@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <Description>bUnit setup and Playwright helpers for testing apps built with Trailblazor.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Trailblazor\Trailblazor.csproj" />
+  </ItemGroup>
+
+</Project>

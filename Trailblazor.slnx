@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/docs/">
+    <Project Path="docs/Trailblazor.Docs/Trailblazor.Docs.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Trailblazor.Analyzers/Trailblazor.Analyzers.csproj" />
+    <Project Path="src/Trailblazor.Primitives/Trailblazor.Primitives.csproj" />
+    <Project Path="src/Trailblazor.Testing/Trailblazor.Testing.csproj" />
+    <Project Path="src/Trailblazor/Trailblazor.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Trailblazor.BrowserTests/Trailblazor.BrowserTests.csproj" />
+    <Project Path="tests/Trailblazor.Tests/Trailblazor.Tests.csproj" />
+  </Folder>
+</Solution>
