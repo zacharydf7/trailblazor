@@ -1,0 +1,67 @@
+@page "/overlays"
+@inject JsModuleLoader Modules
+
+<button data-testid="open-modal" @onclick='() => CallAsync("showModal", _modal)'>Open modal</button>
+<input data-testid="page-input" aria-label="Page input" />
+<button data-testid="open-nonmodal-1" @onclick='() => CallAsync("showNonModal", _nonModal1)'>Open non-modal 1</button>
+<button data-testid="open-nonmodal-2" @onclick='() => CallAsync("showNonModal", _nonModal2)'>Open non-modal 2</button>
+<output data-testid="log">@string.Join(",", _log)</output>
+
+<dialog data-testid="modal" aria-label="Modal" @ref="_modal">
+    <input data-testid="modal-first" aria-label="Modal first" />
+    <button data-testid="open-nested" @onclick='() => CallAsync("showModal", _nested)'>Open nested</button>
+    <button data-testid="open-menu" popovertarget="modal-menu">Menu</button>
+    <div id="modal-menu" data-testid="modal-menu" popover="auto"
+         @onpopovertoggle='e => _log.Add($"menu-{e.NewState}")'>
+        <button data-testid="menu-item" @onclick='() => _log.Add("menu-item")'>Menu item</button>
+    </div>
+    <input data-testid="modal-last" aria-label="Modal last" />
+    <dialog data-testid="nested" aria-label="Nested" @ref="_nested">
+        <input data-testid="nested-input" aria-label="Nested input" />
+    </dialog>
+</dialog>
+
+<div class="hostile-container">
+    <dialog data-testid="nonmodal-1" aria-label="Non-modal 1" popover="manual" @ref="_nonModal1">
+        <input data-testid="nonmodal-1-input" aria-label="Non-modal 1 input" />
+    </dialog>
+</div>
+<dialog data-testid="nonmodal-2" aria-label="Non-modal 2" popover="manual" @ref="_nonModal2">
+    <input data-testid="nonmodal-2-input" aria-label="Non-modal 2 input" />
+</dialog>
+<div class="hostile-cover"></div>
+
+<div style="--tb-color-primary: rgb(0, 128, 128)">
+    <button data-testid="open-themed" popovertarget="themed-popover">Themed</button>
+    <div id="themed-popover" data-testid="themed-popover" popover="auto" style="color: var(--tb-color-primary)">
+        Themed popover
+    </div>
+</div>
+
+<div class="tall"></div>
+
+@code {
+    private readonly List<string> _log = [];
+    private ElementReference _modal;
+    private ElementReference _nested;
+    private ElementReference _nonModal1;
+    private ElementReference _nonModal2;
+
+    // "cancel" or "keydown": wired in JS, because Blazor's oncancel has no preventDefault support.
+    [SupplyParameterFromQuery]
+    public string? NoEscape { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && NoEscape is "cancel" or "keydown")
+        {
+            await CallAsync(NoEscape == "cancel" ? "blockCancel" : "blockEscape", _modal);
+        }
+    }
+
+    private async Task CallAsync(string function, ElementReference element)
+    {
+        var module = await Modules.ImportAsync("./overlays.js");
+        await module.InvokeVoidAsync(function, element);
+    }
+}

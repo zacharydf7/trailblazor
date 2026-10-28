@@ -1,0 +1,130 @@
+/* The page behind a modal dialog must not scroll. */
+:root:has(dialog:modal) {
+    overflow: hidden;
+}
+
+/* Keeps the menu clear of the modal's inputs, so a test can press outside the menu but inside the modal. */
+#modal-menu {
+    inset: auto;
+    top: 8px;
+    right: 8px;
+    margin: 0;
+}
+
+.tall {
+    height: 200vh;
+}
+
+.hostile-container {
+    position: relative;
+    z-index: 1;
+    transform: translateZ(0);
+    overflow: hidden;
+    width: 200px;
+    height: 40px;
+}
+
+/* Covers the middle of the viewport, where non-modal dialogs open, above everything outside the top layer. */
+.hostile-cover {
+    position: fixed;
+    top: 25%;
+    left: 25%;
+    width: 50%;
+    height: 50%;
+    z-index: 9999;
+    background: rgb(0 0 0 / 0.05);
+}
+
+.edge-toolbar {
+    position: fixed;
+    top: 100px;
+    left: 0;
+    display: flex;
+    overflow: hidden;
+    height: 40px;
+}
+
+.edge-toolbar button {
+    width: 40px;
+    height: 40px;
+}
+
+.tooltip {
+    width: 160px;
+    height: 32px;
+    padding: 0;
+}
+
+.listbox {
+    width: 180px;
+    height: 120px;
+    padding: 0;
+}
+
+.scroll-body {
+    max-height: 240px;
+    overflow: auto;
+}
+
+.bottom-select {
+    position: fixed;
+    bottom: 16px;
+    left: 300px;
+}
+
+.center-anchor {
+    position: fixed;
+    top: 300px;
+    left: 600px;
+    width: 100px;
+    height: 40px;
+}
+
+.placement {
+    width: 120px;
+    height: 40px;
+    padding: 0;
+}
+
+/* Native CSS anchor positioning path. overlays.js moves the anchor class to the trigger that opened the overlay. */
+.native .anchor {
+    anchor-name: --spike-anchor;
+}
+
+.native .tooltip {
+    position-anchor: --spike-anchor;
+    position-area: bottom;
+    position-try-fallbacks: flip-block, bottom span-right, bottom span-left;
+    inset: auto;
+    margin: 8px 0 0;
+}
+
+.native .placement {
+    position-anchor: --spike-anchor;
+    inset: auto;
+    margin: 8px;
+}
+
+.native .placement.side-top {
+    position-area: top;
+}
+
+.native .placement.side-bottom {
+    position-area: bottom;
+}
+
+.native .placement.side-start {
+    position-area: inline-start;
+}
+
+.native .placement.side-end {
+    position-area: inline-end;
+}
+
+.native .listbox {
+    position-anchor: --spike-anchor;
+    position-area: bottom span-right;
+    position-try-fallbacks: flip-block;
+    inset: auto;
+    margin: 4px 0;
+}

@@ -17,6 +17,7 @@
     <InternalsVisibleTo Include="Trailblazor" />
     <InternalsVisibleTo Include="Trailblazor.Tests" />
     <InternalsVisibleTo Include="Trailblazor.BrowserTests.Host" />
+    <InternalsVisibleTo Include="Trailblazor.Spikes.Client" />
   </ItemGroup>
 
 </Project>

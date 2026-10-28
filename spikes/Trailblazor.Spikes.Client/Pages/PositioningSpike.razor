@@ -1,0 +1,159 @@
+@page "/positioning"
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject ILogger<PositioningSpike> Logger
+
+<div class="@(Native ? "native" : null)">
+    <div class="edge-toolbar">
+        @for (var i = 0; i < _tools.Length; i++)
+        {
+            var index = i;
+            <button data-testid="tool-@index" @ref="_tools[index]" @onclick="() => ShowTooltipAsync(index)">T@(index)</button>
+        }
+    </div>
+    <div data-testid="tooltip" class="tooltip" popover="manual" @ref="_tooltip">Tooltip</div>
+
+    <button data-testid="open-form-dialog" @onclick="OpenFormDialogAsync">Open form dialog</button>
+    <dialog data-testid="form-dialog" aria-label="Form dialog" @ref="_formDialog">
+        <div data-testid="form-body" class="scroll-body">
+            <table>
+                @for (var i = 0; i < _selects.Length; i++)
+                {
+                    var index = i;
+                    <tr>
+                        <td>Row @index</td>
+                        <td>
+                            <button data-testid="select-@index" @ref="_selects[index]"
+                                    @onclick="() => OpenListboxAsync(_dialogListbox, _selects[index])">Choose</button>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div data-testid="dialog-listbox" class="listbox" popover="auto" @ref="_dialogListbox"
+             @onpopovertoggle="OnListboxToggleAsync">Options</div>
+    </dialog>
+
+    <button data-testid="bottom-select" class="bottom-select" @ref="_bottomSelect"
+            @onclick="() => OpenListboxAsync(_pageListbox, _bottomSelect)">Bottom</button>
+    <div data-testid="page-listbox" class="listbox" popover="auto" @ref="_pageListbox"
+         @onpopovertoggle="OnListboxToggleAsync">Options</div>
+
+    <button data-testid="center-anchor" class="center-anchor" @ref="_centerAnchor"
+            @onclick="ShowPlacementAsync">Center</button>
+    <div data-testid="placement" class="placement side-@Side" popover="manual" @ref="_placement">Placement</div>
+</div>
+<output data-testid="shown">@_shownCount</output>
+
+@code {
+    private const string OverlaysModule = "./overlays.js";
+
+    private readonly ElementReference[] _tools = new ElementReference[3];
+    private readonly ElementReference[] _selects = new ElementReference[20];
+    private ElementReference _tooltip;
+    private ElementReference _formDialog;
+    private ElementReference _dialogListbox;
+    private ElementReference _bottomSelect;
+    private ElementReference _pageListbox;
+    private ElementReference _centerAnchor;
+    private ElementReference _placement;
+    private AnchoredPosition? _tooltipPosition;
+    private AnchoredPosition? _listboxPosition;
+    private AnchoredPosition? _placementPosition;
+    private int _shownCount;
+
+    [SupplyParameterFromQuery]
+    public string? Positioning { get; set; }
+
+    // Side for the placement probe: top, bottom, start or end.
+    [SupplyParameterFromQuery]
+    public string? Side { get; set; }
+
+    // Tags the teardown marker so a measurement waits for its own circuit, not another test's.
+    [SupplyParameterFromQuery]
+    public string? Run { get; set; }
+
+    private bool Native => Positioning == "native";
+
+    private async Task ShowPlacementAsync()
+    {
+        var side = Enum.Parse<AnchorSide>(Side ?? "bottom", ignoreCase: true);
+        var options = new AnchoredPositionOptions { Side = side, Align = AnchorAlign.Center, Offset = 8 };
+        _placementPosition = await ShowAnchoredAsync(_placement, _centerAnchor, options);
+    }
+
+    private async Task OpenFormDialogAsync()
+    {
+        var module = await Modules.ImportAsync(OverlaysModule);
+        await module.InvokeVoidAsync("showModal", _formDialog);
+    }
+
+    private async Task ShowTooltipAsync(int index)
+    {
+        if (_tooltipPosition is not null)
+        {
+            await _tooltipPosition.DisposeAsync();
+        }
+
+        var options = new AnchoredPositionOptions { Side = AnchorSide.Bottom, Align = AnchorAlign.Center, Offset = 8 };
+        _tooltipPosition = await ShowAnchoredAsync(_tooltip, _tools[index], options);
+    }
+
+    private async Task OpenListboxAsync(ElementReference listbox, ElementReference trigger)
+    {
+        var options = new AnchoredPositionOptions { Side = AnchorSide.Bottom, Align = AnchorAlign.Start, Offset = 4 };
+        _listboxPosition = await ShowAnchoredAsync(listbox, trigger, options);
+    }
+
+    private async Task<AnchoredPosition?> ShowAnchoredAsync(ElementReference popover, ElementReference anchor,
+        AnchoredPositionOptions options)
+    {
+        var module = await Modules.ImportAsync(OverlaysModule);
+        AnchoredPosition? position = null;
+        if (Native)
+        {
+            await module.InvokeVoidAsync("showAnchoredNative", popover, anchor);
+        }
+        else
+        {
+            await module.InvokeVoidAsync("showPopover", popover);
+            position = await AnchoredPosition.CreateAsync(Modules, popover, anchor, options);
+        }
+
+        _shownCount++;
+        return position;
+    }
+
+    private async Task OnListboxToggleAsync(PopoverToggleEventArgs e)
+    {
+        if (e.NewState == "closed" && _listboxPosition is not null)
+        {
+            await _listboxPosition.DisposeAsync();
+            _listboxPosition = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_tooltipPosition is not null)
+        {
+            await _tooltipPosition.DisposeAsync();
+        }
+
+        if (_listboxPosition is not null)
+        {
+            await _listboxPosition.DisposeAsync();
+        }
+
+        if (_placementPosition is not null)
+        {
+            await _placementPosition.DisposeAsync();
+        }
+
+        // Marker for the circuit teardown measurement; prerender disposals carry no circuit, so they are left out.
+        if (RendererInfo.IsInteractive)
+        {
+            Logger.LogWarning("Positioning spike disposed: {Run}", Run);
+        }
+    }
+}

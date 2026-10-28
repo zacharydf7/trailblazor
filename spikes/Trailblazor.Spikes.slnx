@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="../src/Trailblazor.Primitives/Trailblazor.Primitives.csproj" />
+  <Project Path="../src/Trailblazor/Trailblazor.csproj" />
+  <Project Path="Trailblazor.Spikes.Client/Trailblazor.Spikes.Client.csproj" />
+  <Project Path="Trailblazor.Spikes.Tests/Trailblazor.Spikes.Tests.csproj" />
+  <Project Path="Trailblazor.Spikes/Trailblazor.Spikes.csproj" />
+</Solution>

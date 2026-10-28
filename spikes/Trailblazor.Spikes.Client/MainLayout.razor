@@ -1,0 +1,8 @@
+@inherits LayoutComponentBase
+
+<TbRoot />
+
+@* data-renderer lets measurements confirm which render mode they ran in. *@
+<main data-interactive="@RendererInfo.IsInteractive" data-renderer="@RendererInfo.Name">
+    @Body
+</main>
