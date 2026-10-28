@@ -1,0 +1,21 @@
+@page "/components/{Name}"
+@using Trailblazor.Docs.Examples
+
+@if (ExampleCatalog.Find(Name) is { } example)
+{
+    <PageTitle>@example.Title · Trailblazor</PageTitle>
+    <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">@example.Title</TbText>
+    <DynamicComponent Type="example.Component" />
+}
+else
+{
+    <PageTitle>Not found · Trailblazor</PageTitle>
+    <TbText>There is no component named @Name.</TbText>
+}
+
+<p><a href="">All components</a></p>
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = "";
+}

@@ -16,6 +16,9 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return page;
     }
 
+    protected static Task SetThemeAsync(IPage page, string theme) =>
+        page.EvaluateAsync("theme => document.documentElement.dataset.tbTheme = theme", theme);
+
     public async ValueTask DisposeAsync()
     {
         foreach (var context in _contexts)

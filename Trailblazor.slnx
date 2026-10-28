@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/docs/">
+    <Project Path="docs/Trailblazor.Docs.Examples/Trailblazor.Docs.Examples.csproj" />
     <Project Path="docs/Trailblazor.Docs/Trailblazor.Docs.csproj" />
   </Folder>
   <Folder Name="/src/">

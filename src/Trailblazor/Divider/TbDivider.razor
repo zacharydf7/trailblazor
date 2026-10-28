@@ -1,0 +1,22 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@if (Vertical)
+{
+    <div role="separator" aria-orientation="@(KeepsSeparatorRole ? "vertical" : null)"
+         @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-divider", "tb-divider--vertical", Class)"
+         style="@Style"></div>
+}
+else
+{
+    <hr @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-divider", Class)" style="@Style" />
+}
+
+@code {
+    /// <summary>Draws a vertical line between items in a row instead of a horizontal rule.</summary>
+    [Parameter]
+    public bool Vertical { get; set; }
+
+    // aria-orientation is only allowed on the separator role, not on a consumer's override such as role="none".
+    private bool KeepsSeparatorRole => AdditionalAttributes?.ContainsKey("role") != true;
+}

@@ -147,9 +147,6 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(probe).ToHaveCSSAsync("height", "32px");
     }
 
-    private static Task SetThemeAsync(IPage page, string theme) =>
-        page.EvaluateAsync("theme => document.documentElement.dataset.tbTheme = theme", theme);
-
     private static Task<double> GetLuminanceAsync(IPage page, string token) =>
         page.EvaluateAsync<double>(LuminanceScript, token);
 

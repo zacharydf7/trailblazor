@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Trailblazor\Trailblazor.csproj" />
+    <ProjectReference Include="..\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,11 @@
+<TbText TextStyle="TextStyle.Display" As="TextElement.H1">Display</TbText>
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H2">Headline</TbText>
+<TbText TextStyle="TextStyle.Title" As="TextElement.H3">Title</TbText>
+<TbText TextStyle="TextStyle.Subtitle">Subtitle</TbText>
+<TbText>Body text, the default.</TbText>
+<TbText TextStyle="TextStyle.Caption">Caption</TbText>
+
+@foreach (var tone in Enum.GetValues<Tone>())
+{
+    <TbText Tone="tone">@tone text</TbText>
+}

@@ -1,0 +1,14 @@
+@page "/examples/{Name}"
+@using Trailblazor.Docs.Examples
+
+<PageTitle>@Example.Title example</PageTitle>
+<DynamicComponent Type="Example.Component" />
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = "";
+
+    // An unknown name must fail loudly; a not-found page would give axe a trivially clean result.
+    private Example Example => ExampleCatalog.Find(Name)
+        ?? throw new InvalidOperationException($"No example is named {Name}.");
+}

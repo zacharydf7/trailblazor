@@ -1,3 +1,11 @@
+body {
+    margin: 0;
+    padding: 16px;
+    background: var(--tb-color-background);
+    color: var(--tb-color-text);
+    font-family: var(--tb-font-family);
+}
+
 #blazor-error-ui {
     display: none;
     position: fixed;

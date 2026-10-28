@@ -216,3 +216,101 @@
         }
     }
 }
+
+@layer tb.components {
+    .tb-text {
+        margin: 0;
+        font-family: var(--tb-font-family);
+        line-height: var(--tb-line-height-normal);
+    }
+
+    .tb-text--display {
+        font-size: var(--tb-font-size-3xl);
+        font-weight: var(--tb-font-weight-bold);
+        line-height: var(--tb-line-height-tight);
+    }
+
+    .tb-text--headline {
+        font-size: var(--tb-font-size-2xl);
+        font-weight: var(--tb-font-weight-semibold);
+        line-height: var(--tb-line-height-tight);
+    }
+
+    .tb-text--title {
+        font-size: var(--tb-font-size-xl);
+        font-weight: var(--tb-font-weight-semibold);
+        line-height: var(--tb-line-height-tight);
+    }
+
+    .tb-text--subtitle {
+        font-size: var(--tb-font-size-lg);
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-text--body {
+        font-size: var(--tb-font-size-md);
+    }
+
+    .tb-text--caption {
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-text--primary {
+        color: var(--tb-color-primary-text);
+    }
+
+    .tb-text--neutral {
+        color: var(--tb-color-neutral-text);
+    }
+
+    .tb-text--success {
+        color: var(--tb-color-success-text);
+    }
+
+    .tb-text--warning {
+        color: var(--tb-color-warning-text);
+    }
+
+    .tb-text--danger {
+        color: var(--tb-color-danger-text);
+    }
+
+    .tb-text--info {
+        color: var(--tb-color-info-text);
+    }
+
+    .tb-divider {
+        margin: var(--tb-space-2) 0;
+        border: none;
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-divider--vertical {
+        align-self: stretch;
+        margin: 0 var(--tb-space-2);
+        border-block-start: none;
+        border-inline-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-surface {
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+    }
+
+    .tb-surface--low {
+        box-shadow: var(--tb-shadow-sm);
+    }
+
+    .tb-surface--medium {
+        box-shadow: var(--tb-shadow-md);
+    }
+
+    .tb-surface--high {
+        box-shadow: var(--tb-shadow-lg);
+    }
+
+    .tb-surface--outlined {
+        border: 1px solid var(--tb-border-subtle);
+    }
+}

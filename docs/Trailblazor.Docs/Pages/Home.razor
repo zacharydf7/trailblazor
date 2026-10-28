@@ -1,7 +1,14 @@
 @page "/"
+@using Trailblazor.Docs.Examples
 
 <PageTitle>Trailblazor</PageTitle>
 
-<h1>Trailblazor</h1>
+<TbText TextStyle="TextStyle.Display" As="TextElement.H1">Trailblazor</TbText>
+<TbText>Accessible Blazor components. Full documentation is coming; these are the components so far.</TbText>
 
-<p>Documentation is coming.</p>
+<ul>
+    @foreach (var example in ExampleCatalog.All)
+    {
+        <li><a href="components/@example.Name">@example.Title</a></li>
+    }
+</ul>

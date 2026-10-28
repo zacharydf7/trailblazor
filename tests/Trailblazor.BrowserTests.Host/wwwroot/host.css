@@ -1,0 +1,8 @@
+/* The page itself follows the theme, so dark-theme checks see dark pages, not dark components on white. */
+body {
+    margin: 0;
+    padding: 16px;
+    background: var(--tb-color-background);
+    color: var(--tb-color-text);
+    font-family: var(--tb-font-family);
+}
