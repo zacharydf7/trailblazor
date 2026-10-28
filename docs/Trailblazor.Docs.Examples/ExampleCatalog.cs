@@ -22,6 +22,8 @@ public static class ExampleCatalog
         new("progress", "Progress", typeof(ProgressExample)),
         new("text-field", "Text field", typeof(TextFieldExample)),
         new("number-field", "Number field", typeof(NumberFieldExample)),
+        new("checkbox", "Checkbox", typeof(CheckboxExample)),
+        new("switch", "Switch", typeof(SwitchExample)),
     ];
 
     public static Example? Find(string name) => All.FirstOrDefault(example => example.Name == name);

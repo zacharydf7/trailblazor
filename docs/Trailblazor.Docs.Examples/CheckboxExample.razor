@@ -1,0 +1,13 @@
+<TbStack Gap="4">
+    <TbCheckbox Label="Email me updates" @bind-Value="_updates" HelperText="About once a month."
+                data-testid="updates" />
+    <output data-testid="updates-echo">@_updates</output>
+    <TbCheckbox Label="All formats" @bind-Value="_allFormats" data-testid="all-formats" />
+    <output data-testid="all-formats-echo">@(_allFormats?.ToString() ?? "mixed")</output>
+    <TbCheckbox Label="Locked" Value="true" Disabled />
+</TbStack>
+
+@code {
+    private bool _updates;
+    private bool? _allFormats;
+}

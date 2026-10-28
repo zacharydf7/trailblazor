@@ -20,9 +20,17 @@
         <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="Increase" Size="Size.Small" tabindex="-1"
                       data-part="increment" Disabled="@(Disabled || !CanStep(1))" OnClick="() => StepAsync(1)" />
     }
-</text>)
+</text>, Start, End)
 
 @code {
+    /// <summary>Content before the input, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the input, such as a unit or a button.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     /// <summary>The smallest value allowed. Step buttons stop here, and a smaller typed value is an error.</summary>
     [Parameter]
     public decimal? Min { get; set; }

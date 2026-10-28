@@ -1,5 +1,4 @@
 @namespace Trailblazor
-@using System.Globalization
 @typeparam TValue
 @inherits TbFieldBase<TValue>
 
@@ -20,9 +19,17 @@
                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" @onchange="OnChange" @oninput="OnInput" />
     }
-</text>)
+</text>, Start, End)
 
 @code {
+    /// <summary>Content before the input, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the input, such as a unit or a button.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     /// <summary>The kind of text the field takes. Defaults to <see cref="TextFieldType.Text"/>.</summary>
     [Parameter]
     public TextFieldType Type { get; set; } = TextFieldType.Text;
@@ -46,19 +53,4 @@
 
     private EventCallback<ChangeEventArgs> Commit =>
         EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetTextAsync(e.Value as string));
-
-    private protected override string? FormatValue(TValue? value) =>
-        BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();
-
-    private protected override bool TryParse(string? text, out TValue? value, out string? error)
-    {
-        if (BindConverter.TryConvertTo(text, CultureInfo.CurrentCulture, out value))
-        {
-            error = null;
-            return true;
-        }
-
-        error = $"{Label ?? "The field"} isn't valid.";
-        return false;
-    }
 }

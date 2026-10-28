@@ -1,8 +1,9 @@
 @page "/static-form"
 @attribute [ExcludeFromInteractiveRouting]
 
-<EditForm Model="Model" FormName="static-form" OnValidSubmit="() => _posted = Model!.Name">
+<EditForm Model="Model" FormName="static-form" OnValidSubmit="Post">
     <TbTextField Label="Name" @bind-Value="Model!.Name" Validation="RequireName" />
+    <TbCheckbox Label="Subscribe" @bind-Value="Model!.Subscribe" />
     <TbButton Type="ButtonType.Submit">Send</TbButton>
 </EditForm>
 <output data-testid="posted">@_posted</output>
@@ -15,11 +16,15 @@
 
     protected override void OnInitialized() => Model ??= new();
 
+    private void Post() => _posted = $"{Model!.Name}, {Model.Subscribe}";
+
     private static IEnumerable<string> RequireName(string? name) =>
         string.IsNullOrWhiteSpace(name) ? ["Enter a name."] : [];
 
     private sealed class Person
     {
         public string? Name { get; set; }
+
+        public bool Subscribe { get; set; }
     }
 }

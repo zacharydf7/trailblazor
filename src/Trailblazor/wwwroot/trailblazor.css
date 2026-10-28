@@ -934,4 +934,125 @@
     .tb-field--disabled .tb-field__control {
         opacity: 0.55;
     }
+
+    .tb-checkbox,
+    .tb-switch {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-checkbox__label,
+    .tb-switch__label {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        min-height: 24px;
+        cursor: pointer;
+    }
+
+    .tb-checkbox__input,
+    .tb-switch__input {
+        appearance: none;
+        display: grid;
+        place-content: center;
+        flex-shrink: 0;
+        box-sizing: border-box;
+        margin: 0;
+        border: 1px solid var(--tb-border-strong);
+        background: var(--tb-color-surface);
+        cursor: inherit;
+    }
+
+    .tb-checkbox__input:focus-visible,
+    .tb-switch__input:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-checkbox__input {
+        width: 1.125rem;
+        height: 1.125rem;
+        border-radius: var(--tb-radius-sm);
+    }
+
+    .tb-checkbox__input:checked,
+    .tb-checkbox__input:indeterminate {
+        border-color: var(--tb-color-primary);
+        background: var(--tb-color-primary);
+    }
+
+    .tb-checkbox__input:checked::before {
+        content: "";
+        width: 0.625rem;
+        height: 0.625rem;
+        background: var(--tb-color-on-primary);
+        clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    }
+
+    .tb-checkbox__input:indeterminate::before {
+        content: "";
+        width: 0.625rem;
+        height: 2px;
+        background: var(--tb-color-on-primary);
+    }
+
+    .tb-switch__input {
+        width: 2.25rem;
+        height: 1.25rem;
+        padding: 2px;
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-color-neutral-subtle);
+        place-content: center start;
+        transition: background var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-switch__input::before {
+        content: "";
+        width: 0.875rem;
+        height: 0.875rem;
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-color-text-muted);
+        transition: transform var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-switch__input:checked {
+        border-color: var(--tb-color-primary);
+        background: var(--tb-color-primary);
+    }
+
+    .tb-switch__input:checked::before {
+        background: var(--tb-color-on-primary);
+        transform: translateX(1rem);
+    }
+
+    .tb-switch__input:dir(rtl):checked::before {
+        transform: translateX(-1rem);
+    }
+
+    .tb-checkbox--invalid .tb-checkbox__input,
+    .tb-switch--invalid .tb-switch__input {
+        border-color: var(--tb-color-danger-text);
+    }
+
+    .tb-checkbox--disabled .tb-checkbox__label,
+    .tb-switch--disabled .tb-switch__label {
+        opacity: 0.55;
+        cursor: default;
+    }
+
+    /* Forced colors drop the drawn boxes, so the native controls come back. */
+    @media (forced-colors: active) {
+        .tb-checkbox__input,
+        .tb-switch__input {
+            appearance: auto;
+        }
+
+        .tb-checkbox__input::before,
+        .tb-switch__input::before {
+            content: none;
+        }
+    }
 }

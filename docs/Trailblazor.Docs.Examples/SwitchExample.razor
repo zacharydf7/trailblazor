@@ -1,0 +1,9 @@
+<TbStack Gap="4">
+    <TbSwitch Label="Auto-save" @bind-Value="_autoSave" data-testid="auto-save" />
+    <output data-testid="auto-save-echo">@_autoSave</output>
+    <TbSwitch Label="Offline mode" Value="true" Disabled />
+</TbStack>
+
+@code {
+    private bool _autoSave = true;
+}

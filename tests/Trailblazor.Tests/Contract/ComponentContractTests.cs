@@ -2,6 +2,7 @@ using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor.Tests.Contract;
 
@@ -12,7 +13,12 @@ public class ComponentContractTests : BunitContext
     private static readonly Type[] RenderNoElement = [typeof(TbRoot)];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
-    private static readonly Dictionary<Type, Type> TypeArguments = new() { [typeof(TbNumberField<>)] = typeof(int) };
+    private static readonly Dictionary<Type, Type> TypeArguments = new()
+    {
+        [typeof(TbNumberField<>)] = typeof(int), [typeof(TbCheckbox<>)] = typeof(bool),
+    };
+
+    public ComponentContractTests() => Services.AddTrailblazor();
 
     public static TheoryData<Type> Components => new(typeof(TbComponentBase).Assembly.GetExportedTypes()
         .Where(type => !type.IsAbstract && typeof(IComponent).IsAssignableFrom(type))

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -51,14 +52,6 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     /// when the surrounding <see cref="EditForm"/> validates.</summary>
     [Parameter]
     public Func<TValue?, IEnumerable<string>>? Validation { get; set; }
-
-    /// <summary>Content before the input, usually an icon.</summary>
-    [Parameter]
-    public RenderFragment? Start { get; set; }
-
-    /// <summary>Content after the input, such as a unit or a button.</summary>
-    [Parameter]
-    public RenderFragment? End { get; set; }
 
     /// <summary>Attributes for the input element itself, such as <c>autocomplete</c> or <c>name</c>.</summary>
     [Parameter]
@@ -145,10 +138,21 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     }
 
     /// <summary>Turns a value into the text the input shows.</summary>
-    private protected abstract string? FormatValue(TValue? value);
+    private protected virtual string? FormatValue(TValue? value) =>
+        BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();
 
     /// <summary>Turns the input's text into a value, or explains why it can't.</summary>
-    private protected abstract bool TryParse(string? text, out TValue? value, out string? error);
+    private protected virtual bool TryParse(string? text, out TValue? value, out string? error)
+    {
+        if (BindConverter.TryConvertTo(text, CultureInfo.CurrentCulture, out value))
+        {
+            error = null;
+            return true;
+        }
+
+        error = $"{Label ?? "The field"} isn't valid.";
+        return false;
+    }
 
     private protected async Task SetValueAsync(TValue? value)
     {
