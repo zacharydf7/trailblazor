@@ -1,0 +1,218 @@
+/* Unlayered consumer CSS beats every rule in these layers, whatever its specificity. */
+@layer tb.reset, tb.tokens, tb.components, tb.utilities;
+
+@layer tb.tokens {
+    :root {
+        /* Reference tier: tonal scales. Components never read these directly. */
+        --tb-gray-50: oklch(0.975 0.003 260);
+        --tb-gray-100: oklch(0.945 0.005 260);
+        --tb-gray-200: oklch(0.89 0.008 260);
+        --tb-gray-300: oklch(0.81 0.012 260);
+        --tb-gray-400: oklch(0.71 0.015 260);
+        --tb-gray-500: oklch(0.62 0.017 260);
+        --tb-gray-600: oklch(0.52 0.018 260);
+        --tb-gray-700: oklch(0.47 0.018 260);
+        --tb-gray-800: oklch(0.4 0.017 260);
+        --tb-gray-900: oklch(0.33 0.015 260);
+        --tb-gray-950: oklch(0.25 0.013 260);
+
+        --tb-blue-50: oklch(0.975 0.015 260);
+        --tb-blue-100: oklch(0.945 0.035 260);
+        --tb-blue-200: oklch(0.89 0.065 260);
+        --tb-blue-300: oklch(0.81 0.1 260);
+        --tb-blue-400: oklch(0.71 0.14 260);
+        --tb-blue-500: oklch(0.62 0.165 260);
+        --tb-blue-600: oklch(0.52 0.17 260);
+        --tb-blue-700: oklch(0.47 0.155 260);
+        --tb-blue-800: oklch(0.4 0.13 260);
+        --tb-blue-900: oklch(0.33 0.105 260);
+        --tb-blue-950: oklch(0.25 0.08 260);
+
+        --tb-green-50: oklch(0.975 0.015 150);
+        --tb-green-100: oklch(0.945 0.035 150);
+        --tb-green-200: oklch(0.89 0.065 150);
+        --tb-green-300: oklch(0.81 0.1 150);
+        --tb-green-400: oklch(0.71 0.14 150);
+        --tb-green-500: oklch(0.62 0.165 150);
+        --tb-green-600: oklch(0.52 0.17 150);
+        --tb-green-700: oklch(0.47 0.155 150);
+        --tb-green-800: oklch(0.4 0.13 150);
+        --tb-green-900: oklch(0.33 0.105 150);
+        --tb-green-950: oklch(0.25 0.08 150);
+
+        --tb-amber-50: oklch(0.975 0.015 75);
+        --tb-amber-100: oklch(0.945 0.035 75);
+        --tb-amber-200: oklch(0.89 0.065 75);
+        --tb-amber-300: oklch(0.81 0.1 75);
+        --tb-amber-400: oklch(0.71 0.14 75);
+        --tb-amber-500: oklch(0.62 0.165 75);
+        --tb-amber-600: oklch(0.52 0.17 75);
+        --tb-amber-700: oklch(0.47 0.155 75);
+        --tb-amber-800: oklch(0.4 0.13 75);
+        --tb-amber-900: oklch(0.33 0.105 75);
+        --tb-amber-950: oklch(0.25 0.08 75);
+
+        --tb-red-50: oklch(0.975 0.015 27);
+        --tb-red-100: oklch(0.945 0.035 27);
+        --tb-red-200: oklch(0.89 0.065 27);
+        --tb-red-300: oklch(0.81 0.1 27);
+        --tb-red-400: oklch(0.71 0.14 27);
+        --tb-red-500: oklch(0.62 0.165 27);
+        --tb-red-600: oklch(0.52 0.17 27);
+        --tb-red-700: oklch(0.47 0.155 27);
+        --tb-red-800: oklch(0.4 0.13 27);
+        --tb-red-900: oklch(0.33 0.105 27);
+        --tb-red-950: oklch(0.25 0.08 27);
+
+        --tb-sky-50: oklch(0.975 0.015 230);
+        --tb-sky-100: oklch(0.945 0.035 230);
+        --tb-sky-200: oklch(0.89 0.065 230);
+        --tb-sky-300: oklch(0.81 0.1 230);
+        --tb-sky-400: oklch(0.71 0.14 230);
+        --tb-sky-500: oklch(0.62 0.165 230);
+        --tb-sky-600: oklch(0.52 0.17 230);
+        --tb-sky-700: oklch(0.47 0.155 230);
+        --tb-sky-800: oklch(0.4 0.13 230);
+        --tb-sky-900: oklch(0.33 0.105 230);
+        --tb-sky-950: oklch(0.25 0.08 230);
+
+        /* Semantic tier: what components read. light-dark() follows the element's color-scheme. */
+        --tb-color-background: light-dark(var(--tb-gray-50), var(--tb-gray-950));
+        --tb-color-surface: light-dark(white, var(--tb-gray-900));
+        --tb-color-surface-raised: light-dark(white, var(--tb-gray-800));
+        --tb-color-surface-sunken: light-dark(var(--tb-gray-100), var(--tb-gray-950));
+        --tb-color-text: light-dark(var(--tb-gray-900), var(--tb-gray-50));
+        --tb-color-text-muted: light-dark(var(--tb-gray-600), var(--tb-gray-300));
+        --tb-color-text-disabled: light-dark(var(--tb-gray-400), var(--tb-gray-600));
+        --tb-border-subtle: light-dark(var(--tb-gray-200), var(--tb-gray-800));
+        --tb-border-strong: var(--tb-gray-500);
+
+        --tb-color-primary: light-dark(var(--tb-blue-600), var(--tb-blue-400));
+        --tb-color-primary-hover: light-dark(var(--tb-blue-700), var(--tb-blue-300));
+        --tb-color-primary-active: light-dark(var(--tb-blue-800), var(--tb-blue-200));
+        --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
+        --tb-color-primary-subtle: light-dark(var(--tb-blue-100), var(--tb-blue-900));
+        --tb-color-primary-text: light-dark(var(--tb-blue-700), var(--tb-blue-300));
+
+        --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
+        --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
+        --tb-color-neutral-active: light-dark(var(--tb-gray-900), var(--tb-gray-100));
+        --tb-color-on-neutral: light-dark(white, var(--tb-gray-950));
+        --tb-color-neutral-subtle: light-dark(var(--tb-gray-100), var(--tb-gray-800));
+        --tb-color-neutral-text: light-dark(var(--tb-gray-700), var(--tb-gray-300));
+
+        --tb-color-success: light-dark(var(--tb-green-600), var(--tb-green-400));
+        --tb-color-success-hover: light-dark(var(--tb-green-700), var(--tb-green-300));
+        --tb-color-success-active: light-dark(var(--tb-green-800), var(--tb-green-200));
+        --tb-color-on-success: light-dark(white, var(--tb-gray-950));
+        --tb-color-success-subtle: light-dark(var(--tb-green-100), var(--tb-green-900));
+        --tb-color-success-text: light-dark(var(--tb-green-700), var(--tb-green-300));
+
+        /* Warning keeps dark text in both modes, so its interaction states get lighter instead of darker. */
+        --tb-color-warning: var(--tb-amber-400);
+        --tb-color-warning-hover: var(--tb-amber-300);
+        --tb-color-warning-active: var(--tb-amber-200);
+        --tb-color-on-warning: var(--tb-gray-950);
+        --tb-color-warning-subtle: light-dark(var(--tb-amber-100), var(--tb-amber-900));
+        --tb-color-warning-text: light-dark(var(--tb-amber-700), var(--tb-amber-300));
+
+        --tb-color-danger: light-dark(var(--tb-red-600), var(--tb-red-400));
+        --tb-color-danger-hover: light-dark(var(--tb-red-700), var(--tb-red-300));
+        --tb-color-danger-active: light-dark(var(--tb-red-800), var(--tb-red-200));
+        --tb-color-on-danger: light-dark(white, var(--tb-gray-950));
+        --tb-color-danger-subtle: light-dark(var(--tb-red-100), var(--tb-red-900));
+        --tb-color-danger-text: light-dark(var(--tb-red-700), var(--tb-red-300));
+
+        --tb-color-info: light-dark(var(--tb-sky-600), var(--tb-sky-400));
+        --tb-color-info-hover: light-dark(var(--tb-sky-700), var(--tb-sky-300));
+        --tb-color-info-active: light-dark(var(--tb-sky-800), var(--tb-sky-200));
+        --tb-color-on-info: light-dark(white, var(--tb-gray-950));
+        --tb-color-info-subtle: light-dark(var(--tb-sky-100), var(--tb-sky-900));
+        --tb-color-info-text: light-dark(var(--tb-sky-700), var(--tb-sky-300));
+
+        --tb-focus-ring-color: light-dark(var(--tb-blue-600), var(--tb-blue-300));
+        --tb-focus-ring-width: 2px;
+        --tb-focus-ring-offset: 2px;
+
+        --tb-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --tb-font-family-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+        --tb-font-size-xs: 0.75rem;
+        --tb-font-size-sm: 0.875rem;
+        --tb-font-size-md: 1rem;
+        --tb-font-size-lg: 1.125rem;
+        --tb-font-size-xl: 1.25rem;
+        --tb-font-size-2xl: 1.5rem;
+        --tb-font-size-3xl: 1.875rem;
+        --tb-font-weight-regular: 400;
+        --tb-font-weight-medium: 500;
+        --tb-font-weight-semibold: 600;
+        --tb-font-weight-bold: 700;
+        --tb-line-height-tight: 1.25;
+        --tb-line-height-normal: 1.5;
+
+        --tb-space-0: 0;
+        --tb-space-1: 0.25rem;
+        --tb-space-2: 0.5rem;
+        --tb-space-3: 0.75rem;
+        --tb-space-4: 1rem;
+        --tb-space-5: 1.25rem;
+        --tb-space-6: 1.5rem;
+        --tb-space-8: 2rem;
+        --tb-space-10: 2.5rem;
+        --tb-space-12: 3rem;
+        --tb-space-16: 4rem;
+
+        --tb-radius-sm: 4px;
+        --tb-radius-md: 6px;
+        --tb-radius-lg: 8px;
+        --tb-radius-xl: 12px;
+        --tb-radius-full: 9999px;
+
+        --tb-shadow-sm: 0 1px 2px light-dark(oklch(0 0 0 / 0.08), oklch(0 0 0 / 0.4));
+        --tb-shadow-md: 0 4px 12px light-dark(oklch(0 0 0 / 0.1), oklch(0 0 0 / 0.5));
+        --tb-shadow-lg: 0 12px 32px light-dark(oklch(0 0 0 / 0.14), oklch(0 0 0 / 0.6));
+
+        --tb-motion-duration-fast: 100ms;
+        --tb-motion-duration-normal: 200ms;
+        --tb-motion-duration-slow: 300ms;
+        --tb-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+        --tb-motion-easing-emphasized: cubic-bezier(0.3, 0, 0, 1.3);
+
+        --tb-control-height: 2.5rem;
+        --tb-control-padding-inline: var(--tb-space-3);
+        --tb-row-height: 2.75rem;
+
+        /* Media queries can't read custom properties; these document the scale and serve JS. */
+        --tb-breakpoint-sm: 640px;
+        --tb-breakpoint-md: 768px;
+        --tb-breakpoint-lg: 1024px;
+        --tb-breakpoint-xl: 1280px;
+    }
+
+    /* No attribute keeps the host page's color-scheme, so adding Trailblazor never darkens an app by itself. */
+    [data-tb-theme="light"] {
+        color-scheme: light;
+    }
+
+    [data-tb-theme="dark"] {
+        color-scheme: dark;
+    }
+
+    [data-tb-theme="system"] {
+        color-scheme: light dark;
+    }
+
+    [data-tb-density="compact"] {
+        --tb-control-height: 2rem;
+        --tb-control-padding-inline: var(--tb-space-2);
+        --tb-row-height: 2rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        :root {
+            --tb-motion-duration-fast: 0ms;
+            --tb-motion-duration-normal: 0ms;
+            --tb-motion-duration-slow: 0ms;
+        }
+    }
+}

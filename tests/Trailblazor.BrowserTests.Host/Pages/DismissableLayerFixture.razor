@@ -1,0 +1,104 @@
+@page "/dismissable-layer"
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<button data-testid="outer-trigger" @ref="_outerTrigger" @onclick="ToggleOuter">Outer</button>
+<input data-testid="outside" aria-label="Outside" />
+@if (_outerOpen)
+{
+    <div data-testid="outer-layer" @ref="_outerElement">
+        <input data-testid="outer-input" aria-label="Outer input" />
+        <button data-testid="inner-trigger" @ref="_innerTrigger" @onclick="() => _innerOpen = true">Inner</button>
+        @if (_innerOpen)
+        {
+            <div data-testid="inner-layer" @ref="_innerElement">
+                <input data-testid="inner-input" aria-label="Inner input" />
+            </div>
+        }
+    </div>
+}
+<ul data-testid="log">
+    @foreach (var entry in _log)
+    {
+        <li>@entry</li>
+    }
+</ul>
+<output data-testid="layer-count">@((_outerLayer is null ? 0 : 1) + (_innerLayer is null ? 0 : 1))</output>
+
+@code {
+    private readonly List<string> _log = [];
+    private bool _outerOpen;
+    private bool _innerOpen;
+    private DismissableLayer? _outerLayer;
+    private DismissableLayer? _innerLayer;
+    private ElementReference _outerTrigger;
+    private ElementReference _outerElement;
+    private ElementReference _innerTrigger;
+    private ElementReference _innerElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var changed = false;
+        if (!_innerOpen && _innerLayer is not null)
+        {
+            await _innerLayer.DisposeAsync();
+            _innerLayer = null;
+            changed = true;
+        }
+
+        if (!_outerOpen && _outerLayer is not null)
+        {
+            await _outerLayer.DisposeAsync();
+            _outerLayer = null;
+            changed = true;
+        }
+
+        if (_outerOpen && _outerLayer is null)
+        {
+            var onDismiss = EventCallback.Factory.Create<DismissReason>(this, reason => Dismiss("outer", reason));
+            _outerLayer = await DismissableLayer.CreateAsync(Modules, _outerElement, _outerTrigger, onDismiss);
+            changed = true;
+        }
+
+        if (_innerOpen && _innerLayer is null)
+        {
+            var onDismiss = EventCallback.Factory.Create<DismissReason>(this, reason => Dismiss("inner", reason));
+            _innerLayer = await DismissableLayer.CreateAsync(Modules, _innerElement, _innerTrigger, onDismiss);
+            changed = true;
+        }
+
+        if (changed)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleOuter()
+    {
+        _outerOpen = !_outerOpen;
+        _innerOpen = false;
+    }
+
+    private void Dismiss(string layer, DismissReason reason)
+    {
+        _log.Add($"{layer}:{reason}");
+        _innerOpen = false;
+        if (layer == "outer")
+        {
+            _outerOpen = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_innerLayer is not null)
+        {
+            await _innerLayer.DisposeAsync();
+        }
+
+        if (_outerLayer is not null)
+        {
+            await _outerLayer.DisposeAsync();
+        }
+    }
+}

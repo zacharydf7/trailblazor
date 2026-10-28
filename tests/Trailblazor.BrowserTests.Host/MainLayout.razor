@@ -1,0 +1,8 @@
+@inherits LayoutComponentBase
+
+<TbRoot />
+
+@* Tests wait for data-interactive, which appears once event handlers are attached. *@
+<main data-interactive="@RendererInfo.IsInteractive">
+    @Body
+</main>

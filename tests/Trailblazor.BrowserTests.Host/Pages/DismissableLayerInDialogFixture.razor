@@ -1,0 +1,57 @@
+@page "/dismissable-layer-in-dialog"
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<button data-testid="open-dialog" onclick="document.querySelector('dialog').showModal()">Open dialog</button>
+<dialog data-testid="dialog">
+    <button data-testid="trigger" @ref="_trigger" @onclick="() => _open = true">Open layer</button>
+    @if (_open)
+    {
+        <div data-testid="layer" @ref="_element">Layer</div>
+    }
+    <ul data-testid="log">
+        @foreach (var entry in _log)
+        {
+            <li>@entry</li>
+        }
+    </ul>
+    <output data-testid="layer-count">@(_layer is null ? 0 : 1)</output>
+</dialog>
+
+@code {
+    private readonly List<string> _log = [];
+    private bool _open;
+    private DismissableLayer? _layer;
+    private ElementReference _trigger;
+    private ElementReference _element;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_open && _layer is null)
+        {
+            var onDismiss = EventCallback.Factory.Create<DismissReason>(this, OnDismiss);
+            _layer = await DismissableLayer.CreateAsync(Modules, _element, _trigger, onDismiss);
+            StateHasChanged();
+        }
+        else if (!_open && _layer is not null)
+        {
+            await _layer.DisposeAsync();
+            _layer = null;
+            StateHasChanged();
+        }
+    }
+
+    private void OnDismiss(DismissReason reason)
+    {
+        _log.Add($"layer:{reason}");
+        _open = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_layer is not null)
+        {
+            await _layer.DisposeAsync();
+        }
+    }
+}

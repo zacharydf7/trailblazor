@@ -1,0 +1,73 @@
+@page "/anchored-position"
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<div dir="@(Rtl ? "rtl" : "ltr")">
+    <div data-testid="scroller" style="position: fixed; inset: 0; overflow: auto">
+        <div style="position: relative; height: 300vh">
+            <button data-testid="detach" @onclick="DetachAsync">Detach</button>
+            <output data-testid="attached">@(_position is not null)</output>
+            <button data-testid="anchor" @ref="_anchor"
+                    style="position: absolute; left: @(X ?? 400)px; top: @(Y ?? 300)px; width: 100px; height: 40px">
+                Anchor
+            </button>
+        </div>
+    </div>
+    <div data-testid="floating" @ref="_floating" style="width: 160px; height: 80px; background: lightgray">
+        Floating
+    </div>
+</div>
+
+@code {
+    private ElementReference _anchor;
+    private ElementReference _floating;
+    private AnchoredPosition? _position;
+
+    // Query parameters missing from the URL are set to null, which would override property initializers.
+    [SupplyParameterFromQuery]
+    public string? Side { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Align { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? X { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? Y { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool Rtl { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var options = new AnchoredPositionOptions
+            {
+                Side = Enum.Parse<AnchorSide>(Side ?? nameof(AnchorSide.Bottom)),
+                Align = Enum.Parse<AnchorAlign>(Align ?? nameof(AnchorAlign.Center)),
+                Offset = 8,
+            };
+            _position = await AnchoredPosition.CreateAsync(Modules, _floating, _anchor, options);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DetachAsync()
+    {
+        if (_position is not null)
+        {
+            await _position.DisposeAsync();
+            _position = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_position is not null)
+        {
+            await _position.DisposeAsync();
+        }
+    }
+}

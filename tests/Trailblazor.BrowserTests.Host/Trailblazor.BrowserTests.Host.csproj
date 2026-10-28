@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Trailblazor\Trailblazor.csproj" />
+  </ItemGroup>
+
+</Project>

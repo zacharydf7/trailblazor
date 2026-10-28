@@ -1,0 +1,82 @@
+@page "/focus-scope"
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<input data-testid="opener" aria-label="Opener" @onkeydown="OnOpenerKeyDownAsync" />
+<div data-testid="outer" tabindex="-1" @ref="_outer" @onkeydown="OnDeactivateKeyDownAsync">
+    <input data-testid="outer-first" aria-label="Outer first" />
+    <input data-testid="inner-opener" aria-label="Inner opener" @onkeydown="OnInnerOpenerKeyDownAsync" />
+    <div data-testid="inner" tabindex="-1" @ref="_inner">
+        <input data-testid="inner-first" aria-label="Inner first" />
+        <input data-testid="inner-last" aria-label="Inner last" />
+    </div>
+    <input data-testid="outer-last" aria-label="Outer last" />
+    @if (Removable && !_removableRemoved)
+    {
+        <input data-testid="removable" aria-label="Removable" @onkeydown="OnRemovableKeyDown" />
+    }
+</div>
+<input data-testid="outside" aria-label="Outside" @onkeydown="OnDeactivateKeyDownAsync" />
+<output data-testid="active-scopes">@_scopes.Count</output>
+
+@code {
+    private readonly Stack<FocusScope> _scopes = new();
+    private ElementReference _outer;
+    private ElementReference _inner;
+    private bool _removableRemoved;
+
+    [SupplyParameterFromQuery]
+    public bool Trapped { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool NoAutoFocus { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool NoRestoreFocus { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool Removable { get; set; }
+
+    private async Task OnOpenerKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ActivateAsync(_outer);
+        }
+    }
+
+    private async Task OnInnerOpenerKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ActivateAsync(_inner);
+        }
+    }
+
+    private async Task OnDeactivateKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && _scopes.TryPop(out var scope))
+        {
+            await scope.DisposeAsync();
+        }
+    }
+
+    private void OnRemovableKeyDown(KeyboardEventArgs e) => _removableRemoved = e.Key == "Delete";
+
+    private async Task ActivateAsync(ElementReference container)
+    {
+        var options = new FocusScopeOptions
+        {
+            Trapped = Trapped, AutoFocus = !NoAutoFocus, RestoreFocus = !NoRestoreFocus,
+        };
+        _scopes.Push(await FocusScope.CreateAsync(Modules, container, options));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        while (_scopes.TryPop(out var scope))
+        {
+            await scope.DisposeAsync();
+        }
+    }
+}

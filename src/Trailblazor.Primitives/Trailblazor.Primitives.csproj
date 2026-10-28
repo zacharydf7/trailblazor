@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <Description>Headless behaviors shared by Trailblazor components: focus scope, dismissable layer and anchored positioning.</Description>
+    <Description>Headless behaviors shared by Trailblazor components.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +11,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Trailblazor" />
+    <InternalsVisibleTo Include="Trailblazor.Tests" />
+    <InternalsVisibleTo Include="Trailblazor.BrowserTests.Host" />
   </ItemGroup>
 
 </Project>

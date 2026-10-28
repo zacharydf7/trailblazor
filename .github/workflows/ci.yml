@@ -23,4 +23,5 @@ jobs:
 
       - run: dotnet restore
       - run: dotnet build --configuration Release --no-restore
+      - run: pwsh tests/Trailblazor.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps
       - run: dotnet test --configuration Release --no-build
