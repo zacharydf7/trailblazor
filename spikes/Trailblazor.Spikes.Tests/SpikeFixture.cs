@@ -29,6 +29,8 @@ public sealed class SpikeFixture : IAsyncLifetime
     {
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
+            // The derived factory doesn't carry UseKestrel's dynamic port, so without this it binds port 5000.
+            builder.UseUrls("http://127.0.0.1:0");
             builder.ConfigureLogging(logging => logging.AddProvider(_errorLogs));
             builder.ConfigureServices(services => services.Configure<CircuitOptions>(options =>
                 options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(1)));
