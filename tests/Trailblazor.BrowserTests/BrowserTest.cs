@@ -8,11 +8,18 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 
     protected async Task<IPage> OpenAsync(string browser, string path, BrowserNewContextOptions? options = null)
     {
+        var page = await OpenStaticAsync(browser, path, options);
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        return page;
+    }
+
+    // For pages rendered as static SSR, which never become interactive.
+    protected async Task<IPage> OpenStaticAsync(string browser, string path, BrowserNewContextOptions? options = null)
+    {
         var context = await Fixture.NewContextAsync(browser, options);
         _contexts.Add(context);
         var page = await context.NewPageAsync();
         await page.GotoAsync(new Uri(Fixture.BaseAddress, path).ToString());
-        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
         return page;
     }
 

@@ -1,0 +1,127 @@
+@namespace Trailblazor
+@using System.Globalization
+@typeparam TValue
+@inherits TbFieldBase<TValue>
+
+<div @attributes="AdditionalAttributes" style="@Style"
+     class="@ClassNames.Join("tb-field", Errors.Count > 0 ? "tb-field--invalid" : null,
+                Disabled ? "tb-field--disabled" : null, Class)">
+    @if (Label is not null)
+    {
+        <label data-part="label" for="@InputId" class="@ClassNames.Join("tb-field__label", Classes?.Label)">
+            @Label
+            @if (Required)
+            {
+                <span class="tb-field__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <div data-part="control" class="@ClassNames.Join("tb-field__control", Classes?.Control)">
+        @if (Start is not null)
+        {
+            <span data-part="start" class="@ClassNames.Join("tb-field__start", Classes?.Start)">@Start</span>
+        }
+        @if (Lines > 1)
+        {
+            <textarea @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+                      rows="@Lines" value="@Text" placeholder="@Placeholder" disabled="@Disabled"
+                      aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+                      aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)"
+                      @onchange="OnChange" @oninput="OnInput"></textarea>
+        }
+        else
+        {
+            <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+                   type="@Type.ToString().ToLowerInvariant()" value="@Text" placeholder="@Placeholder"
+                   disabled="@Disabled" aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", Classes?.Input)" @onchange="OnChange" @oninput="OnInput" />
+        }
+        @if (End is not null)
+        {
+            <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">@End</span>
+        }
+    </div>
+    @if (HelperText is not null)
+    {
+        <div data-part="helper" id="@HelperId" class="@ClassNames.Join("tb-field__helper", Classes?.Helper)">
+            @HelperText
+        </div>
+    }
+    @if (Errors.Count > 0)
+    {
+        <div data-part="error" id="@ErrorId" class="@ClassNames.Join("tb-field__error", Classes?.Error)">
+            @foreach (var error in Errors)
+            {
+                <div>@error</div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>The kind of text the field takes. Defaults to <see cref="TextFieldType.Text"/>.</summary>
+    [Parameter]
+    public TextFieldType Type { get; set; } = TextFieldType.Text;
+
+    /// <summary>Updates the value on every keystroke instead of when the field loses focus.</summary>
+    [Parameter]
+    public bool UpdateOnInput { get; set; }
+
+    /// <summary>The number of text lines. More than one renders a multi-line text area.</summary>
+    [Parameter]
+    public int Lines { get; set; } = 1;
+
+    /// <summary>Example text shown while the field is empty. It is not a label.</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>Content before the input, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the input, such as a unit or a button.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
+    /// <summary>Attributes for the input element itself, such as <c>autocomplete</c> or <c>maxlength</c>.</summary>
+    [Parameter]
+    public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
+    // The input attributes come first, so ours win; where ours are empty the consumer's still apply.
+    private object? InputNameAttribute => InputName ?? InputAttributes?.GetValueOrDefault("name");
+
+    private string? InputDescribedBy => (DescribedBy, InputAttributes?.GetValueOrDefault("aria-describedby")) switch
+    {
+        (null, var theirs) => theirs as string,
+        (var ours, string theirs) => $"{ours} {theirs}",
+        (var ours, _) => ours,
+    };
+
+    // Only the event that commits the value is wired, so a field that updates on change sends no keystrokes.
+    private EventCallback<ChangeEventArgs> OnChange => UpdateOnInput ? default : Commit;
+
+    private EventCallback<ChangeEventArgs> OnInput => UpdateOnInput ? Commit : default;
+
+    private EventCallback<ChangeEventArgs> Commit =>
+        EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetTextAsync(e.Value as string));
+
+    private protected override string? FormatValue(TValue? value) =>
+        BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();
+
+    private protected override bool TryParse(string? text, out TValue? value, out string? error)
+    {
+        if (BindConverter.TryConvertTo(text, CultureInfo.CurrentCulture, out value))
+        {
+            error = null;
+            return true;
+        }
+
+        error = $"{Label ?? "The field"} isn't valid.";
+        return false;
+    }
+}

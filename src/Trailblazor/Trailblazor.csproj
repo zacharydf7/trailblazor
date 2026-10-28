@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Trailblazor.Primitives\Trailblazor.Primitives.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Trailblazor.Tests" />
+  </ItemGroup>
+
 </Project>
