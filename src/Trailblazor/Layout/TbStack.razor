@@ -1,0 +1,35 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" style="@Styles.Join($"--tb-stack-gap: {Spacing.Token(Gap, nameof(Gap))}", Style)"
+     class="@ClassNames.Join("tb-stack", Row ? "tb-stack--row" : null, Wrap ? "tb-stack--wrap" : null,
+                ClassNames.Modifier("tb-stack", "align", Align), ClassNames.Modifier("tb-stack", "justify", Justify), Class)">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>Lays the items out in a row instead of a column.</summary>
+    [Parameter]
+    public bool Row { get; set; }
+
+    /// <summary>The space between items, as a step of the spacing scale (0, 1, 2, 3, 4, 5, 6, 8, 10, 12 or 16).
+    /// Defaults to 3.</summary>
+    [Parameter]
+    public int Gap { get; set; } = 3;
+
+    /// <summary>Where items sit across the stack. Defaults to <see cref="Trailblazor.Align.Stretch"/>.</summary>
+    [Parameter]
+    public Align Align { get; set; } = Align.Stretch;
+
+    /// <summary>How items are spread along the stack. Defaults to <see cref="Trailblazor.Justify.Start"/>.</summary>
+    [Parameter]
+    public Justify Justify { get; set; } = Justify.Start;
+
+    /// <summary>Lets items wrap onto more lines when they don't fit.</summary>
+    [Parameter]
+    public bool Wrap { get; set; }
+
+    /// <summary>The stack's items.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

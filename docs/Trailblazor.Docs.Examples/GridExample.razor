@@ -1,0 +1,23 @@
+<TbGrid data-testid="grid">
+    <TbGridItem SpanMd="6" data-testid="half-first">
+        <TbSurface Outlined Style="padding: var(--tb-space-3)"><TbText>Full width, half from medium up</TbText></TbSurface>
+    </TbGridItem>
+    <TbGridItem SpanMd="6" data-testid="half-second">
+        <TbSurface Outlined Style="padding: var(--tb-space-3)">
+            <TbGrid Gap="2" data-testid="nested-grid">
+                <TbGridItem data-testid="nested-item">
+                    <TbText>A nested item spans its own grid, not its parent's span</TbText>
+                </TbGridItem>
+            </TbGrid>
+        </TbSurface>
+    </TbGridItem>
+    @for (var i = 1; i <= 4; i++)
+    {
+        <TbGridItem Span="6" SpanLg="3">
+            <TbSurface Outlined Style="padding: var(--tb-space-3)"><TbText>Quarter @i</TbText></TbSurface>
+        </TbGridItem>
+    }
+    <TbGridItem Span="4" Start="9" data-testid="end">
+        <TbSurface Outlined Style="padding: var(--tb-space-3)"><TbText>Starts in column 9</TbText></TbSurface>
+    </TbGridItem>
+</TbGrid>

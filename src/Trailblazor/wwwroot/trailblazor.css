@@ -508,4 +508,125 @@
         border-start-end-radius: 0;
         border-end-end-radius: 0;
     }
+
+    .tb-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-stack-gap);
+    }
+
+    .tb-stack--row {
+        flex-direction: row;
+    }
+
+    .tb-stack--wrap {
+        flex-wrap: wrap;
+    }
+
+    .tb-stack--align-start {
+        align-items: flex-start;
+    }
+
+    .tb-stack--align-center {
+        align-items: center;
+    }
+
+    .tb-stack--align-end {
+        align-items: flex-end;
+    }
+
+    .tb-stack--align-stretch {
+        align-items: stretch;
+    }
+
+    .tb-stack--align-baseline {
+        align-items: baseline;
+    }
+
+    .tb-stack--justify-start {
+        justify-content: flex-start;
+    }
+
+    .tb-stack--justify-center {
+        justify-content: center;
+    }
+
+    .tb-stack--justify-end {
+        justify-content: flex-end;
+    }
+
+    .tb-stack--justify-spacebetween {
+        justify-content: space-between;
+    }
+
+    .tb-stack--justify-spacearound {
+        justify-content: space-around;
+    }
+
+    .tb-stack--justify-spaceevenly {
+        justify-content: space-evenly;
+    }
+
+    .tb-spacer {
+        flex: 1 1 auto;
+    }
+
+    .tb-container {
+        box-sizing: border-box;
+        width: 100%;
+        margin-inline: auto;
+        padding-inline: var(--tb-space-4);
+    }
+
+    .tb-container--small {
+        max-width: var(--tb-breakpoint-sm);
+    }
+
+    .tb-container--medium {
+        max-width: var(--tb-breakpoint-md);
+    }
+
+    .tb-container--large {
+        max-width: var(--tb-breakpoint-lg);
+    }
+
+    .tb-container--extralarge {
+        max-width: var(--tb-breakpoint-xl);
+    }
+
+    .tb-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: var(--tb-grid-gap);
+    }
+
+    .tb-grid-item {
+        min-width: 0;
+        grid-column: var(--tb-grid-start) / span var(--tb-grid-span);
+    }
+
+    /* These widths repeat the --tb-breakpoint-* tokens, because media queries can't read custom properties. */
+    @media (min-width: 640px) {
+        .tb-grid-item {
+            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-sm);
+        }
+    }
+
+    @media (min-width: 768px) {
+        .tb-grid-item {
+            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-md);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .tb-grid-item {
+            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-lg);
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .tb-grid-item {
+            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-xl);
+        }
+    }
 }

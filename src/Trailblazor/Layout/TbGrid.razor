@@ -1,0 +1,18 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-grid", Class)"
+     style="@Styles.Join($"--tb-grid-gap: {Spacing.Token(Gap, nameof(Gap))}", Style)">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>The space between rows and columns, as a step of the spacing scale (0, 1, 2, 3, 4, 5, 6, 8, 10, 12
+    /// or 16). Defaults to 4.</summary>
+    [Parameter]
+    public int Gap { get; set; } = 4;
+
+    /// <summary>The grid's <see cref="TbGridItem"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

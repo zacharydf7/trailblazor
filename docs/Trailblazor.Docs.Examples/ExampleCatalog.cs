@@ -14,6 +14,10 @@ public static class ExampleCatalog
         new("button", "Button", typeof(ButtonExample)),
         new("icon-button", "Icon button", typeof(IconButtonExample)),
         new("button-group", "Button group", typeof(ButtonGroupExample)),
+        new("stack", "Stack", typeof(StackExample)),
+        new("spacer", "Spacer", typeof(SpacerExample)),
+        new("grid", "Grid", typeof(GridExample)),
+        new("container", "Container", typeof(ContainerExample)),
     ];
 
     public static Example? Find(string name) => All.FirstOrDefault(example => example.Name == name);
