@@ -1,0 +1,48 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbComponentBase
+
+@code {
+    // The label, the box with the input and its slots, the helper text and the messages, shared by every field.
+    private protected RenderFragment Layout(RenderFragment input) =>
+        @<div @attributes="AdditionalAttributes" style="@Style"
+              class="@ClassNames.Join("tb-field", Errors.Count > 0 ? "tb-field--invalid" : null,
+                         Disabled ? "tb-field--disabled" : null, Class)">
+            @if (Label is not null)
+            {
+                <label data-part="label" for="@InputId" class="@ClassNames.Join("tb-field__label", Classes?.Label)">
+                    @Label
+                    @if (Required)
+                    {
+                        <span class="tb-field__required" aria-hidden="true">*</span>
+                    }
+                </label>
+            }
+            <div data-part="control" class="@ClassNames.Join("tb-field__control", Classes?.Control)">
+                @if (Start is not null)
+                {
+                    <span data-part="start" class="@ClassNames.Join("tb-field__start", Classes?.Start)">@Start</span>
+                }
+                @input
+                @if (End is not null)
+                {
+                    <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">@End</span>
+                }
+            </div>
+            @if (HelperText is not null)
+            {
+                <div data-part="helper" id="@HelperId" class="@ClassNames.Join("tb-field__helper", Classes?.Helper)">
+                    @HelperText
+                </div>
+            }
+            @if (Errors.Count > 0)
+            {
+                <div data-part="error" id="@ErrorId" class="@ClassNames.Join("tb-field__error", Classes?.Error)">
+                    @foreach (var error in Errors)
+                    {
+                        <div>@error</div>
+                    }
+                </div>
+            }
+        </div>;
+}

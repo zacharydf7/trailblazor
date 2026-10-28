@@ -11,11 +11,15 @@ public class ComponentContractTests : BunitContext
     // TbRoot only adds the stylesheet to the page head; it renders no element of its own.
     private static readonly Type[] RenderNoElement = [typeof(TbRoot)];
 
-    // Generic components, such as fields, are checked with string as their type argument.
+    // Generic components, such as fields, are checked with string as their type argument unless listed here.
+    private static readonly Dictionary<Type, Type> TypeArguments = new() { [typeof(TbNumberField<>)] = typeof(int) };
+
     public static TheoryData<Type> Components => new(typeof(TbComponentBase).Assembly.GetExportedTypes()
         .Where(type => !type.IsAbstract && typeof(IComponent).IsAssignableFrom(type))
         .Except(RenderNoElement)
-        .Select(type => type.IsGenericTypeDefinition ? type.MakeGenericType(typeof(string)) : type));
+        .Select(type => type.IsGenericTypeDefinition
+            ? type.MakeGenericType(TypeArguments.GetValueOrDefault(type, typeof(string)))
+            : type));
 
     [Theory, MemberData(nameof(Components))]
     public void Render_ShouldPutClassStyleAndAttributesOnTheRootElement_WhenTheyArePassed(Type component)

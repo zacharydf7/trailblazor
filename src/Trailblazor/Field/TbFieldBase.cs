@@ -6,13 +6,14 @@ namespace Trailblazor;
 
 /// <summary>What every Trailblazor form field shares: <c>@bind-Value</c>, a label, helper text and validation
 /// messages, inside or outside an <see cref="EditForm"/>.</summary>
-public abstract class TbFieldBase<TValue> : TbComponentBase, IDisposable
+public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
 {
     private readonly List<string> _messages = [];
     private EditContext? _editContext;
     private ValidationMessageStore? _messageStore;
     private FieldIdentifier? _field;
     private string? _parseError;
+    private string? _inputName;
     private bool _disposed;
 
     /// <summary>The field's value.</summary>
@@ -51,6 +52,22 @@ public abstract class TbFieldBase<TValue> : TbComponentBase, IDisposable
     [Parameter]
     public Func<TValue?, IEnumerable<string>>? Validation { get; set; }
 
+    /// <summary>Content before the input, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the input, such as a unit or a button.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
+    /// <summary>Attributes for the input element itself, such as <c>autocomplete</c> or <c>name</c>.</summary>
+    [Parameter]
+    public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
     [CascadingParameter]
     private EditContext? CascadedEditContext { get; set; }
 
@@ -62,7 +79,16 @@ public abstract class TbFieldBase<TValue> : TbComponentBase, IDisposable
 
     private protected string ErrorId => $"{FieldId}-error";
 
-    private protected string? InputName { get; private set; }
+    // The input attributes come first, so ours win; where ours are empty the consumer's still apply.
+    private protected object? InputNameAttribute => _inputName ?? InputAttributes?.GetValueOrDefault("name");
+
+    private protected string? InputDescribedBy =>
+        (DescribedBy, InputAttributes?.GetValueOrDefault("aria-describedby")) switch
+        {
+            (null, var theirs) => theirs as string,
+            (var ours, string theirs) => $"{ours} {theirs}",
+            (var ours, _) => ours,
+        };
 
     private protected string? Text => FormatValue(Value);
 
@@ -70,7 +96,7 @@ public abstract class TbFieldBase<TValue> : TbComponentBase, IDisposable
     private protected IReadOnlyList<string> Errors =>
         _messageStore is null ? _messages : _editContext!.GetValidationMessages(_field!.Value).ToList();
 
-    private protected string? DescribedBy => (HelperText is null, Errors.Count == 0) switch
+    private string? DescribedBy => (HelperText is null, Errors.Count == 0) switch
     {
         (true, true) => null,
         (false, true) => HelperId,
@@ -81,7 +107,7 @@ public abstract class TbFieldBase<TValue> : TbComponentBase, IDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        InputName = FieldNames.From(ValueExpression);
+        _inputName = FieldNames.From(ValueExpression);
         // Only a form needs the identifier, and outside one an expression it can't parse must not throw.
         FieldIdentifier? field = CascadedEditContext is not null && ValueExpression is not null
             ? FieldIdentifier.Create(ValueExpression)
@@ -155,6 +181,11 @@ public abstract class TbFieldBase<TValue> : TbComponentBase, IDisposable
             return;
         }
 
+        ShowParseError(error!);
+    }
+
+    private protected void ShowParseError(string error)
+    {
         _parseError = error;
         Validate();
         _editContext?.NotifyValidationStateChanged();

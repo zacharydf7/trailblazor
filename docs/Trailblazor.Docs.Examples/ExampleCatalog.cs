@@ -21,6 +21,7 @@ public static class ExampleCatalog
         new("alert", "Alert", typeof(AlertExample)),
         new("progress", "Progress", typeof(ProgressExample)),
         new("text-field", "Text field", typeof(TextFieldExample)),
+        new("number-field", "Number field", typeof(NumberFieldExample)),
     ];
 
     public static Example? Find(string name) => All.FirstOrDefault(example => example.Name == name);

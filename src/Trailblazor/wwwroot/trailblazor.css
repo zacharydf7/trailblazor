@@ -901,6 +901,17 @@
         resize: vertical;
     }
 
+    /* The field draws its own step buttons, so the browser's spinners are hidden. */
+    input.tb-field__input[type="number"] {
+        appearance: textfield;
+    }
+
+    input.tb-field__input[type="number"]::-webkit-inner-spin-button,
+    input.tb-field__input[type="number"]::-webkit-outer-spin-button {
+        appearance: none;
+        margin: 0;
+    }
+
     .tb-field__start,
     .tb-field__end {
         display: inline-flex;
