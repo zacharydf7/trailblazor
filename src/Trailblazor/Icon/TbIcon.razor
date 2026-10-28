@@ -1,0 +1,23 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<svg @attributes="AdditionalAttributes" viewBox="@Icon.ViewBox" fill="currentColor"
+     role="@(Label is null ? null : "img")" aria-label="@Label" aria-hidden="@(Label is null ? "true" : null)"
+     class="@ClassNames.Join("tb-icon", ClassNames.Modifier("tb-icon", Size), Class)" style="@Style">
+    @((MarkupString)Icon.Svg)
+</svg>
+
+@code {
+    /// <summary>The icon to draw.</summary>
+    [Parameter, EditorRequired]
+    public Icon Icon { get; set; }
+
+    /// <summary>A text alternative. Leave it null for a decorative icon, which is hidden from assistive
+    /// technology; set it when the icon alone carries meaning.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>The icon's size. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+}

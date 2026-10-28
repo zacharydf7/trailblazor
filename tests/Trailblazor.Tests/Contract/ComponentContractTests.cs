@@ -1,6 +1,7 @@
 using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor.Tests.Contract;
 
@@ -24,6 +25,7 @@ public class ComponentContractTests : BunitContext
             builder.AddAttribute(2, nameof(TbComponentBase.Style), "outline: 1px solid red");
             builder.AddAttribute(3, "id", "contract-id");
             builder.AddAttribute(4, "data-contract", "yes");
+            AddRequiredParameters(builder, component, sequence: 5);
             builder.CloseComponent();
         });
 
@@ -32,5 +34,23 @@ public class ComponentContractTests : BunitContext
         Assert.Contains("outline: 1px solid red", root.GetAttribute("style"));
         Assert.Equal("contract-id", root.Id);
         Assert.Equal("yes", root.GetAttribute("data-contract"));
+    }
+
+    // Supplies a sample value for each [EditorRequired] parameter, so every component renders without setup.
+    private static void AddRequiredParameters(RenderTreeBuilder builder, Type component, int sequence)
+    {
+        var required = component.GetProperties()
+            .Where(property => property.IsDefined(typeof(EditorRequiredAttribute), inherit: true));
+        foreach (var property in required)
+        {
+            object value = property.PropertyType switch
+            {
+                var type when type == typeof(string) => "Sample",
+                var type when type == typeof(Icon) => new Icon("<path d=\"M4 4h16v16H4z\" />"),
+                _ => throw new NotSupportedException($"Add a sample {property.PropertyType.Name} to the contract " +
+                    $"kit for {component.Name}.{property.Name}."),
+            };
+            builder.AddAttribute(sequence++, property.Name, value);
+        }
     }
 }

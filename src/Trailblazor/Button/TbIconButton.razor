@@ -1,0 +1,43 @@
+@namespace Trailblazor
+@inherits TbButtonBase
+
+<button @attributes="AdditionalAttributes" type="@TypeAttribute" disabled="@Disabled" aria-label="@AriaLabel"
+        aria-disabled="@(Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+        class="@RootClass("tb-icon-button")" style="@Style" @onclick="OnClickAsync"
+        @onclick:preventDefault="Loading">
+    @if (Loading)
+    {
+        <span data-part="spinner" class="tb-button__spinner"></span>
+    }
+    else
+    {
+        <TbIcon Icon="Icon" Size="Size" />
+    }
+</button>
+
+@code {
+    /// <summary>The icon to show.</summary>
+    [Parameter, EditorRequired]
+    public Icon Icon { get; set; }
+
+    /// <summary>The button's accessible name. An icon alone says nothing to a screen reader, so this is required.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string AriaLabel { get; set; } = "";
+
+    /// <inheritdoc />
+    public TbIconButton()
+    {
+        Variant = Variant.Text;
+        Tone = Tone.Neutral;
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            throw new InvalidOperationException($"{nameof(TbIconButton)} needs an {nameof(AriaLabel)}.");
+        }
+    }
+}

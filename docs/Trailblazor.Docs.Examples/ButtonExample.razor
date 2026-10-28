@@ -1,0 +1,28 @@
+@using Trailblazor.Docs.Examples
+
+@foreach (var variant in Enum.GetValues<Variant>())
+{
+    <div style="display: flex; flex-wrap: wrap; gap: var(--tb-space-2); margin-block-end: var(--tb-space-3)">
+        @foreach (var tone in Enum.GetValues<Tone>())
+        {
+            <TbButton Variant="variant" Tone="tone">@variant @tone</TbButton>
+        }
+    </div>
+}
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--tb-space-2)">
+    <TbButton Size="Size.Small">Small</TbButton>
+    <TbButton>Medium</TbButton>
+    <TbButton Size="Size.Large">Large</TbButton>
+    <TbButton>
+        <Start><TbIcon Icon="ExampleIcons.Plus" /></Start>
+        <ChildContent>Add item</ChildContent>
+    </TbButton>
+    <TbButton Disabled>Disabled</TbButton>
+    <TbButton Loading>Saving</TbButton>
+    <TbButton data-testid="counter" OnClick="() => _clicks++">Clicked @_clicks times</TbButton>
+</div>
+
+@code {
+    private int _clicks;
+}

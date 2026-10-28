@@ -1,0 +1,17 @@
+@page "/submit-button"
+
+<form @onsubmit="() => _submits++">
+    <input data-testid="field" aria-label="Field" />
+    <TbButton Type="ButtonType.Submit" Loading="Loading" data-testid="submit">Save</TbButton>
+</form>
+<button type="button" data-testid="ping" @onclick="() => _pings++">Ping</button>
+<output data-testid="submits">@_submits</output>
+<output data-testid="pings">@_pings</output>
+
+@code {
+    private int _submits;
+    private int _pings;
+
+    [SupplyParameterFromQuery]
+    public bool Loading { get; set; }
+}

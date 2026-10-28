@@ -313,4 +313,199 @@
     .tb-surface--outlined {
         border: 1px solid var(--tb-border-subtle);
     }
+
+    .tb-icon {
+        flex-shrink: 0;
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .tb-icon--small {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .tb-icon--large {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    /* Each tone sets the button's own tokens; each variant decides which of them it paints with. */
+    .tb-button--primary {
+        --tb-button-fill: var(--tb-color-primary);
+        --tb-button-fill-hover: var(--tb-color-primary-hover);
+        --tb-button-fill-active: var(--tb-color-primary-active);
+        --tb-button-on-fill: var(--tb-color-on-primary);
+        --tb-button-subtle: var(--tb-color-primary-subtle);
+        --tb-button-text: var(--tb-color-primary-text);
+    }
+
+    .tb-button--neutral {
+        --tb-button-fill: var(--tb-color-neutral);
+        --tb-button-fill-hover: var(--tb-color-neutral-hover);
+        --tb-button-fill-active: var(--tb-color-neutral-active);
+        --tb-button-on-fill: var(--tb-color-on-neutral);
+        --tb-button-subtle: var(--tb-color-neutral-subtle);
+        --tb-button-text: var(--tb-color-neutral-text);
+    }
+
+    .tb-button--success {
+        --tb-button-fill: var(--tb-color-success);
+        --tb-button-fill-hover: var(--tb-color-success-hover);
+        --tb-button-fill-active: var(--tb-color-success-active);
+        --tb-button-on-fill: var(--tb-color-on-success);
+        --tb-button-subtle: var(--tb-color-success-subtle);
+        --tb-button-text: var(--tb-color-success-text);
+    }
+
+    .tb-button--warning {
+        --tb-button-fill: var(--tb-color-warning);
+        --tb-button-fill-hover: var(--tb-color-warning-hover);
+        --tb-button-fill-active: var(--tb-color-warning-active);
+        --tb-button-on-fill: var(--tb-color-on-warning);
+        --tb-button-subtle: var(--tb-color-warning-subtle);
+        --tb-button-text: var(--tb-color-warning-text);
+    }
+
+    .tb-button--danger {
+        --tb-button-fill: var(--tb-color-danger);
+        --tb-button-fill-hover: var(--tb-color-danger-hover);
+        --tb-button-fill-active: var(--tb-color-danger-active);
+        --tb-button-on-fill: var(--tb-color-on-danger);
+        --tb-button-subtle: var(--tb-color-danger-subtle);
+        --tb-button-text: var(--tb-color-danger-text);
+    }
+
+    .tb-button--info {
+        --tb-button-fill: var(--tb-color-info);
+        --tb-button-fill-hover: var(--tb-color-info-hover);
+        --tb-button-fill-active: var(--tb-color-info-active);
+        --tb-button-on-fill: var(--tb-color-on-info);
+        --tb-button-subtle: var(--tb-color-info-subtle);
+        --tb-button-text: var(--tb-color-info-text);
+    }
+
+    .tb-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--tb-space-2);
+        box-sizing: border-box;
+        min-height: var(--tb-control-height);
+        padding: 0 var(--tb-control-padding-inline);
+        border: 1px solid transparent;
+        border-radius: var(--tb-radius-md);
+        font-family: var(--tb-font-family);
+        font-size: var(--tb-font-size-sm);
+        font-weight: var(--tb-font-weight-medium);
+        line-height: 1;
+        cursor: pointer;
+        transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-button:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-button--filled {
+        background: var(--tb-button-fill);
+        color: var(--tb-button-on-fill);
+    }
+
+    .tb-button--filled:hover:enabled {
+        background: var(--tb-button-fill-hover);
+    }
+
+    .tb-button--filled:active:enabled {
+        background: var(--tb-button-fill-active);
+    }
+
+    .tb-button--outlined {
+        border-color: var(--tb-button-text);
+        background: transparent;
+        color: var(--tb-button-text);
+    }
+
+    .tb-button--soft {
+        background: var(--tb-button-subtle);
+        color: var(--tb-button-text);
+    }
+
+    .tb-button--text {
+        background: transparent;
+        color: var(--tb-button-text);
+    }
+
+    .tb-button--outlined:hover:enabled,
+    .tb-button--text:hover:enabled {
+        background: var(--tb-button-subtle);
+    }
+
+    .tb-button--small {
+        min-height: max(24px, calc(var(--tb-control-height) - 8px));
+        padding: 0 var(--tb-space-2);
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-button--large {
+        min-height: calc(var(--tb-control-height) + 8px);
+        padding: 0 var(--tb-space-4);
+        font-size: var(--tb-font-size-md);
+    }
+
+    .tb-button:disabled,
+    .tb-button[aria-disabled="true"] {
+        cursor: not-allowed;
+        opacity: 0.55;
+    }
+
+    .tb-icon-button {
+        min-width: var(--tb-control-height);
+        padding: 0;
+    }
+
+    .tb-icon-button.tb-button--small {
+        min-width: max(24px, calc(var(--tb-control-height) - 8px));
+    }
+
+    .tb-icon-button.tb-button--large {
+        min-width: calc(var(--tb-control-height) + 8px);
+    }
+
+    .tb-button__spinner {
+        width: 1em;
+        height: 1em;
+        border: 2px solid currentColor;
+        border-block-start-color: transparent;
+        border-radius: var(--tb-radius-full);
+        animation: tb-spin 800ms linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .tb-button__spinner {
+            animation: none;
+        }
+    }
+
+    @keyframes tb-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .tb-button-group {
+        display: inline-flex;
+    }
+
+    .tb-button-group > .tb-button:not(:first-child) {
+        margin-inline-start: -1px;
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+    }
+
+    .tb-button-group > .tb-button:not(:last-child) {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+    }
 }

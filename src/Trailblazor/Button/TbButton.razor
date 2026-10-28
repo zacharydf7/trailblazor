@@ -1,0 +1,38 @@
+@namespace Trailblazor
+@inherits TbButtonBase
+
+<button @attributes="AdditionalAttributes" type="@TypeAttribute" disabled="@Disabled"
+        aria-disabled="@(Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+        class="@RootClass()" style="@Style" @onclick="OnClickAsync" @onclick:preventDefault="Loading">
+    @if (Loading)
+    {
+        <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
+    }
+    @if (Start is not null)
+    {
+        <span data-part="start" class="@ClassNames.Join("tb-button__start", Classes?.Start)">@Start</span>
+    }
+    <span data-part="label" class="@ClassNames.Join("tb-button__label", Classes?.Label)">@ChildContent</span>
+    @if (End is not null)
+    {
+        <span data-part="end" class="@ClassNames.Join("tb-button__end", Classes?.End)">@End</span>
+    }
+</button>
+
+@code {
+    /// <summary>The button's label.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Content before the label, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the label, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
+    /// <summary>Extra CSS classes for the button's inner parts.</summary>
+    [Parameter]
+    public ButtonClasses? Classes { get; set; }
+}

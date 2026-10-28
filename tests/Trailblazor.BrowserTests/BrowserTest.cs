@@ -16,8 +16,16 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return page;
     }
 
+    // Colors transition when the theme flips, so wait until no CSS transition is still running.
     protected static Task SetThemeAsync(IPage page, string theme) =>
-        page.EvaluateAsync("theme => document.documentElement.dataset.tbTheme = theme", theme);
+        page.EvaluateAsync("""
+            async theme => {
+                document.documentElement.dataset.tbTheme = theme;
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                const transitions = document.getAnimations().filter(animation => animation instanceof CSSTransition);
+                await Promise.all(transitions.map(transition => transition.finished));
+            }
+            """, theme);
 
     public async ValueTask DisposeAsync()
     {

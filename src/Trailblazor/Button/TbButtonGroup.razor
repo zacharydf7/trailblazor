@@ -1,0 +1,14 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* Give the group an aria-label so screen readers can say what the buttons have in common. *@
+<div @attributes="AdditionalAttributes" role="group" class="@ClassNames.Join("tb-button-group", Class)"
+     style="@Style">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>The buttons in the group.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
