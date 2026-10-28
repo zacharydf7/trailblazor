@@ -72,6 +72,116 @@
     left: 300px;
 }
 
+.dock {
+    position: relative;
+    height: 600px;
+}
+
+.dock-layout,
+.dock-layout > .dock-split {
+    height: 100%;
+}
+
+.dock-split {
+    display: flex;
+    height: 100%;
+}
+
+.dock-split.vertical {
+    flex-direction: column;
+}
+
+.dock-split-child {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+.dock-splitter {
+    flex: 0 0 6px;
+    background: gray;
+    cursor: col-resize;
+}
+
+.dock-group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.dock-tabs {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.dock-slot {
+    flex: 1;
+    min-height: 0;
+}
+
+.dock-floating {
+    position: absolute;
+    top: 60px;
+    left: 300px;
+    width: 300px;
+    height: 220px;
+    z-index: 2;
+    background: white;
+    border: 1px solid gray;
+}
+
+.dock-autohide {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+}
+
+.dock-flyout {
+    position: absolute;
+    right: 0;
+    bottom: 30px;
+    width: 280px;
+    height: 220px;
+    background: white;
+    border: 1px solid gray;
+}
+
+.dock-host {
+    position: absolute;
+    overflow: auto;
+}
+
+/* Hidden hosts keep their content alive; content-visibility also drops it from layout, tab order and the a11y tree. */
+.dock-host.hidden {
+    content-visibility: hidden;
+    pointer-events: none;
+}
+
+/* Control for the layout-cost measurement: hidden hosts still laid out, only not shown. */
+.no-content-visibility .dock-host.hidden {
+    content-visibility: visible;
+    visibility: hidden;
+}
+
+.panel-list {
+    height: 120px;
+    overflow: auto;
+}
+
+.panel-popover {
+    width: 120px;
+    height: 40px;
+    padding: 0;
+}
+
+.native .panel-popover {
+    position-anchor: --spike-anchor;
+    position-area: bottom span-right;
+    inset: auto;
+    margin: 4px 0;
+}
+
 .center-anchor {
     position: fixed;
     top: 300px;

@@ -1,0 +1,105 @@
+@page "/dock"
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject PanelStats Stats
+
+<div class="dock @(NativePositioning ? "native" : null) @(ContentVisibility == "off" ? "no-content-visibility" : null)"
+     data-testid="dock" @ref="_dock">
+    <div class="dock-layout">
+        <DockLayoutView Node="_layout.Root" OnActivate="Activate" />
+        @if (_layout.Floating is { } floating)
+        {
+            <div class="dock-floating" data-testid="floating-window">
+                <DockLayoutView Node="floating" OnActivate="Activate" />
+            </div>
+        }
+        <div class="dock-autohide">
+            <button data-testid="toggle-autohide" @onclick="ToggleAutoHide">Auto-hide</button>
+            @if (_layout.AutoHideOpen)
+            {
+                <div class="dock-flyout">
+                    <DockLayoutView Node="_layout.AutoHide" OnActivate="Activate" />
+                </div>
+            }
+        </div>
+    </div>
+    <DockHosts Layout="_layout" HeavyPanels="@(Heavy ?? "none")" NativePositioning="NativePositioning" />
+</div>
+<output data-testid="attached">@_attached</output>
+
+@code {
+    private DockLayout _layout = null!;
+    private ElementReference _dock;
+    private DotNetObjectReference<DockSpike>? _reference;
+    private IJSObjectReference? _handle;
+    private bool _attached;
+    private int _layoutCalls;
+
+    // "single" puts all twenty panels in one group.
+    [SupplyParameterFromQuery]
+    public string? Layout { get; set; }
+
+    // "visible" makes only p0 heavy; "all" makes every panel heavy.
+    [SupplyParameterFromQuery]
+    public string? Heavy { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Positioning { get; set; }
+
+    // "off" is the control for the layout-cost measurement.
+    [SupplyParameterFromQuery]
+    public string? ContentVisibility { get; set; }
+
+    private bool NativePositioning => Positioning == "native";
+
+    protected override void OnInitialized() =>
+        _layout = Layout == "single" ? DockLayout.CreateSingleGroup() : DockLayout.CreateDefault();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _reference = DotNetObjectReference.Create(this);
+            var module = await Modules.ImportAsync("./dock.js");
+            _handle = await module.InvokeAsync<IJSObjectReference>("attachDock", _dock, _reference);
+            _attached = true;
+            StateHasChanged();
+        }
+    }
+
+    // The only call .NET should get for a re-dock: JS does the drag, the preview and the geometry.
+    [JSInvokable]
+    public void Move(string panelId, string groupId)
+    {
+        _layoutCalls++;
+        _layout.Move(panelId, groupId);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void Activate(string panelId)
+    {
+        _layoutCalls++;
+        _layout.Activate(panelId);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public Dictionary<string, PanelCounts> GetStats() => Stats.Panels;
+
+    // Counted here, where the calls arrive, so the re-dock measurement sees every layout call from JS.
+    [JSInvokable]
+    public int GetLayoutCallCount() => _layoutCalls;
+
+    private void ToggleAutoHide() => _layout.AutoHideOpen = !_layout.AutoHideOpen;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _reference?.Dispose();
+    }
+}

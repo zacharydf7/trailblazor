@@ -31,6 +31,11 @@ public abstract class SpikeTest(SpikeFixture fixture) : IAsyncDisposable
         return page;
     }
 
+    // Numbers for the README results; the test runner doesn't show output from passing tests.
+    protected static void RecordMeasurement(string line) =>
+        File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "measurements.log"),
+            $"{DateTime.UtcNow:O} {line}{Environment.NewLine}");
+
     // Scroll events and ResizeObserver callbacks run during the next rendering update.
     protected static Task WaitForFramesAsync(IPage page) =>
         page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");

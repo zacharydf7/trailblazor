@@ -1,0 +1,30 @@
+@* One host per panel, keyed and in a fixed order, so moving a panel never moves its content in the render tree. *@
+<div class="dock-hosts">
+    @foreach (var panelId in DockLayout.PanelIds)
+    {
+        var index = int.Parse(panelId[1..]);
+        <div class="dock-host" data-panel="@panelId" @key="panelId">
+            @if (panelId != NotKeptAlive || Layout.IsVisible(panelId))
+            {
+                <PanelContent Id="@panelId" Kind="index % 4" Heavy="IsHeavy(index)" NativePositioning="NativePositioning" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    // The one panel with KeepAlive off: its content is disposed whenever it is hidden.
+    public const string NotKeptAlive = "p19";
+
+    [Parameter, EditorRequired]
+    public DockLayout Layout { get; set; } = null!;
+
+    // "none", "visible" (only p0) or "all".
+    [Parameter]
+    public string HeavyPanels { get; set; } = "none";
+
+    [Parameter]
+    public bool NativePositioning { get; set; }
+
+    private bool IsHeavy(int index) => HeavyPanels == "all" || (HeavyPanels == "visible" && index == 0);
+}

@@ -1,0 +1,89 @@
+@implements IAsyncDisposable
+@inject PanelStats Stats
+@inject JsModuleLoader Modules
+
+@switch (Kind)
+{
+    case 0:
+        <p data-testid="count-@Id">@_count</p>
+        <button data-testid="increment-@Id" @onclick="() => _count++">Add one</button>
+        break;
+    case 1:
+        <input data-testid="input-@Id" aria-label="Input @Id" />
+        break;
+    case 2:
+        <ul data-testid="list-@Id" class="panel-list">
+            @for (var i = 0; i < 200; i++)
+            {
+                <li>Item @i</li>
+            }
+        </ul>
+        break;
+    default:
+        <iframe data-testid="frame-@Id" title="Frame @Id" srcdoc="<p>Frame</p>"
+                onload="window.dockFrameLoads = (window.dockFrameLoads || 0) + 1"></iframe>
+        break;
+}
+
+@if (Heavy)
+{
+    <div class="heavy">
+        @for (var i = 0; i < 2000; i++)
+        {
+            <span>@i</span>
+        }
+    </div>
+}
+
+@if (Id == "p0")
+{
+    <button data-testid="popover-trigger" @ref="_trigger" @onclick="ShowPopoverAsync">Popover</button>
+    <div data-testid="panel-popover" class="panel-popover" popover="manual" @ref="_popover">Panel popover</div>
+}
+
+@code {
+    private int _count;
+    private ElementReference _trigger;
+    private ElementReference _popover;
+    private AnchoredPosition? _position;
+
+    [Parameter, EditorRequired]
+    public string Id { get; set; } = "";
+
+    [Parameter]
+    public int Kind { get; set; }
+
+    [Parameter]
+    public bool Heavy { get; set; }
+
+    [Parameter]
+    public bool NativePositioning { get; set; }
+
+    protected override void OnInitialized() => Stats.For(Id).Initializations++;
+
+    protected override void OnAfterRender(bool firstRender) => Stats.For(Id).Renders++;
+
+    private async Task ShowPopoverAsync()
+    {
+        var module = await Modules.ImportAsync("./overlays.js");
+        if (NativePositioning)
+        {
+            await module.InvokeVoidAsync("showAnchoredNative", _popover, _trigger);
+        }
+        else
+        {
+            await module.InvokeVoidAsync("showPopover", _popover);
+            var options = new AnchoredPositionOptions { Side = AnchorSide.Bottom, Align = AnchorAlign.Start, Offset = 4 };
+            _position = await AnchoredPosition.CreateAsync(Modules, _popover, _trigger, options);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Stats.For(Id).Disposals++;
+        if (_position is not null)
+        {
+            await _position.DisposeAsync();
+        }
+    }
+}

@@ -1,9 +1,11 @@
 using Trailblazor.Spikes;
+using Trailblazor.Spikes.Client.Dock;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents().AddInteractiveWebAssemblyComponents();
 builder.Services.AddTrailblazor();
+builder.Services.AddScoped<PanelStats>();
 
 var app = builder.Build();
 

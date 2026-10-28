@@ -1,0 +1,39 @@
+@switch (Node)
+{
+    case DockSplit split:
+        <div class="dock-split @(split.Vertical ? "vertical" : "horizontal")">
+            @for (var i = 0; i < split.Children.Count; i++)
+            {
+                if (i > 0)
+                {
+                    <div class="dock-splitter" role="separator" tabindex="0" data-testid="splitter"></div>
+                }
+
+                <div class="dock-split-child">
+                    <DockLayoutView Node="split.Children[i]" OnActivate="OnActivate" />
+                </div>
+            }
+        </div>
+        break;
+    case DockGroup group:
+        <section class="dock-group" data-group="@group.Id">
+            <div class="dock-tabs" role="tablist">
+                @foreach (var panelId in group.PanelIds)
+                {
+                    var id = panelId;
+                    <button role="tab" data-testid="tab-@id" aria-selected="@(id == group.ActiveId ? "true" : "false")"
+                            @onclick="() => OnActivate.InvokeAsync(id)">@id</button>
+                }
+            </div>
+            <div class="dock-slot" data-group-slot="@group.Id" data-active-panel="@group.ActiveId"></div>
+        </section>
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public DockNode Node { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<string> OnActivate { get; set; }
+}
