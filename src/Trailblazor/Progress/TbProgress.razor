@@ -1,0 +1,75 @@
+@namespace Trailblazor
+@using System.Globalization
+@inherits TbComponentBase
+
+<div role="progressbar" aria-label="@AriaLabel" aria-valuemin="@Format(Min)" aria-valuemax="@Format(Max)"
+     aria-valuenow="@ValueNow" @attributes="AdditionalAttributes"
+     class="@ClassNames.Join("tb-progress", Circular ? "tb-progress--circular" : "tb-progress--linear",
+                ClassNames.Modifier("tb-progress", Tone), ClassNames.Modifier("tb-progress", Size),
+                Value is null ? "tb-progress--indeterminate" : null, Class)"
+     style="@Styles.Join(PercentStyle, Style)">
+    @if (Circular)
+    {
+        <svg viewBox="0 0 44 44" aria-hidden="true">
+            <circle class="tb-progress__track" cx="22" cy="22" r="19" pathLength="100" />
+            <circle data-part="indicator" class="tb-progress__indicator" cx="22" cy="22" r="19" pathLength="100" />
+        </svg>
+    }
+    else
+    {
+        <div data-part="indicator" class="tb-progress__indicator"></div>
+    }
+</div>
+
+@code {
+    /// <summary>How far along the work is, from <see cref="Min"/> to <see cref="Max"/>. Leave it null when the
+    /// amount of work is unknown, to show an indeterminate animation.</summary>
+    [Parameter]
+    public double? Value { get; set; }
+
+    /// <summary>The value at which no work is done. Defaults to 0.</summary>
+    [Parameter]
+    public double Min { get; set; }
+
+    /// <summary>The value at which the work is finished. Defaults to 100.</summary>
+    [Parameter]
+    public double Max { get; set; } = 100;
+
+    /// <summary>Draws a ring instead of a bar.</summary>
+    [Parameter]
+    public bool Circular { get; set; }
+
+    /// <summary>The indicator's color. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Primary;
+
+    /// <summary>The bar's thickness or the ring's diameter. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>The accessible name, saying what is in progress. Screen readers announce it with the value.</summary>
+    [Parameter, EditorRequired]
+    public string AriaLabel { get; set; } = "";
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            throw new InvalidOperationException($"{nameof(TbProgress)} needs an {nameof(AriaLabel)}.");
+        }
+
+        if (Max <= Min)
+        {
+            throw new ArgumentOutOfRangeException(nameof(Max), Max, $"{nameof(Max)} must be greater than {nameof(Min)}.");
+        }
+    }
+
+    private string? ValueNow => Value is { } value ? Format(Math.Clamp(value, Min, Max)) : null;
+
+    private string? PercentStyle =>
+        Value is { } value ? $"--tb-progress-percent: {Format(Math.Clamp((value - Min) / (Max - Min) * 100, 0, 100))}" : null;
+
+    // CSS and ARIA need a period as the decimal separator whatever the current culture is.
+    private static string Format(double number) => number.ToString("0.##", CultureInfo.InvariantCulture);
+}

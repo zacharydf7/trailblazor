@@ -1,0 +1,16 @@
+<TbStack Gap="6">
+    <TbProgress AriaLabel="Upload" Value="25" data-testid="quarter" />
+    <TbProgress AriaLabel="Loading" data-testid="indeterminate" />
+    <TbStack Row Align="Align.Center" Gap="4">
+        <TbProgress AriaLabel="Export" Value="60" Circular />
+        <TbProgress AriaLabel="Loading" Circular data-testid="spinner" />
+        @foreach (var size in Enum.GetValues<Size>())
+        {
+            <TbProgress AriaLabel="@($"{size} loading")" Circular Size="size" Tone="Tone.Success" />
+        }
+    </TbStack>
+    @foreach (var tone in Enum.GetValues<Tone>())
+    {
+        <TbProgress AriaLabel="@($"{tone} progress")" Value="70" Tone="tone" Size="Size.Large" />
+    }
+</TbStack>

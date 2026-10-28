@@ -629,4 +629,225 @@
             grid-column: var(--tb-grid-start) / span var(--tb-grid-span-xl);
         }
     }
+
+    .tb-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--tb-space-3);
+        padding: var(--tb-space-3) var(--tb-space-4);
+        border-inline-start: 4px solid var(--tb-alert-accent);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-alert-subtle);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+        line-height: var(--tb-line-height-normal);
+    }
+
+    .tb-alert--dense {
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-1) var(--tb-space-3);
+    }
+
+    .tb-alert--primary {
+        --tb-alert-subtle: var(--tb-color-primary-subtle);
+        --tb-alert-accent: var(--tb-color-primary-text);
+    }
+
+    .tb-alert--neutral {
+        --tb-alert-subtle: var(--tb-color-neutral-subtle);
+        --tb-alert-accent: var(--tb-color-neutral-text);
+    }
+
+    .tb-alert--success {
+        --tb-alert-subtle: var(--tb-color-success-subtle);
+        --tb-alert-accent: var(--tb-color-success-text);
+    }
+
+    .tb-alert--warning {
+        --tb-alert-subtle: var(--tb-color-warning-subtle);
+        --tb-alert-accent: var(--tb-color-warning-text);
+    }
+
+    .tb-alert--danger {
+        --tb-alert-subtle: var(--tb-color-danger-subtle);
+        --tb-alert-accent: var(--tb-color-danger-text);
+    }
+
+    .tb-alert--info {
+        --tb-alert-subtle: var(--tb-color-info-subtle);
+        --tb-alert-accent: var(--tb-color-info-text);
+    }
+
+    .tb-alert__icon {
+        color: var(--tb-alert-accent);
+    }
+
+    .tb-alert__message {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .tb-alert__close {
+        margin-block: calc(-1 * var(--tb-space-1));
+    }
+
+    .tb-progress {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tb-progress--linear {
+        height: 0.25rem;
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-progress--linear.tb-progress--small {
+        height: 0.125rem;
+    }
+
+    .tb-progress--linear.tb-progress--large {
+        height: 0.5rem;
+    }
+
+    .tb-progress--linear .tb-progress__indicator {
+        width: calc(var(--tb-progress-percent) * 1%);
+        height: 100%;
+        border-radius: inherit;
+        background: var(--tb-progress-fill);
+        transition: width var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    .tb-progress--linear.tb-progress--indeterminate .tb-progress__indicator {
+        width: 40%;
+        animation: tb-progress-slide 1.4s var(--tb-motion-easing-standard) infinite;
+    }
+
+    .tb-progress--linear.tb-progress--indeterminate:dir(rtl) .tb-progress__indicator {
+        animation-name: tb-progress-slide-rtl;
+    }
+
+    .tb-progress--circular {
+        display: inline-block;
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .tb-progress--circular.tb-progress--small {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .tb-progress--circular.tb-progress--large {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .tb-progress--circular svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .tb-progress--circular circle {
+        fill: none;
+        stroke-width: 4;
+    }
+
+    .tb-progress__track {
+        stroke: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-progress--circular .tb-progress__indicator {
+        stroke: var(--tb-progress-fill);
+        stroke-linecap: round;
+        stroke-dasharray: var(--tb-progress-percent) 100;
+        transition: stroke-dasharray var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    .tb-progress--circular.tb-progress--indeterminate .tb-progress__indicator {
+        stroke-dasharray: 25 100;
+    }
+
+    /* tb-spin starts from the element's own transform, so drop the -90deg start angle while spinning. */
+    .tb-progress--circular.tb-progress--indeterminate svg {
+        transform: none;
+        animation: tb-spin 1s linear infinite;
+    }
+
+    .tb-progress--primary {
+        --tb-progress-fill: var(--tb-color-primary-text);
+    }
+
+    .tb-progress--neutral {
+        --tb-progress-fill: var(--tb-color-neutral-text);
+    }
+
+    .tb-progress--success {
+        --tb-progress-fill: var(--tb-color-success-text);
+    }
+
+    .tb-progress--warning {
+        --tb-progress-fill: var(--tb-color-warning-text);
+    }
+
+    .tb-progress--danger {
+        --tb-progress-fill: var(--tb-color-danger-text);
+    }
+
+    .tb-progress--info {
+        --tb-progress-fill: var(--tb-color-info-text);
+    }
+
+    /* A still partial indicator would read as a real value, so reduced motion fills it and pulses instead. */
+    @media (prefers-reduced-motion: reduce) {
+        .tb-progress--linear.tb-progress--indeterminate .tb-progress__indicator {
+            width: 100%;
+        }
+
+        .tb-progress--circular.tb-progress--indeterminate .tb-progress__indicator {
+            stroke-dasharray: 100 100;
+        }
+
+        .tb-progress--linear.tb-progress--indeterminate .tb-progress__indicator,
+        .tb-progress--linear.tb-progress--indeterminate:dir(rtl) .tb-progress__indicator,
+        .tb-progress--circular.tb-progress--indeterminate .tb-progress__indicator {
+            animation: tb-progress-pulse 2s ease-in-out infinite alternate;
+        }
+
+        .tb-progress--circular.tb-progress--indeterminate svg {
+            animation: none;
+        }
+    }
+
+    @keyframes tb-progress-slide {
+        from {
+            transform: translateX(-100%);
+        }
+
+        to {
+            transform: translateX(250%);
+        }
+    }
+
+    @keyframes tb-progress-slide-rtl {
+        from {
+            transform: translateX(100%);
+        }
+
+        to {
+            transform: translateX(-250%);
+        }
+    }
+
+    @keyframes tb-progress-pulse {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0.35;
+        }
+    }
 }

@@ -1,0 +1,20 @@
+@using Trailblazor.Docs.Examples
+
+<TbStack>
+    @foreach (var tone in Enum.GetValues<Tone>())
+    {
+        <TbAlert Tone="tone">A @tone.ToString().ToLowerInvariant() alert.</TbAlert>
+    }
+    <TbAlert Tone="Tone.Success" Icon="ExampleIcons.Check">Saved with an icon.</TbAlert>
+    <TbAlert Dense>A dense alert for tight spaces.</TbAlert>
+    @if (_showClosable)
+    {
+        <TbAlert Tone="Tone.Warning" OnClose="() => _showClosable = false" data-testid="closable">
+            Close this alert with its button.
+        </TbAlert>
+    }
+</TbStack>
+
+@code {
+    private bool _showClosable = true;
+}

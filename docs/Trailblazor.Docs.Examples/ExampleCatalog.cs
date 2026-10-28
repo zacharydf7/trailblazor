@@ -18,6 +18,8 @@ public static class ExampleCatalog
         new("spacer", "Spacer", typeof(SpacerExample)),
         new("grid", "Grid", typeof(GridExample)),
         new("container", "Container", typeof(ContainerExample)),
+        new("alert", "Alert", typeof(AlertExample)),
+        new("progress", "Progress", typeof(ProgressExample)),
     ];
 
     public static Example? Find(string name) => All.FirstOrDefault(example => example.Name == name);

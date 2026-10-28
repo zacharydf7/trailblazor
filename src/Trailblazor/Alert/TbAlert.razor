@@ -1,0 +1,49 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div role="@(Tone is Tone.Danger or Tone.Warning ? "alert" : "status")" @attributes="AdditionalAttributes"
+     class="@ClassNames.Join("tb-alert", ClassNames.Modifier("tb-alert", Tone), Dense ? "tb-alert--dense" : null, Class)"
+     style="@Style">
+    @if (Icon is { } icon)
+    {
+        <TbIcon Icon="icon" data-part="icon" Class="@ClassNames.Join("tb-alert__icon", Classes?.Icon)" />
+    }
+    <div data-part="message" class="@ClassNames.Join("tb-alert__message", Classes?.Message)">@ChildContent</div>
+    @if (OnClose.HasDelegate)
+    {
+        <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@CloseLabel" Size="Size.Small" OnClick="OnClose"
+                      data-part="close" Class="@ClassNames.Join("tb-alert__close", Classes?.Close)" />
+    }
+</div>
+
+@code {
+    /// <summary>The alert's meaning, which sets its color and role: <c>alert</c> for danger and warning,
+    /// <c>status</c> for the others. Screen readers may not announce a status alert that is added to the page
+    /// with its message already in it. Defaults to <see cref="Trailblazor.Tone.Info"/>.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Info;
+
+    /// <summary>An icon before the message.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Uses less padding, for alerts inside dense layouts.</summary>
+    [Parameter]
+    public bool Dense { get; set; }
+
+    /// <summary>Raised when the close button is clicked. The close button is shown only when this is set.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClose { get; set; }
+
+    /// <summary>The close button's accessible name. Defaults to "Close".</summary>
+    [Parameter]
+    public string CloseLabel { get; set; } = "Close";
+
+    /// <summary>The message.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Extra CSS classes for the alert's inner parts.</summary>
+    [Parameter]
+    public AlertClasses? Classes { get; set; }
+}
