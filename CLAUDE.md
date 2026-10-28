@@ -23,8 +23,10 @@ Trailblazor is written from scratch. The clean-room rule and the names it covers
 - Don't put one parameter per line; fill lines to about 120 characters.
 - Test names: `SUT_Should<Expectation>_When<Condition>`, with `_WhenCalled` when unconditional. Never omit the
   When clause.
-- Commit as often as useful, without asking. Commit messages are one short line with no Co-Authored-By or Claude
-  attribution.
+- Commit as often as useful, without asking, and push to GitHub as needed. Commit messages are one short line with
+  no Co-Authored-By or Claude attribution.
+- Work through a phase's steps without stopping for sign-off; make reasonable decisions and report them. Stop only
+  when asked to, or for a decision that truly needs the user.
 - Commits use `zacharydf7@gmail.com` (set in this repo's local git config, not the global work email).
 - On Windows Git Bash, never name a shell variable `TMP` or `TEMP`.
 
