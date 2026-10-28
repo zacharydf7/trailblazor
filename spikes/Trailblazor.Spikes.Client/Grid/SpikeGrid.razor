@@ -1,0 +1,72 @@
+@inject JsModuleLoader Modules
+
+@* Focus stays on the grid itself (aria-activedescendant), so recycling a row's element can't lose focus. *@
+<div class="grid" role="grid" tabindex="0" aria-label="Spike grid" aria-rowcount="@(RowCount + 1)" aria-colcount="8"
+     aria-activedescendant="@(_activeIndex >= 0 ? $"row-{_activeIndex}" : null)" data-testid="grid"
+     style="--row-height: @(RowHeight)px" @ref="Element" @onkeydown="OnKeyDownAsync">
+    <div role="row" class="grid-row grid-header" aria-rowindex="1" data-testid="header">
+        <div role="columnheader" class="grid-cell pinned">Name</div>
+        <div role="columnheader" class="grid-cell">Owner</div>
+        <div role="columnheader" class="grid-cell number">Quantity</div>
+        <div role="columnheader" class="grid-cell number">Price</div>
+        <div role="columnheader" class="grid-cell number">Score</div>
+        <div role="columnheader" class="grid-cell">Due</div>
+        <div role="columnheader" class="grid-cell">Updated</div>
+        <div role="columnheader" class="grid-cell">Status</div>
+    </div>
+    @if (Items is not null)
+    {
+        <Virtualize Items="Items" ItemSize="RowHeight" OverscanCount="10" Context="row">
+            <GridRow @key="row.Index" Row="row" Active="row.Index == _activeIndex" />
+        </Virtualize>
+    }
+    else
+    {
+        <Virtualize ItemsProvider="ItemsProvider" ItemSize="RowHeight" OverscanCount="10" Context="row">
+            <ItemContent>
+                <GridRow @key="row.Index" Row="row" Active="row.Index == _activeIndex" />
+            </ItemContent>
+            <Placeholder Context="placeholder">
+                <div role="row" class="grid-row placeholder" aria-rowindex="@(placeholder.Index + 2)">Loading</div>
+            </Placeholder>
+        </Virtualize>
+    }
+</div>
+
+@code {
+    private int _activeIndex = -1;
+
+    [Parameter]
+    public List<GridRowData>? Items { get; set; }
+
+    [Parameter]
+    public ItemsProviderDelegate<GridRowData>? ItemsProvider { get; set; }
+
+    [Parameter, EditorRequired]
+    public int RowCount { get; set; }
+
+    [Parameter, EditorRequired]
+    public float RowHeight { get; set; }
+
+    public ElementReference Element { get; private set; }
+
+    public void Refresh() => StateHasChanged();
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        var next = e.Key switch
+        {
+            "ArrowDown" => Math.Min(_activeIndex + 1, RowCount - 1),
+            "ArrowUp" => Math.Max(_activeIndex - 1, 0),
+            _ => _activeIndex,
+        };
+        if (next == _activeIndex)
+        {
+            return;
+        }
+
+        _activeIndex = next;
+        var module = await Modules.ImportAsync("./grid.js");
+        await module.InvokeVoidAsync("scrollRowIntoView", Element, _activeIndex, RowHeight);
+    }
+}

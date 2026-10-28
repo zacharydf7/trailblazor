@@ -1,0 +1,82 @@
+@page "/grid"
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject GridStats Stats
+
+@if (Source == "provider")
+{
+    <SpikeGrid @ref="_grid" ItemsProvider="LoadRowsAsync" RowCount="_rows.Count" RowHeight="RowHeight" />
+}
+else
+{
+    <SpikeGrid @ref="_grid" Items="_rows" RowCount="_rows.Count" RowHeight="RowHeight" />
+}
+<output data-testid="attached">@_attached</output>
+
+@code {
+    private const int RowCount = 100_000;
+
+    private readonly List<GridRowData> _rows = GridRowData.CreateRows(RowCount);
+    private SpikeGrid _grid = null!;
+    private DotNetObjectReference<GridSpike>? _reference;
+    private IJSObjectReference? _handle;
+    private bool _attached;
+
+    // "provider" loads rows through an ItemsProvider with 50 ms latency; anything else uses the in-memory list.
+    [SupplyParameterFromQuery]
+    public string? Source { get; set; }
+
+    // "compact" or comfortable (default).
+    [SupplyParameterFromQuery]
+    public string? Density { get; set; }
+
+    private float RowHeight => Density == "compact" ? 28 : 36;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _reference = DotNetObjectReference.Create(this);
+            var module = await Modules.ImportAsync("./grid.js");
+            _handle = await module.InvokeAsync<IJSObjectReference>("attachGrid", _grid.Element, _reference);
+            _attached = true;
+            StateHasChanged();
+        }
+    }
+
+    private async ValueTask<ItemsProviderResult<GridRowData>> LoadRowsAsync(ItemsProviderRequest request)
+    {
+        var id = Stats.StartRequest();
+        using var registration = request.CancellationToken.Register(() => Stats.CancelRequest(id));
+        await Task.Delay(50, request.CancellationToken);
+        Stats.CompleteRequest(id);
+        return new ItemsProviderResult<GridRowData>(_rows.Skip(request.StartIndex).Take(request.Count), _rows.Count);
+    }
+
+    [JSInvokable]
+    public GridStats GetStats() => Stats;
+
+    [JSInvokable]
+    public void TouchRow(int index)
+    {
+        _rows[index].Version++;
+        _grid.Refresh();
+    }
+
+    // Re-renders the page with unchanged parameters, for the duplicate-load check.
+    [JSInvokable]
+    public void Rerender() => StateHasChanged();
+
+    [JSInvokable]
+    public long GetManagedMemory() => GC.GetTotalMemory(forceFullCollection: true);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _reference?.Dispose();
+    }
+}

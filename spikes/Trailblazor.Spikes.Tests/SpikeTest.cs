@@ -8,7 +8,7 @@ public abstract class SpikeTest(SpikeFixture fixture) : IAsyncDisposable
 
     protected List<string> ScriptErrors { get; } = [];
 
-    protected async Task<IPage> OpenAsync(string browser, string mode, string path)
+    protected async Task<IPage> OpenAsync(string browser, string mode, string path, Uri? baseAddress = null)
     {
         var context = await Fixture.NewContextAsync(browser);
         _contexts.Add(context);
@@ -24,7 +24,7 @@ public abstract class SpikeTest(SpikeFixture fixture) : IAsyncDisposable
 
         var separator = path.Contains('?') ? '&' : '?';
         var url = mode == "wasm" ? $"{path}{separator}mode=wasm" : path;
-        await page.GotoAsync(new Uri(Fixture.BaseAddress, url).ToString());
+        await page.GotoAsync(new Uri(baseAddress ?? Fixture.BaseAddress, url).ToString());
         var renderer = mode == "wasm" ? "WebAssembly" : "Server";
         await page.Locator($"main[data-interactive][data-renderer='{renderer}']")
             .WaitForAsync(new() { State = WaitForSelectorState.Attached });

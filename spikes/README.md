@@ -24,4 +24,6 @@ Spike measurements run locally, not in CI, because timing on shared CI runners i
 - **Performance criteria** run on Chromium with CPU throttling at 4× (Chrome DevTools Protocol
   `Emulation.setCPUThrottlingRate`), to stand in for a mid-range laptop. Each result records the machine, browser
   version and render mode it was measured on.
-- **Server latency**, where a criterion names it, is simulated with Chrome DevTools Protocol network conditions.
+- **Server latency**, where a criterion names it, is simulated with a TCP proxy in the tests that delays everything
+  in both directions. The DevTools Protocol's network emulation was the plan, but it isn't documented to cover
+  WebSocket frames, which carry Blazor Server's traffic.

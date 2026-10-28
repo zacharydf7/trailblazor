@@ -1,0 +1,53 @@
+@inject GridStats Stats
+
+<div role="row" class="grid-row @(Active ? "active" : null)" id="row-@Row.Index" data-row="@Row.Index"
+     aria-rowindex="@(Row.Index + 2)">
+    <div role="gridcell" class="grid-cell pinned">@Row.Name</div>
+    <div role="gridcell" class="grid-cell">@Row.Owner</div>
+    <div role="gridcell" class="grid-cell number">@Row.Quantity</div>
+    <div role="gridcell" class="grid-cell number">@Row.Price.ToString("F2", CultureInfo.InvariantCulture)</div>
+    <div role="gridcell" class="grid-cell number">@Row.Score.ToString("F1", CultureInfo.InvariantCulture)</div>
+    <div role="gridcell" class="grid-cell">@Row.Due.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</div>
+    <div role="gridcell" class="grid-cell">@Row.Updated.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</div>
+    <div role="gridcell" class="grid-cell">@Row.Status</div>
+</div>
+
+@code {
+    private int _renderedIndex = -1;
+    private int _renderedVersion = -1;
+    private bool _renderedActive;
+
+    [Parameter, EditorRequired]
+    public GridRowData Row { get; set; } = null!;
+
+    [Parameter]
+    public bool Active { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Stats.RowInstances++;
+        RememberRenderedState();
+    }
+
+    // The planned rendering model: a row re-renders only when its own data or state changed.
+    protected override bool ShouldRender()
+    {
+        if (Row.Index == _renderedIndex && Row.Version == _renderedVersion && Active == _renderedActive)
+        {
+            return false;
+        }
+
+        RememberRenderedState();
+        return true;
+    }
+
+    protected override void OnAfterRender(bool firstRender) => Stats.RowRenders++;
+
+    // Saved when rendering, not in OnAfterRender, which Server mode delays until the client acknowledges the batch.
+    private void RememberRenderedState()
+    {
+        _renderedIndex = Row.Index;
+        _renderedVersion = Row.Version;
+        _renderedActive = Active;
+    }
+}

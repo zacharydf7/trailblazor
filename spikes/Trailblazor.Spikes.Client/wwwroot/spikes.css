@@ -182,6 +182,48 @@
     margin: 4px 0;
 }
 
+.grid {
+    width: 900px;
+    height: 480px;
+    overflow: auto;
+}
+
+.grid-row {
+    display: grid;
+    grid-template-columns: repeat(8, 160px);
+    width: max-content;
+    height: var(--row-height);
+}
+
+.grid-cell {
+    overflow: hidden;
+    padding: 0 8px;
+    line-height: var(--row-height);
+    white-space: nowrap;
+    background: white;
+}
+
+.grid-cell.number {
+    text-align: end;
+}
+
+.grid-cell.pinned {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+.grid-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    font-weight: 600;
+}
+
+.grid-row.active .grid-cell {
+    background: lightyellow;
+}
+
 .center-anchor {
     position: fixed;
     top: 300px;
