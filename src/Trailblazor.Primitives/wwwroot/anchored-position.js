@@ -9,10 +9,16 @@ export function createAnchoredPosition(floating, anchor, options) {
     // CSS that has to span the gap, such as a tooltip's hover bridge, reads its size from here.
     floating.style.setProperty('--tb-anchored-offset', `${options.offset}px`);
 
-    const update = () => position(floating, anchor, options);
+    // CSS that keeps a popup as wide as its anchor, such as a select's list, reads the live width from here.
+    const update = () => {
+        floating.style.setProperty('--tb-anchor-width', `${anchor.offsetWidth}px`);
+        position(floating, anchor, options);
+    };
     update();
 
-    const resizeObserver = new ResizeObserver(update);
+    // A new anchor width resizes the popup, which inside the observer's own callback is reported as a loop error.
+    const resizeObserver = new ResizeObserver(() => floating.style.getPropertyValue('--tb-anchor-width')
+        === `${anchor.offsetWidth}px` ? update() : requestAnimationFrame(update));
     resizeObserver.observe(anchor);
     resizeObserver.observe(floating);
     window.addEventListener('scroll', update, { capture: true, passive: true });

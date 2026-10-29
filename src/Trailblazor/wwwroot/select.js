@@ -40,7 +40,6 @@ export function createSelect(combobox, listbox, toggle) {
         }
 
         if (!isOpen()) {
-            listbox.style.minWidth = `${control.offsetWidth}px`;
             listbox.showPopover();
         }
 

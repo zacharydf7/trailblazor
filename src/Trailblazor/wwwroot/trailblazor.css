@@ -1238,6 +1238,10 @@
         flex: 1;
     }
 
+    .tb-menu--full-width > .tb-menu__list {
+        min-width: max(10rem, var(--tb-anchor-width, 0px));
+    }
+
     /* The positioning script places the open menu, so only its look is set here. */
     .tb-menu__list {
         min-width: 10rem;
@@ -1527,6 +1531,7 @@
 
     .tb-select__listbox {
         box-sizing: border-box;
+        min-width: var(--tb-anchor-width, 0px);
         max-height: min(20rem, 50vh);
         margin: 0;
         padding: var(--tb-space-1);

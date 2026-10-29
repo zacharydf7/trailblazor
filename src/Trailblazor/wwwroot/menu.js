@@ -47,13 +47,6 @@ export function createMenu(root, menu, options) {
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
         requestAnimationFrame(() => {
             if (list.matches(':popover-open') && !positions.has(list)) {
-                // An inline min-width replaces the stylesheet's, so the menu's own minimum is kept here too.
-                if (list === menu) {
-                    menu.style.minWidth = root.classList.contains('tb-menu--full-width')
-                        ? `max(10rem, ${trigger.offsetWidth}px)`
-                        : '';
-                }
-
                 const placement = list === menu ? options : submenuOptions;
                 positions.set(list, createAnchoredPosition(list, opener(list), placement));
             }

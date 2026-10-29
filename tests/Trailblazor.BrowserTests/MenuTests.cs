@@ -291,6 +291,30 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldStayAtLeastAsWideAsItsTrigger_WhenTheFullWidthTriggerGrowsWhileItIsOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-placement");
+        await page.EvaluateAsync(
+            "() => { window.errors = []; addEventListener('error', event => errors.push(event.message)); }");
+        await OpenPlacedAsync(page, "Wide");
+
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Wide", Exact = true });
+        var width = await trigger.EvaluateAsync<int>("""
+            trigger => {
+                trigger.closest('.tb-menu').parentElement.style.width = '40rem';
+                return trigger.offsetWidth;
+            }
+            """);
+
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Wide", Exact = true });
+        await Expect(menu).ToHaveCSSAsync("min-width", $"{width}px");
+        // Following the trigger mustn't make the browser report a ResizeObserver loop, which apps may log as an error.
+        await page.EvaluateAsync(
+            "() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+        Assert.Empty(await page.EvaluateAsync<string[]>("() => window.errors"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldKeepItsOwnMinimumWidth_WhenFullWidthInANarrowContainer(string browser)
     {
         var page = await OpenAsync(browser, "/menu-placement");

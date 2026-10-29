@@ -35,6 +35,25 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldStayAtLeastAsWideAsTheField_WhenTheFieldGrowsWhileItIsOpen(string browser)
+    {
+        var page = await OpenSelectAsync(browser);
+        await Combobox(page).ClickAsync();
+        var listbox = page.GetByRole(AriaRole.Listbox);
+        await Expect(listbox).ToBeVisibleAsync();
+
+        var width = await Combobox(page).EvaluateAsync<int>("""
+            combobox => {
+                const field = combobox.closest('.tb-field');
+                field.style.width = `${field.offsetWidth + 200}px`;
+                return combobox.parentElement.offsetWidth;
+            }
+            """);
+
+        await Expect(listbox).ToHaveCSSAsync("min-width", $"{width}px");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldMoveSkippingDisabledOptionsAndChooseWithEnter_WhenUsingTheKeyboard(string browser)
     {
         var page = await OpenSelectAsync(browser);
