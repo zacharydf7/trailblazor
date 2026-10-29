@@ -98,4 +98,33 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
             Assert.Empty(drawn);
         }
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Controls_ShouldEndInTheLastChosenState_WhenEachUpdateIsSlowToComeBack(string browser)
+    {
+        // A smoke test: key presses over a few loads make a lost change likely to show (see #91).
+        for (var load = 0; load < 4; load++)
+        {
+            var page = await OpenAsync(browser, "/slow-fields");
+            await PressAsync(page, page.GetByLabel("Subscribe"), " ", 3);
+            await PressAsync(page, page.GetByRole(AriaRole.Switch, new() { Name = "Notify" }), " ", 2);
+            await PressAsync(page, page.GetByRole(AriaRole.Radio, new() { Name = "Small" }), "ArrowDown", 3);
+
+            await Expect(page.GetByTestId("subscribe")).ToHaveTextAsync("True");
+            await Expect(page.GetByTestId("notify")).ToHaveTextAsync("False");
+            await Expect(page.GetByTestId("size")).ToHaveTextAsync("Huge");
+            await Expect(page.GetByLabel("Subscribe")).ToBeCheckedAsync();
+            await Expect(page.GetByRole(AriaRole.Switch, new() { Name = "Notify" })).Not.ToBeCheckedAsync();
+            await Expect(page.GetByRole(AriaRole.Radio, new() { Name = "Huge" })).ToBeCheckedAsync();
+        }
+    }
+
+    private static async Task PressAsync(IPage page, ILocator control, string key, int times)
+    {
+        await control.FocusAsync();
+        for (var press = 0; press < times; press++)
+        {
+            await page.Keyboard.PressAsync(key);
+        }
+    }
 }

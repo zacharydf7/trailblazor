@@ -53,6 +53,25 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(copies).ToHaveAttributeAsync("aria-invalid", "true");
         await Expect(copies).ToHaveAccessibleDescriptionAsync("Copies must be a number.");
+        Assert.True(await copies.EvaluateAsync<bool>("input => input.validity.badInput"),
+            "The typed text was cleared.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldKeepTheUnreadableText_WhenItIsTypedAfterAValue(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/number-field");
+        var quantity = page.GetByLabel("Quantity");
+        var before = await page.GetByTestId("quantity-echo").TextContentAsync();
+
+        await quantity.PressAsync("End");
+        await quantity.PressSequentiallyAsync("e");
+        await quantity.PressAsync("Tab");
+
+        await Expect(quantity).ToHaveAttributeAsync("aria-invalid", "true");
+        Assert.True(await quantity.EvaluateAsync<bool>("input => input.validity.badInput"),
+            "The typed text was replaced.");
+        await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync(before!);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -82,5 +101,25 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(quantity).ToHaveAttributeAsync("aria-invalid", "true");
         await Expect(quantity).ToHaveAccessibleDescriptionAsync("From 0 to 10. Quantity must be from 0 to 10.");
         await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldKeepEveryArrowStep_WhenEachUpdateIsSlowToComeBack(string browser)
+    {
+        // A lost step depends on timing, so a few page loads make a regression fail reliably.
+        for (var load = 0; load < 4; load++)
+        {
+            var page = await OpenAsync(browser, "/slow-fields");
+            var copies = page.GetByLabel("Copies");
+            await copies.FocusAsync();
+
+            for (var press = 0; press < 6; press++)
+            {
+                await page.Keyboard.PressAsync("ArrowUp");
+            }
+
+            await Expect(page.GetByTestId("copies")).ToHaveTextAsync("6");
+            await Expect(copies).ToHaveValueAsync("6");
+        }
     }
 }

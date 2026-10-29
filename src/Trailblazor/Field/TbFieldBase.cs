@@ -204,12 +204,13 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
             return;
         }
 
-        _unparsedText = text;
-        ShowParseError(error!);
+        ShowParseError(error!, text);
     }
 
-    private protected void ShowParseError(string error)
+    // The text stays in the input for the user to fix, and rendering what the browser sent doesn't write over it.
+    private protected void ShowParseError(string error, string? text)
     {
+        _unparsedText = text;
         _parseError = error;
         _valueAtParseError = Value;
         Validate();

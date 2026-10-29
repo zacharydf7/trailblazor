@@ -10,11 +10,7 @@
         <TbIconButton Icon="BuiltInIcons.Minus" AriaLabel="Decrease" Size="Size.Small" tabindex="-1"
                       data-part="decrement" Disabled="@(Disabled || !CanStep(-1))" OnClick="() => StepAsync(-1)" />
     }
-    <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="number"
-           value="@Text" min="@Format(Min)" max="@Format(Max)" step="@Format(Step)" disabled="@Disabled"
-           aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
-           aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)"
-           @ontbnumberchange="OnChangeAsync" @ontbnumberleave="OnChangeAsync" />
+    @Input
     @if (!HideStepButtons)
     {
         <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="Increase" Size="Size.Small" tabindex="-1"
@@ -48,6 +44,33 @@
     public bool HideStepButtons { get; set; }
 
     private static Type NumberType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+    // Built here to mark the events as updating value, as @bind does, so a round trip can't undo newer steps.
+    private RenderFragment Input => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, InputAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "type", "number");
+        builder.AddAttribute(6, "value", Text);
+        builder.AddAttribute(7, "min", Format(Min));
+        builder.AddAttribute(8, "max", Format(Max));
+        builder.AddAttribute(9, "step", Format(Step));
+        builder.AddAttribute(10, "disabled", Disabled);
+        builder.AddAttribute(11, "aria-required", Required ? "true" : null);
+        builder.AddAttribute(12, "aria-invalid", Errors.Count > 0 ? "true" : null);
+        builder.AddAttribute(13, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(14, "class", ClassNames.Join("tb-field__input", Classes?.Input));
+        builder.AddAttribute(15, "ontbnumberchange",
+            EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(16, "ontbnumberleave",
+            EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.CloseElement();
+    };
 
     // The range the number type itself can hold; float and double are stepped within decimal's range.
     private static (decimal Min, decimal Max) TypeLimits => Type.GetTypeCode(NumberType) switch
@@ -119,7 +142,8 @@
     {
         if (e.BadInput)
         {
-            ShowParseError(NotANumber);
+            // The browser reports unreadable text as empty, so empty is what renders, and the text stays put.
+            ShowParseError(NotANumber, e.Value);
             return Task.CompletedTask;
         }
 

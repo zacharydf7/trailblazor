@@ -1,0 +1,38 @@
+@page "/slow-fields"
+
+@* Slow handlers keep each change's round trip in flight while the next one is made. *@
+<TbCheckbox TValue="bool" Label="Subscribe" Value="_subscribe" ValueChanged="SubscribeAsync"
+            ValueExpression="() => _subscribe" />
+<TbSwitch Label="Notify" Value="_notify" ValueChanged="NotifyAsync" ValueExpression="() => _notify" />
+<TbNumberField TValue="int" Label="Copies" Value="_copies" ValueChanged="CopiesAsync" ValueExpression="() => _copies" />
+<TbRadioGroup TValue="string" Label="Size" Value="_size" ValueChanged="SizeAsync" ValueExpression="() => _size!">
+    <TbRadio Value="@("Small")">Small</TbRadio>
+    <TbRadio Value="@("Medium")">Medium</TbRadio>
+    <TbRadio Value="@("Large")">Large</TbRadio>
+    <TbRadio Value="@("Huge")">Huge</TbRadio>
+</TbRadioGroup>
+<output data-testid="subscribe">@_subscribe</output>
+<output data-testid="notify">@_notify</output>
+<output data-testid="copies">@_copies</output>
+<output data-testid="size">@_size</output>
+
+@code {
+    private bool _subscribe;
+    private bool _notify;
+    private int _copies;
+    private string? _size = "Small";
+
+    private Task SubscribeAsync(bool value) => SlowlyAsync(() => _subscribe = value);
+
+    private Task NotifyAsync(bool value) => SlowlyAsync(() => _notify = value);
+
+    private Task CopiesAsync(int value) => SlowlyAsync(() => _copies = value);
+
+    private Task SizeAsync(string value) => SlowlyAsync(() => _size = value);
+
+    private static async Task SlowlyAsync(Action set)
+    {
+        set();
+        await Task.Delay(150);
+    }
+}
