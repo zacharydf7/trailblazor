@@ -2,29 +2,29 @@ namespace Trailblazor.BrowserTests;
 
 public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    // Resolves a color token on a probe inside <main>, then reads it back as sRGB through a canvas.
-    private const string LuminanceScript = """
+    private static readonly string[] Tones = ["primary", "neutral", "success", "warning", "danger", "info"];
+
+    private static readonly string[] Palettes = ["graphite", "cobalt"];
+
+    // Reads a color token on a probe inside <main> as its sRGB channels, 0 to 255.
+    private const string ChannelsScript = """
         token => {
             const probe = document.createElement('div');
             probe.style.color = `var(${token})`;
             document.querySelector('main').append(probe);
-            const color = getComputedStyle(probe).color;
-            probe.remove();
             const context = document.createElement('canvas').getContext('2d');
-            context.fillStyle = color;
+            context.fillStyle = getComputedStyle(probe).color;
+            probe.remove();
             context.fillRect(0, 0, 1, 1);
-            const [r, g, b] = [...context.getImageData(0, 0, 1, 1).data].map(value => {
-                const channel = value / 255;
-                return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-            });
-            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
         }
         """;
 
-    private static readonly string[] Tones = ["primary", "neutral", "success", "warning", "danger", "info"];
-
-    public static TheoryData<string, string> BrowsersAndThemes =>
-        new(AllBrowsers.Names.SelectMany(browser => new[] { (browser, "light"), (browser, "dark") }));
+    public static TheoryData<string, string, string> BrowsersPalettesAndThemes => new(
+        from browser in AllBrowsers.Names
+        from palette in Palettes
+        from theme in new[] { "light", "dark" }
+        select (browser, palette, theme));
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tokens_ShouldUseLightColors_WhenNoThemeIsSetAndSystemPrefersDark(string browser)
@@ -74,10 +74,12 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(await GetLuminanceAsync(page, "--tb-color-surface") < 0.1);
     }
 
-    [Theory, MemberData(nameof(BrowsersAndThemes))]
-    public async Task TextTokens_ShouldMeetContrastMinimum_WhenThemeIsApplied(string browser, string theme)
+    [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
+    public async Task TextTokens_ShouldMeetContrastMinimum_WhenAPaletteAndThemeAreApplied(string browser,
+        string palette, string theme)
     {
         var page = await OpenAsync(browser, "/tokens");
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
         await SetThemeAsync(page, theme);
         var pairs = new List<(string Foreground, string Background)>();
         foreach (var background in new[] { "background", "surface", "surface-raised", "surface-sunken" })
@@ -107,6 +109,53 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
 
         Assert.Empty(failures);
+    }
+
+    [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
+    public async Task NonTextTokens_ShouldMeetContrastMinimum_WhenAPaletteAndThemeAreApplied(string browser,
+        string palette, string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+        await SetThemeAsync(page, theme);
+
+        var failures = new List<string>();
+        foreach (var foreground in new[] { "--tb-focus-ring-color", "--tb-border-strong" })
+        {
+            foreach (var background in new[] { "background", "surface", "surface-raised", "surface-sunken" })
+            {
+                var ratio = ContrastRatio(await GetLuminanceAsync(page, foreground),
+                    await GetLuminanceAsync(page, $"--tb-color-{background}"));
+                if (ratio < 3)
+                {
+                    failures.Add($"{foreground} on --tb-color-{background}: {ratio:F2}");
+                }
+            }
+        }
+
+        Assert.Empty(failures);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Palette_ShouldBeGraphiteInk_WhenNoPaletteIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        var (red, green, blue) = await GetChannelsAsync(page, "--tb-color-primary");
+
+        Assert.True(Math.Max(red, Math.Max(green, blue)) - Math.Min(red, Math.Min(green, blue)) < 12,
+            $"Primary should be gray ink, not rgb({red}, {green}, {blue}).");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Palette_ShouldTurnPrimaryBlue_WhenAnAncestorChoosesCobalt(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        await page.EvalOnSelectorAsync("main", "main => main.dataset.tbPalette = 'cobalt'");
+
+        var (red, _, blue) = await GetChannelsAsync(page, "--tb-color-primary");
+        Assert.True(blue - red > 80, $"Primary should be blue, not rgb with red {red} and blue {blue}.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -147,8 +196,23 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(probe).ToHaveCSSAsync("height", "32px");
     }
 
-    private static Task<double> GetLuminanceAsync(IPage page, string token) =>
-        page.EvaluateAsync<double>(LuminanceScript, token);
+    private static async Task<double> GetLuminanceAsync(IPage page, string token)
+    {
+        var (red, green, blue) = await GetChannelsAsync(page, token);
+        return 0.2126 * Linear(red) + 0.7152 * Linear(green) + 0.0722 * Linear(blue);
+    }
+
+    private static double Linear(int channel)
+    {
+        var value = channel / 255.0;
+        return value <= 0.04045 ? value / 12.92 : Math.Pow((value + 0.055) / 1.055, 2.4);
+    }
+
+    private static async Task<(int Red, int Green, int Blue)> GetChannelsAsync(IPage page, string token)
+    {
+        var channels = await page.EvaluateAsync<int[]>(ChannelsScript, token);
+        return (channels[0], channels[1], channels[2]);
+    }
 
     private static async Task<string> GetRootTokenAsync(IPage page, string token) =>
         (await page.EvaluateAsync<string>(
