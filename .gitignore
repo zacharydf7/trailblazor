@@ -479,5 +479,7 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# Private notes for Claude Code, kept out of the repository
+# Claude Code's files, kept out of the repository
+CLAUDE.md
 CLAUDE.local.md
+.claude/
