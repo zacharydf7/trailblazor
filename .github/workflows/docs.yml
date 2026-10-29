@@ -1,6 +1,6 @@
 name: Docs
 
-# Publishes the docs site to GitHub Pages once CI has passed on main.
+# Publishes the tip of main to GitHub Pages once its CI has passed.
 on:
   workflow_run:
     workflows: [CI]
@@ -13,18 +13,37 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # CI can finish out of order and a queued run can replace another, so any run publishes the tip once its CI passed.
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      sha: ${{ steps.tip.outputs.sha }}
+      publish: ${{ steps.tip.outputs.publish }}
+    steps:
+      - id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          tip=$(gh api "repos/$REPO/commits/main" --jq .sha)
+          ci=$(gh run list --repo "$REPO" --workflow CI --commit "$tip" --event push \
+            --json conclusion --jq '.[0].conclusion')
+          echo "sha=$tip" >> "$GITHUB_OUTPUT"
+          echo "publish=$([ "$ci" = success ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
   build:
-    # CI also runs for pull requests, so only a passing run for a push to this repository deploys.
-    if: >-
-      github.event_name == 'workflow_dispatch'
-      || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    needs: check
+    if: needs.check.outputs.publish == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ needs.check.outputs.sha }}
           fetch-depth: 0 # MinVer computes the version from tags and history
 
       - uses: actions/setup-dotnet@v6
