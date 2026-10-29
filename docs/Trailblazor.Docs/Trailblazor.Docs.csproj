@@ -13,4 +13,10 @@
     <ProjectReference Include="..\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
   </ItemGroup>
 
+  <!-- The logo lives once, in the repository's assets; the site serves it from its own root. -->
+  <ItemGroup>
+    <Content Include="..\..\assets\icon.svg" Link="wwwroot\icon.svg" />
+    <Content Include="..\..\assets\icon-32.png" Link="wwwroot\icon-32.png" />
+  </ItemGroup>
+
 </Project>

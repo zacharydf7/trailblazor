@@ -44,6 +44,32 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Site_ShouldShowTheLogoInTheHeaderAndAsItsIcon_WhenAPageBelowTheRootIsOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+
+        await page.WaitForFunctionAsync(
+            "() => document.querySelector('.docs-brand img').complete",
+            null, new() { Timeout = 5000 });
+        Assert.True(await page.Locator(".docs-brand img").EvaluateAsync<bool>("logo => logo.naturalWidth > 0"),
+            "The header's logo didn't load.");
+
+        foreach (var icon in await page.Locator("link[rel=icon]").AllAsync())
+        {
+            // The address the browser resolved, against the page's base rather than its own path.
+            var address = await icon.EvaluateAsync<string>("link => link.href");
+            Assert.True((await page.APIRequest.GetAsync(address)).Ok, $"{address} didn't load.");
+        }
+
+        await Expect(page.Locator("link[rel=icon]")).ToHaveCountAsync(2);
+        // A link before <base> may be fetched against the page's own path; reading href later can't show that.
+        Assert.True(await page.EvaluateAsync<bool>("""
+            () => [...document.querySelectorAll('link[rel=icon]')].every(link =>
+                document.querySelector('base').compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING)
+            """), "An icon link comes before <base>.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Navigation_ShouldListEveryComponentUnderItsCategory_WhenOpen(string browser)
     {
         var page = await OpenDocsAsync(browser, "");

@@ -1,3 +1,5 @@
+<img src="assets/icon.svg" alt="" width="72" height="72">
+
 # Trailblazor
 
 An MIT-licensed Blazor UI component library for .NET 10: accessible by default, styled with design tokens and
