@@ -1,9 +1,189 @@
 body {
     margin: 0;
-    padding: 16px;
     background: var(--tb-color-background);
     color: var(--tb-color-text);
     font-family: var(--tb-font-family);
+}
+
+a {
+    color: inherit;
+}
+
+/* The router focuses the page's heading for screen readers; a ring there would only distract. */
+h1:focus {
+    outline: none;
+}
+
+a:focus-visible {
+    outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+    outline-offset: var(--tb-focus-ring-offset);
+}
+
+.docs {
+    display: grid;
+    grid-template: "header header" auto "nav main" 1fr / 15rem minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.docs-header {
+    grid-area: header;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--tb-space-4);
+    padding: var(--tb-space-3) var(--tb-space-6);
+    border-block-end: 1px solid var(--tb-border-subtle);
+}
+
+.docs-brand {
+    font-size: var(--tb-font-size-xl);
+    font-weight: var(--tb-font-weight-semibold);
+    text-decoration: none;
+}
+
+.docs-nav-toggle {
+    display: none;
+}
+
+.docs-look {
+    width: min(100%, 22rem);
+}
+
+.docs-nav {
+    grid-area: nav;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: var(--tb-space-4) var(--tb-space-4) var(--tb-space-8);
+    border-inline-end: 1px solid var(--tb-border-subtle);
+    box-sizing: border-box;
+}
+
+.docs-nav__heading {
+    margin: var(--tb-space-4) 0 var(--tb-space-1);
+    color: var(--tb-color-text-muted);
+    font-size: var(--tb-font-size-xs);
+    font-weight: var(--tb-font-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.docs-nav__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.docs-nav__link {
+    display: block;
+    padding: var(--tb-space-1) var(--tb-space-2);
+    border-radius: var(--tb-radius-sm);
+    font-size: var(--tb-font-size-sm);
+    text-decoration: none;
+}
+
+.docs-nav__link:hover {
+    background: var(--tb-color-neutral-subtle);
+}
+
+.docs-nav__link.active {
+    background: var(--tb-color-neutral-subtle);
+    font-weight: var(--tb-font-weight-semibold);
+}
+
+.docs-main {
+    grid-area: main;
+    max-width: 60rem;
+    padding: var(--tb-space-6) var(--tb-space-8) var(--tb-space-12);
+}
+
+.docs-lead {
+    margin-block: var(--tb-space-2) var(--tb-space-6);
+    color: var(--tb-color-text-muted);
+}
+
+.docs-section {
+    margin-block: var(--tb-space-8) var(--tb-space-3);
+}
+
+.docs-example {
+    padding: var(--tb-space-6);
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-lg);
+    background: var(--tb-color-surface);
+}
+
+.docs-source {
+    margin: 0;
+    padding: var(--tb-space-4);
+    overflow-x: auto;
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-lg);
+    background: var(--tb-color-surface-raised);
+    font-family: var(--tb-font-family-mono);
+    font-size: var(--tb-font-size-sm);
+    line-height: 1.6;
+}
+
+.docs-source__file {
+    margin-block: var(--tb-space-4) var(--tb-space-1);
+    color: var(--tb-color-text-muted);
+    font-family: var(--tb-font-family-mono);
+}
+
+.docs-source:focus-visible {
+    outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+    outline-offset: var(--tb-focus-ring-offset);
+}
+
+.docs-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--tb-space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.docs-card {
+    padding: var(--tb-space-4);
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-lg);
+    background: var(--tb-color-surface);
+}
+
+.docs-card__title {
+    display: inline-block;
+    margin-block-end: var(--tb-space-1);
+    font-weight: var(--tb-font-weight-semibold);
+}
+
+@media (max-width: 48rem) {
+    .docs {
+        grid-template: "header" auto "nav" auto "main" 1fr / minmax(0, 1fr);
+    }
+
+    .docs-nav-toggle {
+        display: inline-flex;
+    }
+
+    .docs-nav {
+        position: static;
+        max-height: none;
+        border-inline-end: none;
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .docs-nav:not(.docs-nav--open) {
+        display: none;
+    }
+
+    .docs-main {
+        padding: var(--tb-space-4);
+    }
 }
 
 #blazor-error-ui {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-tb-theme="system">
 
 <head>
     <meta charset="utf-8" />
@@ -8,6 +8,18 @@
     <base href="/" />
     <link rel="preload" id="webassembly" />
     <link rel="stylesheet" href="css/app.css" />
+    <!-- Applies the remembered theme and palette before the first paint, so the page doesn't flash. -->
+    <script>
+        try {
+            for (const name of ['tbTheme', 'tbPalette']) {
+                const value = localStorage.getItem(`docs-${name}`);
+                if (value) {
+                    document.documentElement.dataset[name] = value;
+                }
+            }
+        } catch {
+        }
+    </script>
     <script type="importmap"></script>
 </head>
 

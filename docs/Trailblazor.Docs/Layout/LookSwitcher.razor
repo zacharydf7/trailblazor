@@ -1,0 +1,55 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<TbStack Row Gap="3" Align="Align.End" class="docs-look">
+    <TbSelect Label="Theme" @bind-Value="_theme" @bind-Value:after="ApplyThemeAsync">
+        <TbOption Value="@("system")">System</TbOption>
+        <TbOption Value="@("light")">Light</TbOption>
+        <TbOption Value="@("dark")">Dark</TbOption>
+    </TbSelect>
+    <TbSelect Label="Palette" @bind-Value="_palette" @bind-Value:after="ApplyPaletteAsync">
+        <TbOption Value="@("graphite")">Graphite</TbOption>
+        <TbOption Value="@("cobalt")">Cobalt</TbOption>
+    </TbSelect>
+</TbStack>
+
+@code {
+    private IJSObjectReference? _module;
+    private string? _theme = "system";
+    private string? _palette = "graphite";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./docs.js");
+        var look = await _module.InvokeAsync<Look>("getLook");
+        (_theme, _palette) = (look.Theme, look.Palette);
+        StateHasChanged();
+    }
+
+    private Task ApplyThemeAsync() => SetLookAsync("tbTheme", _theme);
+
+    private Task ApplyPaletteAsync() => SetLookAsync("tbPalette", _palette);
+
+    private async Task SetLookAsync(string name, string? value)
+    {
+        if (value is not null && _module is not null)
+        {
+            await _module.InvokeVoidAsync("setLook", name, value);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.DisposeAsync();
+        }
+    }
+
+    private sealed record Look(string Theme, string Palette);
+}

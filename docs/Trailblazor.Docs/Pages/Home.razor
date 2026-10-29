@@ -4,11 +4,21 @@
 <PageTitle>Trailblazor</PageTitle>
 
 <TbText TextStyle="TextStyle.Display" As="TextElement.H1">Trailblazor</TbText>
-<TbText>Accessible Blazor components. Full documentation is coming; these are the components so far.</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    Accessible Blazor components for .NET 10, built on the browser's own dialogs and popovers and styled with design
+    tokens. Every example on this site runs in your browser, so try them out.
+</TbText>
 
-<ul>
-    @foreach (var example in ExampleCatalog.All)
-    {
-        <li><a href="components/@example.Name">@example.Title</a></li>
-    }
-</ul>
+@foreach (var category in Enum.GetValues<ExampleCategory>())
+{
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">@category</TbText>
+    <ul class="docs-cards">
+        @foreach (var example in ExampleCatalog.All.Where(example => example.Category == category))
+        {
+            <li class="docs-card">
+                <a href="@($"components/{example.Name}")" class="docs-card__title">@example.Title</a>
+                <TbText>@example.Summary</TbText>
+            </li>
+        }
+    </ul>
+}

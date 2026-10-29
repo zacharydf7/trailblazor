@@ -14,12 +14,23 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     }
 
     // For pages rendered as static SSR, which never become interactive.
-    protected async Task<IPage> OpenStaticAsync(string browser, string path, BrowserNewContextOptions? options = null)
+    protected Task<IPage> OpenStaticAsync(string browser, string path, BrowserNewContextOptions? options = null) =>
+        OpenAtAsync(browser, new Uri(Fixture.BaseAddress, path), options);
+
+    // For the published docs site, a WebAssembly app that has loaded once its page heading shows.
+    protected async Task<IPage> OpenDocsAsync(string browser, string path, BrowserNewContextOptions? options = null)
+    {
+        var page = await OpenAtAsync(browser, new Uri(Fixture.DocsAddress, path), options);
+        await page.Locator(".docs-main h1").WaitForAsync();
+        return page;
+    }
+
+    private async Task<IPage> OpenAtAsync(string browser, Uri address, BrowserNewContextOptions? options)
     {
         var context = await Fixture.NewContextAsync(browser, options);
         _contexts.Add(context);
         var page = await context.NewPageAsync();
-        await page.GotoAsync(new Uri(Fixture.BaseAddress, path).ToString());
+        await page.GotoAsync(address.ToString());
         return page;
     }
 

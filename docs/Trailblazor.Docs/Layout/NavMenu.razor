@@ -1,0 +1,12 @@
+@using Trailblazor.Docs.Examples
+
+@foreach (var category in Enum.GetValues<ExampleCategory>())
+{
+    <h2 class="docs-nav__heading">@category</h2>
+    <ul class="docs-nav__list">
+        @foreach (var example in ExampleCatalog.All.Where(example => example.Category == category))
+        {
+            <li><NavLink href="@($"components/{example.Name}")" class="docs-nav__link">@example.Title</NavLink></li>
+        }
+    </ul>
+}

@@ -12,4 +12,8 @@
     <ProjectReference Include="..\..\src\Trailblazor\Trailblazor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="*.razor" Exclude="_Imports.razor" LogicalName="Source/%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

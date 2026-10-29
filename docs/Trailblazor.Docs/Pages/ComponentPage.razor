@@ -5,15 +5,27 @@
 {
     <PageTitle>@example.Title · Trailblazor</PageTitle>
     <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">@example.Title</TbText>
-    <DynamicComponent Type="example.Component" />
+    <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">@example.Summary</TbText>
+
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Example</TbText>
+    <div class="docs-example">
+        <DynamicComponent Type="example.Component" />
+    </div>
+
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Source</TbText>
+    @foreach (var source in example.Sources)
+    {
+        <TbText TextStyle="TextStyle.Caption" As="TextElement.P" class="docs-source__file">@source.File</TbText>
+        @* Scrolls on its own, so it takes focus for keyboard users. *@
+        <pre class="docs-source" role="region" tabindex="0" aria-label="@source.File"><code>@source.Text</code></pre>
+    }
 }
 else
 {
     <PageTitle>Not found · Trailblazor</PageTitle>
+    <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Not found</TbText>
     <TbText>There is no component named @Name.</TbText>
 }
-
-<p><a href="">All components</a></p>
 
 @code {
     [Parameter]
