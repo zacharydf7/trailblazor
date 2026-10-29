@@ -12,6 +12,9 @@
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Top)">Top</TbButton>
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Start)">Start</TbButton>
     <TbButton OnClick="AboutAsync">About</TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Headless", options: new() { ShowHeader = false })'>
+        Headless
+    </TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<AddressDialog, string>("Address")'>Address</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<AddressDialog, string>("Address", p => p.Set(d => d.FloorLocked, true))'>
         Address locked

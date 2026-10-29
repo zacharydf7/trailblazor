@@ -26,6 +26,18 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldKeepItsTitleAsItsNameWithoutAddingAHeading_WhenShownWithoutAHeader(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Headless" }).ClickAsync();
+
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Headless" });
+        await Expect(dialog).ToBeVisibleAsync();
+        await Expect(dialog.GetByRole(AriaRole.Heading)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFocusItself_WhenItsInitialFocusIsTheDialog(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");

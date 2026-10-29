@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
@@ -34,38 +33,17 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.OpenElement(0, "dialog");
         builder.AddAttribute(1, "popover", options.Modal ? null : "manual");
         builder.AddAttribute(2, "data-part", "dialog");
-        builder.AddAttribute(3, "aria-labelledby", options.ShowHeader ? TitleId : null);
-        builder.AddAttribute(4, "aria-label", options.ShowHeader ? null : Dialog.Title);
+        builder.AddAttribute(3, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
         builder.AddAttribute(6, "class", ClassNames.Join("tb-dialog", ClassNames.Modifier("tb-dialog", options.Size),
             ClassNames.Modifier("tb-dialog", "position", options.Position)));
         builder.AddAttribute(7, "role", Dialog.IsAlert ? "alertdialog" : null);
         builder.AddAttribute(8, "aria-describedby", Dialog.IsAlert ? Dialog.DescriptionId : null);
         builder.AddElementReferenceCapture(9, element => _element = element);
-        if (options.ShowHeader)
-        {
-            builder.OpenElement(10, "header");
-            builder.AddAttribute(11, "data-part", "header");
-            builder.AddAttribute(12, "class", "tb-dialog__header");
-            builder.OpenElement(13, "h2");
-            builder.AddAttribute(14, "id", TitleId);
-            builder.AddAttribute(15, "class", "tb-dialog__title");
-            builder.AddContent(16, Dialog.Title);
-            builder.CloseElement();
-            if (options.CloseButton)
-            {
-                builder.OpenComponent<TbIconButton>(17);
-                builder.AddComponentParameter(18, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-                builder.AddComponentParameter(19, nameof(TbIconButton.AriaLabel), "Close");
-                builder.AddComponentParameter(20, nameof(TbIconButton.Size), Size.Small);
-                builder.AddComponentParameter(21, nameof(TbIconButton.OnClick),
-                    EventCallback.Factory.Create<MouseEventArgs>(this, Cancel));
-                builder.AddAttribute(22, "data-part", "close");
-                builder.CloseComponent();
-            }
-
-            builder.CloseElement();
-        }
+        builder.OpenComponent<DialogHeader>(10);
+        builder.AddComponentParameter(11, nameof(DialogHeader.Dialog), Dialog);
+        builder.AddComponentParameter(12, nameof(DialogHeader.TitleId), TitleId);
+        builder.CloseComponent();
 
         builder.OpenElement(30, "div");
         builder.AddAttribute(31, "data-part", "body");

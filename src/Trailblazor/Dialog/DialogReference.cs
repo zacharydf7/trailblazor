@@ -14,6 +14,8 @@ public sealed class DialogReference
         Parameters = parameters;
         IsAlert = isAlert;
         _close = close;
+        ShowHeader = options.ShowHeader;
+        CloseButton = options.CloseButton;
     }
 
     /// <summary>The dialog's title, which is also its accessible name.</summary>
@@ -31,6 +33,20 @@ public sealed class DialogReference
     internal bool IsAlert { get; }
 
     internal string DescriptionId { get; } = $"tb-dialog-description-{Guid.NewGuid():N}";
+
+    // The dialog can change these while it's open, so they start from the options but live here.
+    internal bool ShowHeader { get; private set; }
+
+    internal bool CloseButton { get; private set; }
+
+    internal event Action? HeaderChanged;
+
+    internal void SetHeader(bool showHeader, bool closeButton)
+    {
+        ShowHeader = showHeader;
+        CloseButton = closeButton;
+        HeaderChanged?.Invoke();
+    }
 
     // Set by the rendered dialog, so closing first closes the browser's dialog and focus goes back to the opener.
     internal Func<Task>? CloseInBrowserAsync { get; set; }

@@ -124,9 +124,37 @@ public class DialogServiceTests : BunitContext
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting", options: new() { ShowHeader = false, Modal = false });
 
         var dialog = host.WaitForElement("dialog");
-        Assert.Equal("Greeting", dialog.GetAttribute("aria-label"));
+        var title = host.Find($"#{dialog.GetAttribute("aria-labelledby")}");
+        Assert.Equal("Greeting", title.TextContent);
+        Assert.Contains("tb-visually-hidden", title.ClassList);
         Assert.Empty(host.FindAll("header"));
         Assert.Equal("manual", dialog.GetAttribute("popover"));
+    }
+
+    [Fact]
+    public async Task ShowHeader_ShouldHideAndRestoreTheHeader_WhenTheDialogChangesItWhileOpen()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<HeaderDialog, string>("Settings");
+
+        await host.WaitForElement("[data-testid=toggle-header]").ClickAsync(new());
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("header")));
+        Assert.Equal("Settings", host.Find($"#{host.Find("dialog").GetAttribute("aria-labelledby")}").TextContent);
+        await host.Find("[data-testid=toggle-header]").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Equal("Settings", host.Find("header h2").TextContent));
+    }
+
+    [Fact]
+    public async Task CloseButton_ShouldGoAway_WhenTheDialogTurnsItOffWhileOpen()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<HeaderDialog, string>("Settings");
+
+        await host.WaitForElement("[data-testid=toggle-close]").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=close]")));
+        Assert.Single(host.FindAll("header"));
     }
 
     [Fact]
@@ -229,6 +257,21 @@ public class DialogServiceTests : BunitContext
         public int ParametersSet { get; private set; }
 
         protected override void OnParametersSet() => ParametersSet++;
+    }
+
+    private sealed class HeaderDialog : TbDialog<string>
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "data-testid", "toggle-header");
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => ShowHeader = !ShowHeader));
+            builder.CloseElement();
+            builder.OpenElement(3, "button");
+            builder.AddAttribute(4, "data-testid", "toggle-close");
+            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () => CloseButton = !CloseButton));
+            builder.CloseElement();
+        }
     }
 
     private sealed class GreetingDialog : TbDialog<string>
