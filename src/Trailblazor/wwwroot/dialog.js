@@ -9,6 +9,46 @@ const focusableSelector = ['a[href]', 'button:not([disabled])', 'input:not([disa
 // Open dialogs, oldest first; keys go to the newest, so a nested dialog closes before the one beneath it.
 const stack = [];
 
+// Minimized dialogs, in the order they were minimized, set out in rows from the bottom-end corner.
+const tray = [];
+
+// A row that runs out of room wraps upward, so every minimized dialog stays on screen to be restored.
+function layOutTray() {
+    if (tray.length === 0) {
+        return;
+    }
+
+    // The CSS registers these as lengths, so they come back in px whatever the theme and font size.
+    const style = getComputedStyle(tray[0]);
+    const trayGap = parseFloat(style.getPropertyValue('--tb-dialog-tray-gap'));
+    const room = document.documentElement.clientWidth - 2 * parseFloat(style.getPropertyValue('--tb-dialog-tray-edge'));
+    let inline = 0;
+    let block = 0;
+    let rowHeight = 0;
+    for (const dialog of tray) {
+        if (inline > 0 && inline + dialog.offsetWidth > room) {
+            inline = 0;
+            block += rowHeight + trayGap;
+            rowHeight = 0;
+        }
+
+        dialog.style.setProperty('--tb-dialog-tray-inline', `${inline}px`);
+        dialog.style.setProperty('--tb-dialog-tray-block', `${block}px`);
+        inline += dialog.offsetWidth + trayGap;
+        rowHeight = Math.max(rowHeight, dialog.offsetHeight);
+    }
+}
+
+window.addEventListener('resize', layOutTray);
+
+function leaveTray(dialog) {
+    const slot = tray.indexOf(dialog);
+    if (slot >= 0) {
+        tray.splice(slot, 1);
+        layOutTray();
+    }
+}
+
 // An element marked autofocus wins; a field component carries the attribute on its wrapper, so look inside it.
 function dialogFocusTarget(dialog, options) {
     const body = dialog.querySelector('[data-part="body"]');
@@ -112,6 +152,7 @@ export function openDialog(dialog, dotNet, options) {
         dialog.removeEventListener('pointerdown', onPointerDown);
         dialog.removeEventListener('click', onClick);
         stack.splice(stack.indexOf(entry), 1);
+        leaveTray(dialog);
         return true;
     }
 
@@ -126,6 +167,15 @@ export function openDialog(dialog, dotNet, options) {
     }
 
     return {
+        // 'normal', 'minimized' or 'maximized'.
+        setWindowState(state) {
+            dialog.dataset.windowState = state;
+            leaveTray(dialog);
+            if (state === 'minimized') {
+                tray.push(dialog);
+                layOutTray();
+            }
+        },
         // Closes the dialog and gives focus back to whatever opened it.
         close() {
             const hadFocus = dialog.contains(document.activeElement);

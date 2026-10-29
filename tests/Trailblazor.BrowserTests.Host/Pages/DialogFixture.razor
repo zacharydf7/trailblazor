@@ -12,6 +12,8 @@
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Top)">Top</TbButton>
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Start)">Start</TbButton>
     <TbButton OnClick="AboutAsync">About</TbButton>
+    <TbButton OnClick="() => NotesAsync(DialogSize.Medium)">Notes</TbButton>
+    <TbButton OnClick="() => NotesAsync(DialogSize.Full)">Full notes</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Headless", options: new() { ShowHeader = false })'>
         Headless
     </TbButton>
@@ -64,6 +66,12 @@
     private async Task PlacedAsync(DialogPosition position, bool modal = true) =>
         await Dialogs.ShowAsync<NameDialog, string>($"Placed {position}",
             options: new() { Position = position, Modal = modal });
+
+    private int _notes;
+
+    private async Task NotesAsync(DialogSize size) =>
+        await Dialogs.ShowAsync<NameDialog, string>($"Notes {++_notes}",
+            options: new() { Modal = false, Minimizable = true, Maximizable = true, Size = size });
 
     private async Task AboutAsync() =>
         await Dialogs.ShowAsync<NameDialog, string>("About", options: new() { InitialFocus = DialogFocus.Dialog });

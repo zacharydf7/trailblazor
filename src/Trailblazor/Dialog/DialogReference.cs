@@ -39,13 +39,27 @@ public sealed class DialogReference
 
     internal bool CloseButton { get; private set; }
 
-    internal event Action? HeaderChanged;
+    internal DialogWindowState WindowState { get; private set; }
+
+    internal event Action? Changed;
 
     internal void SetHeader(bool showHeader, bool closeButton)
     {
         ShowHeader = showHeader;
         CloseButton = closeButton;
-        HeaderChanged?.Invoke();
+        // The Restore button goes with the header, so a minimized dialog comes back rather than stay stuck.
+        if (!showHeader && WindowState == DialogWindowState.Minimized)
+        {
+            WindowState = DialogWindowState.Normal;
+        }
+
+        Changed?.Invoke();
+    }
+
+    internal void SetWindowState(DialogWindowState windowState)
+    {
+        WindowState = windowState;
+        Changed?.Invoke();
     }
 
     // Set by the rendered dialog, so closing first closes the browser's dialog and focus goes back to the opener.

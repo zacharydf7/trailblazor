@@ -158,6 +158,61 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task WindowButtons_ShouldTurnIntoRestore_WhenTheDialogIsMinimizedOrMaximized()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Modal = false, Minimizable = true, Maximizable = true });
+        var minimize = host.WaitForElement("[data-part=minimize]");
+        Assert.Equal(("Minimize", "Maximize"), Labels(host));
+
+        await minimize.ClickAsync(new());
+        host.WaitForAssertion(() => Assert.Equal(("Restore", "Maximize"), Labels(host)));
+        await host.Find("[data-part=maximize]").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Equal(("Minimize", "Restore"), Labels(host)));
+    }
+
+    [Fact]
+    public async Task ShowHeader_ShouldRestoreAMinimizedDialog_WhenTheDialogHidesItsHeader()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<HeaderDialog, string>("Settings", options: new() { Modal = false, Minimizable = true });
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+
+        await host.Find("[data-testid=toggle-header]").ClickAsync(new());
+
+        Assert.Equal(DialogWindowState.Normal, Dialogs.OpenDialogs.Single().WindowState);
+    }
+
+    [Fact]
+    public void ShowAsync_ShouldOfferMaximizeButNotMinimize_WhenTheDialogIsModal()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Minimizable = true, Maximizable = true });
+
+        host.WaitForElement("[data-part=maximize]");
+        Assert.Empty(host.FindAll("[data-part=minimize]"));
+    }
+
+    [Fact]
+    public async Task Minimize_ShouldTellTheBrowserDialog_WhenClicked()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("setWindowState", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false, Minimizable = true });
+
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Equal("minimized",
+            handle.VerifyInvoke("setWindowState").Arguments.Single()));
+    }
+
+    [Fact]
     public void Set_ShouldThrow_WhenGivenAnExpressionThatIsNotAProperty()
     {
         var parameters = new DialogParameters<GreetingDialog>();
@@ -258,6 +313,10 @@ public class DialogServiceTests : BunitContext
 
         protected override void OnParametersSet() => ParametersSet++;
     }
+
+    private static (string?, string?) Labels(IRenderedComponent<DialogHost> host) =>
+        (host.Find("[data-part=minimize]").GetAttribute("aria-label"),
+            host.Find("[data-part=maximize]").GetAttribute("aria-label"));
 
     private sealed class HeaderDialog : TbDialog<string>
     {

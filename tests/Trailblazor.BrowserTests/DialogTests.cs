@@ -5,6 +5,9 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     // A positioned dialog's distance from the window edge, --tb-space-4.
     private const double EdgeGap = 16;
 
+    // The gap between minimized dialogs in the tray, --tb-space-2.
+    private const double TrayGap = 8;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFocusTheFirstFieldAndKeepFocusOffThePage_WhenModal(string browser)
     {
@@ -35,6 +38,133 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Headless" });
         await Expect(dialog).ToBeVisibleAsync();
         await Expect(dialog.GetByRole(AriaRole.Heading)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldCollapseToItsHeaderInTheCornerAndKeepFocus_WhenMinimized(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Notes", Exact = true }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 1" });
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(dialog).ToHaveAttributeAsync("data-window-state", "minimized");
+        await Expect(dialog.GetByLabel("Name")).ToBeHiddenAsync();
+        await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Restore" })).ToBeFocusedAsync();
+        var box = await BoxAsync(page, "Notes 1");
+        var (width, height) = await ViewportAsync(page);
+        Assert.Equal(width - EdgeGap, box.X + box.Width, tolerance: 1);
+        Assert.Equal(height - EdgeGap, box.Y + box.Height, tolerance: 1);
+        await page.GetByTestId("page-button").ClickAsync();
+        await Expect(page.GetByTestId("page-clicks")).ToHaveTextAsync("1");
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Restore" }).ClickAsync();
+        await Expect(dialog.GetByLabel("Name")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldSitBesideTheOtherMinimizedDialogAndMoveOver_WhenTheOtherCloses(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        var notes = page.GetByRole(AriaRole.Button, new() { Name = "Notes", Exact = true });
+        var first = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 1" });
+        var second = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 2" });
+        // Each opens in the middle, over the last, so it's minimized before the next opens.
+        await notes.ClickAsync();
+        await first.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+        await notes.ClickAsync();
+        await second.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+        await Expect(second).ToHaveAttributeAsync("data-window-state", "minimized");
+
+        var firstBox = await BoxAsync(page, "Notes 1");
+        var secondBox = await BoxAsync(page, "Notes 2");
+        Assert.Equal(firstBox.X - TrayGap, secondBox.X + secondBox.Width, tolerance: 1);
+        await first.GetByRole(AriaRole.Button, new() { Name = "Close" }).ClickAsync();
+        await Expect(first).ToHaveCountAsync(0);
+
+        var (width, _) = await ViewportAsync(page);
+        var moved = await BoxAsync(page, "Notes 2");
+        Assert.Equal(width - EdgeGap, moved.X + moved.Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStackMinimizedDialogsUpward_WhenARowHasNoRoomForTheNext(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs", new() { ViewportSize = new() { Width = 400, Height = 800 } });
+        var notes = page.GetByRole(AriaRole.Button, new() { Name = "Notes", Exact = true });
+        var first = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 1" });
+        var second = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 2" });
+        await notes.ClickAsync();
+        await first.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+        await notes.ClickAsync();
+
+        await second.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+
+        await Expect(second).ToHaveAttributeAsync("data-window-state", "minimized");
+        var firstBox = await BoxAsync(page, "Notes 1");
+        var secondBox = await BoxAsync(page, "Notes 2");
+        Assert.Equal(firstBox.Y - TrayGap, secondBox.Y + secondBox.Height, tolerance: 1);
+        Assert.Equal(firstBox.X, secondBox.X, tolerance: 1);
+        Assert.True(secondBox.X >= 0, $"The second minimized dialog starts off screen, at {secondBox.X}px.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldSpaceTheTrayWithTheThemesSpacing_WhenTheRootFontIsLarger(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs", new() { ViewportSize = new() { Width = 400, Height = 800 } });
+        // --tb-space-2 and --tb-space-4 are rem, so a 20px root font makes them 10px and 20px.
+        await page.EvaluateAsync("() => document.documentElement.style.fontSize = '20px'");
+        var notes = page.GetByRole(AriaRole.Button, new() { Name = "Notes", Exact = true });
+        var first = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 1" });
+        var second = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 2" });
+        await notes.ClickAsync();
+        await first.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+        await notes.ClickAsync();
+
+        await second.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+
+        await Expect(second).ToHaveAttributeAsync("data-window-state", "minimized");
+        var firstBox = await BoxAsync(page, "Notes 1");
+        var secondBox = await BoxAsync(page, "Notes 2");
+        Assert.Equal(firstBox.Y - 10, secondBox.Y + secondBox.Height, tolerance: 1);
+        Assert.Equal((await ViewportAsync(page)).Width - 20, firstBox.X + firstBox.Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldCollapseToItsHeader_WhenAFullSizeDialogIsMinimized(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Full notes" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 1" });
+
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+
+        await Expect(dialog).ToHaveAttributeAsync("data-window-state", "minimized");
+        var header = (await dialog.Locator("[data-part=header]").BoundingBoxAsync())!;
+        var box = await BoxAsync(page, "Notes 1");
+        Assert.Equal(header.Y + header.Height, box.Y + box.Height, tolerance: 2);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFillTheWindowAndComeBack_WhenMaximizedAndRestored(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Notes", Exact = true }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 1" });
+        var normal = await BoxAsync(page, "Notes 1");
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Maximize" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(dialog).ToHaveAttributeAsync("data-window-state", "maximized");
+        await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Restore" })).ToBeFocusedAsync();
+        var (width, height) = await ViewportAsync(page);
+        var maximized = await BoxAsync(page, "Notes 1");
+        Assert.Equal((width, height), (maximized.Width, maximized.Height));
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Restore" }).ClickAsync();
+        await Expect(dialog).ToHaveAttributeAsync("data-window-state", "normal");
+        Assert.Equal(normal.Width, (await BoxAsync(page, "Notes 1")).Width, tolerance: 1);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

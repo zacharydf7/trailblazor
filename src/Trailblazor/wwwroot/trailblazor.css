@@ -1,3 +1,16 @@
+/* Registered as lengths so the dialog script reads the tray's spacing in px from the theme. */
+@property --tb-dialog-tray-gap {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --tb-dialog-tray-edge {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+}
+
 /* Unlayered consumer CSS beats every rule in these layers, whatever its specificity. */
 @layer tb.reset, tb.tokens, tb.themes, tb.components, tb.utilities;
 
@@ -1362,6 +1375,37 @@
         margin: 0;
         height: 100vh;
         max-height: 100vh;
+        border-radius: 0;
+    }
+
+    /* A minimized dialog shows only its header, at the offset the script gives it from the bottom-end corner. */
+    .tb-dialog[data-window-state="minimized"] {
+        --tb-dialog-tray-gap: var(--tb-space-2);
+        --tb-dialog-tray-edge: var(--tb-space-4);
+        width: min(18rem, 100% - 2 * var(--tb-dialog-tray-edge));
+        height: fit-content;
+        max-height: none;
+        margin-block: auto calc(var(--tb-dialog-tray-edge) + var(--tb-dialog-tray-block, 0px));
+        margin-inline: auto calc(var(--tb-dialog-tray-edge) + var(--tb-dialog-tray-inline, 0px));
+    }
+
+    .tb-dialog[data-window-state="minimized"] > [data-part="body"] {
+        display: none;
+    }
+
+    .tb-dialog[data-window-state="minimized"] .tb-dialog__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Percentages, unlike vw and vh, leave out the scrollbar a page behind a non-modal dialog keeps. */
+    .tb-dialog[data-window-state="maximized"] {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        margin: 0;
         border-radius: 0;
     }
 

@@ -13,6 +13,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private DotNetObjectReference<DialogFrame>? _self;
     private IJSObjectReference? _handle;
     private AnnouncerHost? _announcer;
+    private DialogWindowState _windowState;
     private bool _disposed;
 
     [Parameter, EditorRequired]
@@ -118,8 +119,31 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         }
     }
 
+    protected override void OnInitialized() => Dialog.Changed += OnChanged;
+
     [JSInvokable]
     public Task Cancel() => Dialog.CloseAsync(false, null);
+
+    private void OnChanged() => InvokeAsync(ApplyWindowStateAsync);
+
+    // The frame never re-renders, so a new window state reaches the dialog through the script.
+    private async Task ApplyWindowStateAsync()
+    {
+        if (_handle is null || Dialog.WindowState == _windowState)
+        {
+            return;
+        }
+
+        _windowState = Dialog.WindowState;
+        try
+        {
+            await _handle.InvokeVoidAsync("setWindowState", _windowState.ToString().ToLowerInvariant());
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the dialog went with it.
+        }
+    }
 
     private async Task CloseInBrowserAsync()
     {
@@ -136,6 +160,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
+        Dialog.Changed -= OnChanged;
         Dialog.CloseInBrowserAsync = null;
         if (_handle is not null)
         {

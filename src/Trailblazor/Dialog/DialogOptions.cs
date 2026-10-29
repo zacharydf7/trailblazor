@@ -31,4 +31,12 @@ public sealed record DialogOptions
 
     /// <summary>Shows a close button in the header, which cancels the dialog.</summary>
     public bool CloseButton { get; init; } = true;
+
+    /// <summary>Shows a button in the header that collapses the dialog to its header, in a tray along the bottom-end
+    /// edge. Only a dialog that isn't <see cref="Modal"/> can be minimized, since a modal would still block the
+    /// page.</summary>
+    public bool Minimizable { get; init; }
+
+    /// <summary>Shows a button in the header that makes the dialog fill the window.</summary>
+    public bool Maximizable { get; init; }
 }

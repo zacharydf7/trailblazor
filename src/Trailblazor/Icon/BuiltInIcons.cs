@@ -13,5 +13,9 @@ internal static class BuiltInIcons
 
     public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
 
+    public static Icon Maximize { get; } = new("<path d=\"M4 4h16v16H4zm2 2v12h12V6z\" />");
+
+    public static Icon Restore { get; } = new("<path d=\"M8 4h12v12h-2V6H8zM4 8h12v12H4zm2 2v8h8v-8z\" />");
+
     public static Icon Plus { get; } = new("<path d=\"M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z\" />");
 }

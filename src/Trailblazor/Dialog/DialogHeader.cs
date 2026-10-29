@@ -13,7 +13,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     [Parameter, EditorRequired]
     public string TitleId { get; set; } = "";
 
-    protected override void OnInitialized() => Dialog.HeaderChanged += OnHeaderChanged;
+    protected override void OnInitialized() => Dialog.Changed += OnChanged;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -36,22 +36,53 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddAttribute(15, "class", "tb-dialog__title");
         builder.AddContent(16, Dialog.Title);
         builder.CloseElement();
+        var state = Dialog.WindowState;
+        if (Dialog.Options.Minimizable && !Dialog.Options.Modal)
+        {
+            var minimized = state == DialogWindowState.Minimized;
+            AddWindowButton(builder, 17, "minimize", minimized ? "Restore" : "Minimize",
+                minimized ? BuiltInIcons.Restore : BuiltInIcons.Minus,
+                minimized ? DialogWindowState.Normal : DialogWindowState.Minimized);
+        }
+
+        if (Dialog.Options.Maximizable)
+        {
+            var maximized = state == DialogWindowState.Maximized;
+            AddWindowButton(builder, 23, "maximize", maximized ? "Restore" : "Maximize",
+                maximized ? BuiltInIcons.Restore : BuiltInIcons.Maximize,
+                maximized ? DialogWindowState.Normal : DialogWindowState.Maximized);
+        }
+
         if (Dialog.CloseButton)
         {
-            builder.OpenComponent<TbIconButton>(17);
-            builder.AddComponentParameter(18, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-            builder.AddComponentParameter(19, nameof(TbIconButton.AriaLabel), "Close");
-            builder.AddComponentParameter(20, nameof(TbIconButton.Size), Size.Small);
-            builder.AddComponentParameter(21, nameof(TbIconButton.OnClick),
+            builder.OpenComponent<TbIconButton>(29);
+            builder.AddComponentParameter(30, nameof(TbIconButton.Icon), BuiltInIcons.Close);
+            builder.AddComponentParameter(31, nameof(TbIconButton.AriaLabel), "Close");
+            builder.AddComponentParameter(32, nameof(TbIconButton.Size), Size.Small);
+            builder.AddComponentParameter(33, nameof(TbIconButton.OnClick),
                 EventCallback.Factory.Create<MouseEventArgs>(this, () => Dialog.CloseAsync(false, null)));
-            builder.AddAttribute(22, "data-part", "close");
+            builder.AddAttribute(34, "data-part", "close");
             builder.CloseComponent();
         }
 
         builder.CloseElement();
     }
 
-    private void OnHeaderChanged() => InvokeAsync(StateHasChanged);
+    // Each button keeps its place as its label changes, so focus stays on it after a click.
+    private void AddWindowButton(RenderTreeBuilder builder, int sequence, string part, string label, Icon icon,
+        DialogWindowState next)
+    {
+        builder.OpenComponent<TbIconButton>(sequence);
+        builder.AddComponentParameter(sequence + 1, nameof(TbIconButton.Icon), icon);
+        builder.AddComponentParameter(sequence + 2, nameof(TbIconButton.AriaLabel), label);
+        builder.AddComponentParameter(sequence + 3, nameof(TbIconButton.Size), Size.Small);
+        builder.AddComponentParameter(sequence + 4, nameof(TbIconButton.OnClick),
+            EventCallback.Factory.Create<MouseEventArgs>(this, () => Dialog.SetWindowState(next)));
+        builder.AddAttribute(sequence + 5, "data-part", part);
+        builder.CloseComponent();
+    }
 
-    public void Dispose() => Dialog.HeaderChanged -= OnHeaderChanged;
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Dialog.Changed -= OnChanged;
 }
