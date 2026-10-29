@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Docs.Examples;
 using Trailblazor.Testing.Playwright;
@@ -69,6 +70,21 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             .ToContainTextAsync("ShowAsync<RenameDialog, string>");
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "RenameDialog.razor" }))
             .ToContainTextAsync("TbDialog<string>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldTableTheComponentsParameters_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+
+        var table = page.GetByRole(AriaRole.Region, new() { Name = "TbButton" });
+        var variant = table.GetByRole(AriaRole.Row)
+            .Filter(new() { Has = page.GetByRole(AriaRole.Rowheader, new() { Name = "Variant" }) });
+
+        var cells = variant.GetByRole(AriaRole.Cell);
+        await Expect(cells.Nth(0)).ToHaveTextAsync("Variant");
+        await Expect(cells.Nth(1)).ToHaveTextAsync("Variant.Filled");
+        await Expect(cells.Nth(2)).ToHaveTextAsync(new Regex("^How strongly the button is drawn"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

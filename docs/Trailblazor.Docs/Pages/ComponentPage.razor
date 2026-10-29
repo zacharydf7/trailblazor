@@ -19,6 +19,57 @@
         @* Scrolls on its own, so it takes focus for keyboard users. *@
         <pre class="docs-source" role="region" tabindex="0" aria-label="@source.File"><code>@source.Text</code></pre>
     }
+
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>
+    @if (example.Api.Any(type => type.IsAssignableTo(typeof(IComponent))))
+    {
+        <TbText class="docs-note">
+            Every component also takes <code>Class</code>, <code>Style</code> and any other HTML attribute, such as
+            <code>id</code> or <code>aria-*</code>, and puts them on its outer element.
+        </TbText>
+    }
+    @foreach (var type in example.Api.Select(ApiDocs.Describe))
+    {
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" class="docs-api__name">
+            <code>@type.Name</code>
+        </TbText>
+        @if (type.Members.Count == 0)
+        {
+            <TbText>No parameters of its own.</TbText>
+            continue;
+        }
+
+        @* Scrolls sideways on a narrow screen, so it takes focus for keyboard users. *@
+        <div class="docs-api" role="region" tabindex="0" aria-label="@type.Name">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Default</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in type.Members)
+                    {
+                        <tr>
+                            <th scope="row">
+                                <code>@member.Name</code>
+                                @if (member.Required)
+                                {
+                                    <span class="docs-api__required">Required</span>
+                                }
+                            </th>
+                            <td><code>@member.Type</code></td>
+                            <td>@if (member.Default.Length > 0) { <code>@member.Default</code> }</td>
+                            <td>@member.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 }
 else
 {

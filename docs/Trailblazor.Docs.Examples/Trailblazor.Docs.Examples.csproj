@@ -16,4 +16,12 @@
     <EmbeddedResource Include="*.razor" Exclude="_Imports.razor" LogicalName="Source/%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- The library's XML documentation comes with its reference, and the API tables read it at run time. -->
+  <Target Name="EmbedApiDocumentation" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <EmbeddedResource Include="@(ReferenceCopyLocalPaths)" LogicalName="Api/Trailblazor.xml"
+                        Condition="'%(Filename)%(Extension)' == 'Trailblazor.xml'" />
+    </ItemGroup>
+  </Target>
+
 </Project>

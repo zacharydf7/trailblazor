@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Enum values name themselves; a test checks that every public type and property has a summary instead. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <Description>Accessible Blazor UI components built on design tokens, cascade layers and native browser overlays.</Description>
   </PropertyGroup>
 

@@ -1,0 +1,63 @@
+using Trailblazor.Docs.Examples;
+
+namespace Trailblazor.BrowserTests;
+
+public class ApiDocsTests
+{
+    public static TheoryData<string> Types => new(ExampleCatalog.All.SelectMany(example => example.Api)
+        .Select(type => type.AssemblyQualifiedName!));
+
+    [Theory, MemberData(nameof(Types))]
+    public void Describe_ShouldGiveEveryMemberADescription_WhenGivenATypeTheDocsTable(string type)
+    {
+        var api = ApiDocs.Describe(Type.GetType(type)!);
+
+        Assert.All(api.Members, member => Assert.NotEmpty(member.Description));
+    }
+
+    [Fact]
+    public void Describe_ShouldListAParameterWithItsTypeDefaultAndDescription_WhenGivenAComponent()
+    {
+        var variant = ApiDocs.Describe(typeof(TbButton)).Members.Single(member => member.Name == "Variant");
+
+        Assert.Equal(("Variant", "Variant.Filled"), (variant.Type, variant.Default));
+        Assert.StartsWith("How strongly the button is drawn", variant.Description);
+    }
+
+    [Fact]
+    public void Describe_ShouldShowTypeParametersAndInheritedParameters_WhenGivenAGenericField()
+    {
+        var api = ApiDocs.Describe(typeof(TbSelect<>));
+
+        Assert.Equal("TbSelect<TValue>", api.Name);
+        Assert.Equal("Value", api.Members[0].Name);
+        Assert.Contains(api.Members, member => member is { Name: "Value", Type: "TValue?" });
+        Assert.Contains(api.Members, member => member is { Name: "Label", Type: "string?" });
+        Assert.DoesNotContain(api.Members, member => member.Name is "Class" or "Style");
+    }
+
+    [Fact]
+    public void Describe_ShouldMarkARequiredParameter_WhenTheComponentRequiresIt()
+    {
+        var text = ApiDocs.Describe(typeof(TbTab)).Members.Single(member => member.Name == "Text");
+
+        Assert.True(text.Required);
+    }
+
+    [Fact]
+    public void Describe_ShouldListTheSettableProperties_WhenGivenAnOptionsType()
+    {
+        var api = ApiDocs.Describe(typeof(DialogOptions));
+
+        Assert.Contains(api.Members, member => member is { Name: "Modal", Type: "bool", Default: "true" });
+        Assert.Contains(api.Members, member => member is { Name: "DismissOnEscape", Type: "bool?", Default: "" });
+    }
+
+    [Fact]
+    public void Describe_ShouldWriteACrossReferenceAsItsShortName_WhenASummaryHasOne()
+    {
+        var size = ApiDocs.Describe(typeof(DialogOptions)).Members.Single(member => member.Name == "Size");
+
+        Assert.Contains("DialogSize.Medium", size.Description);
+    }
+}

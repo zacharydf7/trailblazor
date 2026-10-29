@@ -4,8 +4,11 @@ using Trailblazor.Primitives;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+/// <summary>Registers Trailblazor's services.</summary>
 public static class TrailblazorServiceCollectionExtensions
 {
+    /// <summary>Registers the dialog, toast and announcer services Trailblazor's components use, and applies
+    /// <paramref name="configure"/> to the app-wide <see cref="TrailblazorOptions"/>.</summary>
     public static IServiceCollection AddTrailblazor(this IServiceCollection services,
         Action<TrailblazorOptions>? configure = null)
     {

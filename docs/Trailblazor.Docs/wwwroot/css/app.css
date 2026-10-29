@@ -134,9 +134,65 @@ a:focus-visible {
     font-family: var(--tb-font-family-mono);
 }
 
-.docs-source:focus-visible {
+.docs-source:focus-visible,
+.docs-api:focus-visible {
     outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
     outline-offset: var(--tb-focus-ring-offset);
+}
+
+.docs-note {
+    color: var(--tb-color-text-muted);
+}
+
+.docs-api__name {
+    margin-block: var(--tb-space-6) var(--tb-space-2);
+}
+
+.docs-api {
+    overflow-x: auto;
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-lg);
+}
+
+.docs-api table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--tb-font-size-sm);
+}
+
+.docs-api th,
+.docs-api td {
+    padding: var(--tb-space-2) var(--tb-space-3);
+    border-block-end: 1px solid var(--tb-border-subtle);
+    text-align: start;
+    vertical-align: top;
+}
+
+.docs-api thead th {
+    background: var(--tb-color-surface-raised);
+    color: var(--tb-color-text-muted);
+    font-weight: var(--tb-font-weight-semibold);
+}
+
+.docs-api tbody tr:last-child > * {
+    border-block-end: none;
+}
+
+.docs-api tbody th {
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.docs-api code,
+.docs-api__name code,
+.docs-note code {
+    font-family: var(--tb-font-family-mono);
+}
+
+.docs-api__required {
+    display: block;
+    color: var(--tb-color-text-muted);
+    font-size: var(--tb-font-size-xs);
 }
 
 .docs-cards {
