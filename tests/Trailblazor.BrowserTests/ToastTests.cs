@@ -28,8 +28,10 @@ public class ToastTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/toasts");
         await page.GetByRole(AriaRole.Button, new() { Name = "Quick" }).ClickAsync();
+        await Expect(Toast(page, "Quick note")).ToBeVisibleAsync();
 
-        await Toast(page, "Quick note").HoverAsync();
+        // Force skips the wait for the toast to hold still, which on a slow runner can outlast it.
+        await Toast(page, "Quick note").HoverAsync(new() { Force = true });
         await page.WaitForTimeoutAsync(4000);
         await Expect(Toast(page, "Quick note")).ToBeVisibleAsync();
 
