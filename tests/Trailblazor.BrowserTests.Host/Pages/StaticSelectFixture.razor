@@ -6,6 +6,11 @@
         <TbOption Value="@("Small")">Small</TbOption>
         <TbOption Value="@("Medium")">Medium</TbOption>
     </TbSelect>
+    <TbMultiSelect Label="Toppings" @bind-Value="Model!.Toppings">
+        <TbOption Value="@("Cheese")">Cheese</TbOption>
+        <TbOption Value="@("Ham")">Ham</TbOption>
+        <TbOption Value="@("Olives")">Olives</TbOption>
+    </TbMultiSelect>
     <TbButton Type="ButtonType.Submit">Send</TbButton>
 </EditForm>
 <output data-testid="posted">@_posted</output>
@@ -18,10 +23,14 @@
 
     protected override void OnInitialized() => Model ??= new();
 
-    private void Post() => _posted = Model!.Size ?? "none";
+    // An unchosen select posts an empty value, and a multiple select with nothing chosen posts nothing at all.
+    private void Post() => _posted = $"{(string.IsNullOrEmpty(Model!.Size) ? "none" : Model.Size)} | " +
+        $"{(Model.Toppings is { Count: > 0 } toppings ? string.Join(", ", toppings) : "none")}";
 
     private sealed class Order
     {
         public string? Size { get; set; }
+
+        public IReadOnlyList<string>? Toppings { get; set; }
     }
 }

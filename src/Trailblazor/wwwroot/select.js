@@ -17,6 +17,8 @@ export function createSelect(combobox, listbox) {
     let typedAt = 0;
 
     const isOpen = () => listbox.matches(':popover-open');
+    // Choosing in a multiple select toggles the option and leaves the list open for more.
+    const multiple = () => listbox.getAttribute('aria-multiselectable') === 'true';
     const enabled = () => [...listbox.querySelectorAll('[role="option"]:not([aria-disabled="true"])')];
     const selected = () => listbox.querySelector('[role="option"][aria-selected="true"]:not([aria-disabled="true"])');
 
@@ -49,7 +51,7 @@ export function createSelect(combobox, listbox) {
         }
     };
     const choose = option => {
-        // The option's click handler sets the value; the listbox's click listener closes the list.
+        // The option's click handler sets the value; the listbox's click listener closes a single select.
         option?.click();
     };
     const move = (option, step) => {
@@ -117,7 +119,11 @@ export function createSelect(combobox, listbox) {
                 break;
             case 'ArrowUp':
                 if (event.altKey) {
-                    choose(active);
+                    if (multiple()) {
+                        close();
+                    } else {
+                        choose(active);
+                    }
                 } else {
                     setActive(move(active, -1));
                 }
@@ -146,7 +152,10 @@ export function createSelect(combobox, listbox) {
                 break;
             case 'Tab':
                 // Tab keeps the active option, as a native select does, then moves on.
-                choose(active);
+                if (!multiple()) {
+                    choose(active);
+                }
+
                 close();
                 return;
             default:
@@ -181,7 +190,10 @@ export function createSelect(combobox, listbox) {
     const onListboxClick = event => {
         const option = event.target.closest('[role="option"]');
         if (option && option.getAttribute('aria-disabled') !== 'true') {
-            close();
+            if (!multiple()) {
+                close();
+            }
+
             combobox.focus();
         }
     };

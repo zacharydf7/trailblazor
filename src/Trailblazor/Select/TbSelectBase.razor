@@ -1,0 +1,50 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbFieldBase<TValue>
+
+@Layout(@<text>
+    @if (RendererInfo.IsInteractive)
+    {
+        @* Focus stays on the combobox; the script moves an active option with aria-activedescendant. *@
+        <div @attributes="InputAttributes" @ref="_combobox" data-part="input" id="@InputId" role="combobox"
+             tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(Label is null ? null : LabelId)"
+             aria-haspopup="listbox" aria-controls="@ListboxId" aria-disabled="@(Disabled ? "true" : null)"
+             aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+             aria-describedby="@InputDescribedBy"
+             class="@ClassNames.Join("tb-field__input", "tb-select__trigger", Classes?.Input)">
+            @Display
+        </div>
+        <div @ref="_listbox" id="@ListboxId" popover="auto" role="listbox"
+             aria-labelledby="@(Label is null ? null : LabelId)" aria-multiselectable="@(Multiple ? "true" : null)"
+             data-part="listbox" class="tb-select__listbox">
+            @* Not fixed, so every option re-renders with the select and its aria-selected follows the value. *@
+            <CascadingValue Value="this">@ChildContent</CascadingValue>
+        </div>
+    }
+    else
+    {
+        @* Without a circuit the custom list can't open, so a native select keeps the field usable and posted. *@
+        <select @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+                multiple="@Multiple" disabled="@Disabled" aria-required="@(Required ? "true" : null)"
+                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+                class="@ClassNames.Join("tb-field__input", "tb-select__native", Classes?.Input)">
+            @if (!Multiple && SelectedOptions.Count == 0)
+            {
+                <option value="" selected>@Placeholder</option>
+            }
+            <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+        </select>
+    }
+</text>, null, RendererInfo.IsInteractive ? End : null)
+
+@code {
+    private RenderFragment End =>
+        @<text>
+            @if (Clearable && !Disabled && HasChoice)
+            {
+                <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="Clear" Size="Size.Small" OnClick="ClearAsync"
+                              data-part="clear" />
+            }
+            <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" data-part="chevron" Class="tb-select__chevron" />
+        </text>;
+}

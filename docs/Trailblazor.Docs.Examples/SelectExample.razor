@@ -5,6 +5,11 @@
         <TbOption Value="Speed.Express">Express (1 day)</TbOption>
         <TbOption Value="Speed.Overnight" Disabled>Overnight</TbOption>
     </TbSelect>
+    <TbMultiSelect Label="Notify me about" @bind-Value="_topics" Placeholder="Nothing yet" Clearable>
+        <TbOption Value="@("Orders")">Orders</TbOption>
+        <TbOption Value="@("Returns")">Returns</TbOption>
+        <TbOption Value="@("Offers")">Offers</TbOption>
+    </TbMultiSelect>
     <TbSelect Label="Country" @bind-Value="_country" Disabled>
         <TbOption Value="@("Canada")">Canada</TbOption>
     </TbSelect>
@@ -13,6 +18,7 @@
 @code {
     private Speed? _shipping = Speed.Standard;
     private string? _country = "Canada";
+    private IReadOnlyList<string> _topics = ["Orders"];
 
     private enum Speed
     {

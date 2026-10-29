@@ -214,7 +214,89 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByLabel("Size").SelectOptionAsync("Medium");
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
 
-        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Medium");
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Medium | none");
         await Expect(page.GetByLabel("Size")).ToHaveValueAsync("Medium");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldPostEveryChosenOption_WhenUsedInAStaticForm(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-select");
+
+        await page.GetByLabel("Toppings").SelectOptionAsync(["Cheese", "Olives"]);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("none | Cheese, Olives");
+        await Expect(page.GetByLabel("Toppings")).ToHaveValuesAsync(["Cheese", "Olives"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldToggleOptionsAndStayOpen_WhenOptionsAreClicked(string browser)
+    {
+        var page = await OpenSelectAsync(browser);
+        var toppings = Combobox(page, "Toppings");
+
+        await toppings.ClickAsync();
+        await Option(page, "Cheese").ClickAsync();
+        await Option(page, "Olives").ClickAsync();
+        await Expect(page.GetByTestId("toppings")).ToHaveTextAsync("Cheese, Olives");
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
+        await Option(page, "Cheese").ClickAsync();
+
+        await Expect(page.GetByTestId("toppings")).ToHaveTextAsync("Olives");
+        await Expect(toppings).ToContainTextAsync("Olives");
+        await Expect(toppings).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldToggleWithSpaceAndEnterAndCloseWithoutToggling_WhenTabOrAltUpIsPressed(
+        string browser)
+    {
+        var page = await OpenSelectAsync(browser);
+        var toppings = Combobox(page, "Toppings");
+        await Expect(toppings).ToHaveAttributeAsync("aria-expanded", "false");
+        await toppings.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync(" ");
+        await Expect(page.GetByTestId("toppings")).ToHaveTextAsync("Cheese");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByTestId("toppings")).ToHaveTextAsync("Cheese, Ham");
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        await Expect(page.GetByTestId("toppings")).ToHaveTextAsync("Cheese, Ham");
+        await toppings.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Alt+ArrowUp");
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        await Expect(page.GetByTestId("toppings")).ToHaveTextAsync("Cheese, Ham");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldHighlightChosenOptions_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/select", new() { ForcedColors = ForcedColors.Active });
+        var toppings = Combobox(page, "Toppings");
+        await Expect(toppings).ToHaveAttributeAsync("aria-expanded", "false");
+        await toppings.ClickAsync();
+        await Option(page, "Cheese").ClickAsync();
+        await Expect(Option(page, "Cheese")).ToHaveAttributeAsync("aria-selected", "true");
+
+        // Forced colors still give the box a fill, the page's own background color, so only Highlight stands out.
+        var highlight = await page.EvaluateAsync<string>("""
+            () => {
+                const probe = document.body.appendChild(document.createElement('div'));
+                probe.style.cssText = 'forced-color-adjust: none; background: Highlight';
+                return getComputedStyle(probe).backgroundColor;
+            }
+            """);
+        var chosen = await Option(page, "Cheese")
+            .EvaluateAsync<string>("option => getComputedStyle(option, '::before').backgroundColor");
+
+        Assert.Equal(highlight, chosen);
     }
 }

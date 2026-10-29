@@ -11,8 +11,15 @@
     <TbOption Value="@("Slim")">Slim</TbOption>
 </TbSelect>
 <output data-testid="size">@_size</output>
+<TbMultiSelect Label="Toppings" @bind-Value="_toppings" Placeholder="Add toppings">
+    <TbOption Value="@("Cheese")">Cheese</TbOption>
+    <TbOption Value="@("Ham")">Ham</TbOption>
+    <TbOption Value="@("Olives")">Olives</TbOption>
+</TbMultiSelect>
+<output data-testid="toppings">@string.Join(", ", _toppings)</output>
 <TbButton OnClick='() => Dialogs.ShowAsync<SelectDialog, bool>("Choose a color")'>Next</TbButton>
 
 @code {
     private string? _size;
+    private IReadOnlyList<string> _toppings = [];
 }

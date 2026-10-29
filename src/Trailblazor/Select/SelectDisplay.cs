@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor;
 
-// The chosen option, or the placeholder, inside the combobox. A separate component, so options can refresh it after
+// The chosen options, or the placeholder, inside the combobox. A separate component, so options can refresh it after
 // they update without re-rendering the select and every option again. C#, so it can stay internal.
 internal sealed class SelectDisplay : ComponentBase
 {
     [Parameter, EditorRequired]
-    public Func<ISelectOption?> Selected { get; set; } = default!;
+    public Func<IReadOnlyList<ISelectOption>> Selected { get; set; } = default!;
 
     [Parameter]
     public string? Placeholder { get; set; }
@@ -19,15 +19,21 @@ internal sealed class SelectDisplay : ComponentBase
     {
         var selected = Selected();
         builder.OpenElement(0, "span");
-        builder.AddAttribute(1, "data-part", selected is null ? "placeholder" : "value");
-        builder.AddAttribute(2, "class", selected is null ? "tb-select__placeholder" : "tb-select__value");
-        if (selected is null)
+        builder.AddAttribute(1, "data-part", selected.Count == 0 ? "placeholder" : "value");
+        builder.AddAttribute(2, "class", selected.Count == 0 ? "tb-select__placeholder" : "tb-select__value");
+        if (selected.Count == 0)
         {
             builder.AddContent(3, Placeholder);
         }
-        else
+
+        for (var index = 0; index < selected.Count; index++)
         {
-            builder.AddContent(4, selected.Content);
+            if (index > 0)
+            {
+                builder.AddContent(4, ", ");
+            }
+
+            builder.AddContent(5, selected[index].Content);
         }
 
         builder.CloseElement();
