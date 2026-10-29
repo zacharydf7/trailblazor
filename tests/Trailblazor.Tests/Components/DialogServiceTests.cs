@@ -29,6 +29,30 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ShowAsync_ShouldTakeTheAppWideDismissalSettings_WhenItsOptionsLeaveThemUnset()
+    {
+        Services.Configure<TrailblazorOptions>(options => options.Dialogs.DismissOnBackdrop = false);
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting", options: new() { Size = DialogSize.Large });
+        _ = Dialogs.ConfirmAsync("Delete?", "This can't be undone.");
+
+        Assert.All(Dialogs.OpenDialogs, dialog => Assert.Equal((false, true),
+            (dialog.Options.DismissOnBackdrop, dialog.Options.DismissOnEscape)));
+    }
+
+    [Fact]
+    public void ShowAsync_ShouldKeepItsOwnDismissalOptions_WhenTheyDifferFromTheAppWideSettings()
+    {
+        Services.Configure<TrailblazorOptions>(options => options.Dialogs.DismissOnEscape = false);
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting",
+            options: new() { DismissOnEscape = true, DismissOnBackdrop = false });
+
+        var options = Dialogs.OpenDialogs.Single().Options;
+        Assert.Equal((false, true), (options.DismissOnBackdrop, options.DismissOnEscape));
+    }
+
+    [Fact]
     public async Task CloseAsync_ShouldCompleteWithTheValueAndRemoveTheDialog_WhenTheDialogConfirms()
     {
         var host = Render<DialogHost>();

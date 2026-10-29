@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Options;
+
 namespace Trailblazor;
 
-internal sealed class DialogService : IDialogService
+internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOptions) : IDialogService
 {
     private readonly List<DialogReference> _open = [];
     private readonly Dictionary<DialogReference, Action<bool, object?>> _completions = [];
@@ -40,6 +42,12 @@ internal sealed class DialogService : IDialogService
     private Task<DialogResult<TResult>> Open<TResult>(string title, Type component,
         IReadOnlyDictionary<string, object?> parameters, DialogOptions options, bool isAlert)
     {
+        var settings = trailblazorOptions.Value.Dialogs;
+        options = options with
+        {
+            DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
+            DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
+        };
         var completion = new TaskCompletionSource<DialogResult<TResult>>();
         var dialog = new DialogReference(title, options, component, parameters, isAlert, CloseAsync);
         _completions[dialog] = (confirmed, value) => completion.SetResult(

@@ -7,11 +7,13 @@ public sealed record DialogOptions
     /// </summary>
     public bool Modal { get; init; } = true;
 
-    /// <summary>Lets Escape cancel the dialog.</summary>
-    public bool DismissOnEscape { get; init; } = true;
+    /// <summary>Lets Escape cancel the dialog. Left unset, it follows <see cref="DialogSettings.DismissOnEscape"/>.
+    /// </summary>
+    public bool? DismissOnEscape { get; init; }
 
-    /// <summary>Lets a click outside a modal dialog cancel it.</summary>
-    public bool DismissOnBackdrop { get; init; } = true;
+    /// <summary>Lets a click outside a modal dialog cancel it. Left unset, it follows
+    /// <see cref="DialogSettings.DismissOnBackdrop"/>.</summary>
+    public bool? DismissOnBackdrop { get; init; }
 
     /// <summary>How wide the dialog grows. Defaults to <see cref="DialogSize.Medium"/>.</summary>
     public DialogSize Size { get; init; } = DialogSize.Medium;

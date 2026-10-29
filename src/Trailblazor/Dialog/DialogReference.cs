@@ -19,7 +19,8 @@ public sealed class DialogReference
     /// <summary>The dialog's title, which is also its accessible name.</summary>
     public string Title { get; }
 
-    /// <summary>The options the dialog was opened with.</summary>
+    /// <summary>The options the dialog was opened with, with any left unset filled in from
+    /// <see cref="DialogSettings"/>.</summary>
     public DialogOptions Options { get; }
 
     internal Type Component { get; }
