@@ -20,7 +20,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     public static TheoryData<string, string, string> PagesInBothThemes => new(
         from browser in AllBrowsers.Names
-        from path in new[] { "", "components/dialog", "guides/getting-started" }
+        from path in new[] { "", "components/dialog", "guides/getting-started", "search?q=dialog" }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
@@ -88,6 +88,47 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(cells.Nth(0)).ToHaveTextAsync("Variant");
         await Expect(cells.Nth(1)).ToHaveTextAsync("Variant.Filled");
         await Expect(cells.Nth(2)).ToHaveTextAsync(new Regex("^How strongly the button is drawn"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Search_ShouldListTheComponentsWithAParameter_WhenItsNameIsSearched(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "");
+
+        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" }).FillAsync("placeholder");
+        await page.Keyboard.PressAsync("Enter");
+
+        var status = page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Status);
+        await Expect(status).ToHaveTextAsync($"{DocsSearch.Find("placeholder").Count} results for “placeholder”.");
+        var select = page.GetByRole(AriaRole.Listitem).Filter(new() { HasText = "Picks one or several options" });
+        await Expect(select).ToContainTextAsync("Has Placeholder");
+        await select.GetByRole(AriaRole.Link, new() { Name = "Select" }).ClickAsync();
+        await Expect(PageTitle(page)).ToHaveTextAsync("Select");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SearchBox_ShouldShowTheQuery_WhenTheResultsPageIsOpenedFromALink(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "search?q=dialog%20options");
+
+        var box = page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" });
+        await Expect(box).ToHaveValueAsync("dialog options");
+        await box.FillAsync("menu");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Status)).ToContainTextAsync("“menu”");
+        await page.GoBackAsync();
+
+        await Expect(box).ToHaveValueAsync("dialog options");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Search_ShouldSaySoAndListNothing_WhenNothingMatches(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "search?q=zebra");
+
+        var status = page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Status);
+        await Expect(status).ToHaveTextAsync("Nothing matches “zebra”.");
+        await Expect(page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Listitem)).ToHaveCountAsync(0);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

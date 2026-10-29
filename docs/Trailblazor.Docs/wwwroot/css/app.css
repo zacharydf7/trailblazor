@@ -46,6 +46,19 @@ a:focus-visible {
     display: none;
 }
 
+.docs-search {
+    flex: 1;
+    max-width: 20rem;
+}
+
+.docs-results {
+    display: grid;
+    gap: var(--tb-space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
 .docs-look {
     width: min(100%, 22rem);
 }

@@ -1,0 +1,18 @@
+@inject NavigationManager Navigation
+
+<form role="search" class="docs-search" @onsubmit="Search" @onsubmit:preventDefault>
+    @* Enter submits before a change event is guaranteed, so the value follows every keystroke. *@
+    <TbTextField Label="Search" Type="TextFieldType.Search" UpdateOnInput @bind-Value="_query" />
+</form>
+
+@code {
+    private string? _query;
+
+    // A results page opened from a link or by going back shows its query in the box, ready to refine.
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
+
+    protected override void OnParametersSet() => _query = Query;
+
+    private void Search() => Navigation.NavigateTo($"search?q={Uri.EscapeDataString(_query ?? "")}");
+}

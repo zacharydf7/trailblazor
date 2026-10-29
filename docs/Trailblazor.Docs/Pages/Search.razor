@@ -1,0 +1,41 @@
+@page "/search"
+@using Trailblazor.Docs.Examples
+
+<PageTitle>Search · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Search</TbText>
+<TbText role="status" TextStyle="TextStyle.Subtitle" class="docs-lead">@Status</TbText>
+
+@if (_results.Count > 0)
+{
+    <ul class="docs-results">
+        @foreach (var result in _results)
+        {
+            <li>
+                <a href="@result.Path" class="docs-card__title">@result.Title</a>
+                <TbText>@result.Summary</TbText>
+                @if (result.Parameters.Count > 0)
+                {
+                    <TbText class="docs-note">Has @string.Join(", ", result.Parameters)</TbText>
+                }
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private IReadOnlyList<SearchResult> _results = [];
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
+
+    private string Status => _results.Count switch
+    {
+        _ when string.IsNullOrWhiteSpace(Query) => "Type in the search box at the top of the page.",
+        0 => $"Nothing matches “{Query}”.",
+        1 => $"1 result for “{Query}”.",
+        var count => $"{count} results for “{Query}”.",
+    };
+
+    protected override void OnParametersSet() => _results = DocsSearch.Find(Query);
+}

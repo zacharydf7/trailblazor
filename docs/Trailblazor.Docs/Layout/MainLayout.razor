@@ -7,6 +7,7 @@
 <div class="docs">
     <header class="docs-header">
         <a href="" class="docs-brand">Trailblazor</a>
+        <SearchBox />
         @* A narrow screen keeps the list closed until asked for, so the page shows first. *@
         <TbButton Variant="Variant.Outlined" class="docs-nav-toggle" aria-controls="docs-nav"
                   aria-expanded="@(_navOpen ? "true" : "false")" OnClick="() => _navOpen = !_navOpen">
