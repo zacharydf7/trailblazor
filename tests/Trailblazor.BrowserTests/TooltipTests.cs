@@ -64,7 +64,9 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
             button => {
                 const anchor = button.parentElement;
                 anchor.addEventListener('pointerenter', () => window.entered = performance.now());
-                anchor.querySelector('[role=tooltip]').addEventListener('toggle', () => window.opened = performance.now());
+                // Fires inside showPopover, while WebKit can deliver toggle after the tooltip is already visible.
+                anchor.querySelector('[role=tooltip]')
+                    .addEventListener('beforetoggle', () => window.opened = performance.now());
             }
             """);
 
