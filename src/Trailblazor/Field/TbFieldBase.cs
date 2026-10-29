@@ -89,7 +89,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     private protected IReadOnlyList<string> Errors =>
         _messageStore is null ? _messages : _editContext!.GetValidationMessages(_field!.Value).ToList();
 
-    private string? DescribedBy => (HelperText is null, Errors.Count == 0) switch
+    private protected string? DescribedBy => (HelperText is null, Errors.Count == 0) switch
     {
         (true, true) => null,
         (false, true) => HelperId,

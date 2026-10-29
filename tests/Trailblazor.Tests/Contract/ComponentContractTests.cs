@@ -9,8 +9,8 @@ namespace Trailblazor.Tests.Contract;
 // Rules every public Trailblazor component must follow, checked against all of them by reflection.
 public class ComponentContractTests : BunitContext
 {
-    // TbRoot only adds the stylesheet to the page head; it renders no element of its own.
-    private static readonly Type[] RenderNoElement = [typeof(TbRoot)];
+    // TbRoot renders no element of its own, and TbRadio only renders inside a group (see TbRadioGroupTests).
+    private static readonly Type[] NotRenderedAlone = [typeof(TbRoot), typeof(TbRadio<>)];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
     private static readonly Dictionary<Type, Type> TypeArguments = new()
@@ -18,11 +18,15 @@ public class ComponentContractTests : BunitContext
         [typeof(TbNumberField<>)] = typeof(int), [typeof(TbCheckbox<>)] = typeof(bool),
     };
 
-    public ComponentContractTests() => Services.AddTrailblazor();
+    public ComponentContractTests()
+    {
+        Services.AddTrailblazor();
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+    }
 
     public static TheoryData<Type> Components => new(typeof(TbComponentBase).Assembly.GetExportedTypes()
         .Where(type => !type.IsAbstract && typeof(IComponent).IsAssignableFrom(type))
-        .Except(RenderNoElement)
+        .Except(NotRenderedAlone)
         .Select(type => type.IsGenericTypeDefinition
             ? type.MakeGenericType(TypeArguments.GetValueOrDefault(type, typeof(string)))
             : type));

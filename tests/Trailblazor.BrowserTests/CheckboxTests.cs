@@ -72,7 +72,7 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByLabel("Subscribe").CheckAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
 
-        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Ada, True");
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Ada, True, Free");
         await Expect(page.GetByLabel("Subscribe")).ToBeCheckedAsync();
     }
 }

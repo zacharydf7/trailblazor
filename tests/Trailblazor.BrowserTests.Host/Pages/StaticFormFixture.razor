@@ -4,6 +4,10 @@
 <EditForm Model="Model" FormName="static-form" OnValidSubmit="Post">
     <TbTextField Label="Name" @bind-Value="Model!.Name" Validation="RequireName" />
     <TbCheckbox Label="Subscribe" @bind-Value="Model!.Subscribe" />
+    <TbRadioGroup Label="Plan" @bind-Value="Model!.Plan">
+        <TbRadio Value="@("Free")">Free</TbRadio>
+        <TbRadio Value="@("Pro")">Pro</TbRadio>
+    </TbRadioGroup>
     <TbButton Type="ButtonType.Submit">Send</TbButton>
 </EditForm>
 <output data-testid="posted">@_posted</output>
@@ -16,7 +20,7 @@
 
     protected override void OnInitialized() => Model ??= new();
 
-    private void Post() => _posted = $"{Model!.Name}, {Model.Subscribe}";
+    private void Post() => _posted = $"{Model!.Name}, {Model.Subscribe}, {Model.Plan}";
 
     private static IEnumerable<string> RequireName(string? name) =>
         string.IsNullOrWhiteSpace(name) ? ["Enter a name."] : [];
@@ -26,5 +30,7 @@
         public string? Name { get; set; }
 
         public bool Subscribe { get; set; }
+
+        public string Plan { get; set; } = "Free";
     }
 }

@@ -995,7 +995,8 @@
     }
 
     .tb-checkbox__label,
-    .tb-switch__label {
+    .tb-switch__label,
+    .tb-radio {
         display: inline-flex;
         align-items: center;
         gap: var(--tb-space-2);
@@ -1004,7 +1005,8 @@
     }
 
     .tb-checkbox__input,
-    .tb-switch__input {
+    .tb-switch__input,
+    .tb-radio__input {
         appearance: none;
         display: grid;
         place-content: center;
@@ -1017,7 +1019,8 @@
     }
 
     .tb-checkbox__input:focus-visible,
-    .tb-switch__input:focus-visible {
+    .tb-switch__input:focus-visible,
+    .tb-radio__input:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);
     }
@@ -1047,6 +1050,24 @@
         width: 0.625rem;
         height: 2px;
         background: var(--tb-color-on-primary);
+    }
+
+    .tb-radio__input {
+        width: 1.125rem;
+        height: 1.125rem;
+        border-radius: var(--tb-radius-full);
+    }
+
+    .tb-radio__input:checked {
+        border-color: var(--tb-color-primary);
+    }
+
+    .tb-radio__input:checked::before {
+        content: "";
+        width: 0.5625rem;
+        height: 0.5625rem;
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-color-primary);
     }
 
     .tb-switch__input {
@@ -1083,12 +1104,15 @@
     }
 
     .tb-checkbox--invalid .tb-checkbox__input,
-    .tb-switch--invalid .tb-switch__input {
+    .tb-switch--invalid .tb-switch__input,
+    .tb-radio-group--invalid .tb-radio__input {
         border-color: var(--tb-color-danger-text);
     }
 
     .tb-checkbox--disabled .tb-checkbox__label,
-    .tb-switch--disabled .tb-switch__label {
+    .tb-switch--disabled .tb-switch__label,
+    .tb-radio--disabled,
+    .tb-radio-group--disabled .tb-radio {
         opacity: 0.55;
         cursor: default;
     }
@@ -1096,13 +1120,44 @@
     /* Forced colors drop the drawn boxes, so the native controls come back. */
     @media (forced-colors: active) {
         .tb-checkbox__input,
-        .tb-switch__input {
+        .tb-switch__input,
+        .tb-radio__input {
             appearance: auto;
         }
 
         .tb-checkbox__input::before,
-        .tb-switch__input::before {
+        .tb-switch__input::before,
+        .tb-radio__input:checked::before {
             content: none;
         }
+    }
+
+    .tb-radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-2);
+        min-inline-size: 0;
+        margin: 0;
+        padding: 0;
+        border: none;
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-radio-group__label {
+        padding: 0;
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-radio-group__options {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-radio-group__options--row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--tb-space-1) var(--tb-space-4);
     }
 }

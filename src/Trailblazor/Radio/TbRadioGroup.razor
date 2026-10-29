@@ -1,0 +1,50 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbFieldBase<TValue>
+
+@* Radios that share a name already give one tab stop and arrow-key selection, so no script is needed. *@
+<fieldset @attributes="AdditionalAttributes" role="radiogroup" disabled="@Disabled" style="@Style"
+          aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+          aria-describedby="@DescribedBy"
+          class="@ClassNames.Join("tb-radio-group", Errors.Count > 0 ? "tb-radio-group--invalid" : null,
+                     Disabled ? "tb-radio-group--disabled" : null, Class)">
+    @if (Label is not null)
+    {
+        <legend data-part="label" class="@ClassNames.Join("tb-radio-group__label", Classes?.Label)">
+            @Label @RequiredMarker
+        </legend>
+    }
+    <div data-part="options"
+         class="@ClassNames.Join("tb-radio-group__options", Row ? "tb-radio-group__options--row" : null)">
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
+    </div>
+    @Messages
+</fieldset>
+
+@code {
+    /// <summary>The group's <see cref="TbRadio{TValue}"/> options.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Lays the options out in a row instead of a column.</summary>
+    [Parameter]
+    public bool Row { get; set; }
+
+    // Radios sharing a name form one group, so only a static form post, which needs it, gets the bound path.
+    internal string GroupName => (RendererInfo.IsInteractive
+        ? InputAttributes?.GetValueOrDefault("name")?.ToString()
+        : InputNameAttribute?.ToString()) ?? FieldId;
+
+    internal string? FormatOption(TValue value) => FormatValue(value);
+
+    internal bool IsSelected(TValue value) => EqualityComparer<TValue>.Default.Equals(value, Value);
+
+    // The change event belongs to the chosen TbRadio, so the group re-renders itself for its messages.
+    internal async Task SelectAsync(TValue value)
+    {
+        await SetValueAsync(value);
+        StateHasChanged();
+    }
+}

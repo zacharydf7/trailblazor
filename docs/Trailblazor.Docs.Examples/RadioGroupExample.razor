@@ -1,0 +1,25 @@
+<TbStack Gap="6">
+    <TbRadioGroup Label="Paper size" @bind-Value="_paper" HelperText="Used for the next print run." data-testid="paper">
+        <TbRadio Value="@("Letter")">Letter</TbRadio>
+        <TbRadio Value="@("A4")">A4</TbRadio>
+        <TbRadio Value="@("Legal")" Disabled>Legal (out of stock)</TbRadio>
+    </TbRadioGroup>
+    <output data-testid="paper-echo">@_paper</output>
+    <TbRadioGroup Label="Orientation" @bind-Value="_orientation" Row>
+        @foreach (var orientation in Enum.GetValues<PageOrientation>())
+        {
+            <TbRadio Value="orientation">@orientation</TbRadio>
+        }
+    </TbRadioGroup>
+</TbStack>
+
+@code {
+    private string _paper = "Letter";
+    private PageOrientation _orientation = PageOrientation.Portrait;
+
+    private enum PageOrientation
+    {
+        Portrait,
+        Landscape,
+    }
+}

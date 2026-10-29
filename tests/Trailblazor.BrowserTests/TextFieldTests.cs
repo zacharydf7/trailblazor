@@ -10,7 +10,7 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByLabel("Name").FillAsync("Ada");
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
 
-        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Ada, False");
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Ada, False, Free");
         await Expect(page.GetByLabel("Name")).ToHaveValueAsync("Ada");
     }
 

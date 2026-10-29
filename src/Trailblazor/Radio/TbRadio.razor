@@ -1,0 +1,39 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbComponentBase
+
+<label @attributes="AdditionalAttributes" style="@Style"
+       class="@ClassNames.Join("tb-radio", Disabled ? "tb-radio--disabled" : null, Class)">
+    <input @attributes="Group!.InputAttributes" type="radio" data-part="input" name="@Group.GroupName"
+           class="@ClassNames.Join("tb-radio__input", Group.Classes?.Input)"
+           value="@Group.FormatOption(Value)" checked="@Group.IsSelected(Value)" disabled="@Disabled"
+           @onchange="() => Group.SelectAsync(Value)" />
+    <span data-part="label">@ChildContent</span>
+</label>
+
+@code {
+    /// <summary>The value the group takes when this option is chosen.</summary>
+    [Parameter, EditorRequired]
+    public TValue Value { get; set; } = default!;
+
+    /// <summary>The option's visible label.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Turns this option off while the rest of the group stays usable.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [CascadingParameter]
+    private TbRadioGroup<TValue>? Group { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Group is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbRadio<TValue>)} must be inside a {nameof(TbRadioGroup<TValue>)} of the same type.");
+        }
+    }
+}
