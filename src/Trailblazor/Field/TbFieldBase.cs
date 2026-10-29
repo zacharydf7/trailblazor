@@ -66,6 +66,9 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     [CascadingParameter]
     private EditContext? CascadedEditContext { get; set; }
 
+    [Inject]
+    private IAnnouncer Announcer { get; set; } = default!;
+
     private protected string FieldId { get; } = $"tb-field-{Guid.NewGuid():N}";
 
     private protected string InputId => $"{FieldId}-input";
@@ -179,6 +182,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
             return;
         }
 
+        var before = Errors.ToList();
         _parseError = null;
         _unparsedText = null;
         Value = value;
@@ -193,6 +197,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
         {
             _editContext!.NotifyFieldChanged(_field!.Value);
         }
+
+        AnnounceNewErrors(before);
     }
 
     // Text that doesn't parse leaves the value alone and stays in the input, so the user can fix it.
@@ -210,11 +216,23 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     // The text stays in the input for the user to fix, and rendering what the browser sent doesn't write over it.
     private protected void ShowParseError(string error, string? text)
     {
+        var before = Errors.ToList();
         _unparsedText = text;
         _parseError = error;
         _valueAtParseError = Value;
         Validate();
         _editContext?.NotifyValidationStateChanged();
+        AnnounceNewErrors(before);
+    }
+
+    // Only edits speak, and only new messages, so a submit with several errors doesn't read them all out at once.
+    private void AnnounceNewErrors(List<string> before)
+    {
+        var added = Errors.Except(before).ToList();
+        if (added.Count > 0)
+        {
+            Announcer.Polite(string.Join(" ", added));
+        }
     }
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e) => Validate();

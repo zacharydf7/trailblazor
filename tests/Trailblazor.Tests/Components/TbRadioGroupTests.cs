@@ -8,7 +8,11 @@ namespace Trailblazor.Tests.Components;
 public class TbRadioGroupTests : BunitContext
 {
     // The group names its radios differently when interactive, so each test states how it renders.
-    public TbRadioGroupTests() => SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+    public TbRadioGroupTests()
+    {
+        this.AddTrailblazor();
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+    }
 
     [Fact]
     public void Render_ShouldBeALabeledRadioGroupWhoseRadiosShareAName_WhenCalled()

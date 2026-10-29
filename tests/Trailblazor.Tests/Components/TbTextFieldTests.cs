@@ -6,6 +6,8 @@ namespace Trailblazor.Tests.Components;
 
 public class TbTextFieldTests : BunitContext
 {
+    public TbTextFieldTests() => this.AddTrailblazor();
+
     [Fact]
     public void Render_ShouldLinkTheLabelAndHelperToTheInput_WhenBothAreSet()
     {
@@ -157,6 +159,75 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Change_ShouldSpeakOnlyNewMessages_WhenEditsAddKeepAndRemoveThem()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = Render<TbTextField<string>>(parameters => parameters
+            .Add(field => field.Validation, (string? text) => new[]
+            {
+                text?.Length < 8 ? "At least 8 characters." : null,
+                text?.Any(char.IsDigit) == true ? null : "Include a digit.",
+            }.OfType<string>()));
+
+        cut.Find("input").Change("abc");
+        cut.Find("input").Change("abcd");
+        cut.Find("input").Change("abc1");
+
+        Assert.Equal(["At least 8 characters. Include a digit."], Spoken(announcer));
+    }
+
+    [Fact]
+    public void Change_ShouldSpeakTheParseError_WhenTheTextDoesNotParse()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = Render<TbTextField<int>>(parameters => parameters.Add(field => field.Label, "Age"));
+
+        cut.Find("input").Change("twelve");
+
+        Assert.Equal(["Age isn't valid."], Spoken(announcer));
+    }
+
+    [Fact]
+    public void Change_ShouldSpeakTheFormsMessage_WhenAnEditBreaksARuleOnTheModel()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var signup = new Signup { Email = "ada@example.com" };
+        var cut = Render<EditForm>(parameters => parameters
+            .Add(form => form.Model, signup)
+            .Add(form => form.ChildContent, (EditContext _) => builder =>
+            {
+                builder.OpenComponent<DataAnnotationsValidator>(0);
+                builder.CloseComponent();
+                builder.OpenComponent<TbTextField<string>>(1);
+                builder.AddAttribute(2, "Value", signup.Email);
+                builder.AddAttribute(3, "ValueChanged",
+                    EventCallback.Factory.Create<string>(new object(), (string email) => signup.Email = email));
+                builder.AddAttribute(4, "ValueExpression",
+                    (System.Linq.Expressions.Expression<Func<string>>)(() => signup.Email!));
+                builder.CloseComponent();
+            }));
+
+        cut.Find("input").Change("");
+
+        Assert.Equal(["Enter an email."], Spoken(announcer));
+    }
+
+    [Fact]
+    public void Submit_ShouldSpeakNoMessage_WhenTheFormChecksEveryField()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var model = new Person();
+        var cut = Render<EditForm>(parameters => parameters
+            .Add(form => form.Model, model)
+            .Add(form => form.ChildContent, (EditContext _) => NameField(model)));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal("Enter a name.", cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Empty(Spoken(announcer));
+    }
+
+    [Fact]
     public void Submit_ShouldBlockTheFormAndShowTheMessage_WhenValidationFailsInAnEditForm()
     {
         var model = new Person();
@@ -297,6 +368,10 @@ public class TbTextFieldTests : BunitContext
         Assert.Equal("name", cut.Find("input").GetAttribute("autocomplete"));
     }
 
+    // What the page's polite live region holds, which a screen reader reads out.
+    private static IEnumerable<string> Spoken(IRenderedComponent<AnnouncerHost> announcer) =>
+        announcer.FindAll("[role=status] p").Select(spoken => spoken.TextContent);
+
     // A name field bound to the model, which requires a name.
     private static RenderFragment NameField(Person model) => builder =>
     {
@@ -322,6 +397,13 @@ public class TbTextFieldTests : BunitContext
     private sealed class Ages
     {
         public int Age { get; set; }
+    }
+
+    // Its rule lives on the model, so only the form's validator knows the message.
+    private sealed class Signup
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Enter an email.")]
+        public string? Email { get; set; }
     }
 
     private sealed class Person

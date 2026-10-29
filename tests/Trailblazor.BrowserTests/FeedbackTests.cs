@@ -15,6 +15,27 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Progress_ShouldDrawItsBarAndRingInTheHighlightColor_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/progress", new() { ForcedColors = ForcedColors.Active });
+
+        var colors = await page.EvaluateAsync<string[]>("""
+            () => {
+                const probe = document.body.appendChild(document.createElement('div'));
+                probe.style.cssText = 'forced-color-adjust: none; background: Highlight';
+                const bar = document.querySelector('[aria-label="Upload"]');
+                return [getComputedStyle(probe).backgroundColor,
+                    getComputedStyle(bar.querySelector('[data-part=indicator]')).backgroundColor,
+                    getComputedStyle(document.querySelector('[aria-label="Export"] [data-part=indicator]')).stroke,
+                    getComputedStyle(bar).backgroundColor];
+            }
+            """);
+
+        Assert.Equal([colors[0], colors[0]], colors[1..3]);
+        Assert.NotEqual(colors[0], colors[3]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Progress_ShouldFillItsShareOfTheTrack_WhenGivenAValue(string browser)
     {
         var page = await OpenAsync(browser, "/examples/progress");

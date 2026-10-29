@@ -859,6 +859,26 @@
         --tb-progress-fill: var(--tb-color-danger-text);
     }
 
+    /* Forced colors paint every background in the page's own color, so the bar and the ring take system colors. */
+    @media (forced-colors: active) {
+        .tb-progress--linear {
+            border: 1px solid CanvasText;
+        }
+
+        .tb-progress--linear .tb-progress__indicator {
+            forced-color-adjust: none;
+            background: Highlight;
+        }
+
+        .tb-progress--circular .tb-progress__indicator {
+            stroke: Highlight;
+        }
+
+        .tb-progress__track {
+            stroke: GrayText;
+        }
+    }
+
     .tb-progress--info {
         --tb-progress-fill: var(--tb-color-info-text);
     }
@@ -1638,6 +1658,14 @@
     .tb-tabs__tab:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    /* Forced colors drop shadows, so the underline is a border, inside the tab where the list can't clip it. */
+    @media (forced-colors: active) {
+        .tb-tabs__tab[aria-selected="true"] {
+            border-block-end: 2px solid Highlight;
+            padding-block-end: calc(var(--tb-space-2) - 2px);
+        }
     }
 
     .tb-tabs__tab:disabled {

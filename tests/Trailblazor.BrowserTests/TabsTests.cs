@@ -11,6 +11,33 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
             .ToHaveAttributeAsync("aria-orientation", "horizontal");
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldUnderlineOnlyTheSelectedTabWithoutMovingAnything_WhenColorsAreForced(string browser)
+    {
+        var plain = await OpenAsync(browser, "/examples/tabs");
+        var height = (await plain.GetByRole(AriaRole.Tablist).BoundingBoxAsync())!.Height;
+        var page = await OpenAsync(browser, "/examples/tabs", new() { ForcedColors = ForcedColors.Active });
+
+        var underlines = await page.EvaluateAsync<string[]>("""
+            () => {
+                const probe = document.body.appendChild(document.createElement('div'));
+                probe.style.cssText = 'forced-color-adjust: none; color: Highlight';
+                const highlight = getComputedStyle(probe).color;
+                return [...document.querySelectorAll('[role=tab]')].map(tab => {
+                    const style = getComputedStyle(tab);
+                    return style.borderBottomWidth === '0px' ? 'none'
+                        : style.borderBottomColor === highlight ? 'highlight' : style.borderBottomColor;
+                });
+            }
+            """);
+
+        Assert.Equal(["highlight", "none", "none"], underlines);
+        Assert.Equal(height, (await page.GetByRole(AriaRole.Tablist).BoundingBoxAsync())!.Height, tolerance: 0.5);
+        // The list scrolls sideways, so it also clips what sticks out below it; the underline must stay inside.
+        Assert.True(await page.GetByRole(AriaRole.Tablist).EvaluateAsync<bool>(
+            "list => list.scrollHeight <= list.clientHeight"), "The underline is clipped below the tab list.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldMoveFocusAndSelectSkippingDisabledTabs_WhenArrowKeysArePressed(string browser)
     {
         var page = await OpenAsync(browser, "/tabs");

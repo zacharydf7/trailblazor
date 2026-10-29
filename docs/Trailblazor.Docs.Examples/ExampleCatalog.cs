@@ -244,6 +244,7 @@ public static class ExampleCatalog
                     + "with no current value.",
                 "`AriaLabel` is required and names it; a blank label throws when it renders.",
                 "With reduced motion, the moving bar and the spinning ring pulse instead.",
+                "In forced-colors mode, such as Windows high contrast, the fill takes the system's highlight color.",
             ],
             Target = new("progressbar", "Upload"),
             Blocks = ["tb-progress"],
@@ -259,8 +260,8 @@ public static class ExampleCatalog
                 "Helper text and validation messages are linked to the field with `aria-describedby`, an error "
                     + "sets `aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from "
                     + "screen readers.",
-                "A validation message isn't read out when it appears; screen readers read it with the field when "
-                    + "it next gets focus.",
+                "A validation message that appears as someone edits the field is read out once. Checking the whole "
+                    + "form on submit reads none out, so a form with several errors doesn't speak them all at once.",
                 "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "
                     + "browsers expose them.",
             ],
@@ -429,6 +430,8 @@ public static class ExampleCatalog
                     + "right-to-left pages, and Home and End jump to the ends. With automatic activation, moving also "
                     + "selects; with manual activation, Enter or Space selects.",
                 "Each panel is focusable, so keyboard users can reach content that has no controls.",
+                "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
+                    + "system's highlight color.",
             ],
             Target = new("tablist", "Report sections"),
             Blocks = ["tb-tabs"],
