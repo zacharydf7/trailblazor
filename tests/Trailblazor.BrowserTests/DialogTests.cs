@@ -26,6 +26,36 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFocusItself_WhenItsInitialFocusIsTheDialog(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "About" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "About" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFocusTheFieldMarkedAutofocus_WhenOneIsInside(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Address", Exact = true }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog).GetByLabel("Floor")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFocusTheFirstField_WhenTheFieldMarkedAutofocusIsDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Address locked" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog).GetByLabel("Street")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldReturnItsValueAndRefocusTheOpener_WhenSaved(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");

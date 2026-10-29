@@ -1,10 +1,25 @@
 import { focusOrigin } from './pointer-origin.js';
 
-const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), '
-    + 'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+// What Tab reaches; controls kept out of the tab order, such as a number field's step buttons, don't count.
+const focusableSelector = ['a[href]', 'button:not([disabled])', 'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])', 'textarea:not([disabled])', '[tabindex]']
+    .map(selector => `${selector}:not([tabindex="-1"])`)
+    .join(', ');
 
 // Open dialogs, oldest first; keys go to the newest, so a nested dialog closes before the one beneath it.
 const stack = [];
+
+// An element marked autofocus wins; a field component carries the attribute on its wrapper, so look inside it.
+function dialogFocusTarget(dialog, options) {
+    const body = dialog.querySelector('[data-part="body"]');
+    const named = body?.querySelector('[autofocus]');
+    const target = named?.matches(focusableSelector) ? named : named?.querySelector(focusableSelector);
+    if (target) {
+        return target;
+    }
+
+    return options.initialFocus === 'Dialog' ? dialog : body?.querySelector(focusableSelector) ?? dialog;
+}
 
 export function openDialog(dialog, dotNet, options) {
     // Blazor passes null for an element that was removed before this call arrived.
@@ -23,8 +38,7 @@ export function openDialog(dialog, dotNet, options) {
 
     const entry = { dialog, options };
     stack.push(entry);
-    const body = dialog.querySelector('[data-part="body"]');
-    (body?.querySelector(focusableSelector) ?? dialog).focus();
+    dialogFocusTarget(dialog, options).focus();
 
     let finished = false;
     let pressedOnBackdrop = false;

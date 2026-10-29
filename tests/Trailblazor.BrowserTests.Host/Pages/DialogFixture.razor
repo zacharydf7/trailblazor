@@ -11,6 +11,11 @@
     <TbButton OnClick="() => PlacedAsync(DialogPosition.BottomEnd, modal: false)">Docked</TbButton>
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Top)">Top</TbButton>
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Start)">Start</TbButton>
+    <TbButton OnClick="AboutAsync">About</TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<AddressDialog, string>("Address")'>Address</TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<AddressDialog, string>("Address", p => p.Set(d => d.FloorLocked, true))'>
+        Address locked
+    </TbButton>
     <TbButton OnClick="() => HintedAsync(locked: false)">Hinted</TbButton>
     <TbButton OnClick="() => HintedAsync(locked: true)">Hinted locked</TbButton>
     <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
@@ -56,6 +61,9 @@
     private async Task PlacedAsync(DialogPosition position, bool modal = true) =>
         await Dialogs.ShowAsync<NameDialog, string>($"Placed {position}",
             options: new() { Position = position, Modal = modal });
+
+    private async Task AboutAsync() =>
+        await Dialogs.ShowAsync<NameDialog, string>("About", options: new() { InitialFocus = DialogFocus.Dialog });
 
     private async Task PanelAsync()
     {

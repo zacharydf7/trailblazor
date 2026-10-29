@@ -1,0 +1,16 @@
+@inherits TbDialog<string>
+
+@* Opened to correct the floor, so that field asks for focus over the street before it. *@
+<TbTextField Label="Street" @bind-Value="_street" />
+<TbNumberField Label="Floor" @bind-Value="_floor" Disabled="FloorLocked" autofocus />
+<TbDialogActions>
+    <TbButton OnClick='() => CloseAsync($"{_street}, floor {_floor}")'>Save</TbButton>
+</TbDialogActions>
+
+@code {
+    private string? _street;
+    private int? _floor;
+
+    [Parameter]
+    public bool FloorLocked { get; set; }
+}
