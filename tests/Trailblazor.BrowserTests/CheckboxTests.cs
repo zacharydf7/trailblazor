@@ -75,4 +75,27 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Ada, True, Free");
         await Expect(page.GetByLabel("Subscribe")).ToBeCheckedAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Controls_ShouldLeaveOnlyTheNativeMarks_WhenColorsAreForced(string browser)
+    {
+        foreach (var example in new[] { "checkbox", "switch", "radio-group" })
+        {
+            var page = await OpenAsync(browser, $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
+            if (example == "checkbox")
+            {
+                // The mixed mark appears only once the checkbox script sets it.
+                await Expect(page.GetByRole(AriaRole.Checkbox, new() { Name = "All formats" }))
+                    .ToBeCheckedAsync(new() { Indeterminate = true });
+            }
+
+            var drawn = await page.EvaluateAsync<string[]>("""
+                () => [...document.querySelectorAll('input')]
+                    .filter(input => getComputedStyle(input, '::before').content !== 'none')
+                    .map(input => input.labels[0]?.textContent.trim() ?? input.outerHTML)
+                """);
+
+            Assert.Empty(drawn);
+        }
+    }
 }

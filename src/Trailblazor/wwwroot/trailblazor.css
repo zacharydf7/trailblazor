@@ -1125,7 +1125,9 @@
             appearance: auto;
         }
 
-        .tb-checkbox__input::before,
+        /* Each matches the rule that sets its content, since a media query adds no specificity. */
+        .tb-checkbox__input:checked::before,
+        .tb-checkbox__input:indeterminate::before,
         .tb-switch__input::before,
         .tb-radio__input:checked::before {
             content: none;
