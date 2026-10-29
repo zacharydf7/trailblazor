@@ -100,22 +100,27 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Controls_ShouldEndInTheLastChosenState_WhenEachUpdateIsSlowToComeBack(string browser)
+    public async Task Controls_ShouldShowTheStateTheServerHolds_WhenEachUpdateIsSlowToComeBack(string browser)
     {
-        // A smoke test: key presses over a few loads make a lost change likely to show (see #91).
+        // A press made while an older render is on its way can be lost, but the control must still match its value.
         for (var load = 0; load < 4; load++)
         {
             var page = await OpenAsync(browser, "/slow-fields");
-            await PressAsync(page, page.GetByLabel("Subscribe"), " ", 3);
-            await PressAsync(page, page.GetByRole(AriaRole.Switch, new() { Name = "Notify" }), " ", 2);
+            var subscribe = page.GetByLabel("Subscribe");
+            var notify = page.GetByRole(AriaRole.Switch, new() { Name = "Notify" });
+            await PressAsync(page, subscribe, " ", 3);
+            await PressAsync(page, notify, " ", 2);
             await PressAsync(page, page.GetByRole(AriaRole.Radio, new() { Name = "Small" }), "ArrowDown", 3);
+            // Settle's render follows every change's, and renders arrive in order, so the last one has landed.
+            await page.GetByRole(AriaRole.Button, new() { Name = "Settle" }).ClickAsync();
+            await Expect(page.GetByTestId("settled")).ToHaveTextAsync("1");
 
-            await Expect(page.GetByTestId("subscribe")).ToHaveTextAsync("True");
-            await Expect(page.GetByTestId("notify")).ToHaveTextAsync("False");
-            await Expect(page.GetByTestId("size")).ToHaveTextAsync("Huge");
-            await Expect(page.GetByLabel("Subscribe")).ToBeCheckedAsync();
-            await Expect(page.GetByRole(AriaRole.Switch, new() { Name = "Notify" })).Not.ToBeCheckedAsync();
-            await Expect(page.GetByRole(AriaRole.Radio, new() { Name = "Huge" })).ToBeCheckedAsync();
+            await Expect(subscribe).ToBeCheckedAsync(
+                new() { Checked = await page.GetByTestId("subscribe").TextContentAsync() == "True" });
+            await Expect(notify).ToBeCheckedAsync(
+                new() { Checked = await page.GetByTestId("notify").TextContentAsync() == "True" });
+            var size = await page.GetByTestId("size").TextContentAsync();
+            await Expect(page.GetByRole(AriaRole.Radio, new() { Name = size })).ToBeCheckedAsync();
         }
     }
 

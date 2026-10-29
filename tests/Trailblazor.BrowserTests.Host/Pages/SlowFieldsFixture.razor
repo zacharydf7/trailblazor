@@ -15,12 +15,17 @@
 <output data-testid="notify">@_notify</output>
 <output data-testid="copies">@_copies</output>
 <output data-testid="size">@_size</output>
+@* Events are handled in order, so Settle starts after every earlier change and waits for the slow ones to end. *@
+<TbButton OnClick="SettleAsync">Settle</TbButton>
+<output data-testid="settled">@_settled</output>
 
 @code {
     private bool _subscribe;
     private bool _notify;
     private int _copies;
     private string? _size = "Small";
+    private readonly List<Task> _running = [];
+    private int _settled;
 
     private Task SubscribeAsync(bool value) => SlowlyAsync(() => _subscribe = value);
 
@@ -30,9 +35,17 @@
 
     private Task SizeAsync(string value) => SlowlyAsync(() => _size = value);
 
-    private static async Task SlowlyAsync(Action set)
+    private async Task SlowlyAsync(Action set)
     {
+        var delay = Task.Delay(150);
+        _running.Add(delay);
         set();
-        await Task.Delay(150);
+        await delay;
+    }
+
+    private async Task SettleAsync()
+    {
+        await Task.WhenAll(_running);
+        _settled++;
     }
 }
