@@ -64,6 +64,8 @@ export function attachTabs(list, order) {
     // Horizontal is already a tab list's default; setting it marks that the arrow keys are attached.
     list.setAttribute('aria-orientation', 'horizontal');
     return {
+        // A test stand-in answers false here, which tells the server that no order report will come.
+        reportsOrder: () => true,
         dispose() {
             observer.disconnect();
             list.removeEventListener('keydown', onKeyDown);

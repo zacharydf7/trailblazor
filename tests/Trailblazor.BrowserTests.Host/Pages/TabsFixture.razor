@@ -15,7 +15,8 @@
     <TbTab Text="Billing">Billing panel</TbTab>
 </TbTabs>
 
-<TbTabs AriaLabel="Reports" @bind-ActiveIndex="_report">
+@* Kept alive, so a panel that was ever selected stays in the page, hidden. *@
+<TbTabs AriaLabel="Reports" @bind-ActiveIndex="_report" KeepAlive>
     <TbTab Text="Daily">Daily panel</TbTab>
     @if (_weekly)
     {

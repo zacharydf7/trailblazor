@@ -239,6 +239,7 @@ public class TbTabsTests : BunitContext
     public async Task Dispose_ShouldDetachTheKeyboardScript_WhenTheTabsGoAway()
     {
         var handle = JSInterop.SetupModule("./_content/Trailblazor/tabs.js").SetupModule("attachTabs", _ => true);
+        handle.Setup<bool>("reportsOrder").SetResult(true);
         handle.SetupVoid("dispose").SetVoidResult();
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         RenderTabs();
@@ -305,6 +306,43 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldLeaveATabToFocus_WhenTheParentRemovesTheSelectedTabAndSetsTheIndexAlongWithANewTab()
+    {
+        SetUpOrder();
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ActiveIndex, 2)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                AddTab(builder, 10, "Overview", "Overview panel");
+                AddTab(builder, 20, "Specs", "Specs panel");
+                AddTab(builder, 30, "Reviews", "Reviews panel");
+            })));
+
+        cut.Render(parameters => parameters.Add(tabs => tabs.ActiveIndex, 0).Add(tabs => tabs.ChildContent,
+            (RenderFragment)(builder =>
+            {
+                AddTab(builder, 5, "Intro", "Intro panel");
+                AddTab(builder, 10, "Overview", "Overview panel");
+                AddTab(builder, 20, "Specs", "Specs panel");
+            })));
+
+        // The order report is still on its way, so nothing is selected yet, but Tab must still reach a tab.
+        Assert.Single(cut.FindAll("[role=tab][tabindex='0']"));
+        Assert.Empty(cut.FindAll("[role=tab][aria-selected='true']"));
+    }
+
+    [Fact]
+    public void Render_ShouldApplyTheParentsIndex_WhenTheTabsScriptIsUnavailableAndATabRendersAfterOthers()
+    {
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        var cut = RenderTabs();
+
+        cut.Render(parameters => parameters.Add(tabs => tabs.ActiveIndex, 1)
+            .Add(tabs => tabs.ChildContent, WithIntroAfterOverview));
+
+        Assert.Equal("Specs panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
+    [Fact]
     public async Task Reorder_ShouldKeepTheHeaders_WhenATabRegisteredAfterTheReportWasSent()
     {
         var order = SetUpOrder();
@@ -322,7 +360,7 @@ public class TbTabsTests : BunitContext
     private Func<DotNetObjectReference<TabOrder>> SetUpOrder()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/tabs.js");
-        module.SetupModule("attachTabs", _ => true);
+        module.SetupModule("attachTabs", _ => true).Setup<bool>("reportsOrder").SetResult(true);
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         return () => (DotNetObjectReference<TabOrder>)module.Invocations["attachTabs"].Single().Arguments[1]!;
     }

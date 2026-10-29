@@ -177,5 +177,8 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Tab(page, "Weekly")).ToHaveAttributeAsync("aria-selected", "true");
         await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Weekly" })).ToHaveTextAsync("Weekly panel");
         await Expect(page.GetByTestId("report")).ToHaveTextAsync("1");
+        // Kept alive, Monthly would stay in the page had it been selected while the order was on its way.
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Monthly", IncludeHidden = true }))
+            .ToHaveCountAsync(0);
     }
 }

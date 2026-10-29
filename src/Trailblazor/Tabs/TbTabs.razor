@@ -33,10 +33,13 @@
     private int? _lastActiveIndex;
     private bool _indexFromParent;
     private bool _keepIndexOnReorder;
+    private TbTab? _settled;
+    private bool _reportsOrder;
 
-    /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. An index set
-    /// along with a tab that renders after the others applies once the browser reports the tabs' order, so until
-    /// then it counts the new tab as the last.</summary>
+    /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. A new index
+    /// from the parent applies on the render after, once that render's tabs have registered, and one set along with
+    /// a tab that renders after the others waits for the browser to report the tabs' order. Until then the tab
+    /// selected before stays selected, so no other tab's panel renders in between.</summary>
     [Parameter]
     public int ActiveIndex { get; set; }
 
@@ -70,7 +73,10 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    internal TbTab? ActiveTab => _active >= 0 && _active < _tabs.Count ? _tabs[_active] : null;
+    // A new index from the parent may count a tab that registers later in the same render, or one whose place only
+    // the script's report gives, so until then the tab selected before stays selected.
+    internal TbTab? ActiveTab => _indexFromParent || _keepIndexOnReorder && _reportsOrder ? _settled
+        : _active >= 0 && _active < _tabs.Count ? _tabs[_active] : null;
 
     // The tab that Tab reaches: the selected one, or the first enabled one when none is selected.
     private TbTab? FocusableTab => ActiveTab is { Disabled: false } active ? active : _tabs.Find(tab => !tab.Disabled);
@@ -86,29 +92,31 @@
             // Before the tabs register there is nothing a removal could shift.
             if (ActiveIndex != _active && _tabs.Count > 0)
             {
+                _settled = ActiveTab;
                 _indexFromParent = true;
-                _ = ForgetIndexFromParentAsync();
             }
 
             _active = ActiveIndex;
         }
     }
 
-    // Yielding queues the reset behind the current render batch, in which removed tabs are disposed.
-    private async Task ForgetIndexFromParentAsync()
-    {
-        await Task.Yield();
-        _indexFromParent = false;
-    }
-
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The render that took the parent's index has added and removed its tabs by now, so the index can apply.
+        if (_indexFromParent)
+        {
+            _indexFromParent = false;
+            StateHasChanged();
+        }
+
         if (!firstRender)
         {
             return;
         }
 
+        // The script reports the order as it attaches, so an index waiting on that report waits through the attach.
+        _reportsOrder = true;
         try
         {
             var module = await Modules.ImportAsync("./_content/Trailblazor/tabs.js");
@@ -121,6 +129,7 @@
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachTabs", _list, _order);
             if (handle is null)
             {
+                StopWaitingForOrder();
                 return;
             }
 
@@ -131,10 +140,25 @@
             }
 
             _handle = handle;
+            // bUnit's loose mode hands back a stand-in whose calls return defaults, and a stand-in never reports.
+            if (!await handle.InvokeAsync<bool>("reportsOrder"))
+            {
+                StopWaitingForOrder();
+            }
         }
         catch (JSDisconnectedException)
         {
             // The circuit is gone, and the tabs went with it.
+        }
+    }
+
+    // Without the script no report comes, so an index waiting on one applies as it stands.
+    private void StopWaitingForOrder()
+    {
+        _reportsOrder = false;
+        if (_keepIndexOnReorder)
+        {
+            StateHasChanged();
         }
     }
 
@@ -150,6 +174,12 @@
     {
         var index = _tabs.IndexOf(tab);
         _tabs.Remove(tab);
+        // A removed tab can't stay selected while the parent's index settles.
+        if (tab == _settled)
+        {
+            _settled = null;
+        }
+
         // The tabs go away with the list, or the parent already chose the index for the tabs that remain.
         if (_disposed || _indexFromParent)
         {
@@ -198,6 +228,12 @@
         _keepIndexOnReorder = false;
         if (ordered.SequenceEqual(_tabs))
         {
+            // The index was waiting on this report, which shows the new tab really is last.
+            if (keepIndex)
+            {
+                StateHasChanged();
+            }
+
             return;
         }
 
