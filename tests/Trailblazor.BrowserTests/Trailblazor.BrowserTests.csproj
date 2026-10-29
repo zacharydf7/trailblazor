@@ -17,6 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Caps parallel test classes: the one shared test host slows under more load and timing tests flake. -->
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Microsoft.Playwright" />
     <Using Include="Microsoft.Playwright.Assertions" Static="true" />
