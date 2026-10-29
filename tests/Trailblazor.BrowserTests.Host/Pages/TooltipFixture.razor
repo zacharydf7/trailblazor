@@ -1,0 +1,11 @@
+@page "/tooltip"
+
+@* The trigger renders its own aria-describedby, which Blazor rewrites on each change. *@
+<TbTooltip Text="Saves a copy">
+    <button aria-describedby="@(_saved ? "saved-note" : null)" @onclick="() => _saved = true">Save</button>
+</TbTooltip>
+<p id="saved-note">Saved.</p>
+
+@code {
+    private bool _saved;
+}

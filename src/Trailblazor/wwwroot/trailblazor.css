@@ -1160,4 +1160,22 @@
         flex-wrap: wrap;
         gap: var(--tb-space-1) var(--tb-space-4);
     }
+
+    .tb-tooltip-anchor {
+        display: inline-flex;
+    }
+
+    /* The positioning script places the tooltip, so only its look is set here. */
+    .tb-tooltip {
+        max-width: 18rem;
+        margin: 0;
+        padding: var(--tb-space-1) var(--tb-space-2);
+        border: none;
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-text);
+        color: var(--tb-color-surface);
+        font-family: var(--tb-font-family);
+        font-size: var(--tb-font-size-xs);
+        line-height: var(--tb-line-height-normal);
+    }
 }

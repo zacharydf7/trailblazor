@@ -1,0 +1,88 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<span @ref="_anchor" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tooltip-anchor", Class)"
+      style="@Style">
+    @ChildContent
+    <span @ref="_tooltip" id="@_id" popover="manual" role="tooltip" data-part="tooltip" class="tb-tooltip">@Text</span>
+</span>
+
+@code {
+    private readonly string _id = $"tb-tooltip-{Guid.NewGuid():N}";
+    private ElementReference _anchor;
+    private ElementReference _tooltip;
+    private IJSObjectReference? _handle;
+    private bool _disposed;
+
+    /// <summary>The tooltip's text. It also becomes the trigger's accessible description.</summary>
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = "";
+
+    /// <summary>Which side of the trigger the tooltip appears on, read on the first render. It flips when there's no
+    /// room.</summary>
+    [Parameter]
+    public TooltipPlacement Placement { get; set; } = TooltipPlacement.Top;
+
+    /// <summary>The element the tooltip describes, usually a button.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/tooltip.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            var options = new AnchoredPositionOptions { Side = Side, Offset = 6 };
+            var handle = await module.InvokeAsync<IJSObjectReference?>("createTooltip", _anchor, _tooltip, options);
+            if (handle is null)
+            {
+                return;
+            }
+
+            if (_disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the tooltip went with it.
+        }
+    }
+
+    private AnchorSide Side => Placement switch
+    {
+        TooltipPlacement.Bottom => AnchorSide.Bottom,
+        TooltipPlacement.Start => AnchorSide.Start,
+        TooltipPlacement.End => AnchorSide.End,
+        _ => AnchorSide.Top,
+    };
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+    }
+}

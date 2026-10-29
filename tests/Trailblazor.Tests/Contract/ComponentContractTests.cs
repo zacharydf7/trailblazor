@@ -22,6 +22,8 @@ public class ComponentContractTests : BunitContext
     {
         Services.AddTrailblazor();
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        // Components that set up browser behavior after rendering call script the contract doesn't check.
+        JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
     public static TheoryData<Type> Components => new(typeof(TbComponentBase).Assembly.GetExportedTypes()
