@@ -64,7 +64,7 @@ public static class ExampleCatalog
         new("button", "Button", ExampleCategory.Actions,
             "Starts an action, in filled, outlined or text styles and every tone.", typeof(ButtonExample))
         {
-            Api = [typeof(TbButton)],
+            Api = [typeof(TbButton), typeof(ButtonClasses)],
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
             "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
@@ -99,7 +99,7 @@ public static class ExampleCatalog
         new("alert", "Alert", ExampleCategory.Feedback,
             "A message in the page, such as a warning or an error, that can be closed.", typeof(AlertExample))
         {
-            Api = [typeof(TbAlert)],
+            Api = [typeof(TbAlert), typeof(AlertClasses)],
         },
         new("progress", "Progress", ExampleCategory.Feedback,
             "Shows how far along work is, as a bar or a circle, or that it is still going.", typeof(ProgressExample))
@@ -109,32 +109,32 @@ public static class ExampleCatalog
         new("text-field", "Text field", ExampleCategory.Inputs,
             "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
         {
-            Api = [typeof(TbTextField<>)],
+            Api = [typeof(TbTextField<>), typeof(FieldClasses)],
         },
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.", typeof(NumberFieldExample))
         {
-            Api = [typeof(TbNumberField<>)],
+            Api = [typeof(TbNumberField<>), typeof(FieldClasses)],
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
         {
-            Api = [typeof(TbCheckbox<>)],
+            Api = [typeof(TbCheckbox<>), typeof(FieldClasses)],
         },
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.", typeof(SwitchExample))
         {
-            Api = [typeof(TbSwitch)],
+            Api = [typeof(TbSwitch), typeof(FieldClasses)],
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
         {
-            Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>)],
+            Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>), typeof(FieldClasses)],
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
         {
-            Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>)],
+            Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>), typeof(FieldClasses)],
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or focus.", typeof(TooltipExample))
