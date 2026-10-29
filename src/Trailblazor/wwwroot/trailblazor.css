@@ -1178,4 +1178,59 @@
         font-size: var(--tb-font-size-xs);
         line-height: var(--tb-line-height-normal);
     }
+
+    .tb-menu {
+        display: inline-flex;
+    }
+
+    /* The positioning script places the open menu, so only its look is set here. */
+    .tb-menu__list {
+        min-width: 10rem;
+        margin: 0;
+        padding: var(--tb-space-1);
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface-raised);
+        color: var(--tb-color-text);
+        box-shadow: var(--tb-shadow-md);
+    }
+
+    .tb-menu__list:popover-open {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .tb-menu__item {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        box-sizing: border-box;
+        min-height: 2rem;
+        width: 100%;
+        padding: var(--tb-space-1) var(--tb-space-3);
+        border: none;
+        border-radius: var(--tb-radius-sm);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: var(--tb-font-size-sm);
+        text-align: start;
+        cursor: pointer;
+    }
+
+    .tb-menu__item:hover,
+    .tb-menu__item:focus-visible {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-menu__item:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-menu__item[aria-disabled="true"] {
+        opacity: 0.55;
+        cursor: default;
+    }
 }

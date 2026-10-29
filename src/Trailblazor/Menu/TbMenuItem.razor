@@ -1,0 +1,33 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A disabled item stays focusable, as the menu pattern asks, but does nothing when chosen. *@
+<button @attributes="AdditionalAttributes" type="button" role="menuitem" tabindex="-1" style="@Style"
+        aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-menu__item", Class)"
+        @onclick="OnClickAsync">
+    @if (Icon is { } icon)
+    {
+        <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+    }
+    <span data-part="label">@ChildContent</span>
+</button>
+
+@code {
+    /// <summary>The item's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>An icon before the text.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Keeps the item in the menu but stops it from being chosen.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Raised when the item is chosen, by click, Enter or Space; the menu then closes.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    private Task OnClickAsync(MouseEventArgs args) => Disabled ? Task.CompletedTask : OnClick.InvokeAsync(args);
+}

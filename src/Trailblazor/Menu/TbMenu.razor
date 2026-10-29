@@ -1,0 +1,103 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+@* popovertarget opens the menu natively before the script attaches; the script adds keys and aria-expanded. *@
+<div @ref="_root" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-menu", Class)" style="@Style">
+    @if (Icon is { } icon)
+    {
+        <TbIconButton Icon="icon" AriaLabel="@Label" id="@TriggerId" popovertarget="@MenuId" aria-haspopup="menu"
+                      aria-controls="@MenuId" data-part="trigger" />
+    }
+    else
+    {
+        <TbButton Variant="Variant" id="@TriggerId" popovertarget="@MenuId" aria-haspopup="menu"
+                  aria-controls="@MenuId" data-part="trigger">
+            <ChildContent>@Label</ChildContent>
+            <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
+        </TbButton>
+    }
+    <div @ref="_menu" id="@MenuId" popover="auto" role="menu" aria-labelledby="@TriggerId" data-part="menu"
+         class="tb-menu__list">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    private readonly string _id = $"tb-menu-{Guid.NewGuid():N}";
+    private ElementReference _root;
+    private ElementReference _menu;
+    private IJSObjectReference? _handle;
+    private bool _disposed;
+
+    /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>Shows an icon button as the trigger instead of a text button.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>How the text trigger is drawn. Defaults to <see cref="Trailblazor.Variant.Outlined"/>.</summary>
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Outlined;
+
+    /// <summary>The menu's <see cref="TbMenuItem"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string TriggerId => $"{_id}-trigger";
+
+    private string MenuId => $"{_id}-list";
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/menu.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            var options = new AnchoredPositionOptions { Side = AnchorSide.Bottom, Align = AnchorAlign.Start, Offset = 4 };
+            var handle = await module.InvokeAsync<IJSObjectReference?>("createMenu", _root, _menu, options);
+            if (handle is null)
+            {
+                return;
+            }
+
+            if (_disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the menu went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+    }
+}

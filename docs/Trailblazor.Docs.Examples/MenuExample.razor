@@ -1,0 +1,20 @@
+@using Trailblazor.Docs.Examples
+
+<TbStack Row Gap="4" Align="Align.Center">
+    <TbMenu Label="Actions">
+        <TbMenuItem Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Duplicate")">Duplicate</TbMenuItem>
+        <TbMenuItem OnClick="@(() => _last = "Rename")">Rename</TbMenuItem>
+        <TbMenuItem Disabled OnClick="@(() => _last = "Archive")">Archive</TbMenuItem>
+        <TbMenuItem Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete")">Delete</TbMenuItem>
+    </TbMenu>
+    <TbMenu Label="More options" Icon="ExampleIcons.Plus">
+        <TbMenuItem OnClick="@(() => _last = "Export")">Export</TbMenuItem>
+        <TbMenuItem OnClick="@(() => _last = "Print")">Print</TbMenuItem>
+    </TbMenu>
+    <TbButton Variant="Variant.Text">After the menus</TbButton>
+</TbStack>
+<output data-testid="last-action">@_last</output>
+
+@code {
+    private string _last = "";
+}
