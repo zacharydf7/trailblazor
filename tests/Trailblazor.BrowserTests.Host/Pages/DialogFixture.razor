@@ -8,6 +8,9 @@
     <TbButton OnClick="LockedAsync">Locked</TbButton>
     <TbButton OnClick="NestedAsync">Nested</TbButton>
     <TbButton OnClick="PanelAsync">Panel</TbButton>
+    <TbButton OnClick="() => PlacedAsync(DialogPosition.BottomEnd, modal: false)">Docked</TbButton>
+    <TbButton OnClick="() => PlacedAsync(DialogPosition.Top)">Top</TbButton>
+    <TbButton OnClick="() => PlacedAsync(DialogPosition.Start)">Start</TbButton>
     <TbButton OnClick="() => HintedAsync(locked: false)">Hinted</TbButton>
     <TbButton OnClick="() => HintedAsync(locked: true)">Hinted locked</TbButton>
     <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
@@ -49,6 +52,10 @@
         var result = await Dialogs.ShowAsync<HintedDialog, string>("Hinted", options: options);
         _result = result.Confirmed ? "hinted saved" : "hinted cancelled";
     }
+
+    private async Task PlacedAsync(DialogPosition position, bool modal = true) =>
+        await Dialogs.ShowAsync<NameDialog, string>($"Placed {position}",
+            options: new() { Position = position, Modal = modal });
 
     private async Task PanelAsync()
     {

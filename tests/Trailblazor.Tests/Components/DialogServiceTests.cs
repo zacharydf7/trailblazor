@@ -29,6 +29,17 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ShowAsync_ShouldMarkTheDialogWithItsPosition_WhenGivenOne()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting",
+            options: new() { Position = DialogPosition.BottomEnd });
+
+        Assert.Contains("tb-dialog--position-bottomend", host.WaitForElement("dialog").ClassList);
+    }
+
+    [Fact]
     public void ShowAsync_ShouldTakeTheAppWideDismissalSettings_WhenItsOptionsLeaveThemUnset()
     {
         Services.Configure<TrailblazorOptions>(options => options.Dialogs.DismissOnBackdrop = false);

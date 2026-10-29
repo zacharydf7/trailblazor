@@ -37,7 +37,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.AddAttribute(3, "aria-labelledby", options.ShowHeader ? TitleId : null);
         builder.AddAttribute(4, "aria-label", options.ShowHeader ? null : Dialog.Title);
         builder.AddAttribute(5, "tabindex", "-1");
-        builder.AddAttribute(6, "class", ClassNames.Join("tb-dialog", ClassNames.Modifier("tb-dialog", options.Size)));
+        builder.AddAttribute(6, "class", ClassNames.Join("tb-dialog", ClassNames.Modifier("tb-dialog", options.Size),
+            ClassNames.Modifier("tb-dialog", "position", options.Position)));
         builder.AddAttribute(7, "role", Dialog.IsAlert ? "alertdialog" : null);
         builder.AddAttribute(8, "aria-describedby", Dialog.IsAlert ? Dialog.DescriptionId : null);
         builder.AddElementReferenceCapture(9, element => _element = element);

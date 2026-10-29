@@ -18,6 +18,9 @@ public sealed record DialogOptions
     /// <summary>How wide the dialog grows. Defaults to <see cref="DialogSize.Medium"/>.</summary>
     public DialogSize Size { get; init; } = DialogSize.Medium;
 
+    /// <summary>Where the dialog sits in the window. Defaults to <see cref="DialogPosition.Center"/>.</summary>
+    public DialogPosition Position { get; init; } = DialogPosition.Center;
+
     /// <summary>Shows the header with the title. Without it, the title is still the dialog's accessible name.
     /// </summary>
     public bool ShowHeader { get; init; } = true;

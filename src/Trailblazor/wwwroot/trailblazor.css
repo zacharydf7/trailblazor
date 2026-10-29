@@ -1315,6 +1315,31 @@
         background: oklch(0 0 0 / 0.45);
     }
 
+    /* The browser centers a dialog with auto margins; a fixed margin on one side moves it to that edge. */
+    .tb-dialog--position-top,
+    .tb-dialog--position-topstart,
+    .tb-dialog--position-topend {
+        margin-block: var(--tb-space-4) auto;
+    }
+
+    .tb-dialog--position-bottom,
+    .tb-dialog--position-bottomstart,
+    .tb-dialog--position-bottomend {
+        margin-block: auto var(--tb-space-4);
+    }
+
+    .tb-dialog--position-start,
+    .tb-dialog--position-topstart,
+    .tb-dialog--position-bottomstart {
+        margin-inline: var(--tb-space-4) auto;
+    }
+
+    .tb-dialog--position-end,
+    .tb-dialog--position-topend,
+    .tb-dialog--position-bottomend {
+        margin-inline: auto var(--tb-space-4);
+    }
+
     .tb-dialog--small {
         --tb-dialog-width: 24rem;
     }
@@ -1334,6 +1359,7 @@
     .tb-dialog--full {
         --tb-dialog-width: 100vw;
         max-width: 100vw;
+        margin: 0;
         height: 100vh;
         max-height: 100vh;
         border-radius: 0;

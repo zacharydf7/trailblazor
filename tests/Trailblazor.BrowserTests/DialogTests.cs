@@ -2,6 +2,9 @@ namespace Trailblazor.BrowserTests;
 
 public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    // A positioned dialog's distance from the window edge, --tb-space-4.
+    private const double EdgeGap = 16;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFocusTheFirstFieldAndKeepFocusOffThePage_WhenModal(string browser)
     {
@@ -186,6 +189,43 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldSitInTheBottomEndCorner_WhenPositionedThereWithoutAModal(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Docked" }).ClickAsync();
+
+        var box = await BoxAsync(page, "Placed BottomEnd");
+
+        var (width, height) = await ViewportAsync(page);
+        Assert.Equal(width - EdgeGap, box.X + box.Width, tolerance: 1);
+        Assert.Equal(height - EdgeGap, box.Y + box.Height, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldSitAtTheTopCentered_WhenPositionedAtTheTop(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Top", Exact = true }).ClickAsync();
+
+        var box = await BoxAsync(page, "Placed Top");
+
+        Assert.Equal(EdgeGap, box.Y, tolerance: 1);
+        Assert.Equal((await ViewportAsync(page)).Width / 2, box.X + box.Width / 2, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldSitAtTheRightEdge_WhenPositionedAtTheStartOfARightToLeftPage(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Start", Exact = true }).ClickAsync();
+
+        var box = await BoxAsync(page, "Placed Start");
+
+        Assert.Equal((await ViewportAsync(page)).Width - EdgeGap, box.X + box.Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Confirm_ShouldReturnTrue_WhenTheConfirmButtonIsChosen(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");
@@ -197,5 +237,20 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Delete" }).ClickAsync();
 
         await Expect(page.GetByTestId("result")).ToHaveTextAsync("deleted");
+    }
+
+    // A dialog sits within the page's own area, which leaves out a scrollbar that takes up room.
+    private static async Task<(double Width, double Height)> ViewportAsync(IPage page)
+    {
+        var size = await page.EvaluateAsync<double[]>(
+            "() => [document.documentElement.clientWidth, document.documentElement.clientHeight]");
+        return (size[0], size[1]);
+    }
+
+    private static async Task<LocatorBoundingBoxResult> BoxAsync(IPage page, string title)
+    {
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = title });
+        await Expect(dialog).ToBeVisibleAsync();
+        return (await dialog.BoundingBoxAsync())!;
     }
 }
