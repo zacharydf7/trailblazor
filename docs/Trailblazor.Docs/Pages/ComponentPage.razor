@@ -32,6 +32,7 @@
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" class="docs-api__name">
             <code>@type.Name</code>
         </TbText>
+        <TbText class="docs-api__summary">@type.Summary</TbText>
         @if (type.Members.Count == 0)
         {
             <TbText>No parameters of its own.</TbText>

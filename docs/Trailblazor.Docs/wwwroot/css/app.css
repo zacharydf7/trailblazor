@@ -161,6 +161,10 @@ a:focus-visible {
     margin-block: var(--tb-space-6) var(--tb-space-2);
 }
 
+.docs-api__summary {
+    margin-block-end: var(--tb-space-2);
+}
+
 .docs-api {
     overflow-x: auto;
     border: 1px solid var(--tb-border-subtle);

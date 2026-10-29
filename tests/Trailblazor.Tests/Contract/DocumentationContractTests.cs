@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor.Tests.Contract;
 
@@ -30,12 +29,8 @@ public class DocumentationContractTests
     private static IEnumerable<string> DocumentationIds(Type type)
     {
         var name = type.FullName!.Replace('+', '.');
-        // A .razor component's class summary needs a partial .cs file of its own; the docs catalog describes each
-        // component until those exist.
-        if (!type.IsAssignableTo(typeof(IComponent)))
-        {
-            yield return $"T:{name}";
-        }
+        // A .razor component's class summary lives in a partial .cs file beside it.
+        yield return $"T:{name}";
 
         if (type.IsEnum)
         {

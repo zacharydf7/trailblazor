@@ -15,6 +15,14 @@ public class ApiDocsTests
         Assert.All(api.Members, member => Assert.NotEmpty(member.Description));
     }
 
+    [Theory, MemberData(nameof(Types))]
+    public void Describe_ShouldGiveTheTypeASummary_WhenGivenATypeTheDocsTable(string type)
+    {
+        var api = ApiDocs.Describe(Type.GetType(type)!);
+
+        Assert.NotEmpty(api.Summary);
+    }
+
     [Fact]
     public void Describe_ShouldListAParameterWithItsTypeDefaultAndDescription_WhenGivenAComponent()
     {

@@ -81,6 +81,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "components/button");
 
+        await Expect(page.Locator(".docs-api__summary").First).ToHaveTextAsync(new Regex("^A button with text"));
         var table = page.GetByRole(AriaRole.Region, new() { Name = "TbButton" });
         var variant = table.GetByRole(AriaRole.Row)
             .Filter(new() { Has = page.GetByRole(AriaRole.Rowheader, new() { Name = "Variant" }) });

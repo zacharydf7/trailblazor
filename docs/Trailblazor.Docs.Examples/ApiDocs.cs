@@ -8,7 +8,7 @@ namespace Trailblazor.Docs.Examples;
 
 public sealed record ApiMember(string Name, string Type, string Default, string Description, bool Required);
 
-public sealed record ApiType(string Name, IReadOnlyList<ApiMember> Members);
+public sealed record ApiType(string Name, string Summary, IReadOnlyList<ApiMember> Members);
 
 // Builds the docs site's API tables from the library's types and its XML documentation.
 public static partial class ApiDocs
@@ -37,7 +37,8 @@ public static partial class ApiDocs
             .OrderBy(property => Depth(property.DeclaringType!))
             .ThenBy(property => property.MetadataToken);
         var defaults = CreateForDefaults(type);
-        return new(TypeName(type), [.. properties.Select(property => Member(property, defaults))]);
+        return new(TypeName(type), Summary($"T:{type.FullName}"),
+            [.. properties.Select(property => Member(property, defaults))]);
     }
 
     private static ApiMember Member(PropertyInfo property, object defaults)
@@ -103,10 +104,11 @@ public static partial class ApiDocs
     {
         var declaring = property.DeclaringType!;
         var owner = declaring.IsGenericType ? declaring.GetGenericTypeDefinition() : declaring;
-        return Summaries.Value.TryGetValue($"P:{owner.FullName}.{property.Name}", out var summary)
-            ? Text(summary)
-            : "";
+        return Summary($"P:{owner.FullName}.{property.Name}");
     }
+
+    private static string Summary(string member) =>
+        Summaries.Value.TryGetValue(member, out var summary) ? Text(summary) : "";
 
     // Turns a summary into plain text: a cref keeps its last two names, such as Variant.Outlined.
     private static string Text(XElement summary)
