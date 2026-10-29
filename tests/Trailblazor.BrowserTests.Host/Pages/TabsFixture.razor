@@ -15,6 +15,53 @@
     <TbTab Text="Billing">Billing panel</TbTab>
 </TbTabs>
 
+<TbTabs AriaLabel="Reports" @bind-ActiveIndex="_report">
+    <TbTab Text="Daily">Daily panel</TbTab>
+    @if (_weekly)
+    {
+        <TbTab Text="Weekly">Weekly panel</TbTab>
+    }
+    <TbTab Text="Monthly">Monthly panel</TbTab>
+</TbTabs>
+<output data-testid="report">@_report</output>
+<button type="button" @onclick="() => _weekly = true">Add weekly</button>
+<button type="button" @onclick="() => (_weekly, _report) = (true, 1)">Open weekly</button>
+
+@* Selecting Pro reveals Plus before it; Pro's nested tabs leave anchors in the outer tabs. *@
+<TbTabs AriaLabel="Plans" @bind-ActiveIndex="_plan">
+    <TbTab Text="Basic">Basic panel</TbTab>
+    @if (_plan > 0)
+    {
+        <TbTab Text="Plus">Plus panel</TbTab>
+    }
+    <TbTab Text="Pro">
+        <TbTabs AriaLabel="Pro features">
+            <TbTab Text="Seats">Seats panel</TbTab>
+        </TbTabs>
+    </TbTab>
+</TbTabs>
+
+<TbTabs AriaLabel="Regions" @bind-ActiveIndex="_region">
+    @foreach (var region in _regions)
+    {
+        <TbTab @key="region" Text="@region">@region panel</TbTab>
+    }
+</TbTabs>
+<output data-testid="region">@_region</output>
+<button type="button" @onclick="OpenSouth">Open south</button>
+<button type="button" @onclick="() => _regions.Sort()">Sort regions</button>
+
 @code {
     private int _section;
+    private int _report;
+    private bool _weekly;
+    private int _plan;
+    private int _region;
+    private readonly List<string> _regions = ["North", "West"];
+
+    private void OpenSouth()
+    {
+        _regions.Add("South");
+        _region = _regions.Count - 1;
+    }
 }

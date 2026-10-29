@@ -2,6 +2,8 @@
 @inherits TbComponentBase
 @implements IDisposable
 
+@* Marks the tab's place in the markup, which the tabs script reports so the headers can follow it. *@
+<span hidden data-part="tab-anchor" data-tab="@TabId"></span>
 @if (IsPanelRendered)
 {
     <div @attributes="AdditionalAttributes" role="tabpanel" id="@PanelId" aria-labelledby="@TabId" tabindex="0"

@@ -2,7 +2,8 @@ namespace Trailblazor.BrowserTests;
 
 public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    private static ILocator Tab(IPage page, string name) => page.GetByRole(AriaRole.Tab, new() { Name = name });
+    private static ILocator Tab(IPage page, string name) =>
+        page.GetByRole(AriaRole.Tab, new() { Name = name, Exact = true });
 
     // The arrow keys work once the tabs script has attached, which is when it sets aria-orientation.
     private static async Task WaitForKeysAsync(IPage page, string list) =>
@@ -84,5 +85,70 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Tab");
 
         await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Overview" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldListALateTabInMarkupOrderAndKeepTheSelection_WhenItRendersAfterOthers(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs");
+        await WaitForKeysAsync(page, "Reports");
+        await Tab(page, "Monthly").ClickAsync();
+        await Expect(page.GetByTestId("report")).ToHaveTextAsync("1");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add weekly" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Reports" }).GetByRole(AriaRole.Tab))
+            .ToHaveTextAsync(["Daily", "Weekly", "Monthly"]);
+        await Expect(page.GetByTestId("report")).ToHaveTextAsync("2");
+        await Expect(Tab(page, "Monthly")).ToHaveAttributeAsync("aria-selected", "true");
+        await Tab(page, "Daily").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Tab(page, "Weekly")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldKeepTheSelectedTab_WhenTabsAreSortedAfterTheParentOpenedANewLastTab(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs");
+        await WaitForKeysAsync(page, "Regions");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open south" }).ClickAsync();
+        await Expect(Tab(page, "South")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Sort regions" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Regions" }).GetByRole(AriaRole.Tab))
+            .ToHaveTextAsync(["North", "South", "West"]);
+        await Expect(page.GetByTestId("region")).ToHaveTextAsync("1");
+        await Expect(Tab(page, "South")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldKeepFocusOnTheSameTab_WhenALateTabRendersBeforeIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs");
+        await WaitForKeysAsync(page, "Plans");
+        await Tab(page, "Basic").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Plans" }).GetByRole(AriaRole.Tab))
+            .ToHaveTextAsync(["Basic", "Plus", "Pro"]);
+        await Expect(Tab(page, "Pro")).ToBeFocusedAsync();
+        await Expect(Tab(page, "Pro")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldSelectTheTabTheParentChose_WhenItAddsTheTabAndSetsTheIndexTogether(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs");
+        await WaitForKeysAsync(page, "Reports");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open weekly" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Reports" }).GetByRole(AriaRole.Tab))
+            .ToHaveTextAsync(["Daily", "Weekly", "Monthly"]);
+        await Expect(Tab(page, "Weekly")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Weekly" })).ToHaveTextAsync("Weekly panel");
+        await Expect(page.GetByTestId("report")).ToHaveTextAsync("1");
     }
 }

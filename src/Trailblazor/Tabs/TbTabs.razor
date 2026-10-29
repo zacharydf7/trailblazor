@@ -12,7 +12,8 @@
         @foreach (var tab in _tabs)
         {
             var selected = tab == ActiveTab;
-            <button type="button" role="tab" id="@tab.TabId" aria-selected="@(selected ? "true" : "false")"
+            @* Keyed, so a reordered header keeps its focus. *@
+            <button @key="tab" type="button" role="tab" id="@tab.TabId" aria-selected="@(selected ? "true" : "false")"
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
                     class="tb-tabs__tab" @onclick="() => ActivateAsync(tab)">@tab.Text</button>
@@ -26,18 +27,22 @@
     private readonly List<TbTab> _tabs = [];
     private ElementReference _list;
     private IJSObjectReference? _handle;
+    private DotNetObjectReference<TabOrder>? _order;
     private bool _disposed;
     private int _active;
     private int? _lastActiveIndex;
     private bool _indexFromParent;
+    private bool _keepIndexOnReorder;
 
-    /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>.</summary>
+    /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. An index set
+    /// along with a tab that renders after the others applies once the browser reports the tabs' order, so until
+    /// then it counts the new tab as the last.</summary>
     [Parameter]
     public int ActiveIndex { get; set; }
 
-    /// <summary>Raised when the user selects another tab, or when removing a tab before the selected one changes its
-    /// position. TbTabs keeps the same tab selected, so a parent that removes tabs needn't adjust the index itself.
-    /// </summary>
+    /// <summary>Raised when the user selects another tab, or when adding or removing a tab before the selected one
+    /// changes its position. TbTabs keeps the same tab selected, so a parent that adds or removes tabs needn't adjust
+    /// the index itself.</summary>
     [Parameter]
     public EventCallback<int> ActiveIndexChanged { get; set; }
 
@@ -60,7 +65,8 @@
     public string? AriaLabel { get; set; }
 
     /// <summary>The <see cref="TbTab"/>s. A tab that first renders after the others, such as one inside an
-    /// <c>@if</c> that becomes true later, goes to the end of the list.</summary>
+    /// <c>@if</c> that becomes true later, takes its place in the markup once the browser reports it, a moment
+    /// later. Rendered statically, it goes to the end of the list.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -76,6 +82,7 @@
         if (ActiveIndex != _lastActiveIndex)
         {
             _lastActiveIndex = ActiveIndex;
+            _keepIndexOnReorder = false;
             // Before the tabs register there is nothing a removal could shift.
             if (ActiveIndex != _active && _tabs.Count > 0)
             {
@@ -110,7 +117,8 @@
                 return;
             }
 
-            var handle = await module.InvokeAsync<IJSObjectReference?>("attachTabs", _list);
+            _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync));
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachTabs", _list, _order);
             if (handle is null)
             {
                 return;
@@ -133,6 +141,8 @@
     internal void Add(TbTab tab)
     {
         _tabs.Add(tab);
+        // A parent that sets the index as it adds a tab counts in markup order, which the browser reports later.
+        _keepIndexOnReorder = _indexFromParent;
         StateHasChanged();
     }
 
@@ -152,7 +162,7 @@
         if (active != _active)
         {
             _active = active;
-            _ = InvokeAsync(ReportRemovalAsync);
+            _ = InvokeAsync(ReportMovedIndexAsync);
         }
 
         StateHasChanged();
@@ -162,7 +172,7 @@
     internal void Refresh() => StateHasChanged();
 
     // Runs outside any event handler, so a failing callback goes to the renderer instead of being lost.
-    private async Task ReportRemovalAsync()
+    private async Task ReportMovedIndexAsync()
     {
         try
         {
@@ -174,6 +184,37 @@
         }
     }
 
+    // The tabs register in the order they first render, so the browser reports their order in the markup.
+    private async Task ReorderAsync(string[] tabIds)
+    {
+        var ordered = tabIds.Select(id => _tabs.Find(tab => tab.TabId == id)).OfType<TbTab>().ToList();
+        // A tab added since the report was sent is missing from it, and the script reports again once it renders.
+        if (ordered.Count != _tabs.Count)
+        {
+            return;
+        }
+
+        var keepIndex = _keepIndexOnReorder;
+        _keepIndexOnReorder = false;
+        if (ordered.SequenceEqual(_tabs))
+        {
+            return;
+        }
+
+        var active = ActiveTab;
+        _tabs.Clear();
+        _tabs.AddRange(ordered);
+        // As with a removal, the same tab stays selected unless the parent chose the index along with the new tab.
+        var index = keepIndex || active is null ? _active : _tabs.IndexOf(active);
+        var moved = index != _active;
+        _active = index;
+        StateHasChanged();
+        if (moved)
+        {
+            await ReportMovedIndexAsync();
+        }
+    }
+
     private async Task ActivateAsync(TbTab tab)
     {
         if (tab == ActiveTab)
@@ -181,6 +222,7 @@
             return;
         }
 
+        _keepIndexOnReorder = false;
         _active = _tabs.IndexOf(tab);
         await ActiveIndexChanged.InvokeAsync(_active);
     }
@@ -193,5 +235,7 @@
         {
             await _handle.DisposeHandleAsync();
         }
+
+        _order?.Dispose();
     }
 }

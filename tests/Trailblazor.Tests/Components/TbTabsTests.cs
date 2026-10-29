@@ -2,6 +2,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests.Components;
 
@@ -245,6 +246,93 @@ public class TbTabsTests : BunitContext
         await DisposeComponentsAsync();
 
         handle.VerifyInvoke("dispose");
+    }
+
+    [Fact]
+    public async Task Reorder_ShouldMoveTheHeadersAndKeepTheSelectedTab_WhenTheBrowserReportsTheMarkupOrder()
+    {
+        var order = SetUpOrder();
+        int? selected = null;
+        var cut = RenderTabs(active: 1, changed: index => selected = index);
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, WithIntroAfterOverview));
+        var ids = cut.FindAll("[role=tab]").Select(tab => tab.Id!).ToArray();
+
+        await cut.InvokeAsync(() => order().Value.OnReorder([ids[0], ids[3], ids[1], ids[2]]));
+
+        Assert.Equal(["Overview", "Intro", "Specs", "Reviews"],
+            cut.FindAll("[role=tab]").Select(tab => tab.TextContent));
+        Assert.Equal(2, selected);
+        Assert.Equal("Specs panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Reorder_ShouldKeepTheParentsIndex_WhenTheParentSetsItAlongWithTheNewTab()
+    {
+        var order = SetUpOrder();
+        int? selected = null;
+        var cut = RenderTabs(active: 2, changed: index => selected = index);
+        cut.Render(parameters => parameters.Add(tabs => tabs.ActiveIndex, 1)
+            .Add(tabs => tabs.ChildContent, WithIntroAfterOverview));
+        var ids = cut.FindAll("[role=tab]").Select(tab => tab.Id!).ToArray();
+
+        await cut.InvokeAsync(() => order().Value.OnReorder([ids[0], ids[3], ids[1], ids[2]]));
+
+        Assert.Equal("Intro panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+        Assert.Null(selected);
+    }
+
+    [Fact]
+    public async Task Reorder_ShouldKeepTheSelectedTab_WhenTheParentsNewTabWasAlreadyReportedInPlace()
+    {
+        var order = SetUpOrder();
+        int? selected = null;
+        var cut = RenderTabs(changed: index => selected = index);
+        cut.Render(parameters => parameters.Add(tabs => tabs.ActiveIndex, 3).Add(tabs => tabs.ChildContent,
+            (RenderFragment)(builder =>
+            {
+                AddTab(builder, 0, "Overview", "Overview panel");
+                AddTab(builder, 10, "Specs", "Specs panel");
+                AddTab(builder, 20, "Reviews", "Reviews panel");
+                AddTab(builder, 30, "Intro", "Intro panel");
+            })));
+        var ids = cut.FindAll("[role=tab]").Select(tab => tab.Id!).ToArray();
+        await cut.InvokeAsync(() => order().Value.OnReorder(ids));
+
+        await cut.InvokeAsync(() => order().Value.OnReorder([ids[3], ids[0], ids[1], ids[2]]));
+
+        Assert.Equal(0, selected);
+        Assert.Equal("Intro panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Reorder_ShouldKeepTheHeaders_WhenATabRegisteredAfterTheReportWasSent()
+    {
+        var order = SetUpOrder();
+        var cut = RenderTabs();
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, WithIntroAfterOverview));
+        var ids = cut.FindAll("[role=tab]").Select(tab => tab.Id!).ToArray();
+
+        await cut.InvokeAsync(() => order().Value.OnReorder([ids[2], ids[1], ids[0]]));
+
+        Assert.Equal(["Overview", "Specs", "Reviews", "Intro"],
+            cut.FindAll("[role=tab]").Select(tab => tab.TextContent));
+    }
+
+    // The tabs script's callback, once the tabs have attached it.
+    private Func<DotNetObjectReference<TabOrder>> SetUpOrder()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/tabs.js");
+        module.SetupModule("attachTabs", _ => true);
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        return () => (DotNetObjectReference<TabOrder>)module.Invocations["attachTabs"].Single().Arguments[1]!;
+    }
+
+    private static void WithIntroAfterOverview(RenderTreeBuilder builder)
+    {
+        AddTab(builder, 0, "Overview", "Overview panel");
+        AddTab(builder, 5, "Intro", "Intro panel");
+        AddTab(builder, 10, "Specs", "Specs panel");
+        AddTab(builder, 20, "Reviews", "Reviews panel");
     }
 
     private IRenderedComponent<TbTabs> RenderTabs(int active = 0, Action<int>? changed = null, bool keepAlive = false,
