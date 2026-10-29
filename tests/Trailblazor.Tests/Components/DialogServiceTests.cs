@@ -129,7 +129,9 @@ public class DialogServiceTests : BunitContext
     [Fact]
     public async Task Dispose_ShouldCleanUpTheBrowserDialog_WhenTheHostGoesAwayWithADialogOpen()
     {
-        var handle = JSInterop.SetupModule("./_content/Trailblazor/dialog.js").SetupModule("openDialog", _ => true);
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
         handle.SetupVoid("dispose").SetVoidResult();
         var host = Render<DialogHost>();
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting");
@@ -143,7 +145,9 @@ public class DialogServiceTests : BunitContext
     [Fact]
     public async Task CloseAsync_ShouldStillCompleteAndRemoveTheDialog_WhenTheBrowserCloseFails()
     {
-        var handle = JSInterop.SetupModule("./_content/Trailblazor/dialog.js").SetupModule("openDialog", _ => true);
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
         handle.SetupVoid("close").SetException(new Microsoft.JSInterop.JSException("The browser refused."));
         var host = Render<DialogHost>();
         var showing = Dialogs.ShowAsync<GreetingDialog, string>("Greeting", p => p.Set(d => d.Name, "Ada"));

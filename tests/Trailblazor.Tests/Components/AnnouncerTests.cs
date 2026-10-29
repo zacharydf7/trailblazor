@@ -82,6 +82,24 @@ public class AnnouncerTests : BunitContext
             dialogs.FindAll("dialog [role=status] p").Select(p => p.TextContent)));
     }
 
+    [Fact]
+    public void Announcements_ShouldWaitForTheOpenDialogsNextFrame_WhenMadeAsItOpens()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupModule("openDialog", _ => true);
+        var frame = module.SetupVoid("nextFrame");
+        var dialogs = Render<DialogHost>();
+
+        _ = Services.GetRequiredService<IDialogService>().ShowAsync<EmptyDialog, bool>("Edit");
+        Announcer.Polite("Draft restored");
+        dialogs.WaitForAssertion(() => Assert.Single(frame.Invocations));
+        Assert.Empty(dialogs.FindAll("dialog [role=status] p"));
+        frame.SetVoidResult();
+
+        dialogs.WaitForAssertion(() => Assert.Equal(["Draft restored"],
+            dialogs.FindAll("dialog [role=status] p").Select(p => p.TextContent)));
+    }
+
     private sealed class EmptyDialog : TbDialog<bool>
     {
     }

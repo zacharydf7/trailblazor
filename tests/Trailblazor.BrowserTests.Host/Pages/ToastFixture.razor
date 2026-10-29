@@ -11,11 +11,18 @@
         Quick
     </TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<ToastingDialog, bool>("Toasting")'>Dialog</TbButton>
+    <TbButton OnClick="Restore">Restore</TbButton>
 </TbStack>
 <output data-testid="result">@_result</output>
 
 @code {
     private string _result = "";
+
+    private void Restore()
+    {
+        _ = Dialogs.ShowAsync<ToastingDialog, bool>("Toasting");
+        Toasts.Show("Draft restored");
+    }
 
     private void Delete() => Toasts.Show("Deleted",
         options: new() { Action = new("Undo", EventCallback.Factory.Create(this, () => _result = "undone")) });

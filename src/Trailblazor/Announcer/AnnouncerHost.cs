@@ -8,6 +8,9 @@ namespace Trailblazor;
 // messages announced while its dialog was the topmost modal. C#, so it can stay internal.
 internal sealed class AnnouncerHost : ComponentBase, IDisposable
 {
+    // A modal's live regions join the accessibility tree as it opens, and one that joins holding text isn't spoken.
+    private bool _shown;
+
     // The modal dialog this host sits in, or null for the one in TbRoot.
     [Parameter]
     public DialogReference? Dialog { get; set; }
@@ -16,6 +19,12 @@ internal sealed class AnnouncerHost : ComponentBase, IDisposable
     private Announcer Announcer { get; set; } = default!;
 
     protected override void OnInitialized() => Announcer.Changed += OnChanged;
+
+    internal void Show()
+    {
+        _shown = true;
+        StateHasChanged();
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -34,7 +43,8 @@ internal sealed class AnnouncerHost : ComponentBase, IDisposable
         builder.AddAttribute(sequence + 1, "role", role);
         builder.AddAttribute(sequence + 2, "aria-live", live);
         builder.AddAttribute(sequence + 3, "data-part", live);
-        foreach (var announcement in messages.Where(announcement => announcement.Dialog == Dialog))
+        foreach (var announcement in messages.Where(announcement => (Dialog is null || _shown)
+            && announcement.Dialog == Dialog))
         {
             builder.OpenElement(sequence + 4, "p");
             builder.SetKey(announcement.Id);

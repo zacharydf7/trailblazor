@@ -132,6 +132,29 @@ public class ToastTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Announcer_ShouldOpenTheDialogWithAnEmptyRegion_WhenAMessageComesAsItOpens(string browser)
+    {
+        var page = await OpenAsync(browser, "/toasts");
+        // Records each dialog's polite region in the frame after it opens, when it joins the accessibility tree.
+        await page.EvaluateAsync("""
+            () => {
+                window.politeAtOpen = [];
+                new MutationObserver(records => records
+                    .filter(record => record.target.open)
+                    .forEach(record => requestAnimationFrame(() => window.politeAtOpen.push(
+                        record.target.querySelector('[data-part=announcer] [role=status]')?.textContent ?? null))))
+                    .observe(document.body, { attributeFilter: ['open'], subtree: true });
+            }
+            """);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Restore" }).ClickAsync();
+
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Toasting" });
+        await Expect(dialog.Locator("[data-part=announcer] [role=status]")).ToHaveTextAsync("Draft restored");
+        Assert.Equal([""], await page.EvaluateAsync<string?[]>("() => window.politeAtOpen"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toaster_ShouldHandFocusToTheDialog_WhenEscapeIsPressedOnAToastReachedWithoutF8(string browser)
     {
         var page = await OpenAsync(browser, "/toasts");

@@ -129,3 +129,8 @@ export function openDialog(dialog, dotNet, options) {
         },
     };
 }
+
+// Resolves once the browser has drawn a frame, by which time a dialog it just opened is in the accessibility tree.
+export function nextFrame() {
+    return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}

@@ -13,6 +13,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private ElementReference _element;
     private DotNetObjectReference<DialogFrame>? _self;
     private IJSObjectReference? _handle;
+    private AnnouncerHost? _announcer;
     private bool _disposed;
 
     [Parameter, EditorRequired]
@@ -88,6 +89,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             builder.CloseComponent();
             builder.OpenComponent<AnnouncerHost>(39);
             builder.AddComponentParameter(40, nameof(AnnouncerHost.Dialog), Dialog);
+            builder.AddComponentReferenceCapture(41, host => _announcer = (AnnouncerHost)host);
             builder.CloseComponent();
         }
 
@@ -111,19 +113,25 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
             _self = DotNetObjectReference.Create(this);
             var handle = await module.InvokeAsync<IJSObjectReference?>("openDialog", _element, _self, Dialog.Options);
-            if (handle is null)
+            if (handle is not null)
             {
-                return;
+                if (_disposed)
+                {
+                    await handle.DisposeHandleAsync();
+                    return;
+                }
+
+                _handle = handle;
+                Dialog.CloseInBrowserAsync = CloseInBrowserAsync;
             }
 
-            if (_disposed)
+            // The open dialog joins the accessibility tree with the next frame, so its live regions wait for that.
+            if (_announcer is not null)
             {
-                await handle.DisposeHandleAsync();
-                return;
+                // A hidden tab draws no frames, so this waits as long as it takes rather than timing out.
+                await module.InvokeVoidAsync("nextFrame", Timeout.InfiniteTimeSpan);
+                _announcer.Show();
             }
-
-            _handle = handle;
-            Dialog.CloseInBrowserAsync = CloseInBrowserAsync;
         }
         catch (JSDisconnectedException)
         {
