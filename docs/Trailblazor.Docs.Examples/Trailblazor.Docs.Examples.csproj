@@ -15,6 +15,7 @@
   <ItemGroup>
     <EmbeddedResource Include="*.razor" Exclude="_Imports.razor" LogicalName="Source/%(Filename)%(Extension)" />
     <EmbeddedResource Include="roadmap.json" LogicalName="Roadmap/roadmap.json" />
+    <EmbeddedResource Include="..\..\src\Trailblazor\wwwroot\trailblazor.css" LogicalName="Css/trailblazor.css" />
   </ItemGroup>
 
   <!-- The library's XML documentation comes with its reference, and the API tables read it at run time. -->

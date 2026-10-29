@@ -41,6 +41,20 @@ public class ExampleCatalogTests
         Assert.Equal("page.GetByRole(AriaRole.Alert).Filter(new() { HasText = \"A danger alert.\" })", steps);
     }
 
+    // With no blocks, the page would list every token the theme has.
+    [Theory, MemberData(nameof(Names))]
+    public void Example_ShouldNameAtLeastOneBlockAndOnlyBlocksTheStylesheetHas_WhenInTheCatalog(string name)
+    {
+        var blocks = ExampleCatalog.Find(name)!.Blocks;
+
+        using var stream = typeof(DesignTokens).Assembly.GetManifestResourceStream("Css/trailblazor.css")!;
+        using var reader = new StreamReader(stream);
+        var css = reader.ReadToEnd();
+
+        Assert.NotEmpty(blocks);
+        Assert.All(blocks, block => Assert.Matches($@"\.{block}(?:--|__|[^\w-])", css));
+    }
+
     [Fact]
     public void ExampleCatalog_ShouldShowEveryEmbeddedSource_WhenCalled()
     {

@@ -106,6 +106,26 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldListTheThemeTokensTheComponentReads_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/dialog");
+
+        var tokens = page.GetByRole(AriaRole.List, new() { Name = "Design tokens" }).GetByRole(AriaRole.Listitem);
+
+        await Expect(tokens).ToHaveTextAsync([.. DesignTokens.Read(["tb-dialog"])]);
+        await Expect(tokens.Filter(new() { HasText = "--tb-shadow-lg" })).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldSayItReadsNoThemeTokens_WhenTheComponentReadsNone(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/stack");
+
+        await Expect(page.GetByText("Its styles read no theme tokens.")).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.List, new() { Name = "Design tokens" })).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ComponentPage_ShouldShowTheStepThatOpensTheComponent_WhenItOnlyShowsAfterOne(string browser)
     {
         var page = await OpenDocsAsync(browser, "components/dialog");

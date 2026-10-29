@@ -24,6 +24,9 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // How a test finds the component in the example; null for a layout component with no role of its own.
     public required TestTarget? Target { get; init; }
 
+    // The CSS blocks the component is styled under, such as tb-button, which its design tokens are read from.
+    public required IReadOnlyList<string> Blocks { get; init; }
+
     // Extra testing advice for the page; text in backticks shows as code.
     public string? TestingTip { get; init; }
 
@@ -81,6 +84,7 @@ public static class ExampleCatalog
                 "`TextStyle` changes only the look; it adds no meaning for screen readers.",
             ],
             Target = new("heading", "Display"),
+            Blocks = ["tb-text"],
         },
         new("divider", "Divider", ExampleCategory.Layout,
             "A line that separates content, across or down.", typeof(DividerExample))
@@ -93,6 +97,7 @@ public static class ExampleCatalog
                 "It takes no focus and has no name.",
             ],
             Target = null,
+            Blocks = ["tb-divider"],
         },
         new("surface", "Surface", ExampleCategory.Layout,
             "A raised panel with the app's surface color, an optional border and a shadow, for grouping content.",
@@ -107,6 +112,7 @@ public static class ExampleCatalog
                     + "on screen.",
             ],
             Target = null,
+            Blocks = ["tb-surface"],
         },
         new("icon", "Icon", ExampleCategory.Content,
             "An SVG icon from any icon set, sized to the text around it and hidden from screen readers unless named.",
@@ -120,6 +126,7 @@ public static class ExampleCatalog
                     + "no text next to it says.",
             ],
             Target = new("img", "Failed"),
+            Blocks = ["tb-icon"],
         },
         new("button", "Button", ExampleCategory.Actions,
             "Starts an action, in filled, outlined or text styles and every tone.", typeof(ButtonExample))
@@ -135,6 +142,7 @@ public static class ExampleCatalog
                 "With reduced motion, the busy spinner stops turning.",
             ],
             Target = new("button", "Add item"),
+            Blocks = ["tb-button"],
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
             "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
@@ -149,6 +157,7 @@ public static class ExampleCatalog
                 "Keys, `Disabled` and `Loading` work as they do for a button.",
             ],
             Target = new("button", "Add"),
+            Blocks = ["tb-button", "tb-icon-button"],
         },
         new("button-group", "Button group", ExampleCategory.Actions,
             "Joins related buttons into one control.", typeof(ButtonGroupExample))
@@ -160,6 +169,7 @@ public static class ExampleCatalog
                 "Each button keeps its own tab stop; the group adds no arrow-key navigation.",
             ],
             Target = new("group", "Text alignment"),
+            Blocks = ["tb-button-group"],
         },
         new("stack", "Stack", ExampleCategory.Layout,
             "Lays its children out in a row or a column, evenly spaced.", typeof(StackExample))
@@ -172,6 +182,7 @@ public static class ExampleCatalog
                     + "on screen.",
             ],
             Target = null,
+            Blocks = ["tb-stack"],
         },
         new("spacer", "Spacer", ExampleCategory.Layout,
             "Takes up the free space in a stack, pushing what follows to the end.", typeof(SpacerExample))
@@ -182,6 +193,7 @@ public static class ExampleCatalog
                 "A plain `div` with no role and no content; screen readers skip it.",
             ],
             Target = null,
+            Blocks = ["tb-spacer"],
         },
         new("grid", "Grid", ExampleCategory.Layout,
             "A responsive 12-column grid for page layouts.", typeof(GridExample))
@@ -194,6 +206,7 @@ public static class ExampleCatalog
                     + "follow the order in the markup, so keep it the same as the order on screen.",
             ],
             Target = null,
+            Blocks = ["tb-grid", "tb-grid-item"],
         },
         new("container", "Container", ExampleCategory.Layout,
             "Centers content and caps its width at a readable size.", typeof(ContainerExample))
@@ -204,6 +217,7 @@ public static class ExampleCatalog
                 "A plain `div` with no role; it only limits the width of what it holds.",
             ],
             Target = null,
+            Blocks = ["tb-container"],
         },
         new("alert", "Alert", ExampleCategory.Feedback,
             "A message in the page, such as a warning or an error, that can be closed.", typeof(AlertExample))
@@ -218,6 +232,7 @@ public static class ExampleCatalog
                 "The icon is decorative. The close button is named by `CloseLabel`, \"Close\" by default.",
             ],
             Target = new("alert") { Text = "A danger alert." },
+            Blocks = ["tb-alert"],
         },
         new("progress", "Progress", ExampleCategory.Feedback,
             "Shows how far along work is, as a bar or a circle, or that it is still going.", typeof(ProgressExample))
@@ -231,6 +246,7 @@ public static class ExampleCatalog
                 "With reduced motion, the moving bar and the spinning ring pulse instead.",
             ],
             Target = new("progressbar", "Upload"),
+            Blocks = ["tb-progress"],
         },
         new("text-field", "Text field", ExampleCategory.Inputs,
             "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
@@ -249,6 +265,7 @@ public static class ExampleCatalog
                     + "browsers expose them.",
             ],
             Target = new("textbox", "Name"),
+            Blocks = ["tb-field"],
         },
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.", typeof(NumberFieldExample))
@@ -265,6 +282,7 @@ public static class ExampleCatalog
                     + "asterisk it adds is hidden from screen readers.",
             ],
             Target = new("spinbutton", "Quantity"),
+            Blocks = ["tb-field"],
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
@@ -282,6 +300,7 @@ public static class ExampleCatalog
                     + "high-contrast theme.",
             ],
             Target = new("checkbox", "Email me updates"),
+            Blocks = ["tb-checkbox"],
         },
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.", typeof(SwitchExample))
@@ -296,6 +315,7 @@ public static class ExampleCatalog
                     + "high-contrast theme.",
             ],
             Target = new("switch", "Auto-save"),
+            Blocks = ["tb-switch"],
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
@@ -312,6 +332,7 @@ public static class ExampleCatalog
                     + "high-contrast theme.",
             ],
             Target = new("radiogroup", "Paper size"),
+            Blocks = ["tb-radio-group", "tb-radio"],
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
@@ -330,6 +351,7 @@ public static class ExampleCatalog
                 "The clear button is named \"Clear\" and sends focus back to the field.",
             ],
             Target = new("combobox", "Shipping"),
+            Blocks = ["tb-field", "tb-select"],
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too.",
@@ -347,6 +369,7 @@ public static class ExampleCatalog
                     + "keeps it open, and Escape hides it.",
             ],
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
+            Blocks = ["tb-tooltip", "tb-tooltip-anchor"],
         },
         new("menu", "Menu", ExampleCategory.Overlays,
             "A list of actions that opens from a button, with submenus.", typeof(MenuExample))
@@ -367,6 +390,7 @@ public static class ExampleCatalog
                     + "other keys it takes.",
             ],
             Target = new("button", "Actions"),
+            Blocks = ["tb-menu"],
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
             "A window over the page, opened from code, that asks for input or a decision.",
@@ -392,6 +416,7 @@ public static class ExampleCatalog
                     + "hide them.",
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
+            Blocks = ["tb-dialog"],
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.", typeof(TabsExample))
@@ -406,6 +431,7 @@ public static class ExampleCatalog
                 "Each panel is focusable, so keyboard users can reach content that has no controls.",
             ],
             Target = new("tablist", "Report sections"),
+            Blocks = ["tb-tabs"],
         },
         new("accordion", "Accordion", ExampleCategory.Navigation,
             "Sections that open and close under their headings.", typeof(AccordionExample))
@@ -419,6 +445,7 @@ public static class ExampleCatalog
                 "Tab moves between the titles, and Enter or Space opens and closes them.",
             ],
             Target = new("button", "Shipping"),
+            Blocks = ["tb-accordion"],
         },
         new("toast", "Toast", ExampleCategory.Feedback,
             "A brief message in a corner that doesn't interrupt, with an optional action.", typeof(ToastExample))
@@ -434,6 +461,7 @@ public static class ExampleCatalog
                 "The toasts sit in a region named \"Notifications\".",
             ],
             Target = new("listitem") { Text = "Report saved", OpenedBy = new("button", "Save report") },
+            Blocks = ["tb-toast", "tb-toaster"],
             TestingTip = "Each toast is an item in the region named `Notifications`.",
         },
     ];

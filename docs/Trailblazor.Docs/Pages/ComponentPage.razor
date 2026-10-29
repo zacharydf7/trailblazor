@@ -78,6 +78,25 @@
         }
     </ul>
 
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Design tokens</TbText>
+    @if (DesignTokens.Read(example.Blocks) is { Count: > 0 } tokens)
+    {
+        <TbText>
+            Its styles read these tokens from the theme, so changing one restyles it along with everything else that
+            reads it. The <a href="guides/theming">theming guide</a> shows how.
+        </TbText>
+        <ul class="docs-tokens" aria-label="Design tokens">
+            @foreach (var token in tokens)
+            {
+                <li><code>@token</code></li>
+            }
+        </ul>
+    }
+    else
+    {
+        <TbText>Its styles read no theme tokens.</TbText>
+    }
+
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
     @if (example.Target is { } target)
     {
