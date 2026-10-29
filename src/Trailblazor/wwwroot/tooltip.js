@@ -2,7 +2,8 @@ import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-posit
 
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
 const showDelay = 300;
-const hideDelay = 100;
+// The CSS bridges the gap onto the tooltip; this covers a path that strays off the bridge (WCAG 1.4.13 hoverable).
+const hideDelay = 300;
 
 // Hover and focus stay in the browser, so showing a tooltip sends nothing to the server.
 export function createTooltip(anchor, tooltip, options) {

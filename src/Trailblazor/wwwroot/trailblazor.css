@@ -1177,6 +1177,38 @@
         font-family: var(--tb-font-family);
         font-size: var(--tb-font-size-xs);
         line-height: var(--tb-line-height-normal);
+        /* A popover clips by default, which would hide the bridge below. */
+        overflow: visible;
+    }
+
+    /* Bridges the gap to the trigger, so the pointer never leaves the trigger on its way onto the tooltip. */
+    .tb-tooltip::before {
+        content: "";
+        position: absolute;
+    }
+
+    .tb-tooltip[data-side="bottom"]::before {
+        inset-inline: 0;
+        bottom: 100%;
+        height: var(--tb-anchored-offset);
+    }
+
+    .tb-tooltip[data-side="top"]::before {
+        inset-inline: 0;
+        top: 100%;
+        height: var(--tb-anchored-offset);
+    }
+
+    .tb-tooltip[data-side="start"]::before {
+        inset-block: 0;
+        inset-inline-start: 100%;
+        width: var(--tb-anchored-offset);
+    }
+
+    .tb-tooltip[data-side="end"]::before {
+        inset-block: 0;
+        inset-inline-end: 100%;
+        width: var(--tb-anchored-offset);
     }
 
     .tb-menu {

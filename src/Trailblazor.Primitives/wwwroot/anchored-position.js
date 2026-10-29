@@ -6,6 +6,8 @@ export function createAnchoredPosition(floating, anchor, options) {
     floating.style.position = 'fixed';
     floating.style.inset = 'auto';
     floating.style.margin = '0';
+    // CSS that has to span the gap, such as a tooltip's hover bridge, reads its size from here.
+    floating.style.setProperty('--tb-anchored-offset', `${options.offset}px`);
 
     const update = () => position(floating, anchor, options);
     update();

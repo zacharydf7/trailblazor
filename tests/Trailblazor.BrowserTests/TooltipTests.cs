@@ -41,9 +41,13 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
         await below.HoverAsync();
         await Expect(tooltip).ToBeVisibleAsync();
 
-        // Move slowly across the gap between them, which is where a tooltip without a hide delay would close.
+        // Pause in the gap between them for longer than the hide delay, then go on onto the tooltip.
+        var trigger = await below.BoundingBoxAsync();
         var box = await tooltip.BoundingBoxAsync();
-        await page.Mouse.MoveAsync(box!.X + box.Width / 2, box.Y + box.Height / 2, new() { Steps = 10 });
+        var middle = box!.X + box.Width / 2;
+        await page.Mouse.MoveAsync(middle, (trigger!.Y + trigger.Height + box.Y) / 2, new() { Steps = 5 });
+        await page.WaitForTimeoutAsync(500);
+        await page.Mouse.MoveAsync(middle, box.Y + box.Height / 2, new() { Steps = 5 });
         await page.WaitForTimeoutAsync(500);
 
         await Expect(tooltip).ToBeVisibleAsync();
