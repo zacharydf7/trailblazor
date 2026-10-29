@@ -2,7 +2,7 @@
 @using Trailblazor.BrowserTests.Host.Dialogs
 @inject IDialogService Dialogs
 
-<TbSelect Label="Size" @bind-Value="_size" Placeholder="Pick a size" Clearable>
+<TbSelect Label="Size" @bind-Value="_size" @bind-Open="_sizesOpen" Placeholder="Pick a size" Clearable>
     <TbOption Value="@("Small")">Small</TbOption>
     <TbOption Value="@("Medium")">Medium</TbOption>
     <TbOption Value="@("Large")" Disabled>Large</TbOption>
@@ -11,6 +11,8 @@
     <TbOption Value="@("Slim")">Slim</TbOption>
 </TbSelect>
 <output data-testid="size">@_size</output>
+<output data-testid="sizes-open">@(_sizesOpen ? "open" : "closed")</output>
+<TbButton OnClick="() => _sizesOpen = true">Show sizes</TbButton>
 <TbMultiSelect Label="Toppings" @bind-Value="_toppings" Placeholder="Add toppings">
     <TbOption Value="@("Cheese")">Cheese</TbOption>
     <TbOption Value="@("Ham")">Ham</TbOption>
@@ -21,5 +23,6 @@
 
 @code {
     private string? _size;
+    private bool _sizesOpen;
     private IReadOnlyList<string> _toppings = [];
 }

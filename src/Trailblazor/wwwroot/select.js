@@ -1,7 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
-export function createSelect(combobox, listbox) {
+export function createSelect(combobox, listbox, toggle) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!combobox || !listbox) {
         return null;
@@ -89,6 +89,7 @@ export function createSelect(combobox, listbox) {
     const onToggle = event => {
         const opened = event.newState === 'open';
         combobox.setAttribute('aria-expanded', String(opened));
+        toggle.invokeMethodAsync('OnToggle', opened);
         if (!opened) {
             setActive(null);
             position?.dispose();
@@ -215,6 +216,16 @@ export function createSelect(combobox, listbox) {
     label?.addEventListener('click', onLabelClick);
 
     return {
+        // Returns whether the list ended up open, since a disabled select won't open.
+        setOpen(value) {
+            if (value) {
+                open();
+            } else {
+                close();
+            }
+
+            return isOpen();
+        },
         dispose() {
             close();
             position?.dispose();

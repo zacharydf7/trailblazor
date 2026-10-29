@@ -207,6 +207,23 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldOpenFromCodeAndReportTheUserClosingIt_WhenOpenIsBound(string browser)
+    {
+        var page = await OpenSelectAsync(browser);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Show sizes" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
+        await Expect(Combobox(page)).ToHaveAttributeAsync("aria-expanded", "true");
+        await Combobox(page).FocusAsync();
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        await Expect(page.GetByTestId("sizes-open")).ToHaveTextAsync("closed");
+        await Combobox(page).ClickAsync();
+        await Expect(page.GetByTestId("sizes-open")).ToHaveTextAsync("open");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldPostTheChosenOption_WhenUsedInAStaticForm(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-select");

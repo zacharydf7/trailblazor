@@ -13,6 +13,10 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     private ElementReference _listbox;
     private SelectDisplay? _display;
     private IJSObjectReference? _handle;
+    private DotNetObjectReference<SelectToggle>? _toggle;
+    private bool _open;
+    private bool _lastOpen;
+    private bool _openFromParent;
     private bool _disposed;
 
     /// <summary>The <see cref="TbOption{TValue}"/>s to choose from.</summary>
@@ -26,6 +30,16 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     /// <summary>Shows a button that clears the choice.</summary>
     [Parameter]
     public bool Clearable { get; set; }
+
+    /// <summary>Whether the list is open. Bind it with <c>@bind-Open</c> to open or close the list from code, or to
+    /// load options when it opens.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the user opens or closes the list, or when it can't open as asked because the select is
+    /// disabled.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
 
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
@@ -68,34 +82,63 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     private protected abstract string? FormatItem(object? item);
 
     /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        // Only a new value from the parent opens or closes the list, so re-rendering with the old one keeps the
+        // list as the user left it.
+        if (Open != _lastOpen)
+        {
+            _lastOpen = Open;
+            if (Open != _open)
+            {
+                _open = Open;
+                _openFromParent = true;
+            }
+        }
+    }
+
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
-        {
-            return;
-        }
-
         try
         {
-            var module = await Modules.ImportAsync("./_content/Trailblazor/select.js");
-            if (_disposed)
+            if (firstRender)
             {
-                return;
+                var module = await Modules.ImportAsync("./_content/Trailblazor/select.js");
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync));
+                var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox,
+                    _toggle);
+                if (handle is null)
+                {
+                    return;
+                }
+
+                if (_disposed)
+                {
+                    await handle.DisposeHandleAsync();
+                    return;
+                }
+
+                _handle = handle;
             }
 
-            var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox);
-            if (handle is null)
+            if (_handle is not null && _openFromParent)
             {
-                return;
+                _openFromParent = false;
+                // A disabled select stays closed, and the parent hears so rather than keeping a value that didn't apply.
+                var opened = await _handle.InvokeAsync<bool>("setOpen", _open);
+                if (opened != _open)
+                {
+                    _open = opened;
+                    await OpenChanged.InvokeAsync(opened);
+                }
             }
-
-            if (_disposed)
-            {
-                await handle.DisposeHandleAsync();
-                return;
-            }
-
-            _handle = handle;
         }
         catch (JSDisconnectedException)
         {
@@ -133,6 +176,17 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
 
     void ISelect.Refresh() => _display?.Refresh();
 
+    private async Task OnToggleAsync(bool open)
+    {
+        if (open == _open)
+        {
+            return;
+        }
+
+        _open = open;
+        await OpenChanged.InvokeAsync(open);
+    }
+
     // The clear button goes away with the value, so focus moves to the combobox instead of the page.
     private async Task ClearAsync()
     {
@@ -155,5 +209,7 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
         {
             await _handle.DisposeHandleAsync();
         }
+
+        _toggle?.Dispose();
     }
 }

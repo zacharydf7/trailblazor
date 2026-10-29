@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests.Components;
 
@@ -318,6 +319,75 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
+    public void Open_ShouldOpenAndCloseTheList_WhenTheParentChangesIt()
+    {
+        var handle = SetUpSetOpen();
+        var cut = RenderSelect("Small");
+        Assert.Empty(handle.Invocations["setOpen"]);
+
+        cut.Render(parameters => parameters.Add(select => select.Open, true));
+        cut.Render(parameters => parameters.Add(select => select.Open, false));
+
+        Assert.Equal([true, false], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
+    }
+
+    [Fact]
+    public async Task OpenChanged_ShouldReportTheToggleWithoutCallingSetOpen_WhenTheBrowserOpensTheList()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/select.js");
+        var handle = SetUpSetOpen(module);
+        var opened = new List<bool>();
+        var cut = RenderSelect("Small");
+        cut.Render(parameters => parameters.Add(select => select.OpenChanged, (bool open) => opened.Add(open)));
+        var toggle = (DotNetObjectReference<SelectToggle>)module.Invocations["createSelect"].Single().Arguments[2]!;
+
+        await cut.InvokeAsync(() => toggle.Value.OnToggle(true));
+        cut.Render(parameters => parameters.Add(select => select.Open, true));
+        await cut.InvokeAsync(() => toggle.Value.OnToggle(true));
+
+        Assert.Equal([true], opened);
+        Assert.Empty(handle.Invocations["setOpen"]);
+    }
+
+    [Fact]
+    public async Task Render_ShouldLeaveTheListOpen_WhenAParentThatDoesntBindOpenRendersAgain()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/select.js");
+        var handle = SetUpSetOpen(module);
+        var cut = RenderSelect("Small");
+        var toggle = (DotNetObjectReference<SelectToggle>)module.Invocations["createSelect"].Single().Arguments[2]!;
+
+        await cut.InvokeAsync(() => toggle.Value.OnToggle(true));
+        cut.Render(parameters => parameters.Add(select => select.Placeholder, "Choose"));
+
+        Assert.Empty(handle.Invocations["setOpen"]);
+    }
+
+    [Fact]
+    public void Open_ShouldOpenTheList_WhenItStartsTrue()
+    {
+        var handle = SetUpSetOpen();
+
+        RenderSelect("Small", open: true);
+
+        Assert.Equal([true], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
+    }
+
+    [Fact]
+    public void Open_ShouldReportTheListClosed_WhenTheParentOpensADisabledSelect()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/select.js").SetupModule("createSelect", _ => true);
+        handle.Setup<bool>("setOpen", _ => true).SetResult(false);
+        var opened = new List<bool>();
+        var cut = RenderSelect("Small", disabled: true);
+        cut.Render(parameters => parameters.Add(select => select.OpenChanged, (bool open) => opened.Add(open)));
+
+        cut.Render(parameters => parameters.Add(select => select.Open, true));
+
+        Assert.Equal([false], opened);
+    }
+
+    [Fact]
     public async Task Dispose_ShouldDetachTheScript_WhenTheSelectGoesAway()
     {
         var handle = JSInterop.SetupModule("./_content/Trailblazor/select.js").SetupModule("createSelect", _ => true);
@@ -329,11 +399,22 @@ public class TbSelectTests : BunitContext
         handle.VerifyInvoke("dispose");
     }
 
+    // The script's setOpen reports the list open exactly when asked to open it.
+    private BunitJSModuleInterop SetUpSetOpen(BunitJSModuleInterop? module = null)
+    {
+        var handle = (module ?? JSInterop.SetupModule("./_content/Trailblazor/select.js"))
+            .SetupModule("createSelect", _ => true);
+        handle.Setup<bool>("setOpen", call => call.Arguments[0] is true).SetResult(true);
+        handle.Setup<bool>("setOpen", call => call.Arguments[0] is false).SetResult(false);
+        return handle;
+    }
+
     private IRenderedComponent<TbSelect<string?>> RenderSelect(string? value, bool disabled = false,
-        Func<string?, IEnumerable<string>>? validation = null)
+        Func<string?, IEnumerable<string>>? validation = null, bool open = false)
     {
         Size = value;
         return Render<TbSelect<string?>>(parameters => parameters
+            .Add(select => select.Open, open)
             .Add(select => select.Label, "Size")
             .Add(select => select.Placeholder, "Pick a size")
             .Add(select => select.Clearable, true)
