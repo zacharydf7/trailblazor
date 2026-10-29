@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      issues: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -49,6 +50,12 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+
+      # The roadmap page shows the issues as they are now, not as they were when roadmap.json was last committed.
+      - name: Refresh the roadmap
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: docs/update-roadmap.sh
 
       - run: dotnet publish docs/Trailblazor.Docs --configuration Release --output publish
 

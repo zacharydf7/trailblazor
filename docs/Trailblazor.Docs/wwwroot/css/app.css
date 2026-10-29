@@ -217,6 +217,33 @@ a:focus-visible {
     margin-block-start: var(--tb-space-2);
 }
 
+.docs-roadmap__progress {
+    margin-block: var(--tb-space-2) var(--tb-space-3);
+}
+
+.docs-roadmap__other {
+    margin-block: var(--tb-space-3) var(--tb-space-1);
+}
+
+.docs-roadmap__status {
+    margin-inline-start: var(--tb-space-2);
+    padding: 0 var(--tb-space-2);
+    border-radius: var(--tb-radius-full);
+    background: var(--tb-color-neutral-subtle);
+    color: var(--tb-color-neutral-text);
+    font-size: var(--tb-font-size-xs);
+}
+
+.docs-roadmap__status[data-status="shipped"] {
+    background: var(--tb-color-success-subtle);
+    color: var(--tb-color-success-text);
+}
+
+.docs-roadmap__status[data-status="inprogress"] {
+    background: var(--tb-color-warning-subtle);
+    color: var(--tb-color-warning-text);
+}
+
 .docs-api__required {
     display: block;
     color: var(--tb-color-text-muted);

@@ -1,0 +1,86 @@
+@page "/roadmap"
+@using Trailblazor.Docs.Examples
+
+<PageTitle>Roadmap · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Roadmap</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    Trailblazor is built in phases. This page is made from the project's issues each time the site is published, so
+    it shows where things stand today.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">In progress</TbText>
+@if (_roadmap.InProgress.Count == 0)
+{
+    <TbText>Nothing is being worked on right now.</TbText>
+}
+else
+{
+    <ul class="docs-notes">
+        @foreach (var issue in _roadmap.InProgress)
+        {
+            <li>@issue.Title <span class="docs-note">#@issue.Number</span></li>
+        }
+    </ul>
+}
+
+@foreach (var phase in _roadmap.Phases)
+{
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">@phase.Title</TbText>
+    <TbText class="docs-note">
+        @StageText(phase.Stage) · @phase.Shipped of @phase.Components.Count components shipped
+    </TbText>
+    <TbProgress Value="phase.Shipped" Max="Math.Max(1, phase.Components.Count)" AriaLabel="@phase.Title"
+                class="docs-roadmap__progress" />
+    <ul class="docs-notes">
+        @foreach (var component in phase.Components)
+        {
+            <li>
+                @component.Title
+                <span class="docs-roadmap__status" data-status="@component.Status.ToString().ToLowerInvariant()">
+                    @StatusText(component.Status)
+                </span>
+            </li>
+        }
+    </ul>
+    @if (phase.OtherOpen.Count > 0)
+    {
+        <TbText class="docs-roadmap__other">Also left in this phase:</TbText>
+        <ul class="docs-notes">
+            @foreach (var issue in phase.OtherOpen)
+            {
+                <li>@issue.Title <span class="docs-note">#@issue.Number</span></li>
+            }
+        </ul>
+    }
+}
+
+@if (_roadmap.Unscheduled.Count > 0)
+{
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Not scheduled yet</TbText>
+    <ul class="docs-notes">
+        @foreach (var component in _roadmap.Unscheduled)
+        {
+            <li>@component.Title</li>
+        }
+    </ul>
+}
+
+@code {
+    private readonly RoadmapSummary _roadmap = Roadmap.Current;
+
+    private static string StageText(PhaseStage stage) => stage switch
+    {
+        PhaseStage.Done => "Done",
+        PhaseStage.Current => "Current phase",
+        PhaseStage.Next => "Up next",
+        _ => "Later",
+    };
+
+    private static string StatusText(ComponentStatus status) => status switch
+    {
+        ComponentStatus.Shipped => "Shipped",
+        ComponentStatus.InProgress => "In progress",
+        _ => "Planned",
+    };
+}

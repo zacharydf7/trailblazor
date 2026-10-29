@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Docs.Examples;
@@ -20,7 +21,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     public static TheoryData<string, string, string> PagesInBothThemes => new(
         from browser in AllBrowsers.Names
-        from path in new[] { "", "components/dialog", "guides/getting-started", "search?q=dialog" }
+        from path in new[] { "", "components/dialog", "guides/getting-started", "search?q=dialog", "roadmap" }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
@@ -177,8 +178,29 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             await nav.GetByRole(AriaRole.Link, new() { Name = guide.Title, Exact = true }).ClickAsync();
 
             await Expect(PageTitle(page)).ToHaveTextAsync(guide.Title);
-            await Expect(page.GetByRole(AriaRole.Region).First).ToBeVisibleAsync();
+            await Expect(page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Heading, new() { Level = 2 }).First)
+                .ToBeVisibleAsync();
         }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Roadmap_ShouldShowEachPhasesProgressAndComponents_WhenOpened(string browser)
+    {
+        var roadmap = Roadmap.Current;
+        var page = await OpenDocsAsync(browser, "roadmap");
+
+        var bars = page.GetByRole(AriaRole.Progressbar);
+
+        await Expect(bars).ToHaveCountAsync(roadmap.Phases.Count);
+        var first = roadmap.Phases[0];
+        await Expect(page.GetByRole(AriaRole.Progressbar, new() { Name = first.Title }))
+            .ToHaveAttributeAsync("aria-valuenow", first.Shipped.ToString(CultureInfo.InvariantCulture));
+        var shipped = roadmap.Phases.SelectMany(phase => phase.Components)
+            .First(component => component.Status == ComponentStatus.Shipped);
+        var status = page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Listitem)
+            .Filter(new() { HasText = shipped.Title }).Locator("[data-status]");
+        await Expect(status).ToHaveTextAsync("Shipped");
+        await Expect(status).ToHaveAttributeAsync("data-status", "shipped");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
