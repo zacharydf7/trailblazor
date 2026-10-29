@@ -49,6 +49,14 @@ function leaveTray(dialog) {
     }
 }
 
+// How far one press of an arrow key moves or resizes a dialog, in pixels.
+const keyStep = 16;
+
+// Small enough for a narrow window, and big enough to keep a header's buttons usable.
+const minimumSize = { width: 240, height: 120 };
+
+const clamp = (value, low, high) => Math.min(Math.max(value, low), Math.max(low, high));
+
 // An element marked autofocus wins; a field component carries the attribute on its wrapper, so look inside it.
 function dialogFocusTarget(dialog, options) {
     const body = dialog.querySelector('[data-part="body"]');
@@ -133,11 +141,106 @@ export function openDialog(dialog, dotNet, options) {
         }
     };
 
+    const draggable = dialog.classList.contains('tb-dialog--draggable');
+    const resizable = dialog.classList.contains('tb-dialog--resizable');
+    let drag = null;
+
+    // A minimized or maximized dialog has its place set by its window state.
+    const isNormal = () => (dialog.dataset.windowState ?? 'normal') === 'normal';
+
+    function place(left, top) {
+        dialog.style.setProperty('--tb-dialog-left', `${left}px`);
+        dialog.style.setProperty('--tb-dialog-top', `${top}px`);
+        dialog.dataset.placed = '';
+    }
+
+    // Pins the dialog where it is, so moving or resizing starts from its current box.
+    function measure() {
+        const box = dialog.getBoundingClientRect();
+        place(box.left, box.top);
+        return { left: box.left, top: box.top, width: box.width, height: box.height };
+    }
+
+    // Arrow keys and pointers move in screen directions, whichever way the page's text runs. The dialog stays whole
+    // inside the window, so its header can always be reached.
+    function moveBy(start, dx, dy) {
+        const room = document.documentElement;
+        place(clamp(start.left + dx, 0, room.clientWidth - start.width),
+            clamp(start.top + dy, 0, room.clientHeight - start.height));
+    }
+
+    // The grip sits in the bottom-end corner, so on a right-to-left page the left edge follows it.
+    function resizeBy(start, dx, dy) {
+        const room = document.documentElement;
+        const rightToLeft = getComputedStyle(dialog).direction === 'rtl';
+        const width = rightToLeft
+            ? clamp(start.width - dx, minimumSize.width, start.left + start.width)
+            : clamp(start.width + dx, minimumSize.width, room.clientWidth - start.left);
+        const height = clamp(start.height + dy, minimumSize.height, room.clientHeight - start.top);
+        dialog.style.setProperty('--tb-dialog-resized-width', `${width}px`);
+        dialog.style.setProperty('--tb-dialog-resized-height', `${height}px`);
+        dialog.dataset.sized = '';
+        place(rightToLeft ? start.left + start.width - width : start.left, start.top);
+    }
+
+    // The header moves the dialog, apart from its buttons other than Move; the grip resizes it.
+    const onDragStart = event => {
+        const grip = resizable && event.target.closest('[data-part="resize"]');
+        const header = draggable && event.target.closest('[data-part="header"]');
+        const button = event.target.closest('button:not([data-part="move"], [data-part="resize"])');
+        if (event.button !== 0 || !isNormal() || !(grip || (header && !button))) {
+            return;
+        }
+
+        event.preventDefault();
+        dialog.setPointerCapture(event.pointerId);
+        drag = { start: measure(), x: event.clientX, y: event.clientY, resize: Boolean(grip) };
+    };
+    const onDragMove = event => {
+        if (drag) {
+            (drag.resize ? resizeBy : moveBy)(drag.start, event.clientX - drag.x, event.clientY - drag.y);
+        }
+    };
+    const onDragEnd = () => {
+        drag = null;
+    };
+    const steps = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    const onArrowKey = event => {
+        const step = steps[event.key];
+        const handle = event.target.closest?.('[data-part="move"], [data-part="resize"]');
+        if (!step || !handle || event.altKey || event.ctrlKey || event.metaKey || !isNormal()) {
+            return;
+        }
+
+        event.preventDefault();
+        const change = handle.dataset.part === 'move' ? moveBy : resizeBy;
+        change(measure(), step[0] * keyStep, step[1] * keyStep);
+    };
+    // Brings a moved or resized dialog back inside a window that shrank: moving it first keeps its size if it fits.
+    function keepInside() {
+        if (!('placed' in dialog.dataset) || !isNormal()) {
+            return;
+        }
+
+        moveBy(measure(), 0, 0);
+        if ('sized' in dialog.dataset) {
+            resizeBy(measure(), 0, 0);
+        }
+    }
+
     document.addEventListener('keydown', onKeyDown, { capture: true });
     dialog.addEventListener('cancel', onCancel);
     dialog.addEventListener('close', onClose);
     dialog.addEventListener('pointerdown', onPointerDown);
     dialog.addEventListener('click', onClick);
+    if (draggable || resizable) {
+        dialog.addEventListener('pointerdown', onDragStart);
+        dialog.addEventListener('pointermove', onDragMove);
+        dialog.addEventListener('pointerup', onDragEnd);
+        dialog.addEventListener('pointercancel', onDragEnd);
+        dialog.addEventListener('keydown', onArrowKey);
+        window.addEventListener('resize', keepInside);
+    }
 
     // Removes the listeners and the stack entry once, however the dialog ends; true the first time.
     function finish() {
@@ -151,6 +254,12 @@ export function openDialog(dialog, dotNet, options) {
         dialog.removeEventListener('close', onClose);
         dialog.removeEventListener('pointerdown', onPointerDown);
         dialog.removeEventListener('click', onClick);
+        dialog.removeEventListener('pointerdown', onDragStart);
+        dialog.removeEventListener('pointermove', onDragMove);
+        dialog.removeEventListener('pointerup', onDragEnd);
+        dialog.removeEventListener('pointercancel', onDragEnd);
+        dialog.removeEventListener('keydown', onArrowKey);
+        window.removeEventListener('resize', keepInside);
         stack.splice(stack.indexOf(entry), 1);
         leaveTray(dialog);
         return true;
@@ -174,6 +283,9 @@ export function openDialog(dialog, dotNet, options) {
             if (state === 'minimized') {
                 tray.push(dialog);
                 layOutTray();
+            } else if (state === 'normal') {
+                // The window may have shrunk while the dialog was minimized or maximized.
+                keepInside();
             }
         },
         // Closes the dialog and gives focus back to whatever opened it.

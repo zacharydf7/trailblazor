@@ -412,14 +412,14 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     // A dialog sits within the page's own area, which leaves out a scrollbar that takes up room.
-    private static async Task<(double Width, double Height)> ViewportAsync(IPage page)
+    internal static async Task<(double Width, double Height)> ViewportAsync(IPage page)
     {
         var size = await page.EvaluateAsync<double[]>(
             "() => [document.documentElement.clientWidth, document.documentElement.clientHeight]");
         return (size[0], size[1]);
     }
 
-    private static async Task<LocatorBoundingBoxResult> BoxAsync(IPage page, string title)
+    internal static async Task<LocatorBoundingBoxResult> BoxAsync(IPage page, string title)
     {
         var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = title });
         await Expect(dialog).ToBeVisibleAsync();

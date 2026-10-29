@@ -1409,6 +1409,44 @@
         border-radius: 0;
     }
 
+    /* A moved or resized dialog keeps its place and size, apart from while it is minimized or maximized. */
+    .tb-dialog[data-placed]:not([data-window-state="minimized"], [data-window-state="maximized"]) {
+        inset: var(--tb-dialog-top) auto auto var(--tb-dialog-left);
+        margin: 0;
+    }
+
+    .tb-dialog[data-sized]:not([data-window-state="minimized"], [data-window-state="maximized"]) {
+        width: var(--tb-dialog-resized-width);
+        max-width: none;
+        height: var(--tb-dialog-resized-height);
+        max-height: none;
+    }
+
+    .tb-dialog--draggable:not([data-window-state="minimized"], [data-window-state="maximized"]) .tb-dialog__header {
+        cursor: move;
+        user-select: none;
+        touch-action: none;
+    }
+
+    /* A row of its own under the body, so the grip never covers the dialog's actions. */
+    .tb-dialog__resize {
+        align-self: flex-end;
+        cursor: nwse-resize;
+        touch-action: none;
+    }
+
+    .tb-dialog__resize:dir(rtl) {
+        cursor: nesw-resize;
+    }
+
+    .tb-dialog__resize:dir(rtl) svg {
+        transform: scaleX(-1);
+    }
+
+    .tb-dialog:is([data-window-state="minimized"], [data-window-state="maximized"]) .tb-dialog__resize {
+        display: none;
+    }
+
     .tb-dialog__header {
         display: flex;
         align-items: center;

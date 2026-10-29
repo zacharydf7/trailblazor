@@ -382,6 +382,10 @@ public static class ExampleCatalog
                     + "inside it closes first. A click that starts and ends on the backdrop cancels a modal unless "
                     + "`DismissOnBackdrop` is false.",
                 "`ConfirmAsync` opens an `alertdialog` described by its message.",
+                "A dialog that isn't modal can be `Draggable` by its header and `Resizable` by its bottom-end grip. "
+                    + "For the keyboard, the header gains a Move button and the grip is a Resize button; while either "
+                    + "has focus, the arrow keys move or resize the dialog, and a hidden hint says so. There is no "
+                    + "way yet to move or resize it with single clicks, without dragging or the keyboard.",
                 "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't "
                     + "hide them.",
             ],

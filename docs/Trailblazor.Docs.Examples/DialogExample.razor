@@ -3,6 +3,7 @@
 <TbStack Row Gap="2">
     <TbButton OnClick="RenameAsync">Rename report</TbButton>
     <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="DeleteAsync">Delete report</TbButton>
+    <TbButton Variant="Variant.Text" OnClick="EditBesideAsync">Edit beside the page</TbButton>
 </TbStack>
 <TbText Style="margin-block-start: var(--tb-space-3)">@_status</TbText>
 
@@ -13,6 +14,22 @@
     private async Task RenameAsync()
     {
         var result = await Dialogs.ShowAsync<RenameDialog, string>("Rename report", p => p.Set(d => d.Name, _name));
+        if (result.Confirmed)
+        {
+            _name = result.Value!;
+            _status = $"Renamed to {_name}";
+        }
+    }
+
+    // Not modal, so the page stays usable; the dialog can be moved, resized, minimized and maximized.
+    private async Task EditBesideAsync()
+    {
+        var options = new DialogOptions
+        {
+            Modal = false, Draggable = true, Resizable = true, Minimizable = true, Maximizable = true,
+        };
+        var result = await Dialogs.ShowAsync<RenameDialog, string>("Edit name", p => p.Set(d => d.Name, _name),
+            options);
         if (result.Confirmed)
         {
             _name = result.Value!;

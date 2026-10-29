@@ -37,10 +37,27 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddContent(16, Dialog.Title);
         builder.CloseElement();
         var state = Dialog.WindowState;
+        // The script moves the dialog with the arrow keys while this button has focus; the hint says so.
+        if (Dialog.Options.Draggable && !Dialog.Options.Modal && state == DialogWindowState.Normal)
+        {
+            builder.OpenComponent<TbIconButton>(17);
+            builder.AddComponentParameter(18, nameof(TbIconButton.Icon), BuiltInIcons.Move);
+            builder.AddComponentParameter(19, nameof(TbIconButton.AriaLabel), "Move");
+            builder.AddComponentParameter(20, nameof(TbIconButton.Size), Size.Small);
+            builder.AddAttribute(21, "aria-describedby", $"{TitleId}-move-hint");
+            builder.AddAttribute(22, "data-part", "move");
+            builder.CloseComponent();
+            builder.OpenElement(23, "span");
+            builder.AddAttribute(24, "id", $"{TitleId}-move-hint");
+            builder.AddAttribute(25, "class", "tb-visually-hidden");
+            builder.AddContent(26, "Arrow keys move the dialog.");
+            builder.CloseElement();
+        }
+
         if (Dialog.Options.Minimizable && !Dialog.Options.Modal)
         {
             var minimized = state == DialogWindowState.Minimized;
-            AddWindowButton(builder, 17, "minimize", minimized ? "Restore" : "Minimize",
+            AddWindowButton(builder, 27, "minimize", minimized ? "Restore" : "Minimize",
                 minimized ? BuiltInIcons.Restore : BuiltInIcons.Minus,
                 minimized ? DialogWindowState.Normal : DialogWindowState.Minimized);
         }
@@ -48,20 +65,20 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         if (Dialog.Options.Maximizable)
         {
             var maximized = state == DialogWindowState.Maximized;
-            AddWindowButton(builder, 23, "maximize", maximized ? "Restore" : "Maximize",
+            AddWindowButton(builder, 33, "maximize", maximized ? "Restore" : "Maximize",
                 maximized ? BuiltInIcons.Restore : BuiltInIcons.Maximize,
                 maximized ? DialogWindowState.Normal : DialogWindowState.Maximized);
         }
 
         if (Dialog.CloseButton)
         {
-            builder.OpenComponent<TbIconButton>(29);
-            builder.AddComponentParameter(30, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-            builder.AddComponentParameter(31, nameof(TbIconButton.AriaLabel), "Close");
-            builder.AddComponentParameter(32, nameof(TbIconButton.Size), Size.Small);
-            builder.AddComponentParameter(33, nameof(TbIconButton.OnClick),
+            builder.OpenComponent<TbIconButton>(39);
+            builder.AddComponentParameter(40, nameof(TbIconButton.Icon), BuiltInIcons.Close);
+            builder.AddComponentParameter(41, nameof(TbIconButton.AriaLabel), "Close");
+            builder.AddComponentParameter(42, nameof(TbIconButton.Size), Size.Small);
+            builder.AddComponentParameter(43, nameof(TbIconButton.OnClick),
                 EventCallback.Factory.Create<MouseEventArgs>(this, () => Dialog.CloseAsync(false, null)));
-            builder.AddAttribute(34, "data-part", "close");
+            builder.AddAttribute(44, "data-part", "close");
             builder.CloseComponent();
         }
 

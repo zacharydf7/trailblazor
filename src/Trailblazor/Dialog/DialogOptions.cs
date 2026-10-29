@@ -39,4 +39,12 @@ public sealed record DialogOptions
 
     /// <summary>Shows a button in the header that makes the dialog fill the window.</summary>
     public bool Maximizable { get; init; }
+
+    /// <summary>Lets the user move a dialog that isn't <see cref="Modal"/> by dragging its header, or with the arrow
+    /// keys on the move button the header gains.</summary>
+    public bool Draggable { get; init; }
+
+    /// <summary>Lets the user resize a dialog that isn't <see cref="Modal"/> by dragging the grip in its bottom-end
+    /// corner, or with the arrow keys on the grip.</summary>
+    public bool Resizable { get; init; }
 }

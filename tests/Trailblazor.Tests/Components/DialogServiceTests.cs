@@ -198,6 +198,50 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ShowAsync_ShouldOfferAMoveButtonAndAResizeGripWithHints_WhenANonModalDialogIsDraggableAndResizable()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Modal = false, Draggable = true, Resizable = true });
+
+        var move = host.WaitForElement("[data-part=move]");
+        var grip = host.Find("[data-part=resize]");
+        Assert.Equal(("Move", "Resize"), (move.GetAttribute("aria-label"), grip.GetAttribute("aria-label")));
+        Assert.Equal("Arrow keys move the dialog.", host.Find($"#{move.GetAttribute("aria-describedby")}").TextContent);
+        Assert.Equal("Arrow keys resize the dialog.",
+            host.Find($"#{grip.GetAttribute("aria-describedby")}").TextContent);
+        Assert.Contains("tb-dialog--draggable", host.Find("dialog").ClassList);
+        Assert.Contains("tb-dialog--resizable", host.Find("dialog").ClassList);
+    }
+
+    [Fact]
+    public void ShowAsync_ShouldOfferNeitherMoveNorResize_WhenTheDialogIsModal()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Draggable = true, Resizable = true });
+
+        var dialog = host.WaitForElement("dialog");
+        Assert.Empty(host.FindAll("[data-part=move], [data-part=resize]"));
+        Assert.DoesNotContain("tb-dialog--draggable", dialog.ClassList);
+        Assert.DoesNotContain("tb-dialog--resizable", dialog.ClassList);
+    }
+
+    [Fact]
+    public async Task MoveButton_ShouldGoAway_WhenTheDialogIsMinimized()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Modal = false, Draggable = true, Minimizable = true });
+        host.WaitForElement("[data-part=move]");
+
+        await host.Find("[data-part=minimize]").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=move]")));
+    }
+
+    [Fact]
     public async Task Minimize_ShouldTellTheBrowserDialog_WhenClicked()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");

@@ -24,6 +24,11 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
     private string TitleId => $"{_id}-title";
 
+    // A modal can't be moved or resized: it already blocks the page, so there's nothing to uncover.
+    private bool Draggable => Dialog.Options.Draggable && !Dialog.Options.Modal;
+
+    private bool Resizable => Dialog.Options.Resizable && !Dialog.Options.Modal;
+
     // The frame's markup never changes once shown; re-rendering it would push the dialog's original parameters back
     // in whenever another dialog opens or closes.
     protected override bool ShouldRender() => false;
@@ -37,7 +42,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.AddAttribute(3, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
         builder.AddAttribute(6, "class", ClassNames.Join("tb-dialog", ClassNames.Modifier("tb-dialog", options.Size),
-            ClassNames.Modifier("tb-dialog", "position", options.Position)));
+            ClassNames.Modifier("tb-dialog", "position", options.Position),
+            Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null));
         builder.AddAttribute(7, "role", Dialog.IsAlert ? "alertdialog" : null);
         builder.AddAttribute(8, "aria-describedby", Dialog.IsAlert ? Dialog.DescriptionId : null);
         builder.AddElementReferenceCapture(9, element => _element = element);
@@ -71,6 +77,24 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             builder.AddComponentParameter(40, nameof(AnnouncerHost.Dialog), Dialog);
             builder.AddComponentReferenceCapture(41, host => _announcer = (AnnouncerHost)host);
             builder.CloseComponent();
+        }
+
+        // The script resizes the dialog with the arrow keys while the grip has focus; the hint says so.
+        if (Resizable)
+        {
+            builder.OpenComponent<TbIconButton>(42);
+            builder.AddComponentParameter(43, nameof(TbIconButton.Icon), BuiltInIcons.ResizeGrip);
+            builder.AddComponentParameter(44, nameof(TbIconButton.AriaLabel), "Resize");
+            builder.AddComponentParameter(45, nameof(TbIconButton.Size), Size.Small);
+            builder.AddComponentParameter(46, nameof(TbIconButton.Class), "tb-dialog__resize");
+            builder.AddAttribute(47, "aria-describedby", $"{_id}-resize-hint");
+            builder.AddAttribute(48, "data-part", "resize");
+            builder.CloseComponent();
+            builder.OpenElement(49, "span");
+            builder.AddAttribute(50, "id", $"{_id}-resize-hint");
+            builder.AddAttribute(51, "class", "tb-visually-hidden");
+            builder.AddContent(52, "Arrow keys resize the dialog.");
+            builder.CloseElement();
         }
 
         builder.CloseElement();

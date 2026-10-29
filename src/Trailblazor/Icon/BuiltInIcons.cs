@@ -18,4 +18,12 @@ internal static class BuiltInIcons
     public static Icon Restore { get; } = new("<path d=\"M8 4h12v12h-2V6H8zM4 8h12v12H4zm2 2v8h8v-8z\" />");
 
     public static Icon Plus { get; } = new("<path d=\"M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z\" />");
+
+    public static Icon Move { get; } = new("<path d=\"M12 2 8.5 5.5 9.9 6.9 11 5.8V11H5.8l1.1-1.1-1.4-1.4L2 12l3.5 "
+        + "3.5 1.4-1.4L5.8 13H11v5.2l-1.1-1.1-1.4 1.4L12 22l3.5-3.5-1.4-1.4-1.1 1.1V13h5.2l-1.1 1.1 1.4 1.4L22 12l-3.5"
+        + "-3.5-1.4 1.4 1.1 1.1H13V5.8l1.1 1.1 1.4-1.4z\" />");
+
+    // Dots toward the bottom-right corner; flip it in right-to-left text.
+    public static Icon ResizeGrip { get; } = new("<path d=\"M18 18h2v2h-2zm0-4h2v2h-2zm-4 4h2v2h-2zm0-4h2v2h-2zm4-4h2"
+        + "v2h-2zm-8 8h2v2h-2z\" />");
 }
