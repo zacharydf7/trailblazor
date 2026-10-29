@@ -1,0 +1,48 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+</div>
+
+@code {
+    private readonly List<TbAccordionItem> _items = [];
+
+    /// <summary>Lets several items be open at once. Without it, opening one from its header closes the others;
+    /// items opened by setting <see cref="TbAccordionItem.Expanded"/> stay as the parent sets them.</summary>
+    [Parameter]
+    public bool Multiple { get; set; }
+
+    /// <summary>The heading level of each item's header, from 1 to 6, to fit the page's outline. Defaults to 3.
+    /// </summary>
+    [Parameter]
+    public int HeadingLevel { get; set; } = 3;
+
+    /// <summary>The <see cref="TbAccordionItem"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(HeadingLevel, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(HeadingLevel, 6);
+    }
+
+    internal void Add(TbAccordionItem item) => _items.Add(item);
+
+    internal void Remove(TbAccordionItem item) => _items.Remove(item);
+
+    internal async Task ExpandedAsync(TbAccordionItem opened)
+    {
+        if (Multiple)
+        {
+            return;
+        }
+
+        foreach (var item in _items.Where(item => item != opened).ToList())
+        {
+            await item.CollapseAsync();
+        }
+    }
+}

@@ -1,0 +1,195 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<div @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tabs", Class)" style="@Style">
+    <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
+         data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
+         class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null)">
+        @foreach (var tab in _tabs)
+        {
+            var selected = tab == ActiveTab;
+            <button type="button" role="tab" id="@tab.TabId" aria-selected="@(selected ? "true" : "false")"
+                    aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
+                    tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
+                    class="tb-tabs__tab" @onclick="() => ActivateAsync(tab)">@tab.Text</button>
+        }
+    </div>
+    @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
+    <CascadingValue Value="this">@ChildContent</CascadingValue>
+</div>
+
+@code {
+    private readonly List<TbTab> _tabs = [];
+    private ElementReference _list;
+    private IJSObjectReference? _handle;
+    private bool _disposed;
+    private int _active;
+    private int? _lastActiveIndex;
+    private bool _indexFromParent;
+
+    /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>.</summary>
+    [Parameter]
+    public int ActiveIndex { get; set; }
+
+    /// <summary>Raised when the user selects another tab, or when removing a tab before the selected one changes its
+    /// position. TbTabs keeps the same tab selected, so a parent that removes tabs needn't adjust the index itself.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> ActiveIndexChanged { get; set; }
+
+    /// <summary>Whether the arrow keys select the tabs they reach. Defaults to
+    /// <see cref="TabActivation.Automatic"/>.</summary>
+    [Parameter]
+    public TabActivation Activation { get; set; } = TabActivation.Automatic;
+
+    /// <summary>Keeps a panel rendered, but hidden, once it has been shown, so its state survives switching tabs.
+    /// Without it, only the selected panel is rendered.</summary>
+    [Parameter]
+    public bool KeepAlive { get; set; }
+
+    /// <summary>Centers the tabs in their row.</summary>
+    [Parameter]
+    public bool Centered { get; set; }
+
+    /// <summary>The tab list's accessible name, when nothing nearby already names it.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>The <see cref="TbTab"/>s. A tab that first renders after the others, such as one inside an
+    /// <c>@if</c> that becomes true later, goes to the end of the list.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    internal TbTab? ActiveTab => _active >= 0 && _active < _tabs.Count ? _tabs[_active] : null;
+
+    // The tab that Tab reaches: the selected one, or the first enabled one when none is selected.
+    private TbTab? FocusableTab => ActiveTab is { Disabled: false } active ? active : _tabs.Find(tab => !tab.Disabled);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Only a new value from the parent moves the selection, so re-rendering with the old one keeps a click.
+        if (ActiveIndex != _lastActiveIndex)
+        {
+            _lastActiveIndex = ActiveIndex;
+            if (ActiveIndex != _active)
+            {
+                _active = ActiveIndex;
+                _indexFromParent = true;
+                _ = ForgetIndexFromParentAsync();
+            }
+        }
+    }
+
+    // Yielding queues the reset behind the current render batch, in which removed tabs are disposed.
+    private async Task ForgetIndexFromParentAsync()
+    {
+        await Task.Yield();
+        _indexFromParent = false;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/tabs.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachTabs", _list);
+            if (handle is null)
+            {
+                return;
+            }
+
+            if (_disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the tabs went with it.
+        }
+    }
+
+    internal void Add(TbTab tab)
+    {
+        _tabs.Add(tab);
+        StateHasChanged();
+    }
+
+    internal void Remove(TbTab tab)
+    {
+        var index = _tabs.IndexOf(tab);
+        _tabs.Remove(tab);
+        // The tabs go away with the list, or the parent already chose the index for the tabs that remain.
+        if (_disposed || _indexFromParent)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        // Keep the same tab selected, or its neighbor when the selected one went away.
+        var active = index < _active || _active >= _tabs.Count ? Math.Max(_active - 1, 0) : _active;
+        if (active != _active)
+        {
+            _active = active;
+            _ = InvokeAsync(ReportRemovalAsync);
+        }
+
+        StateHasChanged();
+    }
+
+    // A tab's header lives here, so a change to its text or state re-renders the list.
+    internal void Refresh() => StateHasChanged();
+
+    // Runs outside any event handler, so a failing callback goes to the renderer instead of being lost.
+    private async Task ReportRemovalAsync()
+    {
+        try
+        {
+            await ActiveIndexChanged.InvokeAsync(_active);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private async Task ActivateAsync(TbTab tab)
+    {
+        if (tab == ActiveTab)
+        {
+            return;
+        }
+
+        _active = _tabs.IndexOf(tab);
+        await ActiveIndexChanged.InvokeAsync(_active);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+    }
+}

@@ -1,0 +1,118 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+<div @attributes="AdditionalAttributes" data-part="item" style="@Style"
+     class="@ClassNames.Join("tb-accordion__item", _expanded ? "tb-accordion__item--expanded" : null, Class)">
+    @Heading
+    @* The content stays rendered while closed, so fields inside keep what was typed. *@
+    <div id="@PanelId" role="region" aria-labelledby="@TriggerId" hidden="@(!_expanded)" data-part="panel"
+         class="tb-accordion__panel">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    private readonly string _id = $"tb-accordion-item-{Guid.NewGuid():N}";
+    private bool _expanded;
+    private bool? _lastExpanded;
+
+    /// <summary>The header's text. <see cref="TitleContent"/> replaces it when set.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>Custom header content, in place of <see cref="Title"/>.</summary>
+    [Parameter]
+    public RenderFragment? TitleContent { get; set; }
+
+    /// <summary>Whether the item is open. Bind it with <c>@bind-Expanded</c>, or set it to open the item at first.
+    /// </summary>
+    [Parameter]
+    public bool Expanded { get; set; }
+
+    /// <summary>Raised when the user opens or closes the item, or when opening another one closes it.</summary>
+    [Parameter]
+    public EventCallback<bool> ExpandedChanged { get; set; }
+
+    /// <summary>Stops the item from being opened or closed.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>The content shown while the item is open.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TbAccordion? Accordion { get; set; }
+
+    private string TriggerId => $"{_id}-trigger";
+
+    private string PanelId => $"{_id}-panel";
+
+    // Razor has no element whose tag is chosen at run time, so the h1-h6 heading is built here.
+    private RenderFragment Heading => builder =>
+    {
+        builder.OpenElement(0, $"h{Accordion?.HeadingLevel ?? 3}");
+        builder.AddAttribute(1, "data-part", "heading");
+        builder.AddAttribute(2, "class", "tb-accordion__heading");
+        builder.AddContent(3, Trigger);
+        builder.CloseElement();
+    };
+
+    private RenderFragment Trigger =>
+        @<button type="button" id="@TriggerId" aria-expanded="@(_expanded ? "true" : "false")"
+                 aria-controls="@PanelId" disabled="@Disabled" data-part="trigger" class="tb-accordion__trigger"
+                 @onclick="ToggleAsync">
+            <span class="tb-accordion__title">
+                @if (TitleContent is not null)
+                {
+                    @TitleContent
+                }
+                else
+                {
+                    @Title
+                }
+            </span>
+            <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" data-part="chevron"
+                    Class="tb-accordion__chevron" />
+        </button>;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Accordion?.Add(this);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Only a new value from the parent opens or closes the item, so re-rendering with the old one keeps a click.
+        if (Expanded != _lastExpanded)
+        {
+            _lastExpanded = Expanded;
+            _expanded = Expanded;
+        }
+    }
+
+    internal async Task CollapseAsync()
+    {
+        if (!_expanded)
+        {
+            return;
+        }
+
+        _expanded = false;
+        StateHasChanged();
+        await ExpandedChanged.InvokeAsync(false);
+    }
+
+    private async Task ToggleAsync()
+    {
+        _expanded = !_expanded;
+        await ExpandedChanged.InvokeAsync(_expanded);
+        if (_expanded && Accordion is not null)
+        {
+            await Accordion.ExpandedAsync(this);
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Accordion?.Remove(this);
+}

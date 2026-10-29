@@ -1,0 +1,15 @@
+<TbTabs AriaLabel="Report sections" @bind-ActiveIndex="_section">
+    <TbTab Text="Summary">
+        <TbText>Revenue grew 12% over the quarter.</TbText>
+    </TbTab>
+    <TbTab Text="Details">
+        <TbText>Every region beat its target except the north-east.</TbText>
+    </TbTab>
+    <TbTab Text="Archive" Disabled>
+        <TbText>Older reports.</TbText>
+    </TbTab>
+</TbTabs>
+
+@code {
+    private int _section;
+}

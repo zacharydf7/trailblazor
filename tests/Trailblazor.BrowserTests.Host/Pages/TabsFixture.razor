@@ -1,0 +1,20 @@
+@page "/tabs"
+
+<TbTabs AriaLabel="Product" @bind-ActiveIndex="_section">
+    <TbTab Text="Overview">Overview panel</TbTab>
+    <TbTab Text="Specs" Disabled>Specs panel</TbTab>
+    <TbTab Text="Reviews">Reviews panel</TbTab>
+    <TbTab Text="Pricing">Pricing panel</TbTab>
+</TbTabs>
+<output data-testid="section">@_section</output>
+
+<TbTabs AriaLabel="Account" Activation="TabActivation.Manual" KeepAlive>
+    @* An unbound input keeps its text only while its element does. *@
+    <TbTab Text="Profile"><input aria-label="Bio" /></TbTab>
+    <TbTab Text="Security">Security panel</TbTab>
+    <TbTab Text="Billing">Billing panel</TbTab>
+</TbTabs>
+
+@code {
+    private int _section;
+}
