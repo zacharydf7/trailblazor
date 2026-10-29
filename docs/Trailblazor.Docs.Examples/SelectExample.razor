@@ -1,0 +1,23 @@
+<TbStack Gap="4" Style="max-width: 20rem">
+    <TbSelect Label="Shipping" @bind-Value="_shipping" Placeholder="Choose a speed" Clearable
+              HelperText="Express ships the same day.">
+        <TbOption Value="Speed.Standard">Standard (3-5 days)</TbOption>
+        <TbOption Value="Speed.Express">Express (1 day)</TbOption>
+        <TbOption Value="Speed.Overnight" Disabled>Overnight</TbOption>
+    </TbSelect>
+    <TbSelect Label="Country" @bind-Value="_country" Disabled>
+        <TbOption Value="@("Canada")">Canada</TbOption>
+    </TbSelect>
+</TbStack>
+
+@code {
+    private Speed? _shipping = Speed.Standard;
+    private string? _country = "Canada";
+
+    private enum Speed
+    {
+        Standard,
+        Express,
+        Overnight,
+    }
+}

@@ -1,0 +1,374 @@
+using System.Linq.Expressions;
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Trailblazor.Tests.Components;
+
+public class TbSelectTests : BunitContext
+{
+    private string? Size { get; set; }
+
+    public TbSelectTests()
+    {
+        Services.AddTrailblazor();
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+    }
+
+    [Fact]
+    public void Render_ShouldBeAComboboxNamedByItsLabelThatControlsAListbox_WhenInteractive()
+    {
+        var cut = RenderSelect("Medium");
+
+        var combobox = cut.Find("[role=combobox]");
+        var label = cut.Find("label");
+        Assert.Null(label.GetAttribute("for"));
+        Assert.Equal(label.Id, combobox.GetAttribute("aria-labelledby"));
+        Assert.Equal("listbox", combobox.GetAttribute("aria-haspopup"));
+        Assert.Equal("0", combobox.GetAttribute("tabindex"));
+        var listbox = cut.Find($"#{combobox.GetAttribute("aria-controls")}");
+        Assert.Equal("listbox", listbox.GetAttribute("role"));
+        Assert.Equal("auto", listbox.GetAttribute("popover"));
+        var options = cut.FindAll("[role=option]");
+        Assert.Equal(["Small", "Medium", "Large"], options.Select(option => option.TextContent.Trim()));
+        Assert.Equal(["false", "true", "false"], options.Select(option => option.GetAttribute("aria-selected")));
+        Assert.Equal("true", options[2].GetAttribute("aria-disabled"));
+        Assert.Equal("Medium", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldShowThePlaceholder_WhenNoOptionMatchesTheValue()
+    {
+        var cut = RenderSelect(null);
+
+        Assert.Equal("Pick a size", cut.Find("[data-part=placeholder]").TextContent.Trim());
+        Assert.Empty(cut.FindAll("[data-part=value]"));
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
+    }
+
+    [Fact]
+    public void Click_ShouldChooseTheOption_WhenAnEnabledOptionIsClicked()
+    {
+        var cut = RenderSelect("Small");
+
+        cut.FindAll("[role=option]")[1].Click();
+
+        Assert.Equal("Medium", Size);
+        Assert.Equal("true", cut.FindAll("[role=option]")[1].GetAttribute("aria-selected"));
+        Assert.Equal("Medium", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Click_ShouldIgnoreTheOption_WhenItIsDisabled()
+    {
+        var cut = RenderSelect("Small");
+
+        cut.FindAll("[role=option]")[2].Click();
+
+        Assert.Equal("Small", Size);
+    }
+
+    [Fact]
+    public void Clear_ShouldSetTheDefaultValue_WhenTheClearButtonIsClicked()
+    {
+        var cut = RenderSelect("Small");
+
+        cut.Find("[data-part=clear]").Click();
+
+        Assert.Null(Size);
+        Assert.Equal("Pick a size", cut.Find("[data-part=placeholder]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldHideTheClearButtonAndLeaveTheComboboxOutOfTheTabOrder_WhenDisabled()
+    {
+        var cut = RenderSelect("Small", disabled: true);
+
+        var combobox = cut.Find("[role=combobox]");
+        Assert.Equal("-1", combobox.GetAttribute("tabindex"));
+        Assert.Equal("true", combobox.GetAttribute("aria-disabled"));
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
+    }
+
+    [Fact]
+    public void Render_ShouldBeANativeSelectNamedForTheBoundProperty_WhenRenderedStatically()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderSelect("Medium");
+
+        var select = cut.Find("select");
+        Assert.Equal(cut.Find("label").GetAttribute("for"), select.Id);
+        Assert.Equal("Size", select.GetAttribute("name"));
+        var options = cut.FindAll("option");
+        Assert.Equal(["Small", "Medium", "Large"], options.Select(option => option.GetAttribute("value")));
+        Assert.True(options[1].HasAttribute("selected"));
+        Assert.True(options[2].HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll("[data-part=chevron]"));
+    }
+
+    [Fact]
+    public void Render_ShouldStartWithAnEmptyPlaceholderOption_WhenRenderedStaticallyWithNoChoice()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderSelect(null);
+
+        var first = cut.FindAll("option")[0];
+        Assert.Equal("", first.GetAttribute("value"));
+        Assert.True(first.HasAttribute("selected"));
+        Assert.Equal("Pick a size", first.TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldShowAnOptionsTextOrValue_WhenItHasNoContent()
+    {
+        var cut = Render<TbSelect<int>>(parameters => parameters
+            .Add(select => select.Label, "Copies")
+            .Add(select => select.Value, 2)
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<int>>(0);
+                builder.AddAttribute(1, nameof(TbOption<int>.Value), 1);
+                builder.CloseComponent();
+                builder.OpenComponent<TbOption<int>>(2);
+                builder.AddAttribute(3, nameof(TbOption<int>.Value), 2);
+                builder.AddAttribute(4, nameof(TbOption<int>.Text), "Two copies");
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal(["1", "Two copies"], cut.FindAll("[role=option]").Select(option => option.TextContent.Trim()));
+        Assert.Equal("Two copies", cut.FindAll("[role=option]")[1].GetAttribute("data-text"));
+        Assert.Equal("Two copies", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldUpdateTheShownChoice_WhenTheChosenOptionsTextChanges()
+    {
+        var cut = Render<TbSelect<int>>(parameters => parameters.Add(select => select.Value, 1)
+            .Add(select => select.ChildContent, (RenderFragment)(builder => AddNumber(builder, "One"))));
+
+        cut.Render(parameters => parameters.Add(select => select.ChildContent,
+            (RenderFragment)(builder => AddNumber(builder, "Uno"))));
+
+        Assert.Equal("Uno", cut.Find("[data-part=value]").TextContent.Trim());
+
+        static void AddNumber(RenderTreeBuilder builder, string text)
+        {
+            builder.OpenComponent<TbOption<int>>(0);
+            builder.AddAttribute(1, nameof(TbOption<int>.Value), 1);
+            builder.AddAttribute(2, nameof(TbOption<int>.Text), text);
+            builder.CloseComponent();
+        }
+    }
+
+    [Fact]
+    public void Click_ShouldChooseAnEnumOption_WhenTheSelectIsBoundToANullableEnum()
+    {
+        DayOfWeek? day = null;
+        var cut = Render<TbSelect<DayOfWeek?>>(parameters => parameters
+            .Add(select => select.Value, day)
+            .Add(select => select.ValueChanged, (DayOfWeek? next) => day = next)
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<DayOfWeek>>(0);
+                builder.AddAttribute(1, nameof(TbOption<DayOfWeek>.Value), DayOfWeek.Monday);
+                builder.CloseComponent();
+                builder.OpenComponent<TbOption<DayOfWeek>>(2);
+                builder.AddAttribute(3, nameof(TbOption<DayOfWeek>.Value), DayOfWeek.Friday);
+                builder.CloseComponent();
+            })));
+
+        cut.FindAll("[role=option]")[1].Click();
+
+        Assert.Equal(DayOfWeek.Friday, day);
+        Assert.Equal("Friday", cut.Find("[data-part=value]").TextContent.Trim());
+        Assert.Equal(["Monday", "Friday"], cut.FindAll("[role=option]").Select(option => option.TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Render_ShouldUpdateTheShownChoice_WhenTheChosenOptionsContentChanges()
+    {
+        var cut = Render<TbSelect<int>>(parameters => parameters.Add(select => select.Value, 1)
+            .Add(select => select.ChildContent, (RenderFragment)(builder => AddNumbers(builder, (1, "One")))));
+
+        cut.Render(parameters => parameters.Add(select => select.ChildContent,
+            (RenderFragment)(builder => AddNumbers(builder, (1, "Uno")))));
+
+        Assert.Equal("Uno", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheNewChoice_WhenTheValueAndTheOptionsChangeTogether()
+    {
+        var cut = Render<TbSelect<int>>(parameters => parameters.Add(select => select.Value, 1)
+            .Add(select => select.ChildContent, (RenderFragment)(builder => AddNumbers(builder, (1, "One"), (2, "Two")))));
+
+        cut.Render(parameters => parameters.Add(select => select.Value, 3).Add(select => select.ChildContent,
+            (RenderFragment)(builder => AddNumbers(builder, (3, "Three"), (4, "Four")))));
+
+        Assert.Equal("Three", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldShowThePlaceholder_WhenTheChosenOptionIsSwappedForAnother()
+    {
+        var cut = Render<TbSelect<int>>(parameters => parameters.Add(select => select.Value, 1)
+            .Add(select => select.Placeholder, "Pick a number")
+            .Add(select => select.ChildContent, (RenderFragment)(builder => AddNumbers(builder, (1, "One"), (2, "Two")))));
+
+        cut.Render(parameters => parameters.Add(select => select.ChildContent,
+            (RenderFragment)(builder => AddNumbers(builder, (5, "Five"), (2, "Two")))));
+
+        Assert.Equal("Pick a number", cut.Find("[data-part=placeholder]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldMarkOnlyTheChosenOptionSelected_WhenOptionsHaveNoContent()
+    {
+        var chosen = 1;
+        var cut = Render<TbSelect<int>>(parameters => parameters
+            .Add(select => select.Value, chosen)
+            .Add(select => select.ValueChanged, (int next) => chosen = next)
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                for (var value = 1; value <= 3; value++)
+                {
+                    builder.OpenComponent<TbOption<int>>(0);
+                    builder.AddAttribute(1, nameof(TbOption<int>.Value), value);
+                    builder.AddAttribute(2, nameof(TbOption<int>.Text), $"Option {value}");
+                    builder.CloseComponent();
+                }
+            })));
+
+        cut.FindAll("[role=option]")[1].Click();
+        Assert.Equal(["false", "true", "false"], cut.FindAll("[role=option]").Select(o => o.GetAttribute("aria-selected")));
+
+        cut.Render(parameters => parameters.Add(select => select.Value, 3));
+        Assert.Equal(["false", "false", "true"], cut.FindAll("[role=option]").Select(o => o.GetAttribute("aria-selected")));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenAnOptionsValueIsNotTheSelectsType()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => Render<TbSelect<long>>(parameters => parameters
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<int>>(0);
+                builder.AddAttribute(1, nameof(TbOption<int>.Value), 1);
+                builder.CloseComponent();
+            }))));
+
+        Assert.Contains("Int64", exception.Message);
+        exception = Assert.Throws<InvalidOperationException>(() => Render<TbSelect<long?>>(parameters => parameters
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<int>>(0);
+                builder.AddAttribute(1, nameof(TbOption<int>.Value), 1);
+                builder.CloseComponent();
+            }))));
+        Assert.Contains("must be a Int64", exception.Message);
+    }
+
+    [Fact]
+    public void Validate_ShouldIgnoreASelect_WhenItWasRemovedFromTheForm()
+    {
+        var editContext = new EditContext(this);
+        var cut = Render<EditForm>(parameters => parameters
+            .Add(form => form.EditContext, editContext)
+            .Add(form => form.ChildContent, (RenderFragment<EditContext>)(_ => builder =>
+            {
+                builder.OpenComponent<TbSelect<string?>>(0);
+                builder.AddAttribute(1, nameof(TbSelect<string?>.ValueExpression),
+                    (Expression<Func<string?>>)(() => Size));
+                builder.AddAttribute(2, nameof(TbSelect<string?>.Validation),
+                    (Func<string?, IEnumerable<string>>)(_ => ["Pick a size."]));
+                builder.CloseComponent();
+            })));
+        Assert.False(editContext.Validate());
+
+        cut.Render(parameters => parameters.Add(form => form.ChildContent,
+            (RenderFragment<EditContext>)(_ => _ => { })));
+
+        Assert.True(editContext.Validate());
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenAnOptionIsOutsideASelect()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => Render<TbOption<string>>(parameters => parameters.Add(option => option.Value, "Small")));
+
+        Assert.Contains("TbSelect", exception.Message);
+    }
+
+    [Fact]
+    public void Choose_ShouldShowTheValidationMessage_WhenTheValueIsInvalid()
+    {
+        var cut = RenderSelect("Small", validation: size => size == "Medium" ? ["Medium is sold out."] : []);
+
+        cut.FindAll("[role=option]")[1].Click();
+
+        Assert.Equal("Medium is sold out.", cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Equal("true", cut.Find("[role=combobox]").GetAttribute("aria-invalid"));
+        Assert.Contains(cut.Find("[data-part=error]").Id!, cut.Find("[role=combobox]").GetAttribute("aria-describedby"));
+    }
+
+    [Fact]
+    public async Task Dispose_ShouldDetachTheScript_WhenTheSelectGoesAway()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/select.js").SetupModule("createSelect", _ => true);
+        handle.SetupVoid("dispose").SetVoidResult();
+        RenderSelect("Small");
+
+        await DisposeComponentsAsync();
+
+        handle.VerifyInvoke("dispose");
+    }
+
+    private IRenderedComponent<TbSelect<string?>> RenderSelect(string? value, bool disabled = false,
+        Func<string?, IEnumerable<string>>? validation = null)
+    {
+        Size = value;
+        return Render<TbSelect<string?>>(parameters => parameters
+            .Add(select => select.Label, "Size")
+            .Add(select => select.Placeholder, "Pick a size")
+            .Add(select => select.Clearable, true)
+            .Add(select => select.Disabled, disabled)
+            .Add(select => select.Validation, validation)
+            .Add(select => select.Value, value)
+            .Add(select => select.ValueChanged, (string? next) => Size = next)
+            .Add(select => select.ValueExpression, (Expression<Func<string?>>)(() => Size))
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                AddOption(builder, 0, "Small");
+                AddOption(builder, 10, "Medium");
+                AddOption(builder, 20, "Large", disabled: true);
+            })));
+    }
+
+    private static void AddOption(RenderTreeBuilder builder, int sequence, string value, bool disabled = false)
+    {
+        builder.OpenComponent<TbOption<string?>>(sequence);
+        builder.AddAttribute(sequence + 1, nameof(TbOption<string?>.Value), value);
+        builder.AddAttribute(sequence + 2, nameof(TbOption<string?>.Disabled), disabled);
+        builder.AddAttribute(sequence + 3, nameof(TbOption<string?>.ChildContent),
+            (RenderFragment)(content => content.AddContent(0, value)));
+        builder.CloseComponent();
+    }
+
+    private static void AddNumbers(RenderTreeBuilder builder, params (int Value, string Label)[] numbers)
+    {
+        foreach (var (value, label) in numbers)
+        {
+            builder.OpenComponent<TbOption<int>>(0);
+            builder.AddAttribute(1, nameof(TbOption<int>.Value), value);
+            builder.AddAttribute(2, nameof(TbOption<int>.ChildContent),
+                (RenderFragment)(content => content.AddContent(0, label)));
+            builder.CloseComponent();
+        }
+    }
+}

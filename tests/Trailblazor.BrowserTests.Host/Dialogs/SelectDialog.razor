@@ -1,0 +1,10 @@
+@inherits TbDialog<bool>
+
+<TbSelect Label="Color" @bind-Value="_color">
+    <TbOption Value="@("Red")">Red</TbOption>
+    <TbOption Value="@("Green")">Green</TbOption>
+</TbSelect>
+
+@code {
+    private string? _color;
+}

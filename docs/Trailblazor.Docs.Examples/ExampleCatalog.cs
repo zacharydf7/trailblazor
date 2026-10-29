@@ -31,6 +31,7 @@ public static class ExampleCatalog
         new("toast", "Toast", typeof(ToastExample)),
         new("tabs", "Tabs", typeof(TabsExample)),
         new("accordion", "Accordion", typeof(AccordionExample)),
+        new("select", "Select", typeof(SelectExample)),
     ];
 
     public static Example? Find(string name) => All.FirstOrDefault(example => example.Name == name);

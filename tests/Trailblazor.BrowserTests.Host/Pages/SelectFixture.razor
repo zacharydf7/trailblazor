@@ -1,0 +1,18 @@
+@page "/select"
+@using Trailblazor.BrowserTests.Host.Dialogs
+@inject IDialogService Dialogs
+
+<TbSelect Label="Size" @bind-Value="_size" Placeholder="Pick a size" Clearable>
+    <TbOption Value="@("Small")">Small</TbOption>
+    <TbOption Value="@("Medium")">Medium</TbOption>
+    <TbOption Value="@("Large")" Disabled>Large</TbOption>
+    <TbOption Value="@("Extra large")">Extra large</TbOption>
+    <TbOption Value="@("Extra small")">Extra small</TbOption>
+    <TbOption Value="@("Slim")">Slim</TbOption>
+</TbSelect>
+<output data-testid="size">@_size</output>
+<TbButton OnClick='() => Dialogs.ShowAsync<SelectDialog, bool>("Choose a color")'>Next</TbButton>
+
+@code {
+    private string? _size;
+}

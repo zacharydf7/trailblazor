@@ -76,12 +76,14 @@
         if (ActiveIndex != _lastActiveIndex)
         {
             _lastActiveIndex = ActiveIndex;
-            if (ActiveIndex != _active)
+            // Before the tabs register there is nothing a removal could shift.
+            if (ActiveIndex != _active && _tabs.Count > 0)
             {
-                _active = ActiveIndex;
                 _indexFromParent = true;
                 _ = ForgetIndexFromParentAsync();
             }
+
+            _active = ActiveIndex;
         }
     }
 

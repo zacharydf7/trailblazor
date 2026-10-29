@@ -10,7 +10,8 @@
                          Disabled ? "tb-field--disabled" : null, Class)">
             @if (Label is not null)
             {
-                <label data-part="label" for="@InputId" class="@ClassNames.Join("tb-field__label", Classes?.Label)">
+                <label data-part="label" id="@LabelId" for="@(LabelTargetsInput ? InputId : null)"
+                       class="@ClassNames.Join("tb-field__label", Classes?.Label)">
                     @Label
                     @RequiredMarker
                 </label>

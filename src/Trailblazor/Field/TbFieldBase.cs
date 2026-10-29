@@ -70,6 +70,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
 
     private protected string InputId => $"{FieldId}-input";
 
+    private protected string LabelId => $"{FieldId}-label";
+
+    // A label's for attribute works only on form controls; other inputs name themselves with aria-labelledby.
+    private protected virtual bool LabelTargetsInput => true;
+
     private protected string HelperId => $"{FieldId}-helper";
 
     private protected string ErrorId => $"{FieldId}-error";
