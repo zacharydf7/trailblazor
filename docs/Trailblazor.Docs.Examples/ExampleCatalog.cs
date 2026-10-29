@@ -18,7 +18,38 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // The types whose parameters or options the example's page tables.
     public required IReadOnlyList<Type> Api { get; init; }
 
+    // Keyboard, roles and the names a developer must give; text in backticks shows as code.
+    public required IReadOnlyList<string> Accessibility { get; init; }
+
+    // How a test finds the component in the example; null for a layout component with no role of its own.
+    public required TestTarget? Target { get; init; }
+
+    // Extra testing advice for the page; text in backticks shows as code.
+    public string? TestingTip { get; init; }
+
     public IReadOnlyList<ExampleSource> Sources => [.. new[] { Component }.Concat(Parts).Select(ExampleSource.Of)];
+}
+
+// An ARIA role, as Playwright's AriaRole names it apart from case, and the accessible name of the component in the
+// example; or its text, for a role that takes no name from its content.
+public sealed record TestTarget(string Role, string? Name = null)
+{
+    public string? Text { get; init; }
+
+    // A component that shows only once something is clicked, or hovered, is found after that.
+    public TestTarget? OpenedBy { get; init; }
+
+    public bool OpenOnHover { get; init; }
+
+    public string Locator => Text is null
+        ? $"page.GetByRole(AriaRole.{RoleName}, new() {{ Name = \"{Name}\" }})"
+        : $"page.GetByRole(AriaRole.{RoleName}).Filter(new() {{ HasText = \"{Text}\" }})";
+
+    public string Steps => OpenedBy is null
+        ? Locator
+        : $"await {OpenedBy.Locator}.{(OpenOnHover ? "Hover" : "Click")}Async();\n{Locator}";
+
+    private string RoleName => $"{char.ToUpperInvariant(Role[0])}{Role[1..]}";
 }
 
 public sealed record ExampleSource(string File, string Text)
@@ -43,129 +74,361 @@ public static class ExampleCatalog
             typeof(TextExample))
         {
             Api = [typeof(TbText)],
+            Accessibility =
+            [
+                "It renders the element `As` names, so a heading is a real heading. Choose the level that fits "
+                    + "the page's outline, whatever `TextStyle` it looks like.",
+                "`TextStyle` changes only the look; it adds no meaning for screen readers.",
+            ],
+            Target = new("heading", "Display"),
         },
         new("divider", "Divider", ExampleCategory.Layout,
             "A line that separates content, across or down.", typeof(DividerExample))
         {
             Api = [typeof(TbDivider)],
+            Accessibility =
+            [
+                "A horizontal divider is an `<hr>`, which screen readers treat as a separator. A vertical one is "
+                    + "a `div` with `role=\"separator\"` and `aria-orientation=\"vertical\"`.",
+                "It takes no focus and has no name.",
+            ],
+            Target = null,
         },
         new("surface", "Surface", ExampleCategory.Layout,
             "A raised panel with the app's surface color, an optional border and a shadow, for grouping content.",
             typeof(SurfaceExample))
         {
             Api = [typeof(TbSurface)],
+            Accessibility =
+            [
+                "A plain `div` with no role. To make it a landmark, give it one with a name, such as "
+                    + "`role=\"region\"` and an `aria-label`.",
+                "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order "
+                    + "on screen.",
+            ],
+            Target = null,
         },
         new("icon", "Icon", ExampleCategory.Content,
             "An SVG icon from any icon set, sized to the text around it and hidden from screen readers unless named.",
             typeof(IconExample))
         {
             Api = [typeof(TbIcon)],
+            Accessibility =
+            [
+                "Without a `Label` the icon is decorative and hidden from screen readers with `aria-hidden`.",
+                "With a `Label` it's an `img` named by the label. Give one whenever the icon means something that "
+                    + "no text next to it says.",
+            ],
+            Target = new("img", "Failed"),
         },
         new("button", "Button", ExampleCategory.Actions,
             "Starts an action, in filled, outlined or text styles and every tone.", typeof(ButtonExample))
         {
             Api = [typeof(TbButton), typeof(ButtonClasses)],
+            Accessibility =
+            [
+                "A native `<button>`, so Enter and Space press it. It defaults to `type=\"button\"`, so it never "
+                    + "submits a form by accident.",
+                "Its text is its name; a decorative icon in the `Start` or `End` slot adds nothing to it.",
+                "`Disabled` takes it out of the tab order. `Loading` keeps it focusable, marks it `aria-disabled` "
+                    + "and `aria-busy`, and ignores clicks.",
+                "With reduced motion, the busy spinner stops turning.",
+            ],
+            Target = new("button", "Add item"),
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
             "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
         {
             Api = [typeof(TbIconButton)],
+            Accessibility =
+            [
+                "`AriaLabel` is required and names the button, since it shows no text; a blank label throws when "
+                    + "it renders.",
+                "The icon itself is hidden from screen readers. Add a `TbTooltip` with the same words so sighted "
+                    + "users can see the name too.",
+                "Keys, `Disabled` and `Loading` work as they do for a button.",
+            ],
+            Target = new("button", "Add"),
         },
         new("button-group", "Button group", ExampleCategory.Actions,
             "Joins related buttons into one control.", typeof(ButtonGroupExample))
         {
             Api = [typeof(TbButtonGroup)],
+            Accessibility =
+            [
+                "A `div` with `role=\"group\"`. Give it an `aria-label` that says what the buttons do together.",
+                "Each button keeps its own tab stop; the group adds no arrow-key navigation.",
+            ],
+            Target = new("group", "Text alignment"),
         },
         new("stack", "Stack", ExampleCategory.Layout,
             "Lays its children out in a row or a column, evenly spaced.", typeof(StackExample))
         {
             Api = [typeof(TbStack)],
+            Accessibility =
+            [
+                "A plain `div` with no role; it only lays out what it holds.",
+                "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order "
+                    + "on screen.",
+            ],
+            Target = null,
         },
         new("spacer", "Spacer", ExampleCategory.Layout,
             "Takes up the free space in a stack, pushing what follows to the end.", typeof(SpacerExample))
         {
             Api = [typeof(TbSpacer)],
+            Accessibility =
+            [
+                "A plain `div` with no role and no content; screen readers skip it.",
+            ],
+            Target = null,
         },
         new("grid", "Grid", ExampleCategory.Layout,
             "A responsive 12-column grid for page layouts.", typeof(GridExample))
         {
             Api = [typeof(TbGrid), typeof(TbGridItem)],
+            Accessibility =
+            [
+                "Plain `div`s with no roles; they only lay out what they hold.",
+                "`Start` moves an item on screen but not in the reading order. Screen readers and the keyboard "
+                    + "follow the order in the markup, so keep it the same as the order on screen.",
+            ],
+            Target = null,
         },
         new("container", "Container", ExampleCategory.Layout,
             "Centers content and caps its width at a readable size.", typeof(ContainerExample))
         {
             Api = [typeof(TbContainer)],
+            Accessibility =
+            [
+                "A plain `div` with no role; it only limits the width of what it holds.",
+            ],
+            Target = null,
         },
         new("alert", "Alert", ExampleCategory.Feedback,
             "A message in the page, such as a warning or an error, that can be closed.", typeof(AlertExample))
         {
             Api = [typeof(TbAlert), typeof(AlertClasses)],
+            Accessibility =
+            [
+                "Danger and Warning alerts have `role=\"alert\"`, which screen readers read out at once. The "
+                    + "other tones have `role=\"status\"`, read out when the reader is idle.",
+                "Screen readers may not read a status alert that is added to the page with its message already in "
+                    + "it. Add it empty and then set the message, or use `IAnnouncer`.",
+                "The icon is decorative. The close button is named by `CloseLabel`, \"Close\" by default.",
+            ],
+            Target = new("alert") { Text = "A danger alert." },
         },
         new("progress", "Progress", ExampleCategory.Feedback,
             "Shows how far along work is, as a bar or a circle, or that it is still going.", typeof(ProgressExample))
         {
             Api = [typeof(TbProgress)],
+            Accessibility =
+            [
+                "A `progressbar` with its range and current value. Leaving `Value` null makes it indeterminate, "
+                    + "with no current value.",
+                "`AriaLabel` is required and names it; a blank label throws when it renders.",
+                "With reduced motion, the moving bar and the spinning ring pulse instead.",
+            ],
+            Target = new("progressbar", "Upload"),
         },
         new("text-field", "Text field", ExampleCategory.Inputs,
             "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
         {
             Api = [typeof(TbTextField<>), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "The `Label` is a real `<label>` and names the field; give every field one. A placeholder is not "
+                    + "a label.",
+                "Helper text and validation messages are linked to the field with `aria-describedby`, an error "
+                    + "sets `aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from "
+                    + "screen readers.",
+                "A validation message isn't read out when it appears; screen readers read it with the field when "
+                    + "it next gets focus.",
+                "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "
+                    + "browsers expose them.",
+            ],
+            Target = new("textbox", "Name"),
         },
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.", typeof(NumberFieldExample))
         {
             Api = [typeof(TbNumberField<>), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "A native number input, a `spinbutton`: Up and Down step the value by `Step`.",
+                "The Decrease and Increase buttons are left out of the tab order, since the arrow keys do the "
+                    + "same, and they turn off at `Min` and `Max`.",
+                "A value out of range, or one that isn't a number, shows as an error with `aria-invalid`.",
+                "The `Label` names the field. Helper text and validation messages are linked to the field with "
+                    + "`aria-describedby`, an error sets `aria-invalid`, and `Required` sets `aria-required`; the "
+                    + "asterisk it adds is hidden from screen readers.",
+            ],
+            Target = new("spinbutton", "Quantity"),
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
         {
             Api = [typeof(TbCheckbox<>), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "A native checkbox inside its label, so the `Label` names it, clicking the text toggles it, and "
+                    + "Space toggles it from the keyboard.",
+                "A `bool?` value of null shows the mixed state, which screen readers read as partly checked.",
+                "Helper text and validation messages are linked to the field with `aria-describedby`, an error "
+                    + "sets `aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from "
+                    + "screen readers.",
+                "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
+                    + "high-contrast theme.",
+            ],
+            Target = new("checkbox", "Email me updates"),
         },
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.", typeof(SwitchExample))
         {
             Api = [typeof(TbSwitch), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "A native checkbox with `role=\"switch\"`, read as on or off; the `Label` names it and Space "
+                    + "toggles it.",
+                "Use it for a setting that takes effect at once. For a choice saved with a form, use a checkbox.",
+                "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
+                    + "high-contrast theme.",
+            ],
+            Target = new("switch", "Auto-save"),
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
         {
             Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "A `fieldset` with `role=\"radiogroup\"`, named by its `Label` as the legend. Required, error and "
+                    + "helper text apply to the whole group.",
+                "The group is one tab stop, and the arrow keys move between options and choose them, as browsers "
+                    + "do for native radios.",
+                "`Disabled` on the group turns off every option.",
+                "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
+                    + "high-contrast theme.",
+            ],
+            Target = new("radiogroup", "Paper size"),
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
         {
             Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "A `combobox` named by its `Label` that opens a `listbox` of `option`s. Focus stays on the "
+                    + "combobox, which points to the active option with `aria-activedescendant`.",
+                "While closed: Down, Up, Enter or Space opens it, Home and End open it on the first or last "
+                    + "option, and typing jumps to an option that starts with what was typed.",
+                "While open: the arrows, Home and End move; Enter or Space chooses; Escape closes. In a single "
+                    + "select, Tab chooses the active option and moves on. A multi-select stays open as options are "
+                    + "chosen.",
+                "Before the page is interactive it renders as the browser's own `<select>`, so it still works.",
+                "The clear button is named \"Clear\" and sends focus back to the field.",
+            ],
+            Target = new("combobox", "Shipping"),
+            TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
+                + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
+                + "works on the native `<select>` too.",
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or focus.", typeof(TooltipExample))
         {
             Api = [typeof(TbTooltip)],
+            Accessibility =
+            [
+                "The tooltip describes its anchor: its text goes into the `aria-describedby` of the first "
+                    + "focusable element inside. It's a description, not a name, so that element still needs a name of "
+                    + "its own.",
+                "It shows at once on focus and after a short delay on hover. Moving the pointer onto the tooltip "
+                    + "keeps it open, and Escape hides it.",
+            ],
+            Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
         },
         new("menu", "Menu", ExampleCategory.Overlays,
             "A list of actions that opens from a button, with submenus.", typeof(MenuExample))
         {
             Api = [typeof(TbMenu), typeof(TbMenuItem), typeof(TbSubMenu)],
+            Accessibility =
+            [
+                "The trigger is a button with `aria-haspopup=\"menu\"` and `aria-expanded`, named by `Label`; "
+                    + "with an `Icon` it becomes an icon button named by the label. The list is a `menu` of "
+                    + "`menuitem`s.",
+                "Enter, Space or Down opens the menu on its first item; Up opens it on the last.",
+                "In the menu, Up and Down move and wrap, Home and End jump to the ends, and a letter jumps to the "
+                    + "next item that starts with it. Right opens a submenu and Left closes it, mirrored on "
+                    + "right-to-left pages.",
+                "Escape closes the menu and returns focus to the trigger; Tab closes it and moves on. Disabled "
+                    + "items stay focusable, marked `aria-disabled`, so people can still find them.",
+            ],
+            Target = new("button", "Actions"),
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
             "A window over the page, opened from code, that asks for input or a decision.",
             typeof(DialogExample), typeof(RenameDialog))
         {
             Api = [typeof(DialogOptions), typeof(DialogSettings), typeof(TbDialogActions)],
+            Accessibility =
+            [
+                "A native `<dialog>` named by its title. A modal one makes the rest of the page inert, so focus "
+                    + "and screen readers stay inside; a non-modal one leaves the page usable.",
+                "On opening, focus goes to an element marked `autofocus`, or else the first field, or the dialog "
+                    + "itself with `InitialFocus = DialogFocus.Dialog`. On closing, it goes back to whatever opened "
+                    + "the dialog.",
+                "Escape cancels the topmost dialog unless `DismissOnEscape` is false; a menu or select open "
+                    + "inside it closes first. A click that starts and ends on the backdrop cancels a modal unless "
+                    + "`DismissOnBackdrop` is false.",
+                "`ConfirmAsync` opens an `alertdialog` described by its message.",
+                "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't "
+                    + "hide them.",
+            ],
+            Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.", typeof(TabsExample))
         {
             Api = [typeof(TbTabs), typeof(TbTab)],
+            Accessibility =
+            [
+                "A `tablist` of `tab`s, each controlling a `tabpanel`. Give the list an `AriaLabel`.",
+                "The tab list is one tab stop. Left and Right move between tabs and wrap, mirrored on "
+                    + "right-to-left pages, and Home and End jump to the ends. With automatic activation, moving also "
+                    + "selects; with manual activation, Enter or Space selects.",
+                "Each panel is focusable, so keyboard users can reach content that has no controls.",
+            ],
+            Target = new("tablist", "Report sections"),
         },
         new("accordion", "Accordion", ExampleCategory.Navigation,
             "Sections that open and close under their headings.", typeof(AccordionExample))
         {
             Api = [typeof(TbAccordion), typeof(TbAccordionItem)],
+            Accessibility =
+            [
+                "Each title is a button with `aria-expanded` inside a heading, level 3 unless `HeadingLevel` says "
+                    + "otherwise. Choose the level that fits the page's outline.",
+                "Each panel is a `region` named by its title.",
+                "Tab moves between the titles, and Enter or Space opens and closes them.",
+            ],
+            Target = new("button", "Shipping"),
         },
         new("toast", "Toast", ExampleCategory.Feedback,
             "A brief message in a corner that doesn't interrupt, with an optional action.", typeof(ToastExample))
         {
             Api = [typeof(ToastOptions), typeof(ToastSettings)],
+            Accessibility =
+            [
+                "Toasts are read out as they appear: Danger and Warning interrupt, the others wait. They never "
+                    + "take focus themselves.",
+                "F8 moves focus to the newest toast's first button, and Escape sends it back to where it was.",
+                "A toast's timer pauses while the pointer is over it or it has focus, and Danger toasts stay "
+                    + "until they are dismissed unless given a `Duration`.",
+                "The toasts sit in a region named \"Notifications\".",
+            ],
+            Target = new("listitem") { Text = "Report saved", OpenedBy = new("button", "Save report") },
+            TestingTip = "Each toast is an item in the region named `Notifications`.",
         },
     ];
 

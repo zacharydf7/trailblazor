@@ -69,6 +69,32 @@
             </table>
         </div>
     }
+
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Accessibility</TbText>
+    <ul class="docs-notes">
+        @foreach (var note in example.Accessibility)
+        {
+            <li>@WithCode(note)</li>
+        }
+    </ul>
+
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
+    @if (example.Target is { } target)
+    {
+        <TbText>Find it by its role, the way a person finds it:</TbText>
+        <CodeBlock Label="Finding it in Playwright" Code="@target.Steps" />
+    }
+    else
+    {
+        <TbText>It has no role and name a test can single out, so find what it holds or what sits next to it.</TbText>
+    }
+    @if (example.TestingTip is { } tip)
+    {
+        <TbText>@WithCode(tip)</TbText>
+    }
+    <TbText class="docs-note">
+        The <a href="guides/testing">testing guide</a> shows how to set up bUnit and Playwright.
+    </TbText>
 }
 else
 {
@@ -80,4 +106,23 @@ else
 @code {
     [Parameter]
     public string Name { get; set; } = "";
+
+    // Every other piece of the text sits between backticks and shows as code.
+    private static RenderFragment WithCode(string text) => builder =>
+    {
+        var pieces = text.Split('`');
+        for (var index = 0; index < pieces.Length; index++)
+        {
+            if (index % 2 == 1)
+            {
+                builder.OpenElement(0, "code");
+                builder.AddContent(1, pieces[index]);
+                builder.CloseElement();
+            }
+            else
+            {
+                builder.AddContent(2, pieces[index]);
+            }
+        }
+    };
 }

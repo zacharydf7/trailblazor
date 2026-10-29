@@ -198,6 +198,7 @@ a:focus-visible {
 
 /* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
 .docs-main > :is(p, h3) code,
+.docs-notes code,
 .docs-api code {
     font-family: var(--tb-font-family-mono);
     font-size: 0.9em;
@@ -205,6 +206,15 @@ a:focus-visible {
 
 .docs-main > p + p {
     margin-block-start: var(--tb-space-3);
+}
+
+.docs-notes {
+    margin: 0;
+    padding-inline-start: var(--tb-space-5);
+}
+
+.docs-notes > li + li {
+    margin-block-start: var(--tb-space-2);
 }
 
 .docs-api__required {

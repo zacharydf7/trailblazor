@@ -25,6 +25,23 @@ public class ExampleCatalogTests
     }
 
     [Fact]
+    public void Steps_ShouldHoverTheOpenerFirst_WhenTheTargetOpensOnHover()
+    {
+        var steps = ExampleCatalog.Find("tooltip")!.Target!.Steps;
+
+        Assert.Equal("await page.GetByRole(AriaRole.Button, new() { Name = \"Add\" }).HoverAsync();\n"
+            + "page.GetByRole(AriaRole.Tooltip, new() { Name = \"Add an item\" })", steps);
+    }
+
+    [Fact]
+    public void Steps_ShouldFilterByText_WhenTheTargetIsFoundByItsText()
+    {
+        var steps = ExampleCatalog.Find("alert")!.Target!.Steps;
+
+        Assert.Equal("page.GetByRole(AriaRole.Alert).Filter(new() { HasText = \"A danger alert.\" })", steps);
+    }
+
+    [Fact]
     public void ExampleCatalog_ShouldShowEveryEmbeddedSource_WhenCalled()
     {
         var shown = ExampleCatalog.All.SelectMany(example => example.Sources).Select(source => $"Source/{source.File}");

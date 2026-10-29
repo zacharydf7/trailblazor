@@ -91,6 +91,41 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldListTheAccessibilityNotesAndTheLocator_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+
+        var notes = page.Locator(".docs-notes > li");
+
+        await Expect(notes).ToHaveCountAsync(ExampleCatalog.Find("button")!.Accessibility.Count);
+        await Expect(notes.First).ToHaveTextAsync(new Regex("^A native <button>, so Enter and Space press it."));
+        await Expect(notes.First.Locator("code").First).ToHaveTextAsync("<button>");
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Finding it in Playwright" }))
+            .ToHaveTextAsync("""page.GetByRole(AriaRole.Button, new() { Name = "Add item" })""");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldShowTheStepThatOpensTheComponent_WhenItOnlyShowsAfterOne(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/dialog");
+
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Finding it in Playwright" })).ToHaveTextAsync(
+            """
+            await page.GetByRole(AriaRole.Button, new() { Name = "Rename report" }).ClickAsync();
+            page.GetByRole(AriaRole.Dialog, new() { Name = "Rename report" })
+            """);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldSayThereIsNoRoleToFindItBy_WhenTheComponentHasNone(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/stack");
+
+        await Expect(page.GetByText("It has no role and name a test can single out")).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Finding it in Playwright" })).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Search_ShouldListTheComponentsWithAParameter_WhenItsNameIsSearched(string browser)
     {
         var page = await OpenDocsAsync(browser, "");
