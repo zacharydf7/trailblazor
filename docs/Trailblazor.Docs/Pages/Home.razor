@@ -9,6 +9,17 @@
     tokens. Every example on this site runs in your browser, so try them out.
 </TbText>
 
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Guides</TbText>
+<ul class="docs-cards">
+    @foreach (var guide in GuideCatalog.All)
+    {
+        <li class="docs-card">
+            <a href="@guide.Path" class="docs-card__title">@guide.Title</a>
+            <TbText>@guide.Summary</TbText>
+        </li>
+    }
+</ul>
+
 @foreach (var category in Enum.GetValues<ExampleCategory>())
 {
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">@category</TbText>

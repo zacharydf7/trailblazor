@@ -1,0 +1,112 @@
+@page "/guides/getting-started"
+
+<PageTitle>Getting started · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Getting started</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    Add Trailblazor to a Blazor app for .NET 10, render your first component, and choose a render mode.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">1. Add the library</TbText>
+<TbText>
+    Trailblazor isn't on NuGet yet. Until it is, clone the repository and reference the library from your app's
+    project file.
+</TbText>
+<CodeBlock Label="Project reference" Code="@ProjectReference" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">2. Register the services</TbText>
+<TbText>
+    In <code>Program.cs</code>, register the services the components use: dialogs, toasts and screen-reader
+    announcements.
+</TbText>
+<CodeBlock Label="Program.cs" Code="@Services" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">3. Import the namespace</TbText>
+<CodeBlock Label="_Imports.razor" Code="@Imports" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">4. Add TbRoot to the layout</TbText>
+<TbText>
+    Put one <code>&lt;TbRoot /&gt;</code> in the main layout. It adds Trailblazor's stylesheet to the page head and
+    hosts the dialogs, toasts and announcements that services open from code.
+</TbText>
+<CodeBlock Label="MainLayout.razor" Code="@Layout" />
+<TbText>
+    The dialogs and toasts a page opens only show when <code>TbRoot</code> runs in the same interactive session as
+    that page, so make the whole app interactive: give <code>Routes</code> and <code>HeadOutlet</code> the same render
+    mode. With interactivity set page by page instead, the layout renders statically and dialogs and toasts never
+    appear.
+</TbText>
+<CodeBlock Label="App.razor" Code="@App" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">5. Use a component</TbText>
+<CodeBlock Label="A first component" Code="@FirstComponent" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Render modes</TbText>
+<TbText>
+    Every component works in Interactive Server, Interactive WebAssembly and Interactive Auto. Pages rendered as static
+    server-side rendering still show every component; fields post their values with a form, and a select renders the
+    browser's own <code>&lt;select&gt;</code>. Anything that responds to clicks or keys, such as a dialog, a menu or
+    tabs, needs an interactive render mode.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">App-wide options</TbText>
+<TbText>
+    <code>AddTrailblazor</code> takes the settings that apply to every dialog and toast. A dialog's own options still
+    override them.
+</TbText>
+<CodeBlock Label="App-wide options" Code="@Options" />
+
+@code {
+    private const string ProjectReference = """
+        <ItemGroup>
+          <ProjectReference Include="..\trailblazor\src\Trailblazor\Trailblazor.csproj" />
+        </ItemGroup>
+        """;
+
+    private const string Services = """
+        builder.Services.AddTrailblazor();
+        """;
+
+    private const string App = """
+        <head>
+            ...
+            <HeadOutlet @rendermode="InteractiveServer" />
+        </head>
+        <body>
+            <Routes @rendermode="InteractiveServer" />
+            <script src="_framework/blazor.web.js"></script>
+        </body>
+        """;
+
+    private const string Imports = """
+        @using Trailblazor
+        """;
+
+    private const string Layout = """
+        @inherits LayoutComponentBase
+
+        <TbRoot />
+
+        <main>
+            @Body
+        </main>
+        """;
+
+    private const string FirstComponent = """
+        <TbButton OnClick="SaveAsync">Save</TbButton>
+
+        @code {
+            private Task SaveAsync() => Task.CompletedTask;
+        }
+        """;
+
+    private const string Options = """
+        using Trailblazor;
+
+        builder.Services.AddTrailblazor(options =>
+        {
+            options.Dialogs.DismissOnBackdrop = false;
+            options.Toasts.Position = ToastPosition.BottomEnd;
+        });
+        """;
+}

@@ -1,0 +1,10 @@
+@* Scrolls on its own, so it takes focus for keyboard users. *@
+<pre class="docs-source" role="region" tabindex="0" aria-label="@Label"><code>@Code</code></pre>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Code { get; set; } = "";
+}

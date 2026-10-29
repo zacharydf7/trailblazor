@@ -1,5 +1,12 @@
 @using Trailblazor.Docs.Examples
 
+<h2 class="docs-nav__heading">Guides</h2>
+<ul class="docs-nav__list">
+    @foreach (var guide in GuideCatalog.All)
+    {
+        <li><NavLink href="@guide.Path" class="docs-nav__link">@guide.Title</NavLink></li>
+    }
+</ul>
 @foreach (var category in Enum.GetValues<ExampleCategory>())
 {
     <h2 class="docs-nav__heading">@category</h2>

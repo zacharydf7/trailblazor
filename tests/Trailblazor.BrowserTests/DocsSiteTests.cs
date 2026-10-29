@@ -12,12 +12,15 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static string[] Titles => [.. ExampleCatalog.All.OrderBy(example => example.Category)
         .Select(example => example.Title)];
 
+    // The guides come before the components, in the sidebar and on the home page.
+    private static string[] Links => [.. GuideCatalog.All.Select(guide => guide.Title), .. Titles];
+
     // The page's own heading; an example, such as the one for text, can show headings of its own.
     private static ILocator PageTitle(IPage page) => page.Locator(".docs-main > h1");
 
     public static TheoryData<string, string, string> PagesInBothThemes => new(
         from browser in AllBrowsers.Names
-        from path in new[] { "", "components/dialog" }
+        from path in new[] { "", "components/dialog", "guides/getting-started" }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
@@ -44,10 +47,10 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "");
 
-        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Components" });
+        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
 
-        await Expect(nav.GetByRole(AriaRole.Heading)).ToHaveTextAsync(Enum.GetNames<ExampleCategory>());
-        await Expect(nav.GetByRole(AriaRole.Link)).ToHaveTextAsync(Titles);
+        await Expect(nav.GetByRole(AriaRole.Heading)).ToHaveTextAsync(["Guides", .. Enum.GetNames<ExampleCategory>()]);
+        await Expect(nav.GetByRole(AriaRole.Link)).ToHaveTextAsync(Links);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -57,7 +60,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         var main = page.GetByRole(AriaRole.Main);
 
-        await Expect(main.GetByRole(AriaRole.Link)).ToHaveTextAsync(Titles);
+        await Expect(main.GetByRole(AriaRole.Link)).ToHaveTextAsync(Links);
         await Expect(main.GetByText(ExampleCatalog.Find("menu")!.Summary)).ToBeVisibleAsync();
     }
 
@@ -88,10 +91,25 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Site_ShouldOpenEveryGuide_WhenEachIsChosenFromTheList(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "");
+        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
+
+        foreach (var guide in GuideCatalog.All)
+        {
+            await nav.GetByRole(AriaRole.Link, new() { Name = guide.Title, Exact = true }).ClickAsync();
+
+            await Expect(PageTitle(page)).ToHaveTextAsync(guide.Title);
+            await Expect(page.GetByRole(AriaRole.Region).First).ToBeVisibleAsync();
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Site_ShouldOpenEveryComponentPage_WhenEachIsChosenFromTheList(string browser)
     {
         var page = await OpenDocsAsync(browser, "");
-        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Components" });
+        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
 
         foreach (var title in Titles)
         {
@@ -122,8 +140,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Navigation_ShouldStayClosedUntilAskedFor_WhenTheScreenIsNarrow(string browser)
     {
         var page = await OpenDocsAsync(browser, "", new() { ViewportSize = new() { Width = 390, Height = 844 } });
-        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Components" });
-        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Components" });
+        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Contents" });
+        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
         await Expect(nav).ToBeHiddenAsync();
 
         await toggle.ClickAsync();

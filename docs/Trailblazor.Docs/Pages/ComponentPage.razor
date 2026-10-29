@@ -16,8 +16,7 @@
     @foreach (var source in example.Sources)
     {
         <TbText TextStyle="TextStyle.Caption" As="TextElement.P" class="docs-source__file">@source.File</TbText>
-        @* Scrolls on its own, so it takes focus for keyboard users. *@
-        <pre class="docs-source" role="region" tabindex="0" aria-label="@source.File"><code>@source.Text</code></pre>
+        <CodeBlock Label="@source.File" Code="@source.Text" />
     }
 
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>

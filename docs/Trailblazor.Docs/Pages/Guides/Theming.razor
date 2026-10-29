@@ -1,0 +1,79 @@
+@page "/guides/theming"
+
+<PageTitle>Theming · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Theming</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    Every component draws its colors, spacing, shapes and type from design tokens: CSS custom properties named
+    <code>--tb-*</code>. Attributes switch between the ready-made looks, and your own CSS can change any token.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Light and dark</TbText>
+<TbText>
+    Set <code>data-tb-theme</code> to <code>light</code>, <code>dark</code> or <code>system</code>, which follows the
+    device's setting. Without it, Trailblazor keeps the page's own color scheme, so adding the library never darkens an
+    app by itself. The theme switcher at the top of this site sets this attribute.
+</TbText>
+<CodeBlock Label="Theme attribute" Code="@Theme" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Palettes</TbText>
+<TbText>
+    A palette sets the colors for both light and dark. Graphite, a near-monochrome look with ink-colored primary
+    actions, is the default; Cobalt has blue primary actions. Choose one with <code>data-tb-palette</code>. Like the
+    theme, it works on <code>&lt;html&gt;</code> or on any element, and then applies to everything inside it.
+</TbText>
+<CodeBlock Label="Palette attribute" Code="@Palette" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Density</TbText>
+<TbText>
+    <code>data-tb-density="compact"</code> makes controls and rows shorter, for screens full of data.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Changing tokens</TbText>
+<TbText>
+    Trailblazor's CSS sits in cascade layers named <code>tb.*</code>, and your own CSS outside any layer always wins
+    over it, whatever the selectors. So set any token in your stylesheet to change it everywhere.
+</TbText>
+<CodeBlock Label="Token overrides" Code="@Overrides" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Your own palette</TbText>
+<TbText>
+    A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
+    <code>light-dark()</code> so each color has its light and dark value, and set the background, surface, text,
+    border, primary, neutral and focus-ring tokens. The built-in palettes in <code>trailblazor.css</code> list them
+    all.
+</TbText>
+<CodeBlock Label="A custom palette" Code="@CustomPalette" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Reduced motion</TbText>
+<TbText>
+    When the device asks for reduced motion, transitions finish at once and a busy button's spinner stops. An
+    indeterminate progress bar or circle fills and gently pulses in place instead of moving.
+</TbText>
+
+@code {
+    private const string Theme = """
+        <html lang="en" data-tb-theme="system">
+        """;
+
+    private const string Palette = """
+        <html lang="en" data-tb-theme="system" data-tb-palette="cobalt">
+        """;
+
+    private const string Overrides = """
+        :root {
+            --tb-font-family: "Inter", system-ui, sans-serif;
+            --tb-radius-md: 2px;
+        }
+        """;
+
+    private const string CustomPalette = """
+        [data-tb-palette="forest"] {
+            --tb-color-background: light-dark(white, #0f1a14);
+            --tb-color-text: light-dark(#14231a, #e8f2ec);
+            --tb-color-primary: light-dark(#1e6b45, #7fd1a5);
+            --tb-color-on-primary: light-dark(white, #0f1a14);
+            /* ...and the remaining surface, border, neutral and focus-ring tokens. */
+        }
+        """;
+}

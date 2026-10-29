@@ -1,0 +1,16 @@
+namespace Trailblazor.Docs.Examples;
+
+public sealed record Guide(string Path, string Title, string Summary);
+
+// The docs site's guides, in the order it lists them.
+public static class GuideCatalog
+{
+    public static IReadOnlyList<Guide> All { get; } =
+    [
+        new("guides/getting-started", "Getting started",
+            "Add Trailblazor to an app, render your first component, and choose a render mode."),
+        new("guides/theming", "Theming", "Light and dark, palettes, density, and changing any design token."),
+        new("guides/testing", "Testing",
+            "Test pages built with Trailblazor in bUnit and Playwright, and find components the way users do."),
+    ];
+}

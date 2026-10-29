@@ -183,10 +183,15 @@ a:focus-visible {
     white-space: nowrap;
 }
 
-.docs-api code,
-.docs-api__name code,
-.docs-note code {
+/* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
+.docs-main > :is(p, h3) code,
+.docs-api code {
     font-family: var(--tb-font-family-mono);
+    font-size: 0.9em;
+}
+
+.docs-main > p + p {
+    margin-block-start: var(--tb-space-3);
 }
 
 .docs-api__required {
