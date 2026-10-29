@@ -55,6 +55,10 @@ const keyStep = 16;
 // Small enough for a narrow window, and big enough to keep a header's buttons usable.
 const minimumSize = { width: 240, height: 120 };
 
+// How far the pointer moves before a press becomes a drag, so a small slip while clicking Move or Resize still opens
+// its menu.
+const dragThreshold = 4;
+
 const clamp = (value, low, high) => Math.min(Math.max(value, low), Math.max(low, high));
 
 // An element marked autofocus wins; a field component carries the attribute on its wrapper, so look inside it.
@@ -144,6 +148,8 @@ export function openDialog(dialog, dotNet, options) {
     const draggable = dialog.classList.contains('tb-dialog--draggable');
     const resizable = dialog.classList.contains('tb-dialog--resizable');
     let drag = null;
+    // The Move or Resize button a drag started on, whose click as the drag ends mustn't open its menu.
+    let draggedHandle = null;
 
     // A minimized or maximized dialog has its place set by its window state.
     const isNormal = () => (dialog.dataset.windowState ?? 'normal') === 'normal';
@@ -183,36 +189,69 @@ export function openDialog(dialog, dotNet, options) {
         place(rightToLeft ? start.left + start.width - width : start.left, start.top);
     }
 
-    // The header moves the dialog, apart from its buttons other than Move; the grip resizes it.
+    // The Move or Resize menu whose button the element is, if any; the menus' items don't count.
+    const handleOf = element => element.closest?.('[data-part="trigger"]')
+        ?.closest('[data-part="move"], [data-part="resize"]');
+
+    // The header moves the dialog, apart from its buttons other than Move and an open Move menu; the grip resizes it.
     const onDragStart = event => {
-        const grip = resizable && event.target.closest('[data-part="resize"]');
+        draggedHandle = null;
+        const button = event.target.closest('button');
+        const handle = button && handleOf(button);
+        const grip = resizable && handle?.dataset.part === 'resize';
         const header = draggable && event.target.closest('[data-part="header"]');
-        const button = event.target.closest('button:not([data-part="move"], [data-part="resize"])');
-        if (event.button !== 0 || !isNormal() || !(grip || (header && !button))) {
+        if (event.button !== 0 || !isNormal() || event.target.closest('[data-part="menu"]')
+            || !(grip || (header && (!button || handle)))) {
             return;
         }
 
+        // Stops the browser starting a drag of its own, which WebKit would take the rest of the pointer's moves for.
         event.preventDefault();
-        dialog.setPointerCapture(event.pointerId);
-        drag = { start: measure(), x: event.clientX, y: event.clientY, resize: Boolean(grip) };
+        // Capturing on the pressed button, not the dialog, keeps its click there, so a click still opens the menu.
+        (handle ? button : header).setPointerCapture(event.pointerId);
+        drag = { x: event.clientX, y: event.clientY, resize: grip, start: null, handle };
     };
     const onDragMove = event => {
-        if (drag) {
-            (drag.resize ? resizeBy : moveBy)(drag.start, event.clientX - drag.x, event.clientY - drag.y);
+        if (!drag) {
+            return;
         }
+
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
+        if (!drag.start) {
+            if (Math.hypot(dx, dy) < dragThreshold) {
+                return;
+            }
+
+            drag.start = measure();
+        }
+
+        (drag.resize ? resizeBy : moveBy)(drag.start, dx, dy);
     };
-    const onDragEnd = () => {
+    const onDragEnd = event => {
+        draggedHandle = event.type === 'pointerup' && drag?.start ? drag.handle : null;
         drag = null;
     };
+    const onClickAfterDrag = event => {
+        if (draggedHandle?.contains(event.target)) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        draggedHandle = null;
+    };
+    // Runs before the menu's own keys, which would open it on Up and Down.
     const steps = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
     const onArrowKey = event => {
+        draggedHandle = null;
         const step = steps[event.key];
-        const handle = event.target.closest?.('[data-part="move"], [data-part="resize"]');
+        const handle = handleOf(event.target);
         if (!step || !handle || event.altKey || event.ctrlKey || event.metaKey || !isNormal()) {
             return;
         }
 
         event.preventDefault();
+        event.stopPropagation();
         const change = handle.dataset.part === 'move' ? moveBy : resizeBy;
         change(measure(), step[0] * keyStep, step[1] * keyStep);
     };
@@ -238,7 +277,8 @@ export function openDialog(dialog, dotNet, options) {
         dialog.addEventListener('pointermove', onDragMove);
         dialog.addEventListener('pointerup', onDragEnd);
         dialog.addEventListener('pointercancel', onDragEnd);
-        dialog.addEventListener('keydown', onArrowKey);
+        dialog.addEventListener('click', onClickAfterDrag, { capture: true });
+        dialog.addEventListener('keydown', onArrowKey, { capture: true });
         window.addEventListener('resize', keepInside);
     }
 
@@ -258,7 +298,8 @@ export function openDialog(dialog, dotNet, options) {
         dialog.removeEventListener('pointermove', onDragMove);
         dialog.removeEventListener('pointerup', onDragEnd);
         dialog.removeEventListener('pointercancel', onDragEnd);
-        dialog.removeEventListener('keydown', onArrowKey);
+        dialog.removeEventListener('click', onClickAfterDrag, { capture: true });
+        dialog.removeEventListener('keydown', onArrowKey, { capture: true });
         window.removeEventListener('resize', keepInside);
         stack.splice(stack.indexOf(entry), 1);
         leaveTray(dialog);
@@ -276,6 +317,16 @@ export function openDialog(dialog, dotNet, options) {
     }
 
     return {
+        // A place or size chosen from the Move or Resize menu replaces where the dialog was dragged or sized to.
+        moveTo(from, to) {
+            delete dialog.dataset.placed;
+            dialog.classList.replace(from, to);
+        },
+        resizeTo(from, to) {
+            delete dialog.dataset.sized;
+            dialog.classList.replace(from, to);
+            keepInside();
+        },
         // 'normal', 'minimized' or 'maximized'.
         setWindowState(state) {
             dialog.dataset.windowState = state;

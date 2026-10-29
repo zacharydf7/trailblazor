@@ -37,21 +37,9 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddContent(16, Dialog.Title);
         builder.CloseElement();
         var state = Dialog.WindowState;
-        // The script moves the dialog with the arrow keys while this button has focus; the hint says so.
         if (Dialog.Options.Draggable && !Dialog.Options.Modal && state == DialogWindowState.Normal)
         {
-            builder.OpenComponent<TbIconButton>(17);
-            builder.AddComponentParameter(18, nameof(TbIconButton.Icon), BuiltInIcons.Move);
-            builder.AddComponentParameter(19, nameof(TbIconButton.AriaLabel), "Move");
-            builder.AddComponentParameter(20, nameof(TbIconButton.Size), Size.Small);
-            builder.AddAttribute(21, "aria-describedby", $"{TitleId}-move-hint");
-            builder.AddAttribute(22, "data-part", "move");
-            builder.CloseComponent();
-            builder.OpenElement(23, "span");
-            builder.AddAttribute(24, "id", $"{TitleId}-move-hint");
-            builder.AddAttribute(25, "class", "tb-visually-hidden");
-            builder.AddContent(26, "Arrow keys move the dialog.");
-            builder.CloseElement();
+            DialogMenus.AddMove(builder, 17, Dialog);
         }
 
         if (Dialog.Options.Minimizable && !Dialog.Options.Modal)

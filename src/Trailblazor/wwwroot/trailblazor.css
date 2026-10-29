@@ -1422,24 +1422,39 @@
         max-height: none;
     }
 
+    /* The script keeps a dragged dialog inside the window; one the Move menu placed needs the usual limits for that. */
+    .tb-dialog[data-sized]:not([data-placed], [data-window-state="minimized"], [data-window-state="maximized"]) {
+        max-width: calc(100% - 2 * var(--tb-space-4));
+        max-height: calc(100vh - 2 * var(--tb-space-8));
+    }
+
     .tb-dialog--draggable:not([data-window-state="minimized"], [data-window-state="maximized"]) .tb-dialog__header {
         cursor: move;
         user-select: none;
         touch-action: none;
     }
 
+    /* The Move menu sits in the header but is no drag handle. */
+    .tb-dialog--draggable .tb-dialog__header .tb-menu__list {
+        cursor: auto;
+        user-select: auto;
+    }
+
     /* A row of its own under the body, so the grip never covers the dialog's actions. */
     .tb-dialog__resize {
         align-self: flex-end;
+    }
+
+    .tb-dialog__resize > [data-part="trigger"] {
         cursor: nwse-resize;
         touch-action: none;
     }
 
-    .tb-dialog__resize:dir(rtl) {
+    .tb-dialog__resize > [data-part="trigger"]:dir(rtl) {
         cursor: nesw-resize;
     }
 
-    .tb-dialog__resize:dir(rtl) svg {
+    .tb-dialog__resize > [data-part="trigger"]:dir(rtl) svg {
         transform: scaleX(-1);
     }
 

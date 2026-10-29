@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Trailblazor.BrowserTests;
 
 // Under load, Firefox can hand one page's pointer moves to an element holding pointer capture in another page of the
@@ -10,6 +12,12 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
 {
     // One press of an arrow key on the move button or the resize grip, in pixels.
     private const double KeyStep = 16;
+
+    // A positioned dialog's distance from the window edge, --tb-space-4.
+    private const double EdgeGap = 16;
+
+    // The width of a large dialog, 48rem.
+    private const double LargeWidth = 768;
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFollowThePointer_WhenItsHeaderIsDragged(string browser)
@@ -52,6 +60,150 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
         AssertNear([before.X + 2 * KeyStep, before.Y - KeyStep], [after.X, after.Y]);
         await Expect(move).ToBeFocusedAsync();
         await Expect(move).ToHaveAccessibleDescriptionAsync("Arrow keys move the dialog.");
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Move" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldGoToThePlaceChosen_WhenOneIsPickedFromTheMoveMenuAfterADrag(string browser)
+    {
+        var page = await OpenMovableAsync(browser);
+        var dialog = Movable(page);
+        await DragAsync(page, dialog.GetByRole(AriaRole.Heading), -100, 50);
+
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Move" }).ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Top end", Exact = true }).ClickAsync();
+
+        await Expect(dialog).ToHaveClassAsync(new Regex("tb-dialog--position-topend"));
+        var (width, _) = await DialogTests.ViewportAsync(page);
+        var box = await DialogTests.BoxAsync(page, "Movable");
+        AssertNear([width - EdgeGap, EdgeGap], [box.X + box.Width, box.Y]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldGoBackToItsPlace_WhenThePlaceItAlreadyHasIsPickedAfterADrag(string browser)
+    {
+        var page = await OpenMovableAsync(browser);
+        var dialog = Movable(page);
+        var before = await DialogTests.BoxAsync(page, "Movable");
+        await DragAsync(page, dialog.GetByRole(AriaRole.Heading), -100, 50);
+
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Move" }).ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Center", Exact = true }).ClickAsync();
+
+        await page.WaitForFunctionAsync("() => !document.querySelector('dialog[open]').hasAttribute('data-placed')");
+        var after = await DialogTests.BoxAsync(page, "Movable");
+        AssertNear([before.X, before.Y], [after.X, after.Y]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStayPut_WhenADragStartsInsideTheOpenMoveMenu(string browser)
+    {
+        var page = await OpenMovableAsync(browser);
+        var dialog = Movable(page);
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Move" }).ClickAsync();
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Move" });
+        await Expect(menu).ToBeVisibleAsync();
+        var before = await DialogTests.BoxAsync(page, "Movable");
+        var list = (await menu.BoundingBoxAsync())!;
+
+        // The middle of the list's top padding, which no item covers and the rounded corners don't cut off.
+        var (x, y) = (list.X + list.Width / 2, list.Y + 2);
+        await page.Mouse.MoveAsync(x, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(x + 80, y, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        var after = await DialogTests.BoxAsync(page, "Movable");
+        AssertNear([before.X, before.Y], [after.X, after.Y]);
+    }
+
+    // Only Chromium can drive touch from Playwright. A touch drag, unlike a mouse drag, ends without a click, so
+    // nothing may be left waiting to swallow one; Enter's click on Move would lose its default, opening the menu.
+    [Fact]
+    public async Task MoveMenu_ShouldOpenWithEnter_WhenATouchDragOnTheMoveButtonEndedWithoutAClick()
+    {
+        var page = await OpenMovableAsync("chromium", options: new() { HasTouch = true });
+        var dialog = Movable(page);
+        var before = await DialogTests.BoxAsync(page, "Movable");
+        var move = dialog.GetByRole(AriaRole.Button, new() { Name = "Move" });
+        var start = (await move.BoundingBoxAsync())!;
+        var (x, y) = (start.X + start.Width / 2, start.Y + start.Height / 2);
+        var touch = await page.Context.NewCDPSessionAsync(page);
+        await TouchAsync(touch, "touchStart", x, y);
+        await TouchAsync(touch, "touchMove", x - 40, y + 20);
+        await TouchAsync(touch, "touchMove", x - 80, y + 40);
+        await TouchAsync(touch, "touchEnd", null, null);
+        var after = await DialogTests.BoxAsync(page, "Movable");
+        AssertNear([before.X - 80, before.Y + 40], [after.X, after.Y]);
+
+        await move.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Move" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldGrowToTheWindowsCorner_WhenDraggedToTheTopLeftAndResizedAllTheWay(string browser)
+    {
+        var page = await OpenMovableAsync(browser);
+        var dialog = Movable(page);
+        var (width, height) = await DialogTests.ViewportAsync(page);
+        var title = (await dialog.GetByRole(AriaRole.Heading).BoundingBoxAsync())!;
+        await DragAsync(page, dialog.GetByRole(AriaRole.Heading), 1 - (title.X + title.Width / 2),
+            1 - (title.Y + title.Height / 2));
+
+        // The pointer stops just inside the window's bottom-right corner, past where the grip can follow.
+        var grip = (await dialog.GetByRole(AriaRole.Button, new() { Name = "Resize" }).BoundingBoxAsync())!;
+        await DragAsync(page, dialog.GetByRole(AriaRole.Button, new() { Name = "Resize" }),
+            width - 1 - (grip.X + grip.Width / 2), height - 1 - (grip.Y + grip.Height / 2));
+
+        var box = await DialogTests.BoxAsync(page, "Movable");
+        AssertNear([0, 0, width, height], [box.X, box.Y, box.X + box.Width, box.Y + box.Height]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStayInsideANarrowerWindow_WhenResizedAndThenPlacedFromTheMoveMenu(string browser)
+    {
+        var page = await OpenMovableAsync(browser);
+        var dialog = Movable(page);
+        await DragAsync(page, dialog.GetByRole(AriaRole.Button, new() { Name = "Resize" }), 300, 0);
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Move" }).ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Bottom end", Exact = true }).ClickAsync();
+        await Expect(dialog).ToHaveClassAsync(new Regex("tb-dialog--position-bottomend"));
+        var sized = await DialogTests.BoxAsync(page, "Movable");
+
+        await page.SetViewportSizeAsync((int)sized.Width - 100, 720);
+
+        var (width, _) = await DialogTests.ViewportAsync(page);
+        var box = await DialogTests.BoxAsync(page, "Movable");
+        AssertNear([EdgeGap, width - EdgeGap], [box.X, box.X + box.Width]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldTakeTheSizeChosen_WhenOneIsPickedFromTheResizeMenuAfterADrag(string browser)
+    {
+        var page = await OpenMovableAsync(browser);
+        var dialog = Movable(page);
+        var grip = dialog.GetByRole(AriaRole.Button, new() { Name = "Resize" });
+        await DragAsync(page, grip, 40, 30);
+
+        await grip.ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Large", Exact = true }).ClickAsync();
+
+        await Expect(dialog).ToHaveClassAsync(new Regex("tb-dialog--large"));
+        Assert.Equal(LargeWidth, (await DialogTests.BoxAsync(page, "Movable")).Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MoveMenu_ShouldStayClosed_WhenTheDialogIsDraggedByTheMoveButton(string browser)
+    {
+        var page = await OpenMovableAsync(browser);
+        var before = await DialogTests.BoxAsync(page, "Movable");
+
+        await DragAsync(page, Movable(page).GetByRole(AriaRole.Button, new() { Name = "Move" }), 80, 0);
+
+        Assert.Equal(before.X + 80, (await DialogTests.BoxAsync(page, "Movable")).X, tolerance: 1);
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Move" })).ToBeHiddenAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -202,9 +354,10 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
             + $"{save.Y + save.Height}).");
     }
 
-    private async Task<IPage> OpenMovableAsync(string browser, bool rightToLeft = false)
+    private async Task<IPage> OpenMovableAsync(string browser, bool rightToLeft = false,
+        BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, "/dialogs");
+        var page = await OpenAsync(browser, "/dialogs", options);
         if (rightToLeft)
         {
             await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
@@ -220,6 +373,13 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
         Assert.All(expected.Zip(actual), pair => Assert.Equal(pair.First, pair.Second, tolerance: 1));
 
     private static ILocator Movable(IPage page) => page.GetByRole(AriaRole.Dialog, new() { Name = "Movable" });
+
+    private static Task TouchAsync(ICDPSession session, string type, double? x, double? y) =>
+        session.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
+        {
+            ["type"] = type,
+            ["touchPoints"] = x is null ? Array.Empty<object>() : new object[] { new { x, y } },
+        });
 
     // Presses the middle of the element, moves by the distance in a few steps, and lets go.
     private static async Task DragAsync(IPage page, ILocator handle, double dx, double dy)

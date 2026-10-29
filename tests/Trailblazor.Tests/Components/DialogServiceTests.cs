@@ -205,14 +205,67 @@ public class DialogServiceTests : BunitContext
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
             options: new() { Modal = false, Draggable = true, Resizable = true });
 
-        var move = host.WaitForElement("[data-part=move]");
-        var grip = host.Find("[data-part=resize]");
+        var move = host.WaitForElement("[data-part=move] [data-part=trigger]");
+        var grip = host.Find("[data-part=resize] [data-part=trigger]");
         Assert.Equal(("Move", "Resize"), (move.GetAttribute("aria-label"), grip.GetAttribute("aria-label")));
+        Assert.Equal(("menu", "menu"), (move.GetAttribute("aria-haspopup"), grip.GetAttribute("aria-haspopup")));
         Assert.Equal("Arrow keys move the dialog.", host.Find($"#{move.GetAttribute("aria-describedby")}").TextContent);
         Assert.Equal("Arrow keys resize the dialog.",
             host.Find($"#{grip.GetAttribute("aria-describedby")}").TextContent);
         Assert.Contains("tb-dialog--draggable", host.Find("dialog").ClassList);
         Assert.Contains("tb-dialog--resizable", host.Find("dialog").ClassList);
+    }
+
+    [Fact]
+    public void Menus_ShouldOfferEveryPlaceAndEverySizeButFull_WhenTheDialogIsDraggableAndResizable()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Modal = false, Draggable = true, Resizable = true });
+
+        host.WaitForElement("[data-part=move]");
+        Assert.Equal(["Center", "Top", "Bottom", "Start", "End", "Top start", "Top end", "Bottom start", "Bottom end"],
+            host.FindAll("[data-part=move] [role=menuitem]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(["Small", "Medium", "Large", "Extra large"],
+            host.FindAll("[data-part=resize] [role=menuitem]").Select(item => item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task MenuItems_ShouldTellTheBrowserDialogItsNewPlaceAndSize_WhenChosen()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("moveTo", _ => true).SetVoidResult();
+        handle.SetupVoid("resizeTo", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Modal = false, Draggable = true, Resizable = true, Size = DialogSize.Small });
+        host.WaitForElement("[data-part=move]");
+
+        await MenuItem(host, "move", "Top end").ClickAsync(new());
+        await MenuItem(host, "resize", "Large").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Equal(["tb-dialog--position-center", "tb-dialog--position-topend"],
+            handle.VerifyInvoke("moveTo").Arguments));
+        host.WaitForAssertion(() => Assert.Equal(["tb-dialog--small", "tb-dialog--large"],
+            handle.VerifyInvoke("resizeTo").Arguments));
+    }
+
+    [Fact]
+    public async Task MoveMenu_ShouldStillTellTheBrowserDialog_WhenTheCurrentPlaceIsChosen()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("moveTo", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false, Draggable = true });
+        host.WaitForElement("[data-part=move]");
+
+        await MenuItem(host, "move", "Center").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Equal(["tb-dialog--position-center", "tb-dialog--position-center"],
+            handle.VerifyInvoke("moveTo").Arguments));
     }
 
     [Fact]
@@ -357,6 +410,9 @@ public class DialogServiceTests : BunitContext
 
         protected override void OnParametersSet() => ParametersSet++;
     }
+
+    private static AngleSharp.Dom.IElement MenuItem(IRenderedComponent<DialogHost> host, string menu, string text) =>
+        host.FindAll($"[data-part={menu}] [role=menuitem]").Single(item => item.TextContent.Trim() == text);
 
     private static (string?, string?) Labels(IRenderedComponent<DialogHost> host) =>
         (host.Find("[data-part=minimize]").GetAttribute("aria-label"),

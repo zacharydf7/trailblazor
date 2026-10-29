@@ -43,6 +43,12 @@ public sealed class DialogReference
 
     internal event Action? Changed;
 
+    // Choices from the Move and Resize menus. Each is a command, so choosing the current place again still undoes a
+    // drag.
+    internal event Action<DialogPosition>? MoveRequested;
+
+    internal event Action<DialogSize>? ResizeRequested;
+
     internal void SetHeader(bool showHeader, bool closeButton)
     {
         ShowHeader = showHeader;
@@ -61,6 +67,10 @@ public sealed class DialogReference
         WindowState = windowState;
         Changed?.Invoke();
     }
+
+    internal void MoveTo(DialogPosition position) => MoveRequested?.Invoke(position);
+
+    internal void ResizeTo(DialogSize size) => ResizeRequested?.Invoke(size);
 
     // Set by the rendered dialog, so closing first closes the browser's dialog and focus goes back to the opener.
     internal Func<Task>? CloseInBrowserAsync { get; set; }

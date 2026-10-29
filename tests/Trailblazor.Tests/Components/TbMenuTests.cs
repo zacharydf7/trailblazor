@@ -94,6 +94,38 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDescribeTheTrigger_WhenGivenADescription()
+    {
+        var cut = Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Label, "Move")
+            .Add(menu => menu.Description, "Arrow keys move it."));
+
+        var trigger = cut.Find("[data-part=trigger]");
+        Assert.Equal("Arrow keys move it.", cut.Find($"#{trigger.GetAttribute("aria-describedby")}").TextContent);
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheTriggerUndescribed_WhenGivenNoDescription()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions"));
+
+        Assert.Null(cut.Find("[data-part=trigger]").GetAttribute("aria-describedby"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_ShouldSizeTheTrigger_WhenGivenASize(bool icon)
+    {
+        var cut = Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Icon, icon ? new Icon("<path d=\"M4 4h16v16H4z\" />") : null)
+            .Add(menu => menu.Size, Size.Small));
+
+        Assert.Contains("tb-button--small", cut.Find("[data-part=trigger]").ClassList);
+    }
+
+    [Fact]
     public void Click_ShouldRaiseOnClick_WhenTheItemIsEnabled()
     {
         var chosen = false;

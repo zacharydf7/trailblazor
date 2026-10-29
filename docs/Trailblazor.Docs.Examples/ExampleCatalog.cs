@@ -363,6 +363,8 @@ public static class ExampleCatalog
                     + "right-to-left pages.",
                 "Escape closes the menu and returns focus to the trigger; Tab closes it and moves on. Disabled "
                     + "items stay focusable, marked `aria-disabled`, so people can still find them.",
+                "`Description` adds text that screen readers read after the trigger's name, such as a hint about "
+                    + "other keys it takes.",
             ],
             Target = new("button", "Actions"),
         },
@@ -383,9 +385,9 @@ public static class ExampleCatalog
                     + "`DismissOnBackdrop` is false.",
                 "`ConfirmAsync` opens an `alertdialog` described by its message.",
                 "A dialog that isn't modal can be `Draggable` by its header and `Resizable` by its bottom-end grip. "
-                    + "For the keyboard, the header gains a Move button and the grip is a Resize button; while either "
-                    + "has focus, the arrow keys move or resize the dialog, and a hidden hint says so. There is no "
-                    + "way yet to move or resize it with single clicks, without dragging or the keyboard.",
+                    + "Neither needs dragging: the header gains a Move button whose menu picks a place, and the grip "
+                    + "is a Resize button whose menu picks a size. While either button has focus, the arrow keys "
+                    + "move or resize the dialog instead of opening the menu, and its description says so.",
                 "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't "
                     + "hide them.",
             ],

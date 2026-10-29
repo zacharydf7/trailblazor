@@ -10,16 +10,21 @@
      class="@ClassNames.Join("tb-menu", FullWidth ? "tb-menu--full-width" : null, Class)">
     @if (Icon is { } icon)
     {
-        <TbIconButton Icon="icon" AriaLabel="@Label" id="@TriggerId" popovertarget="@MenuId" aria-haspopup="menu"
-                      aria-controls="@MenuId" data-part="trigger" />
+        <TbIconButton Icon="icon" AriaLabel="@Label" Size="Size" id="@TriggerId" popovertarget="@MenuId"
+                      aria-haspopup="menu" aria-controls="@MenuId" aria-describedby="@DescriptionId"
+                      data-part="trigger" />
     }
     else
     {
-        <TbButton Variant="Variant" id="@TriggerId" popovertarget="@MenuId" aria-haspopup="menu"
-                  aria-controls="@MenuId" data-part="trigger">
+        <TbButton Variant="Variant" Size="Size" id="@TriggerId" popovertarget="@MenuId" aria-haspopup="menu"
+                  aria-controls="@MenuId" aria-describedby="@DescriptionId" data-part="trigger">
             <ChildContent>@Label</ChildContent>
             <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
         </TbButton>
+    }
+    @if (Description is not null)
+    {
+        <span id="@DescriptionId" class="tb-visually-hidden">@Description</span>
     }
     <div @ref="_menu" id="@MenuId" popover="auto" role="menu" aria-labelledby="@TriggerId" data-part="menu"
          class="tb-menu__list">
@@ -47,6 +52,10 @@
     [Parameter]
     public Variant Variant { get; set; } = Variant.Outlined;
 
+    /// <summary>How big the trigger is. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
     /// <summary>Which side of the trigger the menu opens on, read on the first render. It flips to the other side
     /// when there's no room. Defaults to <see cref="MenuPlacement.Bottom"/>.</summary>
     [Parameter]
@@ -62,6 +71,11 @@
     [Parameter]
     public bool FullWidth { get; set; }
 
+    /// <summary>Text screen readers read after the trigger's name, such as a hint about keys it also takes.
+    /// </summary>
+    [Parameter]
+    public string? Description { get; set; }
+
     /// <summary>The menu's <see cref="TbMenuItem"/>s and <see cref="TbSubMenu"/>s.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -69,6 +83,8 @@
     private string TriggerId => $"{_id}-trigger";
 
     private string MenuId => $"{_id}-list";
+
+    private string? DescriptionId => Description is null ? null : $"{_id}-description";
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -14,6 +14,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private IJSObjectReference? _handle;
     private AnnouncerHost? _announcer;
     private DialogWindowState _windowState;
+    private DialogPosition _position;
+    private DialogSize _size;
     private bool _disposed;
 
     [Parameter, EditorRequired]
@@ -41,8 +43,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.AddAttribute(2, "data-part", "dialog");
         builder.AddAttribute(3, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
-        builder.AddAttribute(6, "class", ClassNames.Join("tb-dialog", ClassNames.Modifier("tb-dialog", options.Size),
-            ClassNames.Modifier("tb-dialog", "position", options.Position),
+        builder.AddAttribute(6, "class", ClassNames.Join("tb-dialog", SizeClass(options.Size),
+            PositionClass(options.Position),
             Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null));
         builder.AddAttribute(7, "role", Dialog.IsAlert ? "alertdialog" : null);
         builder.AddAttribute(8, "aria-describedby", Dialog.IsAlert ? Dialog.DescriptionId : null);
@@ -79,22 +81,9 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             builder.CloseComponent();
         }
 
-        // The script resizes the dialog with the arrow keys while the grip has focus; the hint says so.
         if (Resizable)
         {
-            builder.OpenComponent<TbIconButton>(42);
-            builder.AddComponentParameter(43, nameof(TbIconButton.Icon), BuiltInIcons.ResizeGrip);
-            builder.AddComponentParameter(44, nameof(TbIconButton.AriaLabel), "Resize");
-            builder.AddComponentParameter(45, nameof(TbIconButton.Size), Size.Small);
-            builder.AddComponentParameter(46, nameof(TbIconButton.Class), "tb-dialog__resize");
-            builder.AddAttribute(47, "aria-describedby", $"{_id}-resize-hint");
-            builder.AddAttribute(48, "data-part", "resize");
-            builder.CloseComponent();
-            builder.OpenElement(49, "span");
-            builder.AddAttribute(50, "id", $"{_id}-resize-hint");
-            builder.AddAttribute(51, "class", "tb-visually-hidden");
-            builder.AddContent(52, "Arrow keys resize the dialog.");
-            builder.CloseElement();
+            DialogMenus.AddResize(builder, 42, Dialog);
         }
 
         builder.CloseElement();
@@ -143,7 +132,14 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected override void OnInitialized() => Dialog.Changed += OnChanged;
+    protected override void OnInitialized()
+    {
+        _position = Dialog.Options.Position;
+        _size = Dialog.Options.Size;
+        Dialog.Changed += OnChanged;
+        Dialog.MoveRequested += OnMoveRequested;
+        Dialog.ResizeRequested += OnResizeRequested;
+    }
 
     [JSInvokable]
     public Task Cancel() => Dialog.CloseAsync(false, null);
@@ -169,6 +165,43 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         }
     }
 
+    // The class to replace is the one set last, so it moves on before the call, ready for a choice made meanwhile.
+    private void OnMoveRequested(DialogPosition position)
+    {
+        var from = PositionClass(_position);
+        _position = position;
+        InvokeAsync(() => CallAsync("moveTo", from, PositionClass(position)));
+    }
+
+    private void OnResizeRequested(DialogSize size)
+    {
+        var from = SizeClass(_size);
+        _size = size;
+        InvokeAsync(() => CallAsync("resizeTo", from, SizeClass(size)));
+    }
+
+    private async Task CallAsync(string method, string from, string to)
+    {
+        if (_handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _handle.InvokeVoidAsync(method, from, to);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the dialog went with it.
+        }
+    }
+
+    private static string PositionClass(DialogPosition position) =>
+        ClassNames.Modifier("tb-dialog", "position", position);
+
+    private static string SizeClass(DialogSize size) => ClassNames.Modifier("tb-dialog", size);
+
     private async Task CloseInBrowserAsync()
     {
         try
@@ -185,6 +218,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     {
         _disposed = true;
         Dialog.Changed -= OnChanged;
+        Dialog.MoveRequested -= OnMoveRequested;
+        Dialog.ResizeRequested -= OnResizeRequested;
         Dialog.CloseInBrowserAsync = null;
         if (_handle is not null)
         {
