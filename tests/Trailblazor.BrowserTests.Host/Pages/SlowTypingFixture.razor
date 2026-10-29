@@ -1,0 +1,18 @@
+@page "/slow-typing"
+
+<TbTextField TValue="string" Label="Search" Value="_search" ValueChanged="OnSearchChangedAsync"
+             ValueExpression="() => _search!" UpdateOnInput />
+<output data-testid="completed">@_completed</output>
+
+@code {
+    private string? _search;
+    private int _completed;
+
+    // A slow handler keeps each keystroke's round trip in flight while the next one is typed.
+    private async Task OnSearchChangedAsync(string search)
+    {
+        _search = search;
+        await Task.Delay(120);
+        _completed++;
+    }
+}

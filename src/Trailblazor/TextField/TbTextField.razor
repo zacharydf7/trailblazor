@@ -6,18 +6,19 @@
     @if (Lines > 1)
     {
         <textarea @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
-                  rows="@Lines" value="@Text" placeholder="@Placeholder" disabled="@Disabled"
+                  rows="@Lines" @bind:get="Text" @bind:set="SetTextAsync" @bind:event="@BindEvent"
+                  placeholder="@Placeholder" disabled="@Disabled"
                   aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
-                  aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)"
-                  @onchange="OnChange" @oninput="OnInput"></textarea>
+                  aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)"></textarea>
     }
     else
     {
         <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
-               type="@Type.ToString().ToLowerInvariant()" value="@Text" placeholder="@Placeholder"
+               type="@Type.ToString().ToLowerInvariant()" @bind:get="Text" @bind:set="SetTextAsync"
+               @bind:event="@BindEvent" placeholder="@Placeholder"
                disabled="@Disabled" aria-required="@(Required ? "true" : null)"
                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
-               class="@ClassNames.Join("tb-field__input", Classes?.Input)" @onchange="OnChange" @oninput="OnInput" />
+               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }
 </text>, Start, End)
 
@@ -46,11 +47,6 @@
     [Parameter]
     public string? Placeholder { get; set; }
 
-    // Only the event that commits the value is wired, so a field that updates on change sends no keystrokes.
-    private EventCallback<ChangeEventArgs> OnChange => UpdateOnInput ? default : Commit;
-
-    private EventCallback<ChangeEventArgs> OnInput => UpdateOnInput ? Commit : default;
-
-    private EventCallback<ChangeEventArgs> Commit =>
-        EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetTextAsync(e.Value as string));
+    // @bind keeps keystrokes typed during a round trip; only the committing event is bound.
+    private string BindEvent => UpdateOnInput ? "oninput" : "onchange";
 }

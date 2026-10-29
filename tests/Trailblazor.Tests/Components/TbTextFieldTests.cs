@@ -71,7 +71,7 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
-    public void Change_ShouldKeepTheValueAndShowAnError_WhenTheTextDoesNotParse()
+    public void Change_ShouldKeepTheTextAndShowAnError_WhenTheTextDoesNotParse()
     {
         var raised = false;
         var cut = Render<TbTextField<int>>(parameters => parameters
@@ -82,11 +82,55 @@ public class TbTextFieldTests : BunitContext
         cut.Find("input").Change("thirty");
 
         var input = cut.Find("input");
-        Assert.Equal("30", input.GetAttribute("value"));
+        Assert.Equal("thirty", input.GetAttribute("value"));
         Assert.Equal("true", input.GetAttribute("aria-invalid"));
         Assert.Equal(cut.Find("[data-part=error]").Id, input.GetAttribute("aria-describedby"));
         Assert.Equal("Age isn't valid.", cut.Find("[data-part=error]").TextContent.Trim());
         Assert.False(raised);
+    }
+
+    [Fact]
+    public void Render_ShouldDropTheUnparsedTextAndError_WhenTheParentSetsAnotherValue()
+    {
+        var cut = Render<TbTextField<int>>(parameters => parameters
+            .Add(field => field.Label, "Age")
+            .Add(field => field.Value, 30));
+        cut.Find("input").Change("thirty");
+
+        cut.Render(parameters => parameters.Add(field => field.Value, 40));
+
+        Assert.Equal("40", cut.Find("input").GetAttribute("value"));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
+    public void Render_ShouldKeepTheUnparsedTextAndError_WhenTheParentRendersTheSameValue()
+    {
+        var cut = Render<TbTextField<int>>(parameters => parameters
+            .Add(field => field.Label, "Age")
+            .Add(field => field.Value, 30));
+        cut.Find("input").Change("thirty");
+
+        cut.Render(parameters => parameters.Add(field => field.Value, 30));
+
+        Assert.Equal("thirty", cut.Find("input").GetAttribute("value"));
+        Assert.Equal("Age isn't valid.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldDropTheUnparsedText_WhenTheFieldIsReboundToAPropertyWithTheSameValue()
+    {
+        var first = new Ages();
+        var second = new Ages();
+        var cut = Render<EditForm>(parameters => parameters
+            .Add(form => form.Model, first)
+            .Add(form => form.ChildContent, (EditContext _) => AgeField(first)));
+        cut.Find("input").Change("thirty");
+
+        cut.Render(parameters => parameters.Add(form => form.ChildContent, (EditContext _) => AgeField(second)));
+
+        Assert.Equal("0", cut.Find("input").GetAttribute("value"));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
     }
 
     [Fact]
@@ -265,6 +309,20 @@ public class TbTextFieldTests : BunitContext
             string.IsNullOrEmpty(name) ? ["Enter a name."] : []));
         builder.CloseComponent();
     };
+
+    private static RenderFragment AgeField(Ages ages) => builder =>
+    {
+        builder.OpenComponent<TbTextField<int>>(0);
+        builder.AddAttribute(1, "Label", "Age");
+        builder.AddAttribute(2, "Value", ages.Age);
+        builder.AddAttribute(3, "ValueExpression", (System.Linq.Expressions.Expression<Func<int>>)(() => ages.Age));
+        builder.CloseComponent();
+    };
+
+    private sealed class Ages
+    {
+        public int Age { get; set; }
+    }
 
     private sealed class Person
     {

@@ -37,6 +37,23 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldKeepEveryKeystroke_WhenEachUpdateIsSlowToComeBack(string browser)
+    {
+        // A lost keystroke depends on timing, so a few page loads make a regression fail reliably.
+        const string text = "abcdefghijklmnopqrst";
+        for (var attempt = 0; attempt < 4; attempt++)
+        {
+            var page = await OpenAsync(browser, "/slow-typing");
+            var search = page.GetByLabel("Search");
+
+            await search.PressSequentiallyAsync(text);
+            await Expect(page.GetByTestId("completed")).ToHaveTextAsync(text.Length.ToString());
+
+            Assert.Equal(text, await search.InputValueAsync());
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldKeepTheTextAndExplain_WhenTheTextDoesNotParse(string browser)
     {
         var page = await OpenAsync(browser, "/examples/text-field");

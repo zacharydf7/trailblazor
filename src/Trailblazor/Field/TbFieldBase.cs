@@ -14,6 +14,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     private ValidationMessageStore? _messageStore;
     private FieldIdentifier? _field;
     private string? _parseError;
+    private string? _unparsedText;
+    private TValue? _valueAtParseError;
     private string? _inputName;
     private bool _disposed;
 
@@ -83,7 +85,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
             (var ours, _) => ours,
         };
 
-    private protected string? Text => FormatValue(Value);
+    private protected string? Text => _unparsedText ?? FormatValue(Value);
 
     // Inside an EditForm the context holds every validator's messages for this field, including ours.
     private protected IReadOnlyList<string> Errors =>
@@ -100,6 +102,16 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        // A new value from the parent replaces text the user typed that didn't parse.
+        if (_parseError is not null && !EqualityComparer<TValue>.Default.Equals(Value, _valueAtParseError))
+        {
+            _parseError = null;
+            _unparsedText = null;
+            _messages.Clear();
+            _messageStore?.Clear();
+            _editContext?.NotifyValidationStateChanged();
+        }
+
         _inputName = FieldNames.From(ValueExpression);
         // Only a form needs the identifier, and outside one an expression it can't parse must not throw.
         FieldIdentifier? field = CascadedEditContext is not null && ValueExpression is not null
@@ -110,6 +122,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
             // A field rebound to another property, as in a list without @key, drops the old property's messages.
             _field = field;
             _parseError = null;
+            _unparsedText = null;
             _messages.Clear();
             _messageStore?.Clear();
         }
@@ -162,6 +175,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
         }
 
         _parseError = null;
+        _unparsedText = null;
         Value = value;
         await ValueChanged.InvokeAsync(value!);
         if (_disposed)
@@ -176,7 +190,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
         }
     }
 
-    // Text that doesn't parse leaves the value, and so the rendered text, alone; the browser keeps what was typed.
+    // Text that doesn't parse leaves the value alone and stays in the input, so the user can fix it.
     private protected async Task SetTextAsync(string? text)
     {
         if (TryParse(text, out var value, out var error))
@@ -185,12 +199,14 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
             return;
         }
 
+        _unparsedText = text;
         ShowParseError(error!);
     }
 
     private protected void ShowParseError(string error)
     {
         _parseError = error;
+        _valueAtParseError = Value;
         Validate();
         _editContext?.NotifyValidationStateChanged();
     }
