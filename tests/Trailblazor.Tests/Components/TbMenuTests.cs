@@ -29,6 +29,29 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldWireASubMenusItemToItsList_WhenCalled()
+    {
+        var cut = Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Label, "Actions")
+            .AddChildContent<TbSubMenu>(submenu => submenu
+                .Add(sub => sub.Label, "Share")
+                .AddChildContent<TbMenuItem>(item => item.AddChildContent("Email"))));
+
+        var item = cut.Find("[data-part=submenu-trigger]");
+        var list = cut.Find(".tb-submenu [role=menu]");
+        Assert.Equal("none", cut.Find(".tb-submenu").GetAttribute("role"));
+        Assert.Equal("menuitem", item.GetAttribute("role"));
+        Assert.Equal("menu", item.GetAttribute("aria-haspopup"));
+        Assert.Equal("false", item.GetAttribute("aria-expanded"));
+        Assert.Equal(list.Id, item.GetAttribute("popovertarget"));
+        Assert.Equal(list.Id, item.GetAttribute("aria-controls"));
+        Assert.Equal("auto", list.GetAttribute("popover"));
+        Assert.Equal(item.Id, list.GetAttribute("aria-labelledby"));
+        Assert.Equal("Share", item.QuerySelector("[data-part=label]")!.TextContent);
+        Assert.Equal("Email", list.QuerySelector("[role=menuitem]")!.TextContent.Trim());
+    }
+
+    [Fact]
     public void Render_ShouldNameTheIconTriggerWithTheLabel_WhenAnIconIsSet()
     {
         var cut = Render<TbMenu>(parameters => parameters

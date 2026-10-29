@@ -8,6 +8,9 @@ internal static class BuiltInIcons
 
     public static Icon ChevronDown { get; } = new("<path d=\"M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z\" />");
 
+    // Points right; flip it in right-to-left text.
+    public static Icon ChevronEnd { get; } = new("<path d=\"M8.6 16.6 13.2 12 8.6 7.4 10 6l6 6-6 6z\" />");
+
     public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
 
     public static Icon Plus { get; } = new("<path d=\"M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z\" />");

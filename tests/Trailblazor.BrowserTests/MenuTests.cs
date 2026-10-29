@@ -1,3 +1,5 @@
+using Deque.AxeCore.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -143,6 +145,114 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var menuBox = await menu.BoundingBoxAsync();
         Assert.True(menuBox!.Y >= triggerBox!.Y + triggerBox.Height - 1, "The menu should open below its trigger.");
         Assert.Equal(triggerBox.X, menuBox.X, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldOpenBesideItsItemWithTheFirstItemFocused_WhenItsItemIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "More options" }).ClickAsync();
+
+        await Item(page, "Share").ClickAsync();
+
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+        await Expect(Item(page, "Share")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "More options" })).ToBeVisibleAsync();
+        var itemBox = await Item(page, "Share").BoundingBoxAsync();
+        var submenuBox = await page.GetByRole(AriaRole.Menu, new() { Name = "Share" }).BoundingBoxAsync();
+        Assert.Equal(itemBox!.X + itemBox.Width, submenuBox!.X, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldKeepTheKeysWithinEachList_WhenOpenedAndClosedWithTheArrowKeys(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "More options" });
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await trigger.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Item(page, "Share")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Item(page, "Copy link")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Share" })).ToBeHiddenAsync();
+        await Expect(Item(page, "Share")).ToBeFocusedAsync();
+        await Expect(Item(page, "Share")).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.Keyboard.PressAsync("e");
+        await Expect(Item(page, "Export")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldOpenWithTheLeftArrow_WhenThePageIsRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "More options" });
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        await trigger.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Item(page, "Share")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Item(page, "Share")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldCloseOneLevelAtATime_WhenEscapeIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "More options" });
+        await trigger.ClickAsync();
+        await Item(page, "Share").ClickAsync();
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Share" })).ToBeHiddenAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "More options" })).ToBeVisibleAsync();
+        await Expect(Item(page, "Share")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "More options" })).ToBeHiddenAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldRunTheItemAndCloseEveryMenu_WhenOneOfItsItemsIsChosen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "More options" });
+        await trigger.ClickAsync();
+        await Item(page, "Share").ClickAsync();
+
+        await Item(page, "Email").ClickAsync();
+
+        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Email");
+        await Expect(page.GetByRole(AriaRole.Menu)).ToHaveCountAsync(0);
+        await Expect(trigger).ToBeFocusedAsync();
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldHaveNoAccessibilityViolations_WhenOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "More options" }).ClickAsync();
+        await Item(page, "Share").ClickAsync();
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+
+        var result = await page.RunAxe(AxeTests.WcagAA);
+
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
 
     private static ILocator Item(IPage page, string name) =>

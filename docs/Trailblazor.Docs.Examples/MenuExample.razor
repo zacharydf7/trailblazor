@@ -10,6 +10,10 @@
     <TbMenu Label="More options" Icon="ExampleIcons.Plus">
         <TbMenuItem OnClick="@(() => _last = "Export")">Export</TbMenuItem>
         <TbMenuItem OnClick="@(() => _last = "Print")">Print</TbMenuItem>
+        <TbSubMenu Label="Share">
+            <TbMenuItem OnClick="@(() => _last = "Email")">Email</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Copy link")">Copy link</TbMenuItem>
+        </TbSubMenu>
     </TbMenu>
     <TbButton Variant="Variant.Text">After the menus</TbButton>
 </TbStack>

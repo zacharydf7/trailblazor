@@ -1263,6 +1263,18 @@
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
     }
 
+    .tb-menu__item [data-part="chevron"] {
+        margin-inline-start: auto;
+    }
+
+    .tb-menu__item [data-part="chevron"]:dir(rtl) {
+        transform: scaleX(-1);
+    }
+
+    .tb-menu__item[aria-expanded="true"] {
+        background: var(--tb-color-neutral-subtle);
+    }
+
     .tb-menu__item[aria-disabled="true"] {
         opacity: 0.55;
         cursor: default;

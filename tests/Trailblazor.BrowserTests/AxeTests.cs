@@ -7,7 +7,7 @@ namespace Trailblazor.BrowserTests;
 // Every docs example must have zero WCAG 2.2 AA violations, in both themes and every engine.
 public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    private static readonly AxeRunOptions WcagAA = new()
+    internal static readonly AxeRunOptions WcagAA = new()
     {
         RunOnly = new RunOnlyOptions
         {

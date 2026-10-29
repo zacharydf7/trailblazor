@@ -1,0 +1,38 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* The list sits inside the parent menu, so the browser treats it as a nested popover and keeps the parent open. *@
+<div @attributes="AdditionalAttributes" role="none" class="@ClassNames.Join("tb-submenu", Class)" style="@Style">
+    <button type="button" role="menuitem" tabindex="-1" id="@TriggerId" popovertarget="@MenuId" aria-haspopup="menu"
+            aria-expanded="false" aria-controls="@MenuId" data-part="submenu-trigger" class="tb-menu__item">
+        @if (Icon is { } icon)
+        {
+            <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+        }
+        <span data-part="label">@Label</span>
+        <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" data-part="chevron" />
+    </button>
+    <div id="@MenuId" popover="auto" role="menu" aria-labelledby="@TriggerId" data-part="menu" class="tb-menu__list">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    private readonly string _id = $"tb-submenu-{Guid.NewGuid():N}";
+
+    /// <summary>The text of the item that opens the submenu. Required.</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>An icon before the text.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>The submenu's <see cref="TbMenuItem"/>s, and any further <see cref="TbSubMenu"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string TriggerId => $"{_id}-trigger";
+
+    private string MenuId => $"{_id}-list";
+}
