@@ -18,12 +18,16 @@
                @onchange="OnChangeAsync" />
         <span>@Label @RequiredMarker</span>
     </label>
-    @Messages
+    @Messages(Classes?.Helper, Classes?.Error)
 </div>
 
 @code {
     private ElementReference _input;
     private bool _shownIndeterminate;
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public ChoiceClasses? Classes { get; set; }
 
     private protected virtual string Block => "tb-checkbox";
 

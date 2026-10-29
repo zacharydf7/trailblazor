@@ -23,6 +23,10 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
     /// <summary>Text shown while no option is chosen. It is not a label.</summary>
     [Parameter]
     public string? Placeholder { get; set; }

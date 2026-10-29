@@ -121,13 +121,31 @@ public class TbRadioGroupTests : BunitContext
     {
         var cut = Render<TbRadioGroup<string>>(parameters => parameters
             .Add(group => group.InputAttributes, new Dictionary<string, object> { ["name"] = "paper", ["data-x"] = "1" })
-            .Add(group => group.Classes, new FieldClasses { Input = "my-input" })
+            .Add(group => group.Classes, new ChoiceClasses { Input = "my-input" })
             .Add(group => group.ChildContent, (RenderFragment)(builder => AddOption(builder, 0, "A4"))));
 
         var radio = cut.Find("input[type=radio]");
         Assert.Equal("paper", radio.GetAttribute("name"));
         Assert.Equal("1", radio.GetAttribute("data-x"));
         Assert.Contains("my-input", radio.ClassList);
+    }
+
+    [Fact]
+    public void Change_ShouldAddTheGroupsPartClasses_WhenClassesAreSet()
+    {
+        var cut = Render<TbRadioGroup<string>>(parameters => parameters
+            .Add(group => group.Label, "Paper size")
+            .Add(group => group.HelperText, "Pick one")
+            .Add(group => group.Validation, (string? paper) => paper == "A4" ? ["A4 is sold out."] : [])
+            .Add(group => group.Classes,
+                new ChoiceClasses { Label = "my-label", Helper = "my-helper", Error = "my-error" })
+            .Add(group => group.ChildContent, (RenderFragment)(builder => AddOption(builder, 0, "A4"))));
+
+        cut.Find("input[type=radio]").Change(true);
+
+        Assert.Contains("my-label", cut.Find("legend[data-part=label]").ClassList);
+        Assert.Contains("my-helper", cut.Find("[data-part=helper]").ClassList);
+        Assert.Contains("my-error", cut.Find("[data-part=error]").ClassList);
     }
 
     [Fact]

@@ -20,7 +20,7 @@
             @ChildContent
         </CascadingValue>
     </div>
-    @Messages
+    @Messages(Classes?.Helper, Classes?.Error)
 </fieldset>
 
 @code {
@@ -31,6 +31,10 @@
     /// <summary>Lays the options out in a row instead of a column.</summary>
     [Parameter]
     public bool Row { get; set; }
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public ChoiceClasses? Classes { get; set; }
 
     // Radios sharing a name form one group, so only a static form post, which needs it, gets the bound path.
     internal string GroupName => (RendererInfo.IsInteractive

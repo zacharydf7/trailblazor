@@ -2,7 +2,7 @@
 @typeparam TValue
 @inherits TbFieldBase<TValue>
 
-@Layout(@<text>
+@Layout(Classes, @<text>
     @if (Lines > 1)
     {
         <textarea @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
@@ -30,6 +30,10 @@
     /// <summary>Content after the input, such as a unit or a button.</summary>
     [Parameter]
     public RenderFragment? End { get; set; }
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
 
     /// <summary>The kind of text the field takes. Defaults to <see cref="TextFieldType.Text"/>.</summary>
     [Parameter]

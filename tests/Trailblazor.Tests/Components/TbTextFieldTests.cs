@@ -159,6 +159,34 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Change_ShouldAddEachPartsClass_WhenClassesAreSet()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters
+            .Add(field => field.Label, "Name")
+            .Add(field => field.HelperText, "As on your badge")
+            .Add(field => field.Start, (RenderFragment)(start => start.AddContent(0, "@")))
+            .Add(field => field.End, (RenderFragment)(end => end.AddContent(0, "!")))
+            .Add(field => field.Validation, (string? text) => text?.Length < 3 ? ["Too short."] : [])
+            .Add(field => field.Classes, new FieldClasses
+            {
+                Label = "my-label",
+                Control = "my-control",
+                Input = "my-input",
+                Start = "my-start",
+                End = "my-end",
+                Helper = "my-helper",
+                Error = "my-error",
+            }));
+
+        cut.Find("input").Change("Al");
+
+        foreach (var part in new[] { "label", "control", "input", "start", "end", "helper", "error" })
+        {
+            Assert.Contains($"my-{part}", cut.Find($"[data-part={part}]").ClassList);
+        }
+    }
+
+    [Fact]
     public void Change_ShouldSpeakOnlyNewMessages_WhenEditsAddKeepAndRemoveThem()
     {
         var announcer = Render<AnnouncerHost>();

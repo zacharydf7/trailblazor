@@ -95,6 +95,25 @@ public class TbCheckboxTests : BunitContext
     }
 
     [Fact]
+    public void Change_ShouldAddEachPartsClass_WhenClassesAreSet()
+    {
+        var cut = Render<TbCheckbox<bool>>(parameters => parameters
+            .Add(checkbox => checkbox.Value, true)
+            .Add(checkbox => checkbox.Label, "Accept the terms")
+            .Add(checkbox => checkbox.HelperText, "Needed to sign up")
+            .Add(checkbox => checkbox.Validation, (bool accepted) => accepted ? [] : ["Accept the terms."])
+            .Add(checkbox => checkbox.Classes,
+                new ChoiceClasses { Label = "my-label", Input = "my-input", Helper = "my-helper", Error = "my-error" }));
+
+        cut.Find("input").Change(false);
+
+        Assert.Contains("my-label", cut.Find("[data-part=label]").ClassList);
+        Assert.Contains("my-input", cut.Find("[data-part=input]").ClassList);
+        Assert.Contains("my-helper", cut.Find("[data-part=helper]").ClassList);
+        Assert.Contains("my-error", cut.Find("[data-part=error]").ClassList);
+    }
+
+    [Fact]
     public void Render_ShouldNotCallScript_WhenTheValueIsNotMixed()
     {
         var cut = Render<TbCheckbox<bool?>>(parameters => parameters.Add(checkbox => checkbox.Value, false));

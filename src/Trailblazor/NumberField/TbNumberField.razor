@@ -3,7 +3,7 @@
 @typeparam TValue
 @inherits TbFieldBase<TValue>
 
-@Layout(@<text>
+@Layout(Classes, @<text>
     @* The step buttons repeat the arrow keys for pointers, so they stay out of the tab order. *@
     @if (!HideStepButtons)
     {
@@ -26,6 +26,10 @@
     /// <summary>Content after the input, such as a unit or a button.</summary>
     [Parameter]
     public RenderFragment? End { get; set; }
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
 
     /// <summary>The smallest value allowed. Step buttons stop here, and a smaller typed value is an error.</summary>
     [Parameter]

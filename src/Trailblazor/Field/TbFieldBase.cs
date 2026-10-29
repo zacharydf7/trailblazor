@@ -59,10 +59,6 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     [Parameter]
     public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
 
-    /// <summary>Extra CSS classes for the field's inner parts.</summary>
-    [Parameter]
-    public FieldClasses? Classes { get; set; }
-
     [CascadingParameter]
     private EditContext? CascadedEditContext { get; set; }
 

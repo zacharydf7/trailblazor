@@ -288,7 +288,7 @@ public static class ExampleCatalog
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
         {
-            Api = [typeof(TbCheckbox<>), typeof(FieldClasses)],
+            Api = [typeof(TbCheckbox<>), typeof(ChoiceClasses)],
             Accessibility =
             [
                 "A native checkbox inside its label, so the `Label` names it, clicking the text toggles it, and "
@@ -306,7 +306,7 @@ public static class ExampleCatalog
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.", typeof(SwitchExample))
         {
-            Api = [typeof(TbSwitch), typeof(FieldClasses)],
+            Api = [typeof(TbSwitch), typeof(ChoiceClasses)],
             Accessibility =
             [
                 "A native checkbox with `role=\"switch\"`, read as on or off; the `Label` names it and Space "
@@ -321,7 +321,7 @@ public static class ExampleCatalog
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
         {
-            Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>), typeof(FieldClasses)],
+            Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>), typeof(ChoiceClasses)],
             Accessibility =
             [
                 "A `fieldset` with `role=\"radiogroup\"`, named by its `Label` as the legend. Required, error and "

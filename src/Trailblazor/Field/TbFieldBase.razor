@@ -4,30 +4,31 @@
 
 @code {
     // The label, the box with the input and its slots, then the helper text and messages, shared by the text fields.
-    private protected RenderFragment Layout(RenderFragment input, RenderFragment? start, RenderFragment? end) =>
+    private protected RenderFragment Layout(FieldClasses? classes, RenderFragment input, RenderFragment? start,
+        RenderFragment? end) =>
         @<div @attributes="AdditionalAttributes" style="@Style"
               class="@ClassNames.Join("tb-field", Errors.Count > 0 ? "tb-field--invalid" : null,
                          Disabled ? "tb-field--disabled" : null, Class)">
             @if (Label is not null)
             {
                 <label data-part="label" id="@LabelId" for="@(LabelTargetsInput ? InputId : null)"
-                       class="@ClassNames.Join("tb-field__label", Classes?.Label)">
+                       class="@ClassNames.Join("tb-field__label", classes?.Label)">
                     @Label
                     @RequiredMarker
                 </label>
             }
-            <div data-part="control" class="@ClassNames.Join("tb-field__control", Classes?.Control)">
+            <div data-part="control" class="@ClassNames.Join("tb-field__control", classes?.Control)">
                 @if (start is not null)
                 {
-                    <span data-part="start" class="@ClassNames.Join("tb-field__start", Classes?.Start)">@start</span>
+                    <span data-part="start" class="@ClassNames.Join("tb-field__start", classes?.Start)">@start</span>
                 }
                 @input
                 @if (end is not null)
                 {
-                    <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">@end</span>
+                    <span data-part="end" class="@ClassNames.Join("tb-field__end", classes?.End)">@end</span>
                 }
             </div>
-            @Messages
+            @Messages(classes?.Helper, classes?.Error)
         </div>;
 
     private protected RenderFragment RequiredMarker =>
@@ -38,17 +39,17 @@
             }
         </text>;
 
-    private protected RenderFragment Messages =>
+    private protected RenderFragment Messages(string? helperClass, string? errorClass) =>
         @<text>
             @if (HelperText is not null)
             {
-                <div data-part="helper" id="@HelperId" class="@ClassNames.Join("tb-field__helper", Classes?.Helper)">
+                <div data-part="helper" id="@HelperId" class="@ClassNames.Join("tb-field__helper", helperClass)">
                     @HelperText
                 </div>
             }
             @if (Errors.Count > 0)
             {
-                <div data-part="error" id="@ErrorId" class="@ClassNames.Join("tb-field__error", Classes?.Error)">
+                <div data-part="error" id="@ErrorId" class="@ClassNames.Join("tb-field__error", errorClass)">
                     @foreach (var error in Errors)
                     {
                         <div>@error</div>
