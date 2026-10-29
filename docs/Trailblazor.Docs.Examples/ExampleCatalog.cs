@@ -28,6 +28,7 @@ public static class ExampleCatalog
         new("tooltip", "Tooltip", typeof(TooltipExample)),
         new("menu", "Menu", typeof(MenuExample)),
         new("dialog", "Dialog", typeof(DialogExample)),
+        new("toast", "Toast", typeof(ToastExample)),
     ];
 
     public static Example? Find(string name) => All.FirstOrDefault(example => example.Name == name);

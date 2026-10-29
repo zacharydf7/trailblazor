@@ -40,10 +40,11 @@ export function openDialog(dialog, dotNet, options) {
     };
 
     // Escape is stopped on keydown: cancelling the dialog's cancel event fails on a second press in every engine.
-    // An open menu takes Escape first; a tooltip, being a manual popover, doesn't.
+    // An open menu and a focused toast take Escape first; a tooltip, being a manual popover, doesn't.
     const onKeyDown = event => {
         if (event.key !== 'Escape' || stack.at(-1) !== entry
-            || dialog.querySelector('[popover]:not([popover="manual"]):popover-open')) {
+            || dialog.querySelector('[popover]:not([popover="manual"]):popover-open')
+            || event.target.closest?.('[data-part="toaster"]')) {
             return;
         }
 

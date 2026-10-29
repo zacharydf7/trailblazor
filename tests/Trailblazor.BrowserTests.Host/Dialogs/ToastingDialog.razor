@@ -1,0 +1,4 @@
+@inherits TbDialog<bool>
+@inject IToastService Toasts
+
+<TbButton OnClick='() => Toasts.Show("Copied", Tone.Success, new() { StayOpen = true })'>Copy</TbButton>

@@ -81,6 +81,16 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         }));
         builder.CloseComponent();
         builder.CloseElement();
+        if (options.Modal)
+        {
+            builder.OpenComponent<ToastHost>(37);
+            builder.AddComponentParameter(38, nameof(ToastHost.Dialog), Dialog);
+            builder.CloseComponent();
+            builder.OpenComponent<AnnouncerHost>(39);
+            builder.AddComponentParameter(40, nameof(AnnouncerHost.Dialog), Dialog);
+            builder.CloseComponent();
+        }
+
         builder.CloseElement();
     }
 

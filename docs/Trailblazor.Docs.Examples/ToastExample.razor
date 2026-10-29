@@ -1,0 +1,21 @@
+@inject IToastService Toasts
+
+<TbStack Row Gap="2" Wrap>
+    <TbButton OnClick='() => Toasts.Show("Report saved", Tone.Success)'>Save report</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="Archive">Archive report</TbButton>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="FailToSync">Fail to sync</TbButton>
+</TbStack>
+<TbText Style="margin-block-start: var(--tb-space-3)">@_status</TbText>
+
+@code {
+    private string _status = "Press F8 to reach an open toast.";
+
+    private void FailToSync() => Toasts.Show("Couldn't reach the server", Tone.Danger);
+
+    private void Archive()
+    {
+        _status = "Archived";
+        Toasts.Show("Report archived",
+            options: new() { Action = new("Undo", EventCallback.Factory.Create(this, () => _status = "Restored")) });
+    }
+}

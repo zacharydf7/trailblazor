@@ -7,6 +7,9 @@ internal sealed class DialogService : IDialogService
 
     public IReadOnlyList<DialogReference> OpenDialogs => _open;
 
+    // A modal makes the rest of the page inert, so toasts and announcements go inside the topmost one.
+    public DialogReference? TopmostModal => _open.LastOrDefault(dialog => dialog.Options.Modal);
+
     // Raised when a dialog opens or closes, so the host in TbRoot re-renders.
     public event Action? Changed;
 
