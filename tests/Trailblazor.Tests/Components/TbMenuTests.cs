@@ -1,5 +1,6 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using Trailblazor.Primitives;
 
 namespace Trailblazor.Tests.Components;
 
@@ -49,6 +50,37 @@ public class TbMenuTests : BunitContext
         Assert.Equal(item.Id, list.GetAttribute("aria-labelledby"));
         Assert.Equal("Share", item.QuerySelector("[data-part=label]")!.TextContent);
         Assert.Equal("Email", list.QuerySelector("[role=menuitem]")!.TextContent.Trim());
+    }
+
+    [Theory]
+    [InlineData(MenuPlacement.Bottom, MenuAlign.Start, "Bottom", "Start")]
+    [InlineData(MenuPlacement.Top, MenuAlign.Center, "Top", "Center")]
+    [InlineData(MenuPlacement.Start, MenuAlign.End, "Start", "End")]
+    [InlineData(MenuPlacement.End, MenuAlign.Start, "End", "Start")]
+    public void Render_ShouldSetUpTheMenuOnTheRequestedSide_WhenGivenAPlacementAndAlignment(MenuPlacement placement,
+        MenuAlign align, string side, string alignment)
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/menu.js");
+        module.SetupModule("createMenu", _ => true);
+
+        Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Placement, placement)
+            .Add(menu => menu.Align, align));
+
+        var options = Assert.IsType<AnchoredPositionOptions>(module.VerifyInvoke("createMenu").Arguments[2]);
+        Assert.Equal(side, options.Side.ToString());
+        Assert.Equal(alignment, options.Align.ToString());
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheMenuFullWidth_WhenFullWidthIsSet()
+    {
+        var cut = Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.FullWidth, true));
+
+        Assert.Contains("tb-menu--full-width", cut.Find(".tb-menu").ClassList);
     }
 
     [Fact]

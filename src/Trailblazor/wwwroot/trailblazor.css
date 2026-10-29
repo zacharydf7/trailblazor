@@ -1217,6 +1217,14 @@
         display: inline-flex;
     }
 
+    .tb-menu--full-width {
+        display: flex;
+    }
+
+    .tb-menu--full-width > [data-part="trigger"] {
+        flex: 1;
+    }
+
     /* The positioning script places the open menu, so only its look is set here. */
     .tb-menu__list {
         min-width: 10rem;

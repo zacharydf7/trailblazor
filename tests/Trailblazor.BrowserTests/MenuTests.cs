@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using Deque.AxeCore.Playwright;
+using Box = Microsoft.Playwright.LocatorBoundingBoxResult;
 
 namespace Trailblazor.BrowserTests;
 
@@ -253,6 +255,77 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Empty(result.Violations.Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldOpenAboveLinedUpWithTheTriggersEnd_WhenPlacedOnTopAlignedToTheEnd(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-placement");
+
+        var (trigger, menu) = await OpenPlacedAsync(page, "Above");
+
+        Assert.True(menu.Y + menu.Height <= trigger.Y + 1, "The menu should open above its trigger.");
+        Assert.Equal(trigger.X + trigger.Width, menu.X + menu.Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldOpenBesideCenteredOnTheTrigger_WhenPlacedAtTheEndAlignedToTheCenter(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-placement");
+
+        var (trigger, menu) = await OpenPlacedAsync(page, "Beside");
+
+        Assert.True(menu.X >= trigger.X + trigger.Width - 1, "The menu should open after its trigger.");
+        Assert.Equal(trigger.Y + trigger.Height / 2, menu.Y + menu.Height / 2, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldStretchTheTriggerAndOpenAtLeastAsWide_WhenFullWidth(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-placement");
+
+        var (trigger, menu) = await OpenPlacedAsync(page, "Wide");
+
+        Assert.Equal(480, trigger.Width, tolerance: 1);
+        Assert.True(menu.Width >= trigger.Width - 1, $"The menu is {menu.Width}px wide, under its trigger's 480px.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldKeepItsOwnMinimumWidth_WhenFullWidthInANarrowContainer(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-placement");
+
+        var (trigger, menu) = await OpenPlacedAsync(page, "Narrow");
+
+        Assert.Equal(128, trigger.Width, tolerance: 1);
+        Assert.True(menu.Width >= 160, $"The menu is {menu.Width}px wide, under its own 10rem minimum.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldOpenAtItsOwnWidth_WhenFullWidthIsTurnedOffAfterItOpened(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-placement");
+        await OpenPlacedAsync(page, "Wide");
+        await page.Keyboard.PressAsync("Escape");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Fit the wide menu" }).ClickAsync();
+        // The server's render has dropped Wide's class once only Narrow is still full width.
+        await Expect(page.Locator(".tb-menu--full-width")).ToHaveCountAsync(1);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Wide", Exact = true }).ClickAsync();
+
+        // The stylesheet's 10rem, rather than the 480px trigger's width left from the first open.
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Wide", Exact = true });
+        await Expect(menu).ToHaveCSSAsync("min-width", "160px");
+    }
+
+    // Opens the menu and measures it once the positioning script has placed it.
+    private static async Task<(Box Trigger, Box Menu)> OpenPlacedAsync(IPage page, string label)
+    {
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = label, Exact = true });
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = label, Exact = true });
+        await trigger.ClickAsync();
+        await Expect(menu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+        return ((await trigger.BoundingBoxAsync())!, (await menu.BoundingBoxAsync())!);
     }
 
     private static ILocator Item(IPage page, string name) =>
