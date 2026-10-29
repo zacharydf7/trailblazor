@@ -1,0 +1,11 @@
+@inherits TbDialog<string>
+
+<TbTextField Label="Name" @bind-Value="Name" />
+<TbDialogActions>
+    <TbButton OnClick="() => CloseAsync(Name ?? string.Empty)">Save</TbButton>
+</TbDialogActions>
+
+@code {
+    [Parameter]
+    public string? Name { get; set; }
+}

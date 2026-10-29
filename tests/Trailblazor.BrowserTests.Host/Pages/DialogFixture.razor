@@ -1,0 +1,58 @@
+@page "/dialogs"
+@using Trailblazor.BrowserTests.Host.Dialogs
+@inject IDialogService Dialogs
+
+<TbStack Row Gap="2" Wrap>
+    <TbButton OnClick="RenameAsync">Rename</TbButton>
+    <TbButton OnClick="ConfirmAsync">Delete</TbButton>
+    <TbButton OnClick="LockedAsync">Locked</TbButton>
+    <TbButton OnClick="NestedAsync">Nested</TbButton>
+    <TbButton OnClick="PanelAsync">Panel</TbButton>
+    <TbButton OnClick="() => HintedAsync(locked: false)">Hinted</TbButton>
+    <TbButton OnClick="() => HintedAsync(locked: true)">Hinted locked</TbButton>
+    <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
+</TbStack>
+<output data-testid="result">@_result</output>
+<output data-testid="page-clicks">@_pageClicks</output>
+@* Tall enough to scroll, so the scroll lock can be seen. *@
+<div style="height: 200vh"></div>
+
+@code {
+    private string _result = "";
+    private int _pageClicks;
+
+    private async Task RenameAsync()
+    {
+        var result = await Dialogs.ShowAsync<NameDialog, string>("Rename", p => p.Set(d => d.Name, "Ada"));
+        _result = result.Confirmed ? $"saved {result.Value}" : "cancelled";
+    }
+
+    private async Task ConfirmAsync() =>
+        _result = await Dialogs.ConfirmAsync("Delete?", "This can't be undone.", "Delete") ? "deleted" : "kept";
+
+    private async Task LockedAsync()
+    {
+        var options = new DialogOptions { DismissOnEscape = false, DismissOnBackdrop = false };
+        var result = await Dialogs.ShowAsync<NameDialog, string>("Locked", options: options);
+        _result = result.Confirmed ? "saved" : "cancelled";
+    }
+
+    private async Task NestedAsync()
+    {
+        var result = await Dialogs.ShowAsync<OuterDialog, bool>("Outer");
+        _result = result.Confirmed ? "outer saved" : "outer cancelled";
+    }
+
+    private async Task HintedAsync(bool locked)
+    {
+        var options = new DialogOptions { DismissOnEscape = !locked };
+        var result = await Dialogs.ShowAsync<HintedDialog, string>("Hinted", options: options);
+        _result = result.Confirmed ? "hinted saved" : "hinted cancelled";
+    }
+
+    private async Task PanelAsync()
+    {
+        var result = await Dialogs.ShowAsync<NameDialog, string>("Panel", options: new() { Modal = false });
+        _result = result.Confirmed ? "panel saved" : "panel cancelled";
+    }
+}

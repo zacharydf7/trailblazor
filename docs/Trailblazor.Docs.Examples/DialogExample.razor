@@ -1,0 +1,29 @@
+@inject IDialogService Dialogs
+
+<TbStack Row Gap="2">
+    <TbButton OnClick="RenameAsync">Rename report</TbButton>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="DeleteAsync">Delete report</TbButton>
+</TbStack>
+<TbText Style="margin-block-start: var(--tb-space-3)">@_status</TbText>
+
+@code {
+    private string _name = "Quarterly report";
+    private string _status = "Quarterly report";
+
+    private async Task RenameAsync()
+    {
+        var result = await Dialogs.ShowAsync<RenameDialog, string>("Rename report", p => p.Set(d => d.Name, _name));
+        if (result.Confirmed)
+        {
+            _name = result.Value!;
+            _status = $"Renamed to {_name}";
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        var deleted = await Dialogs.ConfirmAsync("Delete report?", "This can't be undone.", "Delete",
+            tone: Tone.Danger);
+        _status = deleted ? "Deleted" : "Kept";
+    }
+}

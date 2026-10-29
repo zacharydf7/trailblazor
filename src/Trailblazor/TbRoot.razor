@@ -2,3 +2,5 @@
 <HeadContent>
     <link rel="stylesheet" href="@Assets["_content/Trailblazor/trailblazor.css"]" />
 </HeadContent>
+@* The host is internal, and Razor only finds public components by tag. *@
+<DynamicComponent Type="typeof(DialogHost)" />

@@ -1,0 +1,11 @@
+@inherits TbDialog<string>
+
+@* The tooltip opens as soon as the dialog focuses the field. *@
+<TbTooltip Text="Your full name">
+    <TbTextField Label="Name" @bind-Value="Name" />
+</TbTooltip>
+
+@code {
+    [Parameter]
+    public string? Name { get; set; }
+}

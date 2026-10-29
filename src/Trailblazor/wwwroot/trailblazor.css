@@ -1233,4 +1233,87 @@
         opacity: 0.55;
         cursor: default;
     }
+
+    /* Native modals don't stop the page behind them from scrolling. */
+    :root:has(dialog.tb-dialog:modal) {
+        overflow: hidden;
+    }
+
+    .tb-dialog {
+        box-sizing: border-box;
+        width: min(calc(100vw - 2 * var(--tb-space-4)), var(--tb-dialog-width));
+        max-height: calc(100vh - 2 * var(--tb-space-8));
+        padding: 0;
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-lg);
+        background: var(--tb-color-surface-raised);
+        color: var(--tb-color-text);
+        font-family: var(--tb-font-family);
+        box-shadow: var(--tb-shadow-lg);
+    }
+
+    .tb-dialog[open] {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tb-dialog::backdrop {
+        background: oklch(0 0 0 / 0.45);
+    }
+
+    .tb-dialog--small {
+        --tb-dialog-width: 24rem;
+    }
+
+    .tb-dialog--medium {
+        --tb-dialog-width: 32rem;
+    }
+
+    .tb-dialog--large {
+        --tb-dialog-width: 48rem;
+    }
+
+    .tb-dialog--extralarge {
+        --tb-dialog-width: 64rem;
+    }
+
+    .tb-dialog--full {
+        --tb-dialog-width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .tb-dialog__header {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-3);
+        padding: var(--tb-space-3) var(--tb-space-3) var(--tb-space-3) var(--tb-space-5);
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-dialog__title {
+        flex: 1 1 auto;
+        margin: 0;
+        font-size: var(--tb-font-size-lg);
+        font-weight: var(--tb-font-weight-semibold);
+        line-height: var(--tb-line-height-tight);
+    }
+
+    .tb-dialog__body {
+        flex: 1 1 auto;
+        overflow: auto;
+        padding: var(--tb-space-5);
+    }
+
+    .tb-dialog__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: var(--tb-space-2);
+        margin: var(--tb-space-5) calc(-1 * var(--tb-space-5)) calc(-1 * var(--tb-space-5));
+        padding: var(--tb-space-3) var(--tb-space-5);
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
 }

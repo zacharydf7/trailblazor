@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Trailblazor.Tests;
@@ -9,6 +10,7 @@ public class TbRootTests : BunitContext
     public void Render_ShouldAddStylesheetToHead_WhenHeadOutletIsPresent()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddTrailblazor();
 
         var cut = Render(builder =>
         {

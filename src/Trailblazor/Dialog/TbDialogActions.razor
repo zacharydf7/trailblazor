@@ -1,0 +1,13 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" data-part="actions" class="@ClassNames.Join("tb-dialog__actions", Class)"
+     style="@Style">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>The dialog's buttons, laid out at its end.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

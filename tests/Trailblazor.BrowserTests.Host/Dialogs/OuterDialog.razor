@@ -1,0 +1,13 @@
+@inherits TbDialog<bool>
+@inject IDialogService Dialogs
+
+<TbStack Row Gap="2">
+    <TbButton OnClick="OpenInnerAsync">Open inner</TbButton>
+    <TbMenu Label="Options">
+        <TbMenuItem>Archive</TbMenuItem>
+    </TbMenu>
+</TbStack>
+
+@code {
+    private Task OpenInnerAsync() => Dialogs.ShowAsync<NameDialog, string>("Inner");
+}
