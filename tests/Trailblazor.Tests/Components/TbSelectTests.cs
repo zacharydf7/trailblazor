@@ -14,8 +14,7 @@ public class TbSelectTests : BunitContext
 
     public TbSelectTests()
     {
-        Services.AddTrailblazor();
-        JSInterop.Mode = JSRuntimeMode.Loose;
+        this.AddTrailblazor();
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 

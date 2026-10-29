@@ -8,8 +8,7 @@ public class DialogServiceTests : BunitContext
 {
     public DialogServiceTests()
     {
-        Services.AddTrailblazor();
-        JSInterop.Mode = JSRuntimeMode.Loose;
+        this.AddTrailblazor();
     }
 
     private IDialogService Dialogs => Services.GetRequiredService<IDialogService>();

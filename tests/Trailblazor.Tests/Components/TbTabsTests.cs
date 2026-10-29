@@ -9,8 +9,7 @@ public class TbTabsTests : BunitContext
 {
     public TbTabsTests()
     {
-        Services.AddTrailblazor();
-        JSInterop.Mode = JSRuntimeMode.Loose;
+        this.AddTrailblazor();
     }
 
     [Fact]

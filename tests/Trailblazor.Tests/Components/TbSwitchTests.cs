@@ -5,7 +5,7 @@ namespace Trailblazor.Tests.Components;
 
 public class TbSwitchTests : BunitContext
 {
-    public TbSwitchTests() => Services.AddTrailblazor();
+    public TbSwitchTests() => this.AddTrailblazor();
 
     [Fact]
     public void Render_ShouldBeASwitch_WhenCalled()

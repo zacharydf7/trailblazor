@@ -9,8 +9,9 @@ public class TbRootTests : BunitContext
     [Fact]
     public void Render_ShouldAddStylesheetToHead_WhenHeadOutletIsPresent()
     {
+        // HeadOutlet calls Blazor's own page-title script.
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddTrailblazor();
+        this.AddTrailblazor();
 
         var cut = Render(builder =>
         {

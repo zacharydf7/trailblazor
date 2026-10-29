@@ -7,7 +7,7 @@ public class TbCheckboxTests : BunitContext
 {
     private const string Module = "./_content/Trailblazor/checkbox.js";
 
-    public TbCheckboxTests() => Services.AddTrailblazor();
+    public TbCheckboxTests() => this.AddTrailblazor();
 
     [Fact]
     public void Render_ShouldBeALabeledCheckboxThatPostsTrue_WhenCalled()

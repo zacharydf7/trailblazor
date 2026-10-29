@@ -6,6 +6,7 @@
   <Folder Name="/src/">
     <Project Path="src/Trailblazor.Analyzers/Trailblazor.Analyzers.csproj" />
     <Project Path="src/Trailblazor.Primitives/Trailblazor.Primitives.csproj" />
+    <Project Path="src/Trailblazor.Testing.Playwright/Trailblazor.Testing.Playwright.csproj" />
     <Project Path="src/Trailblazor.Testing/Trailblazor.Testing.csproj" />
     <Project Path="src/Trailblazor/Trailblazor.csproj" />
   </Folder>

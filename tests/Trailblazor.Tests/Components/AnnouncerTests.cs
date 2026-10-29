@@ -5,7 +5,7 @@ namespace Trailblazor.Tests.Components;
 
 public class AnnouncerTests : BunitContext
 {
-    public AnnouncerTests() => Services.AddTrailblazor();
+    public AnnouncerTests() => this.AddTrailblazor();
 
     private IAnnouncer Announcer => Services.GetRequiredService<IAnnouncer>();
 
@@ -50,7 +50,6 @@ public class AnnouncerTests : BunitContext
     [Fact]
     public void Announcements_ShouldGoToTheTopmostModalDialog_WhenOneIsOpen()
     {
-        JSInterop.Mode = JSRuntimeMode.Loose;
         var page = Render<AnnouncerHost>();
         var dialogs = Render<DialogHost>();
         var dialogService = Services.GetRequiredService<IDialogService>();
@@ -74,7 +73,6 @@ public class AnnouncerTests : BunitContext
     [Fact]
     public void Announcements_ShouldReachTheDialog_WhenMadeRightAfterOpeningIt()
     {
-        JSInterop.Mode = JSRuntimeMode.Loose;
         var dialogs = Render<DialogHost>();
 
         _ = Services.GetRequiredService<IDialogService>().ShowAsync<EmptyDialog, bool>("Edit");

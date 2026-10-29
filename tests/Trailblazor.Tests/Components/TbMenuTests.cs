@@ -7,7 +7,7 @@ public class TbMenuTests : BunitContext
 {
     public TbMenuTests()
     {
-        Services.AddTrailblazor();
+        this.AddTrailblazor();
         JSInterop.SetupModule("./_content/Trailblazor/menu.js").SetupModule("createMenu", _ => true);
     }
 

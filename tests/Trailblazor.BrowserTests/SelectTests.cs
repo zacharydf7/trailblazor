@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -315,5 +317,51 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
             .EvaluateAsync<string>("option => getComputedStyle(option, '::before').backgroundColor");
 
         Assert.Equal(highlight, chosen);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldChooseOptionsByName_WhenGivenAnInteractiveSelectsLabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/select");
+
+        await page.Tb().Select("Size").ChooseAsync("Medium");
+        await page.Tb().Select("Toppings").ChooseAsync("Ham", "Olives");
+        await page.Tb().Select("Toppings").ChooseAsync("Ham");
+
+        await Expect(page.GetByTestId("size")).ToHaveTextAsync("Medium");
+        await Expect(page.GetByTestId("toppings")).ToHaveTextAsync("Ham, Olives");
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldChooseTheNativeWay_WhenTheSelectIsRenderedStatically(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-select");
+
+        await page.Tb().Select("Size").ChooseAsync("Small");
+        await page.Tb().Select("Toppings").ChooseAsync("Cheese");
+        await page.Tb().Select("Toppings").ChooseAsync("Ham");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Small | Cheese, Ham");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldWaitForTheCombobox_WhenCalledWhileThePageIsStillPrerendered(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/select");
+
+        await page.Tb().Select("Size").ChooseAsync("Medium");
+
+        await Expect(page.GetByTestId("size")).ToHaveTextAsync("Medium");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldThrow_WhenGivenNoOptionOrSeveralForASingleSelect(string browser)
+    {
+        var page = await OpenAsync(browser, "/select");
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => page.Tb().Select("Size").ChooseAsync());
+        await Assert.ThrowsAsync<ArgumentException>(() => page.Tb().Select("Size").ChooseAsync("Small", "Medium"));
     }
 }

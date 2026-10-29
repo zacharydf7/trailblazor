@@ -12,10 +12,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trailblazor\Trailblazor.csproj" />
+    <ProjectReference Include="..\..\src\Trailblazor.Testing\Trailblazor.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Trailblazor.Testing" />
   </ItemGroup>
 
 </Project>

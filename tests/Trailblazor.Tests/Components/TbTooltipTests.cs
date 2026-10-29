@@ -8,7 +8,7 @@ public class TbTooltipTests : BunitContext
 {
     private const string Module = "./_content/Trailblazor/tooltip.js";
 
-    public TbTooltipTests() => Services.AddTrailblazor();
+    public TbTooltipTests() => this.AddTrailblazor();
 
     [Fact]
     public void Render_ShouldWrapTheTriggerAndHoldAClosedTooltip_WhenCalled()

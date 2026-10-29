@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Trailblazor.BrowserTests.Host\Trailblazor.BrowserTests.Host.csproj" />
     <ProjectReference Include="..\..\docs\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
+    <ProjectReference Include="..\..\src\Trailblazor.Testing.Playwright\Trailblazor.Testing.Playwright.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -24,8 +24,9 @@
     }
     else
     {
-        @* Without a circuit the custom list can't open, so a native select keeps the field usable and posted. *@
+        @* A native select works without a circuit; data-prerender marks one a combobox will replace. *@
         <select @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+                data-prerender="@(AssignedRenderMode is null ? null : "")"
                 multiple="@Multiple" disabled="@Disabled" aria-required="@(Required ? "true" : null)"
                 aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                 class="@ClassNames.Join("tb-field__input", "tb-select__native", Classes?.Input)">

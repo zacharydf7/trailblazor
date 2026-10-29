@@ -13,8 +13,7 @@ public class ToastServiceTests : BunitContext
     public ToastServiceTests()
     {
         Services.AddSingleton<TimeProvider>(_time);
-        Services.AddTrailblazor();
-        JSInterop.Mode = JSRuntimeMode.Loose;
+        this.AddTrailblazor();
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 

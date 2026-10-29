@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <Description>bUnit setup and Playwright helpers for testing apps built with Trailblazor.</Description>
+    <Description>bUnit setup for testing apps built with Trailblazor. Playwright helpers are in Trailblazor.Testing.Playwright.</Description>
   </PropertyGroup>
 
   <ItemGroup>
