@@ -1,0 +1,61 @@
+name: Docs
+
+# Publishes the docs site to GitHub Pages once CI has passed on main.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # CI also runs for pull requests, so only a passing run for a push to this repository deploys.
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0 # MinVer computes the version from tags and history
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - run: dotnet publish docs/Trailblazor.Docs --configuration Release --output publish
+
+      # Pages serves the site under the repository's name and answers a link to any page with 404.html.
+      - name: Prepare the site for Pages
+        working-directory: publish/wwwroot
+        env:
+          BASE: /${{ github.event.repository.name }}/
+        run: |
+          sed -i "s|<base href=\"/\" />|<base href=\"$BASE\" />|" index.html
+          grep -q "<base href=\"$BASE\" />" index.html
+          cp index.html 404.html
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

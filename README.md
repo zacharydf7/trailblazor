@@ -3,7 +3,8 @@
 An MIT-licensed Blazor UI component library for .NET 10: accessible by default, styled with design tokens and
 cascade layers, and built on the browser's native `<dialog>`, Popover API and anchor positioning.
 
-Trailblazor is in early development (phase 0: foundations and design spikes). There are no packages yet.
+Trailblazor is in early development (phase 1: the core components). There are no packages yet. Try the components
+on the documentation site: https://zacharydf7.github.io/trailblazor/
 
 ## Repository layout
 
