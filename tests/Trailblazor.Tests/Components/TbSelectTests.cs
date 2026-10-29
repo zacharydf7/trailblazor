@@ -29,6 +29,7 @@ public class TbSelectTests : BunitContext
         Assert.Null(label.GetAttribute("for"));
         Assert.Equal(label.Id, combobox.GetAttribute("aria-labelledby"));
         Assert.Equal("listbox", combobox.GetAttribute("aria-haspopup"));
+        Assert.Equal("false", combobox.GetAttribute("aria-expanded"));
         Assert.Equal("0", combobox.GetAttribute("tabindex"));
         var listbox = cut.Find($"#{combobox.GetAttribute("aria-controls")}");
         Assert.Equal("listbox", listbox.GetAttribute("role"));

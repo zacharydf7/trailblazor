@@ -8,11 +8,11 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Option(IPage page, string name) =>
         page.GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
 
-    // The keys work once the select script has attached, which is when it sets aria-expanded.
+    // The keys work once the select script has attached, which is when it sets data-ready.
     private async Task<IPage> OpenSelectAsync(string browser)
     {
         var page = await OpenAsync(browser, "/select");
-        await Expect(Combobox(page)).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(Combobox(page)).ToHaveAttributeAsync("data-ready", "");
         return page;
     }
 
@@ -196,7 +196,7 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Next" }).ClickAsync();
         var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Choose a color" });
         var color = Combobox(page, "Color");
-        await Expect(color).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(color).ToHaveAttributeAsync("data-ready", "");
         await color.ClickAsync();
         await Expect(page.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
 
@@ -271,7 +271,7 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenSelectAsync(browser);
         var toppings = Combobox(page, "Toppings");
-        await Expect(toppings).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(toppings).ToHaveAttributeAsync("data-ready", "");
         await toppings.FocusAsync();
 
         await page.Keyboard.PressAsync("ArrowDown");
@@ -298,7 +298,7 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/select", new() { ForcedColors = ForcedColors.Active });
         var toppings = Combobox(page, "Toppings");
-        await Expect(toppings).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(toppings).ToHaveAttributeAsync("data-ready", "");
         await toppings.ClickAsync();
         await Option(page, "Cheese").ClickAsync();
         await Expect(Option(page, "Cheese")).ToHaveAttributeAsync("aria-selected", "true");

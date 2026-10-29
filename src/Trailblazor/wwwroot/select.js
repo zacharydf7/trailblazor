@@ -9,7 +9,8 @@ export function createSelect(combobox, listbox, toggle) {
 
     const control = combobox.parentElement;
     const label = document.getElementById(combobox.getAttribute('aria-labelledby'));
-    combobox.setAttribute('aria-expanded', 'false');
+    // Marks that the keys work, which tests wait for.
+    combobox.dataset.ready = '';
     let position = null;
     let active = null;
     let wasOpen = false;
