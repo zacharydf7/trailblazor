@@ -10,6 +10,16 @@
         <TbOption Value="@("Returns")">Returns</TbOption>
         <TbOption Value="@("Offers")">Offers</TbOption>
     </TbMultiSelect>
+    <TbMultiSelect Label="Trails to hike" @bind-Value="_trails" Chips Placeholder="Pick some trails">
+        <TbOptionGroup Label="North ridge">
+            <TbOption Value="@("Pine Hollow")">Pine Hollow</TbOption>
+            <TbOption Value="@("Eagle Ridge")">Eagle Ridge</TbOption>
+        </TbOptionGroup>
+        <TbOptionGroup Label="River valley">
+            <TbOption Value="@("Cedar Flats")">Cedar Flats</TbOption>
+            <TbOption Value="@("Fern Gully")">Fern Gully</TbOption>
+        </TbOptionGroup>
+    </TbMultiSelect>
     <TbSelect Label="Country" @bind-Value="_country" Disabled>
         <TbOption Value="@("Canada")">Canada</TbOption>
     </TbSelect>
@@ -19,6 +29,7 @@
     private Speed? _shipping = Speed.Standard;
     private string? _country = "Canada";
     private IReadOnlyList<string> _topics = ["Orders"];
+    private IReadOnlyList<string> _trails = ["Pine Hollow", "Fern Gully"];
 
     private enum Speed
     {

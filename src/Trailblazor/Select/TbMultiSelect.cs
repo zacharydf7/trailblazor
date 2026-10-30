@@ -8,6 +8,24 @@ namespace Trailblazor;
 /// post lists them in the options' order.</summary>
 public class TbMultiSelect<TItem> : TbSelectBase<IReadOnlyList<TItem>>
 {
+    /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
+    /// still matches its option. Defaults to the values' own equality.</summary>
+    [Parameter]
+    public IEqualityComparer<TItem>? Comparer { get; set; }
+
+    /// <summary>Shows the chosen options as chips, each with a button that removes it; Backspace removes the last.
+    /// </summary>
+    [Parameter]
+    public bool Chips { get; set; }
+
+    /// <summary>Said when a chip is removed, with <c>{0}</c> for its option. Defaults to "{0} removed".</summary>
+    [Parameter]
+    public string RemovedText { get; set; } = "{0} removed";
+
+    private protected override bool ShowChips => Chips;
+
+    private protected override string RemovedFormat => RemovedText;
+
     private protected override bool Multiple => true;
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TItem)) ?? typeof(TItem);
@@ -16,11 +34,12 @@ public class TbMultiSelect<TItem> : TbSelectBase<IReadOnlyList<TItem>>
 
     private protected override IReadOnlyList<TItem> Cleared => [];
 
-    private protected override bool IsChosen(object? item) => Value?.Any(chosen => Equals(chosen, item)) ?? false;
+    private protected override bool IsChosen(object? item) =>
+        Value?.Any(chosen => OptionValues.Same(Comparer, chosen, item)) ?? false;
 
     // Choosing an option that's already chosen takes it out again.
     private protected override IReadOnlyList<TItem> Choose(object? item) => IsChosen(item)
-        ? Value!.Where(chosen => !Equals(chosen, item)).ToList()
+        ? Value!.Where(chosen => !OptionValues.Same(Comparer, chosen, item)).ToList()
         : [.. Value ?? [], (TItem)item!];
 
     private protected override string? FormatItem(object? item) =>

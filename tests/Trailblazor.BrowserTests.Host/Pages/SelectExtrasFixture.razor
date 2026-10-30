@@ -1,0 +1,41 @@
+@page "/select-extras"
+
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbMultiSelect TItem="Trail" Label="Trails" @bind-Value="_trails" Chips Comparer="SameId.Instance">
+        <TbOptionGroup Label="North">
+            <TbOption Value="Trails[0]">Pine Hollow</TbOption>
+            <TbOption Value="Trails[1]">Eagle Ridge</TbOption>
+        </TbOptionGroup>
+        <TbOptionGroup Label="Valley">
+            <TbOption Value="Trails[2]">Cedar Flats</TbOption>
+        </TbOptionGroup>
+    </TbMultiSelect>
+    <output data-testid="trails">@string.Join(", ", _trails.Select(trail => trail.Name))</output>
+    <TbButton OnClick="Reload">Reload</TbButton>
+</TbStack>
+
+@code {
+    private static readonly Trail[] Trails = [new(1, "Pine Hollow"), new(2, "Eagle Ridge"), new(3, "Cedar Flats")];
+
+    private IReadOnlyList<Trail> _trails = [Trails[0], Trails[2]];
+
+    // New instances, as a page gets after loading its data again; the comparer still matches them to the options.
+    private void Reload() => _trails = [.. _trails.Select(trail => new Trail(trail.Id, trail.Name))];
+
+    // Reference equality, so the reloaded trails match their options only through the comparer.
+    private sealed class Trail(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; } = name;
+    }
+
+    private sealed class SameId : IEqualityComparer<Trail>
+    {
+        public static readonly SameId Instance = new();
+
+        public bool Equals(Trail? first, Trail? second) => first?.Id == second?.Id;
+
+        public int GetHashCode(Trail trail) => trail.Id;
+    }
+}

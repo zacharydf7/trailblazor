@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components;
+
 namespace Trailblazor;
 
 /// <summary>A field for choosing one of its <see cref="TbOption{TValue}"/>s. Bind it with <c>@bind-Value</c>.</summary>
@@ -15,6 +17,11 @@ public class TbSelect<TValue> : TbSelectBase<TValue>
         }
     }
 
+    /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
+    /// still matches its option. Defaults to the values' own equality.</summary>
+    [Parameter]
+    public IEqualityComparer<TValue>? Comparer { get; set; }
+
     private protected override bool Multiple => false;
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
@@ -23,7 +30,7 @@ public class TbSelect<TValue> : TbSelectBase<TValue>
 
     private protected override TValue? Cleared => default;
 
-    private protected override bool IsChosen(object? item) => Equals(item, Value);
+    private protected override bool IsChosen(object? item) => OptionValues.Same(Comparer, item, Value);
 
     private protected override TValue? Choose(object? item) => (TValue?)item;
 

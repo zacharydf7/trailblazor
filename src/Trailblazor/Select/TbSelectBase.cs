@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
@@ -57,6 +58,11 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
 
     private protected abstract bool HasChoice { get; }
 
+    // Whether the chosen options show as removable chips, and what is said when one is removed, with {0} for it.
+    private protected virtual bool ShowChips => false;
+
+    private protected virtual string RemovedFormat => "{0} removed";
+
     // The field's value once nothing is chosen.
     private protected abstract TValue? Cleared { get; }
 
@@ -72,7 +78,9 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
         builder.AddComponentParameter(1, nameof(SelectDisplay.Selected),
             (Func<IReadOnlyList<ISelectOption>>)(() => SelectedOptions));
         builder.AddComponentParameter(2, nameof(SelectDisplay.Placeholder), Placeholder);
-        builder.AddComponentReferenceCapture(3, display => _display = (SelectDisplay)display);
+        builder.AddComponentParameter(3, nameof(SelectDisplay.Chips), ShowChips);
+        builder.AddComponentParameter(4, nameof(SelectDisplay.Disabled), Disabled);
+        builder.AddComponentReferenceCapture(5, display => _display = (SelectDisplay)display);
         builder.CloseComponent();
     };
 
@@ -116,7 +124,7 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
                     return;
                 }
 
-                _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync));
+                _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync));
                 var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox,
                     _toggle);
                 if (handle is null)
@@ -190,6 +198,27 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
 
         _open = open;
         await OpenChanged.InvokeAsync(open);
+    }
+
+    // The script reports a chip removed by its button or by Backspace, with the text the chip shows, which is said
+    // aloud; focus returns to the combobox, since the button went with its chip.
+    // A second removal can arrive before the first reaches the page, so a chip whose option is no longer chosen is
+    // ignored rather than removing another.
+    private async Task OnRemoveChipAsync(string optionId, string text)
+    {
+        var option = _options.FirstOrDefault(each => each.Id == optionId);
+        if (!ShowChips || Disabled || option is null || option.Disabled || !IsChosen(option.Value))
+        {
+            return;
+        }
+
+        await SetValueAsync(Choose(option.Value));
+        StateHasChanged();
+        Announcer.Polite(string.Format(CultureInfo.CurrentCulture, RemovedFormat, text));
+        if (!_disposed)
+        {
+            await _combobox.FocusAsync();
+        }
     }
 
     // The clear button goes away with the value, so focus moves to the combobox instead of the page.

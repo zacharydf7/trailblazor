@@ -50,6 +50,10 @@ else
 
     object? ISelectOption.Value => Value;
 
+    bool ISelectOption.Disabled => Disabled;
+
+    string ISelectOption.Id => _id;
+
     RenderFragment ISelectOption.Content => Content;
 
     /// <inheritdoc />

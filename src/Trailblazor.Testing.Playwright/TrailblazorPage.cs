@@ -106,9 +106,11 @@ public sealed class TbSelectLocator(IPage page, string label)
         var listbox = page.Locator($"[id='{await field.GetAttributeAsync("aria-controls")}']");
         NativeSelect.ThrowIfSeveral(options, await listbox.GetAttributeAsync("aria-multiselectable") == "true",
             "select");
+        // The keyboard opens the list, since a click could land on a chip's remove button.
         if (!await listbox.IsVisibleAsync())
         {
-            await field.ClickAsync();
+            await field.FocusAsync();
+            await field.PressAsync("ArrowDown");
         }
 
         foreach (var name in options)

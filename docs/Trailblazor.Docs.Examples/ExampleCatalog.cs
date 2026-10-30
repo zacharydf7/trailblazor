@@ -573,7 +573,8 @@ public static class ExampleCatalog
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
         {
-            Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>), typeof(FieldClasses)],
+            Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>), typeof(TbOptionGroup),
+                typeof(FieldClasses)],
             Accessibility =
             [
                 "A `combobox` named by its `Label` that opens a `listbox` of `option`s. Focus stays on the "
@@ -585,12 +586,16 @@ public static class ExampleCatalog
                     + "chosen.",
                 "Before the page is interactive it renders as the browser's own `<select>`, so it still works.",
                 "The clear button is named \"Clear\" and sends focus back to the field.",
+                "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
+                "With `Chips`, each chosen option shows as a chip. Backspace removes the last one and each chip has a "
+                    + "remove button for the pointer; a removal is announced, and the list still deselects options.",
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select"],
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
-                + "works on the native `<select>` too.",
+                + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
+                + "select a `Comparer` so they still match their options.",
         },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
             "A text field that suggests values as the user types, from a list or an async search.",
@@ -689,7 +694,8 @@ public static class ExampleCatalog
         new("listbox", "List box", ExampleCategory.Inputs,
             "Picks one or several options from a list that is always shown.", typeof(ListBoxExample))
         {
-            Api = [typeof(TbListBox<>), typeof(TbMultiListBox<>), typeof(TbOption<>), typeof(FieldClasses)],
+            Api = [typeof(TbListBox<>), typeof(TbMultiListBox<>), typeof(TbOption<>), typeof(TbOptionGroup),
+                typeof(FieldClasses)],
             Accessibility =
             [
                 "A `listbox` of `option`s named by its `Label`. It is one tab stop; focus stays on the listbox, which "
@@ -699,12 +705,13 @@ public static class ExampleCatalog
                 "In a single listbox, moving chooses the option, as in the browser's own list. In a multiple one, "
                     + "Space chooses or clears the active option, and Shift with Down or Up also chooses the next.",
                 "Before the page is interactive it renders as the browser's own `<select>` list, so it still works.",
+                "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
             ],
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],
             TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
                 + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
-                + "`<select>` too.",
+                + "`<select>` too. For object values loaded again, give the list box a `Comparer`.",
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or focus.", typeof(TooltipExample))

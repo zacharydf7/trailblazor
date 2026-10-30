@@ -88,9 +88,23 @@ export function createSelect(combobox, listbox, toggle) {
             position = null;
         }
     };
+    const chips = () => [...combobox.querySelectorAll('[data-part="chip"]')];
+    // The server finds the chip's option by its id and says the text the chip shows.
+    const removeChip = chip => toggle.invokeMethodAsync('OnRemoveChip', chip.dataset.option, chip.textContent.trim());
     const onKeyDown = event => {
         const key = event.key;
         if (event.ctrlKey || event.metaKey) {
+            return;
+        }
+
+        // Backspace removes the last chip that can go, as in a field of tags; WebKit would otherwise go back a page.
+        if (key === 'Backspace') {
+            const removable = chips().findLast(chip => chip.querySelector('[data-part="chip-remove"]'));
+            if (removable) {
+                event.preventDefault();
+                removeChip(removable);
+            }
+
             return;
         }
 
@@ -165,6 +179,12 @@ export function createSelect(combobox, listbox, toggle) {
         wasOpen = isOpen();
     };
     const onControlClick = event => {
+        const remove = event.target.closest('[data-part="chip-remove"]');
+        if (remove) {
+            removeChip(remove.closest('[data-part="chip"]'));
+            return;
+        }
+
         // The clear button and the options, which sit inside the control too, handle their own clicks.
         if (event.target.closest('button') || listbox.contains(event.target)) {
             return;

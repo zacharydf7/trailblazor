@@ -22,7 +22,12 @@ internal interface ISelect
 
 internal interface ISelectOption
 {
+    // The option's element id, which its chip carries so the script can name it.
+    string Id { get; }
+
     object? Value { get; }
+
+    bool Disabled { get; }
 
     RenderFragment Content { get; }
 }
