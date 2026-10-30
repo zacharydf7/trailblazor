@@ -21,6 +21,15 @@
             </div>
         }
     </div>
+    @* Wrapping the content sizes the skeleton to it and marks the region busy until it loads. *@
+    <TbSkeleton Loading="_loading" Animation="SkeletonAnimation.Wave" role="region" aria-label="Trip"
+                data-testid="trip">
+        <TbText TextStyle="TextStyle.Subtitle">Ridge loop</TbText>
+        <TbText>12 km, about 4 hours</TbText>
+    </TbSkeleton>
+    <TbSkeleton Loading="_loading" data-testid="book">
+        <TbButton>Book the trip</TbButton>
+    </TbSkeleton>
 </TbStack>
 
 @code {

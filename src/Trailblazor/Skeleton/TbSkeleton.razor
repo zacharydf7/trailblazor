@@ -1,24 +1,57 @@
 @namespace Trailblazor
 @inherits TbComponentBase
 
-@* A span, so a line of text can hold one; screen readers skip it, and the loading region says it's busy. *@
-<span @attributes="AdditionalAttributes" aria-hidden="true"
-      style="@Styles.Join(Width is null ? null : $"inline-size: {Width}",
-                          Height is null ? null : $"block-size: {Height}", Style)"
-      class="@ClassNames.Join("tb-skeleton", ClassNames.Modifier("tb-skeleton", Shape), Class)"></span>
+@if (ChildContent is null)
+{
+    @* A span, so a line of text can hold one; screen readers skip it, and the loading region says it's busy. *@
+    <span @attributes="AdditionalAttributes" aria-hidden="true" style="@SizeStyle"
+          class="@ClassNames.Join("tb-skeleton", ClassNames.Modifier("tb-skeleton", Shape), AnimationClass, Class)"></span>
+}
+else
+{
+    @* The content renders either way, so its components keep their state when loading ends. *@
+    <div @attributes="AdditionalAttributes" aria-busy="@(Loading ? "true" : null)"
+         style="@(Loading ? SizeStyle : Style)"
+         class="@ClassNames.Join("tb-skeleton-region", Loading ? "tb-skeleton" : null,
+                    Loading ? "tb-skeleton--content" : null, Loading ? AnimationClass : null, Class)">
+        <div data-part="content" class="tb-skeleton__content">@ChildContent</div>
+    </div>
+}
 
 @code {
     /// <summary>The shape it stands in for: a line of text, a rectangle such as an image, or a circle such as an
-    /// avatar.</summary>
+    /// avatar. Ignored when it wraps <see cref="ChildContent"/>.</summary>
     [Parameter]
     public SkeletonShape Shape { get; set; }
 
+    /// <summary>How it moves while it waits. Defaults to <see cref="SkeletonAnimation.Pulse"/>; reduced motion
+    /// stops it.</summary>
+    [Parameter]
+    public SkeletonAnimation Animation { get; set; }
+
     /// <summary>The width as a CSS length, such as <c>100px</c> or <c>60%</c>. A line of text fills its row by
-    /// default.</summary>
+    /// default. Wrapped content takes it only while it loads.</summary>
     [Parameter]
     public string? Width { get; set; }
 
-    /// <summary>The height as a CSS length. A line of text is as tall as the text around it by default.</summary>
+    /// <summary>The height as a CSS length. A line of text is as tall as the text around it by default; wrapped
+    /// content takes it only while it loads.</summary>
     [Parameter]
     public string? Height { get; set; }
+
+    /// <summary>Content to hold the place of: while <see cref="Loading"/>, it is hidden and the skeleton takes its
+    /// size, so lay it out with sample data. Its region is marked busy until loading ends. The region is as wide as
+    /// the content, loaded or not; for content that fills its row, such as a card, give it
+    /// <c>Style="inline-size: 100%"</c>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Whether the <see cref="ChildContent"/> is still loading. Defaults to true.</summary>
+    [Parameter]
+    public bool Loading { get; set; } = true;
+
+    private string? SizeStyle => Styles.Join(Width is null ? null : $"inline-size: {Width}",
+        Height is null ? null : $"block-size: {Height}", Style);
+
+    private string AnimationClass => ClassNames.Modifier("tb-skeleton", Animation);
 }

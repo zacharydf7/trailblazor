@@ -923,7 +923,37 @@
     .tb-skeleton {
         display: block;
         background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-skeleton--pulse {
         animation: tb-skeleton-pulse 1.5s ease-in-out infinite alternate;
+    }
+
+    /* A band of the surface color sweeps across the fill, the other way in right-to-left text. */
+    .tb-skeleton--wave {
+        background-image: linear-gradient(90deg, transparent,
+            color-mix(in oklch, var(--tb-color-surface) 60%, transparent), transparent);
+        background-repeat: no-repeat;
+        background-size: 50% 100%;
+        animation: tb-skeleton-wave 1.6s linear infinite;
+    }
+
+    .tb-skeleton--wave:dir(rtl) {
+        animation-direction: reverse;
+    }
+
+    /* As wide as its content whether it is loading or not, so the layout doesn't move when loading ends. */
+    .tb-skeleton-region {
+        inline-size: fit-content;
+    }
+
+    .tb-skeleton--content {
+        border-radius: var(--tb-radius-sm);
+    }
+
+    /* Wrapped content keeps its size and place but isn't seen, read or reached until it has loaded. */
+    .tb-skeleton--content > .tb-skeleton__content {
+        visibility: hidden;
     }
 
     /* A line keeps the height of the text around it, with room above and below like a real line. */
@@ -945,22 +975,39 @@
         border-radius: var(--tb-radius-full);
     }
 
+    /* Still shapes, without a sweep frozen at one side. */
     @media (prefers-reduced-motion: reduce) {
-        .tb-skeleton {
+        .tb-skeleton--pulse,
+        .tb-skeleton--wave {
             animation: none;
+        }
+
+        .tb-skeleton--wave {
+            background-image: none;
         }
     }
 
-    /* Forced colors drop the fill, so an outline keeps the placeholder's shape. */
+    /* Forced colors drop the fill, so an outline keeps the placeholder's shape, inside it so sizes don't change. */
     @media (forced-colors: active) {
         .tb-skeleton {
-            border: 1px solid GrayText;
+            outline: 1px solid GrayText;
+            outline-offset: -1px;
         }
     }
 
     @keyframes tb-skeleton-pulse {
         to {
             opacity: 0.45;
+        }
+    }
+
+    @keyframes tb-skeleton-wave {
+        from {
+            background-position: -100% 0;
+        }
+
+        to {
+            background-position: 200% 0;
         }
     }
 

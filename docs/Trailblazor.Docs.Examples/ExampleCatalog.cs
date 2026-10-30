@@ -943,20 +943,24 @@ public static class ExampleCatalog
                 + "with the role that matches.",
         },
         new("skeleton", "Skeleton", ExampleCategory.Feedback,
-            "A pulsing gray shape that holds the place of content while it loads.", typeof(SkeletonExample))
+            "A gray shape that holds the place of content while it loads, with a pulse or a wave.",
+            typeof(SkeletonExample))
         {
             Api = [typeof(TbSkeleton)],
             Accessibility =
             [
                 "A skeleton is hidden from screen readers, because it has nothing to say. Mark the region that is "
                     + "loading with `aria-busy=\"true\"`, and set it back to `false` when the content arrives.",
-                "With reduced motion, the pulse stops and the shapes stay still.",
+                "Wrapped around content, it does that itself: the content is hidden from sight, screen readers and "
+                    + "the keyboard, and the wrapper has `aria-busy=\"true\"`, until `Loading` turns off.",
+                "With reduced motion, the pulse and the wave stop and the shapes stay still.",
                 "In forced-colors mode, such as Windows high contrast, each shape keeps an outline.",
             ],
             Target = null,
             Blocks = ["tb-skeleton"],
             TestingTip = "Skeletons have no role, so wait for the loaded content rather than for them to go, or check "
-                + "that the region's `aria-busy` is `false`.",
+                + "that the region's `aria-busy` is `false`. Wrapped content is in the page while it loads, but "
+                + "hidden, so `ToBeVisibleAsync` waits for it to load.",
         },
         new("toast", "Toast", ExampleCategory.Feedback,
             "A brief message in a corner that doesn't interrupt, with an optional action.", typeof(ToastExample))

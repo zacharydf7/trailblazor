@@ -46,6 +46,48 @@ public class SkeletonTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/skeleton", new() { ForcedColors = ForcedColors.Active });
 
-        await Expect(page.Locator(".tb-skeleton").First).ToHaveCSSAsync("border-top-style", "solid");
+        await Expect(page.Locator(".tb-skeleton").First).ToHaveCSSAsync("outline-style", "solid");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Skeleton_ShouldHideAndCoverItsContentUntilLoaded_WhenWrappingIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/skeleton");
+        var trip = page.GetByRole(AriaRole.Region, new() { Name = "Trip" });
+        var content = page.GetByTestId("trip").Locator("[data-part=content]");
+
+        await Expect(page.GetByTestId("trip")).ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(page.GetByText("Ridge loop")).ToBeHiddenAsync();
+        var region = (await page.GetByTestId("trip").BoundingBoxAsync())!;
+        var box = (await content.BoundingBoxAsync())!;
+        Assert.Equal(box.Height, region.Height, tolerance: 1);
+        // Narrow content gets a skeleton its own size, not one across the row.
+        var book = (await page.GetByTestId("book").BoundingBoxAsync())!;
+        var button = (await page.GetByTestId("book").Locator("button").BoundingBoxAsync())!;
+        Assert.Equal((button.Width, button.Height), (book.Width, book.Height));
+        await page.GetByRole(AriaRole.Switch, new() { Name = "Loading" }).ClickAsync();
+
+        await Expect(trip).Not.ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(page.GetByText("Ridge loop")).ToBeVisibleAsync();
+        var loaded = (await page.GetByTestId("trip").BoundingBoxAsync())!;
+        Assert.Equal((region.Width, region.Height), (loaded.Width, loaded.Height));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Skeleton_ShouldSweepAndStopForReducedMotion_WhenItWaves(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/skeleton");
+        var still = await OpenAsync(browser, "/examples/skeleton", new() { ReducedMotion = ReducedMotion.Reduce });
+        const string Wave = """
+            skeleton => [getComputedStyle(skeleton).backgroundImage,
+                ...skeleton.getAnimations().map(animation => animation.animationName)]
+            """;
+
+        var moving = await page.GetByTestId("trip").EvaluateAsync<string[]>(Wave);
+        var stopped = await still.GetByTestId("trip").EvaluateAsync<string[]>(Wave);
+
+        Assert.StartsWith("linear-gradient", moving[0]);
+        Assert.Equal(["tb-skeleton-wave"], moving[1..]);
+        Assert.Equal(["none"], stopped);
     }
 }
