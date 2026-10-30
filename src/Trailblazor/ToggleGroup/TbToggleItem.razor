@@ -1,0 +1,63 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbComponentBase
+
+@if (ChildContent is null && Icon is Icon icon)
+{
+    <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Group!.Variant"
+                  Tone="Group.Tone" Size="Group.Size" Disabled="@(Disabled || Group.Disabled)"
+                  Pressed="Group.IsPressed(Value)" PressedChanged="OnPressedChanged" data-part="item" Class="@Class"
+                  Style="@Style" />
+}
+else
+{
+    <TbButton @attributes="AdditionalAttributes" Variant="Group!.Variant" Tone="Group.Tone" Size="Group.Size"
+              Disabled="@(Disabled || Group.Disabled)" Pressed="Group.IsPressed(Value)" PressedChanged="OnPressedChanged"
+              Start="StartIcon" data-part="item" Class="@Class" Style="@Style">
+        @ChildContent
+    </TbButton>
+}
+
+@code {
+    /// <summary>The value the group takes, or adds, when this item is pressed.</summary>
+    [Parameter, EditorRequired]
+    public TValue Value { get; set; } = default!;
+
+    /// <summary>The item's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>An icon before the text, or in place of it, when the item has only an icon and an
+    /// <see cref="AriaLabel"/>.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>The name of an item that shows only an icon. Required then, since an icon says nothing to a screen
+    /// reader.</summary>
+    [Parameter]
+    public string AriaLabel { get; set; } = "";
+
+    /// <summary>Turns this item off while the rest stay usable.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [CascadingParameter]
+    private IToggleGroup? Group { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Group is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbToggleItem<TValue>)} must be inside a TbToggleGroup or a TbMultiToggleGroup.");
+        }
+
+        Group.Accept(Value);
+    }
+
+    private RenderFragment? StartIcon => Icon is Icon icon ? @<TbIcon Icon="icon" Size="Group!.Size" /> : null;
+
+    // The group decides what pressing means, so the button's own idea of its new state is ignored.
+    private Task OnPressedChanged(bool _) => Group!.ToggleAsync(Value);
+}

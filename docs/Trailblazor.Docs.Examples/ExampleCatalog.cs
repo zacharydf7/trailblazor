@@ -197,6 +197,26 @@ public static class ExampleCatalog
             Target = new("group", "Text alignment"),
             Blocks = ["tb-button-group"],
         },
+        new("toggle-group", "Toggle group", ExampleCategory.Actions,
+            "A row of toggle buttons where one, or any number, can be pressed.", typeof(ToggleGroupExample))
+        {
+            Api = [typeof(TbToggleGroup<>), typeof(TbMultiToggleGroup<>), typeof(TbToggleItem<>)],
+            Accessibility =
+            [
+                "A `group` named by its required `AriaLabel`, holding toggle buttons with `aria-pressed`. An item "
+                    + "with only an icon needs an `AriaLabel` of its own.",
+                "The group is one tab stop, landing on the pressed item, or the first one. Left and Right move "
+                    + "between the items (Up and Down when `Vertical`), Home and End go to the first and last, and "
+                    + "disabled items are skipped. Space or Enter presses the focused item.",
+                "In a single group, pressing the pressed item keeps it pressed unless the group is `Clearable`.",
+                "In forced-colors mode a pressed item takes the system highlight.",
+            ],
+            Target = new("group", "Map view"),
+            Blocks = ["tb-toggle-group", "tb-button"],
+            TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
+                + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
+                + "`data-ready` attribute before testing the arrow keys.",
+        },
         new("insert-divider", "Insert divider", ExampleCategory.Actions,
             "A line between two items that reveals an insert button on hover or focus, for adding an item in that "
                 + "place.", typeof(InsertDividerExample))

@@ -1559,19 +1559,48 @@
         }
     }
 
-    .tb-button-group {
+    .tb-button-group,
+    .tb-toggle-group {
         display: inline-flex;
     }
 
-    .tb-button-group > .tb-button:not(:first-child) {
+    .tb-button-group > .tb-button:not(:first-child),
+    .tb-toggle-group:not(.tb-toggle-group--vertical) > .tb-button:not(:first-child) {
         margin-inline-start: -1px;
         border-start-start-radius: 0;
         border-end-start-radius: 0;
     }
 
-    .tb-button-group > .tb-button:not(:last-child) {
+    .tb-button-group > .tb-button:not(:last-child),
+    .tb-toggle-group:not(.tb-toggle-group--vertical) > .tb-button:not(:last-child) {
         border-start-end-radius: 0;
         border-end-end-radius: 0;
+    }
+
+    .tb-toggle-group--vertical {
+        flex-direction: column;
+    }
+
+    .tb-toggle-group--vertical > .tb-button:not(:first-child) {
+        margin-block-start: -1px;
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+    }
+
+    .tb-toggle-group--vertical > .tb-button:not(:last-child) {
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+    }
+
+    /* Joined items overlap by their border, so a pressed or focused one is lifted to show all of its own. */
+    .tb-toggle-group > .tb-button[aria-pressed="true"] {
+        position: relative;
+        z-index: 1;
+    }
+
+    .tb-toggle-group > .tb-button:focus-visible {
+        position: relative;
+        z-index: 2;
     }
 
     .tb-stack {

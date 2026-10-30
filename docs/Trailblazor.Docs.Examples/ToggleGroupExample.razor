@@ -1,0 +1,34 @@
+@using Trailblazor.Docs.Examples
+
+<TbStack Gap="4">
+    <TbStack Gap="2">
+        <TbToggleGroup @bind-Value="_view" AriaLabel="Map view">
+            <TbToggleItem Value="@("Trails")">Trails</TbToggleItem>
+            <TbToggleItem Value="@("Satellite")">Satellite</TbToggleItem>
+            <TbToggleItem Value="@("Terrain")">Terrain</TbToggleItem>
+        </TbToggleGroup>
+        <TbText>View: @_view</TbText>
+    </TbStack>
+    <TbStack Gap="2">
+        <TbMultiToggleGroup @bind-Value="_layers" AriaLabel="Show on map" Size="Size.Small">
+            <TbToggleItem Value="@("Campsites")" Icon="ExampleIcons.Check">Campsites</TbToggleItem>
+            <TbToggleItem Value="@("Water")">Water</TbToggleItem>
+            <TbToggleItem Value="@("Ranger stations")" Disabled>Ranger stations</TbToggleItem>
+            <TbToggleItem Value="@("Alerts")" Icon="ExampleIcons.Bell" AriaLabel="Alerts" />
+        </TbMultiToggleGroup>
+        <TbText>Showing: @(_layers.Count == 0 ? "nothing" : string.Join(", ", _layers))</TbText>
+    </TbStack>
+    <TbStack Row Gap="3" Align="Align.Center">
+        <TbToggleGroup @bind-Value="_units" AriaLabel="Distance units" Vertical Clearable>
+            <TbToggleItem Value="@("Miles")">Miles</TbToggleItem>
+            <TbToggleItem Value="@("Kilometers")">Kilometers</TbToggleItem>
+        </TbToggleGroup>
+        <TbText>Units: @(_units ?? "none")</TbText>
+    </TbStack>
+</TbStack>
+
+@code {
+    private string? _view = "Trails";
+    private IReadOnlyList<string> _layers = ["Water"];
+    private string? _units;
+}

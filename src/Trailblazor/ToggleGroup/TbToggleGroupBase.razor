@@ -1,0 +1,9 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" @ref="_group" role="group" aria-label="@AriaLabel" style="@Style"
+     class="@ClassNames.Join("tb-toggle-group", Vertical ? "tb-toggle-group--vertical" : null, Class)">
+    @* Not fixed, so every item re-renders with the group and its pressed state follows the value. *@
+    <CascadingValue Value="(IToggleGroup)this">@ChildContent</CascadingValue>
+</div>
