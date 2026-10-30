@@ -2,7 +2,8 @@
 
 <form @onsubmit="() => _submits++">
     <input data-testid="field" aria-label="Field" />
-    <TbButton Type="ButtonType.Submit" Loading="Loading" data-testid="submit">Save</TbButton>
+    <TbButton Type="ButtonType.Submit" Loading="Loading" Disabled="FocusableDisabled"
+              FocusableWhenDisabled="FocusableDisabled" data-testid="submit">Save</TbButton>
 </form>
 <button type="button" data-testid="ping" @onclick="() => _pings++">Ping</button>
 <output data-testid="submits">@_submits</output>
@@ -14,4 +15,7 @@
 
     [SupplyParameterFromQuery]
     public bool Loading { get; set; }
+
+    [SupplyParameterFromQuery(Name = "focusable-disabled")]
+    public bool FocusableDisabled { get; set; }
 }

@@ -152,24 +152,35 @@ public static class ExampleCatalog
                 "A native `<button>`, so Enter and Space press it. It defaults to `type=\"button\"`, so it never "
                     + "submits a form by accident.",
                 "Its text is its name; a decorative icon in the `Start` or `End` slot adds nothing to it.",
-                "`Disabled` takes it out of the tab order. `Loading` keeps it focusable, marks it `aria-disabled` "
-                    + "and `aria-busy`, and ignores clicks.",
-                "With reduced motion, the busy spinner stops turning.",
+                "`Disabled` takes it out of the tab order. With `FocusableWhenDisabled` it stays a tab stop, marked "
+                    + "`aria-disabled`, so its tooltip can say why it is off. `Loading` keeps it focusable too, marks "
+                    + "it `aria-disabled` and `aria-busy`, and ignores clicks.",
+                "With `Href` it is a `link` drawn as a button, so it can open in a new tab and is announced as a link. "
+                    + "A disabled one drops its address.",
+                "With `@bind-Pressed` it is a toggle button with `aria-pressed`. Keep its text the same when it is "
+                    + "pressed, or change the text instead of using a toggle, so the state isn't announced twice.",
+                "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
+                    + "the system highlight.",
             ],
             Target = new("button", "Add item"),
             Blocks = ["tb-button"],
+            TestingTip = "Check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, and a disabled "
+                + "button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`. To move focus to a "
+                + "button from code, `@ref` it and call `FocusAsync()`.",
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
             "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
         {
-            Api = [typeof(TbIconButton)],
+            Api = [typeof(TbIconButton), typeof(IconButtonClasses)],
             Accessibility =
             [
                 "`AriaLabel` is required and names the button, since it shows no text; a blank label throws when "
                     + "it renders.",
                 "The icon itself is hidden from screen readers. Add a `TbTooltip` with the same words so sighted "
                     + "users can see the name too.",
-                "Keys, `Disabled` and `Loading` work as they do for a button.",
+                "Keys, `Disabled`, `FocusableWhenDisabled`, `Loading`, `Href` and `@bind-Pressed` work as they do "
+                    + "for a button. A toggle keeps the same `AriaLabel` either way; `aria-pressed` tells whether it "
+                    + "is on.",
             ],
             Target = new("button", "Add"),
             Blocks = ["tb-button", "tb-icon-button"],

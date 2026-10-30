@@ -1,0 +1,34 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@code {
+    // Attributes set here come after the consumer's, so where the button sets nothing the consumer's value is kept.
+    private protected RenderFragment Root(string? extraClass, string? ariaLabel, RenderFragment content) =>
+        @<text>
+            @if (Href is not null)
+            {
+                @* An anchor without an address isn't a link to assistive technology, so a disabled one says it is. *@
+                <a @ref="_element" @attributes="AdditionalAttributes" href="@(Disabled ? null : Href)"
+                   role="@(Disabled ? "link" : Theirs("role"))"
+                   tabindex="@(Disabled ? (FocusableWhenDisabled ? "0" : null) : Theirs("tabindex"))"
+                   aria-label="@(ariaLabel ?? Theirs("aria-label"))"
+                   aria-disabled="@(Disabled || Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+                   class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
+                   @onclick:preventDefault="Loading">
+                    @content
+                </a>
+            }
+            else
+            {
+                <button @ref="_element" @attributes="AdditionalAttributes" type="@TypeAttribute"
+                        disabled="@(Disabled && !FocusableWhenDisabled)"
+                        aria-label="@(ariaLabel ?? Theirs("aria-label"))"
+                        aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+                        aria-pressed="@(Toggles ? (Pressed ? "true" : "false") : Theirs("aria-pressed"))"
+                        class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
+                        @onclick:preventDefault="Inert">
+                    @content
+                </button>
+            }
+        </text>;
+}

@@ -1,9 +1,7 @@
 @namespace Trailblazor
 @inherits TbButtonBase
 
-<button @attributes="AdditionalAttributes" type="@TypeAttribute" disabled="@Disabled"
-        aria-disabled="@(Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
-        class="@RootClass()" style="@Style" @onclick="OnClickAsync" @onclick:preventDefault="Loading">
+@Root(null, null, @<text>
     @if (Loading)
     {
         <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
@@ -17,7 +15,7 @@
     {
         <span data-part="end" class="@ClassNames.Join("tb-button__end", Classes?.End)">@End</span>
     }
-</button>
+</text>)
 
 @code {
     /// <summary>The button's label.</summary>

@@ -1,19 +1,16 @@
 @namespace Trailblazor
 @inherits TbButtonBase
 
-<button @attributes="AdditionalAttributes" type="@TypeAttribute" disabled="@Disabled" aria-label="@AriaLabel"
-        aria-disabled="@(Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
-        class="@RootClass("tb-icon-button")" style="@Style" @onclick="OnClickAsync"
-        @onclick:preventDefault="Loading">
+@Root("tb-icon-button", AriaLabel, @<text>
     @if (Loading)
     {
-        <span data-part="spinner" class="tb-button__spinner"></span>
+        <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
     }
     else
     {
-        <TbIcon Icon="Icon" Size="Size" />
+        <TbIcon Icon="Icon" Size="Size" Class="@Classes?.Icon" data-part="icon" />
     }
-</button>
+</text>)
 
 @code {
     /// <summary>The icon to show.</summary>
@@ -25,6 +22,10 @@
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
 
+    /// <summary>Extra CSS classes for the button's inner parts.</summary>
+    [Parameter]
+    public IconButtonClasses? Classes { get; set; }
+
     /// <inheritdoc />
     public TbIconButton()
     {
@@ -35,6 +36,7 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        base.OnParametersSet();
         if (string.IsNullOrWhiteSpace(AriaLabel))
         {
             throw new InvalidOperationException($"{nameof(TbIconButton)} needs an {nameof(AriaLabel)}.");

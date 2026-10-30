@@ -23,6 +23,16 @@
     <TbButton data-testid="counter" OnClick="() => _clicks++">Clicked @_clicks times</TbButton>
 </div>
 
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--tb-space-2);
+            margin-block-start: var(--tb-space-3)">
+    <TbButton Href="guides/theming" Variant="Variant.Outlined">Read the theming guide</TbButton>
+    <TbButton @bind-Pressed="_pinned" Variant="Variant.Outlined">Pin to top</TbButton>
+    <TbTooltip Text="Add a title before publishing">
+        <TbButton Variant="Variant.Filled" Tone="Tone.Primary" Disabled FocusableWhenDisabled>Publish</TbButton>
+    </TbTooltip>
+</div>
+
 @code {
     private int _clicks;
+    private bool _pinned;
 }

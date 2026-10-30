@@ -7,4 +7,9 @@
     <TbIconButton Icon="ExampleIcons.Plus" AriaLabel="Add" Variant="Variant.Filled" Tone="Tone.Primary" />
     <TbIconButton Icon="ExampleIcons.Close" AriaLabel="Remove" Variant="Variant.Soft" Tone="Tone.Danger" />
     <TbIconButton Icon="ExampleIcons.Check" AriaLabel="Confirm" Disabled />
+    <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="Notifications" @bind-Pressed="_notify" />
 </div>
+
+@code {
+    private bool _notify = true;
+}
