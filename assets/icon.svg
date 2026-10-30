@@ -1,5 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Trailblazor">
-  <rect width="64" height="64" rx="14" fill="#23262b"/>
-  <rect x="13" y="30" width="16" height="24" rx="3.5" fill="#f4f3ef"/>
-  <rect x="35" y="10" width="16" height="24" rx="3.5" fill="#ff6b1f"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -24 152 152">
+  <defs>
+    <linearGradient id="tb-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="144" y2="104">
+      <stop offset="0" stop-color="#7b2ff7"/>
+      <stop offset=".5" stop-color="#3a46f1"/>
+      <stop offset="1" stop-color="#2b3cef"/>
+    </linearGradient>
+    <radialGradient id="tb-light" gradientUnits="userSpaceOnUse" cx="134" cy="10" r="46">
+      <stop offset="0" stop-color="#1f9cfa" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#1f9cfa" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="tb-floor" gradientUnits="userSpaceOnUse" cx="84" cy="104" r="44">
+      <stop offset="0" stop-color="#1e8cf8" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#1e8cf8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tb-fold" gradientUnits="userSpaceOnUse" x1="44" y1="34" x2="80" y2="52">
+      <stop offset="0" stop-color="#14178a" stop-opacity=".26"/>
+      <stop offset="1" stop-color="#14178a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="tb-band" gradientUnits="userSpaceOnUse" x1="84" y1="40" x2="34" y2="104">
+      <stop offset="0" stop-color="#3a3ee6"/>
+      <stop offset=".45" stop-color="#1f8cf8"/>
+      <stop offset="1" stop-color="#1fd0fc"/>
+    </linearGradient>
+    <path id="tb-letters" d="M21 0H100V22H62.5V67.5C55 70 47 74 39.6 78V22H0L10 7C13 2.5 16 0 21 0ZM62.5 0H112C128 0 137 9 137 22C137 34 132 42 124 47C137 52 144 61 144 73C144 92 132 104 116 104H33.5L62.5 60Z"/>
+    <!-- The B's bowls are cut out, so the trail shows the background on any color. -->
+    <mask id="tb-cut" maskUnits="userSpaceOnUse" x="-4" y="-4" width="152" height="112">
+      <rect x="-4" y="-4" width="152" height="112" fill="#fff"/>
+      <path d="M62.5 22H113C117 22 118 29 116 32C114 35 110 37 104 37H68C76 41 84 48 87 55C89 60 85 63 80 64C70 67 58 71 50 77C42 84 36 92 33.5 104H20L39.6 78C47 74 55 70 62.5 67.5Z"/>
+      <path d="M74.5 37.5C90 38 106 44 114 54C120 62 121 72 116 78C112 82 108 83.5 104 83.5H80C88 78 98 72 102 64C105 56 98 46 87 41.5C82 39.5 78 38 74.5 37.5Z"/>
+    </mask>
+  </defs>
+  <g mask="url(#tb-cut)">
+    <use href="#tb-letters" fill="url(#tb-fade)"/>
+    <use href="#tb-letters" fill="url(#tb-light)"/>
+    <use href="#tb-letters" fill="url(#tb-floor)"/>
+    <path d="M39.6 46C52 32 72 18 102 0H120C94 12 76 24 62.5 34V67.5C55 70 47 74 39.6 78Z" fill="url(#tb-fold)"/>
+    <!-- The trail: a point at the top that widens as it winds down and out into the swoosh. -->
+    <path d="M68 37H74.5C78 38 82 39.5 87 41.5C98 46 105 56 102 64C98 72 88 78 80 83.5C72 89 63 96 59 104H33.5C36 92 42 84 50 77C58 71 70 67 80 64C85 63 89 60 87 55C84 48 76 41 68 37Z" fill="url(#tb-band)"/>
+  </g>
 </svg>

@@ -4,12 +4,14 @@
     --docs-display: "Sora", var(--tb-font-family);
     --docs-header-height: 4rem;
     --docs-wrap: 76rem;
-    --docs-brand: light-dark(#4a4ff2, #8fa2ff);
+    --docs-brand: light-dark(#3a46f1, #8fa2ff);
     --docs-brand-text: light-dark(#3a3dc4, #b4c0ff);
     --docs-on-brand: light-dark(#ffffff, #0d1230);
     --docs-brand-subtle: color-mix(in srgb, var(--docs-brand) 14%, transparent);
     --docs-tint: color-mix(in srgb, var(--docs-brand) 6%, var(--tb-color-background));
     --docs-glow: color-mix(in srgb, var(--docs-brand) 24%, transparent);
+    --docs-brand-fade: linear-gradient(100deg, light-dark(#7b2ff7, #b494ff), var(--docs-brand) 55%,
+        light-dark(#1f6fe5, #6cc8ff));
 }
 
 /* Sora, self-hosted under the SIL Open Font License (fonts/Sora-OFL.txt); one variable file covers both weights. */
@@ -538,8 +540,12 @@ a:focus-visible {
     text-wrap: balance;
 }
 
+/* The logo's violet-to-blue fade, clipped to the text; forced colors drop the background and repaint the text. */
+.docs-brand__fade,
 .docs-hero__title span {
-    color: var(--docs-brand-text);
+    background: var(--docs-brand-fade);
+    background-clip: text;
+    color: transparent;
 }
 
 .docs-hero__lede {
