@@ -39,14 +39,26 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Autocomplete_ShouldShowThatItIsSearching_WhileTheSearchRuns(string browser)
     {
         var page = await OpenFieldsAsync(browser);
-        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Trailhead" });
+        // The list is a closed popup until the user types, so it is found while hidden.
+        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Trailhead", IncludeHidden = true });
+
+        // The searching state lasts only as long as the search, so a watcher notes it rather than a poll racing it.
+        await listbox.EvaluateAsync("""
+            listbox => {
+                window.seen = new Set();
+                new MutationObserver(() => {
+                    if (listbox.getAttribute('aria-busy') === 'true') {
+                        window.seen.add(listbox.textContent.trim());
+                    }
+                }).observe(listbox, { attributes: true, childList: true, subtree: true, characterData: true });
+            }
+            """);
 
         await Field(page, "Trailhead").PressSequentiallyAsync("lake");
 
-        await Expect(listbox).ToHaveAttributeAsync("aria-busy", "true");
-        await Expect(listbox.Locator("[data-part=status]")).ToHaveTextAsync("Searching…");
         await Expect(listbox.GetByRole(AriaRole.Option)).ToHaveTextAsync(["Lakeshore Lake country"]);
         await Expect(listbox).Not.ToHaveAttributeAsync("aria-busy", "true");
+        Assert.Contains("Searching…", await page.EvaluateAsync<string[]>("() => [...window.seen]"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
