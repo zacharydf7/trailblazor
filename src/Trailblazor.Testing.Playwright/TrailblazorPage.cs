@@ -18,6 +18,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label.</summary>
     public TbSelectLocator Select(string label) => new(page, label);
 
+    /// <summary>The <c>TbAutocomplete</c> with this label.</summary>
+    public TbAutocompleteLocator Autocomplete(string label) => new(page, label);
+
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
     public TbListBoxLocator ListBox(string label) => new(page, label);
 
@@ -115,6 +118,31 @@ public sealed class TbSelectLocator(IPage page, string label)
         }
     }
 
+}
+
+/// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>
+public sealed class TbAutocompleteLocator(IPage page, string label)
+{
+    /// <summary>Types the text, waits for the suggestions, and chooses the option with this name, waiting until the
+    /// field has taken it. A statically rendered field is a plain input, which just gets the text.</summary>
+    public async Task ChooseAsync(string text, string option)
+    {
+        var input = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("input"));
+        if (await input.GetAttributeAsync("data-static") is not null)
+        {
+            await input.FillAsync(text);
+            return;
+        }
+
+        // Typing opens the list once the field's script has attached.
+        await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
+        await input.FillAsync(text);
+        var listbox = page.Locator($"[id='{await input.GetAttributeAsync("aria-controls")}']");
+        await listbox.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
+        // The list closes as the option is clicked, and the server marks the choice a round trip later.
+        await Assertions.Expect(listbox.GetByRole(AriaRole.Option,
+            new() { Name = option, Exact = true, IncludeHidden = true })).ToHaveAttributeAsync("aria-selected", "true");
+    }
 }
 
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>

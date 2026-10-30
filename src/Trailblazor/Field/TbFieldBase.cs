@@ -63,7 +63,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     private EditContext? CascadedEditContext { get; set; }
 
     [Inject]
-    private IAnnouncer Announcer { get; set; } = default!;
+    private protected IAnnouncer Announcer { get; set; } = default!;
 
     private protected string FieldId { get; } = $"tb-field-{Guid.NewGuid():N}";
 

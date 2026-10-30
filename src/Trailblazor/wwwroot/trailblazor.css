@@ -3081,6 +3081,12 @@
         }
     }
 
+    .tb-autocomplete__status {
+        padding: var(--tb-space-2) var(--tb-space-3);
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
     .tb-tabs__list {
         display: flex;
         gap: var(--tb-space-1);

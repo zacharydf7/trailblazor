@@ -571,6 +571,29 @@ public static class ExampleCatalog
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too.",
         },
+        new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
+            "A text field that suggests values as the user types, from a list or an async search.",
+            typeof(AutocompleteExample))
+        {
+            Api = [typeof(TbAutocomplete<>), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "The input is a `combobox` with `aria-autocomplete=\"list\"`, named by its `Label`, that controls a "
+                    + "`listbox` of `option`s. Focus stays in the input; the active option is pointed to with "
+                    + "`aria-activedescendant`.",
+                "Down opens the list and moves through it, Up moves back, Enter chooses, and Escape closes. Alt+Down "
+                    + "opens without moving. The arrow keys never take the caret out of the text.",
+                "While a search runs the list is `aria-busy` and says \"Searching…\"; when it finishes, the number "
+                    + "of suggestions is announced. Every word can be changed.",
+                "Before the page is interactive it is a plain text input, so a static form still posts what was "
+                    + "typed.",
+            ],
+            Target = new("combobox", "Trailhead"),
+            Blocks = ["tb-field", "tb-select", "tb-autocomplete"],
+            TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
+                + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
+                + "search, and clicks the option by its name.",
+        },
         new("listbox", "List box", ExampleCategory.Inputs,
             "Picks one or several options from a list that is always shown.", typeof(ListBoxExample))
         {

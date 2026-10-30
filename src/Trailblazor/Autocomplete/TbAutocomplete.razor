@@ -1,0 +1,51 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbFieldBase<TValue>
+
+@Layout(Classes, @<text>
+    @* @bind keeps what the user typed while a round trip is in flight; leaving or Enter commits it. *@
+    <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+           type="text" autocomplete="off" @bind:get="_text" @bind:set="OnTypedAsync" @bind:event="oninput"
+           @onchange="CommitAsync" placeholder="@Placeholder" disabled="@Disabled"
+           data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+           role="@(RendererInfo.IsInteractive ? "combobox" : null)"
+           aria-autocomplete="@(RendererInfo.IsInteractive ? "list" : null)"
+           aria-expanded="@(RendererInfo.IsInteractive ? "false" : null)"
+           aria-controls="@(RendererInfo.IsInteractive ? ListboxId : null)"
+           aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+           aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    @if (RendererInfo.IsInteractive)
+    {
+        <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
+             aria-labelledby="@(Label is null ? null : LabelId)" aria-busy="@(_searching ? "true" : null)"
+             class="tb-select__listbox tb-autocomplete__listbox">
+            @if (_results.Count == 0)
+            {
+                <div data-part="status" class="tb-autocomplete__status">
+                    @(_searching ? SearchingText : _searched ? NoResultsText : TypeToSearchText)
+                </div>
+            }
+            @for (var index = 0; index < _results.Count; index++)
+            {
+                var item = _results[index];
+                <div id="@($"{ListboxId}-{index}")" role="option" data-part="option" class="tb-select__option"
+                     aria-selected="@(IsChosen(item) ? "true" : "false")" @onclick="() => ChooseAsync(item)">
+                    @if (ItemTemplate is null)
+                    {
+                        @TextOf(item)
+                    }
+                    else
+                    {
+                        @ItemTemplate(item)
+                    }
+                </div>
+            }
+        </div>
+    }
+</text>, Start, End)
+
+@code {
+    private RenderFragment? End => !Clearable || Disabled || string.IsNullOrEmpty(_text) ? null :
+        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" Size="Size.Small" OnClick="ClearAsync"
+                       data-part="clear" />;
+}
