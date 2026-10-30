@@ -294,6 +294,27 @@ public static class ExampleCatalog
             Target = null,
             Blocks = ["tb-grid", "tb-grid-item"],
         },
+        new("splitter", "Splitter", ExampleCategory.Layout,
+            "Lays out panes side by side or stacked, with separators that resize them by dragging or with the "
+                + "keyboard.", typeof(SplitterExample))
+        {
+            Api = [typeof(TbSplitter), typeof(TbSplitterPane)],
+            Accessibility =
+            [
+                "Each separator is a focusable `separator` named \"Resize\" and the `Label` of the pane before it, "
+                    + "with `aria-valuenow` giving that pane's size in percent and `aria-controls` pointing to it.",
+                "On a separator, the arrows resize by 1% (10% with Shift), Home and End take the pane before it to "
+                    + "its smallest and largest, and Enter collapses or restores a `Collapsible` pane.",
+                "A collapsed pane keeps its content but hides it from sight and from the tab order.",
+                "Dragging has the keyboard as its alternative (WCAG 2.5.7), and works right to left.",
+            ],
+            Target = new("separator", "Resize Trails"),
+            Blocks = ["tb-splitter"],
+            TestingTip = "Resize with the keys, as `var separator = page.GetByRole(AriaRole.Separator, new() { Name "
+                + "= \"Resize Trails\" }); await separator.FocusAsync(); await page.Keyboard.PressAsync(\"End\");`, "
+                + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`. Wait for the splitter's "
+                + "`data-ready` first.",
+        },
         new("container", "Container", ExampleCategory.Layout,
             "Centers content and caps its width at a readable size.", typeof(ContainerExample))
         {

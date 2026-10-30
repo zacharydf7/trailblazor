@@ -2997,6 +2997,90 @@
         }
     }
 
+    .tb-splitter {
+        display: flex;
+        box-sizing: border-box;
+        block-size: 100%;
+        min-inline-size: 0;
+        min-block-size: 0;
+    }
+
+    .tb-splitter--vertical {
+        flex-direction: column;
+    }
+
+    .tb-splitter__pane {
+        flex-shrink: 1;
+        flex-basis: 0;
+        min-inline-size: 0;
+        min-block-size: 0;
+        overflow: auto;
+    }
+
+    /* A collapsed pane keeps its content, but out of sight and out of the tab order. */
+    .tb-splitter__pane--collapsed {
+        overflow: hidden;
+        visibility: hidden;
+    }
+
+    /* The pointer strip is wider than the 1px line but overlaps each pane by less than a scrollbar's width. */
+    .tb-splitter__separator {
+        position: relative;
+        z-index: 1;
+        flex: none;
+        inline-size: 9px;
+        margin-inline: -4px;
+        cursor: col-resize;
+        touch-action: none;
+    }
+
+    .tb-splitter--vertical > .tb-splitter__separator {
+        inline-size: auto;
+        block-size: 9px;
+        margin-inline: 0;
+        margin-block: -4px;
+        cursor: row-resize;
+    }
+
+    .tb-splitter__separator::before {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 50%;
+        inline-size: 1px;
+        background: var(--tb-border-subtle);
+        transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-splitter--vertical > .tb-splitter__separator::before {
+        inset-inline: 0;
+        inset-block-start: 50%;
+        inline-size: auto;
+        block-size: 1px;
+    }
+
+    .tb-splitter__separator:hover::before,
+    .tb-splitter__separator:focus-visible::before {
+        background: var(--tb-color-primary);
+        box-shadow: 0 0 0 1px var(--tb-color-primary);
+    }
+
+    .tb-splitter__separator:focus-visible {
+        outline: none;
+    }
+
+    @media (forced-colors: active) {
+        .tb-splitter__separator::before {
+            background: CanvasText;
+        }
+
+        .tb-splitter__separator:hover::before,
+        .tb-splitter__separator:focus-visible::before {
+            background: Highlight;
+            box-shadow: 0 0 0 1px Highlight;
+        }
+    }
+
     .tb-tabs__list {
         display: flex;
         gap: var(--tb-space-1);

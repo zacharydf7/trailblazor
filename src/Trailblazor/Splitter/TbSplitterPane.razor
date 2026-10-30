@@ -1,0 +1,155 @@
+@namespace Trailblazor
+@using System.Globalization
+@inherits TbComponentBase
+@implements IDisposable
+
+@* Each pane after the first puts the separator between itself and the pane before, which the separator resizes. *@
+@if (Splitter!.Before(this) is { } before)
+{
+    <div role="separator" tabindex="0" data-part="separator" class="tb-splitter__separator"
+         aria-orientation="@(Splitter.Vertical ? "horizontal" : "vertical")" aria-controls="@before.Id"
+         aria-label="@($"Resize {before.Label ?? $"pane {Splitter.IndexOf(before) + 1}"}")"
+         aria-valuenow="@Whole(Splitter.Percent(before))"
+         aria-valuemin="@(before.Collapsible ? "0" : Whole(Splitter.InOpenSpace(before.MinSize)))"
+         aria-valuemax="@Whole(Splitter.InOpenSpace(before.MaxSize))">
+    </div>
+}
+<div @attributes="AdditionalAttributes" id="@Id" data-part="pane" data-min="@Round(Splitter.InOpenSpace(MinSize))"
+     data-max="@Round(Splitter.InOpenSpace(MaxSize))"
+     data-collapsed="@(IsCollapsed ? "" : null)" style="@($"flex-grow: {Round(Splitter.Share(this))}; {Style}")"
+     class="@ClassNames.Join("tb-splitter__pane", IsCollapsed ? "tb-splitter__pane--collapsed" : null, Class)">
+    @ChildContent
+</div>
+
+@code {
+    private double? _size;
+    private double? _sizeFromParent;
+    private bool _collapsed;
+    private bool _collapsedFromParent;
+
+    /// <summary>The pane's content, which can be another <see cref="TbSplitter"/>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The pane's size, in percent of the splitter. Panes without one share what the others leave. Bind it
+    /// with <c>@bind-Size</c> to hear the user resize it.</summary>
+    [Parameter]
+    public double? Size { get; set; }
+
+    /// <summary>Raised when the user resizes the pane.</summary>
+    [Parameter]
+    public EventCallback<double?> SizeChanged { get; set; }
+
+    /// <summary>The smallest the user can make the pane, in percent. Defaults to 0.</summary>
+    [Parameter]
+    public double MinSize { get; set; }
+
+    /// <summary>The largest the user can make the pane, in percent. Defaults to 100.</summary>
+    [Parameter]
+    public double MaxSize { get; set; } = 100;
+
+    /// <summary>Lets Enter on the separator before the pane, or after it for the first pane, collapse it and restore
+    /// it.</summary>
+    [Parameter]
+    public bool Collapsible { get; set; }
+
+    /// <summary>Whether the pane is collapsed. Bind it with <c>@bind-Collapsed</c> to collapse it from a button. A
+    /// collapsed pane keeps its content and its size, which it goes back to when restored.</summary>
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    /// <summary>Raised when the user collapses or restores the pane.</summary>
+    [Parameter]
+    public EventCallback<bool> CollapsedChanged { get; set; }
+
+    /// <summary>What the pane holds, such as "Outline", which names its separator "Resize Outline".</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    [CascadingParameter]
+    private TbSplitter? Splitter { get; set; }
+
+    internal string Id { get; } = $"tb-splitter-pane-{Guid.NewGuid():N}";
+
+    // The size and state the pane has now, which the user changes and the parent replaces only with a new value.
+    internal double? CurrentSize => _size;
+
+    internal bool IsCollapsed => _collapsed;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Splitter is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbSplitterPane)} must be inside a TbSplitter.");
+        }
+
+        _size = _sizeFromParent = Size;
+        _collapsed = _collapsedFromParent = Collapsed;
+        Splitter.Add(this);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // The splitter re-renders its content as the user resizes, which hands every pane its parameters again, so
+        // only a value the parent changed replaces the pane's own, and that one is saved like the user's.
+        if (Size != _sizeFromParent)
+        {
+            _size = _sizeFromParent = Size;
+            Splitter!.SaveAfterRender();
+            Splitter.Refresh();
+        }
+
+        if (Collapsed != _collapsedFromParent)
+        {
+            KeepSizeBeforeCollapsing(Collapsed);
+            _collapsed = _collapsedFromParent = Collapsed;
+            Splitter!.SaveAfterRender();
+            Splitter.Refresh();
+        }
+
+        if (MinSize < 0 || MaxSize > 100 || MinSize > MaxSize)
+        {
+            throw new InvalidOperationException(
+                "A pane needs a MinSize from 0 to its MaxSize, and a MaxSize up to 100.");
+        }
+    }
+
+    internal async Task SetSizeAsync(double size)
+    {
+        if (_size != size)
+        {
+            _size = size;
+            await SizeChanged.InvokeAsync(size);
+        }
+    }
+
+    internal async Task SetCollapsedAsync(bool collapsed)
+    {
+        if (_collapsed != collapsed)
+        {
+            KeepSizeBeforeCollapsing(collapsed);
+            _collapsed = collapsed;
+            await CollapsedChanged.InvokeAsync(collapsed);
+            Splitter!.Refresh();
+        }
+    }
+
+    // A pane that only shared what was left keeps that share as its size, to come back at it when restored.
+    private void KeepSizeBeforeCollapsing(bool collapsing)
+    {
+        if (collapsing && !_collapsed && _size is null)
+        {
+            _size = Splitter!.Share(this);
+        }
+    }
+
+    private static string Round(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
+
+    // Screen readers hear whole percentages, as the script reports them while the user drags.
+    private static string Whole(double value) => Math.Round(value).ToString(CultureInfo.InvariantCulture);
+
+    /// <inheritdoc />
+    public void Dispose() => Splitter?.Remove(this);
+}

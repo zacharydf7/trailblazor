@@ -1,0 +1,13 @@
+@page "/splitter"
+
+<TbButton OnClick="() => _leftCollapsed = !_leftCollapsed">Toggle left</TbButton>
+<div style="block-size: 10rem">
+    <TbSplitter PersistenceKey="splitter-fixture">
+        <TbSplitterPane Label="Left" Size="30" Collapsible @bind-Collapsed="_leftCollapsed">Left pane</TbSplitterPane>
+        <TbSplitterPane Label="Right">Right pane</TbSplitterPane>
+    </TbSplitter>
+</div>
+
+@code {
+    private bool _leftCollapsed;
+}

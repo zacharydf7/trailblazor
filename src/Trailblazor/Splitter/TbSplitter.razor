@@ -1,0 +1,217 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<div @attributes="AdditionalAttributes" @ref="_root" style="@Style"
+     class="@ClassNames.Join("tb-splitter", Vertical ? "tb-splitter--vertical" : null, Class)">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+</div>
+
+@code {
+    private List<TbSplitterPane> _panes = [];
+    private ElementReference _root;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<SplitterReport>? _report;
+    private bool _saveAfterRender;
+    private bool _disposed;
+
+    /// <summary>The <see cref="TbSplitterPane"/>s, two or more, with a separator between each pair.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Stacks the panes top to bottom instead of side by side.</summary>
+    [Parameter]
+    public bool Vertical { get; set; }
+
+    /// <summary>Saves the panes' sizes and collapsed state in the browser under this key, so a reload keeps the
+    /// user's layout. Use a key unique to each splitter.</summary>
+    [Parameter]
+    public string? PersistenceKey { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await AttachAsync();
+            }
+            else if (_saveAfterRender)
+            {
+                _saveAfterRender = false;
+                await SaveAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the splitter went with it.
+        }
+    }
+
+    private async Task AttachAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/splitter.js");
+        if (_disposed)
+        {
+            return;
+        }
+
+        _report = DotNetObjectReference.Create(new SplitterReport(OnResizeAsync, OnToggleAsync, OnOrder));
+        var handle = await module.InvokeAsync<IJSObjectReference?>("attachSplitter", _root, _report, PersistenceKey);
+        if (handle is null)
+        {
+            return;
+        }
+
+        if (_disposed)
+        {
+            await handle.DisposeHandleAsync();
+            return;
+        }
+
+        _handle = handle;
+        // The script only hands back a saved layout with a finite size and a state for every pane.
+        if (await handle.InvokeAsync<SplitterLayout?>("saved") is { } saved && saved.Sizes.Length == _panes.Count
+            && saved.Collapsed.Length == _panes.Count)
+        {
+            await RestoreAsync(saved);
+        }
+    }
+
+    internal void Add(TbSplitterPane pane)
+    {
+        _panes.Add(pane);
+        StateHasChanged();
+    }
+
+    internal void Remove(TbSplitterPane pane)
+    {
+        _panes.Remove(pane);
+        StateHasChanged();
+    }
+
+    internal int IndexOf(TbSplitterPane pane) => _panes.IndexOf(pane);
+
+    internal TbSplitterPane? Before(TbSplitterPane pane) =>
+        IndexOf(pane) is > 0 and var index ? _panes[index - 1] : null;
+
+    // Sizes are percent of the whole splitter. Panes without one share what the sized ones leave, a collapsed pane
+    // takes none, and every pane stays within its limits.
+    internal double Share(TbSplitterPane pane)
+    {
+        if (pane.IsCollapsed)
+        {
+            return 0;
+        }
+
+        var open = _panes.Where(each => !each.IsCollapsed).ToList();
+        var unsized = open.Count(each => each.CurrentSize is null);
+        var left = Math.Max(100 - open.Where(each => each.CurrentSize is not null)
+            .Sum(each => Math.Clamp(each.CurrentSize!.Value, each.MinSize, each.MaxSize)), 0);
+        return Math.Clamp(pane.CurrentSize ?? (unsized == 0 ? 0 : left / unsized), pane.MinSize, pane.MaxSize);
+    }
+
+    // What the collapsed panes leave, in percent of the whole splitter.
+    internal double OpenSpace =>
+        Math.Max(100 - _panes.Where(pane => pane.IsCollapsed).Sum(pane => pane.CurrentSize ?? 0), 0);
+
+    // The browser and the separators work in parts of the open space, so a pane's limits are put in the same terms.
+    internal double InOpenSpace(double limit) => OpenSpace > 0 ? Math.Min(limit * 100 / OpenSpace, 100) : limit;
+
+    // A pane's part of the open space, which is what its separator reports and what the user sees.
+    internal double Percent(TbSplitterPane pane)
+    {
+        var total = _panes.Sum(Share);
+        return total > 0 ? Share(pane) / total * 100 : 0;
+    }
+
+    internal void Refresh() => StateHasChanged();
+
+    // A size or state the parent changed is saved once the splitter has rendered it.
+    internal void SaveAfterRender() => _saveAfterRender = true;
+
+    // Panes register as they first render, so one added later in the middle is put back in markup order.
+    private void OnOrder(string[] ids)
+    {
+        var ordered = _panes.OrderBy(pane => Array.IndexOf(ids, pane.Id) is var index and >= 0 ? index : int.MaxValue)
+            .ToList();
+        if (!ordered.SequenceEqual(_panes))
+        {
+            _panes = ordered;
+            StateHasChanged();
+        }
+    }
+
+    // The browser measures the open panes as shares of the open space, which are scaled back to percent of the whole
+    // around what the collapsed panes keep, so a restored pane comes back at its own size.
+    private async Task OnResizeAsync(string[] ids, double[] shares)
+    {
+        var open = OpenSpace;
+        for (var index = 0; index < ids.Length && index < shares.Length; index++)
+        {
+            if (_panes.Find(pane => pane.Id == ids[index]) is { IsCollapsed: false } pane)
+            {
+                await pane.SetSizeAsync(Clamp(pane, shares[index] * open / 100));
+            }
+        }
+
+        StateHasChanged();
+        await SaveAsync();
+    }
+
+    // Enter on a separator collapses or restores the pane before it, or the one after when that one can't collapse.
+    private async Task OnToggleAsync(string before)
+    {
+        var index = _panes.FindIndex(pane => pane.Id == before);
+        var pane = index >= 0 && _panes[index].Collapsible ? _panes[index]
+            : index >= 0 && index + 1 < _panes.Count && _panes[index + 1].Collapsible ? _panes[index + 1] : null;
+        if (pane is not null)
+        {
+            await pane.SetCollapsedAsync(!pane.IsCollapsed);
+            await SaveAsync();
+        }
+    }
+
+    private async Task RestoreAsync(SplitterLayout saved)
+    {
+        for (var index = 0; index < _panes.Count; index++)
+        {
+            if (saved.Sizes[index] > 0)
+            {
+                await _panes[index].SetSizeAsync(Clamp(_panes[index], saved.Sizes[index]));
+            }
+
+            await _panes[index].SetCollapsedAsync(saved.Collapsed[index]);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_handle is not null && PersistenceKey is not null)
+        {
+            var sizes = _panes.Select(pane => pane.CurrentSize ?? Share(pane));
+            await _handle.InvokeVoidAsync("save", sizes, _panes.Select(pane => pane.IsCollapsed));
+        }
+    }
+
+    private static double Clamp(TbSplitterPane pane, double size) =>
+        Math.Round(Math.Clamp(size, pane.MinSize, pane.MaxSize), 2);
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _report?.Dispose();
+    }
+}
