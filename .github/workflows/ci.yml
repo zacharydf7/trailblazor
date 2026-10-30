@@ -5,6 +5,15 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Pushes test in Chromium only; this run and a manual one cover every browser.
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+# A newer push makes the run it replaces pointless, and only the tip of main is published.
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -12,6 +21,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TRAILBLAZOR_BROWSERS: >-
+        ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && 'chromium' || '' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -23,5 +35,8 @@ jobs:
 
       - run: dotnet restore
       - run: dotnet build --configuration Release --no-restore
-      - run: pwsh tests/Trailblazor.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps
+      # An empty list installs every browser.
+      - run: >-
+          pwsh tests/Trailblazor.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps
+          $TRAILBLAZOR_BROWSERS
       - run: dotnet test --configuration Release --no-build

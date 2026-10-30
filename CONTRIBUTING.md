@@ -6,7 +6,9 @@ An issue is done when all of these hold:
 
 - The change has bUnit tests and Playwright tests in chromium, firefox and webkit, and the new tests fail when the
   change is undone.
-- `dotnet build` passes with warnings as errors, and `dotnet test` passes.
+- `dotnet build` passes with warnings as errors, and `dotnet test` passes locally in every browser. CI runs the
+  browser tests in chromium on each push to save minutes, and in all three every Monday or when run by hand;
+  `TRAILBLAZOR_BROWSERS=chromium` narrows a local run the same way.
 - The docs site is updated: a new or changed component, parameter or behavior has its page, interactive example, API
   table, accessibility notes and testing notes brought up to date, and the docs examples pass the axe checks.
 - The change follows the conventions: American English, comments only for real constraints, test names

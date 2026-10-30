@@ -56,6 +56,9 @@ public sealed class BrowserFixture : IAsyncLifetime
 
     public async Task<IBrowserContext> NewContextAsync(string browser, BrowserNewContextOptions? options = null)
     {
+        // A case for a browser TRAILBLAZOR_BROWSERS leaves out is skipped; an unknown browser name still fails.
+        Assert.SkipWhen(AllBrowsers.Supported.Contains(browser) && !_browsers.ContainsKey(browser),
+            $"TRAILBLAZOR_BROWSERS leaves out {browser}.");
         var launched = await _browsers[browser].Value;
         return await launched.NewContextAsync(options);
     }
