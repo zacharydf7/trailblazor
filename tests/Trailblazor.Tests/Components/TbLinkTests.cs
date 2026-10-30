@@ -64,4 +64,50 @@ public class TbLinkTests : BunitContext
         Assert.Equal("noopener noreferrer", anchor.GetAttribute("rel"));
         Assert.Equal("(new tab)", cut.Find("a .tb-visually-hidden").TextContent.Trim());
     }
+
+    [Fact]
+    public void Render_ShouldDropTheAddressAndSayItIsDisabled_WhenADisabledLinkHasAnHref()
+    {
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "guides/theming")
+            .Add(link => link.Disabled, true).AddUnmatched("tabindex", "0").AddChildContent("Theming"));
+
+        var link = cut.Find("a");
+        Assert.False(link.HasAttribute("href"));
+        Assert.False(link.HasAttribute("tabindex"));
+        Assert.Equal(("link", "true"), (link.GetAttribute("role"), link.GetAttribute("aria-disabled")));
+    }
+
+    [Fact]
+    public void Render_ShouldDisableTheButton_WhenADisabledLinkHasNoHref()
+    {
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Disabled, true).AddChildContent("Run"));
+
+        Assert.True(cut.Find("button").HasAttribute("disabled"));
+    }
+
+    [Theory]
+    [InlineData("guides/theming", "a")]
+    [InlineData(null, "button")]
+    public void Click_ShouldNotRunOnClick_WhenDisabled(string? href, string element)
+    {
+        var ran = false;
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, href)
+            .Add(link => link.Disabled, true).Add(link => link.OnClick, () => ran = true).AddChildContent("Run"));
+
+        cut.Find(element).Click();
+
+        Assert.False(ran);
+    }
+
+    [Fact]
+    public async Task FocusAsync_ShouldFocusTheLink_WhenCalled()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "guides/theming")
+            .AddChildContent("Theming"));
+
+        await cut.InvokeAsync(() => cut.Instance.FocusAsync());
+
+        JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(cut.Find("a"));
+    }
 }

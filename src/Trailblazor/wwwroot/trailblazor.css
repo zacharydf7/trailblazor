@@ -779,6 +779,12 @@
         outline-offset: var(--tb-focus-ring-offset);
     }
 
+    .tb-link:is(:disabled, [aria-disabled="true"]) {
+        color: var(--tb-color-text-disabled);
+        text-decoration: none;
+        cursor: default;
+    }
+
     .tb-link--button {
         padding: 0;
         border: 0;
@@ -791,6 +797,10 @@
     @media (forced-colors: active) {
         .tb-link {
             color: LinkText;
+        }
+
+        .tb-link:is(:disabled, [aria-disabled="true"]) {
+            color: GrayText;
         }
     }
 

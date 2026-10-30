@@ -973,12 +973,16 @@ public static class ExampleCatalog
                 "It is always underlined, so it doesn't rely on color alone to stand out from the text around it.",
                 "`NewTab` adds `target=\"_blank\"` and `rel=\"noopener noreferrer\"`, and screen readers hear \"opens "
                     + "in a new tab\" after its text. `NewTabHint` changes those words.",
-                "In forced-colors mode, such as Windows high contrast, both kinds take the system's link color.",
+                "`Disabled` keeps the text but drops the address, so the link can't be followed or focused, and "
+                    + "marks it `aria-disabled` with the `link` role, so screen readers still read it as a disabled "
+                    + "link. Without `Href` the button is `disabled`. Both lose their underline and turn gray.",
+                "In forced-colors mode, such as Windows high contrast, both kinds take the system's link color, and a "
+                    + "disabled one the system's gray.",
             ],
             Target = new("link", "theming guide"),
             Blocks = ["tb-link"],
             TestingTip = "A link with an `Href` has the `link` role and one without has the `button` role, so find it "
-                + "with the role that matches.",
+                + "with the role that matches. `ToBeDisabledAsync` checks either kind is disabled.",
         },
         new("skeleton", "Skeleton", ExampleCategory.Feedback,
             "A gray shape that holds the place of content while it loads, with a pulse or a wave.",
