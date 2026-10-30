@@ -580,6 +580,22 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldStayClosed_WhenEscapeClosesItBeforeTheHoverDelayEnds(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Expect(Item(page, "Shape")).ToBeFocusedAsync();
+
+        // The click arrives with the pointer, so its hover is still waiting when Escape closes the submenu.
+        await Item(page, "Chart").ClickAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await page.WaitForTimeoutAsync(400);
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeHiddenAsync();
+        await Expect(Item(page, "Chart")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SubMenu_ShouldGoIntoTheSubmenu_WhenItsItemIsClickedAfterThePointerOpenedIt(string browser)
     {
         var page = await OpenAsync(browser, "/menu");
