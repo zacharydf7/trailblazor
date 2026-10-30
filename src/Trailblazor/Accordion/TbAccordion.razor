@@ -1,12 +1,21 @@
 @namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
 @inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
 
-<div @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
+@* data-ready marks that the arrow keys work, which tests wait for. *@
+<div @attributes="AdditionalAttributes" @ref="_accordion" data-ready="@(_handle is null ? null : "")"
+     class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>
 
 @code {
     private readonly List<TbAccordionItem> _items = [];
+    private ElementReference _accordion;
+    private IJSObjectReference? _handle;
+    private bool _disposed;
 
     /// <summary>Lets several items be open at once. Without it, opening one from its header closes the others;
     /// items opened by setting <see cref="TbAccordionItem.Expanded"/> stay as the parent sets them.</summary>
@@ -29,6 +38,38 @@
         ArgumentOutOfRangeException.ThrowIfGreaterThan(HeadingLevel, 6);
     }
 
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/accordion.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachAccordion", _accordion);
+            if (handle is not null && _disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+            StateHasChanged();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the accordion went with it.
+        }
+    }
+
     internal void Add(TbAccordionItem item) => _items.Add(item);
 
     internal void Remove(TbAccordionItem item) => _items.Remove(item);
@@ -43,6 +84,16 @@
         foreach (var item in _items.Where(item => item != opened).ToList())
         {
             await item.CollapseAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
         }
     }
 }

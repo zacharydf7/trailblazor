@@ -5,10 +5,12 @@
 <div @attributes="AdditionalAttributes" data-part="item" style="@Style"
      class="@ClassNames.Join("tb-accordion__item", _expanded ? "tb-accordion__item--expanded" : null, Class)">
     @Heading
-    @* The content stays rendered while closed, so fields inside keep what was typed. *@
-    <div id="@PanelId" role="region" aria-labelledby="@TriggerId" hidden="@(!_expanded)" data-part="panel"
+    @* The content stays rendered while closed, so fields inside keep what was typed; inert keeps it out of reach. *@
+    <div id="@PanelId" role="region" aria-labelledby="@TriggerId" inert="@(!_expanded)" data-part="panel"
          class="tb-accordion__panel">
-        @ChildContent
+        <div class="tb-accordion__clip">
+            <div class="tb-accordion__body">@ChildContent</div>
+        </div>
     </div>
 </div>
 

@@ -4,4 +4,16 @@
     @* An unbound input keeps its text only while its element does. *@
     <TbAccordionItem Title="Shipping options"><input aria-label="Notes" /></TbAccordionItem>
     <TbAccordionItem Title="Return policy">Returns content</TbAccordionItem>
+    <TbAccordionItem Title="Warranty" Disabled>Warranty content</TbAccordionItem>
+    <TbAccordionItem Title="Care" Expanded>
+        <TbMenu Label="Care options">
+            <TbMenuItem>Order a kit</TbMenuItem>
+        </TbMenu>
+        <TbAccordion>
+            <TbAccordionItem Title="Washing">Washing content</TbAccordionItem>
+            <TbAccordionItem Title="Drying">Drying content</TbAccordionItem>
+        </TbAccordion>
+    </TbAccordionItem>
 </TbAccordion>
+@* Taller than the window, so a key that isn't caught would scroll the page. *@
+<div style="block-size: 150vh"></div>

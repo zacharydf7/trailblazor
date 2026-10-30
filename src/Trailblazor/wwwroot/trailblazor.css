@@ -3553,7 +3553,27 @@
         transform: rotate(180deg);
     }
 
+    /* A closed panel's row shrinks to nothing, so opening and closing can animate; it hides once it has closed. */
     .tb-accordion__panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        visibility: hidden;
+        transition: grid-template-rows var(--tb-motion-duration-normal) var(--tb-motion-easing-standard),
+            visibility 0s linear var(--tb-motion-duration-normal);
+    }
+
+    .tb-accordion__item--expanded > .tb-accordion__panel {
+        grid-template-rows: 1fr;
+        visibility: visible;
+        transition-delay: 0s;
+    }
+
+    .tb-accordion__clip {
+        min-block-size: 0;
+        overflow: hidden;
+    }
+
+    .tb-accordion__body {
         padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-4);
     }
 

@@ -869,10 +869,15 @@ public static class ExampleCatalog
                 "Each title is a button with `aria-expanded` inside a heading, level 3 unless `HeadingLevel` says "
                     + "otherwise. Choose the level that fits the page's outline.",
                 "Each panel is a `region` named by its title.",
-                "Tab moves between the titles, and Enter or Space opens and closes them.",
+                "Tab moves between the titles, and Enter or Space opens and closes them. Up and Down also move "
+                    + "between the titles, wrapping at the ends, and Home and End go to the first and last.",
+                "A closed panel is `inert`, so its content can't be reached until it opens. Opening and closing "
+                    + "slide, except with reduced motion.",
             ],
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
+            TestingTip = "The arrow keys, Home and End work once the accordion's script has attached, which its "
+                + "`data-ready` attribute marks; wait for it before pressing them.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "

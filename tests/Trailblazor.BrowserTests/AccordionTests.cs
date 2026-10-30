@@ -36,4 +36,74 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByLabel("Notes")).ToHaveValueAsync("leave at the door");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Accordion_ShouldMoveBetweenItsHeadersWithTheArrowsHomeAndEnd_WhenOneHasFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion");
+        await Expect(page.Locator(".tb-accordion").First).ToHaveAttributeAsync("data-ready", "");
+        ILocator Header(string name) => page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+        await Header("Shipping options").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Header("Return policy")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Header("Care")).ToBeFocusedAsync();
+        // Care's open panel holds a menu and a nested accordion, whose buttons aren't this accordion's headers.
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Header("Shipping options")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Header("Care")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Home");
+        await Expect(Header("Shipping options")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("End");
+
+        await Expect(Header("Care")).ToBeFocusedAsync();
+        Assert.Equal(0, await page.EvaluateAsync<double>("() => scrollY"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Accordion_ShouldLeaveTheKeysToAMenuAndANestedAccordion_WhenTheyAreInAPanel(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion");
+        await Expect(page.Locator(".tb-accordion").First).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.Locator(".tb-accordion .tb-accordion")).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Washing" }).FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Drying" })).ToBeFocusedAsync();
+        // The menu leaves Home alone, so focus stays only if the accordion does too.
+        var menu = page.GetByRole(AriaRole.Button, new() { Name = "Care options" });
+        await menu.FocusAsync();
+        await page.Keyboard.PressAsync("Home");
+
+        await Expect(menu).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionPanel_ShouldSlideOnlyWhenMotionIsAllowed_WhenAnItemOpens(string browser)
+    {
+        var moving = await OpenAsync(browser, "/accordion");
+        var still = await OpenAsync(browser, "/accordion", new() { ReducedMotion = ReducedMotion.Reduce });
+        // The open panel's transitioned properties, their durations and their delays.
+        const string Transition = """
+            panel => ['transitionProperty', 'transitionDuration', 'transitionDelay']
+                .map(property => getComputedStyle(panel)[property])
+            """;
+
+        var opened = new List<string[]>();
+        foreach (var page in new[] { moving, still })
+        {
+            await page.GetByRole(AriaRole.Button, new() { Name = "Return policy" }).ClickAsync();
+            var panel = page.GetByRole(AriaRole.Region, new() { Name = "Return policy" });
+            await Expect(panel).ToBeVisibleAsync();
+            opened.Add(await panel.EvaluateAsync<string[]>(Transition));
+        }
+
+        Assert.StartsWith("grid-template-rows", opened[0][0]);
+        Assert.NotEqual("0s", opened[0][1].Split(", ")[0]);
+        // Opening shows the content at once, so it slides into view rather than appearing at the end.
+        Assert.All(opened[0][2].Split(", "), delay => Assert.Equal("0s", delay));
+        Assert.All(opened[1][1].Split(", "), duration => Assert.Equal("0s", duration));
+    }
 }

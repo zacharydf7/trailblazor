@@ -6,6 +6,8 @@ namespace Trailblazor.Tests.Components;
 
 public class TbAccordionTests : BunitContext
 {
+    public TbAccordionTests() => this.AddTrailblazor();
+
     [Fact]
     public void Render_ShouldLinkEachHeaderButtonToItsHiddenRegion_WhenCollapsed()
     {
@@ -19,7 +21,7 @@ public class TbAccordionTests : BunitContext
         var panel = cut.Find($"#{trigger.GetAttribute("aria-controls")}");
         Assert.Equal("region", panel.GetAttribute("role"));
         Assert.Equal(trigger.Id, panel.GetAttribute("aria-labelledby"));
-        Assert.True(panel.HasAttribute("hidden"));
+        Assert.True(panel.HasAttribute("inert"));
         Assert.Equal("Shipping content", panel.TextContent.Trim());
     }
 
@@ -34,7 +36,7 @@ public class TbAccordionTests : BunitContext
 
         Assert.Equal(["Return policy True", "Shipping options False"], changes);
         Assert.Equal(["false", "true"], cut.FindAll("[data-part=trigger]").Select(t => t.GetAttribute("aria-expanded")));
-        Assert.True(cut.FindAll("[data-part=panel]")[0].HasAttribute("hidden"));
+        Assert.True(cut.FindAll("[data-part=panel]")[0].HasAttribute("inert"));
         Assert.Equal([false, true], cut.FindAll("[data-part=item]")
             .Select(item => item.ClassList.Contains("tb-accordion__item--expanded")));
     }
@@ -69,7 +71,7 @@ public class TbAccordionTests : BunitContext
         cut.Find("[data-part=trigger]").Click();
 
         Assert.False(expanded);
-        Assert.True(cut.Find("[data-part=panel]").HasAttribute("hidden"));
+        Assert.True(cut.Find("[data-part=panel]").HasAttribute("inert"));
         Assert.DoesNotContain("tb-accordion__item--expanded", cut.Find("[data-part=item]").ClassList);
     }
 
@@ -118,6 +120,29 @@ public class TbAccordionTests : BunitContext
             .Add(item => item.Disabled, true));
 
         Assert.True(cut.Find("[data-part=trigger]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheAccordionReady_WhenItsScriptHasAttached()
+    {
+        JSInterop.SetupModule("./_content/Trailblazor/accordion.js").SetupModule("attachAccordion", _ => true);
+
+        var cut = RenderAccordion();
+
+        cut.WaitForAssertion(() => Assert.True(cut.Find(".tb-accordion").HasAttribute("data-ready")));
+    }
+
+    [Fact]
+    public async Task Dispose_ShouldDetachTheKeyboardScript_WhenTheAccordionGoesAway()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/accordion.js")
+            .SetupModule("attachAccordion", _ => true);
+        handle.SetupVoid("dispose").SetVoidResult();
+        RenderAccordion();
+
+        await DisposeComponentsAsync();
+
+        handle.VerifyInvoke("dispose");
     }
 
     private IRenderedComponent<TbAccordion> RenderAccordion(Action<string, bool>? onChanged = null,
