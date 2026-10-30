@@ -1,0 +1,22 @@
+<TbStack Gap="4">
+    <div style="max-inline-size: 320px" data-testid="narrow">
+        <TbImage Src="@Trail" Alt="A trail winding between two hills" Width="640" Height="360" Fluid />
+    </div>
+    <TbStack Row Gap="4" Wrap>
+        <TbImage Src="@Trail" Alt="The trail, cropped to fill a square" Width="120" Height="120"
+                 Fit="ImageFit.Cover" />
+        <TbImage Src="@Trail" Alt="The trail, shrunk to fit a square" Width="120" Height="120"
+                 Fit="ImageFit.Contain" />
+        <TbImage Src="@Trail" Alt="" Width="120" Height="120" Fit="ImageFit.Cover" Lazy />
+        <TbImage Src="missing-trail.png" FallbackSrc="@Trail" Alt="The trail, shown from the fallback picture"
+                 Width="120" Height="120" Fit="ImageFit.Cover" />
+    </TbStack>
+</TbStack>
+
+@code {
+    // Drawn inline, so the example needs no image file.
+    private const string Trail = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90'%3E"
+        + "%3Crect width='160' height='90' fill='%23cfe3f5'/%3E%3Cpath d='M0 70 50 30 90 60 120 40 160 65V90H0z' "
+        + "fill='%235f8f6b'/%3E%3Cpath d='M70 90q10-20 30-25t25-25' stroke='%23e9d7a8' stroke-width='4' "
+        + "fill='none'/%3E%3C/svg%3E";
+}

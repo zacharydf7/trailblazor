@@ -86,6 +86,21 @@ public static class ExampleCatalog
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
         },
+        new("image", "Image", ExampleCategory.Content,
+            "An image with required alternative text, that can scale to fit its container.", typeof(ImageExample))
+        {
+            Api = [typeof(TbImage)],
+            Accessibility =
+            [
+                "`Alt` is required and describes what the image shows; leaving it out throws when it renders. Set "
+                    + "it to an empty string for an image that is only decoration, which screen readers then skip.",
+                "Say what the image shows in its context, without \"image of\": screen readers already say it's an "
+                    + "image.",
+                "`Width` and `Height` reserve the image's space before it loads, so the page doesn't jump.",
+            ],
+            Target = new("img", "A trail winding between two hills"),
+            Blocks = ["tb-image"],
+        },
         new("divider", "Divider", ExampleCategory.Layout,
             "A line that separates content, across or down.", typeof(DividerExample))
         {
@@ -233,6 +248,27 @@ public static class ExampleCatalog
             ],
             Target = new("alert") { Text = "A danger alert." },
             Blocks = ["tb-alert"],
+        },
+        new("chip", "Chip", ExampleCategory.Content,
+            "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.",
+            typeof(ChipExample))
+        {
+            Api = [typeof(TbChip), typeof(TbChipGroup)],
+            Accessibility =
+            [
+                "A `TbChipGroup` is a `list` named by its required `AriaLabel`, and each chip in it is a `listitem`.",
+                "A chip with `OnClick` is a `button`, with `Href` a `link`, and with `@bind-Selected` a toggle button "
+                    + "with `aria-pressed`. Other chips are plain text.",
+                "A removable chip has a remove button named \"Remove\" and the chip's `Text`; Delete or Backspace on "
+                    + "the chip removes it too. In a group, focus then moves to the chip that takes its place, or "
+                    + "to the group when none is left.",
+                "In forced-colors mode, such as Windows high contrast, every chip keeps an outline and a selected "
+                    + "one is outlined in the system's highlight color.",
+            ],
+            Target = new("list", "Selected tags"),
+            Blocks = ["tb-chip", "tb-chip-group"],
+            TestingTip = "Remove a chip with `GetByRole(AriaRole.Button, new() { Name = \"Remove Archive\" })`, and "
+                + "check a filter chip with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`.",
         },
         new("badge", "Badge", ExampleCategory.Feedback,
             "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.",
@@ -440,6 +476,25 @@ public static class ExampleCatalog
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
+        },
+        new("overlay", "Overlay", ExampleCategory.Overlays,
+            "A scrim over the page or over one region, which blocks clicks behind it and can hold a message or a "
+                + "spinner in its center.", typeof(OverlayExample))
+        {
+            Api = [typeof(TbOverlay)],
+            Accessibility =
+            [
+                "The scrim is hidden from screen readers; the content in its center is read as usual.",
+                "It blocks the pointer, not the keyboard. Mark what it covers `inert` while it is shown, as the "
+                    + "loading report does, so Tab can't reach controls behind it.",
+                "With `CloseOnClick`, Escape closes it too, unless a menu or popover above it takes the key first.",
+                "For a message that needs an answer, use a dialog, which moves focus and traps it.",
+            ],
+            Target = null,
+            Blocks = ["tb-overlay"],
+            TestingTip = "The overlay's element has `data-part=\"overlay\"`; click its `data-part=\"scrim\"` to "
+                + "close one with `CloseOnClick`. Before pressing Escape, wait for the overlay's `data-ready` "
+                + "attribute, which appears once Escape is wired.",
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.", typeof(TabsExample))

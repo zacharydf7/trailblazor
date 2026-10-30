@@ -1,0 +1,133 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inject JsModuleLoader Modules
+@implements IAsyncDisposable
+
+@if (Visible)
+{
+    @* data-ready shows that Escape is wired, which happens just after the overlay appears. *@
+    <div @attributes="AdditionalAttributes" @ref="_overlay" data-part="overlay" style="@Style"
+         data-ready="@(_layer is null ? null : "")"
+         class="@ClassNames.Join("tb-overlay", Contained ? "tb-overlay--contained" : "tb-overlay--fixed",
+                    Blur ? "tb-overlay--blur" : null, Transparent ? "tb-overlay--transparent" : null,
+                    LockScroll && !Contained ? "tb-overlay--lock-scroll" : null, Class)">
+        <div data-part="scrim" class="tb-overlay__scrim" aria-hidden="true" @onclick="OnScrimClickAsync"></div>
+        @if (ChildContent is not null)
+        {
+            <div data-part="content" class="tb-overlay__content">@ChildContent</div>
+        }
+    </div>
+}
+
+@code {
+    private ElementReference _overlay;
+    private DismissableLayer? _layer;
+    private bool _disposed;
+
+    /// <summary>Shows the overlay. Bind it with <c>@bind-Visible</c> when clicks or Escape can close it.</summary>
+    [Parameter]
+    public bool Visible { get; set; }
+
+    /// <summary>Raised when the overlay closes itself, after a click on it or Escape.</summary>
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    /// <summary>Closes the overlay when it is clicked, or when Escape is pressed while it is the topmost layer.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnClick { get; set; }
+
+    /// <summary>Raised when the overlay itself is clicked, outside its content.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>Covers only the nearest positioned ancestor, such as a card that is loading, instead of the whole
+    /// page.</summary>
+    [Parameter]
+    public bool Contained { get; set; }
+
+    /// <summary>Blurs what is behind the overlay.</summary>
+    [Parameter]
+    public bool Blur { get; set; }
+
+    /// <summary>Makes the scrim invisible, so it only catches clicks.</summary>
+    [Parameter]
+    public bool Transparent { get; set; }
+
+    /// <summary>Stops the page from scrolling while a page overlay is shown.</summary>
+    [Parameter]
+    public bool LockScroll { get; set; }
+
+    /// <summary>Content shown in the overlay's center, such as a message or a <see cref="TbProgress"/>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var wantsLayer = Visible && CloseOnClick && RendererInfo.IsInteractive;
+        if (wantsLayer && _layer is null)
+        {
+            try
+            {
+                var layer = await DismissableLayer.CreateAsync(Modules, _overlay, null,
+                    EventCallback.Factory.Create<DismissReason>(this, OnDismissAsync));
+                // The overlay may have closed, or gone, while the layer was being made.
+                if (_disposed || !Visible || !CloseOnClick)
+                {
+                    await layer.DisposeAsync();
+                    return;
+                }
+
+                _layer = layer;
+                StateHasChanged();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is gone, and the overlay went with it.
+            }
+        }
+        else if (!wantsLayer && _layer is not null)
+        {
+            await DisposeLayerAsync();
+        }
+    }
+
+    // Clicks on the overlay reach the scrim, and a click on a layer above it mustn't close it, so only Escape counts.
+    private Task OnDismissAsync(DismissReason reason) =>
+        reason == DismissReason.EscapeKey ? CloseAsync() : Task.CompletedTask;
+
+    private async Task OnScrimClickAsync(MouseEventArgs e)
+    {
+        await OnClick.InvokeAsync(e);
+        if (CloseOnClick)
+        {
+            await CloseAsync();
+        }
+    }
+
+    private async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task DisposeLayerAsync()
+    {
+        var layer = _layer;
+        _layer = null;
+        if (layer is not null)
+        {
+            await layer.DisposeAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        await DisposeLayerAsync();
+    }
+}

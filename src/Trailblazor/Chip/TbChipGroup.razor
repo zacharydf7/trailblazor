@@ -1,0 +1,74 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inject JsModuleLoader Modules
+
+@* Focusable from script only, so focus has somewhere to go when the last chip is removed. *@
+<div @attributes="AdditionalAttributes" @ref="_group" role="list" aria-label="@AriaLabel" tabindex="-1"
+     class="@ClassNames.Join("tb-chip-group", Class)" style="@Style">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+</div>
+
+@code {
+    private ElementReference _group;
+    private bool _restoreFocus;
+
+    /// <summary>Names the list for screen readers, such as "Selected tags". Required.</summary>
+    [Parameter, EditorRequired]
+    public string AriaLabel { get; set; } = "";
+
+    /// <summary>The group's <see cref="TbChip"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            throw new InvalidOperationException($"{nameof(TbChipGroup)} needs an {nameof(AriaLabel)}.");
+        }
+    }
+
+    // Called before a chip asks to be removed, while it is still in the page.
+    internal async Task RememberPlaceAsync(ElementReference chip)
+    {
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/chip-group.js");
+            await module.InvokeVoidAsync("rememberPlace", _group, chip);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the group went with it.
+        }
+    }
+
+    // Called once the removal handler has finished, so even an awaited removal has taken the chip away.
+    internal void RestoreFocusAfterRender()
+    {
+        _restoreFocus = true;
+        StateHasChanged();
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_restoreFocus)
+        {
+            return;
+        }
+
+        _restoreFocus = false;
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/chip-group.js");
+            await module.InvokeVoidAsync("focusPlace", _group);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the group went with it.
+        }
+    }
+}

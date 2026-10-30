@@ -32,7 +32,7 @@ public class DocsSearchTests
     }
 
     [Theory]
-    [InlineData("overlays", new[] { "Tooltip", "Menu", "Dialog" })]
+    [InlineData("overlays", new[] { "Tooltip", "Menu", "Dialog", "Overlay" })]
     [InlineData("guides", new[] { "Getting started", "Theming", "Palettes", "Testing", "Roadmap" })]
     public void Find_ShouldFindEverythingInACategory_WhenGivenItsName(string category, string[] titles)
     {

@@ -16,8 +16,14 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
             probe.style.color = `var(${token})`;
             document.querySelector('main').append(probe);
             const context = document.createElement('canvas').getContext('2d');
-            context.fillStyle = getComputedStyle(probe).color;
+            const color = getComputedStyle(probe).color;
             probe.remove();
+            // A color the canvas can't parse leaves its last fill, which would read as two equal colors.
+            context.fillStyle = '#010203';
+            context.fillStyle = color;
+            if (context.fillStyle === '#010203') {
+                throw new Error(`The canvas can't paint ${token}, computed as "${color}".`);
+            }
             context.fillRect(0, 0, 1, 1);
             return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
         }

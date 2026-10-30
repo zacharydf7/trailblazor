@@ -13,6 +13,8 @@ internal static class BuiltInIcons
 
     public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
 
+    public static Icon Check { get; } = new("<path d=\"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z\" />");
+
     public static Icon Maximize { get; } = new("<path d=\"M4 4h16v16H4zm2 2v12h12V6z\" />");
 
     public static Icon Restore { get; } = new("<path d=\"M8 4h12v12h-2V6H8zM4 8h12v12H4zm2 2v8h8v-8z\" />");

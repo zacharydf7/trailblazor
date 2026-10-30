@@ -1,0 +1,90 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* Handlers are only attached when wanted, so a plain image costs no round trip when it loads. *@
+<img @attributes="AdditionalAttributes" src="@(_failed && FallbackSrc is not null ? FallbackSrc : Src)"
+     alt="@Alt" width="@Width" height="@Height" loading="@(Lazy ? "lazy" : null)" style="@Style"
+     @onload="OnLoad" @onerror="ErrorHandler"
+     class="@ClassNames.Join("tb-image", Fluid ? "tb-image--fluid" : null,
+                Fit is ImageFit fit ? ClassNames.Modifier("tb-image", "fit", fit) : null, Class)" />
+
+@code {
+    /// <summary>The image's address, which can be a <c>data:</c> URL.</summary>
+    [Parameter, EditorRequired]
+    public string Src { get; set; } = "";
+
+    /// <summary>What the image shows, for people who can't see it. Required; use an empty string for an image that
+    /// is only decoration, which screen readers then skip.</summary>
+    [Parameter, EditorRequired]
+    public string? Alt { get; set; }
+
+    /// <summary>The width in CSS pixels, which reserves the image's space before it loads.</summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>The height in CSS pixels, which reserves the image's space before it loads.</summary>
+    [Parameter]
+    public int? Height { get; set; }
+
+    /// <summary>Shrinks the image to its container's width, keeping its shape, so it never overflows.</summary>
+    [Parameter]
+    public bool Fluid { get; set; }
+
+    /// <summary>How the image fills its width and height when its own shape differs.</summary>
+    [Parameter]
+    public ImageFit? Fit { get; set; }
+
+    /// <summary>Waits to load the image until it is about to scroll into view.</summary>
+    [Parameter]
+    public bool Lazy { get; set; }
+
+    /// <summary>An address shown instead when <see cref="Src"/> fails to load, such as a placeholder picture. The
+    /// switch needs an interactive render mode.</summary>
+    [Parameter]
+    public string? FallbackSrc { get; set; }
+
+    /// <summary>Raised when the image has loaded.</summary>
+    [Parameter]
+    public EventCallback<ProgressEventArgs> OnLoad { get; set; }
+
+    /// <summary>Raised when <see cref="Src"/> fails to load, before any fallback is shown.</summary>
+    [Parameter]
+    public EventCallback OnError { get; set; }
+
+    private bool _failed;
+    private string? _failedSrc;
+
+    private bool WatchesErrors => FallbackSrc is not null || OnError.HasDelegate;
+
+    private EventCallback<ErrorEventArgs> ErrorHandler =>
+        WatchesErrors ? EventCallback.Factory.Create<ErrorEventArgs>(this, OnErrorAsync) : default;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // A new address gets its own chance to load.
+        if (_failed && Src != _failedSrc)
+        {
+            _failed = false;
+        }
+
+        if (Alt is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbImage)} needs {nameof(Alt)} text, or an empty {nameof(Alt)} for a decorative image.");
+        }
+    }
+
+    // Only the first address's failure counts, so a fallback that also fails doesn't loop.
+    private async Task OnErrorAsync()
+    {
+        if (_failed)
+        {
+            return;
+        }
+
+        _failed = true;
+        _failedSrc = Src;
+        await OnError.InvokeAsync();
+    }
+}

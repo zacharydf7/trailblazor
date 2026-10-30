@@ -1,0 +1,176 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inject JsModuleLoader Modules
+
+<span @attributes="AdditionalAttributes" @ref="_chip" role="@(Group is null ? null : "listitem")" style="@Style"
+      class="@ClassNames.Join("tb-chip", ClassNames.Modifier("tb-chip", Variant), ClassNames.Modifier("tb-chip", Tone),
+                 ClassNames.Modifier("tb-chip", Size), Toggles && Selected ? "tb-chip--selected" : null,
+                 Disabled ? "tb-chip--disabled" : null, Class)">
+    @if (Href is not null && !Disabled)
+    {
+        <a href="@Href" data-part="action" class="tb-chip__action" @onclick="OnClick" @onkeydown="OnKeyDownAsync">
+            @Content
+        </a>
+    }
+    else if (Toggles || OnClick.HasDelegate)
+    {
+        <button type="button" data-part="action" class="tb-chip__action" disabled="@Disabled"
+                aria-pressed="@(Toggles ? (Selected ? "true" : "false") : null)" @onclick="OnActionClickAsync"
+                @onkeydown="OnKeyDownAsync">
+            @Content
+        </button>
+    }
+    else
+    {
+        <span data-part="action" class="tb-chip__action" aria-disabled="@(Disabled ? "true" : null)">@Content</span>
+    }
+    @if (OnClose.HasDelegate)
+    {
+        <button type="button" data-part="remove" class="tb-chip__remove" disabled="@Disabled"
+                aria-label="@(Text is null ? RemoveLabel : $"{RemoveLabel} {Text}")" @onclick="RemoveAsync"
+                @onkeydown="OnKeyDownAsync">
+            <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
+        </button>
+    }
+</span>
+
+@code {
+    private ElementReference _chip;
+    private bool _claimedBackspace;
+
+    /// <summary>The chip's text, which also names its remove button. Use <see cref="ChildContent"/> for richer
+    /// content.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>Content shown instead of <see cref="Text"/>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>An icon before the text. A selected toggle chip shows a check mark in its place.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>The chip's meaning, which sets its color. Defaults to <see cref="Trailblazor.Tone.Neutral"/>.
+    /// </summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Neutral;
+
+    /// <summary>How strongly the chip is drawn. Defaults to <see cref="Trailblazor.Variant.Soft"/>.</summary>
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Soft;
+
+    /// <summary>The chip's size. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>Turns the chip and its remove button off.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Makes the chip a link to this address.</summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary>Raised when the chip is clicked. With it, the chip is a button.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>Whether a filter chip is on. Bind it with <c>@bind-Selected</c> to make the chip a toggle button.
+    /// </summary>
+    [Parameter]
+    public bool Selected { get; set; }
+
+    /// <summary>Raised when the user turns a filter chip on or off.</summary>
+    [Parameter]
+    public EventCallback<bool> SelectedChanged { get; set; }
+
+    /// <summary>Raised when the user removes the chip, with its remove button or the Delete or Backspace key. With
+    /// it, the chip has a remove button; the parent takes the chip away.</summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>The remove button's name, followed by <see cref="Text"/>. Defaults to "Remove".</summary>
+    [Parameter]
+    public string RemoveLabel { get; set; } = "Remove";
+
+    [CascadingParameter]
+    private TbChipGroup? Group { get; set; }
+
+    private bool Toggles => SelectedChanged.HasDelegate;
+
+    private RenderFragment Content =>
+        @<text>
+            @if (Toggles && Selected)
+            {
+                <TbIcon Icon="BuiltInIcons.Check" Size="Size.Small" data-part="check" />
+            }
+            else if (Icon is Icon icon)
+            {
+                <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+            }
+            <span data-part="label" class="tb-chip__label">
+                @if (ChildContent is null)
+                {
+                    @Text
+                }
+                else
+                {
+                    @ChildContent
+                }
+            </span>
+        </text>;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_claimedBackspace || !OnClose.HasDelegate || !RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        _claimedBackspace = true;
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/chip.js");
+            await module.InvokeVoidAsync("claimBackspace", _chip);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the chip went with it.
+        }
+    }
+
+    private async Task OnActionClickAsync(MouseEventArgs e)
+    {
+        if (Toggles)
+        {
+            Selected = !Selected;
+            await SelectedChanged.InvokeAsync(Selected);
+        }
+
+        await OnClick.InvokeAsync(e);
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (OnClose.HasDelegate && !Disabled && e.Key is "Delete" or "Backspace")
+        {
+            await RemoveAsync();
+        }
+    }
+
+    // In a group, focus moves to the chip that takes this one's place, instead of falling back to the page.
+    private async Task RemoveAsync()
+    {
+        if (Group is not null && RendererInfo.IsInteractive)
+        {
+            await Group.RememberPlaceAsync(_chip);
+        }
+
+        await OnClose.InvokeAsync();
+        Group?.RestoreFocusAfterRender();
+    }
+}

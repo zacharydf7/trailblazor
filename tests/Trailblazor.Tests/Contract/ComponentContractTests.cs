@@ -20,6 +20,9 @@ public class ComponentContractTests : BunitContext
         [typeof(TbNumberField<>)] = typeof(int), [typeof(TbCheckbox<>)] = typeof(bool),
     };
 
+    // Components that render nothing until they are shown are checked shown.
+    private static readonly Dictionary<Type, string> ShownBy = new() { [typeof(TbOverlay)] = nameof(TbOverlay.Visible) };
+
     public ComponentContractTests()
     {
         this.AddTrailblazor();
@@ -43,7 +46,12 @@ public class ComponentContractTests : BunitContext
             builder.AddAttribute(2, nameof(TbComponentBase.Style), "outline: 1px solid red");
             builder.AddAttribute(3, "id", "contract-id");
             builder.AddAttribute(4, "data-contract", "yes");
-            AddRequiredParameters(builder, component, sequence: 5);
+            if (ShownBy.TryGetValue(component, out var shown))
+            {
+                builder.AddAttribute(5, shown, true);
+            }
+
+            AddRequiredParameters(builder, component, sequence: 6);
             builder.CloseComponent();
         });
 

@@ -1,0 +1,53 @@
+@using Trailblazor.Docs.Examples
+
+<TbStack Gap="4">
+    <TbChipGroup AriaLabel="Selected tags">
+        @foreach (var tag in _tags)
+        {
+            <TbChip @key="tag" Text="@tag" OnClose="() => RemoveAsync(tag)" />
+        }
+    </TbChipGroup>
+    <TbChipGroup AriaLabel="Filter by status">
+        @foreach (var status in Statuses)
+        {
+            <TbChip @key="status" Text="@status" Variant="Variant.Outlined" Selected="_filters.Contains(status)"
+                    SelectedChanged="on => Toggle(status, on)" />
+        }
+    </TbChipGroup>
+    <TbStack Row Gap="2" Wrap>
+        <TbChip Text="Done" Tone="Tone.Success" Icon="ExampleIcons.Check" Size="Size.Small" />
+        <TbChip Text="Failed" Tone="Tone.Danger" Variant="Variant.Filled" Size="Size.Small" />
+        <TbChip Text="Theming guide" Href="guides/theming" Tone="Tone.Primary" />
+        @if (_recentShown)
+        {
+            <TbChip Text="Recently viewed" Href="guides/palettes" Size="Size.Small"
+                    OnClose="() => _recentShown = false" />
+        }
+    </TbStack>
+</TbStack>
+
+@code {
+    private static readonly string[] Statuses = ["Queued", "Running", "Done"];
+    private readonly List<string> _tags = ["Invoices", "Archive", "2026"];
+    private readonly HashSet<string> _filters = ["Running"];
+    private bool _recentShown = true;
+
+    private async Task RemoveAsync(string tag)
+    {
+        // A real app would save the change here.
+        await Task.Delay(100);
+        _tags.Remove(tag);
+    }
+
+    private void Toggle(string status, bool on)
+    {
+        if (on)
+        {
+            _filters.Add(status);
+        }
+        else
+        {
+            _filters.Remove(status);
+        }
+    }
+}

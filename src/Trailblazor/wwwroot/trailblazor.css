@@ -894,6 +894,249 @@
         }
     }
 
+    .tb-image {
+        vertical-align: middle;
+    }
+
+    /* Its width and height attributes keep the shape while the size follows the container. */
+    .tb-image--fluid {
+        max-inline-size: 100%;
+        block-size: auto;
+    }
+
+    .tb-image--fit-fill {
+        object-fit: fill;
+    }
+
+    .tb-image--fit-contain {
+        object-fit: contain;
+    }
+
+    .tb-image--fit-cover {
+        object-fit: cover;
+    }
+
+    .tb-image--fit-scaledown {
+        object-fit: scale-down;
+    }
+
+    .tb-image--fit-none {
+        object-fit: none;
+    }
+
+    .tb-overlay {
+        inset: 0;
+        display: grid;
+        place-items: center;
+        border-radius: inherit;
+        animation: tb-overlay-in var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    /* Dialogs and popovers sit in the browser's top layer, so they stay above this. */
+    .tb-overlay--fixed {
+        position: fixed;
+        z-index: 1000;
+    }
+
+    .tb-overlay--contained {
+        position: absolute;
+        z-index: 1;
+    }
+
+    .tb-overlay__scrim {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: oklch(0 0 0 / 0.45);
+    }
+
+    .tb-overlay--transparent > .tb-overlay__scrim {
+        background: transparent;
+    }
+
+    .tb-overlay--blur > .tb-overlay__scrim {
+        backdrop-filter: blur(4px);
+    }
+
+    .tb-overlay__content {
+        position: relative;
+    }
+
+    :root:has(.tb-overlay--lock-scroll) {
+        overflow: hidden;
+    }
+
+    @keyframes tb-overlay-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    .tb-chip-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-chip {
+        --tb-chip-height: 2rem;
+        display: inline-flex;
+        align-items: stretch;
+        box-sizing: border-box;
+        block-size: var(--tb-chip-height);
+        border: 1px solid transparent;
+        border-radius: var(--tb-radius-full);
+        font-family: var(--tb-font-family);
+        font-size: var(--tb-font-size-sm);
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .tb-chip--small {
+        --tb-chip-height: 1.5rem;
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-chip--large {
+        --tb-chip-height: 2.5rem;
+        font-size: var(--tb-font-size-md);
+    }
+
+    /* Each tone sets the chip's own tokens; each variant decides which of them it paints with. */
+    .tb-chip--primary {
+        --tb-chip-fill: var(--tb-color-primary);
+        --tb-chip-on-fill: var(--tb-color-on-primary);
+        --tb-chip-subtle: var(--tb-color-primary-subtle);
+        --tb-chip-text: var(--tb-color-primary-text);
+    }
+
+    .tb-chip--neutral {
+        --tb-chip-fill: var(--tb-color-neutral);
+        --tb-chip-on-fill: var(--tb-color-on-neutral);
+        --tb-chip-subtle: var(--tb-color-neutral-subtle);
+        --tb-chip-text: var(--tb-color-neutral-text);
+    }
+
+    .tb-chip--success {
+        --tb-chip-fill: var(--tb-color-success);
+        --tb-chip-on-fill: var(--tb-color-on-success);
+        --tb-chip-subtle: var(--tb-color-success-subtle);
+        --tb-chip-text: var(--tb-color-success-text);
+    }
+
+    .tb-chip--warning {
+        --tb-chip-fill: var(--tb-color-warning);
+        --tb-chip-on-fill: var(--tb-color-on-warning);
+        --tb-chip-subtle: var(--tb-color-warning-subtle);
+        --tb-chip-text: var(--tb-color-warning-text);
+    }
+
+    .tb-chip--danger {
+        --tb-chip-fill: var(--tb-color-danger);
+        --tb-chip-on-fill: var(--tb-color-on-danger);
+        --tb-chip-subtle: var(--tb-color-danger-subtle);
+        --tb-chip-text: var(--tb-color-danger-text);
+    }
+
+    .tb-chip--info {
+        --tb-chip-fill: var(--tb-color-info);
+        --tb-chip-on-fill: var(--tb-color-on-info);
+        --tb-chip-subtle: var(--tb-color-info-subtle);
+        --tb-chip-text: var(--tb-color-info-text);
+    }
+
+    .tb-chip--filled {
+        background: var(--tb-chip-fill);
+        color: var(--tb-chip-on-fill);
+    }
+
+    .tb-chip--soft {
+        background: var(--tb-chip-subtle);
+        color: var(--tb-chip-text);
+    }
+
+    .tb-chip--text {
+        color: var(--tb-chip-text);
+    }
+
+    .tb-chip--outlined {
+        border-color: var(--tb-border-strong);
+        color: var(--tb-chip-text);
+    }
+
+    /* A selected toggle chip is filled whatever its variant, so on and off read apart at a glance. */
+    .tb-chip.tb-chip--selected {
+        border-color: transparent;
+        background: var(--tb-chip-fill);
+        color: var(--tb-chip-on-fill);
+    }
+
+    .tb-chip--disabled {
+        opacity: 0.5;
+    }
+
+    .tb-chip__action {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+        padding-inline: var(--tb-space-3);
+        border: 0;
+        border-radius: inherit;
+        background: none;
+        color: inherit;
+        font: inherit;
+        text-decoration: none;
+    }
+
+    button.tb-chip__action:not(:disabled),
+    a.tb-chip__action {
+        cursor: pointer;
+    }
+
+    button.tb-chip__action:not(:disabled):hover,
+    a.tb-chip__action:hover,
+    .tb-chip__remove:not(:disabled):hover {
+        background: color-mix(in oklch, currentColor 12%, transparent);
+    }
+
+    .tb-chip__action:focus-visible,
+    .tb-chip__remove:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-chip:has(.tb-chip__remove) > .tb-chip__action {
+        padding-inline-end: var(--tb-space-1);
+    }
+
+    /* At least the 24px target WCAG 2.5.8 asks for, so on a small chip it fills the chip's height. */
+    .tb-chip__remove {
+        --tb-chip-remove-size: max(1.5rem, calc(var(--tb-chip-height) - 0.5rem));
+        display: inline-grid;
+        place-items: center;
+        align-self: center;
+        inline-size: var(--tb-chip-remove-size);
+        block-size: var(--tb-chip-remove-size);
+        margin-inline-end: calc((var(--tb-chip-height) - var(--tb-chip-remove-size)) / 2);
+        padding: 0;
+        border: 0;
+        border-radius: var(--tb-radius-full);
+        background: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    /* Forced colors drop the fills, so every chip keeps an outline and a selected one a thicker one. */
+    @media (forced-colors: active) {
+        .tb-chip {
+            border-color: CanvasText;
+        }
+
+        .tb-chip.tb-chip--selected {
+            border: 2px solid Highlight;
+        }
+    }
+
     .tb-divider {
         margin: var(--tb-space-2) 0;
         border: none;
