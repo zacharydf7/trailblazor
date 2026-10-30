@@ -1,0 +1,24 @@
+<TbStack Gap="4" Style="max-inline-size: 28rem">
+    <TbDateRangePicker TDate="DateOnly" Label="Trip dates" @bind-Value="_trip" Min="_today" Presets="_presets"
+                       Clearable HelperText="Type the dates or pick them in the calendar." />
+    <TbText>@Summary</TbText>
+</TbStack>
+
+@code {
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+
+    private readonly IReadOnlyList<DateRangePreset<DateOnly>> _presets =
+    [
+        new("Next 7 days", new(_today, _today.AddDays(6))),
+        new("Next 30 days", new(_today, _today.AddDays(29))),
+        new("Next month", new(FirstOfNextMonth, FirstOfNextMonth.AddMonths(1).AddDays(-1))),
+    ];
+
+    private DateRange<DateOnly> _trip = new(_today.AddDays(7), _today.AddDays(10));
+
+    private static DateOnly FirstOfNextMonth => new DateOnly(_today.Year, _today.Month, 1).AddMonths(1);
+
+    private string Summary => _trip is { Start: { } start, End: { } end }
+        ? $"{end.DayNumber - start.DayNumber + 1} days, from {start:D}."
+        : "No dates chosen yet.";
+}

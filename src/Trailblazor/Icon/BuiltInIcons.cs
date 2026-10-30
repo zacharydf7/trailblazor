@@ -6,6 +6,9 @@ internal static class BuiltInIcons
     public static Icon Close { get; } =
         new("<path d=\"M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z\" />");
 
+    public static Icon Calendar { get; } =
+        new("<path d=\"M7 2h2v2h6V2h2v2h3v18H4V4h3zM6 10v10h12V10zm0-2h12V6H6zm2 4h3v3H8z\" />");
+
     public static Icon ChevronDown { get; } = new("<path d=\"M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z\" />");
 
     // Points right; flip it in right-to-left text.

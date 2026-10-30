@@ -615,6 +615,31 @@ public static class ExampleCatalog
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
                 + "search, and clicks the option by its name.",
         },
+        new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
+            "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.",
+            typeof(DateRangePickerExample))
+        {
+            Api = [typeof(TbDateRangePicker<>), typeof(DateRangePickerLabels), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "The two date boxes and the calendar button sit in a `group` named by the `Label`; each box is "
+                    + "named by the label and \"Start date\" or \"End date\", and shows the format as its placeholder.",
+                "The calendar is a `dialog` with a `grid` for each month. Arrows move by a day or a week, Home and End "
+                    + "go to the start or end of the week, Page Up and Page Down change the month, and with Shift the "
+                    + "year. Enter or Space picks a day; Escape closes and returns focus to the button.",
+                "Days in the range are `aria-selected`, today is `aria-current=\"date\"`, and days that can't be "
+                    + "chosen are `aria-disabled` but can still be reached, so the user hears why.",
+                "A date that can't be read says which box and the format to use, and marks that box `aria-invalid`. "
+                    + "Picking the start announces that the end comes next.",
+                "Before the page is interactive it shows the browser's own date boxes, so a static form still posts "
+                    + "both dates.",
+            ],
+            Target = new("group", "Trip dates"),
+            Blocks = ["tb-field", "tb-date-range"],
+            TestingTip = "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
+                + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until the "
+                + "field has taken them. Its boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`.",
+        },
         new("listbox", "List box", ExampleCategory.Inputs,
             "Picks one or several options from a list that is always shown.", typeof(ListBoxExample))
         {

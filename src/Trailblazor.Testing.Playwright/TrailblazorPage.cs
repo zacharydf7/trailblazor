@@ -24,6 +24,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
     public TbListBoxLocator ListBox(string label) => new(page, label);
 
+    /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
+    public TbDateRangePickerLocator DateRangePicker(string label) => new(page, label);
+
     /// <summary>The <c>TbPagination</c> with this accessible name.</summary>
     public TbPaginationLocator Pagination(string name) => new(page, name);
 
@@ -143,6 +146,35 @@ public sealed class TbAutocompleteLocator(IPage page, string label)
         await Assertions.Expect(listbox.GetByRole(AriaRole.Option,
             new() { Name = option, Exact = true, IncludeHidden = true })).ToHaveAttributeAsync("aria-selected", "true");
     }
+}
+
+/// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>
+public sealed class TbDateRangePickerLocator(IPage page, string label)
+{
+    /// <summary>Types both dates in the field's own format and waits until the field has taken them; null leaves a
+    /// box empty. A statically rendered field gets them in the browser's own date boxes.</summary>
+    public async Task ChooseAsync(DateOnly? start, DateOnly? end)
+    {
+        var group = page.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
+        var boxes = group.Locator("input");
+        if (await boxes.First.GetAttributeAsync("data-static") is not null)
+        {
+            await boxes.Nth(0).FillAsync(Iso(start));
+            await boxes.Nth(1).FillAsync(Iso(end));
+            return;
+        }
+
+        // A prerendered field is replaced once the page is interactive, so the calendar's script is waited for.
+        await Assertions.Expect(group.Locator("[data-part=trigger]")).ToHaveAttributeAsync("data-ready", "");
+        var format = await group.GetAttributeAsync("data-format");
+        var culture = CultureInfo.GetCultureInfo(await group.GetAttributeAsync("data-culture") ?? "");
+        await boxes.Nth(0).FillAsync(start?.ToString(format, culture) ?? "");
+        await boxes.Nth(1).FillAsync(end?.ToString(format, culture) ?? "");
+        await boxes.Nth(1).PressAsync("Enter");
+        await Assertions.Expect(group).ToHaveAttributeAsync("data-value", $"{Iso(start)}/{Iso(end)}");
+    }
+
+    private static string Iso(DateOnly? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
 }
 
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>

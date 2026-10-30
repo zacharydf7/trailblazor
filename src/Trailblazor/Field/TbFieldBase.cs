@@ -95,6 +95,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     private protected string? Text => _unparsedText ?? FormatValue(Value);
 
+    private protected bool HasParseError => _parseError is not null;
+
     // Inside an EditForm the context holds every validator's messages for this field, including ours.
     private protected IReadOnlyList<string> Errors =>
         _messageStore is null ? _messages : _editContext!.GetValidationMessages(_field!.Value).ToList();

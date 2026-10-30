@@ -22,6 +22,7 @@ public class ComponentContractTests : BunitContext
     {
         [typeof(TbNumberField<>)] = typeof(int), [typeof(TbCheckbox<>)] = typeof(bool),
         [typeof(TbSlider<>)] = typeof(int), [typeof(TbRangeSlider<>)] = typeof(int),
+        [typeof(TbDateRangePicker<>)] = typeof(DateOnly),
     };
 
     // Components that render nothing until they are shown are checked shown, and a popover gets the label it needs

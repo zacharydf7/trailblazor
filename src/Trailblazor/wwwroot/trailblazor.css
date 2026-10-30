@@ -3313,6 +3313,165 @@
         min-width: 0;
         padding-block: var(--tb-space-1);
     }
+
+    .tb-date-range__boxes {
+        display: flex;
+        flex: 1 1 auto;
+        align-items: center;
+        gap: var(--tb-space-2);
+        min-width: 0;
+    }
+
+    .tb-date-range__input {
+        width: 0;
+    }
+
+    .tb-date-range__dash {
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-date-range__panel {
+        box-sizing: border-box;
+        max-width: calc(100vw - 2 * var(--tb-space-2));
+        margin: 0;
+        padding: var(--tb-space-3);
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface-raised);
+        color: var(--tb-color-text);
+        font-family: var(--tb-font-family);
+        font-size: var(--tb-font-size-sm);
+        box-shadow: var(--tb-shadow-md);
+    }
+
+    .tb-date-range__panel:popover-open {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-3);
+    }
+
+    .tb-date-range__presets {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tb-space-1);
+        padding-inline-end: var(--tb-space-3);
+        border-inline-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-date-range__calendar {
+        position: relative;
+    }
+
+    /* The month buttons sit level with the month titles, at either end. */
+    .tb-date-range__nav {
+        position: absolute;
+        inset-inline: 0;
+        top: 0;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+
+    .tb-date-range__nav > * {
+        pointer-events: auto;
+    }
+
+    .tb-date-range__flip:dir(rtl) {
+        transform: scaleX(-1);
+    }
+
+    .tb-date-range__months {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-4);
+    }
+
+    .tb-date-range__title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2rem;
+        font-weight: 600;
+    }
+
+    .tb-date-range__grid {
+        border-collapse: collapse;
+    }
+
+    .tb-date-range__grid th {
+        width: 2.25rem;
+        padding-block: var(--tb-space-1);
+        color: var(--tb-color-text-muted);
+        font-weight: 400;
+    }
+
+    .tb-date-range__grid td {
+        padding: 0;
+    }
+
+    .tb-date-range__day {
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: var(--tb-radius-sm);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .tb-date-range__day:hover:not([aria-disabled="true"]) {
+        background: var(--tb-color-neutral-hover);
+    }
+
+    .tb-date-range__day:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-date-range__day--today {
+        border-color: var(--tb-border-strong);
+    }
+
+    .tb-date-range__day--selected,
+    .tb-date-range__day[data-preview] {
+        border-radius: 0;
+        background: var(--tb-color-primary-subtle);
+        color: var(--tb-color-primary-text);
+    }
+
+    .tb-date-range__day--start,
+    .tb-date-range__day--end,
+    .tb-date-range__day--start:hover,
+    .tb-date-range__day--end:hover {
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-primary);
+        color: var(--tb-color-on-primary);
+    }
+
+    .tb-date-range__day[aria-disabled="true"] {
+        color: var(--tb-color-text-disabled);
+        text-decoration: line-through;
+        cursor: not-allowed;
+    }
+
+    /* Forced colors drop the backgrounds, so chosen days are drawn in the system's highlight colors. */
+    @media (forced-colors: active) {
+        .tb-date-range__day--selected,
+        .tb-date-range__day[data-preview],
+        .tb-date-range__day--start,
+        .tb-date-range__day--end {
+            forced-color-adjust: none;
+            background: Highlight;
+            color: HighlightText;
+        }
+
+        .tb-date-range__day[aria-disabled="true"] {
+            color: GrayText;
+        }
+    }
 }
 
 @layer tb.utilities {

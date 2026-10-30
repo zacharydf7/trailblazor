@@ -1,0 +1,156 @@
+@namespace Trailblazor
+@typeparam TDate where TDate : struct
+@inherits TbFieldBase<DateRange<TDate>>
+
+@Layout(Classes, @<text>
+    <span id="@($"{StartId}-name")" hidden>@Labels.Start</span>
+    <span id="@($"{EndId}-name")" hidden>@Labels.End</span>
+    @* Tests type dates in the field's format and wait for the committed range, which these attributes give them. *@
+    <div role="group" aria-labelledby="@(Label is null ? null : LabelId)" data-format="@DateFormat"
+         data-culture="@DateCulture.Name" data-value="@($"{IsoOrNull(StartDate)}/{IsoOrNull(EndDate)}")"
+         class="tb-date-range__boxes">
+        @if (RendererInfo.IsInteractive)
+        {
+            <input @attributes="InputAttributes" @ref="_startInput" data-part="start-input" id="@StartId"
+                   name="@NameOf("Start")" type="text" autocomplete="off" @bind:get="StartText"
+                   @bind:set="SetStartTextAsync" placeholder="@FormatHint" disabled="@Disabled"
+                   aria-labelledby="@Names(StartId)" aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@Invalid(_startBad)" aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
+            <span class="tb-date-range__dash" aria-hidden="true">–</span>
+            <input @attributes="InputAttributes" data-part="end-input" id="@EndId" name="@NameOf("End")" type="text"
+                   autocomplete="off" @bind:get="EndText" @bind:set="SetEndTextAsync" placeholder="@FormatHint"
+                   disabled="@Disabled" aria-labelledby="@Names(EndId)" aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@Invalid(_endBad)" aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
+        }
+        else
+        {
+            @* Without a circuit there is no calendar, so the browser's own date boxes stand in; data-prerender marks
+               ones the interactive boxes will replace. *@
+            <input @attributes="InputAttributes" data-part="start-input" data-static="@StaticMarker"
+                   data-prerender="@PrerenderMarker" id="@StartId" name="@NameOf("Start")" type="date"
+                   value="@IsoOrNull(StartDate)" min="@IsoOf(Min)" max="@IsoOf(Max)" disabled="@Disabled"
+                   aria-labelledby="@Names(StartId)"
+                   aria-required="@(Required ? "true" : null)" aria-invalid="@Invalid(_startBad)"
+                   aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
+            <span class="tb-date-range__dash" aria-hidden="true">–</span>
+            <input @attributes="InputAttributes" data-part="end-input" data-static="@StaticMarker"
+                   data-prerender="@PrerenderMarker" id="@EndId" name="@NameOf("End")"
+                   type="date" value="@IsoOrNull(EndDate)" min="@IsoOf(Min)" max="@IsoOf(Max)"
+                   disabled="@Disabled" aria-labelledby="@Names(EndId)" aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@Invalid(_endBad)" aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
+        }
+        @if (RendererInfo.IsInteractive)
+        {
+            <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">
+                @if (Clearable && !Disabled && HasDates)
+                {
+                    <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Labels.Clear" Size="Size.Small"
+                                  OnClick="ClearAsync" data-part="clear" />
+                }
+                <TbIconButton Icon="BuiltInIcons.Calendar" AriaLabel="@Labels.Open" Size="Size.Small"
+                              Disabled="Disabled" data-part="trigger" popovertarget="@PanelId" aria-haspopup="dialog"
+                              aria-controls="@PanelId" aria-expanded="@(_open ? "true" : "false")"
+                              data-ready="@(_handle is null ? null : "")" />
+            </span>
+        }
+    </div>
+    @if (RendererInfo.IsInteractive)
+    {
+        <div @ref="_panel" id="@PanelId" popover="auto" role="dialog" aria-label="@Labels.Open" data-part="panel"
+             data-anchor="@(_anchor is { } anchor ? Iso(anchor) : null)" class="tb-date-range__panel">
+            @if (Presets is { Count: > 0 })
+            {
+                <div role="group" aria-label="@Labels.Presets" data-part="presets" class="tb-date-range__presets">
+                    @foreach (var preset in Presets)
+                    {
+                        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="preset"
+                                  OnClick="() => ChoosePresetAsync(preset)">@preset.Label</TbButton>
+                    }
+                </div>
+            }
+            <div class="tb-date-range__calendar">
+                <div class="tb-date-range__nav">
+                    <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@Labels.PreviousMonth" Size="Size.Small"
+                                  Variant="Variant.Text" data-part="previous-month" OnClick="() => ShowMonths(-1)"
+                                  class="tb-date-range__flip" />
+                    <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@Labels.NextMonth" Size="Size.Small"
+                                  Variant="Variant.Text" data-part="next-month" OnClick="() => ShowMonths(1)"
+                                  class="tb-date-range__flip" />
+                </div>
+                <div class="tb-date-range__months">
+                    @Month(0)
+                    @Month(1)
+                </div>
+            </div>
+        </div>
+    }
+</text>, null, null)
+
+@code {
+    // Only the first month's title speaks, so paging through months reads each once.
+    private RenderFragment Month(int offset)
+    {
+        var month = _firstMonth.AddMonths(offset);
+        var titleId = $"{PanelId}-month-{offset}";
+        return @<div data-part="month" class="tb-date-range__month">
+            <div id="@titleId" aria-live="@(offset == 0 ? "polite" : null)" class="tb-date-range__title">
+                @month.ToString("Y", DateCulture)
+            </div>
+            <table role="grid" aria-labelledby="@titleId" class="tb-date-range__grid">
+                <thead>
+                    <tr>
+                        @foreach (var day in WeekDays)
+                        {
+                            <th scope="col" abbr="@DateCulture.DateTimeFormat.DayNames[day]">
+                                @DateCulture.DateTimeFormat.ShortestDayNames[day]
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var week in Weeks(month))
+                    {
+                        <tr>
+                            @foreach (var day in week)
+                            {
+                                @if (day is { } date)
+                                {
+                                    <td aria-selected="@(IsSelected(date) ? "true" : null)">
+                                        <button type="button" data-part="day" data-date="@Iso(date)"
+                                                tabindex="@(date == _focus ? 0 : -1)"
+                                                aria-label="@date.ToString("D", DateCulture)"
+                                                aria-disabled="@(IsUnavailable(date) ? "true" : null)"
+                                                aria-current="@(date == Today ? "date" : null)" class="@DayClass(date)"
+                                                @onclick="() => PickAsync(date)">
+                                            @date.Day.ToString(DateCulture)
+                                        </button>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>;
+    }
+
+    private string? StaticMarker => AssignedRenderMode is null ? "" : null;
+
+    private string? PrerenderMarker => AssignedRenderMode is null ? null : "";
+
+    private string Names(string box) => Label is null ? $"{box}-name" : $"{LabelId} {box}-name";
+
+    private string? NameOf(string part) => InputNameAttribute is null ? null : $"{InputNameAttribute}.{part}";
+
+    private static string? IsoOrNull(DateOnly? date) => date is { } day ? Iso(day) : null;
+
+    private static string? IsoOf(TDate? date) => date is { } day ? Iso(ToDate(day)) : null;
+}

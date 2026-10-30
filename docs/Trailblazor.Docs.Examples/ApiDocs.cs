@@ -85,11 +85,14 @@ public static partial class ApiDocs
     // Bases come first, so a field lists its value and label before the parameters of its own kind.
     private static int Depth(Type type) => type.BaseType is null ? 0 : 1 + Depth(type.BaseType);
 
-    // Generic components are made concrete with object, since their defaults don't depend on the type argument.
+    // Generic components are made concrete with object, or int where the type must be a struct, since their defaults
+    // don't depend on the type argument.
     private static object CreateForDefaults(Type type)
     {
         var concrete = type.IsGenericTypeDefinition
-            ? type.MakeGenericType([.. type.GetGenericArguments().Select(_ => typeof(object))])
+            ? type.MakeGenericType([.. type.GetGenericArguments().Select(argument =>
+                argument.GenericParameterAttributes.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint)
+                    ? typeof(int) : typeof(object))])
             : type;
         return Activator.CreateInstance(concrete)!;
     }

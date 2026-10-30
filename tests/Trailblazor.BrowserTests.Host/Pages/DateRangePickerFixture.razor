@@ -1,0 +1,38 @@
+@page "/date-range"
+@using System.Globalization
+
+<TbStack Gap="4">
+    <TbDateRangePicker TDate="DateOnly" Label="Trip dates" @bind-Value="_trip" @bind-Value:after="Count"
+                       Culture="_culture" Clearable Presets="_presets" Min="new DateOnly(2026, 1, 1)"
+                       Max="new DateOnly(2026, 12, 31)" IsDateDisabled="IsClosed" />
+    <output data-testid="trip">@Show(_trip.Start) to @Show(_trip.End)</output>
+    <output data-testid="changes">@_changes</output>
+    <TbButton OnClick="SetFromParent">Set from parent</TbButton>
+    <TbDateRangePicker TDate="DateTime" Label="Created" @bind-Value="_created" Culture="_culture"
+                       Format="MM/dd/yyyy" />
+    <output data-testid="created">@_created.Start?.ToString("O") to @_created.End?.ToString("O")</output>
+    <TbDateRangePicker TDate="DateOnly" Label="Next trip" @bind-Value="_next" Culture="_culture" />
+</TbStack>
+
+@code {
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("en-US");
+    private DateRange<DateOnly> _trip = new(new DateOnly(2026, 6, 3), new DateOnly(2026, 6, 10));
+    private DateRange<DateTime> _created = new(new DateTime(2026, 3, 1, 8, 30, 0), new DateTime(2026, 3, 31, 17, 0, 0));
+    private DateRange<DateOnly> _next;
+    private int _changes;
+
+    private readonly IReadOnlyList<DateRangePreset<DateOnly>> _presets =
+    [
+        new("First week of July", new(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 7))),
+        new("All of August", new(new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 31))),
+    ];
+
+    // The 25th of every month is closed, so a test can find a day that can't be chosen.
+    private static bool IsClosed(DateOnly date) => date.Day == 25;
+
+    private static string Show(DateOnly? date) => date?.ToString("yyyy-MM-dd") ?? "none";
+
+    private void Count() => _changes++;
+
+    private void SetFromParent() => _trip = new(new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 5));
+}
