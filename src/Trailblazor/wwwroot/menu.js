@@ -164,7 +164,6 @@ export function createMenu(root, menu, options) {
         event.preventDefault();
     };
     const onMenuClick = event => {
-        clearTimeout(hoverTimer);
         const item = event.target.closest(itemSelector);
         const submenu = submenuOf(item);
         // A click on an item whose submenu the pointer already opened goes into it, rather than toggling it shut.

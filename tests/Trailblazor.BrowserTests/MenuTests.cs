@@ -529,13 +529,10 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var pauseY = table.Y + table.Height / 2;
         var pauseX = start.X + (end.X - start.X) * (pauseY - start.Y) / (end.Y - start.Y);
         Assert.True(pauseX < table.X + table.Width, "The pause should be over Table.");
-        await page.Mouse.MoveAsync(start.X, start.Y);
-        await page.Mouse.MoveAsync(pauseX, pauseY, new() { Steps = 3 });
-        await page.WaitForTimeoutAsync(250);
-        await page.Mouse.MoveAsync(end.X, end.Y, new() { Steps = 3 });
-        await page.WaitForTimeoutAsync(250);
 
-        await Expect(shape).ToBeVisibleAsync();
+        var open = await MovePointerAsync(page, (start.X, start.Y, 0), (pauseX, pauseY, 250), (end.X, end.Y, 250));
+
+        Assert.Contains("Shape", open);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -545,23 +542,15 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
         await Item(page, "Shape").HoverAsync();
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
-        await Item(page, "Table").EvaluateAsync(
-            "table => table.addEventListener('pointerenter', () => window.arrivedAt = performance.now())");
-        await page.GetByRole(AriaRole.Menu, new() { Name = "Shape" }).EvaluateAsync("""
-            shape => shape.addEventListener('beforetoggle', event => {
-                if (event.newState === 'closed') {
-                    window.closedAt = performance.now();
-                }
-            })
-            """);
-
-        // Down and back towards the start, outside the way to the submenu, so only the hover delay applies.
+        var from = (await Item(page, "Shape").BoundingBoxAsync())!;
         var table = (await Item(page, "Table").BoundingBoxAsync())!;
-        await page.Mouse.MoveAsync(table.X + 8, table.Y + table.Height / 2, new() { Steps = 3 });
-        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
 
-        Assert.True(await page.EvaluateAsync<double>("() => window.closedAt - window.arrivedAt") < 350,
-            "Heading away from the submenu should close it after the hover delay, not wait out the grace time.");
+        // Down and back towards the start, outside the way to the submenu, resting longer than the hover delay but
+        // not the grace time.
+        var open = await MovePointerAsync(page, (from.X + from.Width / 2, from.Y + from.Height / 2, 0),
+            (table.X + 8, table.Y + table.Height / 2, 300));
+
+        Assert.DoesNotContain("Shape", open);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -618,6 +607,21 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(menu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
         return ((await trigger.BoundingBoxAsync())!, (await menu.BoundingBoxAsync())!);
     }
+
+    // Waits on the page's own timers, which fire in order with the menu's however slow the machine is.
+    private static Task<string[]> MovePointerAsync(IPage page, params (double X, double Y, int Wait)[] steps) =>
+        page.EvaluateAsync<string[]>("""
+            async steps => {
+                for (const [x, y, wait] of steps) {
+                    document.elementFromPoint(x, y).dispatchEvent(new PointerEvent('pointermove',
+                        { bubbles: true, clientX: x, clientY: y, pointerType: 'mouse' }));
+                    await new Promise(resolve => setTimeout(resolve, wait));
+                }
+
+                return [...document.querySelectorAll('[role=menu]:popover-open')]
+                    .map(menu => document.getElementById(menu.getAttribute('aria-labelledby')).textContent.trim());
+            }
+            """, steps.Select(step => new[] { step.X, step.Y, step.Wait }).ToArray());
 
     private static ILocator Item(IPage page, string name) =>
         page.GetByRole(AriaRole.Menuitem, new() { Name = name });
