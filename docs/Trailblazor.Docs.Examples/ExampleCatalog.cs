@@ -508,6 +508,8 @@ public static class ExampleCatalog
                     + "its text so typing replaces it.",
                 "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "
                     + "browsers expose them.",
+                "`ReadOnly` keeps the field focusable and posted with its form, and screen readers hear it as read "
+                    + "only; `Disabled` takes it out of the tab order and the post.",
             ],
             Target = new("textbox", "Name"),
             Blocks = ["tb-field"],
@@ -525,6 +527,8 @@ public static class ExampleCatalog
                 "The `Label` names the field. Helper text and validation messages are linked to the field with "
                     + "`aria-describedby`, an error sets `aria-invalid`, and `Required` sets `aria-required`; the "
                     + "asterisk it adds is hidden from screen readers.",
+                "`ReadOnly` keeps the value from changing by typing, the arrow keys or the step buttons, which turn "
+                    + "off.",
             ],
             Target = new("spinbutton", "Quantity"),
             Blocks = ["tb-field"],
@@ -655,6 +659,7 @@ public static class ExampleCatalog
                     + "of suggestions is announced. Every word can be changed.",
                 "Before the page is interactive it is a plain text input, so a static form still posts what was "
                     + "typed.",
+                "`ReadOnly` keeps the list closed and hides the clear button.",
             ],
             Target = new("combobox", "Trailhead"),
             Blocks = ["tb-field", "tb-select", "tb-autocomplete"],
@@ -679,6 +684,8 @@ public static class ExampleCatalog
                 "The eyedropper button appears only in browsers that have one.",
                 "Before the page is interactive it is a plain text box that only takes `#rrggbb` (or `#rrggbbaa` "
                     + "with `Alpha`), so a static form posts a hex color, as typed.",
+                "`ReadOnly` keeps the color from changing: the text can't be edited, the picker buttons turn off and "
+                    + "the clear button hides.",
             ],
             Target = new("textbox", "Trail marker"),
             Blocks = ["tb-field", "tb-color-picker"],
@@ -727,6 +734,8 @@ public static class ExampleCatalog
                     + "Picking the start announces that the end comes next.",
                 "Before the page is interactive it shows the browser's own date boxes, so a static form still posts "
                     + "both dates.",
+                "`ReadOnly` keeps the dates from changing: the boxes can't be edited, the calendar button turns off "
+                    + "and the clear button hides.",
             ],
             Target = new("group", "Trip dates"),
             Blocks = ["tb-field", "tb-date-range"],

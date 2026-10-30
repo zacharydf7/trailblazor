@@ -8,7 +8,7 @@
         RenderFragment? end) =>
         @<div @attributes="AdditionalAttributes" style="@Style"
               class="@ClassNames.Join("tb-field", Errors.Count > 0 ? "tb-field--invalid" : null,
-                         Disabled ? "tb-field--disabled" : null, Class)">
+                         Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
             @if (Label is not null)
             {
                 <label data-part="label" id="@LabelId" for="@(LabelTargetsInput ? InputId : null)"

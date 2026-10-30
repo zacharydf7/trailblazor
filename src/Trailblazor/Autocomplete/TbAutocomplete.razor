@@ -6,7 +6,7 @@
     @* @bind keeps what the user typed while a round trip is in flight; leaving or Enter commits it. *@
     <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
            type="text" autocomplete="off" @bind:get="_text" @bind:set="OnTypedAsync" @bind:event="oninput"
-           @onchange="CommitAsync" placeholder="@Placeholder" disabled="@Disabled"
+           @onchange="CommitAsync" placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
            data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
            role="@(RendererInfo.IsInteractive ? "combobox" : null)"
            aria-autocomplete="@(RendererInfo.IsInteractive ? "list" : null)"
@@ -47,7 +47,7 @@
 </text>, Start, End)
 
 @code {
-    private RenderFragment? End => !Clearable || Disabled || string.IsNullOrEmpty(_text) ? null :
+    private RenderFragment? End => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
         @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(ClearLabel ?? Localizer[TbStrings.AutocompleteClear])"
                        Size="Size.Small" OnClick="ClearAsync"
                        data-part="clear" />;

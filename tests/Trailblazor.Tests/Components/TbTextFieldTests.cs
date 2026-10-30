@@ -60,6 +60,20 @@ public class TbTextFieldTests : BunitContext
         module.VerifyInvoke("selectText").Arguments[0].ShouldBeElementReferenceTo(cut.Find("input"));
     }
 
+    [Theory]
+    [InlineData(1, "input")]
+    [InlineData(3, "textarea")]
+    public void Render_ShouldMakeTheInputReadOnlyButNotDisabled_WhenReadOnly(int lines, string element)
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.ReadOnly, true)
+            .Add(field => field.Lines, lines));
+
+        var input = cut.Find(element);
+        Assert.True(input.HasAttribute("readonly"));
+        Assert.False(input.HasAttribute("disabled"));
+        Assert.Contains("tb-field--readonly", cut.Find(".tb-field").ClassList);
+    }
+
     [Fact]
     public void Render_ShouldNotRaiseValueChanged_WhenTheParentSetsTheValue()
     {

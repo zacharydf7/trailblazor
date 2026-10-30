@@ -30,6 +30,18 @@ public class TbColorPickerTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldTurnOffEveryControlInThePanel_WhenReadOnly()
+    {
+        var cut = RenderPicker("#CC3333", parameters => parameters.Add(picker => picker.ReadOnly, true)
+            .Add(picker => picker.Palette, ["#336699", "#cc3333"]));
+
+        var controls = cut.FindAll("[data-part=swatch], .tb-color-picker__body input[type=range], "
+            + ".tb-color-picker__body input[type=number]");
+        Assert.NotEmpty(controls);
+        Assert.All(controls, control => Assert.True(control.HasAttribute("disabled"), control.OuterHtml));
+    }
+
+    [Fact]
     public void Swatch_ShouldChooseItsColor_WhenChanged()
     {
         var cut = RenderPicker("#336699", parameters => parameters

@@ -8,7 +8,8 @@
         <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId"
                name="@InputNameAttribute" type="text" autocomplete="off" spellcheck="false" data-value="@Value"
                @bind:get="Text" @bind:set="SetTextAsync"
-               placeholder="@Placeholder" disabled="@Disabled" aria-required="@(Required ? "true" : null)"
+               placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
+               aria-required="@(Required ? "true" : null)"
                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     </text>, Preview, Buttons)
@@ -21,7 +22,7 @@ else
     @Layout(Classes, @<text>
         <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="text"
                value="@Text" placeholder="@Placeholder" pattern="@StaticPattern" title="@BadColorLabel"
-               disabled="@Disabled"
+               disabled="@Disabled" readonly="@ReadOnly"
                aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
                aria-describedby="@InputDescribedBy" data-static="@(AssignedRenderMode is null ? "" : null)"
                data-prerender="@(AssignedRenderMode is null ? null : "")"
@@ -38,7 +39,7 @@ else
                style="@(Color is { } color ? $"--tb-color-picker-value: {color.ToHex(true)}" : null)"></span>;
 
     private RenderFragment Buttons => @<text>
-        @if (Clearable && !Disabled && Value is not null)
+        @if (Clearable && !Disabled && !ReadOnly && Value is not null)
         {
             <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" Size="Size.Small" OnClick="ClearAsync"
                           data-part="clear" />
@@ -46,12 +47,12 @@ else
         @if (_canPickColor)
         {
             <TbIconButton Icon="BuiltInIcons.Eyedropper" AriaLabel="@EyedropperLabel" Size="Size.Small"
-                          Disabled="Disabled" OnClick="PickFromScreenAsync" data-part="eyedropper" />
+                          Disabled="@(Disabled || ReadOnly)" OnClick="PickFromScreenAsync" data-part="eyedropper" />
         }
         <TbPopover Title="@OpenLabel" Align="PlacementAlign.End" class="tb-color-picker__popover">
             <Trigger>
                 <TbIconButton Icon="BuiltInIcons.Palette" AriaLabel="@OpenLabel" Size="Size.Small"
-                              Disabled="Disabled" @attributes="context.Attributes" />
+                              Disabled="@(Disabled || ReadOnly)" @attributes="context.Attributes" />
             </Trigger>
             <ChildContent>
                 <div class="tb-color-picker__body" style="@BodyStyle">
@@ -63,6 +64,7 @@ else
                             {
                                 <input type="radio" name="@($"{FieldId}-swatch")" data-part="swatch"
                                        aria-label="@NameOf(swatch)" checked="@IsChosen(swatch)"
+                                       disabled="@(Disabled || ReadOnly)"
                                        @onchange="() => ChooseSwatchAsync(swatch)"
                                        style="@($"--tb-swatch: {Read(swatch).ToHex(true)}")"
                                        class="tb-color-picker__swatch" />
@@ -109,7 +111,7 @@ else
         @<label class="tb-color-picker__row">
             <span class="tb-color-picker__row-label">@label</span>
             <input type="range" data-part="@part" min="0" max="@max" step="1" @bind:get="Invariant(value)"
-                   @bind:set="set" @bind:event="oninput" disabled="@Disabled"
+                   @bind:set="set" @bind:event="oninput" disabled="@(Disabled || ReadOnly)"
                    aria-valuetext="@($"{Invariant(value)}{unit}")"
                    class="@($"tb-color-picker__slider tb-color-picker__slider--{part}")" />
         </label>;
@@ -118,7 +120,7 @@ else
         @<label class="tb-color-picker__channel">
             <span class="tb-color-picker__row-label">@label</span>
             <input type="number" data-part="@part" min="0" max="255" step="1" @bind:get="value?.ToString()"
-                   @bind:set="text => SetChannelAsync(text, with)" disabled="@Disabled"
+                   @bind:set="text => SetChannelAsync(text, with)" disabled="@(Disabled || ReadOnly)"
                    class="tb-color-picker__number" />
         </label>;
 }

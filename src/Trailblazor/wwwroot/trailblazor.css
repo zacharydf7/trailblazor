@@ -2378,6 +2378,10 @@
         opacity: 0.55;
     }
 
+    .tb-field--readonly .tb-field__control {
+        background: var(--tb-color-surface-sunken);
+    }
+
     .tb-checkbox,
     .tb-switch {
         display: flex;

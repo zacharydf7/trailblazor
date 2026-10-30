@@ -28,7 +28,7 @@ export function createAutocomplete(input, listbox, events) {
     };
     // Typing searches by itself, so only an open from the keys asks the server to browse.
     const open = browse => {
-        if (input.disabled || isOpen()) {
+        if (input.disabled || input.readOnly || isOpen()) {
             return;
         }
 
@@ -143,7 +143,7 @@ export function createAutocomplete(input, listbox, events) {
     input.dataset.ready = '';
 
     return {
-        // Returns whether the list ended up open, since a disabled field won't open.
+        // Returns whether the list ended up open, since a disabled or read-only field won't open.
         setOpen(value) {
             if (value) {
                 open(false);

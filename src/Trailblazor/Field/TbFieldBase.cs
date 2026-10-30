@@ -47,6 +47,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>Lets the user focus the field and read or copy its value, but not change it. Unlike
+    /// <see cref="Disabled"/>, the value still posts with its form.</summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
     /// <summary>Marks the field as required for assistive technology and shows a marker by the label. Checking
     /// for a value is left to <see cref="Validation"/> or the form's validator.</summary>
     [Parameter]

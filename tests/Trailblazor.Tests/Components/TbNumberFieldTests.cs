@@ -59,6 +59,17 @@ public class TbNumberFieldTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldTurnOffTheStepButtonsAndMakeTheInputReadOnly_WhenReadOnly()
+    {
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Value, 5)
+            .Add(field => field.ReadOnly, true));
+
+        Assert.True(cut.Find("input").HasAttribute("readonly"));
+        Assert.True(cut.Find("[data-part=decrement]").HasAttribute("disabled"));
+        Assert.True(cut.Find("[data-part=increment]").HasAttribute("disabled"));
+    }
+
+    [Fact]
     public void Render_ShouldDisableDecrease_WhenAnUnsignedValueIsAtZero()
     {
         var cut = Render<TbNumberField<byte>>(parameters => parameters.Add(field => field.Value, (byte)0));

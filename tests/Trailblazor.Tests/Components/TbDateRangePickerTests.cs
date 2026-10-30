@@ -30,6 +30,18 @@ public class TbDateRangePickerTests : BunitContext
         Assert.Equal("YYYY-MM-DD", cut.Find("[data-part=start-input]").GetAttribute("placeholder"));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldMakeBothDateBoxesReadOnly_WhenReadOnly(bool interactive)
+    {
+        SetRendererInfo(new RendererInfo(interactive ? "Server" : "Static", interactive));
+        var cut = RenderPicker(June3To10, parameters => parameters.Add(picker => picker.ReadOnly, true));
+
+        Assert.True(cut.Find("[data-part=start-input]").HasAttribute("readonly"));
+        Assert.True(cut.Find("[data-part=end-input]").HasAttribute("readonly"));
+    }
+
     [Fact]
     public void Render_ShouldStartTheWeekOnTheCulturesFirstDay_WhenGivenACulture()
     {

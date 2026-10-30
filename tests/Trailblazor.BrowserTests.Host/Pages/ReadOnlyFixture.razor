@@ -1,0 +1,13 @@
+@page "/read-only"
+
+<TbTextField Label="Name" Value="@("Ada")" ReadOnly data-testid="name" />
+<TbNumberField TValue="int" Label="Copies" Value="3" ReadOnly data-testid="copies" />
+<TbAutocomplete TValue="string" Label="Town" Value="@("Pine Hollow")" Items="_towns" Clearable ReadOnly
+                data-testid="town" />
+<TbColorPicker Label="Color" Value="@("#336699")" Clearable ReadOnly data-testid="color" />
+<TbDateRangePicker TDate="DateOnly" Label="Dates" Value="_dates" Clearable ReadOnly data-testid="dates" />
+
+@code {
+    private readonly string[] _towns = ["Pine Hollow", "Cedar Falls"];
+    private readonly DateRange<DateOnly> _dates = new(new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 8));
+}

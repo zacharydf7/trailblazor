@@ -13,14 +13,15 @@
         {
             <input @attributes="InputAttributes" @ref="_startInput" data-part="start-input" id="@StartId"
                    name="@NameOf("Start")" type="text" autocomplete="off" @bind:get="StartText"
-                   @bind:set="SetStartTextAsync" placeholder="@FormatHint" disabled="@Disabled"
+                   @bind:set="SetStartTextAsync" placeholder="@FormatHint" disabled="@Disabled" readonly="@ReadOnly"
                    aria-labelledby="@Names(StartId)" aria-required="@(Required ? "true" : null)"
                    aria-invalid="@Invalid(_startBad)" aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
             <span class="tb-date-range__dash" aria-hidden="true">–</span>
             <input @attributes="InputAttributes" data-part="end-input" id="@EndId" name="@NameOf("End")" type="text"
                    autocomplete="off" @bind:get="EndText" @bind:set="SetEndTextAsync" placeholder="@FormatHint"
-                   disabled="@Disabled" aria-labelledby="@Names(EndId)" aria-required="@(Required ? "true" : null)"
+                   disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(EndId)"
+                   aria-required="@(Required ? "true" : null)"
                    aria-invalid="@Invalid(_endBad)" aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
         }
@@ -31,6 +32,7 @@
             <input @attributes="InputAttributes" data-part="start-input" data-static="@StaticMarker"
                    data-prerender="@PrerenderMarker" id="@StartId" name="@NameOf("Start")" type="date"
                    value="@IsoOrNull(StartDate)" min="@IsoOf(Min)" max="@IsoOf(Max)" disabled="@Disabled"
+                   readonly="@ReadOnly"
                    aria-labelledby="@Names(StartId)"
                    aria-required="@(Required ? "true" : null)" aria-invalid="@Invalid(_startBad)"
                    aria-describedby="@InputDescribedBy"
@@ -39,20 +41,22 @@
             <input @attributes="InputAttributes" data-part="end-input" data-static="@StaticMarker"
                    data-prerender="@PrerenderMarker" id="@EndId" name="@NameOf("End")"
                    type="date" value="@IsoOrNull(EndDate)" min="@IsoOf(Min)" max="@IsoOf(Max)"
-                   disabled="@Disabled" aria-labelledby="@Names(EndId)" aria-required="@(Required ? "true" : null)"
+                   disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(EndId)"
+                   aria-required="@(Required ? "true" : null)"
                    aria-invalid="@Invalid(_endBad)" aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
         }
         @if (RendererInfo.IsInteractive)
         {
             <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">
-                @if (Clearable && !Disabled && HasDates)
+                @if (Clearable && !Disabled && !ReadOnly && HasDates)
                 {
                     <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" Size="Size.Small"
                                   OnClick="ClearAsync" data-part="clear" />
                 }
                 <TbIconButton Icon="BuiltInIcons.Calendar" AriaLabel="@OpenLabel" Size="Size.Small"
-                              Disabled="Disabled" data-part="trigger" popovertarget="@PanelId" aria-haspopup="dialog"
+                              Disabled="@(Disabled || ReadOnly)" data-part="trigger" popovertarget="@PanelId"
+                              aria-haspopup="dialog"
                               aria-controls="@PanelId" aria-expanded="@(_open ? "true" : "false")"
                               data-ready="@(_handle is null ? null : "")" />
             </span>
