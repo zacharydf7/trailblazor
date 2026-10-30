@@ -46,6 +46,8 @@ export function createMenu(root, menu, options) {
 
         // Escape or choosing an item closes from inside the list, and focus then goes back to what opened it.
         if (event.newState === 'closed') {
+            // A hover still waiting would undo what Escape or a click just closed; this runs as the list closes.
+            clearTimeout(hoverTimer);
             if (list.contains(document.activeElement)) {
                 returnFocus.add(list);
             } else {
@@ -83,8 +85,6 @@ export function createMenu(root, menu, options) {
 
         positions.get(list)?.dispose();
         positions.delete(list);
-        // A hover still waiting would undo what Escape or a click just closed.
-        clearTimeout(hoverTimer);
         if (list === menu) {
             forgetPointer();
         }
