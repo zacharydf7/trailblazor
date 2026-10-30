@@ -9,10 +9,10 @@ namespace Trailblazor.Tests.Contract;
 // Rules every public Trailblazor component must follow, checked against all of them by reflection.
 public class ComponentContractTests : BunitContext
 {
-    // TbRoot renders no element of its own; TbRadio, TbTab and TbOption only render inside their parent (see their
-    // parents' tests).
+    // TbRoot renders no element of its own, and TbStyles only a <link>, which takes no class or style; TbRadio,
+    // TbTab and TbOption only render inside their parent (see their parents' tests).
     private static readonly Type[] NotRenderedAlone =
-        [typeof(TbRoot), typeof(TbRadio<>), typeof(TbTab), typeof(TbOption<>)];
+        [typeof(TbRoot), typeof(TbStyles), typeof(TbRadio<>), typeof(TbTab), typeof(TbOption<>)];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
     private static readonly Dictionary<Type, Type> TypeArguments = new()

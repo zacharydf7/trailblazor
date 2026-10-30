@@ -28,6 +28,16 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
+    [Fact]
+    public async Task Site_ShouldLinkTheStylesheetBeforeTheAppStarts_WhenItsPageIsServed()
+    {
+        using var client = new HttpClient { BaseAddress = Fixture.DocsAddress };
+
+        var html = await client.GetStringAsync("", TestContext.Current.CancellationToken);
+
+        Assert.Contains("""<link rel="stylesheet" href="_content/Trailblazor/trailblazor.css" />""", html);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task LookSwitcher_ShouldApplyAndRememberTheThemeAndPalette_WhenChosen(string browser)
     {

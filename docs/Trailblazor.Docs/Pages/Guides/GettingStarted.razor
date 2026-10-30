@@ -24,10 +24,19 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">3. Import the namespace</TbText>
 <CodeBlock Label="_Imports.razor" Code="@Imports" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">4. Add TbRoot to the layout</TbText>
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">4. Link the stylesheet</TbText>
 <TbText>
-    Put one <code>&lt;TbRoot /&gt;</code> in the main layout. It adds Trailblazor's stylesheet to the page head and
-    hosts the dialogs, toasts and announcements that services open from code.
+    Put <code>&lt;TbStyles /&gt;</code> in the <code>&lt;head&gt;</code> of App.razor, outside the
+    <code>HeadOutlet</code>. It renders once with the page, so the styles never drop out when the page becomes
+    interactive. A standalone WebAssembly app links the file in its index.html instead.
+</TbText>
+<CodeBlock Label="App.razor" Code="@Head" />
+<CodeBlock Label="index.html, standalone WebAssembly" Code="@IndexHead" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">5. Add TbRoot to the layout</TbText>
+<TbText>
+    Put one <code>&lt;TbRoot /&gt;</code> in the main layout. It hosts the dialogs, toasts and announcements that
+    services open from code.
 </TbText>
 <CodeBlock Label="MainLayout.razor" Code="@Layout" />
 <TbText>
@@ -39,12 +48,12 @@
 <TbText>
     When interactivity is set page by page, as in the default Blazor template, the layout renders statically. Give
     <code>TbRoot</code> the render mode your interactive pages use, and it hosts dialogs, toasts and announcements in
-    that mode while the stylesheet stays in the static page head. Every page then starts an interactive session for
+    that mode. Every page then starts an interactive session for
     these hosts, even a fully static one, and only pages in that same render mode can open them.
 </TbText>
 <CodeBlock Label="MainLayout.razor, interactivity per page" Code="@PerPageLayout" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">5. Use a component</TbText>
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">6. Use a component</TbText>
 <CodeBlock Label="A first component" Code="@FirstComponent" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Render modes</TbText>
@@ -76,12 +85,25 @@
     private const string App = """
         <head>
             ...
+            <TbStyles />
             <HeadOutlet @rendermode="InteractiveServer" />
         </head>
         <body>
             <Routes @rendermode="InteractiveServer" />
             <script src="_framework/blazor.web.js"></script>
         </body>
+        """;
+
+    private const string Head = """
+        <head>
+            ...
+            <TbStyles />
+            <HeadOutlet />
+        </head>
+        """;
+
+    private const string IndexHead = """
+        <link rel="stylesheet" href="_content/Trailblazor/trailblazor.css" />
         """;
 
     private const string Imports = """

@@ -19,7 +19,6 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Badge_ShouldStraddleTheButtonsTopEndCorner_WhenItSitsOnAButton(string browser)
     {
         var page = await OpenAsync(browser, "/examples/badge");
-        await Expect(Host(page, "Review changes").Locator("[data-part=badge]")).ToHaveCSSAsync("position", "absolute");
 
         var ltr = await Host(page, "Review changes").EvaluateAsync<double[]>(CornerScript);
         await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
@@ -39,8 +38,6 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Badge_ShouldLetClicksReachTheButton_WhenThePointerIsOnTheBadge(string browser)
     {
         var page = await OpenAsync(browser, "/examples/badge");
-        // The badge is probed once, so first wait until the stylesheet places it.
-        await Expect(Host(page, "Review changes").Locator("[data-part=badge]")).ToHaveCSSAsync("position", "absolute");
 
         var hit = await Host(page, "Review changes").EvaluateAsync<string>("""
             host => {

@@ -43,8 +43,6 @@ public class ChipTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/chip");
         var running = page.Locator(".tb-chip--selected").Filter(new() { HasText = "Running" });
-        // The tokens are read once, so first wait until the stylesheet is in place.
-        await Expect(running).Not.ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
 
         var colors = await page.EvaluateAsync<string[]>("""
             () => ['--tb-color-neutral', '--tb-color-on-neutral'].map(token => {
