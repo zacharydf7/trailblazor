@@ -6,7 +6,7 @@
        class="@ClassNames.Join("tb-radio", Disabled ? "tb-radio--disabled" : null, Class)">
     <input @attributes="Group!.InputAttributes" type="radio" data-part="input" name="@Group.GroupName"
            class="@ClassNames.Join("tb-radio__input", Group.Classes?.Input)"
-           value="@Group.FormatOption(Value)" checked="@Group.IsSelected(Value)" disabled="@Disabled"
+           value="@Group.FormatOption(Value)" checked="@Group.IsSelected(Value)" disabled="@(Disabled || Held)"
            @onchange="() => Group.SelectAsync(Value)" />
     <span data-part="label">@ChildContent</span>
 </label>
@@ -26,6 +26,9 @@
 
     [CascadingParameter]
     private TbRadioGroup<TValue>? Group { get; set; }
+
+    // A read-only group turns off every radio but the checked one, which stays focusable and posted.
+    private bool Held => Group!.ReadOnly && !Group.IsSelected(Value);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

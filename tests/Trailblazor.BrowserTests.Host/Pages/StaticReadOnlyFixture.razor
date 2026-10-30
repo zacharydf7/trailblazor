@@ -1,0 +1,7 @@
+@page "/static-read-only"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* No circuit runs here, so only the library's startup script can hold these still. *@
+<TbCheckbox TValue="bool" Label="Agree" Value="true" ReadOnly />
+<TbSlider TValue="int" Label="Volume" Value="40" ReadOnly />
+<TbRangeSlider TValue="int" Label="Price" Value="new(20, 60)" ReadOnly />

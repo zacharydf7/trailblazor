@@ -10,6 +10,16 @@ public class TbCheckboxTests : BunitContext
     public TbCheckboxTests() => this.AddTrailblazor();
 
     [Fact]
+    public void Render_ShouldMarkTheBoxReadOnlyButNotDisabled_WhenReadOnly()
+    {
+        var cut = Render<TbCheckbox<bool>>(parameters => parameters.Add(box => box.ReadOnly, true));
+
+        var input = cut.Find("input");
+        Assert.Equal("true", input.GetAttribute("aria-readonly"));
+        Assert.False(input.HasAttribute("disabled"));
+    }
+
+    [Fact]
     public void Render_ShouldBeALabeledCheckboxThatPostsTrue_WhenCalled()
     {
         var cut = Render<TbCheckbox<bool>>(parameters => parameters

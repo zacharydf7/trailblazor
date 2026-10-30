@@ -11,6 +11,10 @@
             <TbRadio Value="orientation">@orientation</TbRadio>
         }
     </TbRadioGroup>
+    <TbRadioGroup TValue="string" Label="Plan" Value="@("Hiker")" ReadOnly HelperText="Change it from billing.">
+        <TbRadio Value="@("Free")">Free</TbRadio>
+        <TbRadio Value="@("Hiker")">Hiker</TbRadio>
+    </TbRadioGroup>
 </TbStack>
 
 @code {

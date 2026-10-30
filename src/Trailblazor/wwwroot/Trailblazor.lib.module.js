@@ -1,5 +1,6 @@
 // Blazor runs this initializer itself, so consumers add no script tags.
 import './pointer-origin.js';
+import './read-only.js';
 
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.
 export function afterWebStarted(blazor) {

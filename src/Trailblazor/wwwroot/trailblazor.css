@@ -3489,6 +3489,20 @@
         cursor: default;
     }
 
+    /* A read-only slider's thumbs ignore the pointer, and read-only.js holds the keys. */
+    .tb-slider__input[aria-readonly="true"] {
+        pointer-events: none;
+    }
+
+    /* Specific enough to beat the range slider's thumbs, which take the pointer back. */
+    .tb-slider .tb-slider__input[aria-readonly="true"]::-webkit-slider-thumb {
+        pointer-events: none;
+    }
+
+    .tb-slider .tb-slider__input[aria-readonly="true"]::-moz-range-thumb {
+        pointer-events: none;
+    }
+
     .tb-slider--invalid .tb-slider__fill {
         background: var(--tb-color-danger-text);
     }

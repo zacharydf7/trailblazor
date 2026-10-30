@@ -547,6 +547,8 @@ public static class ExampleCatalog
                     + "screen readers.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
+                "`ReadOnly` keeps the box focusable and posted, but neither a click nor Space changes it; screen "
+                    + "readers hear it as read only.",
             ],
             Target = new("checkbox", "Email me updates"),
             Blocks = ["tb-checkbox"],
@@ -562,6 +564,8 @@ public static class ExampleCatalog
                 "Use it for a setting that takes effect at once. For a choice saved with a form, use a checkbox.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
+                "`ReadOnly` keeps the switch focusable and posted, but neither a click nor Space changes it; "
+                    + "screen readers hear it as read only.",
             ],
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],
@@ -583,6 +587,8 @@ public static class ExampleCatalog
                     + "`FocusAsync()` focuses the start thumb.",
                 "It posts in a static form, as a number or as `Start` and `End`. In forced-colors mode the track and "
                     + "its fill take system colors.",
+                "`ReadOnly` keeps the thumbs focusable and posted, but neither the pointer nor the keys move them; "
+                    + "screen readers hear them as read only.",
             ],
             Target = new("slider", "Map brightness"),
             Blocks = ["tb-slider"],
@@ -606,6 +612,8 @@ public static class ExampleCatalog
                     + "isn't disabled.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
+                "`ReadOnly` turns off every option but the chosen one, which stays a tab stop and still posts; "
+                    + "with nothing chosen, every option is off. Screen readers hear the group as read only.",
             ],
             Target = new("radiogroup", "Paper size"),
             Blocks = ["tb-radio-group", "tb-radio"],

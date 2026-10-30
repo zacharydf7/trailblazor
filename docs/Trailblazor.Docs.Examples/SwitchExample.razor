@@ -2,6 +2,7 @@
     <TbSwitch Label="Auto-save" @bind-Value="_autoSave" data-testid="auto-save" />
     <output data-testid="auto-save-echo">@_autoSave</output>
     <TbSwitch Label="Offline mode" Value="true" Disabled />
+    <TbSwitch Label="Two-step sign-in" Value="true" ReadOnly HelperText="Your organization requires it." />
 </TbStack>
 
 @code {

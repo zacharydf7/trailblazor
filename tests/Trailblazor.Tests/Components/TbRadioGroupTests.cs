@@ -15,6 +15,22 @@ public class TbRadioGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldTurnOffEveryRadioButTheCheckedOne_WhenReadOnly()
+    {
+        var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Value, "A4")
+            .Add(group => group.ReadOnly, true)
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                AddOption(builder, 0, "Letter");
+                AddOption(builder, 10, "A4");
+            })));
+
+        Assert.Equal("true", cut.Find("fieldset").GetAttribute("aria-readonly"));
+        Assert.True(cut.Find("input[value=Letter]").HasAttribute("disabled"));
+        Assert.False(cut.Find("input[value=A4]").HasAttribute("disabled"));
+    }
+
+    [Fact]
     public void Render_ShouldBeALabeledRadioGroupWhoseRadiosShareAName_WhenCalled()
     {
         var cut = RenderGroup("A4", helperText: "Next print run");

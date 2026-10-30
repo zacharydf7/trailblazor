@@ -17,6 +17,39 @@ public class TbSliderTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldMarkEveryThumbReadOnlyButNotDisabled_WhenReadOnly()
+    {
+        var slider = Render<TbSlider<int>>(parameters => parameters.Add(field => field.ReadOnly, true));
+        var range = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.ReadOnly, true));
+
+        var thumbs = slider.FindAll("input").Concat(range.FindAll("input")).ToList();
+        Assert.Equal(3, thumbs.Count);
+        Assert.All(thumbs, thumb => Assert.Equal("true", thumb.GetAttribute("aria-readonly")));
+        Assert.All(thumbs, thumb => Assert.False(thumb.HasAttribute("disabled")));
+    }
+
+    [Fact]
+    public void Input_ShouldKeepTheValueAndCommitNothing_WhenReadOnly()
+    {
+        var committed = new List<int>();
+        var single = RenderSlider(40, onCommit: committed.Add);
+        single.Render(parameters => parameters.Add(slider => slider.ReadOnly, true));
+        var changes = new List<SliderRange<int>>();
+        var range = Render<TbRangeSlider<int>>(parameters => parameters.Add(slider => slider.ReadOnly, true)
+            .Add(slider => slider.Value, new(20, 60))
+            .Add(slider => slider.ValueChanged, (SliderRange<int> next) => changes.Add(next)));
+
+        single.Find("input").Input("75");
+        single.Find("input").Change("75");
+        range.Find("[data-part=start-thumb]").Input("30");
+        range.Find("[data-part=end-thumb]").Input("90");
+
+        Assert.Equal(40, Brightness);
+        Assert.Empty(committed);
+        Assert.Empty(changes);
+    }
+
+    [Fact]
     public void Render_ShouldBeARangeInputNamedByItsLabel_WhenCalled()
     {
         var cut = RenderSlider(40);

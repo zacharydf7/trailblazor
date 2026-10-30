@@ -11,13 +11,15 @@
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Start)"
            @bind:set="SetStartAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(Start)" aria-labelledby="@Names(StartId)"
-           aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+           aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+           aria-describedby="@InputDescribedBy"
            class="@ClassNames.Join("tb-slider__input", StartOnTop ? "tb-slider__input--top" : null, Classes?.Input)" />
     <input @attributes="InputAttributes" data-part="end-thumb" id="@EndId" name="@NameOf("End")" type="range"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(End)"
            @bind:set="SetEndAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(End)" aria-labelledby="@Names(EndId)"
-           aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+           aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+           aria-describedby="@InputDescribedBy"
            class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />
     @Bubble(Fraction(Start), Format(Start))
     @Bubble(Fraction(End), Format(End))
@@ -66,11 +68,12 @@
         ValueFormatter?.Invoke((TValue)ToValue(number)) ?? Invariant(number);
 
     // A thumb stops at the other, so the range never turns around.
-    private Task SetStartAsync(string? text) => Parse(text) is decimal number
+    // Assistive technology sets a range input's value without keys or the pointer, so read-only holds here too.
+    private Task SetStartAsync(string? text) => !ReadOnly && Parse(text) is decimal number
         ? SetValueAsync(new((TValue)ToValue(Math.Min(number, End)), (TValue)ToValue(End)))
         : Task.CompletedTask;
 
-    private Task SetEndAsync(string? text) => Parse(text) is decimal number
+    private Task SetEndAsync(string? text) => !ReadOnly && Parse(text) is decimal number
         ? SetValueAsync(new((TValue)ToValue(Start), (TValue)ToValue(Math.Max(number, Start))))
         : Task.CompletedTask;
 }

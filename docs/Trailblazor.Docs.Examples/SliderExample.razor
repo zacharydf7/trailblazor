@@ -11,6 +11,8 @@
                        ValueFormatter="@(value => $"{value} m")" />
         <TbText>Between @_elevation.Start and @_elevation.End m</TbText>
     </TbStack>
+    <TbSlider TValue="int" Label="Trail difficulty" Value="3" Min="1" Max="5" ShowValue ReadOnly
+              HelperText="Set by the park service." />
 </TbStack>
 
 @code {

@@ -5,6 +5,7 @@
     <TbCheckbox Label="All formats" @bind-Value="_allFormats" data-testid="all-formats" />
     <output data-testid="all-formats-echo">@(_allFormats?.ToString() ?? "mixed")</output>
     <TbCheckbox Label="Locked" Value="true" Disabled />
+    <TbCheckbox Label="Terms accepted" Value="true" ReadOnly HelperText="Accepted when you signed up." />
 </TbStack>
 
 @code {

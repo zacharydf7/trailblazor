@@ -6,6 +6,14 @@
                 data-testid="town" />
 <TbColorPicker Label="Color" Value="@("#336699")" Clearable ReadOnly data-testid="color" />
 <TbDateRangePicker TDate="DateOnly" Label="Dates" Value="_dates" Clearable ReadOnly data-testid="dates" />
+<TbCheckbox TValue="bool" Label="Agree" Value="true" ReadOnly />
+<TbSwitch Label="Alerts" Value="false" ReadOnly />
+<TbRadioGroup TValue="string" Label="Pace" Value="@("Fast")" ReadOnly>
+    <TbRadio Value="@("Slow")">Slow</TbRadio>
+    <TbRadio Value="@("Fast")">Fast</TbRadio>
+</TbRadioGroup>
+<TbSlider TValue="int" Label="Volume" Value="40" ReadOnly />
+<TbRangeSlider TValue="int" Label="Price" Value="new(20, 60)" ReadOnly />
 
 @code {
     private readonly string[] _towns = ["Pine Hollow", "Cedar Falls"];

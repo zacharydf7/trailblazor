@@ -79,5 +79,5 @@ public abstract partial class TbSliderBase<TValue> : TbFieldBase<TValue>
         decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? number : null;
 
     // Bound to each thumb's change event, which the browser fires once the user lets go.
-    private protected Task CommitAsync() => ValueCommitted.InvokeAsync(Value!);
+    private protected Task CommitAsync() => ReadOnly ? Task.CompletedTask : ValueCommitted.InvokeAsync(Value!);
 }
