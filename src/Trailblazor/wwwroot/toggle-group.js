@@ -7,6 +7,13 @@ export function attachToggleGroup(group) {
         return null;
     }
 
+    // Inside a TbToolbar the toolbar's keys move between every control, the group's items among them; inside a popup
+    // in the toolbar, or another library's toolbar, the group keeps its own.
+    if (group.parentElement?.closest('.tb-toolbar, [popover]')?.classList.contains('tb-toolbar')) {
+        group.dataset.ready = '';
+        return { dispose() {} };
+    }
+
     const focus = createRovingFocus(group, {
         items: '[data-part="item"]',
         vertical: () => group.classList.contains('tb-toggle-group--vertical'),

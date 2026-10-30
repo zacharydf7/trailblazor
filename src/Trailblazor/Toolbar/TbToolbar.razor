@@ -1,0 +1,132 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<div @attributes="AdditionalAttributes" @ref="_toolbar" role="toolbar" aria-label="@AriaLabel"
+     aria-orientation="@(Vertical ? "vertical" : "horizontal")" style="@Style"
+     class="@ClassNames.Join("tb-toolbar", Vertical ? "tb-toolbar--vertical" : null, Class)">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    @if (!Vertical)
+    {
+        @* The script shows it once a button has moved in; the server then fills it with those buttons. *@
+        <div @ref="_more" data-part="overflow" class="tb-toolbar__overflow">
+            <TbMenu Label="@OverflowLabel" Icon="BuiltInIcons.More" Align="MenuAlign.End">@OverflowItems</TbMenu>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<TbToolbarButton> _buttons = [];
+    private IReadOnlyList<string> _overflowed = [];
+    private ElementReference _toolbar;
+    private ElementReference _more;
+    private OverflowMenuItems? _menuItems;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<ToolbarOverflow>? _overflow;
+    private bool _disposed;
+
+    /// <summary>The toolbar's accessible name, such as "Formatting". Required.</summary>
+    [Parameter, EditorRequired]
+    public string AriaLabel { get; set; } = "";
+
+    /// <summary>The toolbar's content: <see cref="TbToolbarButton"/>s, other buttons, toggle groups, menus, text or a
+    /// <see cref="TbSpacer"/>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Stacks the content and moves between the controls with Up and Down, read on the first render. A
+    /// vertical toolbar doesn't move buttons into the overflow menu.</summary>
+    [Parameter]
+    public bool Vertical { get; set; }
+
+    /// <summary>The name of the menu button that holds the toolbar buttons with no room. Defaults to "More".</summary>
+    [Parameter]
+    public string OverflowLabel { get; set; } = "More";
+
+    // Razor only finds public components by tag, so the internal menu items are added here.
+    private RenderFragment OverflowItems => builder =>
+    {
+        builder.OpenComponent<OverflowMenuItems>(0);
+        builder.AddComponentParameter(1, nameof(OverflowMenuItems.Buttons),
+            (Func<IEnumerable<TbToolbarButton>>)(() =>
+                _overflowed.Select(id => _buttons.Find(button => button.Id == id)).OfType<TbToolbarButton>()));
+        builder.AddComponentReferenceCapture(2, items => _menuItems = (OverflowMenuItems)items);
+        builder.CloseComponent();
+    };
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            throw new InvalidOperationException($"{nameof(TbToolbar)} needs an {nameof(AriaLabel)}.");
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/toolbar.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            _overflow = DotNetObjectReference.Create(new ToolbarOverflow(OnOverflow));
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachToolbar", _toolbar,
+                Vertical ? null : _more, _overflow);
+            if (handle is not null && _disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the toolbar went with it.
+        }
+    }
+
+    internal void Add(TbToolbarButton button) => _buttons.Add(button);
+
+    internal void Remove(TbToolbarButton button) => _buttons.Remove(button);
+
+    // A moved button's menu item follows the button's text, icon and state.
+    internal void Refresh(TbToolbarButton button)
+    {
+        if (_overflowed.Contains(button.Id))
+        {
+            _menuItems?.Refresh();
+        }
+    }
+
+    private void OnOverflow(IReadOnlyList<string> ids)
+    {
+        _overflowed = ids;
+        _menuItems?.Refresh();
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _overflow?.Dispose();
+    }
+}

@@ -1,0 +1,25 @@
+@using Trailblazor.Docs.Examples
+
+@* Drag the corner to narrow the toolbar and watch its buttons move into the More menu. *@
+<div data-testid="toolbar-frame" style="inline-size: 100%; max-inline-size: 40rem; resize: inline; overflow: hidden;
+                                        border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
+    <TbToolbar AriaLabel="Trail notes">
+        <TbText As="TextElement.H3" TextStyle="TextStyle.Subtitle" Style="margin: 0 var(--tb-space-2)">Notes</TbText>
+        <TbSpacer />
+        <TbToggleGroup @bind-Value="_sort" AriaLabel="Sort notes" Size="Size.Small">
+            <TbToggleItem Value="@("Newest")">Newest</TbToggleItem>
+            <TbToggleItem Value="@("Oldest")">Oldest</TbToggleItem>
+        </TbToggleGroup>
+        <TbToolbarButton Text="Add a note" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Add a note")" />
+        <TbToolbarButton Text="Filter notes" Icon="ExampleIcons.Filter" OnClick="@(() => _last = "Filter notes")" />
+        <TbToolbarButton Text="Set an alert" Icon="ExampleIcons.Bell" OnClick="@(() => _last = "Set an alert")" />
+        <TbToolbarButton Text="Mark as done" Icon="ExampleIcons.Check" OnClick="@(() => _last = "Mark as done")" />
+        <TbToolbarButton Text="Delete note" Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete note")" />
+    </TbToolbar>
+</div>
+<TbText>Last action: @(_last ?? "none")</TbText>
+
+@code {
+    private string? _sort = "Newest";
+    private string? _last;
+}

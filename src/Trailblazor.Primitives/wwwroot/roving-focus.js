@@ -1,10 +1,15 @@
+// The arrow keys, Home and End move the caret in these, so they stay with the field.
+const textEntry = 'input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"]), '
+    + 'textarea, select, [contenteditable]:not([contenteditable="false"])';
+
 // One tab stop for a set of items: the current item has tabindex 0 and the rest -1, and the arrow keys, Home and End
-// move between the enabled items. `items` selects them, `vertical()` says which arrows move, and `preferred()`
-// names the item that takes the tab stop when focus hasn't been inside yet, such as the pressed one.
-export function createRovingFocus(container, { items, vertical = () => false, preferred = () => null }) {
+// move between the enabled items. `items` selects them and `filter` drops some, `vertical()` says which arrows move,
+// and `preferred()` names the item that takes the tab stop when focus hasn't been inside yet, such as the pressed one.
+export function createRovingFocus(container, { items, filter = () => true, vertical = () => false,
+    preferred = () => null }) {
     let current = null;
 
-    const all = () => [...container.querySelectorAll(items)];
+    const all = () => [...container.querySelectorAll(items)].filter(filter);
     const enabled = () => all().filter(item => !item.disabled && item.getAttribute('aria-disabled') !== 'true');
 
     const sync = () => {
@@ -29,7 +34,7 @@ export function createRovingFocus(container, { items, vertical = () => false, pr
     const onKeyDown = event => {
         const list = enabled();
         const index = list.indexOf(event.target);
-        if (index < 0 || event.altKey || event.ctrlKey || event.metaKey) {
+        if (index < 0 || event.altKey || event.ctrlKey || event.metaKey || event.target.matches(textEntry)) {
             return;
         }
 
@@ -65,6 +70,8 @@ export function createRovingFocus(container, { items, vertical = () => false, pr
     sync();
 
     return {
+        // Call after changing what `filter` lets through.
+        sync,
         dispose() {
             observer.disconnect();
             container.removeEventListener('keydown', onKeyDown);

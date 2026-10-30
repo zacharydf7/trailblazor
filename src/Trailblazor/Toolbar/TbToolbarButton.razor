@@ -1,0 +1,64 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+@* data-toolbar-item marks what the toolbar hides when the button moves into its overflow menu. *@
+@if (Icon is Icon icon)
+{
+    <TbTooltip Text="@Text" Placement="TooltipPlacement.Bottom" data-toolbar-item="@Id">
+        <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@Text" Variant="Variant"
+                      Disabled="Disabled" OnClick="OnClick" Class="@Class" Style="@Style" />
+    </TbTooltip>
+}
+else
+{
+    <TbButton @attributes="AdditionalAttributes" Variant="Variant" Disabled="Disabled" OnClick="OnClick"
+              data-toolbar-item="@Id" Class="@Class" Style="@Style">
+        @Text
+    </TbButton>
+}
+
+@code {
+    /// <summary>The button's text, which names it, shows in its tooltip when it has an <see cref="Icon"/>, and labels
+    /// its item in the overflow menu. Required.</summary>
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = "";
+
+    /// <summary>Shows only this icon, with <see cref="Text"/> in a tooltip, instead of the text.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>How strongly the button is drawn. Defaults to <see cref="Trailblazor.Variant.Text"/>.</summary>
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Text;
+
+    /// <summary>Turns the button, and its item in the overflow menu, off.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Raised when the button, or its item in the overflow menu, is chosen.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [CascadingParameter]
+    private TbToolbar? Toolbar { get; set; }
+
+    internal string Id { get; } = $"tb-toolbar-button-{Guid.NewGuid():N}";
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Toolbar?.Add(this);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Text))
+        {
+            throw new InvalidOperationException($"{nameof(TbToolbarButton)} needs a {nameof(Text)}.");
+        }
+
+        Toolbar?.Refresh(this);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Toolbar?.Remove(this);
+}

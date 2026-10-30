@@ -85,11 +85,13 @@ export function createTooltip(anchor, tooltip, options) {
     };
 }
 
-// Adds the tooltip's id to the trigger's description, unless it is already there.
+// Adds the tooltip's id to the trigger's description, unless it is already there or the tooltip only repeats the
+// trigger's name, which a screen reader would then read twice.
 function describe(anchor, tooltip) {
     const trigger = anchor.querySelector(focusableSelector) ?? anchor;
     const ids = describedBy(trigger);
-    if (!ids.includes(tooltip.id)) {
+    const repeatsName = trigger.getAttribute('aria-label')?.trim() === tooltip.textContent.trim();
+    if (!ids.includes(tooltip.id) && !repeatsName) {
         trigger.setAttribute('aria-describedby', [...ids, tooltip.id].join(' '));
     }
 

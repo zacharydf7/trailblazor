@@ -2726,6 +2726,36 @@
         }
     }
 
+    .tb-toolbar {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+        box-sizing: border-box;
+        min-inline-size: 0;
+        padding: var(--tb-space-1);
+        color: var(--tb-color-text);
+    }
+
+    /* Content keeps its size, so a toolbar too narrow for it overflows and moves buttons into its menu instead. */
+    .tb-toolbar > :not(.tb-spacer) {
+        flex-shrink: 0;
+    }
+
+    .tb-toolbar--vertical {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tb-toolbar [data-overflowed],
+    .tb-toolbar__overflow:not([data-shown]) {
+        display: none;
+    }
+
+    .tb-toolbar__overflow {
+        margin-inline-start: auto;
+    }
+
     .tb-tabs__list {
         display: flex;
         gap: var(--tb-space-1);

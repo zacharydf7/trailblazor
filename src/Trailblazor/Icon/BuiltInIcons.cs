@@ -24,6 +24,9 @@ internal static class BuiltInIcons
 
     public static Icon Plus { get; } = new("<path d=\"M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z\" />");
 
+    public static Icon More { get; } = new("<path d=\"M6 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 "
+        + "0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z\" />");
+
     public static Icon Move { get; } = new("<path d=\"M12 2 8.5 5.5 9.9 6.9 11 5.8V11H5.8l1.1-1.1-1.4-1.4L2 12l3.5 "
         + "3.5 1.4-1.4L5.8 13H11v5.2l-1.1-1.1-1.4 1.4L12 22l3.5-3.5-1.4-1.4-1.1 1.1V13h5.2l-1.1 1.1 1.4 1.4L22 12l-3.5"
         + "-3.5-1.4 1.4 1.1 1.1H13V5.8l1.1 1.1 1.4-1.4z\" />");

@@ -1,0 +1,45 @@
+@page "/toolbar"
+
+<TbToolbar AriaLabel="Search">
+    <TbToolbarButton Text="Back" />
+    @* Added after the toolbar's script attaches, so its own keys would be set up after the toolbar's. *@
+    @if (_showModes)
+    {
+        <TbToggleGroup @bind-Value="_mode" AriaLabel="Search in">
+            <TbToggleItem Value="@("Notes")">Notes</TbToggleItem>
+            <TbToggleItem Value="@("Photos")">Photos</TbToggleItem>
+        </TbToggleGroup>
+    }
+    <input aria-label="Search notes" value="trail" />
+    <TbToolbarButton Text="Go" />
+    @* The panel sits inside the toolbar, but the toolbar's keys skip it, so the group inside keeps its own. *@
+    <TbPopover Label="Units">
+        <TbToggleGroup @bind-Value="_units" AriaLabel="Distance units">
+            <TbToggleItem Value="@("Miles")">Miles</TbToggleItem>
+            <TbToggleItem Value="@("Kilometers")">Kilometers</TbToggleItem>
+        </TbToggleGroup>
+    </TbPopover>
+</TbToolbar>
+
+<TbToolbar AriaLabel="Tools" Vertical>
+    <TbToolbarButton Text="Pan" />
+    <TbToolbarButton Text="Zoom" />
+</TbToolbar>
+
+@* A toolbar of the page's own, which runs no toolbar script, so the group inside keeps its own keys. *@
+<div role="toolbar" aria-label="Plain">
+    <TbToggleGroup @bind-Value="_size" AriaLabel="Text size">
+        <TbToggleItem Value="@("Small")">Small</TbToggleItem>
+        <TbToggleItem Value="@("Large")">Large</TbToggleItem>
+    </TbToggleGroup>
+</div>
+
+<TbButton OnClick="() => _showModes = true">Show search modes</TbButton>
+<TbButton OnClick="@(() => _mode = "Notes")">Search in notes</TbButton>
+
+@code {
+    private bool _showModes;
+    private string? _mode = "Photos";
+    private string? _size = "Small";
+    private string? _units = "Miles";
+}

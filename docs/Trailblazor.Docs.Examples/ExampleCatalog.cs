@@ -217,6 +217,27 @@ public static class ExampleCatalog
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
                 + "`data-ready` attribute before testing the arrow keys.",
         },
+        new("toolbar", "Toolbar", ExampleCategory.Actions,
+            "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
+                + "its end.", typeof(ToolbarExample))
+        {
+            Api = [typeof(TbToolbar), typeof(TbToolbarButton)],
+            Accessibility =
+            [
+                "A `toolbar` named by its required `AriaLabel`, and one tab stop. Left and Right (Up and Down when "
+                    + "`Vertical`) move between every control in it, toggle group items included; Home and End go to "
+                    + "the first and last. A text field keeps its arrow keys.",
+                "A `TbToolbarButton` with an `Icon` is an icon button named by its `Text`, which its tooltip shows "
+                    + "too. A tooltip that repeats a button's name isn't read a second time as its description.",
+                "Toolbar buttons with no room move into the menu button named by `OverflowLabel` (\"More\"), where "
+                    + "each is a `menuitem` with the same text and action. Other content never moves.",
+            ],
+            Target = new("toolbar", "Trail notes"),
+            Blocks = ["tb-toolbar"],
+            TestingTip = "Find a toolbar button by its `Text`, as `GetByRole(AriaRole.Button, new() { Name = \"Add a "
+                + "note\" })`. To test the overflow, set the page's viewport narrow, wait for the toolbar's "
+                + "`data-ready`, open the menu button named \"More\" and choose the `menuitem`.",
+        },
         new("insert-divider", "Insert divider", ExampleCategory.Actions,
             "A line between two items that reveals an insert button on hover or focus, for adding an item in that "
                 + "place.", typeof(InsertDividerExample))
@@ -533,7 +554,8 @@ public static class ExampleCatalog
             [
                 "The tooltip describes its anchor: its text goes into the `aria-describedby` of the first "
                     + "focusable element inside. It's a description, not a name, so that element still needs a name of "
-                    + "its own.",
+                    + "its own. A tooltip that only repeats that element's `aria-label` isn't added, so it isn't read "
+                    + "twice.",
                 "It shows at once on focus and after a short delay on hover. Moving the pointer onto the tooltip "
                     + "keeps it open, and Escape hides it.",
             ],

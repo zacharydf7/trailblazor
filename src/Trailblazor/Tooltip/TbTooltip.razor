@@ -18,7 +18,8 @@
     private IJSObjectReference? _handle;
     private bool _disposed;
 
-    /// <summary>The tooltip's text. It also becomes the trigger's accessible description.</summary>
+    /// <summary>The tooltip's text. It also becomes the trigger's accessible description, unless it only repeats the
+    /// trigger's <c>aria-label</c>.</summary>
     [Parameter, EditorRequired]
     public string Text { get; set; } = "";
 
