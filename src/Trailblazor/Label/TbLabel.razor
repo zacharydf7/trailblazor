@@ -14,7 +14,7 @@
     @if (Info is not null || InfoContent is not null)
     {
         <TbPopover Label="@InfoButtonName" Icon="BuiltInIcons.Info" Variant="Variant.Text" Size="Size.Small"
-                   OpenOnHover Placement="PopoverPlacement.Top" data-part="info" class="tb-label__info">
+                   OpenOnHover Placement="Placement.Top" data-part="info" class="tb-label__info">
             @if (InfoContent is null)
             {
                 <div class="tb-label__info-text tb-label__info-text--lines">@Info</div>

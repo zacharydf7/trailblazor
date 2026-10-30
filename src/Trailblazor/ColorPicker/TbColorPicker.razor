@@ -47,7 +47,7 @@ else
             <TbIconButton Icon="BuiltInIcons.Eyedropper" AriaLabel="@Labels.Eyedropper" Size="Size.Small"
                           Disabled="Disabled" OnClick="PickFromScreenAsync" data-part="eyedropper" />
         }
-        <TbPopover Title="@Labels.Open" Align="PopoverAlign.End" class="tb-color-picker__popover">
+        <TbPopover Title="@Labels.Open" Align="PlacementAlign.End" class="tb-color-picker__popover">
             <Trigger>
                 <TbIconButton Icon="BuiltInIcons.Palette" AriaLabel="@Labels.Open" Size="Size.Small"
                               Disabled="Disabled" @attributes="context.Attributes" />

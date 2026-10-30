@@ -5,7 +5,7 @@
 @* data-toolbar-item marks what the toolbar hides when the button moves into its overflow menu. *@
 @if (Icon is Icon icon)
 {
-    <TbTooltip Text="@Text" Placement="TooltipPlacement.Bottom" data-toolbar-item="@Id">
+    <TbTooltip Text="@Text" Placement="Placement.Bottom" data-toolbar-item="@Id">
         <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@Text" Variant="Variant"
                       Disabled="Disabled" OnClick="OnClick" Class="@Class" Style="@Style" />
     </TbTooltip>

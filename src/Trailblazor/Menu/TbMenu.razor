@@ -57,14 +57,14 @@
     public Size Size { get; set; } = Size.Medium;
 
     /// <summary>Which side of the trigger the menu opens on, read on the first render. It flips to the other side
-    /// when there's no room. Defaults to <see cref="MenuPlacement.Bottom"/>.</summary>
+    /// when there's no room. Defaults to <see cref="Placement.Bottom"/>.</summary>
     [Parameter]
-    public MenuPlacement Placement { get; set; } = MenuPlacement.Bottom;
+    public Placement Placement { get; set; } = Placement.Bottom;
 
     /// <summary>How the menu lines up with the trigger along that side, read on the first render. Defaults to
-    /// <see cref="MenuAlign.Start"/>.</summary>
+    /// <see cref="PlacementAlign.Start"/>.</summary>
     [Parameter]
-    public MenuAlign Align { get; set; } = MenuAlign.Start;
+    public PlacementAlign Align { get; set; } = PlacementAlign.Start;
 
     /// <summary>Stretches the trigger across its container and makes the menu at least as wide as the trigger.
     /// </summary>
@@ -102,7 +102,10 @@
                 return;
             }
 
-            var options = new AnchoredPositionOptions { Side = Side, Align = Alignment, Offset = 4 };
+            var options = new AnchoredPositionOptions
+            {
+                Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 4,
+            };
             var handle = await module.InvokeAsync<IJSObjectReference?>("createMenu", _root, _menu, options);
             if (handle is null)
             {
@@ -122,21 +125,6 @@
             // The circuit is gone, and the menu went with it.
         }
     }
-
-    private AnchorSide Side => Placement switch
-    {
-        MenuPlacement.Top => AnchorSide.Top,
-        MenuPlacement.Start => AnchorSide.Start,
-        MenuPlacement.End => AnchorSide.End,
-        _ => AnchorSide.Bottom,
-    };
-
-    private AnchorAlign Alignment => Align switch
-    {
-        MenuAlign.Center => AnchorAlign.Center,
-        MenuAlign.End => AnchorAlign.End,
-        _ => AnchorAlign.Start,
-    };
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

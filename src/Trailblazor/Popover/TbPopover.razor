@@ -67,14 +67,14 @@
     public string? Title { get; set; }
 
     /// <summary>Which side of the trigger the panel opens on, read on the first render. It flips to the other side
-    /// when there's no room. Defaults to <see cref="PopoverPlacement.Bottom"/>.</summary>
+    /// when there's no room. Defaults to <see cref="Placement.Bottom"/>.</summary>
     [Parameter]
-    public PopoverPlacement Placement { get; set; } = PopoverPlacement.Bottom;
+    public Placement Placement { get; set; } = Placement.Bottom;
 
     /// <summary>How the panel lines up with the trigger along that side, read on the first render. Defaults to
-    /// <see cref="PopoverAlign.Start"/>.</summary>
+    /// <see cref="PlacementAlign.Start"/>.</summary>
     [Parameter]
-    public PopoverAlign Align { get; set; } = PopoverAlign.Start;
+    public PlacementAlign Align { get; set; } = PlacementAlign.Start;
 
     /// <summary>Also opens the panel when the pointer rests on the trigger, and closes it a moment after the pointer
     /// leaves both. Clicks and the keyboard still open it. Read on the first render.</summary>
@@ -163,7 +163,10 @@
 
         // Only a bound Open needs to hear about toggles, so an unbound popover costs no round trips.
         _reference = OpenChanged.HasDelegate ? DotNetObjectReference.Create(this) : null;
-        var options = new AnchoredPositionOptions { Side = Side, Align = Alignment, Offset = 8 };
+        var options = new AnchoredPositionOptions
+        {
+            Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 8,
+        };
         var handle = await module.InvokeAsync<IJSObjectReference?>("createPopover", _root, _panel, options,
             OpenOnHover, _reference);
         if (handle is null)
@@ -198,21 +201,6 @@
         _lastOpen = open;
         await OpenChanged.InvokeAsync(open);
     }
-
-    private AnchorSide Side => Placement switch
-    {
-        PopoverPlacement.Top => AnchorSide.Top,
-        PopoverPlacement.Start => AnchorSide.Start,
-        PopoverPlacement.End => AnchorSide.End,
-        _ => AnchorSide.Bottom,
-    };
-
-    private AnchorAlign Alignment => Align switch
-    {
-        PopoverAlign.Center => AnchorAlign.Center,
-        PopoverAlign.End => AnchorAlign.End,
-        _ => AnchorAlign.Start,
-    };
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

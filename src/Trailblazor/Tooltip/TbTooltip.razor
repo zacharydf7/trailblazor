@@ -26,7 +26,7 @@
     /// <summary>Which side of the trigger the tooltip appears on, read on the first render. It flips when there's no
     /// room.</summary>
     [Parameter]
-    public TooltipPlacement Placement { get; set; } = TooltipPlacement.Top;
+    public Placement Placement { get; set; } = Placement.Top;
 
     /// <summary>The element the tooltip describes, usually a button.</summary>
     [Parameter]
@@ -48,7 +48,7 @@
                 return;
             }
 
-            var options = new AnchoredPositionOptions { Side = Side, Offset = 6 };
+            var options = new AnchoredPositionOptions { Side = Anchors.Side(Placement), Offset = 6 };
             var handle = await module.InvokeAsync<IJSObjectReference?>("createTooltip", _anchor, _tooltip, options);
             if (handle is null)
             {
@@ -68,14 +68,6 @@
             // The circuit is gone, and the tooltip went with it.
         }
     }
-
-    private AnchorSide Side => Placement switch
-    {
-        TooltipPlacement.Bottom => AnchorSide.Bottom,
-        TooltipPlacement.Start => AnchorSide.Start,
-        TooltipPlacement.End => AnchorSide.End,
-        _ => AnchorSide.Top,
-    };
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

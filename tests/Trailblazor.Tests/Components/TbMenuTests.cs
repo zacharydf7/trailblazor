@@ -53,12 +53,12 @@ public class TbMenuTests : BunitContext
     }
 
     [Theory]
-    [InlineData(MenuPlacement.Bottom, MenuAlign.Start, "Bottom", "Start")]
-    [InlineData(MenuPlacement.Top, MenuAlign.Center, "Top", "Center")]
-    [InlineData(MenuPlacement.Start, MenuAlign.End, "Start", "End")]
-    [InlineData(MenuPlacement.End, MenuAlign.Start, "End", "Start")]
-    public void Render_ShouldSetUpTheMenuOnTheRequestedSide_WhenGivenAPlacementAndAlignment(MenuPlacement placement,
-        MenuAlign align, string side, string alignment)
+    [InlineData(Placement.Bottom, PlacementAlign.Start, "Bottom", "Start")]
+    [InlineData(Placement.Top, PlacementAlign.Center, "Top", "Center")]
+    [InlineData(Placement.Start, PlacementAlign.End, "Start", "End")]
+    [InlineData(Placement.End, PlacementAlign.Start, "End", "Start")]
+    public void Render_ShouldSetUpTheMenuOnTheRequestedSide_WhenGivenAPlacementAndAlignment(Placement placement,
+        PlacementAlign align, string side, string alignment)
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/menu.js");
         module.SetupModule("createMenu", _ => true);

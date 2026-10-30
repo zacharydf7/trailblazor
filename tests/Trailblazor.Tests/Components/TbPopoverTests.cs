@@ -1,5 +1,6 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Trailblazor.Primitives;
 
 namespace Trailblazor.Tests.Components;
 
@@ -58,6 +59,25 @@ public class TbPopoverTests : BunitContext
     public void Render_ShouldThrow_WhenThereIsNoLabelOrTrigger()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbPopover>());
+    }
+
+    [Theory]
+    [InlineData(Placement.Bottom, PlacementAlign.Start, "Bottom", "Start")]
+    [InlineData(Placement.Top, PlacementAlign.Center, "Top", "Center")]
+    [InlineData(Placement.Start, PlacementAlign.End, "Start", "End")]
+    [InlineData(Placement.End, PlacementAlign.Start, "End", "Start")]
+    public void Render_ShouldSetUpThePanelOnTheRequestedSide_WhenGivenAPlacementAndAlignment(Placement placement,
+        PlacementAlign align, string side, string alignment)
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/popover.js");
+        module.SetupModule("createPopover", _ => true);
+
+        Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.Placement, placement).Add(popover => popover.Align, align));
+
+        var options = Assert.IsType<AnchoredPositionOptions>(module.VerifyInvoke("createPopover").Arguments[2]);
+        Assert.Equal(side, options.Side.ToString());
+        Assert.Equal(alignment, options.Align.ToString());
     }
 
     [Fact]

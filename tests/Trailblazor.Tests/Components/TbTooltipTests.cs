@@ -26,11 +26,11 @@ public class TbTooltipTests : BunitContext
     }
 
     [Theory]
-    [InlineData(TooltipPlacement.Top, "Top")]
-    [InlineData(TooltipPlacement.Bottom, "Bottom")]
-    [InlineData(TooltipPlacement.Start, "Start")]
-    [InlineData(TooltipPlacement.End, "End")]
-    public void Render_ShouldSetUpTheTooltipOnTheRequestedSide_WhenGivenAPlacement(TooltipPlacement placement,
+    [InlineData(Placement.Top, "Top")]
+    [InlineData(Placement.Bottom, "Bottom")]
+    [InlineData(Placement.Start, "Start")]
+    [InlineData(Placement.End, "End")]
+    public void Render_ShouldSetUpTheTooltipOnTheRequestedSide_WhenGivenAPlacement(Placement placement,
         string side)
     {
         var module = JSInterop.SetupModule(Module);
