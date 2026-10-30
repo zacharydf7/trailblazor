@@ -31,7 +31,8 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     [Parameter]
     public string? Placeholder { get; set; }
 
-    /// <summary>Shows a button that clears the choice.</summary>
+    /// <summary>Shows a button that clears the choice. A single select bound to a value type, such as an enum, needs
+    /// its nullable form, since the type's default is one of its values.</summary>
     [Parameter]
     public bool Clearable { get; set; }
 

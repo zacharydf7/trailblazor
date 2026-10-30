@@ -399,6 +399,32 @@ public class TbSelectTests : BunitContext
         handle.VerifyInvoke("dispose");
     }
 
+    [Fact]
+    public void Render_ShouldThrow_WhenAClearableSelectsValueTypeIsNotNullable()
+    {
+        Assert.Throws<InvalidOperationException>(() => Render<TbSelect<DayOfWeek>>(parameters => parameters
+            .Add(select => select.Label, "Day").Add(select => select.Clearable, true)));
+    }
+
+    [Fact]
+    public void Click_ShouldClearToNull_WhenAClearableSelectHasANullableValueType()
+    {
+        DayOfWeek? day = DayOfWeek.Monday;
+        var cut = Render<TbSelect<DayOfWeek?>>(parameters => parameters
+            .Add(select => select.Label, "Day").Add(select => select.Clearable, true).Add(select => select.Value, day)
+            .Add(select => select.ValueChanged, (DayOfWeek? next) => day = next)
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<DayOfWeek>>(0);
+                builder.AddAttribute(1, nameof(TbOption<DayOfWeek>.Value), DayOfWeek.Monday);
+                builder.CloseComponent();
+            })));
+
+        cut.Find("[data-part=clear]").Click();
+
+        Assert.Null(day);
+    }
+
     // The script's setOpen reports the list open exactly when asked to open it.
     private BunitJSModuleInterop SetUpSetOpen(BunitJSModuleInterop? module = null)
     {
