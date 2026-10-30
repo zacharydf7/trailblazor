@@ -12,6 +12,15 @@
         <TbIconButton Icon="ExampleIcons.Filter" AriaLabel="Filters, some applied" />
     </TbBadge>
     <TbText>Type filters <TbBadge Count="2" Tone="Tone.Neutral" Label="2 filters" /></TbText>
+    <TbBadge Placement="BadgePlacement.BottomEnd" Overlap="BadgeOverlap.Circular" Tone="Tone.Success" Label="Online"
+             data-testid="avatar">
+        <span role="img" aria-label="Ana Ruiz" style="display: inline-grid; place-items: center; inline-size: 2.5rem;
+              block-size: 2.5rem; border-radius: 50%; background: var(--tb-color-neutral-subtle)">AR</span>
+    </TbBadge>
+    <TbBadge Count="1" Placement="BadgePlacement.TopStart" Offset="4px" data-testid="start">
+        <TbButton Variant="Variant.Outlined" aria-label="Drafts, 1 new">Drafts</TbButton>
+    </TbBadge>
+    <TbText>Errors <TbBadge Count="0" ShowZero Tone="Tone.Success" Label="No errors" /></TbText>
 </TbStack>
 
 @code {

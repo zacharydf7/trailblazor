@@ -2,14 +2,17 @@
 @inherits TbComponentBase
 @using System.Globalization
 
-<span @attributes="AdditionalAttributes" style="@Style"
+<span @attributes="AdditionalAttributes"
+      style="@Styles.Join(Offset is null ? null : $"--tb-badge-offset: {Offset}", Style)"
       class="@ClassNames.Join("tb-badge-host", ChildContent is null ? null : "tb-badge-host--overlap", Class)">
     @ChildContent
-    @if (Visible)
+    @if (Visible && (Count != 0 || ShowZero))
     {
         @* On a button, the button's own name says what the badge does, so screen readers needn't hear it twice. *@
         <span data-part="badge" aria-hidden="@(ChildContent is not null && Label is null ? "true" : null)"
               class="@ClassNames.Join("tb-badge", ClassNames.Modifier("tb-badge", Tone),
+                         ChildContent is null ? null : ClassNames.Modifier("tb-badge", "placement", Placement),
+                         ChildContent is null ? null : ClassNames.Modifier("tb-badge", Overlap),
                          Count is null ? "tb-badge--dot" : null)">
             @if (Count is int count)
             {
@@ -31,6 +34,10 @@
     [Parameter]
     public int? Count { get; set; }
 
+    /// <summary>Shows a count of 0, which is hidden by default since there is nothing new.</summary>
+    [Parameter]
+    public bool ShowZero { get; set; }
+
     /// <summary>The largest number shown; a larger count shows as this number and a plus sign. Defaults to 99.
     /// </summary>
     [Parameter]
@@ -50,7 +57,21 @@
     [Parameter]
     public bool Visible { get; set; } = true;
 
-    /// <summary>The icon or button the badge sits on, at its top corner. Without it, the badge sits in the text.
+    /// <summary>The corner of the content the badge sits on. Defaults to the top end corner.</summary>
+    [Parameter]
+    public BadgePlacement Placement { get; set; }
+
+    /// <summary>The shape of the content the badge sits on; a round avatar needs
+    /// <see cref="BadgeOverlap.Circular"/> to keep the badge on its edge.</summary>
+    [Parameter]
+    public BadgeOverlap Overlap { get; set; }
+
+    /// <summary>A CSS length, such as <c>4px</c>, that moves the badge in from its corner, or out with a negative
+    /// one.</summary>
+    [Parameter]
+    public string? Offset { get; set; }
+
+    /// <summary>The icon or button the badge sits on, at one of its corners. Without it, the badge sits in the text.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

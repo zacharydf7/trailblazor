@@ -35,6 +35,42 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Badge_ShouldSitOnTheChosenCorner_WhenPlacedAtTheTopStartOrOnACircle(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/badge");
+
+        // The badge's center, then where it should be: 4px in from the content's top start corner, or the point where
+        // a circle's edge meets the diagonal to its bottom end corner.
+        const string StartScript = """
+            host => {
+                const badge = host.querySelector('[data-part=badge]').getBoundingClientRect();
+                const content = host.firstElementChild.getBoundingClientRect();
+                const start = getComputedStyle(host).direction === 'rtl' ? content.right - 4 : content.left + 4;
+                return [badge.left + badge.width / 2, badge.top + badge.height / 2, start, content.top + 4];
+            }
+            """;
+        var start = await page.GetByTestId("start").EvaluateAsync<double[]>(StartScript);
+        var avatar = await page.GetByTestId("avatar").EvaluateAsync<double[]>("""
+            host => {
+                const badge = host.querySelector('[data-part=badge]').getBoundingClientRect();
+                const circle = host.firstElementChild.getBoundingClientRect();
+                const radius = circle.width / 2;
+                return [badge.left + badge.width / 2, badge.top + badge.height / 2,
+                    circle.left + radius + radius * Math.SQRT1_2, circle.top + radius + radius * Math.SQRT1_2];
+            }
+            """);
+
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        var startRtl = await page.GetByTestId("start").EvaluateAsync<double[]>(StartScript);
+
+        foreach (var corner in new[] { start, avatar, startRtl })
+        {
+            Assert.Equal(corner[2], corner[0], tolerance: 1);
+            Assert.Equal(corner[3], corner[1], tolerance: 1);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Badge_ShouldLetClicksReachTheButton_WhenThePointerIsOnTheBadge(string browser)
     {
         var page = await OpenAsync(browser, "/examples/badge");
@@ -81,6 +117,7 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
             await Expect(badge).ToHaveCSSAsync("border-top-style", "solid");
         }
 
-        await Expect(page.Locator(".tb-badge--dot")).ToHaveCSSAsync("background-color", text);
+        await Expect(Host(page, "Filters, some applied").Locator(".tb-badge--dot"))
+            .ToHaveCSSAsync("background-color", text);
     }
 }

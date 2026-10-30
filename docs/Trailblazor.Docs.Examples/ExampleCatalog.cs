@@ -402,6 +402,8 @@ public static class ExampleCatalog
                 "A badge in a line of text is read in its place. Give it a `Label`, such as \"3 unsaved changes\", "
                     + "which screen readers hear instead of the bare number; a dot with no `Label` isn't read out.",
                 "It takes no focus and never catches clicks, which reach the icon or button under it.",
+                "A count of 0 hides the badge, since there is nothing new; `ShowZero` shows it, such as for a "
+                    + "count of errors that reads well at zero.",
                 "In forced-colors mode, such as Windows high contrast, the badge keeps an outline and a dot keeps its "
                     + "fill.",
             ],

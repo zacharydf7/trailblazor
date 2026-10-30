@@ -77,4 +77,34 @@ public class TbBadgeTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=badge]"));
         Assert.Equal("Messages", cut.Find("button").TextContent);
     }
+
+    [Fact]
+    public void Render_ShouldHideTheBadge_WhenTheCountIsZero()
+    {
+        var cut = Render<TbBadge>(parameters => parameters.Add(badge => badge.Count, 0));
+
+        Assert.Empty(cut.FindAll("[data-part=badge]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowAZero_WhenAskedToShowZero()
+    {
+        var cut = Render<TbBadge>(parameters => parameters.Add(badge => badge.Count, 0)
+            .Add(badge => badge.ShowZero, true));
+
+        Assert.Equal("0", cut.Find("[data-part=badge]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldPlaceTheBadgeAndSetItsOffset_WhenItSitsOnContent()
+    {
+        var cut = Render<TbBadge>(parameters => parameters.Add(badge => badge.Placement, BadgePlacement.BottomStart)
+            .Add(badge => badge.Overlap, BadgeOverlap.Circular).Add(badge => badge.Offset, "4px")
+            .AddChildContent("<img alt=\"Ana\">"));
+
+        var badge = cut.Find("[data-part=badge]");
+        Assert.Contains("tb-badge--placement-bottomstart", badge.ClassList);
+        Assert.Contains("tb-badge--circular", badge.ClassList);
+        Assert.Equal("--tb-badge-offset: 4px", cut.Find(".tb-badge-host").GetAttribute("style"));
+    }
 }

@@ -11,6 +11,13 @@
     initial-value: 0px;
 }
 
+/* Registered as a length so a bare 0 offset still adds to the circle's percentage inset. */
+@property --tb-badge-offset {
+    syntax: "<length-percentage>";
+    inherits: true;
+    initial-value: 0px;
+}
+
 /* Unlayered consumer CSS beats every rule in these layers, whatever its specificity. */
 @layer tb.reset, tb.tokens, tb.themes, tb.components, tb.utilities;
 
@@ -824,18 +831,52 @@
         padding: 0;
     }
 
-    /* On an icon or button, the badge straddles the top end corner, ringed in the surface color to stand apart. */
+    /* On an icon or button, the badge straddles a corner, ringed in the surface color to stand apart. The x and y
+       signs say which way it hangs over, and the reading direction flips x. */
     .tb-badge-host--overlap > .tb-badge {
+        --tb-badge-inset: var(--tb-badge-offset);
+        --tb-badge-direction: 1;
         position: absolute;
-        inset-block-start: 0;
-        inset-inline-end: 0;
-        translate: 50% -50%;
+        translate: calc(var(--tb-badge-x) * var(--tb-badge-direction) * 50%) calc(var(--tb-badge-y) * 50%);
         box-shadow: 0 0 0 2px var(--tb-color-surface);
         pointer-events: none;
     }
 
     .tb-badge-host--overlap > .tb-badge:dir(rtl) {
-        translate: -50% -50%;
+        --tb-badge-direction: -1;
+    }
+
+    /* A circle's edge crosses the diagonal 14.6% in from each side of its box. */
+    .tb-badge-host--overlap > .tb-badge--circular {
+        --tb-badge-inset: calc(14.6% + var(--tb-badge-offset));
+    }
+
+    .tb-badge--placement-topend {
+        --tb-badge-x: 1;
+        --tb-badge-y: -1;
+        inset-block-start: var(--tb-badge-inset);
+        inset-inline-end: var(--tb-badge-inset);
+    }
+
+    .tb-badge--placement-topstart {
+        --tb-badge-x: -1;
+        --tb-badge-y: -1;
+        inset-block-start: var(--tb-badge-inset);
+        inset-inline-start: var(--tb-badge-inset);
+    }
+
+    .tb-badge--placement-bottomend {
+        --tb-badge-x: 1;
+        --tb-badge-y: 1;
+        inset-block-end: var(--tb-badge-inset);
+        inset-inline-end: var(--tb-badge-inset);
+    }
+
+    .tb-badge--placement-bottomstart {
+        --tb-badge-x: -1;
+        --tb-badge-y: 1;
+        inset-block-end: var(--tb-badge-inset);
+        inset-inline-start: var(--tb-badge-inset);
     }
 
     .tb-badge--primary {
