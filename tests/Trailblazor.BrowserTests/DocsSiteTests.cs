@@ -21,7 +21,10 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     public static TheoryData<string, string, string> PagesInBothThemes => new(
         from browser in AllBrowsers.Names
-        from path in new[] { "", "components/dialog", "guides/getting-started", "search?q=dialog", "roadmap" }
+        from path in new[]
+        {
+            "", "components/dialog", "guides/getting-started", "guides/palettes", "search?q=dialog", "roadmap",
+        }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
@@ -279,6 +282,30 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Empty(result.Violations.Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Theming_ShouldNameEveryPalette_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/theming");
+
+        var text = await page.Locator(".docs-main").InnerTextAsync();
+
+        Assert.All(PaletteCatalog.All,
+            palette => Assert.Contains(palette.Name, text, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Palettes_ShouldShowEachRampsStepsInItsColor_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/palettes");
+
+        var teal = page.GetByRole(AriaRole.Region, new() { Name = "teal ramp" }).GetByRole(AriaRole.Listitem);
+        await Expect(teal).ToHaveTextAsync(["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"]);
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "graphite ramp" }).GetByRole(AriaRole.Listitem))
+            .ToHaveCountAsync(15);
+        await Expect(teal.Nth(6).Locator(".docs-ramp__swatch")).Not.ToHaveCSSAsync("background-color",
+            "rgba(0, 0, 0, 0)");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

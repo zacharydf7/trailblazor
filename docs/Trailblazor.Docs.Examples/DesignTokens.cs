@@ -23,6 +23,12 @@ public static partial class DesignTokens
             .Where(Theme.Value.Contains).Distinct().Order(StringComparer.Ordinal)];
     }
 
+    // The reference tier's tonal ramps, such as --tb-gray-50 to --tb-gray-950, in the stylesheet's order.
+    public static IReadOnlyList<(string Name, IReadOnlyList<string> Tokens)> Ramps() =>
+        [.. Rules.Value.SelectMany(rule => RampStep().Matches(rule.Body))
+            .GroupBy(match => match.Groups[2].Value, match => match.Groups[1].Value)
+            .Select(ramp => (ramp.Key, (IReadOnlyList<string>)[.. ramp]))];
+
     // Each innermost block is one rule; a block that holds others, such as a layer or media query, has no tokens.
     private static IReadOnlyList<(string, string)> LoadRules()
     {
@@ -38,6 +44,9 @@ public static partial class DesignTokens
 
     [GeneratedRegex(@"([^{}]+)\{([^{}]*)\}")]
     private static partial Regex Rule();
+
+    [GeneratedRegex(@"(--tb-([a-z]+)-\d+)\s*:\s*oklch\(")]
+    private static partial Regex RampStep();
 
     [GeneratedRegex(@"var\(\s*(--tb-[\w-]+)")]
     private static partial Regex Used();

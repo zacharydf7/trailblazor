@@ -1,4 +1,5 @@
 @page "/guides/theming"
+@using Trailblazor.Docs.Examples
 
 <PageTitle>Theming · Trailblazor</PageTitle>
 
@@ -19,8 +20,11 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Palettes</TbText>
 <TbText>
     A palette sets the colors for both light and dark. Graphite, a near-monochrome look with ink-colored primary
-    actions, is the default; Cobalt has blue primary actions. Choose one with <code>data-tb-palette</code>. Like the
-    theme, it works on <code>&lt;html&gt;</code> or on any element, and then applies to everything inside it.
+    actions, is the default. The others are
+    @string.Join(", ", PaletteCatalog.All.Skip(1).Select(palette => palette.Name)), and the
+    <a href="guides/palettes">palette gallery</a> shows each one on real components. Choose one with
+    <code>data-tb-palette</code>. Like the theme, it works on <code>&lt;html&gt;</code> or on any element, and then
+    applies to everything inside it.
 </TbText>
 <CodeBlock Label="Palette attribute" Code="@Palette" />
 

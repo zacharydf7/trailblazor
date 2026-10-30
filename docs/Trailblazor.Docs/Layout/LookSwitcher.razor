@@ -1,3 +1,4 @@
+@using Trailblazor.Docs.Examples
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
@@ -8,8 +9,10 @@
         <TbOption Value="@("dark")">Dark</TbOption>
     </TbSelect>
     <TbSelect Label="Palette" @bind-Value="_palette" @bind-Value:after="ApplyPaletteAsync">
-        <TbOption Value="@("graphite")">Graphite</TbOption>
-        <TbOption Value="@("cobalt")">Cobalt</TbOption>
+        @foreach (var palette in PaletteCatalog.All)
+        {
+            <TbOption Value="@palette.Name">@palette.Title</TbOption>
+        }
     </TbSelect>
 </TbStack>
 

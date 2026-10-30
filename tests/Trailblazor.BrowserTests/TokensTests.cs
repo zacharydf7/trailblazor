@@ -1,10 +1,13 @@
+using System.Text.RegularExpressions;
+using Trailblazor.Docs.Examples;
+
 namespace Trailblazor.BrowserTests;
 
 public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     private static readonly string[] Tones = ["primary", "neutral", "success", "warning", "danger", "info"];
 
-    private static readonly string[] Palettes = ["graphite", "cobalt"];
+    private static readonly string[] Palettes = [.. PaletteCatalog.All.Select(palette => palette.Name)];
 
     // Reads a color token on a probe inside <main> as its sRGB channels, 0 to 255.
     private const string ChannelsScript = """
@@ -25,6 +28,11 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         from palette in Palettes
         from theme in new[] { "light", "dark" }
         select (browser, palette, theme));
+
+    public static TheoryData<string, string> BrowsersAndThemes => new(
+        from browser in AllBrowsers.Names
+        from theme in new[] { "light", "dark" }
+        select (browser, theme));
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tokens_ShouldUseLightColors_WhenNoThemeIsSetAndSystemPrefersDark(string browser)
@@ -158,6 +166,50 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(blue - red > 80, $"Primary should be blue, not rgb with red {red} and blue {blue}.");
     }
 
+    [Fact]
+    public async Task PaletteCatalog_ShouldListEveryPaletteInTheStylesheet_WhenCalled()
+    {
+        using var client = new HttpClient { BaseAddress = Fixture.BaseAddress };
+
+        var css = await client.GetStringAsync("_content/Trailblazor/trailblazor.css",
+            TestContext.Current.CancellationToken);
+
+        var declared = Regex.Matches(css, "data-tb-palette=\"([a-z]+)\"").Select(match => match.Groups[1].Value);
+        Assert.Equal(declared.Distinct().Order(), Palettes.Order());
+    }
+
+    [Theory, MemberData(nameof(BrowsersAndThemes))]
+    public async Task Palettes_ShouldKeepPrimaryApartFromTheStatusColors_WhenTheirPrimaryIsColored(string browser,
+        string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+        await SetThemeAsync(page, theme);
+
+        var failures = new List<string>();
+        foreach (var palette in Palettes)
+        {
+            await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+            var (chroma, hue) = ToChromaAndHue(await GetChannelsAsync(page, "--tb-color-primary"));
+            // An ink primary has no hue to mistake for a status color.
+            if (chroma < 0.04)
+            {
+                continue;
+            }
+
+            foreach (var tone in new[] { "success", "warning", "danger", "info" })
+            {
+                var (_, toneHue) = ToChromaAndHue(await GetChannelsAsync(page, $"--tb-color-{tone}"));
+                var apart = Math.Abs(hue - toneHue) is var gap && gap > 180 ? 360 - gap : gap;
+                if (apart < 20)
+                {
+                    failures.Add($"{palette} primary is {apart:F0} degrees from {tone}");
+                }
+            }
+        }
+
+        Assert.Empty(failures);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ConsumerCss_ShouldOverrideToken_WhenUnlayeredRuleHasLowerSpecificity(string browser)
     {
@@ -206,6 +258,18 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var value = channel / 255.0;
         return value <= 0.04045 ? value / 12.92 : Math.Pow((value + 0.055) / 1.055, 2.4);
+    }
+
+    // OKLCH chroma and hue, in degrees, of an sRGB color, by way of OKLab.
+    private static (double Chroma, double Hue) ToChromaAndHue((int Red, int Green, int Blue) color)
+    {
+        var (red, green, blue) = (Linear(color.Red), Linear(color.Green), Linear(color.Blue));
+        var l = Math.Cbrt(0.4122214708 * red + 0.5363325363 * green + 0.0514459929 * blue);
+        var m = Math.Cbrt(0.2119034982 * red + 0.6806995451 * green + 0.1073969566 * blue);
+        var s = Math.Cbrt(0.0883024619 * red + 0.2817188376 * green + 0.6299787005 * blue);
+        var a = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
+        var b = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
+        return (Math.Sqrt(a * a + b * b), (Math.Atan2(b, a) * 180 / Math.PI + 360) % 360);
     }
 
     private static async Task<(int Red, int Green, int Blue)> GetChannelsAsync(IPage page, string token)
