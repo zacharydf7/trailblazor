@@ -1,0 +1,101 @@
+@page "/browser"
+@using System.Text
+@implements IAsyncDisposable
+@inject IBrowserService Browser
+
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Wrap>
+        <TbButton OnClick="CopyAsync">Copy</TbButton>
+        <TbButton OnClick="DownloadAsync">Download</TbButton>
+        <TbButton OnClick="SaveAsync">Save</TbButton>
+        <TbButton OnClick="PickColorAsync">Pick a color</TbButton>
+        <TbButton OnClick="ScrollAsync">Scroll to the end</TbButton>
+        <TbButton OnClick="StopAsync">Stop observing</TbButton>
+    </TbStack>
+    <textarea aria-label="Paste here"></textarea>
+    <output data-testid="result">@_result</output>
+    <output data-testid="viewport">@_viewport</output>
+    <output data-testid="viewport-control">@_viewportControl</output>
+    <output data-testid="breakpoint">@_breakpoint</output>
+    <output data-testid="breakpoint-reports">@_breakpointReports</output>
+    <div style="block-size: 300vh"></div>
+    <p @ref="_end">The end</p>
+</TbStack>
+
+@code {
+    private const string Notes = "Pack water and a map.";
+    private ElementReference _end;
+    private IAsyncDisposable? _viewportObservation;
+    private IAsyncDisposable? _breakpointObservation;
+    private string _result = "";
+    private string _viewport = "";
+    // Never stopped, so a test can tell when the stopped observer would have reported.
+    private string _viewportControl = "";
+    private Breakpoint? _breakpoint;
+    private int _breakpointReports;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _viewportObservation = await Browser.ObserveViewportAsync(viewport =>
+            {
+                _viewport = $"{viewport.Width}x{viewport.Height} {viewport.Breakpoint}";
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+            await Browser.ObserveViewportAsync(viewport =>
+            {
+                _viewportControl = $"{viewport.Width}x{viewport.Height}";
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+            _breakpointObservation = await Browser.ObserveBreakpointAsync(breakpoint =>
+            {
+                _breakpoint = breakpoint;
+                _breakpointReports++;
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+        }
+    }
+
+    private async Task CopyAsync() => _result = $"copied {await Browser.CopyTextAsync(Notes)}";
+
+    private async Task DownloadAsync()
+    {
+        using var content = new MemoryStream(Encoding.UTF8.GetBytes(Notes));
+        await Browser.DownloadAsync(content, "notes.txt", "text/plain");
+        _result = "downloaded";
+    }
+
+    private async Task SaveAsync()
+    {
+        using var content = new MemoryStream(Encoding.UTF8.GetBytes(Notes));
+        _result = $"saved {await Browser.SaveAsync(content, "notes.txt", "text/plain")}";
+    }
+
+    private async Task PickColorAsync() =>
+        _result = $"can pick {await Browser.CanPickColorAsync()}, picked {await Browser.PickColorAsync() ?? "nothing"}";
+
+    private Task ScrollAsync() => Browser.ScrollIntoViewAsync(_end, ScrollAlignment.End);
+
+    private async Task StopAsync()
+    {
+        await DisposeAsync();
+        _result = "stopped";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_viewportObservation is not null)
+        {
+            await _viewportObservation.DisposeAsync();
+        }
+
+        if (_breakpointObservation is not null)
+        {
+            await _breakpointObservation.DisposeAsync();
+        }
+    }
+}

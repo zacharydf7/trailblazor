@@ -1,0 +1,271 @@
+@page "/guides/browser"
+@using System.Text
+@implements IAsyncDisposable
+@inject IBrowserService Browser
+@inject IToastService Toasts
+
+<PageTitle>Browser · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Browser</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    <code>IBrowserService</code> reaches browser features from C#: the clipboard, downloads and saves, the eyedropper,
+    scrolling, and the viewport's size. <code>AddTrailblazor()</code> registers it, so inject it where you need it.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try it</TbText>
+<div class="docs-example">
+    <TbStack Gap="3">
+        <TbStack Row Gap="2" Wrap>
+            <TbButton OnClick="CopyAsync">Copy the link</TbButton>
+            <TbButton Variant="Variant.Outlined" OnClick="DownloadAsync">Download the list</TbButton>
+            <TbButton Variant="Variant.Outlined" OnClick="SaveAsync">Save the list</TbButton>
+            @if (_canPickColor)
+            {
+                <TbButton Variant="Variant.Outlined" OnClick="PickColorAsync">Pick a color</TbButton>
+            }
+        </TbStack>
+        @if (_color is not null)
+        {
+            <TbText>You picked <code>@_color</code>.</TbText>
+        }
+        <TbText>@_viewport</TbText>
+    </TbStack>
+</div>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Clipboard</TbText>
+<TbText>
+    <code>CopyTextAsync</code> returns whether the text was copied. Browsers allow it only on a secure page and soon
+    after the user acts, so call it from a click handler. It is silent, so tell the user how it went.
+</TbText>
+<CodeBlock Label="Copying" Code="@Copy" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Downloads and saves</TbText>
+<TbText>
+    <code>DownloadAsync</code> downloads a stream as a file. <code>SaveAsync</code> opens the save dialog, so the user
+    chooses the folder and name, in browsers that have one, and downloads elsewhere. It returns false when the user
+    cancels. Neither closes the stream.
+</TbText>
+<CodeBlock Label="Downloading and saving" Code="@Save" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Eyedropper</TbText>
+<TbText>
+    <code>PickColorAsync</code> lets the user pick a color from anywhere on the screen and returns it as
+    <code>#rrggbb</code>, or null when they cancel. Only some browsers have an eyedropper, so check
+    <code>CanPickColorAsync</code> before offering it, and always let the color be typed too: the eyedropper is made
+    for a pointer.
+</TbText>
+<CodeBlock Label="Picking a color" Code="@Pick" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Scrolling</TbText>
+<TbText>
+    <code>ScrollIntoViewAsync</code> scrolls an element into view, as little as needed unless you pass a
+    <code>ScrollAlignment</code>. A smooth scroll jumps instead for users who ask for reduced motion. Scrolling
+    doesn't move focus; call <code>FocusAsync</code> on the element when the user should land there.
+</TbText>
+<CodeBlock Label="Scrolling" Code="@Scroll" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Viewport and breakpoints</TbText>
+<TbText>
+    <code>GetViewportAsync</code> gives the viewport's size and its <code>Breakpoint</code>: <code>Xs</code> below
+    640px, then <code>Sm</code>, <code>Md</code>, <code>Lg</code> and <code>Xl</code> from the
+    <code>--tb-breakpoint-*</code> tokens. <code>ObserveBreakpointAsync</code> calls back with the breakpoint now
+    and each time it changes, and <code>ObserveViewportAsync</code> does the same with the size once resizing pauses.
+    Dispose the result to stop. Prefer CSS media queries for layout, and these for when the markup itself must
+    change, such as a table that becomes a list of cards.
+</TbText>
+<CodeBlock Label="Following the breakpoint" Code="@Observe" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">When to call it</TbText>
+<TbText>
+    The service talks to the browser, so it works once the page is interactive: in an event handler or in
+    <code>OnAfterRenderAsync</code>, not while the page prerenders or renders as static SSR.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
+<TbText>
+    In bUnit, <code>this.AddTrailblazor()</code> from <code>Trailblazor.Testing</code> registers a
+    <code>FakeBrowserService</code>. Get it from <code>Services</code> to check what a component copied, downloaded,
+    saved or scrolled to, and to set what the browser answers, such as the color the user picks or the viewport's size.
+    Register your own <code>IBrowserService</code> first to use a mock instead.
+</TbText>
+<CodeBlock Label="A bUnit test" Code="@Test" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>
+<ApiTable Type="typeof(IBrowserService)" />
+
+@code {
+    private const string Csv = "Item,Packed\nWater,yes\nMap,no\n";
+    private IAsyncDisposable? _observation;
+    private bool _canPickColor;
+    private string? _color;
+    private string _viewport = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _canPickColor = await Browser.CanPickColorAsync();
+            StateHasChanged();
+            _observation = await Browser.ObserveViewportAsync(viewport =>
+            {
+                _viewport = $"Your window is {viewport.Width} by {viewport.Height} pixels, which is breakpoint "
+                    + $"{viewport.Breakpoint}.";
+                StateHasChanged();
+                return Task.CompletedTask;
+            });
+        }
+    }
+
+    private async Task CopyAsync()
+    {
+        var copied = await Browser.CopyTextAsync("https://example.com/trails/ridge-loop");
+        Toasts.Show(copied ? "Link copied" : "Couldn't copy the link", copied ? Tone.Success : Tone.Danger);
+    }
+
+    private async Task DownloadAsync()
+    {
+        using var content = new MemoryStream(Encoding.UTF8.GetBytes(Csv));
+        await Browser.DownloadAsync(content, "packing-list.csv", "text/csv");
+    }
+
+    private async Task SaveAsync()
+    {
+        using var content = new MemoryStream(Encoding.UTF8.GetBytes(Csv));
+        if (await Browser.SaveAsync(content, "packing-list.csv", "text/csv"))
+        {
+            Toasts.Show("List saved", Tone.Success);
+        }
+    }
+
+    private async Task PickColorAsync() => _color = await Browser.PickColorAsync() ?? _color;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_observation is not null)
+        {
+            await _observation.DisposeAsync();
+        }
+    }
+
+    private const string Copy = """
+        @inject IBrowserService Browser
+        @inject IToastService Toasts
+
+        <TbButton OnClick="CopyAsync">Copy the link</TbButton>
+
+        @code {
+            private async Task CopyAsync()
+            {
+                var copied = await Browser.CopyTextAsync(link);
+                Toasts.Show(copied ? "Link copied" : "Couldn't copy the link", copied ? Tone.Success : Tone.Danger);
+            }
+        }
+        """;
+
+    private const string Save = """
+        using var content = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+        await Browser.DownloadAsync(content, "packing-list.csv", "text/csv");
+
+        content.Position = 0;
+        if (await Browser.SaveAsync(content, "packing-list.csv", "text/csv"))
+        {
+            Toasts.Show("List saved", Tone.Success);
+        }
+        """;
+
+    private const string Pick = """
+        @if (canPickColor)
+        {
+            <TbButton OnClick="PickAsync">Pick a color</TbButton>
+        }
+
+        @code {
+            private bool canPickColor;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    canPickColor = await Browser.CanPickColorAsync();
+                    StateHasChanged();
+                }
+            }
+
+            private async Task PickAsync() => color = await Browser.PickColorAsync() ?? color;
+        }
+        """;
+
+    private const string Scroll = """
+        <li @ref="newest">...</li>
+
+        await Browser.ScrollIntoViewAsync(newest, ScrollAlignment.End, smooth: true);
+        """;
+
+    private const string Observe = """
+        @implements IAsyncDisposable
+
+        @if (breakpoint >= Breakpoint.Md)
+        {
+            <TripTable Trips="trips" />
+        }
+        else
+        {
+            <TripCards Trips="trips" />
+        }
+
+        @code {
+            private Breakpoint breakpoint;
+            private IAsyncDisposable? observation;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    observation = await Browser.ObserveBreakpointAsync(changed =>
+                    {
+                        breakpoint = changed;
+                        StateHasChanged();
+                        return Task.CompletedTask;
+                    });
+                }
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                if (observation is not null)
+                {
+                    await observation.DisposeAsync();
+                }
+            }
+        }
+        """;
+
+    private const string Test = """
+        public class TripPageTests : BunitContext
+        {
+            public TripPageTests() => this.AddTrailblazor();
+
+            private FakeBrowserService Browser => Services.GetRequiredService<FakeBrowserService>();
+
+            [Fact]
+            public void CopyLink_ShouldCopyTheTripsLink_WhenClicked()
+            {
+                var page = Render<TripPage>();
+
+                page.Find("button").Click();
+
+                Assert.Equal(["https://example.com/trails/ridge-loop"], Browser.Copied);
+            }
+
+            [Fact]
+            public async Task Render_ShouldShowCards_WhenTheViewportIsNarrow()
+            {
+                var page = Render<TripPage>();
+
+                await page.InvokeAsync(() => Browser.ResizeAsync(400, 800));
+
+                Assert.NotEmpty(page.FindAll(".trip-card"));
+            }
+        }
+        """;
+}

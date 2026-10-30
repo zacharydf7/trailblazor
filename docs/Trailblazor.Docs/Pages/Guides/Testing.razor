@@ -12,7 +12,9 @@
 <TbText>
     Reference <code>Trailblazor.Testing</code> and call <code>this.AddTrailblazor()</code> in the test class, before
     anything renders. It registers Trailblazor's services and answers its JavaScript calls, so components render and
-    respond to clicks with no JSInterop setup. A call you set up yourself still wins.
+    respond to clicks with no JSInterop setup. A call you set up yourself still wins. The browser service is a
+    <code>FakeBrowserService</code> that records what was copied, downloaded and saved; the
+    <a href="guides/browser">browser guide</a> shows it.
 </TbText>
 <CodeBlock Label="A bUnit test" Code="@Bunit" />
 

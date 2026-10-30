@@ -8,7 +8,8 @@ namespace Trailblazor.Docs.Examples;
 
 public sealed record ApiMember(string Name, string Type, string Default, string Description, bool Required);
 
-public sealed record ApiType(string Name, string Summary, IReadOnlyList<ApiMember> Members);
+// A service's members are its methods, whose Type is what they return.
+public sealed record ApiType(string Name, string Summary, IReadOnlyList<ApiMember> Members, bool Methods = false);
 
 // Builds the docs site's API tables from the library's types and its XML documentation.
 public static partial class ApiDocs
@@ -26,9 +27,15 @@ public static partial class ApiDocs
     };
 
     // A component lists its parameters, apart from Class, Style and attributes, which every component takes; an
-    // options type lists the properties a caller sets.
+    // options type lists the properties a caller sets; a service interface lists its methods.
     public static ApiType Describe(Type type)
     {
+        if (type.IsInterface)
+        {
+            return new(TypeName(type), Summary($"T:{type.FullName}"),
+                [.. type.GetMethods().OrderBy(method => method.MetadataToken).Select(Method)], Methods: true);
+        }
+
         var component = type.IsAssignableTo(typeof(IComponent));
         var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(property => component
@@ -43,18 +50,37 @@ public static partial class ApiDocs
 
     private static ApiMember Member(PropertyInfo property, object defaults)
     {
-        var nullable = new NullabilityInfoContext().Create(property).ReadState == NullabilityState.Nullable;
-        var type = TypeName(property.PropertyType);
-        if (nullable && !type.EndsWith('?'))
-        {
-            type += "?";
-        }
-
+        var type = TypeName(property.PropertyType, new NullabilityInfoContext().Create(property));
         // A generic component's defaults come from its instance made with object, so read through that type.
         var value = defaults.GetType().GetProperty(property.Name)!.GetValue(defaults);
         return new(property.Name, type, FormatDefault(value), Summary(property),
             property.IsDefined(typeof(EditorRequiredAttribute)));
     }
+
+    private static ApiMember Method(MethodInfo method)
+    {
+        var context = new NullabilityInfoContext();
+        var parameters = method.GetParameters();
+        var signature = string.Join(", ", parameters.Select(parameter => Parameter(parameter, context)));
+        var types = parameters.Length == 0 ? ""
+            : $"({string.Join(',', parameters.Select(parameter => DocId(parameter.ParameterType)))})";
+        return new($"{method.Name}({signature})", TypeName(method.ReturnType, context.Create(method.ReturnParameter)),
+            "", Summary($"M:{DocId(method.DeclaringType!)}.{method.Name}{types}"), false);
+    }
+
+    private static string Parameter(ParameterInfo parameter, NullabilityInfoContext context)
+    {
+        var text = $"{TypeName(parameter.ParameterType, context.Create(parameter))} {parameter.Name}";
+        return parameter.HasDefaultValue
+            ? $"{text} = {(parameter.DefaultValue is null ? "null" : FormatDefault(parameter.DefaultValue))}"
+            : text;
+    }
+
+    // The type as the XML documentation names it, with any type arguments in braces.
+    private static string DocId(Type type) => type.IsGenericType
+        ? $"{type.Namespace}.{type.Name[..type.Name.IndexOf('`')]}{{{string.Join(',', type.GetGenericArguments()
+            .Select(DocId))}}}"
+        : type.FullName!.Replace('+', '.');
 
     // Bases come first, so a field lists its value and label before the parameters of its own kind.
     private static int Depth(Type type) => type.BaseType is null ? 0 : 1 + Depth(type.BaseType);
@@ -79,25 +105,29 @@ public static partial class ApiDocs
         _ => "",
     };
 
-    public static string TypeName(Type type)
+    // With nullability, a reference type marked nullable gets a ?, here or in a type argument.
+    public static string TypeName(Type type, NullabilityInfo? nullability = null)
     {
         if (Nullable.GetUnderlyingType(type) is { } underlying)
         {
             return $"{TypeName(underlying)}?";
         }
 
+        var mark = nullability?.ReadState == NullabilityState.Nullable ? "?" : "";
         if (Aliases.TryGetValue(type, out var alias))
         {
-            return alias;
+            return alias + mark;
         }
 
         if (!type.IsGenericType)
         {
-            return type.Name;
+            return type.Name + mark;
         }
 
         var name = type.Name[..type.Name.IndexOf('`')];
-        return $"{name}<{string.Join(", ", type.GetGenericArguments().Select(TypeName))}>";
+        var arguments = type.GetGenericArguments().Select((argument, index) =>
+            TypeName(argument, nullability?.GenericTypeArguments[index]));
+        return $"{name}<{string.Join(", ", arguments)}>{mark}";
     }
 
     private static string Summary(PropertyInfo property)

@@ -18,6 +18,18 @@ public class TrailblazorServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void AddTrailblazor_ShouldRegisterTheBrowserServiceAsScoped_WhenCalled()
+    {
+        var services = new ServiceCollection();
+
+        services.AddTrailblazor();
+
+        var descriptor = Assert.Single(services, d => d.ServiceType == typeof(IBrowserService));
+        Assert.Equal((ServiceLifetime.Scoped, typeof(BrowserService)),
+            (descriptor.Lifetime, descriptor.ImplementationType));
+    }
+
+    [Fact]
     public void AddTrailblazor_ShouldRegisterServicesOnce_WhenCalledTwice()
     {
         var services = new ServiceCollection();

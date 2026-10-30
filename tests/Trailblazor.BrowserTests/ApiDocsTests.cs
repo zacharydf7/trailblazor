@@ -62,6 +62,27 @@ public class ApiDocsTests
     }
 
     [Fact]
+    public void Describe_ShouldListEachMethodWithItsSignatureAndDescription_WhenGivenAServiceInterface()
+    {
+        var api = ApiDocs.Describe(typeof(IBrowserService));
+
+        Assert.True(api.Methods);
+        Assert.NotEmpty(api.Summary);
+        Assert.All(api.Members, member => Assert.NotEmpty(member.Description));
+        Assert.Contains(api.Members, member => member is
+        {
+            Name: "SaveAsync(Stream content, string fileName, string? contentType = null)", Type: "Task<bool>",
+        });
+        Assert.Contains(api.Members, member => member is { Name: "PickColorAsync()", Type: "Task<string?>" });
+        Assert.Contains(api.Members, member => member.Name == "ScrollIntoViewAsync(ElementReference element, "
+            + "ScrollAlignment alignment = ScrollAlignment.Nearest, bool smooth = false)");
+        Assert.Contains(api.Members, member => member is
+        {
+            Name: "ObserveViewportAsync(Func<Viewport, Task> onChange)", Type: "Task<IAsyncDisposable>",
+        });
+    }
+
+    [Fact]
     public void Describe_ShouldWriteACrossReferenceAsItsShortName_WhenASummaryHasOne()
     {
         var size = ApiDocs.Describe(typeof(DialogOptions)).Members.Single(member => member.Name == "Size");

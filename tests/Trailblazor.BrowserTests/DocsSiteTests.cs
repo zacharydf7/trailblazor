@@ -23,7 +23,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from browser in AllBrowsers.Names
         from path in new[]
         {
-            "", "components/dialog", "guides/getting-started", "guides/palettes", "search?q=dialog", "roadmap",
+            "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/browser", "search?q=dialog",
+            "roadmap",
         }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
@@ -292,6 +293,23 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Empty(result.Violations.Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Browser_ShouldFollowTheViewportAndDownloadTheList_WhenUsed(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/browser");
+        var viewport = page.GetByText("Your window is");
+
+        await page.SetViewportSizeAsync(700, 500);
+        await Expect(viewport).ToHaveTextAsync("Your window is 700 by 500 pixels, which is breakpoint Sm.");
+        var download = await page.RunAndWaitForDownloadAsync(() =>
+            page.GetByRole(AriaRole.Button, new() { Name = "Download the list" }).ClickAsync());
+
+        Assert.Equal("packing-list.csv", download.SuggestedFilename);
+        var methods = page.GetByRole(AriaRole.Region, new() { Name = "IBrowserService" });
+        await Expect(methods.GetByRole(AriaRole.Columnheader)).ToHaveTextAsync(["Method", "Returns", "Description"]);
+        await Expect(methods.GetByRole(AriaRole.Rowheader, new() { Name = "PickColorAsync()", Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
