@@ -41,6 +41,32 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
+    public void Click_ShouldKeepTheValueAndHideClear_WhenReadOnly()
+    {
+        var cut = RenderSelect("Small");
+        cut.Render(parameters => parameters.Add(select => select.ReadOnly, true));
+
+        cut.FindAll("[role=option]")[1].Click();
+
+        Assert.Equal("Small", Size);
+        Assert.Equal("true", cut.Find("[role=combobox]").GetAttribute("aria-readonly"));
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheNativeListReadOnlyButNotDisabled_WhenReadOnlyWithoutACircuit()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = RenderSelect("Small");
+        cut.Render(parameters => parameters.Add(select => select.ReadOnly, true));
+
+        var select = cut.Find("select");
+        Assert.Equal("true", select.GetAttribute("aria-readonly"));
+        Assert.False(select.HasAttribute("disabled"));
+        Assert.True(cut.Find("option[value=Small]").HasAttribute("selected"));
+    }
+
+    [Fact]
     public void Render_ShouldShowThePlaceholder_WhenNoOptionMatchesTheValue()
     {
         var cut = RenderSelect(null);

@@ -5,3 +5,20 @@
 <TbCheckbox TValue="bool" Label="Agree" Value="true" ReadOnly />
 <TbSlider TValue="int" Label="Volume" Value="40" ReadOnly />
 <TbRangeSlider TValue="int" Label="Price" Value="new(20, 60)" ReadOnly />
+<TbSelect TValue="string" Label="Trail" Value="@("Ridge loop")" Clearable ReadOnly>
+    <TbOption Value="@("Ridge loop")" />
+    <TbOption Value="@("Creek path")" />
+</TbSelect>
+<TbListBox TValue="string" Label="Camp" Value="@("Lakeside")" ReadOnly>
+    <TbOption Value="@("Lakeside")" />
+    <TbOption Value="@("Meadow")" />
+</TbListBox>
+<TbMultiListBox TValue="string" Label="Gear" Value="_gear" ReadOnly>
+    <TbOption Value="@("Tent")" />
+    <TbOption Value="@("Stove")" />
+    <TbOption Value="@("Lamp")" />
+</TbMultiListBox>
+
+@code {
+    private readonly IReadOnlyList<string> _gear = ["Tent", "Stove"];
+}

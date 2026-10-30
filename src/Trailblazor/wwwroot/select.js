@@ -69,7 +69,7 @@ export function createSelect(combobox, listbox, toggle) {
     };
     // Opening from code leaves focus where it is; the user opening it moves focus to the filter.
     const open = (target, focus = true) => {
-        if (combobox.getAttribute('aria-disabled') === 'true') {
+        if (combobox.getAttribute('aria-disabled') === 'true' || combobox.getAttribute('aria-readonly') === 'true') {
             return;
         }
 
@@ -166,8 +166,10 @@ export function createSelect(combobox, listbox, toggle) {
                 if (filter) {
                     event.preventDefault();
                     open();
-                    filter.value = key;
-                    onFilterInput();
+                    if (isOpen()) {
+                        filter.value = key;
+                        onFilterInput();
+                    }
                 } else {
                     typeahead(key);
                 }
@@ -298,7 +300,7 @@ export function createSelect(combobox, listbox, toggle) {
     label?.addEventListener('click', onLabelClick);
 
     return {
-        // Returns whether the list ended up open, since a disabled select won't open.
+        // Returns whether the list ended up open, since a disabled or read-only select won't open.
         setOpen(value) {
             if (value) {
                 open(null, false);

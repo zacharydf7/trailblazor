@@ -9,7 +9,7 @@
         <div @attributes="InputAttributes" @ref="_combobox" data-part="input" id="@InputId" role="combobox"
              tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(Label is null ? null : LabelId)"
              aria-haspopup="listbox" aria-expanded="false" aria-controls="@ListboxId"
-             aria-disabled="@(Disabled ? "true" : null)"
+             aria-disabled="@(Disabled ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
              aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
              aria-describedby="@InputDescribedBy"
              class="@ClassNames.Join("tb-field__input", "tb-select__trigger", Classes?.Input)">
@@ -38,7 +38,8 @@
         @* A native select works without a circuit; data-prerender marks one a combobox will replace. *@
         <select @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
                 data-prerender="@(AssignedRenderMode is null ? null : "")"
-                multiple="@Multiple" disabled="@Disabled" aria-required="@(Required ? "true" : null)"
+                multiple="@Multiple" disabled="@Disabled" aria-readonly="@(ReadOnly ? "true" : null)"
+                aria-required="@(Required ? "true" : null)"
                 aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                 class="@ClassNames.Join("tb-field__input", "tb-select__native", Classes?.Input)">
             @if (!Multiple && SelectedOptions.Count == 0)
@@ -61,7 +62,7 @@
 
     private RenderFragment End =>
         @<text>
-            @if (Clearable && !Disabled && HasChoice)
+            @if (Clearable && !Disabled && !ReadOnly && HasChoice)
             {
                 <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Localizer[TbStrings.SelectClear]"
                               Size="Size.Small" OnClick="ClearAsync"

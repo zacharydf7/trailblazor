@@ -61,7 +61,7 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     public bool Open { get; set; }
 
     /// <summary>Raised when the user opens or closes the list, or when it can't open as asked because the select is
-    /// disabled.</summary>
+    /// disabled or read only.</summary>
     [Parameter]
     public EventCallback<bool> OpenChanged { get; set; }
 
@@ -97,7 +97,7 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
             (Func<IReadOnlyList<ISelectOption>>)(() => SelectedOptions));
         builder.AddComponentParameter(2, nameof(SelectDisplay.Placeholder), Placeholder);
         builder.AddComponentParameter(3, nameof(SelectDisplay.Chips), ShowChips);
-        builder.AddComponentParameter(4, nameof(SelectDisplay.Disabled), Disabled);
+        builder.AddComponentParameter(4, nameof(SelectDisplay.Disabled), Disabled || ReadOnly);
         builder.AddComponentReferenceCapture(5, display => _display = (SelectDisplay)display);
         builder.CloseComponent();
     };
@@ -167,7 +167,8 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
             if (_handle is not null && _openFromParent)
             {
                 _openFromParent = false;
-                // A disabled select stays closed, and the parent hears so rather than keeping a value that didn't apply.
+                // A disabled or read-only select stays closed, and the parent hears so rather than keeping a value
+                // that didn't apply.
                 var opened = await _handle.InvokeAsync<bool>("setOpen", _open);
                 if (opened != _open)
                 {
@@ -188,6 +189,11 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
 
     async Task ISelect.ChooseAsync(object? value)
     {
+        if (ReadOnly)
+        {
+            return;
+        }
+
         await SetValueAsync(Choose(value));
         StateHasChanged();
     }
@@ -230,7 +236,7 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     private async Task OnRemoveChipAsync(string optionId, string text)
     {
         var option = _options.FirstOrDefault(each => each.Id == optionId);
-        if (!ShowChips || Disabled || option is null || option.Disabled || !IsChosen(option.Value))
+        if (!ShowChips || Disabled || ReadOnly || option is null || option.Disabled || !IsChosen(option.Value))
         {
             return;
         }

@@ -19,6 +19,13 @@
         </TbMultiListBox>
         <TbText>Packing: @(_gear.Count == 0 ? "nothing" : string.Join(", ", _gear))</TbText>
     </TbStack>
+    <TbStack Gap="2" Style="inline-size: 16rem">
+        <TbListBox TValue="string" Label="Assigned crew" Value="@("North team")" Rows="3" ReadOnly
+                   HelperText="Assigned by the ranger station.">
+            <TbOption Value="@("North team")" />
+            <TbOption Value="@("South team")" />
+        </TbListBox>
+    </TbStack>
 </TbStack>
 
 @code {

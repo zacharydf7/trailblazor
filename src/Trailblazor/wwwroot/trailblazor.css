@@ -3015,7 +3015,8 @@
         user-select: none;
     }
 
-    .tb-field--disabled .tb-select__trigger {
+    .tb-field--disabled .tb-select__trigger,
+    .tb-field--readonly .tb-select__trigger {
         cursor: default;
     }
 
@@ -3221,7 +3222,8 @@
         color: var(--tb-color-primary-text);
     }
 
-    .tb-listbox[aria-disabled="true"] .tb-select__option {
+    .tb-listbox[aria-disabled="true"] .tb-select__option,
+    .tb-listbox[aria-readonly="true"] .tb-select__option {
         cursor: default;
     }
 
@@ -3927,8 +3929,8 @@
         font-weight: var(--tb-font-weight-medium);
     }
 
-    .tb-field:not(.tb-field--disabled) > .tb-file-upload__zone:hover,
-    .tb-field:not(.tb-field--disabled) > .tb-file-upload__button:hover,
+    .tb-field:not(.tb-field--disabled, .tb-field--readonly) > .tb-file-upload__zone:hover,
+    .tb-field:not(.tb-field--disabled, .tb-field--readonly) > .tb-file-upload__button:hover,
     .tb-file-upload__zone[data-dragging] {
         border-color: var(--tb-color-primary);
         background: var(--tb-color-primary-subtle);
@@ -3952,7 +3954,9 @@
 
     /* The prompt sits beside the disabled input rather than in it, so it stays readable and the zone fades instead. */
     .tb-field--disabled .tb-file-upload__zone,
-    .tb-field--disabled .tb-file-upload__button {
+    .tb-field--disabled .tb-file-upload__button,
+    .tb-field--readonly .tb-file-upload__zone,
+    .tb-field--readonly .tb-file-upload__button {
         border-color: var(--tb-border-subtle);
         background: var(--tb-color-surface-sunken);
         color: var(--tb-color-text-muted);

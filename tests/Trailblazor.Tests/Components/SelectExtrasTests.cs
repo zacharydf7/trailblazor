@@ -117,6 +117,19 @@ public class SelectExtrasTests : BunitContext
     }
 
     [Fact]
+    public async Task Chips_ShouldStayAndOfferNoRemoveButtons_WhenTheSelectIsReadOnly()
+    {
+        IReadOnlyList<Trail> chosen = [Trails[0]];
+        var cut = RenderChips(() => chosen, value => chosen = value);
+        cut.Render(parameters => parameters.Add(select => select.ReadOnly, true));
+
+        await cut.InvokeAsync(() => Toggle().OnRemoveChip(cut.FindAll("[role=option]")[0].Id!, "Pine Hollow"));
+
+        Assert.Empty(cut.FindAll("[data-part=chip-remove]"));
+        Assert.Equal([Trails[0]], chosen);
+    }
+
+    [Fact]
     public void Chips_ShouldOfferNoRemoveButton_WhenTheOptionIsDisabled()
     {
         IReadOnlyList<Trail> chosen = [Trails[0]];

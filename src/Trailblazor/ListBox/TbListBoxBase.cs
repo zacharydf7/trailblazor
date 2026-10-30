@@ -85,8 +85,8 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
 
     async Task ISelect.ChooseAsync(object? value)
     {
-        // Unlike a select's, a disabled listbox's options are still on the page to be clicked.
-        if (Disabled)
+        // Unlike a select's, a disabled or read-only listbox's options are still on the page to be clicked.
+        if (Disabled || ReadOnly)
         {
             return;
         }

@@ -29,6 +29,10 @@
     <TbSelect Label="Country" @bind-Value="_country" Disabled>
         <TbOption Value="@("Canada")">Canada</TbOption>
     </TbSelect>
+    <TbSelect TValue="string" Label="Region" Value="@("North")" ReadOnly HelperText="Set by your account.">
+        <TbOption Value="@("North")">North</TbOption>
+        <TbOption Value="@("South")">South</TbOption>
+    </TbSelect>
 </TbStack>
 
 @code {

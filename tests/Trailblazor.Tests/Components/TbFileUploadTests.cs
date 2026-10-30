@@ -19,6 +19,18 @@ public class TbFileUploadTests : BunitContext
         InputFileContent.CreateFromBinary(new byte[size], name, contentType: "application/pdf");
 
     [Fact]
+    public void Render_ShouldTurnOffThePickerAndEveryButton_WhenReadOnly()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf"));
+        cut.Render(parameters => parameters.Add(upload => upload.ReadOnly, true));
+
+        Assert.True(cut.Find("input[type=file]").HasAttribute("disabled"));
+        Assert.All(cut.FindAll("button"), button => Assert.True(button.HasAttribute("disabled")));
+        Assert.Contains("tb-field--readonly", cut.Find(".tb-file-upload").ClassList);
+    }
+
+    [Fact]
     public void Choose_ShouldListTheFilesWithTheirSizes_WhenTheyAreTaken()
     {
         var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));

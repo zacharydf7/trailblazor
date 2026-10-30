@@ -48,7 +48,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     public bool Disabled { get; set; }
 
     /// <summary>Lets the user focus the field and read or copy its value, but not change it. Unlike
-    /// <see cref="Disabled"/>, the value still posts with its form.</summary>
+    /// <see cref="Disabled"/>, the value still posts with its form. A file upload, whose input can't be read only,
+    /// turns its picker off instead.</summary>
     [Parameter]
     public bool ReadOnly { get; set; }
 

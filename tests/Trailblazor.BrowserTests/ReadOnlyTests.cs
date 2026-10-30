@@ -43,7 +43,7 @@ public class ReadOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
         await town.PressAsync("ArrowDown");
 
         await Expect(town).ToHaveAttributeAsync("aria-expanded", "false");
-        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeHiddenAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -144,6 +144,94 @@ public class ReadOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(fast).ToBeCheckedAsync();
         await Expect(page.GetByRole(AriaRole.Radiogroup, new() { Name = "Pace" }))
             .ToHaveAttributeAsync("aria-readonly", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ReadOnlySelect_ShouldStayClosedAndKeepItsValue_WhenTheUserTriesToOpenIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/read-only");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Trail", Exact = true });
+
+        // The list shows as the script opens it, before aria-expanded follows, so the list itself is checked.
+        await trail.ClickAsync();
+        await Expect(list).ToBeHiddenAsync();
+        await trail.PressAsync("ArrowDown");
+        await Expect(list).ToBeHiddenAsync();
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "false");
+
+        await Expect(trail).ToBeFocusedAsync();
+        await Expect(trail).ToContainTextAsync("Ridge loop");
+        await Expect(page.Locator("[data-part=clear]")).ToHaveCountAsync(0);
+        await Expect(page.Locator("[data-part=chip]")).ToHaveTextAsync("Orders");
+        await Expect(page.Locator("[data-part=chip-remove]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ReadOnlyListBox_ShouldMoveThroughItsOptionsButKeepItsValue_WhenTheKeysOrPointerTryToChooseOne(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/read-only");
+        var camp = page.GetByRole(AriaRole.Listbox, new() { Name = "Camp" });
+        var meadow = camp.GetByRole(AriaRole.Option, new() { Name = "Meadow" });
+        await Expect(camp).ToHaveAttributeAsync("data-ready", "");
+
+        await camp.FocusAsync();
+        await camp.PressAsync("ArrowDown");
+        await Expect(camp).ToHaveAttributeAsync("aria-activedescendant", (await meadow.GetAttributeAsync("id"))!);
+        await meadow.ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Check" }).ClickAsync();
+        await Expect(page.GetByTestId("checks")).ToHaveTextAsync("1");
+
+        await Expect(camp.GetByRole(AriaRole.Option, new() { Name = "Lakeside" }))
+            .ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(meadow).ToHaveAttributeAsync("aria-selected", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ReadOnlyFileUpload_ShouldTurnOffItsPicker_WhenReadOnly(string browser)
+    {
+        var page = await OpenAsync(browser, "/read-only");
+
+        await Expect(page.GetByLabel("Photos")).ToBeDisabledAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ReadOnlyNativeLists_ShouldKeepTheirValues_WhenTheKeysTryToChangeThem(string browser)
+    {
+        var page = await OpenReadOnlyPageAsync(browser, "/static-read-only");
+        var trail = page.GetByLabel("Trail");
+        var camp = page.GetByLabel("Camp");
+
+        await trail.FocusAsync();
+        await trail.PressAsync("ArrowDown");
+        await camp.FocusAsync();
+        await camp.PressAsync("ArrowDown");
+
+        await Expect(trail).ToHaveValueAsync("Ridge loop");
+        await Expect(camp).ToHaveValueAsync("Lakeside");
+        await Expect(camp).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ReadOnlyNativeMultipleList_ShouldKeepEveryChoice_WhenClickedOrControlClicked(string browser)
+    {
+        var page = await OpenReadOnlyPageAsync(browser, "/static-read-only");
+        var gear = page.GetByLabel("Gear");
+        // WebKit can't click an option itself, so the pointer goes to the list's first row, Tent.
+        var box = (await gear.BoundingBoxAsync())!;
+        var (x, y) = (box.X + box.Width / 2, box.Y + 10);
+
+        await page.Mouse.ClickAsync(x, y);
+        await page.Keyboard.DownAsync("ControlOrMeta");
+        await page.Mouse.ClickAsync(x, y);
+        await page.Keyboard.UpAsync("ControlOrMeta");
+        await gear.PressAsync("ArrowDown");
+
+        Assert.Equal(["Tent", "Stove"],
+            await gear.EvaluateAsync<string[]>("list => [...list.selectedOptions].map(option => option.value)"));
     }
 
     // The startup script holds these fields still, so a test waits for it: through interactivity, or on the static

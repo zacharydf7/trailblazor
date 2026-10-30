@@ -102,6 +102,18 @@ public class TbListBoxTests : BunitContext
         Assert.Equal([true, true], cut.FindAll("option").Select(option => option.HasAttribute("selected")));
     }
 
+    [Fact]
+    public void Click_ShouldKeepTheValue_WhenReadOnly()
+    {
+        var cut = RenderListBox("Ridge loop");
+        cut.Render(parameters => parameters.Add(listbox => listbox.ReadOnly, true));
+
+        cut.FindAll("[role=option]")[1].Click();
+
+        Assert.Equal("Ridge loop", Trail);
+        Assert.Equal("true", cut.Find("[role=listbox]").GetAttribute("aria-readonly"));
+    }
+
     private IRenderedComponent<TbListBox<string?>> RenderListBox(string? value, bool disabled = false, int rows = 5)
     {
         Trail = value;

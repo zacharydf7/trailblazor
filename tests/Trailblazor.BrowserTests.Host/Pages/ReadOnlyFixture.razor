@@ -14,8 +14,29 @@
 </TbRadioGroup>
 <TbSlider TValue="int" Label="Volume" Value="40" ReadOnly />
 <TbRangeSlider TValue="int" Label="Price" Value="new(20, 60)" ReadOnly />
+@* Bound, so a change that got through would survive the page re-rendering for Check. *@
+<TbSelect TValue="string" Label="Trail" @bind-Value="_trail" Clearable ReadOnly>
+    <TbOption Value="@("Ridge loop")" />
+    <TbOption Value="@("Creek path")" />
+</TbSelect>
+<TbListBox TValue="string" Label="Camp" @bind-Value="_camp" ReadOnly>
+    <TbOption Value="@("Lakeside")" />
+    <TbOption Value="@("Meadow")" />
+</TbListBox>
+<TbMultiSelect TValue="string" Label="Topics" Value="_topics" Chips ReadOnly>
+    <TbOption Value="@("Orders")" />
+    <TbOption Value="@("Returns")" />
+</TbMultiSelect>
+<TbFileUpload Label="Photos" ReadOnly />
+@* Events reach the server in order, so once the count shows, every earlier event has been handled. *@
+<button type="button" @onclick="() => _checks++">Check</button>
+<output data-testid="checks">@_checks</output>
 
 @code {
+    private readonly IReadOnlyList<string> _topics = ["Orders"];
+    private int _checks;
+    private string? _trail = "Ridge loop";
+    private string? _camp = "Lakeside";
     private readonly string[] _towns = ["Pine Hollow", "Cedar Falls"];
     private readonly DateRange<DateOnly> _dates = new(new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 8));
 }

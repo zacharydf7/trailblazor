@@ -642,6 +642,9 @@ public static class ExampleCatalog
                     + "filter. Matching ignores case and accents, groups with no matches hide, and `NoResultsText` is "
                     + "announced when nothing matches. Up and Down move, Enter chooses, Escape closes and returns focus "
                     + "to the select.",
+                "`ReadOnly` keeps the select focusable and posted, but it doesn't open and its chips can't be "
+                    + "removed; screen readers hear it as read only. Before the page is interactive, the native select "
+                    + "puts its choice back whenever the user changes it.",
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select"],
@@ -716,6 +719,8 @@ public static class ExampleCatalog
                     + "to the input when a file is removed.",
                 "Each new choice replaces the last, as the browser's file input does, so read the files before the "
                     + "user chooses again.",
+                "`ReadOnly` turns off the picker and the remove and clear buttons, and leaves the chosen files "
+                    + "listed. A file input can't be read only, so the picker can't be focused.",
             ],
             Target = new("button", "Trail maps"),
             Blocks = ["tb-field", "tb-file-upload"],
@@ -766,6 +771,8 @@ public static class ExampleCatalog
                     + "Space chooses or clears the active option, and Shift with Down or Up also chooses the next.",
                 "Before the page is interactive it renders as the browser's own `<select>` list, so it still works.",
                 "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
+                "`ReadOnly` keeps the list focusable, and the arrow keys still move through its options so they can "
+                    + "be read, but nothing gets chosen; screen readers hear it as read only.",
             ],
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],
