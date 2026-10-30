@@ -23,8 +23,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from browser in AllBrowsers.Names
         from path in new[]
         {
-            "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/browser", "search?q=dialog",
-            "roadmap",
+            "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/browser",
+            "guides/announcements", "search?q=dialog", "roadmap",
         }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
@@ -310,6 +310,26 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         var methods = page.GetByRole(AriaRole.Region, new() { Name = "IBrowserService" });
         await Expect(methods.GetByRole(AriaRole.Columnheader)).ToHaveTextAsync(["Method", "Returns", "Description"]);
         await Expect(methods.GetByRole(AriaRole.Rowheader, new() { Name = "PickColorAsync()", Exact = true })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Announcements_ShouldSpeakAndClearMessages_WhenTheButtonsArePressed(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/announcements");
+        var polite = page.Locator("[data-part=announcer] [role=status] p");
+        var assertive = page.Locator("[data-part=announcer] [role=alert] p");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Announce politely" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Announce now" }).ClickAsync();
+        await Expect(polite).ToContainTextAsync("Trail saved");
+        await Expect(assertive).ToHaveTextAsync("Couldn't reach the server");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Clear" }).ClickAsync();
+        await Expect(polite).ToHaveCountAsync(0);
+        await Expect(assertive).ToHaveCountAsync(0);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Announce politely" }).ClickAsync();
+        await Expect(polite).ToHaveCountAsync(1);
+        await Expect(polite).ToHaveCountAsync(0, new() { Timeout = 10_000 });
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

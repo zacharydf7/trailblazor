@@ -1,11 +1,18 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Trailblazor.Tests.Components;
 
 public class AnnouncerTests : BunitContext
 {
-    public AnnouncerTests() => this.AddTrailblazor();
+    private readonly FakeTimeProvider _time = new();
+
+    public AnnouncerTests()
+    {
+        Services.AddSingleton<TimeProvider>(_time);
+        this.AddTrailblazor();
+    }
 
     private IAnnouncer Announcer => Services.GetRequiredService<IAnnouncer>();
 
@@ -30,6 +37,34 @@ public class AnnouncerTests : BunitContext
 
         host.WaitForAssertion(() => Assert.Equal(["Saved", "Saved"],
             host.FindAll("[role=status] p").Select(p => p.TextContent)));
+    }
+
+    [Fact]
+    public void Clear_ShouldRemoveEveryMessage_WhenCalled()
+    {
+        var host = Render<AnnouncerHost>();
+        Announcer.Polite("Saved");
+        Announcer.Assertive("Failed");
+        host.WaitForAssertion(() => Assert.Equal(2, host.FindAll("p").Count));
+
+        Announcer.Clear();
+
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("p")));
+    }
+
+    [Fact]
+    public void Announcer_ShouldRemoveEachMessage_WhenSevenSecondsHavePassedSinceItWasAnnounced()
+    {
+        var host = Render<AnnouncerHost>();
+        Announcer.Polite("Saved");
+        _time.Advance(TimeSpan.FromSeconds(6.9));
+        Announcer.Assertive("Failed");
+
+        _time.Advance(TimeSpan.FromSeconds(0.1));
+
+        host.WaitForAssertion(() => Assert.Equal(["Failed"], host.FindAll("p").Select(p => p.TextContent)));
+        _time.Advance(TimeSpan.FromSeconds(7));
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("p")));
     }
 
     [Fact]

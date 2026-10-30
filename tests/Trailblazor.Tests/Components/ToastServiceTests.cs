@@ -58,10 +58,10 @@ public class ToastServiceTests : BunitContext
         var announcer = Render<AnnouncerHost>();
 
         var toast = Toasts.Show("Upload failed", Tone.Danger);
+        Assert.Equal("Upload failed", announcer.Find("[role=alert] p").TextContent);
         _time.Advance(TimeSpan.FromMinutes(10));
 
         Assert.True(toast.IsOpen);
-        Assert.Equal("Upload failed", announcer.Find("[role=alert] p").TextContent);
         host.Find("[data-part=close]").Click();
         Assert.False(toast.IsOpen);
         Assert.Empty(host.FindAll("[data-part=toast]"));

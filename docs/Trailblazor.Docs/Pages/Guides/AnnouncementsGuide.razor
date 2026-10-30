@@ -1,0 +1,73 @@
+@page "/guides/announcements"
+@inject IAnnouncer Announcer
+
+<PageTitle>Announcements · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Announcements</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    <code>IAnnouncer</code> tells screen reader users about changes they can't see, such as "Saved" or "3 results",
+    through live regions that <code>TbRoot</code> and each modal dialog render. <code>AddTrailblazor()</code> registers
+    it, so inject it where you need it.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try it</TbText>
+<div class="docs-example">
+    <TbStack Row Gap="2" Wrap>
+        <TbButton OnClick="@(() => Announcer.Polite($"Trail saved at {DateTime.Now:t}"))">Announce politely</TbButton>
+        <TbButton Variant="Variant.Outlined" OnClick="@(() => Announcer.Assertive("Couldn't reach the server"))">
+            Announce now
+        </TbButton>
+        <TbButton Variant="Variant.Outlined" OnClick="Announcer.Clear">Clear</TbButton>
+    </TbStack>
+</div>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Polite or now</TbText>
+<TbText>
+    <code>Polite</code> waits until the screen reader finishes what it is saying; use it for nearly everything.
+    <code>Assertive</code> interrupts, so keep it for errors and other messages the user must hear right away. The
+    same message said twice is announced twice. While a modal dialog is open, messages go to its own live regions,
+    since a modal hides the rest of the page from screen readers.
+</TbText>
+<CodeBlock Label="Announcing" Code="@Announce" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Clearing</TbText>
+<TbText>
+    Live regions are part of the page, so a screen reader user browsing it later could find old messages. Each
+    message leaves seven seconds after it is announced, which is time enough to be heard. Call <code>Clear</code> to
+    remove them all at once, such as when the view they were about goes away.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
+<TbText>
+    The live regions are in <code>TbRoot</code>, so render it alongside your component, and look for the message in the
+    <code>status</code> region (polite) or the <code>alert</code> region (assertive). Register a
+    <code>FakeTimeProvider</code> as the <code>TimeProvider</code> before <code>AddTrailblazor()</code> to move past
+    the seven seconds without waiting.
+</TbText>
+<CodeBlock Label="A bUnit test" Code="@Test" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>
+<ApiTable Type="typeof(IAnnouncer)" />
+
+@code {
+    private const string Announce = """
+        @inject IAnnouncer Announcer
+
+        @code {
+            private async Task SaveAsync()
+            {
+                await trails.SaveAsync(trail);
+                Announcer.Polite("Trail saved");
+            }
+        }
+        """;
+
+    private const string Test = """
+        var root = Render<TbRoot>();
+        var editor = Render<TrailEditor>();
+
+        editor.Find("button.save").Click();
+
+        root.WaitForAssertion(() => Assert.Equal("Trail saved", root.Find("[role=status]").TextContent));
+        """;
+}

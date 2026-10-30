@@ -13,6 +13,8 @@ public static class GuideCatalog
         new("guides/palettes", "Palettes", "Every built-in palette on real components, in light and dark."),
         new("guides/browser", "Browser",
             "Copy to the clipboard, download and save files, pick colors, scroll, and follow the viewport from C#."),
+        new("guides/announcements", "Announcements",
+            "Tell screen reader users about changes they can't see, and clear the messages once heard."),
         new("guides/testing", "Testing",
             "Test pages built with Trailblazor in bUnit and Playwright, and find components the way users do."),
         new("roadmap", "Roadmap", "What has shipped, what is being built now, and which components come next."),
