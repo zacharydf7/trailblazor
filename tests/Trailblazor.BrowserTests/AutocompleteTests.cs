@@ -15,6 +15,22 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldOpenJustBelowTheField_WhenTheUserTypes(string browser)
+    {
+        var page = await OpenFieldsAsync(browser);
+        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Trailhead" });
+
+        await Field(page, "Trailhead").PressSequentiallyAsync("ridge");
+        await Expect(listbox).ToHaveAttributeAsync("data-side", "bottom");
+
+        var control = page.Locator("[data-part=control]").Filter(new() { Has = Field(page, "Trailhead") });
+        var controlBox = await control.BoundingBoxAsync();
+        var listBox = await listbox.BoundingBoxAsync();
+        Assert.Equal(controlBox!.Y + controlBox.Height + 4, listBox!.Y, tolerance: 1);
+        Assert.Equal(controlBox.X, listBox.X, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Autocomplete_ShouldSearchAndChooseWithTheKeys_WhenTheUserTypes(string browser)
     {
         var page = await OpenFieldsAsync(browser);

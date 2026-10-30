@@ -35,6 +35,22 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldOpenJustBelowTheField_WhenOpened(string browser)
+    {
+        var page = await OpenSelectAsync(browser);
+        var listbox = page.GetByRole(AriaRole.Listbox);
+
+        await Combobox(page).ClickAsync();
+        await Expect(listbox).ToHaveAttributeAsync("data-side", "bottom");
+
+        var control = page.Locator("[data-part=control]").Filter(new() { Has = Combobox(page) });
+        var controlBox = await control.BoundingBoxAsync();
+        var listBox = await listbox.BoundingBoxAsync();
+        Assert.Equal(controlBox!.Y + controlBox.Height + 4, listBox!.Y, tolerance: 1);
+        Assert.Equal(controlBox.X, listBox.X, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Listbox_ShouldStayAtLeastAsWideAsTheField_WhenTheFieldGrowsWhileItIsOpen(string browser)
     {
         var page = await OpenSelectAsync(browser);

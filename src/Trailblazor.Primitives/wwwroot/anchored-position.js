@@ -2,6 +2,12 @@ const oppositeSides = { top: 'bottom', bottom: 'top', left: 'right', right: 'lef
 const viewportPadding = 8;
 
 export function createAnchoredPosition(floating, anchor, options) {
+    // The names match the C# enums; any other spelling would silently fall back to the end side.
+    if (!['Top', 'Bottom', 'Start', 'End'].includes(options.side)
+        || !['Start', 'Center', 'End'].includes(options.align)) {
+        throw new Error(`Unknown placement: side ${options.side}, align ${options.align}.`);
+    }
+
     // Fixed coordinates are viewport-relative only in the top layer or without transformed ancestors.
     floating.style.position = 'fixed';
     floating.style.inset = 'auto';

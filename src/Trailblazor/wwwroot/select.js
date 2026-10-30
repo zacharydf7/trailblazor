@@ -74,7 +74,7 @@ export function createSelect(combobox, listbox, toggle) {
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
         requestAnimationFrame(() => {
             if (isOpen() && !position) {
-                position = createAnchoredPosition(listbox, control, { side: 'bottom', align: 'start', offset: 4 });
+                position = createAnchoredPosition(listbox, control, { side: 'Bottom', align: 'Start', offset: 4 });
             }
         });
     };

@@ -33,7 +33,7 @@ export function createAutocomplete(input, listbox, events) {
         }
 
         listbox.showPopover();
-        position = createAnchoredPosition(listbox, control, { side: 'bottom', align: 'start', offset: 4 });
+        position = createAnchoredPosition(listbox, control, { side: 'Bottom', align: 'Start', offset: 4 });
         input.setAttribute('aria-expanded', 'true');
         events.invokeMethodAsync('OnToggle', true);
         if (browse) {
