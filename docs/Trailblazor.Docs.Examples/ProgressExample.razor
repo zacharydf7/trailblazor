@@ -1,9 +1,14 @@
 <TbStack Gap="6">
     <TbProgress AriaLabel="Upload" Value="25" data-testid="quarter" />
     <TbProgress AriaLabel="Loading" data-testid="indeterminate" />
+    <TbProgress AriaLabel="Attachment" Label="report.pdf" ShowValue Value="40" data-testid="labeled" />
+    <TbProgress AriaLabel="Import" Label="Importing trails" ShowValue Value="3" Max="10"
+                ValueFormatter="@(value => $"{value} of 10 files")" />
     <TbStack Row Align="Align.Center" Gap="4">
         <TbProgress AriaLabel="Export" Value="60" Circular />
         <TbProgress AriaLabel="Loading" Circular data-testid="spinner" />
+        <TbProgress AriaLabel="Sync" Value="75" Circular ShowValue Size="Size.Large" Label="Syncing"
+                    data-testid="ring-value" />
         @foreach (var size in Enum.GetValues<Size>())
         {
             <TbProgress AriaLabel="@($"{size} loading")" Circular Size="size" Tone="Tone.Success" />

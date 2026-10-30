@@ -3,25 +3,53 @@
 @inherits TbComponentBase
 
 <div role="progressbar" aria-label="@AriaLabel" aria-valuemin="@Format(Min)" aria-valuemax="@Format(Max)"
-     aria-valuenow="@ValueNow" @attributes="AdditionalAttributes"
+     aria-valuenow="@ValueNow" aria-valuetext="@(ValueFormatter is null ? null : _valueText)"
+     @attributes="AdditionalAttributes"
      class="@ClassNames.Join("tb-progress", Circular ? "tb-progress--circular" : "tb-progress--linear",
                 ClassNames.Modifier("tb-progress", Tone), ClassNames.Modifier("tb-progress", Size),
                 Value is null ? "tb-progress--indeterminate" : null, Class)"
      style="@Styles.Join(PercentStyle, Style)">
     @if (Circular)
     {
-        <svg viewBox="0 0 44 44" aria-hidden="true">
-            <circle class="tb-progress__track" cx="22" cy="22" r="19" pathLength="100" />
-            <circle data-part="indicator" class="tb-progress__indicator" cx="22" cy="22" r="19" pathLength="100" />
-        </svg>
+        <span data-part="ring" class="tb-progress__ring">
+            <svg viewBox="0 0 44 44" aria-hidden="true">
+                <circle class="tb-progress__track" cx="22" cy="22" r="19" pathLength="100" />
+                <circle data-part="indicator" class="tb-progress__indicator" cx="22" cy="22" r="19" pathLength="100" />
+            </svg>
+            @if (ShownValue is not null)
+            {
+                <span data-part="value" class="tb-progress__value">@ShownValue</span>
+            }
+        </span>
+        @if (Label is not null)
+        {
+            <span data-part="label" class="tb-progress__label">@Label</span>
+        }
     }
     else
     {
-        <div data-part="indicator" class="tb-progress__indicator"></div>
+        @if (Label is not null || ShownValue is not null)
+        {
+            <div class="tb-progress__header">
+                @if (Label is not null)
+                {
+                    <span data-part="label" class="tb-progress__label">@Label</span>
+                }
+                @if (ShownValue is not null)
+                {
+                    <span data-part="value" class="tb-progress__value">@ShownValue</span>
+                }
+            </div>
+        }
+        <div data-part="bar" class="tb-progress__bar">
+            <div data-part="indicator" class="tb-progress__indicator"></div>
+        </div>
     }
 </div>
 
 @code {
+    private string? _valueText;
+
     /// <summary>How far along the work is, from <see cref="Min"/> to <see cref="Max"/>. Leave it null when the
     /// amount of work is unknown, to show an indeterminate animation.</summary>
     [Parameter]
@@ -51,6 +79,20 @@
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
 
+    /// <summary>Text shown above the bar or beside the ring, such as the file being uploaded.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>Shows the value as text, above the bar at its end or in the ring's center. An indeterminate progress
+    /// has no value to show.</summary>
+    [Parameter]
+    public bool ShowValue { get; set; }
+
+    /// <summary>Turns the value into the text shown with <see cref="ShowValue"/>, such as "3 of 10 files", which
+    /// screen readers then announce in place of the number. Defaults to a percentage.</summary>
+    [Parameter]
+    public Func<double, string>? ValueFormatter { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -63,12 +105,20 @@
         {
             throw new ArgumentOutOfRangeException(nameof(Max), Max, $"{nameof(Max)} must be greater than {nameof(Min)}.");
         }
+
+        // The value as the user reads it, in their culture.
+        _valueText = Value is not { } value ? null : ValueFormatter?.Invoke(Math.Clamp(value, Min, Max))
+            ?? Fraction!.Value.ToString("P0", CultureInfo.CurrentCulture);
     }
 
     private string? ValueNow => Value is { } value ? Format(Math.Clamp(value, Min, Max)) : null;
 
+    private double? Fraction => Value is { } value ? Math.Clamp((value - Min) / (Max - Min), 0, 1) : null;
+
     private string? PercentStyle =>
-        Value is { } value ? $"--tb-progress-percent: {Format(Math.Clamp((value - Min) / (Max - Min) * 100, 0, 100))}" : null;
+        Fraction is { } fraction ? $"--tb-progress-percent: {Format(fraction * 100)}" : null;
+
+    private string? ShownValue => ShowValue ? _valueText : null;
 
     // CSS and ARIA need a period as the decimal separator whatever the current culture is.
     private static string Format(double number) => number.ToString("0.##", CultureInfo.InvariantCulture);

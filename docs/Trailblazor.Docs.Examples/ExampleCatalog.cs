@@ -415,11 +415,17 @@ public static class ExampleCatalog
                 "A `progressbar` with its range and current value. Leaving `Value` null makes it indeterminate, "
                     + "with no current value.",
                 "`AriaLabel` is required and names it; a blank label throws when it renders.",
+                "`Label` and `ShowValue` add visible text. With `ValueFormatter`, screen readers announce that "
+                    + "text, such as \"3 of 10 files\", in place of the number. Show a ring's value at `Size.Large`, "
+                    + "where it is big enough to read.",
                 "With reduced motion, the moving bar and the spinning ring pulse instead.",
                 "In forced-colors mode, such as Windows high contrast, the fill takes the system's highlight color.",
             ],
             Target = new("progressbar", "Upload"),
             Blocks = ["tb-progress"],
+            TestingTip = "Find it with `GetByRole(AriaRole.Progressbar, new() { Name = \"Upload\" })` and check "
+                + "`aria-valuenow`, or `aria-valuetext` when it has a `ValueFormatter`. The shown text is in "
+                + "`[data-part=label]` and `[data-part=value]`.",
         },
         new("label", "Label", ExampleCategory.Inputs,
             "A label for a control or a group of controls, with an optional info button that explains the setting.",

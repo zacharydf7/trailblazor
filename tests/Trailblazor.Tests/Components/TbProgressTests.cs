@@ -69,6 +69,61 @@ public class TbProgressTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowTheLabelAndThePercentInTheUsersCulture_WhenAskedToShowTheValue()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        // Turkish puts the percent sign first, unlike the invariant culture.
+        CultureInfo.CurrentCulture = new CultureInfo("tr-TR");
+        try
+        {
+            var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Upload")
+                .Add(progress => progress.Value, 25).Add(progress => progress.Label, "report.pdf")
+                .Add(progress => progress.ShowValue, true));
+
+            Assert.Equal("report.pdf", cut.Find("[data-part=label]").TextContent);
+            Assert.Equal("%25", cut.Find("[data-part=value]").TextContent);
+            Assert.Null(cut.Find("[role=progressbar]").GetAttribute("aria-valuetext"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [Fact]
+    public void Render_ShouldShowAndAnnounceTheFormattedValue_WhenGivenAValueFormatter()
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Upload")
+            .Add(progress => progress.Value, 3).Add(progress => progress.Max, 10)
+            .Add(progress => progress.ShowValue, true)
+            .Add(progress => progress.ValueFormatter, value => $"{value} of 10 files"));
+
+        Assert.Equal("3 of 10 files", cut.Find("[data-part=value]").TextContent);
+        Assert.Equal("3 of 10 files", cut.Find("[role=progressbar]").GetAttribute("aria-valuetext"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheLabelButNoValue_WhenIndeterminate()
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Upload")
+            .Add(progress => progress.Label, "Preparing").Add(progress => progress.ShowValue, true));
+
+        Assert.Equal("Preparing", cut.Find("[data-part=label]").TextContent);
+        Assert.Empty(cut.FindAll("[data-part=value]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheValueInsideTheRing_WhenCircular()
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Export")
+            .Add(progress => progress.Value, 60).Add(progress => progress.Circular, true)
+            .Add(progress => progress.ShowValue, true).Add(progress => progress.Label, "Exporting"));
+
+        Assert.NotNull(cut.Find("[data-part=ring]").QuerySelector("[data-part=value]"));
+        Assert.Equal("Exporting", cut.Find("[data-part=label]").TextContent);
+    }
+
+    [Fact]
     public void Render_ShouldDrawARing_WhenCircular()
     {
         var cut = Render<TbProgress>(parameters => parameters

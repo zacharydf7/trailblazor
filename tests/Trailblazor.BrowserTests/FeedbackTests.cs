@@ -27,7 +27,7 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
                 return [getComputedStyle(probe).backgroundColor,
                     getComputedStyle(bar.querySelector('[data-part=indicator]')).backgroundColor,
                     getComputedStyle(document.querySelector('[aria-label="Export"] [data-part=indicator]')).stroke,
-                    getComputedStyle(bar).backgroundColor];
+                    getComputedStyle(bar.querySelector('[data-part=bar]')).backgroundColor];
             }
             """);
 
@@ -45,6 +45,33 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
         var indicatorBox = await track.Locator("[data-part=indicator]").BoundingBoxAsync();
 
         Assert.Equal(trackBox!.Width / 4, indicatorBox!.Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Progress_ShouldPutTheValueAtTheBarsEndAndInTheRingsCenter_WhenShown(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/progress");
+        var labeled = page.GetByTestId("labeled");
+        var ring = page.GetByTestId("ring-value").Locator("[data-part=ring]");
+
+        var bar = (await labeled.Locator("[data-part=bar]").BoundingBoxAsync())!;
+        var value = (await labeled.Locator("[data-part=value]").BoundingBoxAsync())!;
+        // The ring's center and size, then its text's, measured on the text itself.
+        var centers = await ring.EvaluateAsync<double[]>("""
+            ring => {
+                const range = document.createRange();
+                range.selectNodeContents(ring.querySelector('[data-part=value]'));
+                const [box, text] = [ring.getBoundingClientRect(), range.getBoundingClientRect()];
+                return [box.x + box.width / 2, box.y + box.height / 2, box.width,
+                    text.x + text.width / 2, text.y + text.height / 2, text.width];
+            }
+            """);
+
+        Assert.Equal(bar.X + bar.Width, value.X + value.Width, tolerance: 1);
+        Assert.True(value.Y + value.Height <= bar.Y, "The value sits above the bar.");
+        Assert.Equal(centers[0], centers[3], tolerance: 1);
+        Assert.Equal(centers[1], centers[4], tolerance: 2);
+        Assert.InRange(centers[5], 1, centers[2] * 0.8);
     }
 
     [Theory]

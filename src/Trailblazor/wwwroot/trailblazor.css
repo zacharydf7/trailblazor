@@ -1819,22 +1819,44 @@
         margin-block: calc(-1 * var(--tb-space-1));
     }
 
-    .tb-progress {
-        position: relative;
-        overflow: hidden;
+    .tb-progress--linear {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
     }
 
-    .tb-progress--linear {
+    .tb-progress__header {
+        display: flex;
+        gap: var(--tb-space-2);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    /* A long file name wraps rather than pushing the value past the bar. */
+    .tb-progress__header .tb-progress__label {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .tb-progress__header .tb-progress__value {
+        margin-inline-start: auto;
+        color: var(--tb-color-text-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tb-progress__bar {
+        position: relative;
         height: 0.25rem;
+        overflow: hidden;
         border-radius: var(--tb-radius-full);
         background: var(--tb-color-neutral-subtle);
     }
 
-    .tb-progress--linear.tb-progress--small {
+    .tb-progress--small .tb-progress__bar {
         height: 0.125rem;
     }
 
-    .tb-progress--linear.tb-progress--large {
+    .tb-progress--large .tb-progress__bar {
         height: 0.5rem;
     }
 
@@ -1856,19 +1878,39 @@
     }
 
     .tb-progress--circular {
-        display: inline-block;
-        width: 2rem;
-        height: 2rem;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
     }
 
-    .tb-progress--circular.tb-progress--small {
+    /* The value in the ring's center scales with the ring, through its width as a container. */
+    .tb-progress__ring {
+        position: relative;
+        flex: none;
+        width: 2rem;
+        height: 2rem;
+        container-type: inline-size;
+    }
+
+    .tb-progress--small .tb-progress__ring {
         width: 1.25rem;
         height: 1.25rem;
     }
 
-    .tb-progress--circular.tb-progress--large {
+    .tb-progress--large .tb-progress__ring {
         width: 3rem;
         height: 3rem;
+    }
+
+    .tb-progress__ring .tb-progress__value {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 26cqi;
+        font-variant-numeric: tabular-nums;
     }
 
     .tb-progress--circular svg {
@@ -1926,7 +1968,7 @@
 
     /* Forced colors paint every background in the page's own color, so the bar and the ring take system colors. */
     @media (forced-colors: active) {
-        .tb-progress--linear {
+        .tb-progress__bar {
             border: 1px solid CanvasText;
         }
 
