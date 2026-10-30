@@ -58,24 +58,6 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task RangeSlider_ShouldLetEachThumbBeDragged_WhenTheyShareATrack(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/slider");
-        var minimum = Slider(page, "Elevation Minimum");
-        var box = (await minimum.BoundingBoxAsync())!;
-
-        // The start thumb sits at 800 of 4000; dragging it to the track's start takes it to 0.
-        var thumb = box.X + 9 + (box.Width - 18) * 0.2f;
-        await page.Mouse.MoveAsync(thumb, box.Y + box.Height / 2);
-        await page.Mouse.DownAsync();
-        await page.Mouse.MoveAsync(box.X, box.Y + box.Height / 2, new() { Steps = 5 });
-        await page.Mouse.UpAsync();
-
-        await Expect(minimum).ToHaveValueAsync("0");
-        await Expect(Slider(page, "Elevation Maximum")).ToHaveValueAsync("2400");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Slider_ShouldBeSetByFill_WhenATestFillsIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/slider");
@@ -135,5 +117,29 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal(track.X + track.Width, fill.X + fill.Width, tolerance: 1);
         Assert.Equal(thumb, bubble.X + bubble.Width / 2, tolerance: 2);
+    }
+}
+
+// Dragging a thumb captures the pointer, which Firefox can leak into parallel pages, so it runs with the other drags.
+[Collection(nameof(PointerDrags))]
+public class SliderDragTests(BrowserFixture fixture) : BrowserTest(fixture)
+{
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldLetEachThumbBeDragged_WhenTheyShareATrack(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+        var minimum = page.GetByRole(AriaRole.Slider, new() { Name = "Elevation Minimum", Exact = true });
+        var box = (await minimum.BoundingBoxAsync())!;
+
+        // The start thumb sits at 800 of 4000; dragging it to the track's start takes it to 0.
+        var thumb = box.X + 9 + (box.Width - 18) * 0.2f;
+        await page.Mouse.MoveAsync(thumb, box.Y + box.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(box.X, box.Y + box.Height / 2, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        await Expect(minimum).ToHaveValueAsync("0");
+        await Expect(page.GetByRole(AriaRole.Slider, new() { Name = "Elevation Maximum", Exact = true }))
+            .ToHaveValueAsync("2400");
     }
 }
