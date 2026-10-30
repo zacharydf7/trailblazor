@@ -1525,6 +1525,30 @@
         height: 1.5rem;
     }
 
+    .tb-icon--primary {
+        color: var(--tb-color-primary-text);
+    }
+
+    .tb-icon--neutral {
+        color: var(--tb-color-neutral-text);
+    }
+
+    .tb-icon--success {
+        color: var(--tb-color-success-text);
+    }
+
+    .tb-icon--warning {
+        color: var(--tb-color-warning-text);
+    }
+
+    .tb-icon--danger {
+        color: var(--tb-color-danger-text);
+    }
+
+    .tb-icon--info {
+        color: var(--tb-color-info-text);
+    }
+
     /* Each tone sets the button's own tokens; each variant decides which of them it paints with. */
     .tb-button--primary {
         --tb-button-fill: var(--tb-color-primary);

@@ -1,6 +1,25 @@
-<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader Assemblies
+
+<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)" OnNavigateAsync="OnNavigateAsync">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code {
+    private static readonly string[] IconPages = ["guides/icons", "components/icon"];
+    private bool _iconsLoaded;
+
+    // Routes match without regard to case, a query or a fragment, so the check does too.
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        var path = context.Path.Split('?', '#')[0].Trim('/');
+        if (!_iconsLoaded && IconPages.Contains(path, StringComparer.OrdinalIgnoreCase))
+        {
+            await Assemblies.LoadAssembliesAsync(["Trailblazor.Icons.Material.wasm"]);
+            _iconsLoaded = true;
+        }
+    }
+}

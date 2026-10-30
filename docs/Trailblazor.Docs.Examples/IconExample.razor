@@ -1,8 +1,12 @@
 @using Trailblazor.Docs.Examples
+@using Trailblazor.Icons.Material
 
 <div style="display: flex; align-items: center; gap: var(--tb-space-4)">
     <TbIcon Icon="ExampleIcons.Check" Size="Size.Small" />
     <TbIcon Icon="ExampleIcons.Check" />
     <TbIcon Icon="ExampleIcons.Check" Size="Size.Large" />
-    <TbIcon Icon="ExampleIcons.Close" Label="Failed" Style="color: var(--tb-color-danger-text)" />
+    <TbIcon Icon="ExampleIcons.Check" Label="Passed" Tone="Tone.Success" />
+    <TbIcon Icon="ExampleIcons.Close" Label="Failed" Tone="Tone.Danger" />
+    <TbIcon Icon="MaterialSymbols.Outlined.Hiking" Label="Hiking" />
+    <TbIcon Icon="MaterialSymbols.RoundedFilled.Forest" Label="Forest" Tone="Tone.Success" />
 </div>

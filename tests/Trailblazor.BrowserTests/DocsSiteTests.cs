@@ -19,12 +19,59 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     // The page's own heading; an example, such as the one for text, can show headings of its own.
     private static ILocator PageTitle(IPage page) => page.Locator(".docs-main > h1");
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IconsGuide_ShouldShowAndCopyTheMatchingIcons_WhenSearched(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/icons");
+        var icons = page.GetByRole(AriaRole.List, new() { Name = "Matching icons" }).GetByRole(AriaRole.Button);
+
+        await page.GetByLabel("Icon name").FillAsync("hiking");
+        await Expect(icons).ToHaveTextAsync(["Hiking"]);
+        await icons.ClickAsync();
+
+        // Whether the browser lets the page copy or not, the toast names the icon.
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Notifications" }))
+            .ToContainTextAsync("MaterialSymbols.Outlined.Hiking");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IconsGuide_ShouldLoadTheIconPack_WhenOpenedThroughAnyAddressThatRoutesToIt(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "Guides/Icons?style=rounded#find");
+
+        await Expect(page.GetByRole(AriaRole.List, new() { Name = "Matching icons" }).Locator("svg").First)
+            .ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IconPack_ShouldLoadOnlyWithThePagesThatDrawIt_WhenNavigating(string browser)
+    {
+        await using var context = await Fixture.NewContextAsync(browser);
+        var page = await context.NewPageAsync();
+        var loads = new List<string>();
+        page.Request += (_, request) =>
+        {
+            if (request.Url.Contains("Trailblazor.Icons.Material", StringComparison.Ordinal))
+            {
+                loads.Add(request.Url);
+            }
+        };
+
+        await page.GotoAsync(new Uri(Fixture.DocsAddress, "").ToString());
+        await page.Locator(".docs-main h1").WaitForAsync();
+        Assert.Empty(loads);
+        await page.GetByRole(AriaRole.Link, new() { Name = "Icon", Exact = true }).First.ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Img, new() { Name = "Hiking" })).ToBeVisibleAsync();
+        Assert.NotEmpty(loads);
+    }
+
     public static TheoryData<string, string, string> PagesInBothThemes => new(
         from browser in AllBrowsers.Names
         from path in new[]
         {
             "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/browser",
-            "guides/announcements", "guides/localization", "search?q=dialog", "roadmap",
+            "guides/announcements", "guides/icons", "guides/localization", "search?q=dialog", "roadmap",
         }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));

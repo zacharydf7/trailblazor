@@ -5,10 +5,14 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Trailblazor.Analyzers/Trailblazor.Analyzers.csproj" />
+    <Project Path="src/Trailblazor.Icons.Material/Trailblazor.Icons.Material.csproj" />
     <Project Path="src/Trailblazor.Primitives/Trailblazor.Primitives.csproj" />
     <Project Path="src/Trailblazor.Testing.Playwright/Trailblazor.Testing.Playwright.csproj" />
     <Project Path="src/Trailblazor.Testing/Trailblazor.Testing.csproj" />
     <Project Path="src/Trailblazor/Trailblazor.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Trailblazor.Icons.Generator/Trailblazor.Icons.Generator.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Trailblazor.BrowserTests.Host/Trailblazor.BrowserTests.Host.csproj" />

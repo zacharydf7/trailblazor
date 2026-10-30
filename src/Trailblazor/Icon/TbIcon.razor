@@ -3,7 +3,8 @@
 
 <svg @attributes="AdditionalAttributes" viewBox="@Icon.ViewBox" fill="currentColor"
      role="@(Label is null ? null : "img")" aria-label="@Label" aria-hidden="@(Label is null ? "true" : null)"
-     class="@ClassNames.Join("tb-icon", ClassNames.Modifier("tb-icon", Size), Class)" style="@Style">
+     class="@ClassNames.Join("tb-icon", ClassNames.Modifier("tb-icon", Size),
+                Tone is { } tone ? ClassNames.Modifier("tb-icon", tone) : null, Class)" style="@Style">
     @((MarkupString)Icon.Svg)
 </svg>
 
@@ -16,6 +17,10 @@
     /// technology; set it when the icon alone carries meaning.</summary>
     [Parameter]
     public string? Label { get; set; }
+
+    /// <summary>Colors the icon by meaning. When null, the icon takes the color of the text around it.</summary>
+    [Parameter]
+    public Tone? Tone { get; set; }
 
     /// <summary>The icon's size. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
     [Parameter]

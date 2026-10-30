@@ -15,6 +15,7 @@ public static class GuideCatalog
             "Copy to the clipboard, download and save files, pick colors, scroll, and follow the viewport from C#."),
         new("guides/announcements", "Announcements",
             "Tell screen reader users about changes they can't see, and clear the messages once heard."),
+        new("guides/icons", "Icons", "Draw Material Symbols or your own SVG icons, and find the one you need."),
         new("guides/localization", "Localization",
             "Change the words components say and show, or translate them all for each user's culture."),
         new("guides/testing", "Testing",

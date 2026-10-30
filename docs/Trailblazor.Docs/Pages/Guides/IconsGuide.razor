@@ -1,0 +1,111 @@
+@page "/guides/icons"
+@using System.Reflection
+@using Trailblazor.Icons.Material
+@inject IBrowserService Browser
+@inject IToastService Toasts
+
+<PageTitle>Icons · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Icons</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    <code>TbIcon</code> draws any SVG icon. The <code>Trailblazor.Icons.Material</code> package adds Google's Material
+    Symbols, more than 3,900 of them in six styles, as values you pass to it.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Find an icon</TbText>
+<div class="docs-example">
+    <TbStack Gap="4">
+        <TbStack Row Gap="3" Wrap>
+            <TbTextField Label="Icon name" @bind-Value="_query" Type="TextFieldType.Search" UpdateOnInput
+                         Placeholder="hiking, map, star" />
+            <TbSelect Label="Style" @bind-Value="_style">
+                @foreach (var style in Styles)
+                {
+                    <TbOption Value="style">@style.Name</TbOption>
+                }
+            </TbSelect>
+        </TbStack>
+        <TbText Muted role="status">@Summary</TbText>
+        <div role="list" aria-label="Matching icons" class="docs-icon-grid">
+            @foreach (var icon in Shown)
+            {
+                <div role="listitem">
+                    <TbButton Variant="Variant.Text" OnClick="() => CopyAsync(icon.Name)" class="docs-icon-choice">
+                        <TbIcon Icon="@((Icon)icon.GetValue(null)!)" Size="Size.Large" />
+                        <span>@icon.Name</span>
+                    </TbButton>
+                </div>
+            }
+        </div>
+    </TbStack>
+</div>
+<TbText>Press an icon to copy its C# name.</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Use one</TbText>
+<TbText>Add the package, then pass a symbol to <code>TbIcon</code>, or to any component that takes an icon.</TbText>
+<CodeBlock Label="Terminal" Code="dotnet add package Trailblazor.Icons.Material" />
+<CodeBlock Label="A page" Code="@Usage" />
+<TbText>
+    Names follow the symbols' own, as Google's <a href="https://fonts.google.com/icons">Material Symbols</a> page
+    lists them: <code>add_circle</code> is <code>AddCircle</code>, and a name that starts with a digit gets an
+    underscore, so <code>10k</code> is <code>_10k</code>. Each icon is in Outlined, Rounded and Sharp, plain or
+    filled. A filled icon whose shape has no filled form is the same as the plain one.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Your own icons</TbText>
+<TbText>
+    An <code>Icon</code> is the markup inside an <code>&lt;svg&gt;</code> and its view box, so any icon set works. The
+    markup is rendered as is, so build it in code, never from user input.
+</TbText>
+<CodeBlock Label="Icons.cs" Code="@Custom" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Size and license</TbText>
+<TbText>
+    Each icon is its own property and the package is marked trimmable, so a WebAssembly app published with trimming
+    can leave out the icons it never uses. The paths are Google's, under the Apache License 2.0; the package carries
+    the notice.
+</TbText>
+
+@code {
+    private const int MaxShown = 60;
+    private static readonly Type[] Styles = typeof(MaterialSymbols).GetNestedTypes();
+    private string? _query;
+    private Type _style = typeof(MaterialSymbols.Outlined);
+
+    private IEnumerable<PropertyInfo> Matches => _style.GetProperties(BindingFlags.Public | BindingFlags.Static)
+        .Where(icon => string.IsNullOrWhiteSpace(_query)
+            || icon.Name.Contains(_query.Replace(" ", "").Replace("_", ""), StringComparison.OrdinalIgnoreCase));
+
+    private IEnumerable<PropertyInfo> Shown => Matches.Take(MaxShown);
+
+    private string Summary => Matches.Count() switch
+    {
+        0 => "No icons match.",
+        var count and > MaxShown => $"{count} icons match; the first {MaxShown} show.",
+        var count => count == 1 ? "1 icon matches." : $"{count} icons match.",
+    };
+
+    private async Task CopyAsync(string name)
+    {
+        var code = $"MaterialSymbols.{_style.Name}.{name}";
+        var copied = await Browser.CopyTextAsync(code);
+        Toasts.Show(copied ? $"Copied {code}" : $"Couldn't copy {code}", copied ? Tone.Success : Tone.Danger);
+    }
+
+    private const string Usage = """
+        @using Trailblazor.Icons.Material
+
+        <TbIcon Icon="MaterialSymbols.Outlined.Hiking" />
+        <TbIconButton Icon="MaterialSymbols.RoundedFilled.Star" AriaLabel="Add to favorites" />
+        """;
+
+    private const string Custom = """
+        public static class AppIcons
+        {
+            public static Icon Trail => new("<path d=\"M4 20 12 4l8 16z\" />");
+
+            // Another set's own grid, such as a 16-unit one.
+            public static Icon Pin => new("<circle cx=\"8\" cy=\"8\" r=\"5\" />", "0 0 16 16");
+        }
+        """;
+}

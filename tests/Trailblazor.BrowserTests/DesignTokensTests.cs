@@ -25,6 +25,7 @@ public class DesignTokensTests
     public void Read_ShouldLeaveOutLongerBlocksThatStartTheSame_WhenGivenAShorterOne()
     {
         Assert.Contains("--tb-control-height", DesignTokens.Read(["tb-icon-button"]));
-        Assert.Empty(DesignTokens.Read(["tb-icon"]));
+        Assert.DoesNotContain("--tb-control-height", DesignTokens.Read(["tb-icon"]));
+        Assert.Contains("--tb-color-danger-text", DesignTokens.Read(["tb-icon"]));
     }
 }

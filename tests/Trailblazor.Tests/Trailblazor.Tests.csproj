@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trailblazor\Trailblazor.csproj" />
+    <ProjectReference Include="..\..\src\Trailblazor.Icons.Material\Trailblazor.Icons.Material.csproj" />
     <ProjectReference Include="..\..\src\Trailblazor.Testing\Trailblazor.Testing.csproj" />
   </ItemGroup>
 

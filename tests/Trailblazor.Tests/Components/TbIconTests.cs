@@ -30,6 +30,24 @@ public class TbIconTests : BunitContext
         Assert.False(svg.HasAttribute("aria-hidden"));
     }
 
+    [Theory]
+    [InlineData(Tone.Danger, "tb-icon--danger")]
+    [InlineData(Tone.Success, "tb-icon--success")]
+    public void Render_ShouldColorTheIconByItsTone_WhenGivenATone(Tone tone, string modifier)
+    {
+        var cut = Render<TbIcon>(parameters => parameters.Add(icon => icon.Icon, Square).Add(icon => icon.Tone, tone));
+
+        Assert.Contains(modifier, cut.Find("svg").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldTakeNoToneClass_WhenNoToneIsSet()
+    {
+        var cut = Render<TbIcon>(parameters => parameters.Add(icon => icon.Icon, Square));
+
+        Assert.Equal(["tb-icon", "tb-icon--medium"], cut.Find("svg").ClassList);
+    }
+
     [Fact]
     public void Render_ShouldUseTheIconsViewBox_WhenCalled()
     {

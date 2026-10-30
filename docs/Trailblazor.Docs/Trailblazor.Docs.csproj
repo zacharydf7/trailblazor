@@ -13,6 +13,11 @@
     <ProjectReference Include="..\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
   </ItemGroup>
 
+  <!-- The icon pack is large, so it loads with the pages that draw its icons (App.razor). -->
+  <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="Trailblazor.Icons.Material.wasm" />
+  </ItemGroup>
+
   <!-- The logo lives once, in the repository's assets; the site serves it from its own root. -->
   <ItemGroup>
     <Content Include="..\..\assets\icon.svg" Link="wwwroot\icon.svg" />

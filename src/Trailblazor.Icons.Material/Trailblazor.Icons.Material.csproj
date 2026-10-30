@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- The icon paths come from Google's Material Symbols, under Apache 2.0; the code around them is MIT. -->
+    <PackageLicenseExpression>MIT AND Apache-2.0</PackageLicenseExpression>
+    <Description>Material Symbols for Trailblazor's TbIcon: Outlined, Rounded and Sharp, plain and filled.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Trailblazor\Trailblazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

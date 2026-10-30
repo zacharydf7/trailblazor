@@ -240,6 +240,20 @@ a:focus-visible {
     box-shadow: var(--tb-shadow-sm);
 }
 
+.docs-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+    gap: var(--tb-space-2);
+}
+
+.docs-icon-choice {
+    flex-direction: column;
+    inline-size: 100%;
+    block-size: auto;
+    padding-block: var(--tb-space-3);
+    overflow-wrap: anywhere;
+}
+
 .docs-palette {
     margin-block: var(--tb-space-8);
 }

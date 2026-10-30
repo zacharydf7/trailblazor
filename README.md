@@ -15,9 +15,11 @@ src/
   Trailblazor/               styled components, CSS, JS module
   Trailblazor.Primitives/    headless behaviors (focus scope, dismissable layer, anchored positioning)
   Trailblazor.Analyzers/     Roslyn analyzers and code fixes
+  Trailblazor.Icons.Material/  Google's Material Symbols as icons for TbIcon (paths under Apache 2.0)
   Trailblazor.Testing/       bUnit setup for consumers: this.AddTrailblazor()
   Trailblazor.Testing.Playwright/  Playwright helpers for consumers: page.Tb().Select("Size").ChooseAsync("Medium")
 docs/Trailblazor.Docs/       WebAssembly docs site
+tools/Trailblazor.Icons.Generator/  writes the icon pack's classes from the Material Symbols npm package
 tests/
   Trailblazor.Tests/         bUnit unit tests
   Trailblazor.BrowserTests/  Playwright browser tests

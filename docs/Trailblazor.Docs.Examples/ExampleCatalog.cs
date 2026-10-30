@@ -145,6 +145,8 @@ public static class ExampleCatalog
                 "Without a `Label` the icon is decorative and hidden from screen readers with `aria-hidden`.",
                 "With a `Label` it's an `img` named by the label. Give one whenever the icon means something that "
                     + "no text next to it says.",
+                "`Tone` colors it by meaning, with the same text colors as `TbText`, which meet contrast in both "
+                    + "themes. Color alone doesn't carry the meaning, so pair it with a label or text.",
             ],
             Target = new("img", "Failed"),
             Blocks = ["tb-icon"],
