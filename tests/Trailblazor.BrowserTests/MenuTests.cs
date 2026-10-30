@@ -62,7 +62,8 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Menu_ShouldStayOpenAndDoNothing_WhenADisabledItemIsChosen(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");
-        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        // A forced click doesn't wait for the menu to settle, so it waits here for the script to place it.
+        await OpenPlacedAsync(page, "Actions");
 
         // Playwright treats aria-disabled as disabled and would wait forever without Force.
         await Item(page, "Archive").ClickAsync(new() { Force = true });
