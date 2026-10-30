@@ -400,6 +400,18 @@ public class TbTreeViewTests : BunitContext
         Assert.Equal("Nothing to show.", cut.Find("[data-part=empty]").TextContent.Trim());
     }
 
+    [Fact]
+    public void Select_ShouldReportTheItemsThemselves_WhenTheTreeHasNoKeySelector()
+    {
+        IReadOnlyCollection<object> selected = [];
+        var cut = Render<TbTreeView<string>>(parameters => parameters.Add(tree => tree.Items, ["Trails", "Huts"])
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> keys) => selected = keys));
+
+        cut.Find("[data-key=Huts]").Click();
+
+        Assert.Equal(["Huts"], selected);
+    }
+
     private TreeViewEvents Events() =>
         ((DotNetObjectReference<TreeViewEvents>)JSInterop.Invocations["createTreeView"].Single().Arguments[1]!).Value;
 

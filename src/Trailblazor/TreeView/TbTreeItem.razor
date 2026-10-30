@@ -1,0 +1,115 @@
+@namespace Trailblazor
+@typeparam TItem
+@inherits TbComponentBase
+@implements IDisposable
+
+@if (RendererInfo.IsInteractive)
+{
+    @* Hidden: the tree shows the rows, and this markup only gives the items' order. *@
+    <span data-tree-item="@_id"><CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue></span>
+}
+else
+{
+    @* Without a circuit the tree can't render rows from what registered, so each item renders its own. *@
+    var open = ChildContent is not null && Level <= Tree!.InitialExpandDepth;
+    <div @attributes="AdditionalAttributes" role="treeitem" data-part="item" aria-level="@Level"
+         aria-disabled="@(Disabled ? "true" : null)"
+         aria-expanded="@(ChildContent is null ? null : open ? "true" : "false")" style="@RowStyle" class="@ClassNames.Join("tb-tree__item", Class)">
+        <span class="tb-tree__toggle" aria-hidden="true"></span>
+        <span data-part="content" class="tb-tree__content">@Row</span>
+    </div>
+    @if (open)
+    {
+        <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    }
+}
+
+@code {
+    private readonly string _id = $"tb-tree-item-{Guid.NewGuid():N}";
+    private (object Key, string? Text, Icon? Icon, bool Disabled) _last;
+
+    /// <summary>The item this row stands for, and with no <c>KeySelector</c> on the tree, its key, so it must then
+    /// stay equal across renders. Selection, checks and expansion report these keys.</summary>
+    [Parameter, EditorRequired]
+    public TItem Value { get; set; } = default!;
+
+    /// <summary>The row's text, which typing finds it by. Defaults to the value's text.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>An icon before the text.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Stops this row from being selected, checked or activated.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>The row's content in place of its <see cref="Icon"/> and <see cref="Text"/>.</summary>
+    [Parameter]
+    public RenderFragment? Content { get; set; }
+
+    /// <summary>The <see cref="TbTreeItem{TItem}"/>s inside this one.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TbTreeView<TItem>? Tree { get; set; }
+
+    [CascadingParameter]
+    private TbTreeItem<TItem>? Parent { get; set; }
+
+    internal string Id => _id;
+
+    internal List<TbTreeItem<TItem>> Children { get; } = [];
+
+    internal int Level => (Parent?.Level ?? 0) + 1;
+
+    // The row's indent, with the item's own style after it.
+    internal string RowStyle =>
+        Style is null ? $"--tb-tree-level: {Level - 1}" : $"--tb-tree-level: {Level - 1}; {Style}";
+
+    // What the row shows, here or in the tree's rows.
+    internal RenderFragment Row => Content ?? (builder =>
+    {
+        if (Icon is not null)
+        {
+            builder.OpenComponent<TbIcon>(0);
+            builder.AddComponentParameter(1, nameof(TbIcon.Icon), Icon);
+            builder.AddComponentParameter(2, nameof(TbIcon.Size), Size.Small);
+            builder.CloseComponent();
+        }
+
+        builder.OpenElement(3, "span");
+        builder.AddAttribute(4, "class", "tb-tree__text");
+        builder.AddContent(5, Text ?? Value?.ToString());
+        builder.CloseElement();
+    });
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Tree is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbTreeItem<TItem>)} must be inside a TbTreeView.");
+        }
+
+        _last = (Tree.KeyOf(Value), Text, Icon, Disabled);
+        Tree.AddItem(this, Parent);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Keys rather than values, so a value made anew on each render doesn't rebuild the tree forever.
+        var current = (Tree!.KeyOf(Value), Text, Icon, Disabled);
+        if (!current.Equals(_last))
+        {
+            _last = current;
+            Tree.ItemChanged();
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Tree?.RemoveItem(this, Parent);
+}

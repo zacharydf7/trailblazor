@@ -859,7 +859,7 @@ public static class ExampleCatalog
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
                 + "when opened.", typeof(TreeViewExample))
         {
-            Api = [typeof(TbTreeView<>), typeof(TreeViewLabels)],
+            Api = [typeof(TbTreeView<>), typeof(TbTreeItem<>), typeof(TreeViewLabels)],
             Accessibility =
             [
                 "It is a `tree` named by `AriaLabel`, with one `treeitem` per visible row carrying `aria-level`, "
@@ -872,6 +872,8 @@ public static class ExampleCatalog
                 "A row is named by everything it shows, its `ItemEnd` content included, so keep actions there short "
                     + "or give icon buttons an `AriaLabel`.",
                 "Children that load show a loading row, and a load that fails shows a row that offers to try again.",
+                "Rows written as nested `TbTreeItem`s work the same. Before the page is interactive, each renders a "
+                    + "plain row, open to `InitialExpandDepth`.",
             ],
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],

@@ -7,7 +7,20 @@
      aria-multiselectable="@(SelectionMode == TreeSelectionMode.Multiple ? "true" : null)"
      aria-disabled="@(Disabled ? "true" : null)" data-ready="@(_handle is null ? null : "")" style="@Style"
      class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null, Class)">
-    @if (_rows.Count == 0)
+    @if (ChildContent is not null)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            @if (RendererInfo.IsInteractive)
+            {
+                <div hidden data-part="items">@ChildContent</div>
+            }
+            else
+            {
+                @ChildContent
+            }
+        </CascadingValue>
+    }
+    @if (_rows.Count == 0 && (ChildContent is null || _itemsRegistered))
     {
         <div data-part="empty" class="tb-tree__empty">
             @if (EmptyContent is null)
@@ -27,18 +40,20 @@
         @if (row.IsItem)
         {
             var context = ContextOf(node);
-            var disabled = Disabled || IsDisabled?.Invoke(node.Item) == true;
+            var disabled = Disabled || IsItemDisabled(node);
+            var declared = _declared.GetValueOrDefault(node.Key);
             @* A row is named by all it shows, its end slot included, as the tree pattern's rows are. *@
-            <div @key="node.Key" @ref="_rowRefs[node.Key]" role="treeitem" data-part="item" data-key="@node.Id"
+            <div @attributes="declared?.AdditionalAttributes" @key="node.Key" @ref="_rowRefs[node.Key]" role="treeitem"
+                 data-part="item" data-key="@node.Id"
                  data-text="@TextOf(node)" data-level="@node.Level" aria-level="@node.Level"
                  aria-setsize="@row.SetSize" aria-posinset="@row.Position"
                  aria-expanded="@(node.HasChildren ? Flag(context.Expanded) : null)"
                  aria-selected="@(CanSelect(node) || context.Selected ? Flag(context.Selected) : null)"
                  aria-checked="@(Checkable ? context.Checked is { } isChecked ? Flag(isChecked) : "mixed" : null)"
                  aria-disabled="@(disabled ? "true" : null)" tabindex="@(node.Id == focusId ? 0 : -1)"
-                 style="@($"--tb-tree-level: {node.Level - 1}")"
+                 style="@(declared?.RowStyle ?? $"--tb-tree-level: {node.Level - 1}")"
                  class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
-                            context.Matches ? "tb-tree__item--match" : null)"
+                            context.Matches ? "tb-tree__item--match" : null, declared?.Class)"
                  @onclick="args => OnRowClickAsync(node, args)" @ondblclick="() => OnRowDoubleClickAsync(node)">
                 <span data-part="toggle" aria-hidden="true" class="tb-tree__toggle"
                       @onclick="() => ToggleAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
@@ -57,6 +72,10 @@
                     @if (ItemTemplate is not null)
                     {
                         @ItemTemplate(context)
+                    }
+                    else if (declared is not null)
+                    {
+                        @declared.Row
                     }
                     else
                     {

@@ -7,10 +7,14 @@ using Trailblazor.Primitives;
 namespace Trailblazor;
 
 /// <summary>Shows items as a tree that expands and collapses, with selection, checkboxes, a filter, children that
-/// load when opened, and the full keyboard of a WAI-ARIA tree. Give it your own items, a <see cref="KeySelector"/>,
-/// and either a <see cref="ChildrenSelector"/> or a <see cref="ParentKeySelector"/>.</summary>
+/// load when opened, and the full keyboard of a WAI-ARIA tree. Give it your own items, usually a
+/// <see cref="KeySelector"/>, and either a <see cref="ChildrenSelector"/> or a <see cref="ParentKeySelector"/>; or
+/// write its rows as nested <see cref="TbTreeItem{TItem}"/>s.</summary>
+[CascadingTypeParameter(nameof(TItem))]
 public partial class TbTreeView<TItem> : IAsyncDisposable
 {
+    private readonly List<TbTreeItem<TItem>> _declaredRoots = [];
+    private readonly Dictionary<object, TbTreeItem<TItem>> _declared = [];
     private readonly Dictionary<object, TreeNode<TItem>> _nodes = [];
     private readonly Dictionary<string, TreeNode<TItem>> _byId = [];
     private readonly Dictionary<object, List<TItem>> _loaded = [];
@@ -34,6 +38,8 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     private object? _anchor;
     private string? _focusId;
     private bool _initialExpandDone;
+    private bool _itemsChanged;
+    private bool _itemsRegistered;
     private (object Key, bool Focus, TaskCompletionSource Done)? _scrollAfterRender;
     private ElementReference _tree;
     private IJSObjectReference? _handle;
@@ -41,13 +47,18 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     private bool _disposed;
 
     /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item.</summary>
-    [Parameter, EditorRequired]
+    [Parameter]
     public IEnumerable<TItem> Items { get; set; } = [];
 
+    /// <summary>The rows as nested <see cref="TbTreeItem{TItem}"/>s, in place of <see cref="Items"/>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
     /// <summary>Gives each item a key that stays the same across renders, such as its id. Expansion, selection,
-    /// checks and focus follow keys, so they survive when <see cref="Items"/> is replaced with new instances.</summary>
-    [Parameter, EditorRequired]
-    public Func<TItem, object> KeySelector { get; set; } = default!;
+    /// checks and focus follow keys, so they survive when <see cref="Items"/> is replaced with new instances.
+    /// Defaults to the item itself, which suits items compared by value, such as strings and records.</summary>
+    [Parameter]
+    public Func<TItem, object>? KeySelector { get; set; }
 
     /// <summary>Gives an item's children, for items that hold their own.</summary>
     [Parameter]
@@ -185,9 +196,11 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (KeySelector is null)
+        if (ChildContent is not null && (Items.Any() || ChildrenSelector is not null || ParentKeySelector is not null
+            || LoadChildrenAsync is not null))
         {
-            throw new InvalidOperationException($"{nameof(TbTreeView<TItem>)} needs a {nameof(KeySelector)}.");
+            throw new InvalidOperationException($"{nameof(TbTreeView<TItem>)} takes {nameof(Items)} or " +
+                $"{nameof(TbTreeItem<TItem>)}s, not both.");
         }
 
         if (ParentKeySelector is not null && (ChildrenSelector is not null || LoadChildrenAsync is not null))
@@ -199,6 +212,11 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         _expanded = TakeFromParent(ExpandedKeys, ref _expandedFromParent, _expanded);
         _selected = TakeFromParent(SelectedKeys, ref _selectedFromParent, _selected);
         _checked = TakeFromParent(CheckedKeys, ref _checkedFromParent, _checked);
+        Refresh();
+    }
+
+    private void Refresh()
+    {
         Build();
         // Items that arrive after the first render, as loaded data does, still open to the initial depth.
         if (!_initialExpandDone && _nodes.Count > 0)
@@ -212,6 +230,25 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         }
 
         Flatten();
+    }
+
+    // Tree items register as the tree renders them, so the tree builds its rows from them after that render.
+    internal void AddItem(TbTreeItem<TItem> item, TbTreeItem<TItem>? parent)
+    {
+        (parent?.Children ?? _declaredRoots).Add(item);
+        ItemChanged();
+    }
+
+    internal void RemoveItem(TbTreeItem<TItem> item, TbTreeItem<TItem>? parent)
+    {
+        (parent?.Children ?? _declaredRoots).Remove(item);
+        ItemChanged();
+    }
+
+    internal void ItemChanged()
+    {
+        _itemsChanged = true;
+        StateHasChanged();
     }
 
     // Only a new set from the parent replaces the tree's own, so a parent rendering again doesn't undo the user.
@@ -241,6 +278,11 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             if (firstRender && RendererInfo.IsInteractive)
             {
                 await AttachAsync();
+            }
+
+            if (RendererInfo.IsInteractive && (_itemsChanged || (firstRender && ChildContent is not null)))
+            {
+                BuildFromItems();
             }
 
             if (_scrollAfterRender is { } scroll)
@@ -278,7 +320,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             return;
         }
 
-        _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync));
+        _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnItemOrderAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createTreeView", _tree, _events);
         if (handle is null)
         {
@@ -293,6 +335,32 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
         _handle = handle;
         StateHasChanged();
+    }
+
+    private void BuildFromItems()
+    {
+        _itemsChanged = false;
+        _itemsRegistered = true;
+        Refresh();
+        StateHasChanged();
+    }
+
+    // Items register in the order they first render, and a keyed item can move without telling the tree, so the
+    // browser reports the order of their markup.
+    private Task OnItemOrderAsync(string[] ids)
+    {
+        var place = ids.Select((id, index) => (id, index)).ToDictionary(pair => pair.id, pair => pair.index);
+        SortByPlace(_declaredRoots);
+        Refresh();
+        StateHasChanged();
+        return Task.CompletedTask;
+
+        void SortByPlace(List<TbTreeItem<TItem>> items)
+        {
+            items.Sort((first, second) =>
+                place.GetValueOrDefault(first.Id).CompareTo(place.GetValueOrDefault(second.Id)));
+            items.ForEach(item => SortByPlace(item.Children));
+        }
     }
 
     /// <summary>Opens every row that has children, or only the rows down to <paramref name="depth"/>. Rows whose
@@ -374,7 +442,19 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     {
         _nodes.Clear();
         _byId.Clear();
+        _declared.Clear();
         _roots = [];
+        // Rendered statically, each tree item shows its own row instead.
+        if (ChildContent is not null)
+        {
+            if (RendererInfo.IsInteractive)
+            {
+                _roots.AddRange(_declaredRoots.Select(item => AddDeclared(item, null)));
+            }
+
+            return;
+        }
+
         if (ParentKeySelector is not { } parentOf)
         {
             _roots.AddRange(Items.Select(item => AddWithChildren(item, null)));
@@ -383,7 +463,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
         // A parent that isn't in the list leaves the item at the root, rather than losing it.
         var items = Items.ToList();
-        var keys = items.Select(KeySelector).ToHashSet();
+        var keys = items.Select(KeyOf).ToHashSet();
         var childrenOf = items.Where(item => parentOf(item) is { } parent && keys.Contains(parent))
             .ToLookup(item => parentOf(item)!);
         _roots.AddRange(items.Where(item => parentOf(item) is not { } parent || !keys.Contains(parent))
@@ -391,7 +471,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         if (_nodes.Count < items.Count)
         {
             throw new InvalidOperationException($"{nameof(TbTreeView<TItem>)} has items whose parents lead back to " +
-                $"themselves, such as {items.Select(KeySelector).First(key => !_nodes.ContainsKey(key))}.");
+                $"themselves, such as {items.Select(KeyOf).First(key => !_nodes.ContainsKey(key))}.");
         }
 
         TreeNode<TItem> Place(TItem item, TreeNode<TItem>? parent)
@@ -400,6 +480,14 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             node.Children.AddRange(childrenOf[node.Key].Select(child => Place(child, node)));
             return node;
         }
+    }
+
+    private TreeNode<TItem> AddDeclared(TbTreeItem<TItem> item, TreeNode<TItem>? parent)
+    {
+        var node = Add(item.Value, parent);
+        _declared[node.Key] = item;
+        node.Children.AddRange(item.Children.Select(child => AddDeclared(child, node)));
+        return node;
     }
 
     private TreeNode<TItem> AddWithChildren(TItem item, TreeNode<TItem>? parent)
@@ -421,7 +509,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
     private TreeNode<TItem> Add(TItem item, TreeNode<TItem>? parent)
     {
-        var key = KeySelector(item);
+        var key = KeyOf(item);
         var id = Convert.ToString(key, CultureInfo.InvariantCulture) ?? "";
         if (_nodes.ContainsKey(key) || _byId.ContainsKey(id))
         {
@@ -629,10 +717,15 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     }
 
     private Task ActivateAsync(TreeNode<TItem> node) =>
-        IsDisabled?.Invoke(node.Item) == true ? Task.CompletedTask : OnActivate.InvokeAsync(node.Item);
+        IsItemDisabled(node) ? Task.CompletedTask : OnActivate.InvokeAsync(node.Item);
 
     private bool CanSelect(TreeNode<TItem> node) => SelectionMode != TreeSelectionMode.None
-        && IsSelectable?.Invoke(node.Item) != false && IsDisabled?.Invoke(node.Item) != true;
+        && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
+
+    private bool IsItemDisabled(TreeNode<TItem> node) =>
+        IsDisabled?.Invoke(node.Item) == true || _declared.GetValueOrDefault(node.Key)?.Disabled == true;
+
+    internal object KeyOf(TItem item) => KeySelector is null ? item! : KeySelector(item);
 
     // Shift selects from the last row chosen without it; Ctrl or Cmd adds or removes one row.
     private Task SelectAsync(TreeNode<TItem> node, bool shift, bool toggle)
@@ -666,7 +759,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
     private async Task ToggleCheckAsync(TreeNode<TItem> node)
     {
-        if (Disabled || IsDisabled?.Invoke(node.Item) == true)
+        if (Disabled || IsItemDisabled(node))
         {
             return;
         }
@@ -730,7 +823,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
     // A cascade passes over turned-off rows, which can't be checked.
     private IEnumerable<TreeNode<TItem>> EnabledDescendants(TreeNode<TItem> node) =>
-        node.Descendants().Where(descendant => IsDisabled?.Invoke(descendant.Item) != true);
+        node.Descendants().Where(descendant => !IsItemDisabled(descendant));
 
     private async Task SetExpandedAsync(IEnumerable<object> keys)
     {
@@ -824,7 +917,8 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         IsOpen(node), _selected.Contains(node.Key), Checkable ? _checkStates.GetValueOrDefault(node.Key) : false,
         node.HasChildren, _loads.ContainsKey(node.Key), _matches.Contains(node.Key));
 
-    private string TextOf(TreeNode<TItem> node) => ItemText?.Invoke(node.Item) ?? node.Item?.ToString() ?? "";
+    private string TextOf(TreeNode<TItem> node) =>
+        ItemText?.Invoke(node.Item) ?? _declared.GetValueOrDefault(node.Key)?.Text ?? node.Item?.ToString() ?? "";
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

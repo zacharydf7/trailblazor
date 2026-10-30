@@ -32,7 +32,19 @@ export function createTreeView(tree, events) {
             target.focus();
         }
     };
-    const observer = new MutationObserver(syncEnds);
+    let order = '';
+    // Blazor moves a keyed tree item's markup without telling the tree, so the order goes to the server on a change.
+    const reportOrder = () => {
+        const ids = [...tree.querySelectorAll('[data-tree-item]')].map(item => item.dataset.treeItem);
+        if (ids.join() !== order) {
+            order = ids.join();
+            events.invokeMethodAsync('OnItemOrder', ids);
+        }
+    };
+    const observer = new MutationObserver(() => {
+        syncEnds();
+        reportOrder();
+    });
     // Every way focus reaches a row, a click included, makes it the tree's one tab stop.
     const onFocusIn = event => {
         if (event.target.matches('[role="treeitem"][data-key]')) {
@@ -118,6 +130,7 @@ export function createTreeView(tree, events) {
     tree.addEventListener('keydown', onKeyDown);
     observer.observe(tree, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
     syncEnds();
+    reportOrder();
     return {
         dispose() {
             observer.disconnect();

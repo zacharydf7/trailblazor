@@ -1,0 +1,34 @@
+@page "/tree-items"
+
+<TbStack Gap="4" Style="max-inline-size: 28rem">
+    <TbTreeView TItem="string" AriaLabel="Files" @bind-SelectedKeys="_selected" Checkable @bind-CheckedKeys="_checked">
+        <TbTreeItem Value="@("docs")" Text="Docs">
+            <TbTreeItem Value="@("guide")" Text="Guide" />
+            <TbTreeItem Value="@("api")" Text="API" />
+        </TbTreeItem>
+        @if (_notes)
+        {
+            <TbTreeItem Value="@("notes")" Text="Notes" />
+        }
+        <TbTreeItem Value="@("src")" Text="Source">
+            <Content><strong>Source</strong> code</Content>
+        </TbTreeItem>
+    </TbTreeView>
+    <output data-testid="selected">@string.Join(", ", _selected)</output>
+    <output data-testid="checked">@string.Join(", ", _checked.Order())</output>
+    <TbButton OnClick="() => _notes = !_notes">Notes</TbButton>
+    <TbTreeView TItem="string" AriaLabel="Trails">
+        @foreach (var trail in _trails)
+        {
+            <TbTreeItem @key="trail" Value="trail" />
+        }
+    </TbTreeView>
+    <TbButton OnClick="() => _trails.Reverse()">Reverse</TbButton>
+</TbStack>
+
+@code {
+    private IReadOnlyCollection<object> _selected = [];
+    private IReadOnlyCollection<object> _checked = [];
+    private bool _notes;
+    private readonly List<string> _trails = ["Pine Hollow", "Eagle Ridge", "Cedar Flats"];
+}

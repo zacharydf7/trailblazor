@@ -14,6 +14,14 @@
         </ItemEnd>
     </TbTreeView>
     <TbText>@(_opened is null ? "Double-click or press Enter on a trail to open it." : $"Opened {_opened}.")</TbText>
+    @* Rows written as markup, for a tree that is part of the page rather than data. *@
+    <TbTreeView TItem="string" AriaLabel="Notifications" Checkable @bind-CheckedKeys="_notify" InitialExpandDepth="1">
+        <TbTreeItem Value="@("trips")" Text="Trips">
+            <TbTreeItem Value="@("trips-new")" Text="New trails near me" />
+            <TbTreeItem Value="@("trips-changed")" Text="Changes to saved trails" />
+        </TbTreeItem>
+        <TbTreeItem Value="@("weather")" Text="Weather alerts" />
+    </TbTreeView>
 </TbStack>
 
 @code {
@@ -27,6 +35,7 @@
     private string? _search;
     private IReadOnlyCollection<object> _selected = [];
     private string? _opened;
+    private IReadOnlyCollection<object> _notify = ["weather"];
 
     private bool Matches(Place place) => place.Name.Contains(_search!, StringComparison.OrdinalIgnoreCase);
 
