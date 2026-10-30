@@ -47,9 +47,9 @@ public class ApiDocsTests
     [Fact]
     public void Describe_ShouldMarkARequiredParameter_WhenTheComponentRequiresIt()
     {
-        var text = ApiDocs.Describe(typeof(TbTab)).Members.Single(member => member.Name == "Text");
+        var label = ApiDocs.Describe(typeof(TbChipGroup)).Members.Single(member => member.Name == "AriaLabel");
 
-        Assert.True(text.Required);
+        Assert.True(label.Required);
     }
 
     [Fact]
