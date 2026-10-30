@@ -8,16 +8,18 @@
 @* popovertarget opens the menu natively before the script attaches; the script adds keys and aria-expanded. *@
 <div @ref="_root" @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-menu", FullWidth ? "tb-menu--full-width" : null, Class)">
-    @if (Icon is { } icon)
+    @if (Trigger is not null)
     {
-        <TbIconButton Icon="icon" AriaLabel="@Label" Size="Size" id="@TriggerId" popovertarget="@MenuId"
-                      aria-haspopup="menu" aria-controls="@MenuId" aria-describedby="@DescriptionId"
-                      data-part="trigger" />
+        @Trigger(new MenuTrigger { Attributes = TriggerAttributes })
+    }
+    else if (Icon is { } icon)
+    {
+        <TbIconButton Icon="icon" AriaLabel="@(Label ?? "")" Size="Size" Disabled="Disabled"
+                      @attributes="TriggerAttributes" />
     }
     else
     {
-        <TbButton Variant="Variant" Size="Size" id="@TriggerId" popovertarget="@MenuId" aria-haspopup="menu"
-                  aria-controls="@MenuId" aria-describedby="@DescriptionId" data-part="trigger">
+        <TbButton Variant="Variant" Size="Size" Disabled="Disabled" @attributes="TriggerAttributes">
             <ChildContent>@Label</ChildContent>
             <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
         </TbButton>
@@ -39,10 +41,19 @@
     private IJSObjectReference? _handle;
     private bool _disposed;
 
-    /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required.
-    /// </summary>
-    [Parameter, EditorRequired]
-    public string Label { get; set; } = "";
+    /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required
+    /// unless <see cref="Trigger"/> gives a trigger of your own.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>A trigger of your own, such as an avatar button or the arrow half of a split button, in place of the
+    /// built-in one. Put <c>context.Attributes</c> on a button.</summary>
+    [Parameter]
+    public RenderFragment<MenuTrigger>? Trigger { get; set; }
+
+    /// <summary>Stops the trigger from opening the menu.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
 
     /// <summary>Shows an icon button as the trigger instead of a text button.</summary>
     [Parameter]
@@ -76,7 +87,9 @@
     [Parameter]
     public string? Description { get; set; }
 
-    /// <summary>The menu's <see cref="TbMenuItem"/>s and <see cref="TbSubMenu"/>s.</summary>
+    /// <summary>The menu's items: <see cref="TbMenuItem"/>s, <see cref="TbMenuCheckboxItem"/>s, a
+    /// <see cref="TbMenuRadioGroup{TValue}"/>, <see cref="TbSubMenu"/>s, and <see cref="TbMenuGroup"/>s and
+    /// <see cref="TbMenuSeparator"/>s to arrange them.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -85,6 +98,42 @@
     private string MenuId => $"{_id}-list";
 
     private string? DescriptionId => Description is null ? null : $"{_id}-description";
+
+    private IReadOnlyDictionary<string, object> TriggerAttributes
+    {
+        get
+        {
+            var attributes = new Dictionary<string, object>
+            {
+                ["id"] = TriggerId,
+                ["popovertarget"] = MenuId,
+                ["aria-haspopup"] = "menu",
+                ["aria-controls"] = MenuId,
+                ["data-part"] = "trigger",
+            };
+            if (DescriptionId is not null)
+            {
+                attributes["aria-describedby"] = DescriptionId;
+            }
+
+            // The built-in triggers take Disabled as a parameter; a custom one gets the attribute.
+            if (Disabled && Trigger is not null)
+            {
+                attributes["disabled"] = true;
+            }
+
+            return attributes;
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Trigger is null && string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException($"{nameof(TbMenu)} needs a {nameof(Label)} or a {nameof(Trigger)}.");
+        }
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -1,0 +1,41 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbComponentBase
+
+<button @attributes="AdditionalAttributes" type="button" role="menuitemradio" tabindex="-1" style="@Style"
+        aria-checked="@(Chosen ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
+        class="@ClassNames.Join("tb-menu__item", Class)" @onclick="ChooseAsync">
+    <span data-part="indicator" class="tb-menu__indicator"></span>
+    <span data-part="label">@ChildContent</span>
+</button>
+
+@code {
+    /// <summary>The value the group takes when this item is chosen.</summary>
+    [Parameter, EditorRequired]
+    public TValue Value { get; set; } = default!;
+
+    /// <summary>The item's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Keeps the item in the menu but stops it from being chosen.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [CascadingParameter]
+    private TbMenuRadioGroup<TValue>? Group { get; set; }
+
+    private bool Chosen => Group!.IsChosen(Value);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Group is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbMenuRadioItem<TValue>)} must be inside a "
+                + $"{nameof(TbMenuRadioGroup<TValue>)} of the same type.");
+        }
+    }
+
+    private Task ChooseAsync() => Disabled ? Task.CompletedTask : Group!.ChooseAsync(Value);
+}

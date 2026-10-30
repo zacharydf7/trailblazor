@@ -154,4 +154,131 @@ public class TbMenuTests : BunitContext
         Assert.False(chosen);
         Assert.Equal("true", cut.Find("button").GetAttribute("aria-disabled"));
     }
+
+    [Fact]
+    public void Render_ShouldHandTheTriggerAttributesToACustomTrigger_WhenGivenATrigger()
+    {
+        var cut = Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Trigger, context => builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddMultipleAttributes(1, context.Attributes);
+                builder.AddContent(2, "RB");
+                builder.CloseElement();
+            })
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Profile")));
+
+        var trigger = cut.Find("button[data-part=trigger]");
+        var menu = cut.Find("[role=menu]");
+        Assert.Equal(("menu", menu.Id, menu.Id), (trigger.GetAttribute("aria-haspopup"),
+            trigger.GetAttribute("popovertarget"), trigger.GetAttribute("aria-controls")));
+        Assert.Equal(trigger.Id, menu.GetAttribute("aria-labelledby"));
+        Assert.False(trigger.HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Render_ShouldDisableTheTrigger_WhenDisabled()
+    {
+        var builtIn = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Disabled, true));
+        var custom = Render<TbMenu>(parameters => parameters.Add(menu => menu.Disabled, true)
+            .Add(menu => menu.Trigger, context => builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddMultipleAttributes(1, context.Attributes);
+                builder.CloseElement();
+            }));
+
+        Assert.True(builtIn.Find("[data-part=trigger]").HasAttribute("disabled"));
+        Assert.True(custom.Find("[data-part=trigger]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Render_ShouldDisableATbButtonTrigger_WhenItTakesOnlyTheTriggerAttributes()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Disabled, true)
+            .Add(menu => menu.Trigger, context => builder =>
+            {
+                builder.OpenComponent<TbButton>(0);
+                builder.AddMultipleAttributes(1, context.Attributes);
+                builder.CloseComponent();
+            }));
+
+        Assert.True(cut.Find("[data-part=trigger]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenThereIsNoLabelOrTrigger()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => Render<TbMenu>());
+
+        Assert.Equal("TbMenu needs a Label or a Trigger.", failure.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldDrawALinkThatOpensANewTabAndSaysSo_WhenGivenAnHrefAndNewTab()
+    {
+        var cut = Render<TbMenuItem>(parameters => parameters.Add(item => item.Href, "/reports")
+            .Add(item => item.NewTab, true).AddChildContent("Reports"));
+
+        var link = cut.Find("a");
+        Assert.Equal(("menuitem", "-1", "/reports"), (link.GetAttribute("role"), link.GetAttribute("tabindex"),
+            link.GetAttribute("href")));
+        Assert.Equal(("_blank", "noopener noreferrer"), (link.GetAttribute("target"), link.GetAttribute("rel")));
+        Assert.Equal("(opens in a new tab)", link.QuerySelector(".tb-visually-hidden")!.TextContent.Trim());
+    }
+
+    [Theory]
+    [InlineData(false, "_top", "nofollow")]
+    [InlineData(true, "_blank", "nofollow noopener noreferrer")]
+    public void Render_ShouldKeepTheConsumersTargetAndRel_WhenGivenThem(bool newTab, string target, string rel)
+    {
+        var cut = Render<TbMenuItem>(parameters => parameters.Add(item => item.Href, "/reports")
+            .Add(item => item.NewTab, newTab).AddUnmatched("target", "_top").AddUnmatched("rel", "nofollow")
+            .AddChildContent("Reports"));
+
+        var link = cut.Find("a");
+        Assert.Equal((target, rel), (link.GetAttribute("target"), link.GetAttribute("rel")));
+    }
+
+    [Fact]
+    public void Render_ShouldDropTheLinksAddress_WhenTheLinkItemIsDisabled()
+    {
+        var cut = Render<TbMenuItem>(parameters => parameters.Add(item => item.Href, "/reports")
+            .Add(item => item.Disabled, true).AddChildContent("Reports"));
+
+        var link = cut.Find("a");
+        Assert.False(link.HasAttribute("href"));
+        Assert.Equal("true", link.GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public void Render_ShouldNameTheGroupByItsLabel_WhenGivenALabel()
+    {
+        var cut = Render<TbMenuGroup>(parameters => parameters.Add(group => group.Label, "Show")
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Map")));
+
+        var group = cut.Find("[role=group]");
+        var label = cut.Find("[data-part=group-label]");
+        Assert.Equal(label.Id, group.GetAttribute("aria-labelledby"));
+        Assert.Equal(("Show", "presentation"), (label.TextContent, label.GetAttribute("role")));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheGroupUnnamed_WhenGivenNoLabel()
+    {
+        var cut = Render<TbMenuGroup>(parameters => parameters
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Map")));
+
+        Assert.False(cut.Find("[role=group]").HasAttribute("aria-labelledby"));
+        Assert.Empty(cut.FindAll("[data-part=group-label]"));
+    }
+
+    [Fact]
+    public void Render_ShouldDrawASeparator_WhenCalled()
+    {
+        var cut = Render<TbMenuSeparator>();
+
+        Assert.Equal("separator", cut.Find(".tb-menu__separator").GetAttribute("role"));
+    }
 }

@@ -1,0 +1,37 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbComponentBase
+
+<TbMenuGroup @attributes="AdditionalAttributes" Label="@Label" Class="@Class" Style="@Style">
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</TbMenuGroup>
+
+@code {
+    /// <summary>A heading shown above the items, which also names the group for screen readers.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>The chosen item's value. Bind it with <c>@bind-Value</c>.</summary>
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    /// <summary>Raised with the value of the item chosen; the menu then closes.</summary>
+    [Parameter]
+    public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>The group's <see cref="TbMenuRadioItem{TValue}"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    internal bool IsChosen(TValue value) => EqualityComparer<TValue>.Default.Equals(value, Value);
+
+    // The click belongs to the chosen item, so the group re-renders itself to move the mark.
+    internal async Task ChooseAsync(TValue value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+        StateHasChanged();
+    }
+}

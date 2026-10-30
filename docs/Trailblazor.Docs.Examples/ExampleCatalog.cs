@@ -764,9 +764,15 @@ public static class ExampleCatalog
                 + "tooltip's text is in the markup from the start, with `role=\"tooltip\"`.",
         },
         new("menu", "Menu", ExampleCategory.Overlays,
-            "A list of actions that opens from a button, with submenus.", typeof(MenuExample))
+            "A list of actions, options and links that opens from a button, with groups and submenus.",
+            typeof(MenuExample))
         {
-            Api = [typeof(TbMenu), typeof(TbMenuItem), typeof(TbSubMenu)],
+            Api =
+            [
+                typeof(TbMenu), typeof(MenuTrigger), typeof(TbMenuItem), typeof(TbMenuCheckboxItem),
+                typeof(TbMenuRadioGroup<>), typeof(TbMenuRadioItem<>), typeof(TbMenuGroup), typeof(TbMenuSeparator),
+                typeof(TbSubMenu),
+            ],
             Accessibility =
             [
                 "The trigger is a button with `aria-haspopup=\"menu\"` and `aria-expanded`, named by `Label`; "
@@ -780,9 +786,21 @@ public static class ExampleCatalog
                     + "items stay focusable, marked `aria-disabled`, so people can still find them.",
                 "`Description` adds text that screen readers read after the trigger's name, such as a hint about "
                     + "other keys it takes.",
+                "A custom `Trigger` gets the same attributes through `context.Attributes`; put them on a button, and "
+                    + "give it a name, such as an `aria-label` on an avatar. `Disabled` turns either trigger off.",
+                "Checkbox items are `menuitemcheckbox`es and radio items `menuitemradio`s, with `aria-checked`. A "
+                    + "`TbMenuGroup` or radio group is a `group` named by its `Label`, and `TbMenuSeparator` is a "
+                    + "`separator`.",
+                "An item with `Href` is a link; Enter or Space follows it. With `NewTab` it opens in a new tab, and "
+                    + "screen readers hear that it does.",
+                "Resting the pointer on a submenu's item opens it without moving focus. On the way there the pointer "
+                    + "can cross other items without the submenu closing.",
             ],
             Target = new("button", "Actions"),
             Blocks = ["tb-menu"],
+            TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
+                + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. A group is "
+                + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`.",
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
             "A window over the page, opened from code, that asks for input or a decision.",

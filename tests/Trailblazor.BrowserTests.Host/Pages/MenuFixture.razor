@@ -1,0 +1,36 @@
+@page "/menu"
+
+<div style="display: flex; gap: 2rem; align-items: flex-start; padding: 2rem">
+    <TbMenu Label="Locked" Disabled>
+        <TbMenuItem>Rename</TbMenuItem>
+    </TbMenu>
+    <TbMenu Disabled>
+        <Trigger>
+            <button @attributes="context.Attributes">Custom locked</button>
+        </Trigger>
+        <ChildContent>
+            <TbMenuItem>Rename</TbMenuItem>
+        </ChildContent>
+    </TbMenu>
+    <TbMenu Label="Go">
+        <TbMenuItem Href="menu#followed">Follow</TbMenuItem>
+        <TbMenuItem Href="menu" NewTab>Again</TbMenuItem>
+        <TbMenuItem Href="menu#never" Disabled>Nowhere</TbMenuItem>
+    </TbMenu>
+    @* The submenu is taller than its item, so a path to its lower items crosses the items below. *@
+    <TbMenu Label="Insert">
+        <TbSubMenu Label="Shape">
+            <TbMenuItem>Circle</TbMenuItem>
+            <TbMenuItem>Square</TbMenuItem>
+            <TbMenuItem>Triangle</TbMenuItem>
+            <TbMenuItem>Star</TbMenuItem>
+            <TbMenuItem>Arrow</TbMenuItem>
+        </TbSubMenu>
+        <TbMenuItem>Table</TbMenuItem>
+        <TbMenuItem>Image</TbMenuItem>
+        <TbSubMenu Label="Chart">
+            <TbMenuItem>Bar</TbMenuItem>
+            <TbMenuItem>Pie</TbMenuItem>
+        </TbSubMenu>
+    </TbMenu>
+</div>

@@ -10,12 +10,12 @@ namespace Trailblazor.Tests.Contract;
 public class ComponentContractTests : BunitContext
 {
     // TbRoot renders no element of its own, and TbStyles only a <link>, which takes no class or style; TbRadio,
-    // TbTab, TbOption, TbToggleItem, TbSplitterPane and TbTreeItem only render inside their parent (see their parents'
-    // tests).
+    // TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem and TbMenuRadioItem only render inside their parent
+    // (see their parents' tests).
     private static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbRadio<>), typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>),
-        typeof(TbSplitterPane), typeof(TbTreeItem<>),
+        typeof(TbSplitterPane), typeof(TbTreeItem<>), typeof(TbMenuRadioItem<>),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
@@ -26,12 +26,13 @@ public class ComponentContractTests : BunitContext
         [typeof(TbDateRangePicker<>)] = typeof(DateOnly),
     };
 
-    // Components that render nothing until they are shown are checked shown; a popover and a tooltip get the label or
-    // text they need when they are given neither.
+    // Components that render nothing until they are shown are checked shown; a popover, a menu and a tooltip get the
+    // label or text they need when they are given neither.
     private static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
     {
         [typeof(TbOverlay)] = (nameof(TbOverlay.Visible), true),
         [typeof(TbPopover)] = (nameof(TbPopover.Label), "Sample"),
+        [typeof(TbMenu)] = (nameof(TbMenu.Label), "Sample"),
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
     };
 

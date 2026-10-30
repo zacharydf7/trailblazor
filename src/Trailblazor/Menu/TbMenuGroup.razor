@@ -1,0 +1,25 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" role="group" aria-labelledby="@(Label is null ? null : LabelId)"
+     class="@ClassNames.Join("tb-menu__group", Class)" style="@Style">
+    @if (Label is not null)
+    {
+        <div id="@LabelId" role="presentation" data-part="group-label" class="tb-menu__group-label">@Label</div>
+    }
+    @ChildContent
+</div>
+
+@code {
+    private readonly string _id = $"tb-menu-group-{Guid.NewGuid():N}";
+
+    /// <summary>A heading shown above the items, which also names the group for screen readers.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>The group's items.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string LabelId => $"{_id}-label";
+}

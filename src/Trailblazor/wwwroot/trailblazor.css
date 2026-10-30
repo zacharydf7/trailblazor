@@ -2659,6 +2659,56 @@
         cursor: default;
     }
 
+    a.tb-menu__item {
+        text-decoration: none;
+    }
+
+    /* Checkbox and radio items keep a slot for their mark, so their text lines up whether or not they are chosen. */
+    .tb-menu__indicator {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 1rem;
+    }
+
+    .tb-menu__item[role="menuitemradio"][aria-checked="true"] > .tb-menu__indicator::before {
+        content: "";
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: var(--tb-radius-full);
+        background: currentColor;
+    }
+
+    .tb-menu__group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .tb-menu__group-label {
+        padding: var(--tb-space-1) var(--tb-space-3);
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-xs);
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-menu__separator {
+        height: 1px;
+        margin-block: var(--tb-space-1);
+        background: var(--tb-border-subtle);
+    }
+
+    @media (forced-colors: active) {
+        .tb-menu__item[role="menuitemradio"][aria-checked="true"] > .tb-menu__indicator::before {
+            background: CanvasText;
+        }
+
+        .tb-menu__separator {
+            background: CanvasText;
+        }
+    }
+
     /* Native modals don't stop the page behind them from scrolling. */
     :root:has(dialog.tb-dialog:modal) {
         overflow: hidden;

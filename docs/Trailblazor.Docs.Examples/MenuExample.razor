@@ -19,6 +19,36 @@
 </TbStack>
 <output data-testid="last-action">@_last</output>
 
+<TbStack Row Gap="4" Align="Align.Center" Style="margin-block-start: var(--tb-space-6)">
+    <TbMenu Label="View">
+        <TbMenuGroup Label="Show">
+            <TbMenuCheckboxItem @bind-Checked="_showMap">Map</TbMenuCheckboxItem>
+            <TbMenuCheckboxItem @bind-Checked="_showElevation">Elevation</TbMenuCheckboxItem>
+        </TbMenuGroup>
+        <TbMenuSeparator />
+        <TbMenuRadioGroup Label="Units" @bind-Value="_units">
+            <TbMenuRadioItem Value="@("Miles")">Miles</TbMenuRadioItem>
+            <TbMenuRadioItem Value="@("Kilometers")">Kilometers</TbMenuRadioItem>
+        </TbMenuRadioGroup>
+        <TbMenuSeparator />
+        <TbMenuItem Href="components/link" NewTab>Link docs</TbMenuItem>
+    </TbMenu>
+    <TbMenu>
+        <Trigger>
+            <TbButton Variant="Variant.Filled" Style="border-radius: var(--tb-radius-full)" aria-label="RB account"
+                      @attributes="context.Attributes">RB</TbButton>
+        </Trigger>
+        <ChildContent>
+            <TbMenuItem OnClick="@(() => _last = "Profile")">Profile</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Sign out")">Sign out</TbMenuItem>
+        </ChildContent>
+    </TbMenu>
+    <output data-testid="view">@_units@(_showMap ? ", map" : "")@(_showElevation ? ", elevation" : "")</output>
+</TbStack>
+
 @code {
     private string _last = "";
+    private bool _showMap = true;
+    private bool _showElevation;
+    private string? _units = "Miles";
 }

@@ -1,5 +1,11 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 
+const itemSelector = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
+// A pointer passing over an item on its way elsewhere doesn't open or close a submenu.
+const hoverDelay = 150;
+// How long a pointer heading for an open submenu across other items keeps it open.
+const graceTime = 400;
+
 // Keyboard and focus handling stay in the browser; only choosing an item reaches the server.
 export function createMenu(root, menu, options) {
     // Blazor passes null for an element that was removed before this call arrived.
@@ -12,12 +18,17 @@ export function createMenu(root, menu, options) {
     const submenuOptions = { side: 'End', align: 'Start', offset: 0 };
     const positions = new Map();
     const returnFocus = new Set();
+    const openedByHover = new Set();
     let focusLastOnOpen = false;
+    let hovered = null;
+    let hoverTimer = 0;
+    let lastPoint = null;
+    let grace = null;
 
     // The element that opens a list: the trigger for the menu itself, or a submenu's item.
     const opener = list => list === menu ? trigger : menu.querySelector(`[aria-controls="${list.id}"]`);
     // A list's own items, not those of the submenus inside it.
-    const items = list => [...list.querySelectorAll('[role="menuitem"]')]
+    const items = list => [...list.querySelectorAll(itemSelector)]
         .filter(item => item.closest('[role="menu"]') === list);
     const focusItem = (list, index) => {
         const all = items(list);
@@ -61,13 +72,21 @@ export function createMenu(root, menu, options) {
         const open = event.newState === 'open';
         opener(list).setAttribute('aria-expanded', String(open));
         if (open) {
-            focusItem(list, list === menu && focusLastOnOpen ? -1 : 0);
+            // A submenu the pointer opened leaves focus where it was, as the pointer may only be passing through.
+            if (!openedByHover.delete(list)) {
+                focusItem(list, list === menu && focusLastOnOpen ? -1 : 0);
+            }
+
             focusLastOnOpen = false;
             return;
         }
 
         positions.get(list)?.dispose();
         positions.delete(list);
+        if (list === menu) {
+            forgetPointer();
+        }
+
         if (returnFocus.delete(list)) {
             opener(list).focus();
         }
@@ -120,6 +139,14 @@ export function createMenu(root, menu, options) {
 
                 list.hidePopover();
                 break;
+            case ' ':
+                // A link only follows Enter by itself; the menu pattern lets Space choose any item.
+                if (all[current]?.localName !== 'a') {
+                    return;
+                }
+
+                all[current].click();
+                break;
             case 'Tab':
                 // Tab moves on to the next control first; closing afterwards leaves focus where Tab put it.
                 setTimeout(() => menu.matches(':popover-open') && menu.hidePopover());
@@ -135,11 +162,78 @@ export function createMenu(root, menu, options) {
         event.preventDefault();
     };
     const onMenuClick = event => {
-        const item = event.target.closest('[role="menuitem"]');
+        const item = event.target.closest(itemSelector);
+        const submenu = submenuOf(item);
+        // A click on an item whose submenu the pointer already opened goes into it, rather than toggling it shut.
+        if (submenu?.matches(':popover-open') && event.detail > 0) {
+            event.preventDefault();
+            focusItem(submenu, 0);
+            return;
+        }
+
         // An item that opens a submenu toggles it through popovertarget instead.
-        if (item && item.getAttribute('aria-disabled') !== 'true' && !submenuOf(item)) {
+        if (item && item.getAttribute('aria-disabled') !== 'true' && !submenu) {
             menu.hidePopover();
         }
+    };
+
+    // A pointer that leaves the menu, or a menu that closes, drops what the pointer was about to open or close.
+    const forgetPointer = () => {
+        clearTimeout(hoverTimer);
+        clearTimeout(grace?.timer);
+        hovered = lastPoint = grace = null;
+    };
+    // Opens the hovered item's submenu, and closes the other submenus open from the same list.
+    const hoverOver = target => {
+        const list = target?.closest('[role="menu"]');
+        if (!list || !menu.contains(list) || !menu.matches(':popover-open')) {
+            return;
+        }
+
+        const submenu = submenuOf(target.closest(itemSelector));
+        items(list).map(submenuOf).filter(other => other && other !== submenu && other.matches(':popover-open'))
+            .forEach(other => other.hidePopover());
+        if (submenu && !submenu.matches(':popover-open')) {
+            openedByHover.add(submenu);
+            submenu.showPopover();
+        }
+    };
+    const onPointerMove = event => {
+        if (event.pointerType !== 'mouse') {
+            return;
+        }
+
+        const point = { x: event.clientX, y: event.clientY };
+        const from = lastPoint;
+        lastPoint = point;
+        const item = event.target.closest(itemSelector);
+        if (item === hovered) {
+            return;
+        }
+
+        // Leaving an item with its submenu open, the pointer may cross other items on the way to the submenu.
+        const submenu = submenuOf(hovered);
+        if (!grace && from && submenu?.matches(':popover-open') && !submenu.contains(event.target)) {
+            grace = { submenu, points: [from, ...nearCorners(submenu, from)], timer: 0 };
+            grace.timer = setTimeout(() => {
+                grace = null;
+                hoverOver(document.elementFromPoint(lastPoint.x, lastPoint.y));
+            }, graceTime);
+        }
+
+        if (grace) {
+            if (!grace.submenu.contains(event.target) && inTriangle(point, grace.points)) {
+                clearTimeout(hoverTimer);
+                return;
+            }
+
+            clearTimeout(grace.timer);
+            grace = null;
+        }
+
+        hovered = item;
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(() => hoverOver(event.target), hoverDelay);
     };
 
     // Toggle events don't bubble, so the submenus' toggles are caught in the capture phase.
@@ -147,6 +241,8 @@ export function createMenu(root, menu, options) {
     menu.addEventListener('toggle', onToggle, true);
     menu.addEventListener('keydown', onMenuKeyDown);
     menu.addEventListener('click', onMenuClick);
+    menu.addEventListener('pointermove', onPointerMove);
+    menu.addEventListener('pointerleave', forgetPointer);
     trigger.addEventListener('keydown', onTriggerKeyDown);
 
     return {
@@ -161,7 +257,10 @@ export function createMenu(root, menu, options) {
             menu.removeEventListener('toggle', onToggle, true);
             menu.removeEventListener('keydown', onMenuKeyDown);
             menu.removeEventListener('click', onMenuClick);
+            menu.removeEventListener('pointermove', onPointerMove);
+            menu.removeEventListener('pointerleave', forgetPointer);
             trigger.removeEventListener('keydown', onTriggerKeyDown);
+            forgetPointer();
         },
     };
 }
@@ -176,4 +275,17 @@ function focusByFirstLetter(items, current, letter) {
             return;
         }
     }
+}
+
+// The corners of the submenu's edge nearest the point; with the point they bound the way to the submenu.
+function nearCorners(submenu, point) {
+    const rect = submenu.getBoundingClientRect();
+    const x = Math.abs(point.x - rect.left) < Math.abs(point.x - rect.right) ? rect.left : rect.right;
+    return [{ x, y: rect.top }, { x, y: rect.bottom }];
+}
+
+function inTriangle(point, [a, b, c]) {
+    const side = (p, q, r) => (p.x - r.x) * (q.y - r.y) - (q.x - r.x) * (p.y - r.y);
+    const signs = [side(point, a, b), side(point, b, c), side(point, c, a)];
+    return !(signs.some(sign => sign < 0) && signs.some(sign => sign > 0));
 }
