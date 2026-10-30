@@ -1,0 +1,24 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A span, so a line of text can hold one; screen readers skip it, and the loading region says it's busy. *@
+<span @attributes="AdditionalAttributes" aria-hidden="true"
+      style="@Styles.Join(Width is null ? null : $"inline-size: {Width}",
+                          Height is null ? null : $"block-size: {Height}", Style)"
+      class="@ClassNames.Join("tb-skeleton", ClassNames.Modifier("tb-skeleton", Shape), Class)"></span>
+
+@code {
+    /// <summary>The shape it stands in for: a line of text, a rectangle such as an image, or a circle such as an
+    /// avatar.</summary>
+    [Parameter]
+    public SkeletonShape Shape { get; set; }
+
+    /// <summary>The width as a CSS length, such as <c>100px</c> or <c>60%</c>. A line of text fills its row by
+    /// default.</summary>
+    [Parameter]
+    public string? Width { get; set; }
+
+    /// <summary>The height as a CSS length. A line of text is as tall as the text around it by default.</summary>
+    [Parameter]
+    public string? Height { get; set; }
+}

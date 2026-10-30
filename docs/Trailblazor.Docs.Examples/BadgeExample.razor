@@ -1,0 +1,19 @@
+@using Trailblazor.Docs.Examples
+
+<TbStack Row Gap="6" Align="Align.Center" Wrap>
+    <TbBadge Count="3">
+        <TbButton aria-label="Review changes, 3 unsaved">Review changes</TbButton>
+    </TbBadge>
+    <TbBadge Count="120" Tone="Tone.Danger" Visible="_unread">
+        <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="@(_unread ? "Messages, 120 unread" : "Messages")" />
+    </TbBadge>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _unread = false">Mark all read</TbButton>
+    <TbBadge>
+        <TbIconButton Icon="ExampleIcons.Filter" AriaLabel="Filters, some applied" />
+    </TbBadge>
+    <TbText>Type filters <TbBadge Count="2" Tone="Tone.Neutral" Label="2 filters" /></TbText>
+</TbStack>
+
+@code {
+    private bool _unread = true;
+}

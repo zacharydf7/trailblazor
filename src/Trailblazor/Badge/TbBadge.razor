@@ -1,0 +1,57 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@using System.Globalization
+
+<span @attributes="AdditionalAttributes" style="@Style"
+      class="@ClassNames.Join("tb-badge-host", ChildContent is null ? null : "tb-badge-host--overlap", Class)">
+    @ChildContent
+    @if (Visible)
+    {
+        @* On a button, the button's own name says what the badge does, so screen readers needn't hear it twice. *@
+        <span data-part="badge" aria-hidden="@(ChildContent is not null && Label is null ? "true" : null)"
+              class="@ClassNames.Join("tb-badge", ClassNames.Modifier("tb-badge", Tone),
+                         Count is null ? "tb-badge--dot" : null)">
+            @if (Count is int count)
+            {
+                @* With a label, screen readers hear the label instead of the bare number. *@
+                <span aria-hidden="@(Label is null ? null : "true")">
+                    @(count > Max ? $"{Max}+" : count.ToString(CultureInfo.CurrentCulture))
+                </span>
+            }
+            @if (Label is not null)
+            {
+                <span class="tb-visually-hidden">@Label</span>
+            }
+        </span>
+    }
+</span>
+
+@code {
+    /// <summary>The number the badge shows, such as unread messages. Leave it null for a dot.</summary>
+    [Parameter]
+    public int? Count { get; set; }
+
+    /// <summary>The largest number shown; a larger count shows as this number and a plus sign. Defaults to 99.
+    /// </summary>
+    [Parameter]
+    public int Max { get; set; } = 99;
+
+    /// <summary>What screen readers hear for the badge, such as "3 unsaved changes". Without it, a badge in the text
+    /// is read as its number and a dot isn't read; a badge on an icon or button is hidden, so put what it says in the
+    /// button's own name.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>The badge's meaning, which sets its color.</summary>
+    [Parameter]
+    public Tone Tone { get; set; }
+
+    /// <summary>Shows the badge. Turning it off hides only the badge, never the content it sits on.</summary>
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    /// <summary>The icon or button the badge sits on, at its top corner. Without it, the badge sits in the text.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,53 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* Without an address it runs an action, and an anchor with no href can't be focused or reached as a link. *@
+@if (Href is null)
+{
+    <button type="button" @attributes="AdditionalAttributes"
+            class="@ClassNames.Join("tb-link", "tb-link--button", Class)" style="@Style" @onclick="OnClick">
+        @ChildContent
+    </button>
+}
+else
+{
+    <a @attributes="AdditionalAttributes" href="@Href" target="@TargetAttribute" rel="@RelAttribute"
+       class="@ClassNames.Join("tb-link", Class)" style="@Style" @onclick="OnClick">
+        @ChildContent
+        @if (NewTab)
+        {
+            <span class="tb-visually-hidden"> (@NewTabHint)</span>
+        }
+    </a>
+}
+
+@code {
+    /// <summary>The address the link goes to. Without one, the link is a button that runs <see cref="OnClick"/>.
+    /// </summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary>Opens the address in a new tab, and tells screen reader users that it does.</summary>
+    [Parameter]
+    public bool NewTab { get; set; }
+
+    /// <summary>What screen readers hear after the text of a link that opens a new tab. Defaults to "opens in a new
+    /// tab".</summary>
+    [Parameter]
+    public string NewTabHint { get; set; } = "opens in a new tab";
+
+    /// <summary>Raised when the link is clicked, or chosen with the keyboard.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>The link's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    // These come after the consumer's attributes, so they carry the consumer's own target and rel along.
+    private object? TargetAttribute => NewTab ? "_blank" : AdditionalAttributes?.GetValueOrDefault("target");
+
+    private object? RelAttribute => NewTab
+        ? $"{AdditionalAttributes?.GetValueOrDefault("rel")} noopener noreferrer".TrimStart()
+        : AdditionalAttributes?.GetValueOrDefault("rel");
+}

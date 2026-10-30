@@ -1,0 +1,28 @@
+<TbStack>
+    <TbSwitch Label="Loading" @bind-Value="_loading" />
+    <div aria-busy="@(_loading ? "true" : "false")" aria-label="Profile" role="region" data-testid="profile"
+         style="display: flex; gap: var(--tb-space-4); align-items: center">
+        @if (_loading)
+        {
+            <TbSkeleton Shape="SkeletonShape.Circle" Width="3rem" />
+            <div style="flex: 1">
+                <TbSkeleton Width="40%" />
+                <TbSkeleton Width="70%" />
+            </div>
+            <TbSkeleton Shape="SkeletonShape.Rectangle" Width="100px" Height="64px" />
+        }
+        else
+        {
+            <div style="inline-size: 3rem; block-size: 3rem; border-radius: 50%;
+                        background: var(--tb-color-primary)"></div>
+            <div style="flex: 1">
+                <TbText TextStyle="TextStyle.Subtitle">Ada Lovelace</TbText>
+                <TbText>Analyst, joined in 1843</TbText>
+            </div>
+        }
+    </div>
+</TbStack>
+
+@code {
+    private bool _loading = true;
+}

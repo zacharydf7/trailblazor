@@ -234,6 +234,28 @@ public static class ExampleCatalog
             Target = new("alert") { Text = "A danger alert." },
             Blocks = ["tb-alert"],
         },
+        new("badge", "Badge", ExampleCategory.Feedback,
+            "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.",
+            typeof(BadgeExample))
+        {
+            Api = [typeof(TbBadge)],
+            Accessibility =
+            [
+                "A badge on an icon or button is hidden from screen readers unless it has a `Label`, and Tab goes to "
+                    + "the button and skips it. So put what the badge says in the button's own name, such as "
+                    + "`AriaLabel=\"Messages, 120 unread\"` or `AriaLabel=\"Filters, some applied\"`, and give a badge "
+                    + "on an icon that isn't a button a `Label`.",
+                "A badge in a line of text is read in its place. Give it a `Label`, such as \"3 unsaved changes\", "
+                    + "which screen readers hear instead of the bare number; a dot with no `Label` isn't read out.",
+                "It takes no focus and never catches clicks, which reach the icon or button under it.",
+                "In forced-colors mode, such as Windows high contrast, the badge keeps an outline and a dot keeps its "
+                    + "fill.",
+            ],
+            Target = null,
+            Blocks = ["tb-badge"],
+            TestingTip = "The badge's element has `data-part=\"badge\"`. Its text holds the count, then the `Label` "
+                + "when there is one, so check it with `ToContainTextAsync`.",
+        },
         new("progress", "Progress", ExampleCategory.Feedback,
             "Shows how far along work is, as a bar or a circle, or that it is still going.", typeof(ProgressExample))
         {
@@ -449,6 +471,40 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
+        },
+        new("link", "Link", ExampleCategory.Navigation,
+            "An underlined text link to an address, or a link-styled button that runs an action.", typeof(LinkExample))
+        {
+            Api = [typeof(TbLink)],
+            Accessibility =
+            [
+                "With `Href` it is a native `link`, followed with Enter. Without `Href` it is a `button` that looks "
+                    + "like a link, run with Enter or Space, because an anchor with no address can't be focused.",
+                "It is always underlined, so it doesn't rely on color alone to stand out from the text around it.",
+                "`NewTab` adds `target=\"_blank\"` and `rel=\"noopener noreferrer\"`, and screen readers hear \"opens "
+                    + "in a new tab\" after its text. `NewTabHint` changes those words.",
+                "In forced-colors mode, such as Windows high contrast, both kinds take the system's link color.",
+            ],
+            Target = new("link", "theming guide"),
+            Blocks = ["tb-link"],
+            TestingTip = "A link with an `Href` has the `link` role and one without has the `button` role, so find it "
+                + "with the role that matches.",
+        },
+        new("skeleton", "Skeleton", ExampleCategory.Feedback,
+            "A pulsing gray shape that holds the place of content while it loads.", typeof(SkeletonExample))
+        {
+            Api = [typeof(TbSkeleton)],
+            Accessibility =
+            [
+                "A skeleton is hidden from screen readers, because it has nothing to say. Mark the region that is "
+                    + "loading with `aria-busy=\"true\"`, and set it back to `false` when the content arrives.",
+                "With reduced motion, the pulse stops and the shapes stay still.",
+                "In forced-colors mode, such as Windows high contrast, each shape keeps an outline.",
+            ],
+            Target = null,
+            Blocks = ["tb-skeleton"],
+            TestingTip = "Skeletons have no role, so wait for the loaded content rather than for them to go, or check "
+                + "that the region's `aria-busy` is `false`.",
         },
         new("toast", "Toast", ExampleCategory.Feedback,
             "A brief message in a corner that doesn't interrupt, with an optional action.", typeof(ToastExample))

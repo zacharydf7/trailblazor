@@ -11,4 +11,10 @@ public static class ExampleIcons
         new("<path d=\"M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z\" />");
 
     public static Icon Trash { get; } = new("<path d=\"M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 12H7z\" />");
+
+    public static Icon Bell { get; } =
+        new("<path d=\"M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"
+            + "m6-6v-5a6 6 0 0 0-5-5.9V4h-2v1.1A6 6 0 0 0 6 11v5l-2 2v1h16v-1z\" />");
+
+    public static Icon Filter { get; } = new("<path d=\"M3 5h18l-7 8v6l-4 2v-8z\" />");
 }

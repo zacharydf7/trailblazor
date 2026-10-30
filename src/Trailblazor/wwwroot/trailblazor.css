@@ -724,6 +724,176 @@
         color: var(--tb-color-info-text);
     }
 
+    /* Always underlined, so a link never relies on color alone to stand out from the text around it. */
+    .tb-link {
+        color: var(--tb-color-primary-text);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+        border-radius: var(--tb-radius-sm);
+        cursor: pointer;
+    }
+
+    .tb-link:hover {
+        text-decoration-thickness: 2px;
+    }
+
+    .tb-link:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-link--button {
+        padding: 0;
+        border: 0;
+        background: none;
+        font: inherit;
+        text-align: inherit;
+    }
+
+    /* The system would draw both kinds in its plain text or button color; they must still read as links. */
+    @media (forced-colors: active) {
+        .tb-link {
+            color: LinkText;
+        }
+    }
+
+    .tb-badge-host {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+        vertical-align: middle;
+    }
+
+    .tb-badge-host--overlap {
+        position: relative;
+    }
+
+    .tb-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        min-inline-size: 1.25rem;
+        block-size: 1.25rem;
+        padding-inline: var(--tb-space-1);
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-badge-fill);
+        color: var(--tb-badge-on-fill);
+        font-family: var(--tb-font-family);
+        font-size: var(--tb-font-size-xs);
+        font-weight: var(--tb-font-weight-semibold);
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .tb-badge--dot {
+        min-inline-size: 0.625rem;
+        inline-size: 0.625rem;
+        block-size: 0.625rem;
+        padding: 0;
+    }
+
+    /* On an icon or button, the badge straddles the top end corner, ringed in the surface color to stand apart. */
+    .tb-badge-host--overlap > .tb-badge {
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline-end: 0;
+        translate: 50% -50%;
+        box-shadow: 0 0 0 2px var(--tb-color-surface);
+        pointer-events: none;
+    }
+
+    .tb-badge-host--overlap > .tb-badge:dir(rtl) {
+        translate: -50% -50%;
+    }
+
+    .tb-badge--primary {
+        --tb-badge-fill: var(--tb-color-primary);
+        --tb-badge-on-fill: var(--tb-color-on-primary);
+    }
+
+    .tb-badge--neutral {
+        --tb-badge-fill: var(--tb-color-neutral);
+        --tb-badge-on-fill: var(--tb-color-on-neutral);
+    }
+
+    .tb-badge--success {
+        --tb-badge-fill: var(--tb-color-success);
+        --tb-badge-on-fill: var(--tb-color-on-success);
+    }
+
+    .tb-badge--warning {
+        --tb-badge-fill: var(--tb-color-warning);
+        --tb-badge-on-fill: var(--tb-color-on-warning);
+    }
+
+    .tb-badge--danger {
+        --tb-badge-fill: var(--tb-color-danger);
+        --tb-badge-on-fill: var(--tb-color-on-danger);
+    }
+
+    .tb-badge--info {
+        --tb-badge-fill: var(--tb-color-info);
+        --tb-badge-on-fill: var(--tb-color-on-info);
+    }
+
+    /* Forced colors drop the fill, so an outline keeps the badge's shape and a dot stays visible. */
+    @media (forced-colors: active) {
+        .tb-badge {
+            border: 1px solid CanvasText;
+        }
+
+        .tb-badge--dot {
+            background: CanvasText;
+        }
+    }
+
+    .tb-skeleton {
+        display: block;
+        background: var(--tb-color-neutral-subtle);
+        animation: tb-skeleton-pulse 1.5s ease-in-out infinite alternate;
+    }
+
+    /* A line keeps the height of the text around it, with room above and below like a real line. */
+    .tb-skeleton--text {
+        block-size: 1em;
+        margin-block: 0.25em;
+        border-radius: var(--tb-radius-sm);
+    }
+
+    .tb-skeleton--rectangle {
+        block-size: 6rem;
+        border-radius: var(--tb-radius-md);
+    }
+
+    /* Only the width is set, so a circle given just a Width stays round. */
+    .tb-skeleton--circle {
+        inline-size: 2.5rem;
+        aspect-ratio: 1;
+        border-radius: var(--tb-radius-full);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .tb-skeleton {
+            animation: none;
+        }
+    }
+
+    /* Forced colors drop the fill, so an outline keeps the placeholder's shape. */
+    @media (forced-colors: active) {
+        .tb-skeleton {
+            border: 1px solid GrayText;
+        }
+    }
+
+    @keyframes tb-skeleton-pulse {
+        to {
+            opacity: 0.45;
+        }
+    }
+
     .tb-divider {
         margin: var(--tb-space-2) 0;
         border: none;
