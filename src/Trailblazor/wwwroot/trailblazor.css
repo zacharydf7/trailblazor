@@ -1155,6 +1155,45 @@
         white-space: pre-line;
     }
 
+    /* As tall as its button, so the button never spills over the items beside it. */
+    .tb-insert-divider {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tb-insert-divider::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        inset-block-start: 50%;
+        border-block-start: 2px solid var(--tb-color-primary);
+        opacity: 0;
+        transition: opacity var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    /* Positioned, so it paints above the line and takes the clicks. */
+    .tb-insert-divider__button {
+        position: relative;
+        opacity: 0;
+        transition: opacity var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-insert-divider:hover::before,
+    .tb-insert-divider:focus-within::before,
+    .tb-insert-divider:hover .tb-insert-divider__button,
+    .tb-insert-divider:focus-within .tb-insert-divider__button {
+        opacity: 1;
+    }
+
+    /* A touch screen can't hover, even on a laptop whose touchpad can, so there the button stays in view. */
+    @media (hover: none), (any-pointer: coarse) {
+        .tb-insert-divider__button {
+            opacity: 1;
+        }
+    }
+
     .tb-divider {
         margin: var(--tb-space-2) 0;
         border: none;

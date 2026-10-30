@@ -1,0 +1,23 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-insert-divider", Class)">
+    <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@Label" Variant="Variant.Filled" Tone="Tone.Primary"
+                  Size="Size.Small" Disabled="Disabled" OnClick="OnInsert" data-part="insert"
+                  class="tb-insert-divider__button" />
+</div>
+
+@code {
+    /// <summary>The insert button's accessible name, which says where the new item goes, such as "Insert a row after
+    /// Invoice 3". Required.</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>Raised when the user chooses to insert here.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnInsert { get; set; }
+
+    /// <summary>Turns the insert button off, for example while a change is being saved.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+}

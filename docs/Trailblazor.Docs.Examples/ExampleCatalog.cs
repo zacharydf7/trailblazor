@@ -186,6 +186,25 @@ public static class ExampleCatalog
             Target = new("group", "Text alignment"),
             Blocks = ["tb-button-group"],
         },
+        new("insert-divider", "Insert divider", ExampleCategory.Actions,
+            "A line between two items that reveals an insert button on hover or focus, for adding an item in that "
+                + "place.", typeof(InsertDividerExample))
+        {
+            Api = [typeof(TbInsertDivider)],
+            Accessibility =
+            [
+                "The insert button is a real button in the tab order, named by the required `Label`. Say where the "
+                    + "new item goes, such as \"Add a step after Pack the tent\".",
+                "It shows when the pointer rests on the line or when the button has focus. On a device with a touch "
+                    + "screen, which can't hover, it stays in view.",
+                "Every divider is a tab stop, so a long list gets many. For a long list, consider one Add button "
+                    + "that inserts after the focused item instead.",
+            ],
+            Target = new("button", "Add a step after Pack the tent"),
+            Blocks = ["tb-insert-divider"],
+            TestingTip = "Click the insert button by its name, as `GetByRole(AriaRole.Button, new() { Name = "
+                + "\"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
+        },
         new("stack", "Stack", ExampleCategory.Layout,
             "Lays its children out in a row or a column, evenly spaced.", typeof(StackExample))
         {
