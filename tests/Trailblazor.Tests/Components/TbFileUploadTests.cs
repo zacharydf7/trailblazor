@@ -1,0 +1,149 @@
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+
+namespace Trailblazor.Tests.Components;
+
+public class TbFileUploadTests : BunitContext
+{
+    private IReadOnlyList<IBrowserFile>? _files;
+    private int _changes;
+
+    public TbFileUploadTests()
+    {
+        this.AddTrailblazor();
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+    }
+
+    private static InputFileContent Pdf(string name, int size = 10) =>
+        InputFileContent.CreateFromBinary(new byte[size], name, contentType: "application/pdf");
+
+    [Fact]
+    public void Choose_ShouldListTheFilesWithTheirSizes_WhenTheyAreTaken()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf", 1_500), Pdf("map.pdf"));
+
+        Assert.Equal(["trail.pdf", "map.pdf"], _files!.Select(file => file.Name));
+        Assert.Equal(["trail.pdf 1.5 KB", "map.pdf 10 B"], cut.FindAll("[data-part=file]")
+            .Select(file => $"{file.QuerySelector(".tb-file-upload__name")!.TextContent} "
+                + file.QuerySelector(".tb-file-upload__size")!.TextContent));
+    }
+
+    [Fact]
+    public void Choose_ShouldLeaveOutAndExplainFilesOfAnotherType_WhenGivenAnAcceptList()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true)
+            .Add(upload => upload.Accept, ".pdf, image/*"));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf"),
+            InputFileContent.CreateFromText("x", "notes.docx", contentType: "application/msword"),
+            InputFileContent.CreateFromBinary([1], "photo.jpg", contentType: "image/jpeg"));
+
+        Assert.Equal(["trail.pdf", "photo.jpg"], _files!.Select(file => file.Name));
+        Assert.Equal("notes.docx isn't one of .pdf, image/*.", cut.Find("[data-part=rejected]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Choose_ShouldKeepTheFirstFilesAndSaySo_WhenThereAreMoreThanMaxFiles()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true)
+            .Add(upload => upload.MaxFiles, 2));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("a.pdf"), Pdf("b.pdf"), Pdf("c.pdf"));
+
+        Assert.Equal(["a.pdf", "b.pdf"], _files!.Select(file => file.Name));
+        Assert.Equal("Choose at most 2 files.", cut.Find("[data-part=rejected]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Choose_ShouldAskForOneFile_WhenOnlyOneIsAllowed()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true)
+            .Add(upload => upload.MaxFiles, 1));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("a.pdf"), Pdf("b.pdf"));
+
+        Assert.Equal("Choose only one file.", cut.Find("[data-part=rejected]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Choose_ShouldLeaveOutAFileOverTheLimit_WhenItIsTooLarge()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.MaxFileSize, 1_000));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("big.pdf", 2_000));
+
+        Assert.Null(_files);
+        Assert.Equal("big.pdf is larger than 1 KB.", cut.Find("[data-part=rejected]").TextContent.Trim());
+        Assert.Contains($"{cut.Find("[data-part=rejected]").Id}",
+            cut.Find("[data-part=input]").GetAttribute("aria-describedby"));
+    }
+
+    [Fact]
+    public void Choose_ShouldReplaceTheEarlierFiles_WhenFilesAreChosenAgain()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("a.pdf"));
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("b.pdf"));
+
+        Assert.Equal(["b.pdf"], _files!.Select(file => file.Name));
+    }
+
+    [Fact]
+    public void Remove_ShouldDropOnlyThatFile_WhenClicked()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("a.pdf"), Pdf("b.pdf"));
+
+        cut.Find("[data-part=remove][aria-label='Remove a.pdf']").Click();
+
+        Assert.Equal(["b.pdf"], _files!.Select(file => file.Name));
+    }
+
+    [Fact]
+    public void Clear_ShouldEmptyTheField_WhenClicked()
+    {
+        var cut = RenderUpload();
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("a.pdf"));
+
+        cut.Find("[data-part=clear]").Click();
+
+        Assert.Null(_files);
+        Assert.Empty(cut.FindAll("[data-part=file]"));
+    }
+
+    [Fact]
+    public void Render_ShouldBeAButtonNamedByItsText_WhenThereIsNoDropZoneOrLabel()
+    {
+        var cut = Render<TbFileUpload>(parameters => parameters.Add(upload => upload.DropZone, false));
+
+        Assert.Single(cut.FindAll(".tb-file-upload__button"));
+        Assert.Equal("Choose files", cut.Find("[data-part=input]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldNotRaiseValueChanged_WhenTheParentSetsTheFiles()
+    {
+        var cut = RenderUpload();
+
+        cut.Render(parameters => parameters.Add(upload => upload.Value, []));
+
+        Assert.Equal(0, _changes);
+    }
+
+    private IRenderedComponent<TbFileUpload> RenderUpload(
+        Action<ComponentParameterCollectionBuilder<TbFileUpload>>? configure = null) =>
+        Render<TbFileUpload>(parameters =>
+        {
+            parameters.Add(upload => upload.Label, "Documents").Add(upload => upload.Value, _files)
+                .Add(upload => upload.ValueChanged, (IReadOnlyList<IBrowserFile>? files) =>
+                {
+                    _files = files;
+                    _changes++;
+                });
+            configure?.Invoke(parameters);
+        });
+}

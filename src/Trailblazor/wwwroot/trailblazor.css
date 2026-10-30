@@ -3314,6 +3314,124 @@
         padding-block: var(--tb-space-1);
     }
 
+    .tb-file-upload__zone,
+    .tb-file-upload__button {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--tb-space-2);
+        border: 1px dashed var(--tb-border-strong);
+        border-radius: var(--tb-radius-md);
+        color: var(--tb-color-text-muted);
+        text-align: center;
+    }
+
+    .tb-file-upload__zone {
+        min-block-size: 6rem;
+        padding: var(--tb-space-4);
+    }
+
+    .tb-file-upload__button {
+        align-self: flex-start;
+        min-block-size: var(--tb-control-height);
+        padding-inline: var(--tb-space-4);
+        border-style: solid;
+        color: var(--tb-color-text);
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-field:not(.tb-field--disabled) > .tb-file-upload__zone:hover,
+    .tb-field:not(.tb-field--disabled) > .tb-file-upload__button:hover,
+    .tb-file-upload__zone[data-dragging] {
+        border-color: var(--tb-color-primary);
+        background: var(--tb-color-primary-subtle);
+    }
+
+    .tb-file-upload__zone:has(.tb-file-upload__input:focus-visible),
+    .tb-file-upload__button:has(.tb-file-upload__input:focus-visible) {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    /* The input covers the zone unseen, so clicks and dropped files land on it while the zone shows the prompt. */
+    .tb-file-upload__input {
+        position: absolute;
+        inset: 0;
+        inline-size: 100%;
+        block-size: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* The prompt sits beside the disabled input rather than in it, so it stays readable and the zone fades instead. */
+    .tb-field--disabled .tb-file-upload__zone,
+    .tb-field--disabled .tb-file-upload__button {
+        border-color: var(--tb-border-subtle);
+        background: var(--tb-color-surface-sunken);
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-file-upload__input:disabled {
+        cursor: not-allowed;
+    }
+
+    /* A static page has no file list, so the browser's own input shows what was chosen, on its own: the zone
+       around it can't take a click or a drop without the input covering it. */
+    .tb-file-upload__input[data-static] {
+        position: static;
+        inline-size: auto;
+        block-size: auto;
+        opacity: 1;
+    }
+
+    .tb-file-upload__zone:has(> [data-static]),
+    .tb-file-upload__button:has(> [data-static]) {
+        min-block-size: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .tb-file-upload__zone:has(> [data-static]) > .tb-file-upload__prompt,
+    .tb-file-upload__button:has(> [data-static]) > .tb-file-upload__prompt {
+        display: none;
+    }
+
+    .tb-file-upload__files {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-file-upload__file {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-file-upload__name {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .tb-file-upload__size {
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-file-upload__clear {
+        align-self: flex-start;
+    }
+
+    @media (forced-colors: active) {
+        .tb-file-upload__zone[data-dragging] {
+            border-color: Highlight;
+        }
+    }
+
     .tb-date-range__boxes {
         display: flex;
         flex: 1 1 auto;

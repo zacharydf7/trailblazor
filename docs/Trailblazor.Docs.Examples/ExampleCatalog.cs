@@ -639,6 +639,28 @@ public static class ExampleCatalog
                 + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it. In bUnit, "
                 + "set `FakeBrowserService.PickedColor` to test the eyedropper.",
         },
+        new("file-upload", "File upload", ExampleCategory.Inputs,
+            "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.",
+            typeof(FileUploadExample))
+        {
+            Api = [typeof(TbFileUpload), typeof(FileUploadLabels), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "It is the browser's own file input, named by the `Label`, laid over the drop zone: Enter or Space "
+                    + "opens the file dialog, and screen readers announce it as a file button.",
+                "Files of another type, too large, or beyond `MaxFiles` are left out, and the reasons are linked to "
+                    + "the input and announced with the number of files chosen.",
+                "The chosen files are a `list`; each has a \"Remove\" button named with its file, and focus moves back "
+                    + "to the input when a file is removed.",
+                "Each new choice replaces the last, as the browser's file input does, so read the files before the "
+                    + "user chooses again.",
+            ],
+            Target = new("button", "Trail maps"),
+            Blocks = ["tb-field", "tb-file-upload"],
+            TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
+                + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
+                + "taken them. In bUnit, `FindComponent<InputFile>().UploadFiles(...)` chooses files.",
+        },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.",
             typeof(DateRangePickerExample))

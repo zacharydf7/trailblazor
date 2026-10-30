@@ -1,0 +1,34 @@
+@page "/file-upload"
+
+<TbStack Gap="4" Style="max-inline-size: 28rem">
+    <TbFileUpload Label="Documents" @bind-Value="_documents" Accept=".pdf" Multiple MaxFiles="3" />
+    <output data-testid="documents">@Names(_documents)</output>
+    <output data-testid="read">@_read</output>
+    <TbButton OnClick="ReadAsync">Read</TbButton>
+    <TbFileUpload Label="Settings" @bind-Value="_settings" Accept=".json" DropZone="false" />
+    <output data-testid="settings">@(_settings?[0].Name ?? "none")</output>
+    <TbFileUpload Label="Archive" Disabled />
+</TbStack>
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _documents;
+    private IReadOnlyList<IBrowserFile>? _settings;
+    private string _read = "";
+
+    private static string Names(IReadOnlyList<IBrowserFile>? files) =>
+        files is null ? "none" : string.Join(", ", files.Select(file => file.Name));
+
+    // Reading proves the files are still readable after the field has listed them.
+    private async Task ReadAsync()
+    {
+        var total = 0L;
+        foreach (var file in _documents ?? [])
+        {
+            await using var stream = file.OpenReadStream();
+            var buffer = new byte[file.Size];
+            total += await stream.ReadAsync(buffer);
+        }
+
+        _read = $"{total} bytes";
+    }
+}

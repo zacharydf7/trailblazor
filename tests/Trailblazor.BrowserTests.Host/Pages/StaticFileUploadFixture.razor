@@ -1,0 +1,18 @@
+@page "/static-file-upload"
+@attribute [ExcludeFromInteractiveRouting]
+
+<form method="post" enctype="multipart/form-data" @formname="static-file-upload" @onsubmit="Post">
+    <AntiforgeryToken />
+    <TbFileUpload Label="Documents" InputAttributes="@(new Dictionary<string, object> { ["name"] = "documents" })" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</form>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private void Post() => _posted = string.Join(", ", HttpContext!.Request.Form.Files.Select(file => file.FileName));
+}

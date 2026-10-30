@@ -27,6 +27,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbColorPicker</c> with this label.</summary>
     public TbColorPickerLocator ColorPicker(string label) => new(page, label);
 
+    /// <summary>The <c>TbFileUpload</c> with this label.</summary>
+    public TbFileUploadLocator FileUpload(string label) => new(page, label);
+
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
     public TbDateRangePickerLocator DateRangePicker(string label) => new(page, label);
 
@@ -182,6 +185,35 @@ public sealed partial class TbColorPickerLocator(IPage page, string label)
 
     [GeneratedRegex("^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")]
     private static partial Regex HexColor();
+}
+
+/// <summary>A <c>TbFileUpload</c>, found by its label.</summary>
+public sealed class TbFileUploadLocator(IPage page, string label)
+{
+    /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog would, and waits
+    /// until the field has taken the choice. A statically rendered field just gets the files.</summary>
+    public Task ChooseAsync(params string[] paths) => ChooseAsync(input => input.SetInputFilesAsync(paths));
+
+    /// <summary>Chooses files made in the test, each with a <c>Name</c>, <c>MimeType</c> and <c>Buffer</c>, and waits
+    /// until the field has taken the choice.</summary>
+    public Task ChooseAsync(params FilePayload[] files) => ChooseAsync(input => input.SetInputFilesAsync(files));
+
+    private async Task ChooseAsync(Func<ILocator, Task> choose)
+    {
+        var input = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("input[type=file]"));
+        if (await input.GetAttributeAsync("data-static") is not null)
+        {
+            await choose(input);
+            return;
+        }
+
+        // A prerendered field is replaced once the page is interactive, and its script listens only after that, which
+        // data-ready tells; the field counts the choices it has taken, which tells when it has this one.
+        await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
+        var choices = await input.GetAttributeAsync("data-choices");
+        await choose(input);
+        await Assertions.Expect(input).Not.ToHaveAttributeAsync("data-choices", choices ?? "");
+    }
 }
 
 /// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>

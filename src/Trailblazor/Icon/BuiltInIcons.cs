@@ -18,6 +18,9 @@ internal static class BuiltInIcons
         + "1.4 1.4 1.4L5 15.9V19h3.1l7.6-7.7 1.4 1.4 1.4-1.4-1.4-1.4 2.5-2.4a2.2 2.2 0 0 0 0-3.1zM7.3 17H7v-.3l7.3-7.3"
         + ".3.3z\" />");
 
+    public static Icon Upload { get; } =
+        new("<path d=\"M11 16V7.8l-3.6 3.6L6 10l6-6 6 6-1.4 1.4L13 7.8V16zm-6 4v-5h2v3h10v-3h2v5z\" />");
+
     public static Icon ChevronDown { get; } = new("<path d=\"M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z\" />");
 
     // Points right; flip it in right-to-left text.

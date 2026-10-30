@@ -1,0 +1,73 @@
+@namespace Trailblazor
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
+@inherits TbFieldBase<IReadOnlyList<IBrowserFile>?>
+
+<div @attributes="AdditionalAttributes" style="@Style"
+     class="@ClassNames.Join("tb-field", "tb-file-upload", Errors.Count > 0 ? "tb-field--invalid" : null,
+                Disabled ? "tb-field--disabled" : null, Class)">
+    @if (Label is not null)
+    {
+        <label data-part="label" id="@LabelId" for="@InputId"
+               class="@ClassNames.Join("tb-field__label", Classes?.Label)">
+            @Label
+            @RequiredMarker
+        </label>
+    }
+    @* The file input lies over the whole zone, so a click, Enter or Space, or a dropped file all reach it. *@
+    <div data-part="zone" data-dragging="@(_dragging ? "" : null)"
+         class="@ClassNames.Join(DropZone ? "tb-file-upload__zone" : "tb-file-upload__button", Classes?.Control)">
+        <span class="tb-file-upload__prompt" aria-hidden="true">
+            @if (!DropZone)
+            {
+                @Labels.Choose
+            }
+            else if (ZoneContent is not null)
+            {
+                @ZoneContent
+            }
+            else
+            {
+                <TbIcon Icon="BuiltInIcons.Upload" />
+                @Labels.Zone
+            }
+        </span>
+        <InputFile @ref="_input" @attributes="InputAttributes" data-part="input" id="@InputId"
+                   name="@InputNameAttribute" OnChange="OnChangeAsync" accept="@Accept" multiple="@Multiple"
+                   disabled="@Disabled" aria-label="@AccessibleName" aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@Description"
+                   data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+                   data-prerender="@(AssignedRenderMode is not null && !RendererInfo.IsInteractive ? "" : null)"
+                   data-choices="@_choices" data-ready="@(_ready ? "" : null)"
+                   @ondragenter="() => _dragging = true" @ondragleave="() => _dragging = false"
+                   @ondrop="() => _dragging = false"
+                   class="@ClassNames.Join("tb-file-upload__input", Classes?.Input)" />
+    </div>
+    @if (Files.Count > 0)
+    {
+        <ul data-part="files" class="tb-file-upload__files">
+            @foreach (var file in Files)
+            {
+                <li data-part="file" class="tb-file-upload__file">
+                    <span class="tb-file-upload__name">@file.Name</span>
+                    <span class="tb-file-upload__size">@FormatSize(file.Size)</span>
+                    <TbIconButton Icon="BuiltInIcons.Close" Size="Size.Small" Variant="Variant.Text"
+                                  AriaLabel="@string.Format(CultureInfo.CurrentCulture, Labels.Remove, file.Name)"
+                                  Disabled="Disabled" OnClick="() => RemoveAsync(file)" data-part="remove" />
+                </li>
+            }
+        </ul>
+        <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="Disabled" OnClick="ClearAsync" data-part="clear"
+                  class="tb-file-upload__clear">@Labels.Clear</TbButton>
+    }
+    @if (_rejected.Count > 0)
+    {
+        <div data-part="rejected" id="@RejectedId" class="tb-field__error">
+            @foreach (var reason in _rejected)
+            {
+                <div>@reason</div>
+            }
+        </div>
+    }
+    @Messages(Classes?.Helper, Classes?.Error)
+</div>
