@@ -192,13 +192,18 @@ public static class ExampleCatalog
             Blocks = ["tb-button", "tb-icon-button"],
         },
         new("button-group", "Button group", ExampleCategory.Actions,
-            "Joins related buttons into one control.", typeof(ButtonGroupExample))
+            "Joins related buttons into one control, in a row or a column, with settings shared by all of them.",
+            typeof(ButtonGroupExample))
         {
             Api = [typeof(TbButtonGroup)],
             Accessibility =
             [
                 "A `div` with `role=\"group\"`. Give it an `aria-label` that says what the buttons do together.",
                 "Each button keeps its own tab stop; the group adds no arrow-key navigation.",
+                "`Disabled` on the group turns every button off, as each button's own `Disabled` would. `Variant`, "
+                    + "`Tone` and `Size` apply to every button that doesn't set its own.",
+                "A menu, popover or tooltip around a button joins the group with it, so a split button is a button "
+                    + "and a menu side by side. Give the menu's icon trigger a `Label` that says what it opens.",
             ],
             Target = new("group", "Text alignment"),
             Blocks = ["tb-button-group"],

@@ -7,6 +7,9 @@ namespace Trailblazor;
 public abstract partial class TbButtonBase : TbComponentBase
 {
     private ElementReference _element;
+    private bool _givenVariant;
+    private bool _givenTone;
+    private bool _givenSize;
 
     /// <summary>How strongly the button is drawn.</summary>
     [Parameter]
@@ -56,22 +59,43 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    [CascadingParameter]
+    private TbButtonGroup? Group { get; set; }
+
+    private protected Variant ShownVariant => TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
+
+    private protected Tone ShownTone => TbButtonGroup.Choose(_givenTone, Tone, Group?.Tone);
+
+    private protected Size ShownSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
+
+    private bool Off => Disabled || Group?.Disabled == true;
+
     private string TypeAttribute => Type.ToString().ToLowerInvariant();
 
     private bool Toggles => PressedChanged.HasDelegate;
 
     // Still focusable, but nothing happens when it is pressed.
-    private bool Inert => Loading || (Disabled && FocusableWhenDisabled);
+    private bool Inert => Loading || (Off && FocusableWhenDisabled);
 
     private string RootClass(string? extra) => ClassNames.Join("tb-button",
-        ClassNames.Modifier("tb-button", Variant), ClassNames.Modifier("tb-button", Tone),
-        ClassNames.Modifier("tb-button", Size), Loading ? "tb-button--loading" : null, extra, Class);
+        ClassNames.Modifier("tb-button", ShownVariant), ClassNames.Modifier("tb-button", ShownTone),
+        ClassNames.Modifier("tb-button", ShownSize), Loading ? "tb-button--loading" : null, extra, Class);
 
     private object? Theirs(string attribute) => AdditionalAttributes?.GetValueOrDefault(attribute);
 
     /// <summary>Moves focus to the button.</summary>
     /// <param name="preventScroll">Whether to keep the page from scrolling the button into view.</param>
     public ValueTask FocusAsync(bool preventScroll = false) => _element.FocusAsync(preventScroll);
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // A group fills in only the settings the button wasn't given.
+        _givenVariant = parameters.TryGetValue<Variant>(nameof(Variant), out _);
+        _givenTone = parameters.TryGetValue<Tone>(nameof(Tone), out _);
+        _givenSize = parameters.TryGetValue<Size>(nameof(Size), out _);
+        return base.SetParametersAsync(parameters);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -84,7 +108,7 @@ public abstract partial class TbButtonBase : TbComponentBase
 
     private async Task OnClickAsync(MouseEventArgs args)
     {
-        if (Disabled || Loading)
+        if (Off || Loading)
         {
             return;
         }

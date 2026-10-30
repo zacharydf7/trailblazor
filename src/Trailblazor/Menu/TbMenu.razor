@@ -14,12 +14,12 @@
     }
     else if (Icon is { } icon)
     {
-        <TbIconButton Icon="icon" AriaLabel="@(Label ?? "")" Size="Size" Disabled="Disabled"
+        <TbIconButton Icon="icon" AriaLabel="@(Label ?? "")" Size="TriggerSize" Disabled="Disabled"
                       @attributes="TriggerAttributes" />
     }
     else
     {
-        <TbButton Variant="Variant" Size="Size" Disabled="Disabled" @attributes="TriggerAttributes">
+        <TbButton Variant="TriggerVariant" Size="TriggerSize" Disabled="Disabled" @attributes="TriggerAttributes">
             <ChildContent>@Label</ChildContent>
             <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
         </TbButton>
@@ -92,6 +92,25 @@
     /// <see cref="TbMenuSeparator"/>s to arrange them.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    private bool _givenVariant;
+    private bool _givenSize;
+
+    [CascadingParameter]
+    private TbButtonGroup? Group { get; set; }
+
+    private Variant TriggerVariant => TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
+
+    private Size TriggerSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // In a button group, the trigger takes the group's settings unless the menu was given its own.
+        _givenVariant = parameters.TryGetValue<Variant>(nameof(Variant), out _);
+        _givenSize = parameters.TryGetValue<Size>(nameof(Size), out _);
+        return base.SetParametersAsync(parameters);
+    }
 
     private string TriggerId => $"{_id}-trigger";
 

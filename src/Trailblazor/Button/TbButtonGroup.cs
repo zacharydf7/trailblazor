@@ -1,4 +1,4 @@
 namespace Trailblazor;
 
-/// <summary>Lays related buttons side by side as one group.</summary>
+/// <summary>Joins related buttons into one control, in a row or a column.</summary>
 public partial class TbButtonGroup;

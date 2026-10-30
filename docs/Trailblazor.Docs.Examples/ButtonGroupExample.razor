@@ -1,5 +1,25 @@
-<TbButtonGroup aria-label="Text alignment">
-    <TbButton Variant="Variant.Outlined">Left</TbButton>
-    <TbButton Variant="Variant.Outlined">Center</TbButton>
-    <TbButton Variant="Variant.Outlined">Right</TbButton>
-</TbButtonGroup>
+@using Trailblazor.Docs.Examples
+
+<TbStack Gap="6">
+    <TbButtonGroup aria-label="Text alignment" Variant="Variant.Outlined">
+        <TbButton>Left</TbButton>
+        <TbButton>Center</TbButton>
+        <TbButton>Right</TbButton>
+    </TbButtonGroup>
+    @* A split button: the main action, and a menu of the other ways to do it. *@
+    <TbButtonGroup aria-label="Save the trail" Variant="Variant.Filled" Tone="Tone.Primary">
+        <TbButton>Save</TbButton>
+        <TbMenu Label="More ways to save" Icon="ExampleIcons.ChevronDown" Align="PlacementAlign.End">
+            <TbMenuItem>Save a copy</TbMenuItem>
+            <TbMenuItem>Save as a template</TbMenuItem>
+        </TbMenu>
+    </TbButtonGroup>
+    <TbButtonGroup aria-label="Zoom" Vertical Variant="Variant.Outlined" Size="Size.Small">
+        <TbTooltip Text="Zoom in" Placement="Placement.End">
+            <TbIconButton Icon="ExampleIcons.Plus" AriaLabel="Zoom in" />
+        </TbTooltip>
+        <TbTooltip Text="Zoom out" Placement="Placement.End">
+            <TbIconButton Icon="ExampleIcons.Minus" AriaLabel="Zoom out" />
+        </TbTooltip>
+    </TbButtonGroup>
+</TbStack>

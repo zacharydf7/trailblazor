@@ -1725,17 +1725,79 @@
         display: inline-flex;
     }
 
-    .tb-button-group > .tb-button:not(:first-child),
     .tb-toggle-group:not(.tb-toggle-group--vertical) > .tb-button:not(:first-child) {
         margin-inline-start: -1px;
         border-start-start-radius: 0;
         border-end-start-radius: 0;
     }
 
-    .tb-button-group > .tb-button:not(:last-child),
     .tb-toggle-group:not(.tb-toggle-group--vertical) > .tb-button:not(:last-child) {
         border-start-end-radius: 0;
         border-end-end-radius: 0;
+    }
+
+    /* A group's items are its buttons, or the menus, popovers and tooltips around them, whose own buttons join. */
+    .tb-button-group--vertical {
+        flex-direction: column;
+    }
+
+    /* The doubled class outranks a wrapper's own display, such as the popover's inline-block. */
+    .tb-button-group.tb-button-group--vertical > * {
+        display: flex;
+    }
+
+    .tb-button-group--vertical > * > .tb-button {
+        flex: 1;
+    }
+
+    .tb-button-group:not(.tb-button-group--vertical) > :not(:first-child) {
+        margin-inline-start: -1px;
+    }
+
+    .tb-button-group--vertical > :not(:first-child) {
+        margin-block-start: -1px;
+    }
+
+    .tb-button-group:not(.tb-button-group--vertical) > :not(:first-child):is(.tb-button),
+    .tb-button-group:not(.tb-button-group--vertical) > :not(:first-child) > .tb-button {
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+    }
+
+    .tb-button-group:not(.tb-button-group--vertical) > :not(:last-child):is(.tb-button),
+    .tb-button-group:not(.tb-button-group--vertical) > :not(:last-child) > .tb-button {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+    }
+
+    .tb-button-group--vertical > :not(:first-child):is(.tb-button),
+    .tb-button-group--vertical > :not(:first-child) > .tb-button {
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+    }
+
+    .tb-button-group--vertical > :not(:last-child):is(.tb-button),
+    .tb-button-group--vertical > :not(:last-child) > .tb-button {
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+    }
+
+    /* Filled and soft buttons side by side would merge into one block, so each after the first draws a seam. */
+    .tb-button-group:not(.tb-button-group--vertical) > :not(:first-child):is(.tb-button--filled, .tb-button--soft),
+    .tb-button-group:not(.tb-button-group--vertical) > :not(:first-child) > :is(.tb-button--filled, .tb-button--soft) {
+        border-inline-start-color: color-mix(in srgb, currentColor 35%, transparent);
+    }
+
+    .tb-button-group--vertical > :not(:first-child):is(.tb-button--filled, .tb-button--soft),
+    .tb-button-group--vertical > :not(:first-child) > :is(.tb-button--filled, .tb-button--soft) {
+        border-block-start-color: color-mix(in srgb, currentColor 35%, transparent);
+    }
+
+    /* Joined buttons overlap by their border, so a focused one is lifted to show all of its ring. */
+    .tb-button-group > .tb-button:focus-visible,
+    .tb-button-group > * > .tb-button:focus-visible {
+        position: relative;
+        z-index: 2;
     }
 
     .tb-toggle-group--vertical {

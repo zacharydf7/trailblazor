@@ -8,11 +8,11 @@
             @if (Href is not null)
             {
                 @* An anchor without an address isn't a link to assistive technology, so a disabled one says it is. *@
-                <a @ref="_element" @attributes="AdditionalAttributes" href="@(Disabled ? null : Href)"
-                   role="@(Disabled ? "link" : Theirs("role"))"
-                   tabindex="@(Disabled ? (FocusableWhenDisabled ? "0" : null) : Theirs("tabindex"))"
+                <a @ref="_element" @attributes="AdditionalAttributes" href="@(Off ? null : Href)"
+                   role="@(Off ? "link" : Theirs("role"))"
+                   tabindex="@(Off ? (FocusableWhenDisabled ? "0" : null) : Theirs("tabindex"))"
                    aria-label="@(ariaLabel ?? Theirs("aria-label"))"
-                   aria-disabled="@(Disabled || Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+                   aria-disabled="@(Off || Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
                    class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
                    @onclick:preventDefault="Loading">
                     @content
@@ -21,7 +21,7 @@
             else
             {
                 <button @ref="_element" @attributes="AdditionalAttributes" type="@TypeAttribute"
-                        disabled="@(Disabled && !FocusableWhenDisabled)"
+                        disabled="@(Off && !FocusableWhenDisabled)"
                         aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                         aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
                         aria-pressed="@(Toggles ? (Pressed ? "true" : "false") : Theirs("aria-pressed"))"

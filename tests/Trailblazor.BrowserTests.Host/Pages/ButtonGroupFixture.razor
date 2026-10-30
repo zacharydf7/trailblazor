@@ -1,0 +1,9 @@
+@page "/button-group"
+
+@* Labels of different widths, each wrapped differently, so only stretching makes the column even. *@
+<TbButtonGroup aria-label="Map tools" Vertical Variant="Variant.Outlined">
+    <TbButton>Fit</TbButton>
+    <TbTooltip Text="Show the layers"><TbButton>Layers and labels</TbButton></TbTooltip>
+    <TbMenu Label="Menu"><TbMenuItem>Print</TbMenuItem></TbMenu>
+    <TbPopover Label="Share">Copy the link.</TbPopover>
+</TbButtonGroup>

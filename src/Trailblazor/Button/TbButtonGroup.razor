@@ -2,13 +2,37 @@
 @inherits TbComponentBase
 
 @* Give the group an aria-label so screen readers can say what the buttons have in common. *@
-<div @attributes="AdditionalAttributes" role="group" class="@ClassNames.Join("tb-button-group", Class)"
-     style="@Style">
-    @ChildContent
+<div @attributes="AdditionalAttributes" role="group" style="@Style"
+     class="@ClassNames.Join("tb-button-group", Vertical ? "tb-button-group--vertical" : null, Class)">
+    <CascadingValue Value="this">@ChildContent</CascadingValue>
 </div>
 
 @code {
-    /// <summary>The buttons in the group.</summary>
+    /// <summary>The buttons in the group. Menus, popovers and tooltips around a button join the group too.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Stacks the buttons in a column instead of a row.</summary>
+    [Parameter]
+    public bool Vertical { get; set; }
+
+    /// <summary>How every button in the group is drawn, unless it sets its own.</summary>
+    [Parameter]
+    public Variant? Variant { get; set; }
+
+    /// <summary>The meaning of every button in the group, unless it sets its own.</summary>
+    [Parameter]
+    public Tone? Tone { get; set; }
+
+    /// <summary>The size of every button in the group, unless it sets its own.</summary>
+    [Parameter]
+    public Size? Size { get; set; }
+
+    /// <summary>Turns every button in the group off.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    // A button's own setting when it was given one, or else the group's.
+    internal static T Choose<T>(bool given, T own, T? fromGroup) where T : struct =>
+        given || fromGroup is null ? own : fromGroup.Value;
 }

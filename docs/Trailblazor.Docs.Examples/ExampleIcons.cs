@@ -21,4 +21,8 @@ public static class ExampleIcons
     public static Icon Folder { get; } = new("<path d=\"M3 5h7l2 2h9v12H3z\" />");
 
     public static Icon Trail { get; } = new("<path d=\"M12 3 4 21h3l5-11 5 11h3z\" />");
+
+    public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
+
+    public static Icon ChevronDown { get; } = new("<path d=\"M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z\" />");
 }

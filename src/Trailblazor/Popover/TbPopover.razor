@@ -13,12 +13,12 @@
     }
     else if (Icon is { } icon)
     {
-        <TbIconButton Icon="icon" AriaLabel="@(Label ?? "")" Variant="Variant" Size="Size"
+        <TbIconButton Icon="icon" AriaLabel="@(Label ?? "")" Variant="TriggerVariant" Size="TriggerSize"
                       @attributes="TriggerAttributes" />
     }
     else
     {
-        <TbButton Variant="Variant" Size="Size" @attributes="TriggerAttributes">@Label</TbButton>
+        <TbButton Variant="TriggerVariant" Size="TriggerSize" @attributes="TriggerAttributes">@Label</TbButton>
     }
     <div @ref="_panel" id="@PanelId" popover="auto" role="dialog" tabindex="-1" data-part="panel"
          aria-labelledby="@(Title is null ? TriggerId : TitleId)" class="tb-popover__panel">
@@ -26,7 +26,8 @@
         {
             <p id="@TitleId" data-part="title" class="tb-popover__title">@Title</p>
         }
-        @ChildContent
+        @* Buttons in the panel aren't the group's, so a button group around the popover stops at its trigger. *@
+        <CascadingValue TValue="TbButtonGroup" Value="null">@ChildContent</CascadingValue>
     </div>
 </div>
 
@@ -92,6 +93,25 @@
     /// <summary>The panel's content.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    private bool _givenVariant;
+    private bool _givenSize;
+
+    [CascadingParameter]
+    private TbButtonGroup? Group { get; set; }
+
+    private Variant TriggerVariant => TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
+
+    private Size TriggerSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // In a button group, the trigger takes the group's settings unless the popover was given its own.
+        _givenVariant = parameters.TryGetValue<Variant>(nameof(Variant), out _);
+        _givenSize = parameters.TryGetValue<Size>(nameof(Size), out _);
+        return base.SetParametersAsync(parameters);
+    }
 
     private string TriggerId => $"{_id}-trigger";
 
