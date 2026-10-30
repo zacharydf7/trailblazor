@@ -1,35 +1,180 @@
 @page "/"
 @using Trailblazor.Docs.Examples
+@inject NavigationManager Navigation
+@inject IBrowserService Browser
 
 <PageTitle>Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Display" As="TextElement.H1">Trailblazor</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    Accessible Blazor components for .NET 10, built on the browser's own dialogs and popovers and styled with design
-    tokens. Every example on this site runs in your browser, so try them out.
-</TbText>
+<section class="docs-hero" aria-labelledby="docs-hero-title">
+    <div class="docs-wrap docs-hero__grid">
+        <div class="docs-hero__text">
+            <TbText TextStyle="TextStyle.Caption" class="docs-eyebrow">Blazor components for .NET 10</TbText>
+            <TbText TextStyle="TextStyle.Display" As="TextElement.H1" id="docs-hero-title" class="docs-hero__title">
+                Accessible components, <span>built on the platform</span>
+            </TbText>
+            <TbText TextStyle="TextStyle.Subtitle" Muted class="docs-hero__lede">
+                Trailblazor gives Blazor apps the inputs, overlays, navigation and feedback they need, built on the
+                browser's own dialogs and popovers, themed with design tokens, and tested in Chromium, Firefox and
+                WebKit. Every example on this site runs in your browser.
+            </TbText>
+            <div class="docs-hero__actions">
+                <TbButton Href="guides/getting-started" Size="Size.Large">Get started</TbButton>
+                <TbButton Href="#components" Variant="Variant.Outlined" Size="Size.Large">Browse components</TbButton>
+                <TbButton Href="https://github.com/zacharydf7/trailblazor" Variant="Variant.Outlined"
+                          Size="Size.Large">GitHub</TbButton>
+            </div>
+            <p class="docs-install">
+                <span aria-hidden="true">$</span> <b>git clone</b> https://github.com/zacharydf7/trailblazor.git
+            </p>
+        </div>
+        <div class="docs-window">
+            <div class="docs-window__bar" aria-hidden="true"><i></i><i></i><i></i><span>A trail form</span></div>
+            <TbTabs AriaLabel="Hero example" class="docs-window__tabs">
+                <TbTab Text="Preview">
+                    <div class="docs-window__body">
+                        <TbStack Gap="4">
+                            <TbTextField Label="Trail name" @bind-Value="_trail" />
+                            <TbSelect Label="Difficulty" @bind-Value="_difficulty">
+                                <TbOption Value="@("Easy")">Easy</TbOption>
+                                <TbOption Value="@("Moderate")">Moderate</TbOption>
+                                <TbOption Value="@("Strenuous")">Strenuous</TbOption>
+                            </TbSelect>
+                            <TbSwitch Label="Dogs allowed" @bind-Value="_dogs" />
+                            <TbStack Row Gap="2" Align="Align.Center">
+                                <TbButton OnClick="Save">Save trail</TbButton>
+                                @if (_saved is not null)
+                                {
+                                    <TbText TextStyle="TextStyle.BodySmall" Muted>Saved @_saved.</TbText>
+                                }
+                            </TbStack>
+                        </TbStack>
+                    </div>
+                </TbTab>
+                <TbTab Text="Code">
+                    <CodeBlock Label="The trail form's markup" Code="@HeroCode" />
+                </TbTab>
+            </TbTabs>
+        </div>
+    </div>
+</section>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Guides</TbText>
-<ul class="docs-cards">
-    @foreach (var guide in GuideCatalog.All)
-    {
-        <li class="docs-card">
-            <a href="@guide.Path" class="docs-card__title">@guide.Title</a>
-            <TbText>@guide.Summary</TbText>
-        </li>
-    }
-</ul>
+<section class="docs-band" aria-labelledby="docs-why">
+    <div class="docs-wrap">
+        <div class="docs-band__head">
+            <TbText TextStyle="TextStyle.Headline" As="TextElement.H2" id="docs-why">
+                What you get in every component
+            </TbText>
+            <TbText TextStyle="TextStyle.Subtitle" Muted>
+                The parts that are easy to get wrong in a component library, done the same way everywhere and checked
+                by tests in three browser engines.
+            </TbText>
+        </div>
+        <ul class="docs-features">
+            @foreach (var feature in Features)
+            {
+                <li class="docs-feature">
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">@feature.Title</TbText>
+                    <TbText TextStyle="TextStyle.BodySmall" Muted>@feature.Text</TbText>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
 
-@foreach (var category in Enum.GetValues<ExampleCategory>())
-{
-    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">@category</TbText>
-    <ul class="docs-cards">
-        @foreach (var example in ExampleCatalog.All.Where(example => example.Category == category))
+@* The catalog: every guide and component, in the sidebar's order, so this page can be the whole map. *@
+<section @ref="_catalog" class="docs-band docs-band--tinted docs-catalog" aria-labelledby="components">
+    <div class="docs-wrap">
+        <div class="docs-band__head">
+            <TbText TextStyle="TextStyle.Headline" As="TextElement.H2" id="components">Guides and components</TbText>
+            <TbText TextStyle="TextStyle.Subtitle" Muted>
+                @ExampleCatalog.All.Count components in @(Enum.GetValues<ExampleCategory>().Length) groups, each with a
+                live example, its source, an API table, accessibility notes and a testing tip.
+            </TbText>
+        </div>
+        <div class="docs-group">
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H3" class="docs-group__title">Guides</TbText>
+            <ul class="docs-cards">
+                @foreach (var guide in GuideCatalog.All)
+                {
+                    <li class="docs-card">
+                        <a href="@guide.Path" class="docs-card__title">@guide.Title</a>
+                        <TbText TextStyle="TextStyle.BodySmall" Muted>@guide.Summary</TbText>
+                    </li>
+                }
+            </ul>
+        </div>
+        @foreach (var category in Enum.GetValues<ExampleCategory>())
         {
-            <li class="docs-card">
-                <a href="@($"components/{example.Name}")" class="docs-card__title">@example.Title</a>
-                <TbText>@example.Summary</TbText>
-            </li>
+            var examples = ExampleCatalog.All.Where(example => example.Category == category).ToList();
+            <div class="docs-group">
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H3" class="docs-group__title">
+                    @category <span class="docs-group__count">@examples.Count</span>
+                </TbText>
+                <ul class="docs-cards">
+                    @foreach (var example in examples)
+                    {
+                        <li class="docs-card">
+                            <a href="@($"components/{example.Name}")" class="docs-card__title">@example.Title</a>
+                            <TbText TextStyle="TextStyle.BodySmall" Muted>@example.Summary</TbText>
+                        </li>
+                    }
+                </ul>
+            </div>
         }
-    </ul>
+    </div>
+</section>
+
+@code {
+    private string? _trail = "Ridge loop";
+    private string? _difficulty = "Moderate";
+    private bool _dogs = true;
+    private string? _saved;
+    private ElementReference _catalog;
+
+    // A link to the catalog from another page arrives before the catalog has rendered, so the page scrolls to it.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && new Uri(Navigation.Uri).Fragment == "#components")
+        {
+            await Browser.ScrollIntoViewAsync(_catalog, ScrollAlignment.Start);
+        }
+    }
+
+    private void Save() => _saved = _trail;
+
+    private static readonly (string Title, string Text)[] Features =
+    [
+        ("Accessible by default", "Each component follows its WAI-ARIA pattern, with the keyboard, focus and names "
+            + "screen readers expect, and every example passes axe in Chromium, Firefox and WebKit."),
+        ("Built on the platform", "Dialogs are native dialog elements and menus, selects and tooltips use the popover "
+            + "API, so the browser handles layering, light dismiss and the top layer."),
+        ("Themed with tokens", "Colors, spacing, type and motion are CSS custom properties. Switch palettes, follow the "
+            + "system's light or dark setting, or change one token for the whole app."),
+        ("Works before it's interactive", "Rendered statically, fields fall back to native controls and forms still "
+            + "post, so pages work before a circuit connects or without one."),
+        ("Easy to test", "Trailblazor.Testing registers fakes for bUnit, and Trailblazor.Testing.Playwright finds and "
+            + "drives components the way users do, with page.Tb()."),
+        ("Respects your users", "Reduced motion stops animations, forced colors keep outlines and fills, and "
+            + "right-to-left layouts mirror, without extra work in your app."),
+    ];
+
+    // The preview's own markup, so the Code tab shows exactly what renders beside it.
+    private const string HeroCode = """
+        <TbStack Gap="4">
+            <TbTextField Label="Trail name" @bind-Value="_trail" />
+            <TbSelect Label="Difficulty" @bind-Value="_difficulty">
+                <TbOption Value="@("Easy")">Easy</TbOption>
+                <TbOption Value="@("Moderate")">Moderate</TbOption>
+                <TbOption Value="@("Strenuous")">Strenuous</TbOption>
+            </TbSelect>
+            <TbSwitch Label="Dogs allowed" @bind-Value="_dogs" />
+            <TbStack Row Gap="2" Align="Align.Center">
+                <TbButton OnClick="Save">Save trail</TbButton>
+                @if (_saved is not null)
+                {
+                    <TbText TextStyle="TextStyle.BodySmall" Muted>Saved @_saved.</TbText>
+                }
+            </TbStack>
+        </TbStack>
+        """;
 }

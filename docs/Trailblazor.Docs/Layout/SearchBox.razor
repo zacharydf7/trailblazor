@@ -2,7 +2,8 @@
 
 <form role="search" class="docs-search" @onsubmit="Search" @onsubmit:preventDefault>
     @* Enter submits before a change event is guaranteed, so the value follows every keystroke. *@
-    <TbTextField Label="Search" Type="TextFieldType.Search" UpdateOnInput @bind-Value="_query" />
+    <TbTextField Label="Search" Type="TextFieldType.Search" UpdateOnInput @bind-Value="_query" Placeholder="Search"
+                 Classes="@(new FieldClasses { Label = "tb-visually-hidden" })" />
 </form>
 
 @code {

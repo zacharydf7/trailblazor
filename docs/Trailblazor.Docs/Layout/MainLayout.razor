@@ -4,27 +4,51 @@
 
 <TbRoot />
 
-<div class="docs">
+<div class="@ClassNames">
     <header class="docs-header">
-        <a href="" class="docs-brand"><img src="icon.svg" alt="" width="28" height="28" />Trailblazor</a>
-        <SearchBox />
-        @* A narrow screen keeps the list closed until asked for, so the page shows first. *@
-        <TbButton Variant="Variant.Outlined" class="docs-nav-toggle" aria-controls="docs-nav"
-                  aria-expanded="@(_navOpen ? "true" : "false")" OnClick="() => _navOpen = !_navOpen">
-            Contents
-        </TbButton>
-        <LookSwitcher />
+        <div class="docs-header__inner">
+            <a href="" class="docs-brand"><img src="icon.svg" alt="" width="30" height="30" />Trailblazor</a>
+            <nav class="docs-site-nav" aria-label="Site">
+                <NavLink href="guides/getting-started" class="docs-site-nav__link">Get started</NavLink>
+                @* Relative to the base, so it opens the home page's catalog from any page. *@
+                <a href="#components" class="docs-site-nav__link">Components</a>
+                <NavLink href="roadmap" class="docs-site-nav__link">Roadmap</NavLink>
+                <a href="https://github.com/zacharydf7/trailblazor" class="docs-site-nav__link">GitHub</a>
+            </nav>
+            <SearchBox />
+            @* A narrow screen keeps the list closed until asked for, so the page shows first. *@
+            @if (!IsHome)
+            {
+                <TbButton Variant="Variant.Outlined" class="docs-nav-toggle" aria-controls="docs-nav"
+                          aria-expanded="@(_navOpen ? "true" : "false")" OnClick="() => _navOpen = !_navOpen">
+                    Contents
+                </TbButton>
+            }
+            <LookSwitcher />
+        </div>
     </header>
-    <nav id="docs-nav" class="@NavClass" aria-label="Contents">
-        <NavMenu />
-    </nav>
+    @if (!IsHome)
+    {
+        <nav id="docs-nav" class="@NavClass" aria-label="Contents">
+            <NavMenu />
+        </nav>
+    }
     <main class="docs-main">
         @Body
     </main>
+    <footer class="docs-footer">
+        <p>Trailblazor is open source under the MIT license.</p>
+        <p><a href="https://github.com/zacharydf7/trailblazor">GitHub</a> · <a href="roadmap">Roadmap</a></p>
+    </footer>
 </div>
 
 @code {
     private bool _navOpen;
+
+    // The home page is the whole map, so it spans the window without the sidebar.
+    private bool IsHome => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0] == "";
+
+    private string ClassNames => IsHome ? "docs docs--home" : "docs";
 
     private string NavClass => _navOpen ? "docs-nav docs-nav--open" : "docs-nav";
 

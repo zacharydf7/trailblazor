@@ -86,7 +86,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Navigation_ShouldListEveryComponentUnderItsCategory_WhenOpen(string browser)
     {
-        var page = await OpenDocsAsync(browser, "");
+        // The home page spans the window without the sidebar, so the list is checked from a guide.
+        var page = await OpenDocsAsync(browser, "guides/getting-started");
 
         var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
 
@@ -95,14 +96,41 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Home_ShouldSpanTheWindowWithoutTheSidebar_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "");
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Guides and components" })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" })).ToHaveCountAsync(0);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Contents" })).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task HeaderLink_ShouldShowTheCatalogBelowTheHeader_WhenComponentsIsClicked(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button",
+            new() { ViewportSize = new() { Width = 1440, Height = 900 } });
+
+        await page.GetByRole(AriaRole.Navigation, new() { Name = "Site" })
+            .GetByRole(AriaRole.Link, new() { Name = "Components" }).ClickAsync();
+
+        var heading = page.GetByRole(AriaRole.Heading, new() { Name = "Guides and components" });
+        await Expect(heading).ToBeInViewportAsync();
+        // The sticky header must not cover the heading the link scrolled to.
+        var header = (await page.Locator(".docs-header").BoundingBoxAsync())!;
+        var title = (await heading.BoundingBoxAsync())!;
+        Assert.True(title.Y >= header.Y + header.Height, $"The heading is at {title.Y}, under the header.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Home_ShouldLinkEveryComponentWithItsSummary_WhenOpened(string browser)
     {
         var page = await OpenDocsAsync(browser, "");
 
-        var main = page.GetByRole(AriaRole.Main);
+        var catalog = page.GetByRole(AriaRole.Region, new() { Name = "Guides and components" });
 
-        await Expect(main.GetByRole(AriaRole.Link)).ToHaveTextAsync(Links);
-        await Expect(main.GetByText(ExampleCatalog.Find("menu")!.Summary)).ToBeVisibleAsync();
+        await Expect(catalog.GetByRole(AriaRole.Link)).ToHaveTextAsync(Links);
+        await Expect(catalog.GetByText(ExampleCatalog.Find("menu")!.Summary)).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -231,7 +259,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Site_ShouldOpenEveryGuide_WhenEachIsChosenFromTheList(string browser)
     {
-        var page = await OpenDocsAsync(browser, "");
+        var page = await OpenDocsAsync(browser, "guides/getting-started");
         var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
 
         foreach (var guide in GuideCatalog.All)
@@ -267,7 +295,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Site_ShouldOpenEveryComponentPage_WhenEachIsChosenFromTheList(string browser)
     {
-        var page = await OpenDocsAsync(browser, "");
+        var page = await OpenDocsAsync(browser, "guides/getting-started");
         var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
 
         foreach (var title in Titles)
@@ -359,7 +387,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Navigation_ShouldStayClosedUntilAskedFor_WhenTheScreenIsNarrow(string browser)
     {
-        var page = await OpenDocsAsync(browser, "", new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        var page = await OpenDocsAsync(browser, "guides/getting-started",
+            new() { ViewportSize = new() { Width = 390, Height = 844 } });
         var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Contents" });
         var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
         await Expect(nav).ToBeHiddenAsync();

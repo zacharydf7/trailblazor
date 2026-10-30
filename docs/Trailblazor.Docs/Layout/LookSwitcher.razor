@@ -2,13 +2,14 @@
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<TbStack Row Gap="3" Align="Align.End" class="docs-look">
-    <TbSelect Label="Theme" @bind-Value="_theme" @bind-Value:after="ApplyThemeAsync">
+@* The labels stay the fields' names for screen readers; the header has no room to show them. *@
+<TbStack Row Gap="2" Align="Align.Center" class="docs-look">
+    <TbSelect Label="Theme" @bind-Value="_theme" @bind-Value:after="ApplyThemeAsync" Classes="HiddenLabel">
         <TbOption Value="@("system")">System</TbOption>
         <TbOption Value="@("light")">Light</TbOption>
         <TbOption Value="@("dark")">Dark</TbOption>
     </TbSelect>
-    <TbSelect Label="Palette" @bind-Value="_palette" @bind-Value:after="ApplyPaletteAsync">
+    <TbSelect Label="Palette" @bind-Value="_palette" @bind-Value:after="ApplyPaletteAsync" Classes="HiddenLabel">
         @foreach (var palette in PaletteCatalog.All)
         {
             <TbOption Value="@palette.Name">@palette.Title</TbOption>
@@ -17,6 +18,7 @@
 </TbStack>
 
 @code {
+    private static readonly FieldClasses HiddenLabel = new() { Label = "tb-visually-hidden" };
     private IJSObjectReference? _module;
     private string? _theme = "system";
     private string? _palette = "graphite";
