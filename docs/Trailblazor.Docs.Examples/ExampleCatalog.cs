@@ -477,6 +477,29 @@ public static class ExampleCatalog
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
         },
+        new("popover", "Popover", ExampleCategory.Overlays,
+            "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "
+                + "a click elsewhere.", typeof(PopoverExample))
+        {
+            Api = [typeof(TbPopover), typeof(PopoverTrigger)],
+            Accessibility =
+            [
+                "The trigger is a button with `aria-haspopup=\"dialog\"`, `aria-controls` and `aria-expanded`. The "
+                    + "panel is a non-modal `dialog`, named by its `Title`, or by the trigger without one.",
+                "Enter or Space on the trigger opens the panel and moves focus into it. Escape, a click elsewhere, or "
+                    + "Tab past its last control closes it, and focus goes back to the trigger if it was in the panel.",
+                "With `OpenOnHover`, the panel also opens when the pointer rests on the trigger, without taking focus, "
+                    + "and stays open while the pointer is over it (WCAG 1.4.13). Escape still closes it. A click on "
+                    + "the trigger, or working in the panel, keeps it open after the pointer leaves, and resting on the "
+                    + "trigger doesn't open it over another popover that is already open.",
+                "A custom `Trigger` gets the same attributes through `context.Attributes`; put them on a button.",
+            ],
+            Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },
+            Blocks = ["tb-popover"],
+            TestingTip = "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens it and returns the panel, a "
+                + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
+                + "ready.",
+        },
         new("overlay", "Overlay", ExampleCategory.Overlays,
             "A scrim over the page or over one region, which blocks clicks behind it and can hold a message or a "
                 + "spinner in its center.", typeof(OverlayExample))

@@ -20,7 +20,8 @@
 <TbText>
     Reference <code>Trailblazor.Testing.Playwright</code> for helpers that drive components the way a person does. A
     select is chosen by its label and option names, whether it renders as Trailblazor's list or, on a static page, as a
-    native <code>&lt;select&gt;</code>, and the helper waits for the page to be ready.
+    native <code>&lt;select&gt;</code>. A popover opens by its trigger's name and hands back its panel. The helpers
+    wait for the page to be ready.
 </TbText>
 <CodeBlock Label="A Playwright test" Code="@Playwright" />
 
@@ -28,8 +29,9 @@
 <TbText>
     Find components by role and accessible name rather than by CSS classes, which can change between versions. Buttons
     are buttons, fields are found by their labels, a select is a <code>combobox</code> with <code>option</code>s, a
-    menu is a <code>menu</code> of <code>menuitem</code>s, a dialog is a <code>dialog</code> named by its title, and
-    tabs are <code>tab</code>s with <code>tabpanel</code>s.
+    menu is a <code>menu</code> of <code>menuitem</code>s, a dialog is a <code>dialog</code> named by its title, a
+    popover's panel is a <code>dialog</code> named by its title or trigger, and tabs are <code>tab</code>s with
+    <code>tabpanel</code>s.
 </TbText>
 <TbText>
     Every component also marks its parts with a stable <code>data-part</code> attribute, for the parts that have no
@@ -63,6 +65,10 @@
 
         await page.Tb().Select("Size").ChooseAsync("Medium");
         await page.Tb().Select("Notify me about").ChooseAsync("Orders", "Returns");
+
+        var filters = await page.Tb().Popover("Filters").OpenAsync();
+        await filters.GetByLabel("Only open items").CheckAsync();
+        await page.Tb().Popover("Filters").CloseAsync();
         """;
 
     private const string Locators = """

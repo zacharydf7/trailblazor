@@ -20,8 +20,13 @@ public class ComponentContractTests : BunitContext
         [typeof(TbNumberField<>)] = typeof(int), [typeof(TbCheckbox<>)] = typeof(bool),
     };
 
-    // Components that render nothing until they are shown are checked shown.
-    private static readonly Dictionary<Type, string> ShownBy = new() { [typeof(TbOverlay)] = nameof(TbOverlay.Visible) };
+    // Components that render nothing until they are shown are checked shown, and a popover gets the label it needs
+    // without a trigger of its own.
+    private static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
+    {
+        [typeof(TbOverlay)] = (nameof(TbOverlay.Visible), true),
+        [typeof(TbPopover)] = (nameof(TbPopover.Label), "Sample"),
+    };
 
     public ComponentContractTests()
     {
@@ -46,9 +51,9 @@ public class ComponentContractTests : BunitContext
             builder.AddAttribute(2, nameof(TbComponentBase.Style), "outline: 1px solid red");
             builder.AddAttribute(3, "id", "contract-id");
             builder.AddAttribute(4, "data-contract", "yes");
-            if (ShownBy.TryGetValue(component, out var shown))
+            if (Setup.TryGetValue(component, out var setup))
             {
-                builder.AddAttribute(5, shown, true);
+                builder.AddAttribute(5, setup.Name, setup.Value);
             }
 
             AddRequiredParameters(builder, component, sequence: 6);

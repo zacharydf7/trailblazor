@@ -76,6 +76,11 @@ export function createFocusScope(container, options) {
     }
 }
 
+// The first control Tab would reach in the container, or null.
+export function firstTabbable(container) {
+    return getTabbables(container)[0] ?? null;
+}
+
 function getTabbables(container) {
     return [...container.querySelectorAll(focusableSelector)].filter(element => element.tabIndex >= 0
         && !element.matches(':disabled') && !element.closest('[inert]') && element.checkVisibility());

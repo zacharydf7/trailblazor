@@ -15,6 +15,51 @@ public sealed class TrailblazorPage(IPage page)
 {
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label.</summary>
     public TbSelectLocator Select(string label) => new(page, label);
+
+    /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
+    public TbPopoverLocator Popover(string trigger) => new(page, trigger);
+}
+
+/// <summary>A <c>TbPopover</c>, found by its trigger's name.</summary>
+public sealed class TbPopoverLocator(IPage page, string trigger)
+{
+    private ILocator Trigger => page.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true });
+
+    /// <summary>Opens the popover, if it isn't open, and returns its panel. On a statically rendered page it opens
+    /// natively, without the script.</summary>
+    public async Task<ILocator> OpenAsync()
+    {
+        var panel = await PanelAsync();
+        if (!await panel.IsVisibleAsync())
+        {
+            await Trigger.ClickAsync();
+        }
+
+        await Assertions.Expect(panel).ToBeVisibleAsync();
+        return panel;
+    }
+
+    /// <summary>Closes the popover with Escape, as a keyboard user would, if it is open.</summary>
+    public async Task CloseAsync()
+    {
+        var panel = await PanelAsync();
+        if (await panel.IsVisibleAsync())
+        {
+            await page.Keyboard.PressAsync("Escape");
+            await Assertions.Expect(panel).ToBeHiddenAsync();
+        }
+    }
+
+    // Focus and hover work once the popover's script has attached, which a static page never waits for.
+    private async Task<ILocator> PanelAsync()
+    {
+        if (await Trigger.GetAttributeAsync("data-static") is null)
+        {
+            await Assertions.Expect(Trigger).ToHaveAttributeAsync("data-ready", "");
+        }
+
+        return page.Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
+    }
 }
 
 /// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label.</summary>

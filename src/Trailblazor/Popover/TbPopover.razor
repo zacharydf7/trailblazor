@@ -1,0 +1,228 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inject JsModuleLoader Modules
+
+@* popovertarget opens the panel natively before the script attaches; the script adds focus, hover and aria-expanded. *@
+<div @ref="_root" @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-popover", Class)">
+    @if (Trigger is not null)
+    {
+        @Trigger(new PopoverTrigger { Attributes = TriggerAttributes })
+    }
+    else if (Icon is { } icon)
+    {
+        <TbIconButton Icon="icon" AriaLabel="@(Label ?? "")" Variant="Variant" Size="Size"
+                      @attributes="TriggerAttributes" />
+    }
+    else
+    {
+        <TbButton Variant="Variant" Size="Size" @attributes="TriggerAttributes">@Label</TbButton>
+    }
+    <div @ref="_panel" id="@PanelId" popover="auto" role="dialog" tabindex="-1" data-part="panel"
+         aria-labelledby="@(Title is null ? TriggerId : TitleId)" class="tb-popover__panel">
+        @if (Title is not null)
+        {
+            <p id="@TitleId" data-part="title" class="tb-popover__title">@Title</p>
+        }
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    private readonly string _id = $"tb-popover-{Guid.NewGuid():N}";
+    private ElementReference _root;
+    private ElementReference _panel;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<TbPopover>? _reference;
+    private bool _lastOpen;
+    private bool _disposed;
+
+    /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required
+    /// unless <see cref="Trigger"/> gives a trigger of your own.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>Shows an icon button as the trigger instead of a text button.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>A trigger of your own, such as an avatar button. Put the context's attributes on the button:
+    /// <c>@attributes="context.Attributes"</c>.</summary>
+    [Parameter]
+    public RenderFragment<PopoverTrigger>? Trigger { get; set; }
+
+    /// <summary>How the built-in trigger is drawn. Defaults to <see cref="Trailblazor.Variant.Outlined"/>.</summary>
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Outlined;
+
+    /// <summary>How big the built-in trigger is. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>A title at the top of the panel, which also names it for screen readers. Without it, the trigger
+    /// names the panel.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>Which side of the trigger the panel opens on, read on the first render. It flips to the other side
+    /// when there's no room. Defaults to <see cref="PopoverPlacement.Bottom"/>.</summary>
+    [Parameter]
+    public PopoverPlacement Placement { get; set; } = PopoverPlacement.Bottom;
+
+    /// <summary>How the panel lines up with the trigger along that side, read on the first render. Defaults to
+    /// <see cref="PopoverAlign.Start"/>.</summary>
+    [Parameter]
+    public PopoverAlign Align { get; set; } = PopoverAlign.Start;
+
+    /// <summary>Also opens the panel when the pointer rests on the trigger, and closes it a moment after the pointer
+    /// leaves both. Clicks and the keyboard still open it. Read on the first render.</summary>
+    [Parameter]
+    public bool OpenOnHover { get; set; }
+
+    /// <summary>Whether the panel is open. Bind it with <c>@bind-Open</c> to open or close it from code.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the panel opens or closes.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>The panel's content.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string TriggerId => $"{_id}-trigger";
+
+    private string PanelId => $"{_id}-panel";
+
+    private string TitleId => $"{_id}-title";
+
+    private IReadOnlyDictionary<string, object> TriggerAttributes
+    {
+        get
+        {
+            var attributes = new Dictionary<string, object>
+            {
+                ["id"] = TriggerId,
+                ["popovertarget"] = PanelId,
+                ["aria-haspopup"] = "dialog",
+                ["aria-controls"] = PanelId,
+                ["aria-expanded"] = "false",
+                ["data-part"] = "trigger",
+            };
+            // A static page never runs the script, so tests know not to wait for it; popovertarget still opens it.
+            if (AssignedRenderMode is null && !RendererInfo.IsInteractive)
+            {
+                attributes["data-static"] = "";
+            }
+
+            return attributes;
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Trigger is null && string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbPopover)} needs a {nameof(Label)} or a {nameof(Trigger)}.");
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await AttachAsync();
+            }
+            else if (_handle is not null && Open != _lastOpen)
+            {
+                _lastOpen = Open;
+                await _handle.InvokeVoidAsync("setOpen", Open);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the popover went with it.
+        }
+    }
+
+    private async Task AttachAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/popover.js");
+        if (_disposed)
+        {
+            return;
+        }
+
+        // Only a bound Open needs to hear about toggles, so an unbound popover costs no round trips.
+        _reference = OpenChanged.HasDelegate ? DotNetObjectReference.Create(this) : null;
+        var options = new AnchoredPositionOptions { Side = Side, Align = Alignment, Offset = 8 };
+        var handle = await module.InvokeAsync<IJSObjectReference?>("createPopover", _root, _panel, options,
+            OpenOnHover, _reference);
+        if (handle is null)
+        {
+            return;
+        }
+
+        if (_disposed)
+        {
+            await handle.DisposeHandleAsync();
+            return;
+        }
+
+        _handle = handle;
+        if (Open)
+        {
+            _lastOpen = true;
+            await _handle.InvokeVoidAsync("setOpen", true);
+        }
+    }
+
+    /// <summary>Called by the popover's script when the panel opens or closes.</summary>
+    [JSInvokable]
+    public async Task OnToggle(bool open)
+    {
+        if (open == Open)
+        {
+            return;
+        }
+
+        Open = open;
+        _lastOpen = open;
+        await OpenChanged.InvokeAsync(open);
+    }
+
+    private AnchorSide Side => Placement switch
+    {
+        PopoverPlacement.Top => AnchorSide.Top,
+        PopoverPlacement.Start => AnchorSide.Start,
+        PopoverPlacement.End => AnchorSide.End,
+        _ => AnchorSide.Bottom,
+    };
+
+    private AnchorAlign Alignment => Align switch
+    {
+        PopoverAlign.Center => AnchorAlign.Center,
+        PopoverAlign.End => AnchorAlign.End,
+        _ => AnchorAlign.Start,
+    };
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _reference?.Dispose();
+    }
+}

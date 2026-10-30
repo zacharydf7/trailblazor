@@ -1,0 +1,9 @@
+@page "/popover"
+
+@* A hover hint inside another popover's panel, as a field's info tip is inside a form. *@
+<TbPopover Label="Filters">
+    <TbText>Status</TbText>
+    <TbPopover Label="What does status mean?" Variant="Variant.Text" OpenOnHover>
+        <TbText>Open items haven't been shipped yet.</TbText>
+    </TbPopover>
+</TbPopover>

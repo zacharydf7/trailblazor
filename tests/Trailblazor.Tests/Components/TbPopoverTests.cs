@@ -1,0 +1,76 @@
+using Bunit;
+using Microsoft.AspNetCore.Components;
+
+namespace Trailblazor.Tests.Components;
+
+public class TbPopoverTests : BunitContext
+{
+    public TbPopoverTests()
+    {
+        this.AddTrailblazor();
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+    }
+
+    [Fact]
+    public void Render_ShouldWireTheTriggerToANamedPanel_WhenGivenALabelAndTitle()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.Title, "Filter the report").AddChildContent("Options"));
+
+        var trigger = cut.Find("[data-part=trigger]");
+        var panel = cut.Find("[data-part=panel]");
+        Assert.Equal("Filters", trigger.TextContent.Trim());
+        Assert.Equal(("dialog", panel.Id, panel.Id, "false"), (trigger.GetAttribute("aria-haspopup"),
+            trigger.GetAttribute("popovertarget"), trigger.GetAttribute("aria-controls"),
+            trigger.GetAttribute("aria-expanded")));
+        Assert.Equal(("auto", "dialog"), (panel.GetAttribute("popover"), panel.GetAttribute("role")));
+        Assert.Equal(cut.Find("[data-part=title]").Id, panel.GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
+    public void Render_ShouldNameThePanelAfterTheTrigger_WhenThereIsNoTitle()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Shortcuts"));
+
+        Assert.Equal(cut.Find("[data-part=trigger]").Id, cut.Find("[data-part=panel]").GetAttribute("aria-labelledby"));
+        Assert.Empty(cut.FindAll("[data-part=title]"));
+    }
+
+    [Fact]
+    public void Render_ShouldHandTheTriggerAttributesToACustomTrigger_WhenTriggerIsSet()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Trigger,
+            (RenderFragment<PopoverTrigger>)(trigger => builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddMultipleAttributes(1, trigger.Attributes);
+                builder.AddContent(2, "Ada");
+                builder.CloseElement();
+            })));
+
+        var button = cut.Find("button");
+        Assert.Equal("Ada", button.TextContent);
+        Assert.Equal(cut.Find("[data-part=panel]").Id, button.GetAttribute("aria-controls"));
+        Assert.Equal("trigger", button.GetAttribute("data-part"));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenThereIsNoLabelOrTrigger()
+    {
+        Assert.Throws<InvalidOperationException>(() => Render<TbPopover>());
+    }
+
+    [Fact]
+    public async Task Toggle_ShouldTellTheParent_WhenTheBrowserOpensOrClosesThePanel()
+    {
+        var states = new List<bool>();
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.OpenChanged, (bool open) => states.Add(open)));
+
+        await cut.InvokeAsync(() => cut.Instance.OnToggle(true));
+        await cut.InvokeAsync(() => cut.Instance.OnToggle(true));
+        await cut.InvokeAsync(() => cut.Instance.OnToggle(false));
+
+        Assert.Equal([true, false], states);
+    }
+}
