@@ -1,0 +1,34 @@
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbTextField Label="Find a trail" @bind-Value="_search" @bind-Value:event="oninput" Clearable />
+    <TbTreeView TItem="Place" AriaLabel="Trails by region" Items="Regions" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" ItemText="place => place.Name"
+                ItemIcon="place => place.Children is null ? ExampleIcons.Trail : ExampleIcons.Folder"
+                IsSelectable="place => place.Children is null" InitialExpandDepth="1"
+                Filter="@(string.IsNullOrWhiteSpace(_search) ? null : Matches)" @bind-SelectedKeys="_selected"
+                OnActivate="place => _opened = place.Name">
+        <ItemEnd>
+            @if (context.Item.Children is { } trails)
+            {
+                <TbBadge Count="trails.Length" Label="@($"{trails.Length} trails")" Tone="Tone.Neutral" />
+            }
+        </ItemEnd>
+    </TbTreeView>
+    <TbText>@(_opened is null ? "Double-click or press Enter on a trail to open it." : $"Opened {_opened}.")</TbText>
+</TbStack>
+
+@code {
+    private static readonly Place[] Regions =
+    [
+        new(1, "North ridge", [new(2, "Pine Hollow loop"), new(3, "Eagle Ridge traverse")]),
+        new(4, "River valley", [new(5, "Cedar Flats"), new(6, "Fern Gully", [new(7, "Waterfall spur")])]),
+        new(8, "High peaks", [new(9, "Summit Gate")]),
+    ];
+
+    private string? _search;
+    private IReadOnlyCollection<object> _selected = [];
+    private string? _opened;
+
+    private bool Matches(Place place) => place.Name.Contains(_search!, StringComparison.OrdinalIgnoreCase);
+
+    private sealed record Place(int Id, string Name, Place[]? Children = null);
+}

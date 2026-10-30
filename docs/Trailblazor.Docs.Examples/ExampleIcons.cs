@@ -17,4 +17,8 @@ public static class ExampleIcons
             + "m6-6v-5a6 6 0 0 0-5-5.9V4h-2v1.1A6 6 0 0 0 6 11v5l-2 2v1h16v-1z\" />");
 
     public static Icon Filter { get; } = new("<path d=\"M3 5h18l-7 8v6l-4 2v-8z\" />");
+
+    public static Icon Folder { get; } = new("<path d=\"M3 5h7l2 2h9v12H3z\" />");
+
+    public static Icon Trail { get; } = new("<path d=\"M12 3 4 21h3l5-11 5 11h3z\" />");
 }

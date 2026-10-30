@@ -70,6 +70,7 @@
         await page.Tb().ListBox("Gear to pack").ChooseAsync("Tent", "Stove");
         await page.Tb().ColorPicker("Trail marker").ChooseAsync("#d1242f");
         await page.Tb().FileUpload("Trail maps").ChooseAsync("map.pdf");
+        await page.Tb().Tree("Trails by region").SelectAsync("River valley", "Fern Gully", "Waterfall spur");
         await page.Tb().DateRangePicker("Trip dates").ChooseAsync(new DateOnly(2026, 7, 2), new DateOnly(2026, 7, 9));
 
         var filters = await page.Tb().Popover("Filters").OpenAsync();

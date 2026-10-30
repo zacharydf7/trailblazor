@@ -1,0 +1,110 @@
+@namespace Trailblazor
+@typeparam TItem
+@inherits TbComponentBase
+
+@* The rows are flat, each saying its own level, so a row keeps its element and state wherever the tree changes. *@
+<div @ref="_tree" @attributes="AdditionalAttributes" role="tree" aria-label="@AriaLabel"
+     aria-multiselectable="@(SelectionMode == TreeSelectionMode.Multiple ? "true" : null)"
+     aria-disabled="@(Disabled ? "true" : null)" data-ready="@(_handle is null ? null : "")" style="@Style"
+     class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null, Class)">
+    @if (_rows.Count == 0)
+    {
+        <div data-part="empty" class="tb-tree__empty">
+            @if (EmptyContent is null)
+            {
+                @Labels.Empty
+            }
+            else
+            {
+                @EmptyContent
+            }
+        </div>
+    }
+    @{ var focusId = FocusId(); }
+    @foreach (var row in _rows)
+    {
+        var node = row.Node;
+        @if (row.IsItem)
+        {
+            var context = ContextOf(node);
+            var disabled = Disabled || IsDisabled?.Invoke(node.Item) == true;
+            @* A row is named by all it shows, its end slot included, as the tree pattern's rows are. *@
+            <div @key="node.Key" @ref="_rowRefs[node.Key]" role="treeitem" data-part="item" data-key="@node.Id"
+                 data-text="@TextOf(node)" data-level="@node.Level" aria-level="@node.Level"
+                 aria-setsize="@row.SetSize" aria-posinset="@row.Position"
+                 aria-expanded="@(node.HasChildren ? Flag(context.Expanded) : null)"
+                 aria-selected="@(CanSelect(node) || context.Selected ? Flag(context.Selected) : null)"
+                 aria-checked="@(Checkable ? context.Checked is { } isChecked ? Flag(isChecked) : "mixed" : null)"
+                 aria-disabled="@(disabled ? "true" : null)" tabindex="@(node.Id == focusId ? 0 : -1)"
+                 style="@($"--tb-tree-level: {node.Level - 1}")"
+                 class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
+                            context.Matches ? "tb-tree__item--match" : null)"
+                 @onclick="args => OnRowClickAsync(node, args)" @ondblclick="() => OnRowDoubleClickAsync(node)">
+                <span data-part="toggle" aria-hidden="true" class="tb-tree__toggle"
+                      @onclick="() => ToggleAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
+                    @if (node.HasChildren)
+                    {
+                        <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-tree__chevron" />
+                    }
+                </span>
+                @if (Checkable)
+                {
+                    <span data-part="check" aria-hidden="true" class="@CheckClass(context.Checked)"
+                          @onclick="() => ToggleCheckAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
+                    </span>
+                }
+                <span data-part="content" class="tb-tree__content">
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(context)
+                    }
+                    else
+                    {
+                        @if (ItemIcon?.Invoke(node.Item) is { } icon)
+                        {
+                            <TbIcon Icon="icon" Size="Size.Small" />
+                        }
+                        <span class="tb-tree__text">@TextOf(node)</span>
+                    }
+                </span>
+                @if (ItemEnd is not null)
+                {
+                    @* The end slot's own controls keep their clicks and keys from the row. *@
+                    <span data-part="end" class="tb-tree__end" @onclick:stopPropagation @ondblclick:stopPropagation
+                          @onkeydown:stopPropagation>
+                        @ItemEnd(context)
+                    </span>
+                }
+            </div>
+        }
+        else if (row.Kind == TreeRowKind.Loading)
+        {
+            <div @key="@($"{node.Id}-loading")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
+                 aria-posinset="1" aria-disabled="true" aria-busy="true" tabindex="-1" data-part="loading"
+                 style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
+                <span class="tb-tree__toggle" aria-hidden="true"></span>
+                <span class="tb-tree__spinner" aria-hidden="true"></span>
+                <span>@Labels.Loading</span>
+            </div>
+        }
+        else
+        {
+            <div @key="@($"{node.Id}-failed")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
+                 aria-posinset="1" aria-disabled="true" tabindex="-1" data-part="failed"
+                 style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
+                <span class="tb-tree__toggle" aria-hidden="true"></span>
+                <span class="tb-tree__failed">@Labels.LoadFailed</span>
+                <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => RetryAsync(node)">
+                    @Labels.Retry
+                </TbButton>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private static string Flag(bool value) => value ? "true" : "false";
+
+    private static string CheckClass(bool? state) => ClassNames.Join("tb-tree__check",
+        state switch { true => "tb-tree__check--checked", null => "tb-tree__check--mixed", _ => null });
+}

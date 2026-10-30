@@ -33,6 +33,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
     public TbDateRangePickerLocator DateRangePicker(string label) => new(page, label);
 
+    /// <summary>The <c>TbTreeView</c> with this accessible name.</summary>
+    public TbTreeLocator Tree(string name) => new(page, name);
+
     /// <summary>The <c>TbPagination</c> with this accessible name.</summary>
     public TbPaginationLocator Pagination(string name) => new(page, name);
 
@@ -243,6 +246,89 @@ public sealed class TbDateRangePickerLocator(IPage page, string label)
     }
 
     private static string Iso(DateOnly? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
+}
+
+/// <summary>A <c>TbTreeView</c>, found by its accessible name. Rows are named by their path of texts from a root,
+/// such as <c>("North", "Ridge")</c>.</summary>
+public sealed class TbTreeLocator(IPage page, string name)
+{
+    private ILocator Tree => page.GetByRole(AriaRole.Tree, new() { Name = name, Exact = true });
+
+    /// <summary>The row at this path, which must be showing.</summary>
+    public Task<ILocator> ItemAsync(params string[] path) => RowAsync(path);
+
+    /// <summary>Opens each row along the path, waiting for children that load.</summary>
+    public async Task ExpandAsync(params string[] path)
+    {
+        await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
+        for (var depth = 1; depth <= path.Length; depth++)
+        {
+            var row = await RowAsync(path[..depth]);
+            if (await row.GetAttributeAsync("aria-expanded") == "false")
+            {
+                await row.Locator("[data-part=toggle]").ClickAsync();
+            }
+
+            await Assertions.Expect(row).ToHaveAttributeAsync("aria-expanded", "true");
+            await Assertions.Expect(Tree.Locator("[data-part=loading]")).ToHaveCountAsync(0);
+        }
+    }
+
+    /// <summary>Opens the rows above the one at this path, clicks it, and waits until it is selected.</summary>
+    public async Task SelectAsync(params string[] path)
+    {
+        await ExpandAsync(path[..^1]);
+        var row = await RowAsync(path);
+        await row.ClickAsync();
+        await Assertions.Expect(row).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    /// <summary>Opens the rows above the one at this path, and checks it.</summary>
+    public async Task CheckAsync(params string[] path)
+    {
+        await ExpandAsync(path[..^1]);
+        var row = await RowAsync(path);
+        await row.Locator("[data-part=check]").ClickAsync();
+        await Assertions.Expect(row).ToHaveAttributeAsync("aria-checked", "true");
+    }
+
+    private async Task<ILocator> RowAsync(string[] path) =>
+        Tree.Locator($"[role=treeitem][data-key=\"{await Key(path)}\"]");
+
+    // Rows are flat, so each name is looked for after its parent row and before the next row at the parent's level.
+    private async Task<string> Key(string[] path)
+    {
+        await Assertions.Expect(Tree.Locator("[role=treeitem]").First).ToBeAttachedAsync();
+        return await Tree.EvaluateAsync<string?>("""
+            (tree, path) => {
+                const rows = [...tree.querySelectorAll('[role=treeitem][data-key]')];
+                let start = 0;
+                let found = null;
+                for (let depth = 0; depth < path.length; depth++) {
+                    found = null;
+                    for (let index = start; index < rows.length; index++) {
+                        const level = Number(rows[index].getAttribute('aria-level'));
+                        if (level <= depth) {
+                            break;
+                        }
+
+                        if (level === depth + 1 && rows[index].dataset.text === path[depth]) {
+                            found = rows[index];
+                            start = index + 1;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        return null;
+                    }
+                }
+
+                return found.dataset.key;
+            }
+            """, path) ?? throw new InvalidOperationException(
+                $"The tree {name} shows no row at {string.Join(" > ", path)}; open the rows above it first.");
+    }
 }
 
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>

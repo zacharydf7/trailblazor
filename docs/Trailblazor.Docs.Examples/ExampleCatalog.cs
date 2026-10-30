@@ -842,6 +842,31 @@ public static class ExampleCatalog
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
         },
+        new("tree-view", "Tree view", ExampleCategory.Navigation,
+            "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
+                + "when opened.", typeof(TreeViewExample))
+        {
+            Api = [typeof(TbTreeView<>), typeof(TreeViewLabels)],
+            Accessibility =
+            [
+                "It is a `tree` named by `AriaLabel`, with one `treeitem` per visible row carrying `aria-level`, "
+                    + "`aria-setsize`, `aria-posinset`, `aria-expanded`, and `aria-selected` or `aria-checked`.",
+                "The tree is one tab stop. Up and Down move between rows, Home and End go to the ends, Right opens a "
+                    + "row or moves into it, Left closes it or moves to its parent, `*` opens its siblings, and typing "
+                    + "finds a row by its text.",
+                "Enter selects and activates a row; Space selects it, or checks it in a `Checkable` tree. Shift with "
+                    + "the arrows extends a `Multiple` selection, and Ctrl+A selects every row.",
+                "A row is named by everything it shows, its `ItemEnd` content included, so keep actions there short "
+                    + "or give icon buttons an `AriaLabel`.",
+                "Children that load show a loading row, and a load that fails shows a row that offers to try again.",
+            ],
+            Target = new("tree", "Trails by region"),
+            Blocks = ["tb-tree"],
+            TestingTip = "`page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows rows by "
+                + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
+                + "`CheckAsync(...)` and `ItemAsync(...)`. Every row also carries `data-key`, `data-level` and "
+                + "`data-text`.",
+        },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
                 + "page number.", typeof(PaginationExample))

@@ -1,0 +1,51 @@
+@page "/tree-view"
+
+<TbStack Gap="4" Style="max-inline-size: 28rem">
+    <TbButton>Before</TbButton>
+    <TbTreeView TItem="Place" AriaLabel="Places" Items="Places" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" @bind-SelectedKeys="_selected" OnActivate="Activate">
+        <ItemEnd>
+            <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => _info = context.Item.Name">Info</TbButton>
+        </ItemEnd>
+    </TbTreeView>
+    <output data-testid="selected">@string.Join(", ", _selected)</output>
+    <output data-testid="activated">@_activated</output>
+    <output data-testid="info">@_info</output>
+    <TbTreeView TItem="Place" AriaLabel="Gear" Items="Places" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" SelectionMode="TreeSelectionMode.Multiple"
+                @bind-SelectedKeys="_gear" Checkable @bind-CheckedKeys="_checked" />
+    <output data-testid="gear">@string.Join(", ", _gear.Order())</output>
+    <output data-testid="checked">@string.Join(", ", _checked.Order())</output>
+    <TbTreeView TItem="Place" AriaLabel="Remote" Items="Remote" KeySelector="place => place.Id"
+                LoadChildrenAsync="LoadAsync" />
+</TbStack>
+
+@code {
+    private static readonly Place[] Places =
+    [
+        new(1, "North", [new(2, "Ridge", [new(3, "Summit", null)]), new(6, "Pass", null)]),
+        new(4, "South", [new(5, "Lake", null)]),
+    ];
+
+    private static readonly Place[] Remote = [new(10, "Archive", null)];
+
+    private IReadOnlyCollection<object> _selected = [];
+    private IReadOnlyCollection<object> _gear = [];
+    private IReadOnlyCollection<object> _checked = [];
+    private string? _activated;
+    private string? _info;
+
+    private void Activate(Place place) => _activated = place.Name;
+
+    // Slow enough for a test to see the loading row.
+    private static async Task<IEnumerable<Place>> LoadAsync(Place place, CancellationToken token)
+    {
+        await Task.Delay(300, token);
+        return [new(11, "2025", null), new(12, "2026", null)];
+    }
+
+    private sealed record Place(int Id, string Name, Place[]? Children)
+    {
+        public override string ToString() => Name;
+    }
+}

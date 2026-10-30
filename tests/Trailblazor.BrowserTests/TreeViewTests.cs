@@ -1,0 +1,173 @@
+using Deque.AxeCore.Playwright;
+using Trailblazor.Testing.Playwright;
+
+namespace Trailblazor.BrowserTests;
+
+public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
+{
+    private static ILocator Tree(IPage page, string name = "Places") =>
+        page.GetByRole(AriaRole.Tree, new() { Name = name });
+
+    // A row's name includes its end slot, so rows are found by their own text.
+    private static ILocator Row(IPage page, string text, string tree = "Places") =>
+        Tree(page, tree).Locator($"[role=treeitem][data-text='{text}']");
+
+    private async Task<IPage> OpenTreeAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+        await Expect(Tree(page)).ToHaveAttributeAsync("data-ready", "");
+        return page;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldMoveOpenAndCloseLikeAWaiAriaTree_WhenPressed(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await Row(page, "North").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Row(page, "South")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Row(page, "North")).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Row(page, "Ridge")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Row(page, "North")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Row(page, "North")).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.Keyboard.PressAsync("End");
+        await Expect(Row(page, "South")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Home");
+        await Expect(Row(page, "North")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("s");
+        await Expect(Row(page, "South")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("activated")).ToHaveTextAsync("South");
+        await Expect(page.GetByTestId("selected")).ToHaveTextAsync("4");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldBeOneTabStopThatRemembersTheRow_WhenTabbedThrough(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await Row(page, "North").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Row(page, "South")).ToBeFocusedAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Before" }).FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(Row(page, "South")).ToBeFocusedAsync();
+        await Expect(Tree(page).Locator("[role=treeitem][tabindex='0']")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldMakeAClickedRowTheTabStop_WhenTheArrowsMovedFocusFirst(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await Row(page, "North").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Row(page, "South")).ToBeFocusedAsync();
+
+        await Row(page, "North").ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Before" }).FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(Row(page, "North")).ToBeFocusedAsync();
+        await Expect(Tree(page).Locator("[role=treeitem][tabindex='0']")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Mouse_ShouldSelectOnClickActivateOnDoubleClickAndOnlyToggleOnTheChevron_WhenUsed(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+
+        await Row(page, "North").Locator("[data-part=toggle]").ClickAsync();
+        await Expect(Row(page, "North")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByTestId("selected")).ToBeEmptyAsync();
+        await Row(page, "Pass").ClickAsync();
+        await Expect(page.GetByTestId("selected")).ToHaveTextAsync("6");
+        await Row(page, "Ridge").DblClickAsync();
+
+        await Expect(page.GetByTestId("activated")).ToHaveTextAsync("Ridge");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task EndSlot_ShouldKeepItsClicksFromTheRow_WhenAButtonInItIsPressed(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+
+        await Row(page, "South").GetByRole(AriaRole.Button, new() { Name = "Info" }).ClickAsync();
+
+        await Expect(page.GetByTestId("info")).ToHaveTextAsync("South");
+        await Expect(page.GetByTestId("selected")).ToBeEmptyAsync();
+        await Expect(Row(page, "South")).ToHaveAttributeAsync("aria-selected", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ShiftArrows_ShouldExtendTheSelection_WhenTheTreeTakesSeveral(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await Row(page, "North", "Gear").ClickAsync(new() { Modifiers = [KeyboardModifier.Shift] });
+        await Row(page, "North", "Gear").ClickAsync();
+
+        await page.Keyboard.PressAsync("Shift+ArrowDown");
+
+        await Expect(page.GetByTestId("gear")).ToHaveTextAsync("1, 4");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Space_ShouldCheckTheRowAndMarkItsParentMixed_WhenTheTreeIsCheckable(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await page.Tb().Tree("Gear").ExpandAsync("North");
+
+        await Row(page, "Pass", "Gear").FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+
+        await Expect(page.GetByTestId("checked")).ToHaveTextAsync("6");
+        await Expect(Row(page, "North", "Gear")).ToHaveAttributeAsync("aria-checked", "mixed");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Expand_ShouldShowLoadingThenTheChildren_WhenTheyLoadLazily(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+
+        await Row(page, "Archive", "Remote").Locator("[data-part=toggle]").ClickAsync();
+
+        await Expect(Tree(page, "Remote").Locator("[data-part=loading]")).ToBeVisibleAsync();
+        await Expect(Row(page, "2026", "Remote")).ToBeVisibleAsync();
+        await Expect(Tree(page, "Remote").Locator("[data-part=loading]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldExpandSelectAndCheckByPath_WhenGivenTheRowsTexts(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+
+        await page.Tb().Tree("Places").SelectAsync("North", "Ridge", "Summit");
+        await page.Tb().Tree("Gear").CheckAsync("South", "Lake");
+        await page.Tb().Tree("Remote").ExpandAsync("Archive");
+
+        await Expect(page.GetByTestId("selected")).ToHaveTextAsync("3");
+        await Expect(page.GetByTestId("checked")).ToHaveTextAsync("4, 5");
+        await Expect(await page.Tb().Tree("Remote").ItemAsync("Archive", "2025")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldHaveNoAccessibilityViolations_WhenOpenSelectedAndChecked(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await page.Tb().Tree("Places").SelectAsync("North", "Pass");
+        await page.Tb().Tree("Gear").CheckAsync("North", "Pass");
+
+        var result = await page.RunAxe(AxeTests.WcagAA);
+
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+}
