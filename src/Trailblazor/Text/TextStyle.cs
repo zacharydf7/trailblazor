@@ -8,5 +8,7 @@ public enum TextStyle
     Title,
     Subtitle,
     Body,
+    BodySmall,
+    Label,
     Caption,
 }

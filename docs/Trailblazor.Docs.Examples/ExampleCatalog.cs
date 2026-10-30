@@ -82,9 +82,13 @@ public static class ExampleCatalog
                 "It renders the element `As` names, so a heading is a real heading. Choose the level that fits "
                     + "the page's outline, whatever `TextStyle` it looks like.",
                 "`TextStyle` changes only the look; it adds no meaning for screen readers.",
+                "Text cut off by `MaxLines` is all still there for screen readers, but sighted users can't read the "
+                    + "rest, so don't cut off text they need without showing it somewhere else.",
             ],
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
+            TestingTip = "Text cut off by `MaxLines` still holds all of it, so text assertions and `GetByText` match "
+                + "the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
         },
         new("image", "Image", ExampleCategory.Content,
             "An image with required alternative text, that can scale to fit its container.", typeof(ImageExample))

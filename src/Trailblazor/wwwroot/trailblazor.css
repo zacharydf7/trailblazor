@@ -696,8 +696,37 @@
         font-size: var(--tb-font-size-md);
     }
 
+    .tb-text--bodysmall {
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-text--label {
+        font-size: var(--tb-font-size-sm);
+        font-weight: var(--tb-font-weight-medium);
+    }
+
     .tb-text--caption {
         font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-text--muted {
+        color: var(--tb-color-text-muted);
+    }
+
+    /* An inline element can't clip its text, so cut-off text is a block. */
+    .tb-text--truncate {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* Line clamping still needs the prefixed box in every engine. */
+    .tb-text--clamp {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: var(--tb-text-lines);
     }
 
     .tb-text--primary {
