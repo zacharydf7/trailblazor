@@ -1,0 +1,6 @@
+@page "/per-page"
+@attribute [ExcludeFromInteractiveRouting]
+@using Trailblazor.BrowserTests.Host.PerPage
+
+@* Only this part of the page is interactive, so the layout and its TbRoot render statically. *@
+<ServiceButtons @rendermode="InteractiveServer" />

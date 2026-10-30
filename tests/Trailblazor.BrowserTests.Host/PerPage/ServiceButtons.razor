@@ -1,0 +1,10 @@
+@using Trailblazor.BrowserTests.Host.Dialogs
+@inject IDialogService Dialogs
+@inject IToastService Toasts
+@inject IAnnouncer Announcer
+
+<TbStack Row Gap="2" data-interactive="@RendererInfo.IsInteractive">
+    <TbButton OnClick='() => Dialogs.ShowAsync<ToastingDialog, bool>("Toasting")'>Dialog</TbButton>
+    <TbButton OnClick='() => Toasts.Show("Saved")'>Toast</TbButton>
+    <TbButton OnClick='() => Announcer.Assertive("Connection lost")'>Announce</TbButton>
+</TbStack>

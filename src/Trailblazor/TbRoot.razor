@@ -1,8 +1,29 @@
+@using Microsoft.AspNetCore.Components.Rendering
+
 @* HeadContent only reaches a HeadOutlet that renders in the same render mode as this component. *@
 <HeadContent>
     <link rel="stylesheet" href="@Assets["_content/Trailblazor/trailblazor.css"]" />
 </HeadContent>
-@* The hosts are internal, and Razor only finds public components by tag. *@
-<DynamicComponent Type="typeof(DialogHost)" />
-<DynamicComponent Type="typeof(ToastHost)" />
-<DynamicComponent Type="typeof(AnnouncerHost)" />
+@((RenderFragment)RenderHosts)
+
+@code {
+    /// <summary>The render mode for the dialogs, toasts and announcements when interactivity is set page by page, so
+    /// they run in the same session as the interactive pages that open them. Give it the render mode those pages use,
+    /// and leave it unset when the whole app is interactive.</summary>
+    [Parameter]
+    public IComponentRenderMode? HostRenderMode { get; set; }
+
+    // The hosts are internal, and Razor only finds public components by tag.
+    private void RenderHosts(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<DialogHost>(0);
+        builder.AddComponentRenderMode(HostRenderMode);
+        builder.CloseComponent();
+        builder.OpenComponent<ToastHost>(1);
+        builder.AddComponentRenderMode(HostRenderMode);
+        builder.CloseComponent();
+        builder.OpenComponent<AnnouncerHost>(2);
+        builder.AddComponentRenderMode(HostRenderMode);
+        builder.CloseComponent();
+    }
+}

@@ -31,12 +31,18 @@
 </TbText>
 <CodeBlock Label="MainLayout.razor" Code="@Layout" />
 <TbText>
-    The dialogs and toasts a page opens only show when <code>TbRoot</code> runs in the same interactive session as
-    that page, so make the whole app interactive: give <code>Routes</code> and <code>HeadOutlet</code> the same render
-    mode. With interactivity set page by page instead, the layout renders statically and dialogs and toasts never
-    appear.
+    The dialogs and toasts a page opens show only when <code>TbRoot</code> hosts them in the same interactive session
+    as that page. When the whole app is interactive, with the same render mode on <code>Routes</code> and
+    <code>HeadOutlet</code>, it already does.
 </TbText>
 <CodeBlock Label="App.razor" Code="@App" />
+<TbText>
+    When interactivity is set page by page, as in the default Blazor template, the layout renders statically. Give
+    <code>TbRoot</code> the render mode your interactive pages use, and it hosts dialogs, toasts and announcements in
+    that mode while the stylesheet stays in the static page head. Every page then starts an interactive session for
+    these hosts, even a fully static one, and only pages in that same render mode can open them.
+</TbText>
+<CodeBlock Label="MainLayout.razor, interactivity per page" Code="@PerPageLayout" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">5. Use a component</TbText>
 <CodeBlock Label="A first component" Code="@FirstComponent" />
@@ -86,6 +92,16 @@
         @inherits LayoutComponentBase
 
         <TbRoot />
+
+        <main>
+            @Body
+        </main>
+        """;
+
+    private const string PerPageLayout = """
+        @inherits LayoutComponentBase
+
+        <TbRoot HostRenderMode="InteractiveServer" />
 
         <main>
             @Body
