@@ -1,0 +1,30 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbSliderBase<TValue>
+
+@Layout(InputId, null, Fraction(Number), @<text>
+    @* @bind keeps the thumb where the user put it while a round trip is in flight. *@
+    <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="range"
+           min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Number)"
+           @bind:set="SetAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
+           aria-valuetext="@ValueText" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+           aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />
+    @Bubble(Fraction(Number), ValueText)
+</text>)
+
+@code {
+    /// <summary>Turns a value into the text shown above the thumb and read by screen readers, such as "40%".
+    /// Defaults to the number itself.</summary>
+    [Parameter]
+    public Func<TValue?, string>? ValueFormatter { get; set; }
+
+    private protected override Type NumberType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+    // A slider always has a value, so an empty one sits at the start.
+    private decimal Number => Math.Clamp(ToNumber(Value) ?? Min, Min, Max);
+
+    private string ValueText => ValueFormatter?.Invoke((TValue)ToValue(Number)) ?? Invariant(Number);
+
+    private Task SetAsync(string? text) =>
+        Parse(text) is decimal number ? SetValueAsync((TValue)ToValue(number)) : Task.CompletedTask;
+}

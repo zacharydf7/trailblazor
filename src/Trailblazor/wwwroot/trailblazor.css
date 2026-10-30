@@ -2814,6 +2814,189 @@
         }
     }
 
+    .tb-slider {
+        --tb-slider-thumb: 1.125rem;
+        --tb-slider-track: 0.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        color: var(--tb-color-text);
+        font-family: var(--tb-font-family);
+    }
+
+    .tb-slider__label {
+        font-size: var(--tb-font-size-sm);
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    /* Native thumbs stay inside the track, so values are placed half a thumb in from each end. */
+    .tb-slider__control {
+        position: relative;
+        display: flex;
+        align-items: center;
+        block-size: max(24px, var(--tb-slider-thumb));
+    }
+
+    .tb-slider__track {
+        position: absolute;
+        inset-inline: 0;
+        block-size: var(--tb-slider-track);
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-border-subtle);
+    }
+
+    .tb-slider__fill {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        inline-size: calc(var(--tb-slider-thumb) / 2 + var(--tb-slider-to) * (100% - var(--tb-slider-thumb)));
+        border-radius: inherit;
+        background: var(--tb-color-primary);
+    }
+
+    .tb-slider--range .tb-slider__fill {
+        inset-inline-start: calc(var(--tb-slider-thumb) / 2 + var(--tb-slider-from) * (100% - var(--tb-slider-thumb)));
+        inline-size: calc((var(--tb-slider-to) - var(--tb-slider-from)) * (100% - var(--tb-slider-thumb)));
+    }
+
+    .tb-slider__input {
+        position: absolute;
+        inset: 0;
+        inline-size: 100%;
+        block-size: 100%;
+        margin: 0;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .tb-slider__input::-webkit-slider-runnable-track {
+        block-size: 100%;
+        background: transparent;
+    }
+
+    .tb-slider__input::-moz-range-track {
+        background: transparent;
+    }
+
+    .tb-slider__input::-webkit-slider-thumb {
+        box-sizing: border-box;
+        inline-size: var(--tb-slider-thumb);
+        block-size: var(--tb-slider-thumb);
+        border: 2px solid var(--tb-color-primary);
+        border-radius: var(--tb-radius-full);
+        appearance: none;
+        background: var(--tb-color-surface);
+        box-shadow: var(--tb-shadow-sm);
+    }
+
+    .tb-slider__input::-moz-range-thumb {
+        box-sizing: border-box;
+        inline-size: var(--tb-slider-thumb);
+        block-size: var(--tb-slider-thumb);
+        border: 2px solid var(--tb-color-primary);
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-color-surface);
+        box-shadow: var(--tb-shadow-sm);
+    }
+
+    .tb-slider__input:focus-visible {
+        outline: none;
+    }
+
+    .tb-slider__input:focus-visible::-webkit-slider-thumb {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-slider__input:focus-visible::-moz-range-thumb {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    /* Two inputs share a range slider's track, so only their thumbs take the pointer. */
+    .tb-slider--range .tb-slider__input {
+        pointer-events: none;
+    }
+
+    .tb-slider--range .tb-slider__input::-webkit-slider-thumb {
+        pointer-events: auto;
+    }
+
+    .tb-slider--range .tb-slider__input::-moz-range-thumb {
+        pointer-events: auto;
+    }
+
+    .tb-slider__input--top {
+        z-index: 1;
+    }
+
+    .tb-slider__value,
+    .tb-slider__mark {
+        position: absolute;
+        inset-inline-start: calc(var(--tb-slider-thumb) / 2 + var(--tb-slider-at) * (100% - var(--tb-slider-thumb)));
+        translate: -50%;
+        font-size: var(--tb-font-size-xs);
+        white-space: nowrap;
+    }
+
+    .tb-slider__value:dir(rtl),
+    .tb-slider__mark:dir(rtl) {
+        translate: 50%;
+    }
+
+    .tb-slider__value {
+        inset-block-end: calc(100% + var(--tb-space-1));
+        padding: 0 var(--tb-space-1);
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-neutral);
+        color: var(--tb-color-on-neutral);
+        pointer-events: none;
+    }
+
+    .tb-slider:has(.tb-slider__value) .tb-slider__control {
+        margin-block-start: 1.5em;
+    }
+
+    .tb-slider__marks {
+        position: relative;
+        block-size: 1.25em;
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-slider__mark::before {
+        content: "";
+        position: absolute;
+        inset-block-end: 100%;
+        inset-inline-start: 50%;
+        inline-size: 1px;
+        block-size: 0.375rem;
+        background: currentColor;
+    }
+
+    .tb-slider--disabled .tb-slider__control {
+        opacity: 0.55;
+    }
+
+    .tb-slider--disabled .tb-slider__input {
+        cursor: default;
+    }
+
+    .tb-slider--invalid .tb-slider__fill {
+        background: var(--tb-color-danger-text);
+    }
+
+    /* Forced colors drop the drawn track and fill, so they take system colors to stay visible. */
+    @media (forced-colors: active) {
+        .tb-slider__track {
+            background: CanvasText;
+        }
+
+        .tb-slider__fill {
+            background: Highlight;
+        }
+    }
+
     .tb-tabs__list {
         display: flex;
         gap: var(--tb-space-1);

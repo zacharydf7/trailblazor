@@ -487,6 +487,30 @@ public static class ExampleCatalog
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],
         },
+        new("slider", "Slider", ExampleCategory.Inputs,
+            "Chooses a number, or a range, by dragging a thumb along a track or with the arrow keys.",
+            typeof(SliderExample))
+        {
+            Api = [typeof(TbSlider<>), typeof(TbRangeSlider<>), typeof(SliderMark), typeof(SliderRange<>),
+                typeof(ChoiceClasses)],
+            Accessibility =
+            [
+                "Each thumb is the browser's own range input, a `slider` named by the `Label`. The arrows step, Page "
+                    + "Up and Page Down jump, and Home and End go to the ends.",
+                "`ValueFormatter` sets the text screen readers hear for the value (`aria-valuetext`), and the text "
+                    + "`ShowValue` shows above the thumb.",
+                "A range slider's two thumbs are named by the label and \"Minimum\" or \"Maximum\" (`StartLabel` "
+                    + "and `EndLabel`), each a tab stop of its own, and neither can pass the other.",
+                "It posts in a static form, as a number or as `Start` and `End`. In forced-colors mode the track and "
+                    + "its fill take system colors.",
+            ],
+            Target = new("slider", "Map brightness"),
+            Blocks = ["tb-slider"],
+            TestingTip = "Set a slider with `await page.GetByRole(AriaRole.Slider, new() { Name = \"Map brightness\" "
+                + "}).FillAsync(\"80\")`, which Playwright supports for range inputs, and check it with "
+                + "`ToHaveValueAsync(\"80\")`. A range slider's thumbs are named \"Elevation Minimum\" and "
+                + "\"Elevation Maximum\".",
+        },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
         {

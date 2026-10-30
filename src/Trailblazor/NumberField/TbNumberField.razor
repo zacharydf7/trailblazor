@@ -76,23 +76,9 @@
         builder.CloseElement();
     };
 
-    // The range the number type itself can hold; float and double are stepped within decimal's range.
-    private static (decimal Min, decimal Max) TypeLimits => Type.GetTypeCode(NumberType) switch
-    {
-        TypeCode.SByte => (sbyte.MinValue, sbyte.MaxValue),
-        TypeCode.Byte => (byte.MinValue, byte.MaxValue),
-        TypeCode.Int16 => (short.MinValue, short.MaxValue),
-        TypeCode.UInt16 => (ushort.MinValue, ushort.MaxValue),
-        TypeCode.Int32 => (int.MinValue, int.MaxValue),
-        TypeCode.UInt32 => (uint.MinValue, uint.MaxValue),
-        TypeCode.Int64 => (long.MinValue, long.MaxValue),
-        TypeCode.UInt64 => (ulong.MinValue, ulong.MaxValue),
-        _ => (decimal.MinValue, decimal.MaxValue),
-    };
+    private decimal Lower => Math.Max(Min ?? decimal.MinValue, NumberTypes.Limits(NumberType).Min);
 
-    private decimal Lower => Math.Max(Min ?? decimal.MinValue, TypeLimits.Min);
-
-    private decimal Upper => Math.Min(Max ?? decimal.MaxValue, TypeLimits.Max);
+    private decimal Upper => Math.Min(Max ?? decimal.MaxValue, NumberTypes.Limits(NumberType).Max);
 
     private string NotANumber => $"{Label ?? "The field"} must be a number.";
 
@@ -100,7 +86,7 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        if (NumberType.IsEnum || Type.GetTypeCode(NumberType) is < TypeCode.SByte or > TypeCode.Decimal)
+        if (!NumberTypes.IsNumber(NumberType))
         {
             throw new InvalidOperationException(
                 $"{nameof(TbNumberField<TValue>)} needs a number type, not {NumberType.Name}.");

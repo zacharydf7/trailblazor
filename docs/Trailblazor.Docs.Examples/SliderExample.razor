@@ -1,0 +1,27 @@
+<TbStack Gap="5" Style="max-inline-size: 24rem">
+    <TbStack Gap="1">
+        <TbSlider @bind-Value="_brightness" Label="Map brightness" ShowValue ValueFormatter="@(value => $"{value}%")"
+                  ValueCommitted="@((int value) => { _saved = value; })" />
+        <TbText>Saved at @_saved%</TbText>
+    </TbStack>
+    <TbSlider @bind-Value="_grade" Label="Steepest grade" Min="0" Max="30" Step="5" Marks="GradeMarks"
+              HelperText="In percent; trails steeper than this are hidden." />
+    <TbStack Gap="1">
+        <TbRangeSlider @bind-Value="_elevation" Label="Elevation" Min="0" Max="4000" Step="100" ShowValue
+                       ValueFormatter="@(value => $"{value} m")" />
+        <TbText>Between @_elevation.Start and @_elevation.End m</TbText>
+    </TbStack>
+</TbStack>
+
+@code {
+    private static readonly SliderMark[] GradeMarks =
+    [
+        new() { Value = 0, Label = "Flat" }, new() { Value = 10, Label = "Gentle" },
+        new() { Value = 20, Label = "Steep" }, new() { Value = 30, Label = "Scramble" },
+    ];
+
+    private int _brightness = 60;
+    private int _saved = 60;
+    private int _grade = 10;
+    private SliderRange<int> _elevation = new(800, 2400);
+}

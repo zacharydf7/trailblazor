@@ -20,6 +20,7 @@ public class ComponentContractTests : BunitContext
     private static readonly Dictionary<Type, Type> TypeArguments = new()
     {
         [typeof(TbNumberField<>)] = typeof(int), [typeof(TbCheckbox<>)] = typeof(bool),
+        [typeof(TbSlider<>)] = typeof(int), [typeof(TbRangeSlider<>)] = typeof(int),
     };
 
     // Components that render nothing until they are shown are checked shown, and a popover gets the label it needs

@@ -1,0 +1,68 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbSliderBase<SliderRange<TValue>>
+
+@* Two native range inputs share one track; each takes pointer input only on its thumb, so both stay reachable. *@
+@Layout(StartId, Fraction(Start), Fraction(End), @<text>
+    <span id="@($"{StartId}-name")" hidden>@StartLabel</span>
+    <span id="@($"{EndId}-name")" hidden>@EndLabel</span>
+    <input @attributes="InputAttributes" data-part="start-thumb" id="@StartId" name="@NameOf("Start")" type="range"
+           min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Start)"
+           @bind:set="SetStartAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
+           aria-valuetext="@Format(Start)" aria-labelledby="@Names(StartId)"
+           aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+           class="@ClassNames.Join("tb-slider__input", StartOnTop ? "tb-slider__input--top" : null, Classes?.Input)" />
+    <input @attributes="InputAttributes" data-part="end-thumb" id="@EndId" name="@NameOf("End")" type="range"
+           min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(End)"
+           @bind:set="SetEndAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
+           aria-valuetext="@Format(End)" aria-labelledby="@Names(EndId)"
+           aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+           class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />
+    @Bubble(Fraction(Start), Format(Start))
+    @Bubble(Fraction(End), Format(End))
+</text>)
+
+@code {
+    /// <summary>Names the lower thumb, after the field's label. Defaults to "Minimum".</summary>
+    [Parameter]
+    public string StartLabel { get; set; } = "Minimum";
+
+    /// <summary>Names the upper thumb, after the field's label. Defaults to "Maximum".</summary>
+    [Parameter]
+    public string EndLabel { get; set; } = "Maximum";
+
+    /// <summary>Turns a thumb's value into the text shown above it and read by screen readers, such as "40%".
+    /// Defaults to the number itself.</summary>
+    [Parameter]
+    public Func<TValue, string>? ValueFormatter { get; set; }
+
+    private protected override Type NumberType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+    private string StartId => $"{InputId}-start";
+
+    private string EndId => $"{InputId}-end";
+
+    // A range the parent left empty, or turned around, still draws its thumbs in order.
+    private decimal Start => Math.Clamp(Math.Min(ToNumber(Value.Start) ?? Min, ToNumber(Value.End) ?? Max), Min, Max);
+
+    private decimal End => Math.Clamp(Math.Max(ToNumber(Value.Start) ?? Min, ToNumber(Value.End) ?? Max), Min, Max);
+
+    // With both thumbs at the top, the end thumb can't move up, so the start thumb sits above it to be grabbed.
+    private bool StartOnTop => Start == End && End == Max;
+
+    private string Names(string thumb) => Label is null ? $"{thumb}-name" : $"{LabelId} {thumb}-name";
+
+    private string? NameOf(string part) => InputNameAttribute is null ? null : $"{InputNameAttribute}.{part}";
+
+    private string Format(decimal number) =>
+        ValueFormatter?.Invoke((TValue)ToValue(number)) ?? Invariant(number);
+
+    // A thumb stops at the other, so the range never turns around.
+    private Task SetStartAsync(string? text) => Parse(text) is decimal number
+        ? SetValueAsync(new((TValue)ToValue(Math.Min(number, End)), (TValue)ToValue(End)))
+        : Task.CompletedTask;
+
+    private Task SetEndAsync(string? text) => Parse(text) is decimal number
+        ? SetValueAsync(new((TValue)ToValue(Start), (TValue)ToValue(Math.Max(number, Start))))
+        : Task.CompletedTask;
+}
