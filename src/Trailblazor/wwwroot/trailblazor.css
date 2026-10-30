@@ -3457,6 +3457,200 @@
         cursor: not-allowed;
     }
 
+    /* A see-through color shows over a checkerboard, so its opacity can be seen. */
+    .tb-color-picker__preview,
+    .tb-color-picker__swatch,
+    .tb-color-picker__slider--alpha {
+        --tb-color-picker-checks: repeating-conic-gradient(#ccc 0 25%, #fff 0 50%) 0 0 / 8px 8px;
+    }
+
+    .tb-color-picker__preview {
+        flex: none;
+        inline-size: 1.25rem;
+        block-size: 1.25rem;
+        margin-inline-start: var(--tb-space-1);
+        border: 1px solid var(--tb-border-strong);
+        border-radius: var(--tb-radius-sm);
+        background:
+            linear-gradient(var(--tb-color-picker-value, transparent), var(--tb-color-picker-value, transparent)),
+            var(--tb-color-picker-checks);
+    }
+
+    .tb-color-picker__body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-3);
+        inline-size: 15rem;
+    }
+
+    .tb-color-picker__swatches {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-color-picker__swatch {
+        inline-size: 1.75rem;
+        block-size: 1.75rem;
+        margin: 0;
+        border: 1px solid var(--tb-border-strong);
+        border-radius: var(--tb-radius-sm);
+        appearance: none;
+        background: linear-gradient(var(--tb-swatch), var(--tb-swatch)), var(--tb-color-picker-checks);
+        cursor: pointer;
+    }
+
+    .tb-color-picker__swatch:checked {
+        outline: 2px solid var(--tb-color-primary);
+        outline-offset: 2px;
+    }
+
+    .tb-color-picker__swatch:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-color-picker__pad {
+        position: relative;
+        block-size: 9rem;
+        border-radius: var(--tb-radius-sm);
+        background: linear-gradient(to top, #000, transparent),
+            linear-gradient(to right, #fff, hsl(var(--tb-color-picker-hue) 100% 50%));
+        cursor: crosshair;
+        touch-action: none;
+    }
+
+    /* The pad is a color space, not text, so it runs left to right in any direction, as the script measures it. */
+    .tb-color-picker__pad-thumb {
+        position: absolute;
+        left: calc(var(--tb-color-picker-x) * 100%);
+        inset-block-start: calc(var(--tb-color-picker-y) * 100%);
+        inline-size: 0.875rem;
+        block-size: 0.875rem;
+        border: 2px solid #fff;
+        border-radius: var(--tb-radius-full);
+        box-shadow: 0 0 0 1px #000;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    .tb-color-picker__row,
+    .tb-color-picker__channel {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-color-picker__row-label {
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-color-picker__slider {
+        block-size: 1.5rem;
+        margin: 0;
+        border-radius: var(--tb-radius-full);
+        appearance: none;
+        cursor: pointer;
+    }
+
+    .tb-color-picker__slider--hue {
+        background: linear-gradient(to right in hsl longer hue, hsl(0 100% 50%), hsl(360 100% 50%));
+    }
+
+    .tb-color-picker__slider--hue:dir(rtl) {
+        background: linear-gradient(to left in hsl longer hue, hsl(0 100% 50%), hsl(360 100% 50%));
+    }
+
+    .tb-color-picker__slider--saturation {
+        background: linear-gradient(to right, var(--tb-color-picker-gray), var(--tb-color-picker-vivid));
+    }
+
+    .tb-color-picker__slider--brightness {
+        background: linear-gradient(to right, #000, var(--tb-color-picker-bright));
+    }
+
+    .tb-color-picker__slider--alpha {
+        background: linear-gradient(to right, transparent, var(--tb-color-picker-opaque)),
+            var(--tb-color-picker-checks);
+    }
+
+    /* A range input runs from the right in right-to-left text, so its track's colors do too. */
+    .tb-color-picker__slider--saturation:dir(rtl) {
+        background: linear-gradient(to left, var(--tb-color-picker-gray), var(--tb-color-picker-vivid));
+    }
+
+    .tb-color-picker__slider--brightness:dir(rtl) {
+        background: linear-gradient(to left, #000, var(--tb-color-picker-bright));
+    }
+
+    .tb-color-picker__slider--alpha:dir(rtl) {
+        background: linear-gradient(to left, transparent, var(--tb-color-picker-opaque)),
+            var(--tb-color-picker-checks);
+    }
+
+    .tb-color-picker__slider::-webkit-slider-thumb {
+        inline-size: 1.25rem;
+        block-size: 1.25rem;
+        border: 2px solid #fff;
+        border-radius: var(--tb-radius-full);
+        appearance: none;
+        background: transparent;
+        box-shadow: 0 0 0 1px #000;
+    }
+
+    .tb-color-picker__slider::-moz-range-thumb {
+        box-sizing: border-box;
+        inline-size: 1.25rem;
+        block-size: 1.25rem;
+        border: 2px solid #fff;
+        border-radius: var(--tb-radius-full);
+        background: transparent;
+        box-shadow: 0 0 0 1px #000;
+    }
+
+    .tb-color-picker__slider:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-color-picker__channels {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--tb-space-2);
+    }
+
+    .tb-color-picker__number {
+        box-sizing: border-box;
+        inline-size: 100%;
+        min-block-size: 2rem;
+        padding-inline: var(--tb-space-2);
+        border: 1px solid var(--tb-border-strong);
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+        font: inherit;
+    }
+
+    .tb-color-picker__number:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    /* Forced colors would paint over the swatches and tracks, which are the color itself. */
+    @media (forced-colors: active) {
+        .tb-color-picker__preview,
+        .tb-color-picker__swatch,
+        .tb-color-picker__pad,
+        .tb-color-picker__slider {
+            forced-color-adjust: none;
+        }
+
+        .tb-color-picker__swatch:checked {
+            outline-color: Highlight;
+        }
+    }
+
     /* Forced colors drop the backgrounds, so chosen days are drawn in the system's highlight colors. */
     @media (forced-colors: active) {
         .tb-date-range__day--selected,

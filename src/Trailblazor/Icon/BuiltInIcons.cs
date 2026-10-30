@@ -9,6 +9,15 @@ internal static class BuiltInIcons
     public static Icon Calendar { get; } =
         new("<path d=\"M7 2h2v2h6V2h2v2h3v18H4V4h3zM6 10v10h12V10zm0-2h12V6H6zm2 4h3v3H8z\" />");
 
+    public static Icon Palette { get; } = new("<path d=\"M12 3a9 9 0 1 0 0 18 2 2 0 0 0 1.5-3.3 2 2 0 0 1 "
+        + "1.5-3.3h2.2A4.8 4.8 0 0 0 22 9.6C21.4 5.8 17.2 3 12 3zM7 12.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 "
+        + "1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 "
+        + "0 1 0 3z\" />");
+
+    public static Icon Eyedropper { get; } = new("<path d=\"M19.6 4.4a2.2 2.2 0 0 0-3.1 0l-2.4 2.4-1.4-1.4-1.4 "
+        + "1.4 1.4 1.4L5 15.9V19h3.1l7.6-7.7 1.4 1.4 1.4-1.4-1.4-1.4 2.5-2.4a2.2 2.2 0 0 0 0-3.1zM7.3 17H7v-.3l7.3-7.3"
+        + ".3.3z\" />");
+
     public static Icon ChevronDown { get; } = new("<path d=\"M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z\" />");
 
     // Points right; flip it in right-to-left text.

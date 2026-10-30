@@ -1,0 +1,123 @@
+@namespace Trailblazor
+@inherits TbFieldBase<string?>
+
+@if (RendererInfo.IsInteractive)
+{
+    @Layout(Classes, @<text>
+        @* Tests wait for data-value to show the color they typed has been taken. *@
+        <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="text"
+               autocomplete="off" spellcheck="false" data-value="@Value" @bind:get="Text" @bind:set="SetTextAsync"
+               placeholder="@Placeholder" disabled="@Disabled" aria-required="@(Required ? "true" : null)"
+               aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    </text>, Preview, Buttons)
+}
+else
+{
+    @* Without a circuit there is no picker. A text box stands in, since the browser's color box can't be empty or
+       see-through and would post black or drop the opacity; data-prerender marks one the interactive field will
+       replace. *@
+    @Layout(Classes, @<text>
+        <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="text"
+               value="@Text" placeholder="@Placeholder" pattern="@StaticPattern" title="@Labels.BadColor"
+               disabled="@Disabled"
+               aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+               aria-describedby="@InputDescribedBy" data-static="@(AssignedRenderMode is null ? "" : null)"
+               data-prerender="@(AssignedRenderMode is null ? null : "")"
+               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    </text>, Preview, null)
+}
+
+@code {
+    // A static post binds the text as it is, so the browser lets through only the hex the interactive field writes.
+    private string StaticPattern => Alpha ? "#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?" : "#[0-9a-fA-F]{6}";
+
+    private RenderFragment Preview =>
+        @<span data-part="swatch-preview" aria-hidden="true" class="tb-color-picker__preview"
+               style="@(Color is { } color ? $"--tb-color-picker-value: {color.ToHex(true)}" : null)"></span>;
+
+    private RenderFragment Buttons => @<text>
+        @if (Clearable && !Disabled && Value is not null)
+        {
+            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Labels.Clear" Size="Size.Small" OnClick="ClearAsync"
+                          data-part="clear" />
+        }
+        @if (_canPickColor)
+        {
+            <TbIconButton Icon="BuiltInIcons.Eyedropper" AriaLabel="@Labels.Eyedropper" Size="Size.Small"
+                          Disabled="Disabled" OnClick="PickFromScreenAsync" data-part="eyedropper" />
+        }
+        <TbPopover Title="@Labels.Open" Align="PopoverAlign.End" class="tb-color-picker__popover">
+            <Trigger>
+                <TbIconButton Icon="BuiltInIcons.Palette" AriaLabel="@Labels.Open" Size="Size.Small"
+                              Disabled="Disabled" @attributes="context.Attributes" />
+            </Trigger>
+            <ChildContent>
+                <div class="tb-color-picker__body" style="@BodyStyle">
+                    @if (Palette is { Count: > 0 })
+                    {
+                        <div role="radiogroup" aria-label="@Labels.Swatches" data-part="swatches"
+                             class="tb-color-picker__swatches">
+                            @foreach (var swatch in Palette)
+                            {
+                                <input type="radio" name="@($"{FieldId}-swatch")" data-part="swatch"
+                                       aria-label="@NameOf(swatch)" checked="@IsChosen(swatch)"
+                                       @onchange="() => ChooseSwatchAsync(swatch)"
+                                       style="@($"--tb-swatch: {Read(swatch).ToHex(true)}")"
+                                       class="tb-color-picker__swatch" />
+                            }
+                        </div>
+                    }
+                    @if (!PaletteOnly)
+                    {
+                        @* The pad is for the pointer; the sliders below give the same control to the keyboard. *@
+                        <div @ref="_pad" data-part="pad" aria-hidden="true" class="tb-color-picker__pad"
+                             style="@PadStyle">
+                            <span class="tb-color-picker__pad-thumb"></span>
+                        </div>
+                        @Slider(Labels.Hue, "hue", 360, _hue, SetHueAsync, "°")
+                        @Slider(Labels.Saturation, "saturation", 100, _saturation * 100, SetSaturationAsync, "%")
+                        @Slider(Labels.Brightness, "brightness", 100, _brightness * 100, SetBrightnessAsync, "%")
+                        @if (Alpha)
+                        {
+                            @Slider(Labels.Alpha, "alpha", 100, _alpha / 255d * 100, SetAlphaAsync, "%")
+                        }
+                        <div class="tb-color-picker__channels">
+                            @Channel(Labels.Red, "red", Color?.R, (color, red) => color with { R = red })
+                            @Channel(Labels.Green, "green", Color?.G, (color, green) => color with { G = green })
+                            @Channel(Labels.Blue, "blue", Color?.B, (color, blue) => color with { B = blue })
+                        </div>
+                    }
+                </div>
+            </ChildContent>
+        </TbPopover>
+    </text>;
+
+    private string PadStyle => FormattableString.Invariant(
+        $"--tb-color-picker-x: {_saturation}; --tb-color-picker-y: {1 - _brightness}");
+
+    // Each slider's track shows the colors it runs through, given the other sliders' values.
+    private string BodyStyle => FormattableString.Invariant($"--tb-color-picker-hue: {_hue}deg; ")
+        + $"--tb-color-picker-gray: {ColorValue.FromHsv(_hue, 0, _brightness, 255).ToHex(false)}; "
+        + $"--tb-color-picker-vivid: {ColorValue.FromHsv(_hue, 1, _brightness, 255).ToHex(false)}; "
+        + $"--tb-color-picker-bright: {ColorValue.FromHsv(_hue, _saturation, 1, 255).ToHex(false)}; "
+        + $"--tb-color-picker-opaque: {Picked.ToHex(false)}";
+
+    private RenderFragment Slider(string label, string part, int max, double value, Func<string?, Task> set,
+        string unit) =>
+        @<label class="tb-color-picker__row">
+            <span class="tb-color-picker__row-label">@label</span>
+            <input type="range" data-part="@part" min="0" max="@max" step="1" @bind:get="Invariant(value)"
+                   @bind:set="set" @bind:event="oninput" disabled="@Disabled"
+                   aria-valuetext="@($"{Invariant(value)}{unit}")"
+                   class="@($"tb-color-picker__slider tb-color-picker__slider--{part}")" />
+        </label>;
+
+    private RenderFragment Channel(string label, string part, byte? value, Func<ColorValue, byte, ColorValue> with) =>
+        @<label class="tb-color-picker__channel">
+            <span class="tb-color-picker__row-label">@label</span>
+            <input type="number" data-part="@part" min="0" max="255" step="1" @bind:get="value?.ToString()"
+                   @bind:set="text => SetChannelAsync(text, with)" disabled="@Disabled"
+                   class="tb-color-picker__number" />
+        </label>;
+}

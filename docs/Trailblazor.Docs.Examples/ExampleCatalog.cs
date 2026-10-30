@@ -615,6 +615,30 @@ public static class ExampleCatalog
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
                 + "search, and clicks the option by its name.",
         },
+        new("color-picker", "Color picker", ExampleCategory.Inputs,
+            "Chooses a color by typing it, picking a swatch, using the custom picker, or taking it from the screen.",
+            typeof(ColorPickerExample))
+        {
+            Api = [typeof(TbColorPicker), typeof(ColorPickerLabels), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "The text box is named by the `Label` and takes `#rgb`, `#rrggbb` or `rgb()`; a color it can't read "
+                    + "says the format to use and marks the box `aria-invalid`.",
+                "The picker is a `dialog`. Swatches are native radios in a `radiogroup`, named by `SwatchName`, so the "
+                    + "arrow keys move between them and choose.",
+                "The saturation and brightness pad is for the pointer; the Hue, Saturation, Brightness and Opacity "
+                    + "sliders and the Red, Green and Blue boxes give keyboard and screen reader users the same "
+                    + "control.",
+                "The eyedropper button appears only in browsers that have one.",
+                "Before the page is interactive it is a plain text box that only takes `#rrggbb` (or `#rrggbbaa` "
+                    + "with `Alpha`), so a static form posts a hex color, as typed.",
+            ],
+            Target = new("textbox", "Trail marker"),
+            Blocks = ["tb-field", "tb-color-picker"],
+            TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
+                + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it. In bUnit, "
+                + "set `FakeBrowserService.PickedColor` to test the eyedropper.",
+        },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.",
             typeof(DateRangePickerExample))

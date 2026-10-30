@@ -1,0 +1,29 @@
+@page "/static-color-picker"
+@attribute [ExcludeFromInteractiveRouting]
+
+<EditForm Model="Model" FormName="static-color-picker" OnValidSubmit="Post">
+    <TbColorPicker Label="Accent" @bind-Value="Model!.Accent" />
+    <TbColorPicker Label="Marker" @bind-Value="Model!.Marker" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</EditForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm]
+    private Theme? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    // Form binding posts an empty box as an empty string.
+    private void Post() =>
+        _posted = $"{Model!.Accent} | {(string.IsNullOrEmpty(Model.Marker) ? "none" : Model.Marker)}";
+
+    private sealed class Theme
+    {
+        public string? Accent { get; set; } = "#336699";
+
+        public string? Marker { get; set; }
+    }
+}

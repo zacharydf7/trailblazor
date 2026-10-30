@@ -1,0 +1,29 @@
+@page "/color-picker"
+
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbColorPicker Label="Accent" @bind-Value="_accent" @bind-Value:after="Count" Palette="_palette"
+                   SwatchName="Name" Clearable />
+    <output data-testid="accent">@(_accent ?? "none")</output>
+    <output data-testid="changes">@_changes</output>
+    <TbColorPicker Label="Highlight" @bind-Value="_highlight" Alpha />
+    <output data-testid="highlight">@(_highlight ?? "none")</output>
+    <TbButton OnClick="SetFromParent">Set from parent</TbButton>
+</TbStack>
+
+@code {
+    private readonly string[] _palette = ["#336699", "#cc3333", "#ffcc00"];
+    private string? _accent = "#336699";
+    private string? _highlight = "#ff000080";
+    private int _changes;
+
+    private static string Name(string swatch) => swatch switch
+    {
+        "#336699" => "Ocean",
+        "#cc3333" => "Brick",
+        _ => "Sun",
+    };
+
+    private void Count() => _changes++;
+
+    private void SetFromParent() => _accent = "#00FF00";
+}

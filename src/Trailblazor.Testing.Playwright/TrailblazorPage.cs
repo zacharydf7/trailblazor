@@ -24,6 +24,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
     public TbListBoxLocator ListBox(string label) => new(page, label);
 
+    /// <summary>The <c>TbColorPicker</c> with this label.</summary>
+    public TbColorPickerLocator ColorPicker(string label) => new(page, label);
+
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
     public TbDateRangePickerLocator DateRangePicker(string label) => new(page, label);
 
@@ -146,6 +149,39 @@ public sealed class TbAutocompleteLocator(IPage page, string label)
         await Assertions.Expect(listbox.GetByRole(AriaRole.Option,
             new() { Name = option, Exact = true, IncludeHidden = true })).ToHaveAttributeAsync("aria-selected", "true");
     }
+}
+
+/// <summary>A <c>TbColorPicker</c>, found by its label.</summary>
+public sealed partial class TbColorPickerLocator(IPage page, string label)
+{
+    /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and waits until
+    /// the field has taken it. A statically rendered field just gets the text.</summary>
+    public async Task ChooseAsync(string color)
+    {
+        if (!HexColor().IsMatch(color))
+        {
+            throw new ArgumentException($"Pass the color as #rrggbb or #rrggbbaa, not {color}.", nameof(color));
+        }
+
+        var input = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("input"));
+        if (await input.GetAttributeAsync("data-static") is not null)
+        {
+            await input.FillAsync(color);
+            return;
+        }
+
+        // A prerendered field is replaced once the page is interactive, so the interactive one is waited for.
+        await Assertions.Expect(input).Not.ToHaveAttributeAsync("data-prerender", "");
+        await input.FillAsync(color);
+        await input.PressAsync("Enter");
+        // The field writes an opaque color without its alpha.
+        var expected = color.ToLowerInvariant();
+        await Assertions.Expect(input).ToHaveAttributeAsync("data-value",
+            expected.Length == 9 && expected.EndsWith("ff", StringComparison.Ordinal) ? expected[..7] : expected);
+    }
+
+    [GeneratedRegex("^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")]
+    private static partial Regex HexColor();
 }
 
 /// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>
