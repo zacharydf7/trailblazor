@@ -876,16 +876,22 @@ public static class ExampleCatalog
             Api = [typeof(TbTabs), typeof(TbTab)],
             Accessibility =
             [
-                "A `tablist` of `tab`s, each controlling a `tabpanel`. Give the list an `AriaLabel`.",
+                "A `tablist` of `tab`s, each controlling a `tabpanel`. Give the list an `AriaLabel`. A tab's "
+                    + "`Header` or `Text` is its name, so a count in the header is read with it; its `Icon` isn't "
+                    + "read.",
                 "The tab list is one tab stop. Left and Right move between tabs and wrap, mirrored on "
-                    + "right-to-left pages, and Home and End jump to the ends. With automatic activation, moving also "
-                    + "selects; with manual activation, Enter or Space selects.",
+                    + "right-to-left pages, and Home and End jump to the ends. A `Vertical` list has "
+                    + "`aria-orientation=\"vertical\"` and moves with Up and Down instead. With automatic activation, "
+                    + "moving also selects; with manual activation, Enter or Space selects.",
                 "Each panel is focusable, so keyboard users can reach content that has no controls.",
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
                     + "system's highlight color.",
             ],
             Target = new("tablist", "Report sections"),
             Blocks = ["tb-tabs"],
+            TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
+                + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. Wait for the tab list's "
+                + "`data-ready` attribute before testing the arrow keys.",
         },
         new("accordion", "Accordion", ExampleCategory.Navigation,
             "Sections that open and close under their headings.", typeof(AccordionExample))

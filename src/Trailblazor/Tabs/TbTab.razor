@@ -18,10 +18,27 @@
     private bool _shown;
     private string? _text;
     private bool _disabled;
+    private string? _key;
+    private Icon? _icon;
+    private RenderFragment? _header;
 
-    /// <summary>The tab's label. Required.</summary>
-    [Parameter, EditorRequired]
-    public string Text { get; set; } = "";
+    /// <summary>The tab's label. Give this or <see cref="Header"/>.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>Content for the tab's header in place of <see cref="Text"/>, such as a label with a count. It becomes
+    /// the tab's accessible name, so keep it short and leave controls out of it.</summary>
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    /// <summary>An icon before the header's text.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Names the tab for <see cref="TbTabs.ActiveKey"/>, which selects it by this key rather than by its
+    /// position. Keys must be unique within the tabs.</summary>
+    [Parameter]
+    public string? Key { get; set; }
 
     /// <summary>Turns this tab off while the others stay usable.</summary>
     [Parameter]
@@ -41,6 +58,16 @@
 
     internal bool IsPanelRendered => ChildContent is not null && (IsSelected || Tabs!.KeepAlive && _shown);
 
+    // TabHeader is internal, so Razor can't name it; the list renders it through this.
+    internal RenderFragment HeaderContent => builder =>
+    {
+        builder.OpenComponent<TabHeader>(0);
+        builder.AddComponentParameter(1, nameof(TabHeader.Tab), this);
+        builder.CloseComponent();
+    };
+
+    internal TabHeader? HeaderView { get; set; }
+
     private bool IsSelected => Tabs!.ActiveTab == this;
 
     /// <inheritdoc />
@@ -53,18 +80,40 @@
 
         _text = Text;
         _disabled = Disabled;
+        _key = Key;
+        _icon = Icon;
         Tabs.Add(this);
     }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        if (Header is null && string.IsNullOrWhiteSpace(Text))
+        {
+            throw new InvalidOperationException($"{nameof(TbTab)} needs a {nameof(Text)} or a {nameof(Header)}.");
+        }
+
+        if (Key is null && Tabs!.SelectsByKey)
+        {
+            throw new InvalidOperationException(
+                $"Every {nameof(TbTab)} needs a {nameof(Key)} when its {nameof(TbTabs)} has an ActiveKey.");
+        }
+
         _shown |= IsSelected;
-        if (Text != _text || Disabled != _disabled)
+        if (Text != _text || Disabled != _disabled || Key != _key || Icon != _icon)
         {
             _text = Text;
             _disabled = Disabled;
+            _key = Key;
+            _icon = Icon;
             Tabs!.Refresh();
+        }
+
+        // A header that changes on its own would otherwise keep what the list drew before it changed.
+        if (Header != _header)
+        {
+            _header = Header;
+            HeaderView?.Refresh();
         }
     }
 

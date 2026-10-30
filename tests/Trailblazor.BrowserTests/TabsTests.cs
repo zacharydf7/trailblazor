@@ -5,24 +5,24 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Tab(IPage page, string name) =>
         page.GetByRole(AriaRole.Tab, new() { Name = name, Exact = true });
 
-    // The arrow keys work once the tabs script has attached, which is when it sets aria-orientation.
+    // The arrow keys work once the tabs script has attached, which is when data-ready appears.
     private static async Task WaitForKeysAsync(IPage page, string list) =>
-        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = list }))
-            .ToHaveAttributeAsync("aria-orientation", "horizontal");
+        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = list })).ToHaveAttributeAsync("data-ready", "");
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldUnderlineOnlyTheSelectedTabWithoutMovingAnything_WhenColorsAreForced(string browser)
     {
         var plain = await OpenAsync(browser, "/examples/tabs");
-        var height = (await plain.GetByRole(AriaRole.Tablist).BoundingBoxAsync())!.Height;
+        var sections = new PageGetByRoleOptions { Name = "Report sections" };
+        var height = (await plain.GetByRole(AriaRole.Tablist, sections).BoundingBoxAsync())!.Height;
         var page = await OpenAsync(browser, "/examples/tabs", new() { ForcedColors = ForcedColors.Active });
 
-        var underlines = await page.EvaluateAsync<string[]>("""
-            () => {
+        var underlines = await page.GetByRole(AriaRole.Tablist, sections).EvaluateAsync<string[]>("""
+            list => {
                 const probe = document.body.appendChild(document.createElement('div'));
                 probe.style.cssText = 'forced-color-adjust: none; color: Highlight';
                 const highlight = getComputedStyle(probe).color;
-                return [...document.querySelectorAll('[role=tab]')].map(tab => {
+                return [...list.querySelectorAll('[role=tab]')].map(tab => {
                     const style = getComputedStyle(tab);
                     return style.borderBottomWidth === '0px' ? 'none'
                         : style.borderBottomColor === highlight ? 'highlight' : style.borderBottomColor;
@@ -31,9 +31,10 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
             """);
 
         Assert.Equal(["highlight", "none", "none"], underlines);
-        Assert.Equal(height, (await page.GetByRole(AriaRole.Tablist).BoundingBoxAsync())!.Height, tolerance: 0.5);
+        Assert.Equal(height, (await page.GetByRole(AriaRole.Tablist, sections).BoundingBoxAsync())!.Height,
+            tolerance: 0.5);
         // The list scrolls sideways, so it also clips what sticks out below it; the underline must stay inside.
-        Assert.True(await page.GetByRole(AriaRole.Tablist).EvaluateAsync<bool>(
+        Assert.True(await page.GetByRole(AriaRole.Tablist, sections).EvaluateAsync<bool>(
             "list => list.scrollHeight <= list.clientHeight"), "The underline is clipped below the tab list.");
     }
 
@@ -180,5 +181,105 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         // Kept alive, Monthly would stay in the page had it been selected while the order was on its way.
         await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Monthly", IncludeHidden = true }))
             .ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldMoveWithUpAndDownButNotLeftAndRight_WhenVertical(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        await WaitForKeysAsync(page, "Trail settings");
+        await Tab(page, "Route").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Tab(page, "Alerts")).ToBeFocusedAsync();
+        await Expect(Tab(page, "Alerts")).ToHaveAttributeAsync("aria-selected", "true");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Tab(page, "Route")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Tab(page, "Filters")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Tab(page, "Filters")).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Filters" }))
+            .ToHaveTextAsync("Dogs allowed, no bikes.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldStandBesideTheirPanel_WhenVertical(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+
+        var list = (await page.GetByRole(AriaRole.Tablist, new() { Name = "Trail settings" }).BoundingBoxAsync())!;
+        var panel = (await page.GetByRole(AriaRole.Tabpanel, new() { Name = "Route" }).BoundingBoxAsync())!;
+
+        Assert.True(panel.X >= list.X + list.Width - 0.5, $"The panel starts at {panel.X}, the list ends at "
+            + $"{list.X + list.Width}.");
+        Assert.True(panel.Y < list.Y + list.Height, "The panel should sit beside the list, not below it.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldMarkTheSelectedTabOnItsInnerEdge_WhenVerticalAndColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs", new() { ForcedColors = ForcedColors.Active });
+
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Trail settings" });
+
+        var lines = await list.EvaluateAsync<string[]>("""
+            list => {
+                const probe = document.body.appendChild(document.createElement('div'));
+                probe.style.cssText = 'forced-color-adjust: none; color: Highlight';
+                const highlight = getComputedStyle(probe).color;
+                return [...list.querySelectorAll('[role=tab]')].map(tab => {
+                    const style = getComputedStyle(tab);
+                    return style.borderBottomWidth !== '0px' ? 'bottom'
+                        : style.borderRightWidth === '0px' ? 'none'
+                        : style.borderRightColor === highlight ? 'highlight' : style.borderRightColor;
+                });
+            }
+            """);
+
+        Assert.Equal(["highlight", "none", "none"], lines);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldKeepTheTabWithTheKey_WhenATabAppearsBeforeIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs");
+        await WaitForKeysAsync(page, "Trips");
+        await Tab(page, "Multi-day").ClickAsync();
+        await Expect(page.GetByTestId("trip")).ToHaveTextAsync("multi");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add overnight" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Trips" }).GetByRole(AriaRole.Tab))
+            .ToHaveTextAsync(["Day hikes", "Overnight", "Multi-day"]);
+        await Expect(Tab(page, "Multi-day")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Multi-day" }))
+            .ToHaveTextAsync("Multi-day panel");
+        await Expect(page.GetByTestId("trip")).ToHaveTextAsync("multi");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldSelectTheParentsTab_WhenItAddsTheTabAndSetsItsKeyTogether(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs");
+        await WaitForKeysAsync(page, "Trips");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open overnight" }).ClickAsync();
+
+        await Expect(Tab(page, "Overnight")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Overnight" }))
+            .ToHaveTextAsync("Overnight panel");
+        await Expect(page.GetByTestId("trip")).ToHaveTextAsync("overnight");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldNameEachTabByItsHeader_WhenHeadersHoldAnIconOrACount(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+
+        await Expect(Tab(page, "Details 3")).ToBeVisibleAsync();
+        await Expect(Tab(page, "Route")).ToBeVisibleAsync();
+        await Expect(Tab(page, "Route").Locator("[data-part=icon]")).ToBeVisibleAsync();
     }
 }

@@ -1,15 +1,33 @@
-<TbTabs AriaLabel="Report sections" @bind-ActiveIndex="_section">
-    <TbTab Text="Summary">
+@using Trailblazor.Docs.Examples
+
+<TbTabs AriaLabel="Report sections" @bind-ActiveKey="_section">
+    <TbTab Key="summary" Text="Summary">
         <TbText>Revenue grew 12% over the quarter.</TbText>
     </TbTab>
-    <TbTab Text="Details">
-        <TbText>Every region beat its target except the north-east.</TbText>
+    <TbTab Key="details">
+        <Header>Details <TbBadge Count="3" Tone="Tone.Neutral" /></Header>
+        <ChildContent>
+            <TbText>Every region beat its target except the north-east.</TbText>
+        </ChildContent>
     </TbTab>
-    <TbTab Text="Archive" Disabled>
+    <TbTab Key="archive" Text="Archive" Disabled>
         <TbText>Older reports.</TbText>
     </TbTab>
 </TbTabs>
 
+<TbTabs AriaLabel="Trail settings" Vertical @bind-ActiveKey="_setting" Style="margin-block-start: var(--tb-space-8)">
+    <TbTab Key="route" Text="Route" Icon="ExampleIcons.Trail">
+        <TbText>Loop, 6.2 miles, starting at the north lot.</TbText>
+    </TbTab>
+    <TbTab Key="alerts" Text="Alerts" Icon="ExampleIcons.Bell">
+        <TbText>Tell me about closures and fire danger.</TbText>
+    </TbTab>
+    <TbTab Key="filters" Text="Filters" Icon="ExampleIcons.Filter">
+        <TbText>Dogs allowed, no bikes.</TbText>
+    </TbTab>
+</TbTabs>
+
 @code {
-    private int _section;
+    private string? _section = "summary";
+    private string? _setting = "route";
 }

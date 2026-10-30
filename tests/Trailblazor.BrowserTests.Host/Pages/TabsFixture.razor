@@ -52,6 +52,19 @@
 <button type="button" @onclick="OpenSouth">Open south</button>
 <button type="button" @onclick="() => _regions.Sort()">Sort regions</button>
 
+@* Selected by key, so Overnight appearing before Multi-day doesn't move the selection. *@
+<TbTabs AriaLabel="Trips" @bind-ActiveKey="_trip">
+    <TbTab Key="day" Text="Day hikes">Day panel</TbTab>
+    @if (_overnight)
+    {
+        <TbTab Key="overnight" Text="Overnight">Overnight panel</TbTab>
+    }
+    <TbTab Key="multi" Text="Multi-day">Multi-day panel</TbTab>
+</TbTabs>
+<output data-testid="trip">@_trip</output>
+<button type="button" @onclick="() => _overnight = true">Add overnight</button>
+<button type="button" @onclick="@(() => (_overnight, _trip) = (true, "overnight"))">Open overnight</button>
+
 @code {
     private int _section;
     private int _report;
@@ -59,6 +72,8 @@
     private int _plan;
     private int _region;
     private readonly List<string> _regions = ["North", "West"];
+    private string? _trip = "day";
+    private bool _overnight;
 
     private void OpenSouth()
     {

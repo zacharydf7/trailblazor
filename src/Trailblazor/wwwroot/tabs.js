@@ -13,8 +13,10 @@ export function attachTabs(list, order) {
             return;
         }
 
-        const forward = getComputedStyle(list).direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-        const back = forward === 'ArrowRight' ? 'ArrowLeft' : 'ArrowRight';
+        const rtl = getComputedStyle(list).direction === 'rtl';
+        const forward = list.getAttribute('aria-orientation') === 'vertical' ? 'ArrowDown'
+            : rtl ? 'ArrowLeft' : 'ArrowRight';
+        const back = { ArrowDown: 'ArrowUp', ArrowRight: 'ArrowLeft', ArrowLeft: 'ArrowRight' }[forward];
         const next = {
             [forward]: tabs[(index + 1) % tabs.length],
             [back]: tabs[(index - 1 + tabs.length) % tabs.length],
@@ -61,8 +63,6 @@ export function attachTabs(list, order) {
     // A tab may have rendered between the first render and this call.
     reportOrder();
     list.addEventListener('keydown', onKeyDown);
-    // Horizontal is already a tab list's default; setting it marks that the arrow keys are attached.
-    list.setAttribute('aria-orientation', 'horizontal');
     return {
         // A test stand-in answers false here, which tells the server that no order report will come.
         reportsOrder: () => true,

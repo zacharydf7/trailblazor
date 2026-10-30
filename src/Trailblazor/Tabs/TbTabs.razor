@@ -5,8 +5,11 @@
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 
-<div @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tabs", Class)" style="@Style">
+<div @attributes="AdditionalAttributes" style="@Style"
+     class="@ClassNames.Join("tb-tabs", Vertical ? "tb-tabs--vertical" : null, Class)">
+    @* data-ready marks that the arrow keys work, which tests wait for. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
+         aria-orientation="@(Vertical ? "vertical" : "horizontal")" data-ready="@(_handle is null ? null : "")"
          data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
          class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null)">
         @foreach (var tab in _tabs)
@@ -16,7 +19,7 @@
             <button @key="tab" type="button" role="tab" id="@tab.TabId" aria-selected="@(selected ? "true" : "false")"
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
-                    class="tb-tabs__tab" @onclick="() => ActivateAsync(tab)">@tab.Text</button>
+                    class="tb-tabs__tab" @onclick="() => ActivateAsync(tab)">@tab.HeaderContent</button>
         }
     </div>
     @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
@@ -35,6 +38,9 @@
     private bool _keepIndexOnReorder;
     private TbTab? _settled;
     private bool _reportsOrder;
+    private string? _activeKey;
+    private string? _lastActiveKey;
+    private bool _selectsByKey;
 
     /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. A new index
     /// from the parent applies on the render after, once that render's tabs have registered, and one set along with
@@ -48,6 +54,20 @@
     /// the index itself.</summary>
     [Parameter]
     public EventCallback<int> ActiveIndexChanged { get; set; }
+
+    /// <summary>The selected tab's <see cref="TbTab.Key"/>. Bind it with <c>@bind-ActiveKey</c> to select tabs by key
+    /// instead of by position, so tabs that come and go don't move the selection; every tab then needs a key. With
+    /// no key, or one no tab has, no tab is selected. Use it or <see cref="ActiveIndex"/>, not both.</summary>
+    [Parameter]
+    public string? ActiveKey { get; set; }
+
+    /// <summary>Raised with the tab's key when the user selects another tab.</summary>
+    [Parameter]
+    public EventCallback<string?> ActiveKeyChanged { get; set; }
+
+    /// <summary>Stacks the tabs in a column beside their panels, moved between with Up and Down.</summary>
+    [Parameter]
+    public bool Vertical { get; set; }
 
     /// <summary>Whether the arrow keys select the tabs they reach. Defaults to
     /// <see cref="TabActivation.Automatic"/>.</summary>
@@ -73,9 +93,21 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    internal bool SelectsByKey => _selectsByKey;
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // Given at all, even as null, a key selects by key for good, so the mode can't change as the key does.
+        _selectsByKey |= parameters.TryGetValue<string?>(nameof(ActiveKey), out _)
+            || parameters.TryGetValue<EventCallback<string?>>(nameof(ActiveKeyChanged), out _);
+        return base.SetParametersAsync(parameters);
+    }
+
     // A new index from the parent may count a tab that registers later in the same render, or one whose place only
-    // the script's report gives, so until then the tab selected before stays selected.
-    internal TbTab? ActiveTab => _indexFromParent || _keepIndexOnReorder && _reportsOrder ? _settled
+    // the script's report gives, so until then the tab selected before stays selected. A key needs no such wait.
+    internal TbTab? ActiveTab => SelectsByKey ? _tabs.Find(tab => tab.Key == _activeKey)
+        : _indexFromParent || _keepIndexOnReorder && _reportsOrder ? _settled
         : _active >= 0 && _active < _tabs.Count ? _tabs[_active] : null;
 
     // The tab that Tab reaches: the selected one, or the first enabled one when none is selected.
@@ -85,6 +117,12 @@
     protected override void OnParametersSet()
     {
         // Only a new value from the parent moves the selection, so re-rendering with the old one keeps a click.
+        if (ActiveKey != _lastActiveKey)
+        {
+            _lastActiveKey = ActiveKey;
+            _activeKey = ActiveKey;
+        }
+
         if (ActiveIndex != _lastActiveIndex)
         {
             _lastActiveIndex = ActiveIndex;
@@ -140,6 +178,7 @@
             }
 
             _handle = handle;
+            StateHasChanged();
             // bUnit's loose mode hands back a stand-in whose calls return defaults, and a stand-in never reports.
             if (!await handle.InvokeAsync<bool>("reportsOrder"))
             {
@@ -189,7 +228,7 @@
 
         // Keep the same tab selected, or its neighbor when the selected one went away.
         var active = index < _active || _active >= _tabs.Count ? Math.Max(_active - 1, 0) : _active;
-        if (active != _active)
+        if (active != _active && !SelectsByKey)
         {
             _active = active;
             _ = InvokeAsync(ReportMovedIndexAsync);
@@ -242,7 +281,7 @@
         _tabs.AddRange(ordered);
         // As with a removal, the same tab stays selected unless the parent chose the index along with the new tab.
         var index = keepIndex || active is null ? _active : _tabs.IndexOf(active);
-        var moved = index != _active;
+        var moved = index != _active && !SelectsByKey;
         _active = index;
         StateHasChanged();
         if (moved)
@@ -260,6 +299,13 @@
 
         _keepIndexOnReorder = false;
         _active = _tabs.IndexOf(tab);
+        if (SelectsByKey)
+        {
+            _activeKey = tab.Key;
+            await ActiveKeyChanged.InvokeAsync(_activeKey);
+            return;
+        }
+
         await ActiveIndexChanged.InvokeAsync(_active);
     }
 

@@ -356,6 +356,164 @@ public class TbTabsTests : BunitContext
             cut.FindAll("[role=tab]").Select(tab => tab.TextContent));
     }
 
+    [Fact]
+    public void Render_ShouldSelectTheTabWithTheKey_WhenGivenAnActiveKey()
+    {
+        var cut = RenderKeyedTabs("specs", includeIntro: false);
+
+        Assert.Equal(["false", "true", "false"], cut.FindAll("[role=tab]").Select(tab =>
+            tab.GetAttribute("aria-selected")));
+        Assert.Equal("Specs panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Click_ShouldReportTheTabsKeyButNotItsIndex_WhenSelectingByKey()
+    {
+        string? key = null;
+        var indexReported = false;
+        var cut = RenderKeyedTabs("overview", includeIntro: false, value => key = value, () => indexReported = true);
+
+        cut.FindAll("[role=tab]")[2].Click();
+
+        Assert.Equal("reviews", key);
+        Assert.False(indexReported);
+        Assert.Equal("Reviews panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Reorder_ShouldKeepTheKeyedTabSelected_WhenATabAppearsBeforeIt()
+    {
+        var order = SetUpOrder();
+        string? reported = null;
+        var cut = RenderKeyedTabs("specs", includeIntro: false, value => reported = value);
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, KeyedTabs(includeIntro: true)));
+        var ids = cut.FindAll("[role=tab]").Select(tab => tab.Id!).ToArray();
+
+        await cut.InvokeAsync(() => order().Value.OnReorder([ids[0], ids[3], ids[1], ids[2]]));
+
+        Assert.Equal(["Overview", "Intro", "Specs", "Reviews"],
+            cut.FindAll("[role=tab]").Select(tab => tab.TextContent));
+        Assert.Equal("true", cut.FindAll("[role=tab]")[2].GetAttribute("aria-selected"));
+        Assert.Equal("Specs panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+        Assert.Null(reported);
+    }
+
+    [Fact]
+    public void Render_ShouldSelectNoTab_WhenTheKeyIsGivenAsNull()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ActiveKey, null)
+            .Add(tabs => tabs.ChildContent, KeyedTabs(includeIntro: false)));
+
+        Assert.All(cut.FindAll("[role=tab]"), tab => Assert.Equal("false", tab.GetAttribute("aria-selected")));
+    }
+
+    [Fact]
+    public void Render_ShouldUpdateAHeader_WhenItsContentChangesWithoutAnythingElse()
+    {
+        var count = 1;
+        RenderFragment tabs = builder =>
+        {
+            var shown = count;
+            builder.OpenComponent<TbTab>(0);
+            builder.AddAttribute(1, nameof(TbTab.Header),
+                (RenderFragment)(header => header.AddContent(0, $"Inbox {shown}")));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTabs>(parameters => parameters.Add(t => t.ChildContent, tabs));
+
+        count = 2;
+        cut.Render(parameters => parameters.Add(t => t.ChildContent, tabs));
+
+        Assert.Equal("Inbox 2", cut.Find("[role=tab]").TextContent);
+    }
+
+    [Fact]
+    public void Render_ShouldSelectNoTab_WhenNoTabHasTheKey()
+    {
+        var cut = RenderKeyedTabs("pricing", includeIntro: false);
+
+        Assert.All(cut.FindAll("[role=tab]"), tab => Assert.Equal("false", tab.GetAttribute("aria-selected")));
+        Assert.Empty(cut.FindAll("[role=tabpanel]"));
+        Assert.Equal("0", cut.FindAll("[role=tab]")[0].GetAttribute("tabindex"));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenATabHasNoKeyAndTheTabsSelectByKey()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => Render<TbTabs>(parameters => parameters
+            .Add(tabs => tabs.ActiveKey, "overview")
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel")))));
+
+        Assert.Equal("Every TbTab needs a Key when its TbTabs has an ActiveKey.", failure.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenATabHasNoTextOrHeader()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => Render<TbTabs>(parameters => parameters
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTab>(0);
+                builder.CloseComponent();
+            }))));
+
+        Assert.Equal("TbTab needs a Text or a Header.", failure.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheIconAndHeaderInTheTab_WhenGivenThem()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbTab>(0);
+            builder.AddAttribute(1, nameof(TbTab.Icon), new Icon("<path d=\"M4 4h16v16H4z\" />"));
+            builder.AddAttribute(2, nameof(TbTab.Header), (RenderFragment)(header =>
+            {
+                header.AddContent(0, "Comments ");
+                header.OpenElement(1, "strong");
+                header.AddContent(2, "3");
+                header.CloseElement();
+            }));
+            builder.CloseComponent();
+        })));
+
+        var tab = cut.Find("[role=tab]");
+        Assert.NotNull(tab.QuerySelector("[data-part=icon]"));
+        Assert.Equal("3", tab.QuerySelector("strong")!.TextContent);
+        Assert.Equal("Comments 3", tab.TextContent.Trim());
+    }
+
+    [Theory]
+    [InlineData(false, "horizontal")]
+    [InlineData(true, "vertical")]
+    public void Render_ShouldMarkTheListVertical_WhenVertical(bool vertical, string orientation)
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.Vertical, vertical)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Equal(orientation, cut.Find("[role=tablist]").GetAttribute("aria-orientation"));
+        Assert.Equal(vertical, cut.Find(".tb-tabs").ClassList.Contains("tb-tabs--vertical"));
+    }
+
+    private IRenderedComponent<TbTabs> RenderKeyedTabs(string active, bool includeIntro,
+        Action<string?>? keyChanged = null, Action? indexChanged = null) =>
+        Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ActiveKey, active)
+            .Add(tabs => tabs.ActiveKeyChanged, (string? key) => keyChanged?.Invoke(key))
+            .Add(tabs => tabs.ActiveIndexChanged, (int _) => indexChanged?.Invoke())
+            .Add(tabs => tabs.ChildContent, KeyedTabs(includeIntro)));
+
+    private static RenderFragment KeyedTabs(bool includeIntro) => builder =>
+    {
+        AddTab(builder, 0, "Overview", "Overview panel", key: "overview");
+        if (includeIntro)
+        {
+            AddTab(builder, 10, "Intro", "Intro panel", key: "intro");
+        }
+
+        AddTab(builder, 20, "Specs", "Specs panel", key: "specs");
+        AddTab(builder, 30, "Reviews", "Reviews panel", key: "reviews");
+    };
+
     // The tabs script's callback, once the tabs have attached it.
     private Func<DotNetObjectReference<TabOrder>> SetUpOrder()
     {
@@ -388,13 +546,14 @@ public class TbTabsTests : BunitContext
             })));
 
     private static void AddTab(RenderTreeBuilder builder, int sequence, string text, string content,
-        bool disabled = false)
+        bool disabled = false, string? key = null)
     {
         builder.OpenComponent<TbTab>(sequence);
         builder.AddAttribute(sequence + 1, nameof(TbTab.Text), text);
         builder.AddAttribute(sequence + 2, nameof(TbTab.Disabled), disabled);
         builder.AddAttribute(sequence + 3, nameof(TbTab.ChildContent),
             (RenderFragment)(panel => panel.AddContent(0, content)));
+        builder.AddAttribute(sequence + 4, nameof(TbTab.Key), key);
         builder.CloseComponent();
     }
 }
