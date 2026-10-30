@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor.Tests.Components;
 
@@ -256,6 +258,98 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldAnnounceTheParentsErrorOnce_WhenTheParentSetsOne()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Name")
+            .Add(field => field.Error, "That name is taken."));
+
+        cut.Render(parameters => parameters.Add(field => field.HelperText, "As on your badge"));
+
+        Assert.Equal(["That name is taken."], Spoken(announcer));
+        Assert.Contains(cut.Find("[data-part=error]").Id!, cut.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [Fact]
+    public async Task Change_ShouldAnnounceTheParentsErrorOnce_WhenTheParentSetsItWhileTheEditIsAwaited()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var check = new TaskCompletionSource();
+        var cut = Render<UsernameForm>(parameters => parameters.Add(form => form.Check, check.Task));
+
+        var change = cut.Find("input").ChangeAsync(new ChangeEventArgs { Value = "robin" });
+        await cut.InvokeAsync(check.SetResult);
+        await change;
+
+        Assert.Equal("That username is taken.", cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Equal(["That username is taken."], Spoken(announcer));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Render_ShouldLeaveTheFieldValid_WhenGivenABlankError(string error)
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Error, error));
+
+        Assert.Null(cut.Find("input").GetAttribute("aria-invalid"));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+        Assert.Empty(Spoken(announcer));
+    }
+
+    [Fact]
+    public void Submit_ShouldBlockTheFormAndShowBothMessages_WhenTheParentSetsAnErrorInAnEditForm()
+    {
+        var model = new Person { Name = "Ada" };
+        var submitted = false;
+        var cut = Render<EditForm>(parameters => parameters
+            .Add(form => form.Model, model)
+            .Add(form => form.OnValidSubmit, () => submitted = true)
+            .Add(form => form.ChildContent, (EditContext _) => builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddComponentParameter(1, nameof(TbTextField<string>.Value), model.Name);
+                builder.AddComponentParameter(2, nameof(TbTextField<string>.ValueExpression),
+                    (Expression<Func<string>>)(() => model.Name!));
+                builder.AddComponentParameter(3, nameof(TbTextField<string>.Error), "That name is taken.");
+                builder.AddComponentParameter(4, nameof(TbTextField<string>.Validation),
+                    (Func<string?, IEnumerable<string>>)(_ => ["Too plain."]));
+                builder.CloseComponent();
+            }));
+
+        cut.Find("form").Submit();
+
+        Assert.False(submitted);
+        Assert.Equal(["That name is taken.", "Too plain."],
+            cut.FindAll("[data-part=error] > div").Select(error => error.TextContent));
+    }
+
+    [Fact]
+    public void Render_ShouldUpdateTheFormsSummary_WhenTheParentSetsAnErrorLater()
+    {
+        var model = new Person();
+        string? error = null;
+        var cut = Render<EditForm>(parameters => parameters
+            .Add(form => form.Model, model)
+            .Add(form => form.ChildContent, (EditContext _) => builder =>
+            {
+                builder.OpenComponent<ValidationSummary>(0);
+                builder.CloseComponent();
+                builder.OpenComponent<TbTextField<string>>(1);
+                builder.AddComponentParameter(2, nameof(TbTextField<string>.ValueExpression),
+                    (Expression<Func<string>>)(() => model.Name!));
+                builder.AddComponentParameter(3, nameof(TbTextField<string>.Error), error);
+                builder.CloseComponent();
+            }));
+
+        error = "That name is taken.";
+        cut.Render();
+
+        Assert.Equal("That name is taken.", cut.Find(".validation-message").TextContent);
+    }
+
+    [Fact]
     public void Submit_ShouldBlockTheFormAndShowTheMessage_WhenValidationFailsInAnEditForm()
     {
         var model = new Person();
@@ -437,5 +531,32 @@ public class TbTextFieldTests : BunitContext
     private sealed class Person
     {
         public string? Name { get; set; }
+    }
+
+    // A parent that checks the name with a server as it changes, and shows the answer as the field's error.
+    private sealed class UsernameForm : ComponentBase
+    {
+        private string? _name;
+        private string? _error;
+
+        [Parameter]
+        public Task Check { get; set; } = Task.CompletedTask;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbTextField<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTextField<string>.Value), _name);
+            builder.AddComponentParameter(2, nameof(TbTextField<string>.ValueChanged),
+                EventCallback.Factory.Create<string>(this, CheckAsync));
+            builder.AddComponentParameter(3, nameof(TbTextField<string>.Error), _error);
+            builder.CloseComponent();
+        }
+
+        private async Task CheckAsync(string name)
+        {
+            _name = name;
+            await Check;
+            _error = name == "robin" ? "That username is taken." : null;
+        }
     }
 }

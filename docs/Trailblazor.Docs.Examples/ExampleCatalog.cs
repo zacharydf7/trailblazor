@@ -477,6 +477,8 @@ public static class ExampleCatalog
                     + "without showing messages, so the user isn't told off before they start; it is for turning a "
                     + "button on and off. When the app calls `AddValidation` and marks the model "
                     + "`[ValidatableType]`, it checks nested objects too, as the submit does.",
+                "A field's `Error`, such as a server's answer, keeps the form from submitting and `IsValid` false "
+                    + "until the parent clears it.",
                 "It posts as a static SSR form when given a `FormName`.",
             ],
             Target = new("form", "Trip sign-up"),
@@ -498,6 +500,8 @@ public static class ExampleCatalog
                     + "screen readers.",
                 "A validation message that appears as someone edits the field is read out once. Checking the whole "
                     + "form on submit reads none out, so a form with several errors doesn't speak them all at once.",
+                "An `Error` from the parent, such as a server's answer, is linked the same way and read out once when "
+                    + "it appears, even after a submit; it keeps its form from submitting until the parent clears it.",
                 "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "
                     + "browsers expose them.",
             ],

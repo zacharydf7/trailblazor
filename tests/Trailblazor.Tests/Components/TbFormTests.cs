@@ -11,6 +11,7 @@ namespace Trailblazor.Tests.Components;
 public class TbFormTests : BunitContext
 {
     private string? _name;
+    private string? _nameError;
     private bool _valid = true;
     private IReadOnlyList<string> _errors = [];
 
@@ -79,6 +80,49 @@ public class TbFormTests : BunitContext
 
         Assert.Empty(cut.FindAll("[data-part=error]"));
         Assert.Empty(_errors);
+    }
+
+    [Fact]
+    public void Submit_ShouldRaiseOnInvalidSubmitWithTheParentsError_WhenTheParentSetsOne()
+    {
+        _name = "Robin";
+        _nameError = "That name is taken.";
+        var invalid = 0;
+        var valid = 0;
+        var cut = RenderForm(onValid: () => valid++, onInvalid: () => invalid++);
+
+        cut.Find("form").Submit();
+
+        Assert.Equal((0, 1), (valid, invalid));
+        Assert.False(_valid);
+        Assert.Equal(["That name is taken."], _errors);
+    }
+
+    [Fact]
+    public async Task ResetValidation_ShouldKeepTheParentsError_WhenTheParentSetOne()
+    {
+        _nameError = "That name is taken.";
+        var cut = RenderForm();
+        await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
+
+        await cut.InvokeAsync(() => cut.Instance.ResetValidationAsync());
+
+        Assert.Equal("That name is taken.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldReportValidAndHideTheError_WhenTheParentClearsItsError()
+    {
+        _name = "Robin";
+        _nameError = "That name is taken.";
+        var cut = RenderForm();
+        Assert.False(_valid);
+
+        _nameError = null;
+        cut.Render();
+
+        Assert.True(_valid);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
     }
 
     [Fact]
@@ -235,6 +279,7 @@ public class TbFormTests : BunitContext
             EventCallback.Factory.Create<string>(this, value => _name = value));
         builder.AddAttribute(4, nameof(TbTextField<string>.Validation),
             (Func<string?, IEnumerable<string>>)(name => string.IsNullOrWhiteSpace(name) ? ["Enter a name."] : []));
+        builder.AddAttribute(5, nameof(TbTextField<string>.Error), _nameError);
         builder.CloseComponent();
     }
 

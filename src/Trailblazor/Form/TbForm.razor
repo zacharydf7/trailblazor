@@ -54,9 +54,9 @@
     public string? FormName { get; set; }
 
     /// <summary>Whether the form would pass now: every field's <c>Validation</c> passes, the model's data annotations
-    /// pass when <see cref="DataAnnotations"/> is on, and no validator's message is showing. It is worked out without
-    /// showing any message and updates as the form changes, so it can turn a save button on and off. Bind it with
-    /// <c>@bind-IsValid</c>.</summary>
+    /// pass when <see cref="DataAnnotations"/> is on, and no validator's message or field's <c>Error</c> is showing.
+    /// It is worked out without showing any message and updates as the form changes, so it can turn a save button on
+    /// and off. Bind it with <c>@bind-IsValid</c>.</summary>
     [Parameter]
     public bool IsValid { get; set; }
 

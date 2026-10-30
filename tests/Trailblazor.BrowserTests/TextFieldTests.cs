@@ -66,4 +66,22 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(age).ToHaveValueAsync("thirty");
         await Expect(age).ToHaveAccessibleDescriptionAsync("Age isn't valid.");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldShowTheParentsErrorUntilItClears_WhenTheParentSetsOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var handle = page.GetByLabel("Handle");
+
+        await handle.PressSequentiallyAsync("robin");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Check the handle" }).ClickAsync();
+        await Expect(handle).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(handle).ToHaveAccessibleDescriptionAsync(
+            "Try robin, who already has an account. That handle is taken.");
+        await Expect(page.Locator("[data-part=announcer] [role=status]")).ToContainTextAsync("That handle is taken.");
+
+        await handle.PressSequentiallyAsync("2");
+
+        await Expect(handle).Not.ToHaveAttributeAsync("aria-invalid", "true");
+    }
 }

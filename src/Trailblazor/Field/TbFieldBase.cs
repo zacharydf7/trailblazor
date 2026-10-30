@@ -17,6 +17,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     private string? _unparsedText;
     private TValue? _valueAtParseError;
     private string? _inputName;
+    private string? _shownError;
     private TbForm? _form;
     private bool _disposed;
 
@@ -50,6 +51,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     /// for a value is left to <see cref="Validation"/> or the form's validator.</summary>
     [Parameter]
     public bool Required { get; set; }
+
+    /// <summary>An error from the parent, such as one the server returned. It shows and is announced with the field's
+    /// own messages, and keeps the form from submitting until the parent clears it.</summary>
+    [Parameter]
+    public string? Error { get; set; }
 
     /// <summary>Checks a new value and returns its error messages, if any. It runs when the value changes and
     /// when the surrounding <see cref="EditForm"/> validates.</summary>
@@ -102,7 +108,12 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     // Inside an EditForm the context holds every validator's messages for this field, including ours.
     private protected IReadOnlyList<string> Errors =>
-        _messageStore is null ? _messages : _editContext!.GetValidationMessages(_field!.Value).ToList();
+        _messageStore is null ? OwnMessages : _editContext!.GetValidationMessages(_field!.Value).ToList();
+
+    private List<string> OwnMessages => ParentError is null ? _messages : [ParentError, .. _messages];
+
+    // A blank error from the parent is no error, so the field is never marked invalid without a message.
+    private string? ParentError => string.IsNullOrWhiteSpace(Error) ? null : Error;
 
     private protected string? DescribedBy => (HelperText is null, Errors.Count == 0) switch
     {
@@ -160,6 +171,18 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         else
         {
             _messageStore ??= new ValidationMessageStore(_editContext);
+            Store();
+        }
+
+        // The parent's error usually arrives after a submit, so it's read out as soon as it shows.
+        if (ParentError != _shownError)
+        {
+            _shownError = ParentError;
+            _editContext?.NotifyValidationStateChanged();
+            if (_shownError is not null)
+            {
+                Announcer.Polite(_shownError);
+            }
         }
 
         if (!ReferenceEquals(Form, _form))
@@ -241,10 +264,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         AnnounceNewErrors(before);
     }
 
-    // Only edits speak, and only new messages, so a submit with several errors doesn't read them all out at once.
+    // Only edits speak, and only new messages, so a submit with several errors doesn't read them all out at once. The
+    // parent's error has already spoken if the parent set it while the edit was awaited.
     private void AnnounceNewErrors(List<string> before)
     {
-        var added = Errors.Except(before).ToList();
+        var added = Errors.Except(before).Where(error => error != _shownError).ToList();
         if (added.Count > 0)
         {
             Announcer.Polite(string.Join(" ", added));
@@ -268,11 +292,13 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             _messages.AddRange(Validation(Value));
         }
 
-        if (_messageStore is not null)
-        {
-            _messageStore.Clear();
-            _messageStore.Add(_field!.Value, _messages);
-        }
+        Store();
+    }
+
+    private void Store()
+    {
+        _messageStore?.Clear();
+        _messageStore?.Add(_field!.Value, OwnMessages);
     }
 
     private void DetachEditContext()
@@ -288,10 +314,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     bool IFormField.HasProblems() => _parseError is not null || (Validation?.Invoke(Value).Any() ?? false);
 
+    // The parent's error stays: only the parent can clear it.
     void IFormField.HideMessages()
     {
         _messages.Clear();
-        _messageStore?.Clear();
+        Store();
     }
 
     /// <inheritdoc />

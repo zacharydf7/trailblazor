@@ -75,6 +75,24 @@ public class ComponentContractTests : BunitContext
         Assert.Equal("yes", root.GetAttribute("data-contract"));
     }
 
+    public static TheoryData<Type> Fields =>
+        new(Components.Select(row => row.Data).Where(typeof(IFormField).IsAssignableFrom));
+
+    [Theory, MemberData(nameof(Fields))]
+    public void Render_ShouldShowTheParentsErrorAndMarkTheFieldInvalid_WhenTheParentSetsOne(Type field)
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            builder.AddAttribute(1, nameof(TbTextField<string>.Error), "That name is taken.");
+            AddRequiredParameters(builder, field, sequence: 2);
+            builder.CloseComponent();
+        });
+
+        Assert.Equal("That name is taken.", cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.NotEmpty(cut.FindAll("[aria-invalid=true]"));
+    }
+
     // Supplies a sample value for each [EditorRequired] parameter, so every component renders without setup.
     private static void AddRequiredParameters(RenderTreeBuilder builder, Type component, int sequence)
     {
