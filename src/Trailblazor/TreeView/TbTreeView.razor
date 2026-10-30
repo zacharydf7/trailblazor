@@ -25,7 +25,7 @@
         <div data-part="empty" class="tb-tree__empty">
             @if (EmptyContent is null)
             {
-                @Labels.Empty
+                @EmptyLabel
             }
             else
             {
@@ -103,7 +103,7 @@
                  style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
                 <span class="tb-tree__toggle" aria-hidden="true"></span>
                 <span class="tb-tree__spinner" aria-hidden="true"></span>
-                <span>@Labels.Loading</span>
+                <span>@LoadingLabel</span>
             </div>
         }
         else
@@ -112,9 +112,9 @@
                  aria-posinset="1" aria-disabled="true" tabindex="-1" data-part="failed"
                  style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
                 <span class="tb-tree__toggle" aria-hidden="true"></span>
-                <span class="tb-tree__failed">@Labels.LoadFailed</span>
+                <span class="tb-tree__failed">@LoadFailedLabel</span>
                 <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => RetryAsync(node)">
-                    @Labels.Retry
+                    @RetryLabel
                 </TbButton>
             </div>
         }

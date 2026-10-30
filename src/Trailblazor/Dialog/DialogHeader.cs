@@ -13,6 +13,9 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     [Parameter, EditorRequired]
     public string TitleId { get; set; } = "";
 
+    [Inject]
+    private ITbLocalizer Localizer { get; set; } = default!;
+
     protected override void OnInitialized() => Dialog.Changed += OnChanged;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -39,13 +42,14 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         var state = Dialog.WindowState;
         if (Dialog.Options.Draggable && !Dialog.Options.Modal && state == DialogWindowState.Normal)
         {
-            DialogMenus.AddMove(builder, 17, Dialog);
+            DialogMenus.AddMove(builder, 17, Dialog, Localizer);
         }
 
         if (Dialog.Options.Minimizable && !Dialog.Options.Modal)
         {
             var minimized = state == DialogWindowState.Minimized;
-            AddWindowButton(builder, 27, "minimize", minimized ? "Restore" : "Minimize",
+            AddWindowButton(builder, 27, "minimize",
+                Localizer[minimized ? TbStrings.DialogRestore : TbStrings.DialogMinimize],
                 minimized ? BuiltInIcons.Restore : BuiltInIcons.Minus,
                 minimized ? DialogWindowState.Normal : DialogWindowState.Minimized);
         }
@@ -53,7 +57,8 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         if (Dialog.Options.Maximizable)
         {
             var maximized = state == DialogWindowState.Maximized;
-            AddWindowButton(builder, 33, "maximize", maximized ? "Restore" : "Maximize",
+            AddWindowButton(builder, 33, "maximize",
+                Localizer[maximized ? TbStrings.DialogRestore : TbStrings.DialogMaximize],
                 maximized ? BuiltInIcons.Restore : BuiltInIcons.Maximize,
                 maximized ? DialogWindowState.Normal : DialogWindowState.Maximized);
         }
@@ -62,7 +67,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         {
             builder.OpenComponent<TbIconButton>(39);
             builder.AddComponentParameter(40, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-            builder.AddComponentParameter(41, nameof(TbIconButton.AriaLabel), "Close");
+            builder.AddComponentParameter(41, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.DialogClose]);
             builder.AddComponentParameter(42, nameof(TbIconButton.Size), Size.Small);
             builder.AddComponentParameter(43, nameof(TbIconButton.OnClick),
                 EventCallback.Factory.Create<MouseEventArgs>(this, () => Dialog.CloseAsync(false, null)));

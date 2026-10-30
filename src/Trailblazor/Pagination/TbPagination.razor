@@ -2,10 +2,12 @@
 @using System.Globalization
 @inherits TbComponentBase
 @inject NavigationManager Navigation
+@inject ITbLocalizer Localizer
 
 @* The testing helper reads data-page and data-page-count, and waits for data-ready before a click that needs the
    page to be interactive. *@
-<nav @attributes="AdditionalAttributes" aria-label="@(AriaLabel ?? Labels.Navigation)" data-page="@CurrentPage"
+<nav @attributes="AdditionalAttributes" data-page="@CurrentPage"
+     aria-label="@(AriaLabel ?? NavigationLabel)"
      data-page-count="@Count" data-ready="@(RendererInfo.IsInteractive ? "" : null)" style="@Style"
      class="@ClassNames.Join("tb-pagination", ClassNames.Modifier("tb-pagination", Size),
                 Compact ? "tb-pagination--compact" : null, Class)">
@@ -13,11 +15,11 @@
     <ul role="list" class="tb-pagination__list">
         @if (ShowFirstLast)
         {
-            <li>@Step(BuiltInIcons.PageFirst, Labels.First, 1, "first")</li>
+            <li>@Step(BuiltInIcons.PageFirst, FirstLabel, 1, "first")</li>
         }
         @if (ShowPreviousNext)
         {
-            <li>@Step(BuiltInIcons.ChevronStart, Labels.Previous, CurrentPage - 1, "previous")</li>
+            <li>@Step(BuiltInIcons.ChevronStart, PreviousLabel, CurrentPage - 1, "previous")</li>
         }
         @if (Compact)
         {
@@ -26,7 +28,7 @@
                                Disabled="Disabled" InputAttributes="PageBoxAttributes" data-part="page-box"
                                Class="tb-pagination__box" />
                 <span id="@CountId" data-part="page-count">
-                    @string.Format(CultureInfo.CurrentCulture, Labels.Of, Count)
+                    @string.Format(CultureInfo.CurrentCulture, OfLabel, Count)
                 </span>
             </li>
         }
@@ -41,7 +43,7 @@
                                   Variant="@(number == CurrentPage ? Variant.Soft : Variant.Text)"
                                   Tone="@(number == CurrentPage ? Tone.Primary : Tone.Neutral)"
                                   Disabled="Disabled" aria-current="@(number == CurrentPage ? "page" : null)"
-                                  aria-label="@string.Format(CultureInfo.CurrentCulture, Labels.Page, number)"
+                                  aria-label="@string.Format(CultureInfo.CurrentCulture, PageLabel, number)"
                                   OnClick="() => GoToAsync(number)" data-part="page" Class="tb-pagination__page">
                             @number
                         </TbButton>
@@ -55,11 +57,11 @@
         }
         @if (ShowPreviousNext)
         {
-            <li>@Step(BuiltInIcons.ChevronEnd, Labels.Next, CurrentPage + 1, "next")</li>
+            <li>@Step(BuiltInIcons.ChevronEnd, NextLabel, CurrentPage + 1, "next")</li>
         }
         @if (ShowFirstLast)
         {
-            <li>@Step(BuiltInIcons.PageLast, Labels.Last, Count, "last")</li>
+            <li>@Step(BuiltInIcons.PageLast, LastLabel, Count, "last")</li>
         }
     </ul>
 </nav>
@@ -129,7 +131,7 @@
 
     private IReadOnlyDictionary<string, object> PageBoxAttributes => new Dictionary<string, object>
     {
-        ["aria-label"] = Labels.PageBox,
+        ["aria-label"] = PageBoxLabel,
         ["aria-describedby"] = CountId,
     };
 
@@ -178,4 +180,13 @@
             Navigation.NavigateTo(PageHref(target));
         }
     }
+
+    private string NavigationLabel => Labels.Navigation ?? Localizer[TbStrings.PaginationNavigation];
+    private string PageLabel => Labels.Page ?? Localizer[TbStrings.PaginationPage];
+    private string PageBoxLabel => Labels.PageBox ?? Localizer[TbStrings.PaginationPageBox];
+    private string OfLabel => Labels.Of ?? Localizer[TbStrings.PaginationOf];
+    private string PreviousLabel => Labels.Previous ?? Localizer[TbStrings.PaginationPrevious];
+    private string NextLabel => Labels.Next ?? Localizer[TbStrings.PaginationNext];
+    private string FirstLabel => Labels.First ?? Localizer[TbStrings.PaginationFirst];
+    private string LastLabel => Labels.Last ?? Localizer[TbStrings.PaginationLast];
 }

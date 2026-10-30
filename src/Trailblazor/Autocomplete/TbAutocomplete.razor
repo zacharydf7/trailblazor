@@ -22,7 +22,9 @@
             @if (_results.Count == 0)
             {
                 <div data-part="status" class="tb-autocomplete__status">
-                    @(_searching ? SearchingText : _searched ? NoResultsText : TypeToSearchText)
+                    @(_searching ? SearchingText ?? Localizer[TbStrings.AutocompleteSearching]
+                        : _searched ? NoResultsText ?? Localizer[TbStrings.AutocompleteNoResults]
+                        : TypeToSearchText ?? Localizer[TbStrings.AutocompleteTypeToSearch])
                 </div>
             }
             @for (var index = 0; index < _results.Count; index++)
@@ -46,6 +48,7 @@
 
 @code {
     private RenderFragment? End => !Clearable || Disabled || string.IsNullOrEmpty(_text) ? null :
-        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" Size="Size.Small" OnClick="ClearAsync"
+        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(ClearLabel ?? Localizer[TbStrings.AutocompleteClear])"
+                       Size="Size.Small" OnClick="ClearAsync"
                        data-part="clear" />;
 }

@@ -24,7 +24,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from path in new[]
         {
             "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/browser",
-            "guides/announcements", "search?q=dialog", "roadmap",
+            "guides/announcements", "guides/localization", "search?q=dialog", "roadmap",
         }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));

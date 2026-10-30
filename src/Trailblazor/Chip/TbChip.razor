@@ -1,5 +1,7 @@
 @namespace Trailblazor
 @inherits TbComponentBase
+@inject ITbLocalizer Localizer
+@using System.Globalization
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inject JsModuleLoader Modules
@@ -29,7 +31,7 @@
     @if (OnClose.HasDelegate)
     {
         <button type="button" data-part="remove" class="tb-chip__remove" disabled="@Disabled"
-                aria-label="@(Text is null ? RemoveLabel : $"{RemoveLabel} {Text}")" @onclick="RemoveAsync"
+                aria-label="@RemoveName" @onclick="RemoveAsync"
                 @onkeydown="OnKeyDownAsync">
             <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
         </button>
@@ -92,9 +94,14 @@
     [Parameter]
     public EventCallback OnClose { get; set; }
 
-    /// <summary>The remove button's name, followed by <see cref="Text"/>. Defaults to "Remove".</summary>
+    /// <summary>The remove button's name, with <c>{0}</c> for <see cref="Text"/>, left empty when there's none.
+    /// Defaults to the app's text for <see cref="TbStrings.ChipRemoveNamed"/>, "Remove {0}" in English, or for
+    /// <see cref="TbStrings.ChipRemove"/>, "Remove", on a chip with no text.</summary>
     [Parameter]
-    public string RemoveLabel { get; set; } = "Remove";
+    public string? RemoveLabel { get; set; }
+
+    private string RemoveName => RemoveLabel is null && Text is null ? Localizer[TbStrings.ChipRemove]
+        : string.Format(CultureInfo.CurrentCulture, RemoveLabel ?? Localizer[TbStrings.ChipRemoveNamed], Text).Trim();
 
     [CascadingParameter]
     private TbChipGroup? Group { get; set; }

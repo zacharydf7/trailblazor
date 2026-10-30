@@ -69,6 +69,9 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Inject]
     private protected IAnnouncer Announcer { get; set; } = default!;
 
+    [Inject]
+    private protected ITbLocalizer Localizer { get; set; } = default!;
+
     private protected string FieldId { get; } = $"tb-field-{Guid.NewGuid():N}";
 
     private protected string InputId => $"{FieldId}-input";
@@ -180,9 +183,13 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             return true;
         }
 
-        error = $"{Label ?? "The field"} isn't valid.";
+        error = Message(TbStrings.FieldInvalid);
         return false;
     }
+
+    // A message about the field: the key's text with the field's label, or a stand-in, first and then the args.
+    private protected string Message(string key, params object?[] args) => string.Format(CultureInfo.CurrentCulture,
+        Localizer[key], [Label ?? Localizer[TbStrings.FieldUnnamed], .. args]);
 
     private protected async Task SetValueAsync(TValue? value)
     {

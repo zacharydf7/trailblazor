@@ -3,8 +3,8 @@
 @inherits TbFieldBase<DateRange<TDate>>
 
 @Layout(Classes, @<text>
-    <span id="@($"{StartId}-name")" hidden>@Labels.Start</span>
-    <span id="@($"{EndId}-name")" hidden>@Labels.End</span>
+    <span id="@($"{StartId}-name")" hidden>@StartLabel</span>
+    <span id="@($"{EndId}-name")" hidden>@EndLabel</span>
     @* Tests type dates in the field's format and wait for the committed range, which these attributes give them. *@
     <div role="group" aria-labelledby="@(Label is null ? null : LabelId)" data-format="@DateFormat"
          data-culture="@DateCulture.Name" data-value="@($"{IsoOrNull(StartDate)}/{IsoOrNull(EndDate)}")"
@@ -48,10 +48,10 @@
             <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">
                 @if (Clearable && !Disabled && HasDates)
                 {
-                    <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Labels.Clear" Size="Size.Small"
+                    <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" Size="Size.Small"
                                   OnClick="ClearAsync" data-part="clear" />
                 }
-                <TbIconButton Icon="BuiltInIcons.Calendar" AriaLabel="@Labels.Open" Size="Size.Small"
+                <TbIconButton Icon="BuiltInIcons.Calendar" AriaLabel="@OpenLabel" Size="Size.Small"
                               Disabled="Disabled" data-part="trigger" popovertarget="@PanelId" aria-haspopup="dialog"
                               aria-controls="@PanelId" aria-expanded="@(_open ? "true" : "false")"
                               data-ready="@(_handle is null ? null : "")" />
@@ -60,11 +60,11 @@
     </div>
     @if (RendererInfo.IsInteractive)
     {
-        <div @ref="_panel" id="@PanelId" popover="auto" role="dialog" aria-label="@Labels.Open" data-part="panel"
+        <div @ref="_panel" id="@PanelId" popover="auto" role="dialog" aria-label="@OpenLabel" data-part="panel"
              data-anchor="@(_anchor is { } anchor ? Iso(anchor) : null)" class="tb-date-range__panel">
             @if (Presets is { Count: > 0 })
             {
-                <div role="group" aria-label="@Labels.Presets" data-part="presets" class="tb-date-range__presets">
+                <div role="group" aria-label="@PresetsLabel" data-part="presets" class="tb-date-range__presets">
                     @foreach (var preset in Presets)
                     {
                         <TbButton Variant="Variant.Text" Size="Size.Small" data-part="preset"
@@ -74,10 +74,10 @@
             }
             <div class="tb-date-range__calendar">
                 <div class="tb-date-range__nav">
-                    <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@Labels.PreviousMonth" Size="Size.Small"
+                    <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@PreviousMonthLabel" Size="Size.Small"
                                   Variant="Variant.Text" data-part="previous-month" OnClick="() => ShowMonths(-1)"
                                   class="tb-date-range__flip" />
-                    <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@Labels.NextMonth" Size="Size.Small"
+                    <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@NextMonthLabel" Size="Size.Small"
                                   Variant="Variant.Text" data-part="next-month" OnClick="() => ShowMonths(1)"
                                   class="tb-date-range__flip" />
                 </div>

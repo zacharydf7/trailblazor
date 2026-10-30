@@ -185,6 +185,9 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     [Inject]
     private IBrowserService Browser { get; set; } = default!;
 
+    [Inject]
+    private ITbLocalizer Localizer { get; set; } = default!;
+
     // The row that takes the tree's one tab stop: the last focused, else the first selected, else the first.
     private string? FocusId()
     {
@@ -937,6 +940,11 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
         _events?.Dispose();
     }
+
+    private string LoadingLabel => Labels.Loading ?? Localizer[TbStrings.TreeViewLoading];
+    private string LoadFailedLabel => Labels.LoadFailed ?? Localizer[TbStrings.TreeViewLoadFailed];
+    private string RetryLabel => Labels.Retry ?? Localizer[TbStrings.TreeViewRetry];
+    private string EmptyLabel => Labels.Empty ?? Localizer[TbStrings.TreeViewEmpty];
 }
 
 internal enum TreeRowKind

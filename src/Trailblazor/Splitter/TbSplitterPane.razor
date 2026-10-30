@@ -2,13 +2,14 @@
 @using System.Globalization
 @inherits TbComponentBase
 @implements IDisposable
+@inject ITbLocalizer Localizer
 
 @* Each pane after the first puts the separator between itself and the pane before, which the separator resizes. *@
 @if (Splitter!.Before(this) is { } before)
 {
     <div role="separator" tabindex="0" data-part="separator" class="tb-splitter__separator"
          aria-orientation="@(Splitter.Vertical ? "horizontal" : "vertical")" aria-controls="@before.Id"
-         aria-label="@($"Resize {before.Label ?? $"pane {Splitter.IndexOf(before) + 1}"}")"
+         aria-label="@SeparatorName(before)"
          aria-valuenow="@Whole(Splitter.Percent(before))"
          aria-valuemin="@(before.Collapsible ? "0" : Whole(Splitter.InOpenSpace(before.MinSize)))"
          aria-valuemax="@Whole(Splitter.InOpenSpace(before.MaxSize))">
@@ -144,6 +145,11 @@
             _size = Splitter!.Share(this);
         }
     }
+
+    // Named after the pane it resizes, or its number when it has no label.
+    private string SeparatorName(TbSplitterPane before) => string.Format(CultureInfo.CurrentCulture,
+        Localizer[TbStrings.SplitterResize], before.Label ?? string.Format(CultureInfo.CurrentCulture,
+            Localizer[TbStrings.SplitterPane], Splitter!.IndexOf(before) + 1));
 
     private static string Round(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
 

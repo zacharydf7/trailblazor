@@ -2,7 +2,8 @@ using Microsoft.Extensions.Options;
 
 namespace Trailblazor;
 
-internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOptions) : IDialogService
+internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOptions, ITbLocalizer localizer)
+    : IDialogService
 {
     private readonly List<DialogReference> _open = [];
     private readonly Dictionary<DialogReference, Action<bool, object?>> _completions = [];
@@ -24,14 +25,14 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         return Open<TResult>(title, typeof(TDialog), values.Values, options ?? new(), isAlert: false);
     }
 
-    public async Task<bool> ConfirmAsync(string title, string message, string confirmText = "OK",
-        string cancelText = "Cancel", Tone tone = Tone.Primary)
+    public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
+        string? cancelText = null, Tone tone = Tone.Primary)
     {
         var parameters = new Dictionary<string, object?>
         {
             [nameof(ConfirmDialog.Message)] = message,
-            [nameof(ConfirmDialog.ConfirmText)] = confirmText,
-            [nameof(ConfirmDialog.CancelText)] = cancelText,
+            [nameof(ConfirmDialog.ConfirmText)] = confirmText ?? localizer[TbStrings.DialogConfirm],
+            [nameof(ConfirmDialog.CancelText)] = cancelText ?? localizer[TbStrings.DialogCancel],
             [nameof(ConfirmDialog.Tone)] = tone,
         };
         var result = await Open<bool>(title, typeof(ConfirmDialog), parameters, new() { Size = DialogSize.Small },

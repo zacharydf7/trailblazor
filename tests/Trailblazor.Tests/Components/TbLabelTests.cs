@@ -70,7 +70,7 @@ public class TbLabelTests : BunitContext
         var cut = Render<TbLabel>(parameters => parameters.Add(label => label.Text, "Delivery speed")
             .Add(label => label.InfoContent,
                 (RenderFragment)(info => info.AddMarkupContent(0, "<a href=\"help\">Help</a>")))
-            .Add(label => label.InfoButtonLabel, "More about"));
+            .Add(label => label.InfoButtonLabel, "More about {0}"));
 
         Assert.Equal("More about Delivery speed", cut.Find("[data-part=trigger]").GetAttribute("aria-label"));
         Assert.DoesNotContain("tb-label__info-text--lines", cut.Find(".tb-label__info-text").ClassList);

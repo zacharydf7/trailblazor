@@ -10,10 +10,10 @@ internal sealed class ConfirmDialog : TbDialog<bool>
     public string Message { get; set; } = "";
 
     [Parameter]
-    public string ConfirmText { get; set; } = "OK";
+    public string ConfirmText { get; set; } = "";
 
     [Parameter]
-    public string CancelText { get; set; } = "Cancel";
+    public string CancelText { get; set; } = "";
 
     [Parameter]
     public Tone Tone { get; set; } = Tone.Primary;

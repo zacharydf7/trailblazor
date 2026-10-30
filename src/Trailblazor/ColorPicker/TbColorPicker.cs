@@ -254,7 +254,7 @@ public partial class TbColorPicker : IAsyncDisposable
         }
 
         value = null;
-        error = Labels.BadColor;
+        error = BadColorLabel;
         return false;
     }
 
@@ -271,4 +271,17 @@ public partial class TbColorPicker : IAsyncDisposable
 
         _events?.Dispose();
     }
+
+    private string OpenLabel => Labels.Open ?? Localizer[TbStrings.ColorPickerOpen];
+    private string EyedropperLabel => Labels.Eyedropper ?? Localizer[TbStrings.ColorPickerEyedropper];
+    private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.ColorPickerClear];
+    private string SwatchesLabel => Labels.Swatches ?? Localizer[TbStrings.ColorPickerSwatches];
+    private string HueLabel => Labels.Hue ?? Localizer[TbStrings.ColorPickerHue];
+    private string SaturationLabel => Labels.Saturation ?? Localizer[TbStrings.ColorPickerSaturation];
+    private string BrightnessLabel => Labels.Brightness ?? Localizer[TbStrings.ColorPickerBrightness];
+    private string AlphaLabel => Labels.Alpha ?? Localizer[TbStrings.ColorPickerAlpha];
+    private string RedLabel => Labels.Red ?? Localizer[TbStrings.ColorPickerRed];
+    private string GreenLabel => Labels.Green ?? Localizer[TbStrings.ColorPickerGreen];
+    private string BlueLabel => Labels.Blue ?? Localizer[TbStrings.ColorPickerBlue];
+    private string BadColorLabel => Labels.BadColor ?? Localizer[TbStrings.ColorPickerBadColor];
 }

@@ -1,5 +1,7 @@
 @namespace Trailblazor
 @inherits TbComponentBase
+@inject ITbLocalizer Localizer
+@using System.Globalization
 
 @* A div, because the info tip's popover holds block content. *@
 <div @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-label", Class)">
@@ -60,11 +62,13 @@
     [Parameter]
     public RenderFragment? InfoContent { get; set; }
 
-    /// <summary>The info button's name, followed by <see cref="Text"/>. Defaults to "Information about".</summary>
+    /// <summary>The info button's name, with <c>{0}</c> for <see cref="Text"/>. Defaults to the app's text for
+    /// <see cref="TbStrings.LabelInfo"/>, "Information about {0}" in English.</summary>
     [Parameter]
-    public string InfoButtonLabel { get; set; } = "Information about";
+    public string? InfoButtonLabel { get; set; }
 
-    private string InfoButtonName => $"{InfoButtonLabel} {Text}";
+    private string InfoButtonName => string.Format(CultureInfo.CurrentCulture,
+        InfoButtonLabel ?? Localizer[TbStrings.LabelInfo], Text);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

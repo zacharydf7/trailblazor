@@ -5,6 +5,8 @@ namespace Trailblazor.Tests.Components;
 
 public class TbAlertTests : BunitContext
 {
+    public TbAlertTests() => this.AddTrailblazor();
+
     [Fact]
     public void Render_ShouldBeAPoliteInfoAlertWithoutAClose_WhenNoParametersAreSet()
     {

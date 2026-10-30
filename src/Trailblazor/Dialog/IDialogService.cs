@@ -12,7 +12,9 @@ public interface IDialogService
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialog<TResult>;
 
-    /// <summary>Asks a yes-or-no question and returns whether it was confirmed.</summary>
-    Task<bool> ConfirmAsync(string title, string message, string confirmText = "OK", string cancelText = "Cancel",
+    /// <summary>Asks a yes-or-no question and returns whether it was confirmed. The buttons say the app's text for
+    /// <see cref="TbStrings.DialogConfirm"/> and <see cref="TbStrings.DialogCancel"/>, "OK" and "Cancel" in English,
+    /// unless <paramref name="confirmText"/> and <paramref name="cancelText"/> say otherwise.</summary>
+    Task<bool> ConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null,
         Tone tone = Tone.Primary);
 }

@@ -20,6 +20,9 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
     [Inject]
     private TimeProvider Time { get; set; } = default!;
 
+    [Inject]
+    private ITbLocalizer Localizer { get; set; } = default!;
+
     protected override void OnParametersSet()
     {
         if (Toast.Version == _version)
@@ -67,7 +70,7 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
 
         builder.OpenComponent<TbIconButton>(17);
         builder.AddComponentParameter(18, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-        builder.AddComponentParameter(19, nameof(TbIconButton.AriaLabel), "Dismiss");
+        builder.AddComponentParameter(19, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.ToastDismiss]);
         builder.AddComponentParameter(20, nameof(TbIconButton.Size), Size.Small);
         builder.AddComponentParameter(21, nameof(TbIconButton.OnClick),
             EventCallback.Factory.Create<MouseEventArgs>(this, Toast.Dismiss));

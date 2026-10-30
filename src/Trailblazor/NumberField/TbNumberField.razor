@@ -7,13 +7,15 @@
     @* The step buttons repeat the arrow keys for pointers, so they stay out of the tab order. *@
     @if (!HideStepButtons)
     {
-        <TbIconButton Icon="BuiltInIcons.Minus" AriaLabel="Decrease" Size="Size.Small" tabindex="-1"
+        <TbIconButton Icon="BuiltInIcons.Minus" AriaLabel="@Localizer[TbStrings.NumberFieldDecrease]"
+                      Size="Size.Small" tabindex="-1"
                       data-part="decrement" Disabled="@(Disabled || !CanStep(-1))" OnClick="() => StepAsync(-1)" />
     }
     @Input
     @if (!HideStepButtons)
     {
-        <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="Increase" Size="Size.Small" tabindex="-1"
+        <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@Localizer[TbStrings.NumberFieldIncrease]"
+                      Size="Size.Small" tabindex="-1"
                       data-part="increment" Disabled="@(Disabled || !CanStep(1))" OnClick="() => StepAsync(1)" />
     }
 </text>, Start, End)
@@ -80,7 +82,7 @@
 
     private decimal Upper => Math.Min(Max ?? decimal.MaxValue, NumberTypes.Limits(NumberType).Max);
 
-    private string NotANumber => $"{Label ?? "The field"} must be a number.";
+    private string NotANumber => Message(TbStrings.NumberFieldNotANumber);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -157,9 +159,9 @@
         error = (number < (double?)Min, number > (double?)Max) switch
         {
             (true, _) or (_, true) when Min is not null && Max is not null =>
-                $"{Label ?? "The field"} must be from {Min} to {Max}.",
-            (true, _) => $"{Label ?? "The field"} must be at least {Min}.",
-            (_, true) => $"{Label ?? "The field"} must be at most {Max}.",
+                Message(TbStrings.NumberFieldRange, Min, Max),
+            (true, _) => Message(TbStrings.NumberFieldAtLeast, Min),
+            (_, true) => Message(TbStrings.NumberFieldAtMost, Max),
             _ => null,
         };
         return error is null;

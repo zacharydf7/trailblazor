@@ -41,7 +41,11 @@ public class DocumentationContractTests
             | BindingFlags.DeclaredOnly);
         foreach (var property in properties)
         {
-            yield return $"P:{name}.{property.Name}";
+            // An indexer's documentation id lists its parameters' types.
+            var index = property.GetIndexParameters().Select(parameter => parameter.ParameterType.FullName);
+            yield return index.Any()
+                ? $"P:{name}.{property.Name}({string.Join(",", index)})"
+                : $"P:{name}.{property.Name}";
         }
     }
 }

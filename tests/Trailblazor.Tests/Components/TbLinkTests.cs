@@ -4,6 +4,8 @@ namespace Trailblazor.Tests.Components;
 
 public class TbLinkTests : BunitContext
 {
+    public TbLinkTests() => this.AddTrailblazor();
+
     [Fact]
     public void Render_ShouldRenderAnAnchorToTheAddress_WhenHrefIsSet()
     {

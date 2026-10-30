@@ -69,26 +69,31 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     [Parameter]
     public bool Clearable { get; set; }
 
-    /// <summary>The clear button's accessible name. Defaults to "Clear".</summary>
+    /// <summary>The clear button's accessible name. Defaults to the app's text for <see
+    /// cref="TbStrings.AutocompleteClear"/>, "Clear" in English.</summary>
     [Parameter]
-    public string ClearLabel { get; set; } = "Clear";
+    public string? ClearLabel { get; set; }
 
-    /// <summary>Shown in the list while a search runs. Defaults to "Searching…".</summary>
+    /// <summary>Shown in the list while a search runs. Defaults to the app's text for <see
+    /// cref="TbStrings.AutocompleteSearching"/>, "Searching…" in English.</summary>
     [Parameter]
-    public string SearchingText { get; set; } = "Searching…";
+    public string? SearchingText { get; set; }
 
-    /// <summary>Shown in the list when nothing matches. Defaults to "No matches".</summary>
+    /// <summary>Shown in the list when nothing matches. Defaults to the app's text for <see
+    /// cref="TbStrings.AutocompleteNoResults"/>, "No matches" in English.</summary>
     [Parameter]
-    public string NoResultsText { get; set; } = "No matches";
+    public string? NoResultsText { get; set; }
 
-    /// <summary>Shown in the list before the user has typed enough to search. Defaults to "Type to search".</summary>
+    /// <summary>Shown in the list before the user has typed enough to search. Defaults to the app's text for <see
+    /// cref="TbStrings.AutocompleteTypeToSearch"/>, "Type to search" in English.</summary>
     [Parameter]
-    public string TypeToSearchText { get; set; } = "Type to search";
+    public string? TypeToSearchText { get; set; }
 
     /// <summary>What screen readers hear when the number of suggestions changes, with <c>{0}</c> for the number.
-    /// Defaults to "Suggestions: {0}".</summary>
+    /// Defaults to the app's text for <see cref="TbStrings.AutocompleteResults"/>, "Suggestions: {0}" in
+    /// English.</summary>
     [Parameter]
-    public string ResultsAnnouncement { get; set; } = "Suggestions: {0}";
+    public string? ResultsAnnouncement { get; set; }
 
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
@@ -240,7 +245,8 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
             if (_results.Count != _announcedCount)
             {
                 _announcedCount = _results.Count;
-                Announcer.Polite(string.Format(CultureInfo.CurrentCulture, ResultsAnnouncement, _results.Count));
+                Announcer.Polite(string.Format(CultureInfo.CurrentCulture,
+                    ResultsAnnouncement ?? Localizer[TbStrings.AutocompleteResults], _results.Count));
             }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)

@@ -55,7 +55,7 @@ public partial class TbFileUpload
 
     private IReadOnlyList<IBrowserFile> Files => Value ?? [];
 
-    private string? AccessibleName => Label is null ? Labels.Choose : null;
+    private string? AccessibleName => Label is null ? ChooseLabel : null;
 
     private string RejectedId => $"{FieldId}-rejected";
 
@@ -85,12 +85,12 @@ public partial class TbFileUpload
         {
             if (!Accepts(file))
             {
-                _rejected.Add(string.Format(CultureInfo.CurrentCulture, Labels.WrongType, file.Name, Accept));
+                _rejected.Add(string.Format(CultureInfo.CurrentCulture, WrongTypeLabel, file.Name, Accept));
             }
             else if (file.Size > MaxFileSize)
             {
                 _rejected.Add(
-                    string.Format(CultureInfo.CurrentCulture, Labels.TooLarge, file.Name, FormatSize(MaxFileSize)));
+                    string.Format(CultureInfo.CurrentCulture, TooLargeLabel, file.Name, FormatSize(MaxFileSize)));
             }
             else if (chosen.Count >= (Multiple ? MaxFiles ?? int.MaxValue : 1))
             {
@@ -105,8 +105,8 @@ public partial class TbFileUpload
         if (tooMany)
         {
             var most = Multiple ? MaxFiles ?? 1 : 1;
-            _rejected.Add(most == 1 ? Labels.TooManyOne
-                : string.Format(CultureInfo.CurrentCulture, Labels.TooMany, most));
+            _rejected.Add(most == 1 ? TooManyOneLabel
+                : string.Format(CultureInfo.CurrentCulture, TooManyLabel, most));
         }
 
         Announcer.Polite(string.Join(" ", [Count(chosen.Count), .. _rejected]));
@@ -145,13 +145,27 @@ public partial class TbFileUpload
                 : string.Equals(file.ContentType, type, StringComparison.OrdinalIgnoreCase));
 
     private string Count(int files) =>
-        files == 1 ? Labels.ChosenOne : string.Format(CultureInfo.CurrentCulture, Labels.Chosen, files);
+        files == 1 ? ChosenOneLabel : string.Format(CultureInfo.CurrentCulture, ChosenLabel, files);
 
-    private static string FormatSize(long bytes) => bytes switch
+    private string FormatSize(long bytes) => bytes switch
     {
-        < 1_000 => $"{bytes} B",
-        < 1_000_000 => $"{bytes / 1_000d:0.#} KB",
-        < 1_000_000_000 => $"{bytes / 1_000_000d:0.#} MB",
-        _ => $"{bytes / 1_000_000_000d:0.#} GB",
+        < 1_000 => SizeText(TbStrings.FileUploadBytes, bytes),
+        < 1_000_000 => SizeText(TbStrings.FileUploadKilobytes, bytes / 1_000d),
+        < 1_000_000_000 => SizeText(TbStrings.FileUploadMegabytes, bytes / 1_000_000d),
+        _ => SizeText(TbStrings.FileUploadGigabytes, bytes / 1_000_000_000d),
     };
+
+    private string SizeText(string key, double amount) => string.Format(CultureInfo.CurrentCulture, Localizer[key],
+        amount.ToString("0.#", CultureInfo.CurrentCulture));
+
+    private string ZoneLabel => Labels.Zone ?? Localizer[TbStrings.FileUploadZone];
+    private string ChooseLabel => Labels.Choose ?? Localizer[TbStrings.FileUploadChoose];
+    private string RemoveLabel => Labels.Remove ?? Localizer[TbStrings.FileUploadRemove];
+    private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.FileUploadClear];
+    private string ChosenLabel => Labels.Chosen ?? Localizer[TbStrings.FileUploadChosen];
+    private string ChosenOneLabel => Labels.ChosenOne ?? Localizer[TbStrings.FileUploadChosenOne];
+    private string WrongTypeLabel => Labels.WrongType ?? Localizer[TbStrings.FileUploadWrongType];
+    private string TooLargeLabel => Labels.TooLarge ?? Localizer[TbStrings.FileUploadTooLarge];
+    private string TooManyLabel => Labels.TooMany ?? Localizer[TbStrings.FileUploadTooMany];
+    private string TooManyOneLabel => Labels.TooManyOne ?? Localizer[TbStrings.FileUploadTooManyOne];
 }

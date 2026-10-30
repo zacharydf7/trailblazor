@@ -27,6 +27,9 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
+    [Inject]
+    private ITbLocalizer Localizer { get; set; } = default!;
+
     private bool IsActive => Dialogs.TopmostModal == Dialog;
 
     protected override void OnInitialized()
@@ -40,7 +43,7 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
         // A manual popover sits in the top layer, above the page and any dialog opened before it.
         builder.OpenElement(0, "section");
         builder.AddAttribute(1, "popover", "manual");
-        builder.AddAttribute(2, "aria-label", "Notifications");
+        builder.AddAttribute(2, "aria-label", Localizer[TbStrings.ToastRegion]);
         builder.AddAttribute(3, "aria-keyshortcuts", "F8");
         builder.AddAttribute(4, "data-part", "toaster");
         builder.AddAttribute(5, "class",

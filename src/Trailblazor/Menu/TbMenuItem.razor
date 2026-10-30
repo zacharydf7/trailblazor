@@ -1,5 +1,6 @@
 @namespace Trailblazor
 @inherits TbComponentBase
+@inject ITbLocalizer Localizer
 
 @* A disabled item stays focusable, as the menu pattern asks, but does nothing when chosen. *@
 @if (Href is not null)
@@ -12,7 +13,7 @@
         @Content
         @if (NewTab)
         {
-            <span class="tb-visually-hidden"> (@NewTabHint)</span>
+            <span class="tb-visually-hidden"> (@(NewTabHint ?? Localizer[TbStrings.NewTabHint]))</span>
         }
     </a>
 }
@@ -46,10 +47,10 @@ else
     [Parameter]
     public bool NewTab { get; set; }
 
-    /// <summary>What screen readers hear after the text of an item that opens a new tab. Defaults to "opens in a new
-    /// tab".</summary>
+    /// <summary>What screen readers hear after the text of an item that opens a new tab. Defaults to the app's text
+    /// for <see cref="TbStrings.NewTabHint"/>, "opens in a new tab" in English.</summary>
     [Parameter]
-    public string NewTabHint { get; set; } = "opens in a new tab";
+    public string? NewTabHint { get; set; }
 
     /// <summary>Raised when the item is chosen, by click, Enter or Space; the menu then closes.</summary>
     [Parameter]

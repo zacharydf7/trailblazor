@@ -24,6 +24,9 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
+    [Inject]
+    private ITbLocalizer Localizer { get; set; } = default!;
+
     private string TitleId => $"{_id}-title";
 
     // A modal can't be moved or resized: it already blocks the page, so there's nothing to uncover.
@@ -83,7 +86,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
         if (Resizable)
         {
-            DialogMenus.AddResize(builder, 42, Dialog);
+            DialogMenus.AddResize(builder, 42, Dialog, Localizer);
         }
 
         builder.CloseElement();

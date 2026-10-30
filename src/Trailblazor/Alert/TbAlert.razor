@@ -1,5 +1,6 @@
 @namespace Trailblazor
 @inherits TbComponentBase
+@inject ITbLocalizer Localizer
 
 <div role="@(Tone is Tone.Danger or Tone.Warning ? "alert" : "status")" @attributes="AdditionalAttributes"
      class="@ClassNames.Join("tb-alert", ClassNames.Modifier("tb-alert", Tone),
@@ -22,7 +23,8 @@
     </div>
     @if (OnClose.HasDelegate)
     {
-        <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@CloseLabel" Size="Size.Small" OnClick="OnClose"
+        <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(CloseLabel ?? Localizer[TbStrings.AlertClose])"
+                      Size="Size.Small" OnClick="OnClose"
                       data-part="close" Class="@ClassNames.Join("tb-alert__close", Classes?.Close)" />
     }
 </div>
@@ -62,9 +64,10 @@
     [Parameter]
     public EventCallback<MouseEventArgs> OnClose { get; set; }
 
-    /// <summary>The close button's accessible name. Defaults to "Close".</summary>
+    /// <summary>The close button's accessible name. Defaults to the app's text for <see cref="TbStrings.AlertClose"/>,
+    /// "Close" in English.</summary>
     [Parameter]
-    public string CloseLabel { get; set; } = "Close";
+    public string? CloseLabel { get; set; }
 
     /// <summary>The message.</summary>
     [Parameter]

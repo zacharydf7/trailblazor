@@ -20,10 +20,11 @@
             @* A listbox can't hold a text box, so the popup holds both; focus moves to the filter while it's open. *@
             <div popover="auto" data-part="popup" class="tb-select__popup">
                 <input data-part="filter" type="text" role="combobox" autocomplete="off" aria-autocomplete="list"
-                       aria-expanded="true" aria-controls="@ListboxId" aria-label="@FilterLabel"
-                       placeholder="@FilterLabel" class="tb-select__filter" />
+                       aria-expanded="true" aria-controls="@ListboxId" aria-label="@FilterText"
+                       placeholder="@FilterText" class="tb-select__filter" />
                 @Listbox
-                <div role="status" data-part="no-results" data-text="@NoResultsText" class="tb-select__no-results">
+                <div role="status" data-part="no-results" class="tb-select__no-results"
+                     data-text="@(NoResultsText ?? Localizer[TbStrings.SelectNoResults])">
                 </div>
             </div>
         }
@@ -62,7 +63,8 @@
         @<text>
             @if (Clearable && !Disabled && HasChoice)
             {
-                <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="Clear" Size="Size.Small" OnClick="ClearAsync"
+                <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Localizer[TbStrings.SelectClear]"
+                              Size="Size.Small" OnClick="ClearAsync"
                               data-part="clear" />
             }
             <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" data-part="chevron" Class="tb-select__chevron" />

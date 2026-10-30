@@ -4,6 +4,7 @@
 @inherits TbComponentBase
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
 
 <div @attributes="AdditionalAttributes" @ref="_toolbar" role="toolbar" aria-label="@AriaLabel"
      aria-orientation="@(Vertical ? "vertical" : "horizontal")" style="@Style"
@@ -13,7 +14,8 @@
     {
         @* The script shows it once a button has moved in; the server then fills it with those buttons. *@
         <div @ref="_more" data-part="overflow" class="tb-toolbar__overflow">
-            <TbMenu Label="@OverflowLabel" Icon="BuiltInIcons.More" Align="PlacementAlign.End">@OverflowItems</TbMenu>
+            <TbMenu Label="@(OverflowLabel ?? Localizer[TbStrings.ToolbarMore])" Icon="BuiltInIcons.More"
+                    Align="PlacementAlign.End">@OverflowItems</TbMenu>
         </div>
     }
 </div>
@@ -42,9 +44,10 @@
     [Parameter]
     public bool Vertical { get; set; }
 
-    /// <summary>The name of the menu button that holds the toolbar buttons with no room. Defaults to "More".</summary>
+    /// <summary>The name of the menu button that holds the toolbar buttons with no room.
+    /// Defaults to the app's text for <see cref="TbStrings.ToolbarMore"/>, "More" in English.</summary>
     [Parameter]
-    public string OverflowLabel { get; set; } = "More";
+    public string? OverflowLabel { get; set; }
 
     // Razor only finds public components by tag, so the internal menu items are added here.
     private RenderFragment OverflowItems => builder =>

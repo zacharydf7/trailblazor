@@ -20,7 +20,7 @@
         <span class="tb-file-upload__prompt" aria-hidden="true">
             @if (!DropZone)
             {
-                @Labels.Choose
+                @ChooseLabel
             }
             else if (ZoneContent is not null)
             {
@@ -29,7 +29,7 @@
             else
             {
                 <TbIcon Icon="BuiltInIcons.Upload" />
-                @Labels.Zone
+                @ZoneLabel
             }
         </span>
         <InputFile @ref="_input" @attributes="InputAttributes" data-part="input" id="@InputId"
@@ -52,13 +52,13 @@
                     <span class="tb-file-upload__name">@file.Name</span>
                     <span class="tb-file-upload__size">@FormatSize(file.Size)</span>
                     <TbIconButton Icon="BuiltInIcons.Close" Size="Size.Small" Variant="Variant.Text"
-                                  AriaLabel="@string.Format(CultureInfo.CurrentCulture, Labels.Remove, file.Name)"
+                                  AriaLabel="@string.Format(CultureInfo.CurrentCulture, RemoveLabel, file.Name)"
                                   Disabled="Disabled" OnClick="() => RemoveAsync(file)" data-part="remove" />
                 </li>
             }
         </ul>
         <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="Disabled" OnClick="ClearAsync" data-part="clear"
-                  class="tb-file-upload__clear">@Labels.Clear</TbButton>
+                  class="tb-file-upload__clear">@ClearLabel</TbButton>
     }
     @if (_rejected.Count > 0)
     {

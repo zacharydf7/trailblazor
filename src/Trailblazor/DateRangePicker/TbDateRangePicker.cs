@@ -236,7 +236,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         if (_anchor is not { } start || day < start)
         {
             _anchor = day;
-            Announcer.Polite(Labels.ChooseEnd);
+            Announcer.Polite(ChooseEndLabel);
             return;
         }
 
@@ -270,12 +270,12 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         DateOnly? end = EndDate;
         string? startError = null;
         string? endError = null;
-        _startBad = _startText is not null && !TryRead(_startText, Labels.BadStart, out start, out startError);
-        _endBad = _endText is not null && !TryRead(_endText, Labels.BadEnd, out end, out endError);
+        _startBad = _startText is not null && !TryRead(_startText, BadStartLabel, out start, out startError);
+        _endBad = _endText is not null && !TryRead(_endText, BadEndLabel, out end, out endError);
         if (!_startBad && !_endBad && start > end)
         {
             _endBad = true;
-            endError = Labels.EndBeforeStart;
+            endError = EndBeforeStartLabel;
         }
 
         if (_startBad || _endBad)
@@ -305,7 +305,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
         if (IsUnavailable(read))
         {
-            error = string.Format(DateCulture, Labels.Unavailable, text.Trim());
+            error = string.Format(DateCulture, UnavailableLabel, text.Trim());
             return false;
         }
 
@@ -415,4 +415,17 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
         _events?.Dispose();
     }
+
+    private string StartLabel => Labels.Start ?? Localizer[TbStrings.DateRangePickerStart];
+    private string EndLabel => Labels.End ?? Localizer[TbStrings.DateRangePickerEnd];
+    private string OpenLabel => Labels.Open ?? Localizer[TbStrings.DateRangePickerOpen];
+    private string PreviousMonthLabel => Labels.PreviousMonth ?? Localizer[TbStrings.DateRangePickerPreviousMonth];
+    private string NextMonthLabel => Labels.NextMonth ?? Localizer[TbStrings.DateRangePickerNextMonth];
+    private string PresetsLabel => Labels.Presets ?? Localizer[TbStrings.DateRangePickerPresets];
+    private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.DateRangePickerClear];
+    private string ChooseEndLabel => Labels.ChooseEnd ?? Localizer[TbStrings.DateRangePickerChooseEnd];
+    private string BadStartLabel => Labels.BadStart ?? Localizer[TbStrings.DateRangePickerBadStart];
+    private string BadEndLabel => Labels.BadEnd ?? Localizer[TbStrings.DateRangePickerBadEnd];
+    private string UnavailableLabel => Labels.Unavailable ?? Localizer[TbStrings.DateRangePickerUnavailable];
+    private string EndBeforeStartLabel => Labels.EndBeforeStart ?? Localizer[TbStrings.DateRangePickerEndBeforeStart];
 }
