@@ -439,6 +439,27 @@ public static class ExampleCatalog
                 + "The info button's name contains the label, so find the control by role with an exact name, as "
                 + "`GetByRole(AriaRole.Textbox, new() { Name = \"Project code\", Exact = true })`.",
         },
+        new("form", "Form", ExampleCategory.Inputs,
+            "A form for Trailblazor fields that reports whether it is valid as the fields change and moves focus to "
+                + "the first error when a submit fails.", typeof(FormExample))
+        {
+            Api = [typeof(TbForm)],
+            Accessibility =
+            [
+                "A `form` element (built on `EditForm`); give it an `aria-label` to make it a landmark, as here.",
+                "When a submit fails, every field shows its messages, which are linked to it with `aria-describedby` "
+                    + "and announced, and focus moves to the first field with `aria-invalid`.",
+                "`@bind-IsValid` checks the fields' `Validation`, and with `DataAnnotations` the model's annotations, "
+                    + "without showing messages, so the user isn't told off before they start; it is for turning a "
+                    + "button on and off.",
+                "It posts as a static SSR form when given a `FormName`.",
+            ],
+            Target = new("form", "Trip sign-up"),
+            Blocks = ["tb-form"],
+            TestingTip = "Submit with the button, then find errors through the fields: "
+                + "`ToHaveAttributeAsync(\"aria-invalid\", \"true\")` on the input, and its message with "
+                + "`ToHaveAccessibleDescriptionAsync`.",
+        },
         new("text-field", "Text field", ExampleCategory.Inputs,
             "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
         {

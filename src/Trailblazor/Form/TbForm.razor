@@ -1,0 +1,242 @@
+@namespace Trailblazor
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IDisposable
+@inject JsModuleLoader Modules
+@inject IServiceProvider Services
+
+@* The fields check themselves, so the browser's own validation bubbles are turned off. *@
+<EditForm @attributes="AdditionalAttributes" id="@Id" EditContext="_editContext" FormName="@FormName"
+          OnSubmit="SubmitAsync" novalidate class="@ClassNames.Join("tb-form", Class)" style="@Style">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+</EditForm>
+
+@code {
+    private readonly List<IFormField> _fields = [];
+    private readonly string _id = $"tb-form-{Guid.NewGuid():N}";
+    private readonly object _noModel = new();
+    private EditContext _editContext;
+    private object? _model;
+    private IDisposable? _annotations;
+    private bool _focusError;
+
+    /// <inheritdoc />
+    public TbForm() => _editContext = new EditContext(_noModel);
+
+    /// <summary>The form's fields and buttons, and any validators such as <c>DataAnnotationsValidator</c>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The object the fields edit, which validators check. Leave it and <see cref="EditContext"/> out for a
+    /// form whose fields carry their own <c>Validation</c>.</summary>
+    [Parameter]
+    public object? Model { get; set; }
+
+    /// <summary>The edit context to use instead of one made for <see cref="Model"/>.</summary>
+    [Parameter]
+    public EditContext? EditContext { get; set; }
+
+    /// <summary>Validates the model's data annotations, as a <c>DataAnnotationsValidator</c> would, and counts them in
+    /// <see cref="IsValid"/> before any message shows. Use it instead of adding the validator inside the form.
+    /// </summary>
+    [Parameter]
+    public bool DataAnnotations { get; set; }
+
+    /// <summary>Names the form, so it posts as a static SSR form.</summary>
+    [Parameter]
+    public string? FormName { get; set; }
+
+    /// <summary>Whether the form would pass now: every field's <c>Validation</c> passes, the model's data annotations
+    /// pass when <see cref="DataAnnotations"/> is on, and no validator's message is showing. It is worked out without
+    /// showing any message and updates as the form changes, so it can turn a save button on and off. Bind it with
+    /// <c>@bind-IsValid</c>.</summary>
+    [Parameter]
+    public bool IsValid { get; set; }
+
+    /// <summary>Raised when <see cref="IsValid"/> changes.</summary>
+    [Parameter]
+    public EventCallback<bool> IsValidChanged { get; set; }
+
+    /// <summary>The messages the form is showing. Bind it with <c>@bind-Errors</c>.</summary>
+    [Parameter]
+    public IReadOnlyList<string> Errors { get; set; } = [];
+
+    /// <summary>Raised when the messages the form is showing change.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<string>> ErrorsChanged { get; set; }
+
+    /// <summary>Raised on submit instead of the form validating; check it yourself with
+    /// <see cref="ValidateAsync"/>.</summary>
+    [Parameter]
+    public EventCallback<EditContext> OnSubmit { get; set; }
+
+    /// <summary>Raised on submit when the form is valid.</summary>
+    [Parameter]
+    public EventCallback<EditContext> OnValidSubmit { get; set; }
+
+    /// <summary>Raised on submit when the form isn't valid. Focus then moves to the first field with an error, once
+    /// the fields have shown their messages.</summary>
+    [Parameter]
+    public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+
+    private object Id => AdditionalAttributes?.GetValueOrDefault("id") ?? _id;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        var context = EditContext ?? (Model is null ? _editContext
+            : ReferenceEquals(Model, _model) ? _editContext : new EditContext(Model));
+        _model = Model;
+        if (!ReferenceEquals(context, _editContext))
+        {
+            _editContext.OnFieldChanged -= OnFieldChanged;
+            _editContext.OnValidationStateChanged -= OnValidationStateChanged;
+            _annotations?.Dispose();
+            _annotations = null;
+            _editContext = context;
+        }
+
+        if (DataAnnotations != _annotations is not null)
+        {
+            _annotations?.Dispose();
+            _annotations = DataAnnotations ? _editContext.EnableDataAnnotationsValidation(Services) : null;
+        }
+
+        _editContext.OnFieldChanged -= OnFieldChanged;
+        _editContext.OnValidationStateChanged -= OnValidationStateChanged;
+        _editContext.OnFieldChanged += OnFieldChanged;
+        _editContext.OnValidationStateChanged += OnValidationStateChanged;
+    }
+
+    // Every render is checked, since the parent can change a value or the model without any field reporting it.
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await ReportAsync();
+        if (_focusError)
+        {
+            _focusError = false;
+            await FocusFirstErrorAsync();
+        }
+    }
+
+    /// <summary>Shows every field's messages and returns whether the form is valid.</summary>
+    public async Task<bool> ValidateAsync()
+    {
+        var valid = _editContext.Validate();
+        // Validate only asks the fields to check themselves, so they are told to show what they found.
+        _editContext.NotifyValidationStateChanged();
+        await ReportAsync();
+        return valid;
+    }
+
+    /// <summary>Hides the messages from the fields' own <c>Validation</c>, as on a form the user hasn't touched yet.
+    /// Messages a validator such as <c>DataAnnotationsValidator</c> added stay until it validates again.</summary>
+    public async Task ResetValidationAsync()
+    {
+        foreach (var field in _fields)
+        {
+            field.HideMessages();
+        }
+
+        _editContext.NotifyValidationStateChanged();
+        await ReportAsync();
+    }
+
+    internal void Add(IFormField field) => _fields.Add(field);
+
+    internal void Remove(IFormField field) => _fields.Remove(field);
+
+    private async Task SubmitAsync(EditContext context)
+    {
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync(context);
+            return;
+        }
+
+        if (await ValidateAsync())
+        {
+            await OnValidSubmit.InvokeAsync(context);
+            return;
+        }
+
+        // Focus moves once the render that shows the messages has reached the browser.
+        _focusError = true;
+        StateHasChanged();
+        await OnInvalidSubmit.InvokeAsync(context);
+    }
+
+    // A statically rendered form has no script, and the browser's own focus stays where it was.
+    private async Task FocusFirstErrorAsync()
+    {
+        if (!RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/form.js");
+            await module.InvokeVoidAsync("focusFirstError", Id);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the form went with it.
+        }
+    }
+
+    private void OnFieldChanged(object? sender, FieldChangedEventArgs e) => _ = InvokeAsync(ReportFromEventAsync);
+
+    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e) =>
+        _ = InvokeAsync(ReportFromEventAsync);
+
+    // The context's events can't await, so a failing callback goes to the renderer instead of being lost.
+    private async Task ReportFromEventAsync()
+    {
+        try
+        {
+            await ReportAsync();
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    // The parent hears only when the validity or the shown messages actually change.
+    private async Task ReportAsync()
+    {
+        var valid = !_fields.Any(field => field.HasProblems()) && !_editContext.GetValidationMessages().Any()
+            && ModelPasses();
+        if (valid != IsValid)
+        {
+            IsValid = valid;
+            await IsValidChanged.InvokeAsync(valid);
+        }
+
+        var errors = _editContext.GetValidationMessages().ToList();
+        if (!errors.SequenceEqual(Errors))
+        {
+            Errors = errors;
+            await ErrorsChanged.InvokeAsync(errors);
+        }
+    }
+
+    // The annotations the form validates are checked again without adding messages, with the same services, so an
+    // attribute that needs a service gives the same answer in both.
+    private bool ModelPasses() => !DataAnnotations || ReferenceEquals(_editContext.Model, _noModel)
+        || Validator.TryValidateObject(_editContext.Model, new ValidationContext(_editContext.Model, Services, null),
+            null, true);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _editContext.OnFieldChanged -= OnFieldChanged;
+        _editContext.OnValidationStateChanged -= OnValidationStateChanged;
+        _annotations?.Dispose();
+    }
+}

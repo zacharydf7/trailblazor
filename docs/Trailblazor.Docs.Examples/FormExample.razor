@@ -1,0 +1,31 @@
+<TbForm @bind-IsValid="_valid" @bind-Errors="_errors" OnValidSubmit="Save" aria-label="Trip sign-up"
+        Style="max-inline-size: 24rem">
+    <TbTextField Label="Leader's name" @bind-Value="_leader" Required Validation="RequireLeader" />
+    <TbNumberField Label="Party size" @bind-Value="_partySize" Min="1" Max="12" Required
+                   Validation="RequirePartySize" />
+    <TbCheckbox Label="I've read the safety notes" @bind-Value="_readNotes" Validation="RequireNotes" />
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit" Disabled="!_valid">Sign up</TbButton>
+        <TbButton Type="ButtonType.Submit" Variant="Variant.Outlined">Check the form</TbButton>
+    </TbStack>
+    <TbText>@(_saved ?? (_errors.Count == 0 ? "Fill in the form to sign up." : $"{_errors.Count} to fix."))</TbText>
+</TbForm>
+
+@code {
+    private string? _leader;
+    private int? _partySize;
+    private bool _readNotes;
+    private bool _valid;
+    private IReadOnlyList<string> _errors = [];
+    private string? _saved;
+
+    private static IEnumerable<string> RequireLeader(string? name) =>
+        string.IsNullOrWhiteSpace(name) ? ["Enter the leader's name."] : [];
+
+    private static IEnumerable<string> RequirePartySize(int? size) =>
+        size is null ? ["Enter how many are going."] : [];
+
+    private static IEnumerable<string> RequireNotes(bool read) => read ? [] : ["Read the safety notes first."];
+
+    private void Save() => _saved = $"Signed up {_leader}'s party of {_partySize}.";
+}

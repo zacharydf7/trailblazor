@@ -3087,6 +3087,13 @@
         font-size: var(--tb-font-size-sm);
     }
 
+    /* The fields stack with even spacing, so a form needs no layout of its own. */
+    .tb-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-4);
+    }
+
     .tb-tabs__list {
         display: flex;
         gap: var(--tb-space-1);

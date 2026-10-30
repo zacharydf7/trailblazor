@@ -7,7 +7,7 @@ namespace Trailblazor;
 
 /// <summary>What every Trailblazor form field shares: <c>@bind-Value</c>, a label, helper text and validation
 /// messages, inside or outside an <see cref="EditForm"/>.</summary>
-public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
+public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField, IDisposable
 {
     private readonly List<string> _messages = [];
     private EditContext? _editContext;
@@ -17,6 +17,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
     private string? _unparsedText;
     private TValue? _valueAtParseError;
     private string? _inputName;
+    private TbForm? _form;
     private bool _disposed;
 
     /// <summary>The field's value.</summary>
@@ -61,6 +62,9 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
 
     [CascadingParameter]
     private EditContext? CascadedEditContext { get; set; }
+
+    [CascadingParameter]
+    private TbForm? Form { get; set; }
 
     [Inject]
     private protected IAnnouncer Announcer { get; set; } = default!;
@@ -117,10 +121,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
         }
 
         _inputName = FieldNames.From(ValueExpression);
-        // Only a form needs the identifier, and outside one an expression it can't parse must not throw.
-        FieldIdentifier? field = CascadedEditContext is not null && ValueExpression is not null
-            ? FieldIdentifier.Create(ValueExpression)
-            : null;
+        // Only a form needs the identifier, and outside one an expression it can't parse must not throw. A field
+        // without a binding names itself, so the form still counts its messages.
+        FieldIdentifier? field = CascadedEditContext is null ? null
+            : ValueExpression is not null ? FieldIdentifier.Create(ValueExpression)
+            : new FieldIdentifier(this, nameof(Value));
         if (!field.Equals(_field))
         {
             // A field rebound to another property, as in a list without @key, drops the old property's messages.
@@ -142,8 +147,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
             }
         }
 
-        // The context can only hold messages for a field it can identify, so an unbound field keeps its own.
-        if (_editContext is null || _field is null)
+        if (_editContext is null)
         {
             _messageStore?.Clear();
             _messageStore = null;
@@ -151,6 +155,13 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
         else
         {
             _messageStore ??= new ValidationMessageStore(_editContext);
+        }
+
+        if (!ReferenceEquals(Form, _form))
+        {
+            _form?.Remove(this);
+            _form = Form;
+            _form?.Add(this);
         }
     }
 
@@ -266,10 +277,19 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IDisposable
         }
     }
 
+    bool IFormField.HasProblems() => _parseError is not null || (Validation?.Invoke(Value).Any() ?? false);
+
+    void IFormField.HideMessages()
+    {
+        _messages.Clear();
+        _messageStore?.Clear();
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {
         _disposed = true;
+        _form?.Remove(this);
         DetachEditContext();
     }
 }

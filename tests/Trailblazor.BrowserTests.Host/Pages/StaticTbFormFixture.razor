@@ -1,0 +1,25 @@
+@page "/static-tbform"
+@attribute [ExcludeFromInteractiveRouting]
+
+<TbForm Model="Model" FormName="static-tbform" OnValidSubmit="Post">
+    <TbTextField Label="Leader" @bind-Value="Model!.Leader"
+                 Validation="@(name => string.IsNullOrWhiteSpace(name) ? ["Enter a leader."] : [])" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</TbForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm(FormName = "static-tbform")]
+    private Trip? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    private void Post() => _posted = Model!.Leader;
+
+    private sealed class Trip
+    {
+        public string? Leader { get; set; }
+    }
+}
