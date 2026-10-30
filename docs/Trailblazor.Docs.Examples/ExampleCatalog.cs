@@ -682,6 +682,29 @@ public static class ExampleCatalog
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
         },
+        new("pagination", "Pagination", ExampleCategory.Navigation,
+            "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
+                + "page number.", typeof(PaginationExample))
+        {
+            Api = [typeof(TbPagination), typeof(PaginationLabels)],
+            Accessibility =
+            [
+                "A `navigation` landmark named by `AriaLabel` (\"Pagination\" by default); name each one when a page "
+                    + "has several.",
+                "Each page is a button named \"Page 3\", and the current one has `aria-current=\"page\"`. The "
+                    + "Previous, Next, First and Last buttons are named, and turn off at either end. The ellipses are "
+                    + "hidden from screen readers.",
+                "Every control is its own tab stop, as in a list of links. In compact mode the page box is named "
+                    + "\"Page\"; typing a page and pressing Enter, or leaving the box, goes there.",
+                "With `PageHref` every item is a link, so the pages work before the page is interactive. All the "
+                    + "words come from `Labels`.",
+            ],
+            Target = new("navigation", "Trail reports"),
+            Blocks = ["tb-pagination"],
+            TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
+                + "`Trailblazor.Testing.Playwright` clicks it, types it into a compact pagination's box, or steps "
+                + "with Next and Previous, then waits for it to be current.",
+        },
         new("link", "Link", ExampleCategory.Navigation,
             "An underlined text link to an address, or a link-styled button that runs an action.", typeof(LinkExample))
         {

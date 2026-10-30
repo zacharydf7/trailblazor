@@ -2756,6 +2756,64 @@
         margin-inline-start: auto;
     }
 
+    .tb-pagination__list {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-1);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: var(--tb-color-text);
+    }
+
+    .tb-pagination__page,
+    .tb-pagination__ellipsis {
+        box-sizing: border-box;
+        min-inline-size: var(--tb-control-height);
+        padding-inline: var(--tb-space-2);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tb-pagination--small .tb-pagination__page,
+    .tb-pagination--small .tb-pagination__ellipsis {
+        min-inline-size: max(24px, calc(var(--tb-control-height) - 8px));
+    }
+
+    .tb-pagination--large .tb-pagination__page,
+    .tb-pagination--large .tb-pagination__ellipsis {
+        min-inline-size: calc(var(--tb-control-height) + 8px);
+    }
+
+    .tb-pagination__ellipsis {
+        color: var(--tb-color-text-muted);
+        text-align: center;
+    }
+
+    /* The arrows point left to right, so right-to-left text turns them around. */
+    .tb-pagination:dir(rtl) .tb-pagination__step .tb-icon {
+        transform: scaleX(-1);
+    }
+
+    .tb-pagination__jump {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-pagination__box {
+        inline-size: 5rem;
+    }
+
+    @media (forced-colors: active) {
+        .tb-pagination__page[aria-current="page"] {
+            forced-color-adjust: none;
+            border-color: Highlight;
+            background: Highlight;
+            color: HighlightText;
+        }
+    }
+
     .tb-tabs__list {
         display: flex;
         gap: var(--tb-space-1);

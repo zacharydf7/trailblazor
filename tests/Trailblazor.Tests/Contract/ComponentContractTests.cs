@@ -79,6 +79,7 @@ public class ComponentContractTests : BunitContext
             object value = property.PropertyType switch
             {
                 var type when type == typeof(string) => "Sample",
+                var type when type == typeof(int) => 3,
                 var type when type == typeof(Icon) => new Icon("<path d=\"M4 4h16v16H4z\" />"),
                 _ => throw new NotSupportedException($"Add a sample {property.PropertyType.Name} to the contract " +
                     $"kit for {component.Name}.{property.Name}."),

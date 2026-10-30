@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
@@ -18,6 +20,9 @@ public sealed class TrailblazorPage(IPage page)
 
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
     public TbListBoxLocator ListBox(string label) => new(page, label);
+
+    /// <summary>The <c>TbPagination</c> with this accessible name.</summary>
+    public TbPaginationLocator Pagination(string name) => new(page, name);
 
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(page, trigger);
@@ -143,6 +148,78 @@ public sealed class TbListBoxLocator(IPage page, string label)
         }
     }
 
+}
+
+/// <summary>A <c>TbPagination</c>, found by its accessible name.</summary>
+public sealed class TbPaginationLocator(IPage page, string name)
+{
+    private ILocator Navigation => page.GetByRole(AriaRole.Navigation, new() { Name = name, Exact = true });
+
+    /// <summary>Goes to this page and waits until it is current. A compact pagination gets the number typed into its
+    /// box; otherwise the page's button is clicked, after stepping toward it through the pages shown when it isn't.
+    /// Buttons wait for the page to be interactive; links, from <c>PageHref</c>, are followed at once. Throws for a
+    /// page past the last.</summary>
+    public async Task GoToPageAsync(int number)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(number, 1);
+        // The pagination renders its current page and page count, which also waits for it to be on the page.
+        await Assertions.Expect(Navigation).ToHaveAttributeAsync("data-page", new Regex(@"^\d+$"));
+        var count = int.Parse((await Navigation.GetAttributeAsync("data-page-count"))!, CultureInfo.InvariantCulture);
+        if (number > count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(number), number, $"{name} has {count} pages.");
+        }
+
+        var box = Navigation.Locator("[data-part=page-box] input");
+        if (await box.CountAsync() > 0)
+        {
+            await GoAsync(number, async () =>
+            {
+                await box.FillAsync(number.ToString(CultureInfo.InvariantCulture));
+                await box.PressAsync("Enter");
+            });
+            return;
+        }
+
+        var pages = Navigation.Locator("[data-part=page]");
+        while (await CurrentAsync() is var current && current != number)
+        {
+            var shown = (await pages.AllInnerTextsAsync())
+                .Select(shownPage => int.Parse(shownPage, CultureInfo.InvariantCulture)).ToList();
+            // The page itself, or the shown page closest to it on the way there; with no page shown in between, as
+            // with no siblings, the Next or Previous button.
+            var between = shown.Where(step => number > current ? step > current && step < number
+                : step < current && step > number).ToList();
+            if (shown.Contains(number) || between.Count > 0)
+            {
+                var next = shown.Contains(number) ? number : number > current ? between.Max() : between.Min();
+                await GoAsync(next, () => pages.Filter(new() { HasTextRegex = new Regex($"^{next}$") }).ClickAsync());
+            }
+            else
+            {
+                var step = Navigation.Locator(number > current ? "[data-part=next]" : "[data-part=previous]");
+                await GoAsync(number > current ? current + 1 : current - 1, () => step.ClickAsync());
+            }
+        }
+    }
+
+    private async Task<int> CurrentAsync() =>
+        int.Parse((await Navigation.GetAttributeAsync("data-page"))!, CultureInfo.InvariantCulture);
+
+    // Blazor attaches its handlers once the page is interactive, so a button or the box waits for that; a link
+    // navigates without it.
+    private async Task GoAsync(int number, Func<Task> act)
+    {
+        if (await Navigation.Locator("a[data-part=page]").CountAsync() == 0
+            || await Navigation.Locator("[data-part=page-box]").CountAsync() > 0)
+        {
+            await Assertions.Expect(Navigation).ToHaveAttributeAsync("data-ready", "");
+        }
+
+        await act();
+        await Assertions.Expect(Navigation)
+            .ToHaveAttributeAsync("data-page", number.ToString(CultureInfo.InvariantCulture));
+    }
 }
 
 // What the select and listbox helpers share: a statically rendered field is the browser's own select.

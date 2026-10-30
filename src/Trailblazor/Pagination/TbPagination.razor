@@ -1,0 +1,181 @@
+@namespace Trailblazor
+@using System.Globalization
+@inherits TbComponentBase
+@inject NavigationManager Navigation
+
+@* The testing helper reads data-page and data-page-count, and waits for data-ready before a click that needs the
+   page to be interactive. *@
+<nav @attributes="AdditionalAttributes" aria-label="@(AriaLabel ?? Labels.Navigation)" data-page="@CurrentPage"
+     data-page-count="@Count" data-ready="@(RendererInfo.IsInteractive ? "" : null)" style="@Style"
+     class="@ClassNames.Join("tb-pagination", ClassNames.Modifier("tb-pagination", Size),
+                Compact ? "tb-pagination--compact" : null, Class)">
+    @* Safari drops the list role from a list without bullets, so it is set again. *@
+    <ul role="list" class="tb-pagination__list">
+        @if (ShowFirstLast)
+        {
+            <li>@Step(BuiltInIcons.PageFirst, Labels.First, 1, "first")</li>
+        }
+        @if (ShowPreviousNext)
+        {
+            <li>@Step(BuiltInIcons.ChevronStart, Labels.Previous, CurrentPage - 1, "previous")</li>
+        }
+        @if (Compact)
+        {
+            <li class="tb-pagination__jump">
+                <TbNumberField TValue="int?" Value="CurrentPage" ValueChanged="GoToTypedPageAsync" HideStepButtons
+                               Disabled="Disabled" InputAttributes="PageBoxAttributes" data-part="page-box"
+                               Class="tb-pagination__box" />
+                <span id="@CountId" data-part="page-count">
+                    @string.Format(CultureInfo.CurrentCulture, Labels.Of, Count)
+                </span>
+            </li>
+        }
+        else
+        {
+            @foreach (var page in PageRange.For(CurrentPage, Count, SiblingCount, BoundaryCount))
+            {
+                @if (page is int number)
+                {
+                    <li>
+                        <TbButton Href="@PageHref?.Invoke(number)" Size="Size"
+                                  Variant="@(number == CurrentPage ? Variant.Soft : Variant.Text)"
+                                  Tone="@(number == CurrentPage ? Tone.Primary : Tone.Neutral)"
+                                  Disabled="Disabled" aria-current="@(number == CurrentPage ? "page" : null)"
+                                  aria-label="@string.Format(CultureInfo.CurrentCulture, Labels.Page, number)"
+                                  OnClick="() => GoToAsync(number)" data-part="page" Class="tb-pagination__page">
+                            @number
+                        </TbButton>
+                    </li>
+                }
+                else
+                {
+                    <li aria-hidden="true" data-part="ellipsis" class="tb-pagination__ellipsis">…</li>
+                }
+            }
+        }
+        @if (ShowPreviousNext)
+        {
+            <li>@Step(BuiltInIcons.ChevronEnd, Labels.Next, CurrentPage + 1, "next")</li>
+        }
+        @if (ShowFirstLast)
+        {
+            <li>@Step(BuiltInIcons.PageLast, Labels.Last, Count, "last")</li>
+        }
+    </ul>
+</nav>
+
+@code {
+    /// <summary>The current page, from 1. Bind it with <c>@bind-Page</c>.</summary>
+    [Parameter]
+    public int Page { get; set; } = 1;
+
+    /// <summary>Raised, and awaited, when the user goes to another page.</summary>
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+
+    /// <summary>How many pages there are. Required.</summary>
+    [Parameter, EditorRequired]
+    public int PageCount { get; set; }
+
+    /// <summary>How many pages show on each side of the current one. Defaults to 1.</summary>
+    [Parameter]
+    public int SiblingCount { get; set; } = 1;
+
+    /// <summary>How many pages always show at each end. Defaults to 1.</summary>
+    [Parameter]
+    public int BoundaryCount { get; set; } = 1;
+
+    /// <summary>Shows buttons that go to the first and last pages.</summary>
+    [Parameter]
+    public bool ShowFirstLast { get; set; }
+
+    /// <summary>Shows buttons that go to the previous and next pages. On by default.</summary>
+    [Parameter]
+    public bool ShowPreviousNext { get; set; } = true;
+
+    /// <summary>Shows a box for the current page and the page count instead of numbered buttons, for long lists or
+    /// tight spaces.</summary>
+    [Parameter]
+    public bool Compact { get; set; }
+
+    /// <summary>Makes every button a link to the address this returns for its page, so the pages can be crawled and
+    /// work before the page is interactive.</summary>
+    [Parameter]
+    public Func<int, string>? PageHref { get; set; }
+
+    /// <summary>The buttons' size. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>Turns every button off.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>The navigation's accessible name. Defaults to <see cref="PaginationLabels.Navigation"/>; name each
+    /// one when a page has several.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>The words read to screen readers and shown in compact mode.</summary>
+    [Parameter]
+    public PaginationLabels Labels { get; set; } = new();
+
+    // A list with no pages still has one, so the pagination always has a current page.
+    private int Count => Math.Max(PageCount, 1);
+
+    private int CurrentPage => Math.Clamp(Page, 1, Count);
+
+    private string CountId { get; } = $"tb-pagination-{Guid.NewGuid():N}-count";
+
+    private IReadOnlyDictionary<string, object> PageBoxAttributes => new Dictionary<string, object>
+    {
+        ["aria-label"] = Labels.PageBox,
+        ["aria-describedby"] = CountId,
+    };
+
+    private RenderFragment Step(Icon icon, string label, int page, string part) =>
+        @<TbIconButton Icon="icon" AriaLabel="@label" Href="@PageHref?.Invoke(Math.Clamp(page, 1, Count))" Size="Size"
+                       Disabled="@(Disabled || page < 1 || page > Count || page == Page)"
+                       OnClick="() => GoToAsync(page)"
+                       data-part="@part" Class="tb-pagination__step" />;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (PageCount < 0 || SiblingCount < 0 || BoundaryCount < 1)
+        {
+            throw new InvalidOperationException(
+                "A pagination needs a PageCount and SiblingCount of 0 or more, and a BoundaryCount of 1 or more.");
+        }
+    }
+
+    // Compared with Page, not the clamped page shown, so a parent left on a page past a shrunken count can come back.
+    private async Task GoToAsync(int page)
+    {
+        page = Math.Clamp(page, 1, Count);
+        if (page == Page)
+        {
+            return;
+        }
+
+        Page = page;
+        await PageChanged.InvokeAsync(page);
+    }
+
+    // Typed pages past either end go to that end, and a cleared box goes back to the current page. With links, the
+    // typed page is navigated to as a click on its link would be.
+    private async Task GoToTypedPageAsync(int? page)
+    {
+        var target = Math.Clamp(page ?? Page, 1, Count);
+        if (page is null || target == Page)
+        {
+            return;
+        }
+
+        await GoToAsync(target);
+        if (PageHref is not null)
+        {
+            Navigation.NavigateTo(PageHref(target));
+        }
+    }
+}

@@ -11,6 +11,14 @@ internal static class BuiltInIcons
     // Points right; flip it in right-to-left text.
     public static Icon ChevronEnd { get; } = new("<path d=\"M8.6 16.6 13.2 12 8.6 7.4 10 6l6 6-6 6z\" />");
 
+    // Points left; flip it in right-to-left text.
+    public static Icon ChevronStart { get; } = new("<path d=\"M15.4 7.4 10.8 12l4.6 4.6L14 18l-6-6 6-6z\" />");
+
+    // A chevron against a bar, pointing left and right; flip them in right-to-left text.
+    public static Icon PageFirst { get; } = new("<path d=\"M18.4 16.6 13.8 12l4.6-4.6L17 6l-6 6 6 6zM6 6h2v12H6z\" />");
+
+    public static Icon PageLast { get; } = new("<path d=\"M5.6 7.4 10.2 12l-4.6 4.6L7 18l6-6-6-6zM16 6h2v12h-2z\" />");
+
     public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
 
     public static Icon Check { get; } = new("<path d=\"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z\" />");

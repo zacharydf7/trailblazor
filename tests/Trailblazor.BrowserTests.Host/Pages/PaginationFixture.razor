@@ -1,0 +1,9 @@
+@page "/pagination"
+
+@* No siblings, so no page shows between the current one and a far one. *@
+<TbPagination @bind-Page="_page" PageCount="30" SiblingCount="0" AriaLabel="Lean" />
+<output data-testid="page">@_page</output>
+
+@code {
+    private int _page = 1;
+}
