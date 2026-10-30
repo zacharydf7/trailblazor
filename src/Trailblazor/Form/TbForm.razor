@@ -1,6 +1,9 @@
 @namespace Trailblazor
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Options
+@using Microsoft.Extensions.Validation
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inherits TbComponentBase
@@ -40,8 +43,9 @@
     public EditContext? EditContext { get; set; }
 
     /// <summary>Validates the model's data annotations, as a <c>DataAnnotationsValidator</c> would, and counts them in
-    /// <see cref="IsValid"/> before any message shows. Use it instead of adding the validator inside the form.
-    /// </summary>
+    /// <see cref="IsValid"/> before any message shows. Use it instead of adding the validator inside the form. When
+    /// the app calls <c>AddValidation</c> and marks the model <c>[ValidatableType]</c>, both also check its nested
+    /// objects.</summary>
     [Parameter]
     public bool DataAnnotations { get; set; }
 
@@ -211,7 +215,7 @@
     private async Task ReportAsync()
     {
         var valid = !_fields.Any(field => field.HasProblems()) && !_editContext.GetValidationMessages().Any()
-            && ModelPasses();
+            && await ModelPassesAsync();
         if (valid != IsValid)
         {
             IsValid = valid;
@@ -226,11 +230,28 @@
         }
     }
 
-    // The annotations the form validates are checked again without adding messages, with the same services, so an
-    // attribute that needs a service gives the same answer in both.
-    private bool ModelPasses() => !DataAnnotations || ReferenceEquals(_editContext.Model, _noModel)
-        || Validator.TryValidateObject(_editContext.Model, new ValidationContext(_editContext.Model, Services, null),
-            null, true);
+    // Checked like the form's validator, with its services: AddValidation's types if registered, else the model's own.
+#pragma warning disable ASP0029 // The validation types are experimental; the validator itself uses them.
+    private async Task<bool> ModelPassesAsync()
+    {
+        if (!DataAnnotations || ReferenceEquals(_editContext.Model, _noModel))
+        {
+            return true;
+        }
+
+        var model = _editContext.Model;
+        var validation = new ValidationContext(model, Services, null);
+        var options = Services.GetService<IOptions<ValidationOptions>>()?.Value;
+        if (options is null || !options.TryGetValidatableTypeInfo(model.GetType(), out var type))
+        {
+            return Validator.TryValidateObject(model, validation, null, true);
+        }
+
+        var context = new ValidateContext { ValidationOptions = options, ValidationContext = validation };
+        await type.ValidateAsync(model, context, CancellationToken.None);
+        return context.ValidationErrors is not { Count: > 0 };
+    }
+#pragma warning restore ASP0029
 
     /// <inheritdoc />
     public void Dispose()

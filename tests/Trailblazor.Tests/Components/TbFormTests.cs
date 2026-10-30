@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
 
 namespace Trailblazor.Tests.Components;
 
@@ -17,6 +18,8 @@ public class TbFormTests : BunitContext
     {
         this.AddTrailblazor();
         Services.AddSingleton(new TakenNames("Robin"));
+        // Only Expedition is marked for it, so Trip is still checked the way an app without it would be.
+        Services.AddValidation();
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
@@ -174,8 +177,26 @@ public class TbFormTests : BunitContext
         Assert.Equal(["Enter a name."], context.GetValidationMessages());
     }
 
-    private IRenderedComponent<TbForm> RenderModelForm(Trip trip, bool annotations = true) =>
-        Render<TbForm>(parameters => parameters.Add(form => form.Model, trip).Add(form => form.IsValid, _valid)
+    [Fact]
+    public async Task Render_ShouldCheckNestedObjectsAsTheValidatorDoes_WhenTheModelIsRegisteredForValidation()
+    {
+        var cut = RenderModelForm(new Expedition());
+
+        Assert.False(_valid);
+        Assert.False(await cut.InvokeAsync(() => cut.Instance.ValidateAsync()));
+        Assert.Equal(["The Site field is required."], _errors);
+    }
+
+    [Fact]
+    public void Render_ShouldReportValid_WhenARegisteredModelsNestedObjectsPass()
+    {
+        RenderModelForm(new Expedition { Camp = { Site = "Lakeshore" } });
+
+        Assert.True(_valid);
+    }
+
+    private IRenderedComponent<TbForm> RenderModelForm(object model, bool annotations = true) =>
+        Render<TbForm>(parameters => parameters.Add(form => form.Model, model).Add(form => form.IsValid, _valid)
             .Add(form => form.DataAnnotations, annotations)
             .Add(form => form.IsValidChanged, (bool valid) => _valid = valid)
             .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors));
@@ -233,4 +254,22 @@ public class TbFormTests : BunitContext
             validationContext.GetService(typeof(TakenNames)) is TakenNames taken && taken.Names.Contains(value)
                 ? new ValidationResult("That name is taken.") : ValidationResult.Success;
     }
+}
+
+// AddValidation reaches nested objects only in public, top-level types marked for its source generator.
+#pragma warning disable ASP0029 // The validation types are experimental.
+[ValidatableType]
+#pragma warning restore ASP0029
+public sealed class Expedition
+{
+    [Required]
+    public string? Name { get; set; } = "Ridge loop";
+
+    public Camp Camp { get; set; } = new();
+}
+
+public sealed class Camp
+{
+    [Required]
+    public string? Site { get; set; }
 }

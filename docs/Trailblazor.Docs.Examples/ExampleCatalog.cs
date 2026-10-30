@@ -470,7 +470,8 @@ public static class ExampleCatalog
                     + "and announced, and focus moves to the first field with `aria-invalid`.",
                 "`@bind-IsValid` checks the fields' `Validation`, and with `DataAnnotations` the model's annotations, "
                     + "without showing messages, so the user isn't told off before they start; it is for turning a "
-                    + "button on and off.",
+                    + "button on and off. When the app calls `AddValidation` and marks the model "
+                    + "`[ValidatableType]`, it checks nested objects too, as the submit does.",
                 "It posts as a static SSR form when given a `FormName`.",
             ],
             Target = new("form", "Trip sign-up"),
