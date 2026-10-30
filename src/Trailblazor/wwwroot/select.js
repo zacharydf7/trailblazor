@@ -9,6 +9,10 @@ export function createSelect(combobox, listbox, toggle) {
     }
 
     const control = combobox.parentElement;
+    // A filterable select's popup holds a filter box and a status above and below the listbox.
+    const popup = listbox.closest('[popover]');
+    const filter = popup.querySelector('[data-part="filter"]');
+    const status = popup.querySelector('[data-part="no-results"]');
     const label = document.getElementById(combobox.getAttribute('aria-labelledby'));
     // Marks that the keys work, which tests wait for.
     combobox.dataset.ready = '';
@@ -17,37 +21,75 @@ export function createSelect(combobox, listbox, toggle) {
     let wasOpen = false;
     const typing = createTypeahead();
 
-    const isOpen = () => listbox.matches(':popover-open');
+    const isOpen = () => popup.matches(':popover-open');
     // Choosing in a multiple select toggles the option and leaves the list open for more.
     const multiple = () => listbox.getAttribute('aria-multiselectable') === 'true';
-    const enabled = () => [...listbox.querySelectorAll('[role="option"]:not([aria-disabled="true"])')];
+    const enabled = () => [...listbox.querySelectorAll('[role="option"]:not([aria-disabled="true"]):not([hidden])')];
     const selected = () => listbox.querySelector('[role="option"][aria-selected="true"]:not([aria-disabled="true"])');
 
     const setActive = option => {
         active?.removeAttribute('data-active');
         active = option ?? null;
+        // Either the combobox or the filter has focus, and each names the active option.
+        for (const owner of [combobox, filter].filter(Boolean)) {
+            if (active) {
+                owner.setAttribute('aria-activedescendant', active.id);
+            } else {
+                owner.removeAttribute('aria-activedescendant');
+            }
+        }
+
         if (active) {
             active.setAttribute('data-active', '');
-            combobox.setAttribute('aria-activedescendant', active.id);
             active.scrollIntoView({ block: 'nearest' });
-        } else {
-            combobox.removeAttribute('aria-activedescendant');
         }
     };
-    const open = target => {
+    // Matching ignores case and accents, so "eagle" finds "Éagle".
+    const fold = text => text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
+    const applyFilter = () => {
+        const query = fold(filter.value.trim());
+        for (const option of listbox.querySelectorAll('[role="option"]')) {
+            const hide = !fold(option.dataset.text || option.textContent).includes(query);
+            if (option.hidden !== hide) {
+                option.hidden = hide;
+            }
+        }
+
+        for (const group of listbox.querySelectorAll('[role="group"]')) {
+            const hide = !group.querySelector('[role="option"]:not([hidden])');
+            if (group.hidden !== hide) {
+                group.hidden = hide;
+            }
+        }
+
+        const text = query && !listbox.querySelector('[role="option"]:not([hidden])') ? status.dataset.text : '';
+        if (status.textContent !== text) {
+            status.textContent = text;
+        }
+    };
+    // Opening from code leaves focus where it is; the user opening it moves focus to the filter.
+    const open = (target, focus = true) => {
         if (combobox.getAttribute('aria-disabled') === 'true') {
             return;
         }
 
         if (!isOpen()) {
-            listbox.showPopover();
+            popup.showPopover();
+        }
+
+        if (focus) {
+            filter?.focus();
         }
 
         setActive(target ?? selected() ?? enabled()[0]);
     };
     const close = () => {
         if (isOpen()) {
-            listbox.hidePopover();
+            if (popup.contains(document.activeElement)) {
+                combobox.focus();
+            }
+
+            popup.hidePopover();
         }
     };
     const choose = option => {
@@ -68,13 +110,19 @@ export function createSelect(combobox, listbox, toggle) {
 
     const onBeforeToggle = event => {
         if (event.newState !== 'open') {
+            // Cleared here, since a quick close and reopen merges into one toggle event that only says open.
+            if (filter) {
+                filter.value = '';
+                applyFilter();
+            }
+
             return;
         }
 
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
         requestAnimationFrame(() => {
             if (isOpen() && !position) {
-                position = createAnchoredPosition(listbox, control, { side: 'Bottom', align: 'Start', offset: 4 });
+                position = createAnchoredPosition(popup, control, { side: 'Bottom', align: 'Start', offset: 4 });
             }
         });
     };
@@ -114,7 +162,15 @@ export function createSelect(combobox, listbox, toggle) {
                 const options = enabled();
                 open(key === 'Home' ? options[0] : key === 'End' ? options.at(-1) : null);
             } else if (key.length === 1 && !event.altKey) {
-                typeahead(key);
+                // With a filter, typing on the closed select starts the filter rather than jumping to an option.
+                if (filter) {
+                    event.preventDefault();
+                    open();
+                    filter.value = key;
+                    onFilterInput();
+                } else {
+                    typeahead(key);
+                }
             }
 
             return;
@@ -174,6 +230,19 @@ export function createSelect(combobox, listbox, toggle) {
 
         event.preventDefault();
     };
+    const onFilterInput = () => {
+        applyFilter();
+        setActive(enabled()[0]);
+    };
+    // The list keys work as on the combobox; Home, End and the other editing keys stay with the text box.
+    const onFilterKeyDown = event => {
+        if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
+            onKeyDown(event);
+        }
+    };
+    // Options can arrive after the user has typed, such as when they load as the list opens.
+    const observer = filter ? new MutationObserver(applyFilter) : null;
+    observer?.observe(listbox, { childList: true, subtree: true });
     // Pressing the combobox closes an open list before the click arrives, so that click mustn't reopen it.
     const onPointerDown = () => {
         wasOpen = isOpen();
@@ -185,8 +254,8 @@ export function createSelect(combobox, listbox, toggle) {
             return;
         }
 
-        // The clear button and the options, which sit inside the control too, handle their own clicks.
-        if (event.target.closest('button') || listbox.contains(event.target)) {
+        // The clear button and the popup, which sit inside the control too, handle their own clicks.
+        if (event.target.closest('button') || popup.contains(event.target)) {
             return;
         }
 
@@ -206,7 +275,7 @@ export function createSelect(combobox, listbox, toggle) {
                 close();
             }
 
-            combobox.focus();
+            (isOpen() ? filter ?? combobox : combobox).focus();
         }
     };
     const onListboxPointerMove = event => {
@@ -217,8 +286,10 @@ export function createSelect(combobox, listbox, toggle) {
     };
     const onLabelClick = () => combobox.focus();
 
-    listbox.addEventListener('beforetoggle', onBeforeToggle);
-    listbox.addEventListener('toggle', onToggle);
+    popup.addEventListener('beforetoggle', onBeforeToggle);
+    popup.addEventListener('toggle', onToggle);
+    filter?.addEventListener('input', onFilterInput);
+    filter?.addEventListener('keydown', onFilterKeyDown);
     listbox.addEventListener('click', onListboxClick);
     listbox.addEventListener('pointermove', onListboxPointerMove);
     combobox.addEventListener('keydown', onKeyDown);
@@ -230,7 +301,7 @@ export function createSelect(combobox, listbox, toggle) {
         // Returns whether the list ended up open, since a disabled select won't open.
         setOpen(value) {
             if (value) {
-                open();
+                open(null, false);
             } else {
                 close();
             }
@@ -240,8 +311,11 @@ export function createSelect(combobox, listbox, toggle) {
         dispose() {
             close();
             position?.dispose();
-            listbox.removeEventListener('beforetoggle', onBeforeToggle);
-            listbox.removeEventListener('toggle', onToggle);
+            observer?.disconnect();
+            popup.removeEventListener('beforetoggle', onBeforeToggle);
+            popup.removeEventListener('toggle', onToggle);
+            filter?.removeEventListener('input', onFilterInput);
+            filter?.removeEventListener('keydown', onFilterKeyDown);
             listbox.removeEventListener('click', onListboxClick);
             listbox.removeEventListener('pointermove', onListboxPointerMove);
             combobox.removeEventListener('keydown', onKeyDown);

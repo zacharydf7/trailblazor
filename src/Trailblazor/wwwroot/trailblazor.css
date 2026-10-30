@@ -2658,19 +2658,58 @@
         cursor: pointer;
     }
 
-    .tb-select__listbox {
+    /* The list is the popup, or a filterable select's popup holds the filter and the list, which scrolls. */
+    .tb-select__listbox[popover],
+    .tb-select__popup {
         box-sizing: border-box;
         min-width: var(--tb-anchor-width, 0px);
-        max-height: min(20rem, 50vh);
         margin: 0;
-        padding: var(--tb-space-1);
-        overflow-y: auto;
         border: 1px solid var(--tb-border-subtle);
         border-radius: var(--tb-radius-md);
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
         font-family: var(--tb-font-family);
         box-shadow: var(--tb-shadow-md);
+    }
+
+    .tb-select__listbox {
+        max-height: min(20rem, 50vh);
+        padding: var(--tb-space-1);
+        overflow-y: auto;
+    }
+
+    .tb-select__popup {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .tb-select__filter {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0;
+        padding: var(--tb-space-2) var(--tb-space-3);
+        border: none;
+        border-bottom: 1px solid var(--tb-border-subtle);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-select__filter:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    /* The status stays rendered while empty, so screen readers announce the text it gets. */
+    .tb-select__no-results:empty {
+        padding: 0;
+    }
+
+    .tb-select__option[hidden],
+    .tb-select__group[hidden] {
+        display: none;
     }
 
     .tb-select__option {
@@ -3128,7 +3167,8 @@
         }
     }
 
-    .tb-autocomplete__status {
+    .tb-autocomplete__status,
+    .tb-select__no-results {
         padding: var(--tb-space-2) var(--tb-space-3);
         color: var(--tb-color-text-muted);
         font-size: var(--tb-font-size-sm);

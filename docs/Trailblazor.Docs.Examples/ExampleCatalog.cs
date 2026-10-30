@@ -589,13 +589,19 @@ public static class ExampleCatalog
                 "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
                 "With `Chips`, each chosen option shows as a chip. Backspace removes the last one and each chip has a "
                     + "remove button for the pointer; a removal is announced, and the list still deselects options.",
+                "With `Filterable`, opening the list moves focus to a filter box above it, a `combobox` with "
+                    + "`aria-autocomplete=\"list\"` named by `FilterLabel`. Typing on the closed select starts the "
+                    + "filter. Matching ignores case and accents, groups with no matches hide, and `NoResultsText` is "
+                    + "announced when nothing matches. Up and Down move, Enter chooses, Escape closes and returns focus "
+                    + "to the select.",
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select"],
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
-                + "select a `Comparer` so they still match their options.",
+                + "select a `Comparer` so they still match their options. The helper works the same on a `Filterable` "
+                + "select.",
         },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
             "A text field that suggests values as the user types, from a list or an async search.",

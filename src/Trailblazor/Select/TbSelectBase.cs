@@ -37,6 +37,20 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
     [Parameter]
     public bool Clearable { get; set; }
 
+    /// <summary>Puts a text box above the options that narrows them to those containing what is typed, for long
+    /// lists. The options are all on the page; to search a server as the user types, use
+    /// <see cref="TbAutocomplete{TValue}"/>. Read on the first render.</summary>
+    [Parameter]
+    public bool Filterable { get; set; }
+
+    /// <summary>Names the filter box and shows in it while it's empty. Defaults to "Filter".</summary>
+    [Parameter]
+    public string FilterLabel { get; set; } = "Filter";
+
+    /// <summary>Shown and announced when no option contains the filter's text. Defaults to "No matches".</summary>
+    [Parameter]
+    public string NoResultsText { get; set; } = "No matches";
+
     /// <summary>Whether the list is open. Bind it with <c>@bind-Open</c> to open or close the list from code, or to
     /// load options when it opens.</summary>
     [Parameter]

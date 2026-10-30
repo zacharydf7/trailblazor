@@ -152,6 +152,33 @@ public class SelectExtrasTests : BunitContext
         Assert.Equal([Trails[2]], chosen);
     }
 
+    [Fact]
+    public void Filter_ShouldPutAFilterBoxAboveTheListInOnePopup_WhenFilterable()
+    {
+        var cut = Render<TbSelect<Trail>>(parameters => parameters.Add(select => select.Filterable, true)
+            .Add(select => select.FilterLabel, "Find a trail").Add(select => select.NoResultsText, "No trails")
+            .Add(select => select.ChildContent, (RenderFragment)AddTrails));
+
+        var popup = cut.Find("[popover]");
+        var listbox = popup.QuerySelector("[role=listbox]")!;
+        var filter = popup.QuerySelector("[data-part=filter]")!;
+        Assert.Equal("combobox", filter.GetAttribute("role"));
+        Assert.Equal(listbox.Id, filter.GetAttribute("aria-controls"));
+        Assert.Equal("Find a trail", filter.GetAttribute("aria-label"));
+        Assert.Equal("No trails", popup.QuerySelector("[role=status]")!.GetAttribute("data-text"));
+        Assert.False(listbox.HasAttribute("popover"));
+    }
+
+    [Fact]
+    public void Filter_ShouldLeaveTheListAsThePopup_WhenNotFilterable()
+    {
+        var cut = Render<TbMultiSelect<Trail>>(parameters => parameters.Add(select => select.ChildContent,
+            (RenderFragment)AddTrails));
+
+        Assert.Equal("auto", cut.Find("[role=listbox]").GetAttribute("popover"));
+        Assert.Empty(cut.FindAll("[data-part=filter]"));
+    }
+
     private static string OptionId(IRenderedComponent<TbMultiSelect<Trail>> cut, int chip) =>
         cut.FindAll("[data-part=chip]")[chip].GetAttribute("data-option")!;
 

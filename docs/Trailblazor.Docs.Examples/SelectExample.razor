@@ -20,6 +20,12 @@
             <TbOption Value="@("Fern Gully")">Fern Gully</TbOption>
         </TbOptionGroup>
     </TbMultiSelect>
+    <TbSelect Label="Time zone" @bind-Value="_zone" Filterable Placeholder="Choose a time zone">
+        @foreach (var zone in Zones)
+        {
+            <TbOption Value="zone">@zone</TbOption>
+        }
+    </TbSelect>
     <TbSelect Label="Country" @bind-Value="_country" Disabled>
         <TbOption Value="@("Canada")">Canada</TbOption>
     </TbSelect>
@@ -27,7 +33,12 @@
 
 @code {
     private Speed? _shipping = Speed.Standard;
+    private static readonly string[] Zones = ["Anchorage", "Auckland", "Berlin", "Chicago", "Denver", "Halifax",
+        "Honolulu", "Johannesburg", "London", "Los Angeles", "Mexico City", "Mumbai", "New York", "Paris",
+        "São Paulo", "Singapore", "Sydney", "Tokyo", "Toronto", "Zürich"];
+
     private string? _country = "Canada";
+    private string? _zone;
     private IReadOnlyList<string> _topics = ["Orders"];
     private IReadOnlyList<string> _trails = ["Pine Hollow", "Fern Gully"];
 

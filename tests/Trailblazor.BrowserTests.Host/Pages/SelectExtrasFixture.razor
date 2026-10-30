@@ -12,12 +12,32 @@
     </TbMultiSelect>
     <output data-testid="trails">@string.Join(", ", _trails.Select(trail => trail.Name))</output>
     <TbButton OnClick="Reload">Reload</TbButton>
+    <TbSelect TValue="string" Label="Park" @bind-Value="_park" Filterable>
+        <TbOptionGroup Label="North">
+            <TbOption Value="@("Pine Hollow")" />
+            <TbOption Value="@("Eagle Ridge")" />
+        </TbOptionGroup>
+        <TbOptionGroup Label="South">
+            <TbOption Value="@("Cedar Flats")" />
+            <TbOption Value="@("Cañon Rim")" />
+        </TbOptionGroup>
+    </TbSelect>
+    <output data-testid="park">@_park</output>
+    <TbMultiSelect TItem="string" Label="Parks" @bind-Value="_parks" Filterable>
+        <TbOption Value="@("Pine Hollow")" />
+        <TbOption Value="@("Eagle Ridge")" />
+        <TbOption Value="@("Cedar Flats")" />
+    </TbMultiSelect>
+    <output data-testid="parks">@string.Join(", ", _parks)</output>
+    <TbButton>After</TbButton>
 </TbStack>
 
 @code {
     private static readonly Trail[] Trails = [new(1, "Pine Hollow"), new(2, "Eagle Ridge"), new(3, "Cedar Flats")];
 
     private IReadOnlyList<Trail> _trails = [Trails[0], Trails[2]];
+    private string? _park;
+    private IReadOnlyList<string> _parks = [];
 
     // New instances, as a page gets after loading its data again; the comparer still matches them to the options.
     private void Reload() => _trails = [.. _trails.Select(trail => new Trail(trail.Id, trail.Name))];
