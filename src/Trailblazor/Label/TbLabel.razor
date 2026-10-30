@@ -1,0 +1,94 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A div, because the info tip's popover holds block content. *@
+<div @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-label", Class)">
+    @if (For is null)
+    {
+        <span id="@TextId" data-part="text" class="tb-label__text">@LabelContent</span>
+    }
+    else
+    {
+        <label id="@TextId" for="@For" data-part="text" class="tb-label__text">@LabelContent</label>
+    }
+    @if (Info is not null || InfoContent is not null)
+    {
+        <TbPopover Label="@InfoButtonName" Icon="BuiltInIcons.Info" Variant="Variant.Text" Size="Size.Small"
+                   OpenOnHover Placement="PopoverPlacement.Top" data-part="info" class="tb-label__info">
+            @if (InfoContent is null)
+            {
+                <div class="tb-label__info-text tb-label__info-text--lines">@Info</div>
+            }
+            else
+            {
+                <div class="tb-label__info-text">@InfoContent</div>
+            }
+        </TbPopover>
+    }
+</div>
+
+@code {
+    /// <summary>The label's text, which also names its info button. Required with an info button.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>Content shown instead of <see cref="Text"/>. With an info button, set <see cref="Text"/> as well; it
+    /// names the button.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The id of the control the label names, which makes it a <c>&lt;label&gt;</c>. Without it, the label
+    /// is plain text, such as the heading of a group of controls.</summary>
+    [Parameter]
+    public string? For { get; set; }
+
+    /// <summary>An id for the label's text alone, without its info button, so a group of controls can name itself
+    /// with <c>aria-labelledby</c>.</summary>
+    [Parameter]
+    public string? TextId { get; set; }
+
+    /// <summary>Shows a marker that the control needs a value. The control itself must say so too, for example
+    /// with <c>Required</c> on a Trailblazor field.</summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>Text the info button shows, explaining the setting. Line breaks are kept.</summary>
+    [Parameter]
+    public string? Info { get; set; }
+
+    /// <summary>Content the info button shows instead of <see cref="Info"/>, such as a link to more help.</summary>
+    [Parameter]
+    public RenderFragment? InfoContent { get; set; }
+
+    /// <summary>The info button's name, followed by <see cref="Text"/>. Defaults to "Information about".</summary>
+    [Parameter]
+    public string InfoButtonLabel { get; set; } = "Information about";
+
+    private string InfoButtonName => $"{InfoButtonLabel} {Text}";
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if ((Info is not null || InfoContent is not null) && string.IsNullOrWhiteSpace(Text))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbLabel)} needs {nameof(Text)} to name its info button, even with {nameof(ChildContent)}.");
+        }
+    }
+
+    private RenderFragment LabelContent =>
+        @<text>
+            @if (ChildContent is null)
+            {
+                @Text
+            }
+            else
+            {
+                @ChildContent
+            }
+            @if (Required)
+            {
+                <span class="tb-label__required" aria-hidden="true">*</span>
+            }
+        </text>;
+}

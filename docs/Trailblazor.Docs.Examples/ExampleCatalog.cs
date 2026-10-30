@@ -307,6 +307,26 @@ public static class ExampleCatalog
             Target = new("progressbar", "Upload"),
             Blocks = ["tb-progress"],
         },
+        new("label", "Label", ExampleCategory.Inputs,
+            "A label for a control or a group of controls, with an optional info button that explains the setting.",
+            typeof(LabelExample))
+        {
+            Api = [typeof(TbLabel)],
+            Accessibility =
+            [
+                "With `For` it is a `<label>` tied to that control. Without it, it is plain text: give a group of "
+                    + "controls `aria-labelledby` pointing at its `TextId`, which leaves out the info button.",
+                "The info button is a toggletip: a button named \"Information about\" and the label's `Text`, which "
+                    + "opens a small panel on click, Enter, Space or hover, and closes on Escape.",
+                "The `Required` marker is only visual; mark the control itself as required too.",
+            ],
+            Target = new("button", "Information about Project code"),
+            Blocks = ["tb-label"],
+            TestingTip = "Open the info with "
+                + "`await page.Tb().Popover(\"Information about Project code\").OpenAsync()`, which returns its panel. "
+                + "The info button's name contains the label, so find the control by role with an exact name, as "
+                + "`GetByRole(AriaRole.Textbox, new() { Name = \"Project code\", Exact = true })`.",
+        },
         new("text-field", "Text field", ExampleCategory.Inputs,
             "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
         {
@@ -490,8 +510,8 @@ public static class ExampleCatalog
                     + "Tab past its last control closes it, and focus goes back to the trigger if it was in the panel.",
                 "With `OpenOnHover`, the panel also opens when the pointer rests on the trigger, without taking focus, "
                     + "and stays open while the pointer is over it (WCAG 1.4.13). Escape still closes it. A click on "
-                    + "the trigger, or working in the panel, keeps it open after the pointer leaves, and resting on the "
-                    + "trigger doesn't open it over another popover that is already open.",
+                    + "the trigger, or working in the panel, keeps it open after the pointer leaves, and resting on "
+                    + "the trigger doesn't open it over another popover that is already open.",
                 "A custom `Trigger` gets the same attributes through `context.Attributes`; put them on a button.",
             ],
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },
