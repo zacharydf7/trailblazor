@@ -1,14 +1,29 @@
 @namespace Trailblazor
+@using Microsoft.Extensions.Options
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inherits TbComponentBase
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
+@inject IOptions<TrailblazorOptions> TrailblazorOptions
 
 <span @ref="_anchor" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tooltip-anchor", Class)"
       style="@Style">
     @ChildContent
-    <span @ref="_tooltip" id="@_id" popover="manual" role="tooltip" data-part="tooltip" class="tb-tooltip">@Text</span>
+    <span @ref="_tooltip" id="@_id" popover="manual" role="tooltip" data-part="tooltip" class="tb-tooltip">
+        @if (Content is null)
+        {
+            @Text
+        }
+        else
+        {
+            @Content
+        }
+        @if (ShowArrow)
+        {
+            <span data-part="arrow" class="tb-tooltip__arrow"></span>
+        }
+    </span>
 </span>
 
 @code {
@@ -19,18 +34,61 @@
     private bool _disposed;
 
     /// <summary>The tooltip's text. It also becomes the trigger's accessible description, unless it only repeats the
-    /// trigger's <c>aria-label</c>.</summary>
-    [Parameter, EditorRequired]
-    public string Text { get; set; } = "";
+    /// trigger's <c>aria-label</c>. Give this or <see cref="Content"/>.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>Formatted content shown instead of <see cref="Text"/>, such as emphasis or a keyboard shortcut in
+    /// <c>&lt;kbd&gt;</c>. It describes the trigger and can't be reached with the keyboard, so it holds no links or
+    /// buttons.</summary>
+    [Parameter]
+    public RenderFragment? Content { get; set; }
 
     /// <summary>Which side of the trigger the tooltip appears on, read on the first render. It flips when there's no
-    /// room.</summary>
+    /// room. Defaults to <see cref="Placement.Top"/>.</summary>
     [Parameter]
     public Placement Placement { get; set; } = Placement.Top;
+
+    /// <summary>How the tooltip lines up with the trigger along that side, read on the first render. Defaults to
+    /// <see cref="PlacementAlign.Center"/>.</summary>
+    [Parameter]
+    public PlacementAlign Align { get; set; } = PlacementAlign.Center;
+
+    /// <summary>How long the pointer rests on the trigger before the tooltip appears, read on the first render.
+    /// Focus shows it at once. Defaults to the app's <see cref="TooltipSettings.ShowDelay"/>.</summary>
+    [Parameter]
+    public TimeSpan? ShowDelay { get; set; }
+
+    /// <summary>How long the tooltip stays after the pointer leaves the trigger, read on the first render. Defaults to
+    /// the app's <see cref="TooltipSettings.HideDelay"/>.</summary>
+    [Parameter]
+    public TimeSpan? HideDelay { get; set; }
+
+    /// <summary>Adds an arrow that points at the middle of the trigger.</summary>
+    [Parameter]
+    public bool ShowArrow { get; set; }
 
     /// <summary>The element the tooltip describes, usually a button.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Content is null && string.IsNullOrWhiteSpace(Text))
+        {
+            throw new InvalidOperationException($"{nameof(TbTooltip)} needs a {nameof(Text)} or {nameof(Content)}.");
+        }
+
+        if (!Fits(ShowDelay) || !Fits(HideDelay))
+        {
+            throw new ArgumentOutOfRangeException(Fits(ShowDelay) ? nameof(HideDelay) : nameof(ShowDelay),
+                $"A tooltip's delays run from zero to {TooltipSettings.MaxDelay}.");
+        }
+
+        static bool Fits(TimeSpan? delay) =>
+            delay is null || (delay >= TimeSpan.Zero && delay <= TooltipSettings.MaxDelay);
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -48,8 +106,16 @@
                 return;
             }
 
-            var options = new AnchoredPositionOptions { Side = Anchors.Side(Placement), Offset = 6 };
-            var handle = await module.InvokeAsync<IJSObjectReference?>("createTooltip", _anchor, _tooltip, options);
+            // The arrow sits in the gap, so the tooltip moves out to make room for it.
+            var options = new AnchoredPositionOptions
+            {
+                Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = ShowArrow ? 9 : 6,
+            };
+            var settings = TrailblazorOptions.Value.Tooltips;
+            var delays = new TooltipDelays((ShowDelay ?? settings.ShowDelay).TotalMilliseconds,
+                (HideDelay ?? settings.HideDelay).TotalMilliseconds);
+            var handle = await module.InvokeAsync<IJSObjectReference?>("createTooltip", _anchor, _tooltip, options,
+                delays);
             if (handle is null)
             {
                 return;
@@ -78,4 +144,6 @@
             await _handle.DisposeHandleAsync();
         }
     }
+
+    internal sealed record TooltipDelays(double Show, double Hide);
 }

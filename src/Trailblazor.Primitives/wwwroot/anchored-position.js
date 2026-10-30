@@ -64,6 +64,11 @@ function position(floating, anchor, options) {
     floating.style.left = `${point.x}px`;
     floating.style.top = `${point.y}px`;
     floating.dataset.side = toLogicalSide(side, rtl);
+    // How far along its edge the anchor's middle falls, so an arrow can point at it after the popup shifts to fit.
+    const center = side === 'top' || side === 'bottom'
+        ? anchorRect.left + anchorRect.width / 2 - point.x
+        : anchorRect.top + anchorRect.height / 2 - point.y;
+    floating.style.setProperty('--tb-anchor-center', `${center}px`);
 }
 
 function place(side, align, anchorRect, size, offset, rtl) {

@@ -112,4 +112,148 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(save).ToHaveAccessibleDescriptionAsync("Saved. Saves a copy");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldDescribeTheTriggerWithItsContent_WhenGivenRichContent(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+
+        await save.FocusAsync();
+
+        await Expect(page.GetByRole(AriaRole.Tooltip).Locator("kbd")).ToHaveTextAsync("Ctrl+S");
+        await Expect(save).ToHaveAccessibleDescriptionAsync("Saves a copy of the trail Ctrl+S");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldLineUpWithTheTriggersStartAndPointAtIt_WhenAlignedToTheStartWithAnArrow(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Saves a copy of the trail Ctrl+S" });
+
+        await save.FocusAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+
+        var trigger = await save.BoundingBoxAsync();
+        var box = await tooltip.BoundingBoxAsync();
+        var arrow = await tooltip.Locator("[data-part=arrow]").BoundingBoxAsync();
+        Assert.True(Math.Abs(box!.X - trigger!.X) <= 1, $"The tooltip starts at {box.X}, the trigger at {trigger.X}.");
+        Assert.True(box.Width > trigger.Width, "The tooltip should be wider, so its arrow isn't simply centered.");
+        AssertPointsAt(arrow!, trigger);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldKeepItsArrowOnTheTrigger_WhenTheTooltipShiftsToFitThePage(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var edge = page.GetByRole(AriaRole.Button, new() { Name = "Edge" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "A description that is much wider" });
+
+        await edge.FocusAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+
+        var trigger = await edge.BoundingBoxAsync();
+        var box = await tooltip.BoundingBoxAsync();
+        var arrow = await tooltip.Locator("[data-part=arrow]").BoundingBoxAsync();
+        Assert.True(box!.X > trigger!.X + trigger.Width / 2 - box.Width / 2, "The tooltip should have shifted to fit.");
+        AssertPointsAt(arrow!, trigger);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldWaitItsOwnDelay_WhenShowDelayIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var slow = page.GetByRole(AriaRole.Button, new() { Name = "Slow" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Takes its time" });
+        await slow.EvaluateAsync("""
+            button => {
+                const anchor = button.parentElement;
+                anchor.addEventListener('pointerenter', () => window.entered = performance.now());
+                anchor.querySelector('[role=tooltip]')
+                    .addEventListener('beforetoggle', () => window.opened = performance.now());
+            }
+            """);
+
+        await slow.HoverAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+
+        Assert.True(await page.EvaluateAsync<double>("() => window.opened - window.entered") >= 950);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldStayItsOwnDelay_WhenHideDelayIsSetAndThePointerLeaves(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var lingering = page.GetByRole(AriaRole.Button, new() { Name = "Lingering" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Lingers" });
+        await lingering.EvaluateAsync("""
+            button => {
+                const anchor = button.parentElement;
+                anchor.addEventListener('pointerleave', () => window.leftAt = performance.now());
+                anchor.querySelector('[role=tooltip]').addEventListener('beforetoggle', event => {
+                    if (event.newState === 'closed') {
+                        window.hiddenAt = performance.now();
+                    }
+                });
+            }
+            """);
+        await lingering.HoverAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+
+        await page.Mouse.MoveAsync(0, 0);
+        await Expect(tooltip).ToBeHiddenAsync();
+
+        Assert.True(await page.EvaluateAsync<double>("() => window.hiddenAt - window.leftAt") >= 950);
+    }
+
+    [Theory]
+    [MemberData(nameof(BrowsersAndDirections))]
+    public async Task Tooltip_ShouldPointItsArrowAcrossAtTheTrigger_WhenPlacedAtTheEnd(string browser, string name,
+        bool rightToLeft)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = name });
+        var tooltip = page.GetByRole(AriaRole.Tooltip).Filter(new() { Visible = true });
+
+        await trigger.FocusAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+
+        var anchor = (await trigger.BoundingBoxAsync())!;
+        var box = (await tooltip.BoundingBoxAsync())!;
+        var arrow = (await tooltip.Locator("[data-part=arrow]").BoundingBoxAsync())!;
+        Assert.True(rightToLeft ? box.X + box.Width <= anchor.X : box.X >= anchor.X + anchor.Width,
+            "The tooltip should sit after the trigger in the reading direction.");
+        var arrowMiddle = (X: arrow.X + arrow.Width / 2, Y: arrow.Y + arrow.Height / 2);
+        Assert.True(Math.Abs(arrowMiddle.Y - (anchor.Y + anchor.Height / 2)) <= 1.5,
+            $"The arrow's middle is at {arrowMiddle.Y}, the trigger's at {anchor.Y + anchor.Height / 2}.");
+        Assert.True(rightToLeft
+            ? arrowMiddle.X <= anchor.X && arrowMiddle.X >= box.X + box.Width / 2
+            : arrowMiddle.X >= anchor.X + anchor.Width && arrowMiddle.X <= box.X + box.Width / 2,
+            "The arrow should sit on the tooltip's edge that faces the trigger.");
+    }
+
+    public static TheoryData<string, string, bool> BrowsersAndDirections()
+    {
+        var data = new TheoryData<string, string, bool>();
+        foreach (var browser in AllBrowsers.Names)
+        {
+            data.Add(browser, "Forward", false);
+            data.Add(browser, "Onward", true);
+        }
+
+        return data;
+    }
+
+    // The arrow's middle lines up with the trigger's, and it sits between the two.
+    private static void AssertPointsAt(LocatorBoundingBoxResult arrow, LocatorBoundingBoxResult trigger)
+    {
+        var arrowMiddle = arrow.X + arrow.Width / 2;
+        var triggerMiddle = trigger.X + trigger.Width / 2;
+        Assert.True(Math.Abs(arrowMiddle - triggerMiddle) <= 1.5,
+            $"The arrow's middle is at {arrowMiddle}, the trigger's at {triggerMiddle}.");
+        Assert.True(arrow.Y + arrow.Height / 2 >= trigger.Y + trigger.Height || arrow.Y + arrow.Height / 2 <= trigger.Y,
+            "The arrow should sit outside the trigger, between it and the tooltip.");
+    }
 }

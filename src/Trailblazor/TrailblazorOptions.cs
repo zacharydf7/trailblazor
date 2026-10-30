@@ -8,4 +8,7 @@ public sealed class TrailblazorOptions
 
     /// <summary>What dialogs do when their own options leave it unset.</summary>
     public DialogSettings Dialogs { get; } = new();
+
+    /// <summary>How long tooltips wait before they appear and disappear.</summary>
+    public TooltipSettings Tooltips { get; } = new();
 }

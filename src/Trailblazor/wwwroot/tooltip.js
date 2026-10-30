@@ -1,12 +1,10 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
-const showDelay = 300;
-// The CSS bridges the gap onto the tooltip; this covers a path that strays off the bridge (WCAG 1.4.13 hoverable).
-const hideDelay = 300;
 
-// Hover and focus stay in the browser, so showing a tooltip sends nothing to the server.
-export function createTooltip(anchor, tooltip, options) {
+// Hover and focus stay in the browser, so showing a tooltip sends nothing to the server. The CSS bridges the gap onto
+// the tooltip, and the hide delay covers a path that strays off the bridge (WCAG 1.4.13 hoverable).
+export function createTooltip(anchor, tooltip, options, delays) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!anchor || !tooltip) {
         return null;
@@ -40,11 +38,11 @@ export function createTooltip(anchor, tooltip, options) {
     };
     const showSoon = () => {
         clearTimeout(timer);
-        timer = setTimeout(show, showDelay);
+        timer = setTimeout(show, delays.show);
     };
     const hideSoon = () => {
         clearTimeout(timer);
-        timer = setTimeout(hide, hideDelay);
+        timer = setTimeout(hide, delays.hide);
     };
     const onKeyDown = event => {
         if (event.key === 'Escape') {

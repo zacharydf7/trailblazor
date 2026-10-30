@@ -742,7 +742,7 @@ public static class ExampleCatalog
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or focus.", typeof(TooltipExample))
         {
-            Api = [typeof(TbTooltip)],
+            Api = [typeof(TbTooltip), typeof(TooltipSettings)],
             Accessibility =
             [
                 "The tooltip describes its anchor: its text goes into the `aria-describedby` of the first "
@@ -750,10 +750,18 @@ public static class ExampleCatalog
                     + "its own. A tooltip that only repeats that element's `aria-label` isn't added, so it isn't read "
                     + "twice.",
                 "It shows at once on focus and after a short delay on hover. Moving the pointer onto the tooltip "
-                    + "keeps it open, and Escape hides it.",
+                    + "keeps it open, and Escape hides it. `ShowDelay` and `HideDelay` change the delays for one "
+                    + "tooltip, and `options.Tooltips` in `AddTrailblazor` for the whole app.",
+                "`Content` can hold formatted text, such as a shortcut in `<kbd>`, which is read as part of the "
+                    + "description. The tooltip can't be reached with the keyboard, so it holds no links or buttons; "
+                    + "use a popover for those.",
+                "The arrow from `ShowArrow` is decoration and isn't read out.",
             ],
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
             Blocks = ["tb-tooltip", "tb-tooltip-anchor"],
+            TestingTip = "Focus or hover the trigger, then find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
+                + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit the "
+                + "tooltip's text is in the markup from the start, with `role=\"tooltip\"`.",
         },
         new("menu", "Menu", ExampleCategory.Overlays,
             "A list of actions that opens from a button, with submenus.", typeof(MenuExample))

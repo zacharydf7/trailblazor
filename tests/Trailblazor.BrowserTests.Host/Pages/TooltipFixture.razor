@@ -6,6 +6,32 @@
 </TbTooltip>
 <p id="saved-note">Saved.</p>
 
+@* Centered on a trigger at the page's edge, the tooltip shifts to fit, and its arrow follows the trigger. *@
+<div style="position: absolute; inset-inline-start: 0; top: 12rem">
+    <TbTooltip Text="A description that is much wider than the trigger it describes" ShowArrow>
+        <button>Edge</button>
+    </TbTooltip>
+</div>
+
+<TbTooltip Text="Takes its time" ShowDelay="TimeSpan.FromSeconds(1)">
+    <button>Slow</button>
+</TbTooltip>
+<TbTooltip Text="Lingers" HideDelay="TimeSpan.FromSeconds(1)">
+    <button>Lingering</button>
+</TbTooltip>
+
+@* Beside the trigger, the arrow points across at its middle, in either direction. *@
+<p>
+    <TbTooltip Text="Goes on" Placement="Placement.End" ShowArrow>
+        <button>Forward</button>
+    </TbTooltip>
+</p>
+<p dir="rtl">
+    <TbTooltip Text="Goes on to the left" Placement="Placement.End" ShowArrow>
+        <button>Onward</button>
+    </TbTooltip>
+</p>
+
 @code {
     private bool _saved;
 }

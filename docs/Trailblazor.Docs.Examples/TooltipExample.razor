@@ -1,6 +1,6 @@
 @using Trailblazor.Docs.Examples
 
-<TbStack Row Gap="2" Align="Align.Center" Style="padding-block: var(--tb-space-10)">
+<TbStack Row Gap="2" Align="Align.Center" Wrap Style="padding-block: var(--tb-space-10)">
     <TbTooltip Text="Add an item">
         <TbIconButton Icon="ExampleIcons.Plus" AriaLabel="Add" />
     </TbTooltip>
@@ -9,5 +9,11 @@
     </TbTooltip>
     <TbTooltip Text="Shown below the button" Placement="Placement.Bottom">
         <TbButton Variant="Variant.Outlined">Below</TbButton>
+    </TbTooltip>
+    <TbTooltip Placement="Placement.Bottom" Align="PlacementAlign.Start" ShowArrow>
+        <Content>Saves a copy of the trail <kbd>Ctrl+S</kbd></Content>
+        <ChildContent>
+            <TbButton Variant="Variant.Outlined">Save</TbButton>
+        </ChildContent>
     </TbTooltip>
 </TbStack>

@@ -2538,6 +2538,48 @@
         width: var(--tb-anchored-offset);
     }
 
+    .tb-tooltip kbd {
+        padding: 0 0.3em;
+        border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+        border-radius: var(--tb-radius-sm);
+        font-family: var(--tb-font-family-mono);
+        font-size: 0.95em;
+    }
+
+    /* A square turned on its corner, half under the tooltip, kept clear of the rounded corners as it follows the
+       trigger's middle. */
+    .tb-tooltip__arrow {
+        --tb-tooltip-arrow-size: 8px;
+        --tb-tooltip-arrow-along: clamp(var(--tb-radius-sm),
+            calc(var(--tb-anchor-center, 50%) - var(--tb-tooltip-arrow-size) / 2),
+            calc(100% - var(--tb-radius-sm) - var(--tb-tooltip-arrow-size)));
+        position: absolute;
+        width: var(--tb-tooltip-arrow-size);
+        height: var(--tb-tooltip-arrow-size);
+        background: inherit;
+        rotate: 45deg;
+    }
+
+    .tb-tooltip[data-side="top"] > .tb-tooltip__arrow {
+        top: calc(100% - var(--tb-tooltip-arrow-size) / 2);
+        left: var(--tb-tooltip-arrow-along);
+    }
+
+    .tb-tooltip[data-side="bottom"] > .tb-tooltip__arrow {
+        bottom: calc(100% - var(--tb-tooltip-arrow-size) / 2);
+        left: var(--tb-tooltip-arrow-along);
+    }
+
+    .tb-tooltip[data-side="start"] > .tb-tooltip__arrow {
+        inset-inline-start: calc(100% - var(--tb-tooltip-arrow-size) / 2);
+        top: var(--tb-tooltip-arrow-along);
+    }
+
+    .tb-tooltip[data-side="end"] > .tb-tooltip__arrow {
+        inset-inline-end: calc(100% - var(--tb-tooltip-arrow-size) / 2);
+        top: var(--tb-tooltip-arrow-along);
+    }
+
     .tb-menu {
         display: inline-flex;
     }
