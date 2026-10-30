@@ -7,6 +7,19 @@
     }
     <TbAlert Tone="Tone.Success" Icon="ExampleIcons.Check">Saved with an icon.</TbAlert>
     <TbAlert Dense>A dense alert for tight spaces.</TbAlert>
+    <TbAlert Tone="Tone.Danger" Variant="AlertVariant.Filled" Title="Payment failed" data-testid="filled"
+             OnClose="() => { }">
+        <ChildContent>The card was declined. Check its details or use another card.</ChildContent>
+        <Actions><TbButton Size="Size.Small" Variant="Variant.Outlined">Update the card</TbButton></Actions>
+    </TbAlert>
+    <TbAlert Tone="Tone.Success" Variant="AlertVariant.Outlined" Title="Trail saved" data-testid="outlined">
+        Everyone on the trip can see it now.
+    </TbAlert>
+    <TbAlert Tone="Tone.Warning" Title="Couldn't sync" data-testid="actions">
+        <ChildContent>Your latest changes are only on this device.</ChildContent>
+        <Actions><TbButton Size="Size.Small" Variant="Variant.Outlined">Try again</TbButton></Actions>
+    </TbAlert>
+    <TbAlert ShowIcon="false">An alert with no icon.</TbAlert>
     @if (_showClosable)
     {
         <TbAlert Tone="Tone.Warning" OnClose="() => _showClosable = false" data-testid="closable">

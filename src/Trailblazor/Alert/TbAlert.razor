@@ -2,13 +2,24 @@
 @inherits TbComponentBase
 
 <div role="@(Tone is Tone.Danger or Tone.Warning ? "alert" : "status")" @attributes="AdditionalAttributes"
-     class="@ClassNames.Join("tb-alert", ClassNames.Modifier("tb-alert", Tone), Dense ? "tb-alert--dense" : null, Class)"
+     class="@ClassNames.Join("tb-alert", ClassNames.Modifier("tb-alert", Tone),
+                ClassNames.Modifier("tb-alert", Variant), Dense ? "tb-alert--dense" : null, Class)"
      style="@Style">
-    @if (Icon is { } icon)
+    @if (ShowIcon)
     {
-        <TbIcon Icon="icon" data-part="icon" Class="@ClassNames.Join("tb-alert__icon", Classes?.Icon)" />
+        <TbIcon Icon="@(Icon ?? ToneIcon)" data-part="icon" Class="@ClassNames.Join("tb-alert__icon", Classes?.Icon)" />
     }
-    <div data-part="message" class="@ClassNames.Join("tb-alert__message", Classes?.Message)">@ChildContent</div>
+    <div class="tb-alert__content">
+        @if (Title is not null)
+        {
+            <div data-part="title" class="@ClassNames.Join("tb-alert__title", Classes?.Title)">@Title</div>
+        }
+        <div data-part="message" class="@ClassNames.Join("tb-alert__message", Classes?.Message)">@ChildContent</div>
+        @if (Actions is not null)
+        {
+            <div data-part="actions" class="@ClassNames.Join("tb-alert__actions", Classes?.Actions)">@Actions</div>
+        }
+    </div>
     @if (OnClose.HasDelegate)
     {
         <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@CloseLabel" Size="Size.Small" OnClick="OnClose"
@@ -23,9 +34,25 @@
     [Parameter]
     public Tone Tone { get; set; } = Tone.Info;
 
-    /// <summary>An icon before the message.</summary>
+    /// <summary>How strongly the alert stands out. Defaults to <see cref="AlertVariant.Soft"/>.</summary>
+    [Parameter]
+    public AlertVariant Variant { get; set; }
+
+    /// <summary>A short heading above the message, such as "Payment failed".</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>The icon before the message. Defaults to one that matches the <see cref="Tone"/>.</summary>
     [Parameter]
     public Icon? Icon { get; set; }
+
+    /// <summary>Shows the icon. Turn it off for an alert with no icon at all.</summary>
+    [Parameter]
+    public bool ShowIcon { get; set; } = true;
+
+    /// <summary>Buttons or links under the message that act on it, such as "Retry".</summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
 
     /// <summary>Uses less padding, for alerts inside dense layouts.</summary>
     [Parameter]
@@ -46,4 +73,12 @@
     /// <summary>Extra CSS classes for the alert's inner parts.</summary>
     [Parameter]
     public AlertClasses? Classes { get; set; }
+
+    private Icon ToneIcon => Tone switch
+    {
+        Tone.Success => BuiltInIcons.Success,
+        Tone.Warning => BuiltInIcons.Warning,
+        Tone.Danger => BuiltInIcons.Error,
+        _ => BuiltInIcons.Info,
+    };
 }

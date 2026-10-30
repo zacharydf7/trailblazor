@@ -6,8 +6,14 @@ public sealed record AlertClasses
     /// <summary>Added to the icon slot (<c>data-part="icon"</c>).</summary>
     public string? Icon { get; init; }
 
+    /// <summary>Added to the title (<c>data-part="title"</c>).</summary>
+    public string? Title { get; init; }
+
     /// <summary>Added to the message (<c>data-part="message"</c>).</summary>
     public string? Message { get; init; }
+
+    /// <summary>Added to the actions (<c>data-part="actions"</c>).</summary>
+    public string? Actions { get; init; }
 
     /// <summary>Added to the close button (<c>data-part="close"</c>).</summary>
     public string? Close { get; init; }

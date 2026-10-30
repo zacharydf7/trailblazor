@@ -36,6 +36,60 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Alert_ShouldPaintItsFillOutlineAndControlsInItsTonesColors_WhenGivenAVariant(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/alert");
+
+        // The filled alert's background and text, the outlined alert's border and background, then the tokens.
+        var colors = await page.EvaluateAsync<string[]>("""
+            () => {
+                // A probe inside an element resolves that element's tokens.
+                const color = (value, parent = document.body) => {
+                    const probe = parent.appendChild(document.createElement('span'));
+                    probe.style.color = value;
+                    return getComputedStyle(probe).color;
+                };
+                const alert = document.querySelector('[data-testid=filled]');
+                const panel = alert.querySelector('[data-part=actions]').appendChild(document.createElement('div'));
+                panel.popover = 'auto';
+                const filled = getComputedStyle(alert);
+                const outlined = getComputedStyle(document.querySelector('[data-testid=outlined]'));
+                return [filled.backgroundColor, filled.color, outlined.borderTopColor, outlined.backgroundColor,
+                    color('var(--tb-color-danger)'), color('var(--tb-color-on-danger)'),
+                    color('var(--tb-color-success-text)'),
+                    getComputedStyle(alert.querySelector('[data-part=close]')).color,
+                    getComputedStyle(alert.querySelector('[data-part=actions] button')).borderTopColor,
+                    color('var(--tb-focus-ring-color)', alert.querySelector('[data-part=close]')),
+                    color('var(--tb-focus-ring-color)', panel.appendChild(document.createElement('div'))),
+                    color('var(--tb-focus-ring-color)')];
+            }
+            """);
+
+        Assert.Equal(colors[4..6], colors[0..2]);
+        Assert.Equal(colors[6], colors[2]);
+        Assert.Equal("rgba(0, 0, 0, 0)", colors[3]);
+        // On the fill, the close button, the action and the close button's focus ring take its text color.
+        Assert.Equal([colors[5], colors[5], colors[5]], colors[7..10]);
+        // A popup's panel in the alert, here a stand-in, keeps the page's focus ring.
+        Assert.Equal(colors[11], colors[10]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Alert_ShouldPutItsTitleAboveAndItsActionsBelowTheMessage_WhenGivenBoth(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/alert");
+        var alert = page.GetByTestId("actions");
+
+        var title = (await alert.Locator("[data-part=title]").BoundingBoxAsync())!;
+        var message = (await alert.Locator("[data-part=message]").BoundingBoxAsync())!;
+        var actions = (await alert.Locator("[data-part=actions]").BoundingBoxAsync())!;
+
+        Assert.True(title.Y + title.Height <= message.Y, "The title sits above the message.");
+        Assert.True(message.Y + message.Height <= actions.Y, "The actions sit below the message.");
+        await Expect(alert.GetByRole(AriaRole.Button, new() { Name = "Try again" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Progress_ShouldFillItsShareOfTheTrack_WhenGivenAValue(string browser)
     {
         var page = await OpenAsync(browser, "/examples/progress");

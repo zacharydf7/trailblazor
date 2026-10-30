@@ -1849,40 +1849,102 @@
     .tb-alert--primary {
         --tb-alert-subtle: var(--tb-color-primary-subtle);
         --tb-alert-accent: var(--tb-color-primary-text);
+        --tb-alert-fill: var(--tb-color-primary);
+        --tb-alert-on-fill: var(--tb-color-on-primary);
     }
 
     .tb-alert--neutral {
         --tb-alert-subtle: var(--tb-color-neutral-subtle);
         --tb-alert-accent: var(--tb-color-neutral-text);
+        --tb-alert-fill: var(--tb-color-neutral);
+        --tb-alert-on-fill: var(--tb-color-on-neutral);
     }
 
     .tb-alert--success {
         --tb-alert-subtle: var(--tb-color-success-subtle);
         --tb-alert-accent: var(--tb-color-success-text);
+        --tb-alert-fill: var(--tb-color-success);
+        --tb-alert-on-fill: var(--tb-color-on-success);
     }
 
     .tb-alert--warning {
         --tb-alert-subtle: var(--tb-color-warning-subtle);
         --tb-alert-accent: var(--tb-color-warning-text);
+        --tb-alert-fill: var(--tb-color-warning);
+        --tb-alert-on-fill: var(--tb-color-on-warning);
     }
 
     .tb-alert--danger {
         --tb-alert-subtle: var(--tb-color-danger-subtle);
         --tb-alert-accent: var(--tb-color-danger-text);
+        --tb-alert-fill: var(--tb-color-danger);
+        --tb-alert-on-fill: var(--tb-color-on-danger);
     }
 
     .tb-alert--info {
         --tb-alert-subtle: var(--tb-color-info-subtle);
         --tb-alert-accent: var(--tb-color-info-text);
+        --tb-alert-fill: var(--tb-color-info);
+        --tb-alert-on-fill: var(--tb-color-on-info);
     }
 
     .tb-alert__icon {
         color: var(--tb-alert-accent);
     }
 
-    .tb-alert__message {
+    .tb-alert--filled {
+        --tb-alert-page-ring: var(--tb-focus-ring-color);
+        border-inline-start-color: transparent;
+        background: var(--tb-alert-fill);
+        color: var(--tb-alert-on-fill);
+    }
+
+    .tb-alert--filled .tb-alert__icon {
+        color: inherit;
+    }
+
+    /* On a solid fill, focus rings and buttons, the close button among them, take its text color so they stay
+       readable. A popup's panel inside the alert has the page's own background, so it sets the page's ring back,
+       which its contents inherit, and its buttons keep their own tokens. */
+    .tb-alert--filled > * {
+        --tb-focus-ring-color: var(--tb-alert-on-fill);
+    }
+
+    .tb-alert--filled [popover] {
+        --tb-focus-ring-color: var(--tb-alert-page-ring);
+    }
+
+    .tb-alert--filled .tb-button:not([popover] *) {
+        --tb-button-text: var(--tb-alert-on-fill);
+        --tb-button-subtle: color-mix(in oklch, var(--tb-alert-on-fill) 16%, transparent);
+        --tb-button-fill: var(--tb-alert-on-fill);
+        --tb-button-fill-hover: color-mix(in oklch, var(--tb-alert-on-fill) 88%, var(--tb-alert-fill));
+        --tb-button-fill-active: color-mix(in oklch, var(--tb-alert-on-fill) 76%, var(--tb-alert-fill));
+        --tb-button-on-fill: var(--tb-alert-fill);
+    }
+
+    .tb-alert--outlined {
+        border: 1px solid var(--tb-alert-accent);
+        background: none;
+    }
+
+    .tb-alert__content {
+        display: flex;
         flex: 1 1 auto;
+        flex-direction: column;
+        gap: var(--tb-space-1);
         min-width: 0;
+    }
+
+    .tb-alert__title {
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-alert__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-2);
+        margin-block-start: var(--tb-space-1);
     }
 
     .tb-alert__close {

@@ -41,6 +41,15 @@ internal static class BuiltInIcons
     public static Icon Info { get; } = new("<path d=\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"
         + "m0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z\" />");
 
+    public static Icon Success { get; } = new("<path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 "
+        + "0-16 8 8 0 0 1 0 16zm-1.5-6.4-2.4-2.4-1.4 1.4 3.8 3.8 6.8-6.8-1.4-1.4z\" />");
+
+    public static Icon Warning { get; } =
+        new("<path d=\"M12 2 1 21h22zm0 4.2 7.5 12.8h-15zM11 10h2v5h-2zm0 6h2v2h-2z\" />");
+
+    public static Icon Error { get; } = new("<path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 "
+        + "8 8 0 0 1 0 16zM11 7h2v6h-2zm0 8h2v2h-2z\" />");
+
     public static Icon Maximize { get; } = new("<path d=\"M4 4h16v16H4zm2 2v12h12V6z\" />");
 
     public static Icon Restore { get; } = new("<path d=\"M8 4h12v12h-2V6H8zM4 8h12v12H4zm2 2v8h8v-8z\" />");

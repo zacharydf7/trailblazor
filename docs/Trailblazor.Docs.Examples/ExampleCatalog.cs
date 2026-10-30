@@ -342,7 +342,12 @@ public static class ExampleCatalog
                     + "other tones have `role=\"status\"`, read out when the reader is idle.",
                 "Screen readers may not read a status alert that is added to the page with its message already in "
                     + "it. Add it empty and then set the message, or use `IAnnouncer`.",
-                "The icon is decorative. The close button is named by `CloseLabel`, \"Close\" by default.",
+                "The icon is decorative, so the `Title` and message must carry the meaning. Success, Warning, Danger "
+                    + "and Info each have their own icon shape, so those tones don't rest on color alone. The close "
+                    + "button is named by `CloseLabel`, \"Close\" by default.",
+                "In a `Filled` alert, buttons and the focus ring take the alert's text color, so they stay readable "
+                    + "on the fill.",
+                "`Actions` sit after the message, so screen readers reach them after hearing it.",
             ],
             Target = new("alert") { Text = "A danger alert." },
             Blocks = ["tb-alert"],
