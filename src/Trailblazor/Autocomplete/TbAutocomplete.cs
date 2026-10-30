@@ -117,6 +117,9 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private string ListboxId => $"{FieldId}-listbox";
 
     /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         base.OnParametersSet();

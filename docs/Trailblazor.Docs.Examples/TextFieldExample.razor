@@ -10,9 +10,10 @@
     <TbTextField Label="Age" @bind-Value="_age" data-testid="age">
         <End>years</End>
     </TbTextField>
-    <TbTextField Label="Handle" Value="@_handle" ValueChanged="(string? name) => ChangeHandle(name)"
-                 Error="@_handleError" UpdateOnInput HelperText="Try robin, who already has an account." />
-    <TbButton Variant="Variant.Outlined" OnClick="CheckHandle">Check the handle</TbButton>
+    <TbTextField @ref="_handleField" Label="Handle" Value="@_handle"
+                 ValueChanged="(string? name) => ChangeHandle(name)" Error="@_handleError" UpdateOnInput
+                 HelperText="Try robin, who already has an account." />
+    <TbButton Variant="Variant.Outlined" OnClick="CheckHandleAsync">Check the handle</TbButton>
     <TbTextField Label="Notes" @bind-Value="_notes" Lines="3" Placeholder="Anything we should know?" />
     <TbTextField Label="Account" Value="@("Read only")" Disabled />
 </TbStack>
@@ -23,13 +24,22 @@
     private int _age = 30;
     private string? _notes;
     private string? _handle;
+    private TbTextField<string> _handleField = default!;
     private string? _handleError;
 
     private static IEnumerable<string> RequireName(string? name) =>
         string.IsNullOrWhiteSpace(name) ? ["Enter a name."] : [];
 
-    // Stands in for asking a server, which answers with an error the field shows until the name changes.
-    private void CheckHandle() => _handleError = _handle == "robin" ? "That handle is taken." : null;
+    // Stands in for asking a server, which answers with an error the field shows until the name changes. A taken
+    // name is selected, so typing replaces it.
+    private async Task CheckHandleAsync()
+    {
+        _handleError = _handle == "robin" ? "That handle is taken." : null;
+        if (_handleError is not null)
+        {
+            await _handleField.SelectTextAsync();
+        }
+    }
 
     private void ChangeHandle(string? name)
     {

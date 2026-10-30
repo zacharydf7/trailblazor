@@ -110,6 +110,9 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         || _endText is not null;
 
     /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _startInput.FocusAsync(preventScroll);
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         if (typeof(TDate) != typeof(DateOnly) && typeof(TDate) != typeof(DateTime))

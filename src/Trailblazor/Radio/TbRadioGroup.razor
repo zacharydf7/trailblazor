@@ -1,9 +1,12 @@
 @namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
 @typeparam TValue
 @inherits TbFieldBase<TValue>
+@inject JsModuleLoader Modules
 
 @* Radios that share a name already give one tab stop and arrow-key selection, so no script is needed. *@
-<fieldset @attributes="AdditionalAttributes" role="radiogroup" disabled="@Disabled" style="@Style"
+<fieldset @attributes="AdditionalAttributes" @ref="_group" role="radiogroup" disabled="@Disabled" style="@Style"
           aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
           aria-describedby="@DescribedBy"
           class="@ClassNames.Join("tb-radio-group", Errors.Count > 0 ? "tb-radio-group--invalid" : null,
@@ -24,6 +27,8 @@
 </fieldset>
 
 @code {
+    private ElementReference _group;
+
     /// <summary>The group's <see cref="TbRadio{TValue}"/> options.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -35,6 +40,14 @@
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
     public ChoiceClasses? Classes { get; set; }
+
+    /// <inheritdoc />
+    public override async ValueTask FocusAsync(bool preventScroll = false)
+    {
+        // Focus goes where Tab would put it: on the checked radio, or else the first radio that isn't disabled.
+        var module = await Modules.ImportAsync("./_content/Trailblazor/field.js");
+        await module.InvokeVoidAsync("focusRadio", _group, preventScroll);
+    }
 
     // Radios sharing a name form one group, so only a static form post, which needs it, gets the bound path.
     internal string GroupName => (RendererInfo.IsInteractive

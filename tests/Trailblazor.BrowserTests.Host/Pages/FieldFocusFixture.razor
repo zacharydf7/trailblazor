@@ -1,0 +1,89 @@
+@page "/field-focus"
+
+<TbTextField Label="Name" @bind-Value="_name" @ref="_nameField" data-testid="name" />
+<TbNumberField TValue="int" Label="Copies" @bind-Value="_copies" @ref="_copiesField" data-testid="copies" />
+<TbCheckbox TValue="bool" Label="Subscribe" @bind-Value="_subscribe" @ref="_subscribeField" data-testid="subscribe" />
+@* With nothing checked, focus skips the disabled first radio, as Tab does. *@
+<TbRadioGroup TValue="string" Label="Size" @bind-Value="_size" @ref="_sizeField" data-testid="size">
+    <TbRadio Value="@("Small")" Disabled>Small</TbRadio>
+    <TbRadio Value="@("Medium")">Medium</TbRadio>
+</TbRadioGroup>
+<TbRadioGroup TValue="string" Label="Pace" @bind-Value="_pace" @ref="_paceField" data-testid="pace">
+    <TbRadio Value="@("Slow")">Slow</TbRadio>
+    <TbRadio Value="@("Fast")">Fast</TbRadio>
+</TbRadioGroup>
+<TbSelect TValue="string" Label="Trail" @bind-Value="_trail" @ref="_trailField" data-testid="trail">
+    <TbOption Value="@("Ridge loop")" />
+</TbSelect>
+<TbListBox TValue="string" Label="Camp" @bind-Value="_camp" @ref="_campField" data-testid="camp">
+    <TbOption Value="@("Lakeside")" />
+</TbListBox>
+<TbAutocomplete TValue="string" Label="Town" @bind-Value="_town" Items="_towns" @ref="_townField" data-testid="town" />
+<TbDateRangePicker TDate="DateOnly" Label="Dates" @bind-Value="_dates" @ref="_datesField" data-testid="dates" />
+<TbColorPicker Label="Color" @bind-Value="_color" @ref="_colorField" data-testid="color" />
+<TbFileUpload Label="Photos" @ref="_photosField" data-testid="photos" />
+<TbSelect TValue="string" Label="Region" Disabled @ref="_regionField" data-testid="region">
+    <TbOption Value="@("North")" />
+</TbSelect>
+<TbListBox TValue="string" Label="Site" Disabled @ref="_siteField" data-testid="site">
+    <TbOption Value="@("Meadow")" />
+</TbListBox>
+<TbSlider TValue="int" Label="Volume" @bind-Value="_volume" @ref="_volumeField" data-testid="volume" />
+<TbRangeSlider TValue="int" Label="Price" @bind-Value="_price" @ref="_priceField" data-testid="price" />
+
+<button type="button" @onclick="() => _nameField.FocusAsync()">Focus name</button>
+<button type="button" @onclick="() => _copiesField.FocusAsync()">Focus copies</button>
+<button type="button" @onclick="() => _subscribeField.FocusAsync()">Focus subscribe</button>
+<button type="button" @onclick="() => _sizeField.FocusAsync()">Focus size</button>
+<button type="button" @onclick="() => _paceField.FocusAsync()">Focus pace</button>
+<button type="button" @onclick="() => _trailField.FocusAsync()">Focus trail</button>
+<button type="button" @onclick="() => _campField.FocusAsync()">Focus camp</button>
+<button type="button" @onclick="() => _townField.FocusAsync()">Focus town</button>
+<button type="button" @onclick="() => _datesField.FocusAsync()">Focus dates</button>
+<button type="button" @onclick="() => _colorField.FocusAsync()">Focus color</button>
+<button type="button" @onclick="() => _photosField.FocusAsync()">Focus photos</button>
+<button type="button" @onclick="() => _volumeField.FocusAsync()">Focus volume</button>
+<button type="button" @onclick="() => _priceField.FocusAsync()">Focus price</button>
+<button type="button" @onclick="() => _nameField.SelectTextAsync()">Select the name</button>
+@* The count shows each call has finished, so a test can check that focus stayed where it was. *@
+<button type="button" @onclick="() => CountAsync(_regionField.FocusAsync())">Focus region</button>
+<button type="button" @onclick="() => CountAsync(_siteField.FocusAsync())">Focus site</button>
+<output data-testid="calls">@_calls</output>
+
+@code {
+    private readonly string[] _towns = ["Pine Hollow", "Cedar Falls"];
+    private string? _name = "Ada Lovelace";
+    private int _copies;
+    private bool _subscribe;
+    private string? _size;
+    private string? _pace = "Fast";
+    private string? _trail;
+    private string? _camp;
+    private string? _town;
+    private DateRange<DateOnly> _dates;
+    private string? _color;
+    private int _volume;
+    private SliderRange<int> _price;
+    private TbTextField<string> _nameField = default!;
+    private TbNumberField<int> _copiesField = default!;
+    private TbCheckbox<bool> _subscribeField = default!;
+    private TbRadioGroup<string> _sizeField = default!;
+    private TbRadioGroup<string> _paceField = default!;
+    private TbSelect<string> _trailField = default!;
+    private TbListBox<string> _campField = default!;
+    private TbAutocomplete<string> _townField = default!;
+    private TbDateRangePicker<DateOnly> _datesField = default!;
+    private TbColorPicker _colorField = default!;
+    private TbFileUpload _photosField = default!;
+    private TbSlider<int> _volumeField = default!;
+    private TbRangeSlider<int> _priceField = default!;
+    private TbSelect<string> _regionField = default!;
+    private TbListBox<string> _siteField = default!;
+    private int _calls;
+
+    private async Task CountAsync(ValueTask focus)
+    {
+        await focus;
+        _calls++;
+    }
+}

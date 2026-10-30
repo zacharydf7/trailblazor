@@ -4,7 +4,8 @@
 
 @Layout(InputId, null, Fraction(Number), @<text>
     @* @bind keeps the thumb where the user put it while a round trip is in flight. *@
-    <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="range"
+    <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+           type="range"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Number)"
            @bind:set="SetAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@ValueText" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
@@ -13,10 +14,15 @@
 </text>)
 
 @code {
+    private ElementReference _input;
+
     /// <summary>Turns a value into the text shown above the thumb and read by screen readers, such as "40%".
     /// Defaults to the number itself.</summary>
     [Parameter]
     public Func<TValue?, string>? ValueFormatter { get; set; }
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
 
     private protected override Type NumberType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 

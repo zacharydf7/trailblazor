@@ -6,7 +6,8 @@
 @Layout(StartId, Fraction(Start), Fraction(End), @<text>
     <span id="@($"{StartId}-name")" hidden>@(StartLabel ?? Localizer[TbStrings.RangeSliderStart])</span>
     <span id="@($"{EndId}-name")" hidden>@(EndLabel ?? Localizer[TbStrings.RangeSliderEnd])</span>
-    <input @attributes="InputAttributes" data-part="start-thumb" id="@StartId" name="@NameOf("Start")" type="range"
+    <input @attributes="InputAttributes" @ref="_start" data-part="start-thumb" id="@StartId" name="@NameOf("Start")"
+           type="range"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Start)"
            @bind:set="SetStartAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(Start)" aria-labelledby="@Names(StartId)"
@@ -23,6 +24,11 @@
 </text>)
 
 @code {
+    private ElementReference _start;
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _start.FocusAsync(preventScroll);
+
     /// <summary>Names the lower thumb, after the field's label. Defaults to the app's text for <see
     /// cref="TbStrings.RangeSliderStart"/>, "Minimum" in English.</summary>
     [Parameter]

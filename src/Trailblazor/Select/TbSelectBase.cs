@@ -112,6 +112,11 @@ public abstract partial class TbSelectBase<TValue> : TbFieldBase<TValue>, ISelec
 
     private protected abstract string? FormatItem(object? item);
 
+    // Disabled, it is still a focusable element, kept so screen readers find it, so it refuses focus here.
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) =>
+        Disabled ? ValueTask.CompletedTask : _combobox.FocusAsync(preventScroll);
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {

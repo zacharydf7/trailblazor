@@ -43,6 +43,11 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
 
     private protected abstract string? FormatItem(object? item);
 
+    // Disabled, it is still a focusable element, kept so screen readers find it, so it refuses focus here.
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) =>
+        Disabled ? ValueTask.CompletedTask : _listbox.FocusAsync(preventScroll);
+
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

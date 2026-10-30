@@ -63,6 +63,10 @@ public partial class TbFileUpload
         : string.Join(" ", new[] { InputDescribedBy, RejectedId }.OfType<string>());
 
     /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) =>
+        _input!.Element!.Value.FocusAsync(preventScroll);
+
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && RendererInfo.IsInteractive)
@@ -113,27 +117,19 @@ public partial class TbFileUpload
         await SetValueAsync(chosen.Count == 0 ? null : chosen);
     }
 
+    // The button that was pressed goes with its file, so focus moves to the input rather than the page.
     private async Task RemoveAsync(IBrowserFile file)
     {
         var left = Files.Where(other => other != file).ToList();
         await SetValueAsync(left.Count == 0 ? null : left);
-        await FocusInputAsync();
+        await FocusAsync();
     }
 
     private async Task ClearAsync()
     {
         _rejected.Clear();
         await SetValueAsync(null);
-        await FocusInputAsync();
-    }
-
-    // The button that was pressed goes with its file, so focus moves to the input rather than the page.
-    private async Task FocusInputAsync()
-    {
-        if (_input?.Element is { } input)
-        {
-            await input.FocusAsync();
-        }
+        await FocusAsync();
     }
 
     // An accept list names extensions such as .pdf, types such as application/pdf, or families such as image/*.

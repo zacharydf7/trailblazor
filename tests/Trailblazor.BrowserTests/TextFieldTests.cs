@@ -76,6 +76,7 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await handle.PressSequentiallyAsync("robin");
         await page.GetByRole(AriaRole.Button, new() { Name = "Check the handle" }).ClickAsync();
         await Expect(handle).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(handle).ToBeFocusedAsync();
         await Expect(handle).ToHaveAccessibleDescriptionAsync(
             "Try robin, who already has an account. That handle is taken.");
         await Expect(page.Locator("[data-part=announcer] [role=status]")).ToContainTextAsync("That handle is taken.");

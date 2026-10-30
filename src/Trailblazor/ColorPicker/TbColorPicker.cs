@@ -9,6 +9,7 @@ namespace Trailblazor;
 /// browser's eyedropper. Bind it with <c>@bind-Value</c> to a hex string such as <c>#336699</c>.</summary>
 public partial class TbColorPicker : IAsyncDisposable
 {
+    private ElementReference _input;
     private ElementReference _pad;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<ColorPickerEvents>? _events;
@@ -68,6 +69,9 @@ public partial class TbColorPicker : IAsyncDisposable
     private ColorValue? Color => ColorValue.TryParse(Value, Alpha, out var color) ? color : null;
 
     private ColorValue Picked => ColorValue.FromHsv(_hue, _saturation, _brightness, _alpha);
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

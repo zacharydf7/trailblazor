@@ -39,6 +39,28 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public async Task FocusAsync_ShouldFocusTheInput_WhenCalled()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Lines, 3));
+
+        await cut.InvokeAsync(() => cut.Instance.FocusAsync());
+
+        JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(cut.Find("textarea"));
+    }
+
+    [Fact]
+    public async Task SelectTextAsync_ShouldSelectTheInputsText_WhenCalled()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/field.js");
+        module.SetupVoid("selectText", _ => true).SetVoidResult();
+        var cut = Render<TbTextField<string>>();
+
+        await cut.InvokeAsync(() => cut.Instance.SelectTextAsync());
+
+        module.VerifyInvoke("selectText").Arguments[0].ShouldBeElementReferenceTo(cut.Find("input"));
+    }
+
+    [Fact]
     public void Render_ShouldNotRaiseValueChanged_WhenTheParentSetsTheValue()
     {
         var raised = false;

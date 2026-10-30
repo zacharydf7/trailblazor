@@ -29,6 +29,9 @@
     [Parameter]
     public ChoiceClasses? Classes { get; set; }
 
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
     private protected virtual string Block => "tb-checkbox";
 
     private protected virtual string? Role => null;

@@ -158,6 +158,20 @@ public class TbRadioGroupTests : BunitContext
     // Every row's group binds a member with the same path, as a @foreach over rows does.
     private static System.Linq.Expressions.Expression<Func<string>> Answer(Row row) => () => row.Answer;
 
+    [Fact]
+    public async Task FocusAsync_ShouldAskTheScriptToFocusARadioInTheGroup_WhenCalled()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/field.js");
+        module.SetupVoid("focusRadio", _ => true).SetVoidResult();
+        var cut = RenderGroup("A4");
+
+        await cut.InvokeAsync(() => cut.Instance.FocusAsync(preventScroll: true));
+
+        var call = module.VerifyInvoke("focusRadio");
+        call.Arguments[0].ShouldBeElementReferenceTo(cut.Find("fieldset"));
+        Assert.Equal(true, call.Arguments[1]);
+    }
+
     private IRenderedComponent<TbRadioGroup<string>> RenderGroup(string value, Action<string>? onChanged = null,
         string? helperText = null, bool disabled = false, bool required = false,
         Func<string?, IEnumerable<string>>? validation = null) =>

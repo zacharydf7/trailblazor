@@ -193,6 +193,10 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         }
     }
 
+    /// <summary>Moves focus to the field's input, such as to the field to fix after a failed save.</summary>
+    /// <param name="preventScroll">Whether to keep the page from scrolling the field into view.</param>
+    public abstract ValueTask FocusAsync(bool preventScroll = false);
+
     /// <summary>Turns a value into the text the input shows.</summary>
     private protected virtual string? FormatValue(TValue? value) =>
         BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();

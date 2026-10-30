@@ -1,11 +1,14 @@
 @namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
 @typeparam TValue
 @inherits TbFieldBase<TValue>
+@inject JsModuleLoader Modules
 
 @Layout(Classes, @<text>
     @if (Lines > 1)
     {
-        <textarea @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+        <textarea @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                   rows="@Lines" @bind:get="Text" @bind:set="SetTextAsync" @bind:event="@BindEvent"
                   placeholder="@Placeholder" disabled="@Disabled"
                   aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
@@ -13,7 +16,7 @@
     }
     else
     {
-        <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+        <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                type="@Type.ToString().ToLowerInvariant()" @bind:get="Text" @bind:set="SetTextAsync"
                @bind:event="@BindEvent" placeholder="@Placeholder"
                disabled="@Disabled" aria-required="@(Required ? "true" : null)"
@@ -23,6 +26,8 @@
 </text>, Start, End)
 
 @code {
+    private ElementReference _input;
+
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
     public RenderFragment? Start { get; set; }
@@ -50,6 +55,16 @@
     /// <summary>Example text shown while the field is empty. It is not a label.</summary>
     [Parameter]
     public string? Placeholder { get; set; }
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
+    /// <summary>Moves focus to the field and selects its text, so typing replaces it.</summary>
+    public async ValueTask SelectTextAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/field.js");
+        await module.InvokeVoidAsync("selectText", _input);
+    }
 
     // @bind keeps keystrokes typed during a round trip; only the committing event is bound.
     private string BindEvent => UpdateOnInput ? "oninput" : "onchange";

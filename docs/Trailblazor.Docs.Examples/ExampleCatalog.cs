@@ -479,6 +479,8 @@ public static class ExampleCatalog
                     + "`[ValidatableType]`, it checks nested objects too, as the submit does.",
                 "A field's `Error`, such as a server's answer, keeps the form from submitting and `IsValid` false "
                     + "until the parent clears it.",
+                "Every field has `FocusAsync()`, to move focus from code, such as to the field a server's answer is "
+                    + "about. A disabled field doesn't take focus.",
                 "It posts as a static SSR form when given a `FormName`.",
             ],
             Target = new("form", "Trip sign-up"),
@@ -502,6 +504,8 @@ public static class ExampleCatalog
                     + "form on submit reads none out, so a form with several errors doesn't speak them all at once.",
                 "An `Error` from the parent, such as a server's answer, is linked the same way and read out once when "
                     + "it appears, even after a submit; it keeps its form from submitting until the parent clears it.",
+                "`@ref` the field and call `FocusAsync()` to move focus to it, or `SelectTextAsync()` to also select "
+                    + "its text so typing replaces it.",
                 "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "
                     + "browsers expose them.",
             ],
@@ -571,7 +575,8 @@ public static class ExampleCatalog
                 "`ValueFormatter` sets the text screen readers hear for the value (`aria-valuetext`), and the text "
                     + "`ShowValue` shows above the thumb.",
                 "A range slider's two thumbs are named by the label and \"Minimum\" or \"Maximum\" (`StartLabel` "
-                    + "and `EndLabel`), each a tab stop of its own, and neither can pass the other.",
+                    + "and `EndLabel`), each a tab stop of its own, and neither can pass the other. Its "
+                    + "`FocusAsync()` focuses the start thumb.",
                 "It posts in a static form, as a number or as `Start` and `End`. In forced-colors mode the track and "
                     + "its fill take system colors.",
             ],
@@ -593,6 +598,8 @@ public static class ExampleCatalog
                 "The group is one tab stop, and the arrow keys move between options and choose them, as browsers "
                     + "do for native radios.",
                 "`Disabled` on the group turns off every option.",
+                "`FocusAsync()` moves focus where Tab would: to the checked radio, or else the first radio that "
+                    + "isn't disabled.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
             ],
@@ -709,7 +716,8 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "The two date boxes and the calendar button sit in a `group` named by the `Label`; each box is "
-                    + "named by the label and \"Start date\" or \"End date\", and shows the format as its placeholder.",
+                    + "named by the label and \"Start date\" or \"End date\", and shows the format as its placeholder. "
+                    + "`FocusAsync()` focuses the start box.",
                 "The calendar is a `dialog` with a `grid` for each month. Arrows move by a day or a week, Home and End "
                     + "go to the start or end of the week, Page Up and Page Down change the month, and with Shift the "
                     + "year. Enter or Space picks a day; Escape closes and returns focus to the button.",

@@ -21,6 +21,8 @@
 </text>, Start, End)
 
 @code {
+    private ElementReference _input;
+
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
     public RenderFragment? Start { get; set; }
@@ -49,6 +51,9 @@
     [Parameter]
     public bool HideStepButtons { get; set; }
 
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
     private static Type NumberType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
     // Built here to mark the events as updating value, as @bind does, so a round trip can't undo newer steps.
@@ -75,6 +80,7 @@
         builder.AddAttribute(16, "ontbnumberleave",
             EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
         builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(17, element => _input = element);
         builder.CloseElement();
     };
 
