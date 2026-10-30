@@ -1155,6 +1155,127 @@
         white-space: pre-line;
     }
 
+    .tb-list {
+        --tb-list-item-height: 2.75rem;
+        --tb-list-item-padding: var(--tb-space-2) var(--tb-space-3);
+        --tb-list-current: var(--tb-color-primary-subtle);
+        --tb-list-on-current: var(--tb-color-primary-text);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: var(--tb-color-text);
+        font-family: var(--tb-font-family);
+    }
+
+    .tb-list--dense {
+        --tb-list-item-height: 2rem;
+        --tb-list-item-padding: var(--tb-space-1) var(--tb-space-3);
+    }
+
+    .tb-list--dividers {
+        gap: 0;
+    }
+
+    .tb-list--dividers > .tb-list__item + .tb-list__item {
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-list__item {
+        display: flex;
+        align-items: center;
+        min-block-size: var(--tb-list-item-height);
+        border-radius: var(--tb-radius-sm);
+    }
+
+    .tb-list__action,
+    .tb-list__content {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: var(--tb-space-3);
+        box-sizing: border-box;
+        min-inline-size: 0;
+        min-block-size: var(--tb-list-item-height);
+        padding: var(--tb-list-item-padding);
+    }
+
+    .tb-list__action {
+        border: none;
+        border-radius: inherit;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: start;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .tb-list__action:hover {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-list__action:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-list__item--selected,
+    .tb-list__item--selected .tb-list__action:hover {
+        background: var(--tb-list-current);
+        color: var(--tb-list-on-current);
+    }
+
+    .tb-list__item--selected .tb-list__primary {
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-list__item--disabled .tb-list__action,
+    .tb-list__item--disabled .tb-list__content {
+        color: var(--tb-color-text-disabled);
+        background: transparent;
+        cursor: default;
+    }
+
+    .tb-list__start,
+    .tb-list__end {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-list__end {
+        padding-inline-end: var(--tb-space-3);
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-list__text {
+        display: flex;
+        flex-direction: column;
+        min-inline-size: 0;
+    }
+
+    .tb-list__description {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-list__item--selected .tb-list__description {
+        color: inherit;
+    }
+
+    /* Forced colors drop the background, so the current item keeps a border instead. */
+    @media (forced-colors: active) {
+        .tb-list__item--selected {
+            outline: 2px solid Highlight;
+            outline-offset: -2px;
+        }
+    }
+
     /* As tall as its button, so the button never spills over the items beside it. */
     .tb-insert-divider {
         position: relative;
@@ -2461,14 +2582,15 @@
         font-weight: var(--tb-font-weight-medium);
     }
 
-    .tb-select__option[data-active] {
+    .tb-select__listbox .tb-select__option[data-active] {
         background: var(--tb-color-neutral-subtle);
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
     }
 
-    /* A box before each option of a multiple select shows which are chosen. */
-    .tb-select__listbox[aria-multiselectable="true"] .tb-select__option::before {
+    /* A box before each option of a multiple select or listbox shows which are chosen. */
+    .tb-select__listbox[aria-multiselectable="true"] .tb-select__option::before,
+    .tb-listbox[aria-multiselectable="true"] .tb-select__option::before {
         content: "";
         flex: none;
         box-sizing: border-box;
@@ -2479,7 +2601,8 @@
         border-radius: var(--tb-radius-sm);
     }
 
-    .tb-select__listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before {
+    .tb-select__listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before,
+    .tb-listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before {
         border-color: var(--tb-color-primary);
         background: var(--tb-color-primary);
         box-shadow: inset 0 0 0 2px var(--tb-color-surface-raised);
@@ -2487,7 +2610,8 @@
 
     /* Forced colors drop the fill and the inset ring, so a chosen box takes the system highlight instead. */
     @media (forced-colors: active) {
-        .tb-select__listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before {
+        .tb-select__listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before,
+        .tb-listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before {
             forced-color-adjust: none;
             border-color: Highlight;
             background: Highlight;
@@ -2498,6 +2622,50 @@
     .tb-select__option[aria-disabled="true"] {
         color: var(--tb-color-text-disabled);
         cursor: default;
+    }
+
+    .tb-field__control:has(> .tb-listbox) {
+        align-items: stretch;
+        padding: var(--tb-space-1);
+    }
+
+    .tb-listbox {
+        box-sizing: border-box;
+        max-block-size: calc(var(--tb-listbox-rows) * 2rem);
+        padding-block: 0;
+        overflow-y: auto;
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-listbox--native {
+        max-block-size: none;
+    }
+
+    .tb-listbox:focus .tb-select__option[data-active] {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-listbox:focus-visible .tb-select__option[data-active] {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    /* A multiple listbox shows its choices in the boxes, so only a single one fills the chosen option. */
+    .tb-listbox:not([aria-multiselectable="true"]) .tb-select__option[aria-selected="true"] {
+        background: var(--tb-color-primary-subtle);
+        color: var(--tb-color-primary-text);
+    }
+
+    .tb-listbox[aria-disabled="true"] .tb-select__option {
+        cursor: default;
+    }
+
+    @media (forced-colors: active) {
+        .tb-listbox:not([aria-multiselectable="true"]) .tb-select__option[aria-selected="true"] {
+            forced-color-adjust: none;
+            background: Highlight;
+            color: HighlightText;
+        }
     }
 
     .tb-tabs__list {

@@ -65,6 +65,7 @@
 
         await page.Tb().Select("Size").ChooseAsync("Medium");
         await page.Tb().Select("Notify me about").ChooseAsync("Orders", "Returns");
+        await page.Tb().ListBox("Gear to pack").ChooseAsync("Tent", "Stove");
 
         var filters = await page.Tb().Popover("Filters").OpenAsync();
         await filters.GetByLabel("Only open items").CheckAsync();

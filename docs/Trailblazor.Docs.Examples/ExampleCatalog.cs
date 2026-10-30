@@ -289,6 +289,26 @@ public static class ExampleCatalog
             TestingTip = "Remove a chip with `GetByRole(AriaRole.Button, new() { Name = \"Remove Archive\" })`, and "
                 + "check a filter chip with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`.",
         },
+        new("list", "List", ExampleCategory.Content,
+            "A list of items, each with optional leading content, a description and trailing content. Items can be "
+                + "links or buttons, and one can be marked as the current item.", typeof(ListExample))
+        {
+            Api = [typeof(TbList), typeof(TbListItem)],
+            Accessibility =
+            [
+                "A `list` of `listitem`s; name it with `aria-label` when the page has several lists.",
+                "An item with `Href` is a `link` and one with `OnClick` a `button`, each a stop in the tab order. "
+                    + "It is named by its text and then its `Description`, so start the text with what the item is.",
+                "The `End` content sits outside the link or button, so its own buttons are tab stops of their own, "
+                    + "reached right after their item.",
+                "`Selected` sets `aria-current`: `page` on a link and `true` on a button or plain item.",
+            ],
+            Target = new("list", "Campsites"),
+            Blocks = ["tb-list"],
+            TestingTip = "Find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
+                + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
+                + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`.",
+        },
         new("badge", "Badge", ExampleCategory.Feedback,
             "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.",
             typeof(BadgeExample))
@@ -453,6 +473,26 @@ public static class ExampleCatalog
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too.",
+        },
+        new("listbox", "List box", ExampleCategory.Inputs,
+            "Picks one or several options from a list that is always shown.", typeof(ListBoxExample))
+        {
+            Api = [typeof(TbListBox<>), typeof(TbMultiListBox<>), typeof(TbOption<>), typeof(FieldClasses)],
+            Accessibility =
+            [
+                "A `listbox` of `option`s named by its `Label`. It is one tab stop; focus stays on the listbox, which "
+                    + "points to the active option with `aria-activedescendant`.",
+                "Down and Up move, Home and End go to the first and last option, and typing jumps to an option that "
+                    + "starts with what was typed. Disabled options are skipped.",
+                "In a single listbox, moving chooses the option, as in the browser's own list. In a multiple one, "
+                    + "Space chooses or clears the active option, and Shift with Down or Up also chooses the next.",
+                "Before the page is interactive it renders as the browser's own `<select>` list, so it still works.",
+            ],
+            Target = new("listbox", "Trail"),
+            Blocks = ["tb-field", "tb-listbox"],
+            TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
+                + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
+                + "`<select>` too.",
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or focus.", typeof(TooltipExample))

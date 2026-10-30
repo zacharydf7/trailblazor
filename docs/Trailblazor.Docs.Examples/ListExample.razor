@@ -1,0 +1,58 @@
+@using Trailblazor.Docs.Examples
+
+<TbStack Gap="5">
+    <TbStack Gap="2">
+        <TbList aria-label="Campsites" Style="max-inline-size: 28rem">
+            @foreach (var site in _sites)
+            {
+                <TbListItem @key="site.Name" Selected="site == _shown" Disabled="site.Closed"
+                            OnClick="() => _shown = site">
+                    <ChildContent>@site.Name</ChildContent>
+                    <Description>@site.Details</Description>
+                    <End>
+                        <TbIconButton Icon="ExampleIcons.Trash" AriaLabel="@($"Remove {site.Name}")" Size="Size.Small"
+                                      OnClick="() => Remove(site)" />
+                    </End>
+                </TbListItem>
+            }
+        </TbList>
+        <TbText>Showing: @(_shown?.Name ?? "nothing")</TbText>
+    </TbStack>
+    <TbList aria-label="Trail conditions" Dense Dividers Style="max-inline-size: 28rem">
+        <TbListItem>
+            <ChildContent>Ridge loop</ChildContent>
+            <End>Open</End>
+        </TbListItem>
+        <TbListItem>
+            <ChildContent>Creek path</ChildContent>
+            <End>Muddy</End>
+        </TbListItem>
+        <TbListItem>
+            <ChildContent>Summit spur</ChildContent>
+            <End>Closed</End>
+        </TbListItem>
+    </TbList>
+</TbStack>
+
+@code {
+    private readonly List<Campsite> _sites =
+    [
+        new("Pine Hollow", "4 sites, water on site"),
+        new("Eagle Ridge", "2 sites, no water"),
+        new("Cedar Flats", "Closed for repairs", Closed: true),
+    ];
+    private Campsite? _shown;
+
+    protected override void OnInitialized() => _shown = _sites[0];
+
+    private void Remove(Campsite site)
+    {
+        _sites.Remove(site);
+        if (_shown == site)
+        {
+            _shown = null;
+        }
+    }
+
+    private sealed record Campsite(string Name, string Details, bool Closed = false);
+}

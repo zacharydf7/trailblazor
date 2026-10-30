@@ -1,0 +1,33 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* Safari drops the list role from a list without bullets, so it is set again. *@
+@if (Ordered)
+{
+    <ol @attributes="AdditionalAttributes" role="list" class="@Classes" style="@Style">@ChildContent</ol>
+}
+else
+{
+    <ul @attributes="AdditionalAttributes" role="list" class="@Classes" style="@Style">@ChildContent</ul>
+}
+
+@code {
+    /// <summary>The <see cref="TbListItem"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Renders an ordered list, for items whose order matters, such as steps.</summary>
+    [Parameter]
+    public bool Ordered { get; set; }
+
+    /// <summary>Tightens the items, for lists that need to show more at once.</summary>
+    [Parameter]
+    public bool Dense { get; set; }
+
+    /// <summary>Draws a line between the items.</summary>
+    [Parameter]
+    public bool Dividers { get; set; }
+
+    private string Classes => ClassNames.Join("tb-list", Dense ? "tb-list--dense" : null,
+        Dividers ? "tb-list--dividers" : null, Class);
+}

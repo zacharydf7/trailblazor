@@ -1,0 +1,79 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<li @attributes="AdditionalAttributes" aria-current="@(Selected && !IsAction ? "true" : null)" style="@Style"
+    class="@ClassNames.Join("tb-list__item", Selected ? "tb-list__item--selected" : null,
+               Disabled ? "tb-list__item--disabled" : null, Class)">
+    @if (Href is not null && !Disabled)
+    {
+        <a href="@Href" data-part="action" class="tb-list__action" aria-current="@(Selected ? "page" : null)"
+           @onclick="OnClick">@Body</a>
+    }
+    else if (OnClick.HasDelegate)
+    {
+        <button type="button" data-part="action" class="tb-list__action" disabled="@Disabled"
+                aria-current="@(Selected ? "true" : null)" @onclick="OnClick">@Body</button>
+    }
+    else
+    {
+        <div data-part="content" class="tb-list__content" aria-disabled="@(Disabled ? "true" : null)">@Body</div>
+    }
+    @if (End is not null)
+    {
+        <div data-part="end" class="tb-list__end">@End</div>
+    }
+</li>
+
+@code {
+    /// <summary>The item's main text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>A second line under the text, such as a date or a short summary.</summary>
+    [Parameter]
+    public RenderFragment? Description { get; set; }
+
+    /// <summary>Content before the text, such as an icon or an avatar.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the text, such as a count or the item's own buttons. It sits outside the item's link
+    /// or button, so it can hold buttons of its own.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
+    /// <summary>The address the item goes to, which makes the item a link.</summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary>Raised when the item is clicked, or chosen with the keyboard. Without an <see cref="Href"/>, it makes
+    /// the item a button.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>Marks the item as the current one, such as the item shown beside a master list or the page a
+    /// navigation list is on.</summary>
+    [Parameter]
+    public bool Selected { get; set; }
+
+    /// <summary>Turns off the item's link or button.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private bool IsAction => (Href is not null && !Disabled) || OnClick.HasDelegate;
+
+    private RenderFragment Body =>
+        @<text>
+            @if (Start is not null)
+            {
+                <span data-part="start" class="tb-list__start">@Start</span>
+            }
+            <span class="tb-list__text">
+                <span data-part="text" class="tb-list__primary">@ChildContent</span>
+                @if (Description is not null)
+                {
+                    <span data-part="description" class="tb-list__description">@Description</span>
+                }
+            </span>
+        </text>;
+}

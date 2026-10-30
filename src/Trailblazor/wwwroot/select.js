@@ -1,4 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
+import { createTypeahead } from './typeahead.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
 export function createSelect(combobox, listbox, toggle) {
@@ -14,8 +15,7 @@ export function createSelect(combobox, listbox, toggle) {
     let position = null;
     let active = null;
     let wasOpen = false;
-    let typed = '';
-    let typedAt = 0;
+    const typing = createTypeahead();
 
     const isOpen = () => listbox.matches(':popover-open');
     // Choosing in a multiple select toggles the option and leaves the list open for more.
@@ -59,16 +59,8 @@ export function createSelect(combobox, listbox, toggle) {
         const index = options.indexOf(option);
         return options[Math.min(Math.max(index + step, 0), options.length - 1)];
     };
-    // Typing letters quickly finds the next option that starts with them.
     const typeahead = key => {
-        const now = Date.now();
-        typed = now - typedAt > 500 ? key.toLowerCase() : typed + key.toLowerCase();
-        typedAt = now;
-        const options = enabled();
-        const current = options.indexOf(active ?? selected());
-        const start = current < 0 ? 0 : current + (typed.length === 1 ? 1 : 0);
-        const match = options.map((_, step) => options[(start + step) % options.length])
-            .find(option => (option.dataset.text ?? option.textContent).trim().toLowerCase().startsWith(typed));
+        const match = typing.find(enabled(), active ?? selected(), key);
         if (match) {
             open(match);
         }
@@ -137,8 +129,7 @@ export function createSelect(combobox, listbox, toggle) {
                 setActive(enabled().at(-1));
                 break;
             case ' ':
-                // Mid-word, Space is part of what's being typed, as in "New York".
-                if (typed && Date.now() - typedAt <= 500) {
+                if (typing.typing()) {
                     typeahead(key);
                     return;
                 }

@@ -24,7 +24,7 @@ else
     private readonly string _id = $"tb-option-{Guid.NewGuid():N}";
     private TValue? _value;
 
-    /// <summary>The value the select takes when this option is chosen.</summary>
+    /// <summary>The value the select or listbox takes when this option is chosen.</summary>
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;
 
@@ -57,7 +57,8 @@ else
     {
         if (Select is null)
         {
-            throw new InvalidOperationException($"{nameof(TbOption<TValue>)} must be inside a TbSelect.");
+            throw new InvalidOperationException(
+                $"{nameof(TbOption<TValue>)} must be inside a TbSelect or a TbListBox.");
         }
 
         _value = Value;

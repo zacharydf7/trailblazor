@@ -16,6 +16,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label.</summary>
     public TbSelectLocator Select(string label) => new(page, label);
 
+    /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
+    public TbListBoxLocator ListBox(string label) => new(page, label);
+
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(page, trigger);
 }
@@ -73,23 +76,16 @@ public sealed class TbSelectLocator(IPage page, string label)
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
         // The list shares the label, so only the combobox, or the native select it replaces, counts as the field.
         var field = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("[role=combobox], select"));
-        var native = await field.EvaluateAsync<string?>(
-            "field => field.localName !== 'select' || field.hasAttribute('data-prerender') ? null " +
-            ": field.multiple ? 'multiple' : 'single'");
-        if (native is not null)
+        if (await NativeSelect.TryChooseAsync(field, options, "select"))
         {
-            ThrowIfSeveral(options, native == "multiple");
-            // Choosing in a native multiple select replaces the selection, so the options already chosen are kept.
-            var chosen = await field.EvaluateAsync<string[]>(
-                "select => select.multiple ? [...select.selectedOptions].map(option => option.label) : []");
-            await field.SelectOptionAsync([.. chosen.Union(options)]);
             return;
         }
 
         // The keys and clicks work once the select's script has attached.
         await Assertions.Expect(field).ToHaveAttributeAsync("data-ready", "");
         var listbox = page.Locator($"[id='{await field.GetAttributeAsync("aria-controls")}']");
-        ThrowIfSeveral(options, await listbox.GetAttributeAsync("aria-multiselectable") == "true");
+        NativeSelect.ThrowIfSeveral(options, await listbox.GetAttributeAsync("aria-multiselectable") == "true",
+            "select");
         if (!await listbox.IsVisibleAsync())
         {
             await field.ClickAsync();
@@ -114,11 +110,68 @@ public sealed class TbSelectLocator(IPage page, string label)
         }
     }
 
-    private static void ThrowIfSeveral(string[] options, bool multiple)
+}
+
+/// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>
+public sealed class TbListBoxLocator(IPage page, string label)
+{
+    /// <summary>Chooses the options with these names: the one option of a listbox, or each one not yet chosen in a
+    /// multiple listbox, keeping what is already chosen. A statically rendered listbox is a native list, and is
+    /// chosen the native way; one still prerendering is waited for.</summary>
+    public async Task ChooseAsync(params string[] options)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
+        var field = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("[role=listbox], select"));
+        if (await NativeSelect.TryChooseAsync(field, options, "listbox"))
+        {
+            return;
+        }
+
+        // The keys and clicks work once the listbox's script has attached.
+        await Assertions.Expect(field).ToHaveAttributeAsync("data-ready", "");
+        NativeSelect.ThrowIfSeveral(options, await field.GetAttributeAsync("aria-multiselectable") == "true",
+            "listbox");
+        foreach (var name in options)
+        {
+            var option = field.GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
+            if (await option.GetAttributeAsync("aria-selected") != "true")
+            {
+                await option.ClickAsync();
+                // The server applies the choice, so wait for it before reading the next option's state.
+                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", "true");
+            }
+        }
+    }
+
+}
+
+// What the select and listbox helpers share: a statically rendered field is the browser's own select.
+internal static class NativeSelect
+{
+    // Chooses on a native select, unless the field is the interactive one or a prerendered select it will replace.
+    public static async Task<bool> TryChooseAsync(ILocator field, string[] options, string kind)
+    {
+        var native = await field.EvaluateAsync<string?>(
+            "field => field.localName !== 'select' || field.hasAttribute('data-prerender') ? null " +
+            ": field.multiple ? 'multiple' : 'single'");
+        if (native is null)
+        {
+            return false;
+        }
+
+        ThrowIfSeveral(options, native == "multiple", kind);
+        // Choosing in a native multiple select replaces the selection, so the options already chosen are kept.
+        var chosen = await field.EvaluateAsync<string[]>(
+            "select => select.multiple ? [...select.selectedOptions].map(option => option.label) : []");
+        await field.SelectOptionAsync([.. chosen.Union(options)]);
+        return true;
+    }
+
+    public static void ThrowIfSeveral(string[] options, bool multiple, string kind)
     {
         if (options.Length > 1 && !multiple)
         {
-            throw new ArgumentException("Only a multiple select takes more than one option.", nameof(options));
+            throw new ArgumentException($"Only a multiple {kind} takes more than one option.", nameof(options));
         }
     }
 }

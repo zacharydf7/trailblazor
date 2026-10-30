@@ -1,0 +1,36 @@
+@page "/static-listbox"
+@attribute [ExcludeFromInteractiveRouting]
+
+<EditForm Model="Model" FormName="static-listbox" OnValidSubmit="Post">
+    <TbListBox Label="Trail" @bind-Value="Model!.Trail">
+        <TbOption Value="@("Ridge loop")" />
+        <TbOption Value="@("Creek path")" />
+    </TbListBox>
+    <TbMultiListBox Label="Gear" @bind-Value="Model!.Gear">
+        <TbOption Value="@("Tent")" />
+        <TbOption Value="@("Stove")" />
+        <TbOption Value="@("Headlamp")" />
+    </TbMultiListBox>
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</EditForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm]
+    private Trip? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    // A list with nothing chosen posts nothing at all.
+    private void Post() => _posted = $"{Model!.Trail ?? "none"} | " +
+        $"{(Model.Gear is { Count: > 0 } gear ? string.Join(", ", gear) : "none")}";
+
+    private sealed class Trip
+    {
+        public string? Trail { get; set; }
+
+        public IReadOnlyList<string>? Gear { get; set; }
+    }
+}
