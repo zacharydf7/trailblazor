@@ -110,6 +110,8 @@ public static class ExampleCatalog
                 "A horizontal divider is an `<hr>`, which screen readers treat as a separator. A vertical one is "
                     + "a `div` with `role=\"separator\"` and `aria-orientation=\"vertical\"`.",
                 "It takes no focus and has no name.",
+                "A divider with content, such as \"or\", is a plain `div`: a separator's children aren't read aloud, "
+                    + "so the content is read as text and the lines are only drawn.",
             ],
             Target = null,
             Blocks = ["tb-divider"],

@@ -1,7 +1,16 @@
 @namespace Trailblazor
 @inherits TbComponentBase
 
-@if (Vertical)
+@if (ChildContent is not null)
+{
+    @* A separator's children aren't read aloud, so a line with words in it is plain content between two lines. *@
+    <div @attributes="AdditionalAttributes" style="@Style"
+         class="@ClassNames.Join("tb-divider", "tb-divider--content", Vertical ? "tb-divider--vertical" : null,
+                    ClassNames.Modifier("tb-divider", "align", ContentAlign), Class)">
+        <span data-part="content" class="tb-divider__content">@ChildContent</span>
+    </div>
+}
+else if (Vertical)
 {
     <div role="separator" aria-orientation="@(KeepsSeparatorRole ? "vertical" : null)"
          @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-divider", "tb-divider--vertical", Class)"
@@ -16,6 +25,15 @@ else
     /// <summary>Draws a vertical line between items in a row instead of a horizontal rule.</summary>
     [Parameter]
     public bool Vertical { get; set; }
+
+    /// <summary>Words or content in the line, such as "or" or a section label. A line with content isn't a
+    /// separator to screen readers, which read the content instead.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Where the content sits along the line. Defaults to the center.</summary>
+    [Parameter]
+    public DividerAlign ContentAlign { get; set; } = DividerAlign.Center;
 
     // aria-orientation is only allowed on the separator role, not on a consumer's override such as role="none".
     private bool KeepsSeparatorRole => AdditionalAttributes?.ContainsKey("role") != true;

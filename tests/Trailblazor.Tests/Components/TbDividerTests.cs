@@ -37,6 +37,41 @@ public class TbDividerTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowContentInAPlainBlockRatherThanASeparator_WhenGivenContent()
+    {
+        var cut = Render<TbDivider>(parameters => parameters.AddChildContent("or")
+            .Add(divider => divider.Class, "custom"));
+
+        var divider = cut.Find(".tb-divider");
+        Assert.Equal("DIV", divider.TagName);
+        Assert.False(divider.HasAttribute("role"));
+        Assert.Contains("custom", divider.ClassList);
+        Assert.Equal("or", cut.Find("[data-part=content]").TextContent);
+    }
+
+    [Theory]
+    [InlineData(DividerAlign.Start, "tb-divider--align-start")]
+    [InlineData(DividerAlign.End, "tb-divider--align-end")]
+    public void Render_ShouldMarkWhereTheContentSits_WhenItIsNotCentered(DividerAlign align, string modifier)
+    {
+        var cut = Render<TbDivider>(parameters => parameters.AddChildContent("Billing")
+            .Add(divider => divider.ContentAlign, align));
+
+        Assert.Contains(modifier, cut.Find(".tb-divider").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldKeepTheContentBlockVertical_WhenVerticalWithContent()
+    {
+        var cut = Render<TbDivider>(parameters => parameters.AddChildContent("or")
+            .Add(divider => divider.Vertical, true));
+
+        var divider = cut.Find(".tb-divider");
+        Assert.Contains("tb-divider--vertical", divider.ClassList);
+        Assert.False(divider.HasAttribute("role"));
+    }
+
+    [Fact]
     public void Render_ShouldLetTheConsumerOverrideTheRole_WhenVerticalAndDecorative()
     {
         var cut = Render<TbDivider>(parameters => parameters

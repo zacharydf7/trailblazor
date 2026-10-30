@@ -1328,6 +1328,38 @@
         border-inline-start: 1px solid var(--tb-border-subtle);
     }
 
+    /* Content sits between two drawn lines, which a short one at the start or end pushes along. */
+    .tb-divider--content {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-3);
+        border: none;
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-divider--content::before,
+    .tb-divider--content::after {
+        content: "";
+        flex: 1;
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-divider--content.tb-divider--vertical {
+        flex-direction: column;
+    }
+
+    .tb-divider--content.tb-divider--vertical::before,
+    .tb-divider--content.tb-divider--vertical::after {
+        border-block-start: none;
+        border-inline-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-divider--align-start::before,
+    .tb-divider--align-end::after {
+        flex: 0 0 var(--tb-space-4);
+    }
+
     .tb-surface {
         border-radius: var(--tb-radius-md);
         background: var(--tb-color-surface);
