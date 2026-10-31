@@ -482,34 +482,40 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         _sorts = sorts;
+        var pageMoved = _page != 1;
+        _page = 1;
+        // The load starts before the app hears of the change, so a handler that waits can't leave the table looking
+        // loaded while the new rows are still on their way.
+        var show = ShowAsync(force: false);
         await SortsChanged.InvokeAsync(_sorts);
+        if (pageMoved)
+        {
+            await PageChanged.InvokeAsync(1);
+        }
+
         Announcer.Polite(sorts.FirstOrDefault(sort => sort.Column == column.Key) is { } now
             ? Format(now.Direction == SortDirection.Ascending ? TbStrings.DataGridSortedAscending
                 : TbStrings.DataGridSortedDescending, column.Heading)
             : Format(TbStrings.DataGridUnsorted, column.Heading));
-        if (_page != 1)
-        {
-            await GoToPageAsync(1);
-            return;
-        }
-
-        await ShowAsync(force: false);
+        await show;
     }
 
     private async Task GoToPageAsync(int page)
     {
         _page = Math.Clamp(page, 1, PageCount);
+        var show = ShowAsync(force: false);
         await PageChanged.InvokeAsync(_page);
-        await ShowAsync(force: false);
+        await show;
     }
 
     private async Task ChangePageSizeAsync(int size)
     {
         _pageSize = size;
         _page = 1;
+        var show = ShowAsync(force: false);
         await PageSizeChanged.InvokeAsync(size);
         await PageChanged.InvokeAsync(1);
-        await ShowAsync(force: false);
+        await show;
     }
 
     private void TakeSelectionFromParent()

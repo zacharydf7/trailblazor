@@ -2923,9 +2923,12 @@
         min-width: max(10rem, var(--tb-anchor-width, 0px));
     }
 
-    /* The positioning script places the open menu, so only its look is set here. */
+    /* The positioning script places the open menu and writes its room, so a long one scrolls instead of overflowing. */
     .tb-menu__list {
+        box-sizing: border-box;
         min-width: 10rem;
+        max-block-size: var(--tb-available-block-size, none);
+        overflow-y: auto;
         margin: 0;
         padding: var(--tb-space-1);
         border: 1px solid var(--tb-border-subtle);
@@ -3048,6 +3051,8 @@
     .tb-popover__panel {
         box-sizing: border-box;
         max-inline-size: min(24rem, calc(100vw - 2 * var(--tb-space-4)));
+        max-block-size: var(--tb-available-block-size, none);
+        overflow-y: auto;
         margin: 0;
         padding: var(--tb-space-4);
         border: 1px solid var(--tb-border-subtle);
@@ -4841,6 +4846,8 @@
     .tb-date-range__panel {
         box-sizing: border-box;
         max-width: calc(100vw - 2 * var(--tb-space-2));
+        max-block-size: var(--tb-available-block-size, none);
+        overflow-y: auto;
         margin: 0;
         padding: var(--tb-space-3);
         border: 1px solid var(--tb-border-subtle);

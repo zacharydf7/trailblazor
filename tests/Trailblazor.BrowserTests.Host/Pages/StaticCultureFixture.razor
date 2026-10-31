@@ -1,0 +1,47 @@
+@page "/static-culture"
+@attribute [ExcludeFromInteractiveRouting]
+@using System.Globalization
+
+@* Opened with ?culture=de-DE, where 1.5 is written 1,5: a post read in no culture would misread it. *@
+<TbForm Model="Model" FormName="static-culture" OnValidSubmit="Post">
+    <TbTextField Label="Price" @bind-Value="Model!.Price" />
+    <TbRadioGroup Label="Start" @bind-Value="Model!.Start">
+        <TbRadio Value="new DateOnly(2026, 7, 1)">July 1</TbRadio>
+        <TbRadio Value="new DateOnly(2026, 7, 2)">July 2</TbRadio>
+    </TbRadioGroup>
+    <TbSelect Label="Ratio" @bind-Value="Model!.Ratio">
+        <TbOption Value="0.5">Half</TbOption>
+        <TbOption Value="1.5">One and a half</TbOption>
+    </TbSelect>
+    <TbCheckboxGroup Label="Loads" @bind-Value="Model!.Loads">
+        <TbCheckboxItem Value="0.5">Light</TbCheckboxItem>
+        <TbCheckboxItem Value="1.5">Heavy</TbCheckboxItem>
+    </TbCheckboxGroup>
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</TbForm>
+<output data-testid="posted">@_posted</output>
+<output data-testid="culture">@CultureInfo.CurrentCulture.Name</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm(FormName = "static-culture")]
+    private Order? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    private void Post() => _posted = string.Create(CultureInfo.InvariantCulture,
+        $"{Model!.Price}|{Model.Start:yyyy-MM-dd}|{Model.Ratio}|")
+        + string.Join(",", Model.Loads.Select(load => load.ToString(CultureInfo.InvariantCulture)));
+
+    private sealed class Order
+    {
+        public decimal Price { get; set; } = 1.5m;
+
+        public DateOnly Start { get; set; } = new(2026, 7, 2);
+
+        public double Ratio { get; set; } = 1.5;
+
+        public IReadOnlyList<double> Loads { get; set; } = [1.5];
+    }
+}

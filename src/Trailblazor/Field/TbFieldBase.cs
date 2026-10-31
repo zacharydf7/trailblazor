@@ -219,14 +219,20 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     /// <param name="preventScroll">Whether to keep the page from scrolling the field into view.</param>
     public abstract ValueTask FocusAsync(bool preventScroll = false);
 
+    // Blazor reads a static form's post in the invariant culture, so a static page writes its numbers and dates that
+    // way. Text needs no culture, which also leaves RendererInfo unread where a test renderer never sets it.
+    private protected CultureInfo CultureFor(Type type) =>
+        typeof(IFormattable).IsAssignableFrom(Nullable.GetUnderlyingType(type) ?? type) && AssignedRenderMode is null
+            && !RendererInfo.IsInteractive ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture;
+
     /// <summary>Turns a value into the text the input shows.</summary>
     private protected virtual string? FormatValue(TValue? value) =>
-        BindConverter.FormatValue(value, CultureInfo.CurrentCulture)?.ToString();
+        BindConverter.FormatValue(value, CultureFor(typeof(TValue)))?.ToString();
 
     /// <summary>Turns the input's text into a value, or explains why it can't.</summary>
     private protected virtual bool TryParse(string? text, out TValue? value, out string? error)
     {
-        if (BindConverter.TryConvertTo(text, CultureInfo.CurrentCulture, out value))
+        if (BindConverter.TryConvertTo(text, CultureFor(typeof(TValue)), out value))
         {
             error = null;
             return true;

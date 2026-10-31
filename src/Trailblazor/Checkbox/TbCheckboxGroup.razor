@@ -73,7 +73,7 @@
     bool ICheckboxGroup.Accepts(object? item) => GroupValues.TryFit<TItem>(item, out _);
 
     string? ICheckboxGroup.FormatItem(object? item) =>
-        BindConverter.FormatValue(GroupValues.Fit<TItem>(item), CultureInfo.CurrentCulture)?.ToString();
+        BindConverter.FormatValue(GroupValues.Fit<TItem>(item), CultureFor(typeof(TItem)))?.ToString();
 
     bool ICheckboxGroup.IsChecked(object? item) =>
         Value?.Any(chosen => OptionValues.Same(Comparer, chosen, GroupValues.Fit<TItem>(item))) ?? false;

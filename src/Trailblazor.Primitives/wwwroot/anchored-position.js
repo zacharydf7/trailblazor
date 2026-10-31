@@ -27,13 +27,15 @@ export function createAnchoredPosition(floating, anchor, options) {
         === `${anchor.offsetWidth}px` ? update() : requestAnimationFrame(update));
     resizeObserver.observe(anchor);
     resizeObserver.observe(floating);
-    window.addEventListener('scroll', update, { capture: true, passive: true });
+    // A popup that scrolls its own content stays where it is.
+    const onScroll = event => floating.contains(event.target) || update();
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
     window.addEventListener('resize', update, { passive: true });
 
     return {
         dispose() {
             resizeObserver.disconnect();
-            window.removeEventListener('scroll', update, { capture: true });
+            window.removeEventListener('scroll', onScroll, { capture: true });
             window.removeEventListener('resize', update);
         },
     };
@@ -41,19 +43,29 @@ export function createAnchoredPosition(floating, anchor, options) {
 
 function position(floating, anchor, options) {
     const anchorRect = anchor.getBoundingClientRect();
-    const size = { width: floating.offsetWidth, height: floating.offsetHeight };
+    // The popup is measured at its natural size, so a cap from the last placement doesn't decide this one. Uncapped,
+    // a scrolled popup would lose its place, so the place is put back once the new cap is on.
+    const scrolled = floating.scrollTop;
+    floating.style.removeProperty('--tb-available-block-size');
+    const natural = { width: floating.offsetWidth, height: floating.offsetHeight };
     const viewport = { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight };
     const rtl = getComputedStyle(anchor).direction === 'rtl';
 
+    // The preferred side if the popup fits there, else the opposite one if it fits, else whichever has more room.
     let side = toPhysicalSide(options.side, rtl);
-    let point = place(side, options.align, anchorRect, size, options.offset, rtl);
-    if (overflows(side, point, size, viewport)) {
-        const flippedPoint = place(oppositeSides[side], options.align, anchorRect, size, options.offset, rtl);
-        if (!overflows(oppositeSides[side], flippedPoint, size, viewport)) {
-            side = oppositeSides[side];
-            point = flippedPoint;
-        }
+    const fits = candidate => room(candidate, anchorRect, options.offset, viewport) >= mainLength(candidate, natural);
+    if (!fits(side) && (fits(oppositeSides[side]) || room(oppositeSides[side], anchorRect, options.offset, viewport)
+        > room(side, anchorRect, options.offset, viewport))) {
+        side = oppositeSides[side];
     }
+
+    // CSS caps a popup that still doesn't fit at the room it has, so its content scrolls instead of leaving the screen.
+    const blockRoom = side === 'top' || side === 'bottom'
+        ? room(side, anchorRect, options.offset, viewport) : viewport.height - 2 * viewportPadding;
+    floating.style.setProperty('--tb-available-block-size', `${Math.max(blockRoom, 0)}px`);
+    floating.scrollTop = scrolled;
+    const size = { width: floating.offsetWidth, height: floating.offsetHeight };
+    const point = place(side, options.align, anchorRect, size, options.offset, rtl);
 
     if (side === 'top' || side === 'bottom') {
         point.x = Math.max(viewportPadding, Math.min(point.x, viewport.width - size.width - viewportPadding));
@@ -90,17 +102,22 @@ function alignOnAxis(align, anchorStart, anchorLength, length, reversed) {
     return alignToStartEdge ? anchorStart : anchorStart + anchorLength - length;
 }
 
-function overflows(side, point, size, viewport) {
+// The space between the anchor's side and the viewport's edge, past the offset and the padding.
+function room(side, anchorRect, offset, viewport) {
     switch (side) {
         case 'top':
-            return point.y < viewportPadding;
+            return anchorRect.top - offset - viewportPadding;
         case 'bottom':
-            return point.y + size.height > viewport.height - viewportPadding;
+            return viewport.height - anchorRect.bottom - offset - viewportPadding;
         case 'left':
-            return point.x < viewportPadding;
+            return anchorRect.left - offset - viewportPadding;
         default:
-            return point.x + size.width > viewport.width - viewportPadding;
+            return viewport.width - anchorRect.right - offset - viewportPadding;
     }
+}
+
+function mainLength(side, size) {
+    return side === 'top' || side === 'bottom' ? size.height : size.width;
 }
 
 function toPhysicalSide(side, rtl) {

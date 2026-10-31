@@ -48,6 +48,17 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldPostNumbersAndDatesIntact_WhenAStaticPageIsInAnotherCulture(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-culture?culture=de-DE");
+        await Expect(page.GetByTestId("culture")).ToHaveTextAsync("de-DE");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("1.5|2026-07-02|1.5|1.5");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Form_ShouldValidateAndPost_WhenUsedAsAStaticForm(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-tbform");

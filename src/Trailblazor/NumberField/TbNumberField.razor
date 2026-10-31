@@ -255,13 +255,17 @@
         error = (number < (double?)Min, number > (double?)Max) switch
         {
             (true, _) or (_, true) when Min is not null && Max is not null =>
-                Message(TbStrings.NumberFieldRange, Min, Max),
-            (true, _) => Message(TbStrings.NumberFieldAtLeast, Min),
-            (_, true) => Message(TbStrings.NumberFieldAtMost, Max),
+                Message(TbStrings.NumberFieldRange, Limit(Min), Limit(Max)),
+            (true, _) => Message(TbStrings.NumberFieldAtLeast, Limit(Min)),
+            (_, true) => Message(TbStrings.NumberFieldAtMost, Limit(Max)),
             _ => null,
         };
         return error is null;
     }
+
+    // A formatted field's message gives its limits as the field shows numbers, such as 0 % and 100 %.
+    private object? Limit(decimal? limit) =>
+        Formatted && limit is { } value ? value.ToString(Format, NumberCulture) : limit;
 
     // .NET writes large doubles with exponents, such as 1E+29, which BindConverter can't read back.
     private static bool TryConvert(string? text, out TValue? value)

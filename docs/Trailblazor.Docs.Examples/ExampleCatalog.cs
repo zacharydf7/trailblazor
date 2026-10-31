@@ -559,6 +559,9 @@ public static class ExampleCatalog
                 "After a static-SSR form post, text that doesn't convert, such as letters in a number, stays in the "
                     + "field with the form's error, so nothing typed is lost. Blazor reports these errors for an "
                     + "`EditForm` whose model is supplied by `[SupplyParameterFromForm]` without its own `FormName`.",
+                "On a static page a number or date shows in the invariant culture, as 1.5 and 07/02/2026, because "
+                    + "Blazor reads a static form's post that way; for numbers typed in the user's own format, use a "
+                    + "number field.",
                 "`@ref` the field and call `FocusAsync()` to move focus to it, or `SelectTextAsync()` to also select "
                     + "its text so typing replaces it.",
                 "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "
@@ -985,6 +988,8 @@ public static class ExampleCatalog
                     + "screen readers hear that it does.",
                 "Resting the pointer on a submenu's item opens it without moving focus. On the way there the pointer "
                     + "can cross other items without the submenu closing.",
+                "A menu too long for the window opens on the side with more room and scrolls, so every item stays "
+                    + "reachable; a popover's panel and a date range picker's panel do the same.",
             ],
             Target = new("button", "Actions"),
             Blocks = ["tb-menu"],
@@ -1242,8 +1247,7 @@ public static class ExampleCatalog
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
                 + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
                 + "`SortAsync(\"Name\", descending: true)`, `SelectAsync(...)` and `GoToPageAsync(2)` drive "
-                + "it; sorting and paging wait for a `DataProvider`'s rows, as long as `SortsChanged` and "
-                + "`PageChanged` handlers don't wait on anything first. Without the helpers, wait for the "
+                + "it; sorting and paging wait for a `DataProvider`'s rows. Without the helpers, wait for the "
                 + "table's `aria-busy` to clear, and for `data-ready` on the grid's root, `[data-part=grid]`, "
                 + "before clicking a row. Rows carry `data-key` and `data-selected`, and cells `data-column`, the "
                 + "field's path such as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its "

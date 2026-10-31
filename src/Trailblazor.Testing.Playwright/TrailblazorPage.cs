@@ -575,7 +575,7 @@ public sealed class TbGridLocator(IPage page, string name)
         await RowsLoadedAsync();
     }
 
-    // The render that changes the header or pager marks the table busy, unless the app's change handler awaits first.
+    // The render that changes the header or pager marks the table busy until the rows come.
     private Task RowsLoadedAsync() => Assertions.Expect(Table).Not.ToHaveAttributeAsync("aria-busy", "true");
 
     private ILocator Header(string column) => Table.Locator($"thead th[data-title=\"{column}\"]");

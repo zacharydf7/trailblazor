@@ -169,6 +169,8 @@ public class TbCheckboxGroupTests : BunitContext
     [Fact]
     public void Change_ShouldCheckTheItemsValue_WhenAnItemOfTheUnderlyingTypeIsInANullableGroup()
     {
+        // Numbers need the culture the page renders in, which RendererInfo tells.
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         IReadOnlyList<int?>? chosen = null;
         var cut = Render<TbCheckboxGroup<int?>>(parameters => parameters.Add(group => group.Value, [1])
             .Add(group => group.ValueChanged, (IReadOnlyList<int?> next) => chosen = next)

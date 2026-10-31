@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
@@ -26,5 +25,5 @@ public class TbMultiListBox<TItem> : TbListBoxBase<IReadOnlyList<TItem>>
         : [.. Value ?? [], (TItem)item!];
 
     private protected override string? FormatItem(object? item) =>
-        BindConverter.FormatValue((TItem?)item, CultureInfo.CurrentCulture)?.ToString();
+        BindConverter.FormatValue((TItem?)item, CultureFor(typeof(TItem)))?.ToString();
 }

@@ -174,6 +174,20 @@ public class TbNumberFieldTests : BunitContext
         Assert.False(raised);
     }
 
+    [Theory]
+    [InlineData("P0", "en-US", 0.0, 1.0, "150%", "Rate must be from 0% to 100%.")]
+    [InlineData("N1", "fr-FR", 0.0, 1.5, "2,5", "Rate must be from 0,0 to 1,5.")]
+    public void Change_ShouldGiveTheLimitsAsTheFieldShowsNumbers_WhenAFormattedFieldGetsANumberOutsideThem(
+        string format, string culture, double min, double max, string text, string message)
+    {
+        var cut = RenderFormatted(format, culture, 0.5m, parameters => parameters.Add(field => field.Label, "Rate")
+            .Add(field => field.Min, (decimal)min).Add(field => field.Max, (decimal)max));
+
+        cut.Find("input").Change(text);
+
+        Assert.Equal(message, cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
     [Fact]
     public void Change_ShouldShowAnError_WhenANonNullableFieldIsEmptied()
     {

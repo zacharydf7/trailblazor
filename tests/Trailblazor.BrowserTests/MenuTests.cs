@@ -281,6 +281,20 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldStayOnScreenAndScroll_WhenNoSideHasRoomForAllItsItems(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-placement");
+        await page.SetViewportSizeAsync(800, 400);
+
+        var (_, menu) = await OpenPlacedAsync(page, "Long");
+
+        Assert.True(menu.Y >= 0 && menu.Y + menu.Height <= 400, $"The menu spans {menu.Y} to {menu.Y + menu.Height}.");
+        var last = page.GetByRole(AriaRole.Menuitem, new() { Name = "Stop 30" });
+        await last.ScrollIntoViewIfNeededAsync();
+        await Expect(last).ToBeInViewportAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldStretchTheTriggerAndOpenAtLeastAsWide_WhenFullWidth(string browser)
     {
         var page = await OpenAsync(browser, "/menu-placement");

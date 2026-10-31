@@ -316,6 +316,42 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task Sort_ShouldMarkTheTableBusy_WhenTheSortsChangedHandlerIsStillWaiting()
+    {
+        var gate = new TaskCompletionSource();
+        var rows = new TaskCompletionSource<GridResult<Trail>>();
+        var cut = RenderProvided(request => request.Sorts.Count == 0
+                ? Task.FromResult(new GridResult<Trail>(Trails, Trails.Count)) : rows.Task,
+            parameters => parameters.Add(grid => grid.SortsChanged, (IReadOnlyList<GridSort> _) => gate.Task));
+
+        var click = cut.Find("th[data-column=Name] button").ClickAsync(new());
+
+        cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("table").GetAttribute("aria-busy")));
+        gate.SetResult();
+        rows.SetResult(new GridResult<Trail>(Trails, Trails.Count));
+        await click;
+        cut.WaitForAssertion(() => Assert.Null(cut.Find("table").GetAttribute("aria-busy")));
+    }
+
+    [Fact]
+    public async Task Page_ShouldMarkTheTableBusy_WhenThePageChangedHandlerIsStillWaiting()
+    {
+        var gate = new TaskCompletionSource();
+        var rows = new TaskCompletionSource<GridResult<Trail>>();
+        var cut = RenderProvided(request => request.StartIndex == 0
+                ? Task.FromResult(new GridResult<Trail>([.. Trails.Take(2)], Trails.Count)) : rows.Task,
+            parameters => parameters.Add(grid => grid.PageChanged, (int _) => gate.Task));
+
+        var click = cut.Find("nav [data-part=next]").ClickAsync(new());
+
+        cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("table").GetAttribute("aria-busy")));
+        gate.SetResult();
+        rows.SetResult(new GridResult<Trail>([.. Trails.Skip(2).Take(2)], Trails.Count));
+        await click;
+        cut.WaitForAssertion(() => Assert.Null(cut.Find("table").GetAttribute("aria-busy")));
+    }
+
+    [Fact]
     public void Sort_ShouldBreakTiesWithASecondColumnAndSayItsPlace_WhenShiftClicked()
     {
         IReadOnlyList<GridSort> sorts = [];

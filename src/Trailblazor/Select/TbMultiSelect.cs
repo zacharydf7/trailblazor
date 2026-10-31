@@ -37,5 +37,5 @@ public class TbMultiSelect<TItem> : TbSelectBase<IReadOnlyList<TItem>>
         : [.. Value ?? [], (TItem)item!];
 
     private protected override string? FormatItem(object? item) =>
-        BindConverter.FormatValue((TItem?)item, CultureInfo.CurrentCulture)?.ToString();
+        BindConverter.FormatValue((TItem?)item, CultureFor(typeof(TItem)))?.ToString();
 }
