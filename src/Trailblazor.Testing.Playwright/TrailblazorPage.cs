@@ -62,6 +62,7 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
         }
 
         await Assertions.Expect(panel).ToBeVisibleAsync();
+        await SettledAsync(open: true);
         return panel;
     }
 
@@ -73,6 +74,16 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
         {
             await page.Keyboard.PressAsync("Escape");
             await Assertions.Expect(panel).ToBeHiddenAsync();
+            await SettledAsync(open: false);
+        }
+    }
+
+    // A browser can show or hide the panel before its toggle event moves focus, which sets aria-expanded as it does.
+    private async Task SettledAsync(bool open)
+    {
+        if (await Trigger.GetAttributeAsync("data-static") is null)
+        {
+            await Assertions.Expect(Trigger).ToHaveAttributeAsync("aria-expanded", open ? "true" : "false");
         }
     }
 

@@ -574,10 +574,12 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
         var chart = (await Item(page, "Chart").BoundingBoxAsync())!;
         await Item(page, "Image").HoverAsync();
+        // A paused clock keeps a slow machine's pointer steps within the hover delay.
+        await HoldTimersAsync(page);
 
         // Down across Chart and out of the menu below it, well within the hover delay.
         await page.Mouse.MoveAsync(chart.X + 8, chart.Y + chart.Height + 60, new() { Steps = 4 });
-        await page.WaitForTimeoutAsync(400);
+        await page.Clock.RunForAsync(400);
 
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeHiddenAsync();
     }
@@ -588,11 +590,15 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/menu");
         await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
         await Expect(Item(page, "Shape")).ToBeFocusedAsync();
+        // A paused clock keeps a slow machine's Escape within the hover delay.
+        await HoldTimersAsync(page);
 
         // The click arrives with the pointer, so its hover is still waiting when Escape closes the submenu.
         await Item(page, "Chart").ClickAsync();
+        // The submenu takes focus in its toggle event, which a quick Escape would otherwise beat.
+        await Expect(Item(page, "Chart")).ToHaveAttributeAsync("aria-expanded", "true");
         await page.Keyboard.PressAsync("Escape");
-        await page.WaitForTimeoutAsync(400);
+        await page.Clock.RunForAsync(400);
 
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeHiddenAsync();
         await Expect(Item(page, "Chart")).ToBeFocusedAsync();
@@ -636,6 +642,17 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
                     .map(menu => document.getElementById(menu.getAttribute('aria-labelledby')).textContent.trim());
             }
             """, steps.Select(step => new[] { step.X, step.Y, step.Wait }).ToArray());
+
+    // The page's timers then fire only when the test runs the clock. The installed clock runs until the pause, which
+    // can't lie in its past, so the pause leaves room for a slow machine.
+    private static async Task HoldTimersAsync(IPage page)
+    {
+        var now = DateTime.Now;
+        await page.Clock.InstallAsync(new() { TimeDate = now });
+        await page.Clock.PauseAtAsync(now + PauseMargin);
+    }
+
+    private static readonly TimeSpan PauseMargin = TimeSpan.FromSeconds(5);
 
     private static ILocator Item(IPage page, string name) =>
         page.GetByRole(AriaRole.Menuitem, new() { Name = name });

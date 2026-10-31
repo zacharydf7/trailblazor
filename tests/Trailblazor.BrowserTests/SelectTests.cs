@@ -155,6 +155,8 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenSelectAsync(browser);
         await Combobox(page).FocusAsync();
+        // A stopped clock keeps a slow machine's keys within the pause that ends a word.
+        await page.Clock.SetFixedTimeAsync(DateTime.Now);
 
         await page.Keyboard.TypeAsync("extra s");
 

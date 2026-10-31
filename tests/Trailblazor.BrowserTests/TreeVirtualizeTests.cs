@@ -34,6 +34,8 @@ public class TreeVirtualizeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Row(page, "Trail 100.100")).ToBeInViewportAsync();
         await page.Keyboard.PressAsync("Home");
         await Expect(Row(page, "Region 1")).ToBeFocusedAsync();
+        // A stopped clock keeps a slow machine's keys within the pause that starts a search over.
+        await page.Clock.SetFixedTimeAsync(DateTime.Now);
         await page.Keyboard.TypeAsync("region 50");
 
         await Expect(Row(page, "Region 50")).ToBeFocusedAsync();
