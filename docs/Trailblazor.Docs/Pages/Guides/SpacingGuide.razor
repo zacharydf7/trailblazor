@@ -1,0 +1,155 @@
+@page "/guides/spacing"
+
+<PageTitle>Spacing · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Spacing</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    Small <code>tb-*</code> classes add padding, margin and gap on the same spacing scale the components use, so
+    one-off space in your own markup stays in step with the rest of the page.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try it</TbText>
+<div class="docs-example">
+    <TbStack Gap="4">
+        <TbStack Row Gap="3" Wrap>
+            <TbSelect Label="Property" @bind-Value="_property">
+                <TbOption Value="@("p")">Padding</TbOption>
+                <TbOption Value="@("m")">Margin</TbOption>
+            </TbSelect>
+            <TbSelect Label="Side" @bind-Value="_side">
+                @foreach (var side in Sides)
+                {
+                    <TbOption Value="side.Letter">@side.Name</TbOption>
+                }
+            </TbSelect>
+            <TbSelect Label="Step" @bind-Value="_step">
+                @foreach (var (step, _) in Scale)
+                {
+                    <TbOption Value="step">@step</TbOption>
+                }
+            </TbSelect>
+        </TbStack>
+        <div class="docs-spacing-frame">
+            <div class="@ClassName docs-spacing-box">
+                <code>@ClassName</code>
+            </div>
+        </div>
+    </TbStack>
+</div>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">The classes</TbText>
+<TbText>
+    Each class is a property, an optional side and a step: <code>tb-p-4</code> pads every side by step 4, and
+    <code>tb-mt-2</code> adds step 2 of margin before the element. <code>tb-m-auto</code> and its sides set
+    <code>auto</code> margins, and <code>tb-gap-*</code> spaces the children of your own flex and grid containers.
+</TbText>
+<div class="docs-api" tabindex="0" role="region" aria-label="Spacing classes">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Classes</th>
+                <th scope="col">Sets</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var (classes, sets) in Classes)
+            {
+                <tr>
+                    <td><code>@classes</code></td>
+                    <td>@sets</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">The scale</TbText>
+<TbText>
+    The steps are the <code>--tb-space-*</code> tokens, so a theme that changes them changes every class too.
+</TbText>
+<div class="docs-api" tabindex="0" role="region" aria-label="Spacing steps">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Step</th>
+                <th scope="col">Token</th>
+                <th scope="col">Default</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var (step, size) in Scale)
+            {
+                <tr>
+                    <td>@step</td>
+                    <td><code>--tb-space-@step</code></td>
+                    <td><code>@size</code></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Sides follow the writing direction</TbText>
+<TbText>
+    The sides are logical. <code>x</code> and <code>y</code> are the inline and block axes; <code>t</code> and
+    <code>b</code> are the block start and end, which are top and bottom in most languages; <code>s</code> and
+    <code>e</code> are the inline start and end, so <code>tb-ms-2</code> is a left margin on an English page and a
+    right margin on an Arabic or Hebrew one, with no extra classes.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">With TbStack and TbGrid</TbText>
+<TbText>
+    For space between siblings, use the layouts' own <code>Gap</code>: <code>&lt;TbStack Gap="4"&gt;</code> and
+    <code>&lt;TbGrid Gap="6"&gt;</code> take the same steps as the classes. Reach for the classes for space around a
+    single element, or for gaps in containers of your own.
+</TbText>
+<CodeBlock Label="Layouts and classes together" Code="@Together" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Which style wins</TbText>
+<TbText>
+    The classes sit in their own cascade layer, <code>tb.utilities</code>, after the components' layer. A class on a
+    component therefore beats the component's own spacing, whatever its selectors, and your own CSS, outside any
+    layer, beats both, so nothing needs <code>!important</code>.
+</TbText>
+
+@code {
+    // The tokens' default values, as trailblazor.css sets them.
+    private static readonly (int Step, string Size)[] Scale =
+    [
+        (0, "0px"), (1, "0.25rem"), (2, "0.5rem"), (3, "0.75rem"), (4, "1rem"), (5, "1.25rem"), (6, "1.5rem"),
+        (8, "2rem"), (10, "2.5rem"), (12, "3rem"), (16, "4rem"),
+    ];
+
+    private static readonly (string Letter, string Name)[] Sides =
+    [
+        ("", "All"), ("x", "Inline (x)"), ("y", "Block (y)"), ("t", "Block start (t)"), ("b", "Block end (b)"),
+        ("s", "Inline start (s)"), ("e", "Inline end (e)"),
+    ];
+
+    private static readonly (string Classes, string Sets)[] Classes =
+    [
+        ("tb-p-{step}", "padding"),
+        ("tb-px-{step}, tb-py-{step}", "padding-inline, padding-block"),
+        ("tb-pt-{step}, tb-pb-{step}", "padding-block-start, padding-block-end"),
+        ("tb-ps-{step}, tb-pe-{step}", "padding-inline-start, padding-inline-end"),
+        ("tb-m-{step}", "margin"),
+        ("tb-mx-{step}, tb-my-{step}", "margin-inline, margin-block"),
+        ("tb-mt-{step}, tb-mb-{step}", "margin-block-start, margin-block-end"),
+        ("tb-ms-{step}, tb-me-{step}", "margin-inline-start, margin-inline-end"),
+        ("tb-m-auto, tb-mx-auto, tb-my-auto, tb-mt-auto, tb-mb-auto, tb-ms-auto, tb-me-auto", "auto margins"),
+        ("tb-gap-{step}, tb-gap-x-{step}, tb-gap-y-{step}", "gap, column-gap, row-gap"),
+    ];
+
+    private const string Together = """
+        <TbStack Row Gap="4" Align="Align.Center" class="tb-p-6">
+            <TbText TextStyle="TextStyle.Title">Trail report</TbText>
+            <TbButton class="tb-ms-auto">Share</TbButton>
+        </TbStack>
+        """;
+
+    private string _property = "p";
+    private string _side = "";
+    private int _step = 4;
+
+    private string ClassName => $"tb-{_property}{_side}-{_step}";
+}

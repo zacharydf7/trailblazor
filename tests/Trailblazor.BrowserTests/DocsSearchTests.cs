@@ -35,8 +35,8 @@ public class DocsSearchTests
     [Theory]
     [InlineData("overlays", new[] { "Tooltip", "Menu", "Dialog", "Focus scope", "Popover", "Overlay" })]
     [InlineData("guides",
-        new[] { "Getting started", "Theming", "Palettes", "Browser", "Announcements", "Icons", "Localization",
-            "Testing", "Telemetry", "Roadmap" })]
+        new[] { "Getting started", "Theming", "Palettes", "Spacing", "Browser", "Announcements", "Icons",
+            "Localization", "Testing", "Telemetry", "Roadmap" })]
     public void Find_ShouldFindEverythingInACategory_WhenGivenItsName(string category, string[] titles)
     {
         var results = DocsSearch.Find(category);

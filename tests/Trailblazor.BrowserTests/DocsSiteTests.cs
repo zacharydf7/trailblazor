@@ -70,7 +70,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from browser in AllBrowsers.Names
         from path in new[]
         {
-            "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/browser",
+            "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/spacing", "guides/browser",
             "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "search?q=dialog",
             "roadmap",
         }
@@ -85,6 +85,20 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         var html = await client.GetStringAsync("", TestContext.Current.CancellationToken);
 
         Assert.Contains("""<link rel="stylesheet" href="_content/Trailblazor/trailblazor.css" />""", html);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SpacingGuide_ShouldShowAndApplyTheChosenClass_WhenAPropertySideAndStepArePicked(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/spacing");
+
+        await page.Tb().Select("Property").ChooseAsync("Margin");
+        await page.Tb().Select("Side").ChooseAsync("Block start (t)");
+        await page.Tb().Select("Step").ChooseAsync("8");
+
+        var box = page.Locator(".docs-spacing-box");
+        await Expect(box).ToHaveTextAsync("tb-mt-8");
+        await Expect(box).ToHaveCSSAsync("margin-top", "32px");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

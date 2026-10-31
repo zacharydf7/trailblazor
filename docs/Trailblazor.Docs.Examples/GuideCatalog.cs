@@ -11,6 +11,8 @@ public static class GuideCatalog
             "Add Trailblazor to an app, render your first component, and choose a render mode."),
         new("guides/theming", "Theming", "Light and dark, palettes, density, and changing any design token."),
         new("guides/palettes", "Palettes", "Every built-in palette on real components, in light and dark."),
+        new("guides/spacing", "Spacing",
+            "Pad, space and push apart your own markup with tb-* classes on the components' spacing scale."),
         new("guides/browser", "Browser",
             "Copy to the clipboard, download and save files, pick colors, scroll, and follow the viewport from C#."),
         new("guides/announcements", "Announcements",

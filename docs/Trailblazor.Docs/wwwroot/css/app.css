@@ -240,6 +240,20 @@ a:focus-visible {
     box-shadow: var(--tb-shadow-sm);
 }
 
+/* The spacing demo's box sets no padding or margin of its own, since this unlayered CSS would beat the class it shows.
+   Flow-root keeps the box's margin inside the frame. */
+.docs-spacing-frame {
+    display: flow-root;
+    border: 1px dashed var(--tb-border-strong);
+    border-radius: var(--tb-radius-md);
+}
+
+.docs-spacing-box {
+    border-radius: var(--tb-radius-sm);
+    background: var(--tb-color-primary-subtle);
+    color: var(--tb-color-text);
+}
+
 .docs-icon-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
