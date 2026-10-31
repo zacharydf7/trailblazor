@@ -90,6 +90,20 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldPressOnlyThePlannedTrailsButton_WhenAnotherTrailIsPlanned(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var pine = page.GetByRole(AriaRole.Button, new() { Name = "Plan Pine Hollow loop" });
+        await pine.ClickAsync();
+        await Expect(pine).ToHaveAttributeAsync("aria-pressed", "true");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Plan Cedar Flats" }).ClickAsync();
+
+        await Expect(page.GetByTestId("chosen")).ToContainTextAsync("Planning Cedar Flats.");
+        await Expect(pine).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Grid_ShouldLoadEachSortedPageFromTheProvider_WhenSortedPagedAndAClickedRowIsChosen(
         string browser)
     {

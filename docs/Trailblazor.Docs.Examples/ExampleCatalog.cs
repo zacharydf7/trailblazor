@@ -1253,7 +1253,9 @@ public static class ExampleCatalog
                 + "field's path such as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its "
                 + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
                 + "the text is empty or when another key has it. In bUnit, find rows with `tr[data-part=row]` and "
-                + "their key.",
+                + "their key. A row draws again only when its item, its selection or the columns change, so a test "
+                + "that changes what a `Cell` template shows calls `RenderRows`, as the app does, and one that "
+                + "changes `Items` in place calls `RefreshAsync`.",
         },
         new("table", "Table", ExampleCategory.Content,
             "A plain table written as markup, with the data grid's look.", typeof(TableExample))

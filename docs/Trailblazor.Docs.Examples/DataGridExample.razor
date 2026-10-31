@@ -1,5 +1,5 @@
 <TbStack Gap="5">
-    <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail.Id"
+    <TbDataGrid @ref="_trailGrid" TItem="Trail" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail.Id"
                 SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_chosen" PageSize="5"
                 PageSizes="[5, 10]" Striped>
         <TbColumn Field="trail => trail.Name" Sortable />
@@ -8,7 +8,8 @@
         <TbColumn Field="trail => trail.LastHiked" Format="d" Sortable />
         <TbColumn Title="Plan" Id="plan">
             <Cell>
-                <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _planned = context.Name"
+                <TbButton Variant="Variant.Text" Size="Size.Small" Pressed="_planned == context.Name"
+                          PressedChanged="pressed => Plan(context, pressed)"
                           aria-label="@($"Plan {context.Name}")">Plan</TbButton>
             </Cell>
         </TbColumn>
@@ -43,9 +44,17 @@
     private static readonly Hike[] Hikes = [.. Enumerable.Range(1, 18).Select(day => new Hike(day,
         new DateOnly(2026, 6, day), Trails[day % Trails.Length].Name, 1 + day % 5 * 1.5))];
 
+    private TbDataGrid<Trail> _trailGrid = default!;
     private IReadOnlyCollection<Trail> _chosen = [];
     private string? _planned;
     private Hike? _hike;
+
+    // Which trail is planned isn't part of a row's item, so the grid is asked to draw its rows again.
+    private void Plan(Trail trail, bool pressed)
+    {
+        _planned = pressed ? trail.Name : null;
+        _trailGrid.RenderRows();
+    }
 
     // Stands in for a server that sorts, counts and pages the hikes.
     private static async Task<GridResult<Hike>> LoadHikesAsync(GridRequest request, CancellationToken cancel)

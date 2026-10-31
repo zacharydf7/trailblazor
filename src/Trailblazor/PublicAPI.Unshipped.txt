@@ -862,6 +862,7 @@ Trailblazor.TbDataGrid<TItem>.PageSizeChanged.set -> void
 Trailblazor.TbDataGrid<TItem>.PageSizes.get -> System.Collections.Generic.IReadOnlyList<int>?
 Trailblazor.TbDataGrid<TItem>.PageSizes.set -> void
 Trailblazor.TbDataGrid<TItem>.RefreshAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbDataGrid<TItem>.RenderRows() -> void
 Trailblazor.TbDataGrid<TItem>.RowClass.get -> System.Func<TItem, string?>?
 Trailblazor.TbDataGrid<TItem>.RowClass.set -> void
 Trailblazor.TbDataGrid<TItem>.RowClickSelects.get -> bool

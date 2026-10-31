@@ -47,12 +47,15 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public bool Sortable { get; set; }
 
-    /// <summary>The value rows sort by, when it isn't the <see cref="Field"/>'s, such as a name's last word.</summary>
+    /// <summary>The value rows sort by, when it isn't the <see cref="Field"/>'s, such as a name's last word. Call the
+    /// grid's <see cref="TbDataGrid{TItem}.RefreshAsync"/> when what it reads from outside the item changes.</summary>
     [Parameter]
     public Func<TItem, object?>? SortBy { get; set; }
 
     /// <summary>Draws each cell instead of the <see cref="Field"/>'s text. Its context is the row's item. Clicks on
-    /// buttons, links and fields in it don't select the row.</summary>
+    /// buttons, links and fields in it don't select the row. A row draws again when its item, its selection or the
+    /// columns change; call the grid's <see cref="TbDataGrid{TItem}.RenderRows"/> when the template shows anything
+    /// else that changed.</summary>
     [Parameter]
     public RenderFragment<TItem>? Cell { get; set; }
 
@@ -82,6 +85,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     internal ColumnAlign Alignment => Align ?? (IsNumber(FieldType) ? ColumnAlign.End : ColumnAlign.Start);
 
     internal bool CanSort => Sortable && (SortBy is not null || _value is not null);
+
+    internal string CellClass { get; private set; } = "";
 
     private string? MemberName => (Body(_field) as MemberExpression)?.Member.Name;
 
@@ -113,6 +118,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
         if (!shown.Equals(_shown))
         {
             _shown = shown;
+            CellClass = ClassNames.Join("tb-data-grid__cell", ClassNames.Modifier("tb-data-grid__cell", Alignment),
+                Class);
             Grid.ColumnChanged();
         }
     }

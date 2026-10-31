@@ -7,7 +7,7 @@
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
-    @{ CheckColumnKeys(); }
+    @{ CheckColumnKeys(); ArrangeForColumns(); }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
         <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
                class="tb-data-grid__table">
@@ -102,41 +102,7 @@
                         </td>
                     </tr>
                 }
-                @foreach (var item in _rows)
-                {
-                    var key = KeyOf(item);
-                    var selected = IsSelected(item);
-                    <tr @key="key" @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)"
-                        data-selected="@(selected ? "" : null)"
-                        class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
-                                   RowClass?.Invoke(item))">
-                        @if (SelectionMode != SelectionMode.None)
-                        {
-                            <td data-part="select" class="tb-data-grid__select">
-                                <input type="@(SelectionMode == SelectionMode.Single ? "radio" : "checkbox")"
-                                       class="tb-data-grid__check" checked="@selected"
-                                       name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
-                                       aria-label="@Format(TbStrings.DataGridSelectRow, LabelOf(item))"
-                                       @onchange="() => ToggleAsync(item)" />
-                            </td>
-                        }
-                        @foreach (var column in _columns)
-                        {
-                            <td data-column="@column.Key"
-                                class="@ClassNames.Join("tb-data-grid__cell",
-                                           ClassNames.Modifier("tb-data-grid__cell", column.Alignment), column.Class)">
-                                @if (column.Cell is not null)
-                                {
-                                    @column.Cell(item)
-                                }
-                                else
-                                {
-                                    @column.TextOf(item)
-                                }
-                            </td>
-                        }
-                    </tr>
-                }
+                @Rows
             </tbody>
         </table>
     </div>
@@ -169,6 +135,35 @@
 </div>
 
 @code {
+    private RenderFragment Row(TItem item, object key, bool selected) =>
+        @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
+             class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
+                        RowClass?.Invoke(item))">
+            @if (SelectionMode != SelectionMode.None)
+            {
+                <td data-part="select" class="tb-data-grid__select">
+                    <input type="@(SelectionMode == SelectionMode.Single ? "radio" : "checkbox")"
+                           class="tb-data-grid__check" checked="@selected"
+                           name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
+                           aria-label="@Format(TbStrings.DataGridSelectRow, LabelOf(item))"
+                           @onchange="() => ToggleAsync(item)" />
+                </td>
+            }
+            @foreach (var column in _columns)
+            {
+                <td data-column="@column.Key" class="@column.CellClass">
+                    @if (column.Cell is not null)
+                    {
+                        @column.Cell(item)
+                    }
+                    else
+                    {
+                        @column.TextOf(item)
+                    }
+                </td>
+            }
+        </tr>;
+
     // Single selection's radio buttons need a group of their own on the page.
     private readonly string _radioName = $"tb-data-grid-{Guid.NewGuid():N}";
 

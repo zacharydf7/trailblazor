@@ -31,6 +31,14 @@ public class TbDataGridTests : BunitContext
         public string Name { get; } = name;
     }
 
+    // A class whose name can change in place, as an entity's can.
+    private sealed class Shelter(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; set; } = name;
+    }
+
     // A plain class, whose text is its type's name, so two of them can't tell rows apart without a key.
     private sealed class Place(string name)
     {
@@ -628,6 +636,199 @@ public class TbDataGridTests : BunitContext
     private DataGridEvents Events() =>
         ((DotNetObjectReference<DataGridEvents>)JSInterop.Invocations["createDataGrid"].Single().Arguments[1]!).Value;
 
+    [Fact]
+    public void Sort_ShouldSortTheItemsOnce_WhenTheParentRendersAgainAndARowIsSelected()
+    {
+        var sorted = 0;
+        IReadOnlyCollection<Trail> selected = [];
+        RenderFragment columns = builder =>
+        {
+            Columns(builder);
+            builder.OpenComponent<TbColumn<Trail>>(10);
+            builder.AddAttribute(11, nameof(TbColumn<Trail>.Id), "length");
+            builder.AddAttribute(12, nameof(TbColumn<Trail>.Sortable), true);
+            builder.AddAttribute(13, nameof(TbColumn<Trail>.SortBy), (Func<Trail, object?>)(trail =>
+            {
+                sorted++;
+                return trail.LengthKm;
+            }));
+            builder.CloseComponent();
+        };
+        var cut = RenderTrails(columns: columns, configure: parameters => parameters
+            .Add(grid => grid.Sorts, [new GridSort("length", SortDirection.Ascending)])
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+
+        cut.Render(parameters => parameters.Add(grid => grid.Striped, true));
+        Row(cut, "2").QuerySelector("input")!.Change(true);
+        cut.Render(parameters => parameters.Add(grid => grid.SelectedItems, selected));
+
+        Assert.Equal(Trails.Count, sorted);
+        Assert.Equal(["Cedar Flats", "Fern Gully", "Pine Hollow", "Lake Camp", "Eagle Ridge"], Names(cut));
+    }
+
+    [Fact]
+    public void Select_ShouldDrawOnlyTheSelectedRowAgain_WhenTheParentPassesTheSelectionBack()
+    {
+        var drawn = new List<int>();
+        IReadOnlyCollection<Trail> selected = [];
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<TbColumn<Trail>>(0);
+            builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "name");
+            builder.AddAttribute(2, nameof(TbColumn<Trail>.Cell), (RenderFragment<Trail>)(trail => cell =>
+            {
+                drawn.Add(trail.Id);
+                cell.AddContent(0, trail.Name);
+            }));
+            builder.CloseComponent();
+        };
+        var cut = RenderTrails(columns: columns, configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        drawn.Clear();
+
+        Row(cut, "3").QuerySelector("input")!.Change(true);
+        cut.Render(parameters => parameters.Add(grid => grid.SelectedItems, selected));
+
+        Assert.Equal([3], drawn);
+        Assert.NotNull(Row(cut, "3").GetAttribute("data-selected"));
+    }
+
+    [Fact]
+    public async Task RenderRows_ShouldDrawTheCellsAgain_WhenWhatTheyShowChanged()
+    {
+        var editing = 0;
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<TbColumn<Trail>>(0);
+            builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "name");
+            builder.AddAttribute(2, nameof(TbColumn<Trail>.Cell), (RenderFragment<Trail>)(trail => cell =>
+                cell.AddContent(0, trail.Id == editing ? "Editing" : trail.Name)));
+            builder.CloseComponent();
+        };
+        var cut = RenderTrails(columns: columns);
+
+        editing = 2;
+        await cut.InvokeAsync(cut.Instance.RenderRows);
+
+        Assert.Equal("Editing", Row(cut, "2").QuerySelector("td")!.TextContent);
+        Assert.Equal("Pine Hollow", Row(cut, "1").QuerySelector("td")!.TextContent);
+    }
+
+    [Fact]
+    public async Task Items_ShouldShowChangesMadeInPlace_WhenRefreshed()
+    {
+        List<Shelter> shelters = [new(1, "Pine Hut"), new(2, "Ridge Hut")];
+        var cut = Render<TbDataGrid<Shelter>>(parameters => parameters.Add(grid => grid.Items, shelters)
+            .Add(grid => grid.AriaLabel, "Shelters").Add(grid => grid.KeySelector, shelter => shelter.Id)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Shelter>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Shelter>.Field),
+                    (Expression<Func<Shelter, object?>>)(shelter => shelter.Name));
+                builder.CloseComponent();
+            })));
+        shelters[0].Name = "Pine Lodge";
+        shelters.Add(new(3, "Lake Hut"));
+
+        cut.Render(parameters => parameters.Add(grid => grid.Striped, true));
+        Assert.Equal(["Pine Hut", "Ridge Hut"], cut.FindAll("tr[data-part=row] td").Select(cell => cell.TextContent));
+        await cut.InvokeAsync(cut.Instance.RefreshAsync);
+
+        Assert.Equal(["Pine Lodge", "Ridge Hut", "Lake Hut"],
+            cut.FindAll("tr[data-part=row] td").Select(cell => cell.TextContent));
+    }
+
+    [Fact]
+    public void Sort_ShouldSortTheItemsOnce_WhenTheParentPassesTheSortsBack()
+    {
+        var sorted = 0;
+        IReadOnlyList<GridSort> sorts = [];
+        var cut = RenderTrails(columns: builder =>
+        {
+            builder.OpenComponent<TbColumn<Trail>>(0);
+            builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "length");
+            builder.AddAttribute(2, nameof(TbColumn<Trail>.Sortable), true);
+            builder.AddAttribute(3, nameof(TbColumn<Trail>.SortBy), (Func<Trail, object?>)(trail =>
+            {
+                sorted++;
+                return trail.LengthKm;
+            }));
+            builder.CloseComponent();
+        }, configure: parameters => parameters
+            .Add(grid => grid.SortsChanged, (IReadOnlyList<GridSort> changed) => sorts = changed));
+
+        cut.Find("th[data-column=length] button").Click();
+        cut.Render(parameters => parameters.Add(grid => grid.Sorts, [.. sorts]));
+
+        Assert.Equal(Trails.Count, sorted);
+    }
+
+    [Fact]
+    public void Render_ShouldDrawEditedItems_WhenTheParentPassesANewCollection()
+    {
+        List<Shelter> shelters = [new(1, "Pine Hut"), new(2, "Ridge Hut")];
+        var cut = Render<TbDataGrid<Shelter>>(parameters => parameters.Add(grid => grid.Items, shelters)
+            .Add(grid => grid.AriaLabel, "Shelters").Add(grid => grid.KeySelector, shelter => shelter.Id)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Shelter>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Shelter>.Field),
+                    (Expression<Func<Shelter, object?>>)(shelter => shelter.Name));
+                builder.CloseComponent();
+            })));
+        shelters[0].Name = "Pine Lodge";
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, [.. shelters]));
+
+        Assert.Equal(["Pine Lodge", "Ridge Hut"], cut.FindAll("tr[data-part=row] td").Select(cell => cell.TextContent));
+    }
+
+    [Fact]
+    public void Render_ShouldDrawARowAgain_WhenItsItemIsReplaced()
+    {
+        var cut = RenderTrails();
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items,
+            [Trails[0] with { Name = "Pine Hollow Loop" }, .. Trails.Skip(1)]));
+
+        Assert.Equal("Pine Hollow Loop", Names(cut)[0]);
+    }
+
+    [Fact]
+    public void Render_ShouldDropAColumnsCells_WhenTheColumnIsRemoved()
+    {
+        var showLength = true;
+        var cut = RenderTrails(columns: builder =>
+        {
+            Columns(builder);
+            if (showLength)
+            {
+                builder.OpenComponent<TbColumn<Trail>>(10);
+                builder.AddAttribute(11, nameof(TbColumn<Trail>.Id), "length");
+                builder.AddAttribute(12, nameof(TbColumn<Trail>.Field),
+                    (Expression<Func<Trail, object?>>)(trail => trail.LengthKm));
+                builder.CloseComponent();
+            }
+        });
+
+        showLength = false;
+        cut.Render(parameters => parameters.Add(grid => grid.Striped, true));
+
+        Assert.Empty(cut.FindAll("td[data-column=length]"));
+    }
+
+    [Fact]
+    public void Render_ShouldGiveEveryRowACheckbox_WhenSelectionIsTurnedOn()
+    {
+        var cut = RenderTrails();
+
+        cut.Render(parameters => parameters.Add(grid => grid.SelectionMode, SelectionMode.Multiple));
+
+        Assert.Equal(Trails.Count, cut.FindAll("tr[data-part=row] input[type=checkbox]").Count);
+    }
+
     private static List<string> Names(IRenderedComponent<TbDataGrid<Trail>> cut) =>
         [.. cut.FindAll("tr[data-part=row] td[data-column=Name]").Select(cell => cell.TextContent)];
 
@@ -635,12 +836,13 @@ public class TbDataGridTests : BunitContext
         cut.Find($"tr[data-part=row][data-key='{key}']");
 
     private IRenderedComponent<TbDataGrid<Trail>> RenderTrails(IReadOnlyList<Trail>? trails = null,
-        Action<ComponentParameterCollectionBuilder<TbDataGrid<Trail>>>? configure = null) =>
+        Action<ComponentParameterCollectionBuilder<TbDataGrid<Trail>>>? configure = null,
+        RenderFragment? columns = null) =>
         Render<TbDataGrid<Trail>>(parameters =>
         {
             parameters.Add(grid => grid.Items, trails ?? Trails).Add(grid => grid.AriaLabel, "Trails")
                 .Add(grid => grid.KeySelector, trail => trail.Id)
-                .Add(grid => grid.ChildContent, (RenderFragment)Columns);
+                .Add(grid => grid.ChildContent, columns ?? Columns);
             configure?.Invoke(parameters);
         });
 

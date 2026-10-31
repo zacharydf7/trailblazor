@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
@@ -36,8 +37,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private DotNetObjectReference<DataGridEvents>? _events;
     private bool _disposed;
     private bool _columnsChanged;
+    private int _columnVersion;
+    private int _rowVersion;
+    private object? _arrangedFor;
+    private object? _rowOptions;
 
-    /// <summary>The rows, held in memory. The grid sorts and pages them itself.</summary>
+    /// <summary>The rows, held in memory. The grid sorts and pages them itself, again when this is a new collection;
+    /// call <see cref="RefreshAsync"/> after changing the same collection or its items in place.</summary>
     [Parameter]
     public IEnumerable<TItem>? Items { get; set; }
 
@@ -94,11 +100,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public EventCallback<TItem> OnRowClick { get; set; }
 
     /// <summary>Names a row's selection box for screen readers, as "Select" and this. Defaults to the first column's
-    /// text.</summary>
+    /// text. Call <see cref="RenderRows"/> when what it reads from outside the item changes.</summary>
     [Parameter]
     public Func<TItem, string>? RowLabel { get; set; }
 
-    /// <summary>Extra CSS classes for a row.</summary>
+    /// <summary>Extra CSS classes for a row. Call <see cref="RenderRows"/> when what it reads from outside the item
+    /// changes, such as which row is current.</summary>
     [Parameter]
     public Func<TItem, string?>? RowClass { get; set; }
 
@@ -192,10 +199,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 $"{nameof(TbDataGrid<TItem>)} takes {nameof(Items)} or a {nameof(DataProvider)}, not both.");
         }
 
+        // The grid's own sorts passed back, as a binding does, keep them, so the rows aren't sorted again for nothing.
         if (!ReferenceEquals(Sorts, _sortsFromParent))
         {
             _sortsFromParent = Sorts;
-            _sorts = [.. Sorts ?? []];
+            if (!(Sorts ?? []).SequenceEqual(_sorts))
+            {
+                _sorts = [.. Sorts ?? []];
+            }
         }
 
         if (Page != _pageFromParent)
@@ -208,6 +219,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             _pageSizeFromParent = PageSize;
             _pageSize = PageSize is > 0 ? PageSize : null;
+        }
+
+        // Rows draw again for a new collection, whose items may have changed in place, and for options read through
+        // delegates only when the method changes, since markup makes a new delegate on every render.
+        object rowOptions = (Items, SelectionMode, RowClass?.Method, RowLabel?.Method);
+        if (!rowOptions.Equals(_rowOptions))
+        {
+            _rowOptions = rowOptions;
+            _rowVersion++;
         }
 
         TakeSelectionFromParent();
@@ -252,7 +272,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// after they changed in place.</summary>
     public async Task RefreshAsync()
     {
+        _rowVersion++;
         await ShowAsync(force: true);
+        StateHasChanged();
+    }
+
+    /// <summary>Draws every row again. A row draws again by itself only when its item, its selection or the columns
+    /// change, so call this when a <see cref="TbColumn{TItem}.Cell"/> template, <see cref="RowClass"/> or
+    /// <see cref="RowLabel"/> shows something else that changed, such as which row is being edited.</summary>
+    public void RenderRows()
+    {
+        _rowVersion++;
         StateHasChanged();
     }
 
@@ -272,6 +302,24 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _scrollAfterRender = (key, done);
         StateHasChanged();
         await done.Task;
+    }
+
+    // Each row is a component of its own, so one row can draw again without the rest; it's added here because markup
+    // can't name an internal component.
+    private void Rows(RenderTreeBuilder builder)
+    {
+        foreach (var item in _rows)
+        {
+            var key = KeyOf(item);
+            var selected = IsSelected(item);
+            builder.OpenComponent<GridRow<TItem>>(0);
+            builder.SetKey(key);
+            builder.AddComponentParameter(1, nameof(GridRow<TItem>.Item), item);
+            builder.AddComponentParameter(2, nameof(GridRow<TItem>.Selected), selected);
+            builder.AddComponentParameter(3, nameof(GridRow<TItem>.Version), _rowVersion);
+            builder.AddComponentParameter(4, nameof(GridRow<TItem>.ChildContent), Row(item, key, selected));
+            builder.CloseComponent();
+        }
     }
 
     internal void AddColumn(TbColumn<TItem> column)
@@ -295,19 +343,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         if (!_disposed && _columns.Remove(column))
         {
+            _columnVersion++;
+            _rowVersion++;
             StateHasChanged();
         }
     }
 
     // A column that reads a value made anew on every render reports a change on each one, so the grid renders again
-    // for its columns at most once until that render has finished; the rows still sort by every column that changed.
+    // for its columns at most once until that render has finished, and sorts its rows again as it does.
     internal void ColumnChanged()
     {
-        if (Items is not null)
-        {
-            Arrange();
-        }
-
+        _columnVersion++;
+        _rowVersion++;
         if (!_columnsChanged)
         {
             _columnsChanged = true;
@@ -341,7 +388,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         if (DataProvider is null)
         {
             var page = _page;
-            Arrange();
+            Arrange(force);
             if (_page != page)
             {
                 await PageChanged.InvokeAsync(_page);
@@ -407,12 +454,30 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
     }
 
-    private void Arrange()
+    // In-memory rows sort and page again only when something that orders them changed, not on every parent render.
+    private void Arrange(bool force)
     {
+        if (!force && ArrangedFor.Equals(_arrangedFor))
+        {
+            return;
+        }
+
         var arranged = Arranged().ToList();
         _total = arranged.Count;
         _page = Math.Min(_page, PageCount);
         ShowRows(_pageSize is { } size ? [.. arranged.Skip((_page - 1) * size).Take(size)] : arranged);
+        _arrangedFor = ArrangedFor;
+    }
+
+    private object ArrangedFor => (Items, _sorts, _page, _pageSize, _columnVersion);
+
+    // Columns report their changes after the grid renders, so their rows sort again as it next renders, once for all.
+    private void ArrangeForColumns()
+    {
+        if (DataProvider is null)
+        {
+            Arrange(force: false);
+        }
     }
 
     // Selection follows a row by its key, so no two rows may share one. A row that isn't shown has no element, so its
