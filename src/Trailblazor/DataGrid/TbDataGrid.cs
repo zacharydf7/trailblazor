@@ -635,9 +635,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private async Task SetSelectionAsync(IEnumerable<TItem> items)
     {
+        // The items may be a query over the selection, so they are read before it is cleared.
+        List<TItem> chosen = [.. items];
         var before = _selection.Keys.ToHashSet();
         _selection.Clear();
-        foreach (var item in items)
+        foreach (var item in chosen)
         {
             _selection[KeyOf(item)] = item;
         }

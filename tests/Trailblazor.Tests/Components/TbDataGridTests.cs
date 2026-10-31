@@ -447,6 +447,21 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void Select_ShouldKeepTheOtherRows_WhenOneOfSeveralSelectedRowsIsUnchecked()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+
+        Row(cut, "1").QuerySelector("input")!.Change(true);
+        Row(cut, "2").QuerySelector("input")!.Change(true);
+        Row(cut, "1").QuerySelector("input")!.Change(false);
+
+        Assert.Equal([2], selected.Select(trail => trail.Id));
+    }
+
+    [Fact]
     public async Task RowClick_ShouldSelectTheRowAndSayItWasClicked_WhenTheBrowserReportsAClick()
     {
         Trail? clicked = null;
