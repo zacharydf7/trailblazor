@@ -65,7 +65,7 @@ public class TreeReorderTests : BunitContext
     public async Task DragOver_ShouldAskTheApp_WhenTheMoveIsOtherwiseAllowed()
     {
         var asked = new List<TreeDrop<Place>>();
-        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanDropAsync, drop =>
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanDrop, drop =>
         {
             asked.Add(drop);
             return Task.FromResult(drop.Position == TreeDropPosition.Inside && drop.Target.Children is null
@@ -100,7 +100,7 @@ public class TreeReorderTests : BunitContext
     public async Task Drop_ShouldSayWhyAndNotRaiseOnDrop_WhenTheAppRefuses()
     {
         var announcer = Render<AnnouncerHost>();
-        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanDropAsync,
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanDrop,
             _ => Task.FromResult(TreeDropCheck.Refuse("Places are read only."))));
 
         await cut.InvokeAsync(() => Events().OnDrop(["6"], "4", TreeDropPosition.Inside));

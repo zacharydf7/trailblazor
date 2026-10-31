@@ -24,7 +24,7 @@
                        placeholder="@FilterText" class="tb-select__filter" />
                 @Listbox
                 <div role="status" data-part="no-results" class="tb-select__no-results"
-                     data-text="@(NoResultsText ?? Localizer[TbStrings.SelectNoResults])">
+                     data-text="@(Labels.NoResults ?? Localizer[TbStrings.SelectNoResults])">
                 </div>
             </div>
         }
@@ -64,7 +64,7 @@
         @<text>
             @if (Clearable && !Disabled && !ReadOnly && HasChoice)
             {
-                <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Localizer[TbStrings.SelectClear]"
+                <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.SelectClear])"
                               Size="Size.Small" OnClick="ClearAsync"
                               data-part="clear" />
             }

@@ -13,7 +13,7 @@
                class="tb-data-grid__table">
             <thead>
                 <tr>
-                    @if (SelectionMode == GridSelectionMode.Multiple)
+                    @if (SelectionMode == SelectionMode.Multiple)
                     {
                         <th scope="col" data-part="select" class="tb-data-grid__select">
                             <input type="checkbox" data-part="select-all" class="tb-data-grid__check"
@@ -22,7 +22,7 @@
                                    disabled="@(_rows.Count == 0)" @onchange="ToggleAllAsync" />
                         </th>
                     }
-                    else if (SelectionMode == GridSelectionMode.Single)
+                    else if (SelectionMode == SelectionMode.Single)
                     {
                         <th scope="col" data-part="select" class="tb-data-grid__select">
                             <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridSelect]</span>
@@ -110,12 +110,12 @@
                         data-selected="@(selected ? "" : null)"
                         class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
                                    RowClass?.Invoke(item))">
-                        @if (SelectionMode != GridSelectionMode.None)
+                        @if (SelectionMode != SelectionMode.None)
                         {
                             <td data-part="select" class="tb-data-grid__select">
-                                <input type="@(SelectionMode == GridSelectionMode.Single ? "radio" : "checkbox")"
+                                <input type="@(SelectionMode == SelectionMode.Single ? "radio" : "checkbox")"
                                        class="tb-data-grid__check" checked="@selected"
-                                       name="@(SelectionMode == GridSelectionMode.Single ? _radioName : null)"
+                                       name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
                                        aria-label="@Format(TbStrings.DataGridSelectRow, LabelOf(item))"
                                        @onchange="() => ToggleAsync(item)" />
                             </td>

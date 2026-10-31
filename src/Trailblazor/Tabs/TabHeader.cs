@@ -26,13 +26,13 @@ internal sealed class TabHeader : ComponentBase
             builder.CloseComponent();
         }
 
-        if (Tab.Header is null)
+        if (Tab.TextContent is null)
         {
             builder.AddContent(4, Tab.Text);
         }
         else
         {
-            builder.AddContent(5, Tab.Header);
+            builder.AddContent(5, Tab.TextContent);
         }
     }
 }

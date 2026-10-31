@@ -165,6 +165,25 @@ public class TbCheckboxGroupTests : BunitContext
             parameters.Add(item => item.Value, "Mon")));
     }
 
+    // Razor types an item by its literal, so Value="2" in a group of int? is a TbCheckboxItem<int>.
+    [Fact]
+    public void Change_ShouldCheckTheItemsValue_WhenAnItemOfTheUnderlyingTypeIsInANullableGroup()
+    {
+        IReadOnlyList<int?>? chosen = null;
+        var cut = Render<TbCheckboxGroup<int?>>(parameters => parameters.Add(group => group.Value, [1])
+            .Add(group => group.ValueChanged, (IReadOnlyList<int?> next) => chosen = next)
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                AddOption(builder, 0, 1);
+                AddOption(builder, 10, 2);
+            })));
+
+        Assert.True(cut.FindAll("input")[0].HasAttribute("checked"));
+        cut.FindAll("input")[1].Change(true);
+
+        Assert.Equal([1, 2], chosen);
+    }
+
     private IRenderedComponent<TbCheckboxGroup<string>> RenderGroup(IReadOnlyList<string> value,
         Action<IReadOnlyList<string>>? onChanged = null, string? helperText = null, bool disabled = false,
         bool required = false, Func<IReadOnlyList<string>?, IEnumerable<string>>? validation = null) =>

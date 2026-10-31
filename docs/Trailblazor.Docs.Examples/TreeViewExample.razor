@@ -25,7 +25,7 @@
     @* Rows that move by dragging, or with Alt+Shift and the arrows; the page applies each move to its own list. *@
     <TbTreeView TItem="Stop" AriaLabel="Trip plan" Items="_plan" KeySelector="stop => stop.Id"
                 ChildrenSelector="stop => stop.Children" ItemText="stop => stop.Name" InitialExpandDepth="1"
-                OnDrop="Move" CanDropAsync="CheckMoveAsync">
+                OnDrop="Move" CanDrop="CheckMoveAsync">
         <InsertTemplate>
             <TbIconButton Icon="ExampleIcons.Plus" Size="Size.Small" OnClick="() => Add(context)"
                           AriaLabel="@(context.Parent is null ? $"Add a day at {context.Index + 1}"

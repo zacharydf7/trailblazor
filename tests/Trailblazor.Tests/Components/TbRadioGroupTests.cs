@@ -181,6 +181,58 @@ public class TbRadioGroupTests : BunitContext
             .Add(radio => radio.Value, "A4")));
     }
 
+    // Razor types a radio by its literal, so Value="4" in a group of int? is a TbRadio<int>.
+    [Fact]
+    public void Change_ShouldChooseTheRadiosValue_WhenARadioOfTheUnderlyingTypeIsInANullableGroup()
+    {
+        int? chosen = null;
+        var cut = Render<TbRadioGroup<int?>>(parameters => parameters.Add(group => group.Value, 2)
+            .Add(group => group.ValueChanged, (int? next) => chosen = next)
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                foreach (var size in new[] { 2, 4 })
+                {
+                    builder.OpenComponent<TbRadio<int>>(0);
+                    builder.AddAttribute(1, "Value", size);
+                    builder.CloseComponent();
+                }
+            })));
+
+        Assert.True(cut.FindAll("input")[0].HasAttribute("checked"));
+        cut.FindAll("input")[1].Change(true);
+
+        Assert.Equal(4, chosen);
+    }
+
+    [Fact]
+    public void Render_ShouldCheckTheRadio_WhenARadioOfAnEnumIsInAGroupOfItsNullable()
+    {
+        var cut = Render<TbRadioGroup<DayOfWeek?>>(parameters => parameters
+            .Add(group => group.Value, DayOfWeek.Friday)
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbRadio<DayOfWeek>>(0);
+                builder.AddAttribute(1, "Value", DayOfWeek.Friday);
+                builder.CloseComponent();
+            })));
+
+        Assert.True(cut.Find("input").HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenARadiosValueDoesntFitItsGroup()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => Render<TbRadioGroup<int?>>(parameters =>
+            parameters.Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbRadio<string>>(0);
+                builder.AddAttribute(1, "Value", "4");
+                builder.CloseComponent();
+            }))));
+
+        Assert.Equal("TbRadio must be inside a TbRadioGroup its value fits.", failure.Message);
+    }
+
     // Every row's group binds a member with the same path, as a @foreach over rows does.
     private static System.Linq.Expressions.Expression<Func<string>> Answer(Row row) => () => row.Answer;
 

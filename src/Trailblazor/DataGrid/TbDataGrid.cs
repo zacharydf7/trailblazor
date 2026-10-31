@@ -61,9 +61,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public string? AriaLabel { get; set; }
 
-    /// <summary>How many rows can be selected. Defaults to <see cref="GridSelectionMode.None"/>.</summary>
+    /// <summary>How many rows can be selected. Defaults to <see cref="SelectionMode.None"/>, since a grid's rows are
+    /// read more often than chosen; a tree view, whose focus selects, defaults to one.</summary>
     [Parameter]
-    public GridSelectionMode SelectionMode { get; set; }
+    public SelectionMode SelectionMode { get; set; }
 
     /// <summary>The selected items. Bind it with <c>@bind-SelectedItems</c>.</summary>
     [Parameter]
@@ -73,7 +74,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<IReadOnlyCollection<TItem>> SelectedItemsChanged { get; set; }
 
-    /// <summary>The selected item of a <see cref="GridSelectionMode.Single"/> grid. Bind it with
+    /// <summary>The selected item of a <see cref="SelectionMode.Single"/> grid. Bind it with
     /// <c>@bind-SelectedItem</c>.</summary>
     [Parameter]
     public TItem? SelectedItem { get; set; }
@@ -82,7 +83,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<TItem?> SelectedItemChanged { get; set; }
 
-    /// <summary>Lets a click on a row select it, or in a <see cref="GridSelectionMode.Multiple"/> grid select or
+    /// <summary>Lets a click on a row select it, or in a <see cref="SelectionMode.Multiple"/> grid select or
     /// unselect it. Defaults to true.</summary>
     [Parameter]
     public bool RowClickSelects { get; set; } = true;
@@ -174,7 +175,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int PageCount => _pageSize is { } size ? Math.Max(1, (_total + size - 1) / size) : 1;
 
-    private int ColumnCount => _columns.Count + (SelectionMode == GridSelectionMode.None ? 0 : 1);
+    private int ColumnCount => _columns.Count + (SelectionMode == SelectionMode.None ? 0 : 1);
 
     private bool IsLoading => Loading || _loading;
 
@@ -513,7 +514,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private void TakeSelectionFromParent()
     {
-        if (SelectionMode == GridSelectionMode.Single && !EqualityComparer<TItem>.Default.Equals(SelectedItem,
+        if (SelectionMode == SelectionMode.Single && !EqualityComparer<TItem>.Default.Equals(SelectedItem,
                 _selectedItemFromParent))
         {
             _selectedItemFromParent = SelectedItem;
@@ -550,7 +551,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         await SelectedItemChanged.InvokeAsync(selected.FirstOrDefault());
     }
 
-    private Task ToggleAsync(TItem item) => SelectionMode == GridSelectionMode.Single
+    private Task ToggleAsync(TItem item) => SelectionMode == SelectionMode.Single
         ? SetSelectionAsync([item])
         : SetSelectionAsync(IsSelected(item) ? _selection.Values.Where(other => !Equals(KeyOf(other), KeyOf(item)))
             : [.. _selection.Values, item]);
@@ -572,7 +573,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         await OnRowClick.InvokeAsync(item);
-        if (RowClickSelects && SelectionMode != GridSelectionMode.None)
+        if (RowClickSelects && SelectionMode != SelectionMode.None)
         {
             await ToggleAsync(item);
         }

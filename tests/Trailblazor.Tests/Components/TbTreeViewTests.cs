@@ -121,7 +121,7 @@ public class TbTreeViewTests : BunitContext
     public void Click_ShouldAddWithCtrlAndRangeWithShift_WhenTheModeIsMultiple()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode,
-            TreeSelectionMode.Multiple).Add(tree => tree.InitialExpandDepth, 1));
+            SelectionMode.Multiple).Add(tree => tree.InitialExpandDepth, 1));
 
         Row(cut, "1").Click();
         Row(cut, "4").Click(new() { ShiftKey = true });
@@ -236,7 +236,7 @@ public class TbTreeViewTests : BunitContext
     {
         var load = new TaskCompletionSource<IEnumerable<Place>>();
         var cut = RenderPlaces([new(1, "North")], parameters => parameters
-            .Add(tree => tree.LoadChildrenAsync, (_, _) => load.Task), nested: false);
+            .Add(tree => tree.LoadChildren, (_, _) => load.Task), nested: false);
 
         Toggle(cut, "1");
         Assert.Single(cut.FindAll("[data-part=loading]"));
@@ -253,7 +253,7 @@ public class TbTreeViewTests : BunitContext
         var failures = new List<Exception>();
         var cut = RenderPlaces([new(1, "North")], parameters => parameters
             .Add(tree => tree.OnLoadFailed, (Exception failure) => failures.Add(failure))
-            .Add(tree => tree.LoadChildrenAsync, (_, _) =>
+            .Add(tree => tree.LoadChildren, (_, _) =>
             {
                 loads.Add(new TaskCompletionSource<IEnumerable<Place>>());
                 return loads[^1].Task;
@@ -279,7 +279,7 @@ public class TbTreeViewTests : BunitContext
         var attempts = 0;
         var cut = RenderPlaces([new(1, "North")], parameters => parameters
             .Add(tree => tree.OnLoadFailed, (Exception failure) => failures.Add(failure))
-            .Add(tree => tree.LoadChildrenAsync, (_, _) => ++attempts == 1
+            .Add(tree => tree.LoadChildren, (_, _) => ++attempts == 1
                 ? Task.FromException<IEnumerable<Place>>(new InvalidOperationException("Offline"))
                 : Task.FromResult<IEnumerable<Place>>([new(2, "Ridge")])), nested: false);
 
@@ -294,7 +294,7 @@ public class TbTreeViewTests : BunitContext
     public void Expand_ShouldSayTheLoadFailed_WhenLoadingFails()
     {
         var announcer = Render<AnnouncerHost>();
-        var cut = RenderPlaces([new(1, "North")], parameters => parameters.Add(tree => tree.LoadChildrenAsync,
+        var cut = RenderPlaces([new(1, "North")], parameters => parameters.Add(tree => tree.LoadChildren,
             (_, _) => Task.FromException<IEnumerable<Place>>(new InvalidOperationException("Offline"))), nested: false);
 
         Toggle(cut, "1");
@@ -374,7 +374,7 @@ public class TbTreeViewTests : BunitContext
     {
         var cut = RenderPlaces([new(1, "North")], parameters => parameters
             .Add(tree => tree.ExpandedKeys, [1])
-            .Add(tree => tree.LoadChildrenAsync, (_, _) => Task.FromResult<IEnumerable<Place>>([new(2, "Ridge")])),
+            .Add(tree => tree.LoadChildren, (_, _) => Task.FromResult<IEnumerable<Place>>([new(2, "Ridge")])),
             nested: false);
 
         cut.WaitForAssertion(() => Assert.Equal(["North", "Ridge"], Texts(cut)));
@@ -384,7 +384,7 @@ public class TbTreeViewTests : BunitContext
     public async Task Check_ShouldCheckTheChildren_WhenARowCheckedBeforeLoadingLoads()
     {
         var cut = RenderPlaces([new(1, "North")], parameters => parameters.Add(tree => tree.Checkable, true)
-            .Add(tree => tree.LoadChildrenAsync, (_, _) =>
+            .Add(tree => tree.LoadChildren, (_, _) =>
                 Task.FromResult<IEnumerable<Place>>([new(2, "Ridge"), new(3, "Pass")])), nested: false);
 
         Check(cut, "1");

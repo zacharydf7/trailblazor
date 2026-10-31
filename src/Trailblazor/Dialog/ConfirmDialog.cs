@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Trailblazor;
 
 // The dialog behind IDialogService.ConfirmAsync and, with no cancel button, AlertAsync. C#, so it can stay internal.
-internal sealed class ConfirmDialog : TbDialog<bool>
+internal sealed class ConfirmDialog : TbDialogContent<bool>
 {
     [Parameter]
     public string Message { get; set; } = "";

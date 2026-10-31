@@ -1,6 +1,6 @@
 <TbStack Gap="5">
     <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail.Id"
-                SelectionMode="GridSelectionMode.Multiple" @bind-SelectedItems="_chosen" PageSize="5"
+                SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_chosen" PageSize="5"
                 PageSizes="[5, 10]" Striped>
         <TbColumn Field="trail => trail.Name" Sortable />
         <TbColumn Field="trail => trail.Region" Sortable />
@@ -20,7 +20,7 @@
     </TbText>
     @* Rows a server sorts and pages, a page at a time. *@
     <TbDataGrid TItem="Hike" DataProvider="LoadHikesAsync" AriaLabel="Hike log" KeySelector="hike => hike.Id"
-                SelectionMode="GridSelectionMode.Single" @bind-SelectedItem="_hike" PageSize="4" Size="Size.Small">
+                SelectionMode="SelectionMode.Single" @bind-SelectedItem="_hike" PageSize="4" Size="Size.Small">
         <TbColumn Field="hike => hike.Date" Format="d" Sortable />
         <TbColumn Field="hike => hike.Trail" Sortable />
         <TbColumn Field="hike => hike.Hours" Format="N1" Sortable />

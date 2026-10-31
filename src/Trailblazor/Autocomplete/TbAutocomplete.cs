@@ -27,11 +27,11 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private bool _disposed;
 
     /// <summary>Finds the suggestions for what the user typed. It runs once the user stops typing for
-    /// <see cref="DebounceInterval"/>, and the token is canceled when the user types again.</summary>
+    /// <see cref="DebounceDelay"/>, and the token is canceled when the user types again.</summary>
     [Parameter]
-    public Func<string, CancellationToken, Task<IEnumerable<TValue>>>? SearchFunc { get; set; }
+    public Func<string, CancellationToken, Task<IEnumerable<TValue>>>? Search { get; set; }
 
-    /// <summary>Suggestions to filter by what the user typed, when there is no <see cref="SearchFunc"/>.</summary>
+    /// <summary>Suggestions to filter by what the user typed, when there is no <see cref="Search"/>.</summary>
     [Parameter]
     public IEnumerable<TValue>? Items { get; set; }
 
@@ -49,10 +49,10 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     [Parameter]
     public bool FreeText { get; set; }
 
-    /// <summary>How long, in milliseconds, the user must stop typing before <see cref="SearchFunc"/> runs. Defaults
-    /// to 200.</summary>
+    /// <summary>How long the user must stop typing before <see cref="Search"/> runs. Defaults to 200 milliseconds;
+    /// zero searches at once. It is timed by the app's <see cref="TimeProvider"/>.</summary>
     [Parameter]
-    public int DebounceInterval { get; set; } = 200;
+    public TimeSpan DebounceDelay { get; set; } = TimeSpan.FromMilliseconds(200);
 
     /// <summary>How many characters the user must type before suggestions show. Defaults to 0.</summary>
     [Parameter]
@@ -70,41 +70,15 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     [Parameter]
     public bool Clearable { get; set; }
 
-    /// <summary>The clear button's accessible name. Defaults to the app's text for <see
-    /// cref="TbStrings.AutocompleteClear"/>, "Clear" in English.</summary>
+    /// <summary>The words it shows and says, such as the clear button's name and the text while a search runs.
+    /// </summary>
     [Parameter]
-    public string? ClearLabel { get; set; }
+    public AutocompleteLabels Labels { get; set; } = new();
 
-    /// <summary>Shown in the list while a search runs. Defaults to the app's text for <see
-    /// cref="TbStrings.AutocompleteSearching"/>, "Searching…" in English.</summary>
-    [Parameter]
-    public string? SearchingText { get; set; }
-
-    /// <summary>Shown in the list when nothing matches. Defaults to the app's text for <see
-    /// cref="TbStrings.AutocompleteNoResults"/>, "No matches" in English.</summary>
-    [Parameter]
-    public string? NoResultsText { get; set; }
-
-    /// <summary>Shown in the list, and read out, when <see cref="SearchFunc"/> fails. Defaults to the app's text for
-    /// <see cref="TbStrings.AutocompleteSearchFailed"/>, "Couldn't load suggestions." in English.</summary>
-    [Parameter]
-    public string? SearchFailedText { get; set; }
-
-    /// <summary>Raised when <see cref="SearchFunc"/> fails. The field stays usable, and typing again searches again.
+    /// <summary>Raised when <see cref="Search"/> fails. The field stays usable, and typing again searches again.
     /// </summary>
     [Parameter]
     public EventCallback<Exception> OnSearchFailed { get; set; }
-
-    /// <summary>Shown in the list before the user has typed enough to search. Defaults to the app's text for <see
-    /// cref="TbStrings.AutocompleteTypeToSearch"/>, "Type to search" in English.</summary>
-    [Parameter]
-    public string? TypeToSearchText { get; set; }
-
-    /// <summary>What screen readers hear when the number of suggestions changes, with <c>{0}</c> for the number.
-    /// Defaults to the app's text for <see cref="TbStrings.AutocompleteResults"/>, "Suggestions: {0}" in
-    /// English.</summary>
-    [Parameter]
-    public string? ResultsAnnouncement { get; set; }
 
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
@@ -125,7 +99,12 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
+    [Inject]
+    private TimeProvider Time { get; set; } = default!;
+
     private string ListboxId => $"{FieldId}-listbox";
+
+    private string SearchFailedLabel => Labels.SearchFailed ?? Localizer[TbStrings.AutocompleteSearchFailed];
 
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
@@ -241,10 +220,10 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
         try
         {
             IEnumerable<TValue> found;
-            if (SearchFunc is not null)
+            if (Search is not null)
             {
-                await Task.Delay(DebounceInterval, token);
-                found = await SearchFunc(_text, token);
+                await Task.Delay(DebounceDelay, Time, token);
+                found = await Search(_text, token);
             }
             else
             {
@@ -261,7 +240,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
             {
                 _announcedCount = _results.Count;
                 Announcer.Polite(string.Format(CultureInfo.CurrentCulture,
-                    ResultsAnnouncement ?? Localizer[TbStrings.AutocompleteResults], _results.Count));
+                    Labels.Results ?? Localizer[TbStrings.AutocompleteResults], _results.Count));
             }
         }
         // A search the user moved on from ends quietly, even when it reports the cancel its own way.
@@ -274,7 +253,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
             _searching = _searched = false;
             _failed = true;
             _announcedCount = null;
-            Announcer.Polite(SearchFailedText ?? Localizer[TbStrings.AutocompleteSearchFailed]);
+            Announcer.Polite(SearchFailedLabel);
             await OnSearchFailed.InvokeAsync(exception);
         }
     }

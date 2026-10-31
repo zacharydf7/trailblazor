@@ -80,7 +80,7 @@ public class TreeVirtualizeTests : BunitContext
     {
         IReadOnlyCollection<object> selected = [];
         var cut = RenderPlaces(Flat, parameters => parameters
-            .Add(tree => tree.SelectionMode, TreeSelectionMode.Multiple)
+            .Add(tree => tree.SelectionMode, SelectionMode.Multiple)
             .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> keys) => selected = keys));
         await cut.InvokeAsync(() => Events().OnKey("40", " ", false, false));
 
@@ -94,7 +94,7 @@ public class TreeVirtualizeTests : BunitContext
     {
         var changed = false;
         var cut = RenderPlaces(Flat, parameters => parameters.Add(tree => tree.Disabled, true)
-            .Add(tree => tree.SelectionMode, TreeSelectionMode.Multiple)
+            .Add(tree => tree.SelectionMode, SelectionMode.Multiple)
             .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> _) => changed = true));
 
         await cut.InvokeAsync(() => Events().OnView(39, 1));
@@ -160,7 +160,7 @@ public class TreeVirtualizeTests : BunitContext
     {
         var load = new TaskCompletionSource<IEnumerable<Place>>();
         var cut = RenderPlaces([new(1, "North"), new(2, "South")], parameters => parameters
-            .Add(tree => tree.LoadChildrenAsync, (_, _) => load.Task).Add(tree => tree.ExpandedKeys, [1]));
+            .Add(tree => tree.LoadChildren, (_, _) => load.Task).Add(tree => tree.ExpandedKeys, [1]));
 
         Assert.Equal(["1", "0", "0"], cut.FindAll("[role=treeitem]").Select(row => row.GetAttribute("data-inside")!));
         Assert.Equal("1", cut.Find("[data-part=loading]").GetAttribute("data-index"));

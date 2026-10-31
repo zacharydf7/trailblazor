@@ -566,7 +566,7 @@ public class DialogServiceTests : BunitContext
         Assert.Null(host.WaitForElement("dialog").GetAttribute("aria-describedby"));
     }
 
-    private sealed class GuardedDialog : TbDialog<bool>
+    private sealed class GuardedDialog : TbDialogContent<bool>
     {
         public List<DialogDismissReason> Asked { get; } = [];
 
@@ -581,7 +581,7 @@ public class DialogServiceTests : BunitContext
         }
     }
 
-    private sealed class EditableDialog : TbDialog<bool>
+    private sealed class EditableDialog : TbDialogContent<bool>
     {
         [Parameter]
         public string? Name { get; set; }
@@ -599,7 +599,7 @@ public class DialogServiceTests : BunitContext
         }
     }
 
-    private sealed class DescribedDialog : TbDialog<bool>
+    private sealed class DescribedDialog : TbDialogContent<bool>
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
@@ -618,7 +618,7 @@ public class DialogServiceTests : BunitContext
         public string Theme { get; set; } = "light";
     }
 
-    private sealed class CountingDialog : TbDialog<bool>
+    private sealed class CountingDialog : TbDialogContent<bool>
     {
         [Parameter]
         public Settings? Settings { get; set; }
@@ -635,7 +635,7 @@ public class DialogServiceTests : BunitContext
         (host.Find("[data-part=minimize]").GetAttribute("aria-label"),
             host.Find("[data-part=maximize]").GetAttribute("aria-label"));
 
-    private sealed class HeaderDialog : TbDialog<string>
+    private sealed class HeaderDialog : TbDialogContent<string>
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
@@ -650,7 +650,7 @@ public class DialogServiceTests : BunitContext
         }
     }
 
-    private sealed class GreetingDialog : TbDialog<string>
+    private sealed class GreetingDialog : TbDialogContent<string>
     {
         [Parameter]
         public string? Name { get; set; }

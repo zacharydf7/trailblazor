@@ -47,7 +47,7 @@ else
 
     /// <summary>The row's content in place of its <see cref="Icon"/> and <see cref="Text"/>.</summary>
     [Parameter]
-    public RenderFragment? Content { get; set; }
+    public RenderFragment? TextContent { get; set; }
 
     /// <summary>The <see cref="TbTreeItem{TItem}"/>s inside this one.</summary>
     [Parameter]
@@ -70,7 +70,7 @@ else
         Style is null ? $"--tb-tree-level: {Level - 1}" : $"--tb-tree-level: {Level - 1}; {Style}";
 
     // What the row shows, here or in the tree's rows.
-    internal RenderFragment Row => Content ?? (builder =>
+    internal RenderFragment Row => TextContent ?? (builder =>
     {
         if (Icon is not null)
         {

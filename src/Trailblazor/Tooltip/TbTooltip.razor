@@ -11,13 +11,13 @@
       style="@Style">
     @ChildContent
     <span @ref="_tooltip" id="@_id" popover="manual" role="tooltip" data-part="tooltip" class="tb-tooltip">
-        @if (Content is null)
+        @if (TextContent is null)
         {
             @Text
         }
         else
         {
-            @Content
+            @TextContent
         }
         @if (ShowArrow)
         {
@@ -34,7 +34,7 @@
     private bool _disposed;
 
     /// <summary>The tooltip's text. It also becomes the trigger's accessible description, unless it only repeats the
-    /// trigger's <c>aria-label</c>. Give this or <see cref="Content"/>.</summary>
+    /// trigger's <c>aria-label</c>. Give this or <see cref="TextContent"/>.</summary>
     [Parameter]
     public string? Text { get; set; }
 
@@ -42,7 +42,7 @@
     /// <c>&lt;kbd&gt;</c>. It describes the trigger and can't be reached with the keyboard, so it holds no links or
     /// buttons.</summary>
     [Parameter]
-    public RenderFragment? Content { get; set; }
+    public RenderFragment? TextContent { get; set; }
 
     /// <summary>Which side of the trigger the tooltip appears on, read on the first render. It flips when there's no
     /// room. Defaults to <see cref="Placement.Top"/>.</summary>
@@ -75,9 +75,10 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Content is null && string.IsNullOrWhiteSpace(Text))
+        if (TextContent is null && string.IsNullOrWhiteSpace(Text))
         {
-            throw new InvalidOperationException($"{nameof(TbTooltip)} needs a {nameof(Text)} or {nameof(Content)}.");
+            throw new InvalidOperationException(
+                $"{nameof(TbTooltip)} needs a {nameof(Text)} or {nameof(TextContent)}.");
         }
 
         if (!Fits(ShowDelay) || !Fits(HideDelay))

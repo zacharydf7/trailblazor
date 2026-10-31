@@ -169,7 +169,7 @@ public class SelectExtrasTests : BunitContext
     public void Filter_ShouldPutAFilterBoxAboveTheListInOnePopup_WhenFilterable()
     {
         var cut = Render<TbSelect<Trail>>(parameters => parameters.Add(select => select.Filterable, true)
-            .Add(select => select.FilterLabel, "Find a trail").Add(select => select.NoResultsText, "No trails")
+            .Add(select => select.Labels, new SelectLabels { Filter = "Find a trail", NoResults = "No trails" })
             .Add(select => select.ChildContent, (RenderFragment)AddTrails));
 
         var popup = cut.Find("[popover]");

@@ -135,7 +135,7 @@ public class AnnouncerTests : BunitContext
             dialogs.FindAll("dialog [role=status] p").Select(p => p.TextContent)));
     }
 
-    private sealed class EmptyDialog : TbDialog<bool>
+    private sealed class EmptyDialog : TbDialogContent<bool>
     {
     }
 }

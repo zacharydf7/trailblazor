@@ -88,10 +88,10 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     /// <summary>Loads an item's children the first time it is opened. The token is canceled if the item is closed
     /// first.</summary>
     [Parameter]
-    public Func<TItem, CancellationToken, Task<IEnumerable<TItem>>>? LoadChildrenAsync { get; set; }
+    public Func<TItem, CancellationToken, Task<IEnumerable<TItem>>>? LoadChildren { get; set; }
 
     /// <summary>Whether an item has children to load, so its toggle shows before they do. Defaults to true for every
-    /// item when <see cref="LoadChildrenAsync"/> is set.</summary>
+    /// item when <see cref="LoadChildren"/> is set.</summary>
     [Parameter]
     public Func<TItem, bool>? HasChildren { get; set; }
 
@@ -126,9 +126,10 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     [Parameter]
     public int InitialExpandDepth { get; set; }
 
-    /// <summary>How many rows can be selected. Defaults to <see cref="TreeSelectionMode.Single"/>.</summary>
+    /// <summary>How many rows can be selected. Defaults to <see cref="SelectionMode.Single"/>, since a tree selects the
+    /// row focus moves to, as the WAI-ARIA tree pattern does; a data grid defaults to none.</summary>
     [Parameter]
-    public TreeSelectionMode SelectionMode { get; set; } = TreeSelectionMode.Single;
+    public SelectionMode SelectionMode { get; set; } = SelectionMode.Single;
 
     /// <summary>The keys of the selected rows. Bind it with <c>@bind-SelectedKeys</c>.</summary>
     [Parameter]
@@ -179,7 +180,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
 
-    /// <summary>Raised when <see cref="LoadChildrenAsync"/> fails; the row offers to try again.</summary>
+    /// <summary>Raised when <see cref="LoadChildren"/> fails; the row offers to try again.</summary>
     [Parameter]
     public EventCallback<Exception> OnLoadFailed { get; set; }
 
@@ -209,7 +210,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     /// with <see cref="TreeDropCheck.Refuse"/> and a reason, which shows beside the place and is read out. An item can
     /// never move into itself, whatever this says.</summary>
     [Parameter]
-    public Func<TreeDrop<TItem>, Task<TreeDropCheck>>? CanDropAsync { get; set; }
+    public Func<TreeDrop<TItem>, Task<TreeDropCheck>>? CanDrop { get; set; }
 
     /// <summary>A slot below each row, such as an "insert here" button, which shows while the row is hovered or the
     /// slot has focus. Its context says where an item inserted there would go; the first row also has one above it.
@@ -255,16 +256,16 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     protected override void OnParametersSet()
     {
         if (ChildContent is not null && (Items.Any() || ChildrenSelector is not null || ParentKeySelector is not null
-            || LoadChildrenAsync is not null))
+            || LoadChildren is not null))
         {
             throw new InvalidOperationException($"{nameof(TbTreeView<TItem>)} takes {nameof(Items)} or " +
                 $"{nameof(TbTreeItem<TItem>)}s, not both.");
         }
 
-        if (ParentKeySelector is not null && (ChildrenSelector is not null || LoadChildrenAsync is not null))
+        if (ParentKeySelector is not null && (ChildrenSelector is not null || LoadChildren is not null))
         {
             throw new InvalidOperationException($"{nameof(TbTreeView<TItem>)} takes a {nameof(ParentKeySelector)} " +
-                $"or a {nameof(ChildrenSelector)} and {nameof(LoadChildrenAsync)}, not both.");
+                $"or a {nameof(ChildrenSelector)} and {nameof(LoadChildren)}, not both.");
         }
 
         _expanded = TakeFromParent(ExpandedKeys, ref _expandedFromParent, _expanded);
@@ -655,7 +656,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         {
             node.Children.AddRange(children.Select(child => AddWithChildren(child, node)));
         }
-        else if (LoadChildrenAsync is not null)
+        else if (LoadChildren is not null)
         {
             node.MayHaveChildren = HasChildren?.Invoke(item) ?? true;
         }
@@ -858,7 +859,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
                 await ToggleCheckAsync(node);
                 break;
             case " ":
-                await SelectAsync(node, shift, toggle: SelectionMode == TreeSelectionMode.Multiple);
+                await SelectAsync(node, shift, toggle: SelectionMode == SelectionMode.Multiple);
                 break;
             case "Extend":
                 await SelectAsync(node, shift: true, toggle: false);
@@ -866,7 +867,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             case "MoveUp" or "MoveDown" or "Indent" or "Outdent" when CanDragRow(node):
                 await MoveByKeyAsync(node, key);
                 break;
-            case "SelectAll" when SelectionMode == TreeSelectionMode.Multiple:
+            case "SelectAll" when SelectionMode == SelectionMode.Multiple:
                 await SetSelectedAsync(_rows.Where(row => row.IsItem && CanSelect(row.Node))
                     .Select(row => row.Node.Key));
                 break;
@@ -906,8 +907,8 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             return TreeDropCheck.Refuse(Localizer[TbStrings.TreeViewCantMoveIntoItself]);
         }
 
-        return CanDropAsync is null ? TreeDropCheck.Allow
-            : await CanDropAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
+        return CanDrop is null ? TreeDropCheck.Allow
+            : await CanDrop(new([.. sources.Select(source => source.Item)], target.Item, position));
     }
 
     private Task<TreeDropCheck> OnDragOverAsync(string[] ids, string targetId, TreeDropPosition position) =>
@@ -1016,7 +1017,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     private Task ActivateAsync(TreeNode<TItem> node) =>
         IsItemDisabled(node) ? Task.CompletedTask : OnActivate.InvokeAsync(node.Item);
 
-    private bool CanSelect(TreeNode<TItem> node) => SelectionMode != TreeSelectionMode.None
+    private bool CanSelect(TreeNode<TItem> node) => SelectionMode != SelectionMode.None
         && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
 
     private bool IsItemDisabled(TreeNode<TItem> node) =>
@@ -1032,7 +1033,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        if (SelectionMode == TreeSelectionMode.Single)
+        if (SelectionMode == SelectionMode.Single)
         {
             _anchor = node.Key;
             return SetSelectedAsync([node.Key]);
@@ -1157,7 +1158,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
     private async Task LoadIfNeededAsync(TreeNode<TItem> node)
     {
-        if (LoadChildrenAsync is not { } load || !node.MayHaveChildren || _loads.ContainsKey(node.Key)
+        if (LoadChildren is not { } load || !node.MayHaveChildren || _loads.ContainsKey(node.Key)
             || !_expanded.Contains(node.Key))
         {
             return;

@@ -158,7 +158,7 @@ public sealed class DialogReference<TResult> : DialogReference
 
     /// <summary>Sets some of the open dialog's parameters, and its content renders again with them.
     /// <typeparamref name="TDialog"/> is the dialog it was opened with.</summary>
-    public void Update<TDialog>(Action<DialogParameters<TDialog>> parameters) where TDialog : TbDialog<TResult>
+    public void Update<TDialog>(Action<DialogParameters<TDialog>> parameters) where TDialog : TbDialogContent<TResult>
     {
         if (Component != typeof(TDialog))
         {

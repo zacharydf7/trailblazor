@@ -433,6 +433,23 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameTheClearButtonFromTheLabels_WhenGivenAClearLabel()
+    {
+        var cut = Render<TbSelect<DayOfWeek?>>(parameters => parameters
+            .Add(select => select.Label, "Day").Add(select => select.Clearable, true)
+            .Add(select => select.Value, DayOfWeek.Monday)
+            .Add(select => select.Labels, new SelectLabels { Clear = "Any day" })
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<DayOfWeek>>(0);
+                builder.AddAttribute(1, nameof(TbOption<DayOfWeek>.Value), DayOfWeek.Monday);
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal("Any day", cut.Find("[data-part=clear]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public void Click_ShouldClearToNull_WhenAClearableSelectHasANullableValueType()
     {
         DayOfWeek? day = DayOfWeek.Monday;

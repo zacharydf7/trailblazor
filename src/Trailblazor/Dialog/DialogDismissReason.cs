@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Trailblazor;
 
-/// <summary>How the user asked to dismiss a dialog, as <see cref="TbDialog{TResult}.CanDismissAsync"/> and
+/// <summary>How the user asked to dismiss a dialog, as <see cref="TbDialogContent{TResult}.CanDismissAsync"/> and
 /// <see cref="TbDialog.CanDismiss"/> are told.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<DialogDismissReason>))]
 public enum DialogDismissReason

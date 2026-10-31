@@ -1,5 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests.Components;
@@ -8,8 +10,11 @@ public class TbAutocompleteTests : BunitContext
 {
     private static readonly string[] Trails = ["Pine Hollow", "Eagle Ridge", "Cedar Flats", "Pine Bluff"];
 
+    private readonly FakeTimeProvider _time = new();
+
     public TbAutocompleteTests()
     {
+        Services.AddSingleton<TimeProvider>(_time);
         this.AddTrailblazor();
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
@@ -50,19 +55,23 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
-    public async Task Input_ShouldWaitForTypingToSettle_WhenGivenADebounceInterval()
+    public void Input_ShouldSearchOnceTypingHasSettledForTheDelay_WhenTheUserTypes()
     {
         var searched = new List<string>();
-        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 50)
-            .Add(field => field.SearchFunc, (text, _) =>
+        // A minute the wall clock won't reach, so only the app's TimeProvider can end it.
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.FromMinutes(1)).Add(field => field.Search, (text, _) =>
             {
                 searched.Add(text);
                 return Task.FromResult(Trails.Where(trail => trail.Contains(text, StringComparison.OrdinalIgnoreCase)));
             }));
 
-        var first = cut.InvokeAsync(() => cut.Find("input").Input("p"));
-        await cut.InvokeAsync(() => cut.Find("input").Input("pine b"));
-        await first;
+        cut.Find("input").Input("p");
+        _time.Advance(TimeSpan.FromSeconds(50));
+        cut.Find("input").Input("pine b");
+        _time.Advance(TimeSpan.FromSeconds(59));
+        Assert.Empty(searched);
+        _time.Advance(TimeSpan.FromSeconds(1));
 
         cut.WaitForAssertion(() => Assert.Equal(["Pine Bluff"],
             cut.FindAll("[role=option]").Select(option => option.TextContent.Trim())));
@@ -73,8 +82,9 @@ public class TbAutocompleteTests : BunitContext
     public async Task Input_ShouldCancelTheRunningSearch_WhenTheUserTypesAgain()
     {
         var tokens = new List<CancellationToken>();
-        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
-            .Add(field => field.SearchFunc, async (text, token) =>
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.Zero)
+            .Add(field => field.Search, async (text, token) =>
             {
                 tokens.Add(token);
                 if (tokens.Count == 1)
@@ -97,9 +107,10 @@ public class TbAutocompleteTests : BunitContext
     [Fact]
     public async Task Clear_ShouldStopTheSearch_WhenOneIsRunning()
     {
-        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.Zero)
             .Add(field => field.Clearable, true)
-            .Add(field => field.SearchFunc, async (_, token) =>
+            .Add(field => field.Search, async (_, token) =>
             {
                 await Task.Delay(Timeout.Infinite, token);
                 return [];
@@ -113,14 +124,34 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
+    public async Task Render_ShouldShowAndSayTheLabelsText_WhenGivenLabels()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.Zero).Add(field => field.Clearable, true)
+            .Add(field => field.Labels,
+                new AutocompleteLabels { Clear = "Empty", SearchFailed = "Trails are offline." })
+            .Add(field => field.Search, (_, _) => Task.FromException<IEnumerable<string>>(new IOException("Down"))));
+
+        await cut.InvokeAsync(() => cut.Find("input").Input("pi"));
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal("Trails are offline.", cut.Find("[data-part=status]").TextContent.Trim()));
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Trails are offline.", announcer.Find("[role=status] p").TextContent));
+        Assert.Equal("Empty", cut.Find("[data-part=clear]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public async Task Search_ShouldSayTheSuggestionsFailedAndRaiseTheError_WhenTheSearchThrows()
     {
         var announcer = Render<AnnouncerHost>();
         Exception? failure = null;
         var calls = 0;
-        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.Zero)
             .Add(field => field.OnSearchFailed, (Exception error) => failure = error)
-            .Add(field => field.SearchFunc, (_, _) => ++calls == 1
+            .Add(field => field.Search, (_, _) => ++calls == 1
                 ? Task.FromException<IEnumerable<string>>(new HttpRequestException("Down"))
                 : Task.FromResult<IEnumerable<string>>(Trails)));
 
@@ -142,9 +173,10 @@ public class TbAutocompleteTests : BunitContext
         var first = new TaskCompletionSource<IEnumerable<string>>();
         Exception? failure = null;
         var calls = 0;
-        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.Zero)
             .Add(field => field.OnSearchFailed, (Exception error) => failure = error)
-            .Add(field => field.SearchFunc, (_, _) => ++calls == 1 ? first.Task
+            .Add(field => field.Search, (_, _) => ++calls == 1 ? first.Task
                 : Task.FromResult<IEnumerable<string>>(Trails)));
         var typed = cut.InvokeAsync(() => cut.Find("input").Input("pi"));
         await cut.InvokeAsync(() => cut.Find("input").Input("pin"));
@@ -159,9 +191,10 @@ public class TbAutocompleteTests : BunitContext
     [Fact]
     public async Task Search_ShouldAskForMoreTyping_WhenAFailedSearchsTextBecomesTooShort()
     {
-        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.Zero)
             .Add(field => field.MinCharacters, 2)
-            .Add(field => field.SearchFunc, (_, _) => Task.FromException<IEnumerable<string>>(new IOException())));
+            .Add(field => field.Search, (_, _) => Task.FromException<IEnumerable<string>>(new IOException())));
         await cut.InvokeAsync(() => cut.Find("input").Input("pi"));
 
         await cut.InvokeAsync(() => cut.Find("input").Input("p"));
@@ -175,8 +208,9 @@ public class TbAutocompleteTests : BunitContext
         var module = JSInterop.SetupModule("./_content/Trailblazor/autocomplete.js");
         module.SetupModule("createAutocomplete", _ => true).Mode = JSRuntimeMode.Loose;
         var found = new TaskCompletionSource<IEnumerable<string>>();
-        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
-            .Add(field => field.SearchFunc, (_, _) => found.Task));
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.Zero)
+            .Add(field => field.Search, (_, _) => found.Task));
         var events = (DotNetObjectReference<AutocompleteEvents>)module.Invocations["createAutocomplete"].Single()
             .Arguments[2]!;
 

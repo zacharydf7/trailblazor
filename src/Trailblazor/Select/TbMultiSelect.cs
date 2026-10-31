@@ -18,14 +18,7 @@ public class TbMultiSelect<TItem> : TbSelectBase<IReadOnlyList<TItem>>
     [Parameter]
     public bool Chips { get; set; }
 
-    /// <summary>Said when a chip is removed, with <c>{0}</c> for its option. Defaults to the app's text for
-    /// <see cref="TbStrings.MultiSelectRemoved"/>, "{0} removed" in English.</summary>
-    [Parameter]
-    public string? RemovedText { get; set; }
-
     private protected override bool ShowChips => Chips;
-
-    private protected override string RemovedFormat => RemovedText ?? Localizer[TbStrings.MultiSelectRemoved];
 
     private protected override bool Multiple => true;
 

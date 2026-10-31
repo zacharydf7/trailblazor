@@ -47,7 +47,23 @@ public class TbMenuRadioGroupTests : BunitContext
         var failure = Assert.Throws<InvalidOperationException>(() => Render<TbMenuRadioItem<string>>(parameters =>
             parameters.Add(item => item.Value, "Miles")));
 
-        Assert.Equal("TbMenuRadioItem must be inside a TbMenuRadioGroup of the same type.", failure.Message);
+        Assert.Equal("TbMenuRadioItem must be inside a TbMenuRadioGroup its value fits.", failure.Message);
+    }
+
+    // Razor types an item by its literal, so Value="3" in a group of int? is a TbMenuRadioItem<int>.
+    [Fact]
+    public async Task Click_ShouldChooseTheItemsValue_WhenAnItemOfTheUnderlyingTypeIsInANullableGroup()
+    {
+        int? stops = 1;
+        var cut = Render<TbMenuRadioGroup<int?>>(parameters => parameters.Add(group => group.Label, "Stops")
+            .Add(group => group.Value, stops).Add(group => group.ValueChanged, (int? value) => stops = value)
+            .AddChildContent<TbMenuRadioItem<int>>(item => item.Add(radio => radio.Value, 1).AddChildContent("One"))
+            .AddChildContent<TbMenuRadioItem<int>>(item => item.Add(radio => radio.Value, 3).AddChildContent("Three")));
+
+        Assert.Equal("true", cut.FindAll("[role=menuitemradio]")[0].GetAttribute("aria-checked"));
+        await cut.FindAll("[role=menuitemradio]")[1].ClickAsync(new());
+
+        Assert.Equal(3, stops);
     }
 
     private IRenderedComponent<TbMenuRadioGroup<string>> RenderUnits(bool kilometersDisabled = false) =>

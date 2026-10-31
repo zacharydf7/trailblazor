@@ -224,7 +224,7 @@ public class TreeItemTests : BunitContext
         builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), row.Value);
         builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Text), row.Text);
         builder.AddComponentParameter(3, nameof(TbTreeItem<string>.Disabled), row.Disabled);
-        builder.AddComponentParameter(4, nameof(TbTreeItem<string>.Content), content?.Invoke(row.Value));
+        builder.AddComponentParameter(4, nameof(TbTreeItem<string>.TextContent), content?.Invoke(row.Value));
         if (row.Children.Length > 0)
         {
             builder.AddComponentParameter(5, nameof(TbTreeItem<string>.ChildContent), Fragment(row.Children, content));

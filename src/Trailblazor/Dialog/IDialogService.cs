@@ -11,12 +11,12 @@ public interface IDialogService
     /// updates it, and whose <see cref="DialogReference{TResult}.Result"/> finishes when it closes.</summary>
     DialogReference<TResult> Show<TDialog, TResult>(string title, Action<DialogParameters<TDialog>>? parameters = null,
         DialogOptions? options = null)
-        where TDialog : TbDialog<TResult>;
+        where TDialog : TbDialogContent<TResult>;
 
     /// <summary>Opens <typeparamref name="TDialog"/> and waits until it closes.</summary>
     Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string title,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
-        where TDialog : TbDialog<TResult>;
+        where TDialog : TbDialogContent<TResult>;
 
     /// <summary>Asks a yes-or-no question and returns whether it was confirmed. The buttons say the app's text for
     /// <see cref="TbStrings.DialogConfirm"/> and <see cref="TbStrings.DialogCancel"/>, "OK" and "Cancel" in English,

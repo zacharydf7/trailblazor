@@ -64,20 +64,27 @@
         await module.InvokeVoidAsync("focusCheckbox", _group, preventScroll);
     }
 
-    internal object? ItemName => InputNameAttribute;
+    object? ICheckboxGroup.ItemName => InputNameAttribute;
 
     internal bool Invalid => Errors.Count > 0;
 
-    internal string? FormatItem(TItem item) => BindConverter.FormatValue(item, CultureInfo.CurrentCulture)?.ToString();
+    bool ICheckboxGroup.Invalid => Invalid;
 
-    internal bool IsChecked(TItem item) => Value?.Any(chosen => OptionValues.Same(Comparer, chosen, item)) ?? false;
+    bool ICheckboxGroup.Accepts(object? item) => GroupValues.TryFit<TItem>(item, out _);
+
+    string? ICheckboxGroup.FormatItem(object? item) =>
+        BindConverter.FormatValue(GroupValues.Fit<TItem>(item), CultureInfo.CurrentCulture)?.ToString();
+
+    bool ICheckboxGroup.IsChecked(object? item) =>
+        Value?.Any(chosen => OptionValues.Same(Comparer, chosen, GroupValues.Fit<TItem>(item))) ?? false;
 
     // The change event belongs to the checked TbCheckboxItem, so the group re-renders itself for its messages. Checked
     // values keep the order they were checked in.
-    internal async Task SetCheckedAsync(TItem item, bool isChecked)
+    async Task ICheckboxGroup.SetCheckedAsync(object? item, bool isChecked)
     {
-        var others = Value?.Where(chosen => !OptionValues.Same(Comparer, chosen, item)) ?? [];
-        await SetValueAsync(isChecked ? [.. others, item] : others.ToList());
+        var fitted = GroupValues.Fit<TItem>(item);
+        var others = Value?.Where(chosen => !OptionValues.Same(Comparer, chosen, fitted)) ?? [];
+        await SetValueAsync(isChecked ? [.. others, fitted] : others.ToList());
         StateHasChanged();
     }
 }

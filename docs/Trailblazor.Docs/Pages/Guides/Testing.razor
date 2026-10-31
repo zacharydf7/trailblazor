@@ -59,11 +59,12 @@
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Time and motion</TbText>
 <TbText>
-    Toasts, announcements and a text field's <code>UpdateDelay</code> run on timers. In bUnit, register a
-    <code>FakeTimeProvider</code> as the <code>TimeProvider</code> before <code>AddTrailblazor()</code> and advance it,
-    rather than waiting. A tooltip's delays run in the browser instead, so set its <code>ShowDelay</code> to zero or
-    use Playwright's <code>page.Clock</code>. In Playwright, open pages with
-    <code>ReducedMotion = ReducedMotion.Reduce</code>, and transitions finish at once.
+    Toasts, announcements, a text field's <code>UpdateDelay</code> and an autocomplete's
+    <code>DebounceDelay</code> run on timers. In bUnit, register a <code>FakeTimeProvider</code> as the
+    <code>TimeProvider</code> before <code>AddTrailblazor()</code> and advance it, rather than waiting. A tooltip's
+    delays run in the browser instead, so set its <code>ShowDelay</code> to zero or use Playwright's
+    <code>page.Clock</code>. In Playwright, open pages with <code>ReducedMotion = ReducedMotion.Reduce</code>, and
+    transitions finish at once.
 </TbText>
 <CodeBlock Label="Time and motion" Code="@TimeAndMotion" />
 

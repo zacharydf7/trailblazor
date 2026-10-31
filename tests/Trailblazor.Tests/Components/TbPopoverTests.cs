@@ -87,9 +87,9 @@ public class TbPopoverTests : BunitContext
         var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
             .Add(popover => popover.OpenChanged, (bool open) => states.Add(open)));
 
-        await cut.InvokeAsync(() => cut.Instance.OnToggle(true));
-        await cut.InvokeAsync(() => cut.Instance.OnToggle(true));
-        await cut.InvokeAsync(() => cut.Instance.OnToggle(false));
+        await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(true));
+        await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(true));
+        await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(false));
 
         Assert.Equal([true, false], states);
     }

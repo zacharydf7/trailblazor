@@ -24,7 +24,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
     public DialogReference<TResult> Show<TDialog, TResult>(string title,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
-        where TDialog : TbDialog<TResult>
+        where TDialog : TbDialogContent<TResult>
     {
         var values = new DialogParameters<TDialog>();
         parameters?.Invoke(values);
@@ -33,7 +33,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
     public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string title,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
-        where TDialog : TbDialog<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
+        where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
 
     public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
         string? cancelText = null, Tone tone = Tone.Primary)

@@ -25,13 +25,16 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    internal bool IsChosen(TValue value) => EqualityComparer<TValue>.Default.Equals(value, Value);
+    bool IMenuRadioGroup.Accepts(object? value) => GroupValues.TryFit<TValue>(value, out _);
+
+    bool IMenuRadioGroup.IsChosen(object? value) =>
+        EqualityComparer<TValue>.Default.Equals(GroupValues.Fit<TValue>(value), Value);
 
     // The click belongs to the chosen item, so the group re-renders itself to move the mark.
-    internal async Task ChooseAsync(TValue value)
+    async Task IMenuRadioGroup.ChooseAsync(object? value)
     {
-        Value = value;
-        await ValueChanged.InvokeAsync(value);
+        Value = GroupValues.Fit<TValue>(value);
+        await ValueChanged.InvokeAsync(Value);
         StateHasChanged();
     }
 }

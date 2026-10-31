@@ -415,7 +415,7 @@ public class TbTabsTests : BunitContext
         {
             var shown = count;
             builder.OpenComponent<TbTab>(0);
-            builder.AddAttribute(1, nameof(TbTab.Header),
+            builder.AddAttribute(1, nameof(TbTab.TextContent),
                 (RenderFragment)(header => header.AddContent(0, $"Inbox {shown}")));
             builder.CloseComponent();
         };
@@ -448,7 +448,7 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldThrow_WhenATabHasNoTextOrHeader()
+    public void Render_ShouldThrow_WhenATabHasNoTextOrTextContent()
     {
         var failure = Assert.Throws<InvalidOperationException>(() => Render<TbTabs>(parameters => parameters
             .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
@@ -457,7 +457,7 @@ public class TbTabsTests : BunitContext
                 builder.CloseComponent();
             }))));
 
-        Assert.Equal("TbTab needs a Text or a Header.", failure.Message);
+        Assert.Equal("TbTab needs a Text or a TextContent.", failure.Message);
     }
 
     [Fact]
@@ -467,7 +467,7 @@ public class TbTabsTests : BunitContext
         {
             builder.OpenComponent<TbTab>(0);
             builder.AddAttribute(1, nameof(TbTab.Icon), new Icon("<path d=\"M4 4h16v16H4z\" />"));
-            builder.AddAttribute(2, nameof(TbTab.Header), (RenderFragment)(header =>
+            builder.AddAttribute(2, nameof(TbTab.TextContent), (RenderFragment)(header =>
             {
                 header.AddContent(0, "Comments ");
                 header.OpenElement(1, "strong");

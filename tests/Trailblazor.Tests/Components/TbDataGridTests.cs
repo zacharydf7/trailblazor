@@ -388,7 +388,7 @@ public class TbDataGridTests : BunitContext
     {
         IReadOnlyCollection<Trail> selected = [];
         var cut = RenderTrails(configure: parameters => parameters
-            .Add(grid => grid.SelectionMode, GridSelectionMode.Multiple).Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.PageSize, 2)
             .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
 
         Row(cut, "1").QuerySelector("input")!.Change(true);
@@ -408,7 +408,7 @@ public class TbDataGridTests : BunitContext
         Trail? clicked = null;
         Trail? selected = null;
         var cut = RenderTrails(configure: parameters => parameters
-            .Add(grid => grid.SelectionMode, GridSelectionMode.Single)
+            .Add(grid => grid.SelectionMode, SelectionMode.Single)
             .Add(grid => grid.OnRowClick, (Trail trail) => clicked = trail)
             .Add(grid => grid.SelectedItemChanged, (Trail? trail) => selected = trail));
 
@@ -424,7 +424,7 @@ public class TbDataGridTests : BunitContext
     public async Task Select_ShouldKeepTheRow_WhenOnlySelectedItemIsBoundAndPassedBack()
     {
         var cut = RenderTrails(configure: parameters => parameters
-            .Add(grid => grid.SelectionMode, GridSelectionMode.Single));
+            .Add(grid => grid.SelectionMode, SelectionMode.Single));
 
         await cut.InvokeAsync(() => Events().OnRowClick("3"));
         cut.Render(parameters => parameters.Add(grid => grid.SelectedItem, Trails[2]));
@@ -436,7 +436,7 @@ public class TbDataGridTests : BunitContext
     public void Select_ShouldFollowTheKey_WhenTheItemsAreReplacedByNewInstances()
     {
         var cut = RenderTrails(configure: parameters => parameters
-            .Add(grid => grid.SelectionMode, GridSelectionMode.Multiple).Add(grid => grid.SelectedItems, [Trails[1]]));
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.SelectedItems, [Trails[1]]));
 
         cut.Render(parameters => parameters.Add(grid => grid.Items, Trails.Select(trail => trail with { }).ToList()));
 

@@ -12,14 +12,14 @@
     <output data-testid="activated">@_activated</output>
     <output data-testid="info">@_info</output>
     <TbTreeView TItem="Place" AriaLabel="Gear" Items="Places" KeySelector="place => place.Id"
-                ChildrenSelector="place => place.Children" SelectionMode="TreeSelectionMode.Multiple"
+                ChildrenSelector="place => place.Children" SelectionMode="SelectionMode.Multiple"
                 @bind-SelectedKeys="_gear" Checkable @bind-CheckedKeys="_checked" />
     <output data-testid="gear">@string.Join(", ", _gear.Order())</output>
     <output data-testid="checked">@string.Join(", ", _checked.Order())</output>
     <TbTreeView TItem="Place" AriaLabel="Remote" Items="Remote" KeySelector="place => place.Id"
-                LoadChildrenAsync="LoadAsync" />
+                LoadChildren="LoadAsync" />
     <TbTreeView TItem="Place" AriaLabel="Flaky" Items="Flaky" KeySelector="place => place.Id"
-                LoadChildrenAsync="LoadFlakyAsync" />
+                LoadChildren="LoadFlakyAsync" />
 </TbStack>
 
 @code {

@@ -746,7 +746,7 @@ public static class ExampleCatalog
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
         {
             Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>), typeof(TbOptionGroup),
-                typeof(FieldClasses)],
+                typeof(SelectLabels), typeof(FieldClasses)],
             Accessibility =
             [
                 "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
@@ -763,10 +763,10 @@ public static class ExampleCatalog
                 "With `Chips`, each chosen option shows as a chip. Backspace removes the last one and each chip has a "
                     + "remove button for the pointer; a removal is announced, and the list still deselects options.",
                 "With `Filterable`, opening the list moves focus to a filter box above it, a `combobox` with "
-                    + "`aria-autocomplete=\"list\"` named by `FilterLabel`. Typing on the closed select starts the "
-                    + "filter. Matching ignores case and accents, groups with no matches hide, and `NoResultsText` is "
-                    + "announced when nothing matches. Up and Down move, Enter chooses, Escape closes and returns focus "
-                    + "to the select.",
+                    + "`aria-autocomplete=\"list\"` named by `Labels.Filter`. Typing on the closed select starts the "
+                    + "filter. Matching ignores case and accents, groups with no matches hide, and `Labels.NoResults` "
+                    + "is announced when nothing matches. Up and Down move, Enter chooses, Escape closes and returns "
+                    + "focus to the select.",
                 "`ReadOnly` keeps the select focusable and posted, but it doesn't open and its chips can't be "
                     + "removed; screen readers hear it as read only. Before the page is interactive, the native select "
                     + "puts its choice back whenever the user changes it.",
@@ -786,7 +786,7 @@ public static class ExampleCatalog
             "A text field that suggests values as the user types, from a list or an async search.",
             typeof(AutocompleteExample))
         {
-            Api = [typeof(TbAutocomplete<>), typeof(FieldClasses)],
+            Api = [typeof(TbAutocomplete<>), typeof(AutocompleteLabels), typeof(FieldClasses)],
             Accessibility =
             [
                 "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
@@ -809,7 +809,8 @@ public static class ExampleCatalog
                 "status"],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
-                + "search, and clicks the option by its name.",
+                + "search, and clicks the option by its name. In bUnit, `Search` runs once `DebounceDelay` has passed "
+                + "on the app's `TimeProvider`, so advance a `FakeTimeProvider` past it, or set it to `TimeSpan.Zero`.",
         },
         new("color-picker", "Color picker", ExampleCategory.Inputs,
             "Chooses a color by typing it, picking a swatch, using the custom picker, or taking it from the screen.",
@@ -940,7 +941,7 @@ public static class ExampleCatalog
                     + "keeps it open, and Escape hides it, without also closing a dialog it is in. `ShowDelay` and "
                     + "`HideDelay` change the delays for one tooltip, and `options.Tooltips` in `AddTrailblazor` for "
                     + "the whole app.",
-                "`Content` can hold formatted text, such as a shortcut in `<kbd>`, which is read as part of the "
+                "`TextContent` can hold formatted text, such as a shortcut in `<kbd>`, which is read as part of the "
                     + "description. The tooltip can't be reached with the keyboard, so it holds no links or buttons; "
                     + "use a popover for those.",
                 "The arrow from `ShowArrow` is decoration and isn't read out.",
@@ -1015,9 +1016,9 @@ public static class ExampleCatalog
                     + "is decorative, so say what happened in the message.",
                 "A `TbDialogDescription` describes any dialog with `aria-describedby`, so screen readers read it with "
                     + "the title as the dialog opens.",
-                "Escape, the backdrop and the close button ask the dialog first: override `CanDismissAsync`, or set "
-                    + "`CanDismiss` on a `TbDialog`, to keep it open, as the rename dialog does once its name has "
-                    + "changed. Closing from code doesn't ask.",
+                "Escape, the backdrop and the close button ask the dialog first: override `CanDismissAsync` in a "
+                    + "`TbDialogContent`, or set `CanDismiss` on a `TbDialog`, to keep it open, as the rename dialog "
+                    + "does once its name has changed. Closing from code doesn't ask.",
                 "A dialog fades in and out with the motion tokens, and focus goes back to its opener once it has "
                     + "faded; reduced motion opens and closes it at once.",
                 "A dialog that isn't modal can be `Draggable` by its header and `Resizable` by its bottom-end grip. "
@@ -1106,7 +1107,7 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "A `tablist` of `tab`s, each controlling a `tabpanel`. Give the list an `AriaLabel`. A tab's "
-                    + "`Header` or `Text` is its name, so a count in the header is read with it; its `Icon` isn't "
+                    + "`TextContent` or `Text` is its name, so a count in it is read with it; its `Icon` isn't "
                     + "read.",
                 "`Variant` marks the selected tab: `Text` (and, for now, `Outlined`) underlines it, and `Soft` and "
                     + "`Filled` make it a pill, in vertical lists too. `--tb-tabs-indicator-color` and "
@@ -1177,7 +1178,7 @@ public static class ExampleCatalog
                     + "first, so a swipe still scrolls), or with Alt+Shift and the arrows: Up and Down past a "
                     + "neighbor, Right into the row above, Left out of the parent. Each movable row is described by "
                     + "those keys, and Escape cancels a drag.",
-                "A move is read out, such as \"Lake camp moved before Pine Hollow.\" A place `CanDropAsync` refuses "
+                "A move is read out, such as \"Lake camp moved before Pine Hollow.\" A place `CanDrop` refuses "
                     + "shows its reason beside the row, in the danger color, and the reason is read out when the "
                     + "move is tried.",
                 "The tree never moves rows itself: `OnDrop` says what moved and where, and the app applies it, so it "

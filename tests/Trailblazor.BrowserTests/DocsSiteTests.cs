@@ -191,7 +191,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "DialogExample.razor" }))
             .ToContainTextAsync("ShowAsync<RenameDialog, string>");
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "RenameDialog.razor" }))
-            .ToContainTextAsync("TbDialog<string>");
+            .ToContainTextAsync("TbDialogContent<string>");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

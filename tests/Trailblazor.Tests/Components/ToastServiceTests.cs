@@ -390,7 +390,7 @@ public class ToastServiceTests : BunitContext
         handle.VerifyInvoke("dispose");
     }
 
-    private sealed class EmptyDialog : TbDialog<bool>
+    private sealed class EmptyDialog : TbDialogContent<bool>
     {
     }
 }

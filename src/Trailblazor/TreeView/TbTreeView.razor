@@ -5,7 +5,7 @@
 
 @* The rows are flat, each saying its own level, so a row keeps its element and state wherever the tree changes. *@
 <div @ref="_tree" @attributes="AdditionalAttributes" role="tree" aria-label="@AriaLabel"
-     aria-multiselectable="@(SelectionMode == TreeSelectionMode.Multiple ? "true" : null)"
+     aria-multiselectable="@(SelectionMode == SelectionMode.Multiple ? "true" : null)"
      aria-disabled="@(Disabled ? "true" : null)" data-ready="@(_handle is null ? null : "")"
      data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
      data-row-size="@(Virtualize ? RowSize : null)"

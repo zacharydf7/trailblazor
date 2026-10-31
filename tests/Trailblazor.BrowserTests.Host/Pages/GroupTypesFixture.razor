@@ -1,0 +1,39 @@
+@page "/group-types"
+
+@* Plain literals fit a nullable or enum group; a null option names its type, since null has none. *@
+<TbRadioGroup Label="Party size" @bind-Value="_size">
+    <TbRadio TValue="int?" Value="null">Any</TbRadio>
+    <TbRadio Value="2">Two</TbRadio>
+    <TbRadio Value="4">Four</TbRadio>
+</TbRadioGroup>
+<output data-testid="size">@_size</output>
+<TbRadioGroup Label="Pace" @bind-Value="_pace">
+    <TbRadio Value="Pace.Easy">Easy</TbRadio>
+    <TbRadio Value="Pace.Brisk">Brisk</TbRadio>
+</TbRadioGroup>
+<output data-testid="pace">@_pace</output>
+<TbCheckboxGroup Label="Days" @bind-Value="_days">
+    <TbCheckboxItem Value="1">Day one</TbCheckboxItem>
+    <TbCheckboxItem Value="2">Day two</TbCheckboxItem>
+</TbCheckboxGroup>
+<output data-testid="days">@string.Join(", ", _days)</output>
+<TbMenu Label="Stops">
+    <TbMenuRadioGroup Label="Stops" @bind-Value="_stops">
+        <TbMenuRadioItem Value="1">One stop</TbMenuRadioItem>
+        <TbMenuRadioItem Value="3">Three stops</TbMenuRadioItem>
+    </TbMenuRadioGroup>
+</TbMenu>
+<output data-testid="stops">@_stops</output>
+
+@code {
+    private int? _size = 2;
+    private Pace? _pace;
+    private IReadOnlyList<int?> _days = [];
+    private int? _stops;
+
+    private enum Pace
+    {
+        Easy,
+        Brisk,
+    }
+}

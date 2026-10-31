@@ -64,14 +64,19 @@
         ? InputAttributes?.GetValueOrDefault("name")?.ToString()
         : InputNameAttribute?.ToString()) ?? FieldId;
 
-    internal string? FormatOption(TValue value) => FormatValue(value);
+    string IRadioGroup.GroupName => GroupName;
 
-    internal bool IsSelected(TValue value) => EqualityComparer<TValue>.Default.Equals(value, Value);
+    bool IRadioGroup.Accepts(object? value) => GroupValues.TryFit<TValue>(value, out _);
+
+    string? IRadioGroup.FormatOption(object? value) => FormatValue(GroupValues.Fit<TValue>(value));
+
+    bool IRadioGroup.IsSelected(object? value) =>
+        EqualityComparer<TValue>.Default.Equals(GroupValues.Fit<TValue>(value), Value);
 
     // The change event belongs to the chosen TbRadio, so the group re-renders itself for its messages.
-    internal async Task SelectAsync(TValue value)
+    async Task IRadioGroup.SelectAsync(object? value)
     {
-        await SetValueAsync(value);
+        await SetValueAsync(GroupValues.Fit<TValue>(value));
         StateHasChanged();
     }
 }

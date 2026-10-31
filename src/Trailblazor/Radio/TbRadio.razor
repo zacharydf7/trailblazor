@@ -12,7 +12,9 @@
 </label>
 
 @code {
-    /// <summary>The value the group takes when this option is chosen.</summary>
+    /// <summary>The value the group takes when this option is chosen. A plain value fits a group of its nullable, such
+    /// as <c>Value="2"</c> in a group bound to an <c>int?</c>; a null option names its type, as with
+    /// <c>TValue="int?" Value="null"</c>.</summary>
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;
 
@@ -25,7 +27,7 @@
     public bool Disabled { get; set; }
 
     [CascadingParameter]
-    private TbRadioGroup<TValue>? Group { get; set; }
+    private IRadioGroup? Group { get; set; }
 
     // A read-only group turns off every radio but the checked one, which stays focusable and posted.
     private bool Held => Group!.ReadOnly && !Group.IsSelected(Value);
@@ -33,10 +35,10 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Group is null)
+        if (Group is null || !Group.Accepts(Value))
         {
             throw new InvalidOperationException(
-                $"{nameof(TbRadio<TValue>)} must be inside a {nameof(TbRadioGroup<TValue>)} of the same type.");
+                $"{nameof(TbRadio<TValue>)} must be inside a {nameof(TbRadioGroup<TValue>)} its value fits.");
         }
     }
 }

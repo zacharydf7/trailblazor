@@ -36,7 +36,7 @@
     private ElementReference _root;
     private ElementReference _panel;
     private IJSObjectReference? _handle;
-    private DotNetObjectReference<TbPopover>? _reference;
+    private DotNetObjectReference<PopoverEvents>? _reference;
     private bool _lastOpen;
     private bool _disposed;
 
@@ -182,7 +182,7 @@
         }
 
         // Only a bound Open needs to hear about toggles, so an unbound popover costs no round trips.
-        _reference = OpenChanged.HasDelegate ? DotNetObjectReference.Create(this) : null;
+        _reference = OpenChanged.HasDelegate ? DotNetObjectReference.Create(new PopoverEvents(OnToggleAsync)) : null;
         var options = new AnchoredPositionOptions
         {
             Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 8,
@@ -208,9 +208,8 @@
         }
     }
 
-    /// <summary>Called by the popover's script when the panel opens or closes.</summary>
-    [JSInvokable]
-    public async Task OnToggle(bool open)
+    // The popover's script reports the panel opening or closing, as a click or Escape changes it.
+    internal async Task OnToggleAsync(bool open)
     {
         if (open == Open)
         {

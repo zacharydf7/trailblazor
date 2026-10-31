@@ -43,17 +43,11 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     [Parameter]
     public bool Filterable { get; set; }
 
-    /// <summary>Names the filter box and shows in it while it's empty. Defaults to the app's text for <see
-    /// cref="TbStrings.SelectFilter"/>, "Filter" in English.</summary>
+    /// <summary>The words it shows and says, such as the filter box's name and the clear button's.</summary>
     [Parameter]
-    public string? FilterLabel { get; set; }
+    public SelectLabels Labels { get; set; } = new();
 
-    /// <summary>Shown and announced when no option contains the filter's text.
-    /// Defaults to the app's text for <see cref="TbStrings.SelectNoResults"/>, "No matches" in English.</summary>
-    [Parameter]
-    public string? NoResultsText { get; set; }
-
-    private string FilterText => FilterLabel ?? Localizer[TbStrings.SelectFilter];
+    private string FilterText => Labels.Filter ?? Localizer[TbStrings.SelectFilter];
 
     /// <summary>Whether the list is open. Bind it with <c>@bind-Open</c> to open or close the list from code, or to
     /// load options when it opens.</summary>
@@ -79,7 +73,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     // Whether the chosen options show as removable chips, and what is said when one is removed, with {0} for it.
     private protected virtual bool ShowChips => false;
 
-    private protected virtual string RemovedFormat => Localizer[TbStrings.MultiSelectRemoved];
+    private string RemovedFormat => Labels.Removed ?? Localizer[TbStrings.MultiSelectRemoved];
 
     // The field's value once nothing is chosen.
     private protected abstract TValue? Cleared { get; }

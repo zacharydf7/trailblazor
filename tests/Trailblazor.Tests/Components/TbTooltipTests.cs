@@ -61,7 +61,7 @@ public class TbTooltipTests : BunitContext
         JSInterop.SetupModule(Module).SetupModule("createTooltip", _ => true);
 
         var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Save")
-            .Add(tooltip => tooltip.Content, "<strong>Save</strong> <kbd>Ctrl+S</kbd>"));
+            .Add(tooltip => tooltip.TextContent, "<strong>Save</strong> <kbd>Ctrl+S</kbd>"));
 
         var tooltip = cut.Find("[role=tooltip]");
         Assert.Equal("Ctrl+S", tooltip.QuerySelector("kbd")!.TextContent);
@@ -69,11 +69,11 @@ public class TbTooltipTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldThrow_WhenThereIsNoTextOrContent()
+    public void Render_ShouldThrow_WhenThereIsNoTextOrTextContent()
     {
         var failure = Assert.Throws<InvalidOperationException>(() => Render<TbTooltip>());
 
-        Assert.Equal("TbTooltip needs a Text or Content.", failure.Message);
+        Assert.Equal("TbTooltip needs a Text or TextContent.", failure.Message);
     }
 
     [Theory]

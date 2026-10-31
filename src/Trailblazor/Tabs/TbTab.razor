@@ -22,14 +22,14 @@
     private Icon? _icon;
     private RenderFragment? _header;
 
-    /// <summary>The tab's label. Give this or <see cref="Header"/>.</summary>
+    /// <summary>The tab's label. Give this or <see cref="TextContent"/>.</summary>
     [Parameter]
     public string? Text { get; set; }
 
     /// <summary>Content for the tab's header in place of <see cref="Text"/>, such as a label with a count. It becomes
     /// the tab's accessible name, so keep it short and leave controls out of it.</summary>
     [Parameter]
-    public RenderFragment? Header { get; set; }
+    public RenderFragment? TextContent { get; set; }
 
     /// <summary>An icon before the header's text.</summary>
     [Parameter]
@@ -88,9 +88,9 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Header is null && string.IsNullOrWhiteSpace(Text))
+        if (TextContent is null && string.IsNullOrWhiteSpace(Text))
         {
-            throw new InvalidOperationException($"{nameof(TbTab)} needs a {nameof(Text)} or a {nameof(Header)}.");
+            throw new InvalidOperationException($"{nameof(TbTab)} needs a {nameof(Text)} or a {nameof(TextContent)}.");
         }
 
         if (Key is null && Tabs!.SelectsByKey)
@@ -110,9 +110,9 @@
         }
 
         // A header that changes on its own would otherwise keep what the list drew before it changed.
-        if (Header != _header)
+        if (TextContent != _header)
         {
-            _header = Header;
+            _header = TextContent;
             HeaderView?.Refresh();
         }
     }

@@ -10,7 +10,8 @@
 </button>
 
 @code {
-    /// <summary>The value the group takes when this item is chosen.</summary>
+    /// <summary>The value the group takes when this item is chosen. A plain value fits a group of its nullable, such
+    /// as <c>Value="2"</c> in a group bound to an <c>int?</c>.</summary>
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;
 
@@ -23,17 +24,17 @@
     public bool Disabled { get; set; }
 
     [CascadingParameter]
-    private TbMenuRadioGroup<TValue>? Group { get; set; }
+    private IMenuRadioGroup? Group { get; set; }
 
     private bool Chosen => Group!.IsChosen(Value);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Group is null)
+        if (Group is null || !Group.Accepts(Value))
         {
             throw new InvalidOperationException($"{nameof(TbMenuRadioItem<TValue>)} must be inside a "
-                + $"{nameof(TbMenuRadioGroup<TValue>)} of the same type.");
+                + $"{nameof(TbMenuRadioGroup<TValue>)} its value fits.");
         }
     }
 
