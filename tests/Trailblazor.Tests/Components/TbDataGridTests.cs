@@ -280,7 +280,7 @@ public class TbDataGridTests : BunitContext
             Task.FromResult(new GridResult<Trail>([.. Trails.Skip(request.StartIndex).Take(2)], Trails.Count)));
         cut.Find("nav [data-part=next]").Click();
 
-        await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(1));
+        await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(Trails.First(trail => trail.Id == 1)));
 
         Assert.Empty(Services.GetRequiredService<FakeBrowserService>().ScrolledTo);
     }
@@ -599,7 +599,7 @@ public class TbDataGridTests : BunitContext
     {
         var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.PageSize, 2));
 
-        await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(5));
+        await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(Trails.First(trail => trail.Id == 5)));
 
         Assert.Equal(["Lake Camp"], Names(cut));
         Assert.Single(Services.GetRequiredService<FakeBrowserService>().ScrolledTo);

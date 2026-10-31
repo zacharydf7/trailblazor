@@ -1,7 +1,7 @@
 namespace Trailblazor;
 
-/// <summary>How many rows of a <see cref="TbDataGrid{TItem}"/> or a <see cref="TbTreeView{TItem}"/> can be selected.
-/// </summary>
+/// <summary>How many rows of a <see cref="TbDataGrid{TItem}"/> or a <see cref="TbTreeView{TItem, TKey}"/> can be
+/// selected.</summary>
 public enum SelectionMode
 {
     /// <summary>Rows can't be selected; a tree's rows can still be focused, expanded and activated.</summary>

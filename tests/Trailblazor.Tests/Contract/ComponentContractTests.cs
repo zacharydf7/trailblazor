@@ -48,7 +48,8 @@ public class ComponentContractTests : BunitContext
         .Where(type => !type.IsAbstract && typeof(IComponent).IsAssignableFrom(type))
         .Except(NotRenderedAlone)
         .Select(type => type.IsGenericTypeDefinition
-            ? type.MakeGenericType(TypeArguments.GetValueOrDefault(type, typeof(string)))
+            ? type.MakeGenericType([.. type.GetGenericArguments()
+                .Select(_ => TypeArguments.GetValueOrDefault(type, typeof(string)))])
             : type));
 
     [Theory, MemberData(nameof(Components))]

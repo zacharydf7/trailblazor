@@ -9,9 +9,9 @@ namespace Trailblazor.Tests.Components;
 
 public class TbTreeViewTests : BunitContext
 {
-    private readonly List<IReadOnlyCollection<object>> _expandedChanges = [];
-    private readonly List<IReadOnlyCollection<object>> _selectedChanges = [];
-    private readonly List<IReadOnlyCollection<object>> _checkedChanges = [];
+    private readonly List<IReadOnlyCollection<int>> _expandedChanges = [];
+    private readonly List<IReadOnlyCollection<int>> _selectedChanges = [];
+    private readonly List<IReadOnlyCollection<int>> _checkedChanges = [];
     private readonly List<string> _activated = [];
 
     public TbTreeViewTests()
@@ -69,6 +69,26 @@ public class TbTreeViewTests : BunitContext
         var failure = Assert.Throws<InvalidOperationException>(() => RenderPlaces([new(1, "North"), new(1, "Copy")]));
 
         Assert.Contains("key 1", failure.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenItsItemsArentItsKeysAndItHasNoKeySelector()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => Render<TbTreeView<Place, int>>(parameters =>
+            parameters.Add(tree => tree.Items, [new Place(1, "North")]).Add(tree => tree.AriaLabel, "Places")));
+
+        Assert.Equal("TbTreeView needs a KeySelector when its items aren't their own keys.", failure.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldThrowNamingTheType_WhenAParentKeyIsntTheTreesKeyType()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => RenderPlaces([new(1, "A"), new(2, "B", 1)],
+            parameters => parameters.Add(tree => tree.ParentKeySelector, place => (long?)place.ParentId),
+            nested: false));
+
+        Assert.Equal("TbTreeView's ParentKeySelector must give a key of type Int32 or null for a root, but gave a "
+            + "Int64.", failure.Message);
     }
 
     [Fact]
@@ -203,7 +223,8 @@ public class TbTreeViewTests : BunitContext
     [Fact]
     public void Render_ShouldGiveEachRowItsOwnKey_WhenPlainItemsAreTheirOwnKeys()
     {
-        var cut = Render<TbTreeView<Trailhead>>(parameters => parameters.Add(tree => tree.AriaLabel, "Trailheads")
+        var cut = Render<TbTreeView<Trailhead, Trailhead>>(parameters => parameters
+            .Add(tree => tree.AriaLabel, "Trailheads")
             .Add(tree => tree.Items, [new Trailhead("North"), new Trailhead("South")])
             .Add(tree => tree.ItemText, trailhead => trailhead.Name));
 
@@ -215,7 +236,7 @@ public class TbTreeViewTests : BunitContext
     [Fact]
     public void Render_ShouldGiveEachRowItsOwnKey_WhenTwoKeysHaveTheSameText()
     {
-        var cut = Render<TbTreeView<Place>>(parameters => parameters.Add(tree => tree.AriaLabel, "Places")
+        var cut = Render<TbTreeView<Place, object>>(parameters => parameters.Add(tree => tree.AriaLabel, "Places")
             .Add(tree => tree.Items, [new Place(1, "North"), new Place(2, "South")])
             .Add(tree => tree.KeySelector, place => place.Id == 2 ? "1" : place.Id));
 
@@ -473,9 +494,10 @@ public class TbTreeViewTests : BunitContext
     [Fact]
     public void Select_ShouldReportTheItemsThemselves_WhenTheTreeHasNoKeySelector()
     {
-        IReadOnlyCollection<object> selected = [];
-        var cut = Render<TbTreeView<string>>(parameters => parameters.Add(tree => tree.Items, ["Trails", "Huts"])
-            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> keys) => selected = keys));
+        IReadOnlyCollection<string> selected = [];
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters
+            .Add(tree => tree.Items, ["Trails", "Huts"])
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<string> keys) => selected = keys));
 
         cut.Find("[data-key=Huts]").Click();
 
@@ -485,22 +507,22 @@ public class TbTreeViewTests : BunitContext
     private TreeViewEvents Events() =>
         ((DotNetObjectReference<TreeViewEvents>)JSInterop.Invocations["createTreeView"].Single().Arguments[1]!).Value;
 
-    private static IElement Row(IRenderedComponent<TbTreeView<Place>> cut, string key) =>
+    private static IElement Row(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         cut.Find($"[role=treeitem][data-key='{key}']");
 
-    private static void Toggle(IRenderedComponent<TbTreeView<Place>> cut, string key) =>
+    private static void Toggle(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         Row(cut, key).QuerySelector("[data-part=toggle]")!.Click();
 
-    private static void Check(IRenderedComponent<TbTreeView<Place>> cut, string key) =>
+    private static void Check(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         Row(cut, key).QuerySelector("[data-part=check]")!.Click();
 
-    private static string[] Texts(IRenderedComponent<TbTreeView<Place>> cut) =>
+    private static string[] Texts(IRenderedComponent<TbTreeView<Place, int>> cut) =>
         [.. cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")!)];
 
     // Nested places give their own children; the others come as a flat list or load lazily.
-    private IRenderedComponent<TbTreeView<Place>> RenderPlaces(IReadOnlyList<Place> items,
-        Action<ComponentParameterCollectionBuilder<TbTreeView<Place>>>? configure = null, bool nested = true) =>
-        Render<TbTreeView<Place>>(parameters =>
+    private IRenderedComponent<TbTreeView<Place, int>> RenderPlaces(IReadOnlyList<Place> items,
+        Action<ComponentParameterCollectionBuilder<TbTreeView<Place, int>>>? configure = null, bool nested = true) =>
+        Render<TbTreeView<Place, int>>(parameters =>
         {
             if (nested)
             {
@@ -509,9 +531,9 @@ public class TbTreeViewTests : BunitContext
 
             parameters.Add(tree => tree.Items, items).Add(tree => tree.KeySelector, place => place.Id)
                 .Add(tree => tree.AriaLabel, "Places")
-                .Add(tree => tree.ExpandedKeysChanged, (IReadOnlyCollection<object> keys) => _expandedChanges.Add(keys))
-                .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> keys) => _selectedChanges.Add(keys))
-                .Add(tree => tree.CheckedKeysChanged, (IReadOnlyCollection<object> keys) => _checkedChanges.Add(keys))
+                .Add(tree => tree.ExpandedKeysChanged, (IReadOnlyCollection<int> keys) => _expandedChanges.Add(keys))
+                .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> keys) => _selectedChanges.Add(keys))
+                .Add(tree => tree.CheckedKeysChanged, (IReadOnlyCollection<int> keys) => _checkedChanges.Add(keys))
                 .Add(tree => tree.OnActivate, (Place place) => _activated.Add(place.Name));
             configure?.Invoke(parameters);
         });

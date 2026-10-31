@@ -256,12 +256,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         StateHasChanged();
     }
 
-    /// <summary>Goes to the page that holds the row with this key, and scrolls the row into view. With a <see
-    /// cref="DataProvider"/>, only a row on the current page can be found.</summary>
-    public async Task ScrollToAsync(object key)
+    /// <summary>Goes to the page that holds this item's row, found by its <see cref="KeySelector"/> key, and scrolls
+    /// the row into view. With a <see cref="DataProvider"/>, only a row on the current page can be found.</summary>
+    public async Task ScrollToAsync(TItem item)
     {
+        var key = KeyOf(item);
         if (_pageSize is { } size && Items is not null
-            && Arranged().ToList().FindIndex(item => Equals(KeyOf(item), key)) is var index and >= 0)
+            && Arranged().ToList().FindIndex(other => Equals(KeyOf(other), key)) is var index and >= 0)
         {
             await GoToPageAsync(index / size + 1);
         }

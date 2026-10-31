@@ -54,7 +54,7 @@ else
     public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter]
-    private TbTreeView<TItem>? Tree { get; set; }
+    private ITreeItemHost<TItem>? Tree { get; set; }
 
     [CascadingParameter]
     private TbTreeItem<TItem>? Parent { get; set; }

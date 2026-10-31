@@ -1,6 +1,7 @@
 @namespace Trailblazor
 @using System.Globalization
 @typeparam TItem
+@typeparam TKey where TKey : notnull
 @inherits TbComponentBase
 
 @* The rows are flat, each saying its own level, so a row keeps its element and state wherever the tree changes. *@

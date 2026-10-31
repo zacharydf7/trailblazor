@@ -1159,7 +1159,7 @@ public static class ExampleCatalog
         {
             Api =
             [
-                typeof(TbTreeView<>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
+                typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
                 typeof(TreeDropCheck), typeof(TreeInsertContext<>),
             ],
             Accessibility =

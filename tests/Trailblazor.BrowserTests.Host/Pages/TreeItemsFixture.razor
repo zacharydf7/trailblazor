@@ -1,7 +1,8 @@
 @page "/tree-items"
 
 <TbStack Gap="4" Style="max-inline-size: 28rem">
-    <TbTreeView TItem="string" AriaLabel="Files" @bind-SelectedKeys="_selected" Checkable @bind-CheckedKeys="_checked">
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Files" @bind-SelectedKeys="_selected" Checkable
+                @bind-CheckedKeys="_checked">
         <TbTreeItem Value="@("docs")" Text="Docs">
             <TbTreeItem Value="@("guide")" Text="Guide" />
             <TbTreeItem Value="@("api")" Text="API" />
@@ -17,7 +18,7 @@
     <output data-testid="selected">@string.Join(", ", _selected)</output>
     <output data-testid="checked">@string.Join(", ", _checked.Order())</output>
     <TbButton OnClick="() => _notes = !_notes">Notes</TbButton>
-    <TbTreeView TItem="string" AriaLabel="Trails">
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Trails">
         @foreach (var trail in _trails)
         {
             <TbTreeItem @key="trail" Value="trail" />
@@ -27,8 +28,8 @@
 </TbStack>
 
 @code {
-    private IReadOnlyCollection<object> _selected = [];
-    private IReadOnlyCollection<object> _checked = [];
+    private IReadOnlyCollection<string> _selected = [];
+    private IReadOnlyCollection<string> _checked = [];
     private bool _notes;
     private readonly List<string> _trails = ["Pine Hollow", "Eagle Ridge", "Cedar Flats"];
 }

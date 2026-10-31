@@ -1,6 +1,6 @@
 <TbStack Gap="3" Style="max-inline-size: 26rem">
     <TbTextField Label="Find a trail" @bind-Value="_search" @bind-Value:event="oninput" Clearable />
-    <TbTreeView TItem="Place" AriaLabel="Trails by region" Items="Regions" KeySelector="place => place.Id"
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Trails by region" Items="Regions" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" ItemText="place => place.Name"
                 ItemIcon="place => place.Children is null ? ExampleIcons.Trail : ExampleIcons.Folder"
                 IsSelectable="place => place.Children is null" InitialExpandDepth="1"
@@ -15,7 +15,8 @@
     </TbTreeView>
     <TbText>@(_opened is null ? "Double-click or press Enter on a trail to open it." : $"Opened {_opened}.")</TbText>
     @* Rows written as markup, for a tree that is part of the page rather than data. *@
-    <TbTreeView TItem="string" AriaLabel="Notifications" Checkable @bind-CheckedKeys="_notify" InitialExpandDepth="1">
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Notifications" Checkable @bind-CheckedKeys="_notify"
+                InitialExpandDepth="1">
         <TbTreeItem Value="@("trips")" Text="Trips">
             <TbTreeItem Value="@("trips-new")" Text="New trails near me" />
             <TbTreeItem Value="@("trips-changed")" Text="Changes to saved trails" />
@@ -23,7 +24,7 @@
         <TbTreeItem Value="@("weather")" Text="Weather alerts" />
     </TbTreeView>
     @* Rows that move by dragging, or with Alt+Shift and the arrows; the page applies each move to its own list. *@
-    <TbTreeView TItem="Stop" AriaLabel="Trip plan" Items="_plan" KeySelector="stop => stop.Id"
+    <TbTreeView TItem="Stop" TKey="int" AriaLabel="Trip plan" Items="_plan" KeySelector="stop => stop.Id"
                 ChildrenSelector="stop => stop.Children" ItemText="stop => stop.Name" InitialExpandDepth="1"
                 OnDrop="Move" CanDrop="CheckMoveAsync">
         <InsertTemplate>
@@ -33,7 +34,7 @@
         </InsertTemplate>
     </TbTreeView>
     @* Ten thousand rows, of which only those in view render. *@
-    <TbTreeView TItem="Place" AriaLabel="Trail atlas" Items="Atlas" KeySelector="place => place.Id"
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Trail atlas" Items="Atlas" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" ItemText="place => place.Name" InitialExpandDepth="1"
                 Virtualize Style="block-size: 20rem" />
 </TbStack>
@@ -52,9 +53,9 @@
             new Place(region * 1000 + trail, $"Trail {region}.{trail}"))]))];
 
     private string? _search;
-    private IReadOnlyCollection<object> _selected = [];
+    private IReadOnlyCollection<int> _selected = [];
     private string? _opened;
-    private IReadOnlyCollection<object> _notify = ["weather"];
+    private IReadOnlyCollection<string> _notify = ["weather"];
     private readonly List<Stop> _plan =
     [
         new(1, "Day 1", [new(2, "Trailhead"), new(3, "Pine Hollow"), new(4, "Lake camp")]),

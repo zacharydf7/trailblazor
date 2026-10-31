@@ -2,7 +2,7 @@
 
 <TbStack Gap="4" Style="max-inline-size: 28rem">
     <TbButton>Before</TbButton>
-    <TbTreeView TItem="Place" AriaLabel="Places" Items="Places" KeySelector="place => place.Id"
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Places" Items="Places" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" @bind-SelectedKeys="_selected" OnActivate="Activate">
         <ItemEnd>
             <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => _info = context.Item.Name">Info</TbButton>
@@ -11,14 +11,14 @@
     <output data-testid="selected">@string.Join(", ", _selected)</output>
     <output data-testid="activated">@_activated</output>
     <output data-testid="info">@_info</output>
-    <TbTreeView TItem="Place" AriaLabel="Gear" Items="Places" KeySelector="place => place.Id"
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Gear" Items="Places" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" SelectionMode="SelectionMode.Multiple"
                 @bind-SelectedKeys="_gear" Checkable @bind-CheckedKeys="_checked" />
     <output data-testid="gear">@string.Join(", ", _gear.Order())</output>
     <output data-testid="checked">@string.Join(", ", _checked.Order())</output>
-    <TbTreeView TItem="Place" AriaLabel="Remote" Items="Remote" KeySelector="place => place.Id"
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Remote" Items="Remote" KeySelector="place => place.Id"
                 LoadChildren="LoadAsync" />
-    <TbTreeView TItem="Place" AriaLabel="Flaky" Items="Flaky" KeySelector="place => place.Id"
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Flaky" Items="Flaky" KeySelector="place => place.Id"
                 LoadChildren="LoadFlakyAsync" />
 </TbStack>
 
@@ -33,9 +33,9 @@
 
     private static readonly Place[] Flaky = [new(20, "Outpost", null)];
 
-    private IReadOnlyCollection<object> _selected = [];
-    private IReadOnlyCollection<object> _gear = [];
-    private IReadOnlyCollection<object> _checked = [];
+    private IReadOnlyCollection<int> _selected = [];
+    private IReadOnlyCollection<int> _gear = [];
+    private IReadOnlyCollection<int> _checked = [];
     private string? _activated;
     private string? _info;
     private int _flakyLoads;

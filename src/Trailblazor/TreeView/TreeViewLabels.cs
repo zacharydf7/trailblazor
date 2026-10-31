@@ -1,6 +1,6 @@
 namespace Trailblazor;
 
-/// <summary>The words a <see cref="TbTreeView{TItem}"/> shows and says to screen readers.</summary>
+/// <summary>The words a <see cref="TbTreeView{TItem, TKey}"/> shows and says to screen readers.</summary>
 public sealed record TreeViewLabels
 {
     /// <summary>Shown in place of children that are loading. Leave it null for the app's text for <see

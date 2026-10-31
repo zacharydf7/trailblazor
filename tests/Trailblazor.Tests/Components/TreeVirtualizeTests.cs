@@ -78,10 +78,10 @@ public class TreeVirtualizeTests : BunitContext
     [Fact]
     public async Task OnKey_ShouldExtendTheSelection_WhenShiftMovesFocusThroughTheServer()
     {
-        IReadOnlyCollection<object> selected = [];
+        IReadOnlyCollection<int> selected = [];
         var cut = RenderPlaces(Flat, parameters => parameters
             .Add(tree => tree.SelectionMode, SelectionMode.Multiple)
-            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> keys) => selected = keys));
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> keys) => selected = keys));
         await cut.InvokeAsync(() => Events().OnKey("40", " ", false, false));
 
         await cut.InvokeAsync(() => Events().OnKey("40", "Next", true, false));
@@ -95,7 +95,7 @@ public class TreeVirtualizeTests : BunitContext
         var changed = false;
         var cut = RenderPlaces(Flat, parameters => parameters.Add(tree => tree.Disabled, true)
             .Add(tree => tree.SelectionMode, SelectionMode.Multiple)
-            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> _) => changed = true));
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> _) => changed = true));
 
         await cut.InvokeAsync(() => Events().OnView(39, 1));
 
@@ -180,15 +180,15 @@ public class TreeVirtualizeTests : BunitContext
     private TreeViewEvents Events() =>
         ((DotNetObjectReference<TreeViewEvents>)JSInterop.Invocations["createTreeView"].Single().Arguments[1]!).Value;
 
-    private static IEnumerable<int> Indexes(IRenderedComponent<TbTreeView<Place>> cut) =>
+    private static IEnumerable<int> Indexes(IRenderedComponent<TbTreeView<Place, int>> cut) =>
         cut.FindAll("[role=treeitem]").Select(row => int.Parse(row.GetAttribute("data-index")!));
 
-    private static IElement Row(IRenderedComponent<TbTreeView<Place>> cut, string key) =>
+    private static IElement Row(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         cut.Find($"[role=treeitem][data-key='{key}']");
 
-    private IRenderedComponent<TbTreeView<Place>> RenderPlaces(IReadOnlyList<Place> places,
-        Action<ComponentParameterCollectionBuilder<TbTreeView<Place>>>? configure = null) =>
-        Render<TbTreeView<Place>>(parameters =>
+    private IRenderedComponent<TbTreeView<Place, int>> RenderPlaces(IReadOnlyList<Place> places,
+        Action<ComponentParameterCollectionBuilder<TbTreeView<Place, int>>>? configure = null) =>
+        Render<TbTreeView<Place, int>>(parameters =>
         {
             parameters.Add(tree => tree.Items, places).Add(tree => tree.ChildrenSelector, place => place.Children)
                 .Add(tree => tree.KeySelector, place => place.Id).Add(tree => tree.ItemText, place => place.Name)

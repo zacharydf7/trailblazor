@@ -2,7 +2,7 @@
 
 @* The rows arrive after the tree attaches, and only then turn virtualization on, as a large load would. *@
 <TbButton OnClick="Load">Load</TbButton>
-<TbTreeView TItem="int" AriaLabel="Numbers" Items="_numbers" ItemText="@(number => $"Number {number}")"
+<TbTreeView TItem="int" TKey="int" AriaLabel="Numbers" Items="_numbers" ItemText="@(number => $"Number {number}")"
             Virtualize="@(_numbers.Count > 100)" Style="block-size: 12rem" />
 
 @code {

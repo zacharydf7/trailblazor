@@ -43,7 +43,7 @@ public class TreeReorderTests : BunitContext
     [Fact]
     public void Render_ShouldLetNoRowMove_WhenOnDropIsNotSet()
     {
-        var cut = Render<TbTreeView<Place>>(parameters => parameters.Add(tree => tree.Items, Nested)
+        var cut = Render<TbTreeView<Place, int>>(parameters => parameters.Add(tree => tree.Items, Nested)
             .Add(tree => tree.ChildrenSelector, place => place.Children)
             .Add(tree => tree.KeySelector, place => place.Id).Add(tree => tree.AriaLabel, "Places"));
 
@@ -207,12 +207,12 @@ public class TreeReorderTests : BunitContext
     private TreeViewEvents Events() =>
         ((DotNetObjectReference<TreeViewEvents>)JSInterop.Invocations["createTreeView"].Single().Arguments[1]!).Value;
 
-    private static IElement Row(IRenderedComponent<TbTreeView<Place>> cut, string key) =>
+    private static IElement Row(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         cut.Find($"[role=treeitem][data-key='{key}']");
 
-    private IRenderedComponent<TbTreeView<Place>> RenderPlaces(
-        Action<ComponentParameterCollectionBuilder<TbTreeView<Place>>>? configure = null) =>
-        Render<TbTreeView<Place>>(parameters =>
+    private IRenderedComponent<TbTreeView<Place, int>> RenderPlaces(
+        Action<ComponentParameterCollectionBuilder<TbTreeView<Place, int>>>? configure = null) =>
+        Render<TbTreeView<Place, int>>(parameters =>
         {
             parameters.Add(tree => tree.Items, Nested).Add(tree => tree.ChildrenSelector, place => place.Children)
                 .Add(tree => tree.KeySelector, place => place.Id).Add(tree => tree.AriaLabel, "Places")

@@ -8,8 +8,8 @@ namespace Trailblazor.Tests.Components;
 // Rows written as nested TbTreeItems rather than given as Items.
 public class TreeItemTests : BunitContext
 {
-    private readonly List<IReadOnlyCollection<object>> _checkedChanges = [];
-    private readonly List<IReadOnlyCollection<object>> _selectedChanges = [];
+    private readonly List<IReadOnlyCollection<string>> _checkedChanges = [];
+    private readonly List<IReadOnlyCollection<string>> _selectedChanges = [];
     private readonly List<string> _activated = [];
 
     public TreeItemTests()
@@ -125,7 +125,8 @@ public class TreeItemTests : BunitContext
     {
         var renders = 0;
 
-        var cut = Render<TbTreeView<Folder>>(parameters => parameters.Add(tree => tree.KeySelector, folder => folder.Id)
+        var cut = Render<TbTreeView<Folder, int>>(parameters => parameters
+            .Add(tree => tree.KeySelector, folder => folder.Id)
             .Add(tree => tree.ChildContent, (RenderFragment)(builder =>
             {
                 renders++;
@@ -194,14 +195,14 @@ public class TreeItemTests : BunitContext
         Assert.Contains("not both", exception.Message);
     }
 
-    private IRenderedComponent<TbTreeView<string>> RenderFiles(Row[] rows,
-        Action<ComponentParameterCollectionBuilder<TbTreeView<string>>>? configure = null,
+    private IRenderedComponent<TbTreeView<string, string>> RenderFiles(Row[] rows,
+        Action<ComponentParameterCollectionBuilder<TbTreeView<string, string>>>? configure = null,
         Func<string, RenderFragment>? content = null) =>
-        Render<TbTreeView<string>>(parameters =>
+        Render<TbTreeView<string, string>>(parameters =>
         {
             parameters.Add(tree => tree.AriaLabel, "Files").Add(tree => tree.ChildContent, Fragment(rows, content))
-                .Add(tree => tree.CheckedKeysChanged, (IReadOnlyCollection<object> keys) => _checkedChanges.Add(keys))
-                .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<object> keys) => _selectedChanges.Add(keys))
+                .Add(tree => tree.CheckedKeysChanged, (IReadOnlyCollection<string> keys) => _checkedChanges.Add(keys))
+                .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<string> keys) => _selectedChanges.Add(keys))
                 .Add(tree => tree.OnActivate, (string value) => _activated.Add(value));
             configure?.Invoke(parameters);
         });
