@@ -95,6 +95,43 @@ public class ComponentContractTests : BunitContext
         Assert.NotEmpty(cut.FindAll("[aria-invalid=true]"));
     }
 
+    public static TheoryData<Type> BoxedFields => new(Components.Select(row => row.Data).Where(type =>
+    {
+        for (var parent = type.BaseType; parent is not null; parent = parent.BaseType)
+        {
+            if (parent.IsGenericType && parent.GetGenericTypeDefinition() == typeof(TbBoxedFieldBase<>))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }));
+
+    [Theory, MemberData(nameof(BoxedFields))]
+    public void Render_ShouldDrawTheBoxInItsVariantAndSize_WhenGivenThem(Type field)
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            builder.AddAttribute(1, nameof(TbTextField<string>.Variant), FieldVariant.Filled);
+            builder.AddAttribute(2, nameof(TbTextField<string>.Size), Size.Large);
+            AddRequiredParameters(builder, field, sequence: 3);
+            builder.CloseComponent();
+        });
+        var plain = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            AddRequiredParameters(builder, field, sequence: 1);
+            builder.CloseComponent();
+        });
+
+        Assert.Superset(new HashSet<string> { "tb-field", "tb-field--filled", "tb-field--large" },
+            cut.Find(".tb-field").ClassList.ToHashSet());
+        Assert.Superset(new HashSet<string> { "tb-field--outlined", "tb-field--medium" },
+            plain.Find(".tb-field").ClassList.ToHashSet());
+    }
+
     // Supplies a sample value for each [EditorRequired] parameter, so every component renders without setup.
     private static void AddRequiredParameters(RenderTreeBuilder builder, Type component, int sequence)
     {

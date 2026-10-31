@@ -1,6 +1,6 @@
 @namespace Trailblazor
 @typeparam TDate where TDate : struct
-@inherits TbFieldBase<DateRange<TDate>>
+@inherits TbBoxedFieldBase<DateRange<TDate>>
 
 @Layout(Classes, @<text>
     <span id="@($"{StartId}-name")" hidden>@StartLabel</span>
@@ -71,7 +71,7 @@
                 <div role="group" aria-label="@PresetsLabel" data-part="presets" class="tb-date-range__presets">
                     @foreach (var preset in Presets)
                     {
-                        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="preset"
+                        <TbButton Variant="Trailblazor.Variant.Text" Size="Size.Small" data-part="preset"
                                   OnClick="() => ChoosePresetAsync(preset)">@preset.Label</TbButton>
                     }
                 </div>
@@ -79,11 +79,11 @@
             <div class="tb-date-range__calendar">
                 <div class="tb-date-range__nav">
                     <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@PreviousMonthLabel" Size="Size.Small"
-                                  Variant="Variant.Text" data-part="previous-month" OnClick="() => ShowMonths(-1)"
-                                  class="tb-date-range__flip" />
+                                  Variant="Trailblazor.Variant.Text" data-part="previous-month"
+                                  OnClick="() => ShowMonths(-1)" class="tb-date-range__flip" />
                     <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@NextMonthLabel" Size="Size.Small"
-                                  Variant="Variant.Text" data-part="next-month" OnClick="() => ShowMonths(1)"
-                                  class="tb-date-range__flip" />
+                                  Variant="Trailblazor.Variant.Text" data-part="next-month"
+                                  OnClick="() => ShowMonths(1)" class="tb-date-range__flip" />
                 </div>
                 <div class="tb-date-range__months">
                     @Month(0)

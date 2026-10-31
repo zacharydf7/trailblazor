@@ -96,6 +96,9 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     // A label's for attribute works only on form controls; other inputs name themselves with aria-labelledby.
     private protected virtual bool LabelTargetsInput => true;
 
+    // A field drawn in a box adds its look and size.
+    private protected virtual string? FieldModifiers => null;
+
     private protected string HelperId => $"{FieldId}-helper";
 
     private protected string ErrorId => $"{FieldId}-error";

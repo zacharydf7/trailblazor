@@ -552,6 +552,10 @@ public static class ExampleCatalog
                     + "every keystroke; Enter in a single-line field, or leaving the field, updates it at once.",
                 "`MaxLines` lets a text area grow with its text from `Lines` up to that many lines, and then scroll, "
                     + "in browsers with CSS `field-sizing`.",
+                "`Variant` and `Size` work the same on every boxed field: text, number, select, autocomplete, color "
+                    + "and date range. `Filled` keeps a 3:1 line along the box's bottom, red when the field is "
+                    + "invalid and dashed when it's read only. Each size is set from the theme's density, as a "
+                    + "button's is.",
             ],
             Target = new("textbox", "Name"),
             Blocks = ["tb-field"],
@@ -565,6 +569,7 @@ public static class ExampleCatalog
             Api = [typeof(TbNumberField<>), typeof(FieldClasses)],
             Accessibility =
             [
+                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
                 "A native number input, a `spinbutton`: Up and Down step the value by `Step`.",
                 "With a `Format`, such as `C2` or `P0`, it is a text box acting as a `spinbutton` instead, since a "
                     + "number box can't show grouping or symbols. It reads and shows numbers in its `Culture`, gives "
@@ -707,6 +712,7 @@ public static class ExampleCatalog
                 typeof(FieldClasses)],
             Accessibility =
             [
+                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
                 "A `combobox` named by its `Label` that opens a `listbox` of `option`s. Focus stays on the "
                     + "combobox, which points to the active option with `aria-activedescendant`.",
                 "While closed: Down, Up, Enter or Space opens it, Home and End open it on the first or last "
@@ -743,6 +749,7 @@ public static class ExampleCatalog
             Api = [typeof(TbAutocomplete<>), typeof(FieldClasses)],
             Accessibility =
             [
+                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
                 "The input is a `combobox` with `aria-autocomplete=\"list\"`, named by its `Label`, that controls a "
                     + "`listbox` of `option`s. Focus stays in the input; the active option is pointed to with "
                     + "`aria-activedescendant`.",
@@ -767,6 +774,7 @@ public static class ExampleCatalog
             Api = [typeof(TbColorPicker), typeof(ColorPickerLabels), typeof(FieldClasses)],
             Accessibility =
             [
+                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
                 "The text box is named by the `Label` and takes `#rgb`, `#rrggbb` or `rgb()`; a color it can't read "
                     + "says the format to use and marks the box `aria-invalid`.",
                 "The picker is a `dialog`. Swatches are native radios in a `radiogroup`, named by `SwatchName`, so the "
@@ -817,6 +825,7 @@ public static class ExampleCatalog
             Api = [typeof(TbDateRangePicker<>), typeof(DateRangePickerLabels), typeof(FieldClasses)],
             Accessibility =
             [
+                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
                 "The two date boxes and the calendar button sit in a `group` named by the `Label`; each box is "
                     + "named by the label and \"Start date\" or \"End date\", and shows the format as its placeholder. "
                     + "`FocusAsync()` focuses the start box.",

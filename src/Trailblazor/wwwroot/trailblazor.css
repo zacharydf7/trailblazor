@@ -2363,6 +2363,7 @@
     }
 
     .tb-field {
+        --tb-field-padding-block: var(--tb-space-2);
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
@@ -2401,13 +2402,44 @@
     .tb-field__input {
         flex: 1 1 auto;
         min-width: 0;
-        padding-block: var(--tb-space-2);
+        padding-block: var(--tb-field-padding-block);
         border: none;
         background: transparent;
         color: inherit;
         font: inherit;
-        font-size: var(--tb-font-size-md);
+        font-size: var(--tb-field-font-size, var(--tb-font-size-md));
         outline: none;
+    }
+
+    /* A size works from the density's control height, as a button's does, and leaves the token to what's inside. */
+    .tb-field--small {
+        --tb-field-font-size: var(--tb-font-size-sm);
+        --tb-field-padding-block: var(--tb-space-0);
+    }
+
+    /* A small box keeps room for its own 24px buttons, the smallest pointer target allowed, inside its borders. */
+    .tb-field--small .tb-field__control {
+        min-height: max(26px, calc(var(--tb-control-height) - 8px));
+        padding-inline: var(--tb-space-2);
+    }
+
+    .tb-field--small :is(.tb-field__control > .tb-icon-button, .tb-field__start .tb-icon-button,
+        .tb-field__end .tb-icon-button) {
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    .tb-field--small textarea.tb-field__input {
+        --tb-field-padding-block: var(--tb-space-1);
+    }
+
+    .tb-field--large {
+        --tb-field-font-size: var(--tb-font-size-lg);
+    }
+
+    .tb-field--large .tb-field__control {
+        min-height: calc(var(--tb-control-height) + 8px);
+        padding-inline: var(--tb-space-4);
     }
 
     textarea.tb-field__input {
@@ -2424,8 +2456,8 @@
         textarea.tb-field__input[data-max-lines] {
             box-sizing: border-box;
             field-sizing: content;
-            min-block-size: calc(var(--tb-text-field-lines) * 1lh + 2 * var(--tb-space-2));
-            max-block-size: calc(var(--tb-text-field-max-lines) * 1lh + 2 * var(--tb-space-2));
+            min-block-size: calc(var(--tb-text-field-lines) * 1lh + 2 * var(--tb-field-padding-block));
+            max-block-size: calc(var(--tb-text-field-max-lines) * 1lh + 2 * var(--tb-field-padding-block));
             resize: none;
         }
     }
@@ -2466,6 +2498,23 @@
 
     .tb-field--readonly .tb-field__control {
         background: var(--tb-color-surface-sunken);
+    }
+
+    /* A filled box is tinted, with only its bottom line drawn; that line keeps the field's 3:1 edge. */
+    .tb-field--filled .tb-field__control {
+        border-color: transparent;
+        border-block-end-color: var(--tb-border-strong);
+        border-radius: var(--tb-radius-md) var(--tb-radius-md) 0 0;
+        background: var(--tb-color-surface-sunken);
+    }
+
+    .tb-field--filled.tb-field--invalid .tb-field__control {
+        border-block-end-color: var(--tb-color-danger-text);
+    }
+
+    /* A read-only filled box already has the read-only tint, so its line is dashed instead. */
+    .tb-field--filled.tb-field--readonly .tb-field__control {
+        border-block-end-style: dashed;
     }
 
     .tb-checkbox,

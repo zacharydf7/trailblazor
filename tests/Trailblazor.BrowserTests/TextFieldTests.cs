@@ -87,12 +87,13 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await search.PressSequentiallyAsync("tea");
         await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("tea");
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Clear" }).ClickAsync();
+        await page.GetByTestId("search").GetByRole(AriaRole.Button, new() { Name = "Clear" }).ClickAsync();
 
         await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("");
         await Expect(search).ToHaveValueAsync("");
         await Expect(search).ToBeFocusedAsync();
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Clear" })).ToHaveCountAsync(0);
+        await Expect(page.GetByTestId("search").GetByRole(AriaRole.Button, new() { Name = "Clear" }))
+            .ToHaveCountAsync(0);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -179,4 +180,45 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(handle).Not.ToHaveAttributeAsync("aria-invalid", "true");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldSizeItsBoxAndText_WhenGivenASize(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        string[] fields = ["Trail code", "Name", "Destination"];
+
+        var heights = await Task.WhenAll(fields.Select(field => BoxStyleAsync(page, field, "height")));
+        var fonts = await Task.WhenAll(fields.Select(field =>
+            page.GetByLabel(field).EvaluateAsync<string>("input => getComputedStyle(input).fontSize")));
+
+        Assert.Equal(["32px", "40px", "48px"], heights);
+        Assert.Equal(["14px", "16px", "18px"], fonts);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldShrinkASmallBoxWithTheDensity_WhenTheThemeIsCompact(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        await page.EvaluateAsync("() => document.documentElement.dataset.tbDensity = 'compact'");
+
+        Assert.Equal("26px", await BoxStyleAsync(page, "Trail code", "height"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldDrawATintedBoxWithOnlyItsBottomLine_WhenFilled(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+
+        Assert.Equal("rgba(0, 0, 0, 0)", await BoxStyleAsync(page, "Call sign", "borderTopColor"));
+        Assert.Equal(await BoxStyleAsync(page, "Name", "borderBottomColor"),
+            await BoxStyleAsync(page, "Call sign", "borderBottomColor"));
+        Assert.Equal(await BoxStyleAsync(page, "Account", "backgroundColor"),
+            await BoxStyleAsync(page, "Call sign", "backgroundColor"));
+        Assert.NotEqual(await BoxStyleAsync(page, "Name", "backgroundColor"),
+            await BoxStyleAsync(page, "Call sign", "backgroundColor"));
+    }
+
+    private static Task<string> BoxStyleAsync(IPage page, string label, string property) =>
+        page.GetByLabel(label).EvaluateAsync<string>(
+            "(input, property) => getComputedStyle(input.closest('.tb-field__control'))[property]", property);
 }
