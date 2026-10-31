@@ -1,0 +1,18 @@
+@inherits TbDialogContent<string>
+
+<TbTextField Label="Notes" @bind-Value="_notes" />
+<TbDialogActions>
+    @* The dialog changes itself while it's open: modal or not, and how wide. *@
+    <TbButton Variant="Variant.Text" OnClick="() => Modal = !Modal">
+        @(Modal ? "Work beside the page" : "Keep the page out")
+    </TbButton>
+    <TbButton Variant="Variant.Text"
+              OnClick="() => Size = Size == DialogSize.Small ? DialogSize.Medium : DialogSize.Small">
+        @(Size == DialogSize.Small ? "Widen" : "Narrow")
+    </TbButton>
+    <TbButton OnClick="() => CloseAsync(_notes ?? string.Empty)">Save</TbButton>
+</TbDialogActions>
+
+@code {
+    private string? _notes;
+}

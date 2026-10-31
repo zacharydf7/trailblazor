@@ -16,13 +16,13 @@ internal static class DialogMenus
         ITbLocalizer localizer) =>
         AddMenu(builder, sequence, dialog, localizer[TbStrings.DialogMove], BuiltInIcons.Move,
             localizer[TbStrings.DialogMoveHint], "move", null, Enum.GetValues<DialogPosition>(),
-            position => localizer[PositionKey(position)], dialog.MoveTo);
+            position => localizer[PositionKey(position)], position => dialog.Position = position);
 
     public static void AddResize(RenderTreeBuilder builder, int sequence, DialogReference dialog,
         ITbLocalizer localizer) =>
         AddMenu(builder, sequence, dialog, localizer[TbStrings.DialogResize], BuiltInIcons.ResizeGrip,
             localizer[TbStrings.DialogResizeHint], "resize", "tb-dialog__resize", Sizes,
-            size => localizer[SizeKey(size)], dialog.ResizeTo);
+            size => localizer[SizeKey(size)], size => dialog.Size = size);
 
     private static void AddMenu<T>(RenderTreeBuilder builder, int sequence, DialogReference dialog, string label,
         Icon icon, string description, string part, string? cssClass, IEnumerable<T> choices, Func<T, string> name,

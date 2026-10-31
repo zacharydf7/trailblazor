@@ -133,9 +133,7 @@ public class TbDialogTests : BunitContext
         var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Rename")
             .Add(d => d.Options, new DialogOptions { Modal = false, Size = DialogSize.Large }));
 
-        var dialog = cut.Find("dialog");
-        Assert.Equal("manual", dialog.GetAttribute("popover"));
-        Assert.Contains("tb-dialog--large", dialog.ClassList);
+        Assert.Contains("tb-dialog--large", cut.Find("dialog").ClassList);
     }
 
     [Fact]

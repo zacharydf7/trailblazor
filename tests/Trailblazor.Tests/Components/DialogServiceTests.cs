@@ -144,7 +144,6 @@ public class DialogServiceTests : BunitContext
         Assert.Equal("Greeting", title.TextContent);
         Assert.Contains("tb-visually-hidden", title.ClassList);
         Assert.Empty(host.FindAll("header"));
-        Assert.Equal("manual", dialog.GetAttribute("popover"));
     }
 
     [Fact]
@@ -199,18 +198,6 @@ public class DialogServiceTests : BunitContext
         await host.Find("[data-testid=toggle-header]").ClickAsync(new());
 
         Assert.Equal(DialogWindowState.Normal, Dialogs.OpenDialogs.Single().WindowState);
-    }
-
-    [Fact]
-    public void ShowAsync_ShouldOfferMaximizeButNotMinimize_WhenTheDialogIsModal()
-    {
-        var host = Render<DialogHost>();
-
-        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
-            options: new() { Minimizable = true, Maximizable = true });
-
-        host.WaitForElement("[data-part=maximize]");
-        Assert.Empty(host.FindAll("[data-part=minimize]"));
     }
 
     [Fact]
@@ -315,14 +302,115 @@ public class DialogServiceTests : BunitContext
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
         var handle = module.SetupModule("openDialog", _ => true);
-        handle.SetupVoid("setWindowState", _ => true).SetVoidResult();
+        handle.SetupVoid("setState", _ => true).SetVoidResult();
         var host = Render<DialogHost>();
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false, Minimizable = true });
 
         await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
 
-        host.WaitForAssertion(() => Assert.Equal("minimized",
-            handle.VerifyInvoke("setWindowState").Arguments.Single()));
+        host.WaitForAssertion(() => Assert.Equal(["minimized", false], handle.VerifyInvoke("setState").Arguments));
+    }
+
+    [Fact]
+    public async Task Minimize_ShouldLeaveThePageUsableUntilRestored_WhenTheDialogIsModal()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("setState", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Minimizable = true });
+        var dialog = Dialogs.OpenDialogs.Single();
+
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+        host.WaitForAssertion(() => Assert.Single(handle.Invocations));
+        var minimized = Services.GetRequiredService<DialogService>().TopmostModal;
+        await host.Find("[data-part=minimize]").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Equal([["minimized", false], ["normal", true]],
+            handle.Invocations.Select(call => call.Arguments)));
+        Assert.Null(minimized);
+        Assert.Same(dialog, Services.GetRequiredService<DialogService>().TopmostModal);
+        Assert.True(dialog.Modal);
+    }
+
+    [Fact]
+    public async Task Modal_ShouldSwitchTheOpenDialogAndMoveToastsIntoIt_WhenSetFromTheReference()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("setState", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false, Draggable = true });
+        host.WaitForElement("[data-part=move]");
+
+        await host.InvokeAsync(() => Dialogs.OpenDialogs.Single().Modal = true);
+
+        host.WaitForAssertion(() => Assert.Equal(["normal", true], handle.VerifyInvoke("setState").Arguments));
+        Assert.Empty(host.FindAll("[data-part=move]"));
+        Assert.DoesNotContain("tb-dialog--draggable", host.Find("dialog").ClassList);
+        Assert.Single(host.FindAll("dialog [data-part=toaster]"));
+    }
+
+    [Fact]
+    public async Task SizeAndPosition_ShouldResizeAndMoveTheOpenDialog_WhenSetFromTheReference()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("moveTo", _ => true).SetVoidResult();
+        handle.SetupVoid("resizeTo", _ => true).SetVoidResult();
+        handle.SetupVoid("setState", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes");
+        host.WaitForElement("dialog");
+        var dialog = Dialogs.OpenDialogs.Single();
+
+        await host.InvokeAsync(() =>
+        {
+            dialog.Size = DialogSize.Full;
+            dialog.Position = DialogPosition.Top;
+        });
+
+        host.WaitForAssertion(() => Assert.Equal(["tb-dialog--medium", "tb-dialog--full"],
+            handle.VerifyInvoke("resizeTo").Arguments));
+        host.WaitForAssertion(() => Assert.Equal(["tb-dialog--position-center", "tb-dialog--position-top"],
+            handle.VerifyInvoke("moveTo").Arguments));
+        // A later render, here for turning modeless, keeps the new size and place.
+        await host.InvokeAsync(() => dialog.Modal = false);
+        Assert.Contains("tb-dialog--full", host.Find("dialog").ClassList);
+        Assert.Contains("tb-dialog--position-top", host.Find("dialog").ClassList);
+    }
+
+    [Fact]
+    public void Size_ShouldShowAtOnce_WhenTheContentSetsItAsItStarts()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<SmallDialog, string>("Notes");
+
+        host.WaitForAssertion(() => Assert.Contains("tb-dialog--small", host.Find("dialog").ClassList));
+    }
+
+    [Fact]
+    public void WindowState_ShouldRefuseToMinimize_WhenTheDialogIsNotMinimizable()
+    {
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false });
+
+        Assert.Throws<InvalidOperationException>(() =>
+            Dialogs.OpenDialogs.Single().WindowState = DialogWindowState.Minimized);
+    }
+
+    [Fact]
+    public async Task WindowState_ShouldMaximizeTheDialog_WhenItsContentSetsIt()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<LayoutDialog, string>("Notes", options: new() { Maximizable = true });
+
+        await host.WaitForElement("[data-testid=maximize]").ClickAsync(new());
+
+        Assert.Equal(DialogWindowState.Maximized, Dialogs.OpenDialogs.Single().WindowState);
+        Assert.Equal("Restore", host.Find("[data-part=maximize]").GetAttribute("aria-label"));
     }
 
     [Fact]
@@ -646,6 +734,23 @@ public class DialogServiceTests : BunitContext
             builder.OpenElement(3, "button");
             builder.AddAttribute(4, "data-testid", "toggle-close");
             builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () => CloseButton = !CloseButton));
+            builder.CloseElement();
+        }
+    }
+
+    private sealed class SmallDialog : TbDialogContent<string>
+    {
+        protected override void OnInitialized() => Size = DialogSize.Small;
+    }
+
+    private sealed class LayoutDialog : TbDialogContent<string>
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "data-testid", "maximize");
+            builder.AddAttribute(2, "onclick",
+                EventCallback.Factory.Create(this, () => WindowState = DialogWindowState.Maximized));
             builder.CloseElement();
         }
     }

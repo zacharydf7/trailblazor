@@ -234,9 +234,17 @@ Trailblazor.DialogPosition.TopEnd = 6 -> Trailblazor.DialogPosition
 Trailblazor.DialogPosition.TopStart = 5 -> Trailblazor.DialogPosition
 Trailblazor.DialogReference
 Trailblazor.DialogReference.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.DialogReference.Modal.get -> bool
+Trailblazor.DialogReference.Modal.set -> void
 Trailblazor.DialogReference.Options.get -> Trailblazor.DialogOptions!
+Trailblazor.DialogReference.Position.get -> Trailblazor.DialogPosition
+Trailblazor.DialogReference.Position.set -> void
+Trailblazor.DialogReference.Size.get -> Trailblazor.DialogSize
+Trailblazor.DialogReference.Size.set -> void
 Trailblazor.DialogReference.Title.get -> string!
 Trailblazor.DialogReference.Title.set -> void
+Trailblazor.DialogReference.WindowState.get -> Trailblazor.DialogWindowState
+Trailblazor.DialogReference.WindowState.set -> void
 Trailblazor.DialogReference<TResult>
 Trailblazor.DialogReference<TResult>.CloseAsync(TResult value) -> System.Threading.Tasks.Task!
 Trailblazor.DialogReference<TResult>.Result.get -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
@@ -262,6 +270,10 @@ Trailblazor.DialogSize.Full = 4 -> Trailblazor.DialogSize
 Trailblazor.DialogSize.Large = 2 -> Trailblazor.DialogSize
 Trailblazor.DialogSize.Medium = 1 -> Trailblazor.DialogSize
 Trailblazor.DialogSize.Small = 0 -> Trailblazor.DialogSize
+Trailblazor.DialogWindowState
+Trailblazor.DialogWindowState.Maximized = 2 -> Trailblazor.DialogWindowState
+Trailblazor.DialogWindowState.Minimized = 1 -> Trailblazor.DialogWindowState
+Trailblazor.DialogWindowState.Normal = 0 -> Trailblazor.DialogWindowState
 Trailblazor.DividerAlign
 Trailblazor.DividerAlign.Center = 1 -> Trailblazor.DividerAlign
 Trailblazor.DividerAlign.End = 2 -> Trailblazor.DividerAlign
@@ -944,9 +956,17 @@ Trailblazor.TbDialogContent<TResult>.CancelAsync() -> System.Threading.Tasks.Tas
 Trailblazor.TbDialogContent<TResult>.CloseAsync(TResult value) -> System.Threading.Tasks.Task!
 Trailblazor.TbDialogContent<TResult>.CloseButton.get -> bool
 Trailblazor.TbDialogContent<TResult>.CloseButton.set -> void
+Trailblazor.TbDialogContent<TResult>.Modal.get -> bool
+Trailblazor.TbDialogContent<TResult>.Modal.set -> void
+Trailblazor.TbDialogContent<TResult>.Position.get -> Trailblazor.DialogPosition
+Trailblazor.TbDialogContent<TResult>.Position.set -> void
 Trailblazor.TbDialogContent<TResult>.ShowHeader.get -> bool
 Trailblazor.TbDialogContent<TResult>.ShowHeader.set -> void
+Trailblazor.TbDialogContent<TResult>.Size.get -> Trailblazor.DialogSize
+Trailblazor.TbDialogContent<TResult>.Size.set -> void
 Trailblazor.TbDialogContent<TResult>.TbDialogContent() -> void
+Trailblazor.TbDialogContent<TResult>.WindowState.get -> Trailblazor.DialogWindowState
+Trailblazor.TbDialogContent<TResult>.WindowState.set -> void
 Trailblazor.TbDialogDescription
 Trailblazor.TbDialogDescription.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDialogDescription.ChildContent.set -> void

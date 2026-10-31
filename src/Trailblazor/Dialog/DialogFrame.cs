@@ -14,6 +14,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private IJSObjectReference? _handle;
     private AnnouncerHost? _announcer;
     private DialogWindowState _windowState;
+    private bool _blocking;
     private DialogPosition _position;
     private DialogSize _size;
     private bool _disposed;
@@ -43,22 +44,21 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private string TitleId => $"{_id}-title";
 
     // A modal can't be moved or resized: it already blocks the page, so there's nothing to uncover.
-    private bool Draggable => Dialog.Options.Draggable && !Dialog.Options.Modal;
+    private bool Draggable => Dialog.Options.Draggable && !Dialog.IsBlocking;
 
-    private bool Resizable => Dialog.Options.Resizable && !Dialog.Options.Modal;
+    private bool Resizable => Dialog.Options.Resizable && !Dialog.IsBlocking;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var options = Dialog.Options;
         builder.OpenElement(0, "dialog");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "popover", options.Modal ? null : "manual");
         builder.AddAttribute(3, "data-part", "dialog");
         builder.AddAttribute(4, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
         builder.AddAttribute(6, "style", Style);
-        builder.AddAttribute(7, "class", ClassNames.Join("tb-dialog", SizeClass(options.Size),
-            PositionClass(options.Position),
+        builder.AddAttribute(7, "class", ClassNames.Join("tb-dialog", SizeClass(Dialog.Size),
+            PositionClass(Dialog.Position),
             Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null, Class));
         builder.AddAttribute(8, "role", Dialog.IsAlert ? "alertdialog" : null);
         builder.AddAttribute(9, "aria-describedby", Dialog.IsAlert || Dialog.Described ? Dialog.DescriptionId : null);
@@ -83,7 +83,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             }));
         builder.CloseComponent();
         builder.CloseElement();
-        if (options.Modal)
+        if (Dialog.IsBlocking)
         {
             builder.OpenComponent<ToastHost>(37);
             builder.AddComponentParameter(38, nameof(ToastHost.Dialog), Dialog);
@@ -129,6 +129,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
                 _handle = handle;
                 Dialog.CloseInBrowserAsync = CloseInBrowserAsync;
+                // The dialog may have changed while the script loaded.
+                await ApplyStateAsync();
             }
 
             // The open dialog joins the accessibility tree with the next frame, so its live regions wait for that.
@@ -147,8 +149,9 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
-        _position = Dialog.Options.Position;
-        _size = Dialog.Options.Size;
+        _blocking = Dialog.Options.Modal;
+        _position = Dialog.Position;
+        _size = Dialog.Size;
         Dialog.Changed += OnChanged;
         Dialog.MoveRequested += OnMoveRequested;
         Dialog.ResizeRequested += OnResizeRequested;
@@ -175,21 +178,29 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private void OnChanged() => InvokeAsync(() =>
     {
         StateHasChanged();
-        return ApplyWindowStateAsync();
+        return ApplyStateAsync();
     });
 
-    // The script sets the window state, which places the dialog in the tray; the markup doesn't.
-    private async Task ApplyWindowStateAsync()
+    // The script opens the dialog modal or not and places it in the tray; the markup can't.
+    private async Task ApplyStateAsync()
     {
-        if (_handle is null || Dialog.WindowState == _windowState)
+        if (_handle is null || (Dialog.WindowState == _windowState && Dialog.IsBlocking == _blocking))
         {
             return;
         }
 
+        var turnsModal = Dialog.IsBlocking && !_blocking;
         _windowState = Dialog.WindowState;
+        _blocking = Dialog.IsBlocking;
         try
         {
-            await _handle.InvokeVoidAsync("setWindowState", _windowState.ToString().ToLowerInvariant());
+            // Turning modal waits for a frame, which a hidden tab doesn't draw, so it has no time limit.
+            await _handle.InvokeVoidAsync("setState", Timeout.InfiniteTimeSpan,
+                [_windowState.ToString().ToLowerInvariant(), _blocking]);
+            if (turnsModal)
+            {
+                _announcer?.Show();
+            }
         }
         catch (JSDisconnectedException)
         {
@@ -197,19 +208,28 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         }
     }
 
-    // The class to replace is the one set last, so it moves on before the call, ready for a choice made meanwhile.
+    // The class to replace is the one set last, so it moves on before the call, ready for a choice made meanwhile. The
+    // markup renders the new class too, for a change made before the script is ready.
     private void OnMoveRequested(DialogPosition position)
     {
         var from = PositionClass(_position);
         _position = position;
-        InvokeAsync(() => CallAsync("moveTo", from, PositionClass(position)));
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+            return CallAsync("moveTo", from, PositionClass(position));
+        });
     }
 
     private void OnResizeRequested(DialogSize size)
     {
         var from = SizeClass(_size);
         _size = size;
-        InvokeAsync(() => CallAsync("resizeTo", from, SizeClass(size)));
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+            return CallAsync("resizeTo", from, SizeClass(size));
+        });
     }
 
     private async Task CallAsync(string method, string from, string to)

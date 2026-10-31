@@ -1,0 +1,12 @@
+@inherits TbDialogContent<string>
+
+<TbTextField Label="Name" @bind-Value="_name" />
+<TbDialogActions>
+    <TbButton OnClick="() => Modal = !Modal">@(Modal ? "Pop out" : "Pop in")</TbButton>
+    <TbButton OnClick="() => Size = DialogSize.Small">Shrink</TbButton>
+    <TbButton OnClick="() => CloseAsync(_name ?? string.Empty)">Save</TbButton>
+</TbDialogActions>
+
+@code {
+    private string? _name;
+}

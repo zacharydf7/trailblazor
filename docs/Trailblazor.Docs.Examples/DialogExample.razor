@@ -5,6 +5,7 @@
     <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="DeleteAsync">Delete report</TbButton>
     <TbButton Variant="Variant.Outlined" OnClick="ExportAsync">Export report</TbButton>
     <TbButton Variant="Variant.Text" OnClick="EditBesideAsync">Edit beside the page</TbButton>
+    <TbButton Variant="Variant.Text" OnClick="NotesAsync">Take notes</TbButton>
     <TbButton Variant="Variant.Text" OnClick="() => _sharing = true">Share</TbButton>
 </TbStack>
 <TbText Style="margin-block-start: var(--tb-space-3)">@_status</TbText>
@@ -46,6 +47,17 @@
         {
             _name = result.Value!;
             _status = $"Renamed to {_name}";
+        }
+    }
+
+    // Modal, but it can be minimized to use the page, and its content can let the page in or narrow itself.
+    private async Task NotesAsync()
+    {
+        var result = await Dialogs.ShowAsync<NotesDialog, string>("Notes on the report",
+            options: new() { Minimizable = true, Maximizable = true });
+        if (result.Confirmed)
+        {
+            _status = $"Notes saved: {result.Value}";
         }
     }
 

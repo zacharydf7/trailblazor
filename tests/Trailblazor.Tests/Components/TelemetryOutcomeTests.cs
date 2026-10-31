@@ -52,6 +52,22 @@ public class TelemetryOutcomeTests : BunitContext
     }
 
     [Fact]
+    public async Task Dialog_ShouldCountItsWindowButtons_WhenItHasATelemetryName()
+    {
+        using var used = Collect("trailblazor.control.used");
+        var host = Render<DialogHost>();
+        Services.GetRequiredService<IDialogService>().Show<EditTrail, bool>("Edit Pine Hollow",
+            options: new() { TelemetryName = "edit-trail", Minimizable = true, Maximizable = true });
+
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+        await host.Find("[data-part=minimize]").ClickAsync(new());
+        await host.Find("[data-part=maximize]").ClickAsync(new());
+
+        Assert.Equal(["minimize", "restore", "maximize"], used.GetMeasurementSnapshot()
+            .Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
     public async Task Dialog_ShouldNameAGenericContentTypeWithoutItsArity_WhenItCloses()
     {
         using var closed = Collect("trailblazor.dialog.closed");

@@ -340,6 +340,25 @@ public class ToastServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task Toasts_ShouldMoveToThePageAndBack_WhenTheModalHoldingThemIsMinimizedAndRestored()
+    {
+        var page = Render<ToastHost>();
+        var dialogs = Render<DialogHost>();
+        _ = Services.GetRequiredService<IDialogService>().ShowAsync<EmptyDialog, bool>("Notes",
+            options: new() { Minimizable = true });
+        Toasts.Show("Saved");
+        dialogs.WaitForElement("dialog [data-part=toast]");
+        var dialog = Services.GetRequiredService<IDialogService>().OpenDialogs.Single();
+
+        await dialogs.InvokeAsync(() => dialog.WindowState = DialogWindowState.Minimized);
+        page.WaitForAssertion(() => Assert.Single(page.FindAll("[data-part=toast]")));
+        await dialogs.InvokeAsync(() => dialog.WindowState = DialogWindowState.Normal);
+
+        dialogs.WaitForElement("dialog [data-part=toast]");
+        page.WaitForAssertion(() => Assert.Empty(page.FindAll("[data-part=toast]")));
+    }
+
+    [Fact]
     public void Toast_ShouldNotStartATimer_WhenRenderedStatically()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));

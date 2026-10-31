@@ -1091,7 +1091,7 @@ public static class ExampleCatalog
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
             "A window over the page, opened from code or written in markup, that asks for input or a decision.",
-            typeof(DialogExample), typeof(RenameDialog), typeof(ExportDialog))
+            typeof(DialogExample), typeof(RenameDialog), typeof(ExportDialog), typeof(NotesDialog))
         {
             Api =
             [
@@ -1123,6 +1123,12 @@ public static class ExampleCatalog
                     + "move or resize the dialog instead of opening the menu, and its description says so.",
                 "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't "
                     + "hide them.",
+                "An open dialog can change: set `Modal`, `Size`, `Position` or `WindowState` on its reference, or on "
+                    + "itself from a `TbDialogContent`. Turning modeless keeps focus where it was; turning modal "
+                    + "moves focus into the dialog unless it is already there, and makes the page inert again.",
+                "A `Minimizable` modal leaves the page usable while it is minimized, with its toasts and "
+                    + "announcements back on the page, and blocks it again once restored; focus stays on the button "
+                    + "that restored it.",
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
@@ -1140,6 +1146,9 @@ public static class ExampleCatalog
                 "Its `trailblazor.component` is the content's type, such as `EditTrailDialog`, `ConfirmDialog` for "
                     + "`ConfirmAsync` and `AlertAsync`, or `TbDialog` for one in markup. Its title and result are "
                     + "never recorded.",
+                "The header's window buttons count `trailblazor.control.used` with `trailblazor.action` `minimize`, "
+                    + "`maximize` or `restore`, so you can see whether anyone uses them. Changes made from code "
+                    + "aren't counted.",
             ],
         },
         new("focus-scope", "Focus scope", ExampleCategory.Overlays,

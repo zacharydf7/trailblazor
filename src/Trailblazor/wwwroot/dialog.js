@@ -69,6 +69,18 @@ function dialogFocusTarget(dialog, options) {
         ?? (options.initialFocus === 'Dialog' ? dialog : body?.querySelector(focusableSelector) ?? dialog);
 }
 
+function show(dialog, modal) {
+    if (modal) {
+        dialog.removeAttribute('popover');
+        dialog.showModal();
+    } else {
+        // show() alone leaves a non-modal dialog out of the top layer; the manual popover puts it there.
+        dialog.popover = 'manual';
+        dialog.show();
+        dialog.showPopover();
+    }
+}
+
 export function openDialog(dialog, dotNet, options) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!dialog) {
@@ -76,15 +88,9 @@ export function openDialog(dialog, dotNet, options) {
     }
 
     const opener = focusOrigin();
-    if (options.modal) {
-        dialog.showModal();
-    } else {
-        // show() alone leaves a non-modal dialog out of the top layer; the manual popover puts it there.
-        dialog.show();
-        dialog.showPopover();
-    }
-
-    const entry = { dialog, options };
+    show(dialog, options.modal);
+    // Whether it is modal now, which can change while it's open.
+    const entry = { dialog, options, modal: options.modal };
     stack.push(entry);
     dialogFocusTarget(dialog, options).focus();
 
@@ -111,7 +117,7 @@ export function openDialog(dialog, dotNet, options) {
             return;
         }
 
-        if (!options.modal && !dialog.contains(document.activeElement)) {
+        if (!entry.modal && !dialog.contains(document.activeElement)) {
             return;
         }
 
@@ -128,9 +134,10 @@ export function openDialog(dialog, dotNet, options) {
             dotNet.invokeMethodAsync('Dismiss', 'Escape');
         }
     };
-    // A close the browser made by itself still has to reach .NET, or the caller would wait forever.
+    // A close the browser made by itself still has to reach .NET, or the caller would wait forever. A dialog switching
+    // between modal and modeless closes and opens again, so it is open by the time its close event arrives.
     const onClose = () => {
-        if (finish()) {
+        if (!dialog.open && finish()) {
             dotNet.invokeMethodAsync('Cancel');
         }
     };
@@ -139,13 +146,14 @@ export function openDialog(dialog, dotNet, options) {
         pressedOnBackdrop = onBackdrop(event);
     };
     const onClick = event => {
-        if (options.modal && options.dismissOnBackdrop && pressedOnBackdrop && onBackdrop(event)) {
+        if (entry.modal && options.dismissOnBackdrop && pressedOnBackdrop && onBackdrop(event)) {
             dotNet.invokeMethodAsync('Dismiss', 'Backdrop');
         }
     };
 
-    const draggable = dialog.classList.contains('tb-dialog--draggable');
-    const resizable = dialog.classList.contains('tb-dialog--resizable');
+    // A dialog can be moved and resized only while it is modeless, so these are asked each time.
+    const draggable = () => dialog.classList.contains('tb-dialog--draggable');
+    const resizable = () => dialog.classList.contains('tb-dialog--resizable');
     let drag = null;
     // The Move or Resize button a drag started on, whose click as the drag ends mustn't open its menu.
     let draggedHandle = null;
@@ -197,8 +205,8 @@ export function openDialog(dialog, dotNet, options) {
         draggedHandle = null;
         const button = event.target.closest('button');
         const handle = button && handleOf(button);
-        const grip = resizable && handle?.dataset.part === 'resize';
-        const header = draggable && event.target.closest('[data-part="header"]');
+        const grip = resizable() && handle?.dataset.part === 'resize';
+        const header = draggable() && event.target.closest('[data-part="header"]');
         if (event.button !== 0 || !isNormal() || event.target.closest('[data-part="menu"]')
             || !(grip || (header && (!button || handle)))) {
             return;
@@ -271,7 +279,7 @@ export function openDialog(dialog, dotNet, options) {
     dialog.addEventListener('close', onClose);
     dialog.addEventListener('pointerdown', onPointerDown);
     dialog.addEventListener('click', onClick);
-    if (draggable || resizable) {
+    if (options.draggable || options.resizable) {
         dialog.addEventListener('pointerdown', onDragStart);
         dialog.addEventListener('pointermove', onDragMove);
         dialog.addEventListener('pointerup', onDragEnd);
@@ -322,7 +330,7 @@ export function openDialog(dialog, dotNet, options) {
     }
 
     function hide() {
-        if (!options.modal && dialog.matches(':popover-open')) {
+        if (dialog.matches(':popover-open')) {
             dialog.hidePopover();
         }
 
@@ -342,8 +350,13 @@ export function openDialog(dialog, dotNet, options) {
             dialog.classList.replace(from, to);
             keepInside();
         },
-        // 'normal', 'minimized' or 'maximized'.
-        setWindowState(state) {
+        // The window state is 'normal', 'minimized' or 'maximized'.
+        async setState(state, modal) {
+            // A dialog that is closing has left the stack and the tray, and mustn't open again.
+            if (finished) {
+                return;
+            }
+
             dialog.dataset.windowState = state;
             leaveTray(dialog);
             if (state === 'minimized') {
@@ -352,6 +365,25 @@ export function openDialog(dialog, dotNet, options) {
             } else if (state === 'normal') {
                 // The window may have shrunk while the dialog was minimized or maximized.
                 keepInside();
+            }
+
+            if (modal === entry.modal) {
+                return;
+            }
+
+            // An open dialog can't change between modal and modeless, so it closes and opens again the other way.
+            // Focus stays where it was, or moves into the dialog as it turns modal.
+            const focused = dialog.contains(document.activeElement) ? document.activeElement : null;
+            entry.modal = modal;
+            hide();
+            show(dialog, modal);
+            // Opening again puts it above the others, so Escape goes to it first.
+            stack.splice(stack.indexOf(entry), 1);
+            stack.push(entry);
+            (focused ?? dialogFocusTarget(dialog, options)).focus();
+            // A modal's own live regions join the accessibility tree with the next frame, as when it opens.
+            if (modal) {
+                await nextFrame();
             }
         },
         // Closes the dialog and gives focus back to whatever opened it.

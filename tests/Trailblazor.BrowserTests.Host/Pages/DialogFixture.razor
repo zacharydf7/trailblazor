@@ -15,6 +15,8 @@
     <TbButton OnClick="() => NotesAsync(DialogSize.Medium)">Notes</TbButton>
     <TbButton OnClick="() => NotesAsync(DialogSize.Full)">Full notes</TbButton>
     <TbButton OnClick="MovableAsync">Movable</TbButton>
+    <TbButton OnClick="() => EditorAsync()">Editor</TbButton>
+    <TbButton OnClick="() => EditorAsync(locked: true)">Locked editor</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Headless", options: new() { ShowHeader = false })'>
         Headless
     </TbButton>
@@ -86,6 +88,13 @@
         {
             Modal = false, Draggable = true, Resizable = true, Minimizable = true, Maximizable = true,
         });
+
+    private async Task EditorAsync(bool locked = false)
+    {
+        var result = await Dialogs.ShowAsync<EditorDialog, string>("Editor",
+            options: new() { Minimizable = true, Maximizable = true, DismissOnEscape = !locked });
+        _result = result.Confirmed ? "editor saved" : "editor cancelled";
+    }
 
     private async Task AboutAsync() =>
         await Dialogs.ShowAsync<NameDialog, string>("About", options: new() { InitialFocus = DialogFocus.Dialog });

@@ -106,6 +106,26 @@ public class AnnouncerTests : BunitContext
     }
 
     [Fact]
+    public async Task Announcements_ShouldGoToADialog_WhenItTurnsModalWhileOpen()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
+        module.SetupModule("openDialog", _ => true).SetupVoid("setState", _ => true).SetVoidResult();
+        var page = Render<AnnouncerHost>();
+        var dialogs = Render<DialogHost>();
+        var dialogService = Services.GetRequiredService<IDialogService>();
+        _ = dialogService.ShowAsync<EmptyDialog, bool>("Edit", options: new() { Modal = false });
+        dialogs.WaitForElement("dialog");
+
+        await dialogs.InvokeAsync(() => dialogService.OpenDialogs.Single().Modal = true);
+        Announcer.Polite("Saved");
+
+        dialogs.WaitForAssertion(() => Assert.Equal(["Saved"],
+            dialogs.FindAll("dialog [role=status] p").Select(p => p.TextContent)));
+        Assert.Empty(page.FindAll("[role=status] p"));
+    }
+
+    [Fact]
     public void Announcements_ShouldReachTheDialog_WhenMadeRightAfterOpeningIt()
     {
         var dialogs = Render<DialogHost>();

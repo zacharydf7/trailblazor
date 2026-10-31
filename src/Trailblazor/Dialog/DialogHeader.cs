@@ -16,6 +16,9 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
 
+    [Inject]
+    private Telemetry Telemetry { get; set; } = default!;
+
     protected override void OnInitialized() => Dialog.Changed += OnChanged;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -40,12 +43,12 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddContent(16, Dialog.Title);
         builder.CloseElement();
         var state = Dialog.WindowState;
-        if (Dialog.Options.Draggable && !Dialog.Options.Modal && state == DialogWindowState.Normal)
+        if (Dialog.Options.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal)
         {
             DialogMenus.AddMove(builder, 17, Dialog, Localizer);
         }
 
-        if (Dialog.Options.Minimizable && !Dialog.Options.Modal)
+        if (Dialog.Options.Minimizable)
         {
             var minimized = state == DialogWindowState.Minimized;
             AddWindowButton(builder, 27, "minimize",
@@ -87,9 +90,25 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddComponentParameter(sequence + 2, nameof(TbIconButton.AriaLabel), label);
         builder.AddComponentParameter(sequence + 3, nameof(TbIconButton.Size), Size.Small);
         builder.AddComponentParameter(sequence + 4, nameof(TbIconButton.OnClick),
-            EventCallback.Factory.Create<MouseEventArgs>(this, () => Dialog.SetWindowState(next)));
+            EventCallback.Factory.Create<MouseEventArgs>(this, () => SetWindowState(next)));
         builder.AddAttribute(sequence + 5, "data-part", part);
         builder.CloseComponent();
+    }
+
+    private void SetWindowState(DialogWindowState next)
+    {
+        if (Dialog.Options.TelemetryName is { } name)
+        {
+            var action = next switch
+            {
+                DialogWindowState.Minimized => "minimize",
+                DialogWindowState.Maximized => "maximize",
+                _ => "restore",
+            };
+            Telemetry.ControlUsed(name, DialogService.ComponentOf(Dialog), action);
+        }
+
+        Dialog.WindowState = next;
     }
 
     private Task CloseAsync() => Dialog.DismissAsync(DialogDismissReason.CloseButton);

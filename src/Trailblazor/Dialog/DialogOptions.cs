@@ -3,8 +3,8 @@ namespace Trailblazor;
 /// <summary>How a dialog opened through <see cref="IDialogService"/> behaves. Each call passes its own.</summary>
 public sealed record DialogOptions
 {
-    /// <summary>Blocks the rest of the page and keeps focus inside the dialog. False leaves the page usable.
-    /// </summary>
+    /// <summary>Blocks the rest of the page and keeps focus inside the dialog. False leaves the page usable. An open
+    /// dialog can change it through <see cref="DialogReference.Modal"/>.</summary>
     public bool Modal { get; init; } = true;
 
     /// <summary>Lets Escape cancel the dialog. Left unset, it follows <see cref="DialogSettings.DismissOnEscape"/>.
@@ -33,8 +33,8 @@ public sealed record DialogOptions
     public bool CloseButton { get; init; } = true;
 
     /// <summary>Shows a button in the header that collapses the dialog to its header, in a tray along the bottom-end
-    /// edge. Only a dialog that isn't <see cref="Modal"/> can be minimized, since a modal would still block the
-    /// page.</summary>
+    /// edge. A <see cref="Modal"/> dialog leaves the page usable while it is minimized, and blocks it again once
+    /// restored.</summary>
     public bool Minimizable { get; init; }
 
     /// <summary>Shows a button in the header that makes the dialog fill the window.</summary>

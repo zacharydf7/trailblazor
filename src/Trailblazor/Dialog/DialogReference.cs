@@ -5,6 +5,10 @@ public abstract class DialogReference
 {
     private readonly Func<DialogReference, bool, object?, Task> _close;
     private string _title;
+    private bool _modal;
+    private DialogSize _size;
+    private DialogPosition _position;
+    private DialogWindowState _windowState;
     private bool _dismissing;
 
     private protected DialogReference(string title, DialogOptions options, Type? component,
@@ -18,6 +22,9 @@ public abstract class DialogReference
         _close = close;
         ShowHeader = options.ShowHeader;
         CloseButton = options.CloseButton;
+        _modal = options.Modal;
+        _size = options.Size;
+        _position = options.Position;
     }
 
     /// <summary>The dialog's title, which is also its accessible name. Setting it renames the open dialog.</summary>
@@ -34,6 +41,59 @@ public abstract class DialogReference
     /// <summary>The options the dialog was opened with, with any left unset filled in from
     /// <see cref="DialogSettings"/>.</summary>
     public DialogOptions Options { get; }
+
+    /// <summary>Whether the dialog blocks the rest of the page. It starts as <see cref="DialogOptions.Modal"/>, and
+    /// setting it switches the open dialog, keeping focus where it was, or moving it into the dialog as it turns
+    /// modal. A modal dialog that is minimized leaves the page usable until it is restored.</summary>
+    public bool Modal
+    {
+        get => _modal;
+        set => Change(() => _modal = value);
+    }
+
+    /// <summary>How wide the dialog is. It starts as <see cref="DialogOptions.Size"/>, and setting it resizes the open
+    /// dialog, replacing any size the user dragged it to.</summary>
+    public DialogSize Size
+    {
+        get => _size;
+        set
+        {
+            _size = value;
+            ResizeRequested?.Invoke(value);
+        }
+    }
+
+    /// <summary>Where the dialog sits. It starts as <see cref="DialogOptions.Position"/>, and setting it moves the open
+    /// dialog, replacing any place the user dragged it to.</summary>
+    public DialogPosition Position
+    {
+        get => _position;
+        set
+        {
+            _position = value;
+            MoveRequested?.Invoke(value);
+        }
+    }
+
+    /// <summary>Whether the dialog shows at its own size, minimized or maximized, as its header's buttons set it.
+    /// Minimizing needs <see cref="DialogOptions.Minimizable"/> and the header, whose button restores it.</summary>
+    public DialogWindowState WindowState
+    {
+        get => _windowState;
+        set
+        {
+            if (value == DialogWindowState.Minimized && !(Options.Minimizable && ShowHeader))
+            {
+                throw new InvalidOperationException(
+                    $"Only a dialog with {nameof(DialogOptions.Minimizable)} and its header can be minimized.");
+            }
+
+            Change(() => _windowState = value);
+        }
+    }
+
+    // A minimized modal leaves the page usable, so it counts as modeless until it is restored.
+    internal bool IsBlocking => _modal && _windowState != DialogWindowState.Minimized;
 
     // Null for a TbDialog written in markup, which renders its own content where it is.
     internal Type? Component { get; }
@@ -53,17 +113,17 @@ public abstract class DialogReference
 
     internal bool CloseButton { get; private set; }
 
-    internal DialogWindowState WindowState { get; private set; }
-
     // Asked before the user dismisses the dialog; set by its content.
     internal Func<DialogDismissReason, Task<bool>>? CanDismiss { get; set; }
 
     internal event Action? Changed;
 
+    // Raised when the dialog starts or stops blocking the page, so toasts and announcements move with it.
+    internal event Action? BlockingChanged;
+
     internal event Action<IReadOnlyDictionary<string, object?>>? ParametersChanged;
 
-    // Choices from the Move and Resize menus. Each is a command, so choosing the current place again still undoes a
-    // drag.
+    // Each place or size set is a command, so setting the current one again still undoes a drag.
     internal event Action<DialogPosition>? MoveRequested;
 
     internal event Action<DialogSize>? ResizeRequested;
@@ -76,18 +136,24 @@ public abstract class DialogReference
         ShowHeader = showHeader;
         CloseButton = closeButton;
         // The Restore button goes with the header, so a minimized dialog comes back rather than stay stuck.
-        if (!showHeader && WindowState == DialogWindowState.Minimized)
+        Change(() =>
         {
-            WindowState = DialogWindowState.Normal;
-        }
-
-        Changed?.Invoke();
+            if (!showHeader && _windowState == DialogWindowState.Minimized)
+            {
+                _windowState = DialogWindowState.Normal;
+            }
+        });
     }
 
-    internal void SetWindowState(DialogWindowState windowState)
+    private void Change(Action change)
     {
-        WindowState = windowState;
+        var wasBlocking = IsBlocking;
+        change();
         Changed?.Invoke();
+        if (IsBlocking != wasBlocking)
+        {
+            BlockingChanged?.Invoke();
+        }
     }
 
     internal void SetDescribed(bool described)
@@ -96,13 +162,8 @@ public abstract class DialogReference
         Changed?.Invoke();
     }
 
-
     private protected void UpdateParameters(IReadOnlyDictionary<string, object?> parameters) =>
         ParametersChanged?.Invoke(parameters);
-
-    internal void MoveTo(DialogPosition position) => MoveRequested?.Invoke(position);
-
-    internal void ResizeTo(DialogSize size) => ResizeRequested?.Invoke(size);
 
     // Set by the rendered dialog, so closing first closes the browser's dialog and focus goes back to the opener.
     internal Func<Task>? CloseInBrowserAsync { get; set; }

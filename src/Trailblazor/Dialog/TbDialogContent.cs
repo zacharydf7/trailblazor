@@ -39,6 +39,38 @@ public abstract class TbDialogContent<TResult> : ComponentBase
         set => Reference.SetHeader(Reference.ShowHeader, value);
     }
 
+    /// <summary>Whether the dialog blocks the rest of the page; setting it switches the open dialog. See
+    /// <see cref="DialogReference.Modal"/>.</summary>
+    protected bool Modal
+    {
+        get => Reference.Modal;
+        set => Reference.Modal = value;
+    }
+
+    /// <summary>How wide the dialog is; setting it resizes the open dialog. See <see cref="DialogReference.Size"/>.
+    /// </summary>
+    protected DialogSize Size
+    {
+        get => Reference.Size;
+        set => Reference.Size = value;
+    }
+
+    /// <summary>Where the dialog sits; setting it moves the open dialog. See <see cref="DialogReference.Position"/>.
+    /// </summary>
+    protected DialogPosition Position
+    {
+        get => Reference.Position;
+        set => Reference.Position = value;
+    }
+
+    /// <summary>Whether the dialog is minimized or maximized; setting it changes the open dialog. See
+    /// <see cref="DialogReference.WindowState"/>.</summary>
+    protected DialogWindowState WindowState
+    {
+        get => Reference.WindowState;
+        set => Reference.WindowState = value;
+    }
+
     /// <summary>Closes the dialog as confirmed, with <paramref name="value"/> as its result.</summary>
     protected Task CloseAsync(TResult value) => Reference.CloseAsync(true, value);
 

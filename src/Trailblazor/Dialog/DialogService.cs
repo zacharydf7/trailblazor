@@ -17,9 +17,9 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     internal HostCheck Hosts { get; } = new("A dialog", time, logger);
 
     // A modal makes the rest of the page inert, so toasts and announcements go inside the topmost one.
-    public DialogReference? TopmostModal => _open.LastOrDefault(dialog => dialog.Options.Modal);
+    public DialogReference? TopmostModal => _open.LastOrDefault(dialog => dialog.IsBlocking);
 
-    // Raised when a dialog opens or closes, so the host in TbRoot re-renders.
+    // Raised when a dialog opens, closes, or starts or stops blocking the page, so the hosts re-render.
     public event Action? Changed;
 
     public DialogReference<TResult> Show<TDialog, TResult>(string title,
@@ -89,6 +89,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         {
             OpenedAt = time.GetTimestamp(),
         };
+        dialog.BlockingChanged += () => Changed?.Invoke();
         lock (_lock)
         {
             _open = _open.Add(dialog);
@@ -127,7 +128,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         telemetry.DialogClosed(name, ComponentOf(dialog), outcome, time.GetElapsedTime(dialog.OpenedAt));
     }
 
-    private static Type ComponentOf(DialogReference dialog) => dialog.Component ?? typeof(TbDialog);
+    internal static Type ComponentOf(DialogReference dialog) => dialog.Component ?? typeof(TbDialog);
 
     private async Task CloseAsync(DialogReference dialog, bool confirmed, object? value)
     {
