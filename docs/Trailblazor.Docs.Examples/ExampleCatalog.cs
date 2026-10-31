@@ -536,6 +536,9 @@ public static class ExampleCatalog
                     + "form on submit reads none out, so a form with several errors doesn't speak them all at once.",
                 "An `Error` from the parent, such as a server's answer, is linked the same way and read out once when "
                     + "it appears, even after a submit; it keeps its form from submitting until the parent clears it.",
+                "After a static-SSR form post, text that doesn't convert, such as letters in a number, stays in the "
+                    + "field with the form's error, so nothing typed is lost. Blazor reports these errors for an "
+                    + "`EditForm` whose model is supplied by `[SupplyParameterFromForm]` without its own `FormName`.",
                 "`@ref` the field and call `FocusAsync()` to move focus to it, or `SelectTextAsync()` to also select "
                     + "its text so typing replaces it.",
                 "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "

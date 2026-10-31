@@ -1,0 +1,24 @@
+@page "/static-attempted"
+@attribute [ExcludeFromInteractiveRouting]
+
+<EditForm Model="Model" FormName="static-attempted" OnValidSubmit="Post">
+    <TbTextField TValue="int" Label="Age" @bind-Value="Model!.Age" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</EditForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm]
+    private Person? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    private void Post() => _posted = Model!.Age.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private sealed class Person
+    {
+        public int Age { get; set; } = 30;
+    }
+}

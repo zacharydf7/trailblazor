@@ -78,6 +78,9 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [CascadingParameter]
     private TbForm? Form { get; set; }
 
+    [CascadingParameter]
+    private FormMappingContext? MappingContext { get; set; }
+
     [Inject]
     private protected IAnnouncer Announcer { get; set; } = default!;
 
@@ -156,6 +159,16 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             _unparsedText = null;
             _messages.Clear();
             _messageStore?.Clear();
+        }
+
+        // A static form post whose text didn't convert keeps the model's old value, so the field shows what was typed.
+        // Only the model the error belongs to, inside a form that reports it, gets the text back. RendererInfo is read
+        // last, since a test renderer that never sets it throws.
+        if (MappingContext is { } mapping && _field is { } bound && !RendererInfo.IsInteractive
+            && mapping.GetAllErrors().FirstOrDefault(error => ReferenceEquals(error.Container, bound.Model)
+                && error.Name == bound.FieldName) is { AttemptedValue: { } attempted })
+        {
+            _unparsedText = attempted;
         }
 
         if (!ReferenceEquals(CascadedEditContext, _editContext))

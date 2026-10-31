@@ -27,6 +27,49 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldKeepWhatWasTypedAndExplain_WhenAStaticFormPostsTextThatDoesNotConvert(
+        string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-attempted");
+        var age = page.GetByLabel("Age");
+
+        await age.FillAsync("thirty");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(age).ToHaveValueAsync("thirty");
+        await Expect(age).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(page.Locator("[data-part=error]")).ToContainTextAsync("thirty");
+        await Expect(page.GetByTestId("posted")).ToBeEmptyAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldShowTheSavedValue_WhenAPlainFormPostsTextThatDoesNotConvert(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-attempted-plain");
+        var age = page.GetByLabel("Age");
+
+        await age.FillAsync("thirty");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("0");
+        await Expect(age).ToHaveValueAsync("0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldShowTheNewModelsValue_WhenTheFormStartsOverAfterTextThatDoesNotConvert(
+        string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-attempted-reset");
+        var age = page.GetByLabel("Age");
+
+        await age.FillAsync("thirty");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByTestId("state")).ToHaveTextAsync("started over");
+        await Expect(age).ToHaveValueAsync("18");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldUpdateWhileTyping_WhenUpdateOnInputIsSet(string browser)
     {
         var page = await OpenAsync(browser, "/examples/text-field");
