@@ -23,6 +23,7 @@ else
 @code {
     private readonly string _id = $"tb-option-{Guid.NewGuid():N}";
     private TValue? _value;
+    private ControlTelemetry? _telemetry;
 
     /// <summary>The value the select or listbox takes when this option is chosen.</summary>
     [Parameter, EditorRequired]
@@ -41,8 +42,21 @@ else
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>A label this option's use is counted under, such as <c>"size-large"</c>, so the app can see how often
+    /// people choose it through the <c>Trailblazor</c> meter. It counts uses only, as a select's list renders hidden
+    /// until opened; give the select a <c>TelemetryName</c> to count how often it is shown. A choice a disabled or
+    /// read-only list refuses isn't counted, and the option's value is never recorded. It names the choice, never the
+    /// user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
     [CascadingParameter]
     private ISelect? Select { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     // What the option shows, in the list and in the select once chosen.
     private RenderFragment Content =>
@@ -80,7 +94,13 @@ else
         }
     }
 
-    private Task ChooseAsync() => Disabled ? Task.CompletedTask : Select!.ChooseAsync(Value);
+    private async Task ChooseAsync()
+    {
+        if (!Disabled && await Select!.ChooseAsync(Value))
+        {
+            Telemetry.Used(TelemetryName);
+        }
+    }
 
     /// <inheritdoc />
     public void Dispose() => Select?.Remove(this);

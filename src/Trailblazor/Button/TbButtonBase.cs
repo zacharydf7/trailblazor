@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor;
 
@@ -8,8 +7,7 @@ namespace Trailblazor;
 public abstract partial class TbButtonBase : TbComponentBase
 {
     private ElementReference _element;
-    private string? _shownAs;
-    private Telemetry? _telemetry;
+    private ControlTelemetry? _telemetry;
     private bool _givenVariant;
     private bool _givenTone;
     private bool _givenSize;
@@ -83,8 +81,7 @@ public abstract partial class TbButtonBase : TbComponentBase
 
     private bool Off => Disabled || Group?.Disabled == true;
 
-    // Looked up only for a labeled button, so an unlabeled one renders without AddTrailblazor, as it always has.
-    private Telemetry? Telemetry => TelemetryName is null ? null : _telemetry ??= Services.GetService<Telemetry>();
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private string TypeAttribute => Type.ToString().ToLowerInvariant();
 
@@ -123,8 +120,7 @@ public abstract partial class TbButtonBase : TbComponentBase
     }
 
     /// <inheritdoc />
-    protected override void OnAfterRender(bool firstRender) =>
-        Telemetry?.ShownOnce(ref _shownAs, TelemetryName, GetType());
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
     private async Task OnClickAsync(MouseEventArgs args)
     {
@@ -133,10 +129,7 @@ public abstract partial class TbButtonBase : TbComponentBase
             return;
         }
 
-        if (TelemetryName is not null)
-        {
-            Telemetry?.ControlUsed(TelemetryName, GetType());
-        }
+        Telemetry.Used(TelemetryName);
 
         if (Toggles)
         {

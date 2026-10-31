@@ -127,7 +127,7 @@
             }
             @if (PageCount > 1)
             {
-                <TbPagination Page="_page" PageChanged="GoToPageAsync" PageCount="PageCount" Size="Size.Small"
+                <TbPagination Page="_page" PageChanged="PageFromPagerAsync" PageCount="PageCount" Size="Size.Small"
                               AriaLabel="@(AriaLabel is null ? null : Format(TbStrings.DataGridPages, AriaLabel))" />
             }
         </div>

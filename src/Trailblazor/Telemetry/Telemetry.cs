@@ -12,21 +12,17 @@ internal sealed class Telemetry(TelemetryInstruments instruments, IOptions<Trail
 
     public const string ComponentTag = "trailblazor.component";
 
-    // A control is shown once for each name it takes, from its first interactive render; a static page never reports.
-    public void ShownOnce(ref string? shownAs, string? telemetryName, Type component)
-    {
-        if (telemetryName is not null && telemetryName != shownAs)
-        {
-            shownAs = telemetryName;
-            Add(instruments.ControlsShown, telemetryName, component);
-        }
-    }
+    public const string ActionTag = "trailblazor.action";
 
-    public void ControlUsed(string telemetryName, Type component) =>
-        Add(instruments.ControlsUsed, telemetryName, component);
+    public void ControlShown(string telemetryName, Type component) =>
+        Add(instruments.ControlsShown, telemetryName, component, null);
+
+    // A component with more than one thing to do, such as a grid that sorts and pages, says which it did.
+    public void ControlUsed(string telemetryName, Type component, string? action = null) =>
+        Add(instruments.ControlsUsed, telemetryName, component, action);
 
     // Nothing is built when no one listens, so an unwatched control costs a check.
-    private void Add(Counter<long> counter, string telemetryName, Type component)
+    private void Add(Counter<long> counter, string telemetryName, Type component, string? action)
     {
         if (!counter.Enabled || !options.Value.Telemetry.Enabled)
         {
@@ -34,6 +30,11 @@ internal sealed class Telemetry(TelemetryInstruments instruments, IOptions<Trail
         }
 
         var tags = new TagList { { NameTag, telemetryName }, { ComponentTag, NameOf(component) } };
+        if (action is not null)
+        {
+            tags.Add(ActionTag, action);
+        }
+
         foreach (var source in appTags)
         {
             foreach (var tag in source.Tags)

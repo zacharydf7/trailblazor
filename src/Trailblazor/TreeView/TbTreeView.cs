@@ -62,6 +62,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private IJSObjectReference? _handle;
     private DotNetObjectReference<TreeViewEvents>? _events;
     private bool _disposed;
+    private ControlTelemetry? _telemetry;
     private object? _builtFor;
     private object? _flattenedFor;
     private Func<TItem, bool>? _flattenedFilter;
@@ -241,6 +242,19 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public float ItemSize { get; set; } = 32;
 
+    /// <summary>A label the tree's use is counted under, such as <c>"folders"</c>, so the app can see how people use it
+    /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>expand</c>,
+    /// <c>collapse</c>, <c>select</c>, <c>check</c>, <c>activate</c> or <c>move</c> each time the user does one.
+    /// Opening rows from code isn't counted, and which rows is never recorded. It names the tree, never the
+    /// user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
@@ -393,6 +407,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         try
         {
             if (firstRender && RendererInfo.IsInteractive)
@@ -910,12 +925,19 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         switch (key)
         {
             case "ArrowRight":
+                CountOpening(node, open: true);
                 await ExpandAsync((TKey)node.Key);
                 break;
             case "ArrowLeft":
+                CountOpening(node, open: false);
                 await CollapseAsync((TKey)node.Key);
                 break;
             case "*":
+                if (Siblings(node).Any(sibling => sibling.HasChildren && !IsOpen(sibling)))
+                {
+                    Telemetry.Used(TelemetryName, "expand");
+                }
+
                 await SetExpandedAsync(_expanded.Union(Siblings(node).Where(sibling => sibling.HasChildren)
                     .Select(sibling => sibling.Key)));
                 await Task.WhenAll(Siblings(node).Select(LoadIfNeededAsync));
@@ -1034,6 +1056,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             TreeDropPosition.After => TbStrings.TreeViewMovedAfter,
             _ => TbStrings.TreeViewMovedInside,
         };
+        Telemetry.Used(TelemetryName, "move");
         await OnDrop.InvokeAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
         // The app applies a move to its items, often in place, so the rows are built again from them.
         Rebuild();
@@ -1076,6 +1099,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
+        CountOpening(node, open: !IsOpen(node));
         if (IsOpen(node))
         {
             await CollapseAsync((TKey)node.Key);
@@ -1086,8 +1110,25 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
     }
 
-    private Task ActivateAsync(TreeNode<TItem> node) =>
-        IsItemDisabled(node) ? Task.CompletedTask : OnActivate.InvokeAsync(node.Item);
+    // ExpandAsync and CollapseAsync serve code too, so only the user's clicks and keys count, when they change a row.
+    private void CountOpening(TreeNode<TItem> node, bool open)
+    {
+        if (node.HasChildren && open != IsOpen(node))
+        {
+            Telemetry.Used(TelemetryName, open ? "expand" : "collapse");
+        }
+    }
+
+    private Task ActivateAsync(TreeNode<TItem> node)
+    {
+        if (IsItemDisabled(node))
+        {
+            return Task.CompletedTask;
+        }
+
+        Telemetry.Used(TelemetryName, "activate");
+        return OnActivate.InvokeAsync(node.Item);
+    }
 
     private bool CanSelect(TreeNode<TItem> node) => SelectionMode != SelectionMode.None
         && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
@@ -1139,6 +1180,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
+        Telemetry.Used(TelemetryName, "check");
         // A cascade sets the rows it can reach, unchecking them once all of them are checked.
         var reached = CascadeChecks ? EnabledDescendants(node).ToList() : [];
         var check = reached.Count == 0 ? !_checked.Contains(node.Key)
@@ -1228,6 +1270,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         {
             return;
         }
+
+        // Only the user's clicks and keys get here, and only a selection that changed counts.
+        Telemetry.Used(TelemetryName, "select");
 
         _selected = selected;
         await SelectedKeysChanged.InvokeAsync(_selected.Cast<TKey>().ToList());

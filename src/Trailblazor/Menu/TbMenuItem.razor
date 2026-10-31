@@ -27,6 +27,8 @@ else
 }
 
 @code {
+    private ControlTelemetry? _telemetry;
+
     /// <summary>The item's text.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -56,6 +58,18 @@ else
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    /// <summary>A label this item's use is counted under, such as <c>"export-csv"</c>, so the app can see how often
+    /// people choose it through the <c>Trailblazor</c> meter. An item renders hidden until its menu opens, so it counts
+    /// uses only; give the menu a <see cref="TbMenu.TelemetryName"/> to count how often it is shown and opened.
+    /// Controls that share a label count together. It names what the item does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
     private RenderFragment Content => @<text>
         @if (Icon is { } icon)
         {
@@ -71,5 +85,14 @@ else
         ? $"{AdditionalAttributes?.GetValueOrDefault("rel")} noopener noreferrer".TrimStart()
         : AdditionalAttributes?.GetValueOrDefault("rel");
 
-    private Task OnClickAsync(MouseEventArgs args) => Disabled ? Task.CompletedTask : OnClick.InvokeAsync(args);
+    private Task OnClickAsync(MouseEventArgs args)
+    {
+        if (Disabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        Telemetry.Used(TelemetryName);
+        return OnClick.InvokeAsync(args);
+    }
 }

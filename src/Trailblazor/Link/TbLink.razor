@@ -28,6 +28,7 @@ else
 
 @code {
     private ElementReference _element;
+    private ControlTelemetry? _telemetry;
 
     /// <summary>The address the link goes to. Without one, the link is a button that runs <see cref="OnClick"/>.
     /// </summary>
@@ -52,6 +53,20 @@ else
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    /// <summary>A label this link's use is counted under, such as <c>"trail-guide"</c>, so the app can see how often
+    /// people see it and use it through the <c>Trailblazor</c> meter. Controls that share a label count together; a
+    /// control without one isn't counted. It names what the link does, never the user, and is no credential.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     /// <summary>The link's text.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -60,7 +75,16 @@ else
     /// <param name="preventScroll">Whether to keep the page from scrolling the link into view.</param>
     public ValueTask FocusAsync(bool preventScroll = false) => _element.FocusAsync(preventScroll);
 
-    private Task OnClickAsync(MouseEventArgs args) => Disabled ? Task.CompletedTask : OnClick.InvokeAsync(args);
+    private Task OnClickAsync(MouseEventArgs args)
+    {
+        if (Disabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        Telemetry.Used(TelemetryName);
+        return OnClick.InvokeAsync(args);
+    }
 
     // These come after the consumer's attributes, so they carry the consumer's own target and rel along.
     private object? TargetAttribute => NewTab ? "_blank" : AdditionalAttributes?.GetValueOrDefault("target");

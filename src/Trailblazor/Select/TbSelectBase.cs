@@ -19,6 +19,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     private bool _lastOpen;
     private bool _openFromParent;
     private bool _disposed;
+    private ControlTelemetry? _telemetry;
 
     /// <summary>The <see cref="TbOption{TValue}"/>s to choose from.</summary>
     [Parameter]
@@ -36,6 +37,13 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     /// its nullable form, since the type's default is one of its values.</summary>
     [Parameter]
     public bool Clearable { get; set; }
+
+    /// <summary>A label this select's use is counted under, such as <c>"trail-size"</c>, so the app can see how often
+    /// people see it and choose in it through the <c>Trailblazor</c> meter: shown when it renders, used for each
+    /// choice, and used with the action <c>remove</c> for a chip removed. Only that a choice was made is counted, never
+    /// which; label the options to count each one. It names what the select sets, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
 
     /// <summary>Puts a text box above the options that narrows them to those containing what is typed, for long
     /// lists. The options are all on the page; to search a server as the user types, use
@@ -61,6 +69,11 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
 
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     // Whether several options can be chosen at once.
     private protected abstract bool Multiple { get; }
@@ -131,6 +144,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         try
         {
             if (firstRender)
@@ -181,15 +195,17 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
 
     string? ISelect.Format(object? value) => FormatItem(value);
 
-    async Task ISelect.ChooseAsync(object? value)
+    async Task<bool> ISelect.ChooseAsync(object? value)
     {
         if (ReadOnly)
         {
-            return;
+            return false;
         }
 
+        Telemetry.Used(TelemetryName);
         await SetValueAsync(Choose(value));
         StateHasChanged();
+        return true;
     }
 
     void ISelect.Add(ISelectOption option)
@@ -235,6 +251,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
             return;
         }
 
+        Telemetry.Used(TelemetryName, "remove");
         await SetValueAsync(Choose(option.Value));
         StateHasChanged();
         Announcer.Polite(string.Format(CultureInfo.CurrentCulture, RemovedFormat, text));

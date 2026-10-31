@@ -12,7 +12,7 @@
                  Disabled ? "tb-chip--disabled" : null, Class)">
     @if (Href is not null && !Disabled)
     {
-        <a href="@Href" data-part="action" class="tb-chip__action" @onclick="OnClick" @onkeydown="OnKeyDownAsync">
+        <a href="@Href" data-part="action" class="tb-chip__action" @onclick="LinkClick" @onkeydown="OnKeyDownAsync">
             @Content
         </a>
     }
@@ -41,6 +41,7 @@
 @code {
     private ElementReference _chip;
     private bool _claimedBackspace;
+    private ControlTelemetry? _telemetry;
 
     /// <summary>The chip's text, which also names its remove button. Use <see cref="ChildContent"/> for richer
     /// content.</summary>
@@ -94,6 +95,18 @@
     [Parameter]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>A label this chip's use is counted under, such as <c>"filter-open-trails"</c>, so the app can see how
+    /// often people see it and use it through the <c>Trailblazor</c> meter. A click or toggle counts as a use, and a
+    /// removal as a use with the action <c>remove</c>. Leave it off chips that only show something. It names what the
+    /// chip does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
     /// <summary>The remove button's name, with <c>{0}</c> for <see cref="Text"/>, left empty when there's none.
     /// Defaults to the app's text for <see cref="TbStrings.ChipRemoveNamed"/>, "Remove {0}" in English, or for
     /// <see cref="TbStrings.ChipRemove"/>, "Remove", on a chip with no text.</summary>
@@ -133,6 +146,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         if (_claimedBackspace || !OnClose.HasDelegate || !RendererInfo.IsInteractive)
         {
             return;
@@ -150,8 +164,19 @@
         }
     }
 
+    // An empty callback leaves the link without a handler, so a plain link chip's clicks stay in the browser.
+    private EventCallback<MouseEventArgs> LinkClick => TelemetryName is null ? OnClick
+        : EventCallback.Factory.Create<MouseEventArgs>(this, OnLinkClickAsync);
+
+    private Task OnLinkClickAsync(MouseEventArgs e)
+    {
+        Telemetry.Used(TelemetryName);
+        return OnClick.InvokeAsync(e);
+    }
+
     private async Task OnActionClickAsync(MouseEventArgs e)
     {
+        Telemetry.Used(TelemetryName);
         if (Toggles)
         {
             Selected = !Selected;
@@ -172,6 +197,7 @@
     // In a group, focus moves to the chip that takes this one's place, instead of falling back to the page.
     private async Task RemoveAsync()
     {
+        Telemetry.Used(TelemetryName, "remove");
         if (Group is not null && RendererInfo.IsInteractive)
         {
             await Group.RememberPlaceAsync(_chip);

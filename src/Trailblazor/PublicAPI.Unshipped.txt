@@ -711,6 +711,8 @@ Trailblazor.TbCheckbox<TValue>.Classes.set -> void
 Trailblazor.TbCheckbox<TValue>.Size.get -> Trailblazor.Size
 Trailblazor.TbCheckbox<TValue>.Size.set -> void
 Trailblazor.TbCheckbox<TValue>.TbCheckbox() -> void
+Trailblazor.TbCheckbox<TValue>.TelemetryName.get -> string?
+Trailblazor.TbCheckbox<TValue>.TelemetryName.set -> void
 Trailblazor.TbCheckbox<TValue>.Tone.get -> Trailblazor.Tone
 Trailblazor.TbCheckbox<TValue>.Tone.set -> void
 Trailblazor.TbCheckboxGroup<TItem>
@@ -757,6 +759,8 @@ Trailblazor.TbChip.SelectedChanged.set -> void
 Trailblazor.TbChip.Size.get -> Trailblazor.Size
 Trailblazor.TbChip.Size.set -> void
 Trailblazor.TbChip.TbChip() -> void
+Trailblazor.TbChip.TelemetryName.get -> string?
+Trailblazor.TbChip.TelemetryName.set -> void
 Trailblazor.TbChip.Text.get -> string?
 Trailblazor.TbChip.Text.set -> void
 Trailblazor.TbChip.Tone.get -> Trailblazor.Tone
@@ -893,6 +897,8 @@ Trailblazor.TbDataGrid<TItem>.SortsChanged.set -> void
 Trailblazor.TbDataGrid<TItem>.Striped.get -> bool
 Trailblazor.TbDataGrid<TItem>.Striped.set -> void
 Trailblazor.TbDataGrid<TItem>.TbDataGrid() -> void
+Trailblazor.TbDataGrid<TItem>.TelemetryName.get -> string?
+Trailblazor.TbDataGrid<TItem>.TelemetryName.set -> void
 Trailblazor.TbDateRangePicker<TDate>
 Trailblazor.TbDateRangePicker<TDate>.Classes.get -> Trailblazor.FieldClasses?
 Trailblazor.TbDateRangePicker<TDate>.Classes.set -> void
@@ -1152,6 +1158,8 @@ Trailblazor.TbLink.NewTabHint.set -> void
 Trailblazor.TbLink.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
 Trailblazor.TbLink.OnClick.set -> void
 Trailblazor.TbLink.TbLink() -> void
+Trailblazor.TbLink.TelemetryName.get -> string?
+Trailblazor.TbLink.TelemetryName.set -> void
 Trailblazor.TbList
 Trailblazor.TbList.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbList.ChildContent.set -> void
@@ -1217,6 +1225,8 @@ Trailblazor.TbMenu.Placement.set -> void
 Trailblazor.TbMenu.Size.get -> Trailblazor.Size
 Trailblazor.TbMenu.Size.set -> void
 Trailblazor.TbMenu.TbMenu() -> void
+Trailblazor.TbMenu.TelemetryName.get -> string?
+Trailblazor.TbMenu.TelemetryName.set -> void
 Trailblazor.TbMenu.Trigger.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.MenuTrigger!>?
 Trailblazor.TbMenu.Trigger.set -> void
 Trailblazor.TbMenu.Variant.get -> Trailblazor.Variant
@@ -1255,6 +1265,8 @@ Trailblazor.TbMenuItem.NewTabHint.set -> void
 Trailblazor.TbMenuItem.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
 Trailblazor.TbMenuItem.OnClick.set -> void
 Trailblazor.TbMenuItem.TbMenuItem() -> void
+Trailblazor.TbMenuItem.TelemetryName.get -> string?
+Trailblazor.TbMenuItem.TelemetryName.set -> void
 Trailblazor.TbMenuRadioGroup<TValue>
 Trailblazor.TbMenuRadioGroup<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbMenuRadioGroup<TValue>.ChildContent.set -> void
@@ -1318,6 +1330,8 @@ Trailblazor.TbOption<TValue>.Disabled.get -> bool
 Trailblazor.TbOption<TValue>.Disabled.set -> void
 Trailblazor.TbOption<TValue>.Dispose() -> void
 Trailblazor.TbOption<TValue>.TbOption() -> void
+Trailblazor.TbOption<TValue>.TelemetryName.get -> string?
+Trailblazor.TbOption<TValue>.TelemetryName.set -> void
 Trailblazor.TbOption<TValue>.Text.get -> string?
 Trailblazor.TbOption<TValue>.Text.set -> void
 Trailblazor.TbOption<TValue>.Value.get -> TValue
@@ -1481,6 +1495,8 @@ Trailblazor.TbSelectBase<TValue>.OpenChanged.set -> void
 Trailblazor.TbSelectBase<TValue>.Placeholder.get -> string?
 Trailblazor.TbSelectBase<TValue>.Placeholder.set -> void
 Trailblazor.TbSelectBase<TValue>.TbSelectBase() -> void
+Trailblazor.TbSelectBase<TValue>.TelemetryName.get -> string?
+Trailblazor.TbSelectBase<TValue>.TelemetryName.set -> void
 Trailblazor.TbSkeleton
 Trailblazor.TbSkeleton.Animation.get -> Trailblazor.SkeletonAnimation
 Trailblazor.TbSkeleton.Animation.set -> void
@@ -1599,6 +1615,8 @@ Trailblazor.TbTab.Icon.set -> void
 Trailblazor.TbTab.Key.get -> string?
 Trailblazor.TbTab.Key.set -> void
 Trailblazor.TbTab.TbTab() -> void
+Trailblazor.TbTab.TelemetryName.get -> string?
+Trailblazor.TbTab.TelemetryName.set -> void
 Trailblazor.TbTab.Text.get -> string?
 Trailblazor.TbTab.Text.set -> void
 Trailblazor.TbTab.TextContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
@@ -1724,6 +1742,8 @@ Trailblazor.TbToggleItem<TValue>.Disabled.set -> void
 Trailblazor.TbToggleItem<TValue>.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbToggleItem<TValue>.Icon.set -> void
 Trailblazor.TbToggleItem<TValue>.TbToggleItem() -> void
+Trailblazor.TbToggleItem<TValue>.TelemetryName.get -> string?
+Trailblazor.TbToggleItem<TValue>.TelemetryName.set -> void
 Trailblazor.TbToggleItem<TValue>.Value.get -> TValue
 Trailblazor.TbToggleItem<TValue>.Value.set -> void
 Trailblazor.TbToolbar
@@ -1865,6 +1885,8 @@ Trailblazor.TbTreeView<TItem, TKey>.SelectedKeysChanged.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.SelectionMode.get -> Trailblazor.SelectionMode
 Trailblazor.TbTreeView<TItem, TKey>.SelectionMode.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.TbTreeView() -> void
+Trailblazor.TbTreeView<TItem, TKey>.TelemetryName.get -> string?
+Trailblazor.TbTreeView<TItem, TKey>.TelemetryName.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.Virtualize.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.Virtualize.set -> void
 Trailblazor.TelemetrySettings
@@ -2347,6 +2369,7 @@ override Trailblazor.TbImage.OnParametersSet() -> void
 ~override Trailblazor.TbLabel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbLabel.OnParametersSet() -> void
 ~override Trailblazor.TbLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbLink.OnAfterRender(bool firstRender) -> void
 ~override Trailblazor.TbList.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbListBoxBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbListBoxBase<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
@@ -2406,6 +2429,7 @@ override Trailblazor.TbSplitterPane.OnParametersSet() -> void
 ~override Trailblazor.TbStyles.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbSubMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTab.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbTab.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbTab.OnInitialized() -> void
 override Trailblazor.TbTab.OnParametersSet() -> void
 ~override Trailblazor.TbTable.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
@@ -2426,6 +2450,7 @@ override Trailblazor.TbToggleGroup<TValue>.OnParametersSet() -> void
 override Trailblazor.TbToggleGroupBase<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbToggleGroupBase<TValue>.OnParametersSet() -> void
 ~override Trailblazor.TbToggleItem<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbToggleItem<TValue>.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbToggleItem<TValue>.OnInitialized() -> void
 ~override Trailblazor.TbToolbar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbToolbar.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!

@@ -150,6 +150,7 @@ public class TelemetryTests : BunitContext
         provider.GetRequiredService<TelemetryInstruments>();
 
         Assert.Equal([Telemetry.NameTag, Telemetry.ComponentTag], TelemetryCatalog.CommonTags);
+        Assert.Equal(Telemetry.ActionTag, TelemetryCatalog.ActionTag);
         Assert.Equal(TelemetryCatalog.Instruments.Select(instrument => (TelemetryCatalog.MeterName, instrument.Name,
                 instrument.Kind, (string?)instrument.Unit, (string?)instrument.Description)),
             published.Select(instrument => (instrument.Meter.Name, instrument.Name,

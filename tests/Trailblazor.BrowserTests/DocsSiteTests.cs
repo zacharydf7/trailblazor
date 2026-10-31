@@ -400,7 +400,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         var counts = page.GetByTestId("telemetry-counts");
         var export = page.GetByRole(AriaRole.Button, new() { Name = "Export", Exact = true });
 
-        await Expect(counts.Locator("tbody tr")).ToHaveCountAsync(4);
+        await Expect(counts.Locator("tbody tr")).ToHaveCountAsync(5);
         await export.ClickAsync();
         await export.ClickAsync();
         // Playwright waits forever for a disabled button to enable unless the click is forced.
@@ -410,6 +410,30 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Counts("export-csv")).ToHaveTextAsync(["1", "2"]);
         await Expect(Counts("archive")).ToHaveTextAsync(["1", "0"]);
         await Expect(Counts("print")).ToHaveTextAsync(["1", "0"]);
+
+        ILocator Counts(string name) => counts.Locator("tbody tr").Filter(new() { HasText = name }).Locator("td");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Telemetry_ShouldCountTheDemoMenusOpensAndItsItemsChosen_WhenOpenedByPointerAndKey(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/telemetry");
+        var counts = page.GetByTestId("telemetry-counts");
+        var more = page.GetByRole(AriaRole.Button, new() { Name = "More", Exact = true });
+        await Expect(more).ToHaveAttributeAsync("aria-expanded", "false");
+
+        // The menu reports an open from its toggle event, which an Escape pressed straight after could beat.
+        await more.ClickAsync();
+        await Expect(more).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(more).ToHaveAttributeAsync("aria-expanded", "false");
+        await more.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Duplicate" }).ClickAsync();
+
+        await Expect(Counts("more-actions")).ToHaveTextAsync(["1", "2"]);
+        await Expect(Counts("duplicate")).ToHaveTextAsync(["0", "1"]);
+        await Expect(counts.Locator("tbody tr").Filter(new() { HasText = "rename" })).ToHaveCountAsync(0);
 
         ILocator Counts(string name) => counts.Locator("tbody tr").Filter(new() { HasText = name }).Locator("td");
     }

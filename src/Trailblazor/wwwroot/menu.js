@@ -6,8 +6,8 @@ const hoverDelay = 150;
 // How long a pointer heading for an open submenu across other items keeps it open.
 const graceTime = 400;
 
-// Keyboard and focus handling stay in the browser; only choosing an item reaches the server.
-export function createMenu(root, menu, options) {
+// Keyboard and focus handling stay in the browser; only choosing an item, and a labeled menu's opens, reach the server.
+export function createMenu(root, menu, options, events) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root || !menu) {
         return null;
@@ -73,6 +73,11 @@ export function createMenu(root, menu, options) {
 
         const open = event.newState === 'open';
         opener(list).setAttribute('aria-expanded', String(open));
+        // A labeled menu counts its opens, however they came; its submenus aren't counted apart.
+        if (open && list === menu) {
+            events?.invokeMethodAsync('OnOpened');
+        }
+
         if (open) {
             // A submenu the pointer opened leaves focus where it was, as the pointer may only be passing through.
             if (!openedByHover.delete(list)) {

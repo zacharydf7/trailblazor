@@ -10,7 +10,7 @@ internal interface ISelect
 
     string? Format(object? value);
 
-    Task ChooseAsync(object? value);
+    Task<bool> ChooseAsync(object? value);
 
     void Add(ISelectOption option);
 

@@ -21,6 +21,7 @@
     private string? _key;
     private Icon? _icon;
     private RenderFragment? _header;
+    private ControlTelemetry? _telemetry;
 
     /// <summary>The tab's label. Give this or <see cref="TextContent"/>.</summary>
     [Parameter]
@@ -49,8 +50,19 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>A label this tab's use is counted under, such as <c>"billing-tab"</c>, so the app can see how often
+    /// people see it and switch to it through the <c>Trailblazor</c> meter. Its header counts as shown when it renders,
+    /// and as used each time the user selects the tab. It names what the tab holds, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
     [CascadingParameter]
     private TbTabs? Tabs { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     internal string TabId => $"{_id}-tab";
 
@@ -69,6 +81,11 @@
     internal TabHeader? HeaderView { get; set; }
 
     private bool IsSelected => Tabs!.ActiveTab == this;
+
+    internal void CountUse() => Telemetry.Used(TelemetryName);
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
     /// <inheritdoc />
     protected override void OnInitialized()

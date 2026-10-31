@@ -83,16 +83,17 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
 
     string? ISelect.Format(object? value) => FormatItem(value);
 
-    async Task ISelect.ChooseAsync(object? value)
+    async Task<bool> ISelect.ChooseAsync(object? value)
     {
         // Unlike a select's, a disabled or read-only listbox's options are still on the page to be clicked.
         if (Disabled || ReadOnly)
         {
-            return;
+            return false;
         }
 
         await SetValueAsync(Choose(value));
         StateHasChanged();
+        return true;
     }
 
     void ISelect.Add(ISelectOption option)

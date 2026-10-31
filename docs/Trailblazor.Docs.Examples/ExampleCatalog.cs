@@ -85,6 +85,14 @@ public static class ExampleCatalog
         "A disabled or loading button counts as shown but not used. Without a `TelemetryName` it counts nothing.",
     ];
 
+    // What a checkbox reports, which a switch shares.
+    private static readonly string[] CheckboxTelemetry =
+    [
+        "With a `TelemetryName`, such as `\"email-alerts\"`, it counts `trailblazor.control.shown` as it first "
+            + "renders and `trailblazor.control.used` each time the user changes it. Only that it changed is counted, "
+            + "never to what.",
+    ];
+
     // The parts every labeled field has; start and end hold its adornments.
     private static readonly string[] FieldParts = ["label", "control", "start", "end", "helper", "error"];
 
@@ -254,6 +262,12 @@ public static class ExampleCatalog
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
                 + "`data-ready` attribute before testing the arrow keys.",
+            Telemetry =
+            [
+                "With a `TelemetryName` on an item, such as `\"view-as-list\"`, the item counts "
+                    + "`trailblazor.control.shown` as it first renders and `trailblazor.control.used` each time it is "
+                    + "pressed.",
+            ],
         },
         new("theme-picker", "Theme picker", ExampleCategory.Actions,
             "Lets people choose a light or dark page, or follow their device, and remembers the choice.",
@@ -438,6 +452,13 @@ public static class ExampleCatalog
             DataParts = ["check", "icon", "label", "action", "remove"],
             TestingTip = "Remove a chip with `GetByRole(AriaRole.Button, new() { Name = \"Remove Archive\" })`, and "
                 + "check a filter chip with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"filter-open\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, `trailblazor.control.used` for each click or toggle, and `trailblazor.control.used` "
+                    + "with `trailblazor.action` `remove` when it is removed. Leave it off chips that only show "
+                    + "something.",
+            ],
         },
         new("list", "List", ExampleCategory.Content,
             "A list of items, each with optional leading content, a description and trailing content. Items can be "
@@ -659,6 +680,7 @@ public static class ExampleCatalog
             Target = new("checkbox", "Email me updates"),
             Blocks = ["tb-checkbox"],
             DataParts = ["input", "label", "helper", "error"],
+            Telemetry = CheckboxTelemetry,
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
             "Picks any number of options from a short list shown all at once.", typeof(CheckboxGroupExample))
@@ -704,6 +726,7 @@ public static class ExampleCatalog
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],
             DataParts = ["input", "label", "helper", "error"],
+            Telemetry = CheckboxTelemetry,
         },
         new("slider", "Slider", ExampleCategory.Inputs,
             "Chooses a number, or a range, by dragging a thumb along a track or with the arrow keys.",
@@ -798,6 +821,15 @@ public static class ExampleCatalog
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
                 + "select a `Comparer` so they still match their options. The helper works the same on a `Filterable` "
                 + "select.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-size\"`, the select counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` for each choice, or with `trailblazor.action` "
+                    + "`remove` for a chip removed. Only that a choice was made is counted, never which.",
+                "An option with its own `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` "
+                    + "each time it is chosen. Its list renders hidden, so it counts uses only; its value is never "
+                    + "recorded.",
+            ],
         },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
             "A text field that suggests values as the user types, from a list or an async search.",
@@ -943,6 +975,12 @@ public static class ExampleCatalog
             TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
                 + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
                 + "`<select>` too. For object values loaded again, give the list box a `Comparer`.",
+            Telemetry =
+            [
+                "An option with a `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` each "
+                    + "time it is chosen. A disabled or read-only list box chooses nothing, so it counts nothing; the "
+                    + "value is never recorded.",
+            ],
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or focus.", typeof(TooltipExample))
@@ -1011,6 +1049,14 @@ public static class ExampleCatalog
             TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
                 + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. A group is "
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"row-actions\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` each time it opens, by pointer or key, which is "
+                    + "how often its items are seen.",
+                "An item with its own `TelemetryName` counts `trailblazor.control.used` each time it is chosen. Items "
+                    + "render hidden until the menu opens, so they count uses only.",
+            ],
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
             "A window over the page, opened from code or written in markup, that asks for input or a decision.",
@@ -1146,6 +1192,11 @@ public static class ExampleCatalog
             TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
                 + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. Wait for the tab list's "
                 + "`data-ready` attribute before testing the arrow keys.",
+            Telemetry =
+            [
+                "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "
+                    + "header first renders and `trailblazor.control.used` each time the user selects it.",
+            ],
         },
         new("accordion", "Accordion", ExampleCategory.Navigation,
             "Sections that open and close under their headings.", typeof(AccordionExample))
@@ -1225,6 +1276,14 @@ public static class ExampleCatalog
                 + "helpers, wait for the tree's `data-ready`. In bUnit, a test that changes `Items` in place calls "
                 + "`RefreshAsync`, as the app does; a new collection, or an `OnDrop`, builds the rows again by "
                 + "itself.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"folders\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, and `trailblazor.control.used` with `trailblazor.action` `expand`, `collapse`, "
+                    + "`select`, `check`, `activate` or `move` for each of those the user does, by pointer or key.",
+                "Rows opened, selected or scrolled to from code aren't counted, and which rows were used is never "
+                    + "recorded.",
+            ],
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
             "Shows items as rows of a table, with columns that sort, pages, and rows that can be selected.",
@@ -1272,6 +1331,14 @@ public static class ExampleCatalog
                 + "their key. A row draws again only when its item, its selection or the columns change, so a test "
                 + "that changes what a `Cell` template shows calls `RenderRows`, as the app does, and one that "
                 + "changes `Items` in place calls `RefreshAsync`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `page`, `page_size` "
+                    + "or `select` for each of those the user does.",
+                "A page `ScrollToAsync` moves to isn't counted, and which column, page or rows were used is never "
+                    + "recorded.",
+            ],
         },
         new("table", "Table", ExampleCategory.Content,
             "A plain table written as markup, with the data grid's look.", typeof(TableExample))
@@ -1333,6 +1400,11 @@ public static class ExampleCatalog
             Blocks = ["tb-link"],
             TestingTip = "A link with an `Href` has the `link` role and one without has the `button` role, so find it "
                 + "with the role that matches. `ToBeDisabledAsync` checks either kind is disabled.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-guide\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders and `trailblazor.control.used` for each click it acts on, as a link or as a button.",
+            ],
         },
         new("skeleton", "Skeleton", ExampleCategory.Feedback,
             "A gray shape that holds the place of content while it loads, with a pulse or a wave.",

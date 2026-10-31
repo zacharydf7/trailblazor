@@ -37,6 +37,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private DotNetObjectReference<DataGridEvents>? _events;
     private bool _disposed;
     private bool _columnsChanged;
+    private ControlTelemetry? _telemetry;
     private int _columnVersion;
     private int _rowVersion;
     private object? _arrangedFor;
@@ -168,8 +169,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public DataGridLabels Labels { get; set; } = new();
 
+    /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
+    /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>, <c>page</c>,
+    /// <c>page_size</c> or <c>select</c> each time the user does one. Which column, page or rows is never recorded. It
+    /// names the grid, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
 
     [Inject]
     private IBrowserService Browser { get; set; } = default!;
@@ -179,6 +190,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     [Inject]
     private IAnnouncer Announcer { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private int PageCount => _pageSize is { } size ? Math.Max(1, (_total + size - 1) / size) : 1;
 
@@ -238,6 +251,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _columnsChanged = false;
+        Telemetry.Rendered(TelemetryName);
         try
         {
             if (firstRender && RendererInfo.IsInteractive)
@@ -526,6 +540,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A plain click sorts by the column alone, then turns it around, then stops; Shift adds it to the sorts instead.
     private async Task SortAsync(TbColumn<TItem> column, MouseEventArgs args)
     {
+        Telemetry.Used(TelemetryName, "sort");
         var at = _sorts.FindIndex(sort => sort.Column == column.Key);
         List<GridSort> sorts = [.. _sorts];
         if (!args.ShiftKey && !(at == 0 && _sorts.Count == 1))
@@ -574,8 +589,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         await show;
     }
 
+    // Code moves the page too, as ScrollToAsync does, so only the pager's moves count as the user's.
+    private Task PageFromPagerAsync(int page)
+    {
+        Telemetry.Used(TelemetryName, "page");
+        return GoToPageAsync(page);
+    }
+
     private async Task ChangePageSizeAsync(int size)
     {
+        Telemetry.Used(TelemetryName, "page_size");
         _pageSize = size;
         _page = 1;
         var show = ShowAsync(force: false);
@@ -612,10 +635,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private async Task SetSelectionAsync(IEnumerable<TItem> items)
     {
+        var before = _selection.Keys.ToHashSet();
         _selection.Clear();
         foreach (var item in items)
         {
             _selection[KeyOf(item)] = item;
+        }
+
+        // Only the user's clicks get here, and only a selection that changed counts.
+        if (!before.SetEquals(_selection.Keys))
+        {
+            Telemetry.Used(TelemetryName, "select");
         }
 
         IReadOnlyCollection<TItem> selected = [.. _selection.Values];

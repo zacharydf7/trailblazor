@@ -16,6 +16,8 @@
     These buttons carry a <code>TelemetryName</code>, and this page listens to the <code>Trailblazor</code> meter in
     your browser, as your app's OpenTelemetry setup would. Each button counts as shown when it renders, and as used
     when you click it. The disabled one is shown but can't be used, which is exactly the kind of gap the counts reveal.
+    The menu counts each time it opens, by pointer or key, and its items count only when chosen, since they're hidden
+    until then.
 </TbText>
 <TelemetryDemo />
 
@@ -66,17 +68,48 @@
         would split the counts and could leak what users work on. It isn't a credential, and it never hides or gates a
         control.
     </li>
+</ul>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">What each control counts</TbText>
+<ul class="docs-notes">
     <li>
-        Buttons, icon buttons and link buttons take it today. Menu items, tabs, toggles, chips, selects, data grids
-        and tree views follow; see the <a href="roadmap">roadmap</a>.
+        <strong>Buttons, icon buttons, links, toggle items, checkboxes and switches:</strong> shown as they first
+        render, and used each time they are clicked, pressed or changed. A switch counts that it changed, never to
+        what.
+    </li>
+    <li>
+        <strong>Tabs:</strong> a tab's header is shown as it renders, and the tab is used each time the user selects
+        it.
+    </li>
+    <li>
+        <strong>Menus and their items:</strong> a labeled menu is shown as it renders and used each time it opens,
+        by pointer or key, which is how often its items are seen; a labeled item counts its uses only, since it renders
+        hidden until the menu opens.
+    </li>
+    <li>
+        <strong>Selects and their options:</strong> a labeled select is shown as it renders and used for each choice;
+        a labeled option counts its uses only, since its list renders hidden, and counts nothing when a disabled or
+        read-only list box refuses the choice. Which value was chosen is never recorded.
+    </li>
+    <li>
+        <strong>Chips:</strong> shown as they render, used for each click or toggle, and used with the action
+        <code>remove</code> when removed.
+    </li>
+    <li>
+        <strong>Data grids and tree views:</strong> shown as they render, and used with an action for each thing the
+        user does: a grid's <code>sort</code>, <code>page</code>, <code>page_size</code> and <code>select</code>; a
+        tree's <code>expand</code>, <code>collapse</code>, <code>select</code>, <code>check</code>,
+        <code>activate</code> and <code>move</code>. What code does, such as opening rows or scrolling to one, isn't
+        counted, and which rows or columns is never recorded.
     </li>
 </ul>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">What's recorded</TbText>
 <TbText>
     Every instrument of the <code>@TelemetryCatalog.MeterName</code> meter, with its tags:
-    <code>trailblazor.telemetry_name</code> is the control's <code>TelemetryName</code> and
-    <code>trailblazor.component</code> its type, such as <code>TbButton</code>. Each also carries any tags your app
+    <code>trailblazor.telemetry_name</code> is the control's <code>TelemetryName</code>,
+    <code>trailblazor.component</code> its type, such as <code>TbButton</code>, and <code>trailblazor.action</code>,
+    on the uses of a component that does more than one thing, what it did. Each also carries any tags your app
     adds.
 </TbText>
 <div class="docs-api" tabindex="0" role="region" aria-label="The Trailblazor meter's instruments">
