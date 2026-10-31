@@ -4688,8 +4688,10 @@
         cursor: pointer;
     }
 
-    .tb-date-range__day:hover:not([aria-disabled="true"]) {
-        background: var(--tb-color-neutral-hover);
+    /* Days in or previewing the range keep their own colors under the pointer. */
+    .tb-date-range__day:hover:not([aria-disabled="true"], .tb-date-range__day--selected, .tb-date-range__day--start,
+        .tb-date-range__day--end, [data-preview]) {
+        background: var(--tb-color-neutral-subtle);
     }
 
     .tb-date-range__day:focus-visible {
@@ -4709,9 +4711,7 @@
     }
 
     .tb-date-range__day--start,
-    .tb-date-range__day--end,
-    .tb-date-range__day--start:hover,
-    .tb-date-range__day--end:hover {
+    .tb-date-range__day--end {
         border-radius: var(--tb-radius-sm);
         background: var(--tb-color-primary);
         color: var(--tb-color-on-primary);

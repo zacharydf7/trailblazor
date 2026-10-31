@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Testing.Playwright;
 
@@ -275,11 +276,16 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Calendar_ShouldHaveNoAccessibilityViolations_WhenOpen(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);
-        await Day(page, "Monday, June 22, 2026").ClickAsync();
+        await Day(page, "Monday, June 15, 2026").HoverAsync();
+        var hovered = await page.RunAxe(AxeTests.WcagAA);
+        var day = Day(page, "Monday, June 22, 2026");
+        await day.ClickAsync();
+        // The click's round trip to the server adds the start class after ClickAsync returns.
+        await Expect(day).ToHaveClassAsync(new Regex("tb-date-range__day--start"));
 
-        var result = await page.RunAxe(AxeTests.WcagAA);
+        var chosen = await page.RunAxe(AxeTests.WcagAA);
 
-        Assert.Empty(result.Violations.Select(violation =>
+        Assert.Empty(hovered.Violations.Concat(chosen.Violations).Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
 }
