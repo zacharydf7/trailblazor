@@ -73,7 +73,7 @@
                 {
                     <tr data-part="failed" class="tb-data-grid__status">
                         <td colspan="@ColumnCount">
-                            <span>@(Labels.LoadFailed ?? Localizer[TbStrings.DataGridLoadFailed])</span>
+                            <span>@LoadFailedLabel</span>
                             <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="RefreshAsync">
                                 @(Labels.Retry ?? Localizer[TbStrings.DataGridRetry])
                             </TbButton>
@@ -92,7 +92,7 @@
                         <td colspan="@ColumnCount">
                             @if (EmptyContent is null)
                             {
-                                @(Labels.Empty ?? Localizer[TbStrings.DataGridEmpty])
+                                @EmptyLabel
                             }
                             else
                             {

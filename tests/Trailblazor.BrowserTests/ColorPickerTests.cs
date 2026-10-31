@@ -135,7 +135,7 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Clear_ShouldEmptyTheColor_WhenClicked(string browser)
+    public async Task Clear_ShouldEmptyTheColorAndFocusTheBox_WhenClicked(string browser)
     {
         var page = await OpenAsync(browser, "/color-picker");
 
@@ -143,6 +143,7 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("accent")).ToHaveTextAsync("none");
         await Expect(Box(page)).ToHaveValueAsync("");
+        await Expect(Box(page)).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

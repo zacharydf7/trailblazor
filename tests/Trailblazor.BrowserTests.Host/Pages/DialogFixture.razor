@@ -24,6 +24,7 @@
     </TbButton>
     <TbButton OnClick="() => HintedAsync(locked: false)">Hinted</TbButton>
     <TbButton OnClick="() => HintedAsync(locked: true)">Hinted locked</TbButton>
+    <TbButton OnClick="SuggestAsync">Suggest</TbButton>
     <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
 </TbStack>
 <output data-testid="result">@_result</output>
@@ -62,6 +63,12 @@
         var options = new DialogOptions { DismissOnEscape = !locked };
         var result = await Dialogs.ShowAsync<HintedDialog, string>("Hinted", options: options);
         _result = result.Confirmed ? "hinted saved" : "hinted cancelled";
+    }
+
+    private async Task SuggestAsync()
+    {
+        var result = await Dialogs.ShowAsync<SuggestDialog, string>("Suggest");
+        _result = result.Confirmed ? "suggest saved" : "suggest cancelled";
     }
 
     private async Task PlacedAsync(DialogPosition position, bool modal = true) =>

@@ -517,6 +517,38 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void DataProvider_ShouldSayTheLoadFailed_WhenALoadFails()
+    {
+        var announcer = Render<AnnouncerHost>();
+
+        RenderProvided(_ => throw new InvalidOperationException("Down"));
+
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Couldn't load the rows.", announcer.Find("[role=status] p").TextContent));
+    }
+
+    [Fact]
+    public void DataProvider_ShouldSayThereIsNothingToShow_WhenALoadFindsNoRows()
+    {
+        var announcer = Render<AnnouncerHost>();
+
+        RenderProvided(_ => Task.FromResult(new GridResult<Trail>([], 0)));
+
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Nothing to show.", announcer.Find("[role=status] p").TextContent));
+    }
+
+    [Fact]
+    public void DataProvider_ShouldSayNothing_WhenALoadFindsRows()
+    {
+        var announcer = Render<AnnouncerHost>();
+
+        RenderProvided(_ => Task.FromResult(new GridResult<Trail>(Trails, Trails.Count)));
+
+        Assert.Empty(announcer.FindAll("[role=status] p"));
+    }
+
+    [Fact]
     public void Render_ShouldShowTheEmptyContent_WhenThereAreNoRows()
     {
         var cut = RenderTrails([], parameters => parameters

@@ -1,11 +1,12 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Trailblazor;
 
 internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptions, IAnnouncer announcer,
-    TimeProvider time, ILogger<ToastService>? logger = null) : IToastService
+    ITbLocalizer localizer, TimeProvider time, ILogger<ToastService>? logger = null) : IToastService
 {
     // An app can show toasts off the dispatcher, such as from a hub handler, while the hosts render them, so the list
     // is replaced rather than changed.
@@ -104,16 +105,23 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
     {
         { StayOpen: true } => null,
         { Duration: { } duration } => duration,
+        // An action mustn't time out before the user reaches it (WCAG 2.2.1).
+        { Action: not null } => null,
         _ when tone is Tone.Danger => null,
         _ => Settings.Duration,
     };
 
-    // The title comes first, as it shows, so "Upload failed. The file is too large." reads as one message.
+    // The title comes first, as it shows, so "Upload failed. The file is too large." reads as one message. An action
+    // is named after it, with the key that reaches it.
     private void Announce(string message, Tone tone, ToastOptions options)
     {
-        var title = options.Title?.Trim();
-        var text = string.IsNullOrEmpty(title) ? message
-            : title[^1] is '.' or '!' or '?' ? $"{title} {message}" : $"{title}. {message}";
+        var text = Sentences(options.Title?.Trim(), message);
+        if (options.Action is { } action)
+        {
+            text = Sentences(text, string.Format(CultureInfo.CurrentCulture, localizer[TbStrings.ToastActionAvailable],
+                action.Text));
+        }
+
         if (tone is Tone.Danger or Tone.Warning)
         {
             announcer.Assertive(text);
@@ -123,4 +131,7 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
             announcer.Polite(text);
         }
     }
+
+    private static string Sentences(string? first, string second) => string.IsNullOrEmpty(first) ? second
+        : first[^1] is '.' or '!' or '?' ? $"{first} {second}" : $"{first}. {second}";
 }

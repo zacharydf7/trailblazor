@@ -20,6 +20,16 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldFocusTheGroupsFirstRadio_WhenASubmitFailsOnARadioGroupFirst(string browser)
+    {
+        var page = await OpenAsync(browser, "/form-group-first");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Book" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Radio, new() { Name = "Meadow" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Form_ShouldTurnOnTheButtonAndSubmit_WhenEveryFieldPasses(string browser)
     {
         var page = await OpenAsync(browser, "/examples/form");

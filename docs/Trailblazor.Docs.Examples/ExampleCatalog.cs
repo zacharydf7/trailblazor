@@ -504,7 +504,8 @@ public static class ExampleCatalog
             [
                 "A `form` element (built on `EditForm`); give it an `aria-label` to make it a landmark, as here.",
                 "When a submit fails, every field shows its messages, which are linked to it with `aria-describedby` "
-                    + "and announced, and focus moves to the first field with `aria-invalid`.",
+                    + "and announced, and focus moves to the first field with `aria-invalid`, or into a radio or "
+                    + "checkbox group where its `FocusAsync()` would.",
                 "`@bind-IsValid` checks the fields' `Validation`, and with `DataAnnotations` the model's annotations, "
                     + "without showing messages, so the user isn't told off before they start; it is for turning a "
                     + "button on and off. When the app calls `AddValidation` and marks the model "
@@ -795,6 +796,7 @@ public static class ExampleCatalog
                     + "with `Alpha`), so a static form posts a hex color, as typed.",
                 "`ReadOnly` keeps the color from changing: the text can't be edited, the picker buttons turn off and "
                     + "the clear button hides.",
+                "The clear button empties the color and puts focus back in the text box.",
             ],
             Target = new("textbox", "Trail marker"),
             Blocks = ["tb-field", "tb-color-picker"],
@@ -890,8 +892,9 @@ public static class ExampleCatalog
                     + "its own. A tooltip that only repeats that element's `aria-label` isn't added, so it isn't read "
                     + "twice.",
                 "It shows at once on focus and after a short delay on hover. Moving the pointer onto the tooltip "
-                    + "keeps it open, and Escape hides it. `ShowDelay` and `HideDelay` change the delays for one "
-                    + "tooltip, and `options.Tooltips` in `AddTrailblazor` for the whole app.",
+                    + "keeps it open, and Escape hides it, without also closing a dialog it is in. `ShowDelay` and "
+                    + "`HideDelay` change the delays for one tooltip, and `options.Tooltips` in `AddTrailblazor` for "
+                    + "the whole app.",
                 "`Content` can hold formatted text, such as a shortcut in `<kbd>`, which is read as part of the "
                     + "description. The tooltip can't be reached with the keyboard, so it holds no links or buttons; "
                     + "use a popover for those.",
@@ -958,9 +961,9 @@ public static class ExampleCatalog
                 "On opening, focus goes to an element marked `autofocus`, or else the first field, or the dialog "
                     + "itself with `InitialFocus = DialogFocus.Dialog`. On closing, it goes back to whatever opened "
                     + "the dialog.",
-                "Escape cancels the topmost dialog unless `DismissOnEscape` is false; a menu or select open "
-                    + "inside it closes first. A click that starts and ends on the backdrop cancels a modal unless "
-                    + "`DismissOnBackdrop` is false.",
+                "Escape cancels the topmost dialog unless `DismissOnEscape` is false; a menu, select, autocomplete "
+                    + "list or tooltip open inside it, or a drag, takes the key first. A click that starts and ends "
+                    + "on the backdrop cancels a modal unless `DismissOnBackdrop` is false.",
                 "`ConfirmAsync` and `AlertAsync` open an `alertdialog` described by its message. The alert's tone icon "
                     + "is decorative, so say what happened in the message.",
                 "A `TbDialogDescription` describes any dialog with `aria-describedby`, so screen readers read it with "
@@ -1110,7 +1113,10 @@ public static class ExampleCatalog
                     + "the arrows extends a `Multiple` selection, and Ctrl+A selects every row.",
                 "A row is named by everything it shows, its `ItemEnd` content included, so keep actions there short "
                     + "or give icon buttons an `AriaLabel`.",
-                "Children that load show a loading row, and a load that fails shows a row that offers to try again.",
+                "Children that load show a loading row, and a load that fails is read out and shows a row that "
+                    + "offers to try again. The arrows reach both rows; Enter on the failed one tries again, and focus "
+                    + "moves on to the children once they arrive.",
+                "In a right-to-left layout, Right and Left swap, as the chevrons do.",
                 "Rows written as nested `TbTreeItem`s work the same. Before the page is interactive, each renders a "
                     + "plain row, open to `InitialExpandDepth`.",
                 "With `OnDrop`, rows move by dragging with a mouse, pen or finger (a finger holds still for a moment "
@@ -1164,8 +1170,9 @@ public static class ExampleCatalog
                 "Pages come with a line such as \"1–5 of 7\" and a `TbPagination`; `PageSizes` adds a list of page "
                     + "sizes.",
                 "While rows load the table is `aria-busy`. A `DataProvider` gets the page and sorts it asks for, and "
-                    + "a new request cancels the last one. A failed load offers to try again, and `RefreshAsync` "
-                    + "loads again after a filter changes.",
+                    + "a new request cancels the last one. A failed load is read out and offers to try again, a load "
+                    + "with no rows is read out too, and `RefreshAsync` loads again after a filter changes. With "
+                    + "`EmptyContent`, set `Labels.Empty` to what screen readers should hear instead.",
                 "Every control in it is a native button, link or input, reached with Tab. Only a pointer clicks a "
                     + "row, so whatever `OnRowClick` does needs a button in a cell too.",
             ],
@@ -1205,8 +1212,9 @@ public static class ExampleCatalog
                 "A `navigation` landmark named by `AriaLabel` (\"Pagination\" by default); name each one when a page "
                     + "has several.",
                 "Each page is a button named \"Page 3\", and the current one has `aria-current=\"page\"`. The "
-                    + "Previous, Next, First and Last buttons are named, and turn off at either end. The ellipses are "
-                    + "hidden from screen readers.",
+                    + "Previous, Next, First and Last buttons are named, and turn off at either end but stay "
+                    + "focusable, so focus stays on Next after it reaches the last page. Focus stays on a chosen page "
+                    + "as the pages around it shift. The ellipses are hidden from screen readers.",
                 "Every control is its own tab stop, as in a list of links. In compact mode the page box is named "
                     + "\"Page\"; typing a page and pressing Enter, or leaving the box, goes there.",
                 "With `PageHref` every item is a link, so the pages work before the page is interactive. All the "
@@ -1270,8 +1278,11 @@ public static class ExampleCatalog
                 "Toasts are read out as they appear: Danger and Warning interrupt, the others wait. They never "
                     + "take focus themselves.",
                 "F8 moves focus to the newest toast's first button, and Escape sends it back to where it was.",
-                "A toast's timer pauses while the pointer is over it or it has focus, and Danger toasts stay "
-                    + "until they are dismissed unless given a `Duration`.",
+                "A toast's timer pauses while the pointer is over it or it has focus. Danger toasts and toasts "
+                    + "with an `Action` stay until they are dismissed unless given a `Duration`, so the action can't "
+                    + "time out unseen.",
+                "A toast's `Action` is read out after its message, as in \"Undo available, press F8.\" Offer the "
+                    + "same action somewhere else in the app too, since a toast can be dismissed before it is used.",
                 "The toasts sit in a region named \"Notifications\".",
                 "A `Title` is read out before the message. The tone's icon is decorative, since the text says the "
                     + "same; `Content` shows in place of the message, which is still what screen readers hear.",

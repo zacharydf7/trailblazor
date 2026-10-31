@@ -1,0 +1,9 @@
+@inherits TbDialog<string>
+
+<TbAutocomplete TValue="string" Label="Trail" @bind-Value="_trail" Items="Trails" />
+
+@code {
+    private static readonly string[] Trails = ["Ridge loop", "River walk", "Rim trail"];
+
+    private string? _trail;
+}

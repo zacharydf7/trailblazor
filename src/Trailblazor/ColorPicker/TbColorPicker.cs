@@ -215,10 +215,15 @@ public partial class TbColorPicker : IAsyncDisposable
         }
     }
 
-    private Task ClearAsync()
+    // The Clear button goes away with the color, so focus moves to the box rather than dropping to the page.
+    private async Task ClearAsync()
     {
         _shownValue = null;
-        return SetValueAsync(null);
+        await SetValueAsync(null);
+        if (!_disposed)
+        {
+            await _input.FocusAsync();
+        }
     }
 
     private bool IsChosen(string swatch) => Color == Read(swatch);

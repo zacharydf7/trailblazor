@@ -41,17 +41,19 @@ public class TbPaginationTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldTurnOffTheStepsAtEachEnd_WhenOnTheFirstOrLastPage()
+    public void Render_ShouldTurnOffTheStepsAtEachEndButKeepThemFocusable_WhenOnTheFirstOrLastPage()
     {
         var cut = RenderPagination(page: 1, count: 3, showFirstLast: true);
+        bool Off(string part) => cut.Find($"[data-part={part}]").GetAttribute("aria-disabled") == "true"
+            && !cut.Find($"[data-part={part}]").HasAttribute("disabled");
 
-        Assert.True(cut.Find("[data-part=previous]").HasAttribute("disabled"));
-        Assert.True(cut.Find("[data-part=first]").HasAttribute("disabled"));
-        Assert.False(cut.Find("[data-part=next]").HasAttribute("disabled"));
+        Assert.True(Off("previous"));
+        Assert.True(Off("first"));
+        Assert.False(Off("next"));
         cut.Render(parameters => parameters.Add(pagination => pagination.Page, 3));
 
-        Assert.True(cut.Find("[data-part=next]").HasAttribute("disabled"));
-        Assert.True(cut.Find("[data-part=last]").HasAttribute("disabled"));
+        Assert.True(Off("next"));
+        Assert.True(Off("last"));
     }
 
     [Fact]

@@ -1,0 +1,18 @@
+@page "/form-group-first"
+
+@* A required radio group comes first, so a failed submit has to focus into its fieldset. *@
+<TbForm aria-label="Campsite">
+    <TbRadioGroup TValue="string" Label="Site" @bind-Value="_site" Required Validation="RequireSite">
+        <TbRadio Value="@("meadow")">Meadow</TbRadio>
+        <TbRadio Value="@("ridge")">Ridge</TbRadio>
+    </TbRadioGroup>
+    <TbTextField Label="Name" @bind-Value="_name" />
+    <TbButton Type="ButtonType.Submit">Book</TbButton>
+</TbForm>
+
+@code {
+    private string? _site;
+    private string? _name;
+
+    private static IEnumerable<string> RequireSite(string? site) => site is null ? ["Choose a site."] : [];
+}

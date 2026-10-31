@@ -18,6 +18,8 @@
     <output data-testid="checked">@string.Join(", ", _checked.Order())</output>
     <TbTreeView TItem="Place" AriaLabel="Remote" Items="Remote" KeySelector="place => place.Id"
                 LoadChildrenAsync="LoadAsync" />
+    <TbTreeView TItem="Place" AriaLabel="Flaky" Items="Flaky" KeySelector="place => place.Id"
+                LoadChildrenAsync="LoadFlakyAsync" />
 </TbStack>
 
 @code {
@@ -29,11 +31,14 @@
 
     private static readonly Place[] Remote = [new(10, "Archive", null)];
 
+    private static readonly Place[] Flaky = [new(20, "Outpost", null)];
+
     private IReadOnlyCollection<object> _selected = [];
     private IReadOnlyCollection<object> _gear = [];
     private IReadOnlyCollection<object> _checked = [];
     private string? _activated;
     private string? _info;
+    private int _flakyLoads;
 
     private void Activate(Place place) => _activated = place.Name;
 
@@ -42,6 +47,18 @@
     {
         await Task.Delay(300, token);
         return [new(11, "2025", null), new(12, "2026", null)];
+    }
+
+    // The first load fails, and the retry is slow enough for a test to act on its loading row.
+    private async Task<IEnumerable<Place>> LoadFlakyAsync(Place place, CancellationToken token)
+    {
+        if (++_flakyLoads == 1)
+        {
+            throw new InvalidOperationException("Offline");
+        }
+
+        await Task.Delay(1000, token);
+        return [new(21, "Cabin", null)];
     }
 
     private sealed record Place(int Id, string Name, Place[]? Children)

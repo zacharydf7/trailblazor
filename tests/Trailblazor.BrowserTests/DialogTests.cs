@@ -257,15 +257,40 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Dialog_ShouldCancel_WhenEscapeIsPressedWithATooltipOpen(string browser)
+    public async Task Dialog_ShouldHideTheTooltipFirstAndCancelNext_WhenEscapeIsPressedWithATooltipOpen(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");
         await page.GetByRole(AriaRole.Button, new() { Name = "Hinted", Exact = true }).ClickAsync();
-        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Your full name" })).ToBeVisibleAsync();
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Your full name" });
+        await Expect(tooltip).ToBeVisibleAsync();
 
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(tooltip).ToBeHiddenAsync();
+        await page.WaitForTimeoutAsync(300);
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Hinted" })).ToBeVisibleAsync();
         await page.Keyboard.PressAsync("Escape");
 
         await Expect(page.GetByTestId("result")).ToHaveTextAsync("hinted cancelled");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldCloseTheSuggestionsFirstAndCancelNext_WhenEscapeIsPressedWithThemOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Suggest" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Suggest" });
+        var trail = dialog.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await trail.FillAsync("Ri");
+        await Expect(dialog.GetByRole(AriaRole.Option, new() { Name = "Ridge loop" })).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.WaitForTimeoutAsync(300);
+        await Expect(dialog).ToBeVisibleAsync();
+        await Expect(trail).ToHaveValueAsync("Ri");
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("suggest cancelled");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

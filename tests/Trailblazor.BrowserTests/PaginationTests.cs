@@ -11,7 +11,7 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
         Navigation(page, pagination).GetByRole(AriaRole.Button, new() { Name = $"Page {number}", Exact = true });
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Pagination_ShouldGoToThePageAndShowItsNeighbors_WhenAPageIsChosenWithTheKeyboard(string browser)
+    public async Task Pagination_ShouldGoToThePageAndKeepFocusOnIt_WhenAPageIsChosenWithTheKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/pagination");
         await Page(page, "Trail reports", 5).FocusAsync();
@@ -22,10 +22,11 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByText("Showing report page")).ToHaveTextAsync("Showing report page 5 of 20");
         await Expect(Page(page, "Trail reports", 6)).ToBeVisibleAsync();
         await Expect(Page(page, "Trail reports", 2)).ToHaveCountAsync(0);
+        await Expect(page.Locator(":focus")).ToHaveAttributeAsync("aria-current", "page");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Pagination_ShouldStepAndStopAtTheEnds_WhenFirstPreviousNextAndLastAreUsed(string browser)
+    public async Task Pagination_ShouldStepStopAndKeepFocusAtTheEnds_WhenFirstPreviousNextAndLastAreUsed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/pagination");
         var camps = Navigation(page, "Campsites");
@@ -36,6 +37,12 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(camps.GetByRole(AriaRole.Button, new() { Name = "Next page" })).ToBeDisabledAsync();
         await camps.GetByRole(AriaRole.Button, new() { Name = "Previous page" }).ClickAsync();
         await Expect(text).ToHaveTextAsync("Showing campsite page 11 of 12");
+        var next = camps.GetByRole(AriaRole.Button, new() { Name = "Next page" });
+        await next.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(text).ToHaveTextAsync("Showing campsite page 12 of 12");
+        await Expect(next).ToBeDisabledAsync();
+        await Expect(next).ToBeFocusedAsync();
         await camps.GetByRole(AriaRole.Button, new() { Name = "First page" }).ClickAsync();
 
         await Expect(text).ToHaveTextAsync("Showing campsite page 1 of 12");

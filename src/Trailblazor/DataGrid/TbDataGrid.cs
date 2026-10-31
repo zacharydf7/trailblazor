@@ -178,6 +178,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private bool IsLoading => Loading || _loading;
 
+    private string LoadFailedLabel => Labels.LoadFailed ?? Localizer[TbStrings.DataGridLoadFailed];
+
+    private string EmptyLabel => Labels.Empty ?? Localizer[TbStrings.DataGridEmpty];
+
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
@@ -370,6 +374,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             _failed = true;
             ShowRows([]);
+            Announcer.Polite(LoadFailedLabel);
             await OnLoadFailed.InvokeAsync(exception);
         }
         finally
@@ -388,6 +393,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         ShowRows([.. result.Items]);
         _total = result.TotalCount;
+        if (_total == 0)
+        {
+            Announcer.Polite(EmptyLabel);
+        }
 
         // Fewer rows than before can leave the page past the last one, so the last page shows instead.
         if (_page > PageCount)

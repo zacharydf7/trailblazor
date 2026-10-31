@@ -5,8 +5,8 @@ namespace Trailblazor;
 /// <summary>How one toast behaves. Each call passes its own.</summary>
 public sealed record ToastOptions
 {
-    /// <summary>How long the toast stays. Defaults to the app-wide duration, or until dismissed for an error.
-    /// </summary>
+    /// <summary>How long the toast stays. Defaults to the app-wide duration, or until dismissed for an error or a
+    /// toast with an <see cref="Action"/>.</summary>
     public TimeSpan? Duration { get; init; }
 
     /// <summary>Keeps the toast until it's dismissed or updated, for messages such as "Uploading…".</summary>
@@ -16,7 +16,8 @@ public sealed record ToastOptions
     /// toast instead of adding another.</summary>
     public string? Key { get; init; }
 
-    /// <summary>A button on the toast, such as "Undo".</summary>
+    /// <summary>A button on the toast, such as "Undo". The toast then stays until dismissed unless given a
+    /// <see cref="Duration"/>, and screen readers hear that F8 reaches the button.</summary>
     public ToastAction? Action { get; init; }
 
     /// <summary>A heading above the message, such as "Upload failed". It is read out with the message.</summary>

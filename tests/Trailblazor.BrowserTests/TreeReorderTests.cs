@@ -170,6 +170,29 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldMirrorTheArrowKeys_WhenItIsLaidOutRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+        var tree = page.GetByRole(AriaRole.Tree, new() { Name = Plan });
+        await Expect(tree).ToHaveAttributeAsync("data-ready", "");
+        await tree.EvaluateAsync("tree => tree.dir = 'rtl'");
+        var day = Row(page, "Day 1");
+        await day.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(day).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(day).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Row(page, "Trailhead")).ToBeFocusedAsync();
+        await Row(page, "Pine Hollow").FocusAsync();
+        await page.Keyboard.PressAsync("Alt+Shift+ArrowRight");
+
+        await Expect(page.Locator("[data-part=announcer] [role=status] p").Last)
+            .ToHaveTextAsync("A stop belongs in a day.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldAddAStopWhereItsSlotSays_WhenTheSlotsButtonIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-view");

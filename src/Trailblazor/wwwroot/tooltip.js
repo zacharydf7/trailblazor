@@ -44,10 +44,17 @@ export function createTooltip(anchor, tooltip, options, delays) {
         clearTimeout(timer);
         timer = setTimeout(hide, delays.hide);
     };
+    // The Escape that hides a shown tooltip is used up, so a dialog around it stays open.
     const onKeyDown = event => {
-        if (event.key === 'Escape') {
-            hide();
+        if (event.key !== 'Escape') {
+            return;
         }
+
+        if (tooltip.matches(':popover-open')) {
+            event.preventDefault();
+        }
+
+        hide();
     };
 
     // The tooltip is inside the anchor, so moving onto it keeps it open; Escape always dismisses it (WCAG 1.4.13).

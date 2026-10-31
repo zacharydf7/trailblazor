@@ -102,10 +102,11 @@ export function openDialog(dialog, dotNet, options) {
     };
 
     // Escape is stopped on keydown: cancelling the dialog's cancel event fails on a second press in every engine.
-    // An open menu and a focused toast take Escape first; a tooltip, being a manual popover, doesn't.
+    // It is heard as it bubbles, so whatever inside used it first, such as an autocomplete list or a drag, keeps it.
+    // An open menu, a shown tooltip and a focused toast take Escape first too.
     const onKeyDown = event => {
-        if (event.key !== 'Escape' || stack.at(-1) !== entry
-            || dialog.querySelector('[popover]:not([popover="manual"]):popover-open')
+        if (event.key !== 'Escape' || event.defaultPrevented || stack.at(-1) !== entry
+            || dialog.querySelector('[popover]:not([popover="manual"]):popover-open, [role="tooltip"]:popover-open')
             || event.target.closest?.('[data-part="toaster"]')) {
             return;
         }
@@ -265,7 +266,7 @@ export function openDialog(dialog, dotNet, options) {
         }
     }
 
-    document.addEventListener('keydown', onKeyDown, { capture: true });
+    document.addEventListener('keydown', onKeyDown);
     dialog.addEventListener('cancel', onCancel);
     dialog.addEventListener('close', onClose);
     dialog.addEventListener('pointerdown', onPointerDown);
@@ -287,7 +288,7 @@ export function openDialog(dialog, dotNet, options) {
         }
 
         finished = true;
-        document.removeEventListener('keydown', onKeyDown, { capture: true });
+        document.removeEventListener('keydown', onKeyDown);
         dialog.removeEventListener('cancel', onCancel);
         dialog.removeEventListener('close', onClose);
         dialog.removeEventListener('pointerdown', onPointerDown);

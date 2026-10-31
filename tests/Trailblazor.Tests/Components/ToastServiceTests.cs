@@ -250,6 +250,35 @@ public class ToastServiceTests : BunitContext
     }
 
     [Fact]
+    public void Toast_ShouldStayOpenAndSayItsActionAndKey_WhenGivenAnAction()
+    {
+        var host = Render<ToastHost>();
+        var announcer = Render<AnnouncerHost>();
+
+        Toasts.Show("Deleted 3 trails", options: new() { Action = new("Undo", EventCallback.Empty) });
+        announcer.WaitForAssertion(() => Assert.Equal("Deleted 3 trails. Undo available, press F8.",
+            announcer.Find("[role=status] p").TextContent));
+        _time.Advance(TimeSpan.FromMinutes(1));
+
+        Assert.Single(host.FindAll("[data-part=toast]"));
+    }
+
+    [Fact]
+    public void Toast_ShouldCloseOnTime_WhenGivenAnActionAndADuration()
+    {
+        Render<ToastHost>();
+
+        var toast = Toasts.Show("Deleted", options: new()
+        {
+            Action = new("Undo", EventCallback.Empty),
+            Duration = TimeSpan.FromSeconds(10),
+        });
+        _time.Advance(TimeSpan.FromSeconds(10));
+
+        Assert.False(toast.IsOpen);
+    }
+
+    [Fact]
     public async Task Closed_ShouldSayWhyEachToastClosed_WhenTheyCloseInEachWay()
     {
         var host = Render<ToastHost>();

@@ -170,6 +170,49 @@ public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keyboard_ShouldReachAFailedRowRetryItAndFollowTheBranch_WhenALazyLoadFails(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        var tree = Tree(page, "Flaky");
+        await Expect(tree).ToHaveAttributeAsync("data-ready", "");
+        await Row(page, "Outpost", "Flaky").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        var failed = tree.Locator("[data-part=failed]");
+        await Expect(failed).ToBeVisibleAsync();
+        var retry = failed.GetByRole(AriaRole.Button, new() { Name = "Retry" });
+        await Expect(retry).ToHaveAttributeAsync("tabindex", "-1");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(failed).ToBeFocusedAsync();
+        await Expect(retry).ToHaveAttributeAsync("tabindex", "0");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(tree.Locator("[data-part=loading]")).ToBeFocusedAsync();
+
+        await Expect(Row(page, "Cabin", "Flaky")).ToBeFocusedAsync();
+        await Expect(page.Locator("[data-part=announcer] [role=status] p").First)
+            .ToHaveTextAsync("Couldn't load these items.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keyboard_ShouldKeepATabStopInTheTree_WhenFocusLeavesALoadingRowBeforeItGoes(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        var tree = Tree(page, "Flaky");
+        await Expect(tree).ToHaveAttributeAsync("data-ready", "");
+        await Row(page, "Outpost", "Flaky").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(tree.Locator("[data-part=failed]")).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(tree.Locator("[data-part=loading]")).ToBeFocusedAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Before" }).FocusAsync();
+
+        await Expect(Row(page, "Cabin", "Flaky")).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Before" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldExpandSelectAndCheckByPath_WhenGivenTheRowsTexts(string browser)
     {
         var page = await OpenAsync(browser, "/tree-view");

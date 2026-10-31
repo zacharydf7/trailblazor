@@ -13,6 +13,13 @@ export function createTreeView(tree, events) {
 
     const typing = createTypeahead();
     const rows = () => [...tree.querySelectorAll('[role="treeitem"][data-key]')];
+    // The arrows also reach a branch's loading or failed row, which has no key of its own.
+    const stops = () => [...tree.querySelectorAll('[role="treeitem"]')];
+    const statusRow = '[role="treeitem"]:is([data-part="loading"], [data-part="failed"])';
+    const ownerOf = row => {
+        const list = stops();
+        return list.slice(0, list.indexOf(row)).findLast(other => level(other) < level(row));
+    };
     const level = row => Number(row.getAttribute('aria-level'));
     // A virtualized tree renders only some rows, so a row next to another in the page may stand beyond rows left out.
     // It is the true neighbor only when every row between them is rendered; otherwise the server finds the row.
@@ -21,7 +28,7 @@ export function createTreeView(tree, events) {
     const place = row => Number(row.dataset.index);
     const total = () => Number(tree.dataset.rows);
     const joined = (from, to) => {
-        const shown = [...tree.querySelectorAll('[role="treeitem"]')];
+        const shown = stops();
         return Math.abs(place(to) - place(from)) === Math.abs(shown.indexOf(to) - shown.indexOf(from));
     };
 
@@ -29,7 +36,7 @@ export function createTreeView(tree, events) {
     // reaches its actions.
     const syncEnds = () => {
         const stop = tree.querySelector('[role="treeitem"][tabindex="0"]');
-        tree.querySelectorAll(':is([data-part="end"], [data-part="insert"]) '
+        tree.querySelectorAll(':is([data-part="end"], [data-part="insert"], [data-part="failed"]) '
             + ':is(a[href], button, input, select, textarea, [tabindex])')
             .forEach(control => {
                 // Writing only real changes keeps the observer below from hearing its own writes forever.
@@ -39,10 +46,13 @@ export function createTreeView(tree, events) {
                 }
             });
     };
-    const focusRow = target => {
+    const makeStop = target => {
         tree.querySelectorAll('[role="treeitem"][tabindex="0"]').forEach(other => { other.tabIndex = -1; });
         target.tabIndex = 0;
         syncEnds();
+    };
+    const focusRow = target => {
+        makeStop(target);
         if (document.activeElement !== target) {
             target.focus();
         }
@@ -56,28 +66,60 @@ export function createTreeView(tree, events) {
             events.invokeMethodAsync('OnItemOrder', ids);
         }
     };
+    // A loading or failed row goes once its branch loads or tries again, so focus in it, or the tab stop if focus has
+    // left the tree, moves on to the branch's first row, or back to the row it was for.
+    let focusedStatus = null;
+    const keepStatusFocus = () => {
+        if (!focusedStatus || focusedStatus.row.isConnected) {
+            return;
+        }
+
+        const { owner } = focusedStatus;
+        focusedStatus = null;
+        if (!owner?.isConnected) {
+            return;
+        }
+
+        const list = stops();
+        const after = list[list.indexOf(owner) + 1];
+        const target = after && level(after) > level(owner) ? after : owner;
+        if (document.activeElement === document.body || !document.activeElement) {
+            focusRow(target);
+        } else {
+            makeStop(target);
+        }
+    };
     const observer = new MutationObserver(() => {
+        keepStatusFocus();
         syncEnds();
         reportOrder();
         scheduleView();
     });
     // Every way focus reaches a row, a click included, makes it the tree's one tab stop.
     const onFocusIn = event => {
+        const row = event.target.closest(statusRow);
+        focusedStatus = row && { row, owner: ownerOf(row) };
         if (event.target.matches('[role="treeitem"][data-key]')) {
             focusRow(event.target);
             events.invokeMethodAsync('OnFocus', event.target.dataset.key);
+        } else if (event.target === row) {
+            focusRow(row);
         }
     };
     const onKeyDown = event => {
         // Keys pressed in a row's own controls, such as a field in its end slot, are theirs.
         const current = event.target;
-        if (!current.matches('[role="treeitem"][data-key]')) {
+        const status = current.matches(statusRow);
+        if (!current.matches('[role="treeitem"][data-key]') && !status) {
             return;
         }
 
-        if (event.altKey && event.shiftKey && moveKeys[event.key] && current.matches('[data-draggable]')) {
+        // Right to left, the arrows mirror as the chevrons do, so the server only hears the logical key.
+        const mirrored = { ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft' };
+        const key = getComputedStyle(tree).direction === 'rtl' ? mirrored[event.key] ?? event.key : event.key;
+        if (event.altKey && event.shiftKey && moveKeys[key] && current.matches('[data-draggable]')) {
             event.preventDefault();
-            events.invokeMethodAsync('OnKey', current.dataset.key, moveKeys[event.key], false, false);
+            events.invokeMethodAsync('OnKey', current.dataset.key, moveKeys[key], false, false);
             return;
         }
 
@@ -85,14 +127,15 @@ export function createTreeView(tree, events) {
             return;
         }
 
-        const list = rows();
+        const list = stops();
         const index = list.indexOf(current);
         const expanded = current.getAttribute('aria-expanded');
-        const send = key => events.invokeMethodAsync('OnKey', current.dataset.key, key, event.shiftKey,
-            event.ctrlKey || event.metaKey);
+        // A status row moves for the row it loads for, whose next row in the server's list is the one after it.
+        const id = status ? ownerOf(current)?.dataset.key : current.dataset.key;
+        const send = key => events.invokeMethodAsync('OnKey', id, key, event.shiftKey, event.ctrlKey || event.metaKey);
         const find = key => {
             if (!virtual()) {
-                return typing.find(list, current, key);
+                return typing.find(rows(), current, key);
             }
 
             events.invokeMethodAsync('OnFind', current.dataset.key, typing.type(key));
@@ -103,8 +146,18 @@ export function createTreeView(tree, events) {
             send(key);
             return null;
         };
+        // Only moving focus works on a status row, and Enter on a failed one tries again.
+        if (status && !['ArrowDown', 'ArrowUp', 'Home', 'End', 'ArrowLeft'].includes(key)) {
+            if (key === 'Enter' && current.matches('[data-part="failed"]')) {
+                event.preventDefault();
+                current.querySelector('button')?.click();
+            }
+
+            return;
+        }
+
         let next = null;
-        switch (event.key) {
+        switch (key) {
             case 'ArrowDown':
                 next = list[index + 1];
                 if (virtual() && (next ? !joined(current, next) : place(current) < total() - 1)) {
@@ -115,7 +168,7 @@ export function createTreeView(tree, events) {
             case 'ArrowUp':
                 next = list[index - 1];
                 if (virtual() && (next ? !joined(current, next) : place(current) > 0)) {
-                    next = far('Previous');
+                    next = status ? null : far('Previous');
                 }
 
                 break;
@@ -126,15 +179,13 @@ export function createTreeView(tree, events) {
                 }
 
                 break;
-            case 'End': {
+            case 'End':
                 next = list.at(-1);
-                const last = [...tree.querySelectorAll('[role="treeitem"]')].at(-1);
-                if (virtual() && !(place(last) === total() - 1 && joined(next, last))) {
+                if (virtual() && place(next) !== total() - 1) {
                     next = far('Last');
                 }
 
                 break;
-            }
             case 'ArrowRight':
                 if (expanded === 'false') {
                     send('ArrowRight');
@@ -147,9 +198,9 @@ export function createTreeView(tree, events) {
                 if (expanded === 'true') {
                     send('ArrowLeft');
                 } else {
-                    next = list.slice(0, index).findLast(other => level(other) < level(current));
+                    next = ownerOf(current);
                     if (virtual() && level(current) > 1 && !(next && joined(next, current))) {
-                        next = far('Parent');
+                        next = status ? null : far('Parent');
                     }
                 }
 
@@ -180,7 +231,7 @@ export function createTreeView(tree, events) {
         if (next) {
             focusRow(next);
             // Shift with an arrow extends a multiple selection to the row focus lands on.
-            if (event.shiftKey && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+            if (event.shiftKey && (event.key === 'ArrowDown' || event.key === 'ArrowUp') && next.dataset.key) {
                 events.invokeMethodAsync('OnKey', next.dataset.key, 'Extend', true, false);
             }
         }

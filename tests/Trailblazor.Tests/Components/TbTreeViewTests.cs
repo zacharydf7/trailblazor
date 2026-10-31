@@ -291,6 +291,19 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Expand_ShouldSayTheLoadFailed_WhenLoadingFails()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPlaces([new(1, "North")], parameters => parameters.Add(tree => tree.LoadChildrenAsync,
+            (_, _) => Task.FromException<IEnumerable<Place>>(new InvalidOperationException("Offline"))), nested: false);
+
+        Toggle(cut, "1");
+
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Couldn't load these items.", announcer.Find("[role=status] p").TextContent));
+    }
+
+    [Fact]
     public async Task ExpandAll_ShouldOpenEveryParent_WhenNoDepthIsGiven()
     {
         var cut = RenderPlaces(Nested);

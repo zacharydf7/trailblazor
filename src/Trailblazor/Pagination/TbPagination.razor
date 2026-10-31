@@ -34,11 +34,13 @@
         }
         else
         {
+            @* Keyed by page, so the button chosen keeps its focus when the pages shown shift around it. *@
+            var gap = "gap-start";
             @foreach (var page in PageRange.For(CurrentPage, Count, SiblingCount, BoundaryCount))
             {
                 @if (page is int number)
                 {
-                    <li>
+                    <li @key="number">
                         <TbButton Href="@PageHref?.Invoke(number)" Size="Size"
                                   Variant="@(number == CurrentPage ? Variant.Soft : Variant.Text)"
                                   Tone="@(number == CurrentPage ? Tone.Primary : Tone.Neutral)"
@@ -51,7 +53,8 @@
                 }
                 else
                 {
-                    <li aria-hidden="true" data-part="ellipsis" class="tb-pagination__ellipsis">…</li>
+                    <li @key="gap" aria-hidden="true" data-part="ellipsis" class="tb-pagination__ellipsis">…</li>
+                    gap = "gap-end";
                 }
             }
         }
@@ -138,6 +141,7 @@
     private RenderFragment Step(Icon icon, string label, int page, string part) =>
         @<TbIconButton Icon="icon" AriaLabel="@label" Href="@PageHref?.Invoke(Math.Clamp(page, 1, Count))" Size="Size"
                        Disabled="@(Disabled || page < 1 || page > Count || page == Page)"
+                       FocusableWhenDisabled="!Disabled"
                        OnClick="() => GoToAsync(page)"
                        data-part="@part" Class="tb-pagination__step" />;
 

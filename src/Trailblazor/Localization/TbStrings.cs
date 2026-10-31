@@ -318,6 +318,10 @@ public static class TbStrings
     /// <summary>"Match the device": names the theme picker's choice that follows the device's setting.</summary>
     public const string ThemeSystem = "Theme.System";
 
+    /// <summary>"{0} available, press F8.": read out after a toast's message when it has an action; {0} is the
+    /// action's text.</summary>
+    public const string ToastActionAvailable = "Toast.ActionAvailable";
+
     /// <summary>"Dismiss": names a toast's close button.</summary>
     public const string ToastDismiss = "Toast.Dismiss";
 
@@ -514,6 +518,7 @@ public static class TbStrings
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",
         [ThemeSystem] = "Match the device",
+        [ToastActionAvailable] = "{0} available, press F8.",
         [ToastDismiss] = "Dismiss",
         [ToastRegion] = "Notifications",
         [ToolbarMore] = "More",

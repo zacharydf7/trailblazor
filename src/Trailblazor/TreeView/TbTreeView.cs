@@ -1180,6 +1180,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         catch (Exception exception)
         {
             _failed.Add(node.Key);
+            Announcer.Polite(LoadFailedLabel);
             await OnLoadFailed.InvokeAsync(exception);
         }
         finally
