@@ -1137,7 +1137,9 @@ public static class ExampleCatalog
                 + "drag one row's path onto another's. Every row also carries `data-key`, `data-level` and "
                 + "`data-text`, and a row being dragged over carries `data-drop`. In a virtualized tree the helpers "
                 + "scroll until the row renders (a drag needs both rows in view together), and rows also carry "
-                + "`data-index` and `data-inside`, the number of rows in their branch.",
+                + "`data-index` and `data-inside`, the number of rows in their branch. A row's `data-key` is its "
+                + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
+                + "the text is empty or when another key has it.",
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
             "Shows items as rows of a table, with columns that sort, pages, and rows that can be selected.",
@@ -1173,7 +1175,10 @@ public static class ExampleCatalog
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
                 + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
                 + "`SortAsync(\"Name\", descending: true)`, `SelectAsync(...)` and `GoToPageAsync(2)` drive "
-                + "it. Rows carry `data-key` and `data-selected`, and cells `data-column`. In bUnit, find rows with "
+                + "it. Rows carry `data-key` and `data-selected`, and cells `data-column`, the field's path such "
+                + "as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its key's text for a "
+                + "string, number or date key, and a made-up id such as `key-3` otherwise, when the text is empty "
+                + "or when another key has it. In bUnit, find rows with "
                 + "`tr[data-part=row]` and their key.",
         },
         new("table", "Table", ExampleCategory.Content,

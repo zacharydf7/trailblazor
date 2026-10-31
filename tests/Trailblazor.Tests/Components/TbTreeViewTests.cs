@@ -201,6 +201,37 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldGiveEachRowItsOwnKey_WhenPlainItemsAreTheirOwnKeys()
+    {
+        var cut = Render<TbTreeView<Trailhead>>(parameters => parameters.Add(tree => tree.AriaLabel, "Trailheads")
+            .Add(tree => tree.Items, [new Trailhead("North"), new Trailhead("South")])
+            .Add(tree => tree.ItemText, trailhead => trailhead.Name));
+
+        var keys = cut.FindAll("[role=treeitem]").Select(row => row.GetAttribute("data-key")).ToList();
+
+        Assert.Equal(2, keys.Distinct().Count());
+    }
+
+    [Fact]
+    public void Render_ShouldGiveEachRowItsOwnKey_WhenTwoKeysHaveTheSameText()
+    {
+        var cut = Render<TbTreeView<Place>>(parameters => parameters.Add(tree => tree.AriaLabel, "Places")
+            .Add(tree => tree.Items, [new Place(1, "North"), new Place(2, "South")])
+            .Add(tree => tree.KeySelector, place => place.Id == 2 ? "1" : place.Id));
+
+        var keys = cut.FindAll("[role=treeitem]").Select(row => row.GetAttribute("data-key")).ToList();
+
+        Assert.Equal("1", keys[0]);
+        Assert.NotEqual(keys[0], keys[1]);
+    }
+
+    // A plain class, whose text is its type's name, so its rows need made-up keys.
+    private sealed class Trailhead(string name)
+    {
+        public string Name { get; } = name;
+    }
+
+    [Fact]
     public async Task Expand_ShouldLoadTheChildrenAndShowLoadingMeanwhile_WhenTheyLoadLazily()
     {
         var load = new TaskCompletionSource<IEnumerable<Place>>();

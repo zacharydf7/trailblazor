@@ -21,6 +21,10 @@ public class TbDataGridTests : BunitContext
 
     private sealed record Trail(int Id, string Name, double LengthKm, DateOnly LastHiked);
 
+    private sealed record Town(string City);
+
+    private sealed record Trip(Town From, Town To);
+
     // A class compared by reference, so a new one never equals the last.
     private sealed class Holder(string name)
     {
@@ -68,19 +72,120 @@ public class TbDataGridTests : BunitContext
     [Fact]
     public void Render_ShouldThrow_WhenTwoRowsHaveTheSameKey()
     {
-        var error = Assert.Throws<InvalidOperationException>(() => Render<TbDataGrid<Place>>(parameters => parameters
-            .Add(grid => grid.Items, [new Place("North"), new Place("South")]).Add(grid => grid.AriaLabel, "Places")));
+        var error = Assert.Throws<InvalidOperationException>(() => RenderTrails([Trails[0], Trails[0] with { }]));
 
         Assert.Contains("KeySelector", error.Message);
     }
 
     [Fact]
+    public async Task RowClick_ShouldFindTheRowClicked_WhenPlainItemsAreTheirOwnKeys()
+    {
+        Place? clicked = null;
+        var cut = Render<TbDataGrid<Place>>(parameters => parameters
+            .Add(grid => grid.Items, [new Place("North"), new Place("South")]).Add(grid => grid.AriaLabel, "Places")
+            .Add(grid => grid.OnRowClick, (Place place) => clicked = place)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Place>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Place>.Field), (Expression<Func<Place, object?>>)(place =>
+                    place.Name));
+                builder.CloseComponent();
+            })));
+        var keys = cut.FindAll("tr[data-part=row]").Select(row => row.GetAttribute("data-key")!).ToList();
+
+        await cut.InvokeAsync(() => Events().OnRowClick(keys[1]));
+
+        Assert.Equal(2, keys.Distinct().Count());
+        Assert.Equal("South", clicked?.Name);
+    }
+
+    [Fact]
+    public async Task RowClick_ShouldFindTheRowClicked_WhenTwoKeysHaveTheSameText()
+    {
+        Trail? clicked = null;
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, [Trails[0], Trails[1]])
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.ChildContent, (RenderFragment)Columns)
+            .Add(grid => grid.KeySelector, trail => trail.Id == 2 ? "1" : trail.Id)
+            .Add(grid => grid.OnRowClick, (Trail trail) => clicked = trail));
+        var keys = cut.FindAll("tr[data-part=row]").Select(row => row.GetAttribute("data-key")!).ToList();
+
+        await cut.InvokeAsync(() => Events().OnRowClick(keys[1]));
+
+        Assert.Equal("1", keys[0]);
+        Assert.NotEqual(keys[0], keys[1]);
+        Assert.Equal(2, clicked?.Id);
+    }
+
+    [Fact]
+    public void Render_ShouldNameAColumnByItsLastMember_WhenItsFieldIsntAPlainChain()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trail>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trail>.Field), (Expression<Func<Trail, object?>>)(trail =>
+                    new[] { trail }[0].Name));
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal("Name", cut.Find("th").GetAttribute("data-column"));
+    }
+
+    [Fact]
+    public void Render_ShouldKeepARecordKeysFieldsOutOfThePage_WhenTheItemIsItsOwnKey()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.ChildContent, (RenderFragment)Columns));
+
+        Assert.DoesNotContain("LengthKm", cut.Find("tr[data-part=row]").GetAttribute("data-key"));
+    }
+
+    [Fact]
+    public void Render_ShouldNameColumnsByTheirFieldsPath_WhenTwoFieldsEndInTheSameName()
+    {
+        var cut = Render<TbDataGrid<Trip>>(parameters => parameters
+            .Add(grid => grid.Items, [new Trip(new Town("Bend"), new Town("Sisters"))])
+            .Add(grid => grid.AriaLabel, "Trips")
+            .Add(grid => grid.KeySelector, trip => trip.From.City)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trip>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trip>.Field), (Expression<Func<Trip, object?>>)(trip =>
+                    trip.From.City));
+                builder.CloseComponent();
+                builder.OpenComponent<TbColumn<Trip>>(2);
+                builder.AddAttribute(3, nameof(TbColumn<Trip>.Field), (Expression<Func<Trip, object?>>)(trip =>
+                    trip.To.City));
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal(["From.City", "To.City"],
+            cut.FindAll("th").Select(header => header.GetAttribute("data-column")!));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenTwoColumnsShareAnId()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trail>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "name");
+                builder.CloseComponent();
+                builder.OpenComponent<TbColumn<Trail>>(2);
+                builder.AddAttribute(3, nameof(TbColumn<Trail>.Id), "name");
+                builder.CloseComponent();
+            }))));
+
+        Assert.Contains("\"name\"", error.Message);
+    }
+
+    [Fact]
     public void DataProvider_ShouldThrowNotOfferToTryAgain_WhenTwoRowsHaveTheSameKey()
     {
-        var error = Assert.Throws<InvalidOperationException>(() => Render<TbDataGrid<Place>>(parameters => parameters
-            .Add(grid => grid.AriaLabel, "Places")
-            .Add(grid => grid.DataProvider, (GridRequest _, CancellationToken _) =>
-                Task.FromResult(new GridResult<Place>([new("North"), new("South")], 2)))));
+        var error = Assert.Throws<InvalidOperationException>(() => RenderProvided(_ =>
+            Task.FromResult(new GridResult<Trail>([Trails[0], Trails[0] with { }], 2))));
 
         Assert.Contains("KeySelector", error.Message);
     }

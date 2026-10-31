@@ -15,6 +15,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly List<TbColumn<TItem>> _columns = [];
     private readonly Dictionary<object, TItem> _selection = [];
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
+    private readonly KeyIds _ids = new();
     private List<TItem> _rows = [];
     private List<GridSort> _sorts = [];
     private int _total;
@@ -51,7 +52,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Gives each item a key that stays the same across loads, such as its id, so selection follows the item.
     /// Defaults to the item itself, which suits items compared by value, such as records; each row's key must differ.
-    /// </summary>
+    /// A row's <c>data-key</c> is the key's text when it is a string, number, date or other formattable value, and a
+    /// made-up id such as <c>key-3</c> otherwise, or when that text is empty or another key already has it.</summary>
     [Parameter]
     public Func<TItem, object>? KeySelector { get; set; }
 
@@ -272,6 +274,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         StateHasChanged();
     }
 
+    // A sort names its column by key, so two columns with one key would sort and mark each other. Checked as the grid
+    // renders, once every column has its parameters, since columns reordered in a loop change one at a time.
+    private void CheckColumnKeys()
+    {
+        if (_columns.GroupBy(column => column.Key).FirstOrDefault(keys => keys.Count() > 1) is { } clash)
+        {
+            throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} has two columns named \"{clash.Key}\"; " +
+                $"give one of them an {nameof(TbColumn<TItem>.Id)}.");
+        }
+    }
+
     internal void RemoveColumn(TbColumn<TItem> column)
     {
         if (!_disposed && _columns.Remove(column))
@@ -391,18 +404,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         ShowRows(_pageSize is { } size ? [.. arranged.Skip((_page - 1) * size).Take(size)] : arranged);
     }
 
-    // A row is found by its key's text when the browser reports a click, so no two rows may share one. A row that
-    // isn't shown has no element, so its reference goes before anything can scroll to it.
+    // Selection follows a row by its key, so no two rows may share one. A row that isn't shown has no element, so its
+    // reference goes before anything can scroll to it.
     private void ShowRows(List<TItem> rows)
     {
-        if (rows.Select(IdOf).Distinct().Count() != rows.Count)
+        var shown = rows.Select(KeyOf).ToHashSet();
+        if (shown.Count != rows.Count)
         {
             throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} has two rows with the same key; " +
                 $"give it a {nameof(KeySelector)} that gives each item a different key, such as its id.");
         }
 
         _rows = rows;
-        var shown = rows.Select(KeyOf).ToHashSet();
+        _ids.Keep(shown);
         foreach (var gone in _rowRefs.Keys.Where(key => !shown.Contains(key)).ToList())
         {
             _rowRefs.Remove(gone);
@@ -559,7 +573,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private object KeyOf(TItem item) => KeySelector?.Invoke(item) ?? item!;
 
-    private string IdOf(TItem item) => Convert.ToString(KeyOf(item), CultureInfo.InvariantCulture) ?? "";
+    private string IdOf(TItem item) => _ids.IdOf(KeyOf(item));
 
     private string LabelOf(TItem item) => RowLabel?.Invoke(item)
         ?? _columns.Select(column => column.TextOf(item)).FirstOrDefault(text => text is not null) ?? IdOf(item);

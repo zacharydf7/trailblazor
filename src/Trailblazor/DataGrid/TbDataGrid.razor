@@ -7,6 +7,7 @@
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    @{ CheckColumnKeys(); }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
         <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
                class="tb-data-grid__table">

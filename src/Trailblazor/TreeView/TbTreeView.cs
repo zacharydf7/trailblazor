@@ -22,6 +22,8 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     private readonly HashSet<object> _failed = [];
     private readonly Dictionary<object, bool?> _checkStates = [];
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
+    // Kept across rebuilds, so a row keeps its id and the focus held by that id.
+    private readonly KeyIds _ids = new();
     // Rows the filter opened that the user closed; they open again when the filter finds other rows.
     private readonly HashSet<object> _closedWhileFiltering = [];
     private List<TreeNode<TItem>> _roots = [];
@@ -68,7 +70,9 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
     /// <summary>Gives each item a key that stays the same across renders, such as its id. Expansion, selection,
     /// checks and focus follow keys, so they survive when <see cref="Items"/> is replaced with new instances.
-    /// Defaults to the item itself, which suits items compared by value, such as strings and records.</summary>
+    /// Defaults to the item itself, which suits items compared by value, such as strings and records. A row's
+    /// <c>data-key</c> is the key's text when it is a string, number, date or other formattable value, and a made-up id
+    /// such as <c>key-3</c> otherwise, or when that text is empty or another key already has it.</summary>
     [Parameter]
     public Func<TItem, object>? KeySelector { get; set; }
 
@@ -583,7 +587,14 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         return _closedWhileFiltering.Count != count;
     }
 
+    // Rebuilds the nodes, then forgets the ids of keys no longer in the tree; those still in it keep theirs.
     private void Build()
+    {
+        BuildNodes();
+        _ids.Keep(_nodes.Keys.ToHashSet());
+    }
+
+    private void BuildNodes()
     {
         _nodes.Clear();
         _byId.Clear();
@@ -655,10 +666,10 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     private TreeNode<TItem> Add(TItem item, TreeNode<TItem>? parent)
     {
         var key = KeyOf(item);
-        var id = Convert.ToString(key, CultureInfo.InvariantCulture) ?? "";
-        if (_nodes.ContainsKey(key) || _byId.ContainsKey(id))
+        var id = _ids.IdOf(key);
+        if (_nodes.ContainsKey(key))
         {
-            throw new InvalidOperationException($"{nameof(TbTreeView<TItem>)} has two items with the key {id}; " +
+            throw new InvalidOperationException($"{nameof(TbTreeView<TItem>)} has two items with the key {key}; " +
                 $"each item's {nameof(KeySelector)} must give a different key.");
         }
 

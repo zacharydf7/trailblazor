@@ -33,7 +33,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     public string? Title { get; set; }
 
     /// <summary>Names the column in a <see cref="GridSort"/> and in its cells' <c>data-column</c>. Defaults to the
-    /// <see cref="Field"/>'s name, or else the <see cref="Title"/>.</summary>
+    /// <see cref="Field"/>'s path from the item, such as <c>Shipping.City</c>, or else the <see cref="Title"/>. No two
+    /// columns of a grid may share one.</summary>
     [Parameter]
     public string? Id { get; set; }
 
@@ -73,7 +74,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public string? Class { get; set; }
 
-    internal string Key => Id ?? MemberName ?? Title ?? throw new InvalidOperationException(
+    internal string Key => Id ?? MemberPath ?? MemberName ?? Title ?? throw new InvalidOperationException(
         $"A {nameof(TbColumn<TItem>)} needs a {nameof(Field)}, an {nameof(Id)} or a {nameof(Title)}.");
 
     internal string Heading => Title ?? (MemberName is { } name ? Words(name) : "");
@@ -83,6 +84,9 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     internal bool CanSort => Sortable && (SortBy is not null || _value is not null);
 
     private string? MemberName => (Body(_field) as MemberExpression)?.Member.Name;
+
+    // The field's members from the item down, such as Shipping.City, so two fields ending in City don't clash.
+    private string? MemberPath => Body(_field) is MemberExpression member ? PathOf(member) : null;
 
     private Type? FieldType => Body(_field)?.Type;
 
@@ -172,6 +176,13 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
             _ => null,
         };
     }
+
+    private static string? PathOf(MemberExpression member) => member.Expression switch
+    {
+        ParameterExpression => member.Member.Name,
+        MemberExpression parent when PathOf(parent) is { } path => $"{path}.{member.Member.Name}",
+        _ => null,
+    };
 
     // A field written as item => item.Count reaches here boxed, as a conversion around the member.
     private static Expression? Body(Expression<Func<TItem, object?>>? field) =>
