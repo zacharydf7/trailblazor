@@ -18,6 +18,20 @@ public interface IDialogService
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>;
 
+    /// <summary>Opens a dialog whose content type is chosen at run time, such as from a list, and returns at once, as
+    /// <see cref="Show{TDialog, TResult}"/> does. <paramref name="dialog"/> must be a
+    /// <see cref="TbDialogContent{TResult}"/>, and <paramref name="parameters"/> are its parameters by name.</summary>
+    /// <exception cref="ArgumentException"><paramref name="dialog"/> isn't a <see cref="TbDialogContent{TResult}"/>
+    /// that can be created, or a name in <paramref name="parameters"/> isn't one of its parameters or its value doesn't
+    /// fit the parameter's type.</exception>
+    DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string title,
+        IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null);
+
+    /// <summary>Opens a dialog whose content type is chosen at run time and waits until it closes. See
+    /// <see cref="ShowDynamic{TResult}"/>.</summary>
+    Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string title,
+        IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null);
+
     /// <summary>Asks a yes-or-no question and returns whether it was confirmed. The buttons say the app's text for
     /// <see cref="TbStrings.DialogConfirm"/> and <see cref="TbStrings.DialogCancel"/>, "OK" and "Cancel" in English,
     /// unless <paramref name="confirmText"/> and <paramref name="cancelText"/> say otherwise. With a

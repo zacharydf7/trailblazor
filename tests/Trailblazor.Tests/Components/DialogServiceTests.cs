@@ -393,6 +393,65 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task ShowDynamic_ShouldOpenTheContentTypeWithItsParametersByName_WhenGivenAType()
+    {
+        var host = Render<DialogHost>();
+        Type chosen = typeof(GreetingDialog);
+
+        var result = Dialogs.ShowDynamicAsync<string>(chosen, "Greeting",
+            new Dictionary<string, object?> { ["name"] = "Ada" });
+
+        Assert.Contains("Hello Ada", host.WaitForElement("dialog").TextContent);
+        await host.Find("[data-testid=accept]").ClickAsync(new());
+        Assert.Equal("Ada", (await result).Value);
+    }
+
+    [Fact]
+    public void ShowDynamic_ShouldRefuseATypeThatIsntContentForTheResult_WhenGivenOne()
+    {
+        var notContent = Assert.Throws<ArgumentException>(() =>
+            Dialogs.ShowDynamic<string>(typeof(string), "Greeting"));
+        var otherResult = Assert.Throws<ArgumentException>(() =>
+            Dialogs.ShowDynamic<bool>(typeof(GreetingDialog), "Greeting"));
+
+        var abstractContent = Assert.Throws<ArgumentException>(() =>
+            Dialogs.ShowDynamic<string>(typeof(TbDialogContent<string>), "Greeting"));
+
+        Assert.Equal("dialog", notContent.ParamName);
+        Assert.Equal("dialog", otherResult.ParamName);
+        Assert.Equal("dialog", abstractContent.ParamName);
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Fact]
+    public void ShowDynamic_ShouldRefuseAValueOfTheWrongType_WhenGivenOne()
+    {
+        var error = Assert.Throws<ArgumentException>(() => Dialogs.ShowDynamic<string>(typeof(GreetingDialog),
+            "Greeting", new Dictionary<string, object?> { ["Name"] = 42 }));
+        var empty = Dialogs.ShowDynamic<string>(typeof(GreetingDialog), "Greeting",
+            new Dictionary<string, object?> { ["Name"] = null });
+
+        var missing = Assert.Throws<ArgumentException>(() => Dialogs.ShowDynamic<string>(typeof(SmallDialog),
+            "Notes", new Dictionary<string, object?> { ["Lines"] = null }));
+
+        Assert.Equal("parameters", error.ParamName);
+        Assert.Contains("String", error.Message);
+        Assert.Contains("Int32", missing.Message);
+        Assert.Same(empty, Assert.Single(Dialogs.OpenDialogs));
+    }
+
+    [Fact]
+    public void ShowDynamic_ShouldRefuseANameThatIsntAParameter_WhenGivenOne()
+    {
+        var error = Assert.Throws<ArgumentException>(() => Dialogs.ShowDynamic<string>(typeof(GreetingDialog),
+            "Greeting", new Dictionary<string, object?> { ["Nickname"] = "Ada" }));
+
+        Assert.Equal("parameters", error.ParamName);
+        Assert.Contains("Nickname", error.Message);
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Fact]
     public void WindowState_ShouldRefuseToMinimize_WhenTheDialogIsNotMinimizable()
     {
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false });
@@ -740,6 +799,9 @@ public class DialogServiceTests : BunitContext
 
     private sealed class SmallDialog : TbDialogContent<string>
     {
+        [Parameter]
+        public int Lines { get; set; }
+
         protected override void OnInitialized() => Size = DialogSize.Small;
     }
 

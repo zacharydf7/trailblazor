@@ -1,4 +1,6 @@
 using System.Collections.Immutable;
+using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -34,6 +36,43 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string title,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
+
+    public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string title,
+        IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null)
+    {
+        if (dialog.IsAbstract || !typeof(TbDialogContent<TResult>).IsAssignableFrom(dialog))
+        {
+            throw new ArgumentException($"{dialog.Name} isn't a TbDialogContent<{typeof(TResult).Name}>.",
+                nameof(dialog));
+        }
+
+        // Blazor matches parameter names without regard to case, and finds a wrong name or value only as it renders.
+        foreach (var (name, value) in parameters ?? ImmutableDictionary<string, object?>.Empty)
+        {
+            var property = dialog.GetProperty(name,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if (property?.IsDefined(typeof(ParameterAttribute)) != true)
+            {
+                throw new ArgumentException($"{dialog.Name} has no parameter named {name}.", nameof(parameters));
+            }
+
+            var type = property.PropertyType;
+            var fits = value is null ? !type.IsValueType || Nullable.GetUnderlyingType(type) is not null
+                : type.IsInstanceOfType(value);
+            if (!fits)
+            {
+                throw new ArgumentException($"{dialog.Name}'s {property.Name} takes a {type.Name}.",
+                    nameof(parameters));
+            }
+        }
+
+        var values = parameters is null ? [] : new Dictionary<string, object?>(parameters);
+        return Open<TResult>(title, dialog, values, options ?? new(), isAlert: false);
+    }
+
+    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string title,
+        IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null) =>
+        ShowDynamic<TResult>(dialog, title, parameters, options).Result;
 
     public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
         string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null)

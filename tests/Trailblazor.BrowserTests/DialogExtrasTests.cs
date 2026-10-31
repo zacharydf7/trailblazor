@@ -5,6 +5,18 @@ namespace Trailblazor.BrowserTests;
 public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldOpenTheFormChosenFromAMenuByItsType_WhenAnItemIsChosen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open a form" }).ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Rename report" }).ClickAsync();
+
+        var rename = page.GetByRole(AriaRole.Dialog, new() { Name = "Rename report" });
+        await Expect(rename.GetByLabel("Name")).ToHaveValueAsync("Quarterly report");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldAskBeforeDiscardingTheNewName_WhenEscapeTheBackdropOrTheCloseButtonDismissIt(
         string browser)
     {
