@@ -5,7 +5,7 @@
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 
-<div @attributes="AdditionalAttributes" @ref="_root" style="@Style"
+<div @attributes="AdditionalAttributes" @ref="_root" data-part="splitter" style="@Style"
      class="@ClassNames.Join("tb-splitter", Vertical ? "tb-splitter--vertical" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>

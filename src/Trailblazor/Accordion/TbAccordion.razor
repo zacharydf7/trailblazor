@@ -6,8 +6,8 @@
 @inject JsModuleLoader Modules
 
 @* data-ready marks that the arrow keys work, which tests wait for. *@
-<div @attributes="AdditionalAttributes" @ref="_accordion" data-ready="@(_handle is null ? null : "")"
-     class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
+<div @attributes="AdditionalAttributes" @ref="_accordion" data-part="accordion"
+     data-ready="@(_handle is null ? null : "")" class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>
 

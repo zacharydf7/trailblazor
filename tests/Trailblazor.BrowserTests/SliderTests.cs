@@ -65,6 +65,7 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Slider(page, "Map brightness").FillAsync("80");
 
         await Expect(page.Locator(".tb-slider [data-part=value]").First).ToHaveTextAsync("80%");
+        await Expect(page.GetByText("Saved at")).ToHaveTextAsync("Saved at 80%");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

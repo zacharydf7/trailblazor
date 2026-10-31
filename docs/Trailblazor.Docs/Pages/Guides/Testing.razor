@@ -16,6 +16,13 @@
     <code>FakeBrowserService</code> that records what was copied, downloaded and saved; the
     <a href="guides/browser">browser guide</a> shows it.
 </TbText>
+<TbText>
+    Then call <code>SetRendererInfo</code>, last, since it starts the services: components read it to know whether the
+    page is interactive, and bUnit throws if it is missing. Interactive mode renders what a user sees once the page is
+    interactive. Static mode renders what a statically rendered or prerendered page shows, which differs for a few
+    components, such as a select that renders a native <code>&lt;select&gt;</code>; each component's page says how.
+    Register your own services, such as a <code>FakeTimeProvider</code>, before both calls.
+</TbText>
 <CodeBlock Label="A bUnit test" Code="@Bunit" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Playwright</TbText>
@@ -27,18 +34,55 @@
 </TbText>
 <CodeBlock Label="A Playwright test" Code="@Playwright" />
 
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Waiting for the page</TbText>
+<TbText>
+    A page shows before its event handlers are attached, so a click that comes too soon does nothing. Playwright's
+    <code>Expect</code> assertions retry, but clicks and key presses don't, so wait first:
+</TbText>
+<ul class="docs-notes">
+    <li>
+        For the page, when <code>Routes</code> is interactive, mark your layout once it is, as with
+        <code>&lt;main data-interactive="@@RendererInfo.IsInteractive"&gt;</code>, and wait for
+        <code>main[data-interactive]</code> after each navigation. When interactivity is set page by page, the layout
+        stays static, so put the marker on each interactive page's root instead.
+    </li>
+    <li>
+        For a component whose keys or pointer gestures need its script, wait for <code>data-ready</code> on it where
+        its page says so, such as a tree, a data grid, a splitter or an accordion.
+    </li>
+    <li>A menu's trigger gets <code>aria-expanded</code> once its menu can open.</li>
+    <li>
+        A data grid with a <code>DataProvider</code> sets <code>aria-busy</code> on its table while rows load; read the
+        rows once it clears.
+    </li>
+</ul>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Time and motion</TbText>
+<TbText>
+    Toasts, announcements and a text field's <code>UpdateDelay</code> run on timers. In bUnit, register a
+    <code>FakeTimeProvider</code> as the <code>TimeProvider</code> before <code>AddTrailblazor()</code> and advance it,
+    rather than waiting. A tooltip's delays run in the browser instead, so set its <code>ShowDelay</code> to zero or
+    use Playwright's <code>page.Clock</code>. In Playwright, open pages with
+    <code>ReducedMotion = ReducedMotion.Reduce</code>, and transitions finish at once.
+</TbText>
+<CodeBlock Label="Time and motion" Code="@TimeAndMotion" />
+
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Finding components</TbText>
 <TbText>
     Find components by role and accessible name rather than by CSS classes, which can change between versions. Buttons
-    are buttons, fields are found by their labels, a select is a <code>combobox</code> with <code>option</code>s, a
-    menu is a <code>menu</code> of <code>menuitem</code>s, a dialog is a <code>dialog</code> named by its title, a
-    popover's panel is a <code>dialog</code> named by its title or trigger, and tabs are <code>tab</code>s with
-    <code>tabpanel</code>s.
+    are buttons and text fields are found by their labels. A select or autocomplete is a <code>combobox</code> with
+    <code>option</code>s; find it with <code>GetByRole(AriaRole.Combobox, new() { Name = "Size" })</code>, since its
+    label names its list of options too. A menu is a <code>menu</code> of <code>menuitem</code>s, a dialog is a
+    <code>dialog</code> named by its title, a popover's panel is a <code>dialog</code> named by its title or trigger,
+    and tabs are <code>tab</code>s with <code>tabpanel</code>s.
 </TbText>
 <TbText>
     Every component also marks its parts with a stable <code>data-part</code> attribute, for the parts that have no
     role of their own, such as a field's <code>[data-part=helper]</code> text or <code>[data-part=error]</code>
-    message.
+    message. Each component's page lists its parts. What is read out goes into <code>TbRoot</code>'s
+    <code>[data-part=announcer]</code>, or a modal dialog's own, as a <code>p</code> in
+    <code>[data-part=polite]</code> or <code>[data-part=assertive]</code>; several can be there at once, so find
+    the one with your text.
 </TbText>
 <CodeBlock Label="Finding components" Code="@Locators" />
 
@@ -48,7 +92,11 @@
 
         public class SettingsPageTests : BunitContext
         {
-            public SettingsPageTests() => this.AddTrailblazor();
+            public SettingsPageTests()
+            {
+                this.AddTrailblazor();
+                SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+            }
 
             [Fact]
             public void Save_ShouldShowAToast_WhenClicked()
@@ -78,10 +126,25 @@
         await page.Tb().Popover("Filters").CloseAsync();
         """;
 
+    private const string TimeAndMotion = """
+        // bUnit: toasts close when the fake time passes their duration.
+        var time = new FakeTimeProvider();
+        Services.AddSingleton<TimeProvider>(time);
+        this.AddTrailblazor();
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        time.Advance(TimeSpan.FromSeconds(5));
+
+        // Playwright: a page with no transitions.
+        var page = await browser.NewPageAsync(new() { ReducedMotion = ReducedMotion.Reduce });
+        """;
+
     private const string Locators = """
         await page.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
         await page.GetByLabel("Name").FillAsync("Ada");
+        await page.GetByRole(AriaRole.Combobox, new() { Name = "Size" }).ClickAsync();
         await page.GetByRole(AriaRole.Dialog, new() { Name = "Rename" })
             .GetByRole(AriaRole.Button, new() { Name = "Close" }).ClickAsync();
+        await Expect(page.Locator("[data-part=polite] p").Filter(new() { HasText = "Saved." }).Last)
+            .ToBeAttachedAsync();
         """;
 }

@@ -514,7 +514,7 @@ public sealed class TbGridLocator(IPage page, string name)
 {
     private ILocator Table => page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
 
-    private ILocator Root => page.Locator(".tb-data-grid").Filter(new() { Has = Table });
+    private ILocator Root => page.Locator("[data-part=grid]").Filter(new() { Has = Table });
 
     /// <summary>The row with a cell whose text is exactly this.</summary>
     public ILocator Row(string cell) => Table.Locator("tbody tr[data-part=row]").Filter(new()
@@ -530,8 +530,8 @@ public sealed class TbGridLocator(IPage page, string name)
         return Row(row).Locator($"td[data-column=\"{id}\"]");
     }
 
-    /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it says so.
-    /// </summary>
+    /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it says so,
+    /// and waits for a <c>DataProvider</c>'s rows.</summary>
     public async Task SortAsync(string column, bool descending = false)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
@@ -539,13 +539,13 @@ public sealed class TbGridLocator(IPage page, string name)
         var wanted = descending ? "descending" : "ascending";
         // A plain click sorts by the column alone; after that it turns the column around, then stops sorting by it.
         const string state = "header => `${header.getAttribute('aria-sort')}|${header.closest('table')"
-            + ".querySelectorAll('.tb-data-grid__sort-order').length}`";
+            + ".querySelectorAll('[data-part=sort-order]').length}`";
         for (var clicks = 0; clicks < 4; clicks++)
         {
             var before = await header.EvaluateAsync<string>(state);
             if (before == $"{wanted}|0")
             {
-                return;
+                break;
             }
 
             await header.Locator("[data-part=sort]").ClickAsync();
@@ -554,6 +554,7 @@ public sealed class TbGridLocator(IPage page, string name)
         }
 
         await Assertions.Expect(header).ToHaveAttributeAsync("aria-sort", wanted);
+        await RowsLoadedAsync();
     }
 
     /// <summary>Selects the row with a cell whose text is exactly this, with its checkbox or radio button.</summary>
@@ -564,13 +565,18 @@ public sealed class TbGridLocator(IPage page, string name)
         await Assertions.Expect(Row(row)).ToHaveAttributeAsync("data-selected", "");
     }
 
-    /// <summary>Goes to this page of the rows and waits until it is current.</summary>
+    /// <summary>Goes to this page of the rows and waits until it is current and a <c>DataProvider</c>'s rows have
+    /// come.</summary>
     public async Task GoToPageAsync(int number)
     {
         var pages = Root.Locator("[data-part=pager] nav");
         await Assertions.Expect(pages).ToHaveAttributeAsync("aria-label", new Regex("."));
         await new TbPaginationLocator(page, (await pages.GetAttributeAsync("aria-label"))!).GoToPageAsync(number);
+        await RowsLoadedAsync();
     }
+
+    // The render that changes the header or pager marks the table busy, unless the app's change handler awaits first.
+    private Task RowsLoadedAsync() => Assertions.Expect(Table).Not.ToHaveAttributeAsync("aria-busy", "true");
 
     private ILocator Header(string column) => Table.Locator($"thead th[data-title=\"{column}\"]");
 }

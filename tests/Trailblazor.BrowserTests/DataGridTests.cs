@@ -98,10 +98,11 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         var hours = Table(page, "Hike log").Locator("tbody td[data-column=Hours]");
         await Expect(hours).ToHaveCountAsync(4);
 
+        // Read once, without retrying, so the helpers must have waited for the provider's rows.
         await log.SortAsync("Hours", descending: true);
-        await Expect(hours).ToHaveTextAsync(["7.0", "7.0", "7.0", "5.5"]);
+        Assert.Equal(["7.0", "7.0", "7.0", "5.5"], await hours.AllTextContentsAsync());
         await log.GoToPageAsync(2);
-        await Expect(hours.First).ToHaveTextAsync("5.5");
+        Assert.Equal("5.5", await hours.First.TextContentAsync());
         await (await log.CellAsync("Lake camp", "Hours")).ClickAsync();
 
         await Expect(log.Row("Lake camp")).ToHaveAttributeAsync("data-selected", "");

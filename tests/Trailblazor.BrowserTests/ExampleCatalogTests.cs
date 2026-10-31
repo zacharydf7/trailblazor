@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Docs.Examples;
 
 namespace Trailblazor.BrowserTests;
@@ -63,5 +64,96 @@ public class ExampleCatalogTests
         var embedded = typeof(Example).Assembly.GetManifestResourceNames().Where(name => name.StartsWith("Source/"));
 
         Assert.Equal(embedded.Order(), shown.Order());
+    }
+
+    // TbRoot's live regions, which the testing guide names rather than a component's page.
+    private static readonly string[] RootParts = ["announcer", "polite", "assertive"];
+
+    // Parts a folder passes in by name rather than writing them as an attribute, found by that quoted name.
+    private static readonly Dictionary<string, string[]> NamedParts = new()
+    {
+        ["Announcer"] = ["polite", "assertive"],
+        ["ColorPicker"] = ["hue", "saturation", "brightness", "alpha", "red", "green", "blue"],
+        ["Dialog"] = ["minimize", "maximize", "move", "resize"],
+        ["Pagination"] = ["first", "previous", "next", "last"],
+        ["Select"] = ["placeholder", "value"],
+    };
+
+    // Folders whose bases and children other components render, and the components whose pages may list their parts.
+    private static readonly Dictionary<string, string[]> SharedFolders = new()
+    {
+        ["Button"] = ["icon-button"],
+        ["Field"] =
+        [
+            "text-field", "number-field", "checkbox", "checkbox-group", "switch", "slider", "radio-group", "select",
+            "autocomplete", "color-picker", "file-upload", "date-range-picker", "listbox",
+        ],
+        ["Select"] = ["select", "listbox"],
+    };
+
+    [Fact]
+    public void DataParts_ShouldNameEveryPartTheLibraryHasAndNoOthers_WhenComparedWithItsSource()
+    {
+        var documented = ExampleCatalog.All.SelectMany(example => example.DataParts).Concat(RootParts).ToHashSet();
+        var inSource = SourceParts().SelectMany(folder => folder.Value).ToHashSet();
+
+        Assert.Empty(inSource.Except(documented).Order());
+        Assert.Empty(documented.Except(inSource).Order());
+    }
+
+    // A folder's parts belong to the components named after it, such as Checkbox's to checkbox and checkbox-group.
+    [Fact]
+    public void DataParts_ShouldListEachComponentsPartsAndNoOthers_WhenComparedWithItsFolder()
+    {
+        var folders = SourceParts();
+        // Each component goes to the longest folder name its own starts with, so text-field is TextField's, not Text's.
+        var owners = ExampleCatalog.All.ToLookup(example => folders.Keys
+            .Where(folder => example.Name.Replace("-", "").StartsWith(folder, StringComparison.OrdinalIgnoreCase))
+            .MaxBy(folder => folder.Length));
+        var wrong = folders.SelectMany(folder =>
+        {
+            var examples = owners[folder.Key].ToList();
+            if (examples.Count == 0)
+            {
+                return [];
+            }
+
+            var unlisted = folder.Value.Except(examples.SelectMany(example => example.DataParts))
+                .Select(part => $"{folder.Key} has {part}");
+            var gone = examples.SelectMany(example => example.DataParts.Except(folder.Value)
+                .Except(SharedFolders.Where(shared => shared.Value.Contains(example.Name))
+                    .SelectMany(shared => folders[shared.Key]))
+                .Select(part => $"{example.Name} lists {part}"));
+            return unlisted.Concat(gone);
+        });
+
+        Assert.Empty(wrong);
+    }
+
+    private static Dictionary<string, HashSet<string>> SourceParts()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!File.Exists(Path.Combine(root.FullName, "Trailblazor.slnx")))
+        {
+            root = root.Parent!;
+        }
+
+        var library = Path.Combine(root.FullName, "src", "Trailblazor");
+        // Markup, a render tree attribute and an attribute dictionary entry.
+        var part = new Regex(@"data-part=""([a-z0-9-]+)""|""data-part"",\s*""([a-z0-9-]+)""|"
+            + @"\[""data-part""\]\s*=\s*""([a-z0-9-]+)""");
+        // Comments name parts too, as the Classes records' summaries do, without rendering them.
+        var comments = new Regex(@"^\s*//[^\n]*|@\*[\s\S]*?\*@", RegexOptions.Multiline);
+        return Directory.EnumerateFiles(library, "*.*", SearchOption.AllDirectories)
+            .Where(file => file.EndsWith(".razor") || file.EndsWith(".cs"))
+            .Select(file => Path.GetRelativePath(library, file).Split(Path.DirectorySeparatorChar))
+            .Where(path => path.Length > 1 && path[0] is not ("obj" or "bin"))
+            .GroupBy(path => path[0], path => comments.Replace(File.ReadAllText(Path.Combine([library, .. path])), ""))
+            .ToDictionary(folder => folder.Key, folder => folder
+                .SelectMany(text => part.Matches(text))
+                .Select(match => match.Groups.Values.Skip(1).First(group => group.Success).Value)
+                .Concat(NamedParts.GetValueOrDefault(folder.Key, [])
+                    .Where(name => folder.Any(text => text.Contains($"\"{name}\""))))
+                .ToHashSet());
     }
 }

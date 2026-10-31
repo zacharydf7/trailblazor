@@ -30,6 +30,9 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // Extra testing advice for the page; text in backticks shows as code.
     public string? TestingTip { get; init; }
 
+    // The data-part names a test can find inside the component, in the order they appear.
+    public IReadOnlyList<string> DataParts { get; init; } = [];
+
     public IReadOnlyList<ExampleSource> Sources => [.. new[] { Component }.Concat(Parts).Select(ExampleSource.Of)];
 }
 
@@ -70,6 +73,9 @@ public sealed record ExampleSource(string File, string Text)
 // Every docs example. The docs site shows them, and the browser tests run axe against each one.
 public static class ExampleCatalog
 {
+    // The parts every labeled field has; start and end hold its adornments.
+    private static readonly string[] FieldParts = ["label", "control", "start", "end", "helper", "error"];
+
     public static IReadOnlyList<Example> All { get; } =
     [
         new("text", "Text", ExampleCategory.Content,
@@ -119,6 +125,7 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-divider"],
+            DataParts = ["content"],
         },
         new("surface", "Surface", ExampleCategory.Layout,
             "A raised panel with the app's surface color, an optional border and a shadow, for grouping content.",
@@ -173,6 +180,7 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Add item"),
             Blocks = ["tb-button"],
+            DataParts = ["start", "icon", "label", "spinner", "end"],
             TestingTip = "Check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, and a disabled "
                 + "button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`. To move focus to a "
                 + "button from code, `@ref` it and call `FocusAsync()`.",
@@ -193,6 +201,7 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Add"),
             Blocks = ["tb-button", "tb-icon-button"],
+            DataParts = ["icon", "spinner"],
         },
         new("button-group", "Button group", ExampleCategory.Actions,
             "Joins related buttons into one control, in a row or a column, with settings shared by all of them.",
@@ -227,6 +236,7 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Map view"),
             Blocks = ["tb-toggle-group", "tb-button"],
+            DataParts = ["item"],
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
                 + "`data-ready` attribute before testing the arrow keys.",
@@ -268,6 +278,7 @@ public static class ExampleCatalog
             ],
             Target = new("toolbar", "Trail notes"),
             Blocks = ["tb-toolbar"],
+            DataParts = ["overflow"],
             TestingTip = "Find a toolbar button by its `Text`, as `GetByRole(AriaRole.Button, new() { Name = \"Add a "
                 + "note\" })`. To test the overflow, set the page's viewport narrow, wait for the toolbar's "
                 + "`data-ready`, open the menu button named \"More\" and choose the `menuitem`.",
@@ -288,6 +299,7 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Add a step after Pack the tent"),
             Blocks = ["tb-insert-divider"],
+            DataParts = ["insert"],
             TestingTip = "Click the insert button by its name, as `GetByRole(AriaRole.Button, new() { Name = "
                 + "\"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
         },
@@ -352,10 +364,11 @@ public static class ExampleCatalog
             ],
             Target = new("separator", "Resize Trails"),
             Blocks = ["tb-splitter"],
+            DataParts = ["splitter", "pane", "separator"],
             TestingTip = "Resize with the keys, as `var separator = page.GetByRole(AriaRole.Separator, new() { Name "
                 + "= \"Resize Trails\" }); await separator.FocusAsync(); await page.Keyboard.PressAsync(\"End\");`, "
-                + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`. Wait for the splitter's "
-                + "`data-ready` first.",
+                + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`. Wait first for `data-ready` "
+                + "on the splitter's root, `[data-part=splitter]`.",
         },
         new("container", "Container", ExampleCategory.Layout,
             "Centers content and caps its width at a readable size.", typeof(ContainerExample))
@@ -388,6 +401,7 @@ public static class ExampleCatalog
             ],
             Target = new("alert") { Text = "A danger alert." },
             Blocks = ["tb-alert"],
+            DataParts = ["icon", "title", "message", "actions", "close"],
         },
         new("chip", "Chip", ExampleCategory.Content,
             "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.",
@@ -407,6 +421,7 @@ public static class ExampleCatalog
             ],
             Target = new("list", "Selected tags"),
             Blocks = ["tb-chip", "tb-chip-group"],
+            DataParts = ["check", "icon", "label", "action", "remove"],
             TestingTip = "Remove a chip with `GetByRole(AriaRole.Button, new() { Name = \"Remove Archive\" })`, and "
                 + "check a filter chip with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`.",
         },
@@ -426,6 +441,7 @@ public static class ExampleCatalog
             ],
             Target = new("list", "Campsites"),
             Blocks = ["tb-list"],
+            DataParts = ["start", "text", "description", "content", "end", "action"],
             TestingTip = "Find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
                 + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
                 + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`.",
@@ -451,6 +467,7 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-badge"],
+            DataParts = ["badge"],
             TestingTip = "The badge's element has `data-part=\"badge\"`. Its text holds the count, then the `Label` "
                 + "when there is one, so check it with `ToContainTextAsync`.",
         },
@@ -471,6 +488,7 @@ public static class ExampleCatalog
             ],
             Target = new("progressbar", "Upload"),
             Blocks = ["tb-progress"],
+            DataParts = ["bar", "ring", "indicator", "value", "label"],
             TestingTip = "Find it with `GetByRole(AriaRole.Progressbar, new() { Name = \"Upload\" })` and check "
                 + "`aria-valuenow`, or `aria-valuetext` when it has a `ValueFormatter`. The shown text is in "
                 + "`[data-part=label]` and `[data-part=value]`.",
@@ -490,6 +508,7 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Information about Project code"),
             Blocks = ["tb-label"],
+            DataParts = ["text", "info"],
             TestingTip = "Open the info with "
                 + "`await page.Tb().Popover(\"Information about Project code\").OpenAsync()`, which returns its panel. "
                 + "The info button's name contains the label, so find the control by role with an exact name, as "
@@ -566,6 +585,7 @@ public static class ExampleCatalog
             ],
             Target = new("textbox", "Name"),
             Blocks = ["tb-field"],
+            DataParts = [.. FieldParts, "input", "clear"],
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, register a `FakeTimeProvider` "
                 + "as the `TimeProvider` and advance it past the delay.",
@@ -591,9 +611,12 @@ public static class ExampleCatalog
                     + "asterisk it adds is hidden from screen readers.",
                 "`ReadOnly` keeps the value from changing by typing, the arrow keys or the step buttons, which turn "
                     + "off.",
+                "Before the page is interactive, a field with a `Format` is a plain number box, since a static form "
+                    + "posts numbers in no culture.",
             ],
             Target = new("spinbutton", "Quantity"),
             Blocks = ["tb-field"],
+            DataParts = [.. FieldParts, "input", "decrement", "increment"],
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
@@ -618,6 +641,7 @@ public static class ExampleCatalog
             ],
             Target = new("checkbox", "Email me updates"),
             Blocks = ["tb-checkbox"],
+            DataParts = ["input", "label", "helper", "error"],
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
             "Picks any number of options from a short list shown all at once.", typeof(CheckboxGroupExample))
@@ -638,6 +662,7 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Trail days"),
             Blocks = ["tb-checkbox-group", "tb-checkbox"],
+            DataParts = ["label", "helper", "error", "options", "input"],
             TestingTip = "Each option is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work "
                 + "on `GetByRole(AriaRole.Checkbox, ...)` inside the group. In bUnit, `Change(true)` or "
                 + "`Change(false)` on an option's `input` checks or unchecks it.",
@@ -661,6 +686,7 @@ public static class ExampleCatalog
             ],
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],
+            DataParts = ["input", "label", "helper", "error"],
         },
         new("slider", "Slider", ExampleCategory.Inputs,
             "Chooses a number, or a range, by dragging a thumb along a track or with the arrow keys.",
@@ -684,10 +710,13 @@ public static class ExampleCatalog
             ],
             Target = new("slider", "Map brightness"),
             Blocks = ["tb-slider"],
+            DataParts = ["label", "helper", "error", "value", "track", "fill", "mark", "input", "start-thumb",
+                "end-thumb"],
             TestingTip = "Set a slider with `await page.GetByRole(AriaRole.Slider, new() { Name = \"Map brightness\" "
-                + "}).FillAsync(\"80\")`, which Playwright supports for range inputs, and check it with "
-                + "`ToHaveValueAsync(\"80\")`. A range slider's thumbs are named \"Elevation Minimum\" and "
-                + "\"Elevation Maximum\".",
+                + "}).FillAsync(\"80\")`, which Playwright supports for range inputs. Then check what the app "
+                + "did with it, such as `Expect(page.GetByText(\"Saved at\")).ToHaveTextAsync(\"Saved at 80%\")`: "
+                + "`ToHaveValueAsync(\"80\")` passes as soon as the box changes, before the app hears of it. A range "
+                + "slider's thumbs are named \"Elevation Minimum\" and \"Elevation Maximum\".",
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
@@ -711,6 +740,7 @@ public static class ExampleCatalog
             ],
             Target = new("radiogroup", "Paper size"),
             Blocks = ["tb-radio-group", "tb-radio"],
+            DataParts = ["label", "helper", "error", "options", "input"],
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
@@ -743,6 +773,9 @@ public static class ExampleCatalog
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select"],
+            DataParts = [.. FieldParts, "input", "placeholder", "value",
+                "chips", "chip", "chip-remove", "clear", "chevron", "popup", "filter", "listbox", "group",
+                "group-label", "option", "no-results"],
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
@@ -772,6 +805,8 @@ public static class ExampleCatalog
             ],
             Target = new("combobox", "Trailhead"),
             Blocks = ["tb-field", "tb-select", "tb-autocomplete"],
+            DataParts = [.. FieldParts, "input", "clear", "listbox", "option",
+                "status"],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
                 + "search, and clicks the option by its name.",
@@ -800,6 +835,9 @@ public static class ExampleCatalog
             ],
             Target = new("textbox", "Trail marker"),
             Blocks = ["tb-field", "tb-color-picker"],
+            DataParts = [.. FieldParts, "input", "swatch-preview", "clear",
+                "eyedropper", "pad", "hue", "saturation", "brightness", "alpha", "red", "green", "blue", "swatches",
+                "swatch"],
             TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
                 + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it. In bUnit, "
                 + "set `FakeBrowserService.PickedColor` to test the eyedropper.",
@@ -821,9 +859,13 @@ public static class ExampleCatalog
                     + "user chooses again.",
                 "`ReadOnly` turns off the picker and the remove and clear buttons, and leaves the chosen files "
                     + "listed. A file input can't be read only, so the picker can't be focused.",
+                "Before the page is interactive it is the same file input, named for its form, so a static form "
+                    + "posts the chosen files; the list of files and the reasons for any left out show once it is "
+                    + "interactive.",
             ],
             Target = new("button", "Trail maps"),
             Blocks = ["tb-field", "tb-file-upload"],
+            DataParts = ["label", "helper", "error", "zone", "input", "files", "file", "remove", "rejected", "clear"],
             TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
                 + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
                 + "taken them. In bUnit, `FindComponent<InputFile>().UploadFiles(...)` chooses files.",
@@ -853,6 +895,8 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Trip dates"),
             Blocks = ["tb-field", "tb-date-range"],
+            DataParts = [.. FieldParts, "start-input", "end-input", "trigger",
+                "clear", "panel", "presets", "preset", "previous-month", "next-month", "month", "day"],
             TestingTip = "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
                 + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until the "
                 + "field has taken them. Its boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`.",
@@ -877,6 +921,7 @@ public static class ExampleCatalog
             ],
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],
+            DataParts = ["label", "helper", "error", "input", "group", "group-label", "option"],
             TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
                 + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
                 + "`<select>` too. For object values loaded again, give the list box a `Comparer`.",
@@ -902,6 +947,7 @@ public static class ExampleCatalog
             ],
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
             Blocks = ["tb-tooltip", "tb-tooltip-anchor"],
+            DataParts = ["tooltip", "arrow"],
             TestingTip = "Focus or hover the trigger, then find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
                 + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit the "
                 + "tooltip's text is in the markup from the start, with `role=\"tooltip\"`.",
@@ -941,6 +987,7 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Actions"),
             Blocks = ["tb-menu"],
+            DataParts = ["trigger", "menu", "icon", "label", "indicator", "chevron", "submenu-trigger", "group-label"],
             TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
                 + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. A group is "
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`.",
@@ -982,6 +1029,8 @@ public static class ExampleCatalog
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
+            DataParts = ["dialog", "header", "icon", "move", "minimize", "maximize", "close", "description", "body",
+                "actions", "resize"],
             TestingTip = "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
                 + "finishes when the dialog closes."
@@ -1004,6 +1053,7 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Find a trail") { OpenedBy = new("button", "Find a trail") },
             Blocks = ["tb-focus-scope"],
+            DataParts = ["focus-scope"],
         },
         new("popover", "Popover", ExampleCategory.Overlays,
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "
@@ -1024,6 +1074,7 @@ public static class ExampleCatalog
             ],
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },
             Blocks = ["tb-popover"],
+            DataParts = ["trigger", "panel", "title"],
             TestingTip = "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens it and returns the panel, a "
                 + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
                 + "ready.",
@@ -1043,6 +1094,7 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-overlay"],
+            DataParts = ["overlay", "scrim", "content"],
             TestingTip = "The overlay's element has `data-part=\"overlay\"`; click its `data-part=\"scrim\"` to "
                 + "close one with `CloseOnClick`. Before pressing Escape, wait for the overlay's `data-ready` "
                 + "attribute, which appears once Escape is wired.",
@@ -1070,6 +1122,7 @@ public static class ExampleCatalog
             ],
             Target = new("tablist", "Report sections"),
             Blocks = ["tb-tabs"],
+            DataParts = ["list", "tab", "tab-anchor", "icon", "panel"],
             TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
                 + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. Wait for the tab list's "
                 + "`data-ready` attribute before testing the arrow keys.",
@@ -1090,8 +1143,9 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
-            TestingTip = "The arrow keys, Home and End work once the accordion's script has attached, which its "
-                + "`data-ready` attribute marks; wait for it before pressing them.",
+            DataParts = ["accordion", "item", "heading", "trigger", "chevron", "panel"],
+            TestingTip = "The arrow keys, Home and End work once the accordion's script has attached, which "
+                + "`data-ready` on its root, `[data-part=accordion]`, marks; wait for it before pressing them.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
@@ -1137,6 +1191,8 @@ public static class ExampleCatalog
             ],
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],
+            DataParts = ["items", "item", "spacer", "toggle", "check", "content", "end", "insert", "loading", "failed",
+                "empty", "drop-reason"],
             TestingTip = "`page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows rows by "
                 + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
                 + "`CheckAsync(...)` and `ItemAsync(...)`; `DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` "
@@ -1145,7 +1201,8 @@ public static class ExampleCatalog
                 + "scroll until the row renders (a drag needs both rows in view together), and rows also carry "
                 + "`data-index` and `data-inside`, the number of rows in their branch. A row's `data-key` is its "
                 + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
-                + "the text is empty or when another key has it.",
+                + "the text is empty or when another key has it. Before pressing keys or dragging without the "
+                + "helpers, wait for the tree's `data-ready`.",
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
             "Shows items as rows of a table, with columns that sort, pages, and rows that can be selected.",
@@ -1178,15 +1235,20 @@ public static class ExampleCatalog
             ],
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
+            DataParts = ["grid", "scroll", "sort", "sort-order", "select-all", "row", "select", "loading", "empty",
+                "failed", "summary", "pager"],
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
                 + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
                 + "`SortAsync(\"Name\", descending: true)`, `SelectAsync(...)` and `GoToPageAsync(2)` drive "
-                + "it. Rows carry `data-key` and `data-selected`, and cells `data-column`, the field's path such "
-                + "as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its key's text for a "
-                + "string, number or date key, and a made-up id such as `key-3` otherwise, when the text is empty "
-                + "or when another key has it. In bUnit, find rows with "
-                + "`tr[data-part=row]` and their key.",
+                + "it; sorting and paging wait for a `DataProvider`'s rows, as long as `SortsChanged` and "
+                + "`PageChanged` handlers don't wait on anything first. Without the helpers, wait for the "
+                + "table's `aria-busy` to clear, and for `data-ready` on the grid's root, `[data-part=grid]`, "
+                + "before clicking a row. Rows carry `data-key` and `data-selected`, and cells `data-column`, the "
+                + "field's path such as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its "
+                + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
+                + "the text is empty or when another key has it. In bUnit, find rows with `tr[data-part=row]` and "
+                + "their key.",
         },
         new("table", "Table", ExampleCategory.Content,
             "A plain table written as markup, with the data grid's look.", typeof(TableExample))
@@ -1222,6 +1284,7 @@ public static class ExampleCatalog
             ],
             Target = new("navigation", "Trail reports"),
             Blocks = ["tb-pagination"],
+            DataParts = ["first", "previous", "page", "ellipsis", "page-box", "page-count", "next", "last"],
             TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
                 + "`Trailblazor.Testing.Playwright` clicks it, types it into a compact pagination's box, or steps "
                 + "with Next and Previous, then waits for it to be current.",
@@ -1264,6 +1327,7 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-skeleton"],
+            DataParts = ["content"],
             TestingTip = "Skeletons have no role, so wait for the loaded content rather than for them to go, or check "
                 + "that the region's `aria-busy` is `false`. Wrapped content is in the page while it loads, but "
                 + "hidden, so `ToBeVisibleAsync` waits for it to load.",
@@ -1290,6 +1354,7 @@ public static class ExampleCatalog
             ],
             Target = new("listitem") { Text = "Report saved", OpenedBy = new("button", "Save report") },
             Blocks = ["tb-toast", "tb-toaster"],
+            DataParts = ["toaster", "toast", "icon", "title", "message", "action", "close"],
             TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
                 + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. In bUnit, "
                 + "`await toast.Closed` says why it closed.",

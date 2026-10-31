@@ -2,7 +2,7 @@
 @typeparam TItem
 @inherits TbComponentBase
 
-<div @attributes="AdditionalAttributes" data-ready="@(_handle is null ? null : "")" style="@Style"
+<div @attributes="AdditionalAttributes" data-part="grid" data-ready="@(_handle is null ? null : "")" style="@Style"
      class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Class)">
@@ -49,7 +49,8 @@
                                                           ? BuiltInIcons.ArrowUp : BuiltInIcons.ArrowDown)" />
                                         @if (_sorts.Count > 1)
                                         {
-                                            <span class="tb-data-grid__sort-order" aria-hidden="true">@(at + 1)</span>
+                                            <span data-part="sort-order" class="tb-data-grid__sort-order"
+                                                  aria-hidden="true">@(at + 1)</span>
                                             <span class="tb-visually-hidden">
                                                 @Format(TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
                                                     Localizer[sort.Direction == SortDirection.Ascending
