@@ -18,7 +18,17 @@
                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join($"{Block}__input", Classes?.Input)"
                @onchange="OnChangeAsync" />
-        <span>@Label @RequiredMarker</span>
+        <span>
+            @if (ChildContent is null)
+            {
+                @Label
+            }
+            else
+            {
+                @ChildContent
+            }
+            @RequiredMarker
+        </span>
     </label>
     @Messages(Classes?.Helper, Classes?.Error)
 </div>
@@ -26,6 +36,11 @@
 @code {
     private ElementReference _input;
     private bool _shownIndeterminate;
+
+    /// <summary>The label as rich content, such as "I agree to the <c>&lt;a&gt;</c>terms<c>&lt;/a&gt;</c>", shown
+    /// in place of <see cref="TbFieldBase{TValue}.Label"/>. It names the control, so keep a link in it short.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>The color the control takes when on. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
     [Parameter]

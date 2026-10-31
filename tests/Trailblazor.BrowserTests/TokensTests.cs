@@ -165,7 +165,7 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await SetThemeAsync(page, theme);
 
         var failures = new List<string>();
-        foreach (var block in new[] { "tb-checkbox", "tb-switch", "tb-radio-group" })
+        foreach (var block in new[] { "tb-checkbox", "tb-switch", "tb-radio-group", "tb-checkbox-group" })
         {
             foreach (var tone in Tones)
             {

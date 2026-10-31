@@ -588,9 +588,34 @@ public static class ExampleCatalog
                     + "readers hear it as read only.",
                 "`Tone` colors the checked box, standing out from the page by at least 3:1 in every tone; warning "
                     + "takes its text color for that. `Size` scales the box and its label.",
+                "Rich content as `ChildContent` takes the place of `Label` and names the box, link text included, so "
+                    + "keep it short. A link inside opens without ticking the box.",
             ],
             Target = new("checkbox", "Email me updates"),
             Blocks = ["tb-checkbox"],
+        },
+        new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
+            "Picks any number of options from a short list shown all at once.", typeof(CheckboxGroupExample))
+        {
+            Api = [typeof(TbCheckboxGroup<>), typeof(TbCheckboxItem<>), typeof(ChoiceClasses)],
+            Accessibility =
+            [
+                "A `fieldset` named by its `Label` as the legend, with a native checkbox per option, each a tab stop "
+                    + "that Space toggles.",
+                "Helper text and messages describe the whole group. An error marks the group and every checkbox "
+                    + "invalid. ARIA has no required state for a group, so `Required` shows the marker; say what's "
+                    + "needed, such as \"Pick at least one\", in the helper text.",
+                "`Disabled` on the group turns off every option, and an option can be disabled on its own. "
+                    + "`ReadOnly` keeps each box focusable and posted, but a click or Space doesn't change it.",
+                "`FocusAsync()` moves focus to the first option that isn't disabled.",
+                "In forced-colors mode it falls back to the system's own controls, so it stays visible in every "
+                    + "high-contrast theme.",
+            ],
+            Target = new("group", "Trail days"),
+            Blocks = ["tb-checkbox-group", "tb-checkbox"],
+            TestingTip = "Each option is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work "
+                + "on `GetByRole(AriaRole.Checkbox, ...)` inside the group. In bUnit, `Change(true)` or "
+                + "`Change(false)` on an option's `input` checks or unchecks it.",
         },
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.", typeof(SwitchExample))
@@ -607,6 +632,7 @@ public static class ExampleCatalog
                     + "screen readers hear it as read only.",
                 "`Tone` colors the track when on, standing out from the page by at least 3:1 in every tone; warning "
                     + "takes its text color for that. `Size` scales the track and its label.",
+                "Rich content as `ChildContent` takes the place of `Label` and names the switch, so keep it short.",
             ],
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],

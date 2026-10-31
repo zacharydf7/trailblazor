@@ -7,10 +7,15 @@
     <TbCheckbox Label="Locked" Value="true" Disabled />
     <TbCheckbox Label="Terms accepted" Value="true" ReadOnly HelperText="Accepted when you signed up." />
     <TbCheckbox Label="Share my route" @bind-Value="_share" Tone="Tone.Success" Size="Size.Large" />
+    @* Rich content as the label; the link opens the terms without ticking the box. *@
+    <TbCheckbox @bind-Value="_agreed" Required>
+        I agree to the <a href="#terms">trail rules</a>
+    </TbCheckbox>
 </TbStack>
 
 @code {
     private bool _updates;
     private bool? _allFormats;
     private bool _share = true;
+    private bool _agreed;
 }

@@ -17,6 +17,15 @@ public class TbSwitchTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowRichContentAsTheLabelAndStayASwitch_WhenGivenChildContent()
+    {
+        var cut = Render<TbSwitch>(parameters => parameters.AddChildContent("Share with <strong>guides</strong>"));
+
+        Assert.Equal("guides", cut.Find("[data-part=label] strong").TextContent);
+        Assert.Equal("switch", cut.Find("input").GetAttribute("role"));
+    }
+
+    [Fact]
     public void Render_ShouldBeASwitch_WhenCalled()
     {
         var cut = Render<TbSwitch>(parameters => parameters.Add(toggle => toggle.Label, "Auto-save"));

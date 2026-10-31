@@ -144,6 +144,18 @@ public class TbCheckboxTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowRichContentAsTheLabel_WhenGivenChildContent()
+    {
+        var cut = Render<TbCheckbox<bool>>(parameters => parameters.Add(box => box.Label, "Unused")
+            .Add(box => box.Required, true).AddChildContent("I agree to the <a href=\"/terms\">terms</a>"));
+
+        var label = cut.Find("[data-part=label]");
+        Assert.Equal("/terms", label.QuerySelector("a")!.GetAttribute("href"));
+        Assert.DoesNotContain("Unused", label.TextContent);
+        Assert.NotNull(label.QuerySelector(".tb-field__required"));
+    }
+
+    [Fact]
     public void Render_ShouldNotCallScript_WhenTheValueIsNotMixed()
     {
         var cut = Render<TbCheckbox<bool?>>(parameters => parameters.Add(checkbox => checkbox.Value, false));

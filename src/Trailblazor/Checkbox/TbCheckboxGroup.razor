@@ -1,0 +1,83 @@
+@namespace Trailblazor
+@using System.Globalization
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@typeparam TItem
+@inherits TbFieldBase<IReadOnlyList<TItem>>
+@inject JsModuleLoader Modules
+
+@* ARIA gives a group no required state, so the legend's marker and the helper text say an answer is needed. The
+   invalid state goes on the group and on each checkbox, where screen readers announce it. *@
+<fieldset @attributes="AdditionalAttributes" @ref="_group" disabled="@Disabled" style="@Style"
+          aria-invalid="@(Invalid ? "true" : null)" aria-describedby="@DescribedBy"
+          class="@ClassNames.Join("tb-checkbox-group", ClassNames.Modifier("tb-checkbox-group", Tone),
+                     ClassNames.Modifier("tb-checkbox-group", Size),
+                     Errors.Count > 0 ? "tb-checkbox-group--invalid" : null,
+                     Disabled ? "tb-checkbox-group--disabled" : null, Class)">
+    @if (Label is not null)
+    {
+        <legend data-part="label" class="@ClassNames.Join("tb-checkbox-group__label", Classes?.Label)">
+            @Label @RequiredMarker
+        </legend>
+    }
+    <div data-part="options"
+         class="@ClassNames.Join("tb-checkbox-group__options", Row ? "tb-checkbox-group__options--row" : null)">
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
+    </div>
+    @Messages(Classes?.Helper, Classes?.Error)
+</fieldset>
+
+@code {
+    private ElementReference _group;
+
+    /// <summary>The group's <see cref="TbCheckboxItem{TItem}"/> options.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
+    /// still checks its option. Defaults to the values' own equality.</summary>
+    [Parameter]
+    public IEqualityComparer<TItem>? Comparer { get; set; }
+
+    /// <summary>The color a checked box takes. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Primary;
+
+    /// <summary>The size of the boxes and their labels. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>Lays the options out in a row instead of a column.</summary>
+    [Parameter]
+    public bool Row { get; set; }
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public ChoiceClasses? Classes { get; set; }
+
+    /// <inheritdoc />
+    public override async ValueTask FocusAsync(bool preventScroll = false)
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/field.js");
+        await module.InvokeVoidAsync("focusCheckbox", _group, preventScroll);
+    }
+
+    internal object? ItemName => InputNameAttribute;
+
+    internal bool Invalid => Errors.Count > 0;
+
+    internal string? FormatItem(TItem item) => BindConverter.FormatValue(item, CultureInfo.CurrentCulture)?.ToString();
+
+    internal bool IsChecked(TItem item) => Value?.Any(chosen => OptionValues.Same(Comparer, chosen, item)) ?? false;
+
+    // The change event belongs to the checked TbCheckboxItem, so the group re-renders itself for its messages. Checked
+    // values keep the order they were checked in.
+    internal async Task SetCheckedAsync(TItem item, bool isChecked)
+    {
+        var others = Value?.Where(chosen => !OptionValues.Same(Comparer, chosen, item)) ?? [];
+        await SetValueAsync(isChecked ? [.. others, item] : others.ToList());
+        StateHasChanged();
+    }
+}

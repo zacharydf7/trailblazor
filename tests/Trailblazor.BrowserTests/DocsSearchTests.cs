@@ -9,8 +9,9 @@ public class DocsSearchTests
     {
         var results = DocsSearch.Find("group");
 
-        Assert.Equal(["Button group", "Toggle group", "Radio group"], results.Take(3).Select(result => result.Title));
-        Assert.Contains(results.Skip(3), result => result.Title == "Surface");
+        Assert.Equal(["Button group", "Toggle group", "Checkbox group", "Radio group"],
+            results.Take(4).Select(result => result.Title));
+        Assert.Contains(results.Skip(4), result => result.Title == "Surface");
         Assert.Equal("components/button-group", results[0].Path);
     }
 

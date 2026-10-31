@@ -1,0 +1,29 @@
+@page "/static-checkbox-group"
+@attribute [ExcludeFromInteractiveRouting]
+
+<EditForm Model="Model" FormName="static-checkbox-group" OnValidSubmit="Post">
+    <TbCheckboxGroup Label="Days" @bind-Value="Model!.Days">
+        <TbCheckboxItem Value="DayOfWeek.Monday">Monday</TbCheckboxItem>
+        <TbCheckboxItem Value="DayOfWeek.Wednesday">Wednesday</TbCheckboxItem>
+        <TbCheckboxItem Value="DayOfWeek.Friday">Friday</TbCheckboxItem>
+    </TbCheckboxGroup>
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</EditForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm]
+    private Plan? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    // A group with nothing checked posts nothing at all.
+    private void Post() => _posted = Model!.Days is { Count: > 0 } days ? string.Join(", ", days) : "none";
+
+    private sealed class Plan
+    {
+        public IReadOnlyList<DayOfWeek>? Days { get; set; }
+    }
+}

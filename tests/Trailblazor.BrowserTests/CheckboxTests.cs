@@ -99,7 +99,7 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Controls_ShouldLeaveOnlyTheNativeMarks_WhenColorsAreForced(string browser)
     {
-        foreach (var example in new[] { "checkbox", "switch", "radio-group" })
+        foreach (var example in new[] { "checkbox", "switch", "radio-group", "checkbox-group" })
         {
             var page = await OpenAsync(browser, $"/examples/{example}", new() { ForcedColors = ForcedColors.Active });
             if (example == "checkbox")

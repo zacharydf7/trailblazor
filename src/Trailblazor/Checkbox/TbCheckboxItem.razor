@@ -1,0 +1,41 @@
+@namespace Trailblazor
+@typeparam TItem
+@inherits TbComponentBase
+
+@* Each option is drawn as a checkbox, so it shares the checkbox's label and input classes. *@
+<label @attributes="AdditionalAttributes" style="@Style"
+       class="@ClassNames.Join("tb-checkbox__label", Disabled ? "tb-checkbox-group__item--disabled" : null, Class)">
+    <input @attributes="Group!.InputAttributes" type="checkbox" data-part="input" name="@Group.ItemName"
+           class="@ClassNames.Join("tb-checkbox__input", Group.Classes?.Input)" value="@Group.FormatItem(Value)"
+           checked="@Group.IsChecked(Value)" disabled="@Disabled" aria-readonly="@(Group.ReadOnly ? "true" : null)"
+           aria-invalid="@(Group.Invalid ? "true" : null)"
+           @onchange="e => Group.SetCheckedAsync(Value, e.Value is true)" />
+    <span data-part="label">@ChildContent</span>
+</label>
+
+@code {
+    /// <summary>The value the group gains while this option is checked.</summary>
+    [Parameter, EditorRequired]
+    public TItem Value { get; set; } = default!;
+
+    /// <summary>The option's visible label, which can hold rich content such as a link.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Turns this option off while the rest of the group stays usable.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [CascadingParameter]
+    private TbCheckboxGroup<TItem>? Group { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Group is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbCheckboxItem<TItem>)} must be inside a {nameof(TbCheckboxGroup<TItem>)} of the same type.");
+        }
+    }
+}

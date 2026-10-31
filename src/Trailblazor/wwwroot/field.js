@@ -4,6 +4,10 @@ export function focusRadio(group, preventScroll) {
     radio?.focus({ preventScroll });
 }
 
+export function focusCheckbox(group, preventScroll) {
+    group.querySelector('input[type=checkbox]:enabled')?.focus({ preventScroll });
+}
+
 export function selectText(input) {
     input.focus();
     input.select();

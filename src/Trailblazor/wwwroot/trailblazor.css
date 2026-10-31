@@ -2433,7 +2433,8 @@
     /* A tone sets the checked fill and the mark on it; a size sets the box, the switch track and the text. */
     .tb-checkbox,
     .tb-switch,
-    .tb-radio-group {
+    .tb-radio-group,
+    .tb-checkbox-group {
         --tb-choice-fill: var(--tb-color-primary);
         --tb-choice-on-fill: var(--tb-color-on-primary);
         --tb-choice-box: 1.125rem;
@@ -2445,28 +2446,32 @@
 
     .tb-checkbox--neutral,
     .tb-switch--neutral,
-    .tb-radio-group--neutral {
+    .tb-radio-group--neutral,
+    .tb-checkbox-group--neutral {
         --tb-choice-fill: var(--tb-color-neutral);
         --tb-choice-on-fill: var(--tb-color-on-neutral);
     }
 
     .tb-checkbox--success,
     .tb-switch--success,
-    .tb-radio-group--success {
+    .tb-radio-group--success,
+    .tb-checkbox-group--success {
         --tb-choice-fill: var(--tb-color-success);
         --tb-choice-on-fill: var(--tb-color-on-success);
     }
 
     .tb-checkbox--danger,
     .tb-switch--danger,
-    .tb-radio-group--danger {
+    .tb-radio-group--danger,
+    .tb-checkbox-group--danger {
         --tb-choice-fill: var(--tb-color-danger);
         --tb-choice-on-fill: var(--tb-color-on-danger);
     }
 
     .tb-checkbox--info,
     .tb-switch--info,
-    .tb-radio-group--info {
+    .tb-radio-group--info,
+    .tb-checkbox-group--info {
         --tb-choice-fill: var(--tb-color-info);
         --tb-choice-on-fill: var(--tb-color-on-info);
     }
@@ -2474,14 +2479,16 @@
     /* The warning fill is too light to stand out from a light page, so checked warning controls take its text color. */
     .tb-checkbox--warning,
     .tb-switch--warning,
-    .tb-radio-group--warning {
+    .tb-radio-group--warning,
+    .tb-checkbox-group--warning {
         --tb-choice-fill: var(--tb-color-warning-text);
         --tb-choice-on-fill: var(--tb-color-surface);
     }
 
     .tb-checkbox--small,
     .tb-switch--small,
-    .tb-radio-group--small {
+    .tb-radio-group--small,
+    .tb-checkbox-group--small {
         --tb-choice-box: 1rem;
         --tb-switch-width: 1.75rem;
         --tb-switch-height: 1rem;
@@ -2491,7 +2498,8 @@
 
     .tb-checkbox--large,
     .tb-switch--large,
-    .tb-radio-group--large {
+    .tb-radio-group--large,
+    .tb-checkbox-group--large {
         --tb-choice-box: 1.375rem;
         --tb-switch-width: 2.75rem;
         --tb-switch-height: 1.5rem;
@@ -2614,14 +2622,17 @@
 
     .tb-checkbox--invalid .tb-checkbox__input,
     .tb-switch--invalid .tb-switch__input,
-    .tb-radio-group--invalid .tb-radio__input {
+    .tb-radio-group--invalid .tb-radio__input,
+    .tb-checkbox-group--invalid .tb-checkbox__input {
         border-color: var(--tb-color-danger-text);
     }
 
     .tb-checkbox--disabled .tb-checkbox__label,
     .tb-switch--disabled .tb-switch__label,
     .tb-radio--disabled,
-    .tb-radio-group--disabled .tb-radio {
+    .tb-radio-group--disabled .tb-radio,
+    .tb-checkbox-group__item--disabled,
+    .tb-checkbox-group--disabled .tb-checkbox__label {
         opacity: 0.55;
         cursor: default;
     }
@@ -2643,7 +2654,8 @@
         }
     }
 
-    .tb-radio-group {
+    .tb-radio-group,
+    .tb-checkbox-group {
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-2);
@@ -2654,18 +2666,21 @@
         color: var(--tb-color-text);
     }
 
-    .tb-radio-group__label {
+    .tb-radio-group__label,
+    .tb-checkbox-group__label {
         padding: 0;
         font-weight: var(--tb-font-weight-medium);
     }
 
-    .tb-radio-group__options {
+    .tb-radio-group__options,
+    .tb-checkbox-group__options {
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
     }
 
-    .tb-radio-group__options--row {
+    .tb-radio-group__options--row,
+    .tb-checkbox-group__options--row {
         flex-direction: row;
         flex-wrap: wrap;
         gap: var(--tb-space-1) var(--tb-space-4);
