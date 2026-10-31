@@ -299,6 +299,10 @@ public static class TbStrings
     /// <summary>"Clear": names a text field's clear button.</summary>
     public const string TextFieldClear = "TextField.Clear";
 
+    /// <summary>"{0} isn't complete.": shown when a masked text field has empty slots; {0} is the field's label.
+    /// </summary>
+    public const string TextFieldMaskIncomplete = "TextField.MaskIncomplete";
+
     /// <summary>"Theme": names a theme picker.</summary>
     public const string ThemePicker = "Theme.Picker";
 
@@ -448,6 +452,7 @@ public static class TbStrings
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
         [TextFieldClear] = "Clear",
+        [TextFieldMaskIncomplete] = "{0} isn't complete.",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

@@ -17,6 +17,8 @@
     <TbButton Variant="Variant.Outlined" OnClick="CheckHandleAsync">Check the handle</TbButton>
     <TbTextField Label="Notes" @bind-Value="_notes" Lines="3" MaxLines="8" Placeholder="Anything we should know?" />
     <TbTextField Label="Account" Value="@("trail-0042")" ReadOnly HelperText="Can't be changed." />
+    <TbTextField Label="Phone" @bind-Value="_phone" Mask="(000) 000-0000" data-testid="phone" />
+    <output data-testid="phone-echo">@_phone</output>
     <TbTextField Label="Trail code" @bind-Value="_code" Size="Size.Small" Clearable />
     <TbTextField Label="Destination" @bind-Value="_destination" Size="Size.Large" />
     <TbTextField Label="Call sign" @bind-Value="_callSign" Variant="FieldVariant.Filled"
@@ -29,6 +31,7 @@
     private int _age = 30;
     private string? _notes;
     private string? _handle;
+    private string? _phone;
     private string? _code = "PCT-12";
     private string? _destination;
     private string? _callSign;

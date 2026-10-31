@@ -22,8 +22,9 @@
     {
         <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                type="@Type.ToString().ToLowerInvariant()" @bind:get="Shown" @bind:set="OnTextAsync"
-               @bind:event="@BindEvent" @onchange="FlushOnChange" placeholder="@Placeholder"
-               disabled="@Disabled" readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
+               @bind:event="@BindEvent" @onchange="FlushOnChange" placeholder="@(Placeholder ?? _mask?.Hint)"
+               inputmode="@InputMode" data-ready="@(_maskHandle is null ? null : "")" disabled="@Disabled"
+               readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }
@@ -33,6 +34,10 @@
     private ElementReference _input;
     private ITimer? _delay;
     private string? _typed;
+    private TextMask? _mask;
+    private IJSObjectReference? _maskHandle;
+    private string? _maskAttached;
+    private bool _disposed;
 
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
@@ -81,6 +86,18 @@
     [Parameter]
     public TimeSpan? UpdateDelay { get; set; }
 
+    /// <summary>Fits what is typed to a pattern, such as <c>"(000) 000-0000"</c>: <c>0</c> takes a digit, <c>a</c> a
+    /// letter and <c>*</c> either, <c>\</c> makes the next character literal, and every other character is shown as
+    /// it is. Text that leaves a slot empty isn't valid. The placeholder shows the pattern unless one is given. A
+    /// static form post binds the text as it was sent, so validate it on the model too.</summary>
+    [Parameter]
+    public string? Mask { get; set; }
+
+    /// <summary>Keeps the <see cref="Mask"/>'s own characters, such as a phone number's brackets and dashes, in the
+    /// value. Otherwise the value holds only what was typed into the slots.</summary>
+    [Parameter]
+    public bool IncludeMaskLiterals { get; set; }
+
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
 
@@ -95,6 +112,10 @@
     private string BindEvent => UpdateOnInput ? "oninput" : "onchange";
 
     private bool Grows => Lines > 1 && MaxLines > Lines;
+
+    // A mask of digits brings up a number keyboard, unless the page asked for another.
+    private object? InputMode =>
+        InputAttributes?.GetValueOrDefault("inputmode") ?? (_mask?.DigitsOnly == true ? "numeric" : null);
 
     // Text still waiting out the delay shows as typed, so a render in the meantime doesn't undo it.
     private string? Shown => _typed ?? Text;
@@ -120,6 +141,78 @@
             throw new InvalidOperationException(
                 $"A clearable text field needs a nullable value type, such as {typeof(TValue).Name}?.");
         }
+
+        if (Mask is not null && Lines > 1)
+        {
+            throw new InvalidOperationException("A mask fits one line of text, so a text area can't have one.");
+        }
+
+        _mask = Mask is null ? null : _mask?.Pattern == Mask ? _mask : new TextMask(Mask);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Mask == _maskAttached)
+        {
+            return;
+        }
+
+        var mask = _maskAttached = Mask;
+        try
+        {
+            if (_maskHandle is { } old)
+            {
+                _maskHandle = null;
+                await old.DisposeHandleAsync();
+            }
+
+            if (mask is null)
+            {
+                return;
+            }
+
+            var module = await Modules.ImportAsync("./_content/Trailblazor/text-mask.js");
+            var handle = await module.InvokeAsync<IJSObjectReference>("createMask", _input, mask);
+            // The field went, or its mask changed, while this one was being attached.
+            if (_disposed || mask != _maskAttached)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _maskHandle = handle;
+            StateHasChanged();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the field went with it.
+        }
+    }
+
+    private protected override string? FormatValue(TValue? value)
+    {
+        var text = base.FormatValue(value);
+        return _mask is null || string.IsNullOrEmpty(text) ? text : _mask.Fit(text, IncludeMaskLiterals).Text;
+    }
+
+    // Text that leaves a slot empty isn't valid; the rest converts what the slots hold, with the literals if asked.
+    private protected override bool TryParse(string? text, out TValue? value, out string? error)
+    {
+        if (_mask is null || string.IsNullOrEmpty(text))
+        {
+            return base.TryParse(text, out value, out error);
+        }
+
+        var (shown, slotted) = _mask.Fit(text, hasLiterals: true);
+        if (slotted.Length > 0 && slotted.Length < _mask.Slots)
+        {
+            value = default;
+            error = Message(TbStrings.TextFieldMaskIncomplete);
+            return false;
+        }
+
+        return base.TryParse(IncludeMaskLiterals ? shown : slotted, out value, out error);
     }
 
     private Task OnTextAsync(string? text)
@@ -173,7 +266,8 @@
     {
         // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
         Dispose();
+        _disposed = true;
         _delay?.Dispose();
-        return ValueTask.CompletedTask;
+        return _maskHandle?.DisposeHandleAsync() ?? ValueTask.CompletedTask;
     }
 }

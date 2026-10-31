@@ -552,6 +552,12 @@ public static class ExampleCatalog
                     + "every keystroke; Enter in a single-line field, or leaving the field, updates it at once.",
                 "`MaxLines` lets a text area grow with its text from `Lines` up to that many lines, and then scroll, "
                     + "in browsers with CSS `field-sizing`.",
+                "`Mask` fits typing to a pattern such as `(000) 000-0000` (`0` a digit, `a` a letter, `*` either), "
+                    + "adding its brackets and dashes as you type and keeping the caret in place; Backspace after one "
+                    + "removes the character before it. Empty slots make the field invalid, the placeholder shows the "
+                    + "pattern, and a pattern of digits brings up a number keyboard. The value holds what was typed, "
+                    + "or the whole text with `IncludeMaskLiterals`. A static form post binds the text as it was "
+                    + "sent, so check it on the model too, with a `[RegularExpression]` for example.",
                 "`Variant` and `Size` work the same on every boxed field: text, number, select, autocomplete, color "
                     + "and date range. `Filled` keeps a 3:1 line along the box's bottom, red when the field is "
                     + "invalid and dashed when it's read only. Each size is set from the theme's density, as a "

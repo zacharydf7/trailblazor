@@ -221,4 +221,77 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static Task<string> BoxStyleAsync(IPage page, string label, string property) =>
         page.GetByLabel(label).EvaluateAsync<string>(
             "(input, property) => getComputedStyle(input.closest('.tb-field__control'))[property]", property);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldFitTypingToTheMaskAndBindTheDigits_WhenItHasAMask(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var phone = page.GetByLabel("Phone");
+        await Expect(phone).ToHaveAttributeAsync("data-ready", "");
+
+        await phone.PressSequentiallyAsync("5551234567");
+        await Expect(phone).ToHaveValueAsync("(555) 123-4567");
+        await phone.BlurAsync();
+
+        await Expect(page.GetByTestId("phone-echo")).ToHaveTextAsync("5551234567");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldKeepTheCaretInPlace_WhenADigitIsTypedOrDeletedMidMask(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var phone = page.GetByLabel("Phone");
+        await Expect(phone).ToHaveAttributeAsync("data-ready", "");
+        await phone.PressSequentiallyAsync("555123");
+
+        await phone.EvaluateAsync("input => input.setSelectionRange(2, 2)");
+        await page.Keyboard.TypeAsync("9");
+        await Expect(phone).ToHaveValueAsync("(595) 512-3");
+        Assert.Equal(3, await Caret(phone));
+        // Backspace just after ") " takes the digit before the literal, not the space.
+        await phone.EvaluateAsync("input => input.setSelectionRange(6, 6)");
+        await page.Keyboard.PressAsync("Backspace");
+
+        await Expect(phone).ToHaveValueAsync("(595) 123");
+        Assert.Equal(3, await Caret(phone));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldFitPastedTextAndFlagAShortOne_WhenItHasAMask(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var phone = page.GetByLabel("Phone");
+        await Expect(phone).ToHaveAttributeAsync("data-ready", "");
+
+        await phone.FillAsync("555-123-4567");
+        await Expect(phone).ToHaveValueAsync("(555) 123-4567");
+        await phone.FillAsync("555 12");
+        await phone.BlurAsync();
+
+        await Expect(phone).ToHaveValueAsync("(555) 12");
+        await Expect(phone).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(phone).ToHaveAccessibleDescriptionAsync("Phone isn't complete.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldFillSlotsWithCharactersLikeTheLiterals_WhenTheMaskHasDigitsOrEndsInOne(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/text-mask");
+        var phone = page.GetByLabel("UK phone");
+        var area = page.GetByLabel("Area");
+        await Expect(phone).ToHaveAttributeAsync("data-ready", "");
+
+        await phone.PressSequentiallyAsync("4412");
+        await Expect(phone).ToHaveValueAsync("+44 4412");
+        await phone.FillAsync("+447700900123");
+        await Expect(phone).ToHaveValueAsync("+44 7700 900123");
+        await area.PressSequentiallyAsync("123");
+        await Expect(area).ToHaveValueAsync("(123)");
+        await area.BlurAsync();
+
+        await Expect(page.GetByTestId("area")).ToHaveTextAsync("(123)");
+    }
+
+    private static Task<int> Caret(ILocator input) => input.EvaluateAsync<int>("input => input.selectionStart");
 }

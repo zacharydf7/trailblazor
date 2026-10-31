@@ -1,0 +1,11 @@
+@page "/text-mask"
+
+@* Masks whose literals a typed character can match, or that end in one. *@
+<TbTextField Label="UK phone" @bind-Value="_phone" Mask="+44 0000 000000" />
+<TbTextField Label="Area" @bind-Value="_area" Mask="(000)" IncludeMaskLiterals />
+<output data-testid="area">@_area</output>
+
+@code {
+    private string? _phone;
+    private string? _area;
+}
