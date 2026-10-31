@@ -73,15 +73,15 @@
     // A day holds stops; a stop holds nothing.
     private sealed record Stop(int Id, string Name, List<Stop>? Children = null);
 
-    private static Task<TreeDropCheck> CheckMoveAsync(TreeDrop<Stop> drop)
+    private static Task<MoveCheck> CheckMoveAsync(TreeDrop<Stop> drop)
     {
         var days = drop.Items.Any(stop => stop.Children is not null);
         var inside = drop.Position == TreeDropPosition.Inside;
         var amongDays = drop.Target.Children is not null != inside;
-        return Task.FromResult(inside && drop.Target.Children is null ? TreeDropCheck.Refuse("A stop can't hold stops.")
-            : days && !amongDays ? TreeDropCheck.Refuse("A day can't go inside a day.")
-            : !days && amongDays ? TreeDropCheck.Refuse("A stop belongs in a day.")
-            : TreeDropCheck.Allow);
+        return Task.FromResult(inside && drop.Target.Children is null ? MoveCheck.Refuse("A stop can't hold stops.")
+            : days && !amongDays ? MoveCheck.Refuse("A day can't go inside a day.")
+            : !days && amongDays ? MoveCheck.Refuse("A stop belongs in a day.")
+            : MoveCheck.Allow);
     }
 
     private void Move(TreeDrop<Stop> drop)

@@ -24,5 +24,7 @@ public static class ExampleIcons
 
     public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
 
+    public static Icon ArrowUp { get; } = new("<path d=\"M11 20V7.8l-5.6 5.6L4 12l8-8 8 8-1.4 1.4L13 7.8V20z\" />");
+
     public static Icon ChevronDown { get; } = new("<path d=\"M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z\" />");
 }

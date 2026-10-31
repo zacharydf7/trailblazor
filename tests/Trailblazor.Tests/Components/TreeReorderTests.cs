@@ -58,7 +58,7 @@ public class TreeReorderTests : BunitContext
 
         var check = await cut.InvokeAsync(() => Events().OnDragOver(["1"], "2", TreeDropPosition.Inside));
 
-        Assert.Equal(TreeDropCheck.Refuse("An item can't move into itself."), check);
+        Assert.Equal(MoveCheck.Refuse("An item can't move into itself."), check);
     }
 
     [Fact]
@@ -69,14 +69,14 @@ public class TreeReorderTests : BunitContext
         {
             asked.Add(drop);
             return Task.FromResult(drop.Position == TreeDropPosition.Inside && drop.Target.Children is null
-                ? TreeDropCheck.Refuse("Lakes can't hold places.") : TreeDropCheck.Allow);
+                ? MoveCheck.Refuse("Lakes can't hold places.") : MoveCheck.Allow);
         }));
 
         var refused = await cut.InvokeAsync(() => Events().OnDragOver(["6"], "5", TreeDropPosition.Inside));
         var allowed = await cut.InvokeAsync(() => Events().OnDragOver(["6"], "5", TreeDropPosition.Before));
 
-        Assert.Equal(TreeDropCheck.Refuse("Lakes can't hold places."), refused);
-        Assert.Equal(TreeDropCheck.Allow, allowed);
+        Assert.Equal(MoveCheck.Refuse("Lakes can't hold places."), refused);
+        Assert.Equal(MoveCheck.Allow, allowed);
         Assert.Equal(["Pass"], asked[0].Items.Select(place => place.Name));
         Assert.Equal("Lake", asked[0].Target.Name);
     }
@@ -101,7 +101,7 @@ public class TreeReorderTests : BunitContext
     {
         var announcer = Render<AnnouncerHost>();
         var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanDrop,
-            _ => Task.FromResult(TreeDropCheck.Refuse("Places are read only."))));
+            _ => Task.FromResult(MoveCheck.Refuse("Places are read only."))));
 
         await cut.InvokeAsync(() => Events().OnDrop(["6"], "4", TreeDropPosition.Inside));
 

@@ -447,6 +447,15 @@ Trailblazor.MenuTrigger.Attributes.get -> System.Collections.Generic.IReadOnlyDi
 Trailblazor.MenuTrigger.Attributes.init -> void
 Trailblazor.MenuTrigger.Equals(Trailblazor.MenuTrigger? other) -> bool
 Trailblazor.MenuTrigger.MenuTrigger() -> void
+Trailblazor.MoveCheck
+Trailblazor.MoveCheck.<Clone>$() -> Trailblazor.MoveCheck!
+Trailblazor.MoveCheck.Allowed.get -> bool
+Trailblazor.MoveCheck.Allowed.init -> void
+Trailblazor.MoveCheck.Deconstruct(out bool Allowed, out string? Reason) -> void
+Trailblazor.MoveCheck.Equals(Trailblazor.MoveCheck? other) -> bool
+Trailblazor.MoveCheck.MoveCheck(bool Allowed, string? Reason = null) -> void
+Trailblazor.MoveCheck.Reason.get -> string?
+Trailblazor.MoveCheck.Reason.init -> void
 Trailblazor.NumberChangeEventArgs
 Trailblazor.NumberChangeEventArgs.BadInput.get -> bool
 Trailblazor.NumberChangeEventArgs.BadInput.set -> void
@@ -554,6 +563,18 @@ Trailblazor.SliderRange<TValue>.Start.init -> void
 Trailblazor.SortDirection
 Trailblazor.SortDirection.Ascending = 0 -> Trailblazor.SortDirection
 Trailblazor.SortDirection.Descending = 1 -> Trailblazor.SortDirection
+Trailblazor.SortableMove<TItem>
+Trailblazor.SortableMove<TItem>.<Clone>$() -> Trailblazor.SortableMove<TItem>!
+Trailblazor.SortableMove<TItem>.ApplyTo(System.Collections.Generic.IList<TItem>! items) -> void
+Trailblazor.SortableMove<TItem>.Deconstruct(out TItem Item, out int From, out int To) -> void
+Trailblazor.SortableMove<TItem>.Equals(Trailblazor.SortableMove<TItem>? other) -> bool
+Trailblazor.SortableMove<TItem>.From.get -> int
+Trailblazor.SortableMove<TItem>.From.init -> void
+Trailblazor.SortableMove<TItem>.Item.get -> TItem
+Trailblazor.SortableMove<TItem>.Item.init -> void
+Trailblazor.SortableMove<TItem>.SortableMove(TItem Item, int From, int To) -> void
+Trailblazor.SortableMove<TItem>.To.get -> int
+Trailblazor.SortableMove<TItem>.To.init -> void
 Trailblazor.TabActivation
 Trailblazor.TabActivation.Automatic = 0 -> Trailblazor.TabActivation
 Trailblazor.TabActivation.Manual = 1 -> Trailblazor.TabActivation
@@ -852,6 +873,8 @@ Trailblazor.TbContainer.TbContainer() -> void
 Trailblazor.TbDataGrid<TItem>
 Trailblazor.TbDataGrid<TItem>.AriaLabel.get -> string?
 Trailblazor.TbDataGrid<TItem>.AriaLabel.set -> void
+Trailblazor.TbDataGrid<TItem>.CanMoveRow.get -> System.Func<Trailblazor.SortableMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
+Trailblazor.TbDataGrid<TItem>.CanMoveRow.set -> void
 Trailblazor.TbDataGrid<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDataGrid<TItem>.ChildContent.set -> void
 Trailblazor.TbDataGrid<TItem>.DataProvider.get -> System.Func<Trailblazor.GridRequest!, System.Threading.CancellationToken, System.Threading.Tasks.Task<Trailblazor.GridResult<TItem>!>!>?
@@ -873,6 +896,8 @@ Trailblazor.TbDataGrid<TItem>.OnLoadFailed.get -> Microsoft.AspNetCore.Component
 Trailblazor.TbDataGrid<TItem>.OnLoadFailed.set -> void
 Trailblazor.TbDataGrid<TItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TItem>
 Trailblazor.TbDataGrid<TItem>.OnRowClick.set -> void
+Trailblazor.TbDataGrid<TItem>.OnRowMove.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.SortableMove<TItem>!>
+Trailblazor.TbDataGrid<TItem>.OnRowMove.set -> void
 Trailblazor.TbDataGrid<TItem>.Page.get -> int
 Trailblazor.TbDataGrid<TItem>.Page.set -> void
 Trailblazor.TbDataGrid<TItem>.PageChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
@@ -1559,6 +1584,28 @@ Trailblazor.TbSliderBase<TValue>.Step.set -> void
 Trailblazor.TbSliderBase<TValue>.TbSliderBase() -> void
 Trailblazor.TbSliderBase<TValue>.ValueCommitted.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
 Trailblazor.TbSliderBase<TValue>.ValueCommitted.set -> void
+Trailblazor.TbSortable<TItem>
+Trailblazor.TbSortable<TItem>.CanMove.get -> System.Func<Trailblazor.SortableMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
+Trailblazor.TbSortable<TItem>.CanMove.set -> void
+Trailblazor.TbSortable<TItem>.Disabled.get -> bool
+Trailblazor.TbSortable<TItem>.Disabled.set -> void
+Trailblazor.TbSortable<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbSortable<TItem>.ItemKey.get -> System.Func<TItem, object!>?
+Trailblazor.TbSortable<TItem>.ItemKey.set -> void
+Trailblazor.TbSortable<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>!
+Trailblazor.TbSortable<TItem>.ItemTemplate.set -> void
+Trailblazor.TbSortable<TItem>.ItemText.get -> System.Func<TItem, string!>?
+Trailblazor.TbSortable<TItem>.ItemText.set -> void
+Trailblazor.TbSortable<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.TbSortable<TItem>.Items.set -> void
+Trailblazor.TbSortable<TItem>.Label.get -> string!
+Trailblazor.TbSortable<TItem>.Label.set -> void
+Trailblazor.TbSortable<TItem>.MoveAsync(int from, int to) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.TbSortable<TItem>.OnMove.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.SortableMove<TItem>!>
+Trailblazor.TbSortable<TItem>.OnMove.set -> void
+Trailblazor.TbSortable<TItem>.TbSortable() -> void
+Trailblazor.TbSortable<TItem>.TelemetryName.get -> string?
+Trailblazor.TbSortable<TItem>.TelemetryName.set -> void
 Trailblazor.TbSpacer
 Trailblazor.TbSpacer.TbSpacer() -> void
 Trailblazor.TbSplitter
@@ -1837,7 +1884,7 @@ Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.get -> string?
 Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.CanDrag.get -> System.Func<TItem, bool>?
 Trailblazor.TbTreeView<TItem, TKey>.CanDrag.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.CanDrop.get -> System.Func<Trailblazor.TreeDrop<TItem>!, System.Threading.Tasks.Task<Trailblazor.TreeDropCheck!>!>?
+Trailblazor.TbTreeView<TItem, TKey>.CanDrop.get -> System.Func<Trailblazor.TreeDrop<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
 Trailblazor.TbTreeView<TItem, TKey>.CanDrop.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.CascadeChecks.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.CascadeChecks.set -> void
@@ -2051,15 +2098,6 @@ Trailblazor.TreeDrop<TItem>.Position.init -> void
 Trailblazor.TreeDrop<TItem>.Target.get -> TItem
 Trailblazor.TreeDrop<TItem>.Target.init -> void
 Trailblazor.TreeDrop<TItem>.TreeDrop(System.Collections.Generic.IReadOnlyList<TItem>! Items, TItem Target, Trailblazor.TreeDropPosition Position) -> void
-Trailblazor.TreeDropCheck
-Trailblazor.TreeDropCheck.<Clone>$() -> Trailblazor.TreeDropCheck!
-Trailblazor.TreeDropCheck.Allowed.get -> bool
-Trailblazor.TreeDropCheck.Allowed.init -> void
-Trailblazor.TreeDropCheck.Deconstruct(out bool Allowed, out string? Reason) -> void
-Trailblazor.TreeDropCheck.Equals(Trailblazor.TreeDropCheck? other) -> bool
-Trailblazor.TreeDropCheck.Reason.get -> string?
-Trailblazor.TreeDropCheck.Reason.init -> void
-Trailblazor.TreeDropCheck.TreeDropCheck(bool Allowed, string? Reason = null) -> void
 Trailblazor.TreeDropPosition
 Trailblazor.TreeDropPosition.After = 1 -> Trailblazor.TreeDropPosition
 Trailblazor.TreeDropPosition.Before = 0 -> Trailblazor.TreeDropPosition
@@ -2153,6 +2191,7 @@ const Trailblazor.TbStrings.DataGridDescending = "DataGrid.Descending" -> string
 const Trailblazor.TbStrings.DataGridEmpty = "DataGrid.Empty" -> string!
 const Trailblazor.TbStrings.DataGridLoadFailed = "DataGrid.LoadFailed" -> string!
 const Trailblazor.TbStrings.DataGridLoading = "DataGrid.Loading" -> string!
+const Trailblazor.TbStrings.DataGridOrder = "DataGrid.Order" -> string!
 const Trailblazor.TbStrings.DataGridPageSize = "DataGrid.PageSize" -> string!
 const Trailblazor.TbStrings.DataGridPages = "DataGrid.Pages" -> string!
 const Trailblazor.TbStrings.DataGridRange = "DataGrid.Range" -> string!
@@ -2237,6 +2276,13 @@ const Trailblazor.TbStrings.RangeSliderStart = "RangeSlider.Start" -> string!
 const Trailblazor.TbStrings.SelectClear = "Select.Clear" -> string!
 const Trailblazor.TbStrings.SelectFilter = "Select.Filter" -> string!
 const Trailblazor.TbStrings.SelectNoResults = "Select.NoResults" -> string!
+const Trailblazor.TbStrings.SortableHandle = "Sortable.Handle" -> string!
+const Trailblazor.TbStrings.SortableHint = "Sortable.Hint" -> string!
+const Trailblazor.TbStrings.SortableMoveDown = "Sortable.MoveDown" -> string!
+const Trailblazor.TbStrings.SortableMoveToEnd = "Sortable.MoveToEnd" -> string!
+const Trailblazor.TbStrings.SortableMoveToStart = "Sortable.MoveToStart" -> string!
+const Trailblazor.TbStrings.SortableMoveUp = "Sortable.MoveUp" -> string!
+const Trailblazor.TbStrings.SortableMoved = "Sortable.Moved" -> string!
 const Trailblazor.TbStrings.SplitterPane = "Splitter.Pane" -> string!
 const Trailblazor.TbStrings.SplitterResize = "Splitter.Resize" -> string!
 const Trailblazor.TbStrings.TextFieldClear = "TextField.Clear" -> string!
@@ -2319,6 +2365,9 @@ override Trailblazor.IconButtonClasses.ToString() -> string!
 override Trailblazor.MenuTrigger.Equals(object? obj) -> bool
 override Trailblazor.MenuTrigger.GetHashCode() -> int
 override Trailblazor.MenuTrigger.ToString() -> string!
+override Trailblazor.MoveCheck.Equals(object? obj) -> bool
+override Trailblazor.MoveCheck.GetHashCode() -> int
+override Trailblazor.MoveCheck.ToString() -> string!
 override Trailblazor.PaginationLabels.Equals(object? obj) -> bool
 override Trailblazor.PaginationLabels.GetHashCode() -> int
 override Trailblazor.PaginationLabels.ToString() -> string!
@@ -2334,6 +2383,9 @@ override Trailblazor.SliderMark.ToString() -> string!
 ~override Trailblazor.SliderRange<TValue>.Equals(object obj) -> bool
 override Trailblazor.SliderRange<TValue>.GetHashCode() -> int
 ~override Trailblazor.SliderRange<TValue>.ToString() -> string
+override Trailblazor.SortableMove<TItem>.Equals(object? obj) -> bool
+override Trailblazor.SortableMove<TItem>.GetHashCode() -> int
+override Trailblazor.SortableMove<TItem>.ToString() -> string!
 ~override Trailblazor.TbAccordion.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbAccordion.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbAccordion.OnParametersSet() -> void
@@ -2508,9 +2560,6 @@ override Trailblazor.ToastOptions.ToString() -> string!
 override Trailblazor.TreeDrop<TItem>.Equals(object? obj) -> bool
 override Trailblazor.TreeDrop<TItem>.GetHashCode() -> int
 override Trailblazor.TreeDrop<TItem>.ToString() -> string!
-override Trailblazor.TreeDropCheck.Equals(object? obj) -> bool
-override Trailblazor.TreeDropCheck.GetHashCode() -> int
-override Trailblazor.TreeDropCheck.ToString() -> string!
 override Trailblazor.TreeInsertContext<TItem>.Equals(object? obj) -> bool
 override Trailblazor.TreeInsertContext<TItem>.GetHashCode() -> int
 override Trailblazor.TreeInsertContext<TItem>.ToString() -> string!
@@ -2569,6 +2618,10 @@ static Trailblazor.IconButtonClasses.operator !=(Trailblazor.IconButtonClasses? 
 static Trailblazor.IconButtonClasses.operator ==(Trailblazor.IconButtonClasses? left, Trailblazor.IconButtonClasses? right) -> bool
 static Trailblazor.MenuTrigger.operator !=(Trailblazor.MenuTrigger? left, Trailblazor.MenuTrigger? right) -> bool
 static Trailblazor.MenuTrigger.operator ==(Trailblazor.MenuTrigger? left, Trailblazor.MenuTrigger? right) -> bool
+static Trailblazor.MoveCheck.Allow.get -> Trailblazor.MoveCheck!
+static Trailblazor.MoveCheck.Refuse(string! reason) -> Trailblazor.MoveCheck!
+static Trailblazor.MoveCheck.operator !=(Trailblazor.MoveCheck? left, Trailblazor.MoveCheck? right) -> bool
+static Trailblazor.MoveCheck.operator ==(Trailblazor.MoveCheck? left, Trailblazor.MoveCheck? right) -> bool
 static Trailblazor.PaginationLabels.operator !=(Trailblazor.PaginationLabels? left, Trailblazor.PaginationLabels? right) -> bool
 static Trailblazor.PaginationLabels.operator ==(Trailblazor.PaginationLabels? left, Trailblazor.PaginationLabels? right) -> bool
 static Trailblazor.PopoverTrigger.operator !=(Trailblazor.PopoverTrigger? left, Trailblazor.PopoverTrigger? right) -> bool
@@ -2579,6 +2632,8 @@ static Trailblazor.SliderMark.operator !=(Trailblazor.SliderMark? left, Trailbla
 static Trailblazor.SliderMark.operator ==(Trailblazor.SliderMark? left, Trailblazor.SliderMark? right) -> bool
 static Trailblazor.SliderRange<TValue>.operator !=(Trailblazor.SliderRange<TValue> left, Trailblazor.SliderRange<TValue> right) -> bool
 static Trailblazor.SliderRange<TValue>.operator ==(Trailblazor.SliderRange<TValue> left, Trailblazor.SliderRange<TValue> right) -> bool
+static Trailblazor.SortableMove<TItem>.operator !=(Trailblazor.SortableMove<TItem>? left, Trailblazor.SortableMove<TItem>? right) -> bool
+static Trailblazor.SortableMove<TItem>.operator ==(Trailblazor.SortableMove<TItem>? left, Trailblazor.SortableMove<TItem>? right) -> bool
 static Trailblazor.TbStrings.English(string! key) -> string!
 static Trailblazor.ToastAction.operator !=(Trailblazor.ToastAction? left, Trailblazor.ToastAction? right) -> bool
 static Trailblazor.ToastAction.operator ==(Trailblazor.ToastAction? left, Trailblazor.ToastAction? right) -> bool
@@ -2586,10 +2641,6 @@ static Trailblazor.ToastOptions.operator !=(Trailblazor.ToastOptions? left, Trai
 static Trailblazor.ToastOptions.operator ==(Trailblazor.ToastOptions? left, Trailblazor.ToastOptions? right) -> bool
 static Trailblazor.TreeDrop<TItem>.operator !=(Trailblazor.TreeDrop<TItem>? left, Trailblazor.TreeDrop<TItem>? right) -> bool
 static Trailblazor.TreeDrop<TItem>.operator ==(Trailblazor.TreeDrop<TItem>? left, Trailblazor.TreeDrop<TItem>? right) -> bool
-static Trailblazor.TreeDropCheck.Allow.get -> Trailblazor.TreeDropCheck!
-static Trailblazor.TreeDropCheck.Refuse(string! reason) -> Trailblazor.TreeDropCheck!
-static Trailblazor.TreeDropCheck.operator !=(Trailblazor.TreeDropCheck? left, Trailblazor.TreeDropCheck? right) -> bool
-static Trailblazor.TreeDropCheck.operator ==(Trailblazor.TreeDropCheck? left, Trailblazor.TreeDropCheck? right) -> bool
 static Trailblazor.TreeInsertContext<TItem>.operator !=(Trailblazor.TreeInsertContext<TItem>? left, Trailblazor.TreeInsertContext<TItem>? right) -> bool
 static Trailblazor.TreeInsertContext<TItem>.operator ==(Trailblazor.TreeInsertContext<TItem>? left, Trailblazor.TreeInsertContext<TItem>? right) -> bool
 static Trailblazor.TreeItemContext<TItem, TKey>.operator !=(Trailblazor.TreeItemContext<TItem, TKey>? left, Trailblazor.TreeItemContext<TItem, TKey>? right) -> bool

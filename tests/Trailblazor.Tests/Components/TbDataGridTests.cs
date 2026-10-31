@@ -844,6 +844,90 @@ public class TbDataGridTests : BunitContext
         Assert.Equal(Trails.Count, cut.FindAll("tr[data-part=row] input[type=checkbox]").Count);
     }
 
+    [Fact]
+    public async Task RowMove_ShouldMoveAmongAllTheItemsAndFollowTheRowToItsPage_WhenAHandleKeyIsPressed()
+    {
+        List<Trail> trails = [.. Trails];
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderTrails(trails, parameters => parameters.Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+        Assert.Equal("Move Pine Hollow", cut.Find("[data-part=handle] > [data-part=trigger]")
+            .GetAttribute("aria-label"));
+
+        await cut.InvokeAsync(() => MoveEvents().OnKey("1", "End"));
+
+        Assert.Equal("Pine Hollow", trails[^1].Name);
+        Assert.Equal(["Pine Hollow"], Names(cut));
+        announcer.WaitForAssertion(() => Assert.Equal("Pine Hollow moved to position 5 of 5.",
+            announcer.FindAll("[role=status] p").Last().TextContent));
+    }
+
+    [Fact]
+    public async Task RowMove_ShouldCountAmongAllTheItems_WhenTheRowIsOnALaterPage()
+    {
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails, parameters => parameters.Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.Page, 2).Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+
+        await cut.InvokeAsync(() => MoveEvents().OnKey("4", "Home"));
+
+        Assert.Equal("Fern Gully", trails[0].Name);
+        Assert.Equal(["Fern Gully", "Pine Hollow"], Names(cut));
+    }
+
+    [Fact]
+    public async Task RowMove_ShouldAskFirstAndLeaveTheOrder_WhenTheMoveIsRefused()
+    {
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails, parameters => parameters
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.CanMoveRow, move => Task.FromResult(move.To == 0
+                ? MoveCheck.Refuse("Pine Hollow stays first.") : MoveCheck.Allow)));
+
+        var refused = await cut.InvokeAsync(() => MoveEvents().OnDragOver("3", "1", before: true));
+        await cut.InvokeAsync(() => MoveEvents().OnDrop("3", "1", before: true));
+        await cut.InvokeAsync(() => MoveEvents().OnDrop("1", "3", before: false));
+
+        Assert.False(refused.Allowed);
+        Assert.Equal(["Eagle Ridge", "Cedar Flats", "Pine Hollow", "Fern Gully", "Lake Camp"], Names(cut));
+    }
+
+    [Fact]
+    public async Task RowMove_ShouldOfferNoHandles_WhenTheGridIsSorted()
+    {
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails, parameters => parameters
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.Sorts, [new GridSort("Name", SortDirection.Ascending)]));
+
+        await cut.InvokeAsync(() => MoveEvents().OnKey("1", "ArrowDown"));
+
+        Assert.Empty(cut.FindAll("[data-part=handle]"));
+        Assert.Equal(Trails, trails);
+    }
+
+    [Fact]
+    public async Task RowMove_ShouldDropAndBringBackTheHandles_WhenTheGridIsSortedAndUnsortedWhileShown()
+    {
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails, parameters => parameters
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+        var sort = cut.Find("th[data-column=Name] [data-part=sort]");
+
+        await sort.ClickAsync(new());
+        Assert.Empty(cut.FindAll("[data-part=handle], [data-part=order]"));
+        Assert.All(cut.FindAll("tr[data-part=row]"), row =>
+            Assert.Equal(cut.FindAll("thead th").Count, row.QuerySelectorAll("td").Length));
+        await cut.Find("th[data-column=Name] [data-part=sort]").ClickAsync(new());
+        await cut.Find("th[data-column=Name] [data-part=sort]").ClickAsync(new());
+
+        Assert.Equal(Trails.Count, cut.FindAll("[data-part=handle]").Count);
+        Assert.Single(cut.FindAll("[data-part=order]"));
+    }
+
+    private SortableEvents MoveEvents() =>
+        ((DotNetObjectReference<SortableEvents>)JSInterop.Invocations["attachSortable"].Single().Arguments[1]!).Value;
+
     private static List<string> Names(IRenderedComponent<TbDataGrid<Trail>> cut) =>
         [.. cut.FindAll("tr[data-part=row] td[data-column=Name]").Select(cell => cell.TextContent)];
 

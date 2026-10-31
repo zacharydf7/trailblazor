@@ -1,0 +1,36 @@
+<TbStack Gap="3" Style="max-inline-size: 28rem">
+    @* The order sets which rule runs first, so the catch-all rule is kept last. *@
+    <TbSortable @ref="_list" TItem="string" Items="_rules" Label="Trail alerts, first match wins"
+                OnMove="move => move.ApplyTo(_rules)" CanMove="CheckAsync" TelemetryName="alert-order">
+        <ItemTemplate>
+            <TbStack Row Gap="2" Align="Align.Center">
+                <TbText>@context</TbText>
+                @if (context != CatchAll)
+                {
+                    <TbIconButton Icon="ExampleIcons.ArrowUp" AriaLabel="@($"Raise {context}")" Size="Size.Small"
+                                  Variant="Variant.Text" OnClick="() => RaiseAsync(context)"
+                                  Disabled="@(_rules.IndexOf(context) == 0)" class="tb-ms-auto" />
+                }
+            </TbStack>
+        </ItemTemplate>
+    </TbSortable>
+    <TbText Muted>Checked in this order: @string.Join(", ", _rules).</TbText>
+</TbStack>
+
+@code {
+    private const string CatchAll = "Everything else";
+
+    private readonly List<string> _rules = ["Trail closed", "Storm warning", "Parking full", CatchAll];
+    private TbSortable<string> _list = default!;
+
+    private Task<MoveCheck> CheckAsync(SortableMove<string> move) =>
+        Task.FromResult(move.Item == CatchAll || move.To == _rules.Count - 1
+            ? MoveCheck.Refuse($"{CatchAll} stays last.") : MoveCheck.Allow);
+
+    // The app's own button moves an item through the list, which asks first and says what moved.
+    private Task RaiseAsync(string rule)
+    {
+        var index = _rules.IndexOf(rule);
+        return _list.MoveAsync(index, index - 1);
+    }
+}

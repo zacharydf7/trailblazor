@@ -1,0 +1,41 @@
+@page "/sortable"
+
+<TbSortable @ref="_list" TItem="string" Items="_rules" Label="Rules" OnMove="move => move.ApplyTo(_rules)"
+            CanMove="CheckAsync">
+    <ItemTemplate>@context</ItemTemplate>
+</TbSortable>
+<TbButton OnClick="() => _list.MoveAsync(0, _rules.Count - 2)">Send the first rule down</TbButton>
+<output data-testid="order">@string.Join(", ", _rules)</output>
+@* A list inside a grid's cell moves its own items, and only its own. *@
+<TbDataGrid TItem="string" Items="_crews" AriaLabel="Crews" OnRowMove="move => move.ApplyTo(_crews)">
+    <TbColumn TItem="string" Title="Crew" Id="crew">
+        <Cell>
+            @context
+            @if (context == "North crew")
+            {
+                <TbSortable TItem="string" Items="_members" Label="North crew members" Context="member"
+                            OnMove="move => move.ApplyTo(_members)">
+                    <ItemTemplate>@member</ItemTemplate>
+                </TbSortable>
+            }
+        </Cell>
+    </TbColumn>
+</TbDataGrid>
+<output data-testid="crews">@string.Join(", ", _crews); @string.Join(", ", _members)</output>
+<TbDataGrid TItem="string" Items="_stops" AriaLabel="Route stops" OnRowMove="move => move.ApplyTo(_stops)">
+    <TbColumn TItem="string" Title="Stop" Id="stop">
+        <Cell>@context</Cell>
+    </TbColumn>
+</TbDataGrid>
+
+@code {
+    private readonly List<string> _rules = ["Block spam", "Flag invoices", "Star the team", "Catch-all"];
+    private readonly List<string> _stops = ["Trailhead", "Lake camp", "Summit Gate"];
+    private readonly List<string> _crews = ["North crew", "South crew"];
+    private readonly List<string> _members = ["Ada", "Ben"];
+    private TbSortable<string> _list = default!;
+
+    private Task<MoveCheck> CheckAsync(SortableMove<string> move) =>
+        Task.FromResult(move.Item == "Catch-all" || move.To == _rules.Count - 1
+            ? MoveCheck.Refuse("The catch-all rule stays last.") : MoveCheck.Allow);
+}

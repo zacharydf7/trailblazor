@@ -89,6 +89,7 @@ public class ExampleCatalogTests
             "autocomplete", "color-picker", "file-upload", "date-range-picker", "listbox",
         ],
         ["Select"] = ["select", "listbox"],
+        ["Sortable"] = ["data-grid"],
     };
 
     [Fact]

@@ -49,6 +49,11 @@ internal static class BuiltInIcons
 
     public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
 
+    // Two columns of dots, the usual sign that a row can be dragged.
+    public static Icon DragHandle { get; } = new("<circle cx=\"9\" cy=\"6\" r=\"1.75\" /><circle cx=\"15\" cy=\"6\" "
+        + "r=\"1.75\" /><circle cx=\"9\" cy=\"12\" r=\"1.75\" /><circle cx=\"15\" cy=\"12\" r=\"1.75\" />"
+        + "<circle cx=\"9\" cy=\"18\" r=\"1.75\" /><circle cx=\"15\" cy=\"18\" r=\"1.75\" />");
+
     public static Icon Check { get; } = new("<path d=\"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z\" />");
 
     public static Icon Info { get; } = new("<path d=\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"

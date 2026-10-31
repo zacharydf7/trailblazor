@@ -27,9 +27,17 @@
         <TbColumn Field="hike => hike.Hours" Format="N1" Sortable />
     </TbDataGrid>
     <TbText data-testid="hike">@(_hike is null ? "No hike chosen." : $"Hike on {_hike.Date:d} chosen.")</TbText>
+    @* Rows the user puts in order, by a row's handle or the arrow keys on it; the app applies each move. *@
+    <TbDataGrid TItem="Stop" Items="_stops" AriaLabel="Route stops" KeySelector="stop => stop.Name"
+                OnRowMove="move => move.ApplyTo(_stops)" Size="Size.Small">
+        <TbColumn Field="stop => stop.Name" />
+        <TbColumn Field="stop => stop.Distance" Title="Distance (km)" Format="N1" />
+    </TbDataGrid>
 </TbStack>
 
 @code {
+    private readonly List<Stop> _stops = [new("Trailhead", 0), new("Lake camp", 4.2), new("Summit Gate", 7.9)];
+
     private static readonly Trail[] Trails =
     [
         new(1, "Pine Hollow loop", "North ridge", 6.4, new(2026, 5, 2)),
@@ -79,4 +87,6 @@
     private sealed record Trail(int Id, string Name, string Region, double LengthKm, DateOnly LastHiked);
 
     private sealed record Hike(int Id, DateOnly Date, string Trail, double Hours);
+
+    private sealed record Stop(string Name, double Distance);
 }

@@ -352,6 +352,10 @@ public static class TbStrings
     /// <summary>"Select {0}": names a row's selection box; {0} is the row's label.</summary>
     public const string DataGridSelectRow = "DataGrid.SelectRow";
 
+    /// <summary>"Order": names the column of a data grid whose rows can be moved, which holds each row's move
+    /// handle.</summary>
+    public const string DataGridOrder = "DataGrid.Order";
+
     /// <summary>"{0}–{1} of {2}": the rows a data grid's page shows; {0} and {1} are the first and last, {2} the
     /// count of all rows.</summary>
     public const string DataGridRange = "DataGrid.Range";
@@ -410,6 +414,30 @@ public static class TbStrings
 
     /// <summary>"{0} items": names several tree rows moved together.</summary>
     public const string TreeViewItemCount = "TreeView.ItemCount";
+
+    /// <summary>"Move {0}": the name of the handle that drags or moves an item of a sortable list or a grid row, with
+    /// the item's text.</summary>
+    public const string SortableHandle = "Sortable.Handle";
+
+    /// <summary>"The arrow keys move it, and Home and End to the start or end. Enter opens a menu of moves.":
+    /// describes a move handle.</summary>
+    public const string SortableHint = "Sortable.Hint";
+
+    /// <summary>"Move up": a move handle's menu item that moves its item one place toward the start.</summary>
+    public const string SortableMoveUp = "Sortable.MoveUp";
+
+    /// <summary>"Move down": a move handle's menu item that moves its item one place toward the end.</summary>
+    public const string SortableMoveDown = "Sortable.MoveDown";
+
+    /// <summary>"Move to the start": a move handle's menu item that moves its item first.</summary>
+    public const string SortableMoveToStart = "Sortable.MoveToStart";
+
+    /// <summary>"Move to the end": a move handle's menu item that moves its item last.</summary>
+    public const string SortableMoveToEnd = "Sortable.MoveToEnd";
+
+    /// <summary>"{0} moved to position {1} of {2}.": said after an item of a sortable list or a grid row moves, with
+    /// its text, new position and the number of items.</summary>
+    public const string SortableMoved = "Sortable.Moved";
 
     /// <summary>"An item can't move into itself.": why a tree move into an item's own branch is refused.</summary>
     public const string TreeViewCantMoveIntoItself = "TreeView.CantMoveIntoItself";
@@ -529,6 +557,7 @@ public static class TbStrings
         [DataGridSelectAll] = "Select all rows",
         [DataGridSelect] = "Select",
         [DataGridSelectRow] = "Select {0}",
+        [DataGridOrder] = "Order",
         [DataGridRange] = "{0}–{1} of {2}",
         [DataGridPages] = "Pages of {0}",
         [DataGridPageSize] = "Rows per page",
@@ -548,6 +577,13 @@ public static class TbStrings
         [TreeViewMovedInside] = "{0} moved into {1}.",
         [TreeViewItemCount] = "{0} items",
         [TreeViewCantMoveIntoItself] = "An item can't move into itself.",
+        [SortableHandle] = "Move {0}",
+        [SortableHint] = "The arrow keys move it, and Home and End to the start or end. Enter opens a menu of moves.",
+        [SortableMoveUp] = "Move up",
+        [SortableMoveDown] = "Move down",
+        [SortableMoveToStart] = "Move to the start",
+        [SortableMoveToEnd] = "Move to the end",
+        [SortableMoved] = "{0} moved to position {1} of {2}.",
     }.ToFrozenDictionary();
 
     /// <summary>The English text for <paramref name="key"/>, for a localizer of your own to fall back on.</summary>

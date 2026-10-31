@@ -33,8 +33,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private TItem? _selectedItemFromParent;
     private (object Key, TaskCompletionSource Done)? _scrollAfterRender;
     private ElementReference _table;
+    private ElementReference _body;
     private IJSObjectReference? _handle;
+    private IJSObjectReference? _reorder;
     private DotNetObjectReference<DataGridEvents>? _events;
+    private DotNetObjectReference<SortableEvents>? _moveEvents;
+    private ItemMover<TItem>? _mover;
+    private bool _reorderable;
     private bool _disposed;
     private bool _columnsChanged;
     private ControlTelemetry? _telemetry;
@@ -169,10 +174,22 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public DataGridLabels Labels { get; set; } = new();
 
+    /// <summary>Lets the user reorder rows held in <see cref="Items"/>, by dragging a row's handle or with the arrow
+    /// keys on it, while the grid isn't sorted. Raised with the move; apply it to the items, as
+    /// <see cref="SortableMove{TItem}.ApplyTo"/> does, and the grid shows the new order. Each row's handle is a menu
+    /// with a script of its own, so give a grid of many rows a <see cref="PageSize"/>.</summary>
+    [Parameter]
+    public EventCallback<SortableMove<TItem>> OnRowMove { get; set; }
+
+    /// <summary>Asked while a row is dragged over a place and before a move is made. A refusal's reason shows beside
+    /// the drop and is read out.</summary>
+    [Parameter]
+    public Func<SortableMove<TItem>, Task<MoveCheck>>? CanMoveRow { get; set; }
+
     /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>, <c>page</c>,
-    /// <c>page_size</c> or <c>select</c> each time the user does one. Which column, page or rows is never recorded. It
-    /// names the grid, never the user.</summary>
+    /// <c>page_size</c>, <c>select</c> or <c>move</c> each time the user does one. Which column, page or rows is never
+    /// recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -195,7 +212,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int PageCount => _pageSize is { } size ? Math.Max(1, (_total + size - 1) / size) : 1;
 
-    private int ColumnCount => _columns.Count + (SelectionMode == SelectionMode.None ? 0 : 1);
+    private int ColumnCount => _columns.Count + (SelectionMode == SelectionMode.None ? 0 : 1) + (CanReorder ? 1 : 0);
+
+    // Rows move among all the items, so only rows held in memory, in their own order, can be moved.
+    private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0;
+
+    private ItemMover<TItem> Mover => _mover ??= new(Announcer, Localizer);
 
     private bool IsLoading => Loading || _loading;
 
@@ -257,6 +279,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             if (firstRender && RendererInfo.IsInteractive)
             {
                 await AttachAsync();
+            }
+
+            if (_moveEvents is null && OnRowMove.HasDelegate && RendererInfo.IsInteractive)
+            {
+                await AttachReorderAsync();
             }
 
             if (_scrollAfterRender is { } scroll)
@@ -322,8 +349,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // can't name an internal component.
     private void Rows(RenderTreeBuilder builder)
     {
-        foreach (var item in _rows)
+        for (var index = 0; index < _rows.Count; index++)
         {
+            var item = _rows[index];
             var key = KeyOf(item);
             var selected = IsSelected(item);
             builder.OpenComponent<GridRow<TItem>>(0);
@@ -331,7 +359,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             builder.AddComponentParameter(1, nameof(GridRow<TItem>.Item), item);
             builder.AddComponentParameter(2, nameof(GridRow<TItem>.Selected), selected);
             builder.AddComponentParameter(3, nameof(GridRow<TItem>.Version), _rowVersion);
-            builder.AddComponentParameter(4, nameof(GridRow<TItem>.ChildContent), Row(item, key, selected));
+            builder.AddComponentParameter(4, nameof(GridRow<TItem>.ChildContent),
+                Row(item, key, selected, Offset + index));
             builder.CloseComponent();
         }
     }
@@ -394,6 +423,104 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         _handle = handle;
         StateHasChanged();
+    }
+
+    // Rows can move once the app handles OnRowMove, which it may start doing after the first render.
+    private async Task AttachReorderAsync()
+    {
+        _moveEvents = DotNetObjectReference.Create(new SortableEvents(OnRowDragOverAsync, OnRowDropAsync,
+            OnRowKeyAsync));
+        var sortable = await Modules.ImportAsync("./_content/Trailblazor/sortable.js");
+        var reorder = _disposed ? null
+            : await sortable.InvokeAsync<IJSObjectReference?>("attachSortable", _body, _moveEvents,
+                "tr[data-part=\"row\"]");
+        if (reorder is not null && _disposed)
+        {
+            await reorder.DisposeHandleAsync();
+            return;
+        }
+
+        _reorder = reorder;
+        StateHasChanged();
+    }
+
+    // Tests wait for data-ready, so it waits for whatever hears their clicks and keys.
+    private bool IsReady => _handle is not null && (!OnRowMove.HasDelegate || _reorder is not null);
+
+    // Rows that can move count among all the items, which they show in order, so a row's place follows from its page.
+    private int Offset => _pageSize is { } size ? (_page - 1) * size : 0;
+
+    // The handles come and go as the grid is sorted, and rows draw again only when told to, so they are told to.
+    private void DrawRowsForReorder()
+    {
+        if (CanReorder != _reorderable)
+        {
+            _reorderable = CanReorder;
+            _rowVersion++;
+        }
+    }
+
+    private IReadOnlyList<TItem> AllItems => Items as IReadOnlyList<TItem> ?? [.. Items ?? []];
+
+    // Rows are named by their key's id, since a key pressed before the last move shows would name a stale place.
+    private int AllIndexOf(string id) => _rows.FindIndex(row => IdOf(row) == id) is >= 0 and var at
+        ? AllIndexOf(_rows[at]) : -1;
+
+    private int AllIndexOf(TItem item)
+    {
+        var key = KeyOf(item);
+        var items = AllItems;
+        for (var index = 0; index < items.Count; index++)
+        {
+            if (Equals(KeyOf(items[index]), key))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private Task<MoveCheck> OnRowDragOverAsync(string id, string targetId, bool before) =>
+        CanReorder && ItemMover<TItem>.DropIndex(AllIndexOf(id), AllIndexOf(targetId), before) is { } to
+            ? Mover.CheckAsync(AllItems, AllIndexOf(id), to, CanMoveRow) : Task.FromResult(new MoveCheck(false));
+
+    private Task OnRowDropAsync(string id, string targetId, bool before) =>
+        ItemMover<TItem>.DropIndex(AllIndexOf(id), AllIndexOf(targetId), before) is { } to
+            ? MoveRowAsync(AllIndexOf(id), to, "pointer") : Task.CompletedTask;
+
+    private Task OnRowKeyAsync(string id, string key) =>
+        AllIndexOf(id) is >= 0 and var from && ItemMover<TItem>.TargetOf(key, from, AllItems.Count) is { } to
+            ? MoveRowAsync(from, to, "keyboard") : Task.CompletedTask;
+
+    // A move chosen from a row's handle menu names the row's item, which is found where it is now.
+    private Task MoveRowAsync(TItem item, int to, string input) => MoveRowAsync(AllIndexOf(item), to, input);
+
+    // The app moves the item in its own list, often in place, so the rows are arranged again, on the page the row
+    // went to. A key press keeps focus on the moved row's handle.
+    private async Task MoveRowAsync(int from, int to, string input)
+    {
+        var items = AllItems;
+        if (!CanReorder || from < 0 || !await Mover.MoveAsync(items, from, to, CanMoveRow, OnRowMove, LabelOf))
+        {
+            return;
+        }
+
+        var moved = AllItems[to];
+
+        Telemetry.Used(TelemetryName, "move", input);
+        var page = _pageSize is { } size ? to / size + 1 : 1;
+        if (page != _page)
+        {
+            _page = page;
+            await PageChanged.InvokeAsync(_page);
+        }
+
+        await RefreshAsync();
+        if (input == "keyboard" && _reorder is not null)
+        {
+            await _reorder.InvokeVoidAsync("focusHandle", IdOf(moved));
+        }
     }
 
     // In memory the rows are sorted and paged here; a provider is asked only when the request differs from the last.
@@ -706,6 +833,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             await _handle.DisposeHandleAsync();
         }
 
+        if (_reorder is not null)
+        {
+            await _reorder.DisposeHandleAsync();
+        }
+
         _events?.Dispose();
+        _moveEvents?.Dispose();
     }
 }

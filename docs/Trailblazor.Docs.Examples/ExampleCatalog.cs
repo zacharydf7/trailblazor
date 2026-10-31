@@ -500,6 +500,42 @@ public static class ExampleCatalog
                 + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
                 + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`.",
         },
+        new("sortable", "Sortable", ExampleCategory.Content,
+            "A list the user puts in order, by dragging an item's handle or with the arrow keys, such as rules whose "
+                + "order sets which runs first.", typeof(SortableExample))
+        {
+            Api = [typeof(TbSortable<>), typeof(SortableMove<>), typeof(MoveCheck)],
+            Accessibility =
+            [
+                "A `list` named by its `Label`. Each item has a handle, a menu `button` named \"Move\" and the item's "
+                    + "text, described by how its keys work.",
+                "On a handle, the up and down arrows move the item one place, and Home and End move it to the start "
+                    + "or end; focus stays on the handle as the item moves. Enter, Space or a click opens its menu: "
+                    + "Move up, Move down, Move to the start and Move to the end. The menu is the one-click way that "
+                    + "replaces dragging (WCAG 2.5.7), and it works where a screen reader keeps the arrow keys for "
+                    + "itself.",
+                "Each move is announced with the item's new position, such as \"Storm warning moved to position 1 of "
+                    + "4.\", and a move `CanMove` refuses is announced with its reason, which also shows beside the "
+                    + "drop.",
+                "A drop lands before or after the item under the pointer, shown by a line; a place it can't go shows "
+                    + "dashed, so it doesn't rely on color.",
+                "`MoveAsync(from, to)` moves an item from the app's own buttons, such as \"Raise\" here, with the same "
+                    + "check and announcement.",
+            ],
+            Target = new("list", "Trail alerts, first match wins"),
+            Blocks = ["tb-sortable"],
+            DataParts = ["list", "item", "handle", "drop-reason"],
+            TestingTip = "Wait for `data-ready` on the list's root, then press keys on a handle, found as "
+                + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
+                + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
+                + "follow. In bUnit, `MoveAsync` makes a move as the user would.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"alert-order\"`, each move the user makes counts "
+                    + "`trailblazor.control.used` with the action `move` and the input `pointer` or `keyboard`. Moves "
+                    + "made with `MoveAsync` aren't counted, and which item moved is never recorded.",
+            ],
+        },
         new("badge", "Badge", ExampleCategory.Feedback,
             "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.",
             typeof(BadgeExample))
@@ -1275,7 +1311,7 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
-                typeof(TreeDropCheck), typeof(TreeInsertContext<>),
+                typeof(MoveCheck), typeof(TreeInsertContext<>),
             ],
             Accessibility =
             [
@@ -1342,7 +1378,7 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),
-                typeof(GridResult<>), typeof(GridSort),
+                typeof(GridResult<>), typeof(GridSort), typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Accessibility =
             [
@@ -1363,11 +1399,17 @@ public static class ExampleCatalog
                     + "`EmptyContent`, set `Labels.Empty` to what screen readers should hear instead.",
                 "Every control in it is a native button, link or input, reached with Tab. Only a pointer clicks a "
                     + "row, so whatever `OnRowClick` does needs a button in a cell too.",
+                "With `OnRowMove`, rows held in `Items` can be put in order while the grid isn't sorted. Each row "
+                    + "gains a handle in an \"Order\" column, a menu `button` named \"Move\" and the row's label: drag "
+                    + "it, press the up and down arrows, Home or End on it, or choose from its menu. Moves cross "
+                    + "pages, focus stays on the handle, and each is read out with the row's new position. `CanMoveRow` can "
+                    + "refuse a move, with a reason shown beside the drop and read out. Each handle is a menu with a "
+                    + "script of its own, so give a grid whose rows move a `PageSize` when it holds many rows.",
             ],
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
-            DataParts = ["grid", "scroll", "sort", "sort-order", "select-all", "row", "select", "loading", "empty",
-                "failed", "summary", "pager"],
+            DataParts = ["grid", "scroll", "sort", "sort-order", "select-all", "row", "select", "order", "handle",
+                "drop-reason", "loading", "empty", "failed", "summary", "pager"],
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
                 + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
@@ -1384,8 +1426,9 @@ public static class ExampleCatalog
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
-                    + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `page`, `page_size` "
-                    + "or `select` for each of those the user does.",
+                    + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `page`, `page_size`, "
+                    + "`select` or `move` for each of those the user does; a move also says whether a `pointer` or "
+                    + "the `keyboard` made it.",
                 "A page `ScrollToAsync` moves to isn't counted, and which column, page or rows were used is never "
                     + "recorded.",
             ],

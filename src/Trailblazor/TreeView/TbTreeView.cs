@@ -221,10 +221,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     public Func<TItem, bool>? CanDrag { get; set; }
 
     /// <summary>Asked whether a move is allowed, as a drag passes over a place and before a keyboard move. Refuse
-    /// with <see cref="TreeDropCheck.Refuse"/> and a reason, which shows beside the place and is read out. An item can
+    /// with <see cref="MoveCheck.Refuse"/> and a reason, which shows beside the place and is read out. An item can
     /// never move into itself, whatever this says.</summary>
     [Parameter]
-    public Func<TreeDrop<TItem>, Task<TreeDropCheck>>? CanDrop { get; set; }
+    public Func<TreeDrop<TItem>, Task<MoveCheck>>? CanDrop { get; set; }
 
     /// <summary>A slot below each row, such as an "insert here" button, which shows while the row is hovered or the
     /// slot has focus. Its context says where an item inserted there would go; the first row also has one above it.
@@ -984,7 +984,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         return [.. nodes.Where(node => !node.Ancestors().Any(nodes.Contains))];
     }
 
-    private async Task<TreeDropCheck> CheckDropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
+    private async Task<MoveCheck> CheckDropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
         TreeDropPosition position)
     {
         if (sources.Count == 0 || !sources.All(CanDragRow))
@@ -995,16 +995,16 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         // Beside or inside one of its own descendants, an item would move into itself.
         if (sources.Any(source => source == target || target.Ancestors().Contains(source)))
         {
-            return TreeDropCheck.Refuse(Localizer[TbStrings.TreeViewCantMoveIntoItself]);
+            return MoveCheck.Refuse(Localizer[TbStrings.TreeViewCantMoveIntoItself]);
         }
 
-        return CanDrop is null ? TreeDropCheck.Allow
+        return CanDrop is null ? MoveCheck.Allow
             : await CanDrop(new([.. sources.Select(source => source.Item)], target.Item, position));
     }
 
-    private Task<TreeDropCheck> OnDragOverAsync(string[] ids, string targetId, TreeDropPosition position) =>
+    private Task<MoveCheck> OnDragOverAsync(string[] ids, string targetId, TreeDropPosition position) =>
         _byId.TryGetValue(targetId, out var target) ? CheckDropAsync(NodesOf(ids), target, position)
-            : Task.FromResult(new TreeDropCheck(false));
+            : Task.FromResult(new MoveCheck(false));
 
     private async Task OnDropAsync(string[] ids, string targetId, TreeDropPosition position)
     {

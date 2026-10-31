@@ -2,17 +2,23 @@
 @typeparam TItem
 @inherits TbComponentBase
 
-<div @attributes="AdditionalAttributes" data-part="grid" data-ready="@(_handle is null ? null : "")" style="@Style"
+<div @attributes="AdditionalAttributes" data-part="grid" data-ready="@(IsReady ? "" : null)" style="@Style"
      class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
-    @{ CheckColumnKeys(); ArrangeForColumns(); }
+    @{ CheckColumnKeys(); ArrangeForColumns(); DrawRowsForReorder(); }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
         <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
                class="tb-data-grid__table">
             <thead>
                 <tr>
+                    @if (CanReorder)
+                    {
+                        <th scope="col" data-part="order" class="tb-data-grid__handle">
+                            <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridOrder]</span>
+                        </th>
+                    }
                     @if (SelectionMode == SelectionMode.Multiple)
                     {
                         <th scope="col" data-part="select" class="tb-data-grid__select">
@@ -69,7 +75,7 @@
                     }
                 </tr>
             </thead>
-            <tbody>
+            <tbody @ref="_body" data-sortable="@(CanReorder ? "" : null)">
                 @if (_failed)
                 {
                     <tr data-part="failed" class="tb-data-grid__status">
@@ -106,6 +112,11 @@
             </tbody>
         </table>
     </div>
+    @if (OnRowMove.HasDelegate)
+    {
+        @* The announcer reads the reason out, so this is only for sight. *@
+        <div data-part="drop-reason" class="tb-sortable__reason" aria-hidden="true" hidden></div>
+    }
     @if (_pageSize is { } size && (_total > 0 || PageSizes is not null))
     {
         var first = _total == 0 ? 0 : (_page - 1) * size + 1;
@@ -135,10 +146,18 @@
 </div>
 
 @code {
-    private RenderFragment Row(TItem item, object key, bool selected) =>
+    private RenderFragment Row(TItem item, object key, bool selected, int at) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
                         RowClass?.Invoke(item))">
+            @if (CanReorder)
+            {
+                <td class="tb-data-grid__handle">
+                    @((RenderFragment)(handle => MoveHandle.Add(handle, 0, Format(TbStrings.SortableHandle,
+                        LabelOf(item)), at, _total, disabled: false, Localizer,
+                        (to, args) => MoveRowAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
+                </td>
+            }
             @if (SelectionMode != SelectionMode.None)
             {
                 <td data-part="select" class="tb-data-grid__select">

@@ -4510,6 +4510,44 @@
         text-align: center;
     }
 
+    /* A grid whose rows move holds its drop reason, placed below the row it is about. */
+    .tb-data-grid:has(> .tb-sortable__reason) {
+        position: relative;
+    }
+
+    .tb-data-grid__handle {
+        width: 2.75rem;
+        padding-block: 0;
+        text-align: center;
+    }
+
+    .tb-data-grid__row[data-dragging] {
+        opacity: 0.5;
+    }
+
+    .tb-data-grid__row[data-drop] {
+        --tb-sortable-drop: var(--tb-color-primary);
+    }
+
+    .tb-data-grid__row[data-drop-refused] {
+        --tb-sortable-drop: var(--tb-color-danger-text);
+        cursor: not-allowed;
+    }
+
+    /* A table row draws no shadow of its own, so its cells draw the line. */
+    .tb-data-grid__row[data-drop="before"] > td {
+        box-shadow: inset 0 2px 0 var(--tb-sortable-drop);
+    }
+
+    .tb-data-grid__row[data-drop="after"] > td {
+        box-shadow: inset 0 -2px 0 var(--tb-sortable-drop);
+    }
+
+    .tb-data-grid__row[data-drop][data-drop-refused] > td {
+        box-shadow: none;
+        border-block: 2px dashed var(--tb-sortable-drop);
+    }
+
     .tb-data-grid__check {
         width: 1rem;
         height: 1rem;
@@ -4553,6 +4591,18 @@
         .tb-data-grid__row--selected {
             outline: 2px solid Highlight;
             outline-offset: -2px;
+        }
+
+        .tb-data-grid__row[data-drop="before"] > td {
+            border-block-start: 2px solid Highlight;
+        }
+
+        .tb-data-grid__row[data-drop="after"] > td {
+            border-block-end: 2px solid Highlight;
+        }
+
+        .tb-data-grid__row[data-drop-refused] > td {
+            border-style: dashed;
         }
     }
 
@@ -5179,6 +5229,111 @@
 
         .tb-date-range__day[aria-disabled="true"] {
             color: GrayText;
+        }
+    }
+
+    .tb-sortable {
+        position: relative;
+    }
+
+    .tb-sortable__list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-sortable__item {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-1) var(--tb-space-2);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+    }
+
+    .tb-sortable__content {
+        flex: 1;
+        min-inline-size: 0;
+    }
+
+    .tb-sortable__handle {
+        flex: none;
+    }
+
+    /* The handle's button is what a drag starts from, so a touch on it holds still instead of scrolling the page. */
+    .tb-sortable__handle > [data-part="trigger"] {
+        color: var(--tb-color-text-muted);
+        cursor: grab;
+        touch-action: none;
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+
+    .tb-sortable__handle > [data-part="trigger"]:disabled {
+        cursor: default;
+    }
+
+    [data-dragging] .tb-sortable__handle > [data-part="trigger"] {
+        cursor: grabbing;
+    }
+
+    .tb-sortable__item[data-dragging] {
+        opacity: 0.5;
+    }
+
+    /* The item lands before or after the one under the pointer; a place it can't land shows dashed, in the danger
+       color. */
+    .tb-sortable__item[data-drop] {
+        --tb-sortable-drop: var(--tb-color-primary);
+    }
+
+    .tb-sortable__item[data-drop-refused] {
+        --tb-sortable-drop: var(--tb-color-danger-text);
+        cursor: not-allowed;
+    }
+
+    .tb-sortable__item[data-drop="before"] {
+        box-shadow: inset 0 2px 0 var(--tb-sortable-drop);
+    }
+
+    .tb-sortable__item[data-drop="after"] {
+        box-shadow: inset 0 -2px 0 var(--tb-sortable-drop);
+    }
+
+    .tb-sortable__item[data-drop][data-drop-refused] {
+        box-shadow: none;
+        outline: 2px dashed var(--tb-sortable-drop);
+        outline-offset: -2px;
+    }
+
+    .tb-sortable__reason {
+        position: absolute;
+        inset-inline-start: var(--tb-space-2);
+        z-index: 1;
+        padding: var(--tb-space-1) var(--tb-space-2);
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-surface-raised);
+        color: var(--tb-color-danger-text);
+        box-shadow: var(--tb-shadow-md);
+        font-size: var(--tb-font-size-xs);
+        pointer-events: none;
+    }
+
+    @media (forced-colors: active) {
+        .tb-sortable__item[data-drop="before"] {
+            border-block-start: 2px solid Highlight;
+        }
+
+        .tb-sortable__item[data-drop="after"] {
+            border-block-end: 2px solid Highlight;
+        }
+
+        .tb-sortable__item[data-drop-refused] {
+            border-style: dashed;
         }
     }
 }
