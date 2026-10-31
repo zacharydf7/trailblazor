@@ -13,6 +13,8 @@ An issue is done when all of these hold:
   table, accessibility notes and testing notes brought up to date, and the docs examples pass the axe checks.
 - The change follows the conventions: American English, comments only for real constraints, test names
   `SUT_Should<Expectation>_When<Condition>`.
+- A change to the public API is listed in its project's `PublicAPI.Unshipped.txt`. The build names each public member
+  that isn't (RS0016), and the IDE's fix adds it; a release moves the lines to `PublicAPI.Shipped.txt`.
 
 ## Roadmap
 

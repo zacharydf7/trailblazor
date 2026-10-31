@@ -1,0 +1,61 @@
+#nullable enable
+override Trailblazor.Testing.BrowserFile.Equals(object? obj) -> bool
+override Trailblazor.Testing.BrowserFile.GetHashCode() -> int
+override Trailblazor.Testing.BrowserFile.ToString() -> string!
+override Trailblazor.Testing.ScrollRequest.Equals(object? obj) -> bool
+override Trailblazor.Testing.ScrollRequest.GetHashCode() -> int
+override Trailblazor.Testing.ScrollRequest.ToString() -> string!
+static Trailblazor.Testing.BrowserFile.operator !=(Trailblazor.Testing.BrowserFile? left, Trailblazor.Testing.BrowserFile? right) -> bool
+static Trailblazor.Testing.BrowserFile.operator ==(Trailblazor.Testing.BrowserFile? left, Trailblazor.Testing.BrowserFile? right) -> bool
+static Trailblazor.Testing.ScrollRequest.operator !=(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
+static Trailblazor.Testing.ScrollRequest.operator ==(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
+static Trailblazor.Testing.TrailblazorBunitExtensions.AddTrailblazor(this Bunit.BunitContext! context, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Bunit.BunitContext!
+Trailblazor.Testing.BrowserFile
+Trailblazor.Testing.BrowserFile.<Clone>$() -> Trailblazor.Testing.BrowserFile!
+Trailblazor.Testing.BrowserFile.BrowserFile(string! FileName, string? ContentType, byte[]! Content) -> void
+Trailblazor.Testing.BrowserFile.Content.get -> byte[]!
+Trailblazor.Testing.BrowserFile.Content.init -> void
+Trailblazor.Testing.BrowserFile.ContentType.get -> string?
+Trailblazor.Testing.BrowserFile.ContentType.init -> void
+Trailblazor.Testing.BrowserFile.Deconstruct(out string! FileName, out string? ContentType, out byte[]! Content) -> void
+Trailblazor.Testing.BrowserFile.Equals(Trailblazor.Testing.BrowserFile? other) -> bool
+Trailblazor.Testing.BrowserFile.FileName.get -> string!
+Trailblazor.Testing.BrowserFile.FileName.init -> void
+Trailblazor.Testing.BrowserFile.Text.get -> string!
+Trailblazor.Testing.FakeBrowserService
+Trailblazor.Testing.FakeBrowserService.CancelsSave.get -> bool
+Trailblazor.Testing.FakeBrowserService.CancelsSave.set -> void
+Trailblazor.Testing.FakeBrowserService.CanCopy.get -> bool
+Trailblazor.Testing.FakeBrowserService.CanCopy.set -> void
+Trailblazor.Testing.FakeBrowserService.CanPickColor.get -> bool
+Trailblazor.Testing.FakeBrowserService.CanPickColor.set -> void
+Trailblazor.Testing.FakeBrowserService.CanPickColorAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.FakeBrowserService.Copied.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.FakeBrowserService.CopyTextAsync(string! text) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.FakeBrowserService.DownloadAsync(System.IO.Stream! content, string! fileName, string? contentType = null) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.FakeBrowserService.Downloads.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Testing.BrowserFile!>!
+Trailblazor.Testing.FakeBrowserService.FakeBrowserService() -> void
+Trailblazor.Testing.FakeBrowserService.GetViewportAsync() -> System.Threading.Tasks.Task<Trailblazor.Viewport!>!
+Trailblazor.Testing.FakeBrowserService.ObserveBreakpointAsync(System.Func<Trailblazor.Breakpoint, System.Threading.Tasks.Task!>! onChange) -> System.Threading.Tasks.Task<System.IAsyncDisposable!>!
+Trailblazor.Testing.FakeBrowserService.ObserveViewportAsync(System.Func<Trailblazor.Viewport!, System.Threading.Tasks.Task!>! onChange) -> System.Threading.Tasks.Task<System.IAsyncDisposable!>!
+Trailblazor.Testing.FakeBrowserService.PickColorAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.FakeBrowserService.PickedColor.get -> string?
+Trailblazor.Testing.FakeBrowserService.PickedColor.set -> void
+Trailblazor.Testing.FakeBrowserService.ResizeAsync(int width, int height) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.FakeBrowserService.SaveAsync(System.IO.Stream! content, string! fileName, string? contentType = null) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.FakeBrowserService.Saves.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Testing.BrowserFile!>!
+Trailblazor.Testing.FakeBrowserService.ScrolledTo.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Testing.ScrollRequest!>!
+Trailblazor.Testing.FakeBrowserService.ScrollIntoViewAsync(Microsoft.AspNetCore.Components.ElementReference element, Trailblazor.ScrollAlignment alignment = Trailblazor.ScrollAlignment.Nearest, bool smooth = false) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.FakeBrowserService.Viewport.get -> Trailblazor.Viewport!
+Trailblazor.Testing.ScrollRequest
+Trailblazor.Testing.ScrollRequest.<Clone>$() -> Trailblazor.Testing.ScrollRequest!
+Trailblazor.Testing.ScrollRequest.Alignment.get -> Trailblazor.ScrollAlignment
+Trailblazor.Testing.ScrollRequest.Alignment.init -> void
+Trailblazor.Testing.ScrollRequest.Deconstruct(out Microsoft.AspNetCore.Components.ElementReference Element, out Trailblazor.ScrollAlignment Alignment, out bool Smooth) -> void
+Trailblazor.Testing.ScrollRequest.Element.get -> Microsoft.AspNetCore.Components.ElementReference
+Trailblazor.Testing.ScrollRequest.Element.init -> void
+Trailblazor.Testing.ScrollRequest.Equals(Trailblazor.Testing.ScrollRequest? other) -> bool
+Trailblazor.Testing.ScrollRequest.ScrollRequest(Microsoft.AspNetCore.Components.ElementReference Element, Trailblazor.ScrollAlignment Alignment, bool Smooth) -> void
+Trailblazor.Testing.ScrollRequest.Smooth.get -> bool
+Trailblazor.Testing.ScrollRequest.Smooth.init -> void
+Trailblazor.Testing.TrailblazorBunitExtensions

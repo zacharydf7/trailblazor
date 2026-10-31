@@ -3,8 +3,10 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Enum values name themselves; a test checks that every public type and property has a summary instead. -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Enum values name themselves; a test checks that every public type and property has a summary instead. Razor's
+         render methods and record structs' generated Equals and ToString have no nullable annotations, which the API
+         files can't fix. -->
+    <NoWarn>$(NoWarn);CS1591;RS0041</NoWarn>
     <Description>Accessible Blazor UI components built on design tokens, cascade layers and native browser overlays.</Description>
   </PropertyGroup>
 

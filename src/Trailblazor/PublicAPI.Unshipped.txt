@@ -1,0 +1,2533 @@
+#nullable enable
+Microsoft.Extensions.DependencyInjection.TrailblazorServiceCollectionExtensions
+Trailblazor.AlertClasses
+Trailblazor.AlertClasses.<Clone>$() -> Trailblazor.AlertClasses!
+Trailblazor.AlertClasses.Actions.get -> string?
+Trailblazor.AlertClasses.Actions.init -> void
+Trailblazor.AlertClasses.AlertClasses() -> void
+Trailblazor.AlertClasses.Close.get -> string?
+Trailblazor.AlertClasses.Close.init -> void
+Trailblazor.AlertClasses.Equals(Trailblazor.AlertClasses? other) -> bool
+Trailblazor.AlertClasses.Icon.get -> string?
+Trailblazor.AlertClasses.Icon.init -> void
+Trailblazor.AlertClasses.Message.get -> string?
+Trailblazor.AlertClasses.Message.init -> void
+Trailblazor.AlertClasses.Title.get -> string?
+Trailblazor.AlertClasses.Title.init -> void
+Trailblazor.AlertVariant
+Trailblazor.AlertVariant.Filled = 1 -> Trailblazor.AlertVariant
+Trailblazor.AlertVariant.Outlined = 2 -> Trailblazor.AlertVariant
+Trailblazor.AlertVariant.Soft = 0 -> Trailblazor.AlertVariant
+Trailblazor.Align
+Trailblazor.Align.Baseline = 4 -> Trailblazor.Align
+Trailblazor.Align.Center = 1 -> Trailblazor.Align
+Trailblazor.Align.End = 2 -> Trailblazor.Align
+Trailblazor.Align.Start = 0 -> Trailblazor.Align
+Trailblazor.Align.Stretch = 3 -> Trailblazor.Align
+Trailblazor.AutocompleteLabels
+Trailblazor.AutocompleteLabels.<Clone>$() -> Trailblazor.AutocompleteLabels!
+Trailblazor.AutocompleteLabels.AutocompleteLabels() -> void
+Trailblazor.AutocompleteLabels.Clear.get -> string?
+Trailblazor.AutocompleteLabels.Clear.init -> void
+Trailblazor.AutocompleteLabels.Equals(Trailblazor.AutocompleteLabels? other) -> bool
+Trailblazor.AutocompleteLabels.NoResults.get -> string?
+Trailblazor.AutocompleteLabels.NoResults.init -> void
+Trailblazor.AutocompleteLabels.Results.get -> string?
+Trailblazor.AutocompleteLabels.Results.init -> void
+Trailblazor.AutocompleteLabels.SearchFailed.get -> string?
+Trailblazor.AutocompleteLabels.SearchFailed.init -> void
+Trailblazor.AutocompleteLabels.Searching.get -> string?
+Trailblazor.AutocompleteLabels.Searching.init -> void
+Trailblazor.AutocompleteLabels.TypeToSearch.get -> string?
+Trailblazor.AutocompleteLabels.TypeToSearch.init -> void
+Trailblazor.BadgeOverlap
+Trailblazor.BadgeOverlap.Circular = 1 -> Trailblazor.BadgeOverlap
+Trailblazor.BadgeOverlap.Rectangular = 0 -> Trailblazor.BadgeOverlap
+Trailblazor.BadgePlacement
+Trailblazor.BadgePlacement.BottomEnd = 2 -> Trailblazor.BadgePlacement
+Trailblazor.BadgePlacement.BottomStart = 3 -> Trailblazor.BadgePlacement
+Trailblazor.BadgePlacement.TopEnd = 0 -> Trailblazor.BadgePlacement
+Trailblazor.BadgePlacement.TopStart = 1 -> Trailblazor.BadgePlacement
+Trailblazor.Breakpoint
+Trailblazor.Breakpoint.Lg = 3 -> Trailblazor.Breakpoint
+Trailblazor.Breakpoint.Md = 2 -> Trailblazor.Breakpoint
+Trailblazor.Breakpoint.Sm = 1 -> Trailblazor.Breakpoint
+Trailblazor.Breakpoint.Xl = 4 -> Trailblazor.Breakpoint
+Trailblazor.Breakpoint.Xs = 0 -> Trailblazor.Breakpoint
+Trailblazor.ButtonClasses
+Trailblazor.ButtonClasses.<Clone>$() -> Trailblazor.ButtonClasses!
+Trailblazor.ButtonClasses.ButtonClasses() -> void
+Trailblazor.ButtonClasses.End.get -> string?
+Trailblazor.ButtonClasses.End.init -> void
+Trailblazor.ButtonClasses.Equals(Trailblazor.ButtonClasses? other) -> bool
+Trailblazor.ButtonClasses.Label.get -> string?
+Trailblazor.ButtonClasses.Label.init -> void
+Trailblazor.ButtonClasses.Spinner.get -> string?
+Trailblazor.ButtonClasses.Spinner.init -> void
+Trailblazor.ButtonClasses.Start.get -> string?
+Trailblazor.ButtonClasses.Start.init -> void
+Trailblazor.ButtonType
+Trailblazor.ButtonType.Button = 0 -> Trailblazor.ButtonType
+Trailblazor.ButtonType.Reset = 2 -> Trailblazor.ButtonType
+Trailblazor.ButtonType.Submit = 1 -> Trailblazor.ButtonType
+Trailblazor.ChoiceClasses
+Trailblazor.ChoiceClasses.<Clone>$() -> Trailblazor.ChoiceClasses!
+Trailblazor.ChoiceClasses.ChoiceClasses() -> void
+Trailblazor.ChoiceClasses.Equals(Trailblazor.ChoiceClasses? other) -> bool
+Trailblazor.ChoiceClasses.Error.get -> string?
+Trailblazor.ChoiceClasses.Error.init -> void
+Trailblazor.ChoiceClasses.Helper.get -> string?
+Trailblazor.ChoiceClasses.Helper.init -> void
+Trailblazor.ChoiceClasses.Input.get -> string?
+Trailblazor.ChoiceClasses.Input.init -> void
+Trailblazor.ChoiceClasses.Label.get -> string?
+Trailblazor.ChoiceClasses.Label.init -> void
+Trailblazor.ColorPickerLabels
+Trailblazor.ColorPickerLabels.<Clone>$() -> Trailblazor.ColorPickerLabels!
+Trailblazor.ColorPickerLabels.Alpha.get -> string?
+Trailblazor.ColorPickerLabels.Alpha.init -> void
+Trailblazor.ColorPickerLabels.BadColor.get -> string?
+Trailblazor.ColorPickerLabels.BadColor.init -> void
+Trailblazor.ColorPickerLabels.Blue.get -> string?
+Trailblazor.ColorPickerLabels.Blue.init -> void
+Trailblazor.ColorPickerLabels.Brightness.get -> string?
+Trailblazor.ColorPickerLabels.Brightness.init -> void
+Trailblazor.ColorPickerLabels.Clear.get -> string?
+Trailblazor.ColorPickerLabels.Clear.init -> void
+Trailblazor.ColorPickerLabels.ColorPickerLabels() -> void
+Trailblazor.ColorPickerLabels.Equals(Trailblazor.ColorPickerLabels? other) -> bool
+Trailblazor.ColorPickerLabels.Eyedropper.get -> string?
+Trailblazor.ColorPickerLabels.Eyedropper.init -> void
+Trailblazor.ColorPickerLabels.Green.get -> string?
+Trailblazor.ColorPickerLabels.Green.init -> void
+Trailblazor.ColorPickerLabels.Hue.get -> string?
+Trailblazor.ColorPickerLabels.Hue.init -> void
+Trailblazor.ColorPickerLabels.Open.get -> string?
+Trailblazor.ColorPickerLabels.Open.init -> void
+Trailblazor.ColorPickerLabels.Red.get -> string?
+Trailblazor.ColorPickerLabels.Red.init -> void
+Trailblazor.ColorPickerLabels.Saturation.get -> string?
+Trailblazor.ColorPickerLabels.Saturation.init -> void
+Trailblazor.ColorPickerLabels.Swatches.get -> string?
+Trailblazor.ColorPickerLabels.Swatches.init -> void
+Trailblazor.ColumnAlign
+Trailblazor.ColumnAlign.Center = 1 -> Trailblazor.ColumnAlign
+Trailblazor.ColumnAlign.End = 2 -> Trailblazor.ColumnAlign
+Trailblazor.ColumnAlign.Start = 0 -> Trailblazor.ColumnAlign
+Trailblazor.ContainerWidth
+Trailblazor.ContainerWidth.ExtraLarge = 3 -> Trailblazor.ContainerWidth
+Trailblazor.ContainerWidth.Full = 4 -> Trailblazor.ContainerWidth
+Trailblazor.ContainerWidth.Large = 2 -> Trailblazor.ContainerWidth
+Trailblazor.ContainerWidth.Medium = 1 -> Trailblazor.ContainerWidth
+Trailblazor.ContainerWidth.Small = 0 -> Trailblazor.ContainerWidth
+Trailblazor.DataGridLabels
+Trailblazor.DataGridLabels.<Clone>$() -> Trailblazor.DataGridLabels!
+Trailblazor.DataGridLabels.DataGridLabels() -> void
+Trailblazor.DataGridLabels.Empty.get -> string?
+Trailblazor.DataGridLabels.Empty.init -> void
+Trailblazor.DataGridLabels.Equals(Trailblazor.DataGridLabels? other) -> bool
+Trailblazor.DataGridLabels.LoadFailed.get -> string?
+Trailblazor.DataGridLabels.LoadFailed.init -> void
+Trailblazor.DataGridLabels.Loading.get -> string?
+Trailblazor.DataGridLabels.Loading.init -> void
+Trailblazor.DataGridLabels.PageSize.get -> string?
+Trailblazor.DataGridLabels.PageSize.init -> void
+Trailblazor.DataGridLabels.Retry.get -> string?
+Trailblazor.DataGridLabels.Retry.init -> void
+Trailblazor.DataGridLabels.SelectAll.get -> string?
+Trailblazor.DataGridLabels.SelectAll.init -> void
+Trailblazor.DateRange<TDate>
+Trailblazor.DateRange<TDate>.DateRange() -> void
+Trailblazor.DateRange<TDate>.DateRange(TDate? Start, TDate? End) -> void
+Trailblazor.DateRange<TDate>.Deconstruct(out TDate? Start, out TDate? End) -> void
+Trailblazor.DateRange<TDate>.End.get -> TDate?
+Trailblazor.DateRange<TDate>.End.init -> void
+Trailblazor.DateRange<TDate>.Equals(Trailblazor.DateRange<TDate> other) -> bool
+Trailblazor.DateRange<TDate>.Start.get -> TDate?
+Trailblazor.DateRange<TDate>.Start.init -> void
+Trailblazor.DateRangePickerLabels
+Trailblazor.DateRangePickerLabels.<Clone>$() -> Trailblazor.DateRangePickerLabels!
+Trailblazor.DateRangePickerLabels.BadEnd.get -> string?
+Trailblazor.DateRangePickerLabels.BadEnd.init -> void
+Trailblazor.DateRangePickerLabels.BadStart.get -> string?
+Trailblazor.DateRangePickerLabels.BadStart.init -> void
+Trailblazor.DateRangePickerLabels.ChooseEnd.get -> string?
+Trailblazor.DateRangePickerLabels.ChooseEnd.init -> void
+Trailblazor.DateRangePickerLabels.Clear.get -> string?
+Trailblazor.DateRangePickerLabels.Clear.init -> void
+Trailblazor.DateRangePickerLabels.DateRangePickerLabels() -> void
+Trailblazor.DateRangePickerLabels.End.get -> string?
+Trailblazor.DateRangePickerLabels.End.init -> void
+Trailblazor.DateRangePickerLabels.EndBeforeStart.get -> string?
+Trailblazor.DateRangePickerLabels.EndBeforeStart.init -> void
+Trailblazor.DateRangePickerLabels.Equals(Trailblazor.DateRangePickerLabels? other) -> bool
+Trailblazor.DateRangePickerLabels.NextMonth.get -> string?
+Trailblazor.DateRangePickerLabels.NextMonth.init -> void
+Trailblazor.DateRangePickerLabels.Open.get -> string?
+Trailblazor.DateRangePickerLabels.Open.init -> void
+Trailblazor.DateRangePickerLabels.Presets.get -> string?
+Trailblazor.DateRangePickerLabels.Presets.init -> void
+Trailblazor.DateRangePickerLabels.PreviousMonth.get -> string?
+Trailblazor.DateRangePickerLabels.PreviousMonth.init -> void
+Trailblazor.DateRangePickerLabels.Start.get -> string?
+Trailblazor.DateRangePickerLabels.Start.init -> void
+Trailblazor.DateRangePickerLabels.Unavailable.get -> string?
+Trailblazor.DateRangePickerLabels.Unavailable.init -> void
+Trailblazor.DateRangePreset<TDate>
+Trailblazor.DateRangePreset<TDate>.<Clone>$() -> Trailblazor.DateRangePreset<TDate>!
+Trailblazor.DateRangePreset<TDate>.DateRangePreset(string! Label, Trailblazor.DateRange<TDate> Range) -> void
+Trailblazor.DateRangePreset<TDate>.Deconstruct(out string! Label, out Trailblazor.DateRange<TDate> Range) -> void
+Trailblazor.DateRangePreset<TDate>.Equals(Trailblazor.DateRangePreset<TDate>? other) -> bool
+Trailblazor.DateRangePreset<TDate>.Label.get -> string!
+Trailblazor.DateRangePreset<TDate>.Label.init -> void
+Trailblazor.DateRangePreset<TDate>.Range.get -> Trailblazor.DateRange<TDate>
+Trailblazor.DateRangePreset<TDate>.Range.init -> void
+Trailblazor.DialogDismissReason
+Trailblazor.DialogDismissReason.Backdrop = 1 -> Trailblazor.DialogDismissReason
+Trailblazor.DialogDismissReason.CloseButton = 2 -> Trailblazor.DialogDismissReason
+Trailblazor.DialogDismissReason.Escape = 0 -> Trailblazor.DialogDismissReason
+Trailblazor.DialogFocus
+Trailblazor.DialogFocus.Dialog = 1 -> Trailblazor.DialogFocus
+Trailblazor.DialogFocus.FirstField = 0 -> Trailblazor.DialogFocus
+Trailblazor.DialogOptions
+Trailblazor.DialogOptions.<Clone>$() -> Trailblazor.DialogOptions!
+Trailblazor.DialogOptions.CloseButton.get -> bool
+Trailblazor.DialogOptions.CloseButton.init -> void
+Trailblazor.DialogOptions.DialogOptions() -> void
+Trailblazor.DialogOptions.DismissOnBackdrop.get -> bool?
+Trailblazor.DialogOptions.DismissOnBackdrop.init -> void
+Trailblazor.DialogOptions.DismissOnEscape.get -> bool?
+Trailblazor.DialogOptions.DismissOnEscape.init -> void
+Trailblazor.DialogOptions.Draggable.get -> bool
+Trailblazor.DialogOptions.Draggable.init -> void
+Trailblazor.DialogOptions.Equals(Trailblazor.DialogOptions? other) -> bool
+Trailblazor.DialogOptions.InitialFocus.get -> Trailblazor.DialogFocus
+Trailblazor.DialogOptions.InitialFocus.init -> void
+Trailblazor.DialogOptions.Maximizable.get -> bool
+Trailblazor.DialogOptions.Maximizable.init -> void
+Trailblazor.DialogOptions.Minimizable.get -> bool
+Trailblazor.DialogOptions.Minimizable.init -> void
+Trailblazor.DialogOptions.Modal.get -> bool
+Trailblazor.DialogOptions.Modal.init -> void
+Trailblazor.DialogOptions.Position.get -> Trailblazor.DialogPosition
+Trailblazor.DialogOptions.Position.init -> void
+Trailblazor.DialogOptions.Resizable.get -> bool
+Trailblazor.DialogOptions.Resizable.init -> void
+Trailblazor.DialogOptions.ShowHeader.get -> bool
+Trailblazor.DialogOptions.ShowHeader.init -> void
+Trailblazor.DialogOptions.Size.get -> Trailblazor.DialogSize
+Trailblazor.DialogOptions.Size.init -> void
+Trailblazor.DialogParameters<TDialog>
+Trailblazor.DialogParameters<TDialog>.DialogParameters() -> void
+Trailblazor.DialogParameters<TDialog>.Set<TValue>(System.Linq.Expressions.Expression<System.Func<TDialog, TValue>!>! parameter, TValue value) -> Trailblazor.DialogParameters<TDialog>!
+Trailblazor.DialogPosition
+Trailblazor.DialogPosition.Bottom = 2 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.BottomEnd = 8 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.BottomStart = 7 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.Center = 0 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.End = 4 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.Start = 3 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.Top = 1 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.TopEnd = 6 -> Trailblazor.DialogPosition
+Trailblazor.DialogPosition.TopStart = 5 -> Trailblazor.DialogPosition
+Trailblazor.DialogReference
+Trailblazor.DialogReference.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.DialogReference.Options.get -> Trailblazor.DialogOptions!
+Trailblazor.DialogReference.Title.get -> string!
+Trailblazor.DialogReference.Title.set -> void
+Trailblazor.DialogReference<TResult>
+Trailblazor.DialogReference<TResult>.CloseAsync(TResult value) -> System.Threading.Tasks.Task!
+Trailblazor.DialogReference<TResult>.Result.get -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.DialogReference<TResult>.Update<TDialog>(System.Action<Trailblazor.DialogParameters<TDialog!>!>! parameters) -> void
+Trailblazor.DialogResult<TResult>
+Trailblazor.DialogResult<TResult>.<Clone>$() -> Trailblazor.DialogResult<TResult>!
+Trailblazor.DialogResult<TResult>.Confirmed.get -> bool
+Trailblazor.DialogResult<TResult>.Confirmed.init -> void
+Trailblazor.DialogResult<TResult>.Deconstruct(out bool Confirmed, out TResult? Value) -> void
+Trailblazor.DialogResult<TResult>.DialogResult(bool Confirmed, TResult? Value) -> void
+Trailblazor.DialogResult<TResult>.Equals(Trailblazor.DialogResult<TResult>? other) -> bool
+Trailblazor.DialogResult<TResult>.Value.get -> TResult?
+Trailblazor.DialogResult<TResult>.Value.init -> void
+Trailblazor.DialogSettings
+Trailblazor.DialogSettings.DialogSettings() -> void
+Trailblazor.DialogSettings.DismissOnBackdrop.get -> bool
+Trailblazor.DialogSettings.DismissOnBackdrop.set -> void
+Trailblazor.DialogSettings.DismissOnEscape.get -> bool
+Trailblazor.DialogSettings.DismissOnEscape.set -> void
+Trailblazor.DialogSize
+Trailblazor.DialogSize.ExtraLarge = 3 -> Trailblazor.DialogSize
+Trailblazor.DialogSize.Full = 4 -> Trailblazor.DialogSize
+Trailblazor.DialogSize.Large = 2 -> Trailblazor.DialogSize
+Trailblazor.DialogSize.Medium = 1 -> Trailblazor.DialogSize
+Trailblazor.DialogSize.Small = 0 -> Trailblazor.DialogSize
+Trailblazor.DividerAlign
+Trailblazor.DividerAlign.Center = 1 -> Trailblazor.DividerAlign
+Trailblazor.DividerAlign.End = 2 -> Trailblazor.DividerAlign
+Trailblazor.DividerAlign.Start = 0 -> Trailblazor.DividerAlign
+Trailblazor.Elevation
+Trailblazor.Elevation.High = 3 -> Trailblazor.Elevation
+Trailblazor.Elevation.Low = 1 -> Trailblazor.Elevation
+Trailblazor.Elevation.Medium = 2 -> Trailblazor.Elevation
+Trailblazor.Elevation.None = 0 -> Trailblazor.Elevation
+Trailblazor.EventHandlers
+Trailblazor.FieldClasses
+Trailblazor.FieldClasses.<Clone>$() -> Trailblazor.FieldClasses!
+Trailblazor.FieldClasses.Control.get -> string?
+Trailblazor.FieldClasses.Control.init -> void
+Trailblazor.FieldClasses.End.get -> string?
+Trailblazor.FieldClasses.End.init -> void
+Trailblazor.FieldClasses.Equals(Trailblazor.FieldClasses? other) -> bool
+Trailblazor.FieldClasses.Error.get -> string?
+Trailblazor.FieldClasses.Error.init -> void
+Trailblazor.FieldClasses.FieldClasses() -> void
+Trailblazor.FieldClasses.Helper.get -> string?
+Trailblazor.FieldClasses.Helper.init -> void
+Trailblazor.FieldClasses.Input.get -> string?
+Trailblazor.FieldClasses.Input.init -> void
+Trailblazor.FieldClasses.Label.get -> string?
+Trailblazor.FieldClasses.Label.init -> void
+Trailblazor.FieldClasses.Start.get -> string?
+Trailblazor.FieldClasses.Start.init -> void
+Trailblazor.FieldVariant
+Trailblazor.FieldVariant.Filled = 1 -> Trailblazor.FieldVariant
+Trailblazor.FieldVariant.Outlined = 0 -> Trailblazor.FieldVariant
+Trailblazor.FileUploadLabels
+Trailblazor.FileUploadLabels.<Clone>$() -> Trailblazor.FileUploadLabels!
+Trailblazor.FileUploadLabels.Choose.get -> string?
+Trailblazor.FileUploadLabels.Choose.init -> void
+Trailblazor.FileUploadLabels.Chosen.get -> string?
+Trailblazor.FileUploadLabels.Chosen.init -> void
+Trailblazor.FileUploadLabels.ChosenOne.get -> string?
+Trailblazor.FileUploadLabels.ChosenOne.init -> void
+Trailblazor.FileUploadLabels.Clear.get -> string?
+Trailblazor.FileUploadLabels.Clear.init -> void
+Trailblazor.FileUploadLabels.Equals(Trailblazor.FileUploadLabels? other) -> bool
+Trailblazor.FileUploadLabels.FileUploadLabels() -> void
+Trailblazor.FileUploadLabels.Remove.get -> string?
+Trailblazor.FileUploadLabels.Remove.init -> void
+Trailblazor.FileUploadLabels.TooLarge.get -> string?
+Trailblazor.FileUploadLabels.TooLarge.init -> void
+Trailblazor.FileUploadLabels.TooMany.get -> string?
+Trailblazor.FileUploadLabels.TooMany.init -> void
+Trailblazor.FileUploadLabels.TooManyOne.get -> string?
+Trailblazor.FileUploadLabels.TooManyOne.init -> void
+Trailblazor.FileUploadLabels.WrongType.get -> string?
+Trailblazor.FileUploadLabels.WrongType.init -> void
+Trailblazor.FileUploadLabels.Zone.get -> string?
+Trailblazor.FileUploadLabels.Zone.init -> void
+Trailblazor.GridRequest
+Trailblazor.GridRequest.<Clone>$() -> Trailblazor.GridRequest!
+Trailblazor.GridRequest.Count.get -> int?
+Trailblazor.GridRequest.Count.init -> void
+Trailblazor.GridRequest.Deconstruct(out int StartIndex, out int? Count, out System.Collections.Generic.IReadOnlyList<Trailblazor.GridSort!>! Sorts) -> void
+Trailblazor.GridRequest.Equals(Trailblazor.GridRequest? other) -> bool
+Trailblazor.GridRequest.GridRequest(int StartIndex, int? Count, System.Collections.Generic.IReadOnlyList<Trailblazor.GridSort!>! Sorts) -> void
+Trailblazor.GridRequest.Sorts.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridSort!>!
+Trailblazor.GridRequest.Sorts.init -> void
+Trailblazor.GridRequest.StartIndex.get -> int
+Trailblazor.GridRequest.StartIndex.init -> void
+Trailblazor.GridResult<TItem>
+Trailblazor.GridResult<TItem>.<Clone>$() -> Trailblazor.GridResult<TItem>!
+Trailblazor.GridResult<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out int TotalCount) -> void
+Trailblazor.GridResult<TItem>.Equals(Trailblazor.GridResult<TItem>? other) -> bool
+Trailblazor.GridResult<TItem>.GridResult(System.Collections.Generic.IReadOnlyList<TItem>! Items, int TotalCount) -> void
+Trailblazor.GridResult<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.GridResult<TItem>.Items.init -> void
+Trailblazor.GridResult<TItem>.TotalCount.get -> int
+Trailblazor.GridResult<TItem>.TotalCount.init -> void
+Trailblazor.GridSort
+Trailblazor.GridSort.<Clone>$() -> Trailblazor.GridSort!
+Trailblazor.GridSort.Column.get -> string!
+Trailblazor.GridSort.Column.init -> void
+Trailblazor.GridSort.Deconstruct(out string! Column, out Trailblazor.SortDirection Direction) -> void
+Trailblazor.GridSort.Direction.get -> Trailblazor.SortDirection
+Trailblazor.GridSort.Direction.init -> void
+Trailblazor.GridSort.Equals(Trailblazor.GridSort? other) -> bool
+Trailblazor.GridSort.GridSort(string! Column, Trailblazor.SortDirection Direction) -> void
+Trailblazor.GridSpan
+Trailblazor.GridSpan.Equals(Trailblazor.GridSpan other) -> bool
+Trailblazor.GridSpan.GridSpan() -> void
+Trailblazor.IAnnouncer
+Trailblazor.IAnnouncer.Assertive(string! message) -> void
+Trailblazor.IAnnouncer.Clear() -> void
+Trailblazor.IAnnouncer.Polite(string! message) -> void
+Trailblazor.IBrowserService
+Trailblazor.IBrowserService.CanPickColorAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.IBrowserService.CopyTextAsync(string! text) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.IBrowserService.DownloadAsync(System.IO.Stream! content, string! fileName, string? contentType = null) -> System.Threading.Tasks.Task!
+Trailblazor.IBrowserService.GetViewportAsync() -> System.Threading.Tasks.Task<Trailblazor.Viewport!>!
+Trailblazor.IBrowserService.ObserveBreakpointAsync(System.Func<Trailblazor.Breakpoint, System.Threading.Tasks.Task!>! onChange) -> System.Threading.Tasks.Task<System.IAsyncDisposable!>!
+Trailblazor.IBrowserService.ObserveViewportAsync(System.Func<Trailblazor.Viewport!, System.Threading.Tasks.Task!>! onChange) -> System.Threading.Tasks.Task<System.IAsyncDisposable!>!
+Trailblazor.IBrowserService.PickColorAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.IBrowserService.SaveAsync(System.IO.Stream! content, string! fileName, string? contentType = null) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.IBrowserService.ScrollIntoViewAsync(Microsoft.AspNetCore.Components.ElementReference element, Trailblazor.ScrollAlignment alignment = Trailblazor.ScrollAlignment.Nearest, bool smooth = false) -> System.Threading.Tasks.Task!
+Trailblazor.IDialogService
+Trailblazor.IDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info) -> System.Threading.Tasks.Task!
+Trailblazor.IDialogService.CloseAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.IDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.IDialogService.OpenDialogs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
+Trailblazor.IDialogService.Show<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
+Trailblazor.IDialogService.ShowAsync<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.ITbLocalizer
+Trailblazor.ITbLocalizer.this[string! key].get -> string!
+Trailblazor.IThemeService
+Trailblazor.IThemeService.Changed -> System.Action?
+Trailblazor.IThemeService.LoadAsync() -> System.Threading.Tasks.Task!
+Trailblazor.IThemeService.Mode.get -> Trailblazor.ThemeMode
+Trailblazor.IThemeService.Palette.get -> Trailblazor.Palette
+Trailblazor.IThemeService.SetModeAsync(Trailblazor.ThemeMode mode) -> System.Threading.Tasks.Task!
+Trailblazor.IThemeService.SetPaletteAsync(Trailblazor.Palette palette) -> System.Threading.Tasks.Task!
+Trailblazor.IToastService
+Trailblazor.IToastService.DismissAll() -> void
+Trailblazor.IToastService.Show(string! message, Trailblazor.Tone tone = Trailblazor.Tone.Neutral, Trailblazor.ToastOptions? options = null) -> Trailblazor.ToastReference!
+Trailblazor.IToastService.Toasts.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.ToastReference!>!
+Trailblazor.Icon
+Trailblazor.Icon.Deconstruct(out string! Svg, out string! ViewBox) -> void
+Trailblazor.Icon.Equals(Trailblazor.Icon other) -> bool
+Trailblazor.Icon.Icon() -> void
+Trailblazor.Icon.Icon(string! Svg, string! ViewBox = "0 0 24 24") -> void
+Trailblazor.Icon.Svg.get -> string!
+Trailblazor.Icon.Svg.init -> void
+Trailblazor.Icon.ViewBox.get -> string!
+Trailblazor.Icon.ViewBox.init -> void
+Trailblazor.IconButtonClasses
+Trailblazor.IconButtonClasses.<Clone>$() -> Trailblazor.IconButtonClasses!
+Trailblazor.IconButtonClasses.Equals(Trailblazor.IconButtonClasses? other) -> bool
+Trailblazor.IconButtonClasses.Icon.get -> string?
+Trailblazor.IconButtonClasses.Icon.init -> void
+Trailblazor.IconButtonClasses.IconButtonClasses() -> void
+Trailblazor.IconButtonClasses.Spinner.get -> string?
+Trailblazor.IconButtonClasses.Spinner.init -> void
+Trailblazor.ImageFit
+Trailblazor.ImageFit.Contain = 1 -> Trailblazor.ImageFit
+Trailblazor.ImageFit.Cover = 2 -> Trailblazor.ImageFit
+Trailblazor.ImageFit.Fill = 0 -> Trailblazor.ImageFit
+Trailblazor.ImageFit.None = 4 -> Trailblazor.ImageFit
+Trailblazor.ImageFit.ScaleDown = 3 -> Trailblazor.ImageFit
+Trailblazor.Justify
+Trailblazor.Justify.Center = 1 -> Trailblazor.Justify
+Trailblazor.Justify.End = 2 -> Trailblazor.Justify
+Trailblazor.Justify.SpaceAround = 4 -> Trailblazor.Justify
+Trailblazor.Justify.SpaceBetween = 3 -> Trailblazor.Justify
+Trailblazor.Justify.SpaceEvenly = 5 -> Trailblazor.Justify
+Trailblazor.Justify.Start = 0 -> Trailblazor.Justify
+Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Article = 2 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Aside = 5 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Div = 0 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Footer = 7 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Header = 6 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Li = 10 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Main = 3 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Nav = 4 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Ol = 9 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Section = 1 -> Trailblazor.LayoutElement
+Trailblazor.LayoutElement.Ul = 8 -> Trailblazor.LayoutElement
+Trailblazor.MenuTrigger
+Trailblazor.MenuTrigger.<Clone>$() -> Trailblazor.MenuTrigger!
+Trailblazor.MenuTrigger.Attributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Trailblazor.MenuTrigger.Attributes.init -> void
+Trailblazor.MenuTrigger.Equals(Trailblazor.MenuTrigger? other) -> bool
+Trailblazor.MenuTrigger.MenuTrigger() -> void
+Trailblazor.NumberChangeEventArgs
+Trailblazor.NumberChangeEventArgs.BadInput.get -> bool
+Trailblazor.NumberChangeEventArgs.BadInput.set -> void
+Trailblazor.NumberChangeEventArgs.NumberChangeEventArgs() -> void
+Trailblazor.NumberChangeEventArgs.Value.get -> string?
+Trailblazor.NumberChangeEventArgs.Value.set -> void
+Trailblazor.PaginationLabels
+Trailblazor.PaginationLabels.<Clone>$() -> Trailblazor.PaginationLabels!
+Trailblazor.PaginationLabels.Equals(Trailblazor.PaginationLabels? other) -> bool
+Trailblazor.PaginationLabels.First.get -> string?
+Trailblazor.PaginationLabels.First.init -> void
+Trailblazor.PaginationLabels.Last.get -> string?
+Trailblazor.PaginationLabels.Last.init -> void
+Trailblazor.PaginationLabels.Navigation.get -> string?
+Trailblazor.PaginationLabels.Navigation.init -> void
+Trailblazor.PaginationLabels.Next.get -> string?
+Trailblazor.PaginationLabels.Next.init -> void
+Trailblazor.PaginationLabels.Of.get -> string?
+Trailblazor.PaginationLabels.Of.init -> void
+Trailblazor.PaginationLabels.Page.get -> string?
+Trailblazor.PaginationLabels.Page.init -> void
+Trailblazor.PaginationLabels.PageBox.get -> string?
+Trailblazor.PaginationLabels.PageBox.init -> void
+Trailblazor.PaginationLabels.PaginationLabels() -> void
+Trailblazor.PaginationLabels.Previous.get -> string?
+Trailblazor.PaginationLabels.Previous.init -> void
+Trailblazor.Palette
+Trailblazor.Palette.Clay = 9 -> Trailblazor.Palette
+Trailblazor.Palette.Cobalt = 1 -> Trailblazor.Palette
+Trailblazor.Palette.Fuchsia = 7 -> Trailblazor.Palette
+Trailblazor.Palette.Graphite = 0 -> Trailblazor.Palette
+Trailblazor.Palette.Indigo = 4 -> Trailblazor.Palette
+Trailblazor.Palette.Moss = 10 -> Trailblazor.Palette
+Trailblazor.Palette.Plum = 6 -> Trailblazor.Palette
+Trailblazor.Palette.Rose = 8 -> Trailblazor.Palette
+Trailblazor.Palette.Sand = 3 -> Trailblazor.Palette
+Trailblazor.Palette.Slate = 2 -> Trailblazor.Palette
+Trailblazor.Palette.Teal = 11 -> Trailblazor.Palette
+Trailblazor.Palette.Violet = 5 -> Trailblazor.Palette
+Trailblazor.Placement
+Trailblazor.Placement.Bottom = 1 -> Trailblazor.Placement
+Trailblazor.Placement.End = 3 -> Trailblazor.Placement
+Trailblazor.Placement.Start = 2 -> Trailblazor.Placement
+Trailblazor.Placement.Top = 0 -> Trailblazor.Placement
+Trailblazor.PlacementAlign
+Trailblazor.PlacementAlign.Center = 1 -> Trailblazor.PlacementAlign
+Trailblazor.PlacementAlign.End = 2 -> Trailblazor.PlacementAlign
+Trailblazor.PlacementAlign.Start = 0 -> Trailblazor.PlacementAlign
+Trailblazor.PopoverTrigger
+Trailblazor.PopoverTrigger.<Clone>$() -> Trailblazor.PopoverTrigger!
+Trailblazor.PopoverTrigger.Attributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Trailblazor.PopoverTrigger.Attributes.init -> void
+Trailblazor.PopoverTrigger.Equals(Trailblazor.PopoverTrigger? other) -> bool
+Trailblazor.PopoverTrigger.PopoverTrigger() -> void
+Trailblazor.ScrollAlignment
+Trailblazor.ScrollAlignment.Center = 2 -> Trailblazor.ScrollAlignment
+Trailblazor.ScrollAlignment.End = 3 -> Trailblazor.ScrollAlignment
+Trailblazor.ScrollAlignment.Nearest = 0 -> Trailblazor.ScrollAlignment
+Trailblazor.ScrollAlignment.Start = 1 -> Trailblazor.ScrollAlignment
+Trailblazor.SelectLabels
+Trailblazor.SelectLabels.<Clone>$() -> Trailblazor.SelectLabels!
+Trailblazor.SelectLabels.Clear.get -> string?
+Trailblazor.SelectLabels.Clear.init -> void
+Trailblazor.SelectLabels.Equals(Trailblazor.SelectLabels? other) -> bool
+Trailblazor.SelectLabels.Filter.get -> string?
+Trailblazor.SelectLabels.Filter.init -> void
+Trailblazor.SelectLabels.NoResults.get -> string?
+Trailblazor.SelectLabels.NoResults.init -> void
+Trailblazor.SelectLabels.Removed.get -> string?
+Trailblazor.SelectLabels.Removed.init -> void
+Trailblazor.SelectLabels.SelectLabels() -> void
+Trailblazor.SelectionMode
+Trailblazor.SelectionMode.Multiple = 2 -> Trailblazor.SelectionMode
+Trailblazor.SelectionMode.None = 0 -> Trailblazor.SelectionMode
+Trailblazor.SelectionMode.Single = 1 -> Trailblazor.SelectionMode
+Trailblazor.Size
+Trailblazor.Size.Large = 2 -> Trailblazor.Size
+Trailblazor.Size.Medium = 1 -> Trailblazor.Size
+Trailblazor.Size.Small = 0 -> Trailblazor.Size
+Trailblazor.SkeletonAnimation
+Trailblazor.SkeletonAnimation.None = 2 -> Trailblazor.SkeletonAnimation
+Trailblazor.SkeletonAnimation.Pulse = 0 -> Trailblazor.SkeletonAnimation
+Trailblazor.SkeletonAnimation.Wave = 1 -> Trailblazor.SkeletonAnimation
+Trailblazor.SkeletonShape
+Trailblazor.SkeletonShape.Circle = 2 -> Trailblazor.SkeletonShape
+Trailblazor.SkeletonShape.Rectangle = 1 -> Trailblazor.SkeletonShape
+Trailblazor.SkeletonShape.Text = 0 -> Trailblazor.SkeletonShape
+Trailblazor.SliderMark
+Trailblazor.SliderMark.<Clone>$() -> Trailblazor.SliderMark!
+Trailblazor.SliderMark.Equals(Trailblazor.SliderMark? other) -> bool
+Trailblazor.SliderMark.Label.get -> string?
+Trailblazor.SliderMark.Label.init -> void
+Trailblazor.SliderMark.SliderMark() -> void
+Trailblazor.SliderMark.Value.get -> decimal
+Trailblazor.SliderMark.Value.init -> void
+Trailblazor.SliderRange<TValue>
+Trailblazor.SliderRange<TValue>.Deconstruct(out TValue Start, out TValue End) -> void
+Trailblazor.SliderRange<TValue>.End.get -> TValue
+Trailblazor.SliderRange<TValue>.End.init -> void
+Trailblazor.SliderRange<TValue>.Equals(Trailblazor.SliderRange<TValue> other) -> bool
+Trailblazor.SliderRange<TValue>.SliderRange() -> void
+Trailblazor.SliderRange<TValue>.SliderRange(TValue Start, TValue End) -> void
+Trailblazor.SliderRange<TValue>.Start.get -> TValue
+Trailblazor.SliderRange<TValue>.Start.init -> void
+Trailblazor.SortDirection
+Trailblazor.SortDirection.Ascending = 0 -> Trailblazor.SortDirection
+Trailblazor.SortDirection.Descending = 1 -> Trailblazor.SortDirection
+Trailblazor.TabActivation
+Trailblazor.TabActivation.Automatic = 0 -> Trailblazor.TabActivation
+Trailblazor.TabActivation.Manual = 1 -> Trailblazor.TabActivation
+Trailblazor.TbAccordion
+Trailblazor.TbAccordion.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAccordion.ChildContent.set -> void
+Trailblazor.TbAccordion.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbAccordion.HeadingLevel.get -> int
+Trailblazor.TbAccordion.HeadingLevel.set -> void
+Trailblazor.TbAccordion.Multiple.get -> bool
+Trailblazor.TbAccordion.Multiple.set -> void
+Trailblazor.TbAccordion.TbAccordion() -> void
+Trailblazor.TbAccordionItem
+Trailblazor.TbAccordionItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAccordionItem.ChildContent.set -> void
+Trailblazor.TbAccordionItem.Disabled.get -> bool
+Trailblazor.TbAccordionItem.Disabled.set -> void
+Trailblazor.TbAccordionItem.Dispose() -> void
+Trailblazor.TbAccordionItem.Expanded.get -> bool
+Trailblazor.TbAccordionItem.Expanded.set -> void
+Trailblazor.TbAccordionItem.ExpandedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbAccordionItem.ExpandedChanged.set -> void
+Trailblazor.TbAccordionItem.TbAccordionItem() -> void
+Trailblazor.TbAccordionItem.Title.get -> string?
+Trailblazor.TbAccordionItem.Title.set -> void
+Trailblazor.TbAccordionItem.TitleContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAccordionItem.TitleContent.set -> void
+Trailblazor.TbAlert
+Trailblazor.TbAlert.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAlert.Actions.set -> void
+Trailblazor.TbAlert.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAlert.ChildContent.set -> void
+Trailblazor.TbAlert.Classes.get -> Trailblazor.AlertClasses?
+Trailblazor.TbAlert.Classes.set -> void
+Trailblazor.TbAlert.CloseLabel.get -> string?
+Trailblazor.TbAlert.CloseLabel.set -> void
+Trailblazor.TbAlert.Dense.get -> bool
+Trailblazor.TbAlert.Dense.set -> void
+Trailblazor.TbAlert.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbAlert.Icon.set -> void
+Trailblazor.TbAlert.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbAlert.OnClose.set -> void
+Trailblazor.TbAlert.ShowIcon.get -> bool
+Trailblazor.TbAlert.ShowIcon.set -> void
+Trailblazor.TbAlert.TbAlert() -> void
+Trailblazor.TbAlert.Title.get -> string?
+Trailblazor.TbAlert.Title.set -> void
+Trailblazor.TbAlert.Tone.get -> Trailblazor.Tone
+Trailblazor.TbAlert.Tone.set -> void
+Trailblazor.TbAlert.Variant.get -> Trailblazor.AlertVariant
+Trailblazor.TbAlert.Variant.set -> void
+Trailblazor.TbAutocomplete<TValue>
+Trailblazor.TbAutocomplete<TValue>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbAutocomplete<TValue>.Classes.set -> void
+Trailblazor.TbAutocomplete<TValue>.Clearable.get -> bool
+Trailblazor.TbAutocomplete<TValue>.Clearable.set -> void
+Trailblazor.TbAutocomplete<TValue>.DebounceDelay.get -> System.TimeSpan
+Trailblazor.TbAutocomplete<TValue>.DebounceDelay.set -> void
+Trailblazor.TbAutocomplete<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbAutocomplete<TValue>.FreeText.get -> bool
+Trailblazor.TbAutocomplete<TValue>.FreeText.set -> void
+Trailblazor.TbAutocomplete<TValue>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TValue>?
+Trailblazor.TbAutocomplete<TValue>.ItemTemplate.set -> void
+Trailblazor.TbAutocomplete<TValue>.ItemText.get -> System.Func<TValue, string!>?
+Trailblazor.TbAutocomplete<TValue>.ItemText.set -> void
+Trailblazor.TbAutocomplete<TValue>.Items.get -> System.Collections.Generic.IEnumerable<TValue>?
+Trailblazor.TbAutocomplete<TValue>.Items.set -> void
+Trailblazor.TbAutocomplete<TValue>.Labels.get -> Trailblazor.AutocompleteLabels!
+Trailblazor.TbAutocomplete<TValue>.Labels.set -> void
+Trailblazor.TbAutocomplete<TValue>.MaxItems.get -> int?
+Trailblazor.TbAutocomplete<TValue>.MaxItems.set -> void
+Trailblazor.TbAutocomplete<TValue>.MinCharacters.get -> int
+Trailblazor.TbAutocomplete<TValue>.MinCharacters.set -> void
+Trailblazor.TbAutocomplete<TValue>.OnSearchFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
+Trailblazor.TbAutocomplete<TValue>.OnSearchFailed.set -> void
+Trailblazor.TbAutocomplete<TValue>.Open.get -> bool
+Trailblazor.TbAutocomplete<TValue>.Open.set -> void
+Trailblazor.TbAutocomplete<TValue>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbAutocomplete<TValue>.OpenChanged.set -> void
+Trailblazor.TbAutocomplete<TValue>.Placeholder.get -> string?
+Trailblazor.TbAutocomplete<TValue>.Placeholder.set -> void
+Trailblazor.TbAutocomplete<TValue>.Search.get -> System.Func<string!, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TValue>!>!>?
+Trailblazor.TbAutocomplete<TValue>.Search.set -> void
+Trailblazor.TbAutocomplete<TValue>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAutocomplete<TValue>.Start.set -> void
+Trailblazor.TbAutocomplete<TValue>.TbAutocomplete() -> void
+Trailblazor.TbBadge
+Trailblazor.TbBadge.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbBadge.ChildContent.set -> void
+Trailblazor.TbBadge.Count.get -> int?
+Trailblazor.TbBadge.Count.set -> void
+Trailblazor.TbBadge.Label.get -> string?
+Trailblazor.TbBadge.Label.set -> void
+Trailblazor.TbBadge.Max.get -> int
+Trailblazor.TbBadge.Max.set -> void
+Trailblazor.TbBadge.Offset.get -> string?
+Trailblazor.TbBadge.Offset.set -> void
+Trailblazor.TbBadge.Overlap.get -> Trailblazor.BadgeOverlap
+Trailblazor.TbBadge.Overlap.set -> void
+Trailblazor.TbBadge.Placement.get -> Trailblazor.BadgePlacement
+Trailblazor.TbBadge.Placement.set -> void
+Trailblazor.TbBadge.ShowZero.get -> bool
+Trailblazor.TbBadge.ShowZero.set -> void
+Trailblazor.TbBadge.TbBadge() -> void
+Trailblazor.TbBadge.Tone.get -> Trailblazor.Tone
+Trailblazor.TbBadge.Tone.set -> void
+Trailblazor.TbBadge.Visible.get -> bool
+Trailblazor.TbBadge.Visible.set -> void
+Trailblazor.TbBoxedFieldBase<TValue>
+Trailblazor.TbBoxedFieldBase<TValue>.Size.get -> Trailblazor.Size
+Trailblazor.TbBoxedFieldBase<TValue>.Size.set -> void
+Trailblazor.TbBoxedFieldBase<TValue>.TbBoxedFieldBase() -> void
+Trailblazor.TbBoxedFieldBase<TValue>.Variant.get -> Trailblazor.FieldVariant
+Trailblazor.TbBoxedFieldBase<TValue>.Variant.set -> void
+Trailblazor.TbButton
+Trailblazor.TbButton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbButton.ChildContent.set -> void
+Trailblazor.TbButton.Classes.get -> Trailblazor.ButtonClasses?
+Trailblazor.TbButton.Classes.set -> void
+Trailblazor.TbButton.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbButton.End.set -> void
+Trailblazor.TbButton.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbButton.Start.set -> void
+Trailblazor.TbButton.TbButton() -> void
+Trailblazor.TbButtonBase
+Trailblazor.TbButtonBase.Disabled.get -> bool
+Trailblazor.TbButtonBase.Disabled.set -> void
+Trailblazor.TbButtonBase.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+Trailblazor.TbButtonBase.FocusableWhenDisabled.get -> bool
+Trailblazor.TbButtonBase.FocusableWhenDisabled.set -> void
+Trailblazor.TbButtonBase.Href.get -> string?
+Trailblazor.TbButtonBase.Href.set -> void
+Trailblazor.TbButtonBase.Loading.get -> bool
+Trailblazor.TbButtonBase.Loading.set -> void
+Trailblazor.TbButtonBase.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbButtonBase.OnClick.set -> void
+Trailblazor.TbButtonBase.Pressed.get -> bool
+Trailblazor.TbButtonBase.Pressed.set -> void
+Trailblazor.TbButtonBase.PressedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbButtonBase.PressedChanged.set -> void
+Trailblazor.TbButtonBase.Size.get -> Trailblazor.Size
+Trailblazor.TbButtonBase.Size.set -> void
+Trailblazor.TbButtonBase.TbButtonBase() -> void
+Trailblazor.TbButtonBase.Tone.get -> Trailblazor.Tone
+Trailblazor.TbButtonBase.Tone.set -> void
+Trailblazor.TbButtonBase.Type.get -> Trailblazor.ButtonType
+Trailblazor.TbButtonBase.Type.set -> void
+Trailblazor.TbButtonBase.Variant.get -> Trailblazor.Variant
+Trailblazor.TbButtonBase.Variant.set -> void
+Trailblazor.TbButtonGroup
+Trailblazor.TbButtonGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbButtonGroup.ChildContent.set -> void
+Trailblazor.TbButtonGroup.Disabled.get -> bool
+Trailblazor.TbButtonGroup.Disabled.set -> void
+Trailblazor.TbButtonGroup.Size.get -> Trailblazor.Size?
+Trailblazor.TbButtonGroup.Size.set -> void
+Trailblazor.TbButtonGroup.TbButtonGroup() -> void
+Trailblazor.TbButtonGroup.Tone.get -> Trailblazor.Tone?
+Trailblazor.TbButtonGroup.Tone.set -> void
+Trailblazor.TbButtonGroup.Variant.get -> Trailblazor.Variant?
+Trailblazor.TbButtonGroup.Variant.set -> void
+Trailblazor.TbButtonGroup.Vertical.get -> bool
+Trailblazor.TbButtonGroup.Vertical.set -> void
+Trailblazor.TbCheckbox<TValue>
+Trailblazor.TbCheckbox<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCheckbox<TValue>.ChildContent.set -> void
+Trailblazor.TbCheckbox<TValue>.Classes.get -> Trailblazor.ChoiceClasses?
+Trailblazor.TbCheckbox<TValue>.Classes.set -> void
+Trailblazor.TbCheckbox<TValue>.Size.get -> Trailblazor.Size
+Trailblazor.TbCheckbox<TValue>.Size.set -> void
+Trailblazor.TbCheckbox<TValue>.TbCheckbox() -> void
+Trailblazor.TbCheckbox<TValue>.Tone.get -> Trailblazor.Tone
+Trailblazor.TbCheckbox<TValue>.Tone.set -> void
+Trailblazor.TbCheckboxGroup<TItem>
+Trailblazor.TbCheckboxGroup<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCheckboxGroup<TItem>.ChildContent.set -> void
+Trailblazor.TbCheckboxGroup<TItem>.Classes.get -> Trailblazor.ChoiceClasses?
+Trailblazor.TbCheckboxGroup<TItem>.Classes.set -> void
+Trailblazor.TbCheckboxGroup<TItem>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
+Trailblazor.TbCheckboxGroup<TItem>.Comparer.set -> void
+Trailblazor.TbCheckboxGroup<TItem>.Row.get -> bool
+Trailblazor.TbCheckboxGroup<TItem>.Row.set -> void
+Trailblazor.TbCheckboxGroup<TItem>.Size.get -> Trailblazor.Size
+Trailblazor.TbCheckboxGroup<TItem>.Size.set -> void
+Trailblazor.TbCheckboxGroup<TItem>.TbCheckboxGroup() -> void
+Trailblazor.TbCheckboxGroup<TItem>.Tone.get -> Trailblazor.Tone
+Trailblazor.TbCheckboxGroup<TItem>.Tone.set -> void
+Trailblazor.TbCheckboxItem<TItem>
+Trailblazor.TbCheckboxItem<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCheckboxItem<TItem>.ChildContent.set -> void
+Trailblazor.TbCheckboxItem<TItem>.Disabled.get -> bool
+Trailblazor.TbCheckboxItem<TItem>.Disabled.set -> void
+Trailblazor.TbCheckboxItem<TItem>.TbCheckboxItem() -> void
+Trailblazor.TbCheckboxItem<TItem>.Value.get -> TItem
+Trailblazor.TbCheckboxItem<TItem>.Value.set -> void
+Trailblazor.TbChip
+Trailblazor.TbChip.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbChip.ChildContent.set -> void
+Trailblazor.TbChip.Disabled.get -> bool
+Trailblazor.TbChip.Disabled.set -> void
+Trailblazor.TbChip.Href.get -> string?
+Trailblazor.TbChip.Href.set -> void
+Trailblazor.TbChip.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbChip.Icon.set -> void
+Trailblazor.TbChip.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbChip.OnClick.set -> void
+Trailblazor.TbChip.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbChip.OnClose.set -> void
+Trailblazor.TbChip.RemoveLabel.get -> string?
+Trailblazor.TbChip.RemoveLabel.set -> void
+Trailblazor.TbChip.Selected.get -> bool
+Trailblazor.TbChip.Selected.set -> void
+Trailblazor.TbChip.SelectedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbChip.SelectedChanged.set -> void
+Trailblazor.TbChip.Size.get -> Trailblazor.Size
+Trailblazor.TbChip.Size.set -> void
+Trailblazor.TbChip.TbChip() -> void
+Trailblazor.TbChip.Text.get -> string?
+Trailblazor.TbChip.Text.set -> void
+Trailblazor.TbChip.Tone.get -> Trailblazor.Tone
+Trailblazor.TbChip.Tone.set -> void
+Trailblazor.TbChip.Variant.get -> Trailblazor.Variant
+Trailblazor.TbChip.Variant.set -> void
+Trailblazor.TbChipGroup
+Trailblazor.TbChipGroup.AriaLabel.get -> string!
+Trailblazor.TbChipGroup.AriaLabel.set -> void
+Trailblazor.TbChipGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbChipGroup.ChildContent.set -> void
+Trailblazor.TbChipGroup.TbChipGroup() -> void
+Trailblazor.TbColorPicker
+Trailblazor.TbColorPicker.Alpha.get -> bool
+Trailblazor.TbColorPicker.Alpha.set -> void
+Trailblazor.TbColorPicker.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbColorPicker.Classes.set -> void
+Trailblazor.TbColorPicker.Clearable.get -> bool
+Trailblazor.TbColorPicker.Clearable.set -> void
+Trailblazor.TbColorPicker.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbColorPicker.Eyedropper.get -> bool
+Trailblazor.TbColorPicker.Eyedropper.set -> void
+Trailblazor.TbColorPicker.Labels.get -> Trailblazor.ColorPickerLabels!
+Trailblazor.TbColorPicker.Labels.set -> void
+Trailblazor.TbColorPicker.Palette.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Trailblazor.TbColorPicker.Palette.set -> void
+Trailblazor.TbColorPicker.PaletteOnly.get -> bool
+Trailblazor.TbColorPicker.PaletteOnly.set -> void
+Trailblazor.TbColorPicker.Placeholder.get -> string?
+Trailblazor.TbColorPicker.Placeholder.set -> void
+Trailblazor.TbColorPicker.SwatchName.get -> System.Func<string!, string!>?
+Trailblazor.TbColorPicker.SwatchName.set -> void
+Trailblazor.TbColorPicker.TbColorPicker() -> void
+Trailblazor.TbColumn<TItem>
+Trailblazor.TbColumn<TItem>.Align.get -> Trailblazor.ColumnAlign?
+Trailblazor.TbColumn<TItem>.Align.set -> void
+Trailblazor.TbColumn<TItem>.Cell.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
+Trailblazor.TbColumn<TItem>.Cell.set -> void
+Trailblazor.TbColumn<TItem>.Class.get -> string?
+Trailblazor.TbColumn<TItem>.Class.set -> void
+Trailblazor.TbColumn<TItem>.Dispose() -> void
+Trailblazor.TbColumn<TItem>.Field.get -> System.Linq.Expressions.Expression<System.Func<TItem, object?>!>?
+Trailblazor.TbColumn<TItem>.Field.set -> void
+Trailblazor.TbColumn<TItem>.Format.get -> string?
+Trailblazor.TbColumn<TItem>.Format.set -> void
+Trailblazor.TbColumn<TItem>.Header.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbColumn<TItem>.Header.set -> void
+Trailblazor.TbColumn<TItem>.Id.get -> string?
+Trailblazor.TbColumn<TItem>.Id.set -> void
+Trailblazor.TbColumn<TItem>.SortBy.get -> System.Func<TItem, object?>?
+Trailblazor.TbColumn<TItem>.SortBy.set -> void
+Trailblazor.TbColumn<TItem>.Sortable.get -> bool
+Trailblazor.TbColumn<TItem>.Sortable.set -> void
+Trailblazor.TbColumn<TItem>.TbColumn() -> void
+Trailblazor.TbColumn<TItem>.Title.get -> string?
+Trailblazor.TbColumn<TItem>.Title.set -> void
+Trailblazor.TbColumn<TItem>.Width.get -> string?
+Trailblazor.TbColumn<TItem>.Width.set -> void
+Trailblazor.TbComponentBase
+Trailblazor.TbComponentBase.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Trailblazor.TbComponentBase.AdditionalAttributes.set -> void
+Trailblazor.TbComponentBase.Class.get -> string?
+Trailblazor.TbComponentBase.Class.set -> void
+Trailblazor.TbComponentBase.Style.get -> string?
+Trailblazor.TbComponentBase.Style.set -> void
+Trailblazor.TbComponentBase.TbComponentBase() -> void
+Trailblazor.TbContainer
+Trailblazor.TbContainer.As.get -> Trailblazor.LayoutElement
+Trailblazor.TbContainer.As.set -> void
+Trailblazor.TbContainer.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbContainer.ChildContent.set -> void
+Trailblazor.TbContainer.MaxWidth.get -> Trailblazor.ContainerWidth
+Trailblazor.TbContainer.MaxWidth.set -> void
+Trailblazor.TbContainer.TbContainer() -> void
+Trailblazor.TbDataGrid<TItem>
+Trailblazor.TbDataGrid<TItem>.AriaLabel.get -> string?
+Trailblazor.TbDataGrid<TItem>.AriaLabel.set -> void
+Trailblazor.TbDataGrid<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDataGrid<TItem>.ChildContent.set -> void
+Trailblazor.TbDataGrid<TItem>.DataProvider.get -> System.Func<Trailblazor.GridRequest!, System.Threading.CancellationToken, System.Threading.Tasks.Task<Trailblazor.GridResult<TItem>!>!>?
+Trailblazor.TbDataGrid<TItem>.DataProvider.set -> void
+Trailblazor.TbDataGrid<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbDataGrid<TItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDataGrid<TItem>.EmptyContent.set -> void
+Trailblazor.TbDataGrid<TItem>.Height.get -> string?
+Trailblazor.TbDataGrid<TItem>.Height.set -> void
+Trailblazor.TbDataGrid<TItem>.Items.get -> System.Collections.Generic.IEnumerable<TItem>?
+Trailblazor.TbDataGrid<TItem>.Items.set -> void
+Trailblazor.TbDataGrid<TItem>.KeySelector.get -> System.Func<TItem, object!>?
+Trailblazor.TbDataGrid<TItem>.KeySelector.set -> void
+Trailblazor.TbDataGrid<TItem>.Labels.get -> Trailblazor.DataGridLabels!
+Trailblazor.TbDataGrid<TItem>.Labels.set -> void
+Trailblazor.TbDataGrid<TItem>.Loading.get -> bool
+Trailblazor.TbDataGrid<TItem>.Loading.set -> void
+Trailblazor.TbDataGrid<TItem>.OnLoadFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
+Trailblazor.TbDataGrid<TItem>.OnLoadFailed.set -> void
+Trailblazor.TbDataGrid<TItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TItem>
+Trailblazor.TbDataGrid<TItem>.OnRowClick.set -> void
+Trailblazor.TbDataGrid<TItem>.Page.get -> int
+Trailblazor.TbDataGrid<TItem>.Page.set -> void
+Trailblazor.TbDataGrid<TItem>.PageChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbDataGrid<TItem>.PageChanged.set -> void
+Trailblazor.TbDataGrid<TItem>.PageSize.get -> int?
+Trailblazor.TbDataGrid<TItem>.PageSize.set -> void
+Trailblazor.TbDataGrid<TItem>.PageSizeChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int?>
+Trailblazor.TbDataGrid<TItem>.PageSizeChanged.set -> void
+Trailblazor.TbDataGrid<TItem>.PageSizes.get -> System.Collections.Generic.IReadOnlyList<int>?
+Trailblazor.TbDataGrid<TItem>.PageSizes.set -> void
+Trailblazor.TbDataGrid<TItem>.RefreshAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbDataGrid<TItem>.RowClass.get -> System.Func<TItem, string?>?
+Trailblazor.TbDataGrid<TItem>.RowClass.set -> void
+Trailblazor.TbDataGrid<TItem>.RowClickSelects.get -> bool
+Trailblazor.TbDataGrid<TItem>.RowClickSelects.set -> void
+Trailblazor.TbDataGrid<TItem>.RowLabel.get -> System.Func<TItem, string!>?
+Trailblazor.TbDataGrid<TItem>.RowLabel.set -> void
+Trailblazor.TbDataGrid<TItem>.ScrollToAsync(TItem item) -> System.Threading.Tasks.Task!
+Trailblazor.TbDataGrid<TItem>.SelectedItem.get -> TItem?
+Trailblazor.TbDataGrid<TItem>.SelectedItem.set -> void
+Trailblazor.TbDataGrid<TItem>.SelectedItemChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TItem?>
+Trailblazor.TbDataGrid<TItem>.SelectedItemChanged.set -> void
+Trailblazor.TbDataGrid<TItem>.SelectedItems.get -> System.Collections.Generic.IReadOnlyCollection<TItem>?
+Trailblazor.TbDataGrid<TItem>.SelectedItems.set -> void
+Trailblazor.TbDataGrid<TItem>.SelectedItemsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyCollection<TItem>!>
+Trailblazor.TbDataGrid<TItem>.SelectedItemsChanged.set -> void
+Trailblazor.TbDataGrid<TItem>.SelectionMode.get -> Trailblazor.SelectionMode
+Trailblazor.TbDataGrid<TItem>.SelectionMode.set -> void
+Trailblazor.TbDataGrid<TItem>.Size.get -> Trailblazor.Size
+Trailblazor.TbDataGrid<TItem>.Size.set -> void
+Trailblazor.TbDataGrid<TItem>.Sorts.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridSort!>?
+Trailblazor.TbDataGrid<TItem>.Sorts.set -> void
+Trailblazor.TbDataGrid<TItem>.SortsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<Trailblazor.GridSort!>!>
+Trailblazor.TbDataGrid<TItem>.SortsChanged.set -> void
+Trailblazor.TbDataGrid<TItem>.Striped.get -> bool
+Trailblazor.TbDataGrid<TItem>.Striped.set -> void
+Trailblazor.TbDataGrid<TItem>.TbDataGrid() -> void
+Trailblazor.TbDateRangePicker<TDate>
+Trailblazor.TbDateRangePicker<TDate>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbDateRangePicker<TDate>.Classes.set -> void
+Trailblazor.TbDateRangePicker<TDate>.Clearable.get -> bool
+Trailblazor.TbDateRangePicker<TDate>.Clearable.set -> void
+Trailblazor.TbDateRangePicker<TDate>.Culture.get -> System.Globalization.CultureInfo?
+Trailblazor.TbDateRangePicker<TDate>.Culture.set -> void
+Trailblazor.TbDateRangePicker<TDate>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbDateRangePicker<TDate>.Format.get -> string?
+Trailblazor.TbDateRangePicker<TDate>.Format.set -> void
+Trailblazor.TbDateRangePicker<TDate>.IsDateDisabled.get -> System.Func<TDate, bool>?
+Trailblazor.TbDateRangePicker<TDate>.IsDateDisabled.set -> void
+Trailblazor.TbDateRangePicker<TDate>.Labels.get -> Trailblazor.DateRangePickerLabels!
+Trailblazor.TbDateRangePicker<TDate>.Labels.set -> void
+Trailblazor.TbDateRangePicker<TDate>.Max.get -> TDate?
+Trailblazor.TbDateRangePicker<TDate>.Max.set -> void
+Trailblazor.TbDateRangePicker<TDate>.Min.get -> TDate?
+Trailblazor.TbDateRangePicker<TDate>.Min.set -> void
+Trailblazor.TbDateRangePicker<TDate>.Presets.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DateRangePreset<TDate>!>?
+Trailblazor.TbDateRangePicker<TDate>.Presets.set -> void
+Trailblazor.TbDateRangePicker<TDate>.TbDateRangePicker() -> void
+Trailblazor.TbDialog
+Trailblazor.TbDialog.CanDismiss.get -> System.Func<Trailblazor.DialogDismissReason, System.Threading.Tasks.Task<bool>!>?
+Trailblazor.TbDialog.CanDismiss.set -> void
+Trailblazor.TbDialog.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDialog.ChildContent.set -> void
+Trailblazor.TbDialog.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbDialog.Open.get -> bool
+Trailblazor.TbDialog.Open.set -> void
+Trailblazor.TbDialog.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbDialog.OpenChanged.set -> void
+Trailblazor.TbDialog.Options.get -> Trailblazor.DialogOptions?
+Trailblazor.TbDialog.Options.set -> void
+Trailblazor.TbDialog.TbDialog() -> void
+Trailblazor.TbDialog.Title.get -> string!
+Trailblazor.TbDialog.Title.set -> void
+Trailblazor.TbDialogActions
+Trailblazor.TbDialogActions.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDialogActions.ChildContent.set -> void
+Trailblazor.TbDialogActions.TbDialogActions() -> void
+Trailblazor.TbDialogContent<TResult>
+Trailblazor.TbDialogContent<TResult>.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbDialogContent<TResult>.CloseAsync(TResult value) -> System.Threading.Tasks.Task!
+Trailblazor.TbDialogContent<TResult>.CloseButton.get -> bool
+Trailblazor.TbDialogContent<TResult>.CloseButton.set -> void
+Trailblazor.TbDialogContent<TResult>.ShowHeader.get -> bool
+Trailblazor.TbDialogContent<TResult>.ShowHeader.set -> void
+Trailblazor.TbDialogContent<TResult>.TbDialogContent() -> void
+Trailblazor.TbDialogDescription
+Trailblazor.TbDialogDescription.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDialogDescription.ChildContent.set -> void
+Trailblazor.TbDialogDescription.Dispose() -> void
+Trailblazor.TbDialogDescription.TbDialogDescription() -> void
+Trailblazor.TbDivider
+Trailblazor.TbDivider.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDivider.ChildContent.set -> void
+Trailblazor.TbDivider.ContentAlign.get -> Trailblazor.DividerAlign
+Trailblazor.TbDivider.ContentAlign.set -> void
+Trailblazor.TbDivider.TbDivider() -> void
+Trailblazor.TbDivider.Vertical.get -> bool
+Trailblazor.TbDivider.Vertical.set -> void
+Trailblazor.TbFieldBase<TValue>
+Trailblazor.TbFieldBase<TValue>.Disabled.get -> bool
+Trailblazor.TbFieldBase<TValue>.Disabled.set -> void
+Trailblazor.TbFieldBase<TValue>.Dispose() -> void
+Trailblazor.TbFieldBase<TValue>.Error.get -> string?
+Trailblazor.TbFieldBase<TValue>.Error.set -> void
+Trailblazor.TbFieldBase<TValue>.HelperText.get -> string?
+Trailblazor.TbFieldBase<TValue>.HelperText.set -> void
+Trailblazor.TbFieldBase<TValue>.InputAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Trailblazor.TbFieldBase<TValue>.InputAttributes.set -> void
+Trailblazor.TbFieldBase<TValue>.Label.get -> string?
+Trailblazor.TbFieldBase<TValue>.Label.set -> void
+Trailblazor.TbFieldBase<TValue>.ReadOnly.get -> bool
+Trailblazor.TbFieldBase<TValue>.ReadOnly.set -> void
+Trailblazor.TbFieldBase<TValue>.Required.get -> bool
+Trailblazor.TbFieldBase<TValue>.Required.set -> void
+Trailblazor.TbFieldBase<TValue>.TbFieldBase() -> void
+Trailblazor.TbFieldBase<TValue>.Validation.get -> System.Func<TValue?, System.Collections.Generic.IEnumerable<string!>!>?
+Trailblazor.TbFieldBase<TValue>.Validation.set -> void
+Trailblazor.TbFieldBase<TValue>.Value.get -> TValue?
+Trailblazor.TbFieldBase<TValue>.Value.set -> void
+Trailblazor.TbFieldBase<TValue>.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Trailblazor.TbFieldBase<TValue>.ValueChanged.set -> void
+Trailblazor.TbFieldBase<TValue>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+Trailblazor.TbFieldBase<TValue>.ValueExpression.set -> void
+Trailblazor.TbFileUpload
+Trailblazor.TbFileUpload.Accept.get -> string?
+Trailblazor.TbFileUpload.Accept.set -> void
+Trailblazor.TbFileUpload.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbFileUpload.Classes.set -> void
+Trailblazor.TbFileUpload.DropZone.get -> bool
+Trailblazor.TbFileUpload.DropZone.set -> void
+Trailblazor.TbFileUpload.Labels.get -> Trailblazor.FileUploadLabels!
+Trailblazor.TbFileUpload.Labels.set -> void
+Trailblazor.TbFileUpload.MaxFileSize.get -> long
+Trailblazor.TbFileUpload.MaxFileSize.set -> void
+Trailblazor.TbFileUpload.MaxFiles.get -> int?
+Trailblazor.TbFileUpload.MaxFiles.set -> void
+Trailblazor.TbFileUpload.Multiple.get -> bool
+Trailblazor.TbFileUpload.Multiple.set -> void
+Trailblazor.TbFileUpload.TbFileUpload() -> void
+Trailblazor.TbFileUpload.ZoneContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbFileUpload.ZoneContent.set -> void
+Trailblazor.TbFocusScope
+Trailblazor.TbFocusScope.AutoFocus.get -> bool
+Trailblazor.TbFocusScope.AutoFocus.set -> void
+Trailblazor.TbFocusScope.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbFocusScope.ChildContent.set -> void
+Trailblazor.TbFocusScope.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbFocusScope.RestoreFocus.get -> bool
+Trailblazor.TbFocusScope.RestoreFocus.set -> void
+Trailblazor.TbFocusScope.TbFocusScope() -> void
+Trailblazor.TbFocusScope.Trapped.get -> bool
+Trailblazor.TbFocusScope.Trapped.set -> void
+Trailblazor.TbForm
+Trailblazor.TbForm.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbForm.ChildContent.set -> void
+Trailblazor.TbForm.DataAnnotations.get -> bool
+Trailblazor.TbForm.DataAnnotations.set -> void
+Trailblazor.TbForm.Dispose() -> void
+Trailblazor.TbForm.EditContext.get -> Microsoft.AspNetCore.Components.Forms.EditContext?
+Trailblazor.TbForm.EditContext.set -> void
+Trailblazor.TbForm.Errors.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.TbForm.Errors.set -> void
+Trailblazor.TbForm.ErrorsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<string!>!>
+Trailblazor.TbForm.ErrorsChanged.set -> void
+Trailblazor.TbForm.FormName.get -> string?
+Trailblazor.TbForm.FormName.set -> void
+Trailblazor.TbForm.IsValid.get -> bool
+Trailblazor.TbForm.IsValid.set -> void
+Trailblazor.TbForm.IsValidChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbForm.IsValidChanged.set -> void
+Trailblazor.TbForm.Model.get -> object?
+Trailblazor.TbForm.Model.set -> void
+Trailblazor.TbForm.OnInvalidSubmit.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext!>
+Trailblazor.TbForm.OnInvalidSubmit.set -> void
+Trailblazor.TbForm.OnSubmit.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext!>
+Trailblazor.TbForm.OnSubmit.set -> void
+Trailblazor.TbForm.OnValidSubmit.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext!>
+Trailblazor.TbForm.OnValidSubmit.set -> void
+Trailblazor.TbForm.ResetValidationAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbForm.TbForm() -> void
+Trailblazor.TbForm.ValidateAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.TbGrid
+Trailblazor.TbGrid.As.get -> Trailblazor.LayoutElement
+Trailblazor.TbGrid.As.set -> void
+Trailblazor.TbGrid.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbGrid.ChildContent.set -> void
+Trailblazor.TbGrid.Gap.get -> int
+Trailblazor.TbGrid.Gap.set -> void
+Trailblazor.TbGrid.TbGrid() -> void
+Trailblazor.TbGridItem
+Trailblazor.TbGridItem.As.get -> Trailblazor.LayoutElement
+Trailblazor.TbGridItem.As.set -> void
+Trailblazor.TbGridItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbGridItem.ChildContent.set -> void
+Trailblazor.TbGridItem.Offset.get -> int
+Trailblazor.TbGridItem.Offset.set -> void
+Trailblazor.TbGridItem.OffsetLg.get -> int?
+Trailblazor.TbGridItem.OffsetLg.set -> void
+Trailblazor.TbGridItem.OffsetMd.get -> int?
+Trailblazor.TbGridItem.OffsetMd.set -> void
+Trailblazor.TbGridItem.OffsetSm.get -> int?
+Trailblazor.TbGridItem.OffsetSm.set -> void
+Trailblazor.TbGridItem.OffsetXl.get -> int?
+Trailblazor.TbGridItem.OffsetXl.set -> void
+Trailblazor.TbGridItem.Span.get -> Trailblazor.GridSpan
+Trailblazor.TbGridItem.Span.set -> void
+Trailblazor.TbGridItem.SpanLg.get -> Trailblazor.GridSpan?
+Trailblazor.TbGridItem.SpanLg.set -> void
+Trailblazor.TbGridItem.SpanMd.get -> Trailblazor.GridSpan?
+Trailblazor.TbGridItem.SpanMd.set -> void
+Trailblazor.TbGridItem.SpanSm.get -> Trailblazor.GridSpan?
+Trailblazor.TbGridItem.SpanSm.set -> void
+Trailblazor.TbGridItem.SpanXl.get -> Trailblazor.GridSpan?
+Trailblazor.TbGridItem.SpanXl.set -> void
+Trailblazor.TbGridItem.TbGridItem() -> void
+Trailblazor.TbIcon
+Trailblazor.TbIcon.Icon.get -> Trailblazor.Icon
+Trailblazor.TbIcon.Icon.set -> void
+Trailblazor.TbIcon.Label.get -> string?
+Trailblazor.TbIcon.Label.set -> void
+Trailblazor.TbIcon.Size.get -> Trailblazor.Size
+Trailblazor.TbIcon.Size.set -> void
+Trailblazor.TbIcon.TbIcon() -> void
+Trailblazor.TbIcon.Tone.get -> Trailblazor.Tone?
+Trailblazor.TbIcon.Tone.set -> void
+Trailblazor.TbIconButton
+Trailblazor.TbIconButton.AriaLabel.get -> string!
+Trailblazor.TbIconButton.AriaLabel.set -> void
+Trailblazor.TbIconButton.Classes.get -> Trailblazor.IconButtonClasses?
+Trailblazor.TbIconButton.Classes.set -> void
+Trailblazor.TbIconButton.Icon.get -> Trailblazor.Icon
+Trailblazor.TbIconButton.Icon.set -> void
+Trailblazor.TbIconButton.TbIconButton() -> void
+Trailblazor.TbImage
+Trailblazor.TbImage.Alt.get -> string?
+Trailblazor.TbImage.Alt.set -> void
+Trailblazor.TbImage.FallbackSrc.get -> string?
+Trailblazor.TbImage.FallbackSrc.set -> void
+Trailblazor.TbImage.Fit.get -> Trailblazor.ImageFit?
+Trailblazor.TbImage.Fit.set -> void
+Trailblazor.TbImage.Fluid.get -> bool
+Trailblazor.TbImage.Fluid.set -> void
+Trailblazor.TbImage.Height.get -> int?
+Trailblazor.TbImage.Height.set -> void
+Trailblazor.TbImage.Lazy.get -> bool
+Trailblazor.TbImage.Lazy.set -> void
+Trailblazor.TbImage.OnError.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbImage.OnError.set -> void
+Trailblazor.TbImage.OnLoad.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ProgressEventArgs!>
+Trailblazor.TbImage.OnLoad.set -> void
+Trailblazor.TbImage.Src.get -> string!
+Trailblazor.TbImage.Src.set -> void
+Trailblazor.TbImage.TbImage() -> void
+Trailblazor.TbImage.Width.get -> int?
+Trailblazor.TbImage.Width.set -> void
+Trailblazor.TbInsertDivider
+Trailblazor.TbInsertDivider.Disabled.get -> bool
+Trailblazor.TbInsertDivider.Disabled.set -> void
+Trailblazor.TbInsertDivider.Label.get -> string!
+Trailblazor.TbInsertDivider.Label.set -> void
+Trailblazor.TbInsertDivider.OnInsert.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbInsertDivider.OnInsert.set -> void
+Trailblazor.TbInsertDivider.TbInsertDivider() -> void
+Trailblazor.TbLabel
+Trailblazor.TbLabel.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbLabel.ChildContent.set -> void
+Trailblazor.TbLabel.For.get -> string?
+Trailblazor.TbLabel.For.set -> void
+Trailblazor.TbLabel.Info.get -> string?
+Trailblazor.TbLabel.Info.set -> void
+Trailblazor.TbLabel.InfoButtonLabel.get -> string?
+Trailblazor.TbLabel.InfoButtonLabel.set -> void
+Trailblazor.TbLabel.InfoContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbLabel.InfoContent.set -> void
+Trailblazor.TbLabel.Required.get -> bool
+Trailblazor.TbLabel.Required.set -> void
+Trailblazor.TbLabel.TbLabel() -> void
+Trailblazor.TbLabel.Text.get -> string?
+Trailblazor.TbLabel.Text.set -> void
+Trailblazor.TbLabel.TextId.get -> string?
+Trailblazor.TbLabel.TextId.set -> void
+Trailblazor.TbLink
+Trailblazor.TbLink.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbLink.ChildContent.set -> void
+Trailblazor.TbLink.Disabled.get -> bool
+Trailblazor.TbLink.Disabled.set -> void
+Trailblazor.TbLink.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+Trailblazor.TbLink.Href.get -> string?
+Trailblazor.TbLink.Href.set -> void
+Trailblazor.TbLink.NewTab.get -> bool
+Trailblazor.TbLink.NewTab.set -> void
+Trailblazor.TbLink.NewTabHint.get -> string?
+Trailblazor.TbLink.NewTabHint.set -> void
+Trailblazor.TbLink.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbLink.OnClick.set -> void
+Trailblazor.TbLink.TbLink() -> void
+Trailblazor.TbList
+Trailblazor.TbList.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbList.ChildContent.set -> void
+Trailblazor.TbList.Dense.get -> bool
+Trailblazor.TbList.Dense.set -> void
+Trailblazor.TbList.Dividers.get -> bool
+Trailblazor.TbList.Dividers.set -> void
+Trailblazor.TbList.Ordered.get -> bool
+Trailblazor.TbList.Ordered.set -> void
+Trailblazor.TbList.TbList() -> void
+Trailblazor.TbListBox<TValue>
+Trailblazor.TbListBox<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
+Trailblazor.TbListBox<TValue>.Comparer.set -> void
+Trailblazor.TbListBox<TValue>.TbListBox() -> void
+Trailblazor.TbListBoxBase<TValue>
+Trailblazor.TbListBoxBase<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbListBoxBase<TValue>.ChildContent.set -> void
+Trailblazor.TbListBoxBase<TValue>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbListBoxBase<TValue>.Classes.set -> void
+Trailblazor.TbListBoxBase<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbListBoxBase<TValue>.Rows.get -> int
+Trailblazor.TbListBoxBase<TValue>.Rows.set -> void
+Trailblazor.TbListBoxBase<TValue>.TbListBoxBase() -> void
+Trailblazor.TbListItem
+Trailblazor.TbListItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbListItem.ChildContent.set -> void
+Trailblazor.TbListItem.Description.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbListItem.Description.set -> void
+Trailblazor.TbListItem.Disabled.get -> bool
+Trailblazor.TbListItem.Disabled.set -> void
+Trailblazor.TbListItem.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbListItem.End.set -> void
+Trailblazor.TbListItem.Href.get -> string?
+Trailblazor.TbListItem.Href.set -> void
+Trailblazor.TbListItem.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbListItem.OnClick.set -> void
+Trailblazor.TbListItem.Selected.get -> bool
+Trailblazor.TbListItem.Selected.set -> void
+Trailblazor.TbListItem.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbListItem.Start.set -> void
+Trailblazor.TbListItem.TbListItem() -> void
+Trailblazor.TbLocalizer
+Trailblazor.TbLocalizer.TbLocalizer(Microsoft.Extensions.Options.IOptions<Trailblazor.TrailblazorOptions!>! options) -> void
+Trailblazor.TbLocalizer.this[string! key].get -> string!
+Trailblazor.TbMenu
+Trailblazor.TbMenu.Align.get -> Trailblazor.PlacementAlign
+Trailblazor.TbMenu.Align.set -> void
+Trailblazor.TbMenu.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMenu.ChildContent.set -> void
+Trailblazor.TbMenu.Description.get -> string?
+Trailblazor.TbMenu.Description.set -> void
+Trailblazor.TbMenu.Disabled.get -> bool
+Trailblazor.TbMenu.Disabled.set -> void
+Trailblazor.TbMenu.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbMenu.FullWidth.get -> bool
+Trailblazor.TbMenu.FullWidth.set -> void
+Trailblazor.TbMenu.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbMenu.Icon.set -> void
+Trailblazor.TbMenu.Label.get -> string?
+Trailblazor.TbMenu.Label.set -> void
+Trailblazor.TbMenu.Placement.get -> Trailblazor.Placement
+Trailblazor.TbMenu.Placement.set -> void
+Trailblazor.TbMenu.Size.get -> Trailblazor.Size
+Trailblazor.TbMenu.Size.set -> void
+Trailblazor.TbMenu.TbMenu() -> void
+Trailblazor.TbMenu.Trigger.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.MenuTrigger!>?
+Trailblazor.TbMenu.Trigger.set -> void
+Trailblazor.TbMenu.Variant.get -> Trailblazor.Variant
+Trailblazor.TbMenu.Variant.set -> void
+Trailblazor.TbMenuCheckboxItem
+Trailblazor.TbMenuCheckboxItem.Checked.get -> bool
+Trailblazor.TbMenuCheckboxItem.Checked.set -> void
+Trailblazor.TbMenuCheckboxItem.CheckedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbMenuCheckboxItem.CheckedChanged.set -> void
+Trailblazor.TbMenuCheckboxItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMenuCheckboxItem.ChildContent.set -> void
+Trailblazor.TbMenuCheckboxItem.Disabled.get -> bool
+Trailblazor.TbMenuCheckboxItem.Disabled.set -> void
+Trailblazor.TbMenuCheckboxItem.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbMenuCheckboxItem.Icon.set -> void
+Trailblazor.TbMenuCheckboxItem.TbMenuCheckboxItem() -> void
+Trailblazor.TbMenuGroup
+Trailblazor.TbMenuGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMenuGroup.ChildContent.set -> void
+Trailblazor.TbMenuGroup.Label.get -> string?
+Trailblazor.TbMenuGroup.Label.set -> void
+Trailblazor.TbMenuGroup.TbMenuGroup() -> void
+Trailblazor.TbMenuItem
+Trailblazor.TbMenuItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMenuItem.ChildContent.set -> void
+Trailblazor.TbMenuItem.Disabled.get -> bool
+Trailblazor.TbMenuItem.Disabled.set -> void
+Trailblazor.TbMenuItem.Href.get -> string?
+Trailblazor.TbMenuItem.Href.set -> void
+Trailblazor.TbMenuItem.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbMenuItem.Icon.set -> void
+Trailblazor.TbMenuItem.NewTab.get -> bool
+Trailblazor.TbMenuItem.NewTab.set -> void
+Trailblazor.TbMenuItem.NewTabHint.get -> string?
+Trailblazor.TbMenuItem.NewTabHint.set -> void
+Trailblazor.TbMenuItem.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbMenuItem.OnClick.set -> void
+Trailblazor.TbMenuItem.TbMenuItem() -> void
+Trailblazor.TbMenuRadioGroup<TValue>
+Trailblazor.TbMenuRadioGroup<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMenuRadioGroup<TValue>.ChildContent.set -> void
+Trailblazor.TbMenuRadioGroup<TValue>.Label.get -> string?
+Trailblazor.TbMenuRadioGroup<TValue>.Label.set -> void
+Trailblazor.TbMenuRadioGroup<TValue>.TbMenuRadioGroup() -> void
+Trailblazor.TbMenuRadioGroup<TValue>.Value.get -> TValue?
+Trailblazor.TbMenuRadioGroup<TValue>.Value.set -> void
+Trailblazor.TbMenuRadioGroup<TValue>.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue?>
+Trailblazor.TbMenuRadioGroup<TValue>.ValueChanged.set -> void
+Trailblazor.TbMenuRadioItem<TValue>
+Trailblazor.TbMenuRadioItem<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMenuRadioItem<TValue>.ChildContent.set -> void
+Trailblazor.TbMenuRadioItem<TValue>.Disabled.get -> bool
+Trailblazor.TbMenuRadioItem<TValue>.Disabled.set -> void
+Trailblazor.TbMenuRadioItem<TValue>.TbMenuRadioItem() -> void
+Trailblazor.TbMenuRadioItem<TValue>.Value.get -> TValue
+Trailblazor.TbMenuRadioItem<TValue>.Value.set -> void
+Trailblazor.TbMenuSeparator
+Trailblazor.TbMenuSeparator.TbMenuSeparator() -> void
+Trailblazor.TbMultiListBox<TItem>
+Trailblazor.TbMultiListBox<TItem>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
+Trailblazor.TbMultiListBox<TItem>.Comparer.set -> void
+Trailblazor.TbMultiListBox<TItem>.TbMultiListBox() -> void
+Trailblazor.TbMultiSelect<TItem>
+Trailblazor.TbMultiSelect<TItem>.Chips.get -> bool
+Trailblazor.TbMultiSelect<TItem>.Chips.set -> void
+Trailblazor.TbMultiSelect<TItem>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
+Trailblazor.TbMultiSelect<TItem>.Comparer.set -> void
+Trailblazor.TbMultiSelect<TItem>.TbMultiSelect() -> void
+Trailblazor.TbMultiToggleGroup<TItem>
+Trailblazor.TbMultiToggleGroup<TItem>.TbMultiToggleGroup() -> void
+Trailblazor.TbNumberField<TValue>
+Trailblazor.TbNumberField<TValue>.ClampToRange.get -> bool
+Trailblazor.TbNumberField<TValue>.ClampToRange.set -> void
+Trailblazor.TbNumberField<TValue>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbNumberField<TValue>.Classes.set -> void
+Trailblazor.TbNumberField<TValue>.Culture.get -> System.Globalization.CultureInfo?
+Trailblazor.TbNumberField<TValue>.Culture.set -> void
+Trailblazor.TbNumberField<TValue>.Decimals.get -> int?
+Trailblazor.TbNumberField<TValue>.Decimals.set -> void
+Trailblazor.TbNumberField<TValue>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbNumberField<TValue>.End.set -> void
+Trailblazor.TbNumberField<TValue>.Format.get -> string?
+Trailblazor.TbNumberField<TValue>.Format.set -> void
+Trailblazor.TbNumberField<TValue>.HideStepButtons.get -> bool
+Trailblazor.TbNumberField<TValue>.HideStepButtons.set -> void
+Trailblazor.TbNumberField<TValue>.Max.get -> decimal?
+Trailblazor.TbNumberField<TValue>.Max.set -> void
+Trailblazor.TbNumberField<TValue>.Min.get -> decimal?
+Trailblazor.TbNumberField<TValue>.Min.set -> void
+Trailblazor.TbNumberField<TValue>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbNumberField<TValue>.Start.set -> void
+Trailblazor.TbNumberField<TValue>.Step.get -> decimal
+Trailblazor.TbNumberField<TValue>.Step.set -> void
+Trailblazor.TbNumberField<TValue>.TbNumberField() -> void
+Trailblazor.TbOption<TValue>
+Trailblazor.TbOption<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbOption<TValue>.ChildContent.set -> void
+Trailblazor.TbOption<TValue>.Disabled.get -> bool
+Trailblazor.TbOption<TValue>.Disabled.set -> void
+Trailblazor.TbOption<TValue>.Dispose() -> void
+Trailblazor.TbOption<TValue>.TbOption() -> void
+Trailblazor.TbOption<TValue>.Text.get -> string?
+Trailblazor.TbOption<TValue>.Text.set -> void
+Trailblazor.TbOption<TValue>.Value.get -> TValue
+Trailblazor.TbOption<TValue>.Value.set -> void
+Trailblazor.TbOptionGroup
+Trailblazor.TbOptionGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbOptionGroup.ChildContent.set -> void
+Trailblazor.TbOptionGroup.Label.get -> string!
+Trailblazor.TbOptionGroup.Label.set -> void
+Trailblazor.TbOptionGroup.TbOptionGroup() -> void
+Trailblazor.TbOverlay
+Trailblazor.TbOverlay.Blur.get -> bool
+Trailblazor.TbOverlay.Blur.set -> void
+Trailblazor.TbOverlay.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbOverlay.ChildContent.set -> void
+Trailblazor.TbOverlay.CloseOnClick.get -> bool
+Trailblazor.TbOverlay.CloseOnClick.set -> void
+Trailblazor.TbOverlay.Contained.get -> bool
+Trailblazor.TbOverlay.Contained.set -> void
+Trailblazor.TbOverlay.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbOverlay.LockScroll.get -> bool
+Trailblazor.TbOverlay.LockScroll.set -> void
+Trailblazor.TbOverlay.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbOverlay.OnClick.set -> void
+Trailblazor.TbOverlay.TbOverlay() -> void
+Trailblazor.TbOverlay.Transparent.get -> bool
+Trailblazor.TbOverlay.Transparent.set -> void
+Trailblazor.TbOverlay.Visible.get -> bool
+Trailblazor.TbOverlay.Visible.set -> void
+Trailblazor.TbOverlay.VisibleChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbOverlay.VisibleChanged.set -> void
+Trailblazor.TbPagination
+Trailblazor.TbPagination.AriaLabel.get -> string?
+Trailblazor.TbPagination.AriaLabel.set -> void
+Trailblazor.TbPagination.BoundaryCount.get -> int
+Trailblazor.TbPagination.BoundaryCount.set -> void
+Trailblazor.TbPagination.Compact.get -> bool
+Trailblazor.TbPagination.Compact.set -> void
+Trailblazor.TbPagination.Disabled.get -> bool
+Trailblazor.TbPagination.Disabled.set -> void
+Trailblazor.TbPagination.Labels.get -> Trailblazor.PaginationLabels!
+Trailblazor.TbPagination.Labels.set -> void
+Trailblazor.TbPagination.Page.get -> int
+Trailblazor.TbPagination.Page.set -> void
+Trailblazor.TbPagination.PageChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbPagination.PageChanged.set -> void
+Trailblazor.TbPagination.PageCount.get -> int
+Trailblazor.TbPagination.PageCount.set -> void
+Trailblazor.TbPagination.PageHref.get -> System.Func<int, string!>?
+Trailblazor.TbPagination.PageHref.set -> void
+Trailblazor.TbPagination.ShowFirstLast.get -> bool
+Trailblazor.TbPagination.ShowFirstLast.set -> void
+Trailblazor.TbPagination.ShowPreviousNext.get -> bool
+Trailblazor.TbPagination.ShowPreviousNext.set -> void
+Trailblazor.TbPagination.SiblingCount.get -> int
+Trailblazor.TbPagination.SiblingCount.set -> void
+Trailblazor.TbPagination.Size.get -> Trailblazor.Size
+Trailblazor.TbPagination.Size.set -> void
+Trailblazor.TbPagination.TbPagination() -> void
+Trailblazor.TbPopover
+Trailblazor.TbPopover.Align.get -> Trailblazor.PlacementAlign
+Trailblazor.TbPopover.Align.set -> void
+Trailblazor.TbPopover.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbPopover.ChildContent.set -> void
+Trailblazor.TbPopover.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbPopover.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbPopover.Icon.set -> void
+Trailblazor.TbPopover.Label.get -> string?
+Trailblazor.TbPopover.Label.set -> void
+Trailblazor.TbPopover.Open.get -> bool
+Trailblazor.TbPopover.Open.set -> void
+Trailblazor.TbPopover.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbPopover.OpenChanged.set -> void
+Trailblazor.TbPopover.OpenOnHover.get -> bool
+Trailblazor.TbPopover.OpenOnHover.set -> void
+Trailblazor.TbPopover.Placement.get -> Trailblazor.Placement
+Trailblazor.TbPopover.Placement.set -> void
+Trailblazor.TbPopover.Size.get -> Trailblazor.Size
+Trailblazor.TbPopover.Size.set -> void
+Trailblazor.TbPopover.TbPopover() -> void
+Trailblazor.TbPopover.Title.get -> string?
+Trailblazor.TbPopover.Title.set -> void
+Trailblazor.TbPopover.Trigger.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.PopoverTrigger!>?
+Trailblazor.TbPopover.Trigger.set -> void
+Trailblazor.TbPopover.Variant.get -> Trailblazor.Variant
+Trailblazor.TbPopover.Variant.set -> void
+Trailblazor.TbProgress
+Trailblazor.TbProgress.AriaLabel.get -> string!
+Trailblazor.TbProgress.AriaLabel.set -> void
+Trailblazor.TbProgress.Circular.get -> bool
+Trailblazor.TbProgress.Circular.set -> void
+Trailblazor.TbProgress.Label.get -> string?
+Trailblazor.TbProgress.Label.set -> void
+Trailblazor.TbProgress.Max.get -> double
+Trailblazor.TbProgress.Max.set -> void
+Trailblazor.TbProgress.Min.get -> double
+Trailblazor.TbProgress.Min.set -> void
+Trailblazor.TbProgress.ShowValue.get -> bool
+Trailblazor.TbProgress.ShowValue.set -> void
+Trailblazor.TbProgress.Size.get -> Trailblazor.Size
+Trailblazor.TbProgress.Size.set -> void
+Trailblazor.TbProgress.TbProgress() -> void
+Trailblazor.TbProgress.Tone.get -> Trailblazor.Tone
+Trailblazor.TbProgress.Tone.set -> void
+Trailblazor.TbProgress.Value.get -> double?
+Trailblazor.TbProgress.Value.set -> void
+Trailblazor.TbProgress.ValueFormatter.get -> System.Func<double, string!>?
+Trailblazor.TbProgress.ValueFormatter.set -> void
+Trailblazor.TbRadio<TValue>
+Trailblazor.TbRadio<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbRadio<TValue>.ChildContent.set -> void
+Trailblazor.TbRadio<TValue>.Disabled.get -> bool
+Trailblazor.TbRadio<TValue>.Disabled.set -> void
+Trailblazor.TbRadio<TValue>.TbRadio() -> void
+Trailblazor.TbRadio<TValue>.Value.get -> TValue
+Trailblazor.TbRadio<TValue>.Value.set -> void
+Trailblazor.TbRadioGroup<TValue>
+Trailblazor.TbRadioGroup<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbRadioGroup<TValue>.ChildContent.set -> void
+Trailblazor.TbRadioGroup<TValue>.Classes.get -> Trailblazor.ChoiceClasses?
+Trailblazor.TbRadioGroup<TValue>.Classes.set -> void
+Trailblazor.TbRadioGroup<TValue>.Row.get -> bool
+Trailblazor.TbRadioGroup<TValue>.Row.set -> void
+Trailblazor.TbRadioGroup<TValue>.Size.get -> Trailblazor.Size
+Trailblazor.TbRadioGroup<TValue>.Size.set -> void
+Trailblazor.TbRadioGroup<TValue>.TbRadioGroup() -> void
+Trailblazor.TbRadioGroup<TValue>.Tone.get -> Trailblazor.Tone
+Trailblazor.TbRadioGroup<TValue>.Tone.set -> void
+Trailblazor.TbRangeSlider<TValue>
+Trailblazor.TbRangeSlider<TValue>.EndLabel.get -> string?
+Trailblazor.TbRangeSlider<TValue>.EndLabel.set -> void
+Trailblazor.TbRangeSlider<TValue>.StartLabel.get -> string?
+Trailblazor.TbRangeSlider<TValue>.StartLabel.set -> void
+Trailblazor.TbRangeSlider<TValue>.TbRangeSlider() -> void
+Trailblazor.TbRangeSlider<TValue>.ValueFormatter.get -> System.Func<TValue, string!>?
+Trailblazor.TbRangeSlider<TValue>.ValueFormatter.set -> void
+Trailblazor.TbRoot
+Trailblazor.TbRoot.HostRenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
+Trailblazor.TbRoot.HostRenderMode.set -> void
+Trailblazor.TbRoot.TbRoot() -> void
+Trailblazor.TbSelect<TValue>
+Trailblazor.TbSelect<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
+Trailblazor.TbSelect<TValue>.Comparer.set -> void
+Trailblazor.TbSelect<TValue>.TbSelect() -> void
+Trailblazor.TbSelectBase<TValue>
+Trailblazor.TbSelectBase<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSelectBase<TValue>.ChildContent.set -> void
+Trailblazor.TbSelectBase<TValue>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbSelectBase<TValue>.Classes.set -> void
+Trailblazor.TbSelectBase<TValue>.Clearable.get -> bool
+Trailblazor.TbSelectBase<TValue>.Clearable.set -> void
+Trailblazor.TbSelectBase<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbSelectBase<TValue>.Filterable.get -> bool
+Trailblazor.TbSelectBase<TValue>.Filterable.set -> void
+Trailblazor.TbSelectBase<TValue>.Labels.get -> Trailblazor.SelectLabels!
+Trailblazor.TbSelectBase<TValue>.Labels.set -> void
+Trailblazor.TbSelectBase<TValue>.Open.get -> bool
+Trailblazor.TbSelectBase<TValue>.Open.set -> void
+Trailblazor.TbSelectBase<TValue>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbSelectBase<TValue>.OpenChanged.set -> void
+Trailblazor.TbSelectBase<TValue>.Placeholder.get -> string?
+Trailblazor.TbSelectBase<TValue>.Placeholder.set -> void
+Trailblazor.TbSelectBase<TValue>.TbSelectBase() -> void
+Trailblazor.TbSkeleton
+Trailblazor.TbSkeleton.Animation.get -> Trailblazor.SkeletonAnimation
+Trailblazor.TbSkeleton.Animation.set -> void
+Trailblazor.TbSkeleton.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSkeleton.ChildContent.set -> void
+Trailblazor.TbSkeleton.Height.get -> string?
+Trailblazor.TbSkeleton.Height.set -> void
+Trailblazor.TbSkeleton.Loading.get -> bool
+Trailblazor.TbSkeleton.Loading.set -> void
+Trailblazor.TbSkeleton.Shape.get -> Trailblazor.SkeletonShape
+Trailblazor.TbSkeleton.Shape.set -> void
+Trailblazor.TbSkeleton.TbSkeleton() -> void
+Trailblazor.TbSkeleton.Width.get -> string?
+Trailblazor.TbSkeleton.Width.set -> void
+Trailblazor.TbSlider<TValue>
+Trailblazor.TbSlider<TValue>.TbSlider() -> void
+Trailblazor.TbSlider<TValue>.ValueFormatter.get -> System.Func<TValue?, string!>?
+Trailblazor.TbSlider<TValue>.ValueFormatter.set -> void
+Trailblazor.TbSliderBase<TValue>
+Trailblazor.TbSliderBase<TValue>.Classes.get -> Trailblazor.ChoiceClasses?
+Trailblazor.TbSliderBase<TValue>.Classes.set -> void
+Trailblazor.TbSliderBase<TValue>.Marks.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.SliderMark!>?
+Trailblazor.TbSliderBase<TValue>.Marks.set -> void
+Trailblazor.TbSliderBase<TValue>.Max.get -> decimal
+Trailblazor.TbSliderBase<TValue>.Max.set -> void
+Trailblazor.TbSliderBase<TValue>.Min.get -> decimal
+Trailblazor.TbSliderBase<TValue>.Min.set -> void
+Trailblazor.TbSliderBase<TValue>.ShowValue.get -> bool
+Trailblazor.TbSliderBase<TValue>.ShowValue.set -> void
+Trailblazor.TbSliderBase<TValue>.Step.get -> decimal
+Trailblazor.TbSliderBase<TValue>.Step.set -> void
+Trailblazor.TbSliderBase<TValue>.TbSliderBase() -> void
+Trailblazor.TbSliderBase<TValue>.ValueCommitted.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Trailblazor.TbSliderBase<TValue>.ValueCommitted.set -> void
+Trailblazor.TbSpacer
+Trailblazor.TbSpacer.TbSpacer() -> void
+Trailblazor.TbSplitter
+Trailblazor.TbSplitter.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSplitter.ChildContent.set -> void
+Trailblazor.TbSplitter.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbSplitter.PersistenceKey.get -> string?
+Trailblazor.TbSplitter.PersistenceKey.set -> void
+Trailblazor.TbSplitter.TbSplitter() -> void
+Trailblazor.TbSplitter.Vertical.get -> bool
+Trailblazor.TbSplitter.Vertical.set -> void
+Trailblazor.TbSplitterPane
+Trailblazor.TbSplitterPane.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSplitterPane.ChildContent.set -> void
+Trailblazor.TbSplitterPane.Collapsed.get -> bool
+Trailblazor.TbSplitterPane.Collapsed.set -> void
+Trailblazor.TbSplitterPane.CollapsedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbSplitterPane.CollapsedChanged.set -> void
+Trailblazor.TbSplitterPane.Collapsible.get -> bool
+Trailblazor.TbSplitterPane.Collapsible.set -> void
+Trailblazor.TbSplitterPane.Dispose() -> void
+Trailblazor.TbSplitterPane.Label.get -> string?
+Trailblazor.TbSplitterPane.Label.set -> void
+Trailblazor.TbSplitterPane.MaxSize.get -> double
+Trailblazor.TbSplitterPane.MaxSize.set -> void
+Trailblazor.TbSplitterPane.MinSize.get -> double
+Trailblazor.TbSplitterPane.MinSize.set -> void
+Trailblazor.TbSplitterPane.Size.get -> double?
+Trailblazor.TbSplitterPane.Size.set -> void
+Trailblazor.TbSplitterPane.SizeChanged.get -> Microsoft.AspNetCore.Components.EventCallback<double?>
+Trailblazor.TbSplitterPane.SizeChanged.set -> void
+Trailblazor.TbSplitterPane.TbSplitterPane() -> void
+Trailblazor.TbStack
+Trailblazor.TbStack.Align.get -> Trailblazor.Align
+Trailblazor.TbStack.Align.set -> void
+Trailblazor.TbStack.As.get -> Trailblazor.LayoutElement
+Trailblazor.TbStack.As.set -> void
+Trailblazor.TbStack.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbStack.ChildContent.set -> void
+Trailblazor.TbStack.Gap.get -> int
+Trailblazor.TbStack.Gap.set -> void
+Trailblazor.TbStack.Justify.get -> Trailblazor.Justify
+Trailblazor.TbStack.Justify.set -> void
+Trailblazor.TbStack.Row.get -> bool
+Trailblazor.TbStack.Row.set -> void
+Trailblazor.TbStack.RowFrom.get -> Trailblazor.Breakpoint?
+Trailblazor.TbStack.RowFrom.set -> void
+Trailblazor.TbStack.TbStack() -> void
+Trailblazor.TbStack.Wrap.get -> bool
+Trailblazor.TbStack.Wrap.set -> void
+Trailblazor.TbStrings
+Trailblazor.TbStyles
+Trailblazor.TbStyles.TbStyles() -> void
+Trailblazor.TbSubMenu
+Trailblazor.TbSubMenu.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSubMenu.ChildContent.set -> void
+Trailblazor.TbSubMenu.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbSubMenu.Icon.set -> void
+Trailblazor.TbSubMenu.Label.get -> string!
+Trailblazor.TbSubMenu.Label.set -> void
+Trailblazor.TbSubMenu.TbSubMenu() -> void
+Trailblazor.TbSurface
+Trailblazor.TbSurface.As.get -> Trailblazor.LayoutElement
+Trailblazor.TbSurface.As.set -> void
+Trailblazor.TbSurface.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSurface.ChildContent.set -> void
+Trailblazor.TbSurface.Elevation.get -> Trailblazor.Elevation
+Trailblazor.TbSurface.Elevation.set -> void
+Trailblazor.TbSurface.Outlined.get -> bool
+Trailblazor.TbSurface.Outlined.set -> void
+Trailblazor.TbSurface.TbSurface() -> void
+Trailblazor.TbSwitch
+Trailblazor.TbSwitch.TbSwitch() -> void
+Trailblazor.TbTab
+Trailblazor.TbTab.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTab.ChildContent.set -> void
+Trailblazor.TbTab.Disabled.get -> bool
+Trailblazor.TbTab.Disabled.set -> void
+Trailblazor.TbTab.Dispose() -> void
+Trailblazor.TbTab.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbTab.Icon.set -> void
+Trailblazor.TbTab.Key.get -> string?
+Trailblazor.TbTab.Key.set -> void
+Trailblazor.TbTab.TbTab() -> void
+Trailblazor.TbTab.Text.get -> string?
+Trailblazor.TbTab.Text.set -> void
+Trailblazor.TbTab.TextContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTab.TextContent.set -> void
+Trailblazor.TbTable
+Trailblazor.TbTable.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTable.ChildContent.set -> void
+Trailblazor.TbTable.Size.get -> Trailblazor.Size
+Trailblazor.TbTable.Size.set -> void
+Trailblazor.TbTable.Striped.get -> bool
+Trailblazor.TbTable.Striped.set -> void
+Trailblazor.TbTable.TbTable() -> void
+Trailblazor.TbTabs
+Trailblazor.TbTabs.Activation.get -> Trailblazor.TabActivation
+Trailblazor.TbTabs.Activation.set -> void
+Trailblazor.TbTabs.ActiveIndex.get -> int
+Trailblazor.TbTabs.ActiveIndex.set -> void
+Trailblazor.TbTabs.ActiveIndexChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbTabs.ActiveIndexChanged.set -> void
+Trailblazor.TbTabs.ActiveKey.get -> string?
+Trailblazor.TbTabs.ActiveKey.set -> void
+Trailblazor.TbTabs.ActiveKeyChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+Trailblazor.TbTabs.ActiveKeyChanged.set -> void
+Trailblazor.TbTabs.AriaLabel.get -> string?
+Trailblazor.TbTabs.AriaLabel.set -> void
+Trailblazor.TbTabs.Centered.get -> bool
+Trailblazor.TbTabs.Centered.set -> void
+Trailblazor.TbTabs.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTabs.ChildContent.set -> void
+Trailblazor.TbTabs.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTabs.KeepAlive.get -> bool
+Trailblazor.TbTabs.KeepAlive.set -> void
+Trailblazor.TbTabs.TbTabs() -> void
+Trailblazor.TbTabs.Variant.get -> Trailblazor.Variant
+Trailblazor.TbTabs.Variant.set -> void
+Trailblazor.TbTabs.Vertical.get -> bool
+Trailblazor.TbTabs.Vertical.set -> void
+Trailblazor.TbText
+Trailblazor.TbText.As.get -> Trailblazor.TextElement
+Trailblazor.TbText.As.set -> void
+Trailblazor.TbText.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbText.ChildContent.set -> void
+Trailblazor.TbText.MaxLines.get -> int?
+Trailblazor.TbText.MaxLines.set -> void
+Trailblazor.TbText.Muted.get -> bool
+Trailblazor.TbText.Muted.set -> void
+Trailblazor.TbText.TbText() -> void
+Trailblazor.TbText.TextStyle.get -> Trailblazor.TextStyle
+Trailblazor.TbText.TextStyle.set -> void
+Trailblazor.TbText.Tone.get -> Trailblazor.Tone?
+Trailblazor.TbText.Tone.set -> void
+Trailblazor.TbTextField<TValue>
+Trailblazor.TbTextField<TValue>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbTextField<TValue>.Classes.set -> void
+Trailblazor.TbTextField<TValue>.ClearLabel.get -> string?
+Trailblazor.TbTextField<TValue>.ClearLabel.set -> void
+Trailblazor.TbTextField<TValue>.Clearable.get -> bool
+Trailblazor.TbTextField<TValue>.Clearable.set -> void
+Trailblazor.TbTextField<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTextField<TValue>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTextField<TValue>.End.set -> void
+Trailblazor.TbTextField<TValue>.IncludeMaskLiterals.get -> bool
+Trailblazor.TbTextField<TValue>.IncludeMaskLiterals.set -> void
+Trailblazor.TbTextField<TValue>.Lines.get -> int
+Trailblazor.TbTextField<TValue>.Lines.set -> void
+Trailblazor.TbTextField<TValue>.Mask.get -> string?
+Trailblazor.TbTextField<TValue>.Mask.set -> void
+Trailblazor.TbTextField<TValue>.MaxLines.get -> int?
+Trailblazor.TbTextField<TValue>.MaxLines.set -> void
+Trailblazor.TbTextField<TValue>.Placeholder.get -> string?
+Trailblazor.TbTextField<TValue>.Placeholder.set -> void
+Trailblazor.TbTextField<TValue>.SelectTextAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTextField<TValue>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTextField<TValue>.Start.set -> void
+Trailblazor.TbTextField<TValue>.TbTextField() -> void
+Trailblazor.TbTextField<TValue>.Type.get -> Trailblazor.TextFieldType
+Trailblazor.TbTextField<TValue>.Type.set -> void
+Trailblazor.TbTextField<TValue>.UpdateDelay.get -> System.TimeSpan?
+Trailblazor.TbTextField<TValue>.UpdateDelay.set -> void
+Trailblazor.TbTextField<TValue>.UpdateOnInput.get -> bool
+Trailblazor.TbTextField<TValue>.UpdateOnInput.set -> void
+Trailblazor.TbThemeHead
+Trailblazor.TbThemeHead.TbThemeHead() -> void
+Trailblazor.TbThemePicker
+Trailblazor.TbThemePicker.AriaLabel.get -> string?
+Trailblazor.TbThemePicker.AriaLabel.set -> void
+Trailblazor.TbThemePicker.Dispose() -> void
+Trailblazor.TbThemePicker.Size.get -> Trailblazor.Size
+Trailblazor.TbThemePicker.Size.set -> void
+Trailblazor.TbThemePicker.TbThemePicker() -> void
+Trailblazor.TbToggleGroup<TValue>
+Trailblazor.TbToggleGroup<TValue>.Clearable.get -> bool
+Trailblazor.TbToggleGroup<TValue>.Clearable.set -> void
+Trailblazor.TbToggleGroup<TValue>.TbToggleGroup() -> void
+Trailblazor.TbToggleGroupBase<TValue>
+Trailblazor.TbToggleGroupBase<TValue>.AriaLabel.get -> string!
+Trailblazor.TbToggleGroupBase<TValue>.AriaLabel.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbToggleGroupBase<TValue>.ChildContent.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.Disabled.get -> bool
+Trailblazor.TbToggleGroupBase<TValue>.Disabled.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbToggleGroupBase<TValue>.Size.get -> Trailblazor.Size
+Trailblazor.TbToggleGroupBase<TValue>.Size.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.TbToggleGroupBase() -> void
+Trailblazor.TbToggleGroupBase<TValue>.Tone.get -> Trailblazor.Tone
+Trailblazor.TbToggleGroupBase<TValue>.Tone.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.Value.get -> TValue?
+Trailblazor.TbToggleGroupBase<TValue>.Value.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Trailblazor.TbToggleGroupBase<TValue>.ValueChanged.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.Variant.get -> Trailblazor.Variant
+Trailblazor.TbToggleGroupBase<TValue>.Variant.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.Vertical.get -> bool
+Trailblazor.TbToggleGroupBase<TValue>.Vertical.set -> void
+Trailblazor.TbToggleItem<TValue>
+Trailblazor.TbToggleItem<TValue>.AriaLabel.get -> string!
+Trailblazor.TbToggleItem<TValue>.AriaLabel.set -> void
+Trailblazor.TbToggleItem<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbToggleItem<TValue>.ChildContent.set -> void
+Trailblazor.TbToggleItem<TValue>.Disabled.get -> bool
+Trailblazor.TbToggleItem<TValue>.Disabled.set -> void
+Trailblazor.TbToggleItem<TValue>.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbToggleItem<TValue>.Icon.set -> void
+Trailblazor.TbToggleItem<TValue>.TbToggleItem() -> void
+Trailblazor.TbToggleItem<TValue>.Value.get -> TValue
+Trailblazor.TbToggleItem<TValue>.Value.set -> void
+Trailblazor.TbToolbar
+Trailblazor.TbToolbar.AriaLabel.get -> string!
+Trailblazor.TbToolbar.AriaLabel.set -> void
+Trailblazor.TbToolbar.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbToolbar.ChildContent.set -> void
+Trailblazor.TbToolbar.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbToolbar.OverflowLabel.get -> string?
+Trailblazor.TbToolbar.OverflowLabel.set -> void
+Trailblazor.TbToolbar.TbToolbar() -> void
+Trailblazor.TbToolbar.Vertical.get -> bool
+Trailblazor.TbToolbar.Vertical.set -> void
+Trailblazor.TbToolbarButton
+Trailblazor.TbToolbarButton.Disabled.get -> bool
+Trailblazor.TbToolbarButton.Disabled.set -> void
+Trailblazor.TbToolbarButton.Dispose() -> void
+Trailblazor.TbToolbarButton.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbToolbarButton.Icon.set -> void
+Trailblazor.TbToolbarButton.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbToolbarButton.OnClick.set -> void
+Trailblazor.TbToolbarButton.TbToolbarButton() -> void
+Trailblazor.TbToolbarButton.Text.get -> string!
+Trailblazor.TbToolbarButton.Text.set -> void
+Trailblazor.TbToolbarButton.Variant.get -> Trailblazor.Variant
+Trailblazor.TbToolbarButton.Variant.set -> void
+Trailblazor.TbTooltip
+Trailblazor.TbTooltip.Align.get -> Trailblazor.PlacementAlign
+Trailblazor.TbTooltip.Align.set -> void
+Trailblazor.TbTooltip.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTooltip.ChildContent.set -> void
+Trailblazor.TbTooltip.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTooltip.HideDelay.get -> System.TimeSpan?
+Trailblazor.TbTooltip.HideDelay.set -> void
+Trailblazor.TbTooltip.Placement.get -> Trailblazor.Placement
+Trailblazor.TbTooltip.Placement.set -> void
+Trailblazor.TbTooltip.ShowArrow.get -> bool
+Trailblazor.TbTooltip.ShowArrow.set -> void
+Trailblazor.TbTooltip.ShowDelay.get -> System.TimeSpan?
+Trailblazor.TbTooltip.ShowDelay.set -> void
+Trailblazor.TbTooltip.TbTooltip() -> void
+Trailblazor.TbTooltip.Text.get -> string?
+Trailblazor.TbTooltip.Text.set -> void
+Trailblazor.TbTooltip.TextContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTooltip.TextContent.set -> void
+Trailblazor.TbTreeItem<TItem>
+Trailblazor.TbTreeItem<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeItem<TItem>.ChildContent.set -> void
+Trailblazor.TbTreeItem<TItem>.Disabled.get -> bool
+Trailblazor.TbTreeItem<TItem>.Disabled.set -> void
+Trailblazor.TbTreeItem<TItem>.Dispose() -> void
+Trailblazor.TbTreeItem<TItem>.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbTreeItem<TItem>.Icon.set -> void
+Trailblazor.TbTreeItem<TItem>.TbTreeItem() -> void
+Trailblazor.TbTreeItem<TItem>.Text.get -> string?
+Trailblazor.TbTreeItem<TItem>.Text.set -> void
+Trailblazor.TbTreeItem<TItem>.TextContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeItem<TItem>.TextContent.set -> void
+Trailblazor.TbTreeItem<TItem>.Value.get -> TItem
+Trailblazor.TbTreeItem<TItem>.Value.set -> void
+Trailblazor.TbTreeView<TItem, TKey>
+Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.get -> string?
+Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CanDrag.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.CanDrag.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CanDrop.get -> System.Func<Trailblazor.TreeDrop<TItem>!, System.Threading.Tasks.Task<Trailblazor.TreeDropCheck!>!>?
+Trailblazor.TbTreeView<TItem, TKey>.CanDrop.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CascadeChecks.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.CascadeChecks.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.Checkable.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.Checkable.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CheckedKeys.get -> System.Collections.Generic.IReadOnlyCollection<TKey>?
+Trailblazor.TbTreeView<TItem, TKey>.CheckedKeys.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CheckedKeysChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyCollection<TKey>!>
+Trailblazor.TbTreeView<TItem, TKey>.CheckedKeysChanged.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeView<TItem, TKey>.ChildContent.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ChildrenSelector.get -> System.Func<TItem, System.Collections.Generic.IEnumerable<TItem>?>?
+Trailblazor.TbTreeView<TItem, TKey>.ChildrenSelector.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CollapseAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbTreeView<TItem, TKey>.CollapseAsync(TKey key) -> System.Threading.Tasks.Task!
+Trailblazor.TbTreeView<TItem, TKey>.Disabled.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.Disabled.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTreeView<TItem, TKey>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeView<TItem, TKey>.EmptyContent.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ExpandAllAsync(int? depth = null) -> System.Threading.Tasks.Task!
+Trailblazor.TbTreeView<TItem, TKey>.ExpandAsync(TKey key) -> System.Threading.Tasks.Task!
+Trailblazor.TbTreeView<TItem, TKey>.ExpandedKeys.get -> System.Collections.Generic.IReadOnlyCollection<TKey>?
+Trailblazor.TbTreeView<TItem, TKey>.ExpandedKeys.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ExpandedKeysChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyCollection<TKey>!>
+Trailblazor.TbTreeView<TItem, TKey>.ExpandedKeysChanged.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.Filter.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.Filter.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.FilterKeepsDescendants.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.FilterKeepsDescendants.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.HasChildren.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.HasChildren.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.InitialExpandDepth.get -> int
+Trailblazor.TbTreeView<TItem, TKey>.InitialExpandDepth.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.InsertTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.TreeInsertContext<TItem>!>?
+Trailblazor.TbTreeView<TItem, TKey>.InsertTemplate.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.IsDisabled.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.IsDisabled.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemEnd.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.TreeItemContext<TItem, TKey>!>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemEnd.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemIcon.get -> System.Func<TItem, Trailblazor.Icon?>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemIcon.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemSize.get -> float
+Trailblazor.TbTreeView<TItem, TKey>.ItemSize.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.TreeItemContext<TItem, TKey>!>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemTemplate.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemText.get -> System.Func<TItem, string!>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemText.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.Items.get -> System.Collections.Generic.IEnumerable<TItem>!
+Trailblazor.TbTreeView<TItem, TKey>.Items.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.KeySelector.get -> System.Func<TItem, TKey>?
+Trailblazor.TbTreeView<TItem, TKey>.KeySelector.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.Labels.get -> Trailblazor.TreeViewLabels!
+Trailblazor.TbTreeView<TItem, TKey>.Labels.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.LoadChildren.get -> System.Func<TItem, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TItem>!>!>?
+Trailblazor.TbTreeView<TItem, TKey>.LoadChildren.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.OnActivate.get -> Microsoft.AspNetCore.Components.EventCallback<TItem>
+Trailblazor.TbTreeView<TItem, TKey>.OnActivate.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.OnDrop.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.TreeDrop<TItem>!>
+Trailblazor.TbTreeView<TItem, TKey>.OnDrop.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
+Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ParentKeySelector.get -> System.Func<TItem, object?>?
+Trailblazor.TbTreeView<TItem, TKey>.ParentKeySelector.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ScrollToAsync(TKey key, bool focus = false) -> System.Threading.Tasks.Task!
+Trailblazor.TbTreeView<TItem, TKey>.SelectedKeys.get -> System.Collections.Generic.IReadOnlyCollection<TKey>?
+Trailblazor.TbTreeView<TItem, TKey>.SelectedKeys.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.SelectedKeysChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyCollection<TKey>!>
+Trailblazor.TbTreeView<TItem, TKey>.SelectedKeysChanged.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.SelectionMode.get -> Trailblazor.SelectionMode
+Trailblazor.TbTreeView<TItem, TKey>.SelectionMode.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.TbTreeView() -> void
+Trailblazor.TbTreeView<TItem, TKey>.Virtualize.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.Virtualize.set -> void
+Trailblazor.TextElement
+Trailblazor.TextElement.Div = 2 -> Trailblazor.TextElement
+Trailblazor.TextElement.H1 = 4 -> Trailblazor.TextElement
+Trailblazor.TextElement.H2 = 5 -> Trailblazor.TextElement
+Trailblazor.TextElement.H3 = 6 -> Trailblazor.TextElement
+Trailblazor.TextElement.H4 = 7 -> Trailblazor.TextElement
+Trailblazor.TextElement.H5 = 8 -> Trailblazor.TextElement
+Trailblazor.TextElement.H6 = 9 -> Trailblazor.TextElement
+Trailblazor.TextElement.Label = 3 -> Trailblazor.TextElement
+Trailblazor.TextElement.P = 0 -> Trailblazor.TextElement
+Trailblazor.TextElement.Span = 1 -> Trailblazor.TextElement
+Trailblazor.TextFieldType
+Trailblazor.TextFieldType.Email = 2 -> Trailblazor.TextFieldType
+Trailblazor.TextFieldType.Password = 1 -> Trailblazor.TextFieldType
+Trailblazor.TextFieldType.Search = 3 -> Trailblazor.TextFieldType
+Trailblazor.TextFieldType.Tel = 4 -> Trailblazor.TextFieldType
+Trailblazor.TextFieldType.Text = 0 -> Trailblazor.TextFieldType
+Trailblazor.TextFieldType.Url = 5 -> Trailblazor.TextFieldType
+Trailblazor.TextStyle
+Trailblazor.TextStyle.Body = 4 -> Trailblazor.TextStyle
+Trailblazor.TextStyle.BodySmall = 5 -> Trailblazor.TextStyle
+Trailblazor.TextStyle.Caption = 7 -> Trailblazor.TextStyle
+Trailblazor.TextStyle.Display = 0 -> Trailblazor.TextStyle
+Trailblazor.TextStyle.Headline = 1 -> Trailblazor.TextStyle
+Trailblazor.TextStyle.Label = 6 -> Trailblazor.TextStyle
+Trailblazor.TextStyle.Subtitle = 3 -> Trailblazor.TextStyle
+Trailblazor.TextStyle.Title = 2 -> Trailblazor.TextStyle
+Trailblazor.ThemeMode
+Trailblazor.ThemeMode.Dark = 2 -> Trailblazor.ThemeMode
+Trailblazor.ThemeMode.Light = 1 -> Trailblazor.ThemeMode
+Trailblazor.ThemeMode.System = 0 -> Trailblazor.ThemeMode
+Trailblazor.ThemeSettings
+Trailblazor.ThemeSettings.Mode.get -> Trailblazor.ThemeMode
+Trailblazor.ThemeSettings.Mode.set -> void
+Trailblazor.ThemeSettings.Palette.get -> Trailblazor.Palette
+Trailblazor.ThemeSettings.Palette.set -> void
+Trailblazor.ThemeSettings.Remember.get -> bool
+Trailblazor.ThemeSettings.Remember.set -> void
+Trailblazor.ThemeSettings.ThemeSettings() -> void
+Trailblazor.ToastAction
+Trailblazor.ToastAction.<Clone>$() -> Trailblazor.ToastAction!
+Trailblazor.ToastAction.Deconstruct(out string! Text, out Microsoft.AspNetCore.Components.EventCallback OnClick) -> void
+Trailblazor.ToastAction.Equals(Trailblazor.ToastAction? other) -> bool
+Trailblazor.ToastAction.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.ToastAction.OnClick.init -> void
+Trailblazor.ToastAction.Text.get -> string!
+Trailblazor.ToastAction.Text.init -> void
+Trailblazor.ToastAction.ToastAction(string! Text, Microsoft.AspNetCore.Components.EventCallback OnClick) -> void
+Trailblazor.ToastCloseReason
+Trailblazor.ToastCloseReason.Action = 2 -> Trailblazor.ToastCloseReason
+Trailblazor.ToastCloseReason.App = 3 -> Trailblazor.ToastCloseReason
+Trailblazor.ToastCloseReason.CloseButton = 1 -> Trailblazor.ToastCloseReason
+Trailblazor.ToastCloseReason.TimedOut = 0 -> Trailblazor.ToastCloseReason
+Trailblazor.ToastOptions
+Trailblazor.ToastOptions.<Clone>$() -> Trailblazor.ToastOptions!
+Trailblazor.ToastOptions.Action.get -> Trailblazor.ToastAction?
+Trailblazor.ToastOptions.Action.init -> void
+Trailblazor.ToastOptions.Content.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.ToastOptions.Content.init -> void
+Trailblazor.ToastOptions.Duration.get -> System.TimeSpan?
+Trailblazor.ToastOptions.Duration.init -> void
+Trailblazor.ToastOptions.Equals(Trailblazor.ToastOptions? other) -> bool
+Trailblazor.ToastOptions.Icon.get -> Trailblazor.Icon?
+Trailblazor.ToastOptions.Icon.init -> void
+Trailblazor.ToastOptions.Key.get -> string?
+Trailblazor.ToastOptions.Key.init -> void
+Trailblazor.ToastOptions.ShowIcon.get -> bool
+Trailblazor.ToastOptions.ShowIcon.init -> void
+Trailblazor.ToastOptions.StayOpen.get -> bool
+Trailblazor.ToastOptions.StayOpen.init -> void
+Trailblazor.ToastOptions.Title.get -> string?
+Trailblazor.ToastOptions.Title.init -> void
+Trailblazor.ToastOptions.ToastOptions() -> void
+Trailblazor.ToastPosition
+Trailblazor.ToastPosition.BottomCenter = 4 -> Trailblazor.ToastPosition
+Trailblazor.ToastPosition.BottomEnd = 5 -> Trailblazor.ToastPosition
+Trailblazor.ToastPosition.BottomStart = 3 -> Trailblazor.ToastPosition
+Trailblazor.ToastPosition.TopCenter = 1 -> Trailblazor.ToastPosition
+Trailblazor.ToastPosition.TopEnd = 2 -> Trailblazor.ToastPosition
+Trailblazor.ToastPosition.TopStart = 0 -> Trailblazor.ToastPosition
+Trailblazor.ToastReference
+Trailblazor.ToastReference.Closed.get -> System.Threading.Tasks.Task<Trailblazor.ToastCloseReason>!
+Trailblazor.ToastReference.Dismiss() -> void
+Trailblazor.ToastReference.IsOpen.get -> bool
+Trailblazor.ToastReference.Message.get -> string!
+Trailblazor.ToastReference.Options.get -> Trailblazor.ToastOptions!
+Trailblazor.ToastReference.Tone.get -> Trailblazor.Tone
+Trailblazor.ToastReference.Update(string! message, Trailblazor.Tone tone, Trailblazor.ToastOptions? options = null) -> void
+Trailblazor.ToastSettings
+Trailblazor.ToastSettings.Duration.get -> System.TimeSpan
+Trailblazor.ToastSettings.Duration.set -> void
+Trailblazor.ToastSettings.MaxVisible.get -> int
+Trailblazor.ToastSettings.MaxVisible.set -> void
+Trailblazor.ToastSettings.Position.get -> Trailblazor.ToastPosition
+Trailblazor.ToastSettings.Position.set -> void
+Trailblazor.ToastSettings.ToastSettings() -> void
+Trailblazor.Tone
+Trailblazor.Tone.Danger = 4 -> Trailblazor.Tone
+Trailblazor.Tone.Info = 5 -> Trailblazor.Tone
+Trailblazor.Tone.Neutral = 1 -> Trailblazor.Tone
+Trailblazor.Tone.Primary = 0 -> Trailblazor.Tone
+Trailblazor.Tone.Success = 2 -> Trailblazor.Tone
+Trailblazor.Tone.Warning = 3 -> Trailblazor.Tone
+Trailblazor.TooltipSettings
+Trailblazor.TooltipSettings.HideDelay.get -> System.TimeSpan
+Trailblazor.TooltipSettings.HideDelay.set -> void
+Trailblazor.TooltipSettings.ShowDelay.get -> System.TimeSpan
+Trailblazor.TooltipSettings.ShowDelay.set -> void
+Trailblazor.TooltipSettings.TooltipSettings() -> void
+Trailblazor.TrailblazorOptions
+Trailblazor.TrailblazorOptions.Dialogs.get -> Trailblazor.DialogSettings!
+Trailblazor.TrailblazorOptions.Strings.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Trailblazor.TrailblazorOptions.Theme.get -> Trailblazor.ThemeSettings!
+Trailblazor.TrailblazorOptions.Toasts.get -> Trailblazor.ToastSettings!
+Trailblazor.TrailblazorOptions.Tooltips.get -> Trailblazor.TooltipSettings!
+Trailblazor.TrailblazorOptions.TrailblazorOptions() -> void
+Trailblazor.TreeDrop<TItem>
+Trailblazor.TreeDrop<TItem>.<Clone>$() -> Trailblazor.TreeDrop<TItem>!
+Trailblazor.TreeDrop<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out TItem Target, out Trailblazor.TreeDropPosition Position) -> void
+Trailblazor.TreeDrop<TItem>.Equals(Trailblazor.TreeDrop<TItem>? other) -> bool
+Trailblazor.TreeDrop<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.TreeDrop<TItem>.Items.init -> void
+Trailblazor.TreeDrop<TItem>.Position.get -> Trailblazor.TreeDropPosition
+Trailblazor.TreeDrop<TItem>.Position.init -> void
+Trailblazor.TreeDrop<TItem>.Target.get -> TItem
+Trailblazor.TreeDrop<TItem>.Target.init -> void
+Trailblazor.TreeDrop<TItem>.TreeDrop(System.Collections.Generic.IReadOnlyList<TItem>! Items, TItem Target, Trailblazor.TreeDropPosition Position) -> void
+Trailblazor.TreeDropCheck
+Trailblazor.TreeDropCheck.<Clone>$() -> Trailblazor.TreeDropCheck!
+Trailblazor.TreeDropCheck.Allowed.get -> bool
+Trailblazor.TreeDropCheck.Allowed.init -> void
+Trailblazor.TreeDropCheck.Deconstruct(out bool Allowed, out string? Reason) -> void
+Trailblazor.TreeDropCheck.Equals(Trailblazor.TreeDropCheck? other) -> bool
+Trailblazor.TreeDropCheck.Reason.get -> string?
+Trailblazor.TreeDropCheck.Reason.init -> void
+Trailblazor.TreeDropCheck.TreeDropCheck(bool Allowed, string? Reason = null) -> void
+Trailblazor.TreeDropPosition
+Trailblazor.TreeDropPosition.After = 1 -> Trailblazor.TreeDropPosition
+Trailblazor.TreeDropPosition.Before = 0 -> Trailblazor.TreeDropPosition
+Trailblazor.TreeDropPosition.Inside = 2 -> Trailblazor.TreeDropPosition
+Trailblazor.TreeInsertContext<TItem>
+Trailblazor.TreeInsertContext<TItem>.<Clone>$() -> Trailblazor.TreeInsertContext<TItem>!
+Trailblazor.TreeInsertContext<TItem>.Deconstruct(out TItem? Parent, out int Index) -> void
+Trailblazor.TreeInsertContext<TItem>.Equals(Trailblazor.TreeInsertContext<TItem>? other) -> bool
+Trailblazor.TreeInsertContext<TItem>.Index.get -> int
+Trailblazor.TreeInsertContext<TItem>.Index.init -> void
+Trailblazor.TreeInsertContext<TItem>.Parent.get -> TItem?
+Trailblazor.TreeInsertContext<TItem>.Parent.init -> void
+Trailblazor.TreeInsertContext<TItem>.TreeInsertContext(TItem? Parent, int Index) -> void
+Trailblazor.TreeItemContext<TItem, TKey>
+Trailblazor.TreeItemContext<TItem, TKey>.<Clone>$() -> Trailblazor.TreeItemContext<TItem, TKey>!
+Trailblazor.TreeItemContext<TItem, TKey>.Checked.get -> bool?
+Trailblazor.TreeItemContext<TItem, TKey>.Checked.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Deconstruct(out TItem Item, out TKey Key, out int Level, out bool Expanded, out bool Selected, out bool? Checked, out bool HasChildren, out bool Loading, out bool Matches) -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Equals(Trailblazor.TreeItemContext<TItem, TKey>? other) -> bool
+Trailblazor.TreeItemContext<TItem, TKey>.Expanded.get -> bool
+Trailblazor.TreeItemContext<TItem, TKey>.Expanded.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.HasChildren.get -> bool
+Trailblazor.TreeItemContext<TItem, TKey>.HasChildren.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Item.get -> TItem
+Trailblazor.TreeItemContext<TItem, TKey>.Item.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Key.get -> TKey
+Trailblazor.TreeItemContext<TItem, TKey>.Key.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Level.get -> int
+Trailblazor.TreeItemContext<TItem, TKey>.Level.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Loading.get -> bool
+Trailblazor.TreeItemContext<TItem, TKey>.Loading.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Matches.get -> bool
+Trailblazor.TreeItemContext<TItem, TKey>.Matches.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.Selected.get -> bool
+Trailblazor.TreeItemContext<TItem, TKey>.Selected.init -> void
+Trailblazor.TreeItemContext<TItem, TKey>.TreeItemContext(TItem Item, TKey Key, int Level, bool Expanded, bool Selected, bool? Checked, bool HasChildren, bool Loading, bool Matches) -> void
+Trailblazor.TreeViewLabels
+Trailblazor.TreeViewLabels.<Clone>$() -> Trailblazor.TreeViewLabels!
+Trailblazor.TreeViewLabels.Empty.get -> string?
+Trailblazor.TreeViewLabels.Empty.init -> void
+Trailblazor.TreeViewLabels.Equals(Trailblazor.TreeViewLabels? other) -> bool
+Trailblazor.TreeViewLabels.LoadFailed.get -> string?
+Trailblazor.TreeViewLabels.LoadFailed.init -> void
+Trailblazor.TreeViewLabels.Loading.get -> string?
+Trailblazor.TreeViewLabels.Loading.init -> void
+Trailblazor.TreeViewLabels.Retry.get -> string?
+Trailblazor.TreeViewLabels.Retry.init -> void
+Trailblazor.TreeViewLabels.TreeViewLabels() -> void
+Trailblazor.Variant
+Trailblazor.Variant.Filled = 0 -> Trailblazor.Variant
+Trailblazor.Variant.Outlined = 1 -> Trailblazor.Variant
+Trailblazor.Variant.Soft = 2 -> Trailblazor.Variant
+Trailblazor.Variant.Text = 3 -> Trailblazor.Variant
+Trailblazor.Viewport
+Trailblazor.Viewport.<Clone>$() -> Trailblazor.Viewport!
+Trailblazor.Viewport.Breakpoint.get -> Trailblazor.Breakpoint
+Trailblazor.Viewport.Deconstruct(out int Width, out int Height) -> void
+Trailblazor.Viewport.Equals(Trailblazor.Viewport? other) -> bool
+Trailblazor.Viewport.Height.get -> int
+Trailblazor.Viewport.Height.init -> void
+Trailblazor.Viewport.Viewport(int Width, int Height) -> void
+Trailblazor.Viewport.Width.get -> int
+Trailblazor.Viewport.Width.init -> void
+Trailblazor._Imports
+Trailblazor._Imports.Execute() -> void
+Trailblazor._Imports._Imports() -> void
+abstract Trailblazor.TbFieldBase<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+const Trailblazor.TbStrings.AlertClose = "Alert.Close" -> string!
+const Trailblazor.TbStrings.AutocompleteClear = "Autocomplete.Clear" -> string!
+const Trailblazor.TbStrings.AutocompleteNoResults = "Autocomplete.NoResults" -> string!
+const Trailblazor.TbStrings.AutocompleteResults = "Autocomplete.Results" -> string!
+const Trailblazor.TbStrings.AutocompleteSearchFailed = "Autocomplete.SearchFailed" -> string!
+const Trailblazor.TbStrings.AutocompleteSearching = "Autocomplete.Searching" -> string!
+const Trailblazor.TbStrings.AutocompleteTypeToSearch = "Autocomplete.TypeToSearch" -> string!
+const Trailblazor.TbStrings.ChipRemove = "Chip.Remove" -> string!
+const Trailblazor.TbStrings.ChipRemoveNamed = "Chip.RemoveNamed" -> string!
+const Trailblazor.TbStrings.ColorPickerAlpha = "ColorPicker.Alpha" -> string!
+const Trailblazor.TbStrings.ColorPickerBadColor = "ColorPicker.BadColor" -> string!
+const Trailblazor.TbStrings.ColorPickerBlue = "ColorPicker.Blue" -> string!
+const Trailblazor.TbStrings.ColorPickerBrightness = "ColorPicker.Brightness" -> string!
+const Trailblazor.TbStrings.ColorPickerClear = "ColorPicker.Clear" -> string!
+const Trailblazor.TbStrings.ColorPickerEyedropper = "ColorPicker.Eyedropper" -> string!
+const Trailblazor.TbStrings.ColorPickerGreen = "ColorPicker.Green" -> string!
+const Trailblazor.TbStrings.ColorPickerHue = "ColorPicker.Hue" -> string!
+const Trailblazor.TbStrings.ColorPickerOpen = "ColorPicker.Open" -> string!
+const Trailblazor.TbStrings.ColorPickerRed = "ColorPicker.Red" -> string!
+const Trailblazor.TbStrings.ColorPickerSaturation = "ColorPicker.Saturation" -> string!
+const Trailblazor.TbStrings.ColorPickerSwatches = "ColorPicker.Swatches" -> string!
+const Trailblazor.TbStrings.DataGridAscending = "DataGrid.Ascending" -> string!
+const Trailblazor.TbStrings.DataGridDescending = "DataGrid.Descending" -> string!
+const Trailblazor.TbStrings.DataGridEmpty = "DataGrid.Empty" -> string!
+const Trailblazor.TbStrings.DataGridLoadFailed = "DataGrid.LoadFailed" -> string!
+const Trailblazor.TbStrings.DataGridLoading = "DataGrid.Loading" -> string!
+const Trailblazor.TbStrings.DataGridPageSize = "DataGrid.PageSize" -> string!
+const Trailblazor.TbStrings.DataGridPages = "DataGrid.Pages" -> string!
+const Trailblazor.TbStrings.DataGridRange = "DataGrid.Range" -> string!
+const Trailblazor.TbStrings.DataGridRetry = "DataGrid.Retry" -> string!
+const Trailblazor.TbStrings.DataGridSelect = "DataGrid.Select" -> string!
+const Trailblazor.TbStrings.DataGridSelectAll = "DataGrid.SelectAll" -> string!
+const Trailblazor.TbStrings.DataGridSelectRow = "DataGrid.SelectRow" -> string!
+const Trailblazor.TbStrings.DataGridSortPosition = "DataGrid.SortPosition" -> string!
+const Trailblazor.TbStrings.DataGridSortedAscending = "DataGrid.SortedAscending" -> string!
+const Trailblazor.TbStrings.DataGridSortedDescending = "DataGrid.SortedDescending" -> string!
+const Trailblazor.TbStrings.DataGridUnsorted = "DataGrid.Unsorted" -> string!
+const Trailblazor.TbStrings.DateRangePickerBadEnd = "DateRangePicker.BadEnd" -> string!
+const Trailblazor.TbStrings.DateRangePickerBadStart = "DateRangePicker.BadStart" -> string!
+const Trailblazor.TbStrings.DateRangePickerChooseEnd = "DateRangePicker.ChooseEnd" -> string!
+const Trailblazor.TbStrings.DateRangePickerClear = "DateRangePicker.Clear" -> string!
+const Trailblazor.TbStrings.DateRangePickerEnd = "DateRangePicker.End" -> string!
+const Trailblazor.TbStrings.DateRangePickerEndBeforeStart = "DateRangePicker.EndBeforeStart" -> string!
+const Trailblazor.TbStrings.DateRangePickerNextMonth = "DateRangePicker.NextMonth" -> string!
+const Trailblazor.TbStrings.DateRangePickerOpen = "DateRangePicker.Open" -> string!
+const Trailblazor.TbStrings.DateRangePickerPresets = "DateRangePicker.Presets" -> string!
+const Trailblazor.TbStrings.DateRangePickerPreviousMonth = "DateRangePicker.PreviousMonth" -> string!
+const Trailblazor.TbStrings.DateRangePickerStart = "DateRangePicker.Start" -> string!
+const Trailblazor.TbStrings.DateRangePickerUnavailable = "DateRangePicker.Unavailable" -> string!
+const Trailblazor.TbStrings.DialogCancel = "Dialog.Cancel" -> string!
+const Trailblazor.TbStrings.DialogClose = "Dialog.Close" -> string!
+const Trailblazor.TbStrings.DialogConfirm = "Dialog.Confirm" -> string!
+const Trailblazor.TbStrings.DialogMaximize = "Dialog.Maximize" -> string!
+const Trailblazor.TbStrings.DialogMinimize = "Dialog.Minimize" -> string!
+const Trailblazor.TbStrings.DialogMove = "Dialog.Move" -> string!
+const Trailblazor.TbStrings.DialogMoveHint = "Dialog.MoveHint" -> string!
+const Trailblazor.TbStrings.DialogPositionBottom = "Dialog.Position.Bottom" -> string!
+const Trailblazor.TbStrings.DialogPositionBottomEnd = "Dialog.Position.BottomEnd" -> string!
+const Trailblazor.TbStrings.DialogPositionBottomStart = "Dialog.Position.BottomStart" -> string!
+const Trailblazor.TbStrings.DialogPositionCenter = "Dialog.Position.Center" -> string!
+const Trailblazor.TbStrings.DialogPositionEnd = "Dialog.Position.End" -> string!
+const Trailblazor.TbStrings.DialogPositionStart = "Dialog.Position.Start" -> string!
+const Trailblazor.TbStrings.DialogPositionTop = "Dialog.Position.Top" -> string!
+const Trailblazor.TbStrings.DialogPositionTopEnd = "Dialog.Position.TopEnd" -> string!
+const Trailblazor.TbStrings.DialogPositionTopStart = "Dialog.Position.TopStart" -> string!
+const Trailblazor.TbStrings.DialogResize = "Dialog.Resize" -> string!
+const Trailblazor.TbStrings.DialogResizeHint = "Dialog.ResizeHint" -> string!
+const Trailblazor.TbStrings.DialogRestore = "Dialog.Restore" -> string!
+const Trailblazor.TbStrings.DialogSizeExtraLarge = "Dialog.Size.ExtraLarge" -> string!
+const Trailblazor.TbStrings.DialogSizeLarge = "Dialog.Size.Large" -> string!
+const Trailblazor.TbStrings.DialogSizeMedium = "Dialog.Size.Medium" -> string!
+const Trailblazor.TbStrings.DialogSizeSmall = "Dialog.Size.Small" -> string!
+const Trailblazor.TbStrings.FieldInvalid = "Field.Invalid" -> string!
+const Trailblazor.TbStrings.FieldUnnamed = "Field.Unnamed" -> string!
+const Trailblazor.TbStrings.FileUploadBytes = "FileUpload.Bytes" -> string!
+const Trailblazor.TbStrings.FileUploadChoose = "FileUpload.Choose" -> string!
+const Trailblazor.TbStrings.FileUploadChosen = "FileUpload.Chosen" -> string!
+const Trailblazor.TbStrings.FileUploadChosenOne = "FileUpload.ChosenOne" -> string!
+const Trailblazor.TbStrings.FileUploadClear = "FileUpload.Clear" -> string!
+const Trailblazor.TbStrings.FileUploadGigabytes = "FileUpload.Gigabytes" -> string!
+const Trailblazor.TbStrings.FileUploadKilobytes = "FileUpload.Kilobytes" -> string!
+const Trailblazor.TbStrings.FileUploadMegabytes = "FileUpload.Megabytes" -> string!
+const Trailblazor.TbStrings.FileUploadRemove = "FileUpload.Remove" -> string!
+const Trailblazor.TbStrings.FileUploadTooLarge = "FileUpload.TooLarge" -> string!
+const Trailblazor.TbStrings.FileUploadTooMany = "FileUpload.TooMany" -> string!
+const Trailblazor.TbStrings.FileUploadTooManyOne = "FileUpload.TooManyOne" -> string!
+const Trailblazor.TbStrings.FileUploadWrongType = "FileUpload.WrongType" -> string!
+const Trailblazor.TbStrings.FileUploadZone = "FileUpload.Zone" -> string!
+const Trailblazor.TbStrings.LabelInfo = "Label.Info" -> string!
+const Trailblazor.TbStrings.MultiSelectRemoved = "MultiSelect.Removed" -> string!
+const Trailblazor.TbStrings.NewTabHint = "NewTabHint" -> string!
+const Trailblazor.TbStrings.NumberFieldAtLeast = "NumberField.AtLeast" -> string!
+const Trailblazor.TbStrings.NumberFieldAtMost = "NumberField.AtMost" -> string!
+const Trailblazor.TbStrings.NumberFieldDecrease = "NumberField.Decrease" -> string!
+const Trailblazor.TbStrings.NumberFieldIncrease = "NumberField.Increase" -> string!
+const Trailblazor.TbStrings.NumberFieldNotANumber = "NumberField.NotANumber" -> string!
+const Trailblazor.TbStrings.NumberFieldRange = "NumberField.Range" -> string!
+const Trailblazor.TbStrings.PaginationFirst = "Pagination.First" -> string!
+const Trailblazor.TbStrings.PaginationLast = "Pagination.Last" -> string!
+const Trailblazor.TbStrings.PaginationNavigation = "Pagination.Navigation" -> string!
+const Trailblazor.TbStrings.PaginationNext = "Pagination.Next" -> string!
+const Trailblazor.TbStrings.PaginationOf = "Pagination.Of" -> string!
+const Trailblazor.TbStrings.PaginationPage = "Pagination.Page" -> string!
+const Trailblazor.TbStrings.PaginationPageBox = "Pagination.PageBox" -> string!
+const Trailblazor.TbStrings.PaginationPrevious = "Pagination.Previous" -> string!
+const Trailblazor.TbStrings.RangeSliderEnd = "RangeSlider.End" -> string!
+const Trailblazor.TbStrings.RangeSliderStart = "RangeSlider.Start" -> string!
+const Trailblazor.TbStrings.SelectClear = "Select.Clear" -> string!
+const Trailblazor.TbStrings.SelectFilter = "Select.Filter" -> string!
+const Trailblazor.TbStrings.SelectNoResults = "Select.NoResults" -> string!
+const Trailblazor.TbStrings.SplitterPane = "Splitter.Pane" -> string!
+const Trailblazor.TbStrings.SplitterResize = "Splitter.Resize" -> string!
+const Trailblazor.TbStrings.TextFieldClear = "TextField.Clear" -> string!
+const Trailblazor.TbStrings.TextFieldMaskIncomplete = "TextField.MaskIncomplete" -> string!
+const Trailblazor.TbStrings.ThemeDark = "Theme.Dark" -> string!
+const Trailblazor.TbStrings.ThemeLight = "Theme.Light" -> string!
+const Trailblazor.TbStrings.ThemePicker = "Theme.Picker" -> string!
+const Trailblazor.TbStrings.ThemeSystem = "Theme.System" -> string!
+const Trailblazor.TbStrings.ToastActionAvailable = "Toast.ActionAvailable" -> string!
+const Trailblazor.TbStrings.ToastDismiss = "Toast.Dismiss" -> string!
+const Trailblazor.TbStrings.ToastRegion = "Toast.Region" -> string!
+const Trailblazor.TbStrings.ToolbarMore = "Toolbar.More" -> string!
+const Trailblazor.TbStrings.TreeViewCantMoveIntoItself = "TreeView.CantMoveIntoItself" -> string!
+const Trailblazor.TbStrings.TreeViewEmpty = "TreeView.Empty" -> string!
+const Trailblazor.TbStrings.TreeViewItemCount = "TreeView.ItemCount" -> string!
+const Trailblazor.TbStrings.TreeViewLoadFailed = "TreeView.LoadFailed" -> string!
+const Trailblazor.TbStrings.TreeViewLoading = "TreeView.Loading" -> string!
+const Trailblazor.TbStrings.TreeViewMoveHint = "TreeView.MoveHint" -> string!
+const Trailblazor.TbStrings.TreeViewMovedAfter = "TreeView.MovedAfter" -> string!
+const Trailblazor.TbStrings.TreeViewMovedBefore = "TreeView.MovedBefore" -> string!
+const Trailblazor.TbStrings.TreeViewMovedInside = "TreeView.MovedInside" -> string!
+const Trailblazor.TbStrings.TreeViewRetry = "TreeView.Retry" -> string!
+override Trailblazor.AlertClasses.Equals(object? obj) -> bool
+override Trailblazor.AlertClasses.GetHashCode() -> int
+override Trailblazor.AlertClasses.ToString() -> string!
+override Trailblazor.AutocompleteLabels.Equals(object? obj) -> bool
+override Trailblazor.AutocompleteLabels.GetHashCode() -> int
+override Trailblazor.AutocompleteLabels.ToString() -> string!
+override Trailblazor.ButtonClasses.Equals(object? obj) -> bool
+override Trailblazor.ButtonClasses.GetHashCode() -> int
+override Trailblazor.ButtonClasses.ToString() -> string!
+override Trailblazor.ChoiceClasses.Equals(object? obj) -> bool
+override Trailblazor.ChoiceClasses.GetHashCode() -> int
+override Trailblazor.ChoiceClasses.ToString() -> string!
+override Trailblazor.ColorPickerLabels.Equals(object? obj) -> bool
+override Trailblazor.ColorPickerLabels.GetHashCode() -> int
+override Trailblazor.ColorPickerLabels.ToString() -> string!
+override Trailblazor.DataGridLabels.Equals(object? obj) -> bool
+override Trailblazor.DataGridLabels.GetHashCode() -> int
+override Trailblazor.DataGridLabels.ToString() -> string!
+~override Trailblazor.DateRange<TDate>.Equals(object obj) -> bool
+override Trailblazor.DateRange<TDate>.GetHashCode() -> int
+~override Trailblazor.DateRange<TDate>.ToString() -> string
+override Trailblazor.DateRangePickerLabels.Equals(object? obj) -> bool
+override Trailblazor.DateRangePickerLabels.GetHashCode() -> int
+override Trailblazor.DateRangePickerLabels.ToString() -> string!
+override Trailblazor.DateRangePreset<TDate>.Equals(object? obj) -> bool
+override Trailblazor.DateRangePreset<TDate>.GetHashCode() -> int
+override Trailblazor.DateRangePreset<TDate>.ToString() -> string!
+override Trailblazor.DialogOptions.Equals(object? obj) -> bool
+override Trailblazor.DialogOptions.GetHashCode() -> int
+override Trailblazor.DialogOptions.ToString() -> string!
+override Trailblazor.DialogResult<TResult>.Equals(object? obj) -> bool
+override Trailblazor.DialogResult<TResult>.GetHashCode() -> int
+override Trailblazor.DialogResult<TResult>.ToString() -> string!
+override Trailblazor.FieldClasses.Equals(object? obj) -> bool
+override Trailblazor.FieldClasses.GetHashCode() -> int
+override Trailblazor.FieldClasses.ToString() -> string!
+override Trailblazor.FileUploadLabels.Equals(object? obj) -> bool
+override Trailblazor.FileUploadLabels.GetHashCode() -> int
+override Trailblazor.FileUploadLabels.ToString() -> string!
+override Trailblazor.GridRequest.Equals(object? obj) -> bool
+override Trailblazor.GridRequest.GetHashCode() -> int
+override Trailblazor.GridRequest.ToString() -> string!
+override Trailblazor.GridResult<TItem>.Equals(object? obj) -> bool
+override Trailblazor.GridResult<TItem>.GetHashCode() -> int
+override Trailblazor.GridResult<TItem>.ToString() -> string!
+override Trailblazor.GridSort.Equals(object? obj) -> bool
+override Trailblazor.GridSort.GetHashCode() -> int
+override Trailblazor.GridSort.ToString() -> string!
+~override Trailblazor.GridSpan.Equals(object obj) -> bool
+override Trailblazor.GridSpan.GetHashCode() -> int
+override Trailblazor.GridSpan.ToString() -> string!
+~override Trailblazor.Icon.Equals(object obj) -> bool
+override Trailblazor.Icon.GetHashCode() -> int
+~override Trailblazor.Icon.ToString() -> string
+override Trailblazor.IconButtonClasses.Equals(object? obj) -> bool
+override Trailblazor.IconButtonClasses.GetHashCode() -> int
+override Trailblazor.IconButtonClasses.ToString() -> string!
+override Trailblazor.MenuTrigger.Equals(object? obj) -> bool
+override Trailblazor.MenuTrigger.GetHashCode() -> int
+override Trailblazor.MenuTrigger.ToString() -> string!
+override Trailblazor.PaginationLabels.Equals(object? obj) -> bool
+override Trailblazor.PaginationLabels.GetHashCode() -> int
+override Trailblazor.PaginationLabels.ToString() -> string!
+override Trailblazor.PopoverTrigger.Equals(object? obj) -> bool
+override Trailblazor.PopoverTrigger.GetHashCode() -> int
+override Trailblazor.PopoverTrigger.ToString() -> string!
+override Trailblazor.SelectLabels.Equals(object? obj) -> bool
+override Trailblazor.SelectLabels.GetHashCode() -> int
+override Trailblazor.SelectLabels.ToString() -> string!
+override Trailblazor.SliderMark.Equals(object? obj) -> bool
+override Trailblazor.SliderMark.GetHashCode() -> int
+override Trailblazor.SliderMark.ToString() -> string!
+~override Trailblazor.SliderRange<TValue>.Equals(object obj) -> bool
+override Trailblazor.SliderRange<TValue>.GetHashCode() -> int
+~override Trailblazor.SliderRange<TValue>.ToString() -> string
+~override Trailblazor.TbAccordion.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbAccordion.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbAccordion.OnParametersSet() -> void
+~override Trailblazor.TbAccordionItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbAccordionItem.OnInitialized() -> void
+override Trailblazor.TbAccordionItem.OnParametersSet() -> void
+~override Trailblazor.TbAlert.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbAutocomplete<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbAutocomplete<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbAutocomplete<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbAutocomplete<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbBadge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbButtonBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbButtonBase.OnParametersSet() -> void
+override Trailblazor.TbButtonBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbButtonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbCheckbox<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbCheckbox<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbCheckbox<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbCheckbox<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbCheckboxGroup<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbCheckboxGroup<TItem>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+~override Trailblazor.TbCheckboxItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbCheckboxItem<TItem>.OnParametersSet() -> void
+~override Trailblazor.TbChip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbChip.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbChipGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbChipGroup.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbChipGroup.OnParametersSet() -> void
+~override Trailblazor.TbColorPicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbColorPicker.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbColorPicker.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbColorPicker.OnParametersSet() -> void
+~override Trailblazor.TbDataGrid<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbDataGrid<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbDataGrid<TItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+~override Trailblazor.TbDateRangePicker<TDate>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbDateRangePicker<TDate>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbDateRangePicker<TDate>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbDateRangePicker<TDate>.OnParametersSet() -> void
+~override Trailblazor.TbDialogActions.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbDialogDescription.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbDialogDescription.OnInitialized() -> void
+~override Trailblazor.TbDivider.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbFieldBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbFieldBase<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbFileUpload.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbFileUpload.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbFileUpload.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbFocusScope.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbFocusScope.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbForm.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbForm.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbForm.OnParametersSet() -> void
+~override Trailblazor.TbIcon.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbIconButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbIconButton.OnParametersSet() -> void
+~override Trailblazor.TbImage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbImage.OnParametersSet() -> void
+~override Trailblazor.TbInsertDivider.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbLabel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbLabel.OnParametersSet() -> void
+~override Trailblazor.TbLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbList.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbListBoxBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbListBoxBase<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbListBoxBase<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbListItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbMenu.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbMenu.OnParametersSet() -> void
+override Trailblazor.TbMenu.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbMenuCheckboxItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbMenuGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbMenuItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbMenuRadioGroup<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbMenuRadioItem<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbMenuRadioItem<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbMenuSeparator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbNumberField<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbNumberField<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbNumberField<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbOption<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbOption<TValue>.OnInitialized() -> void
+override Trailblazor.TbOption<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbOptionGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbOverlay.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbOverlay.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbPagination.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbPagination.OnParametersSet() -> void
+~override Trailblazor.TbPopover.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbPopover.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbPopover.OnParametersSet() -> void
+override Trailblazor.TbPopover.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbProgress.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbProgress.OnParametersSet() -> void
+~override Trailblazor.TbRadio<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbRadio<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbRadioGroup<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbRadioGroup<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+~override Trailblazor.TbRangeSlider<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbRangeSlider<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+~override Trailblazor.TbRoot.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbSelect<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbSelectBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbSelectBase<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbSelectBase<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbSelectBase<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbSkeleton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbSlider<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbSlider<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+~override Trailblazor.TbSliderBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbSliderBase<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbSpacer.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbSplitter.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbSplitter.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbSplitterPane.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbSplitterPane.OnInitialized() -> void
+override Trailblazor.TbSplitterPane.OnParametersSet() -> void
+~override Trailblazor.TbStyles.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbSubMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTab.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbTab.OnInitialized() -> void
+override Trailblazor.TbTab.OnParametersSet() -> void
+~override Trailblazor.TbTable.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTabs.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbTabs.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbTabs.OnParametersSet() -> void
+override Trailblazor.TbTabs.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbTextField<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbTextField<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbTextField<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbTextField<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbThemeHead.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbThemePicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbThemePicker.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbThemePicker.OnInitialized() -> void
+override Trailblazor.TbToggleGroup<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbToggleGroupBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbToggleGroupBase<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbToggleGroupBase<TValue>.OnParametersSet() -> void
+~override Trailblazor.TbToggleItem<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbToggleItem<TValue>.OnInitialized() -> void
+~override Trailblazor.TbToolbar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbToolbar.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbToolbar.OnParametersSet() -> void
+~override Trailblazor.TbToolbarButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbToolbarButton.OnInitialized() -> void
+override Trailblazor.TbToolbarButton.OnParametersSet() -> void
+~override Trailblazor.TbTooltip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbTooltip.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbTooltip.OnParametersSet() -> void
+~override Trailblazor.TbTreeItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbTreeItem<TItem>.OnInitialized() -> void
+override Trailblazor.TbTreeItem<TItem>.OnParametersSet() -> void
+~override Trailblazor.TbTreeView<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbTreeView<TItem, TKey>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbTreeView<TItem, TKey>.OnParametersSet() -> void
+override Trailblazor.TbTreeView<TItem, TKey>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+override Trailblazor.ToastAction.Equals(object? obj) -> bool
+override Trailblazor.ToastAction.GetHashCode() -> int
+override Trailblazor.ToastAction.ToString() -> string!
+override Trailblazor.ToastOptions.Equals(object? obj) -> bool
+override Trailblazor.ToastOptions.GetHashCode() -> int
+override Trailblazor.ToastOptions.ToString() -> string!
+override Trailblazor.TreeDrop<TItem>.Equals(object? obj) -> bool
+override Trailblazor.TreeDrop<TItem>.GetHashCode() -> int
+override Trailblazor.TreeDrop<TItem>.ToString() -> string!
+override Trailblazor.TreeDropCheck.Equals(object? obj) -> bool
+override Trailblazor.TreeDropCheck.GetHashCode() -> int
+override Trailblazor.TreeDropCheck.ToString() -> string!
+override Trailblazor.TreeInsertContext<TItem>.Equals(object? obj) -> bool
+override Trailblazor.TreeInsertContext<TItem>.GetHashCode() -> int
+override Trailblazor.TreeInsertContext<TItem>.ToString() -> string!
+override Trailblazor.TreeItemContext<TItem, TKey>.Equals(object? obj) -> bool
+override Trailblazor.TreeItemContext<TItem, TKey>.GetHashCode() -> int
+override Trailblazor.TreeItemContext<TItem, TKey>.ToString() -> string!
+override Trailblazor.TreeViewLabels.Equals(object? obj) -> bool
+override Trailblazor.TreeViewLabels.GetHashCode() -> int
+override Trailblazor.TreeViewLabels.ToString() -> string!
+override Trailblazor.Viewport.Equals(object? obj) -> bool
+override Trailblazor.Viewport.GetHashCode() -> int
+override Trailblazor.Viewport.ToString() -> string!
+static Microsoft.Extensions.DependencyInjection.TrailblazorServiceCollectionExtensions.AddTrailblazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Trailblazor.AlertClasses.operator !=(Trailblazor.AlertClasses? left, Trailblazor.AlertClasses? right) -> bool
+static Trailblazor.AlertClasses.operator ==(Trailblazor.AlertClasses? left, Trailblazor.AlertClasses? right) -> bool
+static Trailblazor.AutocompleteLabels.operator !=(Trailblazor.AutocompleteLabels? left, Trailblazor.AutocompleteLabels? right) -> bool
+static Trailblazor.AutocompleteLabels.operator ==(Trailblazor.AutocompleteLabels? left, Trailblazor.AutocompleteLabels? right) -> bool
+static Trailblazor.ButtonClasses.operator !=(Trailblazor.ButtonClasses? left, Trailblazor.ButtonClasses? right) -> bool
+static Trailblazor.ButtonClasses.operator ==(Trailblazor.ButtonClasses? left, Trailblazor.ButtonClasses? right) -> bool
+static Trailblazor.ChoiceClasses.operator !=(Trailblazor.ChoiceClasses? left, Trailblazor.ChoiceClasses? right) -> bool
+static Trailblazor.ChoiceClasses.operator ==(Trailblazor.ChoiceClasses? left, Trailblazor.ChoiceClasses? right) -> bool
+static Trailblazor.ColorPickerLabels.operator !=(Trailblazor.ColorPickerLabels? left, Trailblazor.ColorPickerLabels? right) -> bool
+static Trailblazor.ColorPickerLabels.operator ==(Trailblazor.ColorPickerLabels? left, Trailblazor.ColorPickerLabels? right) -> bool
+static Trailblazor.DataGridLabels.operator !=(Trailblazor.DataGridLabels? left, Trailblazor.DataGridLabels? right) -> bool
+static Trailblazor.DataGridLabels.operator ==(Trailblazor.DataGridLabels? left, Trailblazor.DataGridLabels? right) -> bool
+static Trailblazor.DateRange<TDate>.operator !=(Trailblazor.DateRange<TDate> left, Trailblazor.DateRange<TDate> right) -> bool
+static Trailblazor.DateRange<TDate>.operator ==(Trailblazor.DateRange<TDate> left, Trailblazor.DateRange<TDate> right) -> bool
+static Trailblazor.DateRangePickerLabels.operator !=(Trailblazor.DateRangePickerLabels? left, Trailblazor.DateRangePickerLabels? right) -> bool
+static Trailblazor.DateRangePickerLabels.operator ==(Trailblazor.DateRangePickerLabels? left, Trailblazor.DateRangePickerLabels? right) -> bool
+static Trailblazor.DateRangePreset<TDate>.operator !=(Trailblazor.DateRangePreset<TDate>? left, Trailblazor.DateRangePreset<TDate>? right) -> bool
+static Trailblazor.DateRangePreset<TDate>.operator ==(Trailblazor.DateRangePreset<TDate>? left, Trailblazor.DateRangePreset<TDate>? right) -> bool
+static Trailblazor.DialogOptions.operator !=(Trailblazor.DialogOptions? left, Trailblazor.DialogOptions? right) -> bool
+static Trailblazor.DialogOptions.operator ==(Trailblazor.DialogOptions? left, Trailblazor.DialogOptions? right) -> bool
+static Trailblazor.DialogResult<TResult>.Cancel() -> Trailblazor.DialogResult<TResult>!
+static Trailblazor.DialogResult<TResult>.Ok(TResult value) -> Trailblazor.DialogResult<TResult>!
+static Trailblazor.DialogResult<TResult>.operator !=(Trailblazor.DialogResult<TResult>? left, Trailblazor.DialogResult<TResult>? right) -> bool
+static Trailblazor.DialogResult<TResult>.operator ==(Trailblazor.DialogResult<TResult>? left, Trailblazor.DialogResult<TResult>? right) -> bool
+static Trailblazor.FieldClasses.operator !=(Trailblazor.FieldClasses? left, Trailblazor.FieldClasses? right) -> bool
+static Trailblazor.FieldClasses.operator ==(Trailblazor.FieldClasses? left, Trailblazor.FieldClasses? right) -> bool
+static Trailblazor.FileUploadLabels.operator !=(Trailblazor.FileUploadLabels? left, Trailblazor.FileUploadLabels? right) -> bool
+static Trailblazor.FileUploadLabels.operator ==(Trailblazor.FileUploadLabels? left, Trailblazor.FileUploadLabels? right) -> bool
+static Trailblazor.GridRequest.operator !=(Trailblazor.GridRequest? left, Trailblazor.GridRequest? right) -> bool
+static Trailblazor.GridRequest.operator ==(Trailblazor.GridRequest? left, Trailblazor.GridRequest? right) -> bool
+static Trailblazor.GridResult<TItem>.operator !=(Trailblazor.GridResult<TItem>? left, Trailblazor.GridResult<TItem>? right) -> bool
+static Trailblazor.GridResult<TItem>.operator ==(Trailblazor.GridResult<TItem>? left, Trailblazor.GridResult<TItem>? right) -> bool
+static Trailblazor.GridSort.operator !=(Trailblazor.GridSort? left, Trailblazor.GridSort? right) -> bool
+static Trailblazor.GridSort.operator ==(Trailblazor.GridSort? left, Trailblazor.GridSort? right) -> bool
+static Trailblazor.GridSpan.Auto.get -> Trailblazor.GridSpan
+static Trailblazor.GridSpan.Grow.get -> Trailblazor.GridSpan
+static Trailblazor.GridSpan.implicit operator Trailblazor.GridSpan(int columns) -> Trailblazor.GridSpan
+static Trailblazor.GridSpan.operator !=(Trailblazor.GridSpan left, Trailblazor.GridSpan right) -> bool
+static Trailblazor.GridSpan.operator ==(Trailblazor.GridSpan left, Trailblazor.GridSpan right) -> bool
+static Trailblazor.Icon.operator !=(Trailblazor.Icon left, Trailblazor.Icon right) -> bool
+static Trailblazor.Icon.operator ==(Trailblazor.Icon left, Trailblazor.Icon right) -> bool
+static Trailblazor.IconButtonClasses.operator !=(Trailblazor.IconButtonClasses? left, Trailblazor.IconButtonClasses? right) -> bool
+static Trailblazor.IconButtonClasses.operator ==(Trailblazor.IconButtonClasses? left, Trailblazor.IconButtonClasses? right) -> bool
+static Trailblazor.MenuTrigger.operator !=(Trailblazor.MenuTrigger? left, Trailblazor.MenuTrigger? right) -> bool
+static Trailblazor.MenuTrigger.operator ==(Trailblazor.MenuTrigger? left, Trailblazor.MenuTrigger? right) -> bool
+static Trailblazor.PaginationLabels.operator !=(Trailblazor.PaginationLabels? left, Trailblazor.PaginationLabels? right) -> bool
+static Trailblazor.PaginationLabels.operator ==(Trailblazor.PaginationLabels? left, Trailblazor.PaginationLabels? right) -> bool
+static Trailblazor.PopoverTrigger.operator !=(Trailblazor.PopoverTrigger? left, Trailblazor.PopoverTrigger? right) -> bool
+static Trailblazor.PopoverTrigger.operator ==(Trailblazor.PopoverTrigger? left, Trailblazor.PopoverTrigger? right) -> bool
+static Trailblazor.SelectLabels.operator !=(Trailblazor.SelectLabels? left, Trailblazor.SelectLabels? right) -> bool
+static Trailblazor.SelectLabels.operator ==(Trailblazor.SelectLabels? left, Trailblazor.SelectLabels? right) -> bool
+static Trailblazor.SliderMark.operator !=(Trailblazor.SliderMark? left, Trailblazor.SliderMark? right) -> bool
+static Trailblazor.SliderMark.operator ==(Trailblazor.SliderMark? left, Trailblazor.SliderMark? right) -> bool
+static Trailblazor.SliderRange<TValue>.operator !=(Trailblazor.SliderRange<TValue> left, Trailblazor.SliderRange<TValue> right) -> bool
+static Trailblazor.SliderRange<TValue>.operator ==(Trailblazor.SliderRange<TValue> left, Trailblazor.SliderRange<TValue> right) -> bool
+static Trailblazor.TbStrings.English(string! key) -> string!
+static Trailblazor.ToastAction.operator !=(Trailblazor.ToastAction? left, Trailblazor.ToastAction? right) -> bool
+static Trailblazor.ToastAction.operator ==(Trailblazor.ToastAction? left, Trailblazor.ToastAction? right) -> bool
+static Trailblazor.ToastOptions.operator !=(Trailblazor.ToastOptions? left, Trailblazor.ToastOptions? right) -> bool
+static Trailblazor.ToastOptions.operator ==(Trailblazor.ToastOptions? left, Trailblazor.ToastOptions? right) -> bool
+static Trailblazor.TreeDrop<TItem>.operator !=(Trailblazor.TreeDrop<TItem>? left, Trailblazor.TreeDrop<TItem>? right) -> bool
+static Trailblazor.TreeDrop<TItem>.operator ==(Trailblazor.TreeDrop<TItem>? left, Trailblazor.TreeDrop<TItem>? right) -> bool
+static Trailblazor.TreeDropCheck.Allow.get -> Trailblazor.TreeDropCheck!
+static Trailblazor.TreeDropCheck.Refuse(string! reason) -> Trailblazor.TreeDropCheck!
+static Trailblazor.TreeDropCheck.operator !=(Trailblazor.TreeDropCheck? left, Trailblazor.TreeDropCheck? right) -> bool
+static Trailblazor.TreeDropCheck.operator ==(Trailblazor.TreeDropCheck? left, Trailblazor.TreeDropCheck? right) -> bool
+static Trailblazor.TreeInsertContext<TItem>.operator !=(Trailblazor.TreeInsertContext<TItem>? left, Trailblazor.TreeInsertContext<TItem>? right) -> bool
+static Trailblazor.TreeInsertContext<TItem>.operator ==(Trailblazor.TreeInsertContext<TItem>? left, Trailblazor.TreeInsertContext<TItem>? right) -> bool
+static Trailblazor.TreeItemContext<TItem, TKey>.operator !=(Trailblazor.TreeItemContext<TItem, TKey>? left, Trailblazor.TreeItemContext<TItem, TKey>? right) -> bool
+static Trailblazor.TreeItemContext<TItem, TKey>.operator ==(Trailblazor.TreeItemContext<TItem, TKey>? left, Trailblazor.TreeItemContext<TItem, TKey>? right) -> bool
+static Trailblazor.TreeViewLabels.operator !=(Trailblazor.TreeViewLabels? left, Trailblazor.TreeViewLabels? right) -> bool
+static Trailblazor.TreeViewLabels.operator ==(Trailblazor.TreeViewLabels? left, Trailblazor.TreeViewLabels? right) -> bool
+static Trailblazor.Viewport.operator !=(Trailblazor.Viewport? left, Trailblazor.Viewport? right) -> bool
+static Trailblazor.Viewport.operator ==(Trailblazor.Viewport? left, Trailblazor.Viewport? right) -> bool
+virtual Trailblazor.TbDialogContent<TResult>.CanDismissAsync(Trailblazor.DialogDismissReason reason) -> System.Threading.Tasks.Task<bool>!

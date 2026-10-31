@@ -24,4 +24,12 @@
     <None Include="$(MSBuildThisFileDirectory)assets/icon-128.png" Pack="true" PackagePath="icon.png" Visible="false" />
   </ItemGroup>
 
+  <!-- Every public member of a package is listed in its PublicAPI.*.txt, so a change to the public surface is a
+       deliberate edit. Items are evaluated after each project sets IsPackable. -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
 </Project>
