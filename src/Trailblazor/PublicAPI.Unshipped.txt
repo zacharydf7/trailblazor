@@ -663,6 +663,8 @@ Trailblazor.TbButton.TbButton() -> void
 Trailblazor.TbButtonBase
 Trailblazor.TbButtonBase.Disabled.get -> bool
 Trailblazor.TbButtonBase.Disabled.set -> void
+Trailblazor.TbButtonBase.Feature.get -> string?
+Trailblazor.TbButtonBase.Feature.set -> void
 Trailblazor.TbButtonBase.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 Trailblazor.TbButtonBase.FocusableWhenDisabled.get -> bool
 Trailblazor.TbButtonBase.FocusableWhenDisabled.set -> void
@@ -2287,6 +2289,7 @@ override Trailblazor.TbAutocomplete<TValue>.OnParametersSet() -> void
 ~override Trailblazor.TbBadge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbButtonBase.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbButtonBase.OnParametersSet() -> void
 override Trailblazor.TbButtonBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 ~override Trailblazor.TbButtonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

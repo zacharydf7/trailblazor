@@ -59,6 +59,11 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    /// <summary>SPIKE (#101): names the feature this button starts, such as <c>"export-csv"</c>, so an app listening
+    /// to the Trailblazor meter can count how often it is shown and used.</summary>
+    [Parameter]
+    public string? Feature { get; set; }
+
     [CascadingParameter]
     private TbButtonGroup? Group { get; set; }
 
@@ -106,11 +111,25 @@ public abstract partial class TbButtonBase : TbComponentBase
         }
     }
 
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && Feature is not null)
+        {
+            TrailblazorTelemetry.FeatureShown(Feature, GetType().Name);
+        }
+    }
+
     private async Task OnClickAsync(MouseEventArgs args)
     {
         if (Off || Loading)
         {
             return;
+        }
+
+        if (Feature is not null)
+        {
+            TrailblazorTelemetry.FeatureUsed(Feature, GetType().Name);
         }
 
         if (Toggles)

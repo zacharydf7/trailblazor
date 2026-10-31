@@ -84,7 +84,10 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
             DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
         };
-        var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync);
+        var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync)
+        {
+            OpenedAt = time.GetTimestamp(),
+        };
         lock (_lock)
         {
             _open = _open.Add(dialog);
@@ -98,6 +101,22 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
         Changed?.Invoke();
         return dialog;
+    }
+
+    // SPIKE (#101): a dialog is named by its content's type, never its title, which can hold the user's data.
+    private void Record(DialogReference dialog, bool confirmed)
+    {
+        var name = dialog.Component?.Name ?? "markup";
+        var outcome = confirmed ? "confirmed" : dialog.DismissedBy switch
+        {
+            DialogDismissReason.Escape => "escape",
+            DialogDismissReason.Backdrop => "backdrop",
+            DialogDismissReason.CloseButton => "close_button",
+            _ => "cancelled",
+        };
+        KeyValuePair<string, object?>[] tags = [new("tb.dialog.name", name), new("tb.dialog.outcome", outcome)];
+        TrailblazorTelemetry.DialogsClosed.Add(1, tags);
+        TrailblazorTelemetry.DialogDuration.Record(time.GetElapsedTime(dialog.OpenedAt).TotalSeconds, tags);
     }
 
     private async Task CloseAsync(DialogReference dialog, bool confirmed, object? value)
@@ -127,6 +146,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             }
 
             Changed?.Invoke();
+            Record(dialog, confirmed);
             dialog.Complete(confirmed, value);
         }
     }
