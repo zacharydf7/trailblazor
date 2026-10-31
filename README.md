@@ -5,8 +5,20 @@
 An MIT-licensed Blazor UI component library for .NET 10: accessible by default, styled with design tokens and
 cascade layers, and built on the browser's native `<dialog>`, Popover API and anchor positioning.
 
-Trailblazor is in early development (phase 1: the core components). There are no packages yet. Try the components
-on the documentation site: https://zacharydf7.github.io/trailblazor/
+## Why Trailblazor
+
+- **Everything an app needs, with nothing given up.** Fields, pickers and file uploads, a data grid that sorts, pages
+  and selects, a virtualized tree view, dialogs, menus, popovers, tabs, toasts and more, each accessible and themed,
+  with fields and forms that work before the page is interactive.
+- **Easy to test.** `Trailblazor.Testing` sets up bUnit with fakes for the browser, time and JavaScript, and
+  `Trailblazor.Testing.Playwright` drives components by their labels, the way users do:
+  `await page.Tb().Select("Size").ChooseAsync("Medium")`.
+- **Built-in telemetry.** Label a control with `TelemetryName` and the components count how often people see it and
+  use it, through OpenTelemetry, into the dashboard you already have, so features that are shown but never used stand
+  out. Nothing is recorded until the app listens, and nothing about the user is recorded at all.
+
+Trailblazor is in development (phase 2: parity with the components a large app needs). There are no packages yet. Try
+the components on the documentation site: https://zacharydf7.github.io/trailblazor/
 
 ## Repository layout
 

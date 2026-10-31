@@ -15,7 +15,9 @@
             <TbText TextStyle="TextStyle.Subtitle" Muted class="docs-hero__lede">
                 Trailblazor gives Blazor apps the inputs, overlays, navigation and feedback they need, built on the
                 browser's own dialogs and popovers, themed with design tokens, and tested in Chromium, Firefox and
-                WebKit. Every example on this site runs in your browser.
+                WebKit. Pages built with it are <a href="guides/testing">easy to test</a>, and its components
+                <a href="guides/telemetry">count which features people use</a>.
+                Every example on this site runs in your browser.
             </TbText>
             <div class="docs-hero__actions">
                 <TbButton Href="guides/getting-started" Size="Size.Large">Get started</TbButton>
@@ -55,6 +57,59 @@
                 </TbTab>
             </TbTabs>
         </div>
+    </div>
+</section>
+
+<section class="docs-band docs-band--pillars" aria-labelledby="docs-pillars">
+    <div class="docs-wrap">
+        <div class="docs-band__head">
+            <TbText TextStyle="TextStyle.Headline" As="TextElement.H2" id="docs-pillars">
+                Built to be tested and measured
+            </TbText>
+            <TbText TextStyle="TextStyle.Subtitle" Muted>
+                A complete component library, with nothing given up: everything an app needs, plus two things most
+                libraries leave to you, tests that find components the way people do and counts of which features
+                people actually use.
+            </TbText>
+        </div>
+        <ul class="docs-pillars">
+            <li class="docs-pillar">
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H3">Everything an app needs</TbText>
+                <TbText Muted>
+                    @ExampleCatalog.All.Count components: fields, pickers and file uploads, a data grid that sorts,
+                    pages and selects, a virtualized tree view, dialogs, menus, popovers, tabs, toasts and more, each
+                    accessible and themed, with fields and forms that work before the page is interactive.
+                </TbText>
+                <ul class="docs-tokens" aria-label="Components by group">
+                    @foreach (var category in Enum.GetValues<ExampleCategory>())
+                    {
+                        var count = ExampleCatalog.All.Count(example => example.Category == category);
+                        <li><code>@category @count</code></li>
+                    }
+                </ul>
+                <TbButton Href="#components" Variant="Variant.Text">Browse the components</TbButton>
+            </li>
+            <li class="docs-pillar">
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H3">Easy to test</TbText>
+                <TbText Muted>
+                    <code>Trailblazor.Testing</code> sets up bUnit with fakes for the browser, time and JavaScript, and
+                    <code>Trailblazor.Testing.Playwright</code> drives selects, trees, grids and popovers by their
+                    labels, the way users do, with <code>page.Tb()</code>.
+                </TbText>
+                <CodeBlock Label="A Playwright test" Code="@PillarTest" />
+                <TbButton Href="guides/testing" Variant="Variant.Text">Read the testing guide</TbButton>
+            </li>
+            <li class="docs-pillar">
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H3">Built-in telemetry</TbText>
+                <TbText Muted>
+                    Label a control with <code>TelemetryName</code> and its components count how often people see it
+                    and use it, through OpenTelemetry, into the dashboard you already have. Features that are shown
+                    but never used stand out, and nothing about the user is recorded.
+                </TbText>
+                <CodeBlock Label="A counted button" Code="@PillarTelemetry" />
+                <TbButton Href="guides/telemetry" Variant="Variant.Text">Read the telemetry guide</TbButton>
+            </li>
+        </ul>
     </div>
 </section>
 
@@ -152,11 +207,21 @@
             + "system's light or dark setting, or change one token for the whole app."),
         ("Works before it's interactive", "Rendered statically, fields fall back to native controls and forms still "
             + "post, so pages work before a circuit connects or without one."),
-        ("Easy to test", "Trailblazor.Testing registers fakes for bUnit, and Trailblazor.Testing.Playwright finds and "
-            + "drives components the way users do, with page.Tb()."),
         ("Respects your users", "Reduced motion stops animations, forced colors keep outlines and fills, and "
             + "right-to-left layouts mirror, without extra work in your app."),
     ];
+
+    private const string PillarTest = """
+        await page.Tb().Select("Difficulty").ChooseAsync("Moderate");
+        await page.Tb().Tree("Trails").SelectAsync("River valley", "Fern Gully");
+        """;
+
+    private const string PillarTelemetry = """
+        <TbButton TelemetryName="export-csv" OnClick="ExportAsync">Export</TbButton>
+
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics => metrics.AddMeter("Trailblazor").AddOtlpExporter());
+        """;
 
     // The preview's own markup, so the Code tab shows exactly what renders beside it.
     private const string HeroCode = """

@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <!-- The telemetry guide listens to the Trailblazor meter in the browser, which .NET 10 leaves off for WebAssembly. -->
+    <MetricsSupport>true</MetricsSupport>
   </PropertyGroup>
 
   <ItemGroup>

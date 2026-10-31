@@ -370,6 +370,8 @@ Trailblazor.IDialogService.Show<TDialog, TResult>(string! title, System.Action<T
 Trailblazor.IDialogService.ShowAsync<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
 Trailblazor.ITbLocalizer
 Trailblazor.ITbLocalizer.this[string! key].get -> string!
+Trailblazor.ITelemetryTags
+Trailblazor.ITelemetryTags.Tags.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Trailblazor.IThemeService
 Trailblazor.IThemeService.Changed -> System.Action?
 Trailblazor.IThemeService.LoadAsync() -> System.Threading.Tasks.Task!
@@ -679,6 +681,8 @@ Trailblazor.TbButtonBase.PressedChanged.set -> void
 Trailblazor.TbButtonBase.Size.get -> Trailblazor.Size
 Trailblazor.TbButtonBase.Size.set -> void
 Trailblazor.TbButtonBase.TbButtonBase() -> void
+Trailblazor.TbButtonBase.TelemetryName.get -> string?
+Trailblazor.TbButtonBase.TelemetryName.set -> void
 Trailblazor.TbButtonBase.Tone.get -> Trailblazor.Tone
 Trailblazor.TbButtonBase.Tone.set -> void
 Trailblazor.TbButtonBase.Type.get -> Trailblazor.ButtonType
@@ -1863,6 +1867,10 @@ Trailblazor.TbTreeView<TItem, TKey>.SelectionMode.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.TbTreeView() -> void
 Trailblazor.TbTreeView<TItem, TKey>.Virtualize.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.Virtualize.set -> void
+Trailblazor.TelemetrySettings
+Trailblazor.TelemetrySettings.Enabled.get -> bool
+Trailblazor.TelemetrySettings.Enabled.set -> void
+Trailblazor.TelemetrySettings.TelemetrySettings() -> void
 Trailblazor.TextElement
 Trailblazor.TextElement.Div = 2 -> Trailblazor.TextElement
 Trailblazor.TextElement.H1 = 4 -> Trailblazor.TextElement
@@ -1975,6 +1983,7 @@ Trailblazor.TooltipSettings.TooltipSettings() -> void
 Trailblazor.TrailblazorOptions
 Trailblazor.TrailblazorOptions.Dialogs.get -> Trailblazor.DialogSettings!
 Trailblazor.TrailblazorOptions.Strings.get -> System.Collections.Generic.IDictionary<string!, string!>!
+Trailblazor.TrailblazorOptions.Telemetry.get -> Trailblazor.TelemetrySettings!
 Trailblazor.TrailblazorOptions.Theme.get -> Trailblazor.ThemeSettings!
 Trailblazor.TrailblazorOptions.Toasts.get -> Trailblazor.ToastSettings!
 Trailblazor.TrailblazorOptions.Tooltips.get -> Trailblazor.TooltipSettings!
@@ -2287,6 +2296,7 @@ override Trailblazor.TbAutocomplete<TValue>.OnParametersSet() -> void
 ~override Trailblazor.TbBadge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbButtonBase.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbButtonBase.OnParametersSet() -> void
 override Trailblazor.TbButtonBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 ~override Trailblazor.TbButtonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

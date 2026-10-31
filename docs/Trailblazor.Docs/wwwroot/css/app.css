@@ -708,6 +708,53 @@ a:focus-visible {
     line-height: 1.6;
 }
 
+.docs-band--pillars {
+    padding-block-end: 0;
+}
+
+.docs-pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: var(--tb-space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.docs-pillar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--tb-space-3);
+    min-width: 0;
+    padding: var(--tb-space-6) var(--tb-space-8);
+    border: 1px solid var(--tb-border-subtle);
+    border-inline-start: 4px solid var(--docs-brand);
+    border-radius: var(--tb-radius-xl);
+    background: var(--tb-color-surface);
+}
+
+.docs-pillar h3 {
+    margin: 0;
+    font-family: var(--docs-display);
+    letter-spacing: -0.01em;
+}
+
+.docs-pillar p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.docs-pillar .docs-source {
+    align-self: stretch;
+}
+
+.docs-telemetry {
+    display: grid;
+    gap: var(--tb-space-4);
+    margin-block: var(--tb-space-4);
+}
+
 .docs-group + .docs-group {
     margin-block-start: var(--tb-space-10);
 }

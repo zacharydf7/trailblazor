@@ -1,0 +1,271 @@
+@page "/guides/telemetry"
+@using Trailblazor.Docs.Examples
+
+<PageTitle>Telemetry · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Telemetry</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    Trailblazor's components count what people see and use, so you can tell which features matter and which nobody
+    touches, in the dashboard you already have. Label a control with <code>TelemetryName</code>, listen to the
+    <code>Trailblazor</code> meter, and the counts arrive with the rest of your app's telemetry. Nothing is recorded
+    until you listen, and nothing leaves your app unless you send it.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try it</TbText>
+<TbText>
+    These buttons carry a <code>TelemetryName</code>, and this page listens to the <code>Trailblazor</code> meter in
+    your browser, as your app's OpenTelemetry setup would. Each button counts as shown when it renders, and as used
+    when you click it. The disabled one is shown but can't be used, which is exactly the kind of gap the counts reveal.
+</TbText>
+<TelemetryDemo />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">What it's for</TbText>
+<ul class="docs-notes">
+    <li>
+        <strong>Feature adoption, with the zeros.</strong> Analytics tools count the clicks they see, so a feature
+        nobody uses simply never appears. Trailblazor counts a labeled control as shown when it renders, so a feature
+        that is shown but never used stands out, and you can see how often each one is reached at all.
+    </li>
+    <li>
+        <strong>Reports per customer.</strong> Add your own tags, such as the customer or plan a user belongs to, and
+        every count carries them. A team that ships one app to many customers can show each of them what their people
+        use.
+    </li>
+    <li>
+        <strong>In your own pipeline.</strong> The counts go through .NET's standard metrics, so OpenTelemetry sends
+        them wherever your app already sends its telemetry: the Aspire dashboard, Prometheus and Grafana, Azure Monitor,
+        or any OpenTelemetry backend. There is no Trailblazor service and no account.
+    </li>
+</ul>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Set it up</TbText>
+<TbText>
+    <code>AddTrailblazor</code> already registers the meter. Listen to it in your OpenTelemetry setup, with the
+    exporter for your backend:
+</TbText>
+<CodeBlock Label="Program.cs" Code="@Setup" />
+<TbText>Then label the controls you want counted:</TbText>
+<CodeBlock Label="Labeled buttons" Code="@Labels" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Choosing names</TbText>
+<ul class="docs-notes">
+    <li>
+        A <code>TelemetryName</code> is a label you put on a control so the app can count how often people see it and
+        use it. It names what the control does for the user, never the user.
+    </li>
+    <li>
+        Controls that share a name count together. Give the toolbar's Export button and the dialog's Export button the
+        same <code>"export-csv"</code> to count the feature, or different names to compare the two ways in.
+    </li>
+    <li>
+        A control without a name isn't counted, so leave it off buttons such as OK and Cancel that aren't worth
+        measuring.
+    </li>
+    <li>
+        Keep names stable, short and few: dashboards group by them. A name made from data, such as a record's id,
+        would split the counts and could leak what users work on. It isn't a credential, and it never hides or gates a
+        control.
+    </li>
+    <li>
+        Buttons, icon buttons and link buttons take it today. Menu items, tabs, toggles, chips, selects, data grids
+        and tree views follow; see the <a href="roadmap">roadmap</a>.
+    </li>
+</ul>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">What's recorded</TbText>
+<TbText>
+    Every instrument of the <code>@TelemetryCatalog.MeterName</code> meter, with its tags:
+    <code>trailblazor.telemetry_name</code> is the control's <code>TelemetryName</code> and
+    <code>trailblazor.component</code> its type, such as <code>TbButton</code>. Each also carries any tags your app
+    adds.
+</TbText>
+<div class="docs-api" tabindex="0" role="region" aria-label="The Trailblazor meter's instruments">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Instrument</th>
+                <th scope="col">Type</th>
+                <th scope="col">Unit</th>
+                <th scope="col">Tags</th>
+                <th scope="col">Recorded when</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var instrument in TelemetryCatalog.Instruments)
+            {
+                <tr>
+                    <th scope="row"><code>@instrument.Name</code></th>
+                    <td>@instrument.Kind</td>
+                    <td><code>@instrument.Unit</code></td>
+                    <td>
+                        @foreach (var tag in instrument.Tags)
+                        {
+                            <code>@tag</code>@(" ")
+                        }
+                    </td>
+                    <td>@instrument.When</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<TbText>
+    Each component's page lists what that component reports, under Telemetry. Counts start with the first interactive
+    render, so a statically rendered page reports nothing, and a prerendered one counts once, not twice.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">What's never recorded</TbText>
+<ul class="docs-notes">
+    <li>
+        Values, text people type, dialog and page titles, labels' text and anything about the user. Only the names you
+        give and the components' types, by design and not configurable.
+    </li>
+    <li>
+        Nothing is recorded until something listens to the meter, and nothing leaves the app unless the app exports
+        it. Trailblazor never sends anything anywhere itself.
+    </li>
+    <li>
+        Your own tags are yours to keep clean: they go on every count, so never put a user's name, email or id in
+        them.
+    </li>
+    <li>
+        Sending telemetry from the browser, as a WebAssembly app does, can need the user's consent under EU rules even
+        when no personal data is in it. Ask your own privacy advisers; the app decides when to export.
+    </li>
+</ul>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Your own tags</TbText>
+<TbText>
+    Register an <code>ITelemetryTags</code>, scoped when the tags depend on who is signed in, and its tags go on every
+    count. Keep each tag to a small set of values, such as a customer or a plan, since every value is a series in the
+    dashboard.
+</TbText>
+<CodeBlock Label="Tags for the user's customer" Code="@Tags" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Render modes</TbText>
+<ul class="docs-notes">
+    <li>
+        <strong>Interactive Server:</strong> the components run on the server, so the server's OpenTelemetry setup
+        exports the counts with nothing more to do.
+    </li>
+    <li>
+        <strong>WebAssembly:</strong> the components run in the browser. Turn on <code>MetricsSupport</code> in the
+        client project, which .NET 10 leaves off for WebAssembly, use OpenTelemetry .NET 1.15.2 or later, which can
+        export from the browser's single thread, and send over HTTP with protobuf to an endpoint on your own server
+        that forwards to your collector. Your server adds any keys, so none reach the browser and no CORS setup is
+        needed. WebAssembly runs no hosted services, so resolve OpenTelemetry's <code>MeterProvider</code> before
+        running the app, or nothing starts listening. The Aspire dashboard's guide to Blazor WebAssembly telemetry
+        shows the relay.
+    </li>
+    <li>
+        <strong>Auto:</strong> set up both: the server's export for its renders, and the client's for after the
+        WebAssembly runtime takes over.
+    </li>
+    <li><strong>Static rendering:</strong> nothing is counted, since nothing runs after the page is sent.</li>
+</ul>
+<CodeBlock Label="The WebAssembly client" Code="@WebAssembly" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Reading the counts</TbText>
+<TbText>
+    In the Aspire dashboard, open Metrics, choose the app and the <code>Trailblazor</code> meter, then
+    <code>trailblazor.control.used</code>, and split it by <code>trailblazor.telemetry_name</code>. In Prometheus the
+    OpenTelemetry exporter names the counters <code>trailblazor_control_shown_total</code> and
+    <code>trailblazor_control_used_total</code>, and the tag <code>trailblazor_telemetry_name</code>. Features shown in
+    the last month but never used:
+</TbText>
+<CodeBlock Label="Shown but never used, in PromQL" Code="@NeverUsed" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
+<TbText>
+    Check what a page reports in bUnit with <code>MetricCollector&lt;T&gt;</code> from
+    <code>Microsoft.Extensions.Diagnostics.Testing</code>. Pass it the test's <code>IMeterFactory</code>, so it hears
+    only this test's components, even with other tests running alongside.
+</TbText>
+<CodeBlock Label="A bUnit test" Code="@Test" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Cost and turning it off</TbText>
+<TbText>
+    When nothing listens, a count is one check, well under a nanosecond. When something does, a count costs tens of
+    nanoseconds, far less than a render. An app that listens to every meter but doesn't want its UI counted turns the
+    components off:
+</TbText>
+<CodeBlock Label="Turning the counts off" Code="@Off" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>
+<ApiTable Type="typeof(TelemetrySettings)" />
+<ApiTable Type="typeof(ITelemetryTags)" />
+
+@code {
+    private const string Setup = """
+        builder.Services.AddTrailblazor();
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics => metrics
+                .AddMeter("Trailblazor")
+                .AddOtlpExporter());
+        """;
+
+    private const string Labels = """
+        <TbButton TelemetryName="export-csv" OnClick="ExportAsync">Export</TbButton>
+        <TbIconButton TelemetryName="share-link" Icon="MaterialSymbols.Outlined.Share" AriaLabel="Share"
+                      OnClick="Share" />
+        <TbButton TelemetryName="trail-guide" Href="guides/trails" Variant="Variant.Text">Trail guide</TbButton>
+        """;
+
+    private const string Tags = """
+        public sealed class CustomerTags(CurrentCustomer customer) : ITelemetryTags
+        {
+            public IEnumerable<KeyValuePair<string, object?>> Tags => [new("app.customer", customer.Slug)];
+        }
+
+        builder.Services.AddScoped<ITelemetryTags, CustomerTags>();
+        """;
+
+    private const string WebAssembly = """
+        <!-- Client.csproj -->
+        <PropertyGroup>
+          <MetricsSupport>true</MetricsSupport>
+        </PropertyGroup>
+
+        // Client Program.cs: send to the app's own server, which forwards to the collector.
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics => metrics
+                .AddMeter("Trailblazor")
+                .AddOtlpExporter(exporter =>
+                {
+                    exporter.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    exporter.Endpoint = new Uri(new Uri(builder.HostEnvironment.BaseAddress), "_otlp/v1/metrics");
+                }));
+
+        var host = builder.Build();
+        // WebAssembly runs no hosted services, so OpenTelemetry starts listening once its provider is resolved.
+        host.Services.GetRequiredService<MeterProvider>();
+        await host.RunAsync();
+        """;
+
+    private const string NeverUsed = """
+        sum by (trailblazor_telemetry_name) (increase(trailblazor_control_shown_total[30d]))
+          unless
+        sum by (trailblazor_telemetry_name) (increase(trailblazor_control_used_total[30d]) > 0)
+        """;
+
+    private const string Test = """
+        [Fact]
+        public void Export_ShouldBeCounted_WhenClicked()
+        {
+            this.AddTrailblazor();
+            SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+            using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(),
+                "Trailblazor", "trailblazor.control.used");
+            var page = Render<ReportsPage>();
+
+            page.Find("button").Click();
+
+            var count = Assert.Single(used.GetMeasurementSnapshot());
+            Assert.Equal("export-csv", count.Tags["trailblazor.telemetry_name"]);
+        }
+        """;
+
+    private const string Off = """
+        builder.Services.AddTrailblazor(options => options.Telemetry.Enabled = false);
+        """;
+}

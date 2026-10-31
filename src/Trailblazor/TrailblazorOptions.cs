@@ -15,6 +15,9 @@ public sealed class TrailblazorOptions
     /// <summary>How long tooltips wait before they appear and disappear.</summary>
     public TooltipSettings Tooltips { get; } = new();
 
+    /// <summary>Whether the components report what people see and use through the <c>Trailblazor</c> meter.</summary>
+    public TelemetrySettings Telemetry { get; } = new();
+
     /// <summary>Text for built-in strings in place of the English, by the keys in <see cref="TbStrings"/>, for the
     /// default <see cref="TbLocalizer"/>. An app that registers its own <see cref="ITbLocalizer"/> decides itself.
     /// </summary>

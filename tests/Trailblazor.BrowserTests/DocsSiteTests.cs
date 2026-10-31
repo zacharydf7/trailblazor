@@ -71,7 +71,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from path in new[]
         {
             "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/browser",
-            "guides/announcements", "guides/icons", "guides/localization", "search?q=dialog", "roadmap",
+            "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "search?q=dialog",
+            "roadmap",
         }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
@@ -388,6 +389,27 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         var methods = page.GetByRole(AriaRole.Region, new() { Name = "IBrowserService" });
         await Expect(methods.GetByRole(AriaRole.Columnheader)).ToHaveTextAsync(["Member", "Type", "Description"]);
         await Expect(methods.GetByRole(AriaRole.Rowheader, new() { Name = "PickColorAsync()", Exact = true })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Telemetry_ShouldCountTheDemoButtonsShownAndUsed_WhenTheyAreClicked(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/telemetry");
+        var counts = page.GetByTestId("telemetry-counts");
+        var export = page.GetByRole(AriaRole.Button, new() { Name = "Export", Exact = true });
+
+        await Expect(counts.Locator("tbody tr")).ToHaveCountAsync(4);
+        await export.ClickAsync();
+        await export.ClickAsync();
+        // Playwright waits forever for a disabled button to enable unless the click is forced.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Archive", Exact = true })
+            .ClickAsync(new() { Force = true });
+
+        await Expect(Counts("export-csv")).ToHaveTextAsync(["1", "2"]);
+        await Expect(Counts("archive")).ToHaveTextAsync(["1", "0"]);
+        await Expect(Counts("print")).ToHaveTextAsync(["1", "0"]);
+
+        ILocator Counts(string name) => counts.Locator("tbody tr").Filter(new() { HasText = name }).Locator("td");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

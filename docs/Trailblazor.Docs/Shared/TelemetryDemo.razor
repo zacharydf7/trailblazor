@@ -1,0 +1,75 @@
+@using System.Diagnostics.Metrics
+@implements IDisposable
+
+@* Listens to the Trailblazor meter in the browser, as an app's OpenTelemetry setup would, and tables what it hears. *@
+<div class="docs-telemetry">
+    <TbStack Row Gap="2" Wrap>
+        <TbButton TelemetryName="export-csv" Variant="Variant.Outlined">Export</TbButton>
+        <TbButton TelemetryName="share-link" Variant="Variant.Outlined">Share</TbButton>
+        <TbButton TelemetryName="print" Variant="Variant.Outlined">Print</TbButton>
+        <TbButton TelemetryName="archive" Variant="Variant.Outlined" Disabled>Archive</TbButton>
+    </TbStack>
+    <div class="docs-api" tabindex="0" role="region" aria-label="What the Trailblazor meter recorded">
+        <table data-testid="telemetry-counts">
+            <thead>
+                <tr>
+                    <th scope="col"><code>trailblazor.telemetry_name</code></th>
+                    <th scope="col">Shown</th>
+                    <th scope="col">Used</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (name, counts) in _counts)
+                {
+                    <tr>
+                        <th scope="row"><code>@name</code></th>
+                        <td>@counts.Shown</td>
+                        <td>@counts.Used</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private readonly SortedDictionary<string, (long Shown, long Used)> _counts = new(StringComparer.Ordinal);
+    private readonly MeterListener _listener = new();
+
+    protected override void OnInitialized()
+    {
+        _listener.InstrumentPublished = (instrument, listener) =>
+        {
+            if (instrument.Meter.Name == "Trailblazor")
+            {
+                listener.EnableMeasurementEvents(instrument);
+            }
+        };
+        _listener.SetMeasurementEventCallback<long>(OnMeasurement);
+        _listener.Start();
+    }
+
+    private void OnMeasurement(Instrument instrument, long value, ReadOnlySpan<KeyValuePair<string, object?>> tags,
+        object? state)
+    {
+        string? name = null;
+        foreach (var tag in tags)
+        {
+            if (tag.Key == "trailblazor.telemetry_name")
+            {
+                name = tag.Value as string;
+            }
+        }
+
+        if (name is null)
+        {
+            return;
+        }
+
+        var (shown, used) = _counts.GetValueOrDefault(name);
+        _counts[name] = instrument.Name == "trailblazor.control.shown" ? (shown + value, used) : (shown, used + value);
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => _listener.Dispose();
+}

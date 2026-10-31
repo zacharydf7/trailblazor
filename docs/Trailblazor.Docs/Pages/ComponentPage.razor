@@ -40,6 +40,25 @@
         }
     </ul>
 
+    <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Telemetry</TbText>
+    @if (example.Telemetry.Count > 0)
+    {
+        <ul class="docs-notes">
+            @foreach (var note in example.Telemetry)
+            {
+                <li>@WithCode(note)</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <TbText>It reports nothing through the <code>Trailblazor</code> meter.</TbText>
+    }
+    <TbText class="docs-note">
+        The <a href="guides/telemetry">telemetry guide</a> shows how to see what people use, in the dashboard you
+        already have.
+    </TbText>
+
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Design tokens</TbText>
     @if (DesignTokens.Read(example.Blocks) is { Count: > 0 } tokens)
     {

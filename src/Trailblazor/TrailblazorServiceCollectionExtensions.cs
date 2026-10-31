@@ -7,8 +7,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>Registers Trailblazor's services.</summary>
 public static class TrailblazorServiceCollectionExtensions
 {
-    /// <summary>Registers Trailblazor's dialog, toast, announcer, browser, localizer and theme services, and applies
-    /// <paramref name="configure"/> to the app-wide <see cref="TrailblazorOptions"/>.</summary>
+    /// <summary>Registers Trailblazor's dialog, toast, announcer, browser, localizer, theme and telemetry services,
+    /// and applies <paramref name="configure"/> to the app-wide <see cref="TrailblazorOptions"/>.</summary>
     public static IServiceCollection AddTrailblazor(this IServiceCollection services,
         Action<TrailblazorOptions>? configure = null)
     {
@@ -29,6 +29,9 @@ public static class TrailblazorServiceCollectionExtensions
         services.TryAddScoped<IBrowserService, BrowserService>();
         services.TryAddScoped<ITbLocalizer, TbLocalizer>();
         services.TryAddScoped<IThemeService, ThemeService>();
+        services.AddMetrics();
+        services.TryAddSingleton<TelemetryInstruments>();
+        services.TryAddScoped<Telemetry>();
         return services;
     }
 }

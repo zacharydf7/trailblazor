@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor;
 
@@ -7,6 +8,8 @@ namespace Trailblazor;
 public abstract partial class TbButtonBase : TbComponentBase
 {
     private ElementReference _element;
+    private string? _shownAs;
+    private Telemetry? _telemetry;
     private bool _givenVariant;
     private bool _givenTone;
     private bool _givenSize;
@@ -59,8 +62,18 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    /// <summary>A label this button's use is counted under, such as <c>"export-csv"</c>, so the app can see how often
+    /// people see it and use it through the <c>Trailblazor</c> meter. Controls that share a label count together; a
+    /// control without one isn't counted. It names what the button does, never the user, and is no credential.
+    /// </summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
     [CascadingParameter]
     private TbButtonGroup? Group { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
 
     private protected Variant ShownVariant => TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
 
@@ -69,6 +82,9 @@ public abstract partial class TbButtonBase : TbComponentBase
     private protected Size ShownSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
 
     private bool Off => Disabled || Group?.Disabled == true;
+
+    // Looked up only for a labeled button, so an unlabeled one renders without AddTrailblazor, as it always has.
+    private Telemetry? Telemetry => TelemetryName is null ? null : _telemetry ??= Services.GetService<Telemetry>();
 
     private string TypeAttribute => Type.ToString().ToLowerInvariant();
 
@@ -106,11 +122,20 @@ public abstract partial class TbButtonBase : TbComponentBase
         }
     }
 
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) =>
+        Telemetry?.ShownOnce(ref _shownAs, TelemetryName, GetType());
+
     private async Task OnClickAsync(MouseEventArgs args)
     {
         if (Off || Loading)
         {
             return;
+        }
+
+        if (TelemetryName is not null)
+        {
+            Telemetry?.ControlUsed(TelemetryName, GetType());
         }
 
         if (Toggles)

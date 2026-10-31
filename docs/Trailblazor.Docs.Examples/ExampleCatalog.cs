@@ -30,6 +30,9 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // Extra testing advice for the page; text in backticks shows as code.
     public string? TestingTip { get; init; }
 
+    // What the component reports through the Trailblazor meter; text in backticks shows as code.
+    public IReadOnlyList<string> Telemetry { get; init; } = [];
+
     // The data-part names a test can find inside the component, in the order they appear.
     public IReadOnlyList<string> DataParts { get; init; } = [];
 
@@ -73,6 +76,15 @@ public sealed record ExampleSource(string File, string Text)
 // Every docs example. The docs site shows them, and the browser tests run axe against each one.
 public static class ExampleCatalog
 {
+    // What a button reports, which a link button and an icon button share.
+    private static string[] ButtonTelemetry(string component) =>
+    [
+        "With a `TelemetryName`, such as `\"export-csv\"`, it counts `trailblazor.control.shown` once as it first "
+            + "renders interactively, and `trailblazor.control.used` for each click it acts on, as a button or as a "
+            + $"link. Both are tagged with the name and `trailblazor.component` `{component}`.",
+        "A disabled or loading button counts as shown but not used. Without a `TelemetryName` it counts nothing.",
+    ];
+
     // The parts every labeled field has; start and end hold its adornments.
     private static readonly string[] FieldParts = ["label", "control", "start", "end", "helper", "error"];
 
@@ -184,6 +196,7 @@ public static class ExampleCatalog
             TestingTip = "Check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, and a disabled "
                 + "button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`. To move focus to a "
                 + "button from code, `@ref` it and call `FocusAsync()`.",
+            Telemetry = ButtonTelemetry("TbButton"),
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
             "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
@@ -202,6 +215,7 @@ public static class ExampleCatalog
             Target = new("button", "Add"),
             Blocks = ["tb-button", "tb-icon-button"],
             DataParts = ["icon", "spinner"],
+            Telemetry = ButtonTelemetry("TbIconButton"),
         },
         new("button-group", "Button group", ExampleCategory.Actions,
             "Joins related buttons into one control, in a row or a column, with settings shared by all of them.",
