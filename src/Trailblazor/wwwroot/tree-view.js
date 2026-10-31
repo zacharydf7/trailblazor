@@ -14,6 +14,16 @@ export function createTreeView(tree, events) {
     const typing = createTypeahead();
     const rows = () => [...tree.querySelectorAll('[role="treeitem"][data-key]')];
     const level = row => Number(row.getAttribute('aria-level'));
+    // A virtualized tree renders only some rows, so a row next to another in the page may stand beyond rows left out.
+    // It is the true neighbor only when every row between them is rendered; otherwise the server finds the row.
+    // Read each time, since Virtualize can turn on after the tree attaches.
+    const virtual = () => 'virtual' in tree.dataset;
+    const place = row => Number(row.dataset.index);
+    const total = () => Number(tree.dataset.rows);
+    const joined = (from, to) => {
+        const shown = [...tree.querySelectorAll('[role="treeitem"]')];
+        return Math.abs(place(to) - place(from)) === Math.abs(shown.indexOf(to) - shown.indexOf(from));
+    };
 
     // Only the tab stop's own end-slot controls are in the tab order, so the tree stays one stop and Tab from a row
     // reaches its actions.
@@ -49,6 +59,7 @@ export function createTreeView(tree, events) {
     const observer = new MutationObserver(() => {
         syncEnds();
         reportOrder();
+        scheduleView();
     });
     // Every way focus reaches a row, a click included, makes it the tree's one tab stop.
     const onFocusIn = event => {
@@ -79,20 +90,51 @@ export function createTreeView(tree, events) {
         const expanded = current.getAttribute('aria-expanded');
         const send = key => events.invokeMethodAsync('OnKey', current.dataset.key, key, event.shiftKey,
             event.ctrlKey || event.metaKey);
+        const find = key => {
+            if (!virtual()) {
+                return typing.find(list, current, key);
+            }
+
+            events.invokeMethodAsync('OnFind', current.dataset.key, typing.type(key));
+            return null;
+        };
+        // Moves to a row this tree hasn't rendered are the server's, which renders the row and focuses it.
+        const far = key => {
+            send(key);
+            return null;
+        };
         let next = null;
         switch (event.key) {
             case 'ArrowDown':
                 next = list[index + 1];
+                if (virtual() && (next ? !joined(current, next) : place(current) < total() - 1)) {
+                    next = far('Next');
+                }
+
                 break;
             case 'ArrowUp':
                 next = list[index - 1];
+                if (virtual() && (next ? !joined(current, next) : place(current) > 0)) {
+                    next = far('Previous');
+                }
+
                 break;
             case 'Home':
                 next = list[0];
+                if (virtual() && place(next) !== 0) {
+                    next = far('First');
+                }
+
                 break;
-            case 'End':
+            case 'End': {
                 next = list.at(-1);
+                const last = [...tree.querySelectorAll('[role="treeitem"]')].at(-1);
+                if (virtual() && !(place(last) === total() - 1 && joined(next, last))) {
+                    next = far('Last');
+                }
+
                 break;
+            }
             case 'ArrowRight':
                 if (expanded === 'false') {
                     send('ArrowRight');
@@ -106,6 +148,9 @@ export function createTreeView(tree, events) {
                     send('ArrowLeft');
                 } else {
                     next = list.slice(0, index).findLast(other => level(other) < level(current));
+                    if (virtual() && level(current) > 1 && !(next && joined(next, current))) {
+                        next = far('Parent');
+                    }
                 }
 
                 break;
@@ -115,7 +160,7 @@ export function createTreeView(tree, events) {
                 break;
             case ' ':
                 if (typing.typing()) {
-                    next = typing.find(list, current, ' ');
+                    next = find(' ');
                 } else {
                     send(' ');
                 }
@@ -125,7 +170,7 @@ export function createTreeView(tree, events) {
                 if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
                     send('SelectAll');
                 } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
-                    next = typing.find(list, current, event.key);
+                    next = find(event.key);
                 } else {
                     return;
                 }
@@ -233,13 +278,58 @@ export function createTreeView(tree, events) {
         onCancel: endDrag,
     });
 
+    // A virtualized tree tells the server which rows are in view, with some to spare either side, as the tree or the
+    // page scrolls. It tells it again only once the view leaves what was asked for.
+    const spare = 10;
+    let view = { start: -1, count: 0 };
+    let frame = 0;
+    const reportView = () => {
+        frame = 0;
+        const size = Number(tree.dataset.rowSize);
+        const box = tree.getBoundingClientRect();
+        let top = Math.max(box.top, 0);
+        let bottom = Math.min(box.bottom, innerHeight);
+        for (let parent = tree.parentElement; parent; parent = parent.parentElement) {
+            if (getComputedStyle(parent).overflowY !== 'visible') {
+                const clip = parent.getBoundingClientRect();
+                top = Math.max(top, clip.top);
+                bottom = Math.min(bottom, clip.bottom);
+            }
+        }
+
+        const origin = box.top + tree.clientTop - tree.scrollTop;
+        const first = Math.max(0, Math.floor((top - origin) / size));
+        const end = Math.max(first + 1, Math.ceil((bottom - origin) / size));
+        if (first >= view.start && end <= view.start + view.count) {
+            return;
+        }
+
+        view = { start: Math.max(0, first - spare), count: end - first + 2 * spare };
+        events.invokeMethodAsync('OnView', view.start, view.count);
+    };
+    const scheduleView = () => {
+        if (virtual() && !frame) {
+            frame = requestAnimationFrame(reportView);
+        }
+    };
+
     tree.addEventListener('focusin', onFocusIn);
     tree.addEventListener('keydown', onKeyDown);
     observer.observe(tree, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
+    // A tree whose box grows, as in a pane being resized, shows more rows without anything scrolling.
+    const resize = new ResizeObserver(scheduleView);
+    resize.observe(tree);
+    document.addEventListener('scroll', scheduleView, { capture: true, passive: true });
+    addEventListener('resize', scheduleView);
     syncEnds();
     reportOrder();
+    scheduleView();
     return {
         dispose() {
+            cancelAnimationFrame(frame);
+            resize.disconnect();
+            document.removeEventListener('scroll', scheduleView, { capture: true, passive: true });
+            removeEventListener('resize', scheduleView);
             pointerDrag.dispose();
             observer.disconnect();
             tree.removeEventListener('focusin', onFocusIn);

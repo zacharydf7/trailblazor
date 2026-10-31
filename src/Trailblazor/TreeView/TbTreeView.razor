@@ -1,12 +1,17 @@
 @namespace Trailblazor
+@using System.Globalization
 @typeparam TItem
 @inherits TbComponentBase
 
 @* The rows are flat, each saying its own level, so a row keeps its element and state wherever the tree changes. *@
 <div @ref="_tree" @attributes="AdditionalAttributes" role="tree" aria-label="@AriaLabel"
      aria-multiselectable="@(SelectionMode == TreeSelectionMode.Multiple ? "true" : null)"
-     aria-disabled="@(Disabled ? "true" : null)" data-ready="@(_handle is null ? null : "")" style="@Style"
-     class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null, Class)">
+     aria-disabled="@(Disabled ? "true" : null)" data-ready="@(_handle is null ? null : "")"
+     data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
+     data-row-size="@(Virtualize ? RowSize : null)"
+     style="@(Virtualize ? Styles.Join($"--tb-tree-row-size: {RowSize}px", Style) : Style)"
+     class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null,
+                Virtualize ? "tb-tree--virtual" : null, Class)">
     @if (ChildContent is not null)
     {
         <CascadingValue Value="this" IsFixed="true">
@@ -39,22 +44,34 @@
         @* Shown by tree-view.js beside a place a drag can't drop, with the reason. *@
         <div data-part="drop-reason" class="tb-tree__drop-reason" aria-hidden="true" hidden></div>
     }
-    @{ var focusId = FocusId(); var first = true; _rowIds = 0; }
-    @foreach (var row in _rows)
+    @{ var focusId = FocusId(); var next = 0; _rowIds = 0; _scrollRendered = _scrollAfterRender?.Done; }
+    @* Every spacer comes from one line: the browser drops a keyed spacer's attributes when it moves between two. *@
+    @foreach (var index in ShownIndexes().Append(_rows.Count))
     {
+        @if (index > next)
+        {
+            <div @key="new Gap(next)" data-part="spacer" aria-hidden="true" class="tb-tree__spacer"
+                 style="--tb-tree-gap: @(index - next)"></div>
+        }
+        @if (index == _rows.Count)
+        {
+            break;
+        }
+        next = index + 1;
+        var row = _rows[index];
         var node = row.Node;
+        int? place = Virtualize ? index : null;
         @if (row.IsItem)
         {
             var context = ContextOf(node);
             var disabled = Disabled || IsItemDisabled(node);
             var declared = _declared.GetValueOrDefault(node.Key);
             var draggable = CanDragRow(node);
-            var atTop = first;
-            first = false;
             var nameId = $"{TreeId}-row{_rowIds++}";
             @* A row is named by all it shows, its end slot included, as the tree pattern's rows are. *@
             <div @attributes="declared?.AdditionalAttributes" @key="node.Key" @ref="_rowRefs[node.Key]" role="treeitem"
-                 data-part="item" data-key="@node.Id"
+                 data-part="item" data-key="@node.Id" data-index="@place"
+                 data-inside="@(Virtualize ? _inside[index] : null)"
                  data-text="@TextOf(node)" data-level="@node.Level" aria-level="@node.Level"
                  aria-setsize="@row.SetSize" aria-posinset="@row.Position"
                  aria-expanded="@(node.HasChildren ? Flag(context.Expanded) : null)"
@@ -109,7 +126,7 @@
                 }
                 @if (InsertTemplate is not null)
                 {
-                    @if (atTop)
+                    @if (index == 0)
                     {
                         <span data-part="insert" data-edge="start" class="tb-tree__insert" @onclick:stopPropagation
                               @ondblclick:stopPropagation @onkeydown:stopPropagation>
@@ -127,6 +144,7 @@
         {
             <div @key="@($"{node.Id}-loading")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
                  aria-posinset="1" aria-disabled="true" aria-busy="true" tabindex="-1" data-part="loading"
+                 data-index="@place" data-inside="@(Virtualize ? _inside[index] : null)"
                  style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
                 <span class="tb-tree__toggle" aria-hidden="true"></span>
                 <span class="tb-tree__spinner" aria-hidden="true"></span>
@@ -136,7 +154,8 @@
         else
         {
             <div @key="@($"{node.Id}-failed")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
-                 aria-posinset="1" aria-disabled="true" tabindex="-1" data-part="failed"
+                 aria-posinset="1" aria-disabled="true" tabindex="-1" data-part="failed" data-index="@place"
+                 data-inside="@(Virtualize ? _inside[index] : null)"
                  style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
                 <span class="tb-tree__toggle" aria-hidden="true"></span>
                 <span class="tb-tree__failed">@LoadFailedLabel</span>
@@ -151,6 +170,11 @@
 @code {
     // Numbers the rows' name parts in each render, since a row's key needn't make a valid id.
     private int _rowIds;
+
+    private string RowSize => ItemSize.ToString(CultureInfo.InvariantCulture);
+
+    // Keys the spacer that stands for the rows a virtualized tree leaves out, apart from any item's key.
+    private sealed record Gap(int Start);
 
     private static string Flag(bool value) => value ? "true" : "false";
 

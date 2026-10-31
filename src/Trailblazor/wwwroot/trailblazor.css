@@ -4338,6 +4338,23 @@
         outline: none;
     }
 
+    /* Every row of a virtualized tree is one size, so a spacer can stand in for the rows it leaves out. */
+    .tb-tree--virtual {
+        overflow-y: auto;
+    }
+
+    .tb-tree--virtual .tb-tree__item {
+        flex: none;
+        box-sizing: border-box;
+        block-size: var(--tb-tree-row-size);
+        min-block-size: 0;
+    }
+
+    .tb-tree__spacer {
+        flex: none;
+        block-size: calc(var(--tb-tree-gap) * var(--tb-tree-row-size));
+    }
+
     .tb-tree__item:hover:not(.tb-tree__item--status) {
         background: var(--tb-color-neutral-subtle);
     }

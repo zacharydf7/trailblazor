@@ -1112,6 +1112,10 @@ public static class ExampleCatalog
                     + "can be undone like any other change.",
                 "`InsertTemplate` content sits on each row's edge and shows on hover or focus; it is a tab stop "
                     + "after its row, like `ItemEnd` content.",
+                "`Virtualize` renders only the rows in view, every one `ItemSize` pixels tall, in a tree given a "
+                    + "height or in the page's own scroll. Each row still says its level, size and place, the keys "
+                    + "and typing reach rows that aren't rendered yet, and the focused row stays rendered. Before "
+                    + "the page is interactive every row renders.",
             ],
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],
@@ -1119,7 +1123,9 @@ public static class ExampleCatalog
                 + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
                 + "`CheckAsync(...)` and `ItemAsync(...)`; `DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` "
                 + "drag one row's path onto another's. Every row also carries `data-key`, `data-level` and "
-                + "`data-text`, and a row being dragged over carries `data-drop`.",
+                + "`data-text`, and a row being dragged over carries `data-drop`. In a virtualized tree the helpers "
+                + "scroll until the row renders (a drag needs both rows in view together), and rows also carry "
+                + "`data-index` and `data-inside`, the number of rows in their branch.",
         },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "

@@ -26,6 +26,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     private readonly HashSet<object> _closedWhileFiltering = [];
     private List<TreeNode<TItem>> _roots = [];
     private List<TreeRow<TItem>> _rows = [];
+    private int[] _inside = [];
     private HashSet<object> _keep = [];
     private HashSet<object> _matches = [];
     private HashSet<object> _matchAncestors = [];
@@ -37,10 +38,21 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     private IReadOnlyCollection<object>? _checkedFromParent;
     private object? _anchor;
     private string? _focusId;
+    // The row the browser last said has focus, which a virtualized tree keeps rendered until focus has moved on.
+    private string? _browserFocusId;
+    // Set while the tree moves focus itself, so the browser's word about a row it passed on the way doesn't undo it.
+    private bool _focusing;
     private bool _initialExpandDone;
     private bool _itemsChanged;
     private bool _itemsRegistered;
     private (object Key, bool Focus, TaskCompletionSource Done)? _scrollAfterRender;
+    // The scroll the last render drew its row for; one asked for after that render waits for the next.
+    private TaskCompletionSource? _scrollRendered;
+    // The rows being scrolled to while the browser does it, which a virtualized tree keeps rendered till then.
+    private readonly List<object> _scrollingKeys = [];
+    // With Virtualize, the rows the browser last said were in view; until it says, the first ones render.
+    private int _viewStart;
+    private int _viewCount = 40;
     private ElementReference _tree;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<TreeViewEvents>? _events;
@@ -201,6 +213,16 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     [Parameter]
     public RenderFragment<TreeInsertContext<TItem>>? InsertTemplate { get; set; }
 
+    /// <summary>Renders only the rows in view, and a few either side, so a tree of tens of thousands of rows stays
+    /// quick. Every row is then <see cref="ItemSize"/> tall. Give the tree a height to scroll in, or let the page
+    /// scroll it.</summary>
+    [Parameter]
+    public bool Virtualize { get; set; }
+
+    /// <summary>The height of every row, in pixels, when <see cref="Virtualize"/> is on. Defaults to 32.</summary>
+    [Parameter]
+    public float ItemSize { get; set; } = 32;
+
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
@@ -317,9 +339,10 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
                 BuildFromItems();
             }
 
-            if (_scrollAfterRender is { } scroll)
+            if (_scrollAfterRender is { } scroll && scroll.Done == _scrollRendered)
             {
                 _scrollAfterRender = null;
+                _scrollingKeys.Add(scroll.Key);
                 try
                 {
                     if (_rows.Any(shown => shown.IsItem && Equals(shown.Node.Key, scroll.Key))
@@ -334,6 +357,8 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
                 }
                 finally
                 {
+                    _scrollingKeys.Remove(scroll.Key);
+                    _focusing &= _scrollAfterRender is not null || _scrollingKeys.Count > 0;
                     scroll.Done.TrySetResult();
                 }
             }
@@ -353,7 +378,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         }
 
         _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnItemOrderAsync,
-            OnDragOverAsync, OnDropAsync));
+            OnDragOverAsync, OnDropAsync, OnViewAsync, OnFindAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createTreeView", _tree, _events);
         if (handle is null)
         {
@@ -450,17 +475,104 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         }
 
         await SetExpandedAsync(_expanded.Union(node.Ancestors().Select(ancestor => ancestor.Key)));
+        await ScrollAfterRenderAsync(node, focus);
+    }
+
+    private async Task ScrollAfterRenderAsync(TreeNode<TItem> node, bool focus)
+    {
         if (focus)
         {
             _focusId = node.Id;
         }
 
+        _focusing = focus;
         // A newer scroll replaces one still waiting for its render, which then ends without scrolling.
         _scrollAfterRender?.Done.TrySetResult();
         var done = new TaskCompletionSource();
         _scrollAfterRender = (node.Key, focus, done);
         StateHasChanged();
         await done.Task;
+    }
+
+    // The rows to render: every one, or with Virtualize the rows in view, with the focused row, the row the browser
+    // still has focus on, the row being scrolled to and their neighbors, so focus and the arrow keys always have a row
+    // to land on. A static page renders all.
+    private IEnumerable<int> ShownIndexes()
+    {
+        if (!Virtualize || !RendererInfo.IsInteractive)
+        {
+            return Enumerable.Range(0, _rows.Count);
+        }
+
+        var start = Math.Clamp(_viewStart, 0, Math.Max(0, _rows.Count - _viewCount));
+        var shown = new SortedSet<int>(Enumerable.Range(start, Math.Min(_viewCount, _rows.Count - start)));
+        var focusId = FocusId();
+        var scrollKey = _scrollAfterRender?.Key;
+        var pinned = _rows.Select((row, index) => (row, index))
+            .Where(pair => pair.row.IsItem && (pair.row.Node.Id == focusId || pair.row.Node.Id == _browserFocusId
+                || Equals(pair.row.Node.Key, scrollKey) || _scrollingKeys.Contains(pair.row.Node.Key)));
+        foreach (var (_, index) in pinned)
+        {
+            shown.UnionWith(Enumerable.Range(index - 1, 3).Where(near => near >= 0 && near < _rows.Count));
+        }
+
+        return shown;
+    }
+
+    private Task OnViewAsync(int start, int count)
+    {
+        if (start != _viewStart || count != _viewCount)
+        {
+            (_viewStart, _viewCount) = (start, count);
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    // A virtualized tree finds typed text here, since the row it finds may not be rendered.
+    private async Task OnFindAsync(string id, string typed)
+    {
+        var shown = _rows.Where(row => row.IsItem).Select(row => row.Node).ToList();
+        var from = Moving(id);
+        var index = shown.FindIndex(node => node.Id == from);
+        var start = index < 0 ? 0 : index + (typed.Length == 1 ? 1 : 0);
+        var match = Enumerable.Range(0, shown.Count).Select(step => shown[(start + step) % shown.Count])
+            .FirstOrDefault(node => TextOf(node).Trim().StartsWith(typed, StringComparison.CurrentCultureIgnoreCase));
+        if (match is not null)
+        {
+            await ScrollAfterRenderAsync(match, focus: true);
+        }
+    }
+
+    private async Task MoveFocusAsync(string id, string key, bool extend)
+    {
+        if (!_byId.TryGetValue(id, out var node) || FocusTarget(node, key) is not { } target)
+        {
+            return;
+        }
+
+        if (extend && key is "Next" or "Previous")
+        {
+            await SelectAsync(target, shift: true, toggle: false);
+        }
+
+        await ScrollAfterRenderAsync(target, focus: true);
+    }
+
+    // The row a key moves focus to in a virtualized tree, when the browser hasn't rendered it.
+    private TreeNode<TItem>? FocusTarget(TreeNode<TItem> node, string key)
+    {
+        var shown = _rows.Where(row => row.IsItem).Select(row => row.Node).ToList();
+        var index = shown.IndexOf(node);
+        return key switch
+        {
+            "Next" => shown.ElementAtOrDefault(index + 1),
+            "Previous" => index > 0 ? shown[index - 1] : null,
+            "First" => shown.FirstOrDefault(),
+            "Last" => shown.LastOrDefault(),
+            _ => node.Parent,
+        };
     }
 
     // Opening a row from code opens the rows above it too, even ones the user closed while the filter was on.
@@ -563,6 +675,7 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         ComputeChecks();
         _rows = [];
         Walk(_roots);
+        CountInside();
         // A row that isn't shown has no element, so its reference is dropped before anything can scroll to it.
         var shownKeys = _rows.Where(row => row.IsItem).Select(row => row.Node.Key).ToHashSet();
         foreach (var hidden in _rowRefs.Keys.Where(key => !shownKeys.Contains(key)).ToList())
@@ -596,6 +709,27 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
                 }
             }
         }
+    }
+
+    // How many rows each row holds below it, so the testing helpers can step over a branch a virtualized tree hasn't
+    // rendered.
+    private void CountInside()
+    {
+        _inside = new int[_rows.Count];
+        var open = new Stack<int>();
+        for (var index = 0; index <= _rows.Count; index++)
+        {
+            var level = index < _rows.Count ? LevelOf(_rows[index]) : 0;
+            while (open.Count > 0 && LevelOf(_rows[open.Peek()]) >= level)
+            {
+                var done = open.Pop();
+                _inside[done] = index - done - 1;
+            }
+
+            open.Push(index);
+        }
+
+        static int LevelOf(TreeRow<TItem> row) => row.IsItem ? row.Node.Level : row.Node.Level + 1;
     }
 
     private bool IsOpen(TreeNode<TItem> node) => node.HasChildren && !_closedWhileFiltering.Contains(node.Key)
@@ -665,12 +799,27 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
     private Task OnFocusAsync(string id)
     {
-        _focusId = id;
+        _browserFocusId = id;
+        if (!_focusing)
+        {
+            _focusId = id;
+        }
+
         return Task.CompletedTask;
     }
 
+    // Keys pressed while the tree is still moving focus count from where it is moving to, as they would once there.
+    private string Moving(string id) => _focusing && _focusId is { } target ? target : id;
+
     private async Task OnKeyAsync(string id, string key, bool shift, bool ctrl)
     {
+        // Moving focus works in a disabled tree too, as it does among rendered rows.
+        if (key is "Next" or "Previous" or "First" or "Last" or "Parent")
+        {
+            await MoveFocusAsync(Moving(id), key, shift && !Disabled);
+            return;
+        }
+
         if (!_byId.TryGetValue(id, out var node) || Disabled)
         {
             return;

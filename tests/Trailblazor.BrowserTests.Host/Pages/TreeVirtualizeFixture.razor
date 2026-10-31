@@ -1,0 +1,12 @@
+@page "/tree-virtualize"
+
+@* The rows arrive after the tree attaches, and only then turn virtualization on, as a large load would. *@
+<TbButton OnClick="Load">Load</TbButton>
+<TbTreeView TItem="int" AriaLabel="Numbers" Items="_numbers" ItemText="@(number => $"Number {number}")"
+            Virtualize="@(_numbers.Count > 100)" Style="block-size: 12rem" />
+
+@code {
+    private List<int> _numbers = [1, 2, 3];
+
+    private void Load() => _numbers = [.. Enumerable.Range(1, 2000)];
+}

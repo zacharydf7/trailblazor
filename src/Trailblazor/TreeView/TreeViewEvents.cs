@@ -2,11 +2,12 @@ using Microsoft.JSInterop;
 
 namespace Trailblazor;
 
-// Hears the browser move focus, press the keys that change the tree, report the tree items' order and drag rows, so
-// the public tree needn't expose [JSInvokable] methods.
+// Hears the browser move focus, press the keys that change the tree, report the tree items' order, drag rows and
+// scroll a virtualized tree, so the public tree needn't expose [JSInvokable] methods.
 internal sealed class TreeViewEvents(Func<string, Task> onFocus, Func<string, string, bool, bool, Task> onKey,
     Func<string[], Task> onItemOrder, Func<string[], string, TreeDropPosition, Task<TreeDropCheck>> onDragOver,
-    Func<string[], string, TreeDropPosition, Task> onDrop)
+    Func<string[], string, TreeDropPosition, Task> onDrop, Func<int, int, Task> onView,
+    Func<string, string, Task> onFind)
 {
     [JSInvokable]
     public Task OnFocus(string key) => onFocus(key);
@@ -23,4 +24,10 @@ internal sealed class TreeViewEvents(Func<string, Task> onFocus, Func<string, st
 
     [JSInvokable]
     public Task OnDrop(string[] ids, string target, TreeDropPosition position) => onDrop(ids, target, position);
+
+    [JSInvokable]
+    public Task OnView(int start, int count) => onView(start, count);
+
+    [JSInvokable]
+    public Task OnFind(string key, string typed) => onFind(key, typed);
 }

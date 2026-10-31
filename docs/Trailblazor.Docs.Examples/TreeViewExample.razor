@@ -32,6 +32,10 @@
                                           : $"Add a stop to {context.Parent.Name} at {context.Index + 1}")" />
         </InsertTemplate>
     </TbTreeView>
+    @* Ten thousand rows, of which only those in view render. *@
+    <TbTreeView TItem="Place" AriaLabel="Trail atlas" Items="Atlas" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" ItemText="place => place.Name" InitialExpandDepth="1"
+                Virtualize Style="block-size: 20rem" />
 </TbStack>
 
 @code {
@@ -41,6 +45,11 @@
         new(4, "River valley", [new(5, "Cedar Flats"), new(6, "Fern Gully", [new(7, "Waterfall spur")])]),
         new(8, "High peaks", [new(9, "Summit Gate")]),
     ];
+
+    // A hundred regions of a hundred trails each.
+    private static readonly Place[] Atlas = [.. Enumerable.Range(1, 100).Select(region => new Place(region * 1000,
+        $"Region {region}", [.. Enumerable.Range(1, 100).Select(trail =>
+            new Place(region * 1000 + trail, $"Trail {region}.{trail}"))]))];
 
     private string? _search;
     private IReadOnlyCollection<object> _selected = [];

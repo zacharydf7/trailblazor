@@ -311,9 +311,16 @@ public sealed class TbTreeLocator(IPage page, string name)
     private async Task DragAsync(string[] row, string[] target, float at)
     {
         await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
-        var source = await RowAsync(row);
+        var sourceKey = await Key(row);
+        var source = Tree.Locator($"[role=treeitem][data-key=\"{sourceKey}\"]");
         var destination = await RowAsync(target);
         await destination.EvaluateAsync("row => row.scrollIntoView({ block: 'center' })");
+        if (!await ShowsAsync(sourceKey))
+        {
+            throw new InvalidOperationException($"The tree {name} can't show {string.Join(" > ", row)} and "
+                + $"{string.Join(" > ", target)} together, so one can't be dragged onto the other.");
+        }
+
         await source.ScrollIntoViewIfNeededAsync();
         var from = await BoxAsync(source, row);
         await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
@@ -323,6 +330,25 @@ public sealed class TbTreeLocator(IPage page, string name)
         await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * at, new() { Steps = 10 });
         await page.Mouse.UpAsync();
     }
+
+    // A virtualized tree renders only the rows in view, so a row it still has must show, clipped by the tree and the
+    // page as the browser measures it, to stay rendered through the drag. One look at the tree, so it never waits.
+    private Task<bool> ShowsAsync(string key) => Tree.EvaluateAsync<bool>("""
+        (tree, key) => {
+            const row = tree.querySelector(`[role=treeitem][data-key="${CSS.escape(key)}"]`);
+            if (!row || !('virtual' in tree.dataset)) {
+                return !!row;
+            }
+
+            return new Promise(resolve => {
+                const observer = new IntersectionObserver(([entry]) => {
+                    observer.disconnect();
+                    resolve(entry.intersectionRatio > 0);
+                });
+                observer.observe(row);
+            });
+        }
+        """, key);
 
     private static async Task<LocatorBoundingBoxResult> BoxAsync(ILocator row, string[] path) =>
         await row.BoundingBoxAsync() ?? throw new InvalidOperationException(
@@ -335,6 +361,11 @@ public sealed class TbTreeLocator(IPage page, string name)
     private async Task<string> Key(string[] path)
     {
         await Assertions.Expect(Tree.Locator("[role=treeitem]").First).ToBeAttachedAsync();
+        if (await Tree.GetAttributeAsync("data-virtual") is not null)
+        {
+            return await VirtualKeyAsync(path);
+        }
+
         return await Tree.EvaluateAsync<string?>("""
             (tree, path) => {
                 const rows = [...tree.querySelectorAll('[role=treeitem][data-key]')];
@@ -362,8 +393,82 @@ public sealed class TbTreeLocator(IPage page, string name)
 
                 return found.dataset.key;
             }
-            """, path) ?? throw new InvalidOperationException(
-                $"The tree {name} shows no row at {string.Join(" > ", path)}; open the rows above it first.");
+            """, path) ?? throw NoRow(path);
+    }
+
+    // A virtualized tree renders only the rows in view. Each row says how many rows its branch holds, so the walk
+    // steps from sibling to sibling over branches it doesn't need, and scrolls on only when its next row isn't there.
+    private async Task<string> VirtualKeyAsync(string[] path)
+    {
+        var step = new PathStep();
+        while (step.Found is null)
+        {
+            await Tree.EvaluateAsync("""
+                (tree, index) => {
+                    let scroller = tree;
+                    while (scroller && !(scroller.scrollHeight > scroller.clientHeight
+                        && getComputedStyle(scroller).overflowY !== 'visible')) {
+                        scroller = scroller.parentElement;
+                    }
+
+                    const offset = index * Number(tree.dataset.rowSize);
+                    if (scroller === tree) {
+                        tree.scrollTop = offset;
+                        return;
+                    }
+
+                    scroller ??= document.scrollingElement;
+                    const top = scroller === document.scrollingElement ? 0 : scroller.getBoundingClientRect().top;
+                    scroller.scrollTop += tree.getBoundingClientRect().top + tree.clientTop + offset - top;
+                }
+                """, step.Index);
+            await Assertions.Expect(Tree.Locator($"[role=treeitem][data-index=\"{step.Index}\"]")).ToBeAttachedAsync();
+            step = await Tree.EvaluateAsync<PathStep>("""
+                (tree, { path, index, depth }) => {
+                    const total = Number(tree.dataset.rows);
+                    while (index < total) {
+                        const row = tree.querySelector(`[role=treeitem][data-index="${index}"]`);
+                        if (!row) {
+                            return { index, depth, found: null };
+                        }
+
+                        const level = Number(row.getAttribute('aria-level'));
+                        if (level <= depth) {
+                            break;
+                        }
+
+                        if (row.dataset.key && row.dataset.text === path[depth]) {
+                            if (depth === path.length - 1) {
+                                return { index, depth, found: row.dataset.key };
+                            }
+
+                            depth++;
+                            index++;
+                        } else {
+                            index += 1 + Number(row.dataset.inside);
+                        }
+                    }
+
+                    return { index, depth, found: '' };
+                }
+                """, new { path, index = step.Index, depth = step.Depth });
+        }
+
+        return step.Found.Length > 0 ? step.Found : throw NoRow(path);
+    }
+
+    private InvalidOperationException NoRow(string[] path) =>
+        new($"The tree {name} shows no row at {string.Join(" > ", path)}; open the rows above it first.");
+
+    // Where a walk through a virtualized tree has got to; Found is the row's key, or empty when there's no such row.
+    // Playwright fills in a result's properties, so they are settable.
+    private sealed class PathStep
+    {
+        public int Index { get; set; }
+
+        public int Depth { get; set; }
+
+        public string? Found { get; set; }
     }
 }
 
