@@ -52,4 +52,17 @@ public class TrailblazorServiceCollectionExtensionsTests
         Assert.Equal(5, options.Toasts.MaxVisible);
         Assert.Equal(TimeSpan.FromSeconds(8), options.Toasts.Duration);
     }
+
+    [Fact]
+    public void AddTrailblazor_ShouldResolveTheToastDialogAndAnnouncerServices_WhenLoggingIsntRegistered()
+    {
+        using var scope = new ServiceCollection().AddTrailblazor().BuildServiceProvider().CreateScope();
+
+        var toasts = scope.ServiceProvider.GetRequiredService<IToastService>();
+        var dialogs = scope.ServiceProvider.GetRequiredService<IDialogService>();
+
+        toasts.Show("Saved");
+        Assert.Single(toasts.Toasts);
+        Assert.Empty(dialogs.OpenDialogs);
+    }
 }

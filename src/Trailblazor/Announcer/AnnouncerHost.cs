@@ -18,7 +18,11 @@ internal sealed class AnnouncerHost : ComponentBase, IDisposable
     [Inject]
     private Announcer Announcer { get; set; } = default!;
 
-    protected override void OnInitialized() => Announcer.Changed += OnChanged;
+    protected override void OnInitialized()
+    {
+        Announcer.Hosts.Attach();
+        Announcer.Changed += OnChanged;
+    }
 
     internal void Show()
     {
@@ -57,5 +61,9 @@ internal sealed class AnnouncerHost : ComponentBase, IDisposable
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Announcer.Changed -= OnChanged;
+    public void Dispose()
+    {
+        Announcer.Hosts.Detach();
+        Announcer.Changed -= OnChanged;
+    }
 }

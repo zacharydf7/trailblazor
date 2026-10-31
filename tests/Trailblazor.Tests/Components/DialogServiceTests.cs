@@ -14,6 +14,20 @@ public class DialogServiceTests : BunitContext
     private IDialogService Dialogs => Services.GetRequiredService<IDialogService>();
 
     [Fact]
+    public async Task ConfirmAsync_ShouldKeepEveryDialog_WhenDialogsAreOpenedFromManyThreadsAtOnce()
+    {
+        await Task.WhenAll(Enumerable.Range(0, 8).Select(thread => Task.Run(() =>
+        {
+            for (var i = 0; i < 500; i++)
+            {
+                _ = Dialogs.ConfirmAsync("Delete trail", "Delete it?");
+            }
+        })));
+
+        Assert.Equal(4000, Dialogs.OpenDialogs.Distinct().Count());
+    }
+
+    [Fact]
     public void ShowAsync_ShouldRenderATitledDialogWithItsParameters_WhenCalled()
     {
         var host = Render<DialogHost>();

@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
+using Microsoft.Extensions.Logging;
 
 namespace Trailblazor;
 
-internal sealed class Announcer(DialogService dialogs, TimeProvider time) : IAnnouncer
+internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogger<Announcer>? logger = null)
+    : IAnnouncer
 {
     // Enough to hear messages that arrive together; older ones are dropped, which screen readers don't announce.
     private const int Kept = 5;
@@ -19,6 +21,8 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time) : IAnn
     public IReadOnlyList<Announcement> PoliteMessages => _polite;
 
     public IReadOnlyList<Announcement> AssertiveMessages => _assertive;
+
+    internal HostCheck Hosts { get; } = new("An announcement", time, logger);
 
     // Raised when a message is added or removed, so the hosts re-render.
     public event Action? Changed;
@@ -59,6 +63,7 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time) : IAnn
             Remove(announcement);
             timer?.Dispose();
         }, null, ClearAfter, Timeout.InfiniteTimeSpan);
+        Hosts.Shown();
         Changed?.Invoke();
     }
 

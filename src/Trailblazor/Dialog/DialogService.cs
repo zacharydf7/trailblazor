@@ -1,13 +1,20 @@
+using System.Collections.Immutable;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Trailblazor;
 
-internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOptions, ITbLocalizer localizer)
-    : IDialogService
+internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOptions, ITbLocalizer localizer,
+    TimeProvider time, ILogger<DialogService>? logger = null) : IDialogService
 {
-    private readonly List<DialogReference> _open = [];
+    // An app can open dialogs off the dispatcher, such as from a hub handler, while the host renders them, so the list
+    // is replaced rather than changed.
+    private readonly Lock _lock = new();
+    private ImmutableList<DialogReference> _open = [];
 
     public IReadOnlyList<DialogReference> OpenDialogs => _open;
+
+    internal HostCheck Hosts { get; } = new("A dialog", time, logger);
 
     // A modal makes the rest of the page inert, so toasts and announcements go inside the topmost one.
     public DialogReference? TopmostModal => _open.LastOrDefault(dialog => dialog.Options.Modal);
@@ -58,7 +65,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
     public async Task CloseAllAsync()
     {
-        foreach (var dialog in Enumerable.Reverse(_open.ToList()))
+        foreach (var dialog in Enumerable.Reverse(_open))
         {
             await dialog.CancelAsync();
         }
@@ -78,19 +85,33 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
         };
         var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync);
-        _open.Add(dialog);
+        lock (_lock)
+        {
+            _open = _open.Add(dialog);
+        }
+
+        // A TbDialog in markup renders itself, so only the dialogs the host renders need one.
+        if (component is not null)
+        {
+            Hosts.Shown();
+        }
+
         Changed?.Invoke();
         return dialog;
     }
 
     private async Task CloseAsync(DialogReference dialog, bool confirmed, object? value)
     {
-        if (!_open.Contains(dialog) || dialog.Closing)
+        lock (_lock)
         {
-            return;
+            if (!_open.Contains(dialog) || dialog.Closing)
+            {
+                return;
+            }
+
+            dialog.Closing = true;
         }
 
-        dialog.Closing = true;
         try
         {
             if (dialog.CloseInBrowserAsync is { } closeInBrowser)
@@ -100,7 +121,11 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         }
         finally
         {
-            _open.Remove(dialog);
+            lock (_lock)
+            {
+                _open = _open.Remove(dialog);
+            }
+
             Changed?.Invoke();
             dialog.Complete(confirmed, value);
         }

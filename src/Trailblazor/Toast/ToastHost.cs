@@ -43,6 +43,7 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
+        Toasts.Hosts.Attach();
         Toasts.Changed += OnChanged;
         Dialogs.Changed += OnChanged;
     }
@@ -157,6 +158,7 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
             timer.Dispose();
         }
 
+        Toasts.Hosts.Detach();
         Toasts.Changed -= OnChanged;
         Dialogs.Changed -= OnChanged;
         if (_handle is not null)

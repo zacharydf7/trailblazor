@@ -52,6 +52,11 @@
     these hosts, even a fully static one, and only pages in that same render mode can open them.
 </TbText>
 <CodeBlock Label="MainLayout.razor, interactivity per page" Code="@PerPageLayout" />
+<TbText>
+    If a page shows a dialog, toast or announcement and no <code>TbRoot</code> in its session hosts it within a
+    second, Trailblazor logs a warning saying so. The dialog and toast services can be called from any thread, such
+    as a SignalR hub handler.
+</TbText>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">6. Use a component</TbText>
 <CodeBlock Label="A first component" Code="@FirstComponent" />

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="bunit" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <!-- Its source generator builds the validation types that AddValidation registers. -->
     <PackageReference Include="Microsoft.Extensions.Validation" />

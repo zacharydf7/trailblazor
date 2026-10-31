@@ -1,13 +1,20 @@
+using System.Collections.Immutable;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Trailblazor;
 
-internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptions, IAnnouncer announcer)
-    : IToastService
+internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptions, IAnnouncer announcer,
+    TimeProvider time, ILogger<ToastService>? logger = null) : IToastService
 {
-    private readonly List<ToastReference> _toasts = [];
+    // An app can show toasts off the dispatcher, such as from a hub handler, while the hosts render them, so the list
+    // is replaced rather than changed.
+    private readonly Lock _lock = new();
+    private ImmutableList<ToastReference> _toasts = [];
 
     public IReadOnlyList<ToastReference> Toasts => _toasts;
+
+    internal HostCheck Hosts { get; } = new("A toast", time, logger);
 
     public ToastSettings Settings => trailblazorOptions.Value.Toasts;
 
@@ -17,35 +24,59 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
     public ToastReference Show(string message, Tone tone = Tone.Neutral, ToastOptions? options = null)
     {
         options ??= new();
-        if (options.Key is { } key && _toasts.Find(toast => toast.Options.Key == key) is { } existing)
+        ToastReference toast;
+        bool added;
+        lock (_lock)
         {
-            Update(existing, message, tone, options);
-            return existing;
+            var existing = options.Key is { } key ? _toasts.Find(open => open.Options.Key == key) : null;
+            toast = existing ?? new ToastReference(this, message, tone, options, LifetimeOf(tone, options));
+            added = existing is null;
+            if (added)
+            {
+                _toasts = _toasts.Add(toast);
+            }
         }
 
-        var added = new ToastReference(this, message, tone, options, LifetimeOf(tone, options));
-        _toasts.Add(added);
+        if (!added)
+        {
+            Update(toast, message, tone, options);
+            return toast;
+        }
+
+        Hosts.Shown();
         Announce(message, tone, options);
         Changed?.Invoke();
-        return added;
+        return toast;
     }
 
     public void Update(ToastReference toast, string message, Tone tone, ToastOptions? options)
     {
-        if (!_toasts.Contains(toast))
+        options ??= new();
+        lock (_lock)
         {
-            return;
+            if (!_toasts.Contains(toast))
+            {
+                return;
+            }
+
+            toast.Set(message, tone, options, LifetimeOf(tone, options));
         }
 
-        options ??= new();
-        toast.Set(message, tone, options, LifetimeOf(tone, options));
         Announce(message, tone, options);
         Changed?.Invoke();
     }
 
     public void Close(ToastReference toast, ToastCloseReason reason)
     {
-        if (_toasts.Remove(toast))
+        bool removed;
+        lock (_lock)
+        {
+            var before = _toasts;
+            _toasts = _toasts.Remove(toast);
+            removed = _toasts != before;
+        }
+
+        if (removed)
         {
             toast.Finish(reason);
             Changed?.Invoke();
@@ -54,13 +85,17 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
 
     public void DismissAll()
     {
-        if (_toasts.Count == 0)
+        ImmutableList<ToastReference> closing;
+        lock (_lock)
+        {
+            (closing, _toasts) = (_toasts, []);
+        }
+
+        if (closing.Count == 0)
         {
             return;
         }
 
-        var closing = _toasts.ToList();
-        _toasts.Clear();
         closing.ForEach(toast => toast.Finish(ToastCloseReason.App));
         Changed?.Invoke();
     }

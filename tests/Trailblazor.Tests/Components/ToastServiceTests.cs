@@ -20,6 +20,20 @@ public class ToastServiceTests : BunitContext
     private IToastService Toasts => Services.GetRequiredService<IToastService>();
 
     [Fact]
+    public async Task Show_ShouldKeepEveryToast_WhenToastsAreShownFromManyThreadsAtOnce()
+    {
+        await Task.WhenAll(Enumerable.Range(0, 8).Select(thread => Task.Run(() =>
+        {
+            for (var i = 0; i < 500; i++)
+            {
+                Toasts.Show($"Toast {thread}-{i}", Tone.Danger);
+            }
+        })));
+
+        Assert.Equal(4000, Toasts.Toasts.Distinct().Count());
+    }
+
+    [Fact]
     public void Show_ShouldRenderTheMessageInTheToasterAndAnnounceIt_WhenCalled()
     {
         var host = Render<ToastHost>();

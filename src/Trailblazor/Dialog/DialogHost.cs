@@ -9,7 +9,11 @@ internal sealed class DialogHost : ComponentBase, IDisposable
     [Inject]
     private DialogService Dialogs { get; set; } = default!;
 
-    protected override void OnInitialized() => Dialogs.Changed += OnChanged;
+    protected override void OnInitialized()
+    {
+        Dialogs.Hosts.Attach();
+        Dialogs.Changed += OnChanged;
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -24,5 +28,9 @@ internal sealed class DialogHost : ComponentBase, IDisposable
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Dialogs.Changed -= OnChanged;
+    public void Dispose()
+    {
+        Dialogs.Hosts.Detach();
+        Dialogs.Changed -= OnChanged;
+    }
 }
