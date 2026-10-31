@@ -1,0 +1,176 @@
+@namespace Trailblazor
+@typeparam TItem
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" data-ready="@(_handle is null ? null : "")" style="@Style"
+     class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
+                Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
+                Height is null ? null : "tb-data-grid--scrolls", Class)">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
+        <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
+               class="tb-data-grid__table">
+            <thead>
+                <tr>
+                    @if (SelectionMode == GridSelectionMode.Multiple)
+                    {
+                        <th scope="col" data-part="select" class="tb-data-grid__select">
+                            <input type="checkbox" data-part="select-all" class="tb-data-grid__check"
+                                   aria-label="@(Labels.SelectAll ?? Localizer[TbStrings.DataGridSelectAll])"
+                                   checked="@AllSelected" data-mixed="@(SomeSelected ? "" : null)"
+                                   disabled="@(_rows.Count == 0)" @onchange="ToggleAllAsync" />
+                        </th>
+                    }
+                    else if (SelectionMode == GridSelectionMode.Single)
+                    {
+                        <th scope="col" data-part="select" class="tb-data-grid__select">
+                            <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridSelect]</span>
+                        </th>
+                    }
+                    @foreach (var column in _columns)
+                    {
+                        var at = _sorts.FindIndex(sort => sort.Column == column.Key);
+                        var sort = at < 0 ? null : _sorts[at];
+                        <th scope="col" data-column="@column.Key" data-title="@column.Heading"
+                            aria-sort="@AriaSort(at, sort)"
+                            style="@(column.Width is null ? null : $"width: {column.Width}")"
+                            class="@ClassNames.Join("tb-data-grid__header",
+                                       ClassNames.Modifier("tb-data-grid__header", column.Alignment))">
+                            @if (column.CanSort)
+                            {
+                                <button type="button" data-part="sort" class="tb-data-grid__sort"
+                                        @onclick="args => SortAsync(column, args)">
+                                    <span>@column.Heading</span>
+                                    @if (sort is not null)
+                                    {
+                                        <TbIcon Size="Size.Small" class="tb-data-grid__sort-icon"
+                                                Icon="@(sort.Direction == SortDirection.Ascending
+                                                          ? BuiltInIcons.ArrowUp : BuiltInIcons.ArrowDown)" />
+                                        @if (_sorts.Count > 1)
+                                        {
+                                            <span class="tb-data-grid__sort-order" aria-hidden="true">@(at + 1)</span>
+                                            <span class="tb-visually-hidden">
+                                                @Format(TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
+                                                    Localizer[sort.Direction == SortDirection.Ascending
+                                                        ? TbStrings.DataGridAscending : TbStrings.DataGridDescending])
+                                            </span>
+                                        }
+                                    }
+                                </button>
+                                @column.Header
+                            }
+                            else
+                            {
+                                @(column.Header ?? (RenderFragment)(builder => builder.AddContent(0, column.Heading)))
+                            }
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (_failed)
+                {
+                    <tr data-part="failed" class="tb-data-grid__status">
+                        <td colspan="@ColumnCount">
+                            <span>@(Labels.LoadFailed ?? Localizer[TbStrings.DataGridLoadFailed])</span>
+                            <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="RefreshAsync">
+                                @(Labels.Retry ?? Localizer[TbStrings.DataGridRetry])
+                            </TbButton>
+                        </td>
+                    </tr>
+                }
+                else if (_rows.Count == 0 && IsLoading)
+                {
+                    <tr data-part="loading" class="tb-data-grid__status">
+                        <td colspan="@ColumnCount">@(Labels.Loading ?? Localizer[TbStrings.DataGridLoading])</td>
+                    </tr>
+                }
+                else if (_rows.Count == 0)
+                {
+                    <tr data-part="empty" class="tb-data-grid__status">
+                        <td colspan="@ColumnCount">
+                            @if (EmptyContent is null)
+                            {
+                                @(Labels.Empty ?? Localizer[TbStrings.DataGridEmpty])
+                            }
+                            else
+                            {
+                                @EmptyContent
+                            }
+                        </td>
+                    </tr>
+                }
+                @foreach (var item in _rows)
+                {
+                    var key = KeyOf(item);
+                    var selected = IsSelected(item);
+                    <tr @key="key" @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)"
+                        data-selected="@(selected ? "" : null)"
+                        class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
+                                   RowClass?.Invoke(item))">
+                        @if (SelectionMode != GridSelectionMode.None)
+                        {
+                            <td data-part="select" class="tb-data-grid__select">
+                                <input type="@(SelectionMode == GridSelectionMode.Single ? "radio" : "checkbox")"
+                                       class="tb-data-grid__check" checked="@selected"
+                                       name="@(SelectionMode == GridSelectionMode.Single ? _radioName : null)"
+                                       aria-label="@Format(TbStrings.DataGridSelectRow, LabelOf(item))"
+                                       @onchange="() => ToggleAsync(item)" />
+                            </td>
+                        }
+                        @foreach (var column in _columns)
+                        {
+                            <td data-column="@column.Key"
+                                class="@ClassNames.Join("tb-data-grid__cell",
+                                           ClassNames.Modifier("tb-data-grid__cell", column.Alignment), column.Class)">
+                                @if (column.Cell is not null)
+                                {
+                                    @column.Cell(item)
+                                }
+                                else
+                                {
+                                    @column.TextOf(item)
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (_pageSize is { } size && (_total > 0 || PageSizes is not null))
+    {
+        var first = _total == 0 ? 0 : (_page - 1) * size + 1;
+        var last = Math.Min(_page * size, _total);
+        <div data-part="pager" class="tb-data-grid__pager">
+            <span data-part="summary" class="tb-data-grid__summary">
+                @Format(TbStrings.DataGridRange, first, last, _total)
+            </span>
+            @if (PageSizes is { Count: > 0 } sizes)
+            {
+                <TbSelect TValue="int" Label="@(Labels.PageSize ?? Localizer[TbStrings.DataGridPageSize])"
+                          Size="Size.Small" Value="size" ValueChanged="ChangePageSizeAsync"
+                          class="tb-data-grid__page-size">
+                    @foreach (var option in sizes)
+                    {
+                        <TbOption Value="option">@option</TbOption>
+                    }
+                </TbSelect>
+            }
+            @if (PageCount > 1)
+            {
+                <TbPagination Page="_page" PageChanged="GoToPageAsync" PageCount="PageCount" Size="Size.Small"
+                              AriaLabel="@(AriaLabel is null ? null : Format(TbStrings.DataGridPages, AriaLabel))" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    // Single selection's radio buttons need a group of their own on the page.
+    private readonly string _radioName = $"tb-data-grid-{Guid.NewGuid():N}";
+
+    // Only the first sort is the column's sort to screen readers; the rest say their place in words.
+    private static string? AriaSort(int at, GridSort? sort) => at != 0 ? null
+        : sort!.Direction == SortDirection.Ascending ? "ascending" : "descending";
+}

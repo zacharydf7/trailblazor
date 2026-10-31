@@ -324,6 +324,59 @@ public static class TbStrings
     /// <summary>"More": names a toolbar's overflow menu.</summary>
     public const string ToolbarMore = "Toolbar.More";
 
+    /// <summary>"Loading…": shown while a data grid loads its rows.</summary>
+    public const string DataGridLoading = "DataGrid.Loading";
+
+    /// <summary>"Couldn't load the rows.": shown when a data grid's rows fail to load.</summary>
+    public const string DataGridLoadFailed = "DataGrid.LoadFailed";
+
+    /// <summary>"Retry": names the button that loads a data grid's rows again after a failure.</summary>
+    public const string DataGridRetry = "DataGrid.Retry";
+
+    /// <summary>"Nothing to show.": shown by a data grid with no rows.</summary>
+    public const string DataGridEmpty = "DataGrid.Empty";
+
+    /// <summary>"Select all rows": names the header checkbox that selects every row on a data grid's page.</summary>
+    public const string DataGridSelectAll = "DataGrid.SelectAll";
+
+    /// <summary>"Select": names the column of a data grid's selection buttons.</summary>
+    public const string DataGridSelect = "DataGrid.Select";
+
+    /// <summary>"Select {0}": names a row's selection box; {0} is the row's label.</summary>
+    public const string DataGridSelectRow = "DataGrid.SelectRow";
+
+    /// <summary>"{0}–{1} of {2}": the rows a data grid's page shows; {0} and {1} are the first and last, {2} the
+    /// count of all rows.</summary>
+    public const string DataGridRange = "DataGrid.Range";
+
+    /// <summary>"Pages of {0}": names a data grid's pages; {0} is the grid's name.</summary>
+    public const string DataGridPages = "DataGrid.Pages";
+
+    /// <summary>"Rows per page": names a data grid's list of page sizes.</summary>
+    public const string DataGridPageSize = "DataGrid.PageSize";
+
+    /// <summary>"Sorted by {0}, ascending.": read out when a column sorts its rows smallest first; {0} is the column.
+    /// </summary>
+    public const string DataGridSortedAscending = "DataGrid.SortedAscending";
+
+    /// <summary>"Sorted by {0}, descending.": read out when a column sorts its rows largest first; {0} is the column.
+    /// </summary>
+    public const string DataGridSortedDescending = "DataGrid.SortedDescending";
+
+    /// <summary>"No longer sorted by {0}.": read out when a column stops sorting the rows; {0} is the column.
+    /// </summary>
+    public const string DataGridUnsorted = "DataGrid.Unsorted";
+
+    /// <summary>"sort {0} of {1}, {2}": tells which of several sorts a column is; {0} is its place, {1} the count and
+    /// {2} its direction.</summary>
+    public const string DataGridSortPosition = "DataGrid.SortPosition";
+
+    /// <summary>"ascending": a sort from smallest to largest.</summary>
+    public const string DataGridAscending = "DataGrid.Ascending";
+
+    /// <summary>"descending": a sort from largest to smallest.</summary>
+    public const string DataGridDescending = "DataGrid.Descending";
+
     /// <summary>"Loading…": shown while a tree row loads its children.</summary>
     public const string TreeViewLoading = "TreeView.Loading";
 
@@ -460,6 +513,22 @@ public static class TbStrings
         [ToastDismiss] = "Dismiss",
         [ToastRegion] = "Notifications",
         [ToolbarMore] = "More",
+        [DataGridLoading] = "Loading…",
+        [DataGridLoadFailed] = "Couldn't load the rows.",
+        [DataGridRetry] = "Retry",
+        [DataGridEmpty] = "Nothing to show.",
+        [DataGridSelectAll] = "Select all rows",
+        [DataGridSelect] = "Select",
+        [DataGridSelectRow] = "Select {0}",
+        [DataGridRange] = "{0}–{1} of {2}",
+        [DataGridPages] = "Pages of {0}",
+        [DataGridPageSize] = "Rows per page",
+        [DataGridSortedAscending] = "Sorted by {0}, ascending.",
+        [DataGridSortedDescending] = "Sorted by {0}, descending.",
+        [DataGridUnsorted] = "No longer sorted by {0}.",
+        [DataGridSortPosition] = "sort {0} of {1}, {2}",
+        [DataGridAscending] = "ascending",
+        [DataGridDescending] = "descending",
         [TreeViewLoading] = "Loading…",
         [TreeViewLoadFailed] = "Couldn't load these items.",
         [TreeViewRetry] = "Retry",

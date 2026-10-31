@@ -1,0 +1,582 @@
+using System.Globalization;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
+using Trailblazor.Primitives;
+
+namespace Trailblazor;
+
+/// <summary>Shows items as rows of a table, with columns that sort, pages, and rows that can be selected. Give it
+/// <see cref="Items"/> held in memory, or a <see cref="DataProvider"/> that loads a page at a time, and its columns as
+/// <see cref="TbColumn{TItem}"/>s.</summary>
+[CascadingTypeParameter(nameof(TItem))]
+public partial class TbDataGrid<TItem> : IAsyncDisposable
+{
+    private readonly List<TbColumn<TItem>> _columns = [];
+    private readonly Dictionary<object, TItem> _selection = [];
+    private readonly Dictionary<object, ElementReference> _rowRefs = [];
+    private List<TItem> _rows = [];
+    private List<GridSort> _sorts = [];
+    private int _total;
+    private int _page = 1;
+    private int? _pageSize;
+    private bool _loading;
+    private bool _failed;
+    private string? _loaded;
+    private CancellationTokenSource? _load;
+    private IReadOnlyList<GridSort>? _sortsFromParent;
+    private int? _pageFromParent;
+    private int? _pageSizeFromParent;
+    private IReadOnlyCollection<TItem>? _selectedFromParent;
+    private TItem? _selectedItemFromParent;
+    private (object Key, TaskCompletionSource Done)? _scrollAfterRender;
+    private ElementReference _table;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<DataGridEvents>? _events;
+    private bool _disposed;
+    private bool _columnsChanged;
+
+    /// <summary>The rows, held in memory. The grid sorts and pages them itself.</summary>
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>Loads the rows a page at a time, sorted as asked, in place of <see cref="Items"/>. A new request
+    /// cancels the last one. Call <see cref="RefreshAsync"/> to load again, such as when a filter changes.</summary>
+    [Parameter]
+    public Func<GridRequest, CancellationToken, Task<GridResult<TItem>>>? DataProvider { get; set; }
+
+    /// <summary>The columns, as <see cref="TbColumn{TItem}"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Gives each item a key that stays the same across loads, such as its id, so selection follows the item.
+    /// Defaults to the item itself, which suits items compared by value, such as records; each row's key must differ.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, object>? KeySelector { get; set; }
+
+    /// <summary>Names the table for screen readers.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>How many rows can be selected. Defaults to <see cref="GridSelectionMode.None"/>.</summary>
+    [Parameter]
+    public GridSelectionMode SelectionMode { get; set; }
+
+    /// <summary>The selected items. Bind it with <c>@bind-SelectedItems</c>.</summary>
+    [Parameter]
+    public IReadOnlyCollection<TItem>? SelectedItems { get; set; }
+
+    /// <summary>Raised when the selection changes.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyCollection<TItem>> SelectedItemsChanged { get; set; }
+
+    /// <summary>The selected item of a <see cref="GridSelectionMode.Single"/> grid. Bind it with
+    /// <c>@bind-SelectedItem</c>.</summary>
+    [Parameter]
+    public TItem? SelectedItem { get; set; }
+
+    /// <summary>Raised when the selected item changes.</summary>
+    [Parameter]
+    public EventCallback<TItem?> SelectedItemChanged { get; set; }
+
+    /// <summary>Lets a click on a row select it, or in a <see cref="GridSelectionMode.Multiple"/> grid select or
+    /// unselect it. Defaults to true.</summary>
+    [Parameter]
+    public bool RowClickSelects { get; set; } = true;
+
+    /// <summary>Raised when a row is clicked anywhere but on a button, link or field in it. Only a pointer can click a
+    /// row, so give anything this does a button in a cell too.</summary>
+    [Parameter]
+    public EventCallback<TItem> OnRowClick { get; set; }
+
+    /// <summary>Names a row's selection box for screen readers, as "Select" and this. Defaults to the first column's
+    /// text.</summary>
+    [Parameter]
+    public Func<TItem, string>? RowLabel { get; set; }
+
+    /// <summary>Extra CSS classes for a row.</summary>
+    [Parameter]
+    public Func<TItem, string?>? RowClass { get; set; }
+
+    /// <summary>The columns the rows sort by, in order. Bind it with <c>@bind-Sorts</c> to sort from code or to save
+    /// it.</summary>
+    [Parameter]
+    public IReadOnlyList<GridSort>? Sorts { get; set; }
+
+    /// <summary>Raised when the user sorts the rows.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<GridSort>> SortsChanged { get; set; }
+
+    /// <summary>How many rows a page holds. Null, the default, shows every row with no pages.</summary>
+    [Parameter]
+    public int? PageSize { get; set; }
+
+    /// <summary>Raised when the user picks another page size.</summary>
+    [Parameter]
+    public EventCallback<int?> PageSizeChanged { get; set; }
+
+    /// <summary>The page sizes the user can pick from, beside the pages.</summary>
+    [Parameter]
+    public IReadOnlyList<int>? PageSizes { get; set; }
+
+    /// <summary>The current page, from 1. Bind it with <c>@bind-Page</c>.</summary>
+    [Parameter]
+    public int Page { get; set; } = 1;
+
+    /// <summary>Raised when the page changes.</summary>
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+
+    /// <summary>Shades every other row.</summary>
+    [Parameter]
+    public bool Striped { get; set; }
+
+    /// <summary>How tall the rows are. <see cref="Size.Small"/> fits more rows. Defaults to <see cref="Size.Medium"/>.
+    /// </summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>The height the rows scroll in, as CSS, such as <c>"24rem"</c>; the header stays in view above them.
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>.</summary>
+    [Parameter]
+    public bool Loading { get; set; }
+
+    /// <summary>Shown instead of the rows when there are none.</summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    /// <summary>Raised when the <see cref="DataProvider"/> fails; the grid offers to try again.</summary>
+    [Parameter]
+    public EventCallback<Exception> OnLoadFailed { get; set; }
+
+    /// <summary>The words the grid shows and says to screen readers.</summary>
+    [Parameter]
+    public DataGridLabels Labels { get; set; } = new();
+
+    [Inject]
+    private JsModuleLoader Modules { get; set; } = default!;
+
+    [Inject]
+    private IBrowserService Browser { get; set; } = default!;
+
+    [Inject]
+    private ITbLocalizer Localizer { get; set; } = default!;
+
+    [Inject]
+    private IAnnouncer Announcer { get; set; } = default!;
+
+    private int PageCount => _pageSize is { } size ? Math.Max(1, (_total + size - 1) / size) : 1;
+
+    private int ColumnCount => _columns.Count + (SelectionMode == GridSelectionMode.None ? 0 : 1);
+
+    private bool IsLoading => Loading || _loading;
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Items is not null && DataProvider is not null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbDataGrid<TItem>)} takes {nameof(Items)} or a {nameof(DataProvider)}, not both.");
+        }
+
+        if (!ReferenceEquals(Sorts, _sortsFromParent))
+        {
+            _sortsFromParent = Sorts;
+            _sorts = [.. Sorts ?? []];
+        }
+
+        if (Page != _pageFromParent)
+        {
+            _pageFromParent = Page;
+            _page = Math.Max(1, Page);
+        }
+
+        if (PageSize != _pageSizeFromParent)
+        {
+            _pageSizeFromParent = PageSize;
+            _pageSize = PageSize is > 0 ? PageSize : null;
+        }
+
+        TakeSelectionFromParent();
+        await ShowAsync(force: false);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _columnsChanged = false;
+        try
+        {
+            if (firstRender && RendererInfo.IsInteractive)
+            {
+                await AttachAsync();
+            }
+
+            if (_scrollAfterRender is { } scroll)
+            {
+                _scrollAfterRender = null;
+                try
+                {
+                    if (_rows.Any(shown => Equals(KeyOf(shown), scroll.Key))
+                        && _rowRefs.TryGetValue(scroll.Key, out var row))
+                    {
+                        await Browser.ScrollIntoViewAsync(row);
+                    }
+                }
+                finally
+                {
+                    scroll.Done.TrySetResult();
+                }
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the grid went with it.
+        }
+    }
+
+    /// <summary>Loads the rows again from the <see cref="DataProvider"/>, or sorts and pages <see cref="Items"/> again
+    /// after they changed in place.</summary>
+    public async Task RefreshAsync()
+    {
+        await ShowAsync(force: true);
+        StateHasChanged();
+    }
+
+    /// <summary>Goes to the page that holds the row with this key, and scrolls the row into view. With a <see
+    /// cref="DataProvider"/>, only a row on the current page can be found.</summary>
+    public async Task ScrollToAsync(object key)
+    {
+        if (_pageSize is { } size && Items is not null
+            && Arranged().ToList().FindIndex(item => Equals(KeyOf(item), key)) is var index and >= 0)
+        {
+            await GoToPageAsync(index / size + 1);
+        }
+
+        _scrollAfterRender?.Done.TrySetResult();
+        var done = new TaskCompletionSource();
+        _scrollAfterRender = (key, done);
+        StateHasChanged();
+        await done.Task;
+    }
+
+    internal void AddColumn(TbColumn<TItem> column)
+    {
+        _columns.Add(column);
+        StateHasChanged();
+    }
+
+    internal void RemoveColumn(TbColumn<TItem> column)
+    {
+        if (!_disposed && _columns.Remove(column))
+        {
+            StateHasChanged();
+        }
+    }
+
+    // A column that reads a value made anew on every render reports a change on each one, so the grid renders again
+    // for its columns at most once until that render has finished; the rows still sort by every column that changed.
+    internal void ColumnChanged()
+    {
+        if (Items is not null)
+        {
+            Arrange();
+        }
+
+        if (!_columnsChanged)
+        {
+            _columnsChanged = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AttachAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/data-grid.js");
+        if (_disposed)
+        {
+            return;
+        }
+
+        _events = DotNetObjectReference.Create(new DataGridEvents(OnRowClickedAsync));
+        var handle = await module.InvokeAsync<IJSObjectReference?>("createDataGrid", _table, _events);
+        if (handle is not null && _disposed)
+        {
+            await handle.DisposeHandleAsync();
+            return;
+        }
+
+        _handle = handle;
+        StateHasChanged();
+    }
+
+    // In memory the rows are sorted and paged here; a provider is asked only when the request differs from the last.
+    private async Task ShowAsync(bool force)
+    {
+        if (DataProvider is null)
+        {
+            var page = _page;
+            Arrange();
+            if (_page != page)
+            {
+                await PageChanged.InvokeAsync(_page);
+            }
+
+            return;
+        }
+
+        var request = new GridRequest((_page - 1) * (_pageSize ?? 0), _pageSize, [.. _sorts]);
+        var asked = $"{request.StartIndex}|{request.Count}|{string.Join(",", _sorts)}";
+        if (!force && asked == _loaded)
+        {
+            return;
+        }
+
+        _loaded = asked;
+        _load?.Cancel();
+        var load = _load = new CancellationTokenSource();
+        _loading = true;
+        _failed = false;
+        GridResult<TItem>? result = null;
+        try
+        {
+            result = await DataProvider(request, load.Token);
+        }
+        catch (OperationCanceledException) when (load.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception exception)
+        {
+            _failed = true;
+            ShowRows([]);
+            await OnLoadFailed.InvokeAsync(exception);
+        }
+        finally
+        {
+            if (_load == load)
+            {
+                _loading = false;
+            }
+        }
+
+        // Rows that can't be told apart are the app's mistake, not a failed load, so they throw outside the catch.
+        if (result is null || load.IsCancellationRequested)
+        {
+            return;
+        }
+
+        ShowRows([.. result.Items]);
+        _total = result.TotalCount;
+
+        // Fewer rows than before can leave the page past the last one, so the last page shows instead.
+        if (_page > PageCount)
+        {
+            await GoToPageAsync(PageCount);
+        }
+    }
+
+    private void Arrange()
+    {
+        var arranged = Arranged().ToList();
+        _total = arranged.Count;
+        _page = Math.Min(_page, PageCount);
+        ShowRows(_pageSize is { } size ? [.. arranged.Skip((_page - 1) * size).Take(size)] : arranged);
+    }
+
+    // A row is found by its key's text when the browser reports a click, so no two rows may share one. A row that
+    // isn't shown has no element, so its reference goes before anything can scroll to it.
+    private void ShowRows(List<TItem> rows)
+    {
+        if (rows.Select(IdOf).Distinct().Count() != rows.Count)
+        {
+            throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} has two rows with the same key; " +
+                $"give it a {nameof(KeySelector)} that gives each item a different key, such as its id.");
+        }
+
+        _rows = rows;
+        var shown = rows.Select(KeyOf).ToHashSet();
+        foreach (var gone in _rowRefs.Keys.Where(key => !shown.Contains(key)).ToList())
+        {
+            _rowRefs.Remove(gone);
+        }
+    }
+
+    private IEnumerable<TItem> Arranged()
+    {
+        IEnumerable<TItem> items = Items ?? [];
+        IOrderedEnumerable<TItem>? sorted = null;
+        foreach (var sort in _sorts)
+        {
+            if (_columns.FirstOrDefault(column => column.Key == sort.Column) is not { CanSort: true } column)
+            {
+                continue;
+            }
+
+            Func<TItem, object?> key = column.SortValueOf;
+            sorted = (sorted, sort.Direction) switch
+            {
+                (null, SortDirection.Ascending) => items.OrderBy(key, Comparer<object?>.Default),
+                (null, _) => items.OrderByDescending(key, Comparer<object?>.Default),
+                (_, SortDirection.Ascending) => sorted.ThenBy(key, Comparer<object?>.Default),
+                _ => sorted.ThenByDescending(key, Comparer<object?>.Default),
+            };
+        }
+
+        return sorted ?? items;
+    }
+
+    // A plain click sorts by the column alone, then turns it around, then stops; Shift adds it to the sorts instead.
+    private async Task SortAsync(TbColumn<TItem> column, MouseEventArgs args)
+    {
+        var at = _sorts.FindIndex(sort => sort.Column == column.Key);
+        List<GridSort> sorts = [.. _sorts];
+        if (!args.ShiftKey && !(at == 0 && _sorts.Count == 1))
+        {
+            sorts.Clear();
+            at = -1;
+        }
+
+        if (at < 0)
+        {
+            sorts.Add(new(column.Key, SortDirection.Ascending));
+        }
+        else if (sorts[at].Direction == SortDirection.Ascending)
+        {
+            sorts[at] = sorts[at] with { Direction = SortDirection.Descending };
+        }
+        else
+        {
+            sorts.RemoveAt(at);
+        }
+
+        _sorts = sorts;
+        await SortsChanged.InvokeAsync(_sorts);
+        Announcer.Polite(sorts.FirstOrDefault(sort => sort.Column == column.Key) is { } now
+            ? Format(now.Direction == SortDirection.Ascending ? TbStrings.DataGridSortedAscending
+                : TbStrings.DataGridSortedDescending, column.Heading)
+            : Format(TbStrings.DataGridUnsorted, column.Heading));
+        if (_page != 1)
+        {
+            await GoToPageAsync(1);
+            return;
+        }
+
+        await ShowAsync(force: false);
+    }
+
+    private async Task GoToPageAsync(int page)
+    {
+        _page = Math.Clamp(page, 1, PageCount);
+        await PageChanged.InvokeAsync(_page);
+        await ShowAsync(force: false);
+    }
+
+    private async Task ChangePageSizeAsync(int size)
+    {
+        _pageSize = size;
+        _page = 1;
+        await PageSizeChanged.InvokeAsync(size);
+        await PageChanged.InvokeAsync(1);
+        await ShowAsync(force: false);
+    }
+
+    private void TakeSelectionFromParent()
+    {
+        if (SelectionMode == GridSelectionMode.Single && !EqualityComparer<TItem>.Default.Equals(SelectedItem,
+                _selectedItemFromParent))
+        {
+            _selectedItemFromParent = SelectedItem;
+            _selection.Clear();
+            if (SelectedItem is { } item)
+            {
+                _selection[KeyOf(item)] = item;
+            }
+        }
+
+        if (!ReferenceEquals(SelectedItems, _selectedFromParent))
+        {
+            _selectedFromParent = SelectedItems;
+            _selection.Clear();
+            foreach (var item in SelectedItems ?? [])
+            {
+                _selection[KeyOf(item)] = item;
+            }
+        }
+    }
+
+    private bool IsSelected(TItem item) => _selection.ContainsKey(KeyOf(item));
+
+    private async Task SetSelectionAsync(IEnumerable<TItem> items)
+    {
+        _selection.Clear();
+        foreach (var item in items)
+        {
+            _selection[KeyOf(item)] = item;
+        }
+
+        IReadOnlyCollection<TItem> selected = [.. _selection.Values];
+        await SelectedItemsChanged.InvokeAsync(selected);
+        await SelectedItemChanged.InvokeAsync(selected.FirstOrDefault());
+    }
+
+    private Task ToggleAsync(TItem item) => SelectionMode == GridSelectionMode.Single
+        ? SetSelectionAsync([item])
+        : SetSelectionAsync(IsSelected(item) ? _selection.Values.Where(other => !Equals(KeyOf(other), KeyOf(item)))
+            : [.. _selection.Values, item]);
+
+    // The header box selects every row on the page, or unselects them when all already are.
+    private Task ToggleAllAsync() => AllSelected
+        ? SetSelectionAsync(_selection.Values.Where(item => !_rows.Any(row => Equals(KeyOf(row), KeyOf(item)))))
+        : SetSelectionAsync([.. _selection.Values, .. _rows.Where(row => !IsSelected(row))]);
+
+    private bool AllSelected => _rows.Count > 0 && _rows.All(IsSelected);
+
+    private bool SomeSelected => !AllSelected && _rows.Any(IsSelected);
+
+    private async Task OnRowClickedAsync(string id)
+    {
+        if (_rows.FirstOrDefault(row => IdOf(row) == id) is not { } item)
+        {
+            return;
+        }
+
+        await OnRowClick.InvokeAsync(item);
+        if (RowClickSelects && SelectionMode != GridSelectionMode.None)
+        {
+            await ToggleAsync(item);
+        }
+
+        StateHasChanged();
+    }
+
+    private object KeyOf(TItem item) => KeySelector?.Invoke(item) ?? item!;
+
+    private string IdOf(TItem item) => Convert.ToString(KeyOf(item), CultureInfo.InvariantCulture) ?? "";
+
+    private string LabelOf(TItem item) => RowLabel?.Invoke(item)
+        ?? _columns.Select(column => column.TextOf(item)).FirstOrDefault(text => text is not null) ?? IdOf(item);
+
+    private string Format(string key, params object?[] args) =>
+        string.Format(CultureInfo.CurrentCulture, Localizer[key], args);
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        _load?.Cancel();
+        _scrollAfterRender?.Done.TrySetResult();
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
+}

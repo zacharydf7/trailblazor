@@ -4309,6 +4309,170 @@
         }
     }
 
+    /* A table and a data grid share their look; the grid adds sorting, selection and pages around it. */
+    .tb-table,
+    .tb-data-grid__table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: var(--tb-color-text);
+        font-family: var(--tb-font-family);
+        font-size: var(--tb-font-size-sm);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tb-table :is(th, td),
+    .tb-data-grid__table :is(th, td) {
+        box-sizing: border-box;
+        height: var(--tb-row-height);
+        padding: var(--tb-space-1) var(--tb-space-3);
+        border-block-end: 1px solid var(--tb-border-subtle);
+        text-align: start;
+        vertical-align: middle;
+    }
+
+    .tb-table th,
+    .tb-data-grid__table th {
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text-muted);
+        font-weight: var(--tb-font-weight-semibold);
+        white-space: nowrap;
+    }
+
+    .tb-table tbody th {
+        color: var(--tb-color-text);
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-table--small :is(th, td),
+    .tb-data-grid--small .tb-data-grid__table :is(th, td) {
+        height: calc(var(--tb-row-height) - 0.75rem);
+        padding-block: 0;
+    }
+
+    .tb-table--large :is(th, td),
+    .tb-data-grid--large .tb-data-grid__table :is(th, td) {
+        height: calc(var(--tb-row-height) + 0.5rem);
+    }
+
+    .tb-table--striped tbody tr:nth-child(even),
+    .tb-data-grid--striped .tb-data-grid__row:nth-child(even) {
+        background: var(--tb-color-surface-sunken);
+    }
+
+    .tb-data-grid__row:hover {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-data-grid__row--selected,
+    .tb-data-grid__row--selected:hover {
+        background: var(--tb-color-primary-subtle);
+    }
+
+    .tb-data-grid__scroll {
+        overflow: auto;
+    }
+
+    /* Rows that scroll in a set height keep the header in view above them. */
+    .tb-data-grid--scrolls thead th {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 1;
+    }
+
+    .tb-data-grid__header--center,
+    .tb-data-grid__cell--center {
+        text-align: center;
+    }
+
+    .tb-data-grid__header--end,
+    .tb-data-grid__cell--end {
+        text-align: end;
+    }
+
+    .tb-data-grid__header[aria-sort],
+    .tb-data-grid__header:has(.tb-data-grid__sort-icon) {
+        color: var(--tb-color-text);
+    }
+
+    .tb-data-grid__sort {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+        padding: 0;
+        border: none;
+        border-radius: var(--tb-radius-sm);
+        background: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .tb-data-grid__sort:hover {
+        color: var(--tb-color-text);
+        text-decoration: underline;
+    }
+
+    .tb-data-grid__sort:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-data-grid__sort-order {
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-data-grid__select {
+        width: 2.75rem;
+        text-align: center;
+    }
+
+    .tb-data-grid__check {
+        width: 1rem;
+        height: 1rem;
+        margin: 0;
+        accent-color: var(--tb-color-primary);
+        vertical-align: middle;
+    }
+
+    .tb-data-grid__status td {
+        padding-block: var(--tb-space-6);
+        color: var(--tb-color-text-muted);
+        text-align: center;
+    }
+
+    .tb-data-grid--loading .tb-data-grid__row {
+        opacity: 0.55;
+    }
+
+    .tb-data-grid__pager {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--tb-space-2) var(--tb-space-4);
+        padding-block: var(--tb-space-2);
+    }
+
+    .tb-data-grid__summary {
+        margin-inline-end: auto;
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-data-grid__page-size.tb-field {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    @media (forced-colors: active) {
+        .tb-data-grid__row--selected {
+            outline: 2px solid Highlight;
+            outline-offset: -2px;
+        }
+    }
+
     .tb-tree {
         --tb-tree-indent: 1.25rem;
         position: relative;

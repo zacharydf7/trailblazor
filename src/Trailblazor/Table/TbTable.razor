@@ -1,0 +1,23 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<table @attributes="AdditionalAttributes" style="@Style"
+       class="@ClassNames.Join("tb-table", ClassNames.Modifier("tb-table", Size), Striped ? "tb-table--striped" : null,
+                  Class)">
+    @ChildContent
+</table>
+
+@code {
+    /// <summary>The table's markup: a <c>&lt;caption&gt;</c> or <c>aria-label</c> to name it, a <c>&lt;thead&gt;</c>
+    /// with <c>&lt;th scope="col"&gt;</c> headers, and a <c>&lt;tbody&gt;</c> of rows.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Shades every other row.</summary>
+    [Parameter]
+    public bool Striped { get; set; }
+
+    /// <summary>How tall the rows are. Defaults to <see cref="Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+}

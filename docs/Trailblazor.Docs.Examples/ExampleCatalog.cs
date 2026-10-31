@@ -1133,6 +1133,57 @@ public static class ExampleCatalog
                 + "scroll until the row renders (a drag needs both rows in view together), and rows also carry "
                 + "`data-index` and `data-inside`, the number of rows in their branch.",
         },
+        new("data-grid", "Data grid", ExampleCategory.Content,
+            "Shows items as rows of a table, with columns that sort, pages, and rows that can be selected.",
+            typeof(DataGridExample))
+        {
+            Api =
+            [
+                typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),
+                typeof(GridResult<>), typeof(GridSort),
+            ],
+            Accessibility =
+            [
+                "It is a native `table` named by `AriaLabel`, with a header cell for each column, so screen readers "
+                    + "read each cell with its column.",
+                "A sortable column's header is a button. A click sorts by it alone, then turns it around, then stops; "
+                    + "Shift adds it to the sorts. The first sort sets `aria-sort` on its header, later ones say "
+                    + "their place, and every change is read out, such as \"Sorted by Name, ascending.\"",
+                "`Multiple` selection gives each row a checkbox named \"Select\" and the row's label, and the header "
+                    + "a box for every row on the page that shows \"mixed\" when only some are. `Single` uses radio "
+                    + "buttons. Clicking a row selects it too, unless the click lands on a button, link or field in "
+                    + "it.",
+                "Pages come with a line such as \"1–5 of 7\" and a `TbPagination`; `PageSizes` adds a list of page "
+                    + "sizes.",
+                "While rows load the table is `aria-busy`. A `DataProvider` gets the page and sorts it asks for, and "
+                    + "a new request cancels the last one. A failed load offers to try again, and `RefreshAsync` "
+                    + "loads again after a filter changes.",
+                "Every control in it is a native button, link or input, reached with Tab. Only a pointer clicks a "
+                    + "row, so whatever `OnRowClick` does needs a button in a cell too.",
+            ],
+            Target = new("table", "Trails"),
+            Blocks = ["tb-data-grid"],
+            TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
+                + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
+                + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
+                + "`SortAsync(\"Name\", descending: true)`, `SelectAsync(...)` and `GoToPageAsync(2)` drive "
+                + "it. Rows carry `data-key` and `data-selected`, and cells `data-column`. In bUnit, find rows with "
+                + "`tr[data-part=row]` and their key.",
+        },
+        new("table", "Table", ExampleCategory.Content,
+            "A plain table written as markup, with the data grid's look.", typeof(TableExample))
+        {
+            Api = [typeof(TbTable)],
+            Accessibility =
+            [
+                "It is a native `table`: name it with a `<caption>` or `aria-label`, and give headers `scope`.",
+                "For rows that sort, page or select, use the data grid.",
+            ],
+            Target = new("table", "Opening hours"),
+            Blocks = ["tb-table"],
+            TestingTip = "Find it by role and name, `GetByRole(AriaRole.Table, new() { Name = \"Opening hours\" })`, "
+                + "and its cells with `GetByRole(AriaRole.Cell, ...)`.",
+        },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
                 + "page number.", typeof(PaginationExample))

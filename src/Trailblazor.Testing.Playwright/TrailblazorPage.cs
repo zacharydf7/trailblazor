@@ -39,6 +39,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbPagination</c> with this accessible name.</summary>
     public TbPaginationLocator Pagination(string name) => new(page, name);
 
+    /// <summary>The <c>TbDataGrid</c> whose table has this accessible name.</summary>
+    public TbGridLocator Grid(string name) => new(page, name);
+
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(page, trigger);
 }
@@ -503,6 +506,73 @@ public sealed class TbListBoxLocator(IPage page, string label)
         }
     }
 
+}
+
+/// <summary>A <c>TbDataGrid</c>, found by its table's accessible name. Rows are found by the exact text of one of
+/// their cells, and columns by their header's title.</summary>
+public sealed class TbGridLocator(IPage page, string name)
+{
+    private ILocator Table => page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
+
+    private ILocator Root => page.Locator(".tb-data-grid").Filter(new() { Has = Table });
+
+    /// <summary>The row with a cell whose text is exactly this.</summary>
+    public ILocator Row(string cell) => Table.Locator("tbody tr[data-part=row]").Filter(new()
+    {
+        Has = page.Locator("td", new() { HasTextRegex = new Regex($"^{Regex.Escape(cell)}$") }),
+    });
+
+    /// <summary>The cell in the column with this title, of the row with a cell whose text is exactly
+    /// <paramref name="row"/>.</summary>
+    public async Task<ILocator> CellAsync(string row, string column)
+    {
+        var id = await Header(column).GetAttributeAsync("data-column");
+        return Row(row).Locator($"td[data-column=\"{id}\"]");
+    }
+
+    /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it says so.
+    /// </summary>
+    public async Task SortAsync(string column, bool descending = false)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var header = Header(column);
+        var wanted = descending ? "descending" : "ascending";
+        // A plain click sorts by the column alone; after that it turns the column around, then stops sorting by it.
+        const string state = "header => `${header.getAttribute('aria-sort')}|${header.closest('table')"
+            + ".querySelectorAll('.tb-data-grid__sort-order').length}`";
+        for (var clicks = 0; clicks < 4; clicks++)
+        {
+            var before = await header.EvaluateAsync<string>(state);
+            if (before == $"{wanted}|0")
+            {
+                return;
+            }
+
+            await header.Locator("[data-part=sort]").ClickAsync();
+            await page.WaitForFunctionAsync($"([header, before]) => ({state})(header) !== before",
+                new object[] { await header.ElementHandleAsync(), before });
+        }
+
+        await Assertions.Expect(header).ToHaveAttributeAsync("aria-sort", wanted);
+    }
+
+    /// <summary>Selects the row with a cell whose text is exactly this, with its checkbox or radio button.</summary>
+    public async Task SelectAsync(string row)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        await Row(row).Locator("[data-part=select] input").CheckAsync();
+        await Assertions.Expect(Row(row)).ToHaveAttributeAsync("data-selected", "");
+    }
+
+    /// <summary>Goes to this page of the rows and waits until it is current.</summary>
+    public async Task GoToPageAsync(int number)
+    {
+        var pages = Root.Locator("[data-part=pager] nav");
+        await Assertions.Expect(pages).ToHaveAttributeAsync("aria-label", new Regex("."));
+        await new TbPaginationLocator(page, (await pages.GetAttributeAsync("aria-label"))!).GoToPageAsync(number);
+    }
+
+    private ILocator Header(string column) => Table.Locator($"thead th[data-title=\"{column}\"]");
 }
 
 /// <summary>A <c>TbPagination</c>, found by its accessible name.</summary>
