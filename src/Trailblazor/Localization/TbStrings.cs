@@ -19,6 +19,9 @@ public static class TbStrings
     /// <summary>"No matches": shown when an autocomplete finds nothing.</summary>
     public const string AutocompleteNoResults = "Autocomplete.NoResults";
 
+    /// <summary>"Couldn't load suggestions.": shown and read out when an autocomplete's search fails.</summary>
+    public const string AutocompleteSearchFailed = "Autocomplete.SearchFailed";
+
     /// <summary>"Type to search": shown before the user has typed enough for suggestions.</summary>
     public const string AutocompleteTypeToSearch = "Autocomplete.TypeToSearch";
 
@@ -413,6 +416,7 @@ public static class TbStrings
         [AutocompleteClear] = "Clear",
         [AutocompleteSearching] = "Searching…",
         [AutocompleteNoResults] = "No matches",
+        [AutocompleteSearchFailed] = "Couldn't load suggestions.",
         [AutocompleteTypeToSearch] = "Type to search",
         [AutocompleteResults] = "Suggestions: {0}",
         [ChipRemove] = "Remove",

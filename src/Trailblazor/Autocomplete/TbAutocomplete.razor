@@ -23,6 +23,7 @@
             {
                 <div data-part="status" class="tb-autocomplete__status">
                     @(_searching ? SearchingText ?? Localizer[TbStrings.AutocompleteSearching]
+                        : _failed ? SearchFailedText ?? Localizer[TbStrings.AutocompleteSearchFailed]
                         : _searched ? NoResultsText ?? Localizer[TbStrings.AutocompleteNoResults]
                         : TypeToSearchText ?? Localizer[TbStrings.AutocompleteTypeToSearch])
                 </div>

@@ -216,6 +216,32 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public async Task Expand_ShouldLoadAgain_WhenTheRowReopensBeforeItsCancelledLoadEnds()
+    {
+        var loads = new List<TaskCompletionSource<IEnumerable<Place>>>();
+        var failures = new List<Exception>();
+        var cut = RenderPlaces([new(1, "North")], parameters => parameters
+            .Add(tree => tree.OnLoadFailed, (Exception failure) => failures.Add(failure))
+            .Add(tree => tree.LoadChildrenAsync, (_, _) =>
+            {
+                loads.Add(new TaskCompletionSource<IEnumerable<Place>>());
+                return loads[^1].Task;
+            }), nested: false);
+        Toggle(cut, "1");
+        Toggle(cut, "1");
+        Toggle(cut, "1");
+
+        // The first load ignored its token and ends with a provider's own error for the cancel.
+        await cut.InvokeAsync(() => loads[0].SetException(new InvalidOperationException("Cancelled upstream")));
+        cut.WaitForAssertion(() => Assert.Equal(2, loads.Count));
+        Assert.Single(cut.FindAll("[data-part=loading]"));
+        await cut.InvokeAsync(() => loads[1].SetResult([new(2, "Ridge")]));
+
+        cut.WaitForAssertion(() => Assert.Equal(["North", "Ridge"], Texts(cut)));
+        Assert.Empty(failures);
+    }
+
+    [Fact]
     public async Task Expand_ShouldOfferToRetryAndReportTheError_WhenLoadingFails()
     {
         var failures = new List<Exception>();

@@ -16,6 +16,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private List<TValue> _results = [];
     private bool _searching;
     private bool _searched;
+    private bool _failed;
     private CancellationTokenSource? _search;
     private int? _announcedCount;
     private IJSObjectReference? _handle;
@@ -83,6 +84,16 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     /// cref="TbStrings.AutocompleteNoResults"/>, "No matches" in English.</summary>
     [Parameter]
     public string? NoResultsText { get; set; }
+
+    /// <summary>Shown in the list, and read out, when <see cref="SearchFunc"/> fails. Defaults to the app's text for
+    /// <see cref="TbStrings.AutocompleteSearchFailed"/>, "Couldn't load suggestions." in English.</summary>
+    [Parameter]
+    public string? SearchFailedText { get; set; }
+
+    /// <summary>Raised when <see cref="SearchFunc"/> fails. The field stays usable, and typing again searches again.
+    /// </summary>
+    [Parameter]
+    public EventCallback<Exception> OnSearchFailed { get; set; }
 
     /// <summary>Shown in the list before the user has typed enough to search. Defaults to the app's text for <see
     /// cref="TbStrings.AutocompleteTypeToSearch"/>, "Type to search" in English.</summary>
@@ -209,7 +220,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private void StopSearch()
     {
         _search?.Cancel();
-        _searching = false;
+        _searching = _failed = false;
     }
 
     private async Task SearchAsync()
@@ -218,6 +229,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
         _search?.Dispose();
         _search = new CancellationTokenSource();
         var token = _search.Token;
+        _failed = false;
         if (_text.Length < MinCharacters)
         {
             _results = [];
@@ -252,9 +264,18 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
                     ResultsAnnouncement ?? Localizer[TbStrings.AutocompleteResults], _results.Count));
             }
         }
-        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        // A search the user moved on from ends quietly, even when it reports the cancel its own way.
+        catch (Exception) when (token.IsCancellationRequested)
         {
-            // The user typed again, and that search is the one that counts.
+        }
+        catch (Exception exception)
+        {
+            _results = [];
+            _searching = _searched = false;
+            _failed = true;
+            _announcedCount = null;
+            Announcer.Polite(SearchFailedText ?? Localizer[TbStrings.AutocompleteSearchFailed]);
+            await OnSearchFailed.InvokeAsync(exception);
         }
     }
 

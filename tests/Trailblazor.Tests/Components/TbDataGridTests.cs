@@ -377,6 +377,25 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task DataProvider_ShouldIgnoreAReplacedLoadsFailure_WhenItEndsAfterTheNewerLoad()
+    {
+        var first = new TaskCompletionSource<GridResult<Trail>>();
+        var failures = new List<Exception>();
+        var calls = 0;
+        var cut = RenderProvided((_, _) => ++calls == 1 ? first.Task
+                : Task.FromResult(new GridResult<Trail>([.. Trails.Take(2)], Trails.Count)),
+            parameters => parameters.Add(grid => grid.OnLoadFailed, (Exception error) => failures.Add(error)));
+        cut.Find("th[data-column=Name] button").Click();
+
+        // The replaced load ends with a provider's own error for the cancel.
+        await cut.InvokeAsync(() => first.SetException(new InvalidOperationException("Cancelled upstream")));
+
+        Assert.Empty(failures);
+        Assert.Empty(cut.FindAll("[data-part=failed]"));
+        Assert.Equal(2, cut.FindAll("tr[data-part=row]").Count);
+    }
+
+    [Fact]
     public void DataProvider_ShouldOfferToTryAgainAndRaiseTheFailure_WhenALoadFails()
     {
         Exception? failure = null;

@@ -348,7 +348,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             result = await DataProvider(request, load.Token);
         }
-        catch (OperationCanceledException) when (load.IsCancellationRequested)
+        // A load a newer one replaced ends quietly, even when its provider reports the cancel its own way.
+        catch (Exception) when (load.IsCancellationRequested)
         {
             return;
         }

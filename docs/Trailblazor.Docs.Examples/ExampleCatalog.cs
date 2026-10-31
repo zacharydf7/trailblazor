@@ -763,6 +763,8 @@ public static class ExampleCatalog
                     + "opens without moving. The arrow keys never take the caret out of the text.",
                 "While a search runs the list is `aria-busy` and says \"Searching…\"; when it finishes, the number "
                     + "of suggestions is announced. Every word can be changed.",
+                "A search that fails says \"Couldn't load suggestions.\" in the list and reads it out, raises "
+                    + "`OnSearchFailed`, and leaves the field usable: typing again searches again.",
                 "Before the page is interactive it is a plain text input, so a static form still posts what was "
                     + "typed.",
                 "`ReadOnly` keeps the list closed and hides the clear button.",

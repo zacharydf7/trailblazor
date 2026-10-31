@@ -1161,9 +1161,10 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
         {
             _loaded[node.Key] = [.. await load(node.Item, cancel.Token)];
         }
-        catch (OperationCanceledException) when (cancel.IsCancellationRequested)
+        catch (Exception) when (cancel.IsCancellationRequested)
         {
-            // The row was closed while its children loaded, so they load again when it opens.
+            // The row was closed while its children loaded, so they load again when it opens; a loader may report
+            // the cancel with its own exception.
         }
         catch (Exception exception)
         {
@@ -1177,6 +1178,13 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
         if (_disposed)
         {
+            return;
+        }
+
+        // A row opened again before its cancelled load ended starts a new one now.
+        if (cancel.IsCancellationRequested && _expanded.Contains(node.Key) && !_loaded.ContainsKey(node.Key))
+        {
+            await LoadIfNeededAsync(node);
             return;
         }
 

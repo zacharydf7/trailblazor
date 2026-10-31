@@ -113,6 +113,63 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
+    public async Task Search_ShouldSayTheSuggestionsFailedAndRaiseTheError_WhenTheSearchThrows()
+    {
+        var announcer = Render<AnnouncerHost>();
+        Exception? failure = null;
+        var calls = 0;
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
+            .Add(field => field.OnSearchFailed, (Exception error) => failure = error)
+            .Add(field => field.SearchFunc, (_, _) => ++calls == 1
+                ? Task.FromException<IEnumerable<string>>(new HttpRequestException("Down"))
+                : Task.FromResult<IEnumerable<string>>(Trails)));
+
+        await cut.InvokeAsync(() => cut.Find("input").Input("pi"));
+        cut.WaitForAssertion(() =>
+            Assert.Equal("Couldn't load suggestions.", cut.Find("[data-part=status]").TextContent.Trim()));
+        Assert.Equal("Down", failure?.Message);
+        Assert.False(cut.Find("[role=listbox]").HasAttribute("aria-busy"));
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Couldn't load suggestions.", announcer.Find("[role=status] p").TextContent));
+        await cut.InvokeAsync(() => cut.Find("input").Input("pin"));
+
+        cut.WaitForAssertion(() => Assert.Equal(4, cut.FindAll("[role=option]").Count));
+    }
+
+    [Fact]
+    public async Task Search_ShouldIgnoreAnEarlierSearchsFailure_WhenItEndsAfterTheUserTypedAgain()
+    {
+        var first = new TaskCompletionSource<IEnumerable<string>>();
+        Exception? failure = null;
+        var calls = 0;
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
+            .Add(field => field.OnSearchFailed, (Exception error) => failure = error)
+            .Add(field => field.SearchFunc, (_, _) => ++calls == 1 ? first.Task
+                : Task.FromResult<IEnumerable<string>>(Trails)));
+        var typed = cut.InvokeAsync(() => cut.Find("input").Input("pi"));
+        await cut.InvokeAsync(() => cut.Find("input").Input("pin"));
+
+        await cut.InvokeAsync(() => first.SetException(new InvalidOperationException("Cancelled upstream")));
+        await typed;
+
+        Assert.Null(failure);
+        cut.WaitForAssertion(() => Assert.Equal(4, cut.FindAll("[role=option]").Count));
+    }
+
+    [Fact]
+    public async Task Search_ShouldAskForMoreTyping_WhenAFailedSearchsTextBecomesTooShort()
+    {
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.DebounceInterval, 0)
+            .Add(field => field.MinCharacters, 2)
+            .Add(field => field.SearchFunc, (_, _) => Task.FromException<IEnumerable<string>>(new IOException())));
+        await cut.InvokeAsync(() => cut.Find("input").Input("pi"));
+
+        await cut.InvokeAsync(() => cut.Find("input").Input("p"));
+
+        Assert.Equal("Type to search", cut.Find("[data-part=status]").TextContent.Trim());
+    }
+
+    [Fact]
     public async Task Browse_ShouldShowThatItIsSearchingThenTheSuggestions_WhenTheListOpensWithoutTyping()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/autocomplete.js");
