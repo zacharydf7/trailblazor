@@ -53,10 +53,38 @@
     [Parameter]
     public bool HideStepButtons { get; set; }
 
+    /// <summary>A .NET number format, such as <c>N2</c> for grouped digits, <c>C</c> for currency or <c>P0</c> for a
+    /// percent. Once the page is interactive, the field then shows and reads the value in <see cref="Culture"/>'s
+    /// format; in a percent field, a typed 15 is 15%. Without one, or before then, it is the browser's own number box,
+    /// which writes numbers in the browser's language. A custom format with words in it, such as <c>0.0 kg</c>, can't
+    /// be read back; put the unit in the <see cref="End"/> slot instead.</summary>
+    [Parameter]
+    public string? Format { get; set; }
+
+    /// <summary>The culture <see cref="Format"/> writes and reads numbers in. Defaults to the current culture.
+    /// </summary>
+    [Parameter]
+    public CultureInfo? Culture { get; set; }
+
+    /// <summary>Rounds a typed value to this many decimal places, half away from zero.</summary>
+    [Parameter]
+    public int? Decimals { get; set; }
+
+    /// <summary>Moves a typed value outside <see cref="Min"/> and <see cref="Max"/> to the nearer limit instead of
+    /// showing an error.</summary>
+    [Parameter]
+    public bool ClampToRange { get; set; }
+
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
 
     private static Type NumberType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+    private CultureInfo NumberCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    // A formatted field is a text box that acts as a spin button, since a number box can't show grouping or symbols.
+    // Without a circuit it stays the number box, since Blazor's form binding reads posted numbers in no culture.
+    private bool Formatted => Format is not null && RendererInfo.IsInteractive;
 
     // Built here to mark the events as updating value, as @bind does, so a round trip can't undo newer steps.
     private RenderFragment Input => builder =>
@@ -66,24 +94,44 @@
         builder.AddAttribute(2, "data-part", "input");
         builder.AddAttribute(3, "id", InputId);
         builder.AddAttribute(4, "name", InputNameAttribute);
-        builder.AddAttribute(5, "type", "number");
+        builder.AddAttribute(5, "type", Formatted ? "text" : "number");
         builder.AddAttribute(6, "value", Text);
-        builder.AddAttribute(7, "min", Format(Min));
-        builder.AddAttribute(8, "max", Format(Max));
-        builder.AddAttribute(9, "step", Format(Step));
+        builder.AddAttribute(7, "min", Formatted ? null : Invariant(Min));
+        builder.AddAttribute(8, "max", Formatted ? null : Invariant(Max));
+        // Before the page is interactive, a formatted field's number box takes any number, as the formatted field does.
+        builder.AddAttribute(9, "step", Formatted ? null : Format is not null ? "any" : Invariant(Step));
         builder.AddAttribute(10, "disabled", Disabled);
         builder.AddAttribute(11, "readonly", ReadOnly);
         builder.AddAttribute(12, "aria-required", Required ? "true" : null);
         builder.AddAttribute(13, "aria-invalid", Errors.Count > 0 ? "true" : null);
         builder.AddAttribute(14, "aria-describedby", InputDescribedBy);
         builder.AddAttribute(15, "class", ClassNames.Join("tb-field__input", Classes?.Input));
-        builder.AddAttribute(16, "ontbnumberchange",
-            EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
-        builder.SetUpdatesAttributeName("value");
-        builder.AddAttribute(17, "ontbnumberleave",
-            EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
-        builder.SetUpdatesAttributeName("value");
-        builder.AddElementReferenceCapture(18, element => _input = element);
+        if (Formatted)
+        {
+            builder.AddAttribute(16, "inputmode", "decimal");
+            builder.AddAttribute(17, "autocomplete", "off");
+            builder.AddAttribute(18, "role", "spinbutton");
+            builder.AddAttribute(19, "aria-valuenow", TryGetSteppable(out var number) ? Invariant(number) : null);
+            builder.AddAttribute(20, "aria-valuemin", Invariant(Min));
+            builder.AddAttribute(21, "aria-valuemax", Invariant(Max));
+            builder.AddAttribute(22, "aria-valuetext", Text);
+            builder.AddAttribute(23, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this,
+                change => SetTextAsync(change.Value as string)));
+            builder.SetUpdatesAttributeName("value");
+            builder.AddAttribute(24, "onkeydown",
+                EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDownAsync));
+        }
+        else
+        {
+            builder.AddAttribute(25, "ontbnumberchange",
+                EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
+            builder.SetUpdatesAttributeName("value");
+            builder.AddAttribute(26, "ontbnumberleave",
+                EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
+            builder.SetUpdatesAttributeName("value");
+        }
+
+        builder.AddElementReferenceCapture(27, element => _input = element);
         builder.CloseElement();
     };
 
@@ -102,6 +150,12 @@
             throw new InvalidOperationException(
                 $"{nameof(TbNumberField<TValue>)} needs a number type, not {NumberType.Name}.");
         }
+
+        if (Decimals is < 0 or > 28)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(Decimals)} must be from 0 to 28, the places a decimal can hold, not {Decimals}.");
+        }
     }
 
     // A double that decimal can't hold, such as NaN or 1e30, can't be stepped.
@@ -113,17 +167,39 @@
             return true;
         }
 
-        if (!(Math.Abs(Convert.ToDouble(Value, CultureInfo.InvariantCulture)) < (double)decimal.MaxValue))
+        if (!TryToDecimal(Value, out var exact))
         {
             return false;
         }
 
-        number = Convert.ToDecimal(Value, CultureInfo.InvariantCulture);
+        number = exact;
+        return true;
+    }
+
+    private static bool TryToDecimal(TValue? value, out decimal number)
+    {
+        number = 0;
+        if (value is null
+            || !(Math.Abs(Convert.ToDouble(value, CultureInfo.InvariantCulture)) < (double)decimal.MaxValue))
+        {
+            return false;
+        }
+
+        number = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
         return true;
     }
 
     private bool CanStep(int direction) =>
         TryGetSteppable(out var number) && (number is null || (direction < 0 ? number > Lower : number < Upper));
+
+    // A text box would move the caret on the arrows, so number-field.js holds it and the keys step instead, as a
+    // number box's do.
+    private Task OnKeyDownAsync(KeyboardEventArgs e) => ReadOnly ? Task.CompletedTask : e.Key switch
+    {
+        "ArrowUp" => StepAsync(1),
+        "ArrowDown" => StepAsync(-1),
+        _ => Task.CompletedTask,
+    };
 
     // An empty field steps from the minimum, or from zero when there is none.
     private Task StepAsync(int direction)
@@ -134,7 +210,7 @@
         }
 
         var stepped = Math.Clamp((number ?? Min ?? 0) + direction * Step, Lower, Upper);
-        return SetValueAsync((TValue)Convert.ChangeType(stepped, NumberType, CultureInfo.InvariantCulture));
+        return SetValueAsync(ToValue(stepped));
     }
 
     // The browser reports text it can't read, such as "4-", as an empty value, which would clear a nullable field.
@@ -152,15 +228,26 @@
     }
 
     // A number input always holds its value with a period; the browser shows it in the user's own format.
-    private protected override string? FormatValue(TValue? value) =>
-        BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
+    private protected override string? FormatValue(TValue? value) => Formatted && value is IFormattable number
+        ? number.ToString(Format, NumberCulture)
+        : BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
 
     private protected override bool TryParse(string? text, out TValue? value, out string? error)
     {
-        if (!TryConvert(text, out value))
+        if (!(Formatted ? TryConvertFormatted(text, out value) : TryConvert(text, out value)))
         {
             error = NotANumber;
             return false;
+        }
+
+        if (Decimals is int decimals && TryToDecimal(value, out var exact))
+        {
+            value = ToValue(Math.Round(exact, decimals, MidpointRounding.AwayFromZero));
+        }
+
+        if (ClampToRange && TryToDecimal(value, out var unclamped))
+        {
+            value = ToValue(Math.Clamp(unclamped, Lower, Upper));
         }
 
         // Compared as doubles, which hold the range of every number type.
@@ -190,5 +277,37 @@
         return parsed && double.IsFinite(Convert.ToDouble(value, CultureInfo.InvariantCulture));
     }
 
-    private static string? Format(decimal? number) => number?.ToString(CultureInfo.InvariantCulture);
+    // Text in the field's culture, with its group separators and currency symbol; a percent is a hundredth.
+    private bool TryConvertFormatted(string? text, out TValue? value)
+    {
+        value = default;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Nullable.GetUnderlyingType(typeof(TValue)) is not null;
+        }
+
+        // The field's own format says whether it holds a percent, so "15" in a percent field is 15%, as "15%" is.
+        var symbol = NumberCulture.NumberFormat.PercentSymbol;
+        var percent = 1m.ToString(Format, NumberCulture).Contains(symbol, StringComparison.Ordinal);
+        if (!decimal.TryParse(text.Replace(symbol, "", StringComparison.Ordinal),
+                NumberStyles.Currency | NumberStyles.AllowExponent, NumberCulture, out var number))
+        {
+            return false;
+        }
+
+        number = percent ? number / 100 : number;
+        var (lower, upper) = NumberTypes.Limits(NumberType);
+        if (number < lower || number > upper || (NumberTypes.IsWhole(NumberType) && number != Math.Truncate(number)))
+        {
+            return false;
+        }
+
+        value = ToValue(number);
+        return true;
+    }
+
+    private static TValue ToValue(decimal number) =>
+        (TValue)Convert.ChangeType(number, NumberType, CultureInfo.InvariantCulture);
+
+    private static string? Invariant(decimal? number) => number?.ToString(CultureInfo.InvariantCulture);
 }

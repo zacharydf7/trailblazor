@@ -1,0 +1,26 @@
+@page "/static-number"
+@attribute [ExcludeFromInteractiveRouting]
+@using System.Globalization
+
+<EditForm Model="Model" FormName="static-number" OnValidSubmit="Post">
+    <TbNumberField Label="Price" @bind-Value="Model!.Price" Format="C2" Culture="UsEnglish" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</EditForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private static readonly CultureInfo UsEnglish = CultureInfo.GetCultureInfo("en-US");
+    private string? _posted;
+
+    [SupplyParameterFromForm]
+    private Order? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    private void Post() => _posted = Model!.Price.ToString(CultureInfo.InvariantCulture);
+
+    private sealed class Order
+    {
+        public decimal Price { get; set; }
+    }
+}

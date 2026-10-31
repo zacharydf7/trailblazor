@@ -122,4 +122,85 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
             await Expect(copies).ToHaveValueAsync("6");
         }
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldShowTheValueInItsFormat_WhenTypedOrSteppedWithAFormat(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/number-field");
+        var budget = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Budget" });
+
+        await budget.FillAsync("2400.5");
+        await budget.PressAsync("Tab");
+        await Expect(budget).ToHaveValueAsync("$2,400.50");
+        // The text box would move the caret on the arrow, so the field's script holds it.
+        await page.EvaluateAsync(
+            "() => document.addEventListener('keydown', event => window.held = event.defaultPrevented)");
+        await budget.FocusAsync();
+        await budget.PressAsync("ArrowUp");
+        Assert.True(await page.EvaluateAsync<bool>("() => window.held"));
+
+        await Expect(budget).ToHaveValueAsync("$2,450.50");
+        await Expect(page.GetByTestId("budget-echo")).ToHaveTextAsync("2450.5");
+        await Expect(budget).ToHaveAttributeAsync("aria-valuetext", "$2,450.50");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldStepFromTheTypedText_WhenAnArrowIsPressedBeforeItIsCommitted(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/number-field");
+        var budget = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Budget" });
+
+        await budget.FillAsync("2400");
+        await budget.PressAsync("ArrowUp");
+
+        await Expect(budget).ToHaveValueAsync("$2,450.00");
+        await Expect(page.GetByTestId("budget-echo")).ToHaveTextAsync("2450");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldRoundOrClampWhatIsTyped_WhenDecimalsOrClampToRangeIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/number-field");
+        var discount = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Discount" });
+        var group = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Group size" });
+
+        await discount.FillAsync("12.6%");
+        await discount.PressAsync("Tab");
+        await group.FillAsync("30");
+        // The field is the page's last, and Firefox fires no change when Tab leaves the page.
+        await group.BlurAsync();
+
+        await Expect(discount).ToHaveValueAsync("13%");
+        await Expect(group).ToHaveValueAsync("12");
+        await Expect(group).Not.ToHaveAttributeAsync("aria-invalid", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldStayANumberBoxThatPosts_WhenAFormattedFieldIsInAStaticForm(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-number");
+        var price = page.GetByLabel("Price");
+        await Expect(price).ToHaveAttributeAsync("type", "number");
+
+        await price.FillAsync("1234.50");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("1234.50");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldStepFromTheValueNotTheShownText_WhenNothingWasTyped(string browser)
+    {
+        var page = await OpenAsync(browser, "/number-format");
+        var tip = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Tip" });
+        var rate = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Rate" });
+
+        await tip.PressAsync("ArrowUp");
+        await Expect(page.GetByTestId("tip")).ToHaveTextAsync("10.25");
+        await tip.PressAsync("ArrowUp");
+        await rate.PressAsync("ArrowUp");
+
+        await Expect(page.GetByTestId("tip")).ToHaveTextAsync("10.50");
+        await Expect(page.GetByTestId("rate")).ToHaveTextAsync("0.125");
+    }
 }

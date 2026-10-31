@@ -1,3 +1,5 @@
+@using System.Globalization
+
 <TbStack Gap="5" Style="max-width: 24rem">
     <TbNumberField Label="Quantity" @bind-Value="_quantity" Min="0" Max="10" HelperText="From 0 to 10."
                    data-testid="quantity" />
@@ -6,10 +8,21 @@
         <End>kg</End>
     </TbNumberField>
     <TbNumberField Label="Copies" @bind-Value="_copies" HideStepButtons />
+    <TbNumberField Label="Budget" @bind-Value="_budget" Format="C2" Culture="UsEnglish" Step="50" Min="0"
+                   data-testid="budget" />
+    <output data-testid="budget-echo">@_budget</output>
+    <TbNumberField Label="Discount" @bind-Value="_discount" Format="P0" Culture="UsEnglish" Decimals="2" Step="0.05m"
+                   HelperText="Typed values round to the nearest percent." />
+    <TbNumberField Label="Group size" @bind-Value="_group" Min="1" Max="12" ClampToRange
+                   HelperText="A size outside 1 to 12 moves to the nearer limit." />
 </TbStack>
 
 @code {
     private int _quantity = 1;
     private double _weight = 2.5;
     private int? _copies;
+    private static readonly CultureInfo UsEnglish = CultureInfo.GetCultureInfo("en-US");
+    private decimal _budget = 1250;
+    private decimal _discount = 0.1m;
+    private int _group = 4;
 }

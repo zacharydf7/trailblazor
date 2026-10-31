@@ -1,0 +1,14 @@
+@page "/number-format"
+@using System.Globalization
+
+@* Each shows less than it holds, so committing the shown text would round the value. *@
+<TbNumberField Label="Tip" @bind-Value="_tip" Format="C0" Culture="UsEnglish" Step="0.25m" />
+<output data-testid="tip">@_tip.ToString(CultureInfo.InvariantCulture)</output>
+<TbNumberField Label="Rate" @bind-Value="_rate" Format="P0" Culture="UsEnglish" ReadOnly />
+<output data-testid="rate">@_rate.ToString(CultureInfo.InvariantCulture)</output>
+
+@code {
+    private static readonly CultureInfo UsEnglish = CultureInfo.GetCultureInfo("en-US");
+    private decimal _tip = 10;
+    private decimal _rate = 0.125m;
+}

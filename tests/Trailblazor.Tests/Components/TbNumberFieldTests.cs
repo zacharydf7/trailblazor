@@ -1,11 +1,16 @@
 using System.Globalization;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor.Tests.Components;
 
 public class TbNumberFieldTests : BunitContext
 {
-    public TbNumberFieldTests() => this.AddTrailblazor();
+    public TbNumberFieldTests()
+    {
+        this.AddTrailblazor();
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+    }
 
     [Fact]
     public void Render_ShouldBeANumberInputWithItsLimits_WhenMinMaxAndStepAreSet()
@@ -262,6 +267,132 @@ public class TbNumberFieldTests : BunitContext
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbNumberField<DayOfWeek>>());
     }
+
+    [Fact]
+    public void Render_ShouldBeASpinButtonShowingTheFormattedValue_WhenGivenAFormat()
+    {
+        var cut = RenderFormatted<decimal>("N2", "en-US", 1234.5m, parameters => parameters.Add(field => field.Min, 0m)
+            .Add(field => field.Max, 5000m));
+
+        var input = cut.Find("input");
+        Assert.Equal(["text", "decimal", "spinbutton", "1,234.50", "1234.5", "0", "5000", "1,234.50"],
+            new[] { "type", "inputmode", "role", "value", "aria-valuenow", "aria-valuemin", "aria-valuemax",
+                "aria-valuetext" }.Select(input.GetAttribute));
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(29)]
+    public void Render_ShouldThrow_WhenDecimalsIsMoreThanADecimalCanHold(int decimals)
+    {
+        Assert.Throws<InvalidOperationException>(() => Render<TbNumberField<decimal>>(parameters => parameters
+            .Add(field => field.Decimals, decimals)));
+    }
+
+    [Fact]
+    public void Render_ShouldStayTheBrowsersNumberBox_WhenAFormattedFieldRendersWithoutACircuit()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderFormatted<decimal>("C2", "en-US", 1234.5m);
+
+        var input = cut.Find("input");
+        Assert.Equal(["number", "1234.5"], [input.GetAttribute("type"), input.GetAttribute("value")]);
+    }
+
+    [Theory]
+    [InlineData("N2", "en-US", "2,500.75", 2500.75)]
+    [InlineData("C2", "en-US", "$1,200.00", 1200)]
+    [InlineData("C2", "en-US", "($5.00)", -5)]
+    [InlineData("P0", "en-US", "15%", 0.15)]
+    [InlineData("P0", "en-US", "15", 0.15)]
+    [InlineData("E2", "en-US", "1.25E+003", 1250)]
+    [InlineData("N1", "de-DE", "1.234,5", 1234.5)]
+    public void Change_ShouldReadTheTextInTheFieldsCulture_WhenGivenAFormat(string format, string culture, string text,
+        double expected)
+    {
+        decimal? value = null;
+        var cut = RenderFormatted<decimal?>(format, culture, null, parameters => parameters
+            .Add(field => field.ValueChanged, (decimal? number) => value = number));
+
+        cut.Find("input").Change(text);
+
+        Assert.Equal((decimal)expected, value);
+    }
+
+    [Fact]
+    public void Change_ShouldExplainAndKeepTheText_WhenAWholeNumberFieldGetsAFraction()
+    {
+        var cut = RenderFormatted<int>("N0", "en-US", 3);
+
+        cut.Find("input").Change("1.5");
+
+        Assert.Equal("1.5", cut.Find("input").GetAttribute("value"));
+        Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("N3")]
+    public void Change_ShouldRoundToTheDecimalPlaces_WhenDecimalsIsSet(string? format)
+    {
+        decimal value = 0;
+        var cut = Render<TbNumberField<decimal>>(parameters => parameters.Add(field => field.Format, format)
+            .Add(field => field.Culture, CultureInfo.InvariantCulture).Add(field => field.Decimals, 2)
+            .Add(field => field.ValueChanged, (decimal number) => value = number));
+
+        if (format is null)
+        {
+            Commit(cut, "3.14159");
+        }
+        else
+        {
+            cut.Find("input").Change("3.145");
+        }
+
+        Assert.Equal(format is null ? 3.14m : 3.15m, value);
+    }
+
+    [Theory]
+    [InlineData("25", 10)]
+    [InlineData("-3", 1)]
+    public void Change_ShouldMoveAValueOutsideTheRangeToTheNearerLimit_WhenClampToRangeIsSet(string text, int expected)
+    {
+        var value = 5;
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Value, value)
+            .Add(field => field.Min, 1m).Add(field => field.Max, 10m).Add(field => field.ClampToRange, true)
+            .Add(field => field.ValueChanged, (int number) => value = number));
+
+        Commit(cut, text);
+
+        Assert.Equal(expected, value);
+        Assert.Null(cut.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [Theory]
+    [InlineData("ArrowUp", false, 6)]
+    [InlineData("ArrowDown", false, 4)]
+    [InlineData("ArrowUp", true, 5)]
+    public void KeyDown_ShouldStepAFormattedField_WhenAnArrowIsPressedAndItIsntReadOnly(string key, bool readOnly,
+        int expected)
+    {
+        var value = 5;
+        var cut = RenderFormatted<int>("N0", "en-US", value, parameters => parameters
+            .Add(field => field.ReadOnly, readOnly).Add(field => field.ValueChanged, (int number) => value = number));
+
+        cut.Find("input").KeyDown(key);
+
+        Assert.Equal(expected, value);
+    }
+
+    private IRenderedComponent<TbNumberField<TValue>> RenderFormatted<TValue>(string format, string culture,
+        TValue value, Action<ComponentParameterCollectionBuilder<TbNumberField<TValue>>>? configure = null) =>
+        Render<TbNumberField<TValue>>(parameters =>
+        {
+            parameters.Add(field => field.Format, format).Add(field => field.Culture, new CultureInfo(culture))
+                .Add(field => field.Value, value);
+            configure?.Invoke(parameters);
+        });
 
     private static void Commit<TValue>(IRenderedComponent<TbNumberField<TValue>> cut, string text) =>
         cut.Find("input").TriggerEvent("ontbnumberchange", new NumberChangeEventArgs { Value = text });
