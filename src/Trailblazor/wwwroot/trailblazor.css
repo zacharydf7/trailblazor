@@ -21,6 +21,14 @@
 /* Unlayered consumer CSS beats every rule in these layers, whatever its specificity. */
 @layer tb.reset, tb.tokens, tb.themes, tb.components, tb.utilities;
 
+@layer tb.reset {
+    /* A themed element, the page itself once TbThemeHead marks it, takes its theme's background and text. */
+    :where([data-tb-theme]) {
+        background-color: var(--tb-color-background);
+        color: var(--tb-color-text);
+    }
+}
+
 @layer tb.tokens {
     :root {
         /* Reference tier: tonal scales. Components never read these directly. */
@@ -34,7 +42,11 @@
         --tb-gray-700: oklch(0.47 0.018 260);
         --tb-gray-800: oklch(0.4 0.017 260);
         --tb-gray-900: oklch(0.33 0.015 260);
+        --tb-gray-925: oklch(0.27 0.014 260);
         --tb-gray-950: oklch(0.25 0.013 260);
+        --tb-gray-960: oklch(0.23 0.012 260);
+        --tb-gray-975: oklch(0.19 0.011 260);
+        --tb-gray-985: oklch(0.16 0.01 260);
 
         --tb-graphite-50: oklch(0.975 0.0009 255);
         --tb-graphite-100: oklch(0.945 0.0015 255);
@@ -122,7 +134,11 @@
         --tb-stone-700: oklch(0.47 0.0198 60);
         --tb-stone-800: oklch(0.4 0.0187 60);
         --tb-stone-900: oklch(0.33 0.0165 60);
+        --tb-stone-925: oklch(0.27 0.0154 60);
         --tb-stone-950: oklch(0.25 0.0143 60);
+        --tb-stone-960: oklch(0.23 0.0132 60);
+        --tb-stone-975: oklch(0.19 0.0122 60);
+        --tb-stone-985: oklch(0.16 0.011 60);
 
         --tb-mauve-50: oklch(0.975 0.003 310);
         --tb-mauve-100: oklch(0.945 0.005 310);
@@ -134,7 +150,11 @@
         --tb-mauve-700: oklch(0.47 0.018 310);
         --tb-mauve-800: oklch(0.4 0.017 310);
         --tb-mauve-900: oklch(0.33 0.015 310);
+        --tb-mauve-925: oklch(0.27 0.014 310);
         --tb-mauve-950: oklch(0.25 0.013 310);
+        --tb-mauve-960: oklch(0.23 0.012 310);
+        --tb-mauve-975: oklch(0.19 0.011 310);
+        --tb-mauve-985: oklch(0.16 0.01 310);
 
         --tb-sage-50: oklch(0.975 0.003 145);
         --tb-sage-100: oklch(0.945 0.005 145);
@@ -146,7 +166,11 @@
         --tb-sage-700: oklch(0.47 0.018 145);
         --tb-sage-800: oklch(0.4 0.017 145);
         --tb-sage-900: oklch(0.33 0.015 145);
+        --tb-sage-925: oklch(0.27 0.014 145);
         --tb-sage-950: oklch(0.25 0.013 145);
+        --tb-sage-960: oklch(0.23 0.012 145);
+        --tb-sage-975: oklch(0.19 0.011 145);
+        --tb-sage-985: oklch(0.16 0.01 145);
 
         --tb-clay-50: oklch(0.975 0.009 52);
         --tb-clay-100: oklch(0.945 0.021 52);
@@ -380,7 +404,7 @@
         --tb-color-primary-hover: light-dark(var(--tb-graphite-950), var(--tb-graphite-200));
         --tb-color-primary-active: light-dark(var(--tb-graphite-975), var(--tb-graphite-300));
         --tb-color-on-primary: light-dark(white, var(--tb-graphite-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-graphite-100), var(--tb-graphite-800));
+        --tb-color-primary-subtle: light-dark(var(--tb-graphite-200), var(--tb-graphite-700));
         --tb-color-primary-text: light-dark(var(--tb-graphite-900), var(--tb-graphite-50));
 
         --tb-color-neutral: light-dark(var(--tb-graphite-700), var(--tb-graphite-300));
@@ -394,10 +418,10 @@
     }
 
     [data-tb-palette="cobalt"] {
-        --tb-color-background: light-dark(var(--tb-gray-50), var(--tb-gray-950));
-        --tb-color-surface: light-dark(white, var(--tb-gray-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-gray-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-gray-100), var(--tb-gray-950));
+        --tb-color-background: light-dark(white, var(--tb-gray-975));
+        --tb-color-surface: light-dark(white, var(--tb-gray-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-gray-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-gray-50), var(--tb-gray-985));
         --tb-color-text: light-dark(var(--tb-gray-900), var(--tb-gray-50));
         --tb-color-text-muted: light-dark(var(--tb-gray-600), var(--tb-gray-300));
         --tb-color-text-disabled: light-dark(var(--tb-gray-400), var(--tb-gray-600));
@@ -419,10 +443,10 @@
     }
 
     [data-tb-palette="slate"] {
-        --tb-color-background: light-dark(var(--tb-gray-50), var(--tb-gray-950));
-        --tb-color-surface: light-dark(white, var(--tb-gray-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-gray-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-gray-100), var(--tb-gray-950));
+        --tb-color-background: light-dark(white, var(--tb-gray-975));
+        --tb-color-surface: light-dark(white, var(--tb-gray-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-gray-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-gray-50), var(--tb-gray-985));
         --tb-color-text: light-dark(var(--tb-gray-900), var(--tb-gray-50));
         --tb-color-text-muted: light-dark(var(--tb-gray-600), var(--tb-gray-300));
         --tb-color-text-disabled: light-dark(var(--tb-gray-400), var(--tb-gray-600));
@@ -432,7 +456,7 @@
         --tb-color-primary-hover: light-dark(var(--tb-gray-900), var(--tb-gray-200));
         --tb-color-primary-active: light-dark(var(--tb-gray-950), var(--tb-gray-300));
         --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-gray-100), var(--tb-gray-800));
+        --tb-color-primary-subtle: light-dark(var(--tb-gray-200), var(--tb-gray-700));
         --tb-color-primary-text: light-dark(var(--tb-gray-900), var(--tb-gray-100));
         --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
         --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
@@ -444,10 +468,10 @@
     }
 
     [data-tb-palette="sand"] {
-        --tb-color-background: light-dark(var(--tb-stone-50), var(--tb-stone-950));
-        --tb-color-surface: light-dark(white, var(--tb-stone-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-stone-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-stone-100), var(--tb-stone-950));
+        --tb-color-background: light-dark(white, var(--tb-stone-975));
+        --tb-color-surface: light-dark(white, var(--tb-stone-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-stone-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-stone-50), var(--tb-stone-985));
         --tb-color-text: light-dark(var(--tb-stone-900), var(--tb-stone-50));
         --tb-color-text-muted: light-dark(var(--tb-stone-600), var(--tb-stone-300));
         --tb-color-text-disabled: light-dark(var(--tb-stone-400), var(--tb-stone-600));
@@ -457,7 +481,7 @@
         --tb-color-primary-hover: light-dark(var(--tb-stone-900), var(--tb-stone-200));
         --tb-color-primary-active: light-dark(var(--tb-stone-950), var(--tb-stone-300));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-stone-100), var(--tb-stone-800));
+        --tb-color-primary-subtle: light-dark(var(--tb-stone-200), var(--tb-stone-700));
         --tb-color-primary-text: light-dark(var(--tb-stone-900), var(--tb-stone-100));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
@@ -469,10 +493,10 @@
     }
 
     [data-tb-palette="clay"] {
-        --tb-color-background: light-dark(var(--tb-stone-50), var(--tb-stone-950));
-        --tb-color-surface: light-dark(white, var(--tb-stone-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-stone-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-stone-100), var(--tb-stone-950));
+        --tb-color-background: light-dark(white, var(--tb-stone-975));
+        --tb-color-surface: light-dark(white, var(--tb-stone-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-stone-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-stone-50), var(--tb-stone-985));
         --tb-color-text: light-dark(var(--tb-stone-900), var(--tb-stone-50));
         --tb-color-text-muted: light-dark(var(--tb-stone-600), var(--tb-stone-300));
         --tb-color-text-disabled: light-dark(var(--tb-stone-400), var(--tb-stone-600));
@@ -482,7 +506,7 @@
         --tb-color-primary-hover: light-dark(var(--tb-clay-700), var(--tb-clay-300));
         --tb-color-primary-active: light-dark(var(--tb-clay-800), var(--tb-clay-200));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-clay-100), var(--tb-clay-900));
+        --tb-color-primary-subtle: light-dark(var(--tb-clay-200), var(--tb-clay-900));
         --tb-color-primary-text: light-dark(var(--tb-clay-700), var(--tb-clay-300));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
@@ -494,10 +518,10 @@
     }
 
     [data-tb-palette="indigo"] {
-        --tb-color-background: light-dark(var(--tb-gray-50), var(--tb-gray-950));
-        --tb-color-surface: light-dark(white, var(--tb-gray-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-gray-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-gray-100), var(--tb-gray-950));
+        --tb-color-background: light-dark(white, var(--tb-gray-975));
+        --tb-color-surface: light-dark(white, var(--tb-gray-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-gray-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-gray-50), var(--tb-gray-985));
         --tb-color-text: light-dark(var(--tb-gray-900), var(--tb-gray-50));
         --tb-color-text-muted: light-dark(var(--tb-gray-600), var(--tb-gray-300));
         --tb-color-text-disabled: light-dark(var(--tb-gray-400), var(--tb-gray-600));
@@ -519,10 +543,10 @@
     }
 
     [data-tb-palette="violet"] {
-        --tb-color-background: light-dark(var(--tb-mauve-50), var(--tb-mauve-950));
-        --tb-color-surface: light-dark(white, var(--tb-mauve-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-mauve-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-mauve-100), var(--tb-mauve-950));
+        --tb-color-background: light-dark(white, var(--tb-mauve-975));
+        --tb-color-surface: light-dark(white, var(--tb-mauve-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-mauve-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-mauve-50), var(--tb-mauve-985));
         --tb-color-text: light-dark(var(--tb-mauve-900), var(--tb-mauve-50));
         --tb-color-text-muted: light-dark(var(--tb-mauve-600), var(--tb-mauve-300));
         --tb-color-text-disabled: light-dark(var(--tb-mauve-400), var(--tb-mauve-600));
@@ -544,10 +568,10 @@
     }
 
     [data-tb-palette="plum"] {
-        --tb-color-background: light-dark(var(--tb-mauve-50), var(--tb-mauve-950));
-        --tb-color-surface: light-dark(white, var(--tb-mauve-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-mauve-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-mauve-100), var(--tb-mauve-950));
+        --tb-color-background: light-dark(white, var(--tb-mauve-975));
+        --tb-color-surface: light-dark(white, var(--tb-mauve-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-mauve-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-mauve-50), var(--tb-mauve-985));
         --tb-color-text: light-dark(var(--tb-mauve-900), var(--tb-mauve-50));
         --tb-color-text-muted: light-dark(var(--tb-mauve-600), var(--tb-mauve-300));
         --tb-color-text-disabled: light-dark(var(--tb-mauve-400), var(--tb-mauve-600));
@@ -569,10 +593,10 @@
     }
 
     [data-tb-palette="fuchsia"] {
-        --tb-color-background: light-dark(var(--tb-mauve-50), var(--tb-mauve-950));
-        --tb-color-surface: light-dark(white, var(--tb-mauve-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-mauve-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-mauve-100), var(--tb-mauve-950));
+        --tb-color-background: light-dark(white, var(--tb-mauve-975));
+        --tb-color-surface: light-dark(white, var(--tb-mauve-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-mauve-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-mauve-50), var(--tb-mauve-985));
         --tb-color-text: light-dark(var(--tb-mauve-900), var(--tb-mauve-50));
         --tb-color-text-muted: light-dark(var(--tb-mauve-600), var(--tb-mauve-300));
         --tb-color-text-disabled: light-dark(var(--tb-mauve-400), var(--tb-mauve-600));
@@ -594,10 +618,10 @@
     }
 
     [data-tb-palette="rose"] {
-        --tb-color-background: light-dark(var(--tb-stone-50), var(--tb-stone-950));
-        --tb-color-surface: light-dark(white, var(--tb-stone-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-stone-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-stone-100), var(--tb-stone-950));
+        --tb-color-background: light-dark(white, var(--tb-stone-975));
+        --tb-color-surface: light-dark(white, var(--tb-stone-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-stone-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-stone-50), var(--tb-stone-985));
         --tb-color-text: light-dark(var(--tb-stone-900), var(--tb-stone-50));
         --tb-color-text-muted: light-dark(var(--tb-stone-600), var(--tb-stone-300));
         --tb-color-text-disabled: light-dark(var(--tb-stone-400), var(--tb-stone-600));
@@ -619,10 +643,10 @@
     }
 
     [data-tb-palette="moss"] {
-        --tb-color-background: light-dark(var(--tb-sage-50), var(--tb-sage-950));
-        --tb-color-surface: light-dark(white, var(--tb-sage-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-sage-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-sage-100), var(--tb-sage-950));
+        --tb-color-background: light-dark(white, var(--tb-sage-975));
+        --tb-color-surface: light-dark(white, var(--tb-sage-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-sage-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-sage-50), var(--tb-sage-985));
         --tb-color-text: light-dark(var(--tb-sage-900), var(--tb-sage-50));
         --tb-color-text-muted: light-dark(var(--tb-sage-600), var(--tb-sage-300));
         --tb-color-text-disabled: light-dark(var(--tb-sage-400), var(--tb-sage-600));
@@ -644,10 +668,10 @@
     }
 
     [data-tb-palette="teal"] {
-        --tb-color-background: light-dark(var(--tb-sage-50), var(--tb-sage-950));
-        --tb-color-surface: light-dark(white, var(--tb-sage-900));
-        --tb-color-surface-raised: light-dark(white, var(--tb-sage-800));
-        --tb-color-surface-sunken: light-dark(var(--tb-sage-100), var(--tb-sage-950));
+        --tb-color-background: light-dark(white, var(--tb-sage-975));
+        --tb-color-surface: light-dark(white, var(--tb-sage-960));
+        --tb-color-surface-raised: light-dark(white, var(--tb-sage-925));
+        --tb-color-surface-sunken: light-dark(var(--tb-sage-50), var(--tb-sage-985));
         --tb-color-text: light-dark(var(--tb-sage-900), var(--tb-sage-50));
         --tb-color-text-muted: light-dark(var(--tb-sage-600), var(--tb-sage-300));
         --tb-color-text-disabled: light-dark(var(--tb-sage-400), var(--tb-sage-600));
@@ -1391,7 +1415,7 @@
         font-size: var(--tb-font-size-sm);
     }
 
-    .tb-list__item--selected .tb-list__description {
+    .tb-list__item--selected :is(.tb-list__description, .tb-list__end) {
         color: inherit;
     }
 
@@ -1660,6 +1684,16 @@
     .tb-button--outlined:hover:not(:disabled, [aria-disabled="true"]),
     .tb-button--text:hover:not(:disabled, [aria-disabled="true"]) {
         background: var(--tb-button-subtle);
+    }
+
+    /* A soft button's hover and press deepen its fill toward its text, as the filled button's steps do. */
+    .tb-button--soft:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]) {
+        background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 10%);
+    }
+
+    :is(.tb-button--soft, .tb-button--outlined, .tb-button--text):active:not(:disabled, [aria-disabled="true"],
+        [aria-pressed="true"]) {
+        background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 18%);
     }
 
     /* A pressed toggle takes the next stronger fill, so on and off differ in every variant. */
@@ -3931,9 +3965,18 @@
         color: var(--tb-color-text);
     }
 
+    .tb-tabs {
+        --tb-tabs-indicator-color: var(--tb-color-primary);
+        --tb-tabs-indicator-size: 2px;
+    }
+
     .tb-tabs__tab[aria-selected="true"] {
         color: var(--tb-color-text);
-        box-shadow: inset 0 -2px 0 var(--tb-color-primary);
+    }
+
+    /* Text and outlined lists underline the selected tab; the pill variants fill it instead. */
+    :is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
+        box-shadow: inset 0 calc(-1 * var(--tb-tabs-indicator-size)) 0 var(--tb-tabs-indicator-color);
     }
 
     /* Beside a vertical list, the selected tab's line runs down its inner edge instead. */
@@ -3944,12 +3987,45 @@
         text-align: start;
     }
 
-    .tb-tabs--vertical > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
-        box-shadow: inset -2px 0 0 var(--tb-color-primary);
+    .tb-tabs--vertical:is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list
+        > .tb-tabs__tab[aria-selected="true"] {
+        box-shadow: inset calc(-1 * var(--tb-tabs-indicator-size)) 0 0 var(--tb-tabs-indicator-color);
     }
 
-    .tb-tabs--vertical > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"]:dir(rtl) {
-        box-shadow: inset 2px 0 0 var(--tb-color-primary);
+    .tb-tabs--vertical:is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list
+        > .tb-tabs__tab[aria-selected="true"]:dir(rtl) {
+        box-shadow: inset var(--tb-tabs-indicator-size) 0 0 var(--tb-tabs-indicator-color);
+    }
+
+    /* Soft and filled tabs are pills with no line under the list; the selected one takes the variant's fill. */
+    :is(.tb-tabs--soft, .tb-tabs--filled) > .tb-tabs__list {
+        border: none;
+    }
+
+    :is(.tb-tabs--soft, .tb-tabs--filled) > .tb-tabs__list > .tb-tabs__tab {
+        border-radius: var(--tb-radius-full);
+    }
+
+    .tb-tabs--soft > .tb-tabs__list > .tb-tabs__tab:hover:not(:disabled, [aria-selected="true"]),
+    .tb-tabs--filled > .tb-tabs__list > .tb-tabs__tab:hover:not(:disabled, [aria-selected="true"]) {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-tabs--soft > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
+        background: var(--tb-color-primary-subtle);
+        color: var(--tb-color-primary-text);
+    }
+
+    .tb-tabs--filled > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
+        background: var(--tb-color-primary);
+        color: var(--tb-color-on-primary);
+    }
+
+    @media (forced-colors: active) {
+        :is(.tb-tabs--soft, .tb-tabs--filled) > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
+            outline: 2px solid Highlight;
+            outline-offset: -2px;
+        }
     }
 
     .tb-tabs__tab:focus-visible {
@@ -3959,12 +4035,13 @@
 
     /* Forced colors drop shadows, so the underline is a border, inside the tab where the list can't clip it. */
     @media (forced-colors: active) {
-        .tb-tabs__tab[aria-selected="true"] {
+        :is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
             border-block-end: 2px solid Highlight;
             padding-block-end: calc(var(--tb-space-2) - 2px);
         }
 
-        .tb-tabs--vertical > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
+        .tb-tabs--vertical:is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list
+            > .tb-tabs__tab[aria-selected="true"] {
             border-block-end: none;
             border-inline-end: 2px solid Highlight;
             padding-block-end: var(--tb-space-2);
@@ -4221,6 +4298,7 @@
     .tb-file-upload__zone[data-dragging] {
         border-color: var(--tb-color-primary);
         background: var(--tb-color-primary-subtle);
+        color: var(--tb-color-primary-text);
     }
 
     .tb-file-upload__zone:has(.tb-file-upload__input:focus-visible),

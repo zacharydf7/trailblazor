@@ -38,7 +38,11 @@
     <a href="guides/palettes">palette gallery</a> shows each one on real components. Choose the page's palette with the
     <code>Palette</code> value in <code>TrailblazorOptions.Theme</code>, or with
     <code>IThemeService.SetPaletteAsync</code>. For one part of a page, set <code>data-tb-palette</code> or
-    <code>data-tb-theme</code> on any element; it applies to everything inside it.
+    <code>data-tb-theme</code> on any element; it applies to everything inside it. An element with
+    <code>data-tb-theme</code> also takes that theme's background and text color, and <code>TbThemeHead</code> marks
+    the page itself, so the page follows the theme without CSS of its own. To give the page another background, set
+    it on <code>html</code> or change <code>--tb-color-background</code>; a background on <code>body</code> alone
+    leaves the theme's color around it.
 </TbText>
 <CodeBlock Label="A palette for part of a page" Code="@Palette" />
 

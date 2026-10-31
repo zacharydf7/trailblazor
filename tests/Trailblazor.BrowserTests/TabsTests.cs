@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Trailblazor.BrowserTests;
 
 public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -282,4 +284,30 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Tab(page, "Route")).ToBeVisibleAsync();
         await Expect(Tab(page, "Route").Locator("[data-part=icon]")).ToBeVisibleAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldMarkTheSelectedTabWithAFillAndNoLine_WhenTheVariantIsSoft(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        var layers = page.GetByRole(AriaRole.Tablist, new() { Name = "Map layers" });
+        var selected = layers.GetByRole(AriaRole.Tab, new() { Name = "Terrain" });
+        var other = layers.GetByRole(AriaRole.Tab, new() { Name = "Satellite" });
+
+        await Expect(selected).Not.ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+        await Expect(selected).ToHaveCSSAsync("box-shadow", NoLine);
+        await Expect(other).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldFillTheSelectedTabWithNoLine_WhenAVerticalListIsSoft(string browser)
+    {
+        var page = await OpenAsync(browser, "/tab-variants");
+        var selected = page.GetByRole(AriaRole.Tab, new() { Name = "Packs" });
+
+        await Expect(selected).Not.ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+        await Expect(selected).ToHaveCSSAsync("box-shadow", NoLine);
+    }
+
+    // A tab with no line has no shadow, or the see-through one it keeps for the line to fade in.
+    private static readonly Regex NoLine = new(@"^(none|rgba\(0, 0, 0, 0\).*)$");
 }

@@ -495,6 +495,28 @@ public class TbTabsTests : BunitContext
         Assert.Equal(vertical, cut.Find(".tb-tabs").ClassList.Contains("tb-tabs--vertical"));
     }
 
+    [Theory]
+    [InlineData(Variant.Text, "tb-tabs--text")]
+    [InlineData(Variant.Soft, "tb-tabs--soft")]
+    [InlineData(Variant.Filled, "tb-tabs--filled")]
+    [InlineData(Variant.Outlined, "tb-tabs--outlined")]
+    public void Render_ShouldMarkTheTabsWithTheirVariant_WhenGivenOne(Variant variant, string modifier)
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.Variant, variant)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Contains(modifier, cut.Find(".tb-tabs").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheTabsAsText_WhenNoVariantIsGiven()
+    {
+        var cut = Render<TbTabs>(parameters => parameters
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Contains("tb-tabs--text", cut.Find(".tb-tabs").ClassList);
+    }
+
     private IRenderedComponent<TbTabs> RenderKeyedTabs(string active, bool includeIntro,
         Action<string?>? keyChanged = null, Action? indexChanged = null) =>
         Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ActiveKey, active)

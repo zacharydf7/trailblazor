@@ -15,6 +15,13 @@
     </TbTab>
 </TbTabs>
 
+@* Pill tabs, for a compact switch between views. *@
+<TbTabs AriaLabel="Map layers" Variant="Variant.Soft" Style="margin-block-start: var(--tb-space-8)">
+    <TbTab Text="Terrain"><TbText>Contours every 20 meters.</TbText></TbTab>
+    <TbTab Text="Satellite"><TbText>Imagery from last summer.</TbText></TbTab>
+    <TbTab Text="Trails"><TbText>Marked routes only.</TbText></TbTab>
+</TbTabs>
+
 <TbTabs AriaLabel="Trail settings" Vertical @bind-ActiveKey="_setting" Style="margin-block-start: var(--tb-space-8)">
     <TbTab Key="route" Text="Route" Icon="ExampleIcons.Trail">
         <TbText>Loop, 6.2 miles, starting at the north lot.</TbText>

@@ -1053,6 +1053,10 @@ public static class ExampleCatalog
                 "A `tablist` of `tab`s, each controlling a `tabpanel`. Give the list an `AriaLabel`. A tab's "
                     + "`Header` or `Text` is its name, so a count in the header is read with it; its `Icon` isn't "
                     + "read.",
+                "`Variant` marks the selected tab: `Text` (and, for now, `Outlined`) underlines it, and `Soft` and "
+                    + "`Filled` make it a pill, in vertical lists too. `--tb-tabs-indicator-color` and "
+                    + "`--tb-tabs-indicator-size` restyle the underline. In forced colors, the selected pill keeps a "
+                    + "Highlight outline.",
                 "The tab list is one tab stop. Left and Right move between tabs and wrap, mirrored on "
                     + "right-to-left pages, and Home and End jump to the ends. A `Vertical` list has "
                     + "`aria-orientation=\"vertical\"` and moves with Up and Down instead. With automatic activation, "

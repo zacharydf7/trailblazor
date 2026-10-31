@@ -132,6 +132,41 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
+    public async Task SubtleFills_ShouldStandOutFromEverySurfaceAndEachOther_WhenAPaletteAndThemeAreApplied(
+        string browser, string palette, string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+        await SetThemeAsync(page, theme);
+
+        // A hover fill, a selection fill or a divider the same as the panel under it can't be seen, a selected row must
+        // not look hovered, and a sunken well must not vanish into the page. Two fills differ by lightness, at least
+        // the 1.04:1 of neighboring light steps, by how colorful they are, or by hue when both have color.
+        string[] surfaces = ["--tb-color-background", "--tb-color-surface", "--tb-color-surface-raised",
+            "--tb-color-surface-sunken"];
+        var pairs = new[] { "--tb-color-neutral-subtle", "--tb-color-primary-subtle", "--tb-border-subtle" }
+            .SelectMany(fill => surfaces.Select(surface => (fill, surface)))
+            .Append(("--tb-color-primary-subtle", "--tb-color-neutral-subtle"))
+            .Append(("--tb-color-surface-sunken", "--tb-color-background"));
+        var failures = new List<string>();
+        foreach (var (fill, under) in pairs)
+        {
+            var ratio = ContrastRatio(await GetLuminanceAsync(page, fill), await GetLuminanceAsync(page, under));
+            var (chroma, hue) = ToChromaAndHue(await GetChannelsAsync(page, fill));
+            var (underChroma, underHue) = ToChromaAndHue(await GetChannelsAsync(page, under));
+            var apart = Math.Abs(hue - underHue) is var gap && gap > 180 ? 360 - gap : gap;
+            var colorful = Math.Abs(chroma - underChroma) >= 0.02
+                || (Math.Min(chroma, underChroma) >= 0.02 && apart >= 20);
+            if (ratio < 1.04 && !colorful)
+            {
+                failures.Add($"{fill} on {under}: {ratio:F3}, {apart:F0} degrees apart");
+            }
+        }
+
+        Assert.Empty(failures);
+    }
+
+    [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
     public async Task NonTextTokens_ShouldMeetContrastMinimum_WhenAPaletteAndThemeAreApplied(string browser,
         string palette, string theme)
     {

@@ -61,4 +61,19 @@ public class ListTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Site(page, "Cedar Flats")).ToBeDisabledAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task List_ShouldWriteASelectedItemsDescriptionAndEndInItsOwnColor_WhenItIsSelected(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/list");
+        var selected = page.Locator(".tb-list__item--selected").First;
+
+        // Muted text on the selected fill falls below 4.5:1 in the ink palettes, so it takes the item's color.
+        var colors = await selected.EvaluateAsync<string[]>("""
+            item => [item, item.querySelector('.tb-list__description'), item.querySelector('.tb-list__end')]
+                .map(element => getComputedStyle(element).color)
+            """);
+
+        Assert.Equal([colors[0], colors[0]], colors[1..]);
+    }
 }

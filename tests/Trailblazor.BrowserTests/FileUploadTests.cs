@@ -13,6 +13,28 @@ public class FileUploadTests(BrowserFixture fixture) : BrowserTest(fixture)
         page.Locator(".tb-file-upload").Filter(new() { Has = page.GetByLabel(label, new() { Exact = true }) });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DropZone_ShouldWriteItsPromptInThePrimaryText_WhenHovered(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+        var zone = Field(page, "Documents").Locator(".tb-file-upload__zone");
+
+        // Muted text on the selection fill falls below 4.5:1 in the ink palettes.
+        await zone.HoverAsync();
+
+        var colors = await zone.EvaluateAsync<string[]>("""
+            zone => {
+                const probe = document.createElement('span');
+                probe.style.color = 'var(--tb-color-primary-text)';
+                zone.append(probe);
+                const colors = [getComputedStyle(zone).color, getComputedStyle(probe).color];
+                probe.remove();
+                return colors;
+            }
+            """);
+        Assert.Equal(colors[1], colors[0]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Choose_ShouldListTheFilesAndKeepThemReadable_WhenTheyAreChosen(string browser)
     {
         var page = await OpenAsync(browser, "/file-upload");

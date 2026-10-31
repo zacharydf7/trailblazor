@@ -58,4 +58,28 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static Task<string[]> ThemeAsync(IPage page) => page.EvaluateAsync<string[]>(
         "() => [document.documentElement.dataset.tbTheme, document.documentElement.dataset.tbPalette]");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Theme_ShouldPaintARegionWithItsThemesBackgroundAndText_WhenTheRegionSetsATheme(string browser)
+    {
+        var page = await OpenAsync(browser, "/theme");
+
+        var colors = await page.EvaluateAsync<string[]>("""
+            () => {
+                const region = document.createElement('section');
+                region.dataset.tbTheme = 'dark';
+                region.textContent = 'Night trails';
+                const probe = document.createElement('span');
+                probe.style.color = 'var(--tb-color-background)';
+                region.append(probe);
+                document.body.append(region);
+                const style = getComputedStyle(region);
+                return [style.backgroundColor, getComputedStyle(probe).color, style.color];
+            }
+            """);
+
+        Assert.Equal(colors[1], colors[0]);
+        Assert.NotEqual("rgba(0, 0, 0, 0)", colors[0]);
+        Assert.NotEqual(colors[0], colors[2]);
+    }
 }

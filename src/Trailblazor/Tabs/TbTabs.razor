@@ -6,7 +6,8 @@
 @inject JsModuleLoader Modules
 
 <div @attributes="AdditionalAttributes" style="@Style"
-     class="@ClassNames.Join("tb-tabs", Vertical ? "tb-tabs--vertical" : null, Class)">
+     class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), Vertical ? "tb-tabs--vertical" : null,
+                Class)">
     @* data-ready marks that the arrow keys work, which tests wait for. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")" data-ready="@(_handle is null ? null : "")"
@@ -68,6 +69,14 @@
     /// <summary>Stacks the tabs in a column beside their panels, moved between with Up and Down.</summary>
     [Parameter]
     public bool Vertical { get; set; }
+
+    /// <summary>How the selected tab is marked: <see cref="Trailblazor.Variant.Text"/>, the default, underlines it;
+    /// <see cref="Trailblazor.Variant.Soft"/> and <see cref="Trailblazor.Variant.Filled"/> draw it as a tinted or
+    /// filled pill; <see cref="Trailblazor.Variant.Outlined"/> underlines it as Text does, for now. The underline
+    /// takes its color and thickness from <c>--tb-tabs-indicator-color</c> and <c>--tb-tabs-indicator-size</c>.
+    /// </summary>
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Text;
 
     /// <summary>Whether the arrow keys select the tabs they reach. Defaults to
     /// <see cref="TabActivation.Automatic"/>.</summary>

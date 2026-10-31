@@ -105,4 +105,20 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
         from browser in AllBrowsers.Names
         from query in new[] { "loading", "focusable-disabled" }
         select (browser, query));
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldDeepenItsSoftFill_WhenHoveredAndThenPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/button");
+        var soft = page.GetByRole(AriaRole.Button, new() { Name = "Soft Primary", Exact = true });
+        var resting = await soft.EvaluateAsync<string>("button => getComputedStyle(button).backgroundColor");
+
+        await soft.HoverAsync();
+        await Expect(soft).Not.ToHaveCSSAsync("background-color", resting);
+        var hovered = await soft.EvaluateAsync<string>("button => getComputedStyle(button).backgroundColor");
+        await page.Mouse.DownAsync();
+
+        await Expect(soft).Not.ToHaveCSSAsync("background-color", hovered);
+        await page.Mouse.UpAsync();
+    }
 }
