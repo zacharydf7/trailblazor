@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor;
 
-// The dialog behind IDialogService.ConfirmAsync. C#, so it can stay internal.
+// The dialog behind IDialogService.ConfirmAsync and, with no cancel button, AlertAsync. C#, so it can stay internal.
 internal sealed class ConfirmDialog : TbDialog<bool>
 {
     [Parameter]
@@ -13,22 +13,41 @@ internal sealed class ConfirmDialog : TbDialog<bool>
     public string ConfirmText { get; set; } = "";
 
     [Parameter]
-    public string CancelText { get; set; } = "";
+    public string? CancelText { get; set; }
 
     [Parameter]
     public Tone Tone { get; set; } = Tone.Primary;
 
+    [Parameter]
+    public bool ShowIcon { get; set; }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenComponent<TbText>(0);
-        builder.AddAttribute(1, "id", Reference.DescriptionId);
-        builder.AddComponentParameter(2, nameof(TbText.ChildContent),
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "tb-dialog__message");
+        if (ShowIcon && BuiltInIcons.ForTone(Tone) is { } icon)
+        {
+            builder.OpenComponent<TbIcon>(2);
+            builder.AddComponentParameter(3, nameof(TbIcon.Icon), icon);
+            builder.AddComponentParameter(4, nameof(TbIcon.Tone), Tone);
+            builder.AddAttribute(5, "data-part", "icon");
+            builder.CloseComponent();
+        }
+
+        builder.OpenComponent<TbText>(6);
+        builder.AddAttribute(7, "id", Reference.DescriptionId);
+        builder.AddComponentParameter(8, nameof(TbText.ChildContent),
             (RenderFragment)(text => text.AddContent(0, Message)));
         builder.CloseComponent();
-        builder.OpenComponent<TbDialogActions>(3);
-        builder.AddComponentParameter(4, nameof(TbDialogActions.ChildContent), (RenderFragment)(actions =>
+        builder.CloseElement();
+        builder.OpenComponent<TbDialogActions>(9);
+        builder.AddComponentParameter(10, nameof(TbDialogActions.ChildContent), (RenderFragment)(actions =>
         {
-            AddButton(actions, 0, CancelText, Variant.Outlined, Tone.Neutral, CancelAsync);
+            if (CancelText is not null)
+            {
+                AddButton(actions, 0, CancelText, Variant.Outlined, Tone.Neutral, CancelAsync);
+            }
+
             AddButton(actions, 10, ConfirmText, Variant.Filled, Tone, () => CloseAsync(true));
         }));
         builder.CloseComponent();

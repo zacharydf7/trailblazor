@@ -1,4 +1,5 @@
-import { focusOrigin } from './pointer-origin.js';
+import { autofocusTarget } from '../Trailblazor.Primitives/focus-scope.js';
+import { focusOrigin } from '../Trailblazor.Primitives/pointer-origin.js';
 
 // What Tab reaches; controls kept out of the tab order, such as a number field's step buttons, don't count.
 const focusableSelector = ['a[href]', 'button:not([disabled])', 'input:not([disabled]):not([type="hidden"])',
@@ -61,16 +62,11 @@ const dragThreshold = 4;
 
 const clamp = (value, low, high) => Math.min(Math.max(value, low), Math.max(low, high));
 
-// An element marked autofocus wins; a field component carries the attribute on its wrapper, so look inside it.
+// An element marked autofocus wins.
 function dialogFocusTarget(dialog, options) {
     const body = dialog.querySelector('[data-part="body"]');
-    const named = body?.querySelector('[autofocus]');
-    const target = named?.matches(focusableSelector) ? named : named?.querySelector(focusableSelector);
-    if (target) {
-        return target;
-    }
-
-    return options.initialFocus === 'Dialog' ? dialog : body?.querySelector(focusableSelector) ?? dialog;
+    return autofocusTarget(body)
+        ?? (options.initialFocus === 'Dialog' ? dialog : body?.querySelector(focusableSelector) ?? dialog);
 }
 
 export function openDialog(dialog, dotNet, options) {
@@ -120,13 +116,15 @@ export function openDialog(dialog, dotNet, options) {
 
         event.preventDefault();
         if (options.dismissOnEscape) {
-            dotNet.invokeMethodAsync('Cancel');
+            dotNet.invokeMethodAsync('Dismiss', 'Escape');
         }
     };
-    // Other close requests, such as a back gesture, are refused once when the dialog mustn't be dismissed.
+    // Other close requests, such as a back gesture, ask the dialog like Escape. A browser that closes it anyway, as
+    // one may on a second request, still reaches .NET through the close event.
     const onCancel = event => {
-        if (!options.dismissOnEscape) {
-            event.preventDefault();
+        event.preventDefault();
+        if (options.dismissOnEscape) {
+            dotNet.invokeMethodAsync('Dismiss', 'Escape');
         }
     };
     // A close the browser made by itself still has to reach .NET, or the caller would wait forever.
@@ -141,7 +139,7 @@ export function openDialog(dialog, dotNet, options) {
     };
     const onClick = event => {
         if (options.modal && options.dismissOnBackdrop && pressedOnBackdrop && onBackdrop(event)) {
-            dotNet.invokeMethodAsync('Cancel');
+            dotNet.invokeMethodAsync('Dismiss', 'Backdrop');
         }
     };
 
@@ -306,6 +304,22 @@ export function openDialog(dialog, dotNet, options) {
         return true;
     }
 
+    // The dialog fades out before it closes, as long as the theme's transitions last; under reduced motion they're
+    // instant, so it closes at once. A hidden tab may hold transitions back, so the wait has a limit.
+    function leave() {
+        dialog.dataset.leaving = '';
+        dialog.inert = true;
+        const transitions = dialog.getAnimations({ subtree: true })
+            .filter(animation => animation.effect?.target === dialog);
+        if (transitions.length === 0) {
+            return Promise.resolve();
+        }
+
+        const longest = Math.max(...transitions.map(transition => transition.effect.getComputedTiming().endTime));
+        return Promise.race([Promise.allSettled(transitions.map(transition => transition.finished)),
+            new Promise(resolve => setTimeout(resolve, longest + 100))]);
+    }
+
     function hide() {
         if (!options.modal && dialog.matches(':popover-open')) {
             dialog.hidePopover();
@@ -340,9 +354,10 @@ export function openDialog(dialog, dotNet, options) {
             }
         },
         // Closes the dialog and gives focus back to whatever opened it.
-        close() {
+        async close() {
             const hadFocus = dialog.contains(document.activeElement);
             finish();
+            await leave();
             hide();
             if ((hadFocus || document.activeElement === document.body) && opener?.isConnected) {
                 opener.focus();

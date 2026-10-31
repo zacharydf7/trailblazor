@@ -21,6 +21,19 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     [Parameter, EditorRequired]
     public DialogReference Dialog { get; set; } = default!;
 
+    // The content of a TbDialog written in markup, which renders it where it is, and its attributes for the dialog.
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
@@ -34,27 +47,25 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
     private bool Resizable => Dialog.Options.Resizable && !Dialog.Options.Modal;
 
-    // The frame's markup never changes once shown; re-rendering it would push the dialog's original parameters back
-    // in whenever another dialog opens or closes.
-    protected override bool ShouldRender() => false;
-
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var options = Dialog.Options;
         builder.OpenElement(0, "dialog");
-        builder.AddAttribute(1, "popover", options.Modal ? null : "manual");
-        builder.AddAttribute(2, "data-part", "dialog");
-        builder.AddAttribute(3, "aria-labelledby", TitleId);
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        builder.AddAttribute(2, "popover", options.Modal ? null : "manual");
+        builder.AddAttribute(3, "data-part", "dialog");
+        builder.AddAttribute(4, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
-        builder.AddAttribute(6, "class", ClassNames.Join("tb-dialog", SizeClass(options.Size),
+        builder.AddAttribute(6, "style", Style);
+        builder.AddAttribute(7, "class", ClassNames.Join("tb-dialog", SizeClass(options.Size),
             PositionClass(options.Position),
-            Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null));
-        builder.AddAttribute(7, "role", Dialog.IsAlert ? "alertdialog" : null);
-        builder.AddAttribute(8, "aria-describedby", Dialog.IsAlert ? Dialog.DescriptionId : null);
-        builder.AddElementReferenceCapture(9, element => _element = element);
-        builder.OpenComponent<DialogHeader>(10);
-        builder.AddComponentParameter(11, nameof(DialogHeader.Dialog), Dialog);
-        builder.AddComponentParameter(12, nameof(DialogHeader.TitleId), TitleId);
+            Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null, Class));
+        builder.AddAttribute(8, "role", Dialog.IsAlert ? "alertdialog" : null);
+        builder.AddAttribute(9, "aria-describedby", Dialog.IsAlert || Dialog.Described ? Dialog.DescriptionId : null);
+        builder.AddElementReferenceCapture(10, element => _element = element);
+        builder.OpenComponent<DialogHeader>(11);
+        builder.AddComponentParameter(12, nameof(DialogHeader.Dialog), Dialog);
+        builder.AddComponentParameter(13, nameof(DialogHeader.TitleId), TitleId);
         builder.CloseComponent();
 
         builder.OpenElement(30, "div");
@@ -63,14 +74,13 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.OpenComponent<CascadingValue<DialogReference>>(33);
         builder.AddComponentParameter(34, "Value", Dialog);
         builder.AddComponentParameter(35, "IsFixed", true);
-        builder.AddComponentParameter(36, "ChildContent", (RenderFragment)(content =>
-        {
-            content.OpenComponent<DynamicComponent>(0);
-            content.AddComponentParameter(1, nameof(DynamicComponent.Type), Dialog.Component);
-            content.AddComponentParameter(2, nameof(DynamicComponent.Parameters),
-                Dialog.Parameters.ToDictionary(pair => pair.Key, pair => pair.Value!));
-            content.CloseComponent();
-        }));
+        builder.AddComponentParameter(36, "ChildContent", Dialog.Component is null ? ChildContent : (RenderFragment)(
+            content =>
+            {
+                content.OpenComponent<DialogContent>(0);
+                content.AddComponentParameter(1, nameof(DialogContent.Dialog), Dialog);
+                content.CloseComponent();
+            }));
         builder.CloseComponent();
         builder.CloseElement();
         if (options.Modal)
@@ -144,12 +154,31 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         Dialog.ResizeRequested += OnResizeRequested;
     }
 
+    // The browser closed the dialog by itself, so there is nothing left to ask.
     [JSInvokable]
-    public Task Cancel() => Dialog.CloseAsync(false, null);
+    public Task Cancel() => Dialog.CancelAsync();
 
-    private void OnChanged() => InvokeAsync(ApplyWindowStateAsync);
+    // Called from the script, so a failing CanDismiss goes to the renderer instead of the browser's console.
+    [JSInvokable]
+    public async Task Dismiss(DialogDismissReason reason)
+    {
+        try
+        {
+            await Dialog.DismissAsync(reason);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
 
-    // The frame never re-renders, so a new window state reaches the dialog through the script.
+    private void OnChanged() => InvokeAsync(() =>
+    {
+        StateHasChanged();
+        return ApplyWindowStateAsync();
+    });
+
+    // The script sets the window state, which places the dialog in the tray; the markup doesn't.
     private async Task ApplyWindowStateAsync()
     {
         if (_handle is null || Dialog.WindowState == _windowState)

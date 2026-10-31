@@ -1,5 +1,5 @@
 // Safari doesn't focus a button when it's clicked, so the control last pressed stands in for the focused one.
-// The JS initializer imports this at startup, so presses before any overlay loads are still seen.
+// Trailblazor's JS initializer imports this at startup, so presses before any overlay loads are still seen.
 const pressableSelector = 'a[href], button, input, select, textarea, [tabindex]';
 let lastPressed = null;
 

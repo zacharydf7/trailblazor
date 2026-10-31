@@ -70,7 +70,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
             builder.AddComponentParameter(41, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.DialogClose]);
             builder.AddComponentParameter(42, nameof(TbIconButton.Size), Size.Small);
             builder.AddComponentParameter(43, nameof(TbIconButton.OnClick),
-                EventCallback.Factory.Create<MouseEventArgs>(this, () => Dialog.CloseAsync(false, null)));
+                EventCallback.Factory.Create<MouseEventArgs>(this, CloseAsync));
             builder.AddAttribute(44, "data-part", "close");
             builder.CloseComponent();
         }
@@ -91,6 +91,8 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddAttribute(sequence + 5, "data-part", part);
         builder.CloseComponent();
     }
+
+    private Task CloseAsync() => Dialog.DismissAsync(DialogDismissReason.CloseButton);
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
 

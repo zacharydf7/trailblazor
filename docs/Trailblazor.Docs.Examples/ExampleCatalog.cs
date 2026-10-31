@@ -887,10 +887,14 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`.",
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
-            "A window over the page, opened from code, that asks for input or a decision.",
-            typeof(DialogExample), typeof(RenameDialog))
+            "A window over the page, opened from code or written in markup, that asks for input or a decision.",
+            typeof(DialogExample), typeof(RenameDialog), typeof(ExportDialog))
         {
-            Api = [typeof(DialogOptions), typeof(DialogSettings), typeof(TbDialogActions)],
+            Api =
+            [
+                typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
+                typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogDescription),
+            ],
             Accessibility =
             [
                 "A native `<dialog>` named by its title. A modal one makes the rest of the page inert, so focus "
@@ -901,7 +905,15 @@ public static class ExampleCatalog
                 "Escape cancels the topmost dialog unless `DismissOnEscape` is false; a menu or select open "
                     + "inside it closes first. A click that starts and ends on the backdrop cancels a modal unless "
                     + "`DismissOnBackdrop` is false.",
-                "`ConfirmAsync` opens an `alertdialog` described by its message.",
+                "`ConfirmAsync` and `AlertAsync` open an `alertdialog` described by its message. The alert's tone icon "
+                    + "is decorative, so say what happened in the message.",
+                "A `TbDialogDescription` describes any dialog with `aria-describedby`, so screen readers read it with "
+                    + "the title as the dialog opens.",
+                "Escape, the backdrop and the close button ask the dialog first: override `CanDismissAsync`, or set "
+                    + "`CanDismiss` on a `TbDialog`, to keep it open, as the rename dialog does once its name has "
+                    + "changed. Closing from code doesn't ask.",
+                "A dialog fades in and out with the motion tokens, and focus goes back to its opener once it has "
+                    + "faded; reduced motion opens and closes it at once.",
                 "A dialog that isn't modal can be `Draggable` by its header and `Resizable` by its bottom-end grip. "
                     + "Neither needs dragging: the header gains a Move button whose menu picks a place, and the grip "
                     + "is a Resize button whose menu picks a size. While either button has focus, the arrow keys "
@@ -911,6 +923,28 @@ public static class ExampleCatalog
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
+            TestingTip = "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
+                + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
+                + "finishes when the dialog closes."
+        },
+        new("focus-scope", "Focus scope", ExampleCategory.Overlays,
+            "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, and gives focus "
+                + "back when it goes.", typeof(FocusScopeExample))
+        {
+            Api = [typeof(TbFocusScope)],
+            Accessibility =
+            [
+                "When it appears, focus moves to the element marked `autofocus`, or else its first control, unless "
+                    + "focus is already inside. Turn this off with `AutoFocus=\"false\"`.",
+                "`Trapped` keeps Tab and Shift+Tab inside and brings focus back if it leaves. When scopes nest, only "
+                    + "the newest trapped one traps.",
+                "When it goes, focus returns to where it was, unless the user has moved it elsewhere.",
+                "It doesn't make the page behind inert or close on Escape; for a modal window, use a dialog.",
+                "Its options apply when it first renders; render it conditionally, as the example does, to start "
+                    + "it again.",
+            ],
+            Target = new("group", "Find a trail") { OpenedBy = new("button", "Find a trail") },
+            Blocks = ["tb-focus-scope"],
         },
         new("popover", "Popover", ExampleCategory.Overlays,
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "

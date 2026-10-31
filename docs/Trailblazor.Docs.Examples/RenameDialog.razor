@@ -1,12 +1,22 @@
 @inherits TbDialog<string>
+@inject IDialogService Dialogs
 
-<TbTextField Label="Name" @bind-Value="Name" />
+<TbTextField Label="Name" @bind-Value="Name" UpdateOnInput />
 <TbDialogActions>
     <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelAsync">Cancel</TbButton>
     <TbButton OnClick="() => CloseAsync(Name ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {
+    private string? _original;
+
     [Parameter]
     public string? Name { get; set; }
+
+    protected override void OnInitialized() => _original = Name;
+
+    // Escape, the backdrop and the close button ask first once the name has changed.
+    protected override async Task<bool> CanDismissAsync(DialogDismissReason reason) =>
+        Name == _original || await Dialogs.ConfirmAsync("Discard the new name?",
+            $"The report keeps its name, {_original}.", "Discard", "Keep editing", Tone.Danger);
 }

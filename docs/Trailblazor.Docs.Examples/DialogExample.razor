@@ -1,15 +1,27 @@
 @inject IDialogService Dialogs
 
-<TbStack Row Gap="2">
+<TbStack Row Gap="2" Wrap>
     <TbButton OnClick="RenameAsync">Rename report</TbButton>
     <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="DeleteAsync">Delete report</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="ExportAsync">Export report</TbButton>
     <TbButton Variant="Variant.Text" OnClick="EditBesideAsync">Edit beside the page</TbButton>
+    <TbButton Variant="Variant.Text" OnClick="() => _sharing = true">Share</TbButton>
 </TbStack>
 <TbText Style="margin-block-start: var(--tb-space-3)">@_status</TbText>
+
+@* A dialog in markup, for one that needs no class of its own; its content sees this page's fields. *@
+<TbDialog @bind-Open="_sharing" Title="Share report">
+    <TbDialogDescription>Anyone with the link can view @_name.</TbDialogDescription>
+    <TbTextField Label="Link" Value="@("https://example.com/reports/42")" ReadOnly />
+    <TbDialogActions>
+        <TbButton OnClick="() => _sharing = false">Done</TbButton>
+    </TbDialogActions>
+</TbDialog>
 
 @code {
     private string _name = "Quarterly report";
     private string _status = "Quarterly report";
+    private bool _sharing;
 
     private async Task RenameAsync()
     {
@@ -42,5 +54,24 @@
         var deleted = await Dialogs.ConfirmAsync("Delete report?", "This can't be undone.", "Delete",
             tone: Tone.Danger);
         _status = deleted ? "Deleted" : "Kept";
+    }
+
+    // The page keeps a reference to the dialog, updates its progress and closes it when the work is done.
+    private async Task ExportAsync()
+    {
+        var dialog = Dialogs.Show<ExportDialog, bool>("Exporting report");
+        for (var percent = 25; percent <= 100 && !dialog.Result.IsCompleted; percent += 25)
+        {
+            await Task.Delay(400);
+            dialog.Update<ExportDialog>(p => p.Set(d => d.Percent, percent));
+        }
+
+        await dialog.CloseAsync(true);
+        var exported = (await dialog.Result).Confirmed;
+        _status = exported ? "Exported" : "Export stopped";
+        if (exported)
+        {
+            await Dialogs.AlertAsync("Report exported", "The PDF is in your downloads.", tone: Tone.Success);
+        }
     }
 }

@@ -1,0 +1,16 @@
+@page "/tb-focus-scope"
+
+<button type="button" data-testid="opener" @onclick="() => _open = true">Open</button>
+@if (_open)
+{
+    @* The second field is marked autofocus on its wrapper, as a field component carries the attribute. *@
+    <TbFocusScope Trapped>
+        <TbTextField TValue="string" Label="First" />
+        <TbTextField TValue="string" Label="Second" autofocus />
+        <TbButton OnClick="() => _open = false">Close</TbButton>
+    </TbFocusScope>
+}
+
+@code {
+    private bool _open;
+}

@@ -1,5 +1,5 @@
 // Blazor runs this initializer itself, so consumers add no script tags.
-import './pointer-origin.js';
+import '../Trailblazor.Primitives/pointer-origin.js';
 import './read-only.js';
 import './number-field.js';
 

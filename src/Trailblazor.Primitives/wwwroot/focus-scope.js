@@ -1,3 +1,5 @@
+import { focusOrigin } from './pointer-origin.js';
+
 const focusableSelector = 'a[href], area[href], button, input:not([type="hidden"]), select, textarea, iframe, '
     + 'audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
 
@@ -5,7 +7,8 @@ const focusableSelector = 'a[href], area[href], button, input:not([type="hidden"
 const trappedScopes = [];
 
 export function createFocusScope(container, options) {
-    const previouslyFocused = document.activeElement;
+    // Safari leaves focus on the page when a button opens the scope, so the button pressed is where focus goes back.
+    const previouslyFocused = focusOrigin();
     let lastFocusedInside = null;
     const scope = { dispose };
 
@@ -17,7 +20,7 @@ export function createFocusScope(container, options) {
     document.addEventListener('focusin', onFocusIn);
 
     if (options.autoFocus && !container.contains(document.activeElement)) {
-        (getTabbables(container)[0] ?? container).focus();
+        (autofocusTarget(container) ?? getTabbables(container)[0] ?? container).focus();
     }
 
     return scope;
@@ -76,12 +79,23 @@ export function createFocusScope(container, options) {
     }
 }
 
+// The control marked autofocus in the container, or null. A field component carries the attribute on its wrapper,
+// so a wrapper gives its first control instead.
+export function autofocusTarget(container) {
+    const named = container?.querySelector('[autofocus]');
+    return named && (isTabbable(named) ? named : getTabbables(named)[0] ?? null);
+}
+
 // The first control Tab would reach in the container, or null.
 export function firstTabbable(container) {
     return getTabbables(container)[0] ?? null;
 }
 
 function getTabbables(container) {
-    return [...container.querySelectorAll(focusableSelector)].filter(element => element.tabIndex >= 0
-        && !element.matches(':disabled') && !element.closest('[inert]') && element.checkVisibility());
+    return [...container.querySelectorAll(focusableSelector)].filter(isTabbable);
+}
+
+function isTabbable(element) {
+    return element.matches(focusableSelector) && element.tabIndex >= 0 && !element.matches(':disabled')
+        && !element.closest('[inert]') && element.checkVisibility();
 }

@@ -1,0 +1,80 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<div @attributes="AdditionalAttributes" @ref="_element" tabindex="-1" data-part="focus-scope"
+     class="@ClassNames.Join("tb-focus-scope", Class)" style="@Style">
+    @ChildContent
+</div>
+
+@code {
+    private ElementReference _element;
+    private FocusScope? _scope;
+    private bool _disposed;
+
+    /// <summary>Keeps Tab and Shift+Tab inside the scope, and brings focus back if it leaves. When scopes nest, the
+    /// newest trapped one traps, and the one beneath it resumes when it goes.</summary>
+    [Parameter]
+    public bool Trapped { get; set; }
+
+    /// <summary>Moves focus into the scope when it appears, to the element marked <c>autofocus</c> or else its first
+    /// control, unless focus is already inside. Defaults to true.</summary>
+    [Parameter]
+    public bool AutoFocus { get; set; } = true;
+
+    /// <summary>Gives focus back to where it was when the scope goes away, unless the user has moved it elsewhere.
+    /// Defaults to true.</summary>
+    [Parameter]
+    public bool RestoreFocus { get; set; } = true;
+
+    /// <summary>The overlay or region whose focus the scope manages.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    // The options apply as the scope starts, which is when it first renders; render it conditionally to restart it.
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var scope = await FocusScope.CreateAsync(Modules, _element,
+                new() { Trapped = Trapped, AutoFocus = AutoFocus, RestoreFocus = RestoreFocus });
+            if (_disposed)
+            {
+                await scope.DisposeAsync();
+                return;
+            }
+
+            _scope = scope;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the scope went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        try
+        {
+            if (_scope is not null)
+            {
+                await _scope.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the scope went with it.
+        }
+    }
+}

@@ -396,6 +396,207 @@ public class DialogServiceTests : BunitContext
         Assert.Throws<InvalidOperationException>(() => cut.Find("[data-testid=accept]").Click());
     }
 
+    [Fact]
+    public async Task Show_ShouldReturnAReferenceThatClosesTheDialogWithAValue_WhenTheCallerCloses()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GreetingDialog, string>("Greeting");
+        host.WaitForElement("dialog");
+
+        await host.InvokeAsync(() => dialog.CloseAsync("Bo"));
+
+        Assert.Equal(DialogResult<string>.Ok("Bo"), await dialog.Result);
+        Assert.Empty(host.FindAll("dialog"));
+    }
+
+    [Fact]
+    public void Title_ShouldRenameTheOpenDialog_WhenTheCallerSetsIt()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GreetingDialog, string>("Greeting");
+        host.WaitForElement("dialog");
+
+        dialog.Title = "Welcome";
+
+        host.WaitForAssertion(() => Assert.Equal("Welcome", host.Find("h2").TextContent));
+    }
+
+    [Fact]
+    public void Update_ShouldRenderTheContentWithTheNewParameters_WhenTheCallerUpdatesIt()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GreetingDialog, string>("Greeting", p => p.Set(d => d.Name, "Ada"));
+        host.WaitForElement("dialog");
+
+        dialog.Update<GreetingDialog>(p => p.Set(d => d.Name, "Bo"));
+
+        host.WaitForAssertion(() => Assert.Contains("Hello Bo", host.Find("[data-part=body]").TextContent));
+        Assert.Throws<InvalidOperationException>(() => dialog.Update<HeaderDialog>(_ => { }));
+    }
+
+    [Fact]
+    public async Task Update_ShouldKeepAParameterTheDialogChanged_WhenTheUpdateNamesAnother()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<EditableDialog, bool>("Edit", p => p.Set(d => d.Name, "Ada").Set(d => d.Note, "new"));
+        await host.WaitForElement("[data-testid=type]").ClickAsync(new());
+
+        dialog.Update<EditableDialog>(p => p.Set(d => d.Note, "taken"));
+
+        host.WaitForAssertion(() => Assert.Equal("Typed / taken", host.Find("[data-part=body]").TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task CloseAllAsync_ShouldCancelEveryOpenDialog_WhenCalled()
+    {
+        var host = Render<DialogHost>();
+        var first = Dialogs.Show<GreetingDialog, string>("First");
+        var second = Dialogs.Show<GreetingDialog, string>("Second");
+        host.WaitForAssertion(() => Assert.Equal(2, host.FindAll("dialog").Count));
+
+        await host.InvokeAsync(Dialogs.CloseAllAsync);
+
+        Assert.Equal([DialogResult<string>.Cancel(), DialogResult<string>.Cancel()],
+            await Task.WhenAll(first.Result, second.Result));
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Fact]
+    public async Task Dismiss_ShouldAskTheContentWithTheReasonAndStayOpen_WhenTheContentRefuses()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");
+        var content = host.WaitForComponent<GuardedDialog>();
+
+        await host.Find("[data-part=close]").ClickAsync(new());
+        await host.InvokeAsync(() => host.FindComponent<DialogFrame>().Instance.Dismiss(DialogDismissReason.Escape));
+        await host.InvokeAsync(() => host.FindComponent<DialogFrame>().Instance.Dismiss(DialogDismissReason.Backdrop));
+
+        Assert.Equal([DialogDismissReason.CloseButton, DialogDismissReason.Escape, DialogDismissReason.Backdrop],
+            content.Instance.Asked);
+        Assert.False(dialog.Result.IsCompleted);
+        content.Instance.Allow = true;
+        await host.Find("[data-part=close]").ClickAsync(new());
+        Assert.Equal(DialogResult<bool>.Cancel(), await dialog.Result);
+    }
+
+    [Fact]
+    public async Task CancelAsync_ShouldCloseWithoutAskingTheContent_WhenTheCallerCancels()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");
+        var asked = host.WaitForComponent<GuardedDialog>().Instance.Asked;
+
+        await host.InvokeAsync(dialog.CancelAsync);
+
+        Assert.Equal(DialogResult<bool>.Cancel(), await dialog.Result);
+        Assert.Empty(asked);
+    }
+
+    [Fact]
+    public async Task Dismiss_ShouldReportAFailingQuestionToTheRenderer_WhenTheContentThrows()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");
+        host.WaitForComponent<GuardedDialog>().Instance.Failure = new InvalidOperationException("Saving failed.");
+
+        await host.InvokeAsync(() => host.FindComponent<DialogFrame>().Instance.Dismiss(DialogDismissReason.Escape));
+
+        var exception = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5),
+            Xunit.TestContext.Current.CancellationToken);
+        Assert.Equal("Saving failed.", exception.Message);
+        Assert.False(dialog.Result.IsCompleted);
+    }
+
+    [Fact]
+    public async Task AlertAsync_ShouldShowOneButtonAndTheTonesIcon_WhenCalled()
+    {
+        var host = Render<DialogHost>();
+
+        var alerting = Dialogs.AlertAsync("Saved", "The report is saved.", tone: Tone.Success);
+
+        var dialog = host.WaitForElement("dialog");
+        Assert.Equal("alertdialog", dialog.GetAttribute("role"));
+        Assert.Equal("The report is saved.", host.Find($"#{dialog.GetAttribute("aria-describedby")}").TextContent);
+        Assert.Contains("tb-icon--success", host.Find("[data-part=body] [data-part=icon]").ClassList);
+        var button = Assert.Single(host.FindAll("[data-part=actions] button"));
+        Assert.Equal("OK", button.TextContent.Trim());
+        await button.ClickAsync(new());
+        await alerting;
+    }
+
+    [Fact]
+    public void Description_ShouldDescribeTheDialog_WhenItsContentHasOne()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.Show<DescribedDialog, bool>("Export");
+
+        var description = host.WaitForElement("[data-part=description]");
+        host.WaitForAssertion(() => Assert.Equal(description.Id, host.Find("dialog").GetAttribute("aria-describedby")));
+        Assert.Equal("Exports every page as a PDF.", description.TextContent.Trim());
+        Assert.Contains("wide", description.ClassList);
+        Assert.Equal("color: red", description.GetAttribute("style"));
+        Assert.Equal("intro", description.GetAttribute("data-testid"));
+    }
+
+    [Fact]
+    public void Description_ShouldLeaveTheDialogUndescribed_WhenItsContentHasNone()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.Show<GreetingDialog, string>("Greeting");
+
+        Assert.Null(host.WaitForElement("dialog").GetAttribute("aria-describedby"));
+    }
+
+    private sealed class GuardedDialog : TbDialog<bool>
+    {
+        public List<DialogDismissReason> Asked { get; } = [];
+
+        public bool Allow { get; set; }
+
+        public Exception? Failure { get; set; }
+
+        protected override Task<bool> CanDismissAsync(DialogDismissReason reason)
+        {
+            Asked.Add(reason);
+            return Failure is not null ? Task.FromException<bool>(Failure) : Task.FromResult(Allow);
+        }
+    }
+
+    private sealed class EditableDialog : TbDialog<bool>
+    {
+        [Parameter]
+        public string? Name { get; set; }
+
+        [Parameter]
+        public string? Note { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"{Name} / {Note}");
+            builder.OpenElement(1, "button");
+            builder.AddAttribute(2, "data-testid", "type");
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => Name = "Typed"));
+            builder.CloseElement();
+        }
+    }
+
+    private sealed class DescribedDialog : TbDialog<bool>
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbDialogDescription>(0);
+            builder.AddComponentParameter(1, nameof(TbDialogDescription.Class), "wide");
+            builder.AddComponentParameter(2, nameof(TbDialogDescription.Style), "color: red");
+            builder.AddAttribute(3, "data-testid", "intro");
+            builder.AddComponentParameter(4, nameof(TbDialogDescription.ChildContent),
+                (RenderFragment)(text => text.AddContent(0, "Exports every page as a PDF.")));
+            builder.CloseComponent();
+        }
+    }
+
     private sealed class Settings
     {
         public string Theme { get; set; } = "light";

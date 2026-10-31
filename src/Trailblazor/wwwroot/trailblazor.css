@@ -2914,6 +2914,12 @@
         font-family: var(--tb-font-family);
     }
 
+    /* A focus scope with no controls takes focus itself, so it shows where focus went. */
+    .tb-focus-scope:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
     .tb-popover__panel:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);
@@ -2946,6 +2952,42 @@
 
     .tb-dialog::backdrop {
         background: oklch(0 0 0 / 0.45);
+        transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    /* A dialog fades in as it opens and out before dialog.js closes it, without moving, so its box can be measured at
+       once for dragging. Reduced motion skips both. */
+    .tb-dialog {
+        transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    @starting-style {
+        .tb-dialog[open] {
+            opacity: 0;
+        }
+
+        .tb-dialog[open]::backdrop {
+            opacity: 0;
+        }
+    }
+
+    .tb-dialog[data-leaving] {
+        opacity: 0;
+    }
+
+    .tb-dialog[data-leaving]::backdrop {
+        opacity: 0;
+    }
+
+    .tb-dialog__message {
+        display: flex;
+        gap: var(--tb-space-3);
+        align-items: flex-start;
+    }
+
+    .tb-dialog__description {
+        margin-block-end: var(--tb-space-3);
+        color: var(--tb-color-text-muted);
     }
 
     /* The browser centers a dialog with auto margins; a fixed margin on one side moves it to that edge. */

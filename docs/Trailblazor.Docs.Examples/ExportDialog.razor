@@ -1,0 +1,12 @@
+@inherits TbDialog<bool>
+
+<TbProgress Value="Percent" AriaLabel="Export progress" Label="Writing the PDF" ShowValue />
+<TbDialogActions>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelAsync">Stop</TbButton>
+</TbDialogActions>
+
+@code {
+    /// <summary>How far the export has got, which the page updates while the dialog is open.</summary>
+    [Parameter]
+    public int Percent { get; set; }
+}

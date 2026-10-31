@@ -118,15 +118,8 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
         builder.CloseElement();
     }
 
-    // The tone's icon unless the toast names its own or none; primary and neutral say nothing a color needs to back.
-    private Icon? Icon => !Toast.Options.ShowIcon ? null : Toast.Options.Icon ?? Toast.Tone switch
-    {
-        Tone.Success => BuiltInIcons.Success,
-        Tone.Warning => BuiltInIcons.Warning,
-        Tone.Danger => BuiltInIcons.Error,
-        Tone.Info => BuiltInIcons.Info,
-        _ => null,
-    };
+    // The tone's icon unless the toast names its own or none.
+    private Icon? Icon => !Toast.Options.ShowIcon ? null : Toast.Options.Icon ?? BuiltInIcons.ForTone(Toast.Tone);
 
     private void Hold(bool? hovered = null, bool? focused = null)
     {

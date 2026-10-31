@@ -77,11 +77,5 @@
     [Parameter]
     public AlertClasses? Classes { get; set; }
 
-    private Icon ToneIcon => Tone switch
-    {
-        Tone.Success => BuiltInIcons.Success,
-        Tone.Warning => BuiltInIcons.Warning,
-        Tone.Danger => BuiltInIcons.Error,
-        _ => BuiltInIcons.Info,
-    };
+    private Icon ToneIcon => BuiltInIcons.ForTone(Tone) ?? BuiltInIcons.Info;
 }

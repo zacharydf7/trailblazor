@@ -1,0 +1,27 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+<div @attributes="AdditionalAttributes" id="@Reference.DescriptionId" data-part="description"
+     class="@ClassNames.Join("tb-dialog__description", Class)" style="@Style">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter]
+    private DialogReference? Dialog { get; set; }
+
+    /// <summary>What the dialog is about, such as what it asks or what will happen. Screen readers read it with the
+    /// dialog's title when it opens.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private DialogReference Reference => Dialog
+        ?? throw new InvalidOperationException($"Put {nameof(TbDialogDescription)} inside a dialog.");
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Reference.SetDescribed(true);
+
+    /// <inheritdoc />
+    public void Dispose() => Dialog?.SetDescribed(false);
+}
