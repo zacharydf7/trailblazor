@@ -120,6 +120,31 @@ public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Check_ShouldFillWithThePrimaryColor_WhenItsRowIsCheckedOrMixed(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await page.Tb().Tree("Gear").ExpandAsync("North");
+        await Row(page, "Pass", "Gear").FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        await Expect(page.GetByTestId("checked")).ToHaveTextAsync("6");
+
+        foreach (var (row, state) in new[] { ("Pass", "true"), ("North", "mixed") })
+        {
+            await Expect(Row(page, row, "Gear")).ToHaveAttributeAsync("aria-checked", state);
+            var colors = await Row(page, row, "Gear").Locator(".tb-tree__check").EvaluateAsync<string[]>("""
+                check => {
+                    const probe = document.createElement('span');
+                    probe.style.color = 'var(--tb-color-primary)';
+                    document.body.append(probe);
+                    return [getComputedStyle(check).backgroundColor, getComputedStyle(probe).color];
+                }
+                """);
+
+            Assert.Equal(colors[1], colors[0]);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Space_ShouldCheckTheRowAndMarkItsParentMixed_WhenTheTreeIsCheckable(string browser)
     {
         var page = await OpenTreeAsync(browser);

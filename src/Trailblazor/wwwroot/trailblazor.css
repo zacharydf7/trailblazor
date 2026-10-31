@@ -2453,9 +2453,7 @@
     }
 
     .tb-checkbox__input:checked,
-    .tb-checkbox__input:indeterminate,
-    .tb-tree__check--checked,
-    .tb-tree__check--mixed {
+    .tb-checkbox__input:indeterminate {
         border-color: var(--tb-color-primary);
         background: var(--tb-color-primary);
     }
@@ -4133,6 +4131,13 @@
         border-radius: var(--tb-radius-sm);
         background: var(--tb-color-surface);
         cursor: pointer;
+    }
+
+    /* After the base rule, whose surface fill would otherwise cover a checked or mixed check's primary fill. */
+    .tb-tree__check--checked,
+    .tb-tree__check--mixed {
+        border-color: var(--tb-color-primary);
+        background: var(--tb-color-primary);
     }
 
     .tb-tree__content {
