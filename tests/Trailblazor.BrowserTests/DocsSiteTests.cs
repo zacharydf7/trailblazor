@@ -91,7 +91,9 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "components/button");
 
-        await page.Tb().Select("Theme").ChooseAsync("Dark");
+        var dark = page.GetByRole(AriaRole.Group, new() { Name = "Theme" })
+            .GetByRole(AriaRole.Button, new() { Name = "Dark" });
+        await dark.ClickAsync();
         await page.Tb().Select("Palette").ChooseAsync("Cobalt");
 
         var html = page.Locator("html");
@@ -101,7 +103,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Locator(".docs-main h1").WaitForAsync();
         await Expect(html).ToHaveAttributeAsync("data-tb-theme", "dark");
         await Expect(html).ToHaveAttributeAsync("data-tb-palette", "cobalt");
-        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Theme" })).ToHaveTextAsync("Dark");
+        await Expect(dark).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Palette" })).ToHaveTextAsync("Cobalt");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -383,7 +386,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal("packing-list.csv", download.SuggestedFilename);
         var methods = page.GetByRole(AriaRole.Region, new() { Name = "IBrowserService" });
-        await Expect(methods.GetByRole(AriaRole.Columnheader)).ToHaveTextAsync(["Method", "Returns", "Description"]);
+        await Expect(methods.GetByRole(AriaRole.Columnheader)).ToHaveTextAsync(["Member", "Type", "Description"]);
         await Expect(methods.GetByRole(AriaRole.Rowheader, new() { Name = "PickColorAsync()", Exact = true })).ToBeVisibleAsync();
     }
 

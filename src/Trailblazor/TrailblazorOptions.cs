@@ -3,6 +3,9 @@ namespace Trailblazor;
 /// <summary>App-wide settings, passed to <c>AddTrailblazor(options => ...)</c>.</summary>
 public sealed class TrailblazorOptions
 {
+    /// <summary>The theme and palette a page starts with, and whether the user's choice is remembered.</summary>
+    public ThemeSettings Theme { get; } = new();
+
     /// <summary>Where toasts appear, how many show at once, and how long they stay.</summary>
     public ToastSettings Toasts { get; } = new();
 

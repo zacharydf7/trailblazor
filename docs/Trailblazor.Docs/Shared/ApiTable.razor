@@ -15,8 +15,8 @@ else
         <table>
             <thead>
                 <tr>
-                    <th scope="col">@(_api.Methods ? "Method" : "Name")</th>
-                    <th scope="col">@(_api.Methods ? "Returns" : "Type")</th>
+                    <th scope="col">@(_api.Methods ? "Member" : "Name")</th>
+                    <th scope="col">Type</th>
                     @if (!_api.Methods)
                     {
                         <th scope="col">Default</th>

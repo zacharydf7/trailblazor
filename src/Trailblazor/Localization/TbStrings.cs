@@ -296,6 +296,18 @@ public static class TbStrings
     /// </summary>
     public const string SplitterPane = "Splitter.Pane";
 
+    /// <summary>"Theme": names a theme picker.</summary>
+    public const string ThemePicker = "Theme.Picker";
+
+    /// <summary>"Light": names the theme picker's light choice.</summary>
+    public const string ThemeLight = "Theme.Light";
+
+    /// <summary>"Dark": names the theme picker's dark choice.</summary>
+    public const string ThemeDark = "Theme.Dark";
+
+    /// <summary>"Match the device": names the theme picker's choice that follows the device's setting.</summary>
+    public const string ThemeSystem = "Theme.System";
+
     /// <summary>"Dismiss": names a toast's close button.</summary>
     public const string ToastDismiss = "Toast.Dismiss";
 
@@ -414,6 +426,10 @@ public static class TbStrings
         [SelectClear] = "Clear",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
+        [ThemePicker] = "Theme",
+        [ThemeLight] = "Light",
+        [ThemeDark] = "Dark",
+        [ThemeSystem] = "Match the device",
         [ToastDismiss] = "Dismiss",
         [ToastRegion] = "Notifications",
         [ToolbarMore] = "More",

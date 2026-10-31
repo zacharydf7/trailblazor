@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-tb-theme="system">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -11,18 +11,9 @@
     <link rel="preload" id="webassembly" />
     <link rel="stylesheet" href="_content/Trailblazor/trailblazor.css" />
     <link rel="stylesheet" href="css/app.css" />
-    <!-- Applies the remembered theme and palette before the first paint, so the page doesn't flash. -->
-    <script>
-        try {
-            for (const name of ['tbTheme', 'tbPalette']) {
-                const value = localStorage.getItem(`docs-${name}`);
-                if (value) {
-                    document.documentElement.dataset[name] = value;
-                }
-            }
-        } catch {
-        }
-    </script>
+    <!-- What TbThemeHead renders in a server app: the remembered theme and palette go on before the first paint. -->
+    <script src="_content/Trailblazor/theme-head.js" data-mode="system" data-palette="graphite"
+        data-remember="true"></script>
     <script type="importmap"></script>
 </head>
 

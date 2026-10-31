@@ -1,0 +1,5 @@
+@page "/theme"
+@inject IThemeService Theme
+
+<TbThemePicker />
+<button type="button" @onclick="() => Theme.SetPaletteAsync(Palette.Cobalt)">Use cobalt</button>

@@ -5,6 +5,12 @@ import './read-only.js';
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.
 export function afterWebStarted(blazor) {
     registerEvents(blazor);
+    // An enhanced navigation copies the server's <html>, which has no theme, so the one the page showed goes back.
+    blazor.addEventListener('enhancedload', () => {
+        if (globalThis.trailblazorTheme) {
+            Object.assign(document.documentElement.dataset, globalThis.trailblazorTheme);
+        }
+    });
 }
 
 export function afterStarted(blazor) {

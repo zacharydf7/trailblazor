@@ -1,60 +1,25 @@
 @using Trailblazor.Docs.Examples
-@inject IJSRuntime JS
-@implements IAsyncDisposable
+@implements IDisposable
+@inject IThemeService Theme
 
-@* The labels stay the fields' names for screen readers; the header has no room to show them. *@
+@* The palette's label stays its name for screen readers; the header has no room to show it. *@
 <TbStack Row Gap="2" Align="Align.Center" class="docs-look">
-    <TbSelect Label="Theme" @bind-Value="_theme" @bind-Value:after="ApplyThemeAsync" Classes="HiddenLabel">
-        <TbOption Value="@("system")">System</TbOption>
-        <TbOption Value="@("light")">Light</TbOption>
-        <TbOption Value="@("dark")">Dark</TbOption>
-    </TbSelect>
-    <TbSelect Label="Palette" @bind-Value="_palette" @bind-Value:after="ApplyPaletteAsync" Classes="HiddenLabel">
+    <TbThemePicker Size="Size.Small" />
+    <TbSelect Label="Palette" Value="Theme.Palette" ValueChanged="(Palette palette) => Theme.SetPaletteAsync(palette)"
+              Classes="HiddenLabel">
         @foreach (var palette in PaletteCatalog.All)
         {
-            <TbOption Value="@palette.Name">@palette.Title</TbOption>
+            <TbOption Value="palette.Value">@palette.Title</TbOption>
         }
     </TbSelect>
 </TbStack>
 
 @code {
     private static readonly FieldClasses HiddenLabel = new() { Label = "tb-visually-hidden" };
-    private IJSObjectReference? _module;
-    private string? _theme = "system";
-    private string? _palette = "graphite";
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
-            return;
-        }
+    protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
 
-        _module = await JS.InvokeAsync<IJSObjectReference>("import", "./docs.js");
-        var look = await _module.InvokeAsync<Look>("getLook");
-        (_theme, _palette) = (look.Theme, look.Palette);
-        StateHasChanged();
-    }
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
 
-    private Task ApplyThemeAsync() => SetLookAsync("tbTheme", _theme);
-
-    private Task ApplyPaletteAsync() => SetLookAsync("tbPalette", _palette);
-
-    private async Task SetLookAsync(string name, string? value)
-    {
-        if (value is not null && _module is not null)
-        {
-            await _module.InvokeVoidAsync("setLook", name, value);
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_module is not null)
-        {
-            await _module.DisposeAsync();
-        }
-    }
-
-    private sealed record Look(string Theme, string Palette);
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
 }

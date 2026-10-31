@@ -1,0 +1,15 @@
+@implements IDisposable
+@inject IThemeService Theme
+
+<TbStack Gap="3">
+    <TbThemePicker />
+    <TbText Muted data-testid="theme-echo">The page is in @Theme.Mode mode with the @Theme.Palette palette.</TbText>
+</TbStack>
+
+@code {
+    protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
+}

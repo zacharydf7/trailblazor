@@ -34,6 +34,8 @@ public class TrailblazorBunitExtensionsTests : BunitContext
                 EventCallback.Factory.Create<string>(this, size => _size = size));
             builder.AddAttribute(9, nameof(TbSelect<string>.ChildContent), (RenderFragment)AddSizes);
             builder.CloseComponent();
+            builder.OpenComponent<TbThemePicker>(10);
+            builder.CloseComponent();
         });
 
         cut.Find("[role=option]").Click();

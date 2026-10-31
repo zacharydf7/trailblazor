@@ -1,0 +1,49 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+@inject IThemeService Theme
+@inject ITbLocalizer Localizer
+
+@* Nothing is pressed until the picker has read the page, which the head script may have put in a remembered mode. *@
+<TbToggleGroup TValue="ThemeMode?" @attributes="AdditionalAttributes"
+               AriaLabel="@(AriaLabel ?? Localizer[TbStrings.ThemePicker])" Value="@(_loaded ? Theme.Mode : null)"
+               ValueChanged="(ThemeMode? mode) => mode is { } chosen ? Theme.SetModeAsync(chosen) : Task.CompletedTask"
+               Size="Size" Class="@Class" Style="@Style">
+    <TbToggleItem TValue="ThemeMode?" Value="ThemeMode.Light" Icon="BuiltInIcons.Sun"
+                  AriaLabel="@Localizer[TbStrings.ThemeLight]" />
+    <TbToggleItem TValue="ThemeMode?" Value="ThemeMode.Dark" Icon="BuiltInIcons.Moon"
+                  AriaLabel="@Localizer[TbStrings.ThemeDark]" />
+    <TbToggleItem TValue="ThemeMode?" Value="ThemeMode.System" Icon="BuiltInIcons.Monitor"
+                  AriaLabel="@Localizer[TbStrings.ThemeSystem]" />
+</TbToggleGroup>
+
+@code {
+    private bool _loaded;
+
+    /// <summary>The picker's name for screen readers. Defaults to the localizer's "Theme".</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>The size of the picker's buttons. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            await Theme.LoadAsync();
+            _loaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    /// <inheritdoc />
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
+}

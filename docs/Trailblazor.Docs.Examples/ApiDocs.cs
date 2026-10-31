@@ -27,13 +27,23 @@ public static partial class ApiDocs
     };
 
     // A component lists its parameters, apart from Class, Style and attributes, which every component takes; an
-    // options type lists the properties a caller sets; a service interface lists its methods.
+    // options type lists the properties a caller sets; a service interface lists its properties, events and methods,
+    // leaving out the accessor methods the compiler makes for the first two.
     public static ApiType Describe(Type type)
     {
         if (type.IsInterface)
         {
+            var context = new NullabilityInfoContext();
             return new(TypeName(type), Summary($"T:{type.FullName}"),
-                [.. type.GetMethods().OrderBy(method => method.MetadataToken).Select(Method)], Methods: true);
+            [
+                .. type.GetProperties().OrderBy(property => property.MetadataToken)
+                    .Select(property => InterfaceProperty(property, context)),
+                .. type.GetEvents().OrderBy(eventInfo => eventInfo.MetadataToken).Select(eventInfo => new ApiMember(
+                    $"event {eventInfo.Name}", TypeName(eventInfo.EventHandlerType!), "",
+                    Summary($"E:{DocId(type)}.{eventInfo.Name}"), false)),
+                .. type.GetMethods().Where(method => !method.IsSpecialName).OrderBy(method => method.MetadataToken)
+                    .Select(Method),
+            ], Methods: true);
         }
 
         var component = type.IsAssignableTo(typeof(IComponent));
@@ -56,6 +66,25 @@ public static partial class ApiDocs
         return new(property.Name, type, FormatDefault(value), Summary(property),
             property.IsDefined(typeof(EditorRequiredAttribute)));
     }
+
+    // An indexer shows as this[...], and its summary is found by its parameter types, as a method's is.
+    private static ApiMember InterfaceProperty(PropertyInfo property, NullabilityInfoContext context)
+    {
+        var index = property.GetIndexParameters();
+        var type = TypeName(property.PropertyType, context.Create(property));
+        if (index.Length == 0)
+        {
+            return new($"{property.Name} {{ get; }}", type, "", Summary(property), false);
+        }
+
+        var signature = string.Join(", ", index.Select(parameter => Parameter(parameter, context)));
+        var types = string.Join(',', index.Select(parameter => DocId(parameter.ParameterType)));
+        return new($"this[{signature}] {{ get; }}", type, "",
+            Summary($"P:{DocId(property.DeclaringType!)}.{property.Name}({types})"), false);
+    }
+
+    /// <summary>The summary the XML documentation gives one value of an enum, such as a palette.</summary>
+    public static string Describe(Enum value) => Summary($"F:{value.GetType().FullName}.{value}");
 
     private static ApiMember Method(MethodInfo method)
     {

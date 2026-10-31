@@ -230,6 +230,26 @@ public static class ExampleCatalog
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
                 + "`data-ready` attribute before testing the arrow keys.",
         },
+        new("theme-picker", "Theme picker", ExampleCategory.Actions,
+            "Lets people choose a light or dark page, or follow their device, and remembers the choice.",
+            typeof(ThemePickerExample))
+        {
+            Api = [typeof(TbThemePicker), typeof(IThemeService), typeof(ThemeSettings)],
+            Accessibility =
+            [
+                "A `group` named \"Theme\", holding toggle buttons for Light, Dark and Match the device, each named "
+                    + "by the localizer and marked with `aria-pressed`.",
+                "The group is one tab stop. Left and Right move between the choices, and Space or Enter picks one, as "
+                    + "in a toggle group.",
+                "`TbThemeHead` in `<head>` puts a remembered choice back before the page paints, so a dark page "
+                    + "never flashes light first.",
+            ],
+            Target = new("group", "Theme"),
+            Blocks = ["tb-toggle-group", "tb-button"],
+            TestingTip = "Pick a mode with `GetByRole(AriaRole.Button, new() { Name = \"Dark\" })`, and check the "
+                + "page with `ToHaveAttributeAsync(\"data-tb-theme\", \"dark\")` on `html`. A test that needs one "
+                + "theme can set `data-tb-theme` on `html` itself.",
+        },
         new("toolbar", "Toolbar", ExampleCategory.Actions,
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
                 + "its end.", typeof(ToolbarExample))

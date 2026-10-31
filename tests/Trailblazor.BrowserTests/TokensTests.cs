@@ -48,6 +48,8 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Tokens_ShouldUseLightColors_WhenNoThemeIsSetAndSystemPrefersDark(string browser)
     {
         var page = await OpenAsync(browser, "/tokens", new() { ColorScheme = ColorScheme.Dark });
+        // The host puts the app's default theme on <html>, so the attribute comes off for a page with none.
+        await page.EvaluateAsync("() => delete document.documentElement.dataset.tbTheme");
 
         Assert.True(await GetLuminanceAsync(page, "--tb-color-surface") > 0.9);
     }
@@ -210,7 +212,7 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Fact]
-    public async Task PaletteCatalog_ShouldListEveryPaletteInTheStylesheet_WhenCalled()
+    public async Task Palette_ShouldNameEveryPaletteInTheStylesheet_WhenCalled()
     {
         using var client = new HttpClient { BaseAddress = Fixture.BaseAddress };
 

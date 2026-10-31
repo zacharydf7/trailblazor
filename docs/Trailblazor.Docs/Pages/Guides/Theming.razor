@@ -11,22 +11,36 @@
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Light and dark</TbText>
 <TbText>
-    Set <code>data-tb-theme</code> to <code>light</code>, <code>dark</code> or <code>system</code>, which follows the
-    device's setting. Without it, Trailblazor keeps the page's own color scheme, so adding the library never darkens an
-    app by itself. The theme switcher at the top of this site sets this attribute.
+    Put <code>TbThemeHead</code> in <code>&lt;head&gt;</code>, next to <code>TbStyles</code>. It starts the page in the
+    mode and palette you set in <code>TrailblazorOptions.Theme</code>, or in the ones the user chose last time, and
+    does so before the page paints, so a dark page never flashes light. <code>System</code>, the default, follows the
+    device's setting. Without <code>TbThemeHead</code>, Trailblazor keeps the page's own color scheme, so adding the
+    library never darkens an app by itself.
 </TbText>
-<CodeBlock Label="Theme attribute" Code="@Theme" />
+<CodeBlock Label="App.razor and Program.cs" Code="@Theme" />
+<TbText>
+    A standalone WebAssembly app has no server to render <code>&lt;head&gt;</code>, so put the script
+    <code>TbThemeHead</code> renders in <code>index.html</code> yourself, as this site does. There its attributes, not
+    <code>TrailblazorOptions.Theme</code>, choose how the first page looks, so keep the two the same.
+</TbText>
+<CodeBlock Label="index.html" Code="@StandaloneTheme" />
+<TbText>
+    The <a href="components/theme-picker">theme picker</a> lets people choose, as the one at the top of this site
+    does, and <code>IThemeService</code> changes the mode or palette from your own code. Both remember the choice in
+    the browser unless <code>Remember</code> is off.
+</TbText>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Palettes</TbText>
 <TbText>
     A palette sets the colors for both light and dark. Graphite, a near-monochrome look with ink-colored primary
     actions, is the default. The others are
     @string.Join(", ", PaletteCatalog.All.Skip(1).Select(palette => palette.Name)), and the
-    <a href="guides/palettes">palette gallery</a> shows each one on real components. Choose one with
-    <code>data-tb-palette</code>. Like the theme, it works on <code>&lt;html&gt;</code> or on any element, and then
-    applies to everything inside it.
+    <a href="guides/palettes">palette gallery</a> shows each one on real components. Choose the page's palette with the
+    <code>Palette</code> value in <code>TrailblazorOptions.Theme</code>, or with
+    <code>IThemeService.SetPaletteAsync</code>. For one part of a page, set <code>data-tb-palette</code> or
+    <code>data-tb-theme</code> on any element; it applies to everything inside it.
 </TbText>
-<CodeBlock Label="Palette attribute" Code="@Palette" />
+<CodeBlock Label="A palette for part of a page" Code="@Palette" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Density</TbText>
 <TbText>
@@ -57,11 +71,29 @@
 
 @code {
     private const string Theme = """
-        <html lang="en" data-tb-theme="system">
+        @* App.razor *@
+        <head>
+            <TbStyles />
+            <TbThemeHead />
+        </head>
+
+        // Program.cs
+        builder.Services.AddTrailblazor(options =>
+        {
+            options.Theme.Mode = ThemeMode.System;
+            options.Theme.Palette = Palette.Cobalt;
+        });
+        """;
+
+    private const string StandaloneTheme = """
+        <script src="_content/Trailblazor/theme-head.js" data-mode="system" data-palette="cobalt"
+            data-remember="true"></script>
         """;
 
     private const string Palette = """
-        <html lang="en" data-tb-theme="system" data-tb-palette="cobalt">
+        <section data-tb-palette="moss" data-tb-theme="dark">
+            ...
+        </section>
         """;
 
     private const string Overrides = """

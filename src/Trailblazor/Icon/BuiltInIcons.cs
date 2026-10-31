@@ -6,6 +6,15 @@ internal static class BuiltInIcons
     public static Icon Close { get; } =
         new("<path d=\"M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z\" />");
 
+    public static Icon Sun { get; } = new("<circle cx=\"12\" cy=\"12\" r=\"4\" />"
+        + "<path d=\"M11 1h2v3h-2zm0 19h2v3h-2zM1 11h3v2H1zm19 0h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4z"
+        + "m12.1 12.1 1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1z"
+        + "m12.1-12.1 2.1-2.1 1.4 1.4-2.1 2.1z\" />");
+
+    public static Icon Moon { get; } = new("<path d=\"M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 9 9 0 1 0 20.5 14.6z\" />");
+
+    public static Icon Monitor { get; } = new("<path d=\"M2 4h20v13h-9v2h3v2H8v-2h3v-2H2zm2 2v9h16V6z\" />");
+
     public static Icon Calendar { get; } =
         new("<path d=\"M7 2h2v2h6V2h2v2h3v18H4V4h3zM6 10v10h12V10zm0-2h12V6H6zm2 4h3v3H8z\" />");
 

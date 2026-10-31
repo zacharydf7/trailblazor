@@ -34,14 +34,17 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return page;
     }
 
-    // Colors transition when the theme flips, so wait until no CSS transition is still running.
+    // Colors transition when the theme flips, so wait until no CSS transition is still running. A transition another
+    // replaces, as when a component re-renders for the new theme, ends canceled, so the wait goes on to its successor.
     protected static Task SetThemeAsync(IPage page, string theme) =>
         page.EvaluateAsync("""
             async theme => {
                 document.documentElement.dataset.tbTheme = theme;
                 await new Promise(resolve => requestAnimationFrame(resolve));
-                const transitions = document.getAnimations().filter(animation => animation instanceof CSSTransition);
-                await Promise.all(transitions.map(transition => transition.finished));
+                const running = () => document.getAnimations().filter(animation => animation instanceof CSSTransition);
+                for (let transitions = running(); transitions.length > 0; transitions = running()) {
+                    await Promise.allSettled(transitions.map(transition => transition.finished));
+                }
             }
             """, theme);
 

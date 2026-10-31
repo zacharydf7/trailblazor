@@ -7,6 +7,18 @@ public class ApiDocsTests
     public static TheoryData<string> Types => new(ExampleCatalog.All.SelectMany(example => example.Api)
         .Select(type => type.AssemblyQualifiedName!));
 
+    [Fact]
+    public void Describe_ShouldListAnInterfacesPropertiesEventsAndIndexers_WhenGivenAnInterface()
+    {
+        var theme = ApiDocs.Describe(typeof(IThemeService)).Members;
+        var localizer = ApiDocs.Describe(typeof(ITbLocalizer)).Members;
+
+        Assert.Equal(["Mode { get; }", "Palette { get; }", "event Changed", "LoadAsync()",
+            "SetModeAsync(ThemeMode mode)", "SetPaletteAsync(Palette palette)"], theme.Select(member => member.Name));
+        Assert.Equal(["this[string key] { get; }"], localizer.Select(member => member.Name));
+        Assert.All(theme.Concat(localizer), member => Assert.NotEmpty(member.Description));
+    }
+
     [Theory, MemberData(nameof(Types))]
     public void Describe_ShouldGiveEveryMemberADescription_WhenGivenATypeTheDocsTable(string type)
     {
