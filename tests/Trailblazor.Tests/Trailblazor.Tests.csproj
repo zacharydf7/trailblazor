@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <!-- Five minutes with no test finishing ends the run, with a dump and a log of the tests still running. -->
+    <TestingPlatformCommandLineArguments>--hangdump --hangdump-timeout 5m --hangdump-type Mini</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +12,7 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <!-- Its source generator builds the validation types that AddValidation registers. -->
     <PackageReference Include="Microsoft.Extensions.Validation" />
+    <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
 

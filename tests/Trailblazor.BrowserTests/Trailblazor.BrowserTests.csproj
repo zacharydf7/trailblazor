@@ -2,12 +2,15 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <!-- Five minutes with no test finishing ends the run, with a dump and a log of the tests still running. -->
+    <TestingPlatformCommandLineArguments>--hangdump --hangdump-timeout 5m --hangdump-type Mini</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Deque.AxeCore.Playwright" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
 
