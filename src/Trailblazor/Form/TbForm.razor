@@ -25,6 +25,7 @@
     private object? _model;
     private IDisposable? _annotations;
     private bool _focusError;
+    private ControlTelemetry? _telemetry;
 
     /// <inheritdoc />
     public TbForm() => _editContext = new EditContext(_noModel);
@@ -86,6 +87,17 @@
     [Parameter]
     public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
+    /// <summary>A label this form's use is counted under, such as <c>"new-trail"</c>, so the app can see how often
+    /// people submit it, and how often it fails, through the <c>Trailblazor</c> meter: shown when it first renders,
+    /// and counted in <c>trailblazor.form.submitted</c> with <c>trailblazor.outcome</c> <c>valid</c> or
+    /// <c>invalid</c> on each submit it validates. On an invalid submit, each field with a <c>TelemetryName</c> and an
+    /// error counts in <c>trailblazor.field.invalid</c>. No value is ever recorded. It names the form, never the
+    /// user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
     private object Id => AdditionalAttributes?.GetValueOrDefault("id") ?? _id;
 
     /// <inheritdoc />
@@ -119,6 +131,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         await ReportAsync();
         if (_focusError)
         {
@@ -164,8 +177,15 @@
 
         if (await ValidateAsync())
         {
+            Telemetry.Submitted(TelemetryName, valid: true);
             await OnValidSubmit.InvokeAsync(context);
             return;
+        }
+
+        Telemetry.Submitted(TelemetryName, valid: false);
+        foreach (var field in _fields)
+        {
+            field.CountIfInvalid();
         }
 
         // Focus moves once the render that shows the messages has reached the browser.

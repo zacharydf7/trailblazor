@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace Trailblazor;
 
 internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOptions, ITbLocalizer localizer,
-    TimeProvider time, ILogger<DialogService>? logger = null) : IDialogService
+    TimeProvider time, Telemetry telemetry, ILogger<DialogService>? logger = null) : IDialogService
 {
     // An app can open dialogs off the dispatcher, such as from a hub handler, while the host renders them, so the list
     // is replaced rather than changed.
@@ -36,7 +36,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
 
     public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
-        string? cancelText = null, Tone tone = Tone.Primary)
+        string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null)
     {
         var parameters = new Dictionary<string, object?>
         {
@@ -45,12 +45,13 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.CancelText)] = cancelText ?? localizer[TbStrings.DialogCancel],
             [nameof(ConfirmDialog.Tone)] = tone,
         };
-        var dialog = Open<bool>(title, typeof(ConfirmDialog), parameters, new() { Size = DialogSize.Small },
-            isAlert: true);
+        var dialog = Open<bool>(title, typeof(ConfirmDialog), parameters,
+            new() { Size = DialogSize.Small, TelemetryName = telemetryName }, isAlert: true);
         return (await dialog.Result).Confirmed;
     }
 
-    public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info)
+    public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
+        string? telemetryName = null)
     {
         var parameters = new Dictionary<string, object?>
         {
@@ -59,8 +60,8 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.Tone)] = tone,
             [nameof(ConfirmDialog.ShowIcon)] = true,
         };
-        await Open<bool>(title, typeof(ConfirmDialog), parameters, new() { Size = DialogSize.Small }, isAlert: true)
-            .Result;
+        await Open<bool>(title, typeof(ConfirmDialog), parameters,
+            new() { Size = DialogSize.Small, TelemetryName = telemetryName }, isAlert: true).Result;
     }
 
     public async Task CloseAllAsync()
@@ -84,7 +85,10 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
             DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
         };
-        var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync);
+        var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync)
+        {
+            OpenedAt = time.GetTimestamp(),
+        };
         lock (_lock)
         {
             _open = _open.Add(dialog);
@@ -96,9 +100,34 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             Hosts.Shown();
         }
 
+        if (options.TelemetryName is { } name)
+        {
+            telemetry.ControlShown(name, ComponentOf(dialog));
+        }
+
         Changed?.Invoke();
         return dialog;
     }
+
+    // A dialog is named by its label, and its component by its content's type, never by its title.
+    private void CountClose(DialogReference dialog, bool confirmed)
+    {
+        if (dialog.Options.TelemetryName is not { } name)
+        {
+            return;
+        }
+
+        var outcome = confirmed ? "confirmed" : dialog.DismissedBy switch
+        {
+            DialogDismissReason.Escape => "escape",
+            DialogDismissReason.Backdrop => "backdrop",
+            DialogDismissReason.CloseButton => "close_button",
+            _ => "cancelled",
+        };
+        telemetry.DialogClosed(name, ComponentOf(dialog), outcome, time.GetElapsedTime(dialog.OpenedAt));
+    }
+
+    private static Type ComponentOf(DialogReference dialog) => dialog.Component ?? typeof(TbDialog);
 
     private async Task CloseAsync(DialogReference dialog, bool confirmed, object? value)
     {
@@ -127,6 +156,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             }
 
             Changed?.Invoke();
+            CountClose(dialog, confirmed);
             dialog.Complete(confirmed, value);
         }
     }

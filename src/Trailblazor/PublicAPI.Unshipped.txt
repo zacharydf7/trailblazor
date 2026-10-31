@@ -217,6 +217,8 @@ Trailblazor.DialogOptions.ShowHeader.get -> bool
 Trailblazor.DialogOptions.ShowHeader.init -> void
 Trailblazor.DialogOptions.Size.get -> Trailblazor.DialogSize
 Trailblazor.DialogOptions.Size.init -> void
+Trailblazor.DialogOptions.TelemetryName.get -> string?
+Trailblazor.DialogOptions.TelemetryName.init -> void
 Trailblazor.DialogParameters<TDialog>
 Trailblazor.DialogParameters<TDialog>.DialogParameters() -> void
 Trailblazor.DialogParameters<TDialog>.Set<TValue>(System.Linq.Expressions.Expression<System.Func<TDialog, TValue>!>! parameter, TValue value) -> Trailblazor.DialogParameters<TDialog>!
@@ -362,9 +364,9 @@ Trailblazor.IBrowserService.PickColorAsync() -> System.Threading.Tasks.Task<stri
 Trailblazor.IBrowserService.SaveAsync(System.IO.Stream! content, string! fileName, string? contentType = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.IBrowserService.ScrollIntoViewAsync(Microsoft.AspNetCore.Components.ElementReference element, Trailblazor.ScrollAlignment alignment = Trailblazor.ScrollAlignment.Nearest, bool smooth = false) -> System.Threading.Tasks.Task!
 Trailblazor.IDialogService
-Trailblazor.IDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info) -> System.Threading.Tasks.Task!
+Trailblazor.IDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info, string? telemetryName = null) -> System.Threading.Tasks.Task!
 Trailblazor.IDialogService.CloseAllAsync() -> System.Threading.Tasks.Task!
-Trailblazor.IDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.IDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.IDialogService.OpenDialogs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
 Trailblazor.IDialogService.Show<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
 Trailblazor.IDialogService.ShowAsync<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
@@ -711,8 +713,6 @@ Trailblazor.TbCheckbox<TValue>.Classes.set -> void
 Trailblazor.TbCheckbox<TValue>.Size.get -> Trailblazor.Size
 Trailblazor.TbCheckbox<TValue>.Size.set -> void
 Trailblazor.TbCheckbox<TValue>.TbCheckbox() -> void
-Trailblazor.TbCheckbox<TValue>.TelemetryName.get -> string?
-Trailblazor.TbCheckbox<TValue>.TelemetryName.set -> void
 Trailblazor.TbCheckbox<TValue>.Tone.get -> Trailblazor.Tone
 Trailblazor.TbCheckbox<TValue>.Tone.set -> void
 Trailblazor.TbCheckboxGroup<TItem>
@@ -977,6 +977,8 @@ Trailblazor.TbFieldBase<TValue>.ReadOnly.set -> void
 Trailblazor.TbFieldBase<TValue>.Required.get -> bool
 Trailblazor.TbFieldBase<TValue>.Required.set -> void
 Trailblazor.TbFieldBase<TValue>.TbFieldBase() -> void
+Trailblazor.TbFieldBase<TValue>.TelemetryName.get -> string?
+Trailblazor.TbFieldBase<TValue>.TelemetryName.set -> void
 Trailblazor.TbFieldBase<TValue>.Validation.get -> System.Func<TValue?, System.Collections.Generic.IEnumerable<string!>!>?
 Trailblazor.TbFieldBase<TValue>.Validation.set -> void
 Trailblazor.TbFieldBase<TValue>.Value.get -> TValue?
@@ -1042,6 +1044,8 @@ Trailblazor.TbForm.OnValidSubmit.get -> Microsoft.AspNetCore.Components.EventCal
 Trailblazor.TbForm.OnValidSubmit.set -> void
 Trailblazor.TbForm.ResetValidationAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbForm.TbForm() -> void
+Trailblazor.TbForm.TelemetryName.get -> string?
+Trailblazor.TbForm.TelemetryName.set -> void
 Trailblazor.TbForm.ValidateAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.TbGrid
 Trailblazor.TbGrid.As.get -> Trailblazor.LayoutElement
@@ -1495,8 +1499,6 @@ Trailblazor.TbSelectBase<TValue>.OpenChanged.set -> void
 Trailblazor.TbSelectBase<TValue>.Placeholder.get -> string?
 Trailblazor.TbSelectBase<TValue>.Placeholder.set -> void
 Trailblazor.TbSelectBase<TValue>.TbSelectBase() -> void
-Trailblazor.TbSelectBase<TValue>.TelemetryName.get -> string?
-Trailblazor.TbSelectBase<TValue>.TelemetryName.set -> void
 Trailblazor.TbSkeleton
 Trailblazor.TbSkeleton.Animation.get -> Trailblazor.SkeletonAnimation
 Trailblazor.TbSkeleton.Animation.set -> void
@@ -1963,6 +1965,8 @@ Trailblazor.ToastOptions.ShowIcon.get -> bool
 Trailblazor.ToastOptions.ShowIcon.init -> void
 Trailblazor.ToastOptions.StayOpen.get -> bool
 Trailblazor.ToastOptions.StayOpen.init -> void
+Trailblazor.ToastOptions.TelemetryName.get -> string?
+Trailblazor.ToastOptions.TelemetryName.init -> void
 Trailblazor.ToastOptions.Title.get -> string?
 Trailblazor.ToastOptions.Title.init -> void
 Trailblazor.ToastOptions.ToastOptions() -> void
@@ -2351,6 +2355,7 @@ override Trailblazor.TbDateRangePicker<TDate>.OnParametersSet() -> void
 override Trailblazor.TbDialogDescription.OnInitialized() -> void
 ~override Trailblazor.TbDivider.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbFieldBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbFieldBase<TValue>.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbFieldBase<TValue>.OnParametersSet() -> void
 ~override Trailblazor.TbFileUpload.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbFileUpload.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask

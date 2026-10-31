@@ -36,17 +36,17 @@
     <ul class="docs-notes" aria-label="Accessibility">
         @foreach (var note in example.Accessibility)
         {
-            <li>@WithCode(note)</li>
+            <li>@DocsText.WithCode(note)</li>
         }
     </ul>
 
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Telemetry</TbText>
-    @if (example.Telemetry.Count > 0)
+    @if (example.TelemetryNotes.Count > 0)
     {
         <ul class="docs-notes" aria-label="Telemetry">
-            @foreach (var note in example.Telemetry)
+            @foreach (var note in example.TelemetryNotes)
             {
-                <li>@WithCode(note)</li>
+                <li>@DocsText.WithCode(note)</li>
             }
         </ul>
     }
@@ -90,7 +90,7 @@
     }
     @if (example.TestingTip is { } tip)
     {
-        <TbText>@WithCode(tip)</TbText>
+        <TbText>@DocsText.WithCode(tip)</TbText>
     }
     @if (example.DataParts.Count > 0)
     {
@@ -119,23 +119,4 @@ else
 @code {
     [Parameter]
     public string Name { get; set; } = "";
-
-    // Every other piece of the text sits between backticks and shows as code.
-    private static RenderFragment WithCode(string text) => builder =>
-    {
-        var pieces = text.Split('`');
-        for (var index = 0; index < pieces.Length; index++)
-        {
-            if (index % 2 == 1)
-            {
-                builder.OpenElement(0, "code");
-                builder.AddContent(1, pieces[index]);
-                builder.CloseElement();
-            }
-            else
-            {
-                builder.AddContent(2, pieces[index]);
-            }
-        }
-    };
 }

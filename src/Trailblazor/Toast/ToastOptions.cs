@@ -33,4 +33,10 @@ public sealed record ToastOptions
     /// <summary>What the toast shows in place of its message, such as a link or a component. The message is still
     /// what screen readers hear, so keep it saying the same thing.</summary>
     public RenderFragment? Content { get; init; }
+
+    /// <summary>A label the toast's use is counted under, such as <c>"trail-saved"</c>, through the
+    /// <c>Trailblazor</c> meter: shown each time it appears, and counted in <c>trailblazor.toast.closed</c> with how it
+    /// closed: <c>action</c>, <c>dismissed</c>, <c>timed_out</c> or <c>closed</c> by the app. Its message is never
+    /// recorded. It names the toast, never the user.</summary>
+    public string? TelemetryName { get; init; }
 }

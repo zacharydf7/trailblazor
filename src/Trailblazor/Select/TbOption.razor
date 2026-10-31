@@ -94,11 +94,13 @@ else
         }
     }
 
-    private async Task ChooseAsync()
+    // A choice the script makes for a key, such as Enter, is a click with no count of presses.
+    private async Task ChooseAsync(MouseEventArgs args)
     {
-        if (!Disabled && await Select!.ChooseAsync(Value))
+        var input = args.Detail > 0 ? "pointer" : "keyboard";
+        if (!Disabled && await Select!.ChooseAsync(Value, input))
         {
-            Telemetry.Used(TelemetryName);
+            Telemetry.Used(TelemetryName, input: input);
         }
     }
 

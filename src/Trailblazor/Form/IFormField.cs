@@ -7,4 +7,7 @@ internal interface IFormField
     bool HasProblems();
 
     void HideMessages();
+
+    // Counts the field in trailblazor.field.invalid when it has an error, after its form failed to submit.
+    void CountIfInvalid();
 }

@@ -20,11 +20,27 @@ internal sealed class ControlTelemetry(IServiceProvider services, Type component
         }
     }
 
-    public void Used(string? telemetryName, string? action = null)
+    public void Used(string? telemetryName, string? action = null, string? input = null)
     {
         if (telemetryName is not null)
         {
-            Service?.ControlUsed(telemetryName, component, action);
+            Service?.ControlUsed(telemetryName, component, action, input);
+        }
+    }
+
+    public void Invalid(string? telemetryName)
+    {
+        if (telemetryName is not null)
+        {
+            Service?.FieldInvalid(telemetryName, component);
+        }
+    }
+
+    public void Submitted(string? telemetryName, bool valid)
+    {
+        if (telemetryName is not null)
+        {
+            Service?.FormSubmitted(telemetryName, component, valid);
         }
     }
 

@@ -83,7 +83,7 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
 
     string? ISelect.Format(object? value) => FormatItem(value);
 
-    async Task<bool> ISelect.ChooseAsync(object? value)
+    async Task<bool> ISelect.ChooseAsync(object? value, string input)
     {
         // Unlike a select's, a disabled or read-only listbox's options are still on the page to be clicked.
         if (Disabled || ReadOnly)
@@ -91,6 +91,7 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
             return false;
         }
 
+        Telemetry.Used(TelemetryName, input: input);
         await SetValueAsync(Choose(value));
         StateHasChanged();
         return true;

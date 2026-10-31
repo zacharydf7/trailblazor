@@ -40,6 +40,35 @@
     </li>
 </ul>
 
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Use cases</TbText>
+<TbText>
+    Different apps ask different questions. Each row says what to label and which counts answer it. Start with a few
+    names on the features you're least sure about, then add more as the questions come.
+</TbText>
+<div class="docs-api" tabindex="0" role="region" aria-label="Use cases">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">For</th>
+                <th scope="col">The question</th>
+                <th scope="col">Label</th>
+                <th scope="col">Read</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var useCase in UseCases)
+            {
+                <tr>
+                    <th scope="row">@useCase.For</th>
+                    <td>@useCase.Question</td>
+                    <td>@DocsText.WithCode(useCase.Label)</td>
+                    <td>@DocsText.WithCode(useCase.Read)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Set it up</TbText>
 <TbText>
     <code>AddTrailblazor</code> already registers the meter. Listen to it in your OpenTelemetry setup, with the
@@ -87,9 +116,30 @@
         hidden until the menu opens.
     </li>
     <li>
-        <strong>Selects and their options:</strong> a labeled select is shown as it renders and used for each choice;
+        <strong>Selects, list boxes and their options:</strong> a labeled select or list box is shown as it renders
+        and used for each choice,
+        tagged <code>trailblazor.input</code> <code>pointer</code> or <code>keyboard</code>, which shows how many people
+        choose by keyboard;
         a labeled option counts its uses only, since its list renders hidden, and counts nothing when a disabled or
         read-only list box refuses the choice. Which value was chosen is never recorded.
+    </li>
+    <li>
+        <strong>Fields and forms:</strong> every field takes a <code>TelemetryName</code>, shown as it renders and
+        counted in <code>trailblazor.field.invalid</code> each time its <code>TbForm</code> is submitted while it has an
+        error, so the fields people trip over stand out. A labeled form counts each submit it validates in
+        <code>trailblazor.form.submitted</code>, <code>valid</code> or <code>invalid</code>. No value is ever recorded.
+    </li>
+    <li>
+        <strong>Dialogs:</strong> give <code>DialogOptions.TelemetryName</code>, or <code>ConfirmAsync</code> and
+        <code>AlertAsync</code> a <code>telemetryName</code>, and each open counts as shown, then
+        <code>trailblazor.dialog.closed</code> and <code>trailblazor.dialog.duration</code> say how it closed:
+        <code>confirmed</code>, <code>cancelled</code>, <code>escape</code>, <code>backdrop</code> or
+        <code>close_button</code>, and how long it was open. Its title and result are never recorded.
+    </li>
+    <li>
+        <strong>Toasts:</strong> with <code>ToastOptions.TelemetryName</code>, each toast counts as shown, then
+        <code>trailblazor.toast.closed</code> says whether its action was taken, it was dismissed, it timed out or the
+        app closed it. Its message is never recorded.
     </li>
     <li>
         <strong>Chips:</strong> shown as they render, used for each click or toggle, and used with the action
@@ -229,6 +279,41 @@
 <ApiTable Type="typeof(ITelemetryTags)" />
 
 @code {
+    private sealed record UseCase(string For, string Question, string Label, string Read);
+
+    private static readonly UseCase[] UseCases =
+    [
+        new("Internal business apps", "Which screens and actions does the team use, and what could we retire?",
+            "The buttons, menus and tabs of each screen, such as `bulk-approve` and `export-csv`.",
+            "Names in `trailblazor.control.shown` with no `trailblazor.control.used` over a quarter: features "
+            + "nobody uses."),
+        new("Product teams", "Did the new feature land?",
+            "Every way into the feature, under one name, such as `smart-filters`.",
+            "Used divided by shown, week by week after release; with your own tags, by plan or rollout group."),
+        new("Vendors with many customers", "What does each customer use, and which paid features sit idle?",
+            "The features as above, and an `ITelemetryTags` that adds the customer.",
+            "`trailblazor.control.used` grouped by your customer tag, for account reviews and renewals."),
+        new("Forms and data entry", "Where do people get stuck?", "The `TbForm` and its fields.",
+            "Invalid submits in `trailblazor.form.submitted`, and `trailblazor.field.invalid` by field: the fields "
+            + "to fix first."),
+        new("Destructive actions", "Do people mean it when they press Delete?",
+            "`ConfirmAsync` with a `telemetryName`, such as `delete-trail`.",
+            "`trailblazor.dialog.closed` by outcome: many cancels can mean the action is too easy to hit, or its "
+            + "words unclear."),
+        new("Notifications", "Does anyone use Undo?", "The toast, with `ToastOptions.TelemetryName`.",
+            "`trailblazor.toast.closed` with the outcome `action` against `timed_out`."),
+        new("Long tasks", "Which tasks take people longest, and which do they give up on?",
+            "The dialogs that hold them, such as `edit-trail`.",
+            "`trailblazor.dialog.duration` by outcome: a long time before a cancel suggests confusion."),
+        new("Data-heavy screens", "How do people work through big lists?", "Data grids and tree views.",
+            "`trailblazor.control.used` by `trailblazor.action`: sorts and page sizes to set better defaults, "
+            + "expands and moves to see how a tree is used."),
+        new("Accessibility", "How many people choose by keyboard, and close dialogs with Escape?",
+            "Selects, list boxes, their options, and dialogs.",
+            "`trailblazor.control.used` by `trailblazor.input`, and dialogs closed with `escape`: real keyboard use "
+            + "to test against."),
+    ];
+
     private const string Setup = """
         builder.Services.AddTrailblazor();
         builder.Services.AddOpenTelemetry()

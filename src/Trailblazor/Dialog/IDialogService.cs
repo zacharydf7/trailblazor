@@ -20,13 +20,16 @@ public interface IDialogService
 
     /// <summary>Asks a yes-or-no question and returns whether it was confirmed. The buttons say the app's text for
     /// <see cref="TbStrings.DialogConfirm"/> and <see cref="TbStrings.DialogCancel"/>, "OK" and "Cancel" in English,
-    /// unless <paramref name="confirmText"/> and <paramref name="cancelText"/> say otherwise.</summary>
+    /// unless <paramref name="confirmText"/> and <paramref name="cancelText"/> say otherwise. With a
+    /// <paramref name="telemetryName"/>, it counts as <see cref="DialogOptions.TelemetryName"/> describes.</summary>
     Task<bool> ConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null,
-        Tone tone = Tone.Primary);
+        Tone tone = Tone.Primary, string? telemetryName = null);
 
     /// <summary>Tells the user something with one button, the app's text for <see cref="TbStrings.DialogConfirm"/>
-    /// ("OK") unless <paramref name="okText"/> says otherwise, and the tone's icon. Finishes when it closes.</summary>
-    Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info);
+    /// ("OK") unless <paramref name="okText"/> says otherwise, and the tone's icon. Finishes when it closes. With a
+    /// <paramref name="telemetryName"/>, it counts as <see cref="DialogOptions.TelemetryName"/> describes.</summary>
+    Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
+        string? telemetryName = null);
 
     /// <summary>Cancels every open dialog, newest first, without asking them.</summary>
     Task CloseAllAsync();

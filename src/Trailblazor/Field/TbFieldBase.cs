@@ -13,6 +13,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     private EditContext? _editContext;
     private ValidationMessageStore? _messageStore;
     private FieldIdentifier? _field;
+    private ControlTelemetry? _telemetry;
     private string? _parseError;
     private string? _unparsedText;
     private TValue? _valueAtParseError;
@@ -72,6 +73,14 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Parameter]
     public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
 
+    /// <summary>A label this field's use is counted under, such as <c>"email"</c>, so the app can see how people use
+    /// it through the <c>Trailblazor</c> meter: shown when it first renders, and counted in
+    /// <c>trailblazor.field.invalid</c> each time its <see cref="TbForm"/> is submitted while it has an error. A
+    /// checkbox, switch, select or list box also counts each change or choice. Its value is never recorded. It names
+    /// what the field holds, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
     [CascadingParameter]
     private EditContext? CascadedEditContext { get; set; }
 
@@ -86,6 +95,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     [Inject]
     private protected ITbLocalizer Localizer { get; set; } = default!;
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private protected ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private protected string FieldId { get; } = $"tb-field-{Guid.NewGuid():N}";
 
@@ -345,6 +359,17 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     }
 
     bool IFormField.HasProblems() => _parseError is not null || (Validation?.Invoke(Value).Any() ?? false);
+
+    void IFormField.CountIfInvalid()
+    {
+        if (Errors.Count > 0)
+        {
+            Telemetry.Invalid(TelemetryName);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
     // The parent's error stays: only the parent can clear it.
     void IFormField.HideMessages()

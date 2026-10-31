@@ -36,7 +36,6 @@
 @code {
     private ElementReference _input;
     private bool _shownIndeterminate;
-    private ControlTelemetry? _telemetry;
 
     /// <summary>The label as rich content, such as "I agree to the <c>&lt;a&gt;</c>terms<c>&lt;/a&gt;</c>", shown
     /// in place of <see cref="TbFieldBase{TValue}.Label"/>. It names the control, so keep a link in it short.</summary>
@@ -54,17 +53,6 @@
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
     public ChoiceClasses? Classes { get; set; }
-
-    /// <summary>A label this control's use is counted under, such as <c>"email-alerts"</c>, so the app can see how
-    /// often people see it and change it through the <c>Trailblazor</c> meter. Only that it changed is counted, never
-    /// to what. It names what the control sets, never the user.</summary>
-    [Parameter]
-    public string? TelemetryName { get; set; }
-
-    [Inject]
-    private IServiceProvider Services { get; set; } = default!;
-
-    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
@@ -98,7 +86,6 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Telemetry.Rendered(TelemetryName);
         if (Indeterminate == _shownIndeterminate)
         {
             return;

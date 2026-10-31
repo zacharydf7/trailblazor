@@ -47,4 +47,11 @@ public sealed record DialogOptions
     /// <summary>Lets the user resize a dialog that isn't <see cref="Modal"/> by dragging the grip in its bottom-end
     /// corner, or with the arrow keys on the grip.</summary>
     public bool Resizable { get; init; }
+
+    /// <summary>A label the dialog's use is counted under, such as <c>"delete-trail"</c>, through the
+    /// <c>Trailblazor</c> meter: shown each time it opens, and counted in <c>trailblazor.dialog.closed</c> and
+    /// <c>trailblazor.dialog.duration</c> with how it closed: <c>confirmed</c>, <c>cancelled</c>, <c>escape</c>,
+    /// <c>backdrop</c> or <c>close_button</c>. Its title and result are never recorded. It names the dialog, never the
+    /// user.</summary>
+    public string? TelemetryName { get; init; }
 }

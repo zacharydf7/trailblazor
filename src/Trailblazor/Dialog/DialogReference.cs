@@ -125,6 +125,7 @@ public abstract class DialogReference
         {
             if (CanDismiss is null || await CanDismiss(reason))
             {
+                DismissedBy = reason;
                 await CancelAsync();
             }
         }
@@ -135,6 +136,11 @@ public abstract class DialogReference
     }
 
     internal abstract void Complete(bool confirmed, object? value);
+
+    // How the user dismissed it, if they did, and when it opened, for its telemetry.
+    internal DialogDismissReason? DismissedBy { get; private set; }
+
+    internal long OpenedAt { get; init; }
 }
 
 /// <summary>A dialog that is open and closes with a <typeparamref name="TResult"/>, as

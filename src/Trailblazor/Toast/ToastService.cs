@@ -6,7 +6,8 @@ using Microsoft.Extensions.Options;
 namespace Trailblazor;
 
 internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptions, IAnnouncer announcer,
-    ITbLocalizer localizer, TimeProvider time, ILogger<ToastService>? logger = null) : IToastService
+    ITbLocalizer localizer, TimeProvider time, Telemetry telemetry, ILogger<ToastService>? logger = null)
+    : IToastService
 {
     // An app can show toasts off the dispatcher, such as from a hub handler, while the hosts render them, so the list
     // is replaced rather than changed.
@@ -45,6 +46,11 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
         }
 
         Hosts.Shown();
+        if (options.TelemetryName is { } name)
+        {
+            telemetry.ToastShown(name);
+        }
+
         Announce(message, tone, options);
         Changed?.Invoke();
         return toast;
@@ -79,6 +85,7 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
 
         if (removed)
         {
+            CountClose(toast, reason);
             toast.Finish(reason);
             Changed?.Invoke();
         }
@@ -97,8 +104,26 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
             return;
         }
 
-        closing.ForEach(toast => toast.Finish(ToastCloseReason.App));
+        closing.ForEach(toast =>
+        {
+            CountClose(toast, ToastCloseReason.App);
+            toast.Finish(ToastCloseReason.App);
+        });
         Changed?.Invoke();
+    }
+
+    private void CountClose(ToastReference toast, ToastCloseReason reason)
+    {
+        if (toast.Options.TelemetryName is { } name)
+        {
+            telemetry.ToastClosed(name, reason switch
+            {
+                ToastCloseReason.TimedOut => "timed_out",
+                ToastCloseReason.CloseButton => "dismissed",
+                ToastCloseReason.Action => "action",
+                _ => "closed",
+            });
+        }
     }
 
     private TimeSpan? LifetimeOf(Tone tone, ToastOptions options) => options switch

@@ -33,6 +33,26 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // What the component reports through the Trailblazor meter; text in backticks shows as code.
     public IReadOnlyList<string> Telemetry { get; init; } = [];
 
+    // Every field takes a TelemetryName, so a field's page says what that counts before its own notes.
+    public IReadOnlyList<string> TelemetryNotes => Api.Any(IsField) ? [FieldTelemetry, .. Telemetry] : Telemetry;
+
+    private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
+        + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
+        + "submitted while it has an error. Its value is never recorded.";
+
+    private static bool IsField(Type type)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+        {
+            if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(TbFieldBase<>))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // The data-part names a test can find inside the component, in the order they appear.
     public IReadOnlyList<string> DataParts { get; init; } = [];
 
@@ -88,8 +108,7 @@ public static class ExampleCatalog
     // What a checkbox reports, which a switch shares.
     private static readonly string[] CheckboxTelemetry =
     [
-        "With a `TelemetryName`, such as `\"email-alerts\"`, it counts `trailblazor.control.shown` as it first "
-            + "renders and `trailblazor.control.used` each time the user changes it. Only that it changed is counted, "
+        "It also counts `trailblazor.control.used` each time the user changes it. Only that it changed is counted, "
             + "never to what.",
     ];
 
@@ -575,6 +594,14 @@ public static class ExampleCatalog
             TestingTip = "Submit with the button, then find errors through the fields: "
                 + "`ToHaveAttributeAsync(\"aria-invalid\", \"true\")` on the input, and its message with "
                 + "`ToHaveAccessibleDescriptionAsync`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"new-trail\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, and `trailblazor.form.submitted` with `trailblazor.outcome` `valid` or `invalid` for "
+                    + "each submit it validates.",
+                "On an invalid submit, each field with a `TelemetryName` and an error counts "
+                    + "`trailblazor.field.invalid`, so the fields people trip over stand out. No value is recorded.",
+            ],
         },
         new("text-field", "Text field", ExampleCategory.Inputs,
             "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
@@ -823,12 +850,12 @@ public static class ExampleCatalog
                 + "select.",
             Telemetry =
             [
-                "With a `TelemetryName`, such as `\"trail-size\"`, the select counts `trailblazor.control.shown` as it "
-                    + "first renders and `trailblazor.control.used` for each choice, or with `trailblazor.action` "
-                    + "`remove` for a chip removed. Only that a choice was made is counted, never which.",
-                "An option with its own `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` "
-                    + "each time it is chosen. Its list renders hidden, so it counts uses only; its value is never "
-                    + "recorded.",
+                "The select also counts `trailblazor.control.used` for each choice, with `trailblazor.input` `pointer` "
+                    + "or `keyboard`, or with `trailblazor.action` `remove` for a chip removed. Only that a choice was "
+                    + "made is counted, never which.",
+                "An option with its own `TelemetryName`, such as `\"size-large\"`, counts "
+                    + "`trailblazor.control.used` each time it is chosen, with `trailblazor.input` too. Its list "
+                    + "renders hidden, so it counts uses only; its value is never recorded.",
             ],
         },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
@@ -1099,7 +1126,17 @@ public static class ExampleCatalog
                 "actions", "resize"],
             TestingTip = "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
-                + "finishes when the dialog closes."
+                + "finishes when the dialog closes.",
+            Telemetry =
+            [
+                "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
+                    + "`ConfirmAsync` and `AlertAsync`, it counts `trailblazor.control.shown` each time it opens, and "
+                    + "`trailblazor.dialog.closed` and `trailblazor.dialog.duration` with `trailblazor.outcome`: "
+                    + "`confirmed`, `cancelled`, `escape`, `backdrop` or `close_button`.",
+                "Its `trailblazor.component` is the content's type, such as `EditTrailDialog`, `ConfirmDialog` for "
+                    + "`ConfirmAsync` and `AlertAsync`, or `TbDialog` for one in markup. Its title and result are "
+                    + "never recorded.",
+            ],
         },
         new("focus-scope", "Focus scope", ExampleCategory.Overlays,
             "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, and gives focus "
@@ -1453,6 +1490,12 @@ public static class ExampleCatalog
             TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
                 + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. In bUnit, "
                 + "`await toast.Closed` says why it closed.",
+            Telemetry =
+            [
+                "With `ToastOptions.TelemetryName`, such as `\"trail-saved\"`, it counts `trailblazor.control.shown` "
+                    + "each time it appears, and `trailblazor.toast.closed` with `trailblazor.outcome`: `action`, "
+                    + "`dismissed`, `timed_out`, or `closed` by the app. Its message is never recorded.",
+            ],
         },
     ];
 
