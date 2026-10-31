@@ -33,7 +33,7 @@
     }
 
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Accessibility</TbText>
-    <ul class="docs-notes">
+    <ul class="docs-notes" aria-label="Accessibility">
         @foreach (var note in example.Accessibility)
         {
             <li>@WithCode(note)</li>
@@ -43,7 +43,7 @@
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Telemetry</TbText>
     @if (example.Telemetry.Count > 0)
     {
-        <ul class="docs-notes">
+        <ul class="docs-notes" aria-label="Telemetry">
             @foreach (var note in example.Telemetry)
             {
                 <li>@WithCode(note)</li>

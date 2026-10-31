@@ -216,9 +216,11 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "components/button");
 
-        var notes = page.Locator(".docs-notes > li");
+        var notes = page.GetByRole(AriaRole.List, new() { Name = "Accessibility" }).GetByRole(AriaRole.Listitem);
 
         await Expect(notes).ToHaveCountAsync(ExampleCatalog.Find("button")!.Accessibility.Count);
+        await Expect(page.GetByRole(AriaRole.List, new() { Name = "Telemetry" }).GetByRole(AriaRole.Listitem))
+            .ToHaveCountAsync(ExampleCatalog.Find("button")!.Telemetry.Count);
         await Expect(notes.First).ToHaveTextAsync(new Regex("^A native <button>, so Enter and Space press it."));
         await Expect(notes.First.Locator("code").First).ToHaveTextAsync("<button>");
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Finding it in Playwright" }))
