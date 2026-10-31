@@ -3,12 +3,20 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Trailblazor.Tests.Components;
 
 public class TbTextFieldTests : BunitContext
 {
-    public TbTextFieldTests() => this.AddTrailblazor();
+    private readonly FakeTimeProvider _time = new();
+
+    public TbTextFieldTests()
+    {
+        Services.AddSingleton<TimeProvider>(_time);
+        this.AddTrailblazor();
+    }
 
     [Fact]
     public void Render_ShouldLinkTheLabelAndHelperToTheInput_WhenBothAreSet()
@@ -108,6 +116,150 @@ public class TbTextFieldTests : BunitContext
 
         Assert.Equal("A", value);
         Assert.Throws<MissingEventHandlerException>(() => cut.Find("input").Change("AB"));
+    }
+
+    [Fact]
+    public void Input_ShouldWaitForTypingToPause_WhenGivenAnUpdateDelay()
+    {
+        var values = new List<string?>();
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.UpdateDelay, TimeSpan.FromMilliseconds(300))
+            .Add(field => field.ValueChanged, (string text) => values.Add(text)));
+
+        cut.Find("input").Input("t");
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+        cut.Find("input").Input("te");
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+
+        Assert.Empty(values);
+        Assert.Equal("te", cut.Find("input").GetAttribute("value"));
+        _time.Advance(TimeSpan.FromMilliseconds(100));
+        cut.WaitForAssertion(() => Assert.Equal(["te"], values));
+    }
+
+    [Fact]
+    public void Change_ShouldUpdateTheValueOnceAndAtOnce_WhenTextIsWaitingOutTheDelay()
+    {
+        var values = new List<string?>();
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.UpdateDelay, TimeSpan.FromMilliseconds(300))
+            .Add(field => field.ValueChanged, (string text) => values.Add(text)));
+
+        cut.Find("input").Input("tea");
+        cut.Find("input").Change("tea");
+
+        Assert.Equal(["tea"], values);
+        _time.Advance(TimeSpan.FromSeconds(1));
+        Assert.Equal(["tea"], values);
+    }
+
+    [Fact]
+    public void Input_ShouldShowTheValidationMessage_WhenTheDelayedValueBreaksARule()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.UpdateDelay, TimeSpan.FromMilliseconds(300))
+            .Add(field => field.Validation, (string? text) => text?.Length < 3 ? ["Too short."] : []));
+
+        cut.Find("input").Input("Al");
+        _time.Advance(TimeSpan.FromMilliseconds(300));
+
+        cut.WaitForAssertion(() => Assert.Equal("Too short.", cut.Find("[data-part=error]").TextContent.Trim()));
+        Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [Fact]
+    public void Input_ShouldShowTheParseError_WhenTheDelayedTextIsNotANumber()
+    {
+        var cut = Render<TbTextField<int>>(parameters => parameters.Add(field => field.Label, "Age")
+            .Add(field => field.UpdateOnInput, true).Add(field => field.UpdateDelay, TimeSpan.FromMilliseconds(300)));
+
+        cut.Find("input").Input("abc");
+        _time.Advance(TimeSpan.FromMilliseconds(300));
+
+        cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid")));
+    }
+
+    [Fact]
+    public async Task Input_ShouldReportAFailingCallbackToTheRenderer_WhenTheDelayEnds()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.UpdateDelay, TimeSpan.FromMilliseconds(300))
+            .Add(field => field.ValueChanged, (string _) => throw new InvalidOperationException("Search failed.")));
+        cut.Find("input").Input("tea");
+
+        _time.Advance(TimeSpan.FromMilliseconds(300));
+
+        var exception = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5),
+            Xunit.TestContext.Current.CancellationToken);
+        Assert.Equal("Search failed.", Assert.IsType<InvalidOperationException>(exception).Message);
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenAClearableFieldsValueTypeIsNotNullable()
+    {
+        Assert.Throws<InvalidOperationException>(() => Render<TbTextField<int>>(parameters => parameters
+            .Add(field => field.Clearable, true)));
+    }
+
+    [Theory]
+    [InlineData("tea", false, false, true)]
+    [InlineData("", false, false, false)]
+    [InlineData("tea", true, false, false)]
+    [InlineData("tea", false, true, false)]
+    public void Render_ShouldShowTheClearButtonOnlyForTextThatCanChange_WhenClearable(string text, bool disabled,
+        bool readOnly, bool shown)
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Clearable, true)
+            .Add(field => field.Value, text).Add(field => field.Disabled, disabled)
+            .Add(field => field.ReadOnly, readOnly));
+
+        var clear = cut.FindAll("[data-part=clear]");
+        Assert.Equal(shown, clear.Count == 1);
+        if (shown)
+        {
+            Assert.Equal("Clear", clear[0].GetAttribute("aria-label"));
+        }
+    }
+
+    [Fact]
+    public async Task Clear_ShouldEmptyTheFieldDropWaitingTextAndFocusIt_WhenPressed()
+    {
+        var values = new List<string?>();
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Clearable, true)
+            .Add(field => field.ClearLabel, "Clear search").Add(field => field.UpdateOnInput, true)
+            .Add(field => field.UpdateDelay, TimeSpan.FromMilliseconds(300))
+            .Add(field => field.ValueChanged, (string text) => values.Add(text)));
+        // bUnit leaves the reference out of the markup once the input re-renders.
+        var input = cut.Find("input").GetAttribute("blazor:elementreference");
+        cut.Find("input").Input("tea");
+        cut.Find("input").Change("tea");
+        cut.Find("input").Input("teapot");
+
+        var clear = cut.Find("[data-part=clear]");
+        Assert.Equal("Clear search", clear.GetAttribute("aria-label"));
+        await cut.InvokeAsync(() => clear.Click());
+        _time.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.Equal(["tea", null], values);
+        Assert.Null(cut.Find("input").GetAttribute("value"));
+        Assert.Equal(input, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Theory]
+    [InlineData(3, 8, "8")]
+    [InlineData(3, null, null)]
+    [InlineData(3, 3, null)]
+    [InlineData(1, 8, null)]
+    public void Render_ShouldLetATextAreaGrowToMaxLines_WhenMaxLinesIsAboveLines(int lines, int? maxLines,
+        string? grows)
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Lines, lines)
+            .Add(field => field.MaxLines, maxLines));
+
+        var input = cut.Find("[data-part=input]");
+        Assert.Equal(grows, input.GetAttribute("data-max-lines"));
+        Assert.Equal(grows is null ? null : "--tb-text-field-lines: 3; --tb-text-field-max-lines: 8",
+            input.GetAttribute("style"));
     }
 
     [Fact]

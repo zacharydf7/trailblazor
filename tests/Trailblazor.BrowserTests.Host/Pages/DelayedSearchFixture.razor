@@ -1,0 +1,10 @@
+@page "/delayed-search"
+
+@* The delay outlasts any test, so a value that arrives came from Enter or leaving the field. *@
+<TbTextField Label="Search" @bind-Value="_search" UpdateOnInput UpdateDelay="TimeSpan.FromMinutes(1)" />
+<output data-testid="search-echo">@_search</output>
+<button type="button">Next</button>
+
+@code {
+    private string? _search;
+}

@@ -37,6 +37,57 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldEmptyAndKeepFocus_WhenTheClearButtonIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var search = page.GetByLabel("Search");
+        await search.PressSequentiallyAsync("tea");
+        await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("tea");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Clear" }).ClickAsync();
+
+        await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("");
+        await Expect(search).ToHaveValueAsync("");
+        await Expect(search).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Clear" })).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldUpdateAtOnce_WhenEnterOrLeavingTheFieldEndsTheDelay(string browser)
+    {
+        var page = await OpenAsync(browser, "/delayed-search");
+        var search = page.GetByLabel("Search");
+
+        await search.PressSequentiallyAsync("tea");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("tea");
+
+        await search.PressSequentiallyAsync("pot");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("teapot");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldGrowWithItsTextUpToMaxLinesThenScroll_WhenMaxLinesIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var notes = page.GetByLabel("Notes");
+        // Playwright passes a float to the page as an empty object, so the height goes over as a double.
+        double start = (await notes.BoundingBoxAsync())!.Height;
+
+        await notes.FillAsync("1\n2\n3\n4\n5");
+        await page.WaitForFunctionAsync(
+            "start => document.querySelector('textarea[data-max-lines]').getBoundingClientRect().height > start",
+            start);
+        await notes.FillAsync(string.Join('\n', Enumerable.Range(1, 20)));
+        await page.WaitForFunctionAsync(
+            "() => (box => box.scrollHeight > box.clientHeight)(document.querySelector('textarea[data-max-lines]'))");
+
+        var full = (await notes.BoundingBoxAsync())!.Height;
+        Assert.InRange(full, start * 2, start * 8 / 3);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldKeepEveryKeystroke_WhenEachUpdateIsSlowToComeBack(string browser)
     {
         // A lost keystroke depends on timing, so a few page loads make a regression fail reliably.

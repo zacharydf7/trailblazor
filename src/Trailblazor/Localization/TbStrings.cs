@@ -296,6 +296,9 @@ public static class TbStrings
     /// </summary>
     public const string SplitterPane = "Splitter.Pane";
 
+    /// <summary>"Clear": names a text field's clear button.</summary>
+    public const string TextFieldClear = "TextField.Clear";
+
     /// <summary>"Theme": names a theme picker.</summary>
     public const string ThemePicker = "Theme.Picker";
 
@@ -426,6 +429,7 @@ public static class TbStrings
         [SelectClear] = "Clear",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
+        [TextFieldClear] = "Clear",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

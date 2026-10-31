@@ -532,9 +532,19 @@ public static class ExampleCatalog
                     + "browsers expose them.",
                 "`ReadOnly` keeps the field focusable and posted with its form, and screen readers hear it as read "
                     + "only; `Disabled` takes it out of the tab order and the post.",
+                "`Clearable` adds a button named \"Clear\" (or `ClearLabel`) while the field holds text it can "
+                    + "change; pressing it empties the field and puts focus back in it. A number needs a nullable "
+                    + "type, such as `int?`.",
+                "`UpdateDelay` waits for typing to pause before updating the value, so a search doesn't run on "
+                    + "every keystroke; Enter in a single-line field, or leaving the field, updates it at once.",
+                "`MaxLines` lets a text area grow with its text from `Lines` up to that many lines, and then scroll, "
+                    + "in browsers with CSS `field-sizing`.",
             ],
             Target = new("textbox", "Name"),
             Blocks = ["tb-field"],
+            TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
+                + "`Expect`, which waits, or press Enter to update it at once. In bUnit, register a `FakeTimeProvider` "
+                + "as the `TimeProvider` and advance it past the delay.",
         },
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.", typeof(NumberFieldExample))

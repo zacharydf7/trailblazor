@@ -3,13 +3,17 @@
 @using Trailblazor.Primitives
 @typeparam TValue
 @inherits TbFieldBase<TValue>
+@implements IAsyncDisposable
 @inject JsModuleLoader Modules
+@inject TimeProvider Time
 
 @Layout(Classes, @<text>
     @if (Lines > 1)
     {
         <textarea @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-                  rows="@Lines" @bind:get="Text" @bind:set="SetTextAsync" @bind:event="@BindEvent"
+                  rows="@Lines" @bind:get="Shown" @bind:set="OnTextAsync" @bind:event="@BindEvent"
+                  @onchange="FlushOnChange" data-max-lines="@(Grows ? MaxLines : null)"
+                  style="@(Grows ? $"--tb-text-field-lines: {Lines}; --tb-text-field-max-lines: {MaxLines}" : null)"
                   placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
                   aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
                   aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)"></textarea>
@@ -17,16 +21,18 @@
     else
     {
         <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-               type="@Type.ToString().ToLowerInvariant()" @bind:get="Text" @bind:set="SetTextAsync"
-               @bind:event="@BindEvent" placeholder="@Placeholder"
+               type="@Type.ToString().ToLowerInvariant()" @bind:get="Shown" @bind:set="OnTextAsync"
+               @bind:event="@BindEvent" @onchange="FlushOnChange" placeholder="@Placeholder"
                disabled="@Disabled" readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }
-</text>, Start, End)
+</text>, Start, EndWithClear)
 
 @code {
     private ElementReference _input;
+    private ITimer? _delay;
+    private string? _typed;
 
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
@@ -56,6 +62,25 @@
     [Parameter]
     public string? Placeholder { get; set; }
 
+    /// <summary>Shows a button that empties the field while it holds text and can be changed. Focus goes back to the
+    /// input. A value type has to be nullable, such as <c>int?</c>.</summary>
+    [Parameter]
+    public bool Clearable { get; set; }
+
+    /// <summary>The clear button's name. Defaults to the localizer's "Clear".</summary>
+    [Parameter]
+    public string? ClearLabel { get; set; }
+
+    /// <summary>Lets a text area grow with its text, from <see cref="Lines"/> up to this many lines, and then scroll.
+    /// A browser without CSS <c>field-sizing</c> shows a resizable text area of <see cref="Lines"/> instead.</summary>
+    [Parameter]
+    public int? MaxLines { get; set; }
+
+    /// <summary>With <see cref="UpdateOnInput"/>, waits until typing has paused this long before updating the value.
+    /// Enter in a single-line field, or leaving the field, updates it at once.</summary>
+    [Parameter]
+    public TimeSpan? UpdateDelay { get; set; }
+
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
 
@@ -68,4 +93,87 @@
 
     // @bind keeps keystrokes typed during a round trip; only the committing event is bound.
     private string BindEvent => UpdateOnInput ? "oninput" : "onchange";
+
+    private bool Grows => Lines > 1 && MaxLines > Lines;
+
+    // Text still waiting out the delay shows as typed, so a render in the meantime doesn't undo it.
+    private string? Shown => _typed ?? Text;
+
+    // Change comes on Enter and on leaving the field; without a delay @bind already uses it, and nothing waits.
+    private EventCallback FlushOnChange => UpdateOnInput && UpdateDelay is not null
+        ? EventCallback.Factory.Create(this, FlushAsync) : default;
+
+    private RenderFragment? EndWithClear => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(Shown) ? End :
+        @<text>
+            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(ClearLabel ?? Localizer[TbStrings.TextFieldClear])"
+                          Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
+            @End
+        </text>;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        // A value type's default is a real value, such as 0, so clearing needs a nullable type.
+        if (Clearable && typeof(TValue).IsValueType && Nullable.GetUnderlyingType(typeof(TValue)) is null)
+        {
+            throw new InvalidOperationException(
+                $"A clearable text field needs a nullable value type, such as {typeof(TValue).Name}?.");
+        }
+    }
+
+    private Task OnTextAsync(string? text)
+    {
+        if (!UpdateOnInput || UpdateDelay is not { } delay)
+        {
+            return SetTextAsync(text);
+        }
+
+        _typed = text;
+        _delay?.Dispose();
+        _delay = Time.CreateTimer(_ => InvokeAsync(FlushFromTimerAsync), null, delay, Timeout.InfiniteTimeSpan);
+        return Task.CompletedTask;
+    }
+
+    private async Task FlushAsync()
+    {
+        _delay?.Dispose();
+        _delay = null;
+        if (_typed is { } typed)
+        {
+            _typed = null;
+            await SetTextAsync(typed);
+        }
+    }
+
+    // Runs outside any event handler, so it renders the new messages and hands a failing callback to the renderer.
+    private async Task FlushFromTimerAsync()
+    {
+        try
+        {
+            await FlushAsync();
+            StateHasChanged();
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private async Task ClearAsync()
+    {
+        _delay?.Dispose();
+        _typed = null;
+        await SetValueAsync(default);
+        await _input.FocusAsync();
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        _delay?.Dispose();
+        return ValueTask.CompletedTask;
+    }
 }

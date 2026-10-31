@@ -2368,6 +2368,22 @@
         resize: vertical;
     }
 
+    /* A clearable search box has its own clear button, so the browser's would be a second one. */
+    .tb-field__control:has([data-part="clear"]) input.tb-field__input::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+    }
+
+    /* A text area with MaxLines sizes to its text between its line counts; without field-sizing it stays resizable. */
+    @supports (field-sizing: content) {
+        textarea.tb-field__input[data-max-lines] {
+            box-sizing: border-box;
+            field-sizing: content;
+            min-block-size: calc(var(--tb-text-field-lines) * 1lh + 2 * var(--tb-space-2));
+            max-block-size: calc(var(--tb-text-field-max-lines) * 1lh + 2 * var(--tb-space-2));
+            resize: none;
+        }
+    }
+
     /* The field draws its own step buttons, so the browser's spinners are hidden. */
     input.tb-field__input[type="number"] {
         appearance: textfield;
