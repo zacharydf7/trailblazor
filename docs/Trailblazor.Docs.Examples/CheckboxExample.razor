@@ -6,9 +6,11 @@
     <output data-testid="all-formats-echo">@(_allFormats?.ToString() ?? "mixed")</output>
     <TbCheckbox Label="Locked" Value="true" Disabled />
     <TbCheckbox Label="Terms accepted" Value="true" ReadOnly HelperText="Accepted when you signed up." />
+    <TbCheckbox Label="Share my route" @bind-Value="_share" Tone="Tone.Success" Size="Size.Large" />
 </TbStack>
 
 @code {
     private bool _updates;
     private bool? _allFormats;
+    private bool _share = true;
 }

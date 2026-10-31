@@ -10,6 +10,26 @@ public class TbCheckboxTests : BunitContext
     public TbCheckboxTests() => this.AddTrailblazor();
 
     [Fact]
+    public void Render_ShouldBePrimaryAndMedium_WhenNoToneOrSizeIsSet()
+    {
+        var cut = Render<TbCheckbox<bool>>();
+
+        Assert.Equal(["tb-checkbox", "tb-checkbox--primary", "tb-checkbox--medium"],
+            cut.Find(".tb-checkbox").ClassList);
+    }
+
+    [Theory]
+    [InlineData(Tone.Warning, Size.Small, "tb-checkbox--warning", "tb-checkbox--small")]
+    [InlineData(Tone.Success, Size.Large, "tb-checkbox--success", "tb-checkbox--large")]
+    public void Render_ShouldTakeTheToneAndSize_WhenSet(Tone tone, Size size, string toneClass, string sizeClass)
+    {
+        var cut = Render<TbCheckbox<bool>>(parameters => parameters.Add(box => box.Tone, tone)
+            .Add(box => box.Size, size));
+
+        Assert.Equal(["tb-checkbox", toneClass, sizeClass], cut.Find(".tb-checkbox").ClassList);
+    }
+
+    [Fact]
     public void Render_ShouldMarkTheBoxReadOnlyButNotDisabled_WhenReadOnly()
     {
         var cut = Render<TbCheckbox<bool>>(parameters => parameters.Add(box => box.ReadOnly, true));

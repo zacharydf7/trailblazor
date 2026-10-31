@@ -44,17 +44,37 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     [Theory]
     [MemberData(nameof(FeedbackTests.BrowsersAndDirections), MemberType = typeof(FeedbackTests))]
+    public async Task Switch_ShouldSlideItsThumbToTheTracksFarEdge_WhenOnAtEverySize(string browser, string direction)
+    {
+        var page = await OpenAsync(browser, "/examples/switch");
+        await SetDirectionAsync(page, direction);
+
+        var widths = new List<float>();
+        foreach (var name in new[] { "Wi-Fi", "Auto-save", "Alarms" })
+        {
+            var track = page.GetByRole(AriaRole.Switch, new() { Name = name });
+            var gap = await track.EvaluateAsync<double>("""
+                track => {
+                    const style = getComputedStyle(track);
+                    const thumb = getComputedStyle(track, '::before');
+                    const shift = Math.abs(new DOMMatrix(thumb.transform).m41);
+                    const room = track.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+                    return room - parseFloat(thumb.width) - shift;
+                }
+                """);
+            Assert.True(Math.Abs(gap) < 0.5, $"The {name} thumb stops {gap}px short of the far edge in {direction}.");
+            widths.Add((await track.BoundingBoxAsync())!.Width);
+        }
+
+        Assert.True(widths[0] < widths[1] && widths[1] < widths[2], $"The tracks are {string.Join(", ", widths)}px.");
+    }
+
+    [Theory]
+    [MemberData(nameof(FeedbackTests.BrowsersAndDirections), MemberType = typeof(FeedbackTests))]
     public async Task Switch_ShouldPutTheThumbAtTheEndOfTheReadingDirection_WhenOn(string browser, string direction)
     {
         var page = await OpenAsync(browser, "/examples/switch");
-        // The thumb slides to its new side, so wait until no transition is still running.
-        await page.EvaluateAsync("""
-            async direction => {
-                document.documentElement.dir = direction;
-                await new Promise(resolve => requestAnimationFrame(resolve));
-                await Promise.all(document.getAnimations().map(animation => animation.finished));
-            }
-            """, direction);
+        await SetDirectionAsync(page, direction);
         var autoSave = page.GetByRole(AriaRole.Switch, new() { Name = "Auto-save" });
 
         var shift = await autoSave.EvaluateAsync<double>(
@@ -123,6 +143,15 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
             await Expect(page.GetByRole(AriaRole.Radio, new() { Name = size })).ToBeCheckedAsync();
         }
     }
+
+    // The thumb slides to its new side, so wait until no transition is still running.
+    private static Task SetDirectionAsync(IPage page, string direction) => page.EvaluateAsync("""
+        async direction => {
+            document.documentElement.dir = direction;
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await Promise.all(document.getAnimations().map(animation => animation.finished));
+        }
+        """, direction);
 
     private static async Task PressAsync(IPage page, ILocator control, string key, int times)
     {

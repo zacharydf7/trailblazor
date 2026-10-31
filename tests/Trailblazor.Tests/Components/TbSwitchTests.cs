@@ -8,6 +8,15 @@ public class TbSwitchTests : BunitContext
     public TbSwitchTests() => this.AddTrailblazor();
 
     [Fact]
+    public void Render_ShouldNameTheToneAndSizeAfterTheSwitch_WhenSet()
+    {
+        var cut = Render<TbSwitch>(parameters => parameters.Add(item => item.Tone, Tone.Danger)
+            .Add(item => item.Size, Size.Large));
+
+        Assert.Equal(["tb-switch", "tb-switch--danger", "tb-switch--large"], cut.Find(".tb-switch").ClassList);
+    }
+
+    [Fact]
     public void Render_ShouldBeASwitch_WhenCalled()
     {
         var cut = Render<TbSwitch>(parameters => parameters.Add(toggle => toggle.Label, "Auto-save"));

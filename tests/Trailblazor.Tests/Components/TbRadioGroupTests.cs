@@ -15,6 +15,16 @@ public class TbRadioGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldTakeTheToneAndSize_WhenSet()
+    {
+        var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Tone, Tone.Info)
+            .Add(group => group.Size, Size.Small));
+
+        Assert.Equal(["tb-radio-group", "tb-radio-group--info", "tb-radio-group--small"],
+            cut.Find("fieldset").ClassList);
+    }
+
+    [Fact]
     public void Render_ShouldTurnOffEveryRadioButTheCheckedOne_WhenReadOnly()
     {
         var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Value, "A4")

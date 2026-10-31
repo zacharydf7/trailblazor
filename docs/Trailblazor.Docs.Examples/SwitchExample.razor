@@ -3,8 +3,14 @@
     <output data-testid="auto-save-echo">@_autoSave</output>
     <TbSwitch Label="Offline mode" Value="true" Disabled />
     <TbSwitch Label="Two-step sign-in" Value="true" ReadOnly HelperText="Your organization requires it." />
+    <TbStack Row Gap="5" Wrap>
+        <TbSwitch Label="Wi-Fi" @bind-Value="_wifi" Size="Size.Small" Tone="Tone.Success" />
+        <TbSwitch Label="Alarms" @bind-Value="_alarms" Size="Size.Large" Tone="Tone.Danger" />
+    </TbStack>
 </TbStack>
 
 @code {
     private bool _autoSave = true;
+    private bool _wifi = true;
+    private bool _alarms = true;
 }

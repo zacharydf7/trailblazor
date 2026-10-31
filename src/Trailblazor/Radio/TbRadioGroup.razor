@@ -10,7 +10,8 @@
           aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
           aria-invalid="@(Errors.Count > 0 ? "true" : null)"
           aria-describedby="@DescribedBy"
-          class="@ClassNames.Join("tb-radio-group", Errors.Count > 0 ? "tb-radio-group--invalid" : null,
+          class="@ClassNames.Join("tb-radio-group", ClassNames.Modifier("tb-radio-group", Tone),
+                     ClassNames.Modifier("tb-radio-group", Size), Errors.Count > 0 ? "tb-radio-group--invalid" : null,
                      Disabled ? "tb-radio-group--disabled" : null, Class)">
     @if (Label is not null)
     {
@@ -33,6 +34,14 @@
     /// <summary>The group's <see cref="TbRadio{TValue}"/> options.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The color a chosen radio takes. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Primary;
+
+    /// <summary>The size of the radios and their labels. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
 
     /// <summary>Lays the options out in a row instead of a column.</summary>
     [Parameter]

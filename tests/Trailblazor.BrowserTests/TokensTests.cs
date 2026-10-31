@@ -9,15 +9,19 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static readonly string[] Palettes = [.. PaletteCatalog.All.Select(palette => palette.Name)];
 
-    // Reads a color token on a probe inside <main> as its sRGB channels, 0 to 255.
+    // Reads a color token on a probe inside <main>, or inside an element with the given classes, as its sRGB
+    // channels, 0 to 255.
     private const string ChannelsScript = """
-        token => {
+        ([token, classes]) => {
+            const host = document.createElement('div');
+            host.className = classes ?? '';
             const probe = document.createElement('div');
             probe.style.color = `var(${token})`;
-            document.querySelector('main').append(probe);
+            host.append(probe);
+            document.querySelector('main').append(host);
             const context = document.createElement('canvas').getContext('2d');
             const color = getComputedStyle(probe).color;
-            probe.remove();
+            host.remove();
             // A color the canvas can't parse leaves its last fill, which would read as two equal colors.
             context.fillStyle = '#010203';
             context.fillStyle = color;
@@ -150,6 +154,39 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(failures);
     }
 
+    [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
+    public async Task ChoiceFills_ShouldStandOutFromThePageAndTheirMarks_WhenAPaletteAndThemeAreApplied(string browser,
+        string palette, string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+        await SetThemeAsync(page, theme);
+
+        var failures = new List<string>();
+        foreach (var block in new[] { "tb-checkbox", "tb-switch", "tb-radio-group" })
+        {
+            foreach (var tone in Tones)
+            {
+                var classes = $"{block} {block}--{tone}";
+                var fill = await GetLuminanceAsync(page, "--tb-choice-fill", classes);
+                foreach (var other in new[]
+                {
+                    "--tb-color-background", "--tb-color-surface", "--tb-color-surface-raised",
+                    "--tb-color-surface-sunken", "--tb-choice-on-fill",
+                })
+                {
+                    var ratio = ContrastRatio(fill, await GetLuminanceAsync(page, other, classes));
+                    if (ratio < 3)
+                    {
+                        failures.Add($"{classes} fill on {other}: {ratio:F2}");
+                    }
+                }
+            }
+        }
+
+        Assert.Empty(failures);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Palette_ShouldBeGraphiteInk_WhenNoPaletteIsSet(string browser)
     {
@@ -254,9 +291,9 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(probe).ToHaveCSSAsync("height", "32px");
     }
 
-    private static async Task<double> GetLuminanceAsync(IPage page, string token)
+    private static async Task<double> GetLuminanceAsync(IPage page, string token, string? classes = null)
     {
-        var (red, green, blue) = await GetChannelsAsync(page, token);
+        var (red, green, blue) = await GetChannelsAsync(page, token, classes);
         return 0.2126 * Linear(red) + 0.7152 * Linear(green) + 0.0722 * Linear(blue);
     }
 
@@ -278,9 +315,10 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         return (Math.Sqrt(a * a + b * b), (Math.Atan2(b, a) * 180 / Math.PI + 360) % 360);
     }
 
-    private static async Task<(int Red, int Green, int Blue)> GetChannelsAsync(IPage page, string token)
+    private static async Task<(int Red, int Green, int Blue)> GetChannelsAsync(IPage page, string token,
+        string? classes = null)
     {
-        var channels = await page.EvaluateAsync<int[]>(ChannelsScript, token);
+        var channels = await page.EvaluateAsync<int[]>(ChannelsScript, new[] { token, classes });
         return (channels[0], channels[1], channels[2]);
     }
 

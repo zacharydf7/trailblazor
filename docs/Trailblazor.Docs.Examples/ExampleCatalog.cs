@@ -551,6 +551,8 @@ public static class ExampleCatalog
                     + "high-contrast theme.",
                 "`ReadOnly` keeps the box focusable and posted, but neither a click nor Space changes it; screen "
                     + "readers hear it as read only.",
+                "`Tone` colors the checked box, standing out from the page by at least 3:1 in every tone; warning "
+                    + "takes its text color for that. `Size` scales the box and its label.",
             ],
             Target = new("checkbox", "Email me updates"),
             Blocks = ["tb-checkbox"],
@@ -568,6 +570,8 @@ public static class ExampleCatalog
                     + "high-contrast theme.",
                 "`ReadOnly` keeps the switch focusable and posted, but neither a click nor Space changes it; "
                     + "screen readers hear it as read only.",
+                "`Tone` colors the track when on, standing out from the page by at least 3:1 in every tone; warning "
+                    + "takes its text color for that. `Size` scales the track and its label.",
             ],
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],
@@ -616,6 +620,8 @@ public static class ExampleCatalog
                     + "high-contrast theme.",
                 "`ReadOnly` turns off every option but the chosen one, which stays a tab stop and still posts; "
                     + "with nothing chosen, every option is off. Screen readers hear the group as read only.",
+                "`Tone` colors the chosen radio, standing out from the page by at least 3:1 in every tone; warning "
+                    + "takes its text color for that. `Size` scales the radios and their labels.",
             ],
             Target = new("radiogroup", "Paper size"),
             Blocks = ["tb-radio-group", "tb-radio"],

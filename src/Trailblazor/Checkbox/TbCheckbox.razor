@@ -8,7 +8,8 @@
 @* In a static-SSR form an unchecked box posts nothing, so a bool? left unchecked posts as null rather than false. *@
 
 <div @attributes="AdditionalAttributes" style="@Style"
-     class="@ClassNames.Join(Block, Errors.Count > 0 ? $"{Block}--invalid" : null,
+     class="@ClassNames.Join(Block, ClassNames.Modifier(Block, Tone), ClassNames.Modifier(Block, Size),
+                Errors.Count > 0 ? $"{Block}--invalid" : null,
                 Disabled ? $"{Block}--disabled" : null, Class)">
     <label data-part="label" class="@ClassNames.Join($"{Block}__label", Classes?.Label)">
         <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
@@ -25,6 +26,14 @@
 @code {
     private ElementReference _input;
     private bool _shownIndeterminate;
+
+    /// <summary>The color the control takes when on. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Primary;
+
+    /// <summary>The size of the control and its label. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
 
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
