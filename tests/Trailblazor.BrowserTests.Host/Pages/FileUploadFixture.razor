@@ -8,11 +8,17 @@
     <TbFileUpload Label="Settings" @bind-Value="_settings" Accept=".json" DropZone="false" />
     <output data-testid="settings">@(_settings?[0].Name ?? "none")</output>
     <TbFileUpload Label="Archive" Disabled />
+    <TbFileUpload @ref="_import" Label="Import" Hidden @bind-Value="_imported" Accept=".json" />
+    <TbButton OnClick="() => _import.OpenAsync()">Import settings</TbButton>
+    <TbButton OnClick="() => _import.ClearAsync()">Forget the import</TbButton>
+    <output data-testid="imported">@(_imported?[0].Name ?? "none")</output>
 </TbStack>
 
 @code {
     private IReadOnlyList<IBrowserFile>? _documents;
     private IReadOnlyList<IBrowserFile>? _settings;
+    private IReadOnlyList<IBrowserFile>? _imported;
+    private TbFileUpload _import = default!;
     private string _read = "";
 
     private static string Names(IReadOnlyList<IBrowserFile>? files) =>

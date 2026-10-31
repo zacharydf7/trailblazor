@@ -128,6 +128,58 @@ public class TbFileUploadTests : BunitContext
     }
 
     [Fact]
+    public async Task OpenAsync_ShouldAskTheBrowserToOpenThePicker_WhenTheFieldIsEnabled()
+    {
+        var cut = RenderUpload();
+
+        await cut.InvokeAsync(cut.Instance.OpenAsync);
+
+        Assert.Single(JSInterop.Invocations["openPicker"]);
+    }
+
+    [Fact]
+    public async Task OpenAsync_ShouldDoNothing_WhenTheFieldIsDisabled()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Disabled, true));
+
+        await cut.InvokeAsync(cut.Instance.OpenAsync);
+
+        Assert.Empty(JSInterop.Invocations["openPicker"]);
+    }
+
+    [Fact]
+    public async Task ClearAsync_ShouldEmptyTheFieldAndSaySo_WhenCalled()
+    {
+        var cut = RenderUpload();
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("a.pdf"));
+
+        await cut.InvokeAsync(cut.Instance.ClearAsync);
+
+        Assert.Null(_files);
+        Assert.Equal(2, _changes);
+        Assert.Empty(cut.FindAll("[data-part=file]"));
+    }
+
+    [Fact]
+    public void Render_ShouldKeepTheFieldOutOfSightAndReachButShowWhyFilesWereLeftOut_WhenHidden()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Hidden, true)
+            .Add(upload => upload.Multiple, true).Add(upload => upload.MaxFileSize, 100));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf"), Pdf("atlas.pdf", 200));
+
+        Assert.Equal(["trail.pdf"], _files!.Select(file => file.Name));
+        Assert.All(cut.FindAll("[data-part=label], [data-part=zone]"), part =>
+        {
+            Assert.Contains("tb-visually-hidden", part.ClassList);
+            Assert.Equal("true", part.GetAttribute("aria-hidden"));
+        });
+        Assert.Equal("-1", cut.Find("[data-part=input]").GetAttribute("tabindex"));
+        Assert.Empty(cut.FindAll("button"));
+        Assert.Null(cut.Find("[data-part=rejected]").Closest("[aria-hidden]"));
+    }
+
+    [Fact]
     public void Render_ShouldBeAButtonNamedByItsText_WhenThereIsNoDropZoneOrLabel()
     {
         var cut = Render<TbFileUpload>(parameters => parameters.Add(upload => upload.DropZone, false));

@@ -6,17 +6,19 @@
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-field", "tb-file-upload", Errors.Count > 0 ? "tb-field--invalid" : null,
                 Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
+    @* A hidden field keeps its input so code can open the picker, out of sight and reach; its errors still show. *@
     @if (Label is not null)
     {
-        <label data-part="label" id="@LabelId" for="@InputId"
-               class="@ClassNames.Join("tb-field__label", Classes?.Label)">
+        <label data-part="label" id="@LabelId" for="@InputId" aria-hidden="@(Hidden ? "true" : null)"
+               class="@ClassNames.Join("tb-field__label", Hidden ? "tb-visually-hidden" : null, Classes?.Label)">
             @Label
             @RequiredMarker
         </label>
     }
     @* The file input lies over the whole zone, so a click, Enter or Space, or a dropped file all reach it. *@
-    <div data-part="zone" data-dragging="@(_dragging ? "" : null)"
-         class="@ClassNames.Join(DropZone ? "tb-file-upload__zone" : "tb-file-upload__button", Classes?.Control)">
+    <div data-part="zone" data-dragging="@(_dragging ? "" : null)" aria-hidden="@(Hidden ? "true" : null)"
+         class="@ClassNames.Join(DropZone ? "tb-file-upload__zone" : "tb-file-upload__button",
+                    Hidden ? "tb-visually-hidden" : null, Classes?.Control)">
         <span class="tb-file-upload__prompt" aria-hidden="true">
             @if (!DropZone)
             {
@@ -39,12 +41,12 @@
                    aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@Description"
                    data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
                    data-prerender="@(AssignedRenderMode is not null && !RendererInfo.IsInteractive ? "" : null)"
-                   data-choices="@_choices" data-ready="@(_ready ? "" : null)"
+                   data-choices="@_choices" data-ready="@(_ready ? "" : null)" tabindex="@(Hidden ? "-1" : null)"
                    @ondragenter="() => _dragging = true" @ondragleave="() => _dragging = false"
                    @ondrop="() => _dragging = false"
                    class="@ClassNames.Join("tb-file-upload__input", Classes?.Input)" />
     </div>
-    @if (Files.Count > 0)
+    @if (Files.Count > 0 && !Hidden)
     {
         <ul data-part="files" class="tb-file-upload__files">
             @foreach (var file in Files)
@@ -59,8 +61,8 @@
                 </li>
             }
         </ul>
-        <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="@(Disabled || ReadOnly)" OnClick="ClearAsync"
-                  data-part="clear"
+        <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="@(Disabled || ReadOnly)"
+                  OnClick="OnClearClickedAsync" data-part="clear"
                   class="tb-file-upload__clear">@ClearLabel</TbButton>
     }
     @if (_rejected.Count > 0)

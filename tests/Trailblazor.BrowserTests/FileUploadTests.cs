@@ -35,6 +35,39 @@ public class FileUploadTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Clear_ShouldLetTheSameFileBeChosenAgain_WhenAFileWasCleared(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+        var input = page.Locator("[data-part=input]").First;
+        await Expect(input).ToHaveAttributeAsync("data-ready", "");
+        await input.SetInputFilesAsync(File("trail.pdf", "x", "application/pdf"));
+
+        await page.Locator("[data-part=clear]").First.ClickAsync();
+
+        await Expect(page.Locator("[data-part=file]")).ToHaveCountAsync(0);
+        Assert.Equal("", await input.InputValueAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Open_ShouldOpenThePickerFromCodeAndLetItBeCleared_WhenButtonsAsk(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+        var imported = page.GetByTestId("imported");
+        var import = page.GetByRole(AriaRole.Button, new() { Name = "Import settings" });
+        await Expect(page.Locator(".tb-visually-hidden [data-part=input]")).ToHaveAttributeAsync("data-ready", "");
+
+        var chooser = await page.RunAndWaitForFileChooserAsync(() => import.ClickAsync());
+        await chooser.SetFilesAsync(File("trail.json", "{}", "application/json"));
+        await Expect(imported).ToHaveTextAsync("trail.json");
+        chooser = await page.RunAndWaitForFileChooserAsync(() => import.ClickAsync());
+        // A browser reports no change for the file the input already holds, so opening empties it first.
+        Assert.Equal("", await chooser.Element.InputValueAsync());
+        await page.GetByRole(AriaRole.Button, new() { Name = "Forget the import" }).ClickAsync();
+
+        await Expect(imported).ToHaveTextAsync("none");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Choose_ShouldListTheFilesAndKeepThemReadable_WhenTheyAreChosen(string browser)
     {
         var page = await OpenAsync(browser, "/file-upload");

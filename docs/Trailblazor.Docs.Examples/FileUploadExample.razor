@@ -4,12 +4,22 @@
     <TbFileUpload Label="Trail maps" @bind-Value="_maps" Accept=".pdf,image/*" Multiple MaxFiles="5"
                   HelperText="PDFs or images, up to five." />
     <TbFileUpload Label="Gear list" @bind-Value="_gear" Accept=".json" DropZone="false" />
+    <TbFileUpload @ref="_import" Label="Import a route" @bind-Value="_route" Accept=".gpx" Hidden />
+    <TbStack Row Gap="2" Wrap>
+        <TbButton OnClick="() => _import!.OpenAsync()">Import a route</TbButton>
+        <TbButton Variant="Variant.Text" Disabled="@(_route is null)" OnClick="() => _import!.ClearAsync()">
+            Forget the route
+        </TbButton>
+    </TbStack>
     <TbText>@Summary</TbText>
 </TbStack>
 
 @code {
     private IReadOnlyList<IBrowserFile>? _maps;
     private IReadOnlyList<IBrowserFile>? _gear;
+    private IReadOnlyList<IBrowserFile>? _route;
+    private TbFileUpload? _import;
 
-    private string Summary => $"{_maps?.Count ?? 0} maps and {(_gear is null ? "no gear list" : _gear[0].Name)}.";
+    private string Summary => $"{_maps?.Count ?? 0} maps, {(_gear is null ? "no gear list" : _gear[0].Name)} and "
+        + $"{(_route is null ? "no route" : _route[0].Name)}.";
 }

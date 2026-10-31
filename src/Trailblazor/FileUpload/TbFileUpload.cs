@@ -1,6 +1,8 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
+using Trailblazor.Primitives;
 
 namespace Trailblazor;
 
@@ -45,6 +47,17 @@ public partial class TbFileUpload
     [Parameter]
     public RenderFragment? ZoneContent { get; set; }
 
+    /// <summary>Shows nothing on the page but the reasons any files were left out and its messages, for a field opened
+    /// only from code with <see cref="OpenAsync"/>, such as by an "Open file" menu item. Its files arrive through
+    /// <c>ValueChanged</c> as usual.</summary>
+    [Parameter]
+    public bool Hidden { get; set; }
+
+    private const string Script = "./_content/Trailblazor/file-upload.js";
+
+    [Inject]
+    private JsModuleLoader Modules { get; set; } = default!;
+
     /// <summary>The words the field shows and says to screen readers.</summary>
     [Parameter]
     public FileUploadLabels Labels { get; set; } = new();
@@ -62,6 +75,34 @@ public partial class TbFileUpload
     private string? Description => _rejected.Count == 0 ? InputDescribedBy
         : string.Join(" ", new[] { InputDescribedBy, RejectedId }.OfType<string>());
 
+    /// <summary>Opens the browser's file picker, as clicking the field does. Browsers open it only during the user's
+    /// own click or key press, so call it from that event's handler, such as a menu item's <c>OnClick</c>, and not
+    /// after a delay. Does nothing while the field is disabled or read only.</summary>
+    public async Task OpenAsync()
+    {
+        if (Disabled || ReadOnly || _input?.Element is not { } input)
+        {
+            return;
+        }
+
+        var module = await Modules.ImportAsync(Script);
+        await module.InvokeVoidAsync("openPicker", input);
+    }
+
+    /// <summary>Empties the field and raises <c>ValueChanged</c>, as its clear button does, without moving focus.
+    /// </summary>
+    public async Task ClearAsync()
+    {
+        _rejected.Clear();
+        await SetValueAsync(null);
+        StateHasChanged();
+        if (_input?.Element is { } input)
+        {
+            var module = await Modules.ImportAsync(Script);
+            await module.InvokeVoidAsync("clearPicker", input);
+        }
+    }
+
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) =>
         _input!.Element!.Value.FocusAsync(preventScroll);
@@ -71,6 +112,8 @@ public partial class TbFileUpload
     {
         if (firstRender && RendererInfo.IsInteractive)
         {
+            // Loaded ahead, so OpenAsync is one call within the click's time limit; a failed load retries on that call.
+            _ = Modules.ImportAsync(Script);
             // InputFile starts listening in its own first after-render, which runs after this one, so it goes first.
             await Task.Yield();
             _ready = true;
@@ -125,10 +168,9 @@ public partial class TbFileUpload
         await FocusAsync();
     }
 
-    private async Task ClearAsync()
+    private async Task OnClearClickedAsync()
     {
-        _rejected.Clear();
-        await SetValueAsync(null);
+        await ClearAsync();
         await FocusAsync();
     }
 

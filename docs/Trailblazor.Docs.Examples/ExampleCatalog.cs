@@ -939,6 +939,10 @@ public static class ExampleCatalog
                 "Before the page is interactive it is the same file input, named for its form, so a static form "
                     + "posts the chosen files; the list of files and the reasons for any left out show once it is "
                     + "interactive.",
+                "`Hidden` keeps the field out of sight, the tab order and the reading order, apart from the reasons "
+                    + "any files were left out and its messages, so your own button can call `OpenAsync()` from its "
+                    + "click; browsers open a file dialog only shortly after a user's click. `ClearAsync()` empties the "
+                    + "field from code.",
             ],
             Target = new("button", "Trail maps"),
             Blocks = ["tb-field", "tb-file-upload"],

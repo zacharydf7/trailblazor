@@ -992,8 +992,11 @@ Trailblazor.TbFileUpload.Accept.get -> string?
 Trailblazor.TbFileUpload.Accept.set -> void
 Trailblazor.TbFileUpload.Classes.get -> Trailblazor.FieldClasses?
 Trailblazor.TbFileUpload.Classes.set -> void
+Trailblazor.TbFileUpload.ClearAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbFileUpload.DropZone.get -> bool
 Trailblazor.TbFileUpload.DropZone.set -> void
+Trailblazor.TbFileUpload.Hidden.get -> bool
+Trailblazor.TbFileUpload.Hidden.set -> void
 Trailblazor.TbFileUpload.Labels.get -> Trailblazor.FileUploadLabels!
 Trailblazor.TbFileUpload.Labels.set -> void
 Trailblazor.TbFileUpload.MaxFileSize.get -> long
@@ -1002,6 +1005,7 @@ Trailblazor.TbFileUpload.MaxFiles.get -> int?
 Trailblazor.TbFileUpload.MaxFiles.set -> void
 Trailblazor.TbFileUpload.Multiple.get -> bool
 Trailblazor.TbFileUpload.Multiple.set -> void
+Trailblazor.TbFileUpload.OpenAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbFileUpload.TbFileUpload() -> void
 Trailblazor.TbFileUpload.ZoneContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbFileUpload.ZoneContent.set -> void
