@@ -32,7 +32,7 @@ public class DocsSearchTests
     }
 
     [Theory]
-    [InlineData("overlays", new[] { "Tooltip", "Menu", "Dialog", "Popover", "Overlay" })]
+    [InlineData("overlays", new[] { "Tooltip", "Menu", "Dialog", "Focus scope", "Popover", "Overlay" })]
     [InlineData("guides",
         new[] { "Getting started", "Theming", "Palettes", "Browser", "Announcements", "Icons", "Localization",
             "Testing", "Roadmap" })]

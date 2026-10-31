@@ -8,7 +8,7 @@ namespace Trailblazor.Docs.Examples;
 
 public sealed record ApiMember(string Name, string Type, string Default, string Description, bool Required);
 
-// A service's members are its methods, whose Type is what they return.
+// A service's or a handle's members are its properties and methods, whose Type is what they return.
 public sealed record ApiType(string Name, string Summary, IReadOnlyList<ApiMember> Members, bool Methods = false);
 
 // Builds the docs site's API tables from the library's types and its XML documentation.
@@ -27,26 +27,30 @@ public static partial class ApiDocs
     };
 
     // A component lists its parameters, apart from Class, Style and attributes, which every component takes; an
-    // options type lists the properties a caller sets; a service interface lists its properties, events and methods,
-    // leaving out the accessor methods the compiler makes for the first two.
+    // options type lists the properties a caller sets. A service interface, or a handle the library hands out, which
+    // has no constructor to call, lists its properties, events and methods, leaving out the accessor methods the
+    // compiler makes for the first two.
     public static ApiType Describe(Type type)
     {
-        if (type.IsInterface)
+        var component = type.IsAssignableTo(typeof(IComponent));
+        if (type.IsInterface || (!component && !type.IsValueType && type.GetConstructor(Type.EmptyTypes) is null))
         {
             var context = new NullabilityInfoContext();
             return new(TypeName(type), Summary($"T:{type.FullName}"),
             [
-                .. type.GetProperties().OrderBy(property => property.MetadataToken)
+                .. type.GetProperties().OrderBy(property => Depth(property.DeclaringType!))
+                    .ThenBy(property => property.MetadataToken)
                     .Select(property => InterfaceProperty(property, context)),
                 .. type.GetEvents().OrderBy(eventInfo => eventInfo.MetadataToken).Select(eventInfo => new ApiMember(
                     $"event {eventInfo.Name}", TypeName(eventInfo.EventHandlerType!), "",
                     Summary($"E:{DocId(type)}.{eventInfo.Name}"), false)),
-                .. type.GetMethods().Where(method => !method.IsSpecialName).OrderBy(method => method.MetadataToken)
+                .. type.GetMethods()
+                    .Where(method => !method.IsSpecialName && method.DeclaringType != typeof(object))
+                    .OrderBy(method => Depth(method.DeclaringType!)).ThenBy(method => method.MetadataToken)
                     .Select(Method),
             ], Methods: true);
         }
 
-        var component = type.IsAssignableTo(typeof(IComponent));
         var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(property => component
                 ? property.IsDefined(typeof(ParameterAttribute)) && property.DeclaringType != typeof(TbComponentBase)
@@ -74,7 +78,8 @@ public static partial class ApiDocs
         var type = TypeName(property.PropertyType, context.Create(property));
         if (index.Length == 0)
         {
-            return new($"{property.Name} {{ get; }}", type, "", Summary(property), false);
+            var accessors = property.SetMethod is { IsPublic: true } ? "get; set;" : "get;";
+            return new($"{property.Name} {{ {accessors} }}", type, "", Summary(property), false);
         }
 
         var signature = string.Join(", ", index.Select(parameter => Parameter(parameter, context)));
@@ -93,8 +98,13 @@ public static partial class ApiDocs
         var signature = string.Join(", ", parameters.Select(parameter => Parameter(parameter, context)));
         var types = parameters.Length == 0 ? ""
             : $"({string.Join(',', parameters.Select(parameter => DocId(parameter.ParameterType)))})";
-        return new($"{method.Name}({signature})", TypeName(method.ReturnType, context.Create(method.ReturnParameter)),
-            "", Summary($"M:{DocId(method.DeclaringType!)}.{method.Name}{types}"), false);
+        // The XML documentation counts a generic method's type parameters after two backticks, such as Show``2.
+        var arguments = method.GetGenericArguments();
+        var (shown, id) = arguments.Length == 0 ? (method.Name, method.Name)
+            : ($"{method.Name}<{string.Join(", ", arguments.Select(argument => argument.Name))}>",
+                $"{method.Name}``{arguments.Length}");
+        return new($"{shown}({signature})", TypeName(method.ReturnType, context.Create(method.ReturnParameter)),
+            "", Summary($"M:{DocId(method.DeclaringType!)}.{id}{types}"), false);
     }
 
     private static string Parameter(ParameterInfo parameter, NullabilityInfoContext context)
@@ -105,11 +115,18 @@ public static partial class ApiDocs
             : text;
     }
 
-    // The type as the XML documentation names it, with any type arguments in braces.
-    private static string DocId(Type type) => type.IsGenericType
-        ? $"{type.Namespace}.{type.Name[..type.Name.IndexOf('`')]}{{{string.Join(',', type.GetGenericArguments()
-            .Select(DocId))}}}"
-        : type.FullName!.Replace('+', '.');
+    // The type as the XML documentation names it: a generic type itself keeps its arity, as DialogReference`1, a use
+    // of one has its type arguments in braces, and a type parameter is its position, after two backticks for a
+    // method's and one for a type's.
+    private static string DocId(Type type) => type switch
+    {
+        { IsGenericMethodParameter: true } => $"``{type.GenericParameterPosition}",
+        { IsGenericTypeParameter: true } => $"`{type.GenericParameterPosition}",
+        { IsGenericTypeDefinition: true } => type.FullName!.Replace('+', '.'),
+        { IsGenericType: true } => $"{type.Namespace}.{type.Name[..type.Name.IndexOf('`')]}"
+            + $"{{{string.Join(',', type.GetGenericArguments().Select(DocId))}}}",
+        _ => type.FullName!.Replace('+', '.'),
+    };
 
     // Bases come first, so a field lists its value and label before the parameters of its own kind.
     private static int Depth(Type type) => type.BaseType is null ? 0 : 1 + Depth(type.BaseType);

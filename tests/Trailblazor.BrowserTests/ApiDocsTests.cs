@@ -19,6 +19,20 @@ public class ApiDocsTests
         Assert.All(theme.Concat(localizer), member => Assert.NotEmpty(member.Description));
     }
 
+    [Fact]
+    public void Describe_ShouldListAHandlesPropertiesAndGenericMethods_WhenGivenATypeWithoutAConstructor()
+    {
+        var reference = ApiDocs.Describe(typeof(DialogReference<>)).Members;
+        var dialogs = ApiDocs.Describe(typeof(IDialogService)).Members;
+
+        Assert.Equal(["Title { get; set; }", "Options { get; }", "Result { get; }", "CancelAsync()",
+            "CloseAsync(TResult? value)", "Update<TDialog>(Action<DialogParameters<TDialog>> parameters)"],
+            reference.Select(member => member.Name));
+        Assert.Contains(dialogs, member => member.Name.StartsWith("Show<TDialog, TResult>(string title,",
+            StringComparison.Ordinal));
+        Assert.All(reference.Concat(dialogs), member => Assert.NotEmpty(member.Description));
+    }
+
     [Theory, MemberData(nameof(Types))]
     public void Describe_ShouldGiveEveryMemberADescription_WhenGivenATypeTheDocsTable(string type)
     {
