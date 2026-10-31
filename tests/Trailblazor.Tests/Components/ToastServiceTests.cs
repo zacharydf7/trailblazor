@@ -22,15 +22,17 @@ public class ToastServiceTests : BunitContext
     [Fact]
     public async Task Show_ShouldKeepEveryToast_WhenToastsAreShownFromManyThreadsAtOnce()
     {
+        // Resolved before the threads start, since the first resolution builds the test's service provider.
+        var toasts = Toasts;
         await Task.WhenAll(Enumerable.Range(0, 8).Select(thread => Task.Run(() =>
         {
             for (var i = 0; i < 500; i++)
             {
-                Toasts.Show($"Toast {thread}-{i}", Tone.Danger);
+                toasts.Show($"Toast {thread}-{i}", Tone.Danger);
             }
         })));
 
-        Assert.Equal(4000, Toasts.Toasts.Distinct().Count());
+        Assert.Equal(4000, toasts.Toasts.Distinct().Count());
     }
 
     [Fact]

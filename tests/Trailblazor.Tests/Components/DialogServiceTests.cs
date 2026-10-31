@@ -16,15 +16,17 @@ public class DialogServiceTests : BunitContext
     [Fact]
     public async Task ConfirmAsync_ShouldKeepEveryDialog_WhenDialogsAreOpenedFromManyThreadsAtOnce()
     {
+        // Resolved before the threads start, since the first resolution builds the test's service provider.
+        var dialogs = Dialogs;
         await Task.WhenAll(Enumerable.Range(0, 8).Select(thread => Task.Run(() =>
         {
             for (var i = 0; i < 500; i++)
             {
-                _ = Dialogs.ConfirmAsync("Delete trail", "Delete it?");
+                _ = dialogs.ConfirmAsync("Delete trail", "Delete it?");
             }
         })));
 
-        Assert.Equal(4000, Dialogs.OpenDialogs.Distinct().Count());
+        Assert.Equal(4000, dialogs.OpenDialogs.Distinct().Count());
     }
 
     [Fact]
