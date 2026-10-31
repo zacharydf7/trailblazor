@@ -1079,9 +1079,10 @@ public static class ExampleCatalog
                 + "hidden, so `ToBeVisibleAsync` waits for it to load.",
         },
         new("toast", "Toast", ExampleCategory.Feedback,
-            "A brief message in a corner that doesn't interrupt, with an optional action.", typeof(ToastExample))
+            "A brief message in a corner that doesn't interrupt, with an optional title, icon, content and action.",
+            typeof(ToastExample))
         {
-            Api = [typeof(ToastOptions), typeof(ToastSettings)],
+            Api = [typeof(IToastService), typeof(ToastOptions), typeof(ToastSettings)],
             Accessibility =
             [
                 "Toasts are read out as they appear: Danger and Warning interrupt, the others wait. They never "
@@ -1090,10 +1091,15 @@ public static class ExampleCatalog
                 "A toast's timer pauses while the pointer is over it or it has focus, and Danger toasts stay "
                     + "until they are dismissed unless given a `Duration`.",
                 "The toasts sit in a region named \"Notifications\".",
+                "A `Title` is read out before the message. The tone's icon is decorative, since the text says the "
+                    + "same; `Content` shows in place of the message, which is still what screen readers hear.",
+                "Toasts fade in and out; with reduced motion they appear and go at once.",
             ],
             Target = new("listitem") { Text = "Report saved", OpenedBy = new("button", "Save report") },
             Blocks = ["tb-toast", "tb-toaster"],
-            TestingTip = "Each toast is an item in the region named `Notifications`.",
+            TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
+                + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. In bUnit, "
+                + "`await toast.Closed` says why it closed.",
         },
     ];
 

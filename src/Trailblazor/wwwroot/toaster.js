@@ -8,7 +8,9 @@ export function attachToaster(toaster) {
     let returnFocus = null;
     let focused = null;
 
-    const newestButton = () => [...toaster.querySelectorAll('[data-part="toast"]')].at(-1)?.querySelector('button');
+    // A toast fading out after it closed can't take focus.
+    const newestButton = () => [...toaster.querySelectorAll('[data-part="toast"]:not([data-leaving])')].at(-1)
+        ?.querySelector('button');
 
     const onKeyDown = event => {
         if (event.key === 'F8' && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
@@ -47,7 +49,10 @@ export function attachToaster(toaster) {
     return {
         // Runs after every render: shows or hides the toaster and keeps focus when the toast holding it closes.
         sync() {
-            if (focused && !focused.isConnected && (!document.activeElement || document.activeElement === document.body)) {
+            // A closing toast stays inert while it fades, so focus inside it is as lost as in a removed one.
+            const active = document.activeElement;
+            if (focused && (!focused.isConnected || focused.closest('[data-leaving]'))
+                && (!active || active === document.body || active.closest('[data-leaving]'))) {
                 const next = newestButton() ?? (returnFocus?.isConnected ? returnFocus : null);
                 focused = null;
                 next?.focus();

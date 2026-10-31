@@ -25,7 +25,7 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
 
         var added = new ToastReference(this, message, tone, options, LifetimeOf(tone, options));
         _toasts.Add(added);
-        Announce(message, tone);
+        Announce(message, tone, options);
         Changed?.Invoke();
         return added;
     }
@@ -39,16 +39,30 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
 
         options ??= new();
         toast.Set(message, tone, options, LifetimeOf(tone, options));
-        Announce(message, tone);
+        Announce(message, tone, options);
         Changed?.Invoke();
     }
 
-    public void Dismiss(ToastReference toast)
+    public void Close(ToastReference toast, ToastCloseReason reason)
     {
         if (_toasts.Remove(toast))
         {
+            toast.Finish(reason);
             Changed?.Invoke();
         }
+    }
+
+    public void DismissAll()
+    {
+        if (_toasts.Count == 0)
+        {
+            return;
+        }
+
+        var closing = _toasts.ToList();
+        _toasts.Clear();
+        closing.ForEach(toast => toast.Finish(ToastCloseReason.App));
+        Changed?.Invoke();
     }
 
     private TimeSpan? LifetimeOf(Tone tone, ToastOptions options) => options switch
@@ -59,15 +73,19 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
         _ => Settings.Duration,
     };
 
-    private void Announce(string message, Tone tone)
+    // The title comes first, as it shows, so "Upload failed. The file is too large." reads as one message.
+    private void Announce(string message, Tone tone, ToastOptions options)
     {
+        var title = options.Title?.Trim();
+        var text = string.IsNullOrEmpty(title) ? message
+            : title[^1] is '.' or '!' or '?' ? $"{title} {message}" : $"{title}. {message}";
         if (tone is Tone.Danger or Tone.Warning)
         {
-            announcer.Assertive(message);
+            announcer.Assertive(text);
         }
         else
         {
-            announcer.Polite(message);
+            announcer.Polite(text);
         }
     }
 }

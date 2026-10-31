@@ -3961,6 +3961,40 @@
         font-size: var(--tb-font-size-sm);
         line-height: var(--tb-line-height-normal);
         pointer-events: auto;
+        transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard),
+            translate var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    /* A new toast fades and slides in; a closed one fades out while the host keeps it. Reduced motion skips both. */
+    @starting-style {
+        .tb-toast {
+            opacity: 0;
+            translate: 0 -0.5rem;
+        }
+    }
+
+    .tb-toast[data-leaving] {
+        opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .tb-toast[data-leaving] {
+            display: none;
+        }
+    }
+
+    .tb-toast__icon {
+        color: var(--tb-toast-accent);
+    }
+
+    .tb-toast__body {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding-block: var(--tb-space-1);
+    }
+
+    .tb-toast__title {
+        font-weight: var(--tb-font-weight-semibold);
     }
 
     .tb-toast--primary {
@@ -3985,12 +4019,6 @@
 
     .tb-toast--info {
         --tb-toast-accent: var(--tb-color-info-text);
-    }
-
-    .tb-toast__message {
-        flex: 1 1 auto;
-        min-width: 0;
-        padding-block: var(--tb-space-1);
     }
 
     .tb-file-upload__zone,

@@ -47,8 +47,11 @@ public class ToastServiceTests : BunitContext
         Assert.Single(host.FindAll("[data-part=toast]"));
 
         _time.Advance(TimeSpan.FromSeconds(0.2));
-        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=toast]")));
         Assert.Empty(Toasts.Toasts);
+        // It fades out before it goes.
+        host.WaitForAssertion(() => Assert.NotNull(host.Find("[data-part=toast][data-leaving]")));
+        _time.Advance(TimeSpan.FromSeconds(0.2));
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=toast]")));
     }
 
     [Fact]
@@ -64,7 +67,8 @@ public class ToastServiceTests : BunitContext
         Assert.True(toast.IsOpen);
         host.Find("[data-part=close]").Click();
         Assert.False(toast.IsOpen);
-        Assert.Empty(host.FindAll("[data-part=toast]"));
+        _time.Advance(TimeSpan.FromSeconds(0.2));
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=toast]")));
     }
 
     [Fact]
@@ -132,7 +136,7 @@ public class ToastServiceTests : BunitContext
         toasts[0].Dismiss();
 
         host.WaitForAssertion(() => Assert.Contains("Toast 4", host.Markup));
-        Assert.Equal(3, host.FindAll("[data-part=toast]").Count);
+        Assert.Equal(3, host.FindAll("[data-part=toast]:not([data-leaving])").Count);
     }
 
     [Fact]
@@ -147,6 +151,121 @@ public class ToastServiceTests : BunitContext
 
         Assert.True(undone);
         Assert.False(toast.IsOpen);
+    }
+
+    [Fact]
+    public void Show_ShouldPutTheTitleAboveTheMessageAndAnnounceBoth_WhenGivenATitle()
+    {
+        var host = Render<ToastHost>();
+        var announcer = Render<AnnouncerHost>();
+
+        Toasts.Show("The file is over 10 MB.", Tone.Danger, new() { Title = "Upload failed" });
+
+        var toast = host.WaitForElement("[data-part=toast]");
+        Assert.Equal("Upload failed", toast.QuerySelector("[data-part=title]")!.TextContent);
+        Assert.Equal("The file is over 10 MB.", toast.QuerySelector("[data-part=message]")!.TextContent);
+        Assert.Equal("Upload failed. The file is over 10 MB.", announcer.Find("[role=alert] p").TextContent);
+    }
+
+    [Theory]
+    [InlineData("Upload failed!", "Upload failed! The file is over 10 MB.")]
+    [InlineData(" ", "The file is over 10 MB.")]
+    public void Show_ShouldAnnounceTheTitleWithoutDoublingItsPunctuation_WhenGivenAPunctuatedOrBlankTitle(
+        string title, string announced)
+    {
+        var host = Render<ToastHost>();
+        var announcer = Render<AnnouncerHost>();
+
+        Toasts.Show("The file is over 10 MB.", Tone.Danger, new() { Title = title });
+
+        Assert.Equal(announced, announcer.Find("[role=alert] p").TextContent);
+        Assert.Equal(string.IsNullOrWhiteSpace(title),
+            host.WaitForElement("[data-part=toast]").QuerySelector("[data-part=title]") is null);
+    }
+
+    [Theory]
+    [InlineData(Tone.Success, false, false, true)]
+    [InlineData(Tone.Neutral, false, false, false)]
+    [InlineData(Tone.Neutral, true, false, true)]
+    [InlineData(Tone.Danger, false, true, false)]
+    public void Show_ShouldShowTheTonesIconOrItsOwnOrNone_WhenAsked(Tone tone, bool ownIcon, bool hideIcon, bool shown)
+    {
+        var host = Render<ToastHost>();
+
+        Toasts.Show("Saved", tone, new()
+        {
+            Icon = ownIcon ? new Icon("<circle cx=\"12\" cy=\"12\" r=\"6\" />") : null,
+            ShowIcon = !hideIcon,
+        });
+
+        var icon = host.WaitForElement("[data-part=toast]").QuerySelector(".tb-toast__icon");
+        Assert.Equal(shown, icon is not null);
+        if (ownIcon)
+        {
+            Assert.NotNull(icon!.QuerySelector("circle"));
+        }
+        else if (shown)
+        {
+            var success = Render<TbIcon>(parameters => parameters.Add(p => p.Icon, BuiltInIcons.Success));
+            Assert.Equal(success.Find("svg").InnerHtml, icon!.InnerHtml);
+        }
+    }
+
+    [Fact]
+    public void Show_ShouldShowTheContentButAnnounceTheMessage_WhenGivenContent()
+    {
+        var host = Render<ToastHost>();
+        var announcer = Render<AnnouncerHost>();
+
+        Toasts.Show("Report ready", options: new()
+        {
+            Content = builder =>
+            {
+                builder.OpenElement(0, "a");
+                builder.AddAttribute(1, "href", "reports/7");
+                builder.AddContent(2, "Report ready: open it");
+                builder.CloseElement();
+            },
+        });
+
+        var message = host.WaitForElement("[data-part=message]");
+        Assert.Equal("reports/7", message.QuerySelector("a")!.GetAttribute("href"));
+        Assert.Equal("Report ready", announcer.Find("[role=status] p").TextContent);
+    }
+
+    [Fact]
+    public async Task Closed_ShouldSayWhyEachToastClosed_WhenTheyCloseInEachWay()
+    {
+        var host = Render<ToastHost>();
+        var timedOut = Toasts.Show("Saved");
+        var closed = Toasts.Show("Copied");
+        var acted = Toasts.Show("Deleted", options: new() { Action = new("Undo", EventCallback.Empty) });
+        host.WaitForAssertion(() => Assert.Equal(3, host.FindAll("[data-part=toast]").Count));
+
+        host.FindAll("[data-part=close]")[1].Click();
+        await host.Find("[data-part=action]").ClickAsync(new());
+        _time.Advance(TimeSpan.FromSeconds(5));
+        var dismissed = Toasts.Show("Moved");
+        dismissed.Dismiss();
+
+        Assert.Equal([ToastCloseReason.TimedOut, ToastCloseReason.CloseButton, ToastCloseReason.Action,
+            ToastCloseReason.App],
+            await Task.WhenAll(timedOut.Closed, closed.Closed, acted.Closed, dismissed.Closed));
+    }
+
+    [Fact]
+    public async Task DismissAll_ShouldCloseEveryToastAndTheQueue_WhenCalled()
+    {
+        var host = Render<ToastHost>();
+        var toasts = Enumerable.Range(1, 5).Select(n => Toasts.Show($"Toast {n}", Tone.Danger)).ToList();
+
+        Toasts.DismissAll();
+
+        Assert.Empty(Toasts.Toasts);
+        Assert.All(await Task.WhenAll(toasts.Select(toast => toast.Closed)),
+            reason => Assert.Equal(ToastCloseReason.App, reason));
+        _time.Advance(TimeSpan.FromSeconds(0.2));
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=toast]")));
     }
 
     [Fact]

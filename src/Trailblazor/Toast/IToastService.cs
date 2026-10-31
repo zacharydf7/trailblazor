@@ -11,4 +11,7 @@ public interface IToastService
     /// <summary>Shows a toast and announces it to screen readers.</summary>
     /// <returns>The toast, to update or dismiss it later.</returns>
     ToastReference Show(string message, Tone tone = Tone.Neutral, ToastOptions? options = null);
+
+    /// <summary>Closes every toast, the waiting ones too, as <see cref="ToastCloseReason.App"/>.</summary>
+    void DismissAll();
 }
