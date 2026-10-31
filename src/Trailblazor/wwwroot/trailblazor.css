@@ -294,7 +294,7 @@
         --tb-line-height-tight: 1.25;
         --tb-line-height-normal: 1.5;
 
-        --tb-space-0: 0;
+        --tb-space-0: 0px;
         --tb-space-1: 0.25rem;
         --tb-space-2: 0.5rem;
         --tb-space-3: 0.75rem;
@@ -1860,6 +1860,42 @@
         flex-direction: row;
     }
 
+    /* A stack that turns into a row from a breakpoint; these widths repeat the --tb-breakpoint-* tokens. */
+    @media (min-width: 640px) {
+        .tb-stack--row-from-sm {
+            flex-direction: row;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .tb-stack--row-from-md {
+            flex-direction: row;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .tb-stack--row-from-lg {
+            flex-direction: row;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .tb-stack--row-from-xl {
+            flex-direction: row;
+        }
+    }
+
+    .tb-stack--row-from-xs {
+        flex-direction: row;
+    }
+
+    /* A layout rendered as a list lays out its items, so the browser's bullets and indent go. */
+    :where(ul, ol):is(.tb-stack, .tb-grid, .tb-container, .tb-surface) {
+        margin-block: 0;
+        padding-inline-start: 0;
+        list-style: none;
+    }
+
     .tb-stack--wrap {
         flex-wrap: wrap;
     }
@@ -1935,39 +1971,49 @@
         max-width: var(--tb-breakpoint-xl);
     }
 
+    /* Rows that wrap, so an item can grow into what's left of its row or size to its content. */
     .tb-grid {
-        display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
+        display: flex;
+        flex-wrap: wrap;
         gap: var(--tb-grid-gap);
     }
 
+    /* A column is the grid's width less its eleven gaps, over twelve; TbGridItem sizes its span in columns. */
     .tb-grid-item {
+        --tb-grid-column: calc((100% - 11 * var(--tb-grid-gap)) / 12);
+        box-sizing: border-box;
         min-width: 0;
-        grid-column: var(--tb-grid-start) / span var(--tb-grid-span);
+        max-width: 100%;
+        flex: var(--tb-grid-flex);
+        margin-inline-start: calc(var(--tb-grid-offset) * (var(--tb-grid-column) + var(--tb-grid-gap)));
     }
 
     /* These widths repeat the --tb-breakpoint-* tokens, because media queries can't read custom properties. */
     @media (min-width: 640px) {
         .tb-grid-item {
-            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-sm);
+            flex: var(--tb-grid-flex-sm);
+            margin-inline-start: calc(var(--tb-grid-offset-sm) * (var(--tb-grid-column) + var(--tb-grid-gap)));
         }
     }
 
     @media (min-width: 768px) {
         .tb-grid-item {
-            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-md);
+            flex: var(--tb-grid-flex-md);
+            margin-inline-start: calc(var(--tb-grid-offset-md) * (var(--tb-grid-column) + var(--tb-grid-gap)));
         }
     }
 
     @media (min-width: 1024px) {
         .tb-grid-item {
-            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-lg);
+            flex: var(--tb-grid-flex-lg);
+            margin-inline-start: calc(var(--tb-grid-offset-lg) * (var(--tb-grid-column) + var(--tb-grid-gap)));
         }
     }
 
     @media (min-width: 1280px) {
         .tb-grid-item {
-            grid-column: var(--tb-grid-start) / span var(--tb-grid-span-xl);
+            flex: var(--tb-grid-flex-xl);
+            margin-inline-start: calc(var(--tb-grid-offset-xl) * (var(--tb-grid-column) + var(--tb-grid-gap)));
         }
     }
 

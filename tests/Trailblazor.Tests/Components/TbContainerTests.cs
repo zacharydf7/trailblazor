@@ -21,4 +21,12 @@ public class TbContainerTests : BunitContext
 
         Assert.Contains("tb-container--full", cut.Find(".tb-container").ClassList);
     }
+
+    [Fact]
+    public void Render_ShouldRenderTheChosenElement_WhenAsIsSet()
+    {
+        var cut = Render<TbContainer>(parameters => parameters.Add(container => container.As, LayoutElement.Main));
+
+        Assert.Null(cut.Find("main.tb-container").GetAttribute("role"));
+    }
 }

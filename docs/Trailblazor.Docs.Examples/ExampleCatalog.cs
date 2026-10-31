@@ -127,8 +127,9 @@ public static class ExampleCatalog
             Api = [typeof(TbSurface)],
             Accessibility =
             [
-                "A plain `div` with no role. To make it a landmark, give it one with a name, such as "
-                    + "`role=\"region\"` and an `aria-label`.",
+                "A plain `div` by default. `As` renders it as another element, such as `LayoutElement.Article` for a "
+                    + "card that stands on its own, or `LayoutElement.Section` with an `aria-label` for a region "
+                    + "screen readers can jump to.",
                 "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order "
                     + "on screen.",
             ],
@@ -296,7 +297,12 @@ public static class ExampleCatalog
             Api = [typeof(TbStack)],
             Accessibility =
             [
-                "A plain `div` with no role; it only lays out what it holds.",
+                "A plain `div` by default; it only lays out what it holds. `As` renders it as another element, such as "
+                    + "`LayoutElement.Nav` for a group of links or `LayoutElement.Ul` for a list, whose items are "
+                    + "`li` elements. A list keeps `role=\"list\"`, since Safari stops reading a list without "
+                    + "bullets as one.",
+                "`RowFrom` keeps the items in a column on narrow screens and lays them in a row from a breakpoint; "
+                    + "the reading order stays the same either way.",
                 "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order "
                     + "on screen.",
             ],
@@ -320,9 +326,12 @@ public static class ExampleCatalog
             Api = [typeof(TbGrid), typeof(TbGridItem)],
             Accessibility =
             [
-                "Plain `div`s with no roles; they only lay out what they hold.",
-                "`Start` moves an item on screen but not in the reading order. Screen readers and the keyboard "
-                    + "follow the order in the markup, so keep it the same as the order on screen.",
+                "Plain `div`s by default; they only lay out what they hold. Render the grid `As` `LayoutElement.Ul` "
+                    + "and its items as `LayoutElement.Li` for a list of cards, which screen readers count.",
+                "`Offset` leaves columns empty before an item but doesn't change the reading order. Screen readers "
+                    + "and the keyboard follow the order in the markup, so keep it the same as the order on screen.",
+                "An item's `Span` can be `GridSpan.Grow`, which takes what's left of its row, or `GridSpan.Auto`, "
+                    + "which sizes to its content; an item that doesn't fit starts the next row.",
             ],
             Target = null,
             Blocks = ["tb-grid", "tb-grid-item"],
@@ -354,7 +363,8 @@ public static class ExampleCatalog
             Api = [typeof(TbContainer)],
             Accessibility =
             [
-                "A plain `div` with no role; it only limits the width of what it holds.",
+                "A plain `div` by default; it only limits the width of what it holds. Render it `As` "
+                    + "`LayoutElement.Main` to make it the page's main landmark.",
             ],
             Target = null,
             Blocks = ["tb-container"],

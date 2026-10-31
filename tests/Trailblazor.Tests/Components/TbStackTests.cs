@@ -52,4 +52,34 @@ public class TbStackTests : BunitContext
 
         Assert.Equal(nameof(TbStack.Gap), exception.ParamName);
     }
+
+    [Fact]
+    public void Render_ShouldBeAColumnTurningIntoARowAtTheBreakpoint_WhenRowFromIsSet()
+    {
+        var cut = Render<TbStack>(parameters => parameters.Add(stack => stack.RowFrom, Breakpoint.Md));
+
+        var stack = cut.Find(".tb-stack");
+        Assert.Contains("tb-stack--row-from-md", stack.ClassList);
+        Assert.DoesNotContain("tb-stack--row", stack.ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldRenderAListWithTheListRole_WhenRenderedAsAList()
+    {
+        var cut = Render<TbStack>(parameters => parameters.Add(stack => stack.As, LayoutElement.Ul)
+            .AddChildContent("<li>One</li>"));
+
+        Assert.Equal("list", cut.Find("ul.tb-stack").GetAttribute("role"));
+    }
+
+    [Theory]
+    [InlineData(LayoutElement.Div, "toolbar")]
+    [InlineData(LayoutElement.Ul, "tablist")]
+    public void Render_ShouldKeepTheRoleTheConsumerGives_WhenGivenOne(LayoutElement element, string role)
+    {
+        var cut = Render<TbStack>(parameters => parameters.Add(stack => stack.As, element)
+            .AddUnmatched("role", role));
+
+        Assert.Equal(role, cut.Find(".tb-stack").GetAttribute("role"));
+    }
 }

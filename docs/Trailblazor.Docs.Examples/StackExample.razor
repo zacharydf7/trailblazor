@@ -10,3 +10,12 @@
         <TbButton>Save</TbButton>
     </TbStack>
 </TbStack>
+
+@* A column on narrow screens and a row from medium up, rendered as a list of links in a nav. *@
+<TbStack As="LayoutElement.Nav" aria-label="Trail sections" Style="margin-block-start: var(--tb-space-6)">
+    <TbStack As="LayoutElement.Ul" RowFrom="Breakpoint.Md" Gap="4" data-testid="sections">
+        <li><TbLink Href="#overview">Overview</TbLink></li>
+        <li><TbLink Href="#map">Map</TbLink></li>
+        <li><TbLink Href="#reviews">Reviews</TbLink></li>
+    </TbStack>
+</TbStack>

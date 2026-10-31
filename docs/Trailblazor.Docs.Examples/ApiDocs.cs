@@ -149,6 +149,7 @@ public static partial class ApiDocs
         string text => $"\"{text}\"",
         Enum option => $"{option.GetType().Name}.{option}",
         TimeSpan span => span.ToString(),
+        GridSpan span => span.ToString(),
         int or double or decimal => Convert.ToString(value, CultureInfo.InvariantCulture)!,
         // A callback, a fragment or an object has no default worth showing.
         _ => "",

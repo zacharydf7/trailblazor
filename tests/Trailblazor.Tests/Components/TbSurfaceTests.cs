@@ -25,4 +25,14 @@ public class TbSurfaceTests : BunitContext
         Assert.Contains("tb-surface--high", surface.ClassList);
         Assert.Contains("tb-surface--outlined", surface.ClassList);
     }
+
+    [Fact]
+    public void Render_ShouldRenderTheChosenElement_WhenAsIsSet()
+    {
+        var cut = Render<TbSurface>(parameters => parameters.Add(surface => surface.As, LayoutElement.Article)
+            .AddUnmatched("role", "region"));
+
+        var surface = cut.Find("article.tb-surface");
+        Assert.Equal("region", surface.GetAttribute("role"));
+    }
 }
