@@ -24,8 +24,9 @@
         <TbTreeItem Value="@("weather")" Text="Weather alerts" />
     </TbTreeView>
     @* Rows that move by dragging, or with Alt+Shift and the arrows; the page applies each move to its own list. *@
-    <TbTreeView TItem="Stop" TKey="int" AriaLabel="Trip plan" Items="_plan" KeySelector="stop => stop.Id"
-                ChildrenSelector="stop => stop.Children" ItemText="stop => stop.Name" InitialExpandDepth="1"
+    <TbTreeView @ref="_planTree" TItem="Stop" TKey="int" AriaLabel="Trip plan" Items="_plan"
+                KeySelector="stop => stop.Id" ChildrenSelector="stop => stop.Children" ItemText="stop => stop.Name"
+                InitialExpandDepth="1"
                 OnDrop="Move" CanDrop="CheckMoveAsync">
         <InsertTemplate>
             <TbIconButton Icon="ExampleIcons.Plus" Size="Size.Small" OnClick="() => Add(context)"
@@ -62,6 +63,7 @@
         new(5, "Day 2", [new(6, "Eagle Ridge"), new(7, "Summit Gate")]),
     ];
 
+    private TbTreeView<Stop, int> _planTree = default!;
     private int _nextStop = 8;
 
     private bool Matches(Place place) => place.Name.Contains(_search!, StringComparison.OrdinalIgnoreCase);
@@ -99,12 +101,13 @@
         into.InsertRange(at, drop.Items);
     }
 
-    // A slot among the days adds a day; one in a day adds a stop.
-    private void Add(TreeInsertContext<Stop> insert)
+    // A slot among the days adds a day; one in a day adds a stop. The list changes in place, so the tree is told.
+    private Task Add(TreeInsertContext<Stop> insert)
     {
         var id = _nextStop++;
         (insert.Parent?.Children ?? _plan).Insert(insert.Index,
             insert.Parent is null ? new(id, $"Day {id}", []) : new(id, $"Stop {id}"));
+        return _planTree.RefreshAsync();
     }
 
     private List<Stop> ListOf(Stop stop) =>

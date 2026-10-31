@@ -204,6 +204,23 @@ public class TreeReorderTests : BunitContext
             cut.FindAll("[data-part=insert]").Select(slot => slot.TextContent.Trim()));
     }
 
+    [Fact]
+    public async Task Drop_ShouldShowTheMove_WhenTheAppMovesItsItemsInPlace()
+    {
+        List<Place> places = [new(1, "North"), new(4, "South")];
+        var cut = Render<TbTreeView<Place, int>>(parameters => parameters.Add(tree => tree.Items, places)
+            .Add(tree => tree.KeySelector, place => place.Id).Add(tree => tree.AriaLabel, "Places")
+            .Add(tree => tree.OnDrop, (TreeDrop<Place> drop) =>
+            {
+                places.Remove(drop.Items[0]);
+                places.Insert(places.IndexOf(drop.Target), drop.Items[0]);
+            }));
+
+        await cut.InvokeAsync(() => Events().OnDrop(["4"], "1", TreeDropPosition.Before));
+
+        Assert.Equal(["4", "1"], cut.FindAll("[role=treeitem]").Select(row => row.GetAttribute("data-key")));
+    }
+
     private TreeViewEvents Events() =>
         ((DotNetObjectReference<TreeViewEvents>)JSInterop.Invocations["createTreeView"].Single().Arguments[1]!).Value;
 

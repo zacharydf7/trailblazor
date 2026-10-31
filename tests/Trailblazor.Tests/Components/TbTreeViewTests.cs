@@ -25,6 +25,14 @@ public class TbTreeViewTests : BunitContext
         public override string ToString() => Name;
     }
 
+    // A filter as a page writes one: a method reading search text that changes.
+    private sealed class Search
+    {
+        public string Text { get; set; } = "";
+
+        public bool Matches(Place place) => place.Name == Text;
+    }
+
     // North (1) holds Ridge (2), which holds Summit (3), and Pass (6); South (4) holds Lake (5).
     private static IReadOnlyList<Place> Nested =>
     [
@@ -506,6 +514,94 @@ public class TbTreeViewTests : BunitContext
 
     private TreeViewEvents Events() =>
         ((DotNetObjectReference<TreeViewEvents>)JSInterop.Invocations["createTreeView"].Single().Arguments[1]!).Value;
+
+    [Fact]
+    public void Render_ShouldBuildTheRowsOnce_WhenTheParentRendersAgainAndPassesTheOpenRowsBack()
+    {
+        var built = 0;
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.ChildrenSelector, place =>
+        {
+            built++;
+            return place.Children;
+        }), nested: false);
+
+        Toggle(cut, "1");
+        cut.Render(parameters => parameters.Add(tree => tree.ExpandedKeys, _expandedChanges[^1]));
+        cut.Render(parameters => parameters.Add(tree => tree.AriaLabel, "Places"));
+
+        Assert.Equal(Nested.Count + 4, built);
+        Assert.Equal(["North", "Ridge", "Pass", "South"], Texts(cut));
+    }
+
+    [Fact]
+    public void Filter_ShouldNotRunAgain_WhenTheParentPassesBackTheTreesOwnOpenRows()
+    {
+        var filtered = 0;
+        Func<Place, bool> roots = place =>
+        {
+            filtered++;
+            return place.Id is 1 or 4;
+        };
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Filter, roots)
+            .Add(tree => tree.FilterKeepsDescendants, true));
+        Toggle(cut, "1");
+        var before = filtered;
+
+        cut.Render(parameters => parameters.Add(tree => tree.ExpandedKeys, _expandedChanges[^1]));
+
+        Assert.Equal(before, filtered);
+        Assert.Equal(["North", "Ridge", "Pass", "South"], Texts(cut));
+    }
+
+    [Fact]
+    public void Filter_ShouldShowTheNewMatches_WhenTheParentPassesAFilterFromTheSameMethodReadingNewText()
+    {
+        var search = new Search { Text = "Ridge" };
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Filter, search.Matches));
+
+        search.Text = "Lake";
+        cut.Render(parameters => parameters.Add(tree => tree.Filter, search.Matches));
+
+        Assert.Equal(["South", "Lake"], Texts(cut));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldShowChildrenAddedInPlace_WhenCalled()
+    {
+        List<Place> children = [new(2, "Ridge")];
+        var cut = RenderPlaces([new(1, "North", Children: children)], parameters => parameters
+            .Add(tree => tree.InitialExpandDepth, 1));
+        children.Add(new(6, "Pass"));
+
+        cut.Render(parameters => parameters.Add(tree => tree.AriaLabel, "Places"));
+        Assert.Equal(["North", "Ridge"], Texts(cut));
+        await cut.InvokeAsync(cut.Instance.RefreshAsync);
+
+        Assert.Equal(["North", "Ridge", "Pass"], Texts(cut));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldLoadTheChildrenOfAnOpenRowItAdds_WhenCalled()
+    {
+        List<Place> places = [new(1, "North")];
+        var cut = RenderPlaces(places, parameters => parameters.Add(tree => tree.ExpandedKeys, [4])
+            .Add(tree => tree.LoadChildren, (place, _) =>
+                Task.FromResult<IEnumerable<Place>>(place.Id == 4 ? [new(5, "Lake")] : [])), nested: false);
+        places.Add(new(4, "South"));
+
+        await cut.InvokeAsync(cut.Instance.RefreshAsync);
+
+        Assert.Equal(["North", "South", "Lake"], Texts(cut));
+    }
+
+    [Fact]
+    public void Render_ShouldGiveTheFirstSelectedRowTheTabStop_WhenNoRowHasBeenFocused()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectedKeys, [4]));
+
+        Assert.Equal("0", Row(cut, "4").GetAttribute("tabindex"));
+        Assert.Equal("-1", Row(cut, "1").GetAttribute("tabindex"));
+    }
 
     private static IElement Row(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         cut.Find($"[role=treeitem][data-key='{key}']");

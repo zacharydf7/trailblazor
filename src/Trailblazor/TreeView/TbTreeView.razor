@@ -47,7 +47,7 @@
     }
     @{ var focusId = FocusId(); var next = 0; _rowIds = 0; _scrollRendered = _scrollAfterRender?.Done; }
     @* Every spacer comes from one line: the browser drops a keyed spacer's attributes when it moves between two. *@
-    @foreach (var index in ShownIndexes().Append(_rows.Count))
+    @foreach (var index in ShownIndexes(focusId).Append(_rows.Count))
     {
         @if (index > next)
         {

@@ -29,6 +29,18 @@ internal sealed class TreeNode<TItem>(TItem item, object key, string id, TreeNod
         }
     }
 
-    public IEnumerable<TreeNode<TItem>> Descendants() =>
-        Children.SelectMany(child => child.Descendants().Prepend(child));
+    // A walk with a stack, in order, since nested iterators cost a step for every level above each row.
+    public IEnumerable<TreeNode<TItem>> Descendants()
+    {
+        var stack = new Stack<TreeNode<TItem>>(Enumerable.Reverse(Children));
+        while (stack.Count > 0)
+        {
+            var node = stack.Pop();
+            yield return node;
+            for (var index = node.Children.Count - 1; index >= 0; index--)
+            {
+                stack.Push(node.Children[index]);
+            }
+        }
+    }
 }

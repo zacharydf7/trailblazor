@@ -1852,6 +1852,7 @@ Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.get -> Microsoft.AspNetCore.Com
 Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ParentKeySelector.get -> System.Func<TItem, object?>?
 Trailblazor.TbTreeView<TItem, TKey>.ParentKeySelector.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.RefreshAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbTreeView<TItem, TKey>.ScrollToAsync(TKey key, bool focus = false) -> System.Threading.Tasks.Task!
 Trailblazor.TbTreeView<TItem, TKey>.SelectedKeys.get -> System.Collections.Generic.IReadOnlyCollection<TKey>?
 Trailblazor.TbTreeView<TItem, TKey>.SelectedKeys.set -> void

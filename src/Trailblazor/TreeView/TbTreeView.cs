@@ -24,6 +24,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private readonly HashSet<object> _failed = [];
     private readonly Dictionary<object, bool?> _checkStates = [];
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
+    private readonly Dictionary<object, int> _rowIndex = [];
     // Kept across rebuilds, so a row keeps its id and the focus held by that id.
     private readonly KeyIds _ids = new();
     // Rows the filter opened that the user closed; they open again when the filter finds other rows.
@@ -61,8 +62,13 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private IJSObjectReference? _handle;
     private DotNetObjectReference<TreeViewEvents>? _events;
     private bool _disposed;
+    private object? _builtFor;
+    private object? _flattenedFor;
+    private Func<TItem, bool>? _flattenedFilter;
 
-    /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item.</summary>
+    /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item. The rows are built again when this
+    /// is a new collection; call <see cref="RefreshAsync"/> after changing it, or the children it holds, in place.
+    /// </summary>
     [Parameter]
     public IEnumerable<TItem> Items { get; set; } = [];
 
@@ -79,7 +85,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public Func<TItem, TKey>? KeySelector { get; set; }
 
-    /// <summary>Gives an item's children, for items that hold their own.</summary>
+    /// <summary>Gives an item's children, for items that hold their own. Call <see cref="RefreshAsync"/> when what it
+    /// reads from outside the item changes.</summary>
     [Parameter]
     public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
 
@@ -171,7 +178,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public bool CascadeChecks { get; set; } = true;
 
-    /// <summary>Shows only the rows that match and the rows they sit in, which open to show them.</summary>
+    /// <summary>Shows only the rows that match and the rows they sit in, which open to show them. It runs again
+    /// whenever a new delegate is passed, as markup does on every render; for one kept in a field, call
+    /// <see cref="RefreshAsync"/> when what it reads changes.</summary>
     [Parameter]
     public Func<TItem, bool>? Filter { get; set; }
 
@@ -201,7 +210,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     /// <summary>Raised when the user moves rows, by dragging them or with Alt+Shift and the arrow keys, with what
     /// moved and where to. The tree doesn't move them: apply the move to your items, so it can be undone like any
-    /// other change. Setting it lets rows be dragged.</summary>
+    /// other change, and the tree builds its rows again from them once this returns. Setting it lets rows be
+    /// dragged.</summary>
     [Parameter]
     public EventCallback<TreeDrop<TItem>> OnDrop { get; set; }
 
@@ -250,10 +260,16 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // The row that takes the tree's one tab stop: the last focused, else the first selected, else the first.
     private string? FocusId()
     {
-        var shown = _rows.Where(row => row.IsItem).Select(row => row.Node).ToList();
-        return shown.Any(node => node.Id == _focusId) ? _focusId
-            : (shown.FirstOrDefault(node => _selected.Contains(node.Key)) ?? shown.FirstOrDefault())?.Id;
+        if (KeyOfId(_focusId) is { } focused && _rowIndex.ContainsKey(focused))
+        {
+            return _focusId;
+        }
+
+        var selected = _selected.Select(key => _rowIndex.GetValueOrDefault(key, _rows.Count)).Append(_rows.Count).Min();
+        return selected < _rows.Count ? _rows[selected].Node.Id : _rows.Count > 0 ? _rows[0].Node.Id : null;
     }
+
+    private object? KeyOfId(string? id) => id is not null && _byId.TryGetValue(id, out var node) ? node.Key : null;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -280,10 +296,37 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         _expanded = TakeFromParent(ExpandedKeys, ref _expandedFromParent, _expanded);
         _selected = TakeFromParent(SelectedKeys, ref _selectedFromParent, _selected);
         _checked = TakeFromParent(CheckedKeys, ref _checkedFromParent, _checked);
-        Refresh();
+        // A parent render builds or lays out the rows again only when what they come from changed.
+        if (!BuiltFor.Equals(_builtFor))
+        {
+            Rebuild();
+        }
+        // A filter compares by instance, since one from the same method can read new search text.
+        else if (!ReferenceEquals(Filter, _flattenedFilter) || !FlattenedFor.Equals(_flattenedFor))
+        {
+            Flatten();
+        }
     }
 
-    private void Refresh()
+    // Markup makes a new delegate on every render, so selectors are compared by method.
+    private object BuiltFor => (Items, ChildContent, KeySelector?.Method, ChildrenSelector?.Method,
+        ParentKeySelector?.Method, HasChildren?.Method, LoadChildren is null);
+
+    private object FlattenedFor => (FilterKeepsDescendants, Checkable, CascadeChecks, _expanded, _checked);
+
+    /// <summary>Builds the rows again from <see cref="Items"/> after they, or the children they hold, changed in
+    /// place, or after what <see cref="KeySelector"/>, <see cref="ChildrenSelector"/>,
+    /// <see cref="ParentKeySelector"/> or <see cref="HasChildren"/> read from outside the item changed; a parent render
+    /// reads them again only for a new collection. Children already loaded with <see cref="LoadChildren"/> stay.
+    /// </summary>
+    public Task RefreshAsync()
+    {
+        Rebuild();
+        StateHasChanged();
+        return LoadOpenRowsAsync();
+    }
+
+    private void Rebuild()
     {
         Build();
         // Items that arrive after the first render, as loaded data does, still open to the initial depth.
@@ -329,13 +372,22 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         last = fromParent;
-        return fromParent is null ? current : [.. fromParent.Select(key => (object)key)];
+        if (fromParent is null)
+        {
+            return current;
+        }
+
+        // The tree's own set passed back, as a binding does, keeps it, so the rows aren't laid out again for nothing.
+        HashSet<object> taken = [.. fromParent.Select(key => (object)key)];
+        return taken.SetEquals(current) ? current : taken;
     }
 
     // Rows opened by a set from the parent, such as one saved earlier, load like rows the user opens.
     /// <inheritdoc />
-    protected override Task OnParametersSetAsync() => Task.WhenAll(_nodes.Values
-        .Where(node => node.MayHaveChildren && _expanded.Contains(node.Key) && !_failed.Contains(node.Key))
+    protected override Task OnParametersSetAsync() => LoadOpenRowsAsync();
+
+    private Task LoadOpenRowsAsync() => Task.WhenAll(_expanded.Select(key => _nodes.GetValueOrDefault(key))
+        .OfType<TreeNode<TItem>>().Where(node => node.MayHaveChildren && !_failed.Contains(node.Key))
         .ToList().Select(LoadIfNeededAsync));
 
     /// <inheritdoc />
@@ -359,8 +411,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 _scrollingKeys.Add(scroll.Key);
                 try
                 {
-                    if (_rows.Any(shown => shown.IsItem && Equals(shown.Node.Key, scroll.Key))
-                        && _rowRefs.TryGetValue(scroll.Key, out var row))
+                    if (_rowIndex.ContainsKey(scroll.Key) && _rowRefs.TryGetValue(scroll.Key, out var row))
                     {
                         await Browser.ScrollIntoViewAsync(row);
                         if (scroll.Focus)
@@ -413,7 +464,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     {
         _itemsChanged = false;
         _itemsRegistered = true;
-        Refresh();
+        Rebuild();
         StateHasChanged();
     }
 
@@ -423,7 +474,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     {
         var place = ids.Select((id, index) => (id, index)).ToDictionary(pair => pair.id, pair => pair.index);
         SortByPlace(_declaredRoots);
-        Refresh();
+        Rebuild();
         StateHasChanged();
         return Task.CompletedTask;
 
@@ -511,7 +562,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // The rows to render: every one, or with Virtualize the rows in view, with the focused row, the row the browser
     // still has focus on, the row being scrolled to and their neighbors, so focus and the arrow keys always have a row
     // to land on. A static page renders all.
-    private IEnumerable<int> ShownIndexes()
+    private IEnumerable<int> ShownIndexes(string? focusId)
     {
         if (!Virtualize || !RendererInfo.IsInteractive)
         {
@@ -520,14 +571,13 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
         var start = Math.Clamp(_viewStart, 0, Math.Max(0, _rows.Count - _viewCount));
         var shown = new SortedSet<int>(Enumerable.Range(start, Math.Min(_viewCount, _rows.Count - start)));
-        var focusId = FocusId();
-        var scrollKey = _scrollAfterRender?.Key;
-        var pinned = _rows.Select((row, index) => (row, index))
-            .Where(pair => pair.row.IsItem && (pair.row.Node.Id == focusId || pair.row.Node.Id == _browserFocusId
-                || Equals(pair.row.Node.Key, scrollKey) || _scrollingKeys.Contains(pair.row.Node.Key)));
-        foreach (var (_, index) in pinned)
+        object?[] pinned = [KeyOfId(focusId), KeyOfId(_browserFocusId), _scrollAfterRender?.Key, .. _scrollingKeys];
+        foreach (var key in pinned)
         {
-            shown.UnionWith(Enumerable.Range(index - 1, 3).Where(near => near >= 0 && near < _rows.Count));
+            if (key is not null && _rowIndex.TryGetValue(key, out var index))
+            {
+                shown.UnionWith(Enumerable.Range(index - 1, 3).Where(near => near >= 0 && near < _rows.Count));
+            }
         }
 
         return shown;
@@ -602,6 +652,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     {
         BuildNodes();
         _ids.Keep(_nodes.Keys.ToHashSet());
+        _builtFor = BuiltFor;
     }
 
     private void BuildNodes()
@@ -701,11 +752,13 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         ComputeFilter();
         ComputeChecks();
         _rows = [];
+        _rowIndex.Clear();
         Walk(_roots);
         CountInside();
+        _flattenedFor = FlattenedFor;
+        _flattenedFilter = Filter;
         // A row that isn't shown has no element, so its reference is dropped before anything can scroll to it.
-        var shownKeys = _rows.Where(row => row.IsItem).Select(row => row.Node.Key).ToHashSet();
-        foreach (var hidden in _rowRefs.Keys.Where(key => !shownKeys.Contains(key)).ToList())
+        foreach (var hidden in _rowRefs.Keys.Where(key => !_rowIndex.ContainsKey(key)).ToList())
         {
             _rowRefs.Remove(hidden);
         }
@@ -716,6 +769,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             for (var index = 0; index < shown.Count; index++)
             {
                 var node = shown[index];
+                _rowIndex[node.Key] = _rows.Count;
                 _rows.Add(new TreeRow<TItem>(node, shown.Count, index + 1, TreeRowKind.Item));
                 if (!IsOpen(node))
                 {
@@ -981,6 +1035,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             _ => TbStrings.TreeViewMovedInside,
         };
         await OnDrop.InvokeAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
+        // The app applies a move to its items, often in place, so the rows are built again from them.
+        Rebuild();
+        StateHasChanged();
         Announcer.Polite(string.Format(CultureInfo.CurrentCulture, Localizer[said], moved, TextOf(target)));
         if (position == TreeDropPosition.Inside)
         {

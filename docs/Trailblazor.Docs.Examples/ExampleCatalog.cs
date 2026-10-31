@@ -1208,7 +1208,9 @@ public static class ExampleCatalog
                 + "`data-index` and `data-inside`, the number of rows in their branch. A row's `data-key` is its "
                 + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
                 + "the text is empty or when another key has it. Before pressing keys or dragging without the "
-                + "helpers, wait for the tree's `data-ready`.",
+                + "helpers, wait for the tree's `data-ready`. In bUnit, a test that changes `Items` in place calls "
+                + "`RefreshAsync`, as the app does; a new collection, or an `OnDrop`, builds the rows again by "
+                + "itself.",
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
             "Shows items as rows of a table, with columns that sort, pages, and rows that can be selected.",

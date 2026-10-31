@@ -140,6 +140,17 @@ public class TreeVirtualizeTests : BunitContext
     }
 
     [Fact]
+    public async Task ScrollTo_ShouldRenderTheRowAndScrollToIt_WhenItIsntRenderedAndIsntFocused()
+    {
+        var cut = RenderPlaces(Flat);
+
+        await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(900));
+
+        Assert.Equal("-1", Row(cut, "900").GetAttribute("tabindex"));
+        Assert.Single(Services.GetRequiredService<FakeBrowserService>().ScrolledTo);
+    }
+
+    [Fact]
     public void Render_ShouldCountTheRowsInEachBranch_WhenVirtualized()
     {
         // North holds Ridge, which holds Summit and Peak, and Pass; South is closed over Lake.
