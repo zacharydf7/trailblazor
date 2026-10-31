@@ -1,4 +1,8 @@
+import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { createTypeahead } from './typeahead.js';
+
+// Alt+Shift with an arrow moves the focused row: past its neighbors, into the row above, or out of its parent.
+const moveKeys = { ArrowUp: 'MoveUp', ArrowDown: 'MoveDown', ArrowRight: 'Indent', ArrowLeft: 'Outdent' };
 
 // Focus moves among the rows here, at once; the keys that open, close, select or check a row go to the server.
 export function createTreeView(tree, events) {
@@ -15,7 +19,8 @@ export function createTreeView(tree, events) {
     // reaches its actions.
     const syncEnds = () => {
         const stop = tree.querySelector('[role="treeitem"][tabindex="0"]');
-        tree.querySelectorAll('[data-part="end"] :is(a[href], button, input, select, textarea, [tabindex])')
+        tree.querySelectorAll(':is([data-part="end"], [data-part="insert"]) '
+            + ':is(a[href], button, input, select, textarea, [tabindex])')
             .forEach(control => {
                 // Writing only real changes keeps the observer below from hearing its own writes forever.
                 const wanted = control.closest('[role="treeitem"]') === stop ? 0 : -1;
@@ -55,7 +60,17 @@ export function createTreeView(tree, events) {
     const onKeyDown = event => {
         // Keys pressed in a row's own controls, such as a field in its end slot, are theirs.
         const current = event.target;
-        if (!current.matches('[role="treeitem"][data-key]') || event.altKey) {
+        if (!current.matches('[role="treeitem"][data-key]')) {
+            return;
+        }
+
+        if (event.altKey && event.shiftKey && moveKeys[event.key] && current.matches('[data-draggable]')) {
+            event.preventDefault();
+            events.invokeMethodAsync('OnKey', current.dataset.key, moveKeys[event.key], false, false);
+            return;
+        }
+
+        if (event.altKey) {
             return;
         }
 
@@ -126,6 +141,98 @@ export function createTreeView(tree, events) {
         }
     };
 
+    // A drag drops before, after or inside the row under the pointer, by where on the row it is; the server says
+    // whether it may, and a refusal shows its reason beside the row.
+    const reason = tree.querySelector('[data-part="drop-reason"]');
+    let sources = [];
+    let over = null;
+    const clearDrop = () => {
+        tree.querySelectorAll('[data-drop]').forEach(row => {
+            delete row.dataset.drop;
+            delete row.dataset.dropRefused;
+        });
+        if (reason) {
+            reason.hidden = true;
+        }
+
+        over = null;
+    };
+    const endDrag = () => {
+        sources.forEach(row => delete row.dataset.dragging);
+        sources = [];
+        delete tree.dataset.dragging;
+        clearDrop();
+    };
+    const showRefusal = (row, text) => {
+        row.dataset.dropRefused = '';
+        if (reason && text) {
+            reason.textContent = text;
+            reason.style.insetBlockStart = `${row.offsetTop + row.offsetHeight}px`;
+            reason.hidden = false;
+        }
+    };
+    const selected = row => row.getAttribute('aria-selected') === 'true';
+    const pointerDrag = createPointerDrag(tree, {
+        itemSelector: '[role="treeitem"][data-draggable]',
+        ignoreSelector: ':is([data-part="toggle"], [data-part="check"], [data-part="end"], [data-part="insert"])',
+        // Dragging a selected row moves every selected row that can move. While it runs, the insert slots on the
+        // rows' edges let the pointer through to the rows.
+        onStart: row => {
+            sources = selected(row) ? rows().filter(other => selected(other) && other.matches('[data-draggable]'))
+                : [row];
+            sources.forEach(source => { source.dataset.dragging = ''; });
+            tree.dataset.dragging = '';
+        },
+        onMove: event => {
+            let row = document.elementFromPoint(event.clientX, event.clientY)
+                ?.closest('[role="treeitem"][data-key]');
+            if (!row || !tree.contains(row) || sources.includes(row)) {
+                clearDrop();
+                return;
+            }
+
+            const box = row.getBoundingClientRect();
+            const at = (event.clientY - box.top) / box.height;
+            let position = at < 0.25 ? 'Before' : at > 0.75 ? 'After' : 'Inside';
+            // Below an open row is above its first child, so that is where the drop goes.
+            const list = rows();
+            const next = list[list.indexOf(row) + 1];
+            if (position === 'After' && row.getAttribute('aria-expanded') === 'true' && next
+                && level(next) > level(row)) {
+                row = next;
+                position = 'Before';
+            }
+
+            if (sources.includes(row)) {
+                clearDrop();
+                return;
+            }
+            if (over?.row === row && over.position === position) {
+                return;
+            }
+
+            clearDrop();
+            row.dataset.drop = position.toLowerCase();
+            const current = over = { row, position };
+            events.invokeMethodAsync('OnDragOver', sources.map(source => source.dataset.key), row.dataset.key,
+                position).then(check => {
+                if (over === current && !check.allowed) {
+                    showRefusal(row, check.reason);
+                }
+            });
+        },
+        // The server checks the drop again, and says why when it refuses.
+        onDrop: () => {
+            const target = over;
+            const moved = sources.map(source => source.dataset.key);
+            endDrag();
+            if (target) {
+                events.invokeMethodAsync('OnDrop', moved, target.row.dataset.key, target.position);
+            }
+        },
+        onCancel: endDrag,
+    });
+
     tree.addEventListener('focusin', onFocusIn);
     tree.addEventListener('keydown', onKeyDown);
     observer.observe(tree, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
@@ -133,6 +240,7 @@ export function createTreeView(tree, events) {
     reportOrder();
     return {
         dispose() {
+            pointerDrag.dispose();
             observer.disconnect();
             tree.removeEventListener('focusin', onFocusIn);
             tree.removeEventListener('keydown', onKeyDown);

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Components;
@@ -44,8 +45,10 @@ public static partial class ApiDocs
                 .. type.GetEvents().OrderBy(eventInfo => eventInfo.MetadataToken).Select(eventInfo => new ApiMember(
                     $"event {eventInfo.Name}", TypeName(eventInfo.EventHandlerType!), "",
                     Summary($"E:{DocId(type)}.{eventInfo.Name}"), false)),
+                // A record's Equals, ToString and Deconstruct come from the compiler, not the library's API.
                 .. type.GetMethods()
-                    .Where(method => !method.IsSpecialName && method.DeclaringType != typeof(object))
+                    .Where(method => !method.IsSpecialName && method.DeclaringType != typeof(object)
+                        && !method.IsDefined(typeof(CompilerGeneratedAttribute)))
                     .OrderBy(method => Depth(method.DeclaringType!)).ThenBy(method => method.MetadataToken)
                     .Select(Method),
             ], Methods: true);

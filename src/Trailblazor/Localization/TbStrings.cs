@@ -332,6 +332,24 @@ public static class TbStrings
     /// <summary>"Nothing to show.": shown by a tree with no rows.</summary>
     public const string TreeViewEmpty = "TreeView.Empty";
 
+    /// <summary>"Alt+Shift and the arrow keys move this item.": describes a tree row that can be moved.</summary>
+    public const string TreeViewMoveHint = "TreeView.MoveHint";
+
+    /// <summary>"{0} moved before {1}.": said after a tree move, with what moved and its new neighbor.</summary>
+    public const string TreeViewMovedBefore = "TreeView.MovedBefore";
+
+    /// <summary>"{0} moved after {1}.": said after a tree move, with what moved and its new neighbor.</summary>
+    public const string TreeViewMovedAfter = "TreeView.MovedAfter";
+
+    /// <summary>"{0} moved into {1}.": said after a tree move, with what moved and its new parent.</summary>
+    public const string TreeViewMovedInside = "TreeView.MovedInside";
+
+    /// <summary>"{0} items": names several tree rows moved together.</summary>
+    public const string TreeViewItemCount = "TreeView.ItemCount";
+
+    /// <summary>"An item can't move into itself.": why a tree move into an item's own branch is refused.</summary>
+    public const string TreeViewCantMoveIntoItself = "TreeView.CantMoveIntoItself";
+
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
     {
         [AlertClose] = "Close",
@@ -441,6 +459,12 @@ public static class TbStrings
         [TreeViewLoadFailed] = "Couldn't load these items.",
         [TreeViewRetry] = "Retry",
         [TreeViewEmpty] = "Nothing to show.",
+        [TreeViewMoveHint] = "Alt+Shift and the arrow keys move this item.",
+        [TreeViewMovedBefore] = "{0} moved before {1}.",
+        [TreeViewMovedAfter] = "{0} moved after {1}.",
+        [TreeViewMovedInside] = "{0} moved into {1}.",
+        [TreeViewItemCount] = "{0} items",
+        [TreeViewCantMoveIntoItself] = "An item can't move into itself.",
     }.ToFrozenDictionary();
 
     /// <summary>The English text for <paramref name="key"/>, for a localizer of your own to fall back on.</summary>

@@ -179,6 +179,28 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     [Parameter]
     public TreeViewLabels Labels { get; set; } = new();
 
+    /// <summary>Raised when the user moves rows, by dragging them or with Alt+Shift and the arrow keys, with what
+    /// moved and where to. The tree doesn't move them: apply the move to your items, so it can be undone like any
+    /// other change. Setting it lets rows be dragged.</summary>
+    [Parameter]
+    public EventCallback<TreeDrop<TItem>> OnDrop { get; set; }
+
+    /// <summary>Decides which rows can be moved. Every row that isn't disabled can when it is null.</summary>
+    [Parameter]
+    public Func<TItem, bool>? CanDrag { get; set; }
+
+    /// <summary>Asked whether a move is allowed, as a drag passes over a place and before a keyboard move. Refuse
+    /// with <see cref="TreeDropCheck.Refuse"/> and a reason, which shows beside the place and is read out. An item can
+    /// never move into itself, whatever this says.</summary>
+    [Parameter]
+    public Func<TreeDrop<TItem>, Task<TreeDropCheck>>? CanDropAsync { get; set; }
+
+    /// <summary>A slot below each row, such as an "insert here" button, which shows while the row is hovered or the
+    /// slot has focus. Its context says where an item inserted there would go; the first row also has one above it.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TreeInsertContext<TItem>>? InsertTemplate { get; set; }
+
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
@@ -187,6 +209,13 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
 
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
+
+    [Inject]
+    private IAnnouncer Announcer { get; set; } = default!;
+
+    private string TreeId { get; } = $"tb-tree-{Guid.NewGuid():N}";
+
+    private string MoveHintId => $"{TreeId}-move-hint";
 
     // The row that takes the tree's one tab stop: the last focused, else the first selected, else the first.
     private string? FocusId()
@@ -323,7 +352,8 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             return;
         }
 
-        _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnItemOrderAsync));
+        _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnItemOrderAsync,
+            OnDragOverAsync, OnDropAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createTreeView", _tree, _events);
         if (handle is null)
         {
@@ -673,6 +703,9 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
             case "Extend":
                 await SelectAsync(node, shift: true, toggle: false);
                 break;
+            case "MoveUp" or "MoveDown" or "Indent" or "Outdent" when CanDragRow(node):
+                await MoveByKeyAsync(node, key);
+                break;
             case "SelectAll" when SelectionMode == TreeSelectionMode.Multiple:
                 await SetSelectedAsync(_rows.Where(row => row.IsItem && CanSelect(row.Node))
                     .Select(row => row.Node.Key));
@@ -683,6 +716,107 @@ public partial class TbTreeView<TItem> : IAsyncDisposable
     }
 
     private IEnumerable<TreeNode<TItem>> Siblings(TreeNode<TItem> node) => node.Parent?.Children ?? _roots;
+
+    private bool CanDragRow(TreeNode<TItem> node) =>
+        OnDrop.HasDelegate && !Disabled && !IsItemDisabled(node) && CanDrag?.Invoke(node.Item) != false;
+
+    // A slot below a row inserts as its first child when its children show under it, and otherwise just after it.
+    private TreeInsertContext<TItem> InsertBelow(TreeNode<TItem> node, TreeItemContext<TItem> context) =>
+        context.Expanded && node.Children.Count > 0 ? new(node.Item, 0)
+            : new(node.Parent is { } parent ? parent.Item : default, Siblings(node).ToList().IndexOf(node) + 1);
+
+    // A row inside another row that moves goes with it, so only the outermost rows are moved.
+    private List<TreeNode<TItem>> NodesOf(IEnumerable<string> ids)
+    {
+        var nodes = ids.Select(id => _byId.GetValueOrDefault(id)).OfType<TreeNode<TItem>>().ToList();
+        return [.. nodes.Where(node => !node.Ancestors().Any(nodes.Contains))];
+    }
+
+    private async Task<TreeDropCheck> CheckDropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
+        TreeDropPosition position)
+    {
+        if (sources.Count == 0 || !sources.All(CanDragRow))
+        {
+            return new(false);
+        }
+
+        // Beside or inside one of its own descendants, an item would move into itself.
+        if (sources.Any(source => source == target || target.Ancestors().Contains(source)))
+        {
+            return TreeDropCheck.Refuse(Localizer[TbStrings.TreeViewCantMoveIntoItself]);
+        }
+
+        return CanDropAsync is null ? TreeDropCheck.Allow
+            : await CanDropAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
+    }
+
+    private Task<TreeDropCheck> OnDragOverAsync(string[] ids, string targetId, TreeDropPosition position) =>
+        _byId.TryGetValue(targetId, out var target) ? CheckDropAsync(NodesOf(ids), target, position)
+            : Task.FromResult(new TreeDropCheck(false));
+
+    private async Task OnDropAsync(string[] ids, string targetId, TreeDropPosition position)
+    {
+        if (_byId.TryGetValue(targetId, out var target))
+        {
+            await DropAsync(NodesOf(ids), target, position, keepFocus: false);
+        }
+    }
+
+    // A keyboard move goes before or after the row's neighbor, into the row above as its last child, or after its
+    // parent.
+    private async Task MoveByKeyAsync(TreeNode<TItem> node, string key)
+    {
+        var siblings = Siblings(node).Where(sibling => Filter is null || _keep.Contains(sibling.Key)).ToList();
+        var index = siblings.IndexOf(node);
+        var (target, position) = key switch
+        {
+            "MoveUp" => (index > 0 ? siblings[index - 1] : null, TreeDropPosition.Before),
+            "MoveDown" => (index < siblings.Count - 1 ? siblings[index + 1] : null, TreeDropPosition.After),
+            "Indent" => (index > 0 ? siblings[index - 1] : null, TreeDropPosition.Inside),
+            _ => (node.Parent, TreeDropPosition.After),
+        };
+        if (target is not null)
+        {
+            await DropAsync([node], target, position, keepFocus: true);
+        }
+    }
+
+    // The app moves the items; the tree opens a target they went into and says what moved, or why it didn't.
+    private async Task DropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
+        TreeDropPosition position, bool keepFocus)
+    {
+        var check = await CheckDropAsync(sources, target, position);
+        if (!check.Allowed)
+        {
+            if (check.Reason is { } reason)
+            {
+                Announcer.Polite(reason);
+            }
+
+            return;
+        }
+
+        var moved = sources.Count == 1 ? TextOf(sources[0])
+            : string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.TreeViewItemCount], sources.Count);
+        var said = position switch
+        {
+            TreeDropPosition.Before => TbStrings.TreeViewMovedBefore,
+            TreeDropPosition.After => TbStrings.TreeViewMovedAfter,
+            _ => TbStrings.TreeViewMovedInside,
+        };
+        await OnDrop.InvokeAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
+        Announcer.Polite(string.Format(CultureInfo.CurrentCulture, Localizer[said], moved, TextOf(target)));
+        if (position == TreeDropPosition.Inside)
+        {
+            await ExpandAsync(target.Key);
+        }
+
+        // Blazor moves the row's element to its new place, which takes focus off it, so it gets focus back.
+        if (keepFocus)
+        {
+            await ScrollToAsync(sources[0].Key, focus: true);
+        }
+    }
 
     private async Task OnRowClickAsync(TreeNode<TItem> node, MouseEventArgs args)
     {

@@ -33,7 +33,13 @@
             }
         </div>
     }
-    @{ var focusId = FocusId(); }
+    @if (OnDrop.HasDelegate)
+    {
+        <span id="@MoveHintId" hidden>@Localizer[TbStrings.TreeViewMoveHint]</span>
+        @* Shown by tree-view.js beside a place a drag can't drop, with the reason. *@
+        <div data-part="drop-reason" class="tb-tree__drop-reason" aria-hidden="true" hidden></div>
+    }
+    @{ var focusId = FocusId(); var first = true; _rowIds = 0; }
     @foreach (var row in _rows)
     {
         var node = row.Node;
@@ -42,6 +48,10 @@
             var context = ContextOf(node);
             var disabled = Disabled || IsItemDisabled(node);
             var declared = _declared.GetValueOrDefault(node.Key);
+            var draggable = CanDragRow(node);
+            var atTop = first;
+            first = false;
+            var nameId = $"{TreeId}-row{_rowIds++}";
             @* A row is named by all it shows, its end slot included, as the tree pattern's rows are. *@
             <div @attributes="declared?.AdditionalAttributes" @key="node.Key" @ref="_rowRefs[node.Key]" role="treeitem"
                  data-part="item" data-key="@node.Id"
@@ -51,6 +61,8 @@
                  aria-selected="@(CanSelect(node) || context.Selected ? Flag(context.Selected) : null)"
                  aria-checked="@(Checkable ? context.Checked is { } isChecked ? Flag(isChecked) : "mixed" : null)"
                  aria-disabled="@(disabled ? "true" : null)" tabindex="@(node.Id == focusId ? 0 : -1)"
+                 data-draggable="@(draggable ? "" : null)" aria-describedby="@(draggable ? MoveHintId : null)"
+                 aria-labelledby="@(InsertTemplate is null ? null : $"{nameId}-content {nameId}-end")"
                  style="@(declared?.RowStyle ?? $"--tb-tree-level: {node.Level - 1}")"
                  class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
                             context.Matches ? "tb-tree__item--match" : null, declared?.Class)"
@@ -68,7 +80,8 @@
                           @onclick="() => ToggleCheckAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
                     </span>
                 }
-                <span data-part="content" class="tb-tree__content">
+                <span data-part="content" id="@(InsertTemplate is null ? null : $"{nameId}-content")"
+                      class="tb-tree__content">
                     @if (ItemTemplate is not null)
                     {
                         @ItemTemplate(context)
@@ -89,9 +102,23 @@
                 @if (ItemEnd is not null)
                 {
                     @* The end slot's own controls keep their clicks and keys from the row. *@
-                    <span data-part="end" class="tb-tree__end" @onclick:stopPropagation @ondblclick:stopPropagation
-                          @onkeydown:stopPropagation>
+                    <span data-part="end" id="@(InsertTemplate is null ? null : $"{nameId}-end")" class="tb-tree__end"
+                          @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown:stopPropagation>
                         @ItemEnd(context)
+                    </span>
+                }
+                @if (InsertTemplate is not null)
+                {
+                    @if (atTop)
+                    {
+                        <span data-part="insert" data-edge="start" class="tb-tree__insert" @onclick:stopPropagation
+                              @ondblclick:stopPropagation @onkeydown:stopPropagation>
+                            @InsertTemplate(new(default, 0))
+                        </span>
+                    }
+                    <span data-part="insert" class="tb-tree__insert" @onclick:stopPropagation
+                          @ondblclick:stopPropagation @onkeydown:stopPropagation>
+                        @InsertTemplate(InsertBelow(node, context))
                     </span>
                 }
             </div>
@@ -122,6 +149,9 @@
 </div>
 
 @code {
+    // Numbers the rows' name parts in each render, since a row's key needn't make a valid id.
+    private int _rowIds;
+
     private static string Flag(bool value) => value ? "true" : "false";
 
     private static string CheckClass(bool? state) => ClassNames.Join("tb-tree__check",

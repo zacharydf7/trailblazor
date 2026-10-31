@@ -294,6 +294,40 @@ public sealed class TbTreeLocator(IPage page, string name)
         await Assertions.Expect(row).ToHaveAttributeAsync("aria-checked", "true");
     }
 
+    /// <summary>Drags the row at <paramref name="row"/> onto the top edge of the row at <paramref name="target"/>,
+    /// to move it just before that row. Both rows must be showing, with their parents open.</summary>
+    public Task DragBeforeAsync(string[] row, string[] target) => DragAsync(row, target, 0.1f);
+
+    /// <summary>Drags the row at <paramref name="row"/> onto the bottom edge of the row at <paramref name="target"/>,
+    /// to move it just after that row. Both rows must be showing, with their parents open.</summary>
+    public Task DragAfterAsync(string[] row, string[] target) => DragAsync(row, target, 0.9f);
+
+    /// <summary>Drags the row at <paramref name="row"/> onto the middle of the row at <paramref name="target"/>, to
+    /// move it inside that row. Both rows must be showing, with their parents open.</summary>
+    public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, 0.5f);
+
+    // A drag near the window's edge scrolls the page, so the target is brought to the middle first, and measured again
+    // once the drag has started with a short move. The drop lands at a share of the target row's height.
+    private async Task DragAsync(string[] row, string[] target, float at)
+    {
+        await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
+        var source = await RowAsync(row);
+        var destination = await RowAsync(target);
+        await destination.EvaluateAsync("row => row.scrollIntoView({ block: 'center' })");
+        await source.ScrollIntoViewIfNeededAsync();
+        var from = await BoxAsync(source, row);
+        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2 + 8, new() { Steps = 2 });
+        var to = await BoxAsync(destination, target);
+        await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * at, new() { Steps = 10 });
+        await page.Mouse.UpAsync();
+    }
+
+    private static async Task<LocatorBoundingBoxResult> BoxAsync(ILocator row, string[] path) =>
+        await row.BoundingBoxAsync() ?? throw new InvalidOperationException(
+            $"The row {string.Join(" > ", path)} isn't showing.");
+
     private async Task<ILocator> RowAsync(string[] path) =>
         Tree.Locator($"[role=treeitem][data-key=\"{await Key(path)}\"]");
 

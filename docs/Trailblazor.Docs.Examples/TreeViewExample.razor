@@ -22,6 +22,16 @@
         </TbTreeItem>
         <TbTreeItem Value="@("weather")" Text="Weather alerts" />
     </TbTreeView>
+    @* Rows that move by dragging, or with Alt+Shift and the arrows; the page applies each move to its own list. *@
+    <TbTreeView TItem="Stop" AriaLabel="Trip plan" Items="_plan" KeySelector="stop => stop.Id"
+                ChildrenSelector="stop => stop.Children" ItemText="stop => stop.Name" InitialExpandDepth="1"
+                OnDrop="Move" CanDropAsync="CheckMoveAsync">
+        <InsertTemplate>
+            <TbIconButton Icon="ExampleIcons.Plus" Size="Size.Small" OnClick="() => Add(context)"
+                          AriaLabel="@(context.Parent is null ? $"Add a day at {context.Index + 1}"
+                                          : $"Add a stop to {context.Parent.Name} at {context.Index + 1}")" />
+        </InsertTemplate>
+    </TbTreeView>
 </TbStack>
 
 @code {
@@ -36,8 +46,57 @@
     private IReadOnlyCollection<object> _selected = [];
     private string? _opened;
     private IReadOnlyCollection<object> _notify = ["weather"];
+    private readonly List<Stop> _plan =
+    [
+        new(1, "Day 1", [new(2, "Trailhead"), new(3, "Pine Hollow"), new(4, "Lake camp")]),
+        new(5, "Day 2", [new(6, "Eagle Ridge"), new(7, "Summit Gate")]),
+    ];
+
+    private int _nextStop = 8;
 
     private bool Matches(Place place) => place.Name.Contains(_search!, StringComparison.OrdinalIgnoreCase);
 
     private sealed record Place(int Id, string Name, Place[]? Children = null);
+
+    // A day holds stops; a stop holds nothing.
+    private sealed record Stop(int Id, string Name, List<Stop>? Children = null);
+
+    private static Task<TreeDropCheck> CheckMoveAsync(TreeDrop<Stop> drop)
+    {
+        var days = drop.Items.Any(stop => stop.Children is not null);
+        var inside = drop.Position == TreeDropPosition.Inside;
+        var amongDays = drop.Target.Children is not null != inside;
+        return Task.FromResult(inside && drop.Target.Children is null ? TreeDropCheck.Refuse("A stop can't hold stops.")
+            : days && !amongDays ? TreeDropCheck.Refuse("A day can't go inside a day.")
+            : !days && amongDays ? TreeDropCheck.Refuse("A stop belongs in a day.")
+            : TreeDropCheck.Allow);
+    }
+
+    private void Move(TreeDrop<Stop> drop)
+    {
+        foreach (var stop in drop.Items)
+        {
+            ListOf(stop).Remove(stop);
+        }
+
+        var into = drop.Position == TreeDropPosition.Inside ? drop.Target.Children! : ListOf(drop.Target);
+        var at = drop.Position switch
+        {
+            TreeDropPosition.Before => into.IndexOf(drop.Target),
+            TreeDropPosition.After => into.IndexOf(drop.Target) + 1,
+            _ => into.Count,
+        };
+        into.InsertRange(at, drop.Items);
+    }
+
+    // A slot among the days adds a day; one in a day adds a stop.
+    private void Add(TreeInsertContext<Stop> insert)
+    {
+        var id = _nextStop++;
+        (insert.Parent?.Children ?? _plan).Insert(insert.Index,
+            insert.Parent is null ? new(id, $"Day {id}", []) : new(id, $"Stop {id}"));
+    }
+
+    private List<Stop> ListOf(Stop stop) =>
+        _plan.Contains(stop) ? _plan : _plan.First(day => day.Children?.Contains(stop) == true).Children!;
 }

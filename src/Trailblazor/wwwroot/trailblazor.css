@@ -4262,6 +4262,7 @@
 
     .tb-tree {
         --tb-tree-indent: 1.25rem;
+        position: relative;
         display: flex;
         flex-direction: column;
         color: var(--tb-color-text);
@@ -4277,6 +4278,7 @@
     }
 
     .tb-tree__item {
+        position: relative;
         display: flex;
         align-items: center;
         gap: var(--tb-space-1);
@@ -4377,6 +4379,96 @@
         gap: var(--tb-space-1);
     }
 
+    /* A drag lands before, after or inside the row under the pointer; a place it can't land shows the danger color. */
+    .tb-tree__item[data-draggable] {
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+
+    .tb-tree__item[data-dragging] {
+        opacity: 0.5;
+    }
+
+
+    .tb-tree__item[data-drop] {
+        --tb-tree-drop: var(--tb-color-primary);
+    }
+
+    .tb-tree__item[data-drop-refused] {
+        --tb-tree-drop: var(--tb-color-danger-text);
+        cursor: not-allowed;
+    }
+
+    .tb-tree__item[data-drop="before"] {
+        box-shadow: inset 0 2px 0 var(--tb-tree-drop);
+    }
+
+    .tb-tree__item[data-drop="after"] {
+        box-shadow: inset 0 -2px 0 var(--tb-tree-drop);
+    }
+
+    .tb-tree__item[data-drop="inside"] {
+        box-shadow: inset 0 0 0 2px var(--tb-tree-drop);
+    }
+
+    /* A place the drop is refused is dashed, so it doesn't rely on its color. */
+    .tb-tree__item[data-drop][data-drop-refused] {
+        box-shadow: none;
+        outline: 2px dashed var(--tb-tree-drop);
+        outline-offset: -2px;
+    }
+
+    .tb-tree__drop-reason {
+        position: absolute;
+        inset-inline-start: var(--tb-space-2);
+        z-index: 1;
+        padding: var(--tb-space-1) var(--tb-space-2);
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-surface-raised);
+        color: var(--tb-color-danger-text);
+        box-shadow: var(--tb-shadow-md);
+        font-size: var(--tb-font-size-xs);
+        pointer-events: none;
+    }
+
+    /* The insert slot sits on the row's lower edge, or the first row's upper one, where the row's content starts,
+       clear of the middle a drag starts from. It overlaps the next row, so it takes the pointer only while its own row
+       is hovered. */
+    .tb-tree__insert {
+        position: absolute;
+        inset-block-end: 0;
+        inset-inline-start: calc(var(--tb-tree-level) * var(--tb-tree-indent) + 1.5rem + var(--tb-space-2));
+        z-index: 1;
+        translate: 0 50%;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-tree__insert[data-edge="start"] {
+        inset-block: 0 auto;
+        translate: 0 -50%;
+    }
+
+    .tb-tree__item:hover > .tb-tree__insert,
+    .tb-tree__insert:focus-within {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* A touch screen can't hover, so there the focused row's slots show; a tap focuses a row. */
+    @media (hover: none), (any-pointer: coarse) {
+        .tb-tree__item:focus > .tb-tree__insert {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }
+
+    /* While a drag runs, the slots let the pointer through to the rows. */
+    .tb-tree[data-dragging] .tb-tree__insert {
+        pointer-events: none;
+    }
+
     .tb-tree__item--status {
         color: var(--tb-color-text-muted);
     }
@@ -4397,6 +4489,23 @@
             forced-color-adjust: none;
             border-color: Highlight;
             background: Highlight;
+        }
+
+        .tb-tree__item[data-drop="before"] {
+            border-block-start: 2px solid Highlight;
+        }
+
+        .tb-tree__item[data-drop="after"] {
+            border-block-end: 2px solid Highlight;
+        }
+
+        .tb-tree__item[data-drop="inside"] {
+            outline: 2px solid Highlight;
+            outline-offset: -2px;
+        }
+
+        .tb-tree__item[data-drop-refused] {
+            border-style: dashed;
         }
 
         .tb-tree__check--checked::before,

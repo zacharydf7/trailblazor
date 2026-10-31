@@ -1073,7 +1073,11 @@ public static class ExampleCatalog
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
                 + "when opened.", typeof(TreeViewExample))
         {
-            Api = [typeof(TbTreeView<>), typeof(TbTreeItem<>), typeof(TreeViewLabels)],
+            Api =
+            [
+                typeof(TbTreeView<>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
+                typeof(TreeDropCheck), typeof(TreeInsertContext<>),
+            ],
             Accessibility =
             [
                 "It is a `tree` named by `AriaLabel`, with one `treeitem` per visible row carrying `aria-level`, "
@@ -1088,13 +1092,25 @@ public static class ExampleCatalog
                 "Children that load show a loading row, and a load that fails shows a row that offers to try again.",
                 "Rows written as nested `TbTreeItem`s work the same. Before the page is interactive, each renders a "
                     + "plain row, open to `InitialExpandDepth`.",
+                "With `OnDrop`, rows move by dragging with a mouse, pen or finger (a finger holds still for a moment "
+                    + "first, so a swipe still scrolls), or with Alt+Shift and the arrows: Up and Down past a "
+                    + "neighbor, Right into the row above, Left out of the parent. Each movable row is described by "
+                    + "those keys, and Escape cancels a drag.",
+                "A move is read out, such as \"Lake camp moved before Pine Hollow.\" A place `CanDropAsync` refuses "
+                    + "shows its reason beside the row, in the danger color, and the reason is read out when the "
+                    + "move is tried.",
+                "The tree never moves rows itself: `OnDrop` says what moved and where, and the app applies it, so it "
+                    + "can be undone like any other change.",
+                "`InsertTemplate` content sits on each row's edge and shows on hover or focus; it is a tab stop "
+                    + "after its row, like `ItemEnd` content.",
             ],
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],
             TestingTip = "`page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows rows by "
                 + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
-                + "`CheckAsync(...)` and `ItemAsync(...)`. Every row also carries `data-key`, `data-level` and "
-                + "`data-text`.",
+                + "`CheckAsync(...)` and `ItemAsync(...)`; `DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` "
+                + "drag one row's path onto another's. Every row also carries `data-key`, `data-level` and "
+                + "`data-text`, and a row being dragged over carries `data-drop`.",
         },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
