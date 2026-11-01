@@ -6,14 +6,26 @@
     {
         <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
     }
-    @if (Start is not null)
+    @if (Start is not null || StartIcon is not null)
     {
-        <span data-part="start" class="@ClassNames.Join("tb-button__start", Classes?.Start)">@Start</span>
+        <span data-part="start" class="@ClassNames.Join("tb-button__start", Classes?.Start)">
+            @if (StartIcon is { } startIcon)
+            {
+                <TbIcon Icon="startIcon" Size="ShownSize" />
+            }
+            @Start
+        </span>
     }
     <span data-part="label" class="@ClassNames.Join("tb-button__label", Classes?.Label)">@ChildContent</span>
-    @if (End is not null)
+    @if (End is not null || EndIcon is not null)
     {
-        <span data-part="end" class="@ClassNames.Join("tb-button__end", Classes?.End)">@End</span>
+        <span data-part="end" class="@ClassNames.Join("tb-button__end", Classes?.End)">
+            @End
+            @if (EndIcon is { } endIcon)
+            {
+                <TbIcon Icon="endIcon" Size="ShownSize" />
+            }
+        </span>
     }
 </text>)
 
@@ -29,6 +41,14 @@
     /// <summary>Content after the label, usually an icon.</summary>
     [Parameter]
     public RenderFragment? End { get; set; }
+
+    /// <summary>An icon before the label: the short form of a <see cref="TbIcon"/> in <see cref="Start"/>.</summary>
+    [Parameter]
+    public Icon? StartIcon { get; set; }
+
+    /// <summary>An icon after the label: the short form of a <see cref="TbIcon"/> in <see cref="End"/>.</summary>
+    [Parameter]
+    public Icon? EndIcon { get; set; }
 
     /// <summary>Extra CSS classes for the button's inner parts.</summary>
     [Parameter]

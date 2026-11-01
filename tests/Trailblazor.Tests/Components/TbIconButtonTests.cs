@@ -87,4 +87,28 @@ public class TbIconButtonTests : BunitContext
             .Add(button => button.Icon, Square)
             .Add(button => button.AriaLabel, ariaLabel)));
     }
+
+    [Fact]
+    public void Render_ShouldShowTheNameInATooltip_WhenShowTooltipIsSet()
+    {
+        this.AddTrailblazor();
+
+        var cut = Render<TbIconButton>(parameters => parameters
+            .Add(button => button.Icon, Square)
+            .Add(button => button.AriaLabel, "Delete")
+            .Add(button => button.ShowTooltip, true));
+
+        Assert.Equal("Delete", cut.Find("[role=tooltip]").TextContent.Trim());
+        Assert.Equal("Delete", cut.Find("button").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowNoTooltip_WhenShowTooltipIsNotSet()
+    {
+        var cut = Render<TbIconButton>(parameters => parameters
+            .Add(button => button.Icon, Square)
+            .Add(button => button.AriaLabel, "Delete"));
+
+        Assert.Empty(cut.FindAll("[role=tooltip]"));
+    }
 }

@@ -5,6 +5,9 @@ namespace Trailblazor.Tests.Components;
 
 public class TbButtonTests : BunitContext
 {
+    private static readonly Icon Plus = new("<path d=\"M12 5v14M5 12h14\" />");
+    private static readonly Icon Chevron = new("<path d=\"M6 9l6 6 6-6\" />");
+
     [Fact]
     public void Render_ShouldRenderAFilledPrimaryButton_WhenNoParametersAreSet()
     {
@@ -73,6 +76,42 @@ public class TbButtonTests : BunitContext
         Assert.Equal("E", cut.Find("[data-part=end]").TextContent);
         Assert.Contains("my-label", cut.Find("[data-part=label]").ClassList);
         Assert.Contains("my-start", cut.Find("[data-part=start]").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldDrawTheIconsAroundTheLabel_WhenGivenStartAndEndIcons()
+    {
+        var cut = Render<TbButton>(parameters => parameters
+            .Add(button => button.StartIcon, Plus)
+            .Add(button => button.EndIcon, Chevron)
+            .AddChildContent("Add"));
+
+        Assert.Contains("M12 5v14", cut.Find("[data-part=start] svg").InnerHtml);
+        Assert.Contains("M6 9l6 6", cut.Find("[data-part=end] svg").InnerHtml);
+        Assert.Equal("Add", cut.Find("[data-part=label]").TextContent);
+    }
+
+    [Theory]
+    [InlineData(Size.Small, "tb-icon--small")]
+    [InlineData(Size.Large, "tb-icon--large")]
+    public void Render_ShouldSizeTheIconsWithTheButton_WhenTheButtonHasASize(Size size, string iconClass)
+    {
+        var cut = Render<TbButton>(parameters => parameters
+            .Add(button => button.Size, size)
+            .Add(button => button.StartIcon, Plus)
+            .Add(button => button.EndIcon, Chevron)
+            .AddChildContent("Add"));
+
+        Assert.Contains(iconClass, cut.Find("[data-part=start] svg").ClassList);
+        Assert.Contains(iconClass, cut.Find("[data-part=end] svg").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldDrawNoIconParts_WhenNoIconsOrSlotsAreSet()
+    {
+        var cut = Render<TbButton>(parameters => parameters.AddChildContent("Add"));
+
+        Assert.Empty(cut.FindAll("[data-part=start], [data-part=end]"));
     }
 
     [Fact]

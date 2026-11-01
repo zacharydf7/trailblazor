@@ -206,7 +206,8 @@ public static class ExampleCatalog
             [
                 "A native `<button>`, so Enter and Space press it. It defaults to `type=\"button\"`, so it never "
                     + "submits a form by accident.",
-                "Its text is its name; a decorative icon in the `Start` or `End` slot adds nothing to it.",
+                "Its text is its name; a decorative icon, from `StartIcon`, `EndIcon` or the `Start` and `End` "
+                    + "slots, adds nothing to it.",
                 "`Disabled` takes it out of the tab order. With `FocusableWhenDisabled` it stays a tab stop, marked "
                     + "`aria-disabled`, so its tooltip can say why it is off. `Loading` keeps it focusable too, marks "
                     + "it `aria-disabled` and `aria-busy`, and ignores clicks.",
@@ -233,8 +234,9 @@ public static class ExampleCatalog
             [
                 "`AriaLabel` is required and names the button, since it shows no text; a blank label throws when "
                     + "it renders.",
-                "The icon itself is hidden from screen readers. Add a `TbTooltip` with the same words so sighted "
-                    + "users can see the name too.",
+                "The icon itself is hidden from screen readers. Set `ShowTooltip` so sighted users can see the "
+                    + "name too, on hover and on focus. The tooltip repeats the name, so it isn't added as a "
+                    + "description, and screen readers hear the name once.",
                 "Keys, `Disabled`, `FocusableWhenDisabled`, `Loading`, `Href` and `@bind-Pressed` work as they do "
                     + "for a button. A toggle keeps the same `AriaLabel` either way; `aria-pressed` tells whether it "
                     + "is on.",
@@ -242,6 +244,8 @@ public static class ExampleCatalog
             Target = new("button", "Add"),
             Blocks = ["tb-button", "tb-icon-button"],
             DataParts = ["icon", "spinner"],
+            TestingTip = "Find it by its name: `GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`. With "
+                + "`ShowTooltip`, focusing it shows a `tooltip` role with the same text.",
             Telemetry = ButtonTelemetry("TbIconButton"),
         },
         new("button-group", "Button group", ExampleCategory.Actions,

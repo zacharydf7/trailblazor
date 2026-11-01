@@ -1,16 +1,14 @@
 @namespace Trailblazor
 @inherits TbButtonBase
 
-@Root("tb-icon-button", AriaLabel, @<text>
-    @if (Loading)
-    {
-        <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
-    }
-    else
-    {
-        <TbIcon Icon="Icon" Size="ShownSize" Class="@Classes?.Icon" data-part="icon" />
-    }
-</text>)
+@if (ShowTooltip)
+{
+    <TbTooltip Text="@AriaLabel">@Button</TbTooltip>
+}
+else
+{
+    @Button
+}
 
 @code {
     /// <summary>The icon to show.</summary>
@@ -22,9 +20,25 @@
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
 
+    /// <summary>Shows <see cref="AriaLabel"/> in a tooltip on hover and focus, so people who see the icon learn its
+    /// name too. Screen readers hear the name once, as the button's label.</summary>
+    [Parameter]
+    public bool ShowTooltip { get; set; }
+
     /// <summary>Extra CSS classes for the button's inner parts.</summary>
     [Parameter]
     public IconButtonClasses? Classes { get; set; }
+
+    private RenderFragment Button => Root("tb-icon-button", AriaLabel, @<text>
+        @if (Loading)
+        {
+            <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
+        }
+        else
+        {
+            <TbIcon Icon="Icon" Size="ShownSize" Class="@Classes?.Icon" data-part="icon" />
+        }
+    </text>);
 
     /// <inheritdoc />
     public TbIconButton()

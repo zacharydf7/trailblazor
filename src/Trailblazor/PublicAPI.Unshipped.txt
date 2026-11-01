@@ -699,6 +699,10 @@ Trailblazor.TbButton.End.set -> void
 Trailblazor.TbButton.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbButton.Start.set -> void
 Trailblazor.TbButton.TbButton() -> void
+Trailblazor.TbButton.EndIcon.get -> Trailblazor.Icon?
+Trailblazor.TbButton.EndIcon.set -> void
+Trailblazor.TbButton.StartIcon.get -> Trailblazor.Icon?
+Trailblazor.TbButton.StartIcon.set -> void
 Trailblazor.TbButtonBase
 Trailblazor.TbButtonBase.Disabled.get -> bool
 Trailblazor.TbButtonBase.Disabled.set -> void
@@ -1150,6 +1154,8 @@ Trailblazor.TbIconButton.Classes.set -> void
 Trailblazor.TbIconButton.Icon.get -> Trailblazor.Icon
 Trailblazor.TbIconButton.Icon.set -> void
 Trailblazor.TbIconButton.TbIconButton() -> void
+Trailblazor.TbIconButton.ShowTooltip.get -> bool
+Trailblazor.TbIconButton.ShowTooltip.set -> void
 Trailblazor.TbImage
 Trailblazor.TbImage.Alt.get -> string?
 Trailblazor.TbImage.Alt.set -> void

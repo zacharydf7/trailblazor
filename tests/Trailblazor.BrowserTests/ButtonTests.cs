@@ -45,6 +45,18 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IconButton_ShouldShowItsNameWithoutDescribingItself_WhenFocusedWithShowTooltip(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/icon-button");
+        var bell = page.GetByRole(AriaRole.Button, new() { Name = "Notifications" });
+
+        await bell.FocusAsync();
+
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Notifications" })).ToBeVisibleAsync();
+        await Expect(bell).ToHaveAccessibleDescriptionAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Button_ShouldShowAFocusRing_WhenFocusedByKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/button");
