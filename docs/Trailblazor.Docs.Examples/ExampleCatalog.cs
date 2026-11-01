@@ -1017,8 +1017,11 @@ public static class ExampleCatalog
             [
                 "It is the browser's own file input, named by the `Label`, laid over the drop zone: Enter or Space "
                     + "opens the file dialog, and screen readers announce it as a file button.",
-                "Files of another type, too large, or beyond `MaxFiles` are left out, and the reasons are linked to "
-                    + "the input and announced with the number of files chosen.",
+                "Files of another type, over `MaxFileSize`, or beyond `MaxFiles` are left out, and the reasons are "
+                    + "linked to the input and announced with the number of files chosen. `MaxFileSize` is 512 KB "
+                    + "unless set, the size `OpenReadStream` reads by default, so raise both for larger files. The "
+                    + "types come from `Accept`, or an `accept` in `InputAttributes`, which also filters the picker; "
+                    + "with `RejectOtherTypes` off it only filters, and the app checks the types that arrive.",
                 "The chosen files are a `list`; each has a \"Remove\" button named with its file, and focus moves back "
                     + "to the input when a file is removed.",
                 "Each new choice replaces the last, as the browser's file input does, so read the files before the "

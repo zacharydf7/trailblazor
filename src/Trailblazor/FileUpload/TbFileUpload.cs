@@ -20,9 +20,17 @@ public partial class TbFileUpload
     private bool _dragging;
 
     /// <summary>The file types to take, as the input's <c>accept</c> attribute lists them, such as
-    /// <c>.pdf,image/*</c>. Dropped files are checked against it too, since browsers don't.</summary>
+    /// <c>.pdf,image/*</c>. Without it, an <c>accept</c> in <c>InputAttributes</c> is used. The picker shows only those
+    /// types, and a chosen or dropped file of another type is left out with a message, since browsers don't check
+    /// drops; set <see cref="RejectOtherTypes"/> to false to take it and check it yourself.</summary>
     [Parameter]
     public string? Accept { get; set; }
+
+    /// <summary>Leaves out a chosen or dropped file of a type the accept list doesn't name, with a message. Defaults
+    /// to true; false only filters the picker, and a file of another type is taken like any other, within
+    /// <see cref="MaxFileSize"/> and <see cref="MaxFiles"/>.</summary>
+    [Parameter]
+    public bool RejectOtherTypes { get; set; } = true;
 
     /// <summary>Takes more than one file at a time.</summary>
     [Parameter]
@@ -32,8 +40,9 @@ public partial class TbFileUpload
     [Parameter]
     public int? MaxFiles { get; set; }
 
-    /// <summary>The largest file, in bytes, the field takes. Defaults to 512,000, the size
-    /// <c>OpenReadStream</c> reads by default.</summary>
+    /// <summary>The largest file, in bytes, the field takes; a larger one is left out with a message. Defaults to
+    /// 512,000 (512 KB), the size <c>OpenReadStream</c> reads by default, so for larger files raise both this and the
+    /// <c>maxAllowedSize</c> you pass to <c>OpenReadStream</c>.</summary>
     [Parameter]
     public long MaxFileSize { get; set; } = 512_000;
 
@@ -113,7 +122,7 @@ public partial class TbFileUpload
         builder.AddAttribute(4, "name", InputNameAttribute);
         builder.AddComponentParameter(5, nameof(InputFile.OnChange),
             EventCallback.Factory.Create<InputFileChangeEventArgs>(this, OnChangeAsync));
-        builder.AddAttribute(6, "accept", Accept);
+        builder.AddAttribute(6, "accept", AcceptList);
         builder.AddAttribute(7, "multiple", Multiple);
         builder.AddAttribute(8, "disabled", Disabled || ReadOnly);
         builder.AddAttribute(9, "aria-label", AccessibleName);
@@ -160,9 +169,9 @@ public partial class TbFileUpload
         var tooMany = false;
         foreach (var file in args.GetMultipleFiles(args.FileCount))
         {
-            if (!Accepts(file))
+            if (RejectOtherTypes && !Accepts(file))
             {
-                _rejected.Add(string.Format(CultureInfo.CurrentCulture, WrongTypeLabel, file.Name, Accept));
+                _rejected.Add(string.Format(CultureInfo.CurrentCulture, WrongTypeLabel, file.Name, AcceptList));
             }
             else if (file.Size > MaxFileSize)
             {
@@ -204,8 +213,11 @@ public partial class TbFileUpload
         await FocusAsync();
     }
 
+    // Accept, or else an accept given in InputAttributes, kept as an input name given there is.
+    private string? AcceptList => Accept ?? InputAttributes?.GetValueOrDefault("accept") as string;
+
     // An accept list names extensions such as .pdf, types such as application/pdf, or families such as image/*.
-    private bool Accepts(IBrowserFile file) => string.IsNullOrWhiteSpace(Accept) || Accept
+    private bool Accepts(IBrowserFile file) => string.IsNullOrWhiteSpace(AcceptList) || AcceptList
         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
         .Any(type => type.StartsWith('.') ? file.Name.EndsWith(type, StringComparison.OrdinalIgnoreCase)
             : type.EndsWith("/*", StringComparison.Ordinal)

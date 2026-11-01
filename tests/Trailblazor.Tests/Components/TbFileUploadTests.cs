@@ -90,6 +90,54 @@ public class TbFileUploadTests : BunitContext
     }
 
     [Fact]
+    public void Choose_ShouldFilterAndCheckByAnInputAttributesAccept_WhenAcceptIsntSet()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true)
+            .Add(upload => upload.InputAttributes, new Dictionary<string, object> { ["accept"] = ".pdf" }));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf"),
+            InputFileContent.CreateFromText("x", "notes.docx", contentType: "application/msword"));
+
+        Assert.Equal(".pdf", cut.Find("input[type=file]").GetAttribute("accept"));
+        Assert.Equal(["trail.pdf"], _files!.Select(file => file.Name));
+        Assert.Equal("notes.docx isn't one of .pdf.", cut.Find("[data-part=rejected]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldUseAccept_WhenInputAttributesHaveAnotherToo()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Accept, ".gpx")
+            .Add(upload => upload.InputAttributes, new Dictionary<string, object> { ["accept"] = ".pdf" }));
+
+        Assert.Equal(".gpx", cut.Find("input[type=file]").GetAttribute("accept"));
+    }
+
+    [Fact]
+    public void Choose_ShouldTakeFilesOfOtherTypesAndStillFilterThePicker_WhenRejectOtherTypesIsOff()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true)
+            .Add(upload => upload.Accept, ".pdf").Add(upload => upload.RejectOtherTypes, false));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf"),
+            InputFileContent.CreateFromText("x", "notes.docx", contentType: "application/msword"));
+
+        Assert.Equal(".pdf", cut.Find("input[type=file]").GetAttribute("accept"));
+        Assert.Equal(["trail.pdf", "notes.docx"], _files!.Select(file => file.Name));
+        Assert.Empty(cut.FindAll("[data-part=rejected]"));
+    }
+
+    [Fact]
+    public void Choose_ShouldLeaveOutAFileOver512Kilobytes_WhenMaxFileSizeIsntSet()
+    {
+        var cut = RenderUpload();
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("atlas.pdf", 512_001));
+
+        Assert.Null(_files);
+        Assert.Equal("atlas.pdf is larger than 512 KB.", cut.Find("[data-part=rejected]").TextContent.Trim());
+    }
+
+    [Fact]
     public void Choose_ShouldLeaveOutAFileOverTheLimit_WhenItIsTooLarge()
     {
         var cut = RenderUpload(parameters => parameters.Add(upload => upload.MaxFileSize, 1_000));

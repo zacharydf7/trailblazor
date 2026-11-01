@@ -2,7 +2,7 @@
 
 <TbStack Gap="4" Style="max-inline-size: 28rem">
     <TbFileUpload Label="Trail maps" @bind-Value="_maps" Accept=".pdf,image/*" Multiple MaxFiles="5"
-                  HelperText="PDFs or images, up to five." />
+                  HelperText="PDFs or images, up to five, each up to 512 KB." />
     <TbFileUpload Label="Gear list" @bind-Value="_gear" Accept=".json" DropZone="false" />
     <TbFileUpload @ref="_import" Label="Import a route" @bind-Value="_route" Accept=".gpx" Hidden />
     <TbStack Row Gap="2" Wrap>

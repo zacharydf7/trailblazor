@@ -74,6 +74,7 @@ const Trailblazor.TbStrings.DialogSizeLarge = "Dialog.Size.Large" -> string!
 const Trailblazor.TbStrings.DialogSizeMedium = "Dialog.Size.Medium" -> string!
 const Trailblazor.TbStrings.DialogSizeSmall = "Dialog.Size.Small" -> string!
 const Trailblazor.TbStrings.FieldInvalid = "Field.Invalid" -> string!
+const Trailblazor.TbStrings.FieldRequired = "Field.Required" -> string!
 const Trailblazor.TbStrings.FieldUnnamed = "Field.Unnamed" -> string!
 const Trailblazor.TbStrings.FileUploadBytes = "FileUpload.Bytes" -> string!
 const Trailblazor.TbStrings.FileUploadChoose = "FileUpload.Choose" -> string!
@@ -1448,6 +1449,8 @@ Trailblazor.TbFieldBase<TValue>.HelperText.get -> string?
 Trailblazor.TbFieldBase<TValue>.HelperText.set -> void
 Trailblazor.TbFieldBase<TValue>.InputAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Trailblazor.TbFieldBase<TValue>.InputAttributes.set -> void
+Trailblazor.TbFieldBase<TValue>.Invalid.get -> bool
+Trailblazor.TbFieldBase<TValue>.Invalid.set -> void
 Trailblazor.TbFieldBase<TValue>.Label.get -> string?
 Trailblazor.TbFieldBase<TValue>.Label.set -> void
 Trailblazor.TbFieldBase<TValue>.OnBlur.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.FocusEventArgs!>
@@ -1458,6 +1461,8 @@ Trailblazor.TbFieldBase<TValue>.ReadOnly.get -> bool
 Trailblazor.TbFieldBase<TValue>.ReadOnly.set -> void
 Trailblazor.TbFieldBase<TValue>.Required.get -> bool
 Trailblazor.TbFieldBase<TValue>.Required.set -> void
+Trailblazor.TbFieldBase<TValue>.RequiredMessage.get -> string?
+Trailblazor.TbFieldBase<TValue>.RequiredMessage.set -> void
 Trailblazor.TbFieldBase<TValue>.TbFieldBase() -> void
 Trailblazor.TbFieldBase<TValue>.TelemetryName.get -> string?
 Trailblazor.TbFieldBase<TValue>.TelemetryName.set -> void
@@ -1488,6 +1493,8 @@ Trailblazor.TbFileUpload.MaxFileSize.set -> void
 Trailblazor.TbFileUpload.Multiple.get -> bool
 Trailblazor.TbFileUpload.Multiple.set -> void
 Trailblazor.TbFileUpload.OpenAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbFileUpload.RejectOtherTypes.get -> bool
+Trailblazor.TbFileUpload.RejectOtherTypes.set -> void
 Trailblazor.TbFileUpload.TbFileUpload() -> void
 Trailblazor.TbFileUpload.ZoneContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbFileUpload.ZoneContent.set -> void
@@ -2100,7 +2107,6 @@ Trailblazor.TbStack.TbStack() -> void
 Trailblazor.TbStack.Wrap.get -> bool
 Trailblazor.TbStack.Wrap.set -> void
 Trailblazor.TbStrings
-const Trailblazor.TbStrings.FieldRequired = "Field.Required" -> string!
 Trailblazor.TbStyles
 Trailblazor.TbStyles.TbStyles() -> void
 Trailblazor.TbSubMenu
@@ -2695,8 +2701,3 @@ virtual Trailblazor.TbDialogContent<TResult>.CanDismissAsync(Trailblazor.DialogD
 ~override Trailblazor.TbTooltip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeView<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-
-Trailblazor.TbFieldBase<TValue>.Invalid.get -> bool
-Trailblazor.TbFieldBase<TValue>.Invalid.set -> void
-Trailblazor.TbFieldBase<TValue>.RequiredMessage.get -> string?
-Trailblazor.TbFieldBase<TValue>.RequiredMessage.set -> void
