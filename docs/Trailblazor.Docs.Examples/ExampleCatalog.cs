@@ -1377,6 +1377,13 @@ public static class ExampleCatalog
                     + "`aria-orientation=\"vertical\"` and moves with Up and Down instead. With automatic activation, "
                     + "moving also selects; with manual activation, Enter or Space selects.",
                 "Each panel is focusable, so keyboard users can reach content that has no controls.",
+                "Only the selected panel renders, unless `KeepAlive` keeps each one once shown or "
+                    + "`RenderAllPanels` renders them all from the start, hidden, so a form across the tabs, like "
+                    + "the trip plan, validates and saves every field. A hidden panel's fields can't take focus, so "
+                    + "name the tab that needs attention, as the trip plan does with `Text` and a `HeaderClass`; a "
+                    + "class alone is only seen.",
+                "A tab's `OnClick` is raised each time its header is clicked, or Enter or Space is pressed on it, "
+                    + "even while it is selected, once it is selected; the arrow keys select without raising it.",
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
                     + "system's highlight color.",
             ],

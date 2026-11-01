@@ -34,7 +34,43 @@
     </TbTab>
 </TbTabs>
 
+@* A form across tabs: every panel renders from the start, so saving checks them all, and a tab with a problem says
+   so in its name and its look. Clicking Map, even while it is selected, refreshes it. *@
+<TbForm OnValidSubmit="SaveTrip" OnInvalidSubmit="() => _checked = true" aria-label="Plan a trip"
+        Style="margin-block-start: var(--tb-space-8); max-inline-size: 24rem">
+    <TbTabs AriaLabel="Trip plan" RenderAllPanels>
+        <TbTab Text="@TabName("Leader", _leader)" HeaderClass="@AttentionClass(_leader)">
+            <TbTextField Label="Leader's name" @bind-Value="_leader" Required />
+        </TbTab>
+        <TbTab Text="@TabName("Itinerary", _trail)" HeaderClass="@AttentionClass(_trail)">
+            <TbTextField Label="Trail" @bind-Value="_trail" Required />
+        </TbTab>
+        <TbTab Text="Map" OnClick="() => _mapRefreshes++">
+            <TbText>Map refreshed @_mapRefreshes @(_mapRefreshes == 1 ? "time" : "times").</TbText>
+        </TbTab>
+    </TbTabs>
+    <TbButton Type="ButtonType.Submit">Save trip</TbButton>
+    <TbText>@_tripStatus</TbText>
+</TbForm>
+
 @code {
     private string? _section = "summary";
     private string? _setting = "route";
+    private string? _leader;
+    private string? _trail;
+    private bool _checked;
+    private int _mapRefreshes;
+    private string? _tripStatus;
+
+    private bool NeedsAttention(string? value) => _checked && string.IsNullOrWhiteSpace(value);
+
+    private string TabName(string name, string? value) => NeedsAttention(value) ? $"{name} (needs attention)" : name;
+
+    private string? AttentionClass(string? value) => NeedsAttention(value) ? "docs-tab-attention" : null;
+
+    private void SaveTrip()
+    {
+        _checked = false;
+        _tripStatus = $"Saved {_leader}'s trip on {_trail}.";
+    }
 }

@@ -2730,3 +2730,9 @@ Trailblazor.DialogOptions.TopLayer.init -> void
 Trailblazor.DialogSettings.TopLayer.get -> bool
 Trailblazor.DialogSettings.TopLayer.set -> void
 Trailblazor.DialogSettings.OutsidePopups.get -> System.Collections.Generic.IList<string!>!
+Trailblazor.TbTab.HeaderClass.get -> string?
+Trailblazor.TbTab.HeaderClass.set -> void
+Trailblazor.TbTab.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbTab.OnClick.set -> void
+Trailblazor.TbTabs.RenderAllPanels.get -> bool
+Trailblazor.TbTabs.RenderAllPanels.set -> void

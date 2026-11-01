@@ -20,7 +20,8 @@
             <button @key="tab" type="button" role="tab" id="@tab.TabId" aria-selected="@(selected ? "true" : "false")"
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
-                    class="tb-tabs__tab" @onclick="() => ActivateAsync(tab)">@tab.HeaderContent</button>
+                    class="@ClassNames.Join("tb-tabs__tab", tab.HeaderClass)"
+                    @onclick="args => ClickAsync(tab, args)">@tab.HeaderContent</button>
         }
     </div>
     @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
@@ -87,6 +88,12 @@
     /// Without it, only the selected panel is rendered.</summary>
     [Parameter]
     public bool KeepAlive { get; set; }
+
+    /// <summary>Renders every panel from the start, hidden unless its tab is selected, so a form whose fields are
+    /// spread across the tabs validates and saves them all. It keeps each panel's state, as <see cref="KeepAlive"/>
+    /// does.</summary>
+    [Parameter]
+    public bool RenderAllPanels { get; set; }
 
     /// <summary>Centers the tabs in their row.</summary>
     [Parameter]
@@ -172,7 +179,7 @@
                 return;
             }
 
-            _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync));
+            _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync, SelectAsync));
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachTabs", _list, _order);
             if (handle is null)
             {
@@ -297,6 +304,31 @@
         {
             await ReportMovedIndexAsync();
         }
+    }
+
+    // The arrow keys select a tab without clicking it, so its OnClick isn't raised. Called from the script, so a
+    // failing callback goes to the renderer instead of the browser's console.
+    private async Task SelectAsync(string tabId)
+    {
+        try
+        {
+            if (_tabs.Find(tab => tab.TabId == tabId) is { } tab)
+            {
+                await ActivateAsync(tab);
+                StateHasChanged();
+            }
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    // The tab is selected first, so its OnClick sees the new selection.
+    private async Task ClickAsync(TbTab tab, MouseEventArgs args)
+    {
+        await ActivateAsync(tab);
+        await tab.OnClick.InvokeAsync(args);
     }
 
     private async Task ActivateAsync(TbTab tab)

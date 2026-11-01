@@ -20,6 +20,7 @@
     private bool _disabled;
     private string? _givenId;
     private string? _key;
+    private string? _headerClass;
     private Icon? _icon;
     private RenderFragment? _header;
     private ControlTelemetry? _telemetry;
@@ -46,6 +47,17 @@
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>Extra CSS classes for the tab's header, such as one marking a tab whose fields need attention.
+    /// <c>Class</c> styles its panel. A class alone is only seen, so say what it means in the header's text too.
+    /// </summary>
+    [Parameter]
+    public string? HeaderClass { get; set; }
+
+    /// <summary>Raised each time the user clicks the tab's header, or presses Enter or Space on it, whether or not it
+    /// was already selected, once it is selected. The arrow keys select tabs without raising it.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
     /// <summary>The panel shown while this tab is selected. Leave it out for tabs that only switch a view rendered
     /// elsewhere.</summary>
     [Parameter]
@@ -70,7 +82,8 @@
 
     internal string PanelId => $"{_id}-panel";
 
-    internal bool IsPanelRendered => ChildContent is not null && (IsSelected || Tabs!.KeepAlive && _shown);
+    internal bool IsPanelRendered => ChildContent is not null
+        && (IsSelected || Tabs!.RenderAllPanels || Tabs.KeepAlive && _shown);
 
     // TabHeader is internal, so Razor can't name it; the list renders it through this.
     internal RenderFragment HeaderContent => builder =>
@@ -100,6 +113,7 @@
         _text = Text;
         _disabled = Disabled;
         _key = Key;
+        _headerClass = HeaderClass;
         _icon = Icon;
         _givenId = GivenId;
         Tabs.Add(this);
@@ -120,12 +134,14 @@
         }
 
         _shown |= IsSelected;
-        if (Text != _text || Disabled != _disabled || Key != _key || Icon != _icon || GivenId != _givenId)
+        if (Text != _text || Disabled != _disabled || Key != _key || HeaderClass != _headerClass || Icon != _icon
+            || GivenId != _givenId)
         {
             _text = Text;
             _disabled = Disabled;
             _givenId = GivenId;
             _key = Key;
+            _headerClass = HeaderClass;
             _icon = Icon;
             Tabs!.Refresh();
         }

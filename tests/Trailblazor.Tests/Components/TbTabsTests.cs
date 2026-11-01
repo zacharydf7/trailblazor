@@ -84,6 +84,84 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldRenderEveryPanelHiddenUnlessItsTabIsSelected_WhenRenderAllPanelsIsSet()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.RenderAllPanels, true)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                AddTab(builder, 0, "Overview", "Overview panel");
+                AddTab(builder, 10, "Specs", "Specs panel");
+            })));
+
+        var panels = cut.FindAll("[role=tabpanel]");
+        Assert.Equal(["Overview panel", "Specs panel"], panels.Select(panel => panel.TextContent.Trim()));
+        Assert.Equal([false, true], panels.Select(panel => panel.HasAttribute("hidden")));
+        Assert.Equal(panels.Select(panel => panel.Id),
+            cut.FindAll("[role=tab]").Select(tab => tab.GetAttribute("aria-controls")));
+    }
+
+    [Fact]
+    public void Render_ShouldPutTheHeaderClassOnTheTabAndFollowIt_WhenATabHasOne()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, HeaderClassTab("attention")));
+        Assert.Equal(["tb-tabs__tab", "attention"], cut.Find("[role=tab]").ClassList);
+        Assert.DoesNotContain("attention", cut.Find("[role=tabpanel]").ClassList);
+
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, HeaderClassTab(null)));
+
+        Assert.Equal(["tb-tabs__tab"], cut.Find("[role=tab]").ClassList);
+    }
+
+    [Fact]
+    public void Click_ShouldRaiseTheTabsOnClickOnceItIsSelected_WhenItsHeaderIsClickedSelectedOrNot()
+    {
+        var events = new List<string>();
+        var cut = Render<TbTabs>(parameters => parameters
+            .Add(tabs => tabs.ActiveIndexChanged, (int index) => events.Add($"selected {index}"))
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                AddTab(builder, 0, "Overview", "Overview panel");
+                builder.OpenComponent<TbTab>(10);
+                builder.AddAttribute(11, nameof(TbTab.Text), "Map");
+                builder.AddAttribute(12, nameof(TbTab.OnClick),
+                    EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
+                        () => events.Add("clicked")));
+                builder.CloseComponent();
+            })));
+
+        cut.FindAll("[role=tab]")[1].Click();
+        cut.FindAll("[role=tab]")[1].Click();
+
+        Assert.Equal(["selected 1", "clicked", "clicked"], events);
+    }
+
+    [Fact]
+    public async Task Select_ShouldSelectTheTabWithoutRaisingItsOnClick_WhenTheArrowKeysReachIt()
+    {
+        var order = SetUpOrder();
+        var events = new List<string>();
+        var cut = Render<TbTabs>(parameters => parameters
+            .Add(tabs => tabs.ActiveIndexChanged, (int index) => events.Add($"selected {index}"))
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                AddTab(builder, 0, "Overview", "Overview panel");
+                builder.OpenComponent<TbTab>(10);
+                builder.AddAttribute(11, nameof(TbTab.Text), "Map");
+                builder.AddAttribute(12, nameof(TbTab.ChildContent),
+                    (RenderFragment)(panel => panel.AddContent(0, "Map panel")));
+                builder.AddAttribute(13, nameof(TbTab.OnClick),
+                    EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
+                        () => events.Add("clicked")));
+                builder.CloseComponent();
+            })));
+
+        await cut.InvokeAsync(() => order().Value.OnSelect(cut.FindAll("[role=tab]")[1].Id!));
+
+        Assert.Equal(["selected 1"], events);
+        Assert.Equal("Map panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
+    [Fact]
     public void Render_ShouldMakeTheFirstEnabledTabReachable_WhenTheSelectedTabIsDisabled()
     {
         var cut = RenderTabs(active: 0, disabledIndex: 0);
@@ -571,6 +649,15 @@ public class TbTabsTests : BunitContext
         Assert.Equal("details", cut.Find("[role=tab]").Id);
         Assert.Equal("details", cut.Find("[role=tabpanel]").GetAttribute("aria-labelledby"));
     }
+
+    private static RenderFragment HeaderClassTab(string? headerClass) => builder =>
+    {
+        builder.OpenComponent<TbTab>(0);
+        builder.AddAttribute(1, nameof(TbTab.Text), "Leader");
+        builder.AddAttribute(2, nameof(TbTab.HeaderClass), headerClass);
+        builder.AddAttribute(3, nameof(TbTab.ChildContent), (RenderFragment)(panel => panel.AddContent(0, "Name")));
+        builder.CloseComponent();
+    };
 
     private static RenderFragment SpecsTab(string id) => builder =>
     {

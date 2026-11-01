@@ -869,6 +869,11 @@ a:focus-visible {
     }
 }
 
+/* The tabs example marks a tab whose fields need attention. */
+.tb-tabs__tab.docs-tab-attention {
+    color: var(--tb-color-danger-text);
+}
+
 #blazor-error-ui {
     display: none;
     position: fixed;

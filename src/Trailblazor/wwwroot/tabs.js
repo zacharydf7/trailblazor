@@ -1,5 +1,6 @@
-// The arrow keys, Home and End move focus between enabled tabs; with automatic activation they also select it.
-// The headers follow the order in which tabs register, so the tabs' order in the markup is reported to `order`.
+// The arrow keys, Home and End move focus between enabled tabs; with automatic activation they also select it, through
+// `order` rather than a click, so the tab's OnClick hears only clicks. The headers follow the order in which tabs
+// register, so the tabs' order in the markup is reported to `order` too.
 export function attachTabs(list, order) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!list) {
@@ -30,7 +31,7 @@ export function attachTabs(list, order) {
         event.preventDefault();
         next.focus();
         if (list.dataset.activation === 'automatic') {
-            next.click();
+            order.invokeMethodAsync('OnSelect', next.id);
         }
     };
 

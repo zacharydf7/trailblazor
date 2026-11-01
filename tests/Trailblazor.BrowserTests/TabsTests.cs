@@ -323,4 +323,44 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     // A tab with no line has no shadow, or the see-through one it keeps for the line to fade in.
     private static readonly Regex NoLine = new(@"^(none|rgba\(0, 0, 0, 0\).*)$");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldCheckEveryPanelsFieldsAndNameTheTabsToFix_WhenRenderAllPanelsIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        var plan = page.GetByRole(AriaRole.Tablist, new() { Name = "Trip plan" });
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save trip" });
+
+        await page.GetByLabel("Leader's name").FillAsync("Ada");
+        await save.ClickAsync();
+        await plan.GetByRole(AriaRole.Tab, new() { Name = "Itinerary (needs attention)" }).ClickAsync();
+        await Expect(page.GetByText("Saved")).ToHaveCountAsync(0);
+        await page.GetByRole(AriaRole.Tabpanel, new() { Name = "Itinerary" }).GetByRole(AriaRole.Textbox)
+            .FillAsync("Pine Hollow");
+        await save.ClickAsync();
+
+        await Expect(page.GetByText("Saved Ada's trip on Pine Hollow.")).ToBeVisibleAsync();
+        await Expect(plan.GetByRole(AriaRole.Tab, new() { Name = "Leader", Exact = true })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tab_ShouldRaiseItsOnClickForClicksButNotArrowKeys_WhenItsHeaderIsClickedEvenWhileSelected(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        var plan = page.GetByRole(AriaRole.Tablist, new() { Name = "Trip plan" });
+        var map = plan.GetByRole(AriaRole.Tab, new() { Name = "Map" });
+        await Expect(plan).ToHaveAttributeAsync("data-ready", "");
+
+        await map.ClickAsync();
+        await map.ClickAsync();
+        await map.PressAsync("Enter");
+        await map.PressAsync("ArrowLeft");
+        await Expect(plan.GetByRole(AriaRole.Tab, new() { Name = "Itinerary" })).ToHaveAttributeAsync("aria-selected",
+            "true");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(map).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByText("Map refreshed 3 times.")).ToBeVisibleAsync();
+    }
 }
