@@ -4647,7 +4647,7 @@
         overflow-y: auto;
     }
 
-    .tb-tree--virtual .tb-tree__item {
+    .tb-tree--virtual > .tb-tree__item {
         flex: none;
         box-sizing: border-box;
         block-size: var(--tb-tree-row-size);
@@ -4675,11 +4675,11 @@
     }
 
     .tb-tree__item[aria-disabled="true"]:not(.tb-tree__item--status),
-    .tb-tree--disabled .tb-tree__item {
+    .tb-tree--disabled > .tb-tree__item {
         color: var(--tb-color-text-disabled);
     }
 
-    .tb-tree__item--match .tb-tree__text {
+    .tb-tree__item--match > .tb-tree__content > .tb-tree__text {
         font-weight: var(--tb-font-weight-medium);
     }
 
@@ -4703,7 +4703,7 @@
         transform: scaleX(-1);
     }
 
-    .tb-tree__item[aria-expanded="true"] .tb-tree__chevron {
+    .tb-tree__item[aria-expanded="true"] > .tb-tree__toggle > .tb-tree__chevron {
         transform: rotate(90deg);
     }
 
@@ -4835,7 +4835,7 @@
     }
 
     /* While a drag runs, the slots let the pointer through to the rows. */
-    .tb-tree[data-dragging] .tb-tree__insert {
+    .tb-tree[data-dragging] > .tb-tree__item > .tb-tree__insert {
         pointer-events: none;
     }
 

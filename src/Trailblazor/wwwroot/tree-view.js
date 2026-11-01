@@ -12,9 +12,12 @@ export function createTreeView(tree, events) {
     }
 
     const typing = createTypeahead();
-    const rows = () => [...tree.querySelectorAll('[role="treeitem"][data-key]')];
+    // A tree inside one of this tree's rows has rows, keys and drags of its own.
+    const owns = element => element.closest('[role="tree"]') === tree;
+    const own = selector => [...tree.querySelectorAll(selector)].filter(owns);
+    const rows = () => own('[role="treeitem"][data-key]');
     // The arrows also reach a branch's loading or failed row, which has no key of its own.
-    const stops = () => [...tree.querySelectorAll('[role="treeitem"]')];
+    const stops = () => own('[role="treeitem"]');
     const statusRow = '[role="treeitem"]:is([data-part="loading"], [data-part="failed"])';
     const ownerOf = row => {
         const list = stops();
@@ -35,8 +38,8 @@ export function createTreeView(tree, events) {
     // Only the tab stop's own end-slot controls are in the tab order, so the tree stays one stop and Tab from a row
     // reaches its actions.
     const syncEnds = () => {
-        const stop = tree.querySelector('[role="treeitem"][tabindex="0"]');
-        tree.querySelectorAll(':is([data-part="end"], [data-part="insert"], [data-part="failed"]) '
+        const stop = own('[role="treeitem"][tabindex="0"]')[0];
+        own(':is([data-part="end"], [data-part="insert"], [data-part="failed"]) '
             + ':is(a[href], button, input, select, textarea, [tabindex])')
             .forEach(control => {
                 // Writing only real changes keeps the observer below from hearing its own writes forever.
@@ -47,7 +50,7 @@ export function createTreeView(tree, events) {
             });
     };
     const makeStop = target => {
-        tree.querySelectorAll('[role="treeitem"][tabindex="0"]').forEach(other => { other.tabIndex = -1; });
+        own('[role="treeitem"][tabindex="0"]').forEach(other => { other.tabIndex = -1; });
         target.tabIndex = 0;
         syncEnds();
     };
@@ -60,7 +63,7 @@ export function createTreeView(tree, events) {
     let order = '';
     // Blazor moves a keyed tree item's markup without telling the tree, so the order goes to the server on a change.
     const reportOrder = () => {
-        const ids = [...tree.querySelectorAll('[data-tree-item]')].map(item => item.dataset.treeItem);
+        const ids = own('[data-tree-item]').map(item => item.dataset.treeItem);
         if (ids.join() !== order) {
             order = ids.join();
             events.invokeMethodAsync('OnItemOrder', ids);
@@ -97,6 +100,10 @@ export function createTreeView(tree, events) {
     });
     // Every way focus reaches a row, a click included, makes it the tree's one tab stop.
     const onFocusIn = event => {
+        if (!owns(event.target)) {
+            return;
+        }
+
         const row = event.target.closest(statusRow);
         focusedStatus = row && { row, owner: ownerOf(row) };
         if (event.target.matches('[role="treeitem"][data-key]')) {
@@ -110,7 +117,7 @@ export function createTreeView(tree, events) {
         // Keys pressed in a row's own controls, such as a field in its end slot, are theirs.
         const current = event.target;
         const status = current.matches(statusRow);
-        if (!current.matches('[role="treeitem"][data-key]') && !status) {
+        if ((!current.matches('[role="treeitem"][data-key]') && !status) || !owns(current)) {
             return;
         }
 
@@ -239,11 +246,11 @@ export function createTreeView(tree, events) {
 
     // A drag drops before, after or inside the row under the pointer, by where on the row it is; the server says
     // whether it may, and a refusal shows its reason beside the row.
-    const reason = tree.querySelector('[data-part="drop-reason"]');
+    const reason = own('[data-part="drop-reason"]')[0];
     let sources = [];
     let over = null;
     const clearDrop = () => {
-        tree.querySelectorAll('[data-drop]').forEach(row => {
+        own('[data-drop]').forEach(row => {
             delete row.dataset.drop;
             delete row.dataset.dropRefused;
         });
@@ -270,6 +277,7 @@ export function createTreeView(tree, events) {
     const selected = row => row.getAttribute('aria-selected') === 'true';
     const pointerDrag = createPointerDrag(tree, {
         itemSelector: '[role="treeitem"][data-draggable]',
+        ownsPress: owns,
         ignoreSelector: ':is([data-part="toggle"], [data-part="check"], [data-part="end"], [data-part="insert"])',
         // Dragging a selected row moves every selected row that can move. While it runs, the insert slots on the
         // rows' edges let the pointer through to the rows.
@@ -282,7 +290,7 @@ export function createTreeView(tree, events) {
         onMove: event => {
             let row = document.elementFromPoint(event.clientX, event.clientY)
                 ?.closest('[role="treeitem"][data-key]');
-            if (!row || !tree.contains(row) || sources.includes(row)) {
+            if (!row || !owns(row) || sources.includes(row)) {
                 clearDrop();
                 return;
             }

@@ -1390,6 +1390,8 @@ public static class ExampleCatalog
                 "A `TbTreeItem` with no `Value`, such as the Trips heading, opens, closes and is found by typing, but "
                     + "can't be selected or activated, so it has no `aria-selected`. With cascading checks it checks "
                     + "the rows inside it, and it is never in the bound keys, so texts that repeat need no keys.",
+                "A tree inside another tree's row is a tree of its own: its rows take their own keys, focus, clicks and "
+                    + "drags, the outer tree's arrows pass over them, and the outer row isn't selected by them.",
                 "With `OnDrop`, rows move by dragging with a mouse, pen or finger (a finger holds still for a moment "
                     + "first, so a swipe still scrolls), or with Alt+Shift and the arrows: Up and Down past a "
                     + "neighbor, Right into the row above, Left out of the parent. Each movable row is described by "

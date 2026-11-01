@@ -4,7 +4,9 @@
 @typeparam TKey where TKey : notnull
 @inherits TbComponentBase
 
-@* The rows are flat, each saying its own level, so a row keeps its element and state wherever the tree changes. *@
+@* The rows are flat, each saying its own level, so a row keeps its element and state wherever the tree changes. The
+   scope covers the rows too, so a tree inside a row knows it is nested. *@
+<CascadingValue Value="Scope" IsFixed="true">
 <div @ref="_tree" @attributes="AdditionalAttributes" role="tree" aria-label="@AriaLabel"
      aria-multiselectable="@(SelectionMode == SelectionMode.Multiple ? "true" : null)"
      aria-disabled="@(Disabled ? "true" : null)" data-ready="@(_handle is null ? null : "")"
@@ -12,19 +14,18 @@
      data-row-size="@(Virtualize ? RowSize : null)"
      style="@(Virtualize ? Styles.Join($"--tb-tree-row-size: {RowSize}px", Style) : Style)"
      class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null,
-                Virtualize ? "tb-tree--virtual" : null, Class)">
+                Virtualize ? "tb-tree--virtual" : null, Class)"
+     @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
     @if (ChildContent is not null)
     {
-        <CascadingValue Value="Scope" IsFixed="true">
-            @if (RendererInfo.IsInteractive)
-            {
-                <div hidden data-part="items">@ChildContent</div>
-            }
-            else
-            {
-                @ChildContent
-            }
-        </CascadingValue>
+        @if (RendererInfo.IsInteractive)
+        {
+            <div hidden data-part="items">@ChildContent</div>
+        }
+        else
+        {
+            @ChildContent
+        }
     }
     @if (_rows.Count == 0 && (ChildContent is null || _itemsRegistered))
     {
@@ -172,6 +173,7 @@
         }
     }
 </div>
+</CascadingValue>
 
 @code {
     // Numbers the rows' name parts in each render, since a row's key needn't make a valid id.

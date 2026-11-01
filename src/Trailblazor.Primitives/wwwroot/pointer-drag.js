@@ -6,7 +6,8 @@ const holdForTouch = 300;
 const edge = 32;
 const scrollStep = 12;
 
-export function createPointerDrag(container, { itemSelector, ignoreSelector, onStart, onMove, onDrop, onCancel }) {
+export function createPointerDrag(container,
+    { itemSelector, ignoreSelector, ownsPress = () => true, onStart, onMove, onDrop, onCancel }) {
     let pending = null;
     let drag = null;
     // Set when a drag ends, so the click that may follow doesn't also act on the row. That click comes before a timer
@@ -57,7 +58,7 @@ export function createPointerDrag(container, { itemSelector, ignoreSelector, onS
     const onPointerDown = event => {
         justDragged = false;
         const item = event.target.closest?.(itemSelector);
-        if (event.button !== 0 || !event.isPrimary || !item || !container.contains(item)
+        if (event.button !== 0 || !event.isPrimary || !item || !container.contains(item) || !ownsPress(event.target)
             || (ignoreSelector && event.target.closest(ignoreSelector))) {
             return;
         }

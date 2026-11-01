@@ -361,6 +361,12 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private TreeScope<TItem> Scope => _scope ??= new(this, null);
 
+    // Set for a tree inside another tree's row, whose clicks mustn't also select that row.
+    [CascadingParameter]
+    private ITreeScope? Enclosing { get; set; }
+
+    private bool Nested => Enclosing is not null;
+
     // A declared row with no value is keyed by its TbTreeItem, which stays inside the tree and out of the bound keys.
     private static bool HasValue(TreeNode<TItem> node) => node.Key is not TbTreeItem<TItem>;
 

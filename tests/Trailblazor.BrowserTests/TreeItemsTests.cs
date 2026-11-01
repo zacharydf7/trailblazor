@@ -67,6 +67,47 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NestedTree_ShouldKeepItsKeysAndClicksToItself_WhenInsideAnotherTreesRow(string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var outline = page.GetByRole(AriaRole.Tree, new() { Name = "Outline" });
+        var sections = page.GetByRole(AriaRole.Tree, new() { Name = "Sections" });
+        await Expect(sections).ToHaveAttributeAsync("data-ready", "");
+        var intro = sections.Locator("[role=treeitem][data-text='Intro']");
+
+        var body = sections.Locator("[role=treeitem][data-text='Body']");
+        // The open Chapter row around the inner tree mustn't turn the inner tree's closed chevrons.
+        await Expect(outline.Locator("[role=treeitem][data-text='Chapter']")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(body.Locator(".tb-tree__chevron")).ToHaveCSSAsync("transform", "none");
+
+        await intro.ClickAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(body).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(sections.Locator("[role=treeitem][data-text='Detail']")).ToBeVisibleAsync();
+        await Expect(page.GetByTestId("sections")).ToHaveTextAsync("intro");
+        await Expect(page.GetByTestId("outline")).ToHaveTextAsync("");
+        // A press on an inner row, which can't be dragged, mustn't drag the outer row it sits in.
+        var box = (await intro.BoundingBoxAsync())!;
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2 + 30, new() { Steps = 5 });
+        await Expect(outline).Not.ToHaveAttributeAsync("data-dragging", "");
+        await page.Mouse.UpAsync();
+        // Focus in the inner tree leaves the outer tree's tab stop on its own row.
+        await Expect(outline.Locator("[role=treeitem][data-text='Part one']")).ToHaveAttributeAsync("tabindex", "0");
+        await outline.Locator("[role=treeitem][data-text='Page']").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(outline.Locator("[role=treeitem][data-text='Chapter']")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+
+        await Expect(outline.Locator("[role=treeitem][data-text='Part one']")).ToBeFocusedAsync();
+        var result = await page.RunAxe(AxeTests.WcagAA);
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TreeItems_ShouldHaveNoAccessibilityViolations_WhenOpen(string browser)
     {
         var page = await OpenItemsAsync(browser);

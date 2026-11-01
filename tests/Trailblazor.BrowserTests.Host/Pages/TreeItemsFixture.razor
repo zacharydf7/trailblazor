@@ -25,6 +25,29 @@
         }
     </TbTreeView>
     <TbButton OnClick="() => _trails.Reverse()">Reverse</TbButton>
+    @* A heading with no value, and a row that holds a tree of its own. *@
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Outline" InitialExpandDepth="2"
+                @bind-SelectedKeys="_outline" OnDrop="(TreeDrop<string> _) => { }">
+        <TbTreeItem Text="Part one">
+            <TbTreeItem Value="@("chapter")" Text="Chapter">
+                <TextContent>
+                    Chapter
+                    <TbTreeView TItem="string" TKey="string" AriaLabel="Sections" @bind-SelectedKeys="_sections">
+                        <TbTreeItem Value="@("intro")" Text="Intro" />
+                        <TbTreeItem Value="@("body")" Text="Body">
+                            <TbTreeItem Value="@("detail")" Text="Detail" />
+                        </TbTreeItem>
+                    </TbTreeView>
+                </TextContent>
+                <ChildContent>
+                    <TbTreeItem Value="@("page")" Text="Page" />
+                </ChildContent>
+            </TbTreeItem>
+        </TbTreeItem>
+        <TbTreeItem Value="@("appendix")" Text="Appendix" />
+    </TbTreeView>
+    <output data-testid="outline">@string.Join(", ", _outline)</output>
+    <output data-testid="sections">@string.Join(", ", _sections)</output>
 </TbStack>
 
 @code {
@@ -32,4 +55,6 @@
     private IReadOnlyCollection<string> _checked = [];
     private bool _notes;
     private readonly List<string> _trails = ["Pine Hollow", "Eagle Ridge", "Cedar Flats"];
+    private IReadOnlyCollection<string> _outline = [];
+    private IReadOnlyCollection<string> _sections = [];
 }

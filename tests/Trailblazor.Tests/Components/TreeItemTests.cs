@@ -341,6 +341,28 @@ public class TreeItemTests : BunitContext
     }
 
     [Fact]
+    public void TreeItem_ShouldSelectOnlyTheInnerRow_WhenARowOfATreeInsideItIsClicked()
+    {
+        List<IReadOnlyCollection<string>> inner = [];
+        RenderFragment sections = builder =>
+        {
+            builder.OpenComponent<TbTreeView<string, string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeView<string, string>.AriaLabel), "Sections");
+            builder.AddComponentParameter(2, nameof(TbTreeView<string, string>.SelectedKeysChanged),
+                EventCallback.Factory.Create<IReadOnlyCollection<string>>(this, keys => inner.Add(keys)));
+            builder.AddComponentParameter(3, nameof(TbTreeView<string, string>.ChildContent),
+                Fragment([new Row("intro")], null));
+            builder.CloseComponent();
+        };
+        var cut = RenderFiles([new Row("chapter")], content: value => value == "chapter" ? sections : text => text.AddContent(0, value));
+
+        cut.Find("[aria-label=Sections] [data-key=intro]").Click();
+
+        Assert.Equal([["intro"]], inner);
+        Assert.Empty(_selectedChanges);
+    }
+
+    [Fact]
     public void Tree_ShouldThrow_WhenGivenItemsAndTreeItems()
     {
         var exception = Assert.Throws<InvalidOperationException>(() => RenderFiles(Docs,
