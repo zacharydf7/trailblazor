@@ -1,4 +1,17 @@
 #nullable enable
+override Trailblazor.Testing.BrowserFile.Equals(object? obj) -> bool
+override Trailblazor.Testing.BrowserFile.GetHashCode() -> int
+override Trailblazor.Testing.BrowserFile.ToString() -> string!
+override Trailblazor.Testing.ScrollRequest.Equals(object? obj) -> bool
+override Trailblazor.Testing.ScrollRequest.GetHashCode() -> int
+override Trailblazor.Testing.ScrollRequest.ToString() -> string!
+static Trailblazor.Testing.BrowserFile.operator !=(Trailblazor.Testing.BrowserFile? left, Trailblazor.Testing.BrowserFile? right) -> bool
+static Trailblazor.Testing.BrowserFile.operator ==(Trailblazor.Testing.BrowserFile? left, Trailblazor.Testing.BrowserFile? right) -> bool
+static Trailblazor.Testing.ScrollRequest.operator !=(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
+static Trailblazor.Testing.ScrollRequest.operator ==(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
+static Trailblazor.Testing.TrailblazorBunitExtensions.AddTrailblazor(this Bunit.BunitContext! context, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Bunit.BunitContext!
+static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.BunitContext! context, string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
+static Trailblazor.Testing.TrailblazorMarkupExtensions.Tb<TComponent>(this Bunit.IRenderedComponent<TComponent>! rendered) -> Trailblazor.Testing.TrailblazorMarkup!
 Trailblazor.Testing.BrowserFile
 Trailblazor.Testing.BrowserFile.<Clone>$() -> Trailblazor.Testing.BrowserFile!
 Trailblazor.Testing.BrowserFile.BrowserFile(string! FileName, string? ContentType, byte[]! Content) -> void
@@ -12,13 +25,13 @@ Trailblazor.Testing.BrowserFile.FileName.get -> string!
 Trailblazor.Testing.BrowserFile.FileName.init -> void
 Trailblazor.Testing.BrowserFile.Text.get -> string!
 Trailblazor.Testing.FakeBrowserService
+Trailblazor.Testing.FakeBrowserService.CancelsSave.get -> bool
+Trailblazor.Testing.FakeBrowserService.CancelsSave.set -> void
 Trailblazor.Testing.FakeBrowserService.CanCopy.get -> bool
 Trailblazor.Testing.FakeBrowserService.CanCopy.set -> void
 Trailblazor.Testing.FakeBrowserService.CanPickColor.get -> bool
 Trailblazor.Testing.FakeBrowserService.CanPickColor.set -> void
 Trailblazor.Testing.FakeBrowserService.CanPickColorAsync() -> System.Threading.Tasks.Task<bool>!
-Trailblazor.Testing.FakeBrowserService.CancelsSave.get -> bool
-Trailblazor.Testing.FakeBrowserService.CancelsSave.set -> void
 Trailblazor.Testing.FakeBrowserService.Copied.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.FakeBrowserService.CopyTextAsync(string! text) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.FakeBrowserService.DownloadAsync(System.IO.Stream! content, string! fileName, string? contentType = null) -> System.Threading.Tasks.Task!
@@ -33,9 +46,23 @@ Trailblazor.Testing.FakeBrowserService.PickedColor.set -> void
 Trailblazor.Testing.FakeBrowserService.ResizeAsync(int width, int height) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.FakeBrowserService.SaveAsync(System.IO.Stream! content, string! fileName, string? contentType = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.FakeBrowserService.Saves.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Testing.BrowserFile!>!
-Trailblazor.Testing.FakeBrowserService.ScrollIntoViewAsync(Microsoft.AspNetCore.Components.ElementReference element, Trailblazor.ScrollAlignment alignment = Trailblazor.ScrollAlignment.Nearest, bool smooth = false) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.FakeBrowserService.ScrolledTo.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Testing.ScrollRequest!>!
+Trailblazor.Testing.FakeBrowserService.ScrollIntoViewAsync(Microsoft.AspNetCore.Components.ElementReference element, Trailblazor.ScrollAlignment alignment = Trailblazor.ScrollAlignment.Nearest, bool smooth = false) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.FakeBrowserService.Viewport.get -> Trailblazor.Viewport!
+Trailblazor.Testing.FakeDialogService
+Trailblazor.Testing.FakeDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info, string? telemetryName = null) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.FakeDialogService.Answer.get -> System.Func<Trailblazor.DialogReference!, bool?>?
+Trailblazor.Testing.FakeDialogService.Answer.set -> void
+Trailblazor.Testing.FakeDialogService.CloseAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.FakeDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.FakeDialogService.Last<TDialog, TResult>() -> Trailblazor.DialogReference<TResult>!
+Trailblazor.Testing.FakeDialogService.LastConfirm() -> Trailblazor.DialogReference<bool>!
+Trailblazor.Testing.FakeDialogService.OpenDialogs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
+Trailblazor.Testing.FakeDialogService.Opened.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
+Trailblazor.Testing.FakeDialogService.Show<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
+Trailblazor.Testing.FakeDialogService.ShowAsync<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.Testing.FakeDialogService.ShowDynamic<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
+Trailblazor.Testing.FakeDialogService.ShowDynamicAsync<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
 Trailblazor.Testing.ScrollRequest
 Trailblazor.Testing.ScrollRequest.<Clone>$() -> Trailblazor.Testing.ScrollRequest!
 Trailblazor.Testing.ScrollRequest.Alignment.get -> Trailblazor.ScrollAlignment
@@ -62,6 +89,14 @@ Trailblazor.Testing.TbTabsDriver
 Trailblazor.Testing.TbTabsDriver.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTabsDriver.Selected.get -> string?
 Trailblazor.Testing.TbTabsDriver.Tabs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbTreeDriver
+Trailblazor.Testing.TbTreeDriver.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.ExpandAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.Item(params string![]! path) -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbTreeDriver.Items(params string![]! path) -> System.Collections.Generic.IReadOnlyList<AngleSharp.Dom.IElement!>!
+Trailblazor.Testing.TbTreeDriver.SelectAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.Texts.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TestDialog<TDialog, TResult>
 Trailblazor.Testing.TestDialog<TDialog, TResult>.Content.get -> Bunit.IRenderedComponent<TDialog!>!
 Trailblazor.Testing.TestDialog<TDialog, TResult>.Reference.get -> Trailblazor.DialogReference<TResult>!
@@ -72,27 +107,5 @@ Trailblazor.Testing.TrailblazorMarkup.ListBox(string! label) -> Trailblazor.Test
 Trailblazor.Testing.TrailblazorMarkup.NumberField(string! label) -> Trailblazor.Testing.TbNumberFieldDriver!
 Trailblazor.Testing.TrailblazorMarkup.Select(string! label) -> Trailblazor.Testing.TbSelectDriver!
 Trailblazor.Testing.TrailblazorMarkup.Tabs(string? name = null) -> Trailblazor.Testing.TbTabsDriver!
-Trailblazor.Testing.TrailblazorMarkupExtensions
-override Trailblazor.Testing.BrowserFile.Equals(object? obj) -> bool
-override Trailblazor.Testing.BrowserFile.GetHashCode() -> int
-override Trailblazor.Testing.BrowserFile.ToString() -> string!
-override Trailblazor.Testing.ScrollRequest.Equals(object? obj) -> bool
-override Trailblazor.Testing.ScrollRequest.GetHashCode() -> int
-override Trailblazor.Testing.ScrollRequest.ToString() -> string!
-static Trailblazor.Testing.BrowserFile.operator !=(Trailblazor.Testing.BrowserFile? left, Trailblazor.Testing.BrowserFile? right) -> bool
-static Trailblazor.Testing.BrowserFile.operator ==(Trailblazor.Testing.BrowserFile? left, Trailblazor.Testing.BrowserFile? right) -> bool
-static Trailblazor.Testing.ScrollRequest.operator !=(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
-static Trailblazor.Testing.ScrollRequest.operator ==(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
-static Trailblazor.Testing.TrailblazorBunitExtensions.AddTrailblazor(this Bunit.BunitContext! context, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Bunit.BunitContext!
-static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.BunitContext! context, string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
-static Trailblazor.Testing.TrailblazorMarkupExtensions.Tb<TComponent>(this Bunit.IRenderedComponent<TComponent>! rendered) -> Trailblazor.Testing.TrailblazorMarkup!
 Trailblazor.Testing.TrailblazorMarkup.Tree(string? name = null) -> Trailblazor.Testing.TbTreeDriver!
-Trailblazor.Testing.TbTreeDriver
-Trailblazor.Testing.TbTreeDriver.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.TbTreeDriver.ExpandAllAsync() -> System.Threading.Tasks.Task!
-Trailblazor.Testing.TbTreeDriver.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.TbTreeDriver.Item(params string![]! path) -> AngleSharp.Dom.IElement!
-Trailblazor.Testing.TbTreeDriver.Items(params string![]! path) -> System.Collections.Generic.IReadOnlyList<AngleSharp.Dom.IElement!>!
-Trailblazor.Testing.TbTreeDriver.SelectAsync(params string![]! path) -> System.Threading.Tasks.Task!
-
-Trailblazor.Testing.TbTreeDriver.Texts.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TrailblazorMarkupExtensions

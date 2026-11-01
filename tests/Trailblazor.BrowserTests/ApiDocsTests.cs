@@ -26,7 +26,8 @@ public class ApiDocsTests
         var dialogs = ApiDocs.Describe(typeof(IDialogService)).Members;
 
         Assert.Equal(["Title { get; set; }", "Options { get; }", "Modal { get; set; }", "Size { get; set; }",
-            "Position { get; set; }", "WindowState { get; set; }", "Result { get; }", "CancelAsync()",
+            "Position { get; set; }", "WindowState { get; set; }", "ContentType { get; }", "Parameters { get; }",
+            "Result { get; }", "CancelAsync()",
             "CloseAsync(TResult? value)", "Update<TDialog>(Action<DialogParameters<TDialog>> parameters)"],
             reference.Select(member => member.Name));
         Assert.Contains(dialogs, member => member.Name.StartsWith("Show<TDialog, TResult>(string title,",

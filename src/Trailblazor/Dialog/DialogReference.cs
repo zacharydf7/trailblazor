@@ -16,7 +16,7 @@ public abstract class DialogReference
     {
         _title = title;
         Options = options;
-        Component = component;
+        ContentType = component;
         Parameters = parameters;
         IsAlert = isAlert;
         _close = close;
@@ -95,10 +95,14 @@ public abstract class DialogReference
     // A minimized modal leaves the page usable, so it counts as modeless until it is restored.
     internal bool IsBlocking => _modal && _windowState != DialogWindowState.Minimized;
 
-    // Null for a TbDialog written in markup, which renders its own content where it is.
-    internal Type? Component { get; }
+    /// <summary>The content the dialog shows, the <c>TDialog</c> it was opened with, or null for a
+    /// <see cref="TbDialog"/> written in markup, which renders its own content where it is.</summary>
+    public Type? ContentType { get; }
 
-    internal IReadOnlyDictionary<string, object?> Parameters { get; }
+    /// <summary>The content's parameters by name, as the dialog was opened with them and as
+    /// <see cref="DialogReference{TResult}.Update{TDialog}"/> has set them since. A confirm or alert has its
+    /// <c>Message</c> here.</summary>
+    public IReadOnlyDictionary<string, object?> Parameters { get; private set; }
 
     // An alert dialog asks for a response, and its message, rendered with DescriptionId, describes it.
     internal bool IsAlert { get; }
@@ -162,8 +166,17 @@ public abstract class DialogReference
         Changed?.Invoke();
     }
 
-    private protected void UpdateParameters(IReadOnlyDictionary<string, object?> parameters) =>
+    private protected void UpdateParameters(IReadOnlyDictionary<string, object?> parameters)
+    {
+        var merged = new Dictionary<string, object?>(Parameters);
+        foreach (var (name, value) in parameters)
+        {
+            merged[name] = value;
+        }
+
+        Parameters = merged;
         ParametersChanged?.Invoke(parameters);
+    }
 
     // Set by the rendered dialog, so closing first closes the browser's dialog and focus goes back to the opener.
     internal Func<Task>? CloseInBrowserAsync { get; set; }
@@ -227,10 +240,10 @@ public sealed class DialogReference<TResult> : DialogReference
     /// <typeparamref name="TDialog"/> is the dialog it was opened with.</summary>
     public void Update<TDialog>(Action<DialogParameters<TDialog>> parameters) where TDialog : TbDialogContent<TResult>
     {
-        if (Component != typeof(TDialog))
+        if (ContentType != typeof(TDialog))
         {
             throw new InvalidOperationException(
-                $"This dialog shows {Component?.Name ?? "markup"}, not {typeof(TDialog).Name}.");
+                $"This dialog shows {ContentType?.Name ?? "markup"}, not {typeof(TDialog).Name}.");
         }
 
         var values = new DialogParameters<TDialog>();

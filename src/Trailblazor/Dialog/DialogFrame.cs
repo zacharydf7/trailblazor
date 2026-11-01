@@ -74,7 +74,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.OpenComponent<CascadingValue<DialogReference>>(33);
         builder.AddComponentParameter(34, "Value", Dialog);
         builder.AddComponentParameter(35, "IsFixed", true);
-        builder.AddComponentParameter(36, "ChildContent", Dialog.Component is null ? ChildContent : (RenderFragment)(
+        builder.AddComponentParameter(36, "ChildContent", Dialog.ContentType is null ? ChildContent : (RenderFragment)(
             content =>
             {
                 content.OpenComponent<DialogContent>(0);

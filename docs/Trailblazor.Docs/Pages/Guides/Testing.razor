@@ -46,6 +46,17 @@
     don't render one of your own as well.
 </TbText>
 <CodeBlock Label="Testing a dialog in bUnit" Code="@BunitDialog" />
+<TbText>
+    To test a page that opens dialogs, get the <code>FakeDialogService</code> from <code>Services</code>;
+    <code>AddTrailblazor()</code> makes it the <code>IDialogService</code>. Dialogs open as they otherwise would, and
+    it records each one opened through the service in <code>Opened</code>, with its <code>Title</code>,
+    <code>ContentType</code> and <code>Parameters</code>. <code>Last&lt;TDialog, TResult&gt;()</code> finds the last
+    one of a type, and <code>LastConfirm()</code> the last confirm or alert, to check and close. A click whose handler
+    awaits a dialog finishes only once the dialog closes, so start the click, close the dialog, then await the click.
+    Set <code>Answer</code> to answer each confirm and alert as it opens: true confirms, false cancels, and null leaves
+    it open.
+</TbText>
+<CodeBlock Label="Checking the dialogs a page opens" Code="@FakeDialogs" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Playwright</TbText>
 <TbText>
@@ -168,6 +179,20 @@
 
             Assert.Equal("Eagle Ridge", (await dialog.Reference.Result).Value);
         }
+        """;
+
+    private const string FakeDialogs = """
+        var dialogs = Services.GetRequiredService<FakeDialogService>();
+        var page = Render<TrailsPage>();
+
+        var click = page.Find("button.rename").ClickAsync(new());
+        var rename = dialogs.Last<RenameDialog, string>();
+        Assert.Equal("Pine Hollow", rename.Parameters[nameof(RenameDialog.Name)]);
+        await rename.CloseAsync("Eagle Ridge");
+        await click;
+
+        dialogs.Answer = confirm => confirm.Title == "Delete trail?";
+        await page.Find("button.delete").ClickAsync(new());
         """;
 
     private const string Playwright = """

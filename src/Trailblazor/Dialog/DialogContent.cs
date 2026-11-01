@@ -34,7 +34,7 @@ internal sealed class DialogContent : ComponentBase, IDisposable
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenComponent<DynamicComponent>(0);
-        builder.AddComponentParameter(1, nameof(DynamicComponent.Type), Dialog.Component);
+        builder.AddComponentParameter(1, nameof(DynamicComponent.Type), Dialog.ContentType);
         builder.AddComponentParameter(2, nameof(DynamicComponent.Parameters),
             _parameters.ToDictionary(pair => pair.Key, pair => pair.Value!));
         builder.CloseComponent();

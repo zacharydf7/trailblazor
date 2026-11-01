@@ -17,7 +17,7 @@ internal sealed class DialogHost : ComponentBase, IDisposable
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        foreach (var dialog in Dialogs.OpenDialogs.Where(dialog => dialog.Component is not null))
+        foreach (var dialog in Dialogs.OpenDialogs.Where(dialog => dialog.ContentType is not null))
         {
             builder.OpenComponent<DialogFrame>(0);
             builder.SetKey(dialog);

@@ -620,6 +620,18 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void Reference_ShouldTellItsContentAndParameters_WhenOpenedAndUpdated()
+    {
+        var dialog = Dialogs.Show<EditableDialog, bool>("Edit", p => p.Set(d => d.Name, "Ada").Set(d => d.Note, "new"));
+
+        dialog.Update<EditableDialog>(p => p.Set(d => d.Note, "taken"));
+
+        Assert.Equal(typeof(EditableDialog), dialog.ContentType);
+        Assert.Equal([("Name", "Ada"), ("Note", "taken")],
+            dialog.Parameters.OrderBy(pair => pair.Key).Select(pair => (pair.Key, pair.Value as string)));
+    }
+
+    [Fact]
     public async Task Update_ShouldKeepAParameterTheDialogChanged_WhenTheUpdateNamesAnother()
     {
         var host = Render<DialogHost>();

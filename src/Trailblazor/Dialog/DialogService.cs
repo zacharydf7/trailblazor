@@ -75,7 +75,15 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         ShowDynamic<TResult>(dialog, title, parameters, options).Result;
 
     public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
-        string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null)
+        string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null) =>
+        (await OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName).Result).Confirmed;
+
+    public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
+        string? telemetryName = null) => await OpenAlert(title, message, okText, tone, telemetryName).Result;
+
+    // The dialogs behind ConfirmAsync and AlertAsync, which FakeDialogService records and answers.
+    internal DialogReference<bool> OpenConfirm(string title, string message, string? confirmText, string? cancelText,
+        Tone tone, string? telemetryName)
     {
         var parameters = new Dictionary<string, object?>
         {
@@ -84,13 +92,12 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.CancelText)] = cancelText ?? localizer[TbStrings.DialogCancel],
             [nameof(ConfirmDialog.Tone)] = tone,
         };
-        var dialog = Open<bool>(title, typeof(ConfirmDialog), parameters,
+        return Open<bool>(title, typeof(ConfirmDialog), parameters,
             new() { Size = DialogSize.Small, TelemetryName = telemetryName }, isAlert: true);
-        return (await dialog.Result).Confirmed;
     }
 
-    public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
-        string? telemetryName = null)
+    internal DialogReference<bool> OpenAlert(string title, string message, string? okText, Tone tone,
+        string? telemetryName)
     {
         var parameters = new Dictionary<string, object?>
         {
@@ -99,8 +106,8 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.Tone)] = tone,
             [nameof(ConfirmDialog.ShowIcon)] = true,
         };
-        await Open<bool>(title, typeof(ConfirmDialog), parameters,
-            new() { Size = DialogSize.Small, TelemetryName = telemetryName }, isAlert: true).Result;
+        return Open<bool>(title, typeof(ConfirmDialog), parameters,
+            new() { Size = DialogSize.Small, TelemetryName = telemetryName }, isAlert: true);
     }
 
     public async Task CloseAllAsync()
@@ -167,7 +174,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         telemetry.DialogClosed(name, ComponentOf(dialog), outcome, time.GetElapsedTime(dialog.OpenedAt));
     }
 
-    internal static Type ComponentOf(DialogReference dialog) => dialog.Component ?? typeof(TbDialog);
+    internal static Type ComponentOf(DialogReference dialog) => dialog.ContentType ?? typeof(TbDialog);
 
     private async Task CloseAsync(DialogReference dialog, bool confirmed, object? value)
     {

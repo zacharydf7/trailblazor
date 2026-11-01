@@ -2686,3 +2686,6 @@ static Trailblazor.TreeViewLabels.operator ==(Trailblazor.TreeViewLabels? left, 
 static Trailblazor.Viewport.operator !=(Trailblazor.Viewport? left, Trailblazor.Viewport? right) -> bool
 static Trailblazor.Viewport.operator ==(Trailblazor.Viewport? left, Trailblazor.Viewport? right) -> bool
 virtual Trailblazor.TbDialogContent<TResult>.CanDismissAsync(Trailblazor.DialogDismissReason reason) -> System.Threading.Tasks.Task<bool>!
+
+Trailblazor.DialogReference.ContentType.get -> System.Type?
+Trailblazor.DialogReference.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!

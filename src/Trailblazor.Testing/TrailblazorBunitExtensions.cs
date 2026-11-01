@@ -18,7 +18,8 @@ public static class TrailblazorBunitExtensions
     /// <summary>Registers Trailblazor's services and answers its JavaScript modules, so components render and respond
     /// to clicks in bUnit with no JSInterop setup. Calls into the modules return defaults, which Trailblazor's
     /// components take to mean the browser part isn't there. <see cref="IBrowserService"/> is a
-    /// <see cref="FakeBrowserService"/>, to check and steer from the test. A module or service set up by the test
+    /// <see cref="FakeBrowserService"/>, to check and steer from the test, and <see cref="IDialogService"/> is a
+    /// <see cref="FakeDialogService"/>, which records the dialogs opened. A module or service set up by the test
     /// itself still wins. Components render as on an interactive page: the renderer becomes an interactive Server one
     /// when the first component is created, unless the test has called <c>SetRendererInfo</c> itself, as it does to
     /// test what a static page shows; that call starts the services, so it comes after the test's own. The default is a
@@ -28,6 +29,8 @@ public static class TrailblazorBunitExtensions
     {
         context.Services.TryAddSingleton<FakeBrowserService>();
         context.Services.TryAddSingleton<IBrowserService>(provider => provider.GetRequiredService<FakeBrowserService>());
+        context.Services.TryAddScoped(provider => new FakeDialogService(provider.GetRequiredService<DialogService>()));
+        context.Services.TryAddScoped<IDialogService>(provider => provider.GetRequiredService<FakeDialogService>());
         context.Services.AddTrailblazor(configure);
         var modules = context.JSInterop.SetupModule(
             invocation => invocation.Arguments.FirstOrDefault() is string path

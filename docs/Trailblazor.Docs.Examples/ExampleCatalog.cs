@@ -1223,7 +1223,11 @@ public static class ExampleCatalog
                 + "and opens a dialog in one call, as the Testing guide shows. "
                 + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
-                + "finishes when the dialog closes. In Playwright, `page.Tb().Dialog(\"Delete report?\")` from "
+                + "finishes when the dialog closes, and whose `ContentType` and `Parameters` say what it shows. In "
+                + "bUnit, `FakeDialogService` records the dialogs opened through it, finds one with `Last<TDialog, "
+                + "TResult>()` or `LastConfirm()`, "
+                + "and answers confirms and alerts with `Answer`, as the Testing guide shows. In Playwright, "
+                + "`page.Tb().Dialog(\"Delete report?\")` from "
                 + "`Trailblazor.Testing.Playwright` finds a dialog by its title: `WaitForAsync()` returns it once "
                 + "open, `ChooseAsync(\"Delete\")` clicks a button and waits for it to close, and `CancelAsync()` "
                 + "presses Escape.",
