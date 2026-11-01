@@ -1387,6 +1387,9 @@ public static class ExampleCatalog
                 "In a right-to-left layout, Right and Left swap, as the chevrons do.",
                 "Rows written as nested `TbTreeItem`s work the same. Before the page is interactive, each renders a "
                     + "plain row, open to `InitialExpandDepth`.",
+                "A `TbTreeItem` with no `Value`, such as the Trips heading, opens, closes and is found by typing, but "
+                    + "can't be selected or activated, so it has no `aria-selected`. With cascading checks it checks "
+                    + "the rows inside it, and it is never in the bound keys, so texts that repeat need no keys.",
                 "With `OnDrop`, rows move by dragging with a mouse, pen or finger (a finger holds still for a moment "
                     + "first, so a swipe still scrolls), or with Alt+Shift and the arrows: Up and Down past a "
                     + "neighbor, Right into the row above, Left out of the parent. Each movable row is described by "

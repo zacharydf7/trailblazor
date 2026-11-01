@@ -6,7 +6,7 @@
 @if (RendererInfo.IsInteractive)
 {
     @* Hidden: the tree shows the rows, and this markup only gives the items' order. *@
-    <span data-tree-item="@_id"><CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue></span>
+    <span data-tree-item="@_id"><CascadingValue Value="Inner" IsFixed="true">@ChildContent</CascadingValue></span>
 }
 else
 {
@@ -20,17 +20,21 @@ else
     </div>
     @if (open)
     {
-        <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+        <CascadingValue Value="Inner" IsFixed="true">@ChildContent</CascadingValue>
     }
 }
 
 @code {
     private readonly string _id = $"tb-tree-item-{Guid.NewGuid():N}";
     private (object Key, string? Text, Icon? Icon, bool Disabled) _last;
+    private TreeScope<TItem>? _inner;
 
     /// <summary>The item this row stands for, and with no <c>KeySelector</c> on the tree, its key, so it must then
-    /// stay equal across renders. Selection, checks and expansion report these keys.</summary>
-    [Parameter, EditorRequired]
+    /// stay equal across renders. Selection, checks and expansion report these keys. A row with no value, such as a
+    /// heading for the rows inside it, opens, closes and is found by typing, but it can't be selected, dragged or
+    /// activated, and the tree's item functions and templates aren't called for it. It has a checkbox only when checks
+    /// cascade to rows inside it, and it is never in the bound keys.</summary>
+    [Parameter]
     public TItem Value { get; set; } = default!;
 
     /// <summary>The row's text, which typing finds it by. Defaults to the value's text.</summary>
@@ -54,12 +58,20 @@ else
     public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter]
-    private ITreeItemHost<TItem>? Tree { get; set; }
+    private TreeScope<TItem>? Scope { get; set; }
 
-    [CascadingParameter]
-    private TbTreeItem<TItem>? Parent { get; set; }
+    private ITreeItemHost<TItem>? Tree => Scope?.Tree;
+
+    private TbTreeItem<TItem>? Parent => Scope?.Parent;
+
+    private TreeScope<TItem> Inner => _inner ??= new(Tree!, this);
 
     internal string Id => _id;
+
+    internal bool HasValue { get; private set; }
+
+    // A row with no value is keyed by the item itself, which stays the same while it renders in its place.
+    internal object Key => HasValue ? Tree!.KeyOf(Value) : this;
 
     internal List<TbTreeItem<TItem>> Children { get; } = [];
 
@@ -82,9 +94,16 @@ else
 
         builder.OpenElement(3, "span");
         builder.AddAttribute(4, "class", "tb-tree__text");
-        builder.AddContent(5, Text ?? Value?.ToString());
+        builder.AddContent(5, Text ?? (HasValue ? Value?.ToString() : null));
         builder.CloseElement();
     });
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        HasValue = parameters.TryGetValue<TItem>(nameof(Value), out _);
+        return base.SetParametersAsync(parameters);
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -94,7 +113,7 @@ else
             throw new InvalidOperationException($"{nameof(TbTreeItem<TItem>)} must be inside a TbTreeView.");
         }
 
-        _last = (Tree.KeyOf(Value), Text, Icon, Disabled);
+        _last = (Key, Text, Icon, Disabled);
         Tree.AddItem(this, Parent);
     }
 
@@ -102,11 +121,11 @@ else
     protected override void OnParametersSet()
     {
         // Keys rather than values, so a value made anew on each render doesn't rebuild the tree forever.
-        var current = (Tree!.KeyOf(Value), Text, Icon, Disabled);
+        var current = (Key, Text, Icon, Disabled);
         if (!current.Equals(_last))
         {
             _last = current;
-            Tree.ItemChanged();
+            Tree!.ItemChanged();
         }
     }
 

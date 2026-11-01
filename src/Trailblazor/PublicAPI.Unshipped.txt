@@ -1897,6 +1897,7 @@ Trailblazor.TbTreeItem<TItem>.Dispose() -> void
 Trailblazor.TbTreeItem<TItem>.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbTreeItem<TItem>.Icon.set -> void
 Trailblazor.TbTreeItem<TItem>.TbTreeItem() -> void
+override Trailblazor.TbTreeItem<TItem>.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Trailblazor.TbTreeItem<TItem>.Text.get -> string?
 Trailblazor.TbTreeItem<TItem>.Text.set -> void
 Trailblazor.TbTreeItem<TItem>.TextContent.get -> Microsoft.AspNetCore.Components.RenderFragment?

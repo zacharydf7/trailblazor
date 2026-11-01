@@ -14,8 +14,9 @@ public class TreeItemTests : BunitContext
 
     public TreeItemTests() => this.AddTrailblazor();
 
+    // A row with NoValue gives the tree no Value, and its Value here only names it in the test.
     private sealed record Row(string Value, Row[] Children, string? Text = null, bool Disabled = false,
-        string? Class = null)
+        string? Class = null, bool NoValue = false)
     {
         public Row(string value, params Row[] children) : this(value, children, null)
         {
@@ -183,6 +184,163 @@ public class TreeItemTests : BunitContext
     }
 
     [Fact]
+    public void TreeItem_ShouldOpenButNotBeSelectedCheckedActivatedOrReported_WhenItHasNoValue()
+    {
+        List<IReadOnlyCollection<string>> expanded = [];
+        Row[] rows = [new("guides", [new("guide"), new("api")], "Guides", NoValue: true)];
+        var cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.Checkable, true)
+            .Add(tree => tree.CascadeChecks, false)
+            .Add(tree => tree.ExpandedKeysChanged, (IReadOnlyCollection<string> keys) => expanded.Add(keys)));
+
+        var heading = cut.Find("[data-text=Guides]");
+        Assert.Equal((null, null), (heading.GetAttribute("aria-selected"), heading.GetAttribute("aria-checked")));
+        Assert.Empty(heading.QuerySelectorAll("[data-part=check]"));
+        heading.Click();
+        heading.DoubleClick();
+        cut.Find("[data-text=Guides] [data-part=toggle]").Click();
+        cut.Find("[data-key=guide] [data-part=check]").Click();
+        cut.Find("[data-key=api] [data-part=check]").Click();
+
+        Assert.Equal(3, cut.FindAll("[data-part=item]").Count);
+        Assert.Equal([[]], expanded);
+        Assert.Empty(_selectedChanges);
+        Assert.Empty(_activated);
+        Assert.Equal(["api", "guide"], _checkedChanges[^1].Order());
+    }
+
+    [Fact]
+    public void TreeItem_ShouldCheckTheRowsInsideItWithoutReportingItself_WhenItHasNoValueAndChecksCascade()
+    {
+        Row[] rows = [new("trips", [new("trips-new"), new("trips-changed")], "Trips", NoValue: true),
+            new("empty", [], "Empty", NoValue: true)];
+        var cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.Checkable, true)
+            .Add(tree => tree.InitialExpandDepth, 1));
+
+        cut.Find("[data-text=Trips] [data-part=check]").Click();
+
+        Assert.Equal(["trips-changed", "trips-new"], _checkedChanges.Single().Order());
+        Assert.Equal("true", cut.Find("[data-text=Trips]").GetAttribute("aria-checked"));
+        Assert.Null(cut.Find("[data-text=Empty]").GetAttribute("aria-checked"));
+    }
+
+    [Fact]
+    public async Task TreeItem_ShouldNotBeDraggedOrDroppedBeside_WhenItHasNoValue()
+    {
+        List<TreeDrop<string>> drops = [];
+        Row[] rows = [new("guides", [new("guide")], "Guides", NoValue: true), new("src")];
+        var cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.InitialExpandDepth, 1)
+            .Add(tree => tree.OnDrop, (TreeDrop<string> drop) => drops.Add(drop)));
+        var heading = cut.Find("[data-text=Guides]");
+        Assert.False(heading.HasAttribute("data-draggable"));
+        Assert.True(cut.Find("[data-key=guide]").HasAttribute("data-draggable"));
+
+        var check = await cut.InvokeAsync(() =>
+            Events().OnDragOver(["src"], heading.GetAttribute("data-key")!, TreeDropPosition.Before));
+        await cut.InvokeAsync(() => Events().OnDrop(["src"], heading.GetAttribute("data-key")!, TreeDropPosition.Inside));
+
+        Assert.False(check.Allowed);
+        Assert.Empty(drops);
+    }
+
+    [Fact]
+    public async Task TreeItem_ShouldStayOpen_WhenItHasNoValueAndTheTreesExpandedKeysAreBound()
+    {
+        IReadOnlyCollection<string> expanded = [];
+        Row[] rows = [new("guides", [new("guide", new Row("intro"))], "Guides", NoValue: true)];
+        IRenderedComponent<TbTreeView<string, string>>? cut = null;
+        cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.ExpandedKeys, expanded)
+            .Add(tree => tree.ExpandedKeysChanged, (IReadOnlyCollection<string> keys) =>
+            {
+                expanded = keys;
+                cut!.Render(again => again.Add(tree => tree.ExpandedKeys, keys));
+            }));
+
+        cut.Find("[data-text=Guides] [data-part=toggle]").Click();
+        await cut.InvokeAsync(() => cut.Instance.ExpandAsync("guide"));
+
+        Assert.Equal(["Guides", "guide", "intro"],
+            cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")));
+        Assert.Equal(["guide"], expanded);
+    }
+
+    [Fact]
+    public void TreeItem_ShouldHaveNoInsertSlotInsideIt_WhenItHasNoValue()
+    {
+        List<TreeInsertContext<string>> slots = [];
+        Row[] rows = [new("guides", [new("guide")], "Guides", NoValue: true), new("src")];
+        var cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.InitialExpandDepth, 1)
+            .Add(tree => tree.InsertTemplate, slot => builder =>
+            {
+                slots.Add(slot);
+                builder.AddContent(0, "+");
+            }));
+
+        Assert.Equal(2, cut.FindAll("[data-part=insert]").Count);
+        Assert.Equal([new(null, 0), new(null, 2)], slots.Distinct());
+    }
+
+    [Fact]
+    public void TreeItem_ShouldHaveNoText_WhenItHasNoValueOrTextAndItsTypeIsAValueType()
+    {
+        var cut = Render<TbTreeView<int, int>>(parameters => parameters.Add(tree => tree.AriaLabel, "Numbers")
+            .Add(tree => tree.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTreeItem<int>>(0);
+                builder.CloseComponent();
+            })));
+
+        var row = cut.Find("[data-part=item]");
+        Assert.Equal(("", ""), (row.GetAttribute("data-text"), row.QuerySelector(".tb-tree__text")!.TextContent));
+    }
+
+    [Fact]
+    public void TreeItem_ShouldShowEachRow_WhenRowsWithNoValueRepeatATextThatCouldNotBeAKey()
+    {
+        Row[] rows = [new("first", [], "P", NoValue: true), new("second", [], "P", NoValue: true), new("P")];
+        var cut = RenderFiles(rows);
+
+        var shown = cut.FindAll("[data-part=item]");
+        Assert.Equal(["P", "P", "P"], shown.Select(row => row.GetAttribute("data-text")));
+        Assert.Equal(3, shown.Select(row => row.GetAttribute("data-key")).Distinct().Count());
+    }
+
+    [Fact]
+    public void TreeItem_ShouldNotBePassedToTheTreesItemFunctionsOrTemplates_WhenItHasNoValue()
+    {
+        Row[] rows = [new("guides", [new("guide"), new("api")], "Guides", NoValue: true)];
+        var cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.InitialExpandDepth, 1)
+            .Add(tree => tree.IsDisabled, value => value.Length == 0)
+            .Add(tree => tree.IsSelectable, value => value.Length > 0)
+            .Add(tree => tree.ItemText, value => value.ToUpperInvariant())
+            .Add(tree => tree.Filter, value => value.StartsWith('g'))
+            .Add(tree => tree.ItemEnd, context => builder => builder.AddContent(0, context.Item.Length)));
+
+        Assert.Equal(["Guides", "GUIDE"],
+            cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")));
+        Assert.Empty(cut.FindAll("[data-text=Guides] [data-part=end]"));
+        Assert.Equal("5", cut.Find("[data-key=guide] [data-part=end]").TextContent);
+    }
+
+    [Fact]
+    public void TreeItem_ShouldStartATreeInsideItsRowAtTheFirstLevel_WhenStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        RenderFragment inner = builder =>
+        {
+            builder.OpenComponent<TbTreeView<string, string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeView<string, string>.AriaLabel), "Inner");
+            builder.AddComponentParameter(2, nameof(TbTreeView<string, string>.ChildContent),
+                Fragment([new Row("x")], null));
+            builder.CloseComponent();
+        };
+
+        var cut = RenderFiles([new Row("docs", new Row("guide"))], parameters => parameters
+            .Add(tree => tree.InitialExpandDepth, 1), value => value == "guide" ? inner : text => text.AddContent(0, value));
+
+        Assert.Equal("1", cut.Find("[aria-label=Inner] [role=treeitem]").GetAttribute("aria-level"));
+    }
+
+    [Fact]
     public void Tree_ShouldThrow_WhenGivenItemsAndTreeItems()
     {
         var exception = Assert.Throws<InvalidOperationException>(() => RenderFiles(Docs,
@@ -218,7 +376,11 @@ public class TreeItemTests : BunitContext
     {
         builder.OpenComponent<TbTreeItem<string>>(0);
         builder.SetKey(row.Value);
-        builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), row.Value);
+        if (!row.NoValue)
+        {
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), row.Value);
+        }
+
         builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Text), row.Text);
         builder.AddComponentParameter(3, nameof(TbTreeItem<string>.Disabled), row.Disabled);
         builder.AddComponentParameter(4, nameof(TbTreeItem<string>.TextContent), content?.Invoke(row.Value));

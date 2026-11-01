@@ -66,6 +66,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private object? _builtFor;
     private object? _flattenedFor;
     private Func<TItem, bool>? _flattenedFilter;
+    private TreeScope<TItem>? _scope;
 
     /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item. The rows are built again when this
     /// is a new collection; call <see cref="RefreshAsync"/> after changing it, or the children it holds, in place.
@@ -124,7 +125,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     public RenderFragment<TreeItemContext<TItem, TKey>>? ItemEnd { get; set; }
 
     /// <summary>The keys of the open rows. Bind it with <c>@bind-ExpandedKeys</c> to open rows from code or to save
-    /// them.</summary>
+    /// them. A <see cref="TbTreeItem{TItem}"/> with no value has no key, so it opens and closes only by the user,
+    /// <see cref="ExpandAllAsync"/> and <see cref="CollapseAllAsync"/>, or as a row inside it is opened.</summary>
     [Parameter]
     public IReadOnlyCollection<TKey>? ExpandedKeys { get; set; }
 
@@ -357,6 +359,18 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         Flatten();
     }
 
+    private TreeScope<TItem> Scope => _scope ??= new(this, null);
+
+    // A declared row with no value is keyed by its TbTreeItem, which stays inside the tree and out of the bound keys.
+    private static bool HasValue(TreeNode<TItem> node) => node.Key is not TbTreeItem<TItem>;
+
+    // A row with no value is checked only through the rows inside it, as its own check would mean nothing.
+    private bool CanCheck(TreeNode<TItem> node) =>
+        Checkable && (HasValue(node) || (CascadeChecks && node.Children.Count > 0));
+
+    private static List<TKey> Reported(IEnumerable<object> keys) =>
+        [.. keys.Where(key => key is not TbTreeItem<TItem>).Cast<TKey>()];
+
     // Tree items register as the tree renders them, so the tree builds its rows from them after that render.
     void ITreeItemHost<TItem>.AddItem(TbTreeItem<TItem> item, TbTreeItem<TItem>? parent)
     {
@@ -392,7 +406,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         // The tree's own set passed back, as a binding does, keeps it, so the rows aren't laid out again for nothing.
-        HashSet<object> taken = [.. fromParent.Select(key => (object)key)];
+        // Rows with no value can't be in the parent's set, so they keep their state.
+        HashSet<object> taken =
+            [.. fromParent.Select(key => (object)key), .. current.Where(key => key is TbTreeItem<TItem>)];
         return taken.SetEquals(current) ? current : taken;
     }
 
@@ -511,7 +527,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     /// <summary>Opens the row with this key, and the rows it sits in, loading its children if they haven't
     /// loaded.</summary>
-    public async Task ExpandAsync(TKey key)
+    public Task ExpandAsync(TKey key) => OpenAsync(key);
+
+    private async Task OpenAsync(object key)
     {
         if (!_nodes.TryGetValue(key, out var node))
         {
@@ -529,7 +547,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     }
 
     /// <summary>Closes the row with this key, even one the filter opened.</summary>
-    public async Task CollapseAsync(TKey key)
+    public Task CollapseAsync(TKey key) => CloseAsync(key);
+
+    private async Task CloseAsync(object key)
     {
         if (_matchAncestors.Contains(key) && _closedWhileFiltering.Add(key))
         {
@@ -722,7 +742,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private TreeNode<TItem> AddDeclared(TbTreeItem<TItem> item, TreeNode<TItem>? parent)
     {
-        var node = Add(item.Value, parent);
+        var node = Add(item.Value, parent, item.Key);
         _declared[node.Key] = item;
         node.Children.AddRange(item.Children.Select(child => AddDeclared(child, node)));
         return node;
@@ -745,9 +765,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         return node;
     }
 
-    private TreeNode<TItem> Add(TItem item, TreeNode<TItem>? parent)
+    private TreeNode<TItem> Add(TItem item, TreeNode<TItem>? parent, object? key = null)
     {
-        var key = KeyOf(item);
+        key ??= KeyOf(item);
         var id = _ids.IdOf(key);
         if (_nodes.ContainsKey(key))
         {
@@ -843,7 +863,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
-        foreach (var node in _nodes.Values.Where(node => filter(node.Item)))
+        foreach (var node in _nodes.Values.Where(node => HasValue(node) && filter(node.Item)))
         {
             _matches.Add(node.Key);
             _keep.Add(node.Key);
@@ -926,11 +946,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         {
             case "ArrowRight":
                 CountOpening(node, open: true);
-                await ExpandAsync((TKey)node.Key);
+                await OpenAsync(node.Key);
                 break;
             case "ArrowLeft":
                 CountOpening(node, open: false);
-                await CollapseAsync((TKey)node.Key);
+                await CloseAsync(node.Key);
                 break;
             case "*":
                 if (Siblings(node).Any(sibling => sibling.HasChildren && !IsOpen(sibling)))
@@ -969,13 +989,22 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private IEnumerable<TreeNode<TItem>> Siblings(TreeNode<TItem> node) => node.Parent?.Children ?? _roots;
 
-    private bool CanDragRow(TreeNode<TItem> node) =>
-        OnDrop.HasDelegate && !Disabled && !IsItemDisabled(node) && CanDrag?.Invoke(node.Item) != false;
+    private bool CanDragRow(TreeNode<TItem> node) => OnDrop.HasDelegate && HasValue(node) && !Disabled
+        && !IsItemDisabled(node) && CanDrag?.Invoke(node.Item) != false;
 
-    // A slot below a row inserts as its first child when its children show under it, and otherwise just after it.
-    private TreeInsertContext<TItem> InsertBelow(TreeNode<TItem> node, TreeItemContext<TItem, TKey> context) =>
-        context.Expanded && node.Children.Count > 0 ? new(node.Item, 0)
-            : new(node.Parent is { } parent ? parent.Item : default, Siblings(node).ToList().IndexOf(node) + 1);
+    // A slot below a row inserts as its first child when its children show under it, and otherwise just after it. A
+    // row with no value can't be named as the parent, so no slot goes inside one.
+    private TreeInsertContext<TItem>? InsertBelow(TreeNode<TItem> node, TreeItemContext<TItem, TKey> context)
+    {
+        var inside = context.Expanded && node.Children.Count > 0;
+        if ((inside ? node : node.Parent) is { } parent && !HasValue(parent))
+        {
+            return null;
+        }
+
+        return inside ? new(node.Item, 0)
+            : new(node.Parent is { } above ? above.Item : default, Siblings(node).ToList().IndexOf(node) + 1);
+    }
 
     // A row inside another row that moves goes with it, so only the outermost rows are moved.
     private List<TreeNode<TItem>> NodesOf(IEnumerable<string> ids)
@@ -987,7 +1016,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private async Task<MoveCheck> CheckDropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
         TreeDropPosition position)
     {
-        if (sources.Count == 0 || !sources.All(CanDragRow))
+        // A row with no value can't be named to the app as the place a move goes.
+        if (sources.Count == 0 || !sources.All(CanDragRow) || !HasValue(target))
         {
             return new(false);
         }
@@ -1102,11 +1132,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         CountOpening(node, open: !IsOpen(node));
         if (IsOpen(node))
         {
-            await CollapseAsync((TKey)node.Key);
+            await CloseAsync(node.Key);
         }
         else
         {
-            await ExpandAsync((TKey)node.Key);
+            await OpenAsync(node.Key);
         }
     }
 
@@ -1121,7 +1151,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private Task ActivateAsync(TreeNode<TItem> node)
     {
-        if (IsItemDisabled(node))
+        if (!HasValue(node) || IsItemDisabled(node))
         {
             return Task.CompletedTask;
         }
@@ -1130,11 +1160,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         return OnActivate.InvokeAsync(node.Item);
     }
 
-    private bool CanSelect(TreeNode<TItem> node) => SelectionMode != SelectionMode.None
+    private bool CanSelect(TreeNode<TItem> node) => SelectionMode != SelectionMode.None && HasValue(node)
         && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
 
-    private bool IsItemDisabled(TreeNode<TItem> node) =>
-        IsDisabled?.Invoke(node.Item) == true || _declared.GetValueOrDefault(node.Key)?.Disabled == true;
+    private bool IsItemDisabled(TreeNode<TItem> node) => _declared.GetValueOrDefault(node.Key)?.Disabled == true
+        || (HasValue(node) && IsDisabled?.Invoke(node.Item) == true);
 
     // Without a KeySelector, OnParametersSet has checked that the items are keys.
     private object KeyOf(TItem item) => KeySelector is null ? item! : KeySelector(item);
@@ -1175,7 +1205,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private async Task ToggleCheckAsync(TreeNode<TItem> node)
     {
-        if (Disabled || IsItemDisabled(node))
+        if (Disabled || !CanCheck(node) || IsItemDisabled(node))
         {
             return;
         }
@@ -1205,7 +1235,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
         _checked = keys;
         Flatten();
-        await CheckedKeysChanged.InvokeAsync(_checked.Cast<TKey>().ToList());
+        await CheckedKeysChanged.InvokeAsync(Reported(_checked));
     }
 
     // A parent's key follows its rows, from the deepest up, so the set lists exactly the rows that show as checked.
@@ -1260,7 +1290,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         Flatten();
         // Called from code as well as from events, so the tree renders the change itself.
         StateHasChanged();
-        await ExpandedKeysChanged.InvokeAsync(_expanded.Cast<TKey>().ToList());
+        await ExpandedKeysChanged.InvokeAsync(Reported(_expanded));
     }
 
     private async Task SetSelectedAsync(IEnumerable<object> keys)
@@ -1275,7 +1305,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         Telemetry.Used(TelemetryName, "select");
 
         _selected = selected;
-        await SelectedKeysChanged.InvokeAsync(_selected.Cast<TKey>().ToList());
+        await SelectedKeysChanged.InvokeAsync(Reported(_selected));
     }
 
     private async Task LoadIfNeededAsync(TreeNode<TItem> node)
@@ -1329,7 +1359,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         {
             _checked.UnionWith(EnabledDescendants(loaded).Select(descendant => descendant.Key));
             KeepParentsInStep(_checked);
-            await CheckedKeysChanged.InvokeAsync(_checked.Cast<TKey>().ToList());
+            await CheckedKeysChanged.InvokeAsync(Reported(_checked));
         }
 
         Flatten();
@@ -1342,12 +1372,14 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         return LoadIfNeededAsync(node);
     }
 
-    private TreeItemContext<TItem, TKey> ContextOf(TreeNode<TItem> node) => new(node.Item, (TKey)node.Key, node.Level,
+    private TreeItemContext<TItem, TKey> ContextOf(TreeNode<TItem> node) => new(node.Item,
+        HasValue(node) ? (TKey)node.Key : default!, node.Level,
         IsOpen(node), _selected.Contains(node.Key), Checkable ? _checkStates.GetValueOrDefault(node.Key) : false,
         node.HasChildren, _loads.ContainsKey(node.Key), _matches.Contains(node.Key));
 
     private string TextOf(TreeNode<TItem> node) =>
-        ItemText?.Invoke(node.Item) ?? _declared.GetValueOrDefault(node.Key)?.Text ?? node.Item?.ToString() ?? "";
+        (HasValue(node) ? ItemText?.Invoke(node.Item) : null) ?? _declared.GetValueOrDefault(node.Key)?.Text
+        ?? (HasValue(node) ? node.Item?.ToString() : null) ?? "";
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

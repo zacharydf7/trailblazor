@@ -15,7 +15,7 @@
                 Virtualize ? "tb-tree--virtual" : null, Class)">
     @if (ChildContent is not null)
     {
-        <CascadingValue Value="this" IsFixed="true">
+        <CascadingValue Value="Scope" IsFixed="true">
             @if (RendererInfo.IsInteractive)
             {
                 <div hidden data-part="items">@ChildContent</div>
@@ -65,6 +65,8 @@
         @if (row.IsItem)
         {
             var context = ContextOf(node);
+            var valued = HasValue(node);
+            var checkable = CanCheck(node);
             var disabled = Disabled || IsItemDisabled(node);
             var declared = _declared.GetValueOrDefault(node.Key);
             var draggable = CanDragRow(node);
@@ -77,7 +79,7 @@
                  aria-setsize="@row.SetSize" aria-posinset="@row.Position"
                  aria-expanded="@(node.HasChildren ? Flag(context.Expanded) : null)"
                  aria-selected="@(CanSelect(node) || context.Selected ? Flag(context.Selected) : null)"
-                 aria-checked="@(Checkable ? context.Checked is { } isChecked ? Flag(isChecked) : "mixed" : null)"
+                 aria-checked="@(checkable ? context.Checked is { } isChecked ? Flag(isChecked) : "mixed" : null)"
                  aria-disabled="@(disabled ? "true" : null)" tabindex="@(node.Id == focusId ? 0 : -1)"
                  data-draggable="@(draggable ? "" : null)" aria-describedby="@(draggable ? MoveHintId : null)"
                  aria-labelledby="@(InsertTemplate is null ? null : $"{nameId}-content {nameId}-end")"
@@ -92,7 +94,7 @@
                         <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-tree__chevron" />
                     }
                 </span>
-                @if (Checkable)
+                @if (checkable)
                 {
                     <span data-part="check" aria-hidden="true" class="@CheckClass(context.Checked)"
                           @onclick="() => ToggleCheckAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
@@ -100,7 +102,7 @@
                 }
                 <span data-part="content" id="@(InsertTemplate is null ? null : $"{nameId}-content")"
                       class="tb-tree__content">
-                    @if (ItemTemplate is not null)
+                    @if (ItemTemplate is not null && valued)
                     {
                         @ItemTemplate(context)
                     }
@@ -117,7 +119,7 @@
                         <span class="tb-tree__text">@TextOf(node)</span>
                     }
                 </span>
-                @if (ItemEnd is not null)
+                @if (ItemEnd is not null && valued)
                 {
                     @* The end slot's own controls keep their clicks and keys from the row. *@
                     <span data-part="end" id="@(InsertTemplate is null ? null : $"{nameId}-end")" class="tb-tree__end"
@@ -134,10 +136,13 @@
                             @InsertTemplate(new(default, 0))
                         </span>
                     }
-                    <span data-part="insert" class="tb-tree__insert" @onclick:stopPropagation
-                          @ondblclick:stopPropagation @onkeydown:stopPropagation>
-                        @InsertTemplate(InsertBelow(node, context))
-                    </span>
+                    @if (InsertBelow(node, context) is { } below)
+                    {
+                        <span data-part="insert" class="tb-tree__insert" @onclick:stopPropagation
+                              @ondblclick:stopPropagation @onkeydown:stopPropagation>
+                            @InsertTemplate(below)
+                        </span>
+                    }
                 }
             </div>
         }
