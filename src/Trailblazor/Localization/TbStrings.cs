@@ -253,6 +253,9 @@ public static class TbStrings
     /// <summary>"{0} removed": announced when a multi-select's chip is removed; {0} is its option.</summary>
     public const string MultiSelectRemoved = "MultiSelect.Removed";
 
+    /// <summary>"Select all": names the option that chooses every option of a multi-select.</summary>
+    public const string MultiSelectSelectAll = "MultiSelect.SelectAll";
+
     /// <summary>"Pagination": names the pagination's navigation landmark.</summary>
     public const string PaginationNavigation = "Pagination.Navigation";
 
@@ -525,6 +528,7 @@ public static class TbStrings
         [NumberFieldAtLeast] = "{0} must be at least {1}.",
         [NumberFieldAtMost] = "{0} must be at most {1}.",
         [MultiSelectRemoved] = "{0} removed",
+        [MultiSelectSelectAll] = "Select all",
         [PaginationNavigation] = "Pagination",
         [PaginationPage] = "Page {0}",
         [PaginationPageBox] = "Page",

@@ -18,7 +18,14 @@ public class TbMultiSelect<TItem> : TbSelectBase<IReadOnlyList<TItem>>
     [Parameter]
     public bool Chips { get; set; }
 
+    /// <summary>Starts the list with an option that chooses every enabled option, or takes them all out once they are
+    /// all chosen. It is hidden while the filter has text, and a statically rendered select has none.</summary>
+    [Parameter]
+    public bool SelectAll { get; set; }
+
     private protected override bool ShowChips => Chips;
+
+    private protected override bool ShowSelectAll => SelectAll;
 
     private protected override bool Multiple => true;
 
@@ -35,6 +42,10 @@ public class TbMultiSelect<TItem> : TbSelectBase<IReadOnlyList<TItem>>
     private protected override IReadOnlyList<TItem> Choose(object? item) => IsChosen(item)
         ? Value!.Where(chosen => !OptionValues.Same(Comparer, chosen, item)).ToList()
         : [.. Value ?? [], (TItem)item!];
+
+    private protected override IReadOnlyList<TItem> ChooseAll(IEnumerable<object?> items, bool choose) => choose
+        ? [.. Value ?? [], .. items.Where(item => !IsChosen(item)).Cast<TItem>()]
+        : (Value ?? []).Where(chosen => !items.Any(item => OptionValues.Same(Comparer, chosen, item))).ToList();
 
     private protected override string? FormatItem(object? item) =>
         BindConverter.FormatValue((TItem?)item, CultureFor(typeof(TItem)))?.ToString();

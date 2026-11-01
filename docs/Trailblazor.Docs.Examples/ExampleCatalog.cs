@@ -878,7 +878,16 @@ public static class ExampleCatalog
                     + "select, Tab chooses the active option and moves on. A multi-select stays open as options are "
                     + "chosen.",
                 "Before the page is interactive it renders as the browser's own `<select>`, so it still works.",
-                "The clear button is named \"Clear\" and sends focus back to the field.",
+                "The clear button is named \"Clear\" and sends focus back to the field. A select bound to a value "
+                    + "type, such as `Guid`, clears to its default, which shows the placeholder.",
+                "A value no option has, such as one that has left the list, still shows: as its text, or as "
+                    + "`UnmatchedText` makes it. Before the page is interactive, the native select keeps it chosen. "
+                    + "Options that load as the list opens aren't there yet, so give such a select `UnmatchedText`, "
+                    + "such as a lookup of the value's name, rather than showing a key such as a `Guid`.",
+                "With `SelectAll`, a multi-select's list starts with a \"Select all\" option, named by "
+                    + "`Labels.SelectAll`, that the arrows reach like any other. It chooses every enabled option, and is "
+                    + "selected once they all are, when choosing it takes them out again. It hides while the filter "
+                    + "has text.",
                 "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
                 "With `Chips`, each chosen option shows as a chip. Backspace removes the last one and each chip has a "
                     + "remove button for the pointer; a removal is announced, and the list still deselects options.",
@@ -895,18 +904,19 @@ public static class ExampleCatalog
             Blocks = ["tb-field", "tb-select"],
             DataParts = [.. FieldParts, "input", "placeholder", "value",
                 "chips", "chip", "chip-remove", "clear", "chevron", "popup", "filter", "listbox", "group",
-                "group-label", "option", "no-results"],
+                "group-label", "option", "select-all", "no-results"],
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
                 + "select a `Comparer` so they still match their options. The helper works the same on a `Filterable` "
                 + "select. In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
-                + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows.",
+                + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows. "
+                + "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it.",
             Telemetry =
             [
                 "The select also counts `trailblazor.control.used` for each choice, with `trailblazor.input` `pointer` "
-                    + "or `keyboard`, or with `trailblazor.action` `remove` for a chip removed. Only that a choice was "
-                    + "made is counted, never which.",
+                    + "or `keyboard`, or with `trailblazor.action` `remove` for a chip removed or `select_all` for "
+                    + "\"Select all\". Only that a choice was made is counted, never which.",
                 "An option with its own `TelemetryName`, such as `\"size-large\"`, counts "
                     + "`trailblazor.control.used` each time it is chosen, with `trailblazor.input` too. Its list "
                     + "renders hidden, so it counts uses only; its value is never recorded.",

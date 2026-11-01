@@ -3446,6 +3446,13 @@
         font-weight: var(--tb-font-weight-medium);
     }
 
+    .tb-select__select-all {
+        margin-block-end: var(--tb-space-1);
+        border-block-end: 1px solid var(--tb-border-subtle);
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+    }
+
     .tb-select__listbox .tb-select__option[data-active] {
         background: var(--tb-color-neutral-subtle);
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);

@@ -75,7 +75,8 @@ public sealed class TbSelectDriver
     internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
         (_find, _findAll) = (find, findAll);
 
-    /// <summary>The options' texts, in order, leaving out a static select's placeholder.</summary>
+    /// <summary>The options' texts, in order, leaving out a static select's placeholder and the value it keeps when no
+    /// option has it.</summary>
     public IReadOnlyList<string> Options => OptionElements().Select(option => option.TextContent.Trim()).ToList();
 
     /// <summary>The text the select shows for its value, or null while it shows its placeholder. A multiple select's
@@ -106,7 +107,7 @@ public sealed class TbSelectDriver
     private IEnumerable<IElement> OptionElements()
     {
         var control = _find();
-        return control.TagName == "SELECT" ? control.QuerySelectorAll("option:not([value=''])")
+        return control.TagName == "SELECT" ? control.QuerySelectorAll("option:not([value='']):not([data-unmatched])")
             : _findAll($"[id='{control.GetAttribute("aria-controls")}'] [role=option]");
     }
 }

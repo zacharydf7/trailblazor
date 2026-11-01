@@ -23,12 +23,17 @@
         </TbOptionGroup>
     </TbSelect>
     <output data-testid="park">@_park</output>
-    <TbMultiSelect TItem="string" Label="Parks" @bind-Value="_parks" Filterable>
+    <TbMultiSelect TItem="string" Label="Parks" @bind-Value="_parks" Filterable SelectAll>
         <TbOption Value="@("Pine Hollow")" />
         <TbOption Value="@("Eagle Ridge")" />
         <TbOption Value="@("Cedar Flats")" />
     </TbMultiSelect>
     <output data-testid="parks">@string.Join(", ", _parks)</output>
+    <TbMultiSelect TItem="string" Label="Seasons" @bind-Value="_seasons" SelectAll>
+        <TbOption Value="@("Spring")" />
+        <TbOption Value="@("Summer")" />
+        <TbOption Value="@("Autumn")" />
+    </TbMultiSelect>
     <TbButton>After</TbButton>
 </TbStack>
 
@@ -38,6 +43,7 @@
     private IReadOnlyList<Trail> _trails = [Trails[0], Trails[2]];
     private string? _park;
     private IReadOnlyList<string> _parks = [];
+    private IReadOnlyList<string> _seasons = [];
 
     // New instances, as a page gets after loading its data again; the comparer still matches them to the options.
     private void Reload() => _trails = [.. _trails.Select(trail => new Trail(trail.Id, trail.Name))];

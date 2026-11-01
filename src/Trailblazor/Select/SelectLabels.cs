@@ -18,4 +18,8 @@ public sealed record SelectLabels
     /// <summary>Read out when a chip is removed from a multiple select, with <c>{0}</c> for its option. Leave it null
     /// for the app's text for <see cref="TbStrings.MultiSelectRemoved"/>.</summary>
     public string? Removed { get; init; }
+
+    /// <summary>Names the option that chooses every option of a multiple select. Leave it null for the app's text for
+    /// <see cref="TbStrings.MultiSelectSelectAll"/>.</summary>
+    public string? SelectAll { get; init; }
 }

@@ -5,7 +5,7 @@
         <TbOption Value="Speed.Express">Express (1 day)</TbOption>
         <TbOption Value="Speed.Overnight" Disabled>Overnight</TbOption>
     </TbSelect>
-    <TbMultiSelect Label="Notify me about" @bind-Value="_topics" Placeholder="Nothing yet" Clearable>
+    <TbMultiSelect Label="Notify me about" @bind-Value="_topics" Placeholder="Nothing yet" Clearable SelectAll>
         <TbOption Value="@("Orders")">Orders</TbOption>
         <TbOption Value="@("Returns")">Returns</TbOption>
         <TbOption Value="@("Offers")">Offers</TbOption>

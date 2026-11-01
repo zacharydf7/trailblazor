@@ -63,7 +63,7 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldShowThePlaceholder_WhenNoOptionMatchesTheValue()
+    public void Render_ShouldShowThePlaceholder_WhenNothingIsChosen()
     {
         var cut = RenderSelect(null);
 
@@ -237,7 +237,7 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldShowThePlaceholder_WhenTheChosenOptionIsSwappedForAnother()
+    public void Render_ShouldShowTheValuesText_WhenTheChosenOptionIsSwappedForAnother()
     {
         var cut = Render<TbSelect<int>>(parameters => parameters.Add(select => select.Value, 1)
             .Add(select => select.Placeholder, "Pick a number")
@@ -246,7 +246,66 @@ public class TbSelectTests : BunitContext
         cut.Render(parameters => parameters.Add(select => select.ChildContent,
             (RenderFragment)(builder => AddNumbers(builder, (5, "Five"), (2, "Two")))));
 
-        Assert.Equal("Pick a number", cut.Find("[data-part=placeholder]").TextContent.Trim());
+        Assert.Equal("1", cut.Find("[data-part=value]").TextContent.Trim());
+        Assert.Empty(cut.FindAll("[data-part=placeholder]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheValuesTextAndOfferToClearIt_WhenNoOptionHasTheValue()
+    {
+        var cut = RenderSelect("Huge");
+
+        Assert.Equal("Huge", cut.Find("[data-part=value]").TextContent.Trim());
+        Assert.Empty(cut.FindAll("[data-part=placeholder]"));
+        Assert.Single(cut.FindAll("[data-part=clear]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowThePlaceholder_WhenTheValueIsAnEmptyString()
+    {
+        var cut = RenderSelect("");
+
+        Assert.Equal("Pick a size", cut.Find("[data-part=placeholder]").TextContent.Trim());
+        Assert.Empty(cut.FindAll("[data-part=value]"));
+    }
+
+    [Fact]
+    public void Render_ShouldStartWithThePlaceholderOption_WhenRenderedStaticallyWithAnEmptyString()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderSelect("");
+
+        var first = cut.FindAll("option")[0];
+        Assert.Equal(("", "Pick a size"), (first.GetAttribute("value"), first.TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheUnmatchedText_WhenGivenOneForAValueNoOptionHas()
+    {
+        var cut = Render<TbSelect<int>>(parameters => parameters.Add(select => select.Value, 7)
+            .Add(select => select.UnmatchedText, number => $"Archived ({number})")
+            .Add(select => select.ChildContent, (RenderFragment)(builder => AddNumbers(builder, (1, "One"), (2, "Two")))));
+
+        Assert.Equal("Archived (7)", cut.Find("[data-part=value]").TextContent.Trim());
+
+        cut.Render(parameters => parameters.Add(select => select.Value, 2));
+
+        Assert.Equal("Two", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldKeepAValueNoOptionHasSelected_WhenRenderedStatically()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderSelect("Huge");
+
+        var first = cut.FindAll("option")[0];
+        Assert.Equal("Huge", first.GetAttribute("value"));
+        Assert.True(first.HasAttribute("selected"));
+        Assert.Equal("Huge", first.TextContent.Trim());
+        Assert.Empty(cut.FindAll("option[value='']"));
     }
 
     [Fact]
@@ -422,10 +481,27 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldThrow_WhenAClearableSelectsValueTypeIsNotNullable()
+    public void Click_ShouldClearToTheDefaultAndShowThePlaceholder_WhenAClearableSelectHasANonNullableValueType()
     {
-        Assert.Throws<InvalidOperationException>(() => Render<TbSelect<DayOfWeek>>(parameters => parameters
-            .Add(select => select.Label, "Day").Add(select => select.Clearable, true)));
+        var rangers = Guid.NewGuid();
+        var team = rangers;
+        var cut = Render<TbSelect<Guid>>(parameters => parameters
+            .Add(select => select.Label, "Team").Add(select => select.Clearable, true)
+            .Add(select => select.Placeholder, "No team").Add(select => select.Value, team)
+            .Add(select => select.ValueChanged, (Guid next) => team = next)
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<Guid>>(0);
+                builder.AddAttribute(1, nameof(TbOption<Guid>.Value), rangers);
+                builder.AddAttribute(2, nameof(TbOption<Guid>.Text), "Rangers");
+                builder.CloseComponent();
+            })));
+
+        cut.Find("[data-part=clear]").Click();
+
+        Assert.Equal(Guid.Empty, team);
+        Assert.Equal("No team", cut.Find("[data-part=placeholder]").TextContent.Trim());
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
     }
 
     [Fact]

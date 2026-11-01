@@ -18,6 +18,10 @@ internal sealed class SelectDisplay : ComponentBase
     [Parameter]
     public bool Chips { get; set; }
 
+    // The text for a chosen value that no option has.
+    [Parameter]
+    public Func<string?>? Unmatched { get; set; }
+
     // A disabled select's chips, and a disabled option's chip, can't be removed.
     [Parameter]
     public bool Disabled { get; set; }
@@ -33,13 +37,12 @@ internal sealed class SelectDisplay : ComponentBase
             return;
         }
 
+        var unmatched = selected.Count == 0 ? Unmatched?.Invoke() : null;
+        var empty = selected.Count == 0 && unmatched is null;
         builder.OpenElement(0, "span");
-        builder.AddAttribute(1, "data-part", selected.Count == 0 ? "placeholder" : "value");
-        builder.AddAttribute(2, "class", selected.Count == 0 ? "tb-select__placeholder" : "tb-select__value");
-        if (selected.Count == 0)
-        {
-            builder.AddContent(3, Placeholder);
-        }
+        builder.AddAttribute(1, "data-part", empty ? "placeholder" : "value");
+        builder.AddAttribute(2, "class", empty ? "tb-select__placeholder" : "tb-select__value");
+        builder.AddContent(3, empty ? Placeholder : unmatched);
 
         for (var index = 0; index < selected.Count; index++)
         {

@@ -190,6 +190,60 @@ public class SelectExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SelectAll_ShouldChooseAndThenTakeOutEveryOptionAndStayOpen_WhenEnterIsPressedOnIt(string browser)
+    {
+        var page = await OpenExtrasAsync(browser);
+        var parks = page.GetByRole(AriaRole.Combobox, new() { Name = "Parks" });
+        var all = page.GetByRole(AriaRole.Option, new() { Name = "Select all" });
+        await parks.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(all).ToHaveAttributeAsync("data-active", "");
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("parks")).ToHaveTextAsync("Pine Hollow, Eagle Ridge, Cedar Flats");
+        await Expect(all).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(parks).ToHaveAttributeAsync("aria-expanded", "true");
+        var result = await page.RunAxe(AxeTests.WcagAA);
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("parks")).ToHaveTextAsync("");
+        await Expect(all).ToHaveAttributeAsync("aria-selected", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SelectAll_ShouldHideWhileTheFilterHasText_WhenTheSelectIsFilterable(string browser)
+    {
+        var page = await OpenExtrasAsync(browser);
+        await page.GetByRole(AriaRole.Combobox, new() { Name = "Parks" }).ClickAsync();
+        var filter = page.GetByRole(AriaRole.Combobox, new() { Name = "Filter" });
+        var all = page.GetByRole(AriaRole.Option, new() { Name = "Select all" });
+        await Expect(all).ToBeVisibleAsync();
+
+        await filter.FillAsync("e");
+
+        await Expect(all).ToBeHiddenAsync();
+        await filter.FillAsync("");
+        await Expect(all).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SelectAll_ShouldBePassedOverByTyping_WhenItsNameMatchesTheTypedText(string browser)
+    {
+        var page = await OpenExtrasAsync(browser);
+        var seasons = page.GetByRole(AriaRole.Combobox, new() { Name = "Seasons" });
+        await Expect(seasons).ToHaveAttributeAsync("data-ready", "");
+        await seasons.FocusAsync();
+
+        await page.Keyboard.PressAsync("s");
+
+        await Expect(page.GetByRole(AriaRole.Option, new() { Name = "Spring" })).ToHaveAttributeAsync("data-active", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldChooseAnOption_WhenTheSelectIsFilterable(string browser)
     {
         var page = await OpenExtrasAsync(browser);

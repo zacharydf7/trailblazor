@@ -43,6 +43,17 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public void Select_ShouldShowAValueNoOptionHasButNotListIt_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        _size = "Huge";
+        var cut = RenderForm();
+
+        Assert.Equal(["Small", "Medium", "Large"], cut.Tb().Select("Size").Options);
+        Assert.Equal("Huge", cut.Tb().Select("Size").Text);
+    }
+
+    [Fact]
     public async Task Select_ShouldChooseTheOptionThatReadsExactlyTheText_WhenAnotherOptionContainsIt()
     {
         var cut = RenderForm();

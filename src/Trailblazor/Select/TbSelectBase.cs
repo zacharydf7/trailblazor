@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
@@ -32,8 +33,9 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     [Parameter]
     public string? Placeholder { get; set; }
 
-    /// <summary>Shows a button that clears the choice. A single select bound to a value type, such as an enum, needs
-    /// its nullable form, since the type's default is one of its values.</summary>
+    /// <summary>Shows a button that clears the choice. A single select bound to a value type clears to its default,
+    /// such as <c>Guid.Empty</c> or an enum's <c>None</c>, which shows as no choice; bind the nullable form instead when
+    /// the default is one of the options.</summary>
     [Parameter]
     public bool Clearable { get; set; }
 
@@ -75,6 +77,19 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
 
     private string RemovedFormat => Labels.Removed ?? Localizer[TbStrings.MultiSelectRemoved];
 
+    // Whether the list starts with an option that chooses every enabled option, or clears them once all are chosen.
+    private protected virtual bool ShowSelectAll => false;
+
+    private string SelectAllText => Labels.SelectAll ?? Localizer[TbStrings.MultiSelectSelectAll];
+
+    private bool HasEnabledOptions => _options.Any(option => !option.Disabled);
+
+    private bool AllChosen => HasEnabledOptions
+        && _options.Where(option => !option.Disabled).All(option => IsChosen(option.Value));
+
+    // The text shown for a chosen value that no option has, or null when an option has it or nothing is chosen.
+    private protected virtual string? UnmatchedValueText => null;
+
     // The field's value once nothing is chosen.
     private protected abstract TValue? Cleared { get; }
 
@@ -92,7 +107,8 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
         builder.AddComponentParameter(2, nameof(SelectDisplay.Placeholder), Placeholder);
         builder.AddComponentParameter(3, nameof(SelectDisplay.Chips), ShowChips);
         builder.AddComponentParameter(4, nameof(SelectDisplay.Disabled), Disabled || ReadOnly);
-        builder.AddComponentReferenceCapture(5, display => _display = (SelectDisplay)display);
+        builder.AddComponentParameter(5, nameof(SelectDisplay.Unmatched), (Func<string?>)(() => UnmatchedValueText));
+        builder.AddComponentReferenceCapture(6, display => _display = (SelectDisplay)display);
         builder.CloseComponent();
     };
 
@@ -105,6 +121,10 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     private protected abstract TValue? Choose(object? item);
 
     private protected abstract string? FormatItem(object? item);
+
+    // The field's value after choosing these options, or taking them out when choose is false.
+    private protected virtual TValue? ChooseAll(IEnumerable<object?> items, bool choose) =>
+        throw new NotSupportedException();
 
     // Disabled, it is still a focusable element, kept so screen readers find it, so it refuses focus here.
     /// <inheritdoc />
@@ -246,6 +266,20 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
         {
             await _combobox.FocusAsync();
         }
+    }
+
+    // Disabled options keep their state, as they do when chosen one at a time.
+    private async Task SelectAllAsync(MouseEventArgs args)
+    {
+        if (Disabled || ReadOnly || !HasEnabledOptions)
+        {
+            return;
+        }
+
+        Telemetry.Used(TelemetryName, "select_all", args.Detail > 0 ? "pointer" : "keyboard");
+        var enabled = _options.Where(option => !option.Disabled).Select(option => option.Value);
+        await SetValueAsync(ChooseAll(enabled, !AllChosen));
+        StateHasChanged();
     }
 
     // The clear button goes away with the value, so focus moves to the combobox instead of the page.

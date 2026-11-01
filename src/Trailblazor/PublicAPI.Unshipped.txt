@@ -530,6 +530,8 @@ Trailblazor.SelectLabels.NoResults.get -> string?
 Trailblazor.SelectLabels.NoResults.init -> void
 Trailblazor.SelectLabels.Removed.get -> string?
 Trailblazor.SelectLabels.Removed.init -> void
+Trailblazor.SelectLabels.SelectAll.get -> string?
+Trailblazor.SelectLabels.SelectAll.init -> void
 Trailblazor.SelectLabels.SelectLabels() -> void
 Trailblazor.SelectionMode
 Trailblazor.SelectionMode.Multiple = 2 -> Trailblazor.SelectionMode
@@ -1367,6 +1369,8 @@ Trailblazor.TbMultiListBox<TItem>.TbMultiListBox() -> void
 Trailblazor.TbMultiSelect<TItem>
 Trailblazor.TbMultiSelect<TItem>.Chips.get -> bool
 Trailblazor.TbMultiSelect<TItem>.Chips.set -> void
+Trailblazor.TbMultiSelect<TItem>.SelectAll.get -> bool
+Trailblazor.TbMultiSelect<TItem>.SelectAll.set -> void
 Trailblazor.TbMultiSelect<TItem>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
 Trailblazor.TbMultiSelect<TItem>.Comparer.set -> void
 Trailblazor.TbMultiSelect<TItem>.TbMultiSelect() -> void
@@ -1548,6 +1552,8 @@ Trailblazor.TbRoot.TbRoot() -> void
 Trailblazor.TbSelect<TValue>
 Trailblazor.TbSelect<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
 Trailblazor.TbSelect<TValue>.Comparer.set -> void
+Trailblazor.TbSelect<TValue>.UnmatchedText.get -> System.Func<TValue, string!>?
+Trailblazor.TbSelect<TValue>.UnmatchedText.set -> void
 Trailblazor.TbSelect<TValue>.TbSelect() -> void
 Trailblazor.TbSelectBase<TValue>
 Trailblazor.TbSelectBase<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
@@ -2274,6 +2280,7 @@ const Trailblazor.TbStrings.FileUploadWrongType = "FileUpload.WrongType" -> stri
 const Trailblazor.TbStrings.FileUploadZone = "FileUpload.Zone" -> string!
 const Trailblazor.TbStrings.LabelInfo = "Label.Info" -> string!
 const Trailblazor.TbStrings.MultiSelectRemoved = "MultiSelect.Removed" -> string!
+const Trailblazor.TbStrings.MultiSelectSelectAll = "MultiSelect.SelectAll" -> string!
 const Trailblazor.TbStrings.NewTabHint = "NewTabHint" -> string!
 const Trailblazor.TbStrings.NumberFieldAtLeast = "NumberField.AtLeast" -> string!
 const Trailblazor.TbStrings.NumberFieldAtMost = "NumberField.AtMost" -> string!
@@ -2512,7 +2519,6 @@ override Trailblazor.TbRadioGroup<TValue>.FocusAsync(bool preventScroll = false)
 ~override Trailblazor.TbRangeSlider<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbRangeSlider<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 ~override Trailblazor.TbRoot.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-override Trailblazor.TbSelect<TValue>.OnParametersSet() -> void
 ~override Trailblazor.TbSelectBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbSelectBase<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbSelectBase<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!

@@ -44,7 +44,15 @@
                 class="@ClassNames.Join("tb-field__input", "tb-select__native", Classes?.Input)">
             @if (!Multiple && SelectedOptions.Count == 0)
             {
-                <option value="" selected>@Placeholder</option>
+                @* A value no option has posts back unchanged. *@
+                @if (UnmatchedValueText is { } unmatched)
+                {
+                    <option value="@FormatItem(Value)" selected data-unmatched>@unmatched</option>
+                }
+                else
+                {
+                    <option value="" selected>@Placeholder</option>
+                }
             }
             <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
         </select>
@@ -56,6 +64,14 @@
         @<div @ref="_listbox" id="@ListboxId" popover="@(Filterable ? null : "auto")" role="listbox"
               aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-multiselectable="@(Multiple ? "true" : null)"
               data-part="listbox" class="tb-select__listbox">
+            @if (ShowSelectAll)
+            {
+                <div id="@ListboxId-all" role="option" aria-selected="@(AllChosen ? "true" : "false")"
+                     aria-disabled="@(HasEnabledOptions ? null : "true")"
+                     data-part="select-all" class="tb-select__option tb-select__select-all" @onclick="SelectAllAsync">
+                    @SelectAllText
+                </div>
+            }
             @* Not fixed, so every option re-renders with the select and its aria-selected follows the value. *@
             <CascadingValue Value="this">@ChildContent</CascadingValue>
         </div>;

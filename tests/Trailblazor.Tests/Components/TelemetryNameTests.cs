@@ -1,6 +1,7 @@
 using System.Diagnostics.Metrics;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.JSInterop;
@@ -137,6 +138,22 @@ public class TelemetryNameTests : BunitContext
 
         Assert.Equal(["trail-size"], Names(_shown));
         Assert.Equal([("trail-size", "TbSelect", null), ("size-large", "TbOption", null)], Uses());
+    }
+
+    [Fact]
+    public void SelectAll_ShouldCountItsUseWithTheInput_WhenTheSelectHasATelemetryName()
+    {
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Label, "Sizes")
+            .Add(select => select.TelemetryName, "trail-sizes").Add(select => select.SelectAll, true)
+            .AddChildContent<TbOption<string>>(option => option.Add(choice => choice.Value, "L")));
+
+        cut.Find("[data-part=select-all]").Click(new MouseEventArgs { Detail = 1 });
+        cut.Find("[data-part=select-all]").Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.Equal([("trail-sizes", "TbMultiSelect", "select_all"), ("trail-sizes", "TbMultiSelect", "select_all")],
+            Uses());
+        Assert.Equal(["pointer", "keyboard"],
+            _used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.input"]));
     }
 
     [Fact]

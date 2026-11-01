@@ -86,6 +86,66 @@ public class TbMultiSelectTests : BunitContext
     }
 
     [Fact]
+    public void SelectAll_ShouldChooseEveryEnabledOptionAfterThoseChosen_WhenSomeAreNotChosen()
+    {
+        var cut = RenderMultiSelect(["Olives"], selectAll: true, disabled: "Ham");
+
+        var all = cut.Find("[data-part=select-all]");
+        Assert.Equal(("option", "false", "Select all"),
+            (all.GetAttribute("role"), all.GetAttribute("aria-selected"), all.TextContent.Trim()));
+        all.Click();
+
+        Assert.Equal(["Olives", "Cheese"], Toppings);
+        Assert.Equal("true", cut.Find("[data-part=select-all]").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public void SelectAll_ShouldTakeOutEveryEnabledOptionButKeepADisabledOne_WhenAllEnabledAreChosen()
+    {
+        var cut = RenderMultiSelect(["Ham", "Cheese", "Olives"], selectAll: true, disabled: "Ham");
+
+        cut.Find("[data-part=select-all]").Click();
+
+        Assert.Equal(["Ham"], Toppings);
+        Assert.Equal("false", cut.Find("[data-part=select-all]").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public void SelectAll_ShouldLeaveTheValue_WhenTheSelectIsReadOnly()
+    {
+        var cut = RenderMultiSelect(["Olives"], selectAll: true, readOnly: true);
+
+        cut.Find("[data-part=select-all]").Click();
+
+        Assert.Equal(["Olives"], Toppings);
+    }
+
+    [Fact]
+    public void SelectAll_ShouldBeNamedFromTheLabelsAndDoNothing_WhenNoOptionIsEnabled()
+    {
+        var changes = 0;
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.SelectAll, true)
+            .Add(select => select.ValueChanged, (IReadOnlyList<string> _) => changes++)
+            .Add(select => select.Labels, new SelectLabels { SelectAll = "Every status" }));
+
+        var all = cut.Find("[data-part=select-all]");
+        Assert.Equal(("Every status", "true"), (all.TextContent.Trim(), all.GetAttribute("aria-disabled")));
+        all.Click();
+
+        Assert.Equal(0, changes);
+    }
+
+    [Fact]
+    public void Render_ShouldHaveNoSelectAllOption_WhenNotAskedForOrRenderedStatically()
+    {
+        Assert.Empty(RenderMultiSelect([]).FindAll("[data-part=select-all]"));
+
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        Assert.Empty(RenderMultiSelect([], selectAll: true).FindAll("[data-part=select-all], option[value='']"));
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenAnOptionsValueIsNotTheItemType()
     {
         var exception = Assert.Throws<InvalidOperationException>(() => Render<TbMultiSelect<long>>(parameters =>
@@ -100,29 +160,33 @@ public class TbMultiSelectTests : BunitContext
     }
 
     private IRenderedComponent<TbMultiSelect<string>> RenderMultiSelect(IReadOnlyList<string> value,
-        Func<IReadOnlyList<string>?, IEnumerable<string>>? validation = null)
+        Func<IReadOnlyList<string>?, IEnumerable<string>>? validation = null, bool selectAll = false,
+        string? disabled = null, bool readOnly = false)
     {
         Toppings = value;
         return Render<TbMultiSelect<string>>(parameters => parameters
             .Add(select => select.Label, "Toppings")
             .Add(select => select.Placeholder, "Add toppings")
             .Add(select => select.Clearable, true)
+            .Add(select => select.SelectAll, selectAll)
+            .Add(select => select.ReadOnly, readOnly)
             .Add(select => select.Validation, validation)
             .Add(select => select.Value, value)
             .Add(select => select.ValueChanged, (IReadOnlyList<string> next) => Toppings = next)
             .Add(select => select.ValueExpression, (Expression<Func<IReadOnlyList<string>>>)(() => Toppings))
             .Add(select => select.ChildContent, (RenderFragment)(builder =>
             {
-                AddOption(builder, 0, "Cheese");
-                AddOption(builder, 10, "Ham");
-                AddOption(builder, 20, "Olives");
+                AddOption(builder, 0, "Cheese", disabled == "Cheese");
+                AddOption(builder, 10, "Ham", disabled == "Ham");
+                AddOption(builder, 20, "Olives", disabled == "Olives");
             })));
     }
 
-    private static void AddOption(RenderTreeBuilder builder, int sequence, string value)
+    private static void AddOption(RenderTreeBuilder builder, int sequence, string value, bool disabled = false)
     {
         builder.OpenComponent<TbOption<string>>(sequence);
         builder.AddAttribute(sequence + 1, nameof(TbOption<string>.Value), value);
+        builder.AddAttribute(sequence + 2, nameof(TbOption<string>.Disabled), disabled);
         builder.CloseComponent();
     }
 }

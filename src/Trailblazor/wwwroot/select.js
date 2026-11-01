@@ -49,7 +49,9 @@ export function createSelect(combobox, listbox, toggle) {
     const applyFilter = () => {
         const query = fold(filter.value.trim());
         for (const option of listbox.querySelectorAll('[role="option"]')) {
-            const hide = !fold(option.dataset.text || option.textContent).includes(query);
+            // Choosing every option means nothing while only some are shown.
+            const hide = option.dataset.part === 'select-all' ? query !== ''
+                : !fold(option.dataset.text || option.textContent).includes(query);
             if (option.hidden !== hide) {
                 option.hidden = hide;
             }
@@ -102,7 +104,9 @@ export function createSelect(combobox, listbox, toggle) {
         return options[Math.min(Math.max(index + step, 0), options.length - 1)];
     };
     const typeahead = key => {
-        const match = typing.find(enabled(), active ?? selected(), key);
+        // Typing finds an option by its name, so it passes over "Select all".
+        const match = typing.find(enabled().filter(option => option.dataset.part !== 'select-all'),
+            active ?? selected(), key);
         if (match) {
             open(match);
         }
