@@ -95,8 +95,9 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Parameter]
     public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
-    /// <summary>Moves focus to the control once the page is interactive, as a dialog or a search page does with its
-    /// first field. Give it to one field at most.</summary>
+    /// <summary>Moves focus to the control, as a dialog or a search page does with its first field, as it appears on
+    /// an interactive page, unless the user is typing in another field by then. In a dialog or focus scope it takes
+    /// focus as that opens. Give it to one field at most.</summary>
     [Parameter]
     public bool AutoFocus { get; set; }
 
@@ -127,9 +128,6 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     private IServiceProvider Services { get; set; } = default!;
 
     [CascadingParameter]
-    private DialogReference? Dialog { get; set; }
-
-    [CascadingParameter]
     private TbFocusScope? FocusScope { get; set; }
 
     private protected ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
@@ -157,7 +155,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     // A group's root keeps its id, since its items each have their own, and carries the group's autofocus.
     private protected IReadOnlyDictionary<string, object>? GroupRootAttributes =>
-        WithFocusEvents(AutoFocus ? WithAutofocus(AdditionalAttributes) : AdditionalAttributes);
+        WithFocusEvents(MarkAutoFocus ? WithAutofocus(AdditionalAttributes) : AdditionalAttributes);
 
     private protected string LabelId => $"{FieldId}-label";
 
@@ -166,12 +164,16 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     private protected string? LabelHiddenClass => Label is null && AriaLabel is not null ? "tb-visually-hidden" : null;
 
-    // The consumer's input attributes, marked for focus when asked, which dialogs and focus scopes look for. It isn't
-    // the native autofocus, which some browsers act on as soon as the field appears. A field with several controls
-    // marks one itself: a group its root, a range its first part.
+    // The consumer's input attributes, marked for focus on an interactive page when asked, which the browser, dialogs
+    // and focus scopes look for. It isn't the native autofocus, which browsers act on even where a closed dialog or a
+    // focus scope should place focus. A field with several controls marks one itself: a group its root, a range its
+    // first part.
     private protected IReadOnlyDictionary<string, object>? ControlAttributes { get; private set; }
 
-    private protected string? AutoFocusMark => AutoFocus ? "" : null;
+    private protected string? AutoFocusMark => MarkAutoFocus ? "" : null;
+
+    // RendererInfo is read only when asked for, since a test renderer may never set it.
+    private bool MarkAutoFocus => AutoFocus && RendererInfo.IsInteractive;
 
     // A label's for attribute works only on form controls; other inputs name themselves with aria-labelledby.
     private protected virtual bool LabelTargetsInput => true;
@@ -218,7 +220,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        ControlAttributes = AutoFocus ? WithAutofocus(InputAttributes) : InputAttributes;
+        ControlAttributes = MarkAutoFocus ? WithAutofocus(InputAttributes) : InputAttributes;
         // A new value from the parent replaces text the user typed that didn't parse.
         if (_parseError is not null && !EqualityComparer<TValue>.Default.Equals(Value, _valueAtParseError))
         {
@@ -441,20 +443,13 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // A dialog or focus scope that is opening notes where focus was and then moves it to the marked control itself;
-        // one already open, or a scope that leaves focus alone, lets the field take it.
-        if (firstRender && AutoFocus && RendererInfo.IsInteractive)
+        // A focus scope decides when its field takes focus; elsewhere the browser focuses the marked control as it is
+        // added (autofocus.js), or an opening dialog does.
+        if (firstRender && AutoFocus && RendererInfo.IsInteractive && FocusScope is not null)
         {
             try
             {
-                if (FocusScope is not null)
-                {
-                    await FocusScope.FocusWhenActiveAsync(() => FocusAsync());
-                }
-                else if (Dialog is null or { Opened: true })
-                {
-                    await FocusAsync();
-                }
+                await FocusScope.FocusWhenActiveAsync(() => FocusAsync());
             }
             catch (JSDisconnectedException)
             {

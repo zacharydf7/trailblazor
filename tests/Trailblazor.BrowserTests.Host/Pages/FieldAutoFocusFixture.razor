@@ -7,10 +7,36 @@
 <TbDateRangePicker TDate="DateOnly" Label="Dates" @bind-Value="_dates" OnBlur="() => _datesLeft++" />
 <button type="button">After the dates</button>
 <output data-testid="dates-left">@_datesLeft</output>
+<TbCheckbox Label="Other trail" @bind-Value="_other" />
+@if (_other)
+{
+    <TbTextField TValue="string" Label="Which trail" AutoFocus />
+}
+<TbButton OnClick="() => _note = true">Add a note</TbButton>
+<TbButton OnClick="AddNoteLaterAsync">Add a note later</TbButton>
+@if (_note)
+{
+    <TbTextField Label="Note" @bind-Value="_noteText" AutoFocus />
+}
+@foreach (var step in _steps)
+{
+    <TbTextField TValue="string" @key="step" Label="@step" AutoFocus="@(step == "First step")" />
+}
+<TbButton OnClick="() => _steps.Reverse()">Reverse the steps</TbButton>
 
 @code {
     private string? _name;
     private string? _trail;
     private DateRange<DateOnly> _dates;
     private int _datesLeft;
+    private bool _note;
+    private bool _other;
+    private string? _noteText;
+    private readonly List<string> _steps = ["First step", "Second step"];
+
+    private async Task AddNoteLaterAsync()
+    {
+        await Task.Delay(500);
+        _note = true;
+    }
 }

@@ -91,9 +91,13 @@ export function createFocusScope(container, options) {
 // so a wrapper gives its first control instead.
 export function autofocusTarget(container) {
     const named = container?.querySelector('[autofocus], [data-tb-autofocus]');
-    // A marked group sends focus where Tab would: to its checked radio, or else to its first control.
-    return named && (isTabbable(named) ? named
-        : [...named.querySelectorAll('input[type=radio]:checked')].find(isTabbable) ?? getTabbables(named)[0] ?? null);
+    return named && markedTarget(named);
+}
+
+// A marked group sends focus where Tab would: to its checked radio, or else to its first control.
+export function markedTarget(named) {
+    return isTabbable(named) ? named
+        : [...named.querySelectorAll('input[type=radio]:checked')].find(isTabbable) ?? getTabbables(named)[0] ?? null;
 }
 
 // The first control Tab would reach in the container, or null.

@@ -36,6 +36,60 @@ public class FieldFocusTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AutoFocus_ShouldFocusTheField_WhenItAppearsOnThePageLater(string browser)
+    {
+        var page = await OpenAsync(browser, "/field-autofocus");
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" })).ToBeFocusedAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add a note", Exact = true }).ClickAsync();
+
+        await Expect(page.GetByLabel("Note")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AutoFocus_ShouldLeaveFocusInTheFieldTheUserIsTypingIn_WhenAnotherFieldAppears(string browser)
+    {
+        var page = await OpenAsync(browser, "/field-autofocus");
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" })).ToBeFocusedAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add a note later" }).ClickAsync();
+        var name = page.GetByRole(AriaRole.Textbox, new() { Name = "Name", Exact = true });
+
+        await name.FillAsync("Ada");
+        await Expect(page.GetByLabel("Note")).ToBeVisibleAsync();
+
+        await Expect(name).ToBeFocusedAsync();
+        await page.Keyboard.TypeAsync(" Lovelace");
+        await Expect(name).ToHaveValueAsync("Ada Lovelace");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AutoFocus_ShouldFocusTheField_WhenACheckboxRevealsIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/field-autofocus");
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" })).ToBeFocusedAsync();
+
+        await page.GetByRole(AriaRole.Checkbox, new() { Name = "Other trail" }).ClickAsync();
+
+        await Expect(page.GetByLabel("Which trail")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AutoFocus_ShouldNotTakeFocusAgain_WhenAReorderMovesTheField(string browser)
+    {
+        var page = await OpenAsync(browser, "/field-autofocus");
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" })).ToBeFocusedAsync();
+        var reverse = page.GetByRole(AriaRole.Button, new() { Name = "Reverse the steps" });
+        // From the keyboard, since WebKit doesn't focus a button that is clicked.
+        await reverse.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.Locator("label", new() { HasText = "step" })).ToHaveTextAsync(["Second step", "First step"]);
+
+        await Expect(page.GetByLabel("First step")).Not.ToBeFocusedAsync();
+        await Expect(reverse).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task AutoFocus_ShouldFocusTheFieldAndGiveFocusBack_WhenItsScopeLeavesFocusAlone(string browser)
     {
         var page = await OpenAsync(browser, "/field-autofocus-scopes");

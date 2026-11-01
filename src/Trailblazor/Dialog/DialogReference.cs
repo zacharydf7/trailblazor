@@ -173,9 +173,6 @@ public abstract class DialogReference
     // Set once closing starts, so a second close while the dialog fades out does nothing.
     internal bool Closing { get; set; }
 
-    // Set once the browser's dialog has opened and placed focus, so a field shown later focuses itself.
-    internal bool Opened { get; set; }
-
     // A second request while the content is still deciding, such as a double click on the backdrop, is ignored.
     internal async Task DismissAsync(DialogDismissReason reason)
     {

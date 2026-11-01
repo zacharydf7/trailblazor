@@ -107,14 +107,15 @@ public class FieldFocusAndNameTests : BunitContext
         Assert.Throws<MissingEventHandlerException>(() => cut.Find("input").Focus());
     }
 
+    // The browser focuses the marked control as it is added; the browser tests prove it.
     [Fact]
-    public void Render_ShouldFocusTheInput_WhenAutoFocusIsSet()
+    public void Render_ShouldMarkTheInputForFocus_WhenAutoFocusIsSet()
     {
         var cut = Render<TbTextField<string>>(parameters => parameters
             .Add(field => field.Label, "Name")
             .Add(field => field.AutoFocus, true));
 
-        JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(cut.Find("input"));
+        Assert.True(cut.Find("input").HasAttribute("data-tb-autofocus"));
     }
 
     // Which of the field and an opening scope places focus depends on the browser's timing; the browser tests prove
@@ -147,12 +148,22 @@ public class FieldFocusAndNameTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldNotFocus_WhenAutoFocusIsNotSet()
+    public void Render_ShouldNotMarkTheField_WhenAutoFocusIsNotSet()
     {
-        Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Name"));
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Name"));
 
-        Assert.DoesNotContain(JSInterop.Invocations,
-            invocation => invocation.Identifier.EndsWith("focus", StringComparison.Ordinal));
+        Assert.Empty(cut.FindAll("[data-tb-autofocus]"));
+    }
+
+    [Fact]
+    public void Render_ShouldNotMarkTheField_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbTextField<string>>(parameters => parameters
+            .Add(field => field.Label, "Name").Add(field => field.AutoFocus, true));
+
+        Assert.Empty(cut.FindAll("[data-tb-autofocus]"));
     }
 
     [Fact]
@@ -173,12 +184,12 @@ public class FieldFocusAndNameTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldFocusTheCombobox_WhenASelectHasAutoFocus()
+    public void Render_ShouldMarkTheComboboxForFocus_WhenASelectHasAutoFocus()
     {
         var cut = Render<TbSelect<string>>(parameters => parameters
             .Add(field => field.Label, "Trail")
             .Add(field => field.AutoFocus, true));
 
-        JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(cut.Find("[role=combobox]"));
+        Assert.True(cut.Find("[role=combobox]").HasAttribute("data-tb-autofocus"));
     }
 }

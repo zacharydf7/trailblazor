@@ -128,7 +128,6 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
                 }
 
                 _handle = handle;
-                Dialog.Opened = true;
                 Dialog.CloseInBrowserAsync = CloseInBrowserAsync;
                 // The dialog may have changed while the script loaded.
                 await ApplyStateAsync();

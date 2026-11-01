@@ -43,7 +43,8 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     private const string FieldAccessibility = "With no room for a label, an `AriaLabel` names the field through a "
         + "label only screen readers see. `OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
         + "between its own parts, so they suit checking or saving when the user moves on. `AutoFocus` moves focus to "
-        + "it once the page is interactive, or, in a dialog or focus scope, as it opens.";
+        + "it as it appears on an interactive page, unless the user is typing in another field by then, or, in a "
+        + "dialog or focus scope, as that opens.";
 
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "

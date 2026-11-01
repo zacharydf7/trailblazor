@@ -162,9 +162,9 @@ public class ComponentContractTests : BunitContext
     }
 
     [Theory, MemberData(nameof(Fields))]
-    public void Render_ShouldFocusTheField_WhenAutoFocusIsSet(Type field)
+    public void Render_ShouldMarkOneControlForFocus_WhenAutoFocusIsSet(Type field)
     {
-        // Fields take focus only once the page is interactive.
+        // Fields are marked only on an interactive page; the browser focuses the mark as it appears.
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var cut = Render(builder =>
         {
@@ -175,8 +175,6 @@ public class ComponentContractTests : BunitContext
             builder.CloseComponent();
         });
 
-        Assert.Contains(JSInterop.Invocations,
-            invocation => invocation.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
         Assert.Single(cut.FindAll("[data-tb-autofocus]"));
     }
 
