@@ -148,6 +148,7 @@
 @code {
     private RenderFragment Row(TItem item, object key, bool selected, int at) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
+             @ontbrowclick="args => OnRowClickedAsync(item, args)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
                         RowClass?.Invoke(item))">
             @if (CanReorder)

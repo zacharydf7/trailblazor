@@ -36,7 +36,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private ElementReference _body;
     private IJSObjectReference? _handle;
     private IJSObjectReference? _reorder;
-    private DotNetObjectReference<DataGridEvents>? _events;
     private DotNetObjectReference<SortableEvents>? _moveEvents;
     private ItemMover<TItem>? _mover;
     private bool _reorderable;
@@ -413,8 +412,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
-        _events = DotNetObjectReference.Create(new DataGridEvents(OnRowClickedAsync));
-        var handle = await module.InvokeAsync<IJSObjectReference?>("createDataGrid", _table, _events);
+        var handle = await module.InvokeAsync<IJSObjectReference?>("createDataGrid", _table);
         if (handle is not null && _disposed)
         {
             await handle.DisposeHandleAsync();
@@ -796,9 +794,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private bool SomeSelected => !AllSelected && _rows.Any(IsSelected);
 
-    private async Task OnRowClickedAsync(string id)
+    private async Task OnRowClickedAsync(TItem item, RowClickEventArgs args)
     {
-        if (_rows.FirstOrDefault(row => IdOf(row) == id) is not { } item)
+        if (args.OnControl)
         {
             return;
         }
@@ -808,8 +806,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             await ToggleAsync(item);
         }
-
-        StateHasChanged();
     }
 
     private object KeyOf(TItem item) => KeySelector?.Invoke(item) ?? item!;
@@ -838,7 +834,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             await _reorder.DisposeHandleAsync();
         }
 
-        _events?.Dispose();
         _moveEvents?.Dispose();
     }
 }

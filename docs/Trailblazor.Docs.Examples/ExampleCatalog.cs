@@ -1498,8 +1498,11 @@ public static class ExampleCatalog
                 + "before clicking a row. Rows carry `data-key` and `data-selected`, and cells `data-column`, the "
                 + "field's path such as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its "
                 + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
-                + "the text is empty or when another key has it. In bUnit, find rows with `tr[data-part=row]` and "
-                + "their key. A row draws again only when its item, its selection or the columns change, so a test "
+                + "the text is empty or when another key has it. In bUnit, `cut.Tb().Grid(\"Trails\")` from "
+                + "`Trailblazor.Testing` has the same `Row` and `SelectAsync`, and `ClickRowAsync(\"Cedar Flats\")` "
+                + "clicks a row as the browser reports it, raising `OnRowClick` and, with `RowClickSelects`, "
+                + "selecting it; a plain bUnit `Click()` on the row doesn't. A row draws again only when its item, "
+                + "its selection or the columns change, so a test "
                 + "that changes what a `Cell` template shows calls `RenderRows`, as the app does, and one that "
                 + "changes `Items` in place calls `RefreshAsync`.",
             Telemetry =

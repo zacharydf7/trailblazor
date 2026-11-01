@@ -41,4 +41,12 @@ function registerEvents(blazor) {
     };
     blazor.registerCustomEventType('tbfocusenter', { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
     blazor.registerCustomEventType('tbfocusleave', { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
+
+    // A click on a data grid row says whether it landed on a control in the row, whose click is the control's own.
+    const rowControls = 'a[href], button, input, select, textarea, label, summary, [contenteditable], '
+        + '[role="button"], [role="checkbox"], [role="combobox"], [role="switch"], [role="link"]';
+    blazor.registerCustomEventType('tbrowclick', {
+        browserEventName: 'click',
+        createEventArgs: event => ({ onControl: !!event.target.closest?.(rowControls) }),
+    });
 }

@@ -100,7 +100,7 @@ public class TbDataGridTests : BunitContext
             })));
         var keys = cut.FindAll("tr[data-part=row]").Select(row => row.GetAttribute("data-key")!).ToList();
 
-        await cut.InvokeAsync(() => Events().OnRowClick(keys[1]));
+        await ClickAsync(cut.FindAll("tr[data-part=row]")[1]);
 
         Assert.Equal(2, keys.Distinct().Count());
         Assert.Equal("South", clicked?.Name);
@@ -116,7 +116,7 @@ public class TbDataGridTests : BunitContext
             .Add(grid => grid.OnRowClick, (Trail trail) => clicked = trail));
         var keys = cut.FindAll("tr[data-part=row]").Select(row => row.GetAttribute("data-key")!).ToList();
 
-        await cut.InvokeAsync(() => Events().OnRowClick(keys[1]));
+        await ClickAsync(cut.FindAll("tr[data-part=row]")[1]);
 
         Assert.Equal("1", keys[0]);
         Assert.NotEqual(keys[0], keys[1]);
@@ -470,7 +470,7 @@ public class TbDataGridTests : BunitContext
             .Add(grid => grid.OnRowClick, (Trail trail) => clicked = trail)
             .Add(grid => grid.SelectedItemChanged, (Trail? trail) => selected = trail));
 
-        await cut.InvokeAsync(() => Events().OnRowClick("3"));
+        await ClickAsync(Row(cut, "3"));
 
         Assert.Equal(3, clicked?.Id);
         Assert.Equal(3, selected?.Id);
@@ -479,12 +479,26 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task RowClick_ShouldLeaveTheClickToTheControl_WhenItLandsOnAControlInTheRow()
+    {
+        Trail? clicked = null;
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Single)
+            .Add(grid => grid.OnRowClick, (Trail trail) => clicked = trail));
+
+        await ClickAsync(Row(cut, "3"), onControl: true);
+
+        Assert.Null(clicked);
+        Assert.Null(Row(cut, "3").GetAttribute("data-selected"));
+    }
+
+    [Fact]
     public async Task Select_ShouldKeepTheRow_WhenOnlySelectedItemIsBoundAndPassedBack()
     {
         var cut = RenderTrails(configure: parameters => parameters
             .Add(grid => grid.SelectionMode, SelectionMode.Single));
 
-        await cut.InvokeAsync(() => Events().OnRowClick("3"));
+        await ClickAsync(Row(cut, "3"));
         cut.Render(parameters => parameters.Add(grid => grid.SelectedItem, Trails[2]));
 
         Assert.NotNull(Row(cut, "3").GetAttribute("data-selected"));
@@ -647,8 +661,9 @@ public class TbDataGridTests : BunitContext
         Assert.Equal("Plan Cedar Flats", Row(cut, "3").QuerySelector("button")!.TextContent);
     }
 
-    private DataGridEvents Events() =>
-        ((DotNetObjectReference<DataGridEvents>)JSInterop.Invocations["createDataGrid"].Single().Arguments[1]!).Value;
+    // The browser reports a row's clicks through its tbrowclick event, saying whether they landed on a control.
+    private static Task ClickAsync(IElement row, bool onControl = false) =>
+        row.TriggerEventAsync("ontbrowclick", new RowClickEventArgs { OnControl = onControl });
 
     [Fact]
     public void Sort_ShouldSortTheItemsOnce_WhenTheParentRendersAgainAndARowIsSelected()

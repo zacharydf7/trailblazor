@@ -195,6 +195,35 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Grid_ShouldClickAndSelectRowsByACellsText_WhenTheRowsCanBeSelected()
+    {
+        Trail? clicked = null;
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.Items, [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")])
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.OnRowClick, (Trail trail) => clicked = trail)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> trails) => selected = trails)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trail>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trail>.Field),
+                    (System.Linq.Expressions.Expression<Func<Trail, object?>>)(trail => trail.Name));
+                builder.CloseComponent();
+            })));
+        var grid = cut.Tb().Grid("Trails");
+
+        await grid.ClickRowAsync("Cedar Flats");
+        await grid.SelectAsync("Lake camp");
+        await grid.SelectAsync("Lake camp");
+
+        Assert.Equal("Cedar Flats", clicked?.Name);
+        Assert.Equal(["Cedar Flats", "Lake camp"], selected.Select(trail => trail.Name).Order());
+        Assert.Throws<InvalidOperationException>(() => grid.Row("Elk Pass"));
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().Grid("Camps").Row("Lake camp"));
+    }
+
+    [Fact]
     public async Task Tree_ShouldExpandSelectAndCheckRowsByTheirTexts_WhenRowsRepeatATextAndHoldATree()
     {
         IReadOnlyCollection<string> selected = [];
@@ -394,4 +423,6 @@ public class TrailblazorMarkupTests : BunitContext
             builder.CloseComponent();
         }
     };
+
+    private sealed record Trail(string Name);
 }

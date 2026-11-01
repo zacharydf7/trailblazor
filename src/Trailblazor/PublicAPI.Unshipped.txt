@@ -2689,3 +2689,7 @@ virtual Trailblazor.TbDialogContent<TResult>.CanDismissAsync(Trailblazor.DialogD
 
 Trailblazor.DialogReference.ContentType.get -> System.Type?
 Trailblazor.DialogReference.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Trailblazor.RowClickEventArgs
+Trailblazor.RowClickEventArgs.OnControl.get -> bool
+Trailblazor.RowClickEventArgs.OnControl.set -> void
+Trailblazor.RowClickEventArgs.RowClickEventArgs() -> void

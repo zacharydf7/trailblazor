@@ -57,6 +57,18 @@ public sealed class TrailblazorMarkup
                 : $"No tree is named \"{name}\".");
     });
 
+    /// <summary>The <c>TbDataGrid</c> whose table has this accessible name, or the only grid in the markup when no
+    /// name is given.</summary>
+    public TbGridDriver Grid(string? name = null) => new(() =>
+    {
+        var tables = _findAll("[data-part=grid] table")
+            .Where(table => name is null || table.GetAttribute("aria-label") == name).ToList();
+        return tables.Count == 1 ? tables[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one data grid, found {tables.Count}; name the one to use."
+                : $"No data grid is named \"{name}\".");
+    });
+
     // A field's label names its control by for or aria-labelledby; a label's text ends with a required marker.
     private IElement Field(string label, params string[] controls)
     {
@@ -318,6 +330,41 @@ public sealed class TbTreeDriver
     {
         var tree = _find();
         return [.. tree.QuerySelectorAll("[role=treeitem][data-key]").Where(row => row.Closest("[role=tree]") == tree)];
+    }
+}
+
+/// <summary>A <c>TbDataGrid</c>, found by its table's accessible name.</summary>
+public sealed class TbGridDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbGridDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The row with a cell whose text is exactly this.</summary>
+    public IElement Row(string cell)
+    {
+        var rows = _find().QuerySelectorAll("tbody tr[data-part=row]")
+            .Where(row => row.Children.Any(td => td.TextContent.Trim() == cell)).ToList();
+        return rows.Count == 1 ? rows[0]
+            : throw new InvalidOperationException(rows.Count == 0
+                ? $"No row has a cell that reads \"{cell}\"."
+                : $"{rows.Count} rows have a cell that reads \"{cell}\".");
+    }
+
+    /// <summary>Clicks the row with a cell whose text is exactly this, away from its controls, as the browser reports
+    /// a click on a plain cell: the grid raises <c>OnRowClick</c> and, with <c>RowClickSelects</c>, selects it.
+    /// </summary>
+    public Task ClickRowAsync(string cell) =>
+        Row(cell).TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+
+    /// <summary>Selects the row with a cell whose text is exactly this, with its checkbox or radio button, unless it
+    /// is selected already.</summary>
+    public Task SelectAsync(string row)
+    {
+        var found = Row(row);
+        var box = found.QuerySelector("[data-part=select] input")
+            ?? throw new InvalidOperationException("The grid's rows can't be selected; set its SelectionMode.");
+        return found.HasAttribute("data-selected") ? Task.CompletedTask : box.ChangeAsync(new ChangeEventArgs());
     }
 }
 

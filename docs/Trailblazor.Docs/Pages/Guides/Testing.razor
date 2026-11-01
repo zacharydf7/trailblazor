@@ -29,12 +29,12 @@
 <TbText>
     To drive fields the way a user does, <code>cut.Tb()</code> finds them by their labels, with the same names as the
     Playwright helpers below: choose an option in a select or list box by its text, read what a select shows, type a
-    number, pick a tab, and open, select or check a tree's rows by their path of texts. As in Playwright, choosing keeps
-    options already chosen and refuses a disabled field. Choosing needs an interactive page, since a static select is a
-    native one that posts with its form. A number field without a <code>Format</code> reads what was typed through its
-    own change event, which bUnit's <code>Change</code> doesn't reach; <code>EnterAsync</code> types into either kind. A
-    field's error is also announced in <code>TbRoot</code>'s live region, so a check that the markup no longer holds an
-    error looks at the field, not the whole page.
+    number, pick a tab, open, select or check a tree's rows by their path of texts, and click or select a grid's rows by
+    a cell's text. As in Playwright, choosing keeps options already chosen and refuses a disabled field. Choosing needs
+    an interactive page, since a static select is a native one that posts with its form. A number field without a
+    <code>Format</code> reads what was typed through its own change event, which bUnit's <code>Change</code> doesn't
+    reach; <code>EnterAsync</code> types into either kind. A field's error is also announced in <code>TbRoot</code>'s
+    live region, so a check that the markup no longer holds an error looks at the field, not the whole page.
 </TbText>
 <CodeBlock Label="Driving fields in bUnit" Code="@BunitDrivers" />
 <TbText>
@@ -162,6 +162,7 @@
         await page.Tb().NumberField("Copies").EnterAsync("12");
         await page.Tb().Tabs().SelectAsync("Route");
         await page.Tb().Tree("Trails by region").SelectAsync("River valley", "Fern Gully");
+        await page.Tb().Grid("Orders").ClickRowAsync("Cedar Flats");
 
         Assert.Equal("Olives, Basil", page.Tb().Select("Toppings").Text);
         """;
