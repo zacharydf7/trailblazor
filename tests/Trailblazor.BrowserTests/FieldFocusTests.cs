@@ -88,6 +88,8 @@ public class FieldFocusTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task OnBlur_ShouldBeRaisedOnlyOnLeaving_WhenFocusMovesBetweenTheFieldsOwnBoxes(string browser)
     {
         var page = await OpenAsync(browser, "/field-autofocus");
+        // The page's autofocused select takes focus once interactive, so the test acts after that.
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" })).ToBeFocusedAsync();
         await page.GetByRole(AriaRole.Group, new() { Name = "Dates" }).Locator("[data-part=start-input]").FocusAsync();
 
         await page.Keyboard.PressAsync("Tab");

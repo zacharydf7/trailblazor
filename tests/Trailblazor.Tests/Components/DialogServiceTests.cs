@@ -521,6 +521,28 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task CloseAsync_ShouldStopCountingTheDialogAsTheTopmostModal_WhenItStartsToFadeOut()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var close = module.SetupModule("openDialog", _ => true).SetupVoid("close");
+        var host = Render<DialogHost>();
+        var changes = 0;
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting", p => p.Set(d => d.Name, "Ada"));
+        var service = Services.GetRequiredService<DialogService>();
+        var accept = host.WaitForElement("[data-testid=accept]");
+        Assert.Same(Dialogs.OpenDialogs.Single(), service.TopmostModal);
+        service.Changed += () => changes++;
+
+        var closing = accept.ClickAsync(new());
+
+        Assert.Null(service.TopmostModal);
+        Assert.Equal(1, changes);
+        close.SetVoidResult();
+        await closing;
+    }
+
+    [Fact]
     public async Task CloseAsync_ShouldStillCompleteAndRemoveTheDialog_WhenTheBrowserCloseFails()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");

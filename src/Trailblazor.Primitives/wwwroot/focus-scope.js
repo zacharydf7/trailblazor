@@ -10,7 +10,7 @@ export function createFocusScope(container, options) {
     // Safari leaves focus on the page when a button opens the scope, so the button pressed is where focus goes back.
     const previouslyFocused = focusOrigin();
     let lastFocusedInside = null;
-    const scope = { dispose };
+    const scope = { dispose, focusMarkedIfUnmoved };
 
     if (options.trapped) {
         trappedScopes.push(scope);
@@ -23,7 +23,15 @@ export function createFocusScope(container, options) {
         (autofocusTarget(container) ?? getTabbables(container)[0] ?? container).focus();
     }
 
+    const settled = document.activeElement;
     return scope;
+
+    // A field marked to take focus asked before the scope started; it takes focus unless the user has moved it.
+    function focusMarkedIfUnmoved() {
+        if (document.activeElement === settled) {
+            autofocusTarget(container)?.focus();
+        }
+    }
 
     function isActiveTrap() {
         return trappedScopes.at(-1) === scope;

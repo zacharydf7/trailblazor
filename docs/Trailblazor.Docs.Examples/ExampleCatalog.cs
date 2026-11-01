@@ -1181,8 +1181,9 @@ public static class ExampleCatalog
                 "Escape, the backdrop and the close button ask the dialog first: override `CanDismissAsync` in a "
                     + "`TbDialogContent`, or set `CanDismiss` on a `TbDialog`, to keep it open, as the rename dialog "
                     + "does once its name has changed. Closing from code doesn't ask.",
-                "A dialog fades in and out with the motion tokens, and focus goes back to its opener once it has "
-                    + "faded; reduced motion opens and closes it at once.",
+                "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
+                    + "starts to fade out, the page takes input again and focus goes back to its opener, unless focus "
+                    + "had already left the dialog.",
                 "A dialog that isn't modal can be `Draggable` by its header and `Resizable` by its bottom-end grip. "
                     + "Neither needs dragging: the header gains a Move button whose menu picks a place, and the grip "
                     + "is a Resize button whose menu picks a size. While either button has focus, the arrow keys "

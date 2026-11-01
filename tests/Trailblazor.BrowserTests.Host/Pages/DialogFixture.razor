@@ -29,6 +29,7 @@
     <TbButton OnClick="() => HintedAsync(locked: true)">Hinted locked</TbButton>
     <TbButton OnClick="SuggestAsync">Suggest</TbButton>
     <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
+    <input aria-label="Page note" />
 </TbStack>
 <output data-testid="result">@_result</output>
 <output data-testid="page-clicks">@_pageClicks</output>

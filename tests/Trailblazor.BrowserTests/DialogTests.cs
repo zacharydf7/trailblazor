@@ -224,6 +224,57 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldLetThePageTakeInputAndKeepItsFocus_WhenAModalFadesOut(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        // A long fade, so the test acts while the dialog is still leaving.
+        await page.AddStyleTagAsync(new() { Content = ":root { --tb-motion-duration-normal: 3s; }" });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Rename" }).ClickAsync();
+        var dialog = page.Locator("dialog.tb-dialog");
+        await Expect(page.GetByRole(AriaRole.Dialog).GetByLabel("Name")).ToBeFocusedAsync();
+        // Counts focus moving onto the closing dialog's controls, which would raise their focus and blur events.
+        await dialog.EvaluateAsync("""
+            dialog => dialog.addEventListener('focusin', event => {
+                window.focusedWhileClosing = (window.focusedWhileClosing ?? 0) + (event.target === dialog ? 0 : 1);
+            })
+            """);
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(dialog).ToHaveAttributeAsync("data-leaving", "");
+        // The dialog and its backdrop both fade as the dialog lets the page go; WebKit lists no ::backdrop animation.
+        var fading = await dialog.EvaluateAsync<bool[]>("""
+            dialog => [false, true].map(backdrop => dialog.getAnimations({ subtree: true })
+                .some(animation => (animation.effect.pseudoElement === '::backdrop') === backdrop))
+            """);
+        Assert.Equal(new[] { true, browser != "webkit" }, fading);
+        var note = page.GetByLabel("Page note");
+        await note.FocusAsync();
+        await page.Keyboard.TypeAsync("hi");
+
+        await Expect(note).ToHaveValueAsync("hi");
+        Assert.True(await dialog.EvaluateAsync<bool>("dialog => dialog.hasAttribute('data-leaving')"),
+            "The dialog finished leaving before the page was used.");
+        await Expect(dialog).ToBeHiddenAsync(new() { Timeout = 10_000 });
+        await Expect(note).ToBeFocusedAsync();
+        Assert.Equal(0, await page.EvaluateAsync<int>("() => window.focusedWhileClosing ?? 0"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldRefocusTheOpener_WhenFocusWasOnThePageBodyAsItClosed(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        var rename = page.GetByRole(AriaRole.Button, new() { Name = "Rename" });
+        await rename.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Dialog).GetByLabel("Name")).ToBeFocusedAsync();
+
+        // As when the focused control is removed, focus falls to the body.
+        await page.EvaluateAsync("() => document.activeElement.blur()");
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(rename).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldCancelAndRefocusTheOpener_WhenEscapeIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");

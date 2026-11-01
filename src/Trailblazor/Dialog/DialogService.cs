@@ -19,7 +19,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     internal HostCheck Hosts { get; } = new("A dialog", time, logger);
 
     // A modal makes the rest of the page inert, so toasts and announcements go inside the topmost one.
-    public DialogReference? TopmostModal => _open.LastOrDefault(dialog => dialog.IsBlocking);
+    public DialogReference? TopmostModal => _open.LastOrDefault(dialog => dialog.IsBlocking && !dialog.Closing);
 
     // Raised when a dialog opens, closes, or starts or stops blocking the page, so the hosts re-render.
     public event Action? Changed;
@@ -181,6 +181,8 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             dialog.Closing = true;
         }
 
+        // The page takes input while the dialog fades out, so its toasts and announcements go back to the page now.
+        Changed?.Invoke();
         try
         {
             if (dialog.CloseInBrowserAsync is { } closeInBrowser)

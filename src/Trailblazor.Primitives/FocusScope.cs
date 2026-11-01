@@ -20,6 +20,8 @@ internal sealed class FocusScope : IAsyncDisposable
         return new FocusScope(handle);
     }
 
+    public ValueTask FocusMarkedIfUnmovedAsync() => _handle.InvokeVoidAsync("focusMarkedIfUnmoved");
+
     public async ValueTask DisposeAsync()
     {
         if (_disposed)

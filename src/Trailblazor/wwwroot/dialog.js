@@ -386,15 +386,36 @@ export function openDialog(dialog, dotNet, options) {
                 await nextFrame();
             }
         },
-        // Closes the dialog and gives focus back to whatever opened it.
+        // Closes the dialog and gives focus back to whatever opened it, unless focus has already moved on.
         async close() {
-            const hadFocus = dialog.contains(document.activeElement);
+            const giveBack = dialog.contains(document.activeElement) || document.activeElement === document.body;
             finish();
-            await leave();
-            hide();
-            if ((hadFocus || document.activeElement === document.body) && opener?.isConnected) {
+            // A modal keeps the page inert, so it fades out as a popover and the page takes input at once. Its content
+            // goes inert first, so showing it again doesn't move focus into it.
+            dialog.dataset.leaving = '';
+            for (const child of dialog.children) {
+                child.inert = true;
+            }
+
+            if (entry.modal) {
+                hide();
+                show(dialog, false);
+                // Shown again, it would start its transition afresh, which WebKit sometimes drops, so it fades out as
+                // an animation with the transition's timing; reduced motion makes that 0s.
+                const { transitionDuration, transitionTimingFunction } = getComputedStyle(dialog);
+                const timing = { duration: parseFloat(transitionDuration) * 1000, easing: transitionTimingFunction };
+                if (timing.duration > 0) {
+                    dialog.animate([{ opacity: 1 }, { opacity: 0 }], timing);
+                    dialog.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, pseudoElement: '::backdrop' });
+                }
+            }
+
+            if (giveBack && opener?.isConnected) {
                 opener.focus();
             }
+
+            await leave();
+            hide();
         },
         // Cleans up when the dialog is removed without being closed, for example when its host goes away.
         dispose() {
