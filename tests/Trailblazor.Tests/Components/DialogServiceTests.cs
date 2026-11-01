@@ -80,6 +80,17 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ShowAsync_ShouldTakeTheAppWideLayerUnlessItsOptionsSetOne_WhenTheAppKeepsDialogsOnThePage()
+    {
+        Services.Configure<TrailblazorOptions>(options => options.Dialogs.TopLayer = false);
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting");
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting", options: new() { TopLayer = true });
+
+        Assert.Equal([false, true], Dialogs.OpenDialogs.Select(dialog => dialog.Options.TopLayer));
+    }
+
+    [Fact]
     public async Task CloseAsync_ShouldCompleteWithTheValueAndRemoveTheDialog_WhenTheDialogConfirms()
     {
         var host = Render<DialogHost>();

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
@@ -41,6 +42,9 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
+
+    [Inject]
+    private IOptions<TrailblazorOptions> Settings { get; set; } = default!;
 
     private string TitleId => $"{_id}-title";
 
@@ -120,7 +124,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             }
 
             _self = DotNetObjectReference.Create(this);
-            var handle = await module.InvokeAsync<IJSObjectReference?>("openDialog", _element, _self, Dialog.Options);
+            var handle = await module.InvokeAsync<IJSObjectReference?>("openDialog", _element, _self, Dialog.Options,
+                Settings.Value.Dialogs.OutsidePopups);
             if (handle is not null)
             {
                 if (_disposed)

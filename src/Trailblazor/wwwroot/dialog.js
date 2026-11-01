@@ -69,8 +69,51 @@ function dialogFocusTarget(dialog, options) {
         ?? (options.initialFocus === 'Dialog' ? dialog : body?.querySelector(focusableSelector) ?? dialog);
 }
 
-function show(dialog, modal) {
-    if (modal) {
+// The elements the topmost modal on the page layer made inert, with that dialog.
+let pageBlock = { dialog: null, elements: [] };
+
+// Blazor's reconnect dialog and error bar, which must work whatever is open.
+const alwaysUsable = ['#components-reconnect-modal', '#blazor-error-ui'];
+
+// The top layer would make the page inert, popups other scripts add to it included, so a modal on the page layer
+// makes everything beside it and its ancestors inert itself. Only the topmost one counts, however they close.
+function blockPage() {
+    const topEntry = stack.findLast(entry => entry.modal && !entry.topLayer);
+    const top = topEntry?.dialog ?? null;
+    if (top === pageBlock.dialog) {
+        return;
+    }
+
+    for (const element of pageBlock.elements) {
+        element.inert = false;
+    }
+
+    const elements = [];
+    for (let node = top; node && node !== document.body; node = node.parentElement) {
+        for (const sibling of node.parentElement?.children ?? []) {
+            if (sibling !== node && !sibling.inert && !sibling.matches(topEntry.usable)) {
+                sibling.inert = true;
+                elements.push(sibling);
+            }
+        }
+    }
+
+    pageBlock = { dialog: top, elements };
+}
+
+function show(dialog, modal, topLayer) {
+    if (!topLayer) {
+        // Out of the top layer, it draws its own backdrop, under popups added to the page.
+        dialog.removeAttribute('popover');
+        dialog.toggleAttribute('data-backdrop', modal);
+        if (modal) {
+            dialog.setAttribute('aria-modal', 'true');
+        } else {
+            dialog.removeAttribute('aria-modal');
+        }
+
+        dialog.show();
+    } else if (modal) {
         dialog.removeAttribute('popover');
         dialog.showModal();
     } else {
@@ -81,23 +124,40 @@ function show(dialog, modal) {
     }
 }
 
-export function openDialog(dialog, dotNet, options) {
+export function openDialog(dialog, dotNet, options, outsidePopups) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!dialog) {
         return null;
     }
 
     const opener = focusOrigin();
-    show(dialog, options.modal);
+    // A modal in the top layer makes the page inert, so a dialog it opens joins it there.
+    const topLayer = options.topLayer || stack.some(entry => entry.modal && entry.topLayer);
+    let usable = null;
+    if (!topLayer) {
+        // A selector the app got wrong throws here, quoted in the error, before the dialog is half set up.
+        usable = [...alwaysUsable, ...outsidePopups].join(', ');
+        document.querySelector(usable);
+        dialog.dataset.layer = 'page';
+    }
+
+    show(dialog, options.modal, topLayer);
     // Whether it is modal now, which can change while it's open.
-    const entry = { dialog, options, modal: options.modal };
+    const entry = { dialog, options, modal: options.modal, topLayer, usable };
     stack.push(entry);
+    blockPage();
     dialogFocusTarget(dialog, options).focus();
 
     let finished = false;
     let pressedOnBackdrop = false;
 
+    // On the page layer, a click on the inert page lands on one of the dialog's ancestors, while one on a popup added
+    // to the page lands on that popup.
     const onBackdrop = event => {
+        if (!entry.topLayer) {
+            return stack.at(-1) === entry && event.target !== dialog && event.target.contains?.(dialog);
+        }
+
         if (event.target !== dialog) {
             return false;
         }
@@ -117,7 +177,13 @@ export function openDialog(dialog, dotNet, options) {
             return;
         }
 
-        if (!entry.modal && !dialog.contains(document.activeElement)) {
+        const outside = !dialog.contains(document.activeElement);
+        if (!entry.modal && outside) {
+            return;
+        }
+
+        // A page-layer modal leaves keys pressed in a popup added to the page above it to that popup.
+        if (!entry.topLayer && outside && document.activeElement !== document.body) {
             return;
         }
 
@@ -277,8 +343,8 @@ export function openDialog(dialog, dotNet, options) {
     document.addEventListener('keydown', onKeyDown);
     dialog.addEventListener('cancel', onCancel);
     dialog.addEventListener('close', onClose);
-    dialog.addEventListener('pointerdown', onPointerDown);
-    dialog.addEventListener('click', onClick);
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('click', onClick);
     if (options.draggable || options.resizable) {
         dialog.addEventListener('pointerdown', onDragStart);
         dialog.addEventListener('pointermove', onDragMove);
@@ -299,8 +365,8 @@ export function openDialog(dialog, dotNet, options) {
         document.removeEventListener('keydown', onKeyDown);
         dialog.removeEventListener('cancel', onCancel);
         dialog.removeEventListener('close', onClose);
-        dialog.removeEventListener('pointerdown', onPointerDown);
-        dialog.removeEventListener('click', onClick);
+        document.removeEventListener('pointerdown', onPointerDown);
+        document.removeEventListener('click', onClick);
         dialog.removeEventListener('pointerdown', onDragStart);
         dialog.removeEventListener('pointermove', onDragMove);
         dialog.removeEventListener('pointerup', onDragEnd);
@@ -309,6 +375,7 @@ export function openDialog(dialog, dotNet, options) {
         dialog.removeEventListener('keydown', onArrowKey, { capture: true });
         window.removeEventListener('resize', keepInside);
         stack.splice(stack.indexOf(entry), 1);
+        blockPage();
         leaveTray(dialog);
         return true;
     }
@@ -377,10 +444,11 @@ export function openDialog(dialog, dotNet, options) {
             const focused = dialog.contains(document.activeElement) ? document.activeElement : null;
             entry.modal = modal;
             hide();
-            show(dialog, modal);
+            show(dialog, modal, entry.topLayer);
             // Opening again puts it above the others, so Escape goes to it first.
             stack.splice(stack.indexOf(entry), 1);
             stack.push(entry);
+            blockPage();
             (focused ?? dialogFocusTarget(dialog, options)).focus();
             // A modal's own live regions join the accessibility tree with the next frame, as when it opens.
             if (modal) {
@@ -398,9 +466,9 @@ export function openDialog(dialog, dotNet, options) {
                 child.inert = true;
             }
 
-            if (entry.modal) {
+            if (entry.modal && entry.topLayer) {
                 hide();
-                show(dialog, false);
+                show(dialog, false, true);
                 // Shown again, it would start its transition afresh, which WebKit sometimes drops, so it fades out as
                 // an animation with the transition's timing; reduced motion makes that 0s.
                 const { transitionDuration, transitionTimingFunction } = getComputedStyle(dialog);

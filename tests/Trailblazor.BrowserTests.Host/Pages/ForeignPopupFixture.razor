@@ -1,0 +1,40 @@
+@page "/foreign-popups"
+@using Trailblazor.BrowserTests.Host.Dialogs
+@using Microsoft.JSInterop
+@inject IDialogService Dialogs
+@inject IJSRuntime JS
+
+@* Dialogs holding another library's color picker, whose popup goes to the page's body. *@
+<TbStack Row Gap="2">
+    <TbButton OnClick="() => _note = true">Note</TbButton>
+    <TbButton OnClick="() => _topNote = true">Top note</TbButton>
+    <TbButton data-testid="page-button" OnClick="() => _clicks++">Page button</TbButton>
+</TbStack>
+<output data-testid="page-clicks">@_clicks</output>
+
+<TbDialog @bind-Open="_note" Title="Note" Options="PageLayer">
+    <ForeignPicker />
+    <TbButton OnClick="DetailsAsync">Details</TbButton>
+</TbDialog>
+<TbDialog @bind-Open="_topNote" Title="Top note">
+    <ForeignPicker />
+    <TbButton OnClick="DetailsAsync">Details</TbButton>
+</TbDialog>
+
+@code {
+    private static readonly DialogOptions PageLayer = new() { TopLayer = false, Minimizable = true };
+    private bool _note;
+    private bool _topNote;
+    private int _clicks;
+
+    private Task DetailsAsync() => Dialogs.ShowAsync<NameDialog, string>("Details", options: PageLayer);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./foreign-popup.js");
+            await module.InvokeVoidAsync("createPageParts");
+        }
+    }
+}

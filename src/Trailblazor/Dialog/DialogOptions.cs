@@ -15,6 +15,11 @@ public sealed record DialogOptions
     /// <see cref="DialogSettings.DismissOnBackdrop"/>.</summary>
     public bool? DismissOnBackdrop { get; init; }
 
+    /// <summary>Opens the dialog in the browser's top layer, above everything on the page. False keeps it on the page,
+    /// below popups that other libraries add to the page's body, such as an editor's menus or a date picker, so they
+    /// can be used from inside it. Left unset, it follows <see cref="DialogSettings.TopLayer"/>.</summary>
+    public bool? TopLayer { get; init; }
+
     /// <summary>How wide the dialog grows. Defaults to <see cref="DialogSize.Medium"/>.</summary>
     public DialogSize Size { get; init; } = DialogSize.Medium;
 

@@ -5,7 +5,7 @@ using Trailblazor.BrowserTests.Host;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddTrailblazor();
+builder.Services.AddTrailblazor(options => options.Dialogs.OutsidePopups.Add(".reused-popup"));
 
 var app = builder.Build();
 

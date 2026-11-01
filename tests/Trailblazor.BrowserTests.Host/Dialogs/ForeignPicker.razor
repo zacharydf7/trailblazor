@@ -1,0 +1,25 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+@* A color picker from another library, whose popup goes to the page's body. *@
+<button type="button" @ref="_button">Pick a color</button>
+<output @ref="_output" data-testid="color">None</output>
+<button type="button" @ref="_sizeButton">Pick a size</button>
+<output @ref="_size" data-testid="size">None</output>
+
+@code {
+    private ElementReference _button;
+    private ElementReference _output;
+    private ElementReference _sizeButton;
+    private ElementReference _size;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./foreign-popup.js");
+            await module.InvokeVoidAsync("attach", _button, _output);
+            await module.InvokeVoidAsync("attachReused", _sizeButton, _size);
+        }
+    }
+}

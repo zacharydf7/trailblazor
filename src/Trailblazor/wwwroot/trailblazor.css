@@ -3040,7 +3040,7 @@
     }
 
     /* Native modals don't stop the page behind them from scrolling. */
-    :root:has(dialog.tb-dialog:modal) {
+    :root:has(dialog.tb-dialog:is(:modal, [data-layer="page"][data-backdrop]:not([data-leaving]))) {
         overflow: hidden;
     }
 
@@ -3097,6 +3097,18 @@
     .tb-dialog[open] {
         display: flex;
         flex-direction: column;
+    }
+
+    /* Kept out of the top layer, a dialog sits over the page by z-index, so other scripts' popups can open above it,
+       and draws its own backdrop. */
+    .tb-dialog[data-layer="page"] {
+        position: fixed;
+        inset: 0;
+        z-index: var(--tb-dialog-z-index, 1100);
+    }
+
+    .tb-dialog[data-layer="page"][data-backdrop] {
+        box-shadow: var(--tb-shadow-lg), 0 0 0 100vmax oklch(0 0 0 / 0.45);
     }
 
     .tb-dialog::backdrop {

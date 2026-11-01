@@ -130,6 +130,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         {
             DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
             DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
+            TopLayer = options.TopLayer ?? settings.TopLayer,
         };
         var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync)
         {

@@ -1235,6 +1235,18 @@ public static class ExampleCatalog
                     + "(384px), `Medium` 32rem (512px), `Large` 48rem (768px), `ExtraLarge` 64rem (1024px) and "
                     + "`Full`. Pick the step nearest the content's need, or set `Width` to a CSS length for one "
                     + "between the steps; no dialog grows past the window.",
+                "A dialog opens in the browser's top layer, above everything on the page, and a modal makes the page "
+                    + "inert. A popup another library adds to the page's body, such as an editor's menus or a date "
+                    + "picker, then opens beneath a modal and can't be used. Set `TopLayer = false` on the dialog, or "
+                    + "`DialogSettings.TopLayer` for the app, to keep it on the page: it sits at "
+                    + "`--tb-dialog-z-index` (1100), draws its own backdrop, stops the page scrolling, is marked "
+                    + "`aria-modal` and makes the rest of the page inert itself, so popups added later open above it "
+                    + "and work, and keys pressed in them stay there. A library that makes its popup's element "
+                    + "before the dialog opens, such as a date picker's calendar made as the page loads, needs its "
+                    + "selector in `DialogSettings.OutsidePopups`; Blazor's reconnect dialog and error bar always "
+                    + "stay usable. The trade-offs: a popup with a lower z-index still opens beneath it, and a parent "
+                    + "with a transform or a stacking context of its own can hold it beneath the page. A dialog "
+                    + "opened from a modal in the top layer opens there too.",
                 "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
                     + "starts to fade out, the page takes input again and focus goes back to its opener, unless focus "
                     + "had already left the dialog.",
