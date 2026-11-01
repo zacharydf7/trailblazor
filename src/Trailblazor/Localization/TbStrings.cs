@@ -179,6 +179,9 @@ public static class TbStrings
     /// </summary>
     public const string FieldInvalid = "Field.Invalid";
 
+    /// <summary>"{0} is required.": shown when a <c>Required</c> field is empty; {0} is the field's label.</summary>
+    public const string FieldRequired = "Field.Required";
+
     /// <summary>"The field": stands in for the label in a field's messages when it has none.</summary>
     public const string FieldUnnamed = "Field.Unnamed";
 
@@ -504,6 +507,7 @@ public static class TbStrings
         [DialogConfirm] = "OK",
         [DialogCancel] = "Cancel",
         [FieldInvalid] = "{0} isn't valid.",
+        [FieldRequired] = "{0} is required.",
         [FieldUnnamed] = "The field",
         [FileUploadZone] = "Drop files here, or click to choose them.",
         [FileUploadChoose] = "Choose files",

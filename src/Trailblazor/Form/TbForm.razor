@@ -54,7 +54,8 @@
     [Parameter]
     public string? FormName { get; set; }
 
-    /// <summary>Whether the form would pass now: every field's <c>Validation</c> passes, the model's data annotations
+    /// <summary>Whether the form would pass now: no <c>Required</c> field is empty, every field's <c>Validation</c>
+    /// passes, the model's data annotations
     /// pass when <see cref="DataAnnotations"/> is on, and no validator's message or field's <c>Error</c> is showing.
     /// It is worked out without showing any message and updates as the form changes, so it can turn a save button on
     /// and off. Bind it with <c>@bind-IsValid</c>.</summary>
@@ -150,7 +151,8 @@
         return valid;
     }
 
-    /// <summary>Hides the messages from the fields' own <c>Validation</c>, as on a form the user hasn't touched yet.
+    /// <summary>Hides the messages from the fields' own <c>Required</c> and <c>Validation</c> checks, as on a form the
+    /// user hasn't touched yet.
     /// Messages a validator such as <c>DataAnnotationsValidator</c> added stay until it validates again.</summary>
     public async Task ResetValidationAsync()
     {

@@ -244,6 +244,121 @@ public class TbFormTests : BunitContext
             .Add(form => form.IsValidChanged, (bool valid) => _valid = valid)
             .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors));
 
+    [Fact]
+    public void Submit_ShouldSayWhichRequiredFieldsAreEmptyAndNotSubmit_WhenTheyAreLeftEmpty()
+    {
+        var valid = 0;
+        var cut = Render<TbForm>(parameters => parameters
+            .Add(form => form.OnValidSubmit, (EditContext _) => valid++)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Name");
+                builder.AddAttribute(2, nameof(TbTextField<string>.Required), true);
+                builder.CloseComponent();
+                builder.OpenComponent<TbCheckbox<bool>>(3);
+                builder.AddAttribute(4, nameof(TbCheckbox<bool>.Label), "Terms");
+                builder.AddAttribute(5, nameof(TbCheckbox<bool>.Required), true);
+                builder.AddAttribute(6, nameof(TbCheckbox<bool>.RequiredMessage), "Accept the terms to go on.");
+                builder.CloseComponent();
+            })));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(0, valid);
+        Assert.Equal(["Name is required.", "Accept the terms to go on."],
+            cut.FindAll("[data-part=error]").Select(error => error.TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Submit_ShouldCountAnEmptyListAndAHalfRangeAsMissing_WhenTheirFieldsAreRequired()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbMultiSelect<string>>(0);
+            builder.AddAttribute(1, nameof(TbMultiSelect<string>.Label), "Trails");
+            builder.AddAttribute(2, nameof(TbMultiSelect<string>.Required), true);
+            builder.AddAttribute(3, nameof(TbMultiSelect<string>.Value), (IReadOnlyList<string>)[]);
+            builder.CloseComponent();
+            builder.OpenComponent<TbDateRangePicker<DateOnly>>(4);
+            builder.AddAttribute(5, nameof(TbDateRangePicker<DateOnly>.Label), "Trip");
+            builder.AddAttribute(6, nameof(TbDateRangePicker<DateOnly>.Required), true);
+            builder.AddAttribute(7, nameof(TbDateRangePicker<DateOnly>.Value),
+                new DateRange<DateOnly>(new DateOnly(2026, 7, 2), null));
+            builder.CloseComponent();
+        })));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(["Trails is required.", "Trip is required."],
+            cut.FindAll("[data-part=error]").Select(error => error.TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Render_ShouldReportInvalidUntilARequiredFieldIsFilled_WhenItStartsEmpty()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.IsValid, _valid)
+            .Add(form => form.IsValidChanged, (bool valid) => _valid = valid)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Name");
+                builder.AddAttribute(2, nameof(TbTextField<string>.Required), true);
+                builder.CloseComponent();
+            })));
+        Assert.False(_valid);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+
+        cut.Find("input").Change("Robin");
+
+        Assert.True(_valid);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Submit_ShouldSubmit_WhenAnEmptyRequiredFieldIsDisabledOrReadOnly(bool disabled, bool readOnly)
+    {
+        var valid = 0;
+        var cut = Render<TbForm>(parameters => parameters
+            .Add(form => form.OnValidSubmit, (EditContext _) => valid++)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Name");
+                builder.AddAttribute(2, nameof(TbTextField<string>.Required), true);
+                builder.AddAttribute(3, nameof(TbTextField<string>.Disabled), disabled);
+                builder.AddAttribute(4, nameof(TbTextField<string>.ReadOnly), readOnly);
+                builder.CloseComponent();
+            })));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(1, valid);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
+    public void Submit_ShouldSubmit_WhenAFieldIsMarkedInvalidWithoutAMessage()
+    {
+        var valid = 0;
+        var cut = Render<TbForm>(parameters => parameters
+            .Add(form => form.OnValidSubmit, (EditContext _) => valid++)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Name");
+                builder.AddAttribute(2, nameof(TbTextField<string>.Invalid), true);
+                builder.CloseComponent();
+            })));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(1, valid);
+        Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid"));
+    }
+
     private IRenderedComponent<TbForm> RenderForm(Action? onValid = null, Action? onInvalid = null,
         Action? onSubmit = null) =>
         Render<TbForm>(parameters =>

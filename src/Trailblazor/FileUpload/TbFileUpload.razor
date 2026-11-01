@@ -4,7 +4,7 @@
 @inherits TbFieldBase<IReadOnlyList<IBrowserFile>?>
 
 <div @attributes="RootAttributes" style="@Style"
-     class="@ClassNames.Join("tb-field", "tb-file-upload", Errors.Count > 0 ? "tb-field--invalid" : null,
+     class="@ClassNames.Join("tb-field", "tb-file-upload", ShowsInvalid ? "tb-field--invalid" : null,
                 Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
     @* A hidden field keeps its input so code can open the picker, out of sight and reach; its errors still show. *@
     @if (ShownLabel is not null)

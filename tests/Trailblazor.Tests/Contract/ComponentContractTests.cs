@@ -105,6 +105,22 @@ public class ComponentContractTests : BunitContext
         Assert.NotEmpty(cut.FindAll("[aria-invalid=true]"));
     }
 
+    [Theory, MemberData(nameof(Fields))]
+    public void Render_ShouldLookInvalidWithoutAMessage_WhenTheParentSetsInvalid(Type field)
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            builder.AddAttribute(1, nameof(TbTextField<string>.Invalid), true);
+            AddRequiredParameters(builder, field, sequence: 2);
+            builder.CloseComponent();
+        });
+
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+        Assert.NotEmpty(cut.FindAll("[aria-invalid=true]"));
+        Assert.Contains(cut.Nodes.OfType<IElement>().First().ClassList, name => name.EndsWith("--invalid"));
+    }
+
     public static TheoryData<Type, bool> FieldsStaticAndInteractive =>
         new(from row in Fields from interactive in new[] { false, true } select (row.Data, interactive));
 

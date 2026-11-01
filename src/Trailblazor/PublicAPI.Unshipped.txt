@@ -2100,6 +2100,7 @@ Trailblazor.TbStack.TbStack() -> void
 Trailblazor.TbStack.Wrap.get -> bool
 Trailblazor.TbStack.Wrap.set -> void
 Trailblazor.TbStrings
+const Trailblazor.TbStrings.FieldRequired = "Field.Required" -> string!
 Trailblazor.TbStyles
 Trailblazor.TbStyles.TbStyles() -> void
 Trailblazor.TbSubMenu
@@ -2694,3 +2695,8 @@ virtual Trailblazor.TbDialogContent<TResult>.CanDismissAsync(Trailblazor.DialogD
 ~override Trailblazor.TbTooltip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeView<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+
+Trailblazor.TbFieldBase<TValue>.Invalid.get -> bool
+Trailblazor.TbFieldBase<TValue>.Invalid.set -> void
+Trailblazor.TbFieldBase<TValue>.RequiredMessage.get -> string?
+Trailblazor.TbFieldBase<TValue>.RequiredMessage.set -> void

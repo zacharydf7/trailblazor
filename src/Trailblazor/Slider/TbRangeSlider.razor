@@ -11,14 +11,14 @@
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Start)"
            @bind:set="SetStartAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(Start)" aria-labelledby="@Names(StartId)"
-           aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+           aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy"
            class="@ClassNames.Join("tb-slider__input", StartOnTop ? "tb-slider__input--top" : null, Classes?.Input)" />
     <input @attributes="InputAttributes" data-part="end-thumb" id="@EndId" name="@NameOf("End")" type="range"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(End)"
            @bind:set="SetEndAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(End)" aria-labelledby="@Names(EndId)"
-           aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+           aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy"
            class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />
     @Bubble(Fraction(Start), Format(Start))

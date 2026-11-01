@@ -10,7 +10,7 @@
              tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-multiselectable="@(Multiple ? "true" : null)" aria-disabled="@(Disabled ? "true" : null)"
              aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
-             aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+             aria-invalid="@(ShowsInvalid ? "true" : null)"
              aria-describedby="@InputDescribedBy" style="--tb-listbox-rows: @Rows"
              class="@ClassNames.Join("tb-field__input", "tb-listbox", Classes?.Input)">
             <CascadingValue Value="this">@ChildContent</CascadingValue>
@@ -23,7 +23,7 @@
                 data-prerender="@(AssignedRenderMode is null ? null : "")" size="@Rows" multiple="@Multiple"
                 disabled="@Disabled" aria-readonly="@(ReadOnly ? "true" : null)"
                 aria-required="@(Required ? "true" : null)"
-                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                 class="@ClassNames.Join("tb-field__input", "tb-listbox", "tb-listbox--native", Classes?.Input)">
             <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
         </select>

@@ -635,6 +635,9 @@ public static class ExampleCatalog
                     + "`[ValidatableType]`, it checks nested objects too, as the submit does.",
                 "A field's `Error`, such as a server's answer, keeps the form from submitting and `IsValid` false "
                     + "until the parent clears it.",
+                "A `Required` field left empty keeps the form from submitting too, and says \"Name is required.\", "
+                    + "or its `RequiredMessage`. A field's `Invalid` marks it invalid without a message of its own, "
+                    + "as when a summary lists the form's errors; it doesn't stop a submit.",
                 "Every field has `FocusAsync()`, to move focus from code, such as to the field a server's answer is "
                     + "about. A disabled field doesn't take focus.",
                 "It posts as a static SSR form when given a `FormName`.",
@@ -668,6 +671,9 @@ public static class ExampleCatalog
                     + "form on submit reads none out, so a form with several errors doesn't speak them all at once.",
                 "An `Error` from the parent, such as a server's answer, is linked the same way and read out once when "
                     + "it appears, even after a submit; it keeps its form from submitting until the parent clears it.",
+                "`Required` checks the field too: once it is edited, or its form validates, an empty or blank value "
+                    + "shows `RequiredMessage`, \"Name is required.\" by default. `Invalid` marks the field invalid "
+                    + "without a message, for a form that lists its errors elsewhere.",
                 "After a static-SSR form post, text that doesn't convert, such as letters in a number, stays in the "
                     + "field with the form's error, so nothing typed is lost. Blazor reports these errors for an "
                     + "`EditForm` whose model is supplied by `[SupplyParameterFromForm]` without its own `FormName`.",
@@ -754,6 +760,9 @@ public static class ExampleCatalog
                 "Helper text and validation messages are linked to the field with `aria-describedby`, an error "
                     + "sets `aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from "
                     + "screen readers.",
+                "A `Required` checkbox, such as one accepting terms, must be checked. One labeled by its content "
+                    + "rather than a `Label` should set `RequiredMessage`, since the default message names the field "
+                    + "by its `Label`.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
                 "`ReadOnly` keeps the box focusable and posted, but neither a click nor Space changes it; screen "
@@ -777,7 +786,8 @@ public static class ExampleCatalog
                 "A `fieldset` named by its `Label` as the legend, with a native checkbox per option, each a tab stop "
                     + "that Space toggles.",
                 "Helper text and messages describe the whole group. An error marks the group and every checkbox "
-                    + "invalid. ARIA has no required state for a group, so `Required` shows the marker; say what's "
+                    + "invalid. ARIA has no required state for a group, so `Required` shows the marker, and a message "
+                    + "when nothing is checked; say what's "
                     + "needed, such as \"Pick at least one\", in the helper text.",
                 "`Disabled` on the group turns off every option, and an option can be disabled on its own. "
                     + "`ReadOnly` keeps each box focusable and posted, but a click or Space doesn't change it.",

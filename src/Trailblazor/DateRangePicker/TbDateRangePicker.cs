@@ -353,7 +353,10 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     }
 
     // An error from Validation belongs to both boxes; one from typing belongs to the box that has it.
-    private string? Invalid(bool bad) => Errors.Count > 0 && (bad || !(_startBad || _endBad)) ? "true" : null;
+    private string? AriaInvalid(bool bad) => ShowsInvalid && (bad || !(_startBad || _endBad)) ? "true" : null;
+
+    // A required range needs both of its dates.
+    private protected override bool IsMissing(DateRange<TDate> value) => value.Start is null || value.End is null;
 
     private bool IsUnavailable(DateOnly date) =>
         date < MinDate || date > MaxDate || (IsDateDisabled?.Invoke(FromDate(date)) ?? false);

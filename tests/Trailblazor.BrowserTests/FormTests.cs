@@ -72,4 +72,15 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Robin");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldFocusTheFieldWithAnError_WhenAFieldAboveItIsOnlyMarkedInvalid(string browser)
+    {
+        var page = await OpenAsync(browser, "/form-invalid-first");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
+
+        await Expect(Field(page, "Name")).ToBeFocusedAsync();
+        await Expect(Field(page, "Nickname")).ToHaveAttributeAsync("aria-invalid", "true");
+    }
 }

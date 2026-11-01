@@ -15,7 +15,7 @@
                   @onchange="FlushOnChange" data-max-lines="@(Grows ? MaxLines : null)"
                   style="@(Grows ? $"--tb-text-field-lines: {Lines}; --tb-text-field-max-lines: {MaxLines}" : null)"
                   placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
-                  aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+                  aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
                   aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)"></textarea>
     }
     else
@@ -25,7 +25,7 @@
                @bind:event="@BindEvent" @onchange="FlushOnChange" placeholder="@(Placeholder ?? _mask?.Hint)"
                inputmode="@InputMode" data-ready="@(_maskHandle is null ? null : "")" disabled="@Disabled"
                readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
-               aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+               aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }
 </text>, Start, EndWithClear)

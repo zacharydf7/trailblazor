@@ -1,0 +1,8 @@
+@page "/form-invalid-first"
+
+@* A field marked invalid with no message of its own sits above an empty required one. *@
+<TbForm aria-label="Profile">
+    <TbTextField TValue="string" Label="Nickname" Invalid />
+    <TbTextField TValue="string" Label="Name" Required />
+    <TbButton Type="ButtonType.Submit">Save</TbButton>
+</TbForm>

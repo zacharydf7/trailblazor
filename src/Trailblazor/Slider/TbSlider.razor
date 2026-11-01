@@ -9,7 +9,7 @@
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Number)"
            @bind:set="SetAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@ValueText" aria-readonly="@(ReadOnly ? "true" : null)"
-           aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+           aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />
     @Bubble(Fraction(Number), ValueText)
 </text>)

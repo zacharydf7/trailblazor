@@ -18,6 +18,24 @@ public class TbTextFieldTests : BunitContext
         this.AddTrailblazor();
     }
 
+    [Theory]
+    [InlineData(null, "Name is required.")]
+    [InlineData("Tell us your name.", "Tell us your name.")]
+    public void Change_ShouldShowTheRequiredMessage_WhenARequiredFieldIsEmptied(string? message, string expected)
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Name")
+            .Add(field => field.Value, "Ada").Add(field => field.Required, true)
+            .Add(field => field.RequiredMessage, message));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+
+        cut.Find("input").Change("  ");
+
+        Assert.Equal(expected, cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid"));
+        cut.Find("input").Change("Ada");
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
     [Fact]
     public void Render_ShouldLinkTheLabelAndHelperToTheInput_WhenBothAreSet()
     {

@@ -10,7 +10,7 @@
              tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-haspopup="listbox" aria-expanded="false" aria-controls="@ListboxId"
              aria-disabled="@(Disabled ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
-             aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
+             aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
              aria-describedby="@InputDescribedBy"
              class="@ClassNames.Join("tb-field__input", "tb-select__trigger", Classes?.Input)">
             @Display
@@ -40,7 +40,7 @@
                 data-prerender="@(AssignedRenderMode is null ? null : "")"
                 multiple="@Multiple" disabled="@Disabled" aria-readonly="@(ReadOnly ? "true" : null)"
                 aria-required="@(Required ? "true" : null)"
-                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
+                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                 class="@ClassNames.Join("tb-field__input", "tb-select__native", Classes?.Input)">
             @if (!Multiple && SelectedOptions.Count == 0)
             {

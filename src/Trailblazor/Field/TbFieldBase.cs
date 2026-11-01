@@ -61,10 +61,22 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Parameter]
     public bool ReadOnly { get; set; }
 
-    /// <summary>Marks the field as required for assistive technology and shows a marker by the label. Checking
-    /// for a value is left to <see cref="Validation"/> or the form's validator.</summary>
+    /// <summary>Marks the field as required: screen readers hear it, the label shows a marker, and an empty value
+    /// shows <see cref="RequiredMessage"/> once the user changes the field or its form validates. A disabled or read
+    /// only field isn't checked, since the user can't fill it in.</summary>
     [Parameter]
     public bool Required { get; set; }
+
+    /// <summary>The message for a <see cref="Required"/> field left empty. Defaults to the app's text for
+    /// <see cref="TbStrings.FieldRequired"/>, "{label} is required." in English.</summary>
+    [Parameter]
+    public string? RequiredMessage { get; set; }
+
+    /// <summary>Shows the field as invalid, with its styling and <c>aria-invalid</c>, without a message of its own,
+    /// as when a summary elsewhere lists the form's errors. Unlike <see cref="Error"/>, it doesn't keep a form from
+    /// submitting.</summary>
+    [Parameter]
+    public bool Invalid { get; set; }
 
     /// <summary>An error from the parent, such as one the server returned. It shows and is announced with the field's
     /// own messages, and keeps the form from submitting until the parent clears it.</summary>
@@ -209,7 +221,22 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     private List<string> OwnMessages => ParentError is null ? _messages : [ParentError, .. _messages];
 
-    // A blank error from the parent is no error, so the field is never marked invalid without a message.
+    // Whether the field looks invalid: it has a message, or the parent marked it so.
+    private protected bool ShowsInvalid => Errors.Count > 0 || Invalid;
+
+    // What counts as no value for Required: null, blank text or an empty list.
+    private protected virtual bool IsMissing(TValue? value) => value switch
+    {
+        null => true,
+        string text => string.IsNullOrWhiteSpace(text),
+        System.Collections.IEnumerable items => !items.GetEnumerator().MoveNext(),
+        _ => false,
+    };
+
+    // A field the user can't change isn't asked of them, as the browser's own validation skips one.
+    private bool MissesRequired => Required && !Disabled && !ReadOnly && _parseError is null && IsMissing(Value);
+
+    // A blank error from the parent is no error, so it doesn't mark the field invalid.
     private string? ParentError => string.IsNullOrWhiteSpace(Error) ? null : Error;
 
     private protected string? DescribedBy => (HelperText is null, Errors.Count == 0) switch
@@ -426,6 +453,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             _messages.Add(_parseError);
         }
 
+        if (MissesRequired)
+        {
+            _messages.Add(RequiredMessage ?? Message(TbStrings.FieldRequired));
+        }
+
         if (Validation is not null)
         {
             _messages.AddRange(Validation(Value));
@@ -451,7 +483,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         }
     }
 
-    bool IFormField.HasProblems() => _parseError is not null || (Validation?.Invoke(Value).Any() ?? false);
+    bool IFormField.HasProblems() =>
+        _parseError is not null || MissesRequired || (Validation?.Invoke(Value).Any() ?? false);
 
     void IFormField.CountIfInvalid()
     {

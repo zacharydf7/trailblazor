@@ -1,6 +1,6 @@
 <TbStack Gap="4">
     <TbCheckboxGroup Label="Trail days" @bind-Value="_days" Required HelperText="Pick at least one."
-                     Validation="RequireADay" Row>
+                     RequiredMessage="Pick at least one day." Row>
         @foreach (var day in Days)
         {
             <TbCheckboxItem Value="day" Disabled="@(day == DayOfWeek.Sunday)">@day</TbCheckboxItem>
@@ -23,7 +23,4 @@
 
     private IReadOnlyList<DayOfWeek> _days = [DayOfWeek.Saturday];
     private IReadOnlyList<string> _gear = ["kit"];
-
-    private static IEnumerable<string> RequireADay(IReadOnlyList<DayOfWeek>? days) =>
-        days is { Count: > 0 } ? [] : ["Pick at least one day."];
 }

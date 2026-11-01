@@ -118,7 +118,7 @@ public partial class TbFileUpload
         builder.AddAttribute(8, "disabled", Disabled || ReadOnly);
         builder.AddAttribute(9, "aria-label", AccessibleName);
         builder.AddAttribute(10, "aria-required", Required ? "true" : null);
-        builder.AddAttribute(11, "aria-invalid", Errors.Count > 0 ? "true" : null);
+        builder.AddAttribute(11, "aria-invalid", ShowsInvalid ? "true" : null);
         builder.AddAttribute(12, "aria-describedby", Description);
         builder.AddAttribute(13, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
         builder.AddAttribute(14, "data-prerender",

@@ -2,7 +2,7 @@
 
 <TbStack Gap="5" Style="max-width: 24rem">
     <TbTextField Label="Name" @bind-Value="_name" HelperText="As it appears on your badge." Required
-                 Validation="RequireName" data-testid="name" />
+                 RequiredMessage="Enter a name." data-testid="name" />
     <TbTextField Label="Search" @bind-Value="_search" Type="TextFieldType.Search" UpdateOnInput
                  UpdateDelay="TimeSpan.FromMilliseconds(300)" Clearable data-testid="search">
         <Start><TbIcon Icon="ExampleIcons.Plus" /></Start>
@@ -42,9 +42,6 @@
     private string? _callSign;
     private TbTextField<string> _handleField = default!;
     private string? _handleError;
-
-    private static IEnumerable<string> RequireName(string? name) =>
-        string.IsNullOrWhiteSpace(name) ? ["Enter a name."] : [];
 
     // Stands in for asking a server, which answers with an error the field shows until the name changes. A taken
     // name is selected, so typing replaces it.

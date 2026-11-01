@@ -9,10 +9,10 @@
 @* ARIA gives a group no required state, so the legend's marker and the helper text say an answer is needed. The
    invalid state goes on the group and on each checkbox, where screen readers announce it. *@
 <fieldset @attributes="GroupRootAttributes" @ref="_group" disabled="@Disabled" style="@Style"
-          aria-invalid="@(Invalid ? "true" : null)" aria-describedby="@DescribedBy"
+          aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedBy"
           class="@ClassNames.Join("tb-checkbox-group", ClassNames.Modifier("tb-checkbox-group", Tone),
                      ClassNames.Modifier("tb-checkbox-group", Size),
-                     Errors.Count > 0 ? "tb-checkbox-group--invalid" : null,
+                     ShowsInvalid ? "tb-checkbox-group--invalid" : null,
                      Disabled ? "tb-checkbox-group--disabled" : null, Class)">
     @if (ShownLabel is not null)
     {
@@ -66,9 +66,7 @@
 
     object? ICheckboxGroup.ItemName => InputNameAttribute;
 
-    internal bool Invalid => Errors.Count > 0;
-
-    bool ICheckboxGroup.Invalid => Invalid;
+    bool ICheckboxGroup.Invalid => ShowsInvalid;
 
     bool ICheckboxGroup.Accepts(object? item) => GroupValues.TryFit<TItem>(item, out _);
 
