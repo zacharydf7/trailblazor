@@ -1416,7 +1416,7 @@ public static class ExampleCatalog
             ],
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],
-            DataParts = ["items", "item", "spacer", "toggle", "check", "content", "end", "insert", "loading", "failed",
+            DataParts = ["item", "group", "spacer", "toggle", "check", "content", "end", "insert", "loading", "failed",
                 "empty", "drop-reason"],
             TestingTip = "`page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows rows by "
                 + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
