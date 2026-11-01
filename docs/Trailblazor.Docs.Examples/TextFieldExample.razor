@@ -8,6 +8,9 @@
         <Start><TbIcon Icon="ExampleIcons.Plus" /></Start>
     </TbTextField>
     <output data-testid="search-echo">@_search</output>
+    <TbTextField AriaLabel="Filter trails" Placeholder="Filter trails" @bind-Value="_filter"
+                 OnBlur="() => _filterChecked = true" data-testid="filter" />
+    <output data-testid="filter-checked">@(_filterChecked ? "Checked on leaving" : "")</output>
     <TbTextField Label="Age" @bind-Value="_age" data-testid="age">
         <End>years</End>
     </TbTextField>
@@ -28,6 +31,8 @@
 @code {
     private string? _name;
     private string? _search;
+    private string? _filter;
+    private bool _filterChecked;
     private int _age = 30;
     private string? _notes;
     private string? _handle;

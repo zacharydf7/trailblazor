@@ -4,7 +4,7 @@
 
 @Layout(InputId, null, Fraction(Number), @<text>
     @* @bind keeps the thumb where the user put it while a round trip is in flight. *@
-    <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+    <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
            type="range"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Number)"
            @bind:set="SetAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"

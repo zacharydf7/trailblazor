@@ -188,6 +188,16 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFocusTheGroupsCheckedItem_WhenARadioGroupHasAutoFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Pace", Exact = true }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Radio, new() { Name = "Fast" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFocusTheFirstField_WhenTheFieldMarkedAutofocusIsDisabled(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");

@@ -140,6 +140,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         try
         {
             if (firstRender && RendererInfo.IsInteractive)

@@ -7,11 +7,12 @@
      class="@ClassNames.Join("tb-field", "tb-file-upload", Errors.Count > 0 ? "tb-field--invalid" : null,
                 Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
     @* A hidden field keeps its input so code can open the picker, out of sight and reach; its errors still show. *@
-    @if (Label is not null)
+    @if (ShownLabel is not null)
     {
         <label data-part="label" id="@LabelId" for="@InputId" aria-hidden="@(Hidden ? "true" : null)"
-               class="@ClassNames.Join("tb-field__label", Hidden ? "tb-visually-hidden" : null, Classes?.Label)">
-            @Label
+               class="@ClassNames.Join("tb-field__label", Hidden ? "tb-visually-hidden" : LabelHiddenClass,
+                          Classes?.Label)">
+            @ShownLabel
             @RequiredMarker
         </label>
     }
@@ -34,7 +35,7 @@
                 @ZoneLabel
             }
         </span>
-        <InputFile @ref="_input" @attributes="InputAttributes" data-part="input" id="@InputId"
+        <InputFile @ref="_input" @attributes="ControlAttributes" data-part="input" id="@InputId"
                    name="@InputNameAttribute" OnChange="OnChangeAsync" accept="@Accept" multiple="@Multiple"
                    disabled="@(Disabled || ReadOnly)" aria-label="@AccessibleName"
                    aria-required="@(Required ? "true" : null)"

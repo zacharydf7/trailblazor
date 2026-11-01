@@ -6,13 +6,14 @@
     <span id="@($"{StartId}-name")" hidden>@StartLabel</span>
     <span id="@($"{EndId}-name")" hidden>@EndLabel</span>
     @* Tests type dates in the field's format and wait for the committed range, which these attributes give them. *@
-    <div role="group" aria-labelledby="@(Label is null ? null : LabelId)" data-format="@DateFormat"
+    <div role="group" aria-labelledby="@(ShownLabel is null ? null : LabelId)" data-format="@DateFormat"
          data-culture="@DateCulture.Name" data-value="@($"{IsoOrNull(StartDate)}/{IsoOrNull(EndDate)}")"
          class="tb-date-range__boxes">
         @if (RendererInfo.IsInteractive)
         {
             <input @attributes="InputAttributes" @ref="_startInput" data-part="start-input" id="@StartId"
-                   name="@NameOf("Start")" type="text" autocomplete="off" @bind:get="StartText"
+                   data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="text" autocomplete="off"
+                   @bind:get="StartText"
                    @bind:set="SetStartTextAsync" placeholder="@FormatHint" disabled="@Disabled" readonly="@ReadOnly"
                    aria-labelledby="@Names(StartId)" aria-required="@(Required ? "true" : null)"
                    aria-invalid="@Invalid(_startBad)" aria-describedby="@InputDescribedBy"
@@ -30,7 +31,8 @@
             @* Without a circuit there is no calendar, so the browser's own date boxes stand in; data-prerender marks
                ones the interactive boxes will replace. *@
             <input @attributes="InputAttributes" data-part="start-input" data-static="@StaticMarker"
-                   data-prerender="@PrerenderMarker" id="@StartId" name="@NameOf("Start")" type="date"
+                   data-tb-autofocus="@AutoFocusMark" data-prerender="@PrerenderMarker" id="@StartId"
+                   name="@NameOf("Start")" type="date"
                    value="@IsoOrNull(StartDate)" min="@IsoOf(Min)" max="@IsoOf(Max)" disabled="@Disabled"
                    readonly="@ReadOnly"
                    aria-labelledby="@Names(StartId)"
@@ -150,7 +152,7 @@
 
     private string? PrerenderMarker => AssignedRenderMode is null ? null : "";
 
-    private string Names(string box) => Label is null ? $"{box}-name" : $"{LabelId} {box}-name";
+    private string Names(string box) => ShownLabel is null ? $"{box}-name" : $"{LabelId} {box}-name";
 
     private string? NameOf(string part) => InputNameAttribute is null ? null : $"{InputNameAttribute}.{part}";
 

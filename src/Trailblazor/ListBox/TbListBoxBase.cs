@@ -51,6 +51,7 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         if (!firstRender)
         {
             return;

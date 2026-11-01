@@ -5,7 +5,7 @@
 {
     @Layout(Classes, @<text>
         @* Tests wait for data-value to show the color they typed has been taken. *@
-        <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId"
+        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
                name="@InputNameAttribute" type="text" autocomplete="off" spellcheck="false" data-value="@Value"
                @bind:get="Text" @bind:set="SetTextAsync"
                placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
@@ -20,7 +20,7 @@ else
        see-through and would post black or drop the opacity; data-prerender marks one the interactive field will
        replace. *@
     @Layout(Classes, @<text>
-        <input @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="text"
+        <input @attributes="ControlAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="text"
                value="@Text" placeholder="@Placeholder" pattern="@StaticPattern" title="@BadColorLabel"
                disabled="@Disabled" readonly="@ReadOnly"
                aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"

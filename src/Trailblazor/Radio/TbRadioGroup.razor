@@ -6,17 +6,17 @@
 @inject JsModuleLoader Modules
 
 @* Radios that share a name already give one tab stop and arrow-key selection, so no script is needed. *@
-<fieldset @attributes="AdditionalAttributes" @ref="_group" role="radiogroup" disabled="@Disabled" style="@Style"
+<fieldset @attributes="GroupRootAttributes" @ref="_group" role="radiogroup" disabled="@Disabled" style="@Style"
           aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
           aria-invalid="@(Errors.Count > 0 ? "true" : null)"
           aria-describedby="@DescribedBy"
           class="@ClassNames.Join("tb-radio-group", ClassNames.Modifier("tb-radio-group", Tone),
                      ClassNames.Modifier("tb-radio-group", Size), Errors.Count > 0 ? "tb-radio-group--invalid" : null,
                      Disabled ? "tb-radio-group--disabled" : null, Class)">
-    @if (Label is not null)
+    @if (ShownLabel is not null)
     {
-        <legend data-part="label" class="@ClassNames.Join("tb-radio-group__label", Classes?.Label)">
-            @Label @RequiredMarker
+        <legend data-part="label" class="@ClassNames.Join("tb-radio-group__label", LabelHiddenClass, Classes?.Label)">
+            @ShownLabel @RequiredMarker
         </legend>
     }
     <div data-part="options"

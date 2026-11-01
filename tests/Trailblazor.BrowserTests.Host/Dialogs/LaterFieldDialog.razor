@@ -1,0 +1,12 @@
+@inherits TbDialogContent<bool>
+
+@* The field appears after the dialog has opened and placed focus, as content that loads does. *@
+<TbButton OnClick="() => _shown = true">Write a reply</TbButton>
+@if (_shown)
+{
+    <TbTextField TValue="string" Label="Reply" AutoFocus />
+}
+
+@code {
+    private bool _shown;
+}

@@ -12,16 +12,16 @@
                 Errors.Count > 0 ? $"{Block}--invalid" : null,
                 Disabled ? $"{Block}--disabled" : null, Class)">
     <label data-part="label" class="@ClassNames.Join($"{Block}__label", Classes?.Label)">
-        <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                type="checkbox" role="@Role" value="true" checked="@(Value is true)" disabled="@Disabled"
                aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
                aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join($"{Block}__input", Classes?.Input)"
                @onchange="OnChangeAsync" />
-        <span>
+        <span class="@(ChildContent is null ? LabelHiddenClass : null)">
             @if (ChildContent is null)
             {
-                @Label
+                @ShownLabel
             }
             else
             {
@@ -86,6 +86,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         if (Indeterminate == _shownIndeterminate)
         {
             return;

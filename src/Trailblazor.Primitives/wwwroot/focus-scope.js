@@ -82,8 +82,10 @@ export function createFocusScope(container, options) {
 // The control marked autofocus in the container, or null. A field component carries the attribute on its wrapper,
 // so a wrapper gives its first control instead.
 export function autofocusTarget(container) {
-    const named = container?.querySelector('[autofocus]');
-    return named && (isTabbable(named) ? named : getTabbables(named)[0] ?? null);
+    const named = container?.querySelector('[autofocus], [data-tb-autofocus]');
+    // A marked group sends focus where Tab would: to its checked radio, or else to its first control.
+    return named && (isTabbable(named) ? named
+        : [...named.querySelectorAll('input[type=radio]:checked')].find(isTabbable) ?? getTabbables(named)[0] ?? null);
 }
 
 // The first control Tab would reach in the container, or null.

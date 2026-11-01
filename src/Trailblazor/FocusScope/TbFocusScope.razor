@@ -7,12 +7,13 @@
 
 <div @attributes="AdditionalAttributes" @ref="_element" tabindex="-1" data-part="focus-scope"
      class="@ClassNames.Join("tb-focus-scope", Class)" style="@Style">
-    @ChildContent
+    <CascadingValue Value="this" IsFixed>@ChildContent</CascadingValue>
 </div>
 
 @code {
     private ElementReference _element;
     private FocusScope? _scope;
+    private Func<ValueTask>? _focusOnceActive;
     private bool _disposed;
 
     /// <summary>Keeps Tab and Shift+Tab inside the scope, and brings focus back if it leaves. When scopes nest, the
@@ -54,10 +55,36 @@
             }
 
             _scope = scope;
+            if (_focusOnceActive is { } focus)
+            {
+                _focusOnceActive = null;
+                try
+                {
+                    await focus();
+                }
+                catch (JSException)
+                {
+                    // The field that asked was removed before the scope started.
+                }
+            }
         }
         catch (JSDisconnectedException)
         {
             // The circuit is gone, and the scope went with it.
+        }
+    }
+
+    // A field asking for focus gets it now if the scope is active, or else once the scope has noted where focus was;
+    // the first field to ask wins, as the scope's own pick does.
+    internal async Task FocusWhenActiveAsync(Func<ValueTask> focus)
+    {
+        if (_scope is not null)
+        {
+            await focus();
+        }
+        else
+        {
+            _focusOnceActive ??= focus;
         }
     }
 

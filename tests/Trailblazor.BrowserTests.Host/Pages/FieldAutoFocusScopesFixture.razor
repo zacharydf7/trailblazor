@@ -1,0 +1,33 @@
+@page "/field-autofocus-scopes"
+@using Trailblazor.BrowserTests.Host.Dialogs
+@inject IDialogService Dialogs
+
+<button type="button" data-testid="open-quiet" @onclick="() => _quiet = true">Open quiet</button>
+@if (_quiet)
+{
+    @* The scope leaves focus alone, so the field takes it once the scope has noted the opener. *@
+    <TbFocusScope AutoFocus="false">
+        <TbTextField TValue="string" Label="Note" AutoFocus />
+        <button type="button" @onclick="() => _quiet = false">Close quiet</button>
+    </TbFocusScope>
+}
+
+<button type="button" data-testid="open-later" @onclick="() => _later = true">Open later</button>
+@if (_later)
+{
+    <TbFocusScope>
+        <button type="button" @onclick="() => _laterField = true">Show the field</button>
+        @if (_laterField)
+        {
+            <TbTextField TValue="string" Label="Later" AutoFocus />
+        }
+    </TbFocusScope>
+}
+
+<button type="button" @onclick='() => Dialogs.ShowAsync<LaterFieldDialog, bool>("Reply")'>Open reply</button>
+
+@code {
+    private bool _quiet;
+    private bool _later;
+    private bool _laterField;
+}

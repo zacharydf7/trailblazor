@@ -21,6 +21,7 @@
         Headless
     </TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<AddressDialog, string>("Address")'>Address</TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<PaceDialog, string>("Pace")'>Pace</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<AddressDialog, string>("Address", p => p.Set(d => d.FloorLocked, true))'>
         Address locked
     </TbButton>

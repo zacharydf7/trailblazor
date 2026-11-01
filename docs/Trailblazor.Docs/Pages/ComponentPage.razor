@@ -34,7 +34,7 @@
 
     <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Accessibility</TbText>
     <ul class="docs-notes" aria-label="Accessibility">
-        @foreach (var note in example.Accessibility)
+        @foreach (var note in example.AccessibilityNotes)
         {
             <li>@DocsText.WithCode(note)</li>
         }

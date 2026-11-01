@@ -93,6 +93,7 @@ public partial class TbColorPicker : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         if (!firstRender || !RendererInfo.IsInteractive)
         {
             return;

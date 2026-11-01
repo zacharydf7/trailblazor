@@ -68,7 +68,7 @@ public partial class TbFileUpload
 
     private IReadOnlyList<IBrowserFile> Files => Value ?? [];
 
-    private string? AccessibleName => Label is null ? ChooseLabel : null;
+    private string? AccessibleName => ShownLabel is null ? ChooseLabel : null;
 
     private string RejectedId => $"{FieldId}-rejected";
 
@@ -110,6 +110,7 @@ public partial class TbFileUpload
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         if (firstRender && RendererInfo.IsInteractive)
         {
             // Loaded ahead, so OpenAsync is one call within the click's time limit; a failed load retries on that call.

@@ -32,4 +32,12 @@ function registerEvents(blazor) {
     const numberEventArgs = event => ({ value: event.target.value, badInput: event.target.validity.badInput });
     blazor.registerCustomEventType('tbnumberchange', { browserEventName: 'change', createEventArgs: numberEventArgs });
     blazor.registerCustomEventType('tbnumberleave', { browserEventName: 'focusout', createEventArgs: numberEventArgs });
+
+    // A field's OnFocus and OnBlur count only focus that crosses its root, not moves between its own parts.
+    const fieldFocusEventArgs = event => {
+        const root = event.target.closest?.('[data-tb-focus-root]');
+        return { crossesField: !root || !root.contains(event.relatedTarget) };
+    };
+    blazor.registerCustomEventType('tbfocusenter', { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
+    blazor.registerCustomEventType('tbfocusleave', { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
 }

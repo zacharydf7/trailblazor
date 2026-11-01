@@ -1,0 +1,16 @@
+@page "/field-autofocus"
+
+<TbTextField Label="Name" @bind-Value="_name" />
+<TbSelect TValue="string" Label="Trail" @bind-Value="_trail" AutoFocus>
+    <TbOption Value="@("Ridge loop")" />
+</TbSelect>
+<TbDateRangePicker TDate="DateOnly" Label="Dates" @bind-Value="_dates" OnBlur="() => _datesLeft++" />
+<button type="button">After the dates</button>
+<output data-testid="dates-left">@_datesLeft</output>
+
+@code {
+    private string? _name;
+    private string? _trail;
+    private DateRange<DateOnly> _dates;
+    private int _datesLeft;
+}

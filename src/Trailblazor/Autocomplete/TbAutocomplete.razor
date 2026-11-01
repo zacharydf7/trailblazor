@@ -4,7 +4,7 @@
 
 @Layout(Classes, @<text>
     @* @bind keeps what the user typed while a round trip is in flight; leaving or Enter commits it. *@
-    <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+    <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
            type="text" autocomplete="off" @bind:get="_text" @bind:set="OnTypedAsync" @bind:event="oninput"
            @onchange="CommitAsync" placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
            data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
@@ -17,7 +17,7 @@
     @if (RendererInfo.IsInteractive)
     {
         <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
-             aria-labelledby="@(Label is null ? null : LabelId)" aria-busy="@(_searching ? "true" : null)"
+             aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-busy="@(_searching ? "true" : null)"
              class="tb-select__listbox tb-autocomplete__listbox">
             @if (_results.Count == 0)
             {

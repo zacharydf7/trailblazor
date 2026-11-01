@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Trailblazor;
 
@@ -76,6 +78,28 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Parameter]
     public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
 
+    /// <summary>The control's accessible name when the field shows no <see cref="Label"/>, such as a search box marked
+    /// only by an icon. It is read like a label but not shown; a visible <see cref="Label"/> is better where there is
+    /// room.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>Raised when focus moves into the field from outside it. Moves between the field's own parts, such as a
+    /// range's two boxes, a select's filter or a group's items, don't count.</summary>
+    [Parameter]
+    public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>Raised when focus leaves the field for somewhere outside it, for example to check or save what was
+    /// entered when the user moves on. Moves between the field's own parts don't count; a field placed in another
+    /// field's slot counts as outside it.</summary>
+    [Parameter]
+    public EventCallback<FocusEventArgs> OnBlur { get; set; }
+
+    /// <summary>Moves focus to the control once the page is interactive, as a dialog or a search page does with its
+    /// first field. Give it to one field at most.</summary>
+    [Parameter]
+    public bool AutoFocus { get; set; }
+
     /// <summary>A label this field's use is counted under, such as <c>"email"</c>, so the app can see how people use
     /// it through the <c>Trailblazor</c> meter: shown when it first renders, and counted in
     /// <c>trailblazor.field.invalid</c> each time its <see cref="TbForm"/> is submitted while it has an error. A
@@ -102,6 +126,12 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
+    [CascadingParameter]
+    private DialogReference? Dialog { get; set; }
+
+    [CascadingParameter]
+    private TbFocusScope? FocusScope { get; set; }
+
     private protected ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private protected string FieldId { get; } = $"tb-field-{Guid.NewGuid():N}";
@@ -119,11 +149,29 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             { Length: > 0 } id ? id : null;
 
     // The root's attributes, less an id that names the control. Attribute names ignore case, as in HTML.
-    private protected IReadOnlyDictionary<string, object>? RootAttributes => IdOfControl is null ? AdditionalAttributes
+    private protected IReadOnlyDictionary<string, object>? RootAttributes => WithFocusEvents(IdOfControl is null
+        ? AdditionalAttributes
         : AdditionalAttributes!
-            .Where(attribute => !string.Equals(attribute.Key, "id", StringComparison.OrdinalIgnoreCase)).ToDictionary();
+            .Where(attribute => !string.Equals(attribute.Key, "id", StringComparison.OrdinalIgnoreCase))
+            .ToDictionary());
+
+    // A group's root keeps its id, since its items each have their own, and carries the group's autofocus.
+    private protected IReadOnlyDictionary<string, object>? GroupRootAttributes =>
+        WithFocusEvents(AutoFocus ? WithAutofocus(AdditionalAttributes) : AdditionalAttributes);
 
     private protected string LabelId => $"{FieldId}-label";
+
+    // An AriaLabel is drawn as a label only screen readers see, so every part named by the label is named by it too.
+    private protected string? ShownLabel => Label ?? AriaLabel;
+
+    private protected string? LabelHiddenClass => Label is null && AriaLabel is not null ? "tb-visually-hidden" : null;
+
+    // The consumer's input attributes, marked for focus when asked, which dialogs and focus scopes look for. It isn't
+    // the native autofocus, which some browsers act on as soon as the field appears. A field with several controls
+    // marks one itself: a group its root, a range its first part.
+    private protected IReadOnlyDictionary<string, object>? ControlAttributes { get; private set; }
+
+    private protected string? AutoFocusMark => AutoFocus ? "" : null;
 
     // A label's for attribute works only on form controls; other inputs name themselves with aria-labelledby.
     private protected virtual bool LabelTargetsInput => true;
@@ -170,6 +218,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        ControlAttributes = AutoFocus ? WithAutofocus(InputAttributes) : InputAttributes;
         // A new value from the parent replaces text the user typed that didn't parse.
         if (_parseError is not null && !EqualityComparer<TValue>.Default.Equals(Value, _valueAtParseError))
         {
@@ -276,7 +325,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     // A message about the field: the key's text with the field's label, or a stand-in, first and then the args.
     private protected string Message(string key, params object?[] args) => string.Format(CultureInfo.CurrentCulture,
-        Localizer[key], [Label ?? Localizer[TbStrings.FieldUnnamed], .. args]);
+        Localizer[key], [ShownLabel ?? Localizer[TbStrings.FieldUnnamed], .. args]);
 
     private protected async Task SetValueAsync(TValue? value)
     {
@@ -388,6 +437,63 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     /// <inheritdoc />
     protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A dialog or focus scope that is opening notes where focus was and then moves it to the marked control itself;
+        // one already open, or a scope that leaves focus alone, lets the field take it.
+        if (firstRender && AutoFocus && RendererInfo.IsInteractive)
+        {
+            try
+            {
+                if (FocusScope is not null)
+                {
+                    await FocusScope.FocusWhenActiveAsync(() => FocusAsync());
+                }
+                else if (Dialog is null or { Opened: true })
+                {
+                    await FocusAsync();
+                }
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is gone, so there is nothing to focus.
+            }
+        }
+    }
+
+    // The browser tells whether focus crossed the root, since .NET's focus events don't say where focus went.
+    private IReadOnlyDictionary<string, object>? WithFocusEvents(IReadOnlyDictionary<string, object>? attributes)
+    {
+        if (!OnFocus.HasDelegate && !OnBlur.HasDelegate)
+        {
+            return attributes;
+        }
+
+        var withEvents = attributes?.ToDictionary() ?? [];
+        withEvents["data-tb-focus-root"] = "";
+        if (OnFocus.HasDelegate)
+        {
+            withEvents["ontbfocusenter"] = EventCallback.Factory.Create<FieldFocusEventArgs>(this, crossing =>
+                crossing.CrossesField ? OnFocus.InvokeAsync(new() { Type = "focus" }) : Task.CompletedTask);
+        }
+
+        if (OnBlur.HasDelegate)
+        {
+            withEvents["ontbfocusleave"] = EventCallback.Factory.Create<FieldFocusEventArgs>(this, crossing =>
+                crossing.CrossesField ? OnBlur.InvokeAsync(new() { Type = "blur" }) : Task.CompletedTask);
+        }
+
+        return withEvents;
+    }
+
+    private static Dictionary<string, object> WithAutofocus(IReadOnlyDictionary<string, object>? attributes)
+    {
+        var marked = attributes?.ToDictionary() ?? [];
+        marked["data-tb-autofocus"] = "";
+        return marked;
+    }
 
     // The parent's error stays: only the parent can clear it.
     void IFormField.HideMessages()

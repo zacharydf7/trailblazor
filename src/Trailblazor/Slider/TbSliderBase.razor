@@ -11,11 +11,11 @@
               class="@ClassNames.Join("tb-slider", from is null ? null : "tb-slider--range",
                          Errors.Count > 0 ? "tb-slider--invalid" : null, Disabled ? "tb-slider--disabled" : null,
                          Class)">
-            @if (Label is not null)
+            @if (ShownLabel is not null)
             {
                 <label data-part="label" id="@LabelId" for="@labelFor"
-                       class="@ClassNames.Join("tb-slider__label", Classes?.Label)">
-                    @Label
+                       class="@ClassNames.Join("tb-slider__label", LabelHiddenClass, Classes?.Label)">
+                    @ShownLabel
                     @RequiredMarker
                 </label>
             }

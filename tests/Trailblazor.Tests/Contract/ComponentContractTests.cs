@@ -2,6 +2,7 @@ using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor.Tests.Contract;
@@ -100,6 +101,83 @@ public class ComponentContractTests : BunitContext
 
         Assert.Equal("That name is taken.", cut.Find("[data-part=error]").TextContent.Trim());
         Assert.NotEmpty(cut.FindAll("[aria-invalid=true]"));
+    }
+
+    public static TheoryData<Type, bool> FieldsStaticAndInteractive =>
+        new(from row in Fields from interactive in new[] { false, true } select (row.Data, interactive));
+
+    [Theory, MemberData(nameof(FieldsStaticAndInteractive))]
+    public void Render_ShouldNameTheControlWithAHiddenLabel_WhenGivenOnlyAnAriaLabel(Type field, bool interactive)
+    {
+        if (interactive)
+        {
+            SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        }
+
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            builder.AddAttribute(1, nameof(TbTextField<string>.AriaLabel), "Search trails");
+            AddRequiredParameters(builder, field, sequence: 2);
+            builder.CloseComponent();
+        });
+
+        var hidden = Assert.Single(cut.FindAll(".tb-visually-hidden"),
+            part => part.TextContent.Trim().StartsWith("Search trails"));
+        var names = hidden.TagName == "LEGEND"
+            || (hidden.GetAttribute("for") is { } target && cut.FindAll($"[id='{target}']").Count > 0)
+            || (hidden.Id is { Length: > 0 } id && cut.FindAll($"[aria-labelledby~='{id}']").Count > 0)
+            || hidden.Closest("label")?.QuerySelector("input") is not null;
+        Assert.True(names, $"The hidden label of {field.Name} names no control.");
+        // A label with an id names each of the field's own parts, such as a range's thumbs and a popup list.
+        if (hidden.Id is { Length: > 0 } labelId)
+        {
+            Assert.All(cut.FindAll("input[aria-labelledby], [role=combobox][aria-labelledby], "
+                    + "[role=listbox][aria-labelledby], [role=group][aria-labelledby]"),
+                part => Assert.Contains(labelId, part.GetAttribute("aria-labelledby")!.Split(' ')));
+        }
+    }
+
+    [Theory, MemberData(nameof(Fields))]
+    public async Task Focus_ShouldRaiseOnFocusAndOnBlurOnce_WhenFocusCrossesTheField(Type field)
+    {
+        var events = new List<string>();
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            builder.AddAttribute(1, nameof(TbTextField<string>.OnFocus),
+                EventCallback.Factory.Create<FocusEventArgs>(this, () => events.Add("focus")));
+            builder.AddAttribute(2, nameof(TbTextField<string>.OnBlur),
+                EventCallback.Factory.Create<FocusEventArgs>(this, () => events.Add("blur")));
+            AddRequiredParameters(builder, field, sequence: 3);
+            builder.CloseComponent();
+        });
+
+        var root = cut.Find("[data-tb-focus-root]");
+        await root.TriggerEventAsync("ontbfocusenter", new FieldFocusEventArgs { CrossesField = true });
+        await root.TriggerEventAsync("ontbfocusleave", new FieldFocusEventArgs { CrossesField = false });
+        await root.TriggerEventAsync("ontbfocusleave", new FieldFocusEventArgs { CrossesField = true });
+
+        Assert.Equal(["focus", "blur"], events);
+    }
+
+    [Theory, MemberData(nameof(Fields))]
+    public void Render_ShouldFocusTheField_WhenAutoFocusIsSet(Type field)
+    {
+        // Fields take focus only once the page is interactive.
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Trail");
+            builder.AddAttribute(2, nameof(TbTextField<string>.AutoFocus), true);
+            AddRequiredParameters(builder, field, sequence: 3);
+            builder.CloseComponent();
+        });
+
+        Assert.Contains(JSInterop.Invocations,
+            invocation => invocation.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+        Assert.Single(cut.FindAll("[data-tb-autofocus]"));
     }
 
     public static TheoryData<Type> BoxedFields => new(Components.Select(row => row.Data).Where(type =>

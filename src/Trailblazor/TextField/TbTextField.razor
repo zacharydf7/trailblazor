@@ -10,7 +10,7 @@
 @Layout(Classes, @<text>
     @if (Lines > 1)
     {
-        <textarea @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+        <textarea @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                   rows="@Lines" @bind:get="Shown" @bind:set="OnTextAsync" @bind:event="@BindEvent"
                   @onchange="FlushOnChange" data-max-lines="@(Grows ? MaxLines : null)"
                   style="@(Grows ? $"--tb-text-field-lines: {Lines}; --tb-text-field-max-lines: {MaxLines}" : null)"
@@ -20,7 +20,7 @@
     }
     else
     {
-        <input @attributes="InputAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                type="@Type.ToString().ToLowerInvariant()" @bind:get="Shown" @bind:set="OnTextAsync"
                @bind:event="@BindEvent" @onchange="FlushOnChange" placeholder="@(Placeholder ?? _mask?.Hint)"
                inputmode="@InputMode" data-ready="@(_maskHandle is null ? null : "")" disabled="@Disabled"
@@ -153,6 +153,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         if (Mask == _maskAttached)
         {
             return;

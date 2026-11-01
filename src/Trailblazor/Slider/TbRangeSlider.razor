@@ -6,8 +6,8 @@
 @Layout(StartId, Fraction(Start), Fraction(End), @<text>
     <span id="@($"{StartId}-name")" hidden>@(StartLabel ?? Localizer[TbStrings.RangeSliderStart])</span>
     <span id="@($"{EndId}-name")" hidden>@(EndLabel ?? Localizer[TbStrings.RangeSliderEnd])</span>
-    <input @attributes="InputAttributes" @ref="_start" data-part="start-thumb" id="@StartId" name="@NameOf("Start")"
-           type="range"
+    <input @attributes="InputAttributes" @ref="_start" data-part="start-thumb" id="@StartId"
+           data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="range"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Start)"
            @bind:set="SetStartAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(Start)" aria-labelledby="@Names(StartId)"
@@ -63,7 +63,7 @@
     // With both thumbs at the top, the end thumb can't move up, so the start thumb sits above it to be grabbed.
     private bool StartOnTop => Start == End && End == Max;
 
-    private string Names(string thumb) => Label is null ? $"{thumb}-name" : $"{LabelId} {thumb}-name";
+    private string Names(string thumb) => ShownLabel is null ? $"{thumb}-name" : $"{LabelId} {thumb}-name";
 
     private string? NameOf(string part) => InputNameAttribute is null ? null : $"{InputNameAttribute}.{part}";
 

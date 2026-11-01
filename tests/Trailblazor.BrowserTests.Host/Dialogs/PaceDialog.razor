@@ -1,0 +1,17 @@
+@inherits TbDialogContent<string>
+
+@* The group asks for focus, so it lands on the chosen pace, as Tab would, not on the first radio. *@
+<TbTextField Label="Route" @bind-Value="_route" />
+<TbRadioGroup TValue="string" Label="Pace" @bind-Value="_pace" AutoFocus>
+    <TbRadio Value="@("Stroll")" Disabled>Stroll</TbRadio>
+    <TbRadio Value="@("Steady")">Steady</TbRadio>
+    <TbRadio Value="@("Fast")">Fast</TbRadio>
+</TbRadioGroup>
+<TbDialogActions>
+    <TbButton OnClick="() => CloseAsync(_pace ?? string.Empty)">Save</TbButton>
+</TbDialogActions>
+
+@code {
+    private string? _route;
+    private string? _pace = "Fast";
+}

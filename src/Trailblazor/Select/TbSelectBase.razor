@@ -6,8 +6,8 @@
     @if (RendererInfo.IsInteractive)
     {
         @* Focus stays on the combobox; the script moves an active option and keeps aria-expanded current. *@
-        <div @attributes="InputAttributes" @ref="_combobox" data-part="input" id="@InputId" role="combobox"
-             tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(Label is null ? null : LabelId)"
+        <div @attributes="ControlAttributes" @ref="_combobox" data-part="input" id="@InputId" role="combobox"
+             tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-haspopup="listbox" aria-expanded="false" aria-controls="@ListboxId"
              aria-disabled="@(Disabled ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
              aria-required="@(Required ? "true" : null)" aria-invalid="@(Errors.Count > 0 ? "true" : null)"
@@ -36,7 +36,7 @@
     else
     {
         @* A native select works without a circuit; data-prerender marks one a combobox will replace. *@
-        <select @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+        <select @attributes="ControlAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
                 data-prerender="@(AssignedRenderMode is null ? null : "")"
                 multiple="@Multiple" disabled="@Disabled" aria-readonly="@(ReadOnly ? "true" : null)"
                 aria-required="@(Required ? "true" : null)"
@@ -54,7 +54,7 @@
 @code {
     private RenderFragment Listbox =>
         @<div @ref="_listbox" id="@ListboxId" popover="@(Filterable ? null : "auto")" role="listbox"
-              aria-labelledby="@(Label is null ? null : LabelId)" aria-multiselectable="@(Multiple ? "true" : null)"
+              aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-multiselectable="@(Multiple ? "true" : null)"
               data-part="listbox" class="tb-select__listbox">
             @* Not fixed, so every option re-renders with the select and its aria-selected follows the value. *@
             <CascadingValue Value="this">@ChildContent</CascadingValue>

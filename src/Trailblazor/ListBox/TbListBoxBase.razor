@@ -6,8 +6,8 @@
     @if (RendererInfo.IsInteractive)
     {
         @* Focus stays on the listbox; the script moves an active option and points to it. *@
-        <div @attributes="InputAttributes" @ref="_listbox" data-part="input" id="@InputId" role="listbox"
-             tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(Label is null ? null : LabelId)"
+        <div @attributes="ControlAttributes" @ref="_listbox" data-part="input" id="@InputId" role="listbox"
+             tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-multiselectable="@(Multiple ? "true" : null)" aria-disabled="@(Disabled ? "true" : null)"
              aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
              aria-invalid="@(Errors.Count > 0 ? "true" : null)"
@@ -19,7 +19,7 @@
     else
     {
         @* A native list works without a circuit; data-prerender marks one a listbox will replace. *@
-        <select @attributes="InputAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
+        <select @attributes="ControlAttributes" data-part="input" id="@InputId" name="@InputNameAttribute"
                 data-prerender="@(AssignedRenderMode is null ? null : "")" size="@Rows" multiple="@Multiple"
                 disabled="@Disabled" aria-readonly="@(ReadOnly ? "true" : null)"
                 aria-required="@(Required ? "true" : null)"

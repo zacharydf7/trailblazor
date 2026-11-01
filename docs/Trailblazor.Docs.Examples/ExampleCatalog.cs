@@ -36,6 +36,15 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // Every field takes a TelemetryName, so a field's page says what that counts before its own notes.
     public IReadOnlyList<string> TelemetryNotes => Api.Any(IsField) ? [FieldTelemetry, .. Telemetry] : Telemetry;
 
+    // Every field takes AriaLabel, OnFocus, OnBlur and AutoFocus, so a field's page ends its notes with them.
+    public IReadOnlyList<string> AccessibilityNotes => Api.Any(IsField) ? [.. Accessibility, FieldAccessibility]
+        : Accessibility;
+
+    private const string FieldAccessibility = "With no room for a label, an `AriaLabel` names the field through a "
+        + "label only screen readers see. `OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
+        + "between its own parts, so they suit checking or saving when the user moves on. `AutoFocus` moves focus to "
+        + "it once the page is interactive, or, in a dialog or focus scope, as it opens.";
+
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
         + "submitted while it has an error. Its value is never recorded.";

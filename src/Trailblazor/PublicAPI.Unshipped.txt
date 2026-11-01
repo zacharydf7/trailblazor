@@ -302,6 +302,10 @@ Trailblazor.FieldClasses.Label.get -> string?
 Trailblazor.FieldClasses.Label.init -> void
 Trailblazor.FieldClasses.Start.get -> string?
 Trailblazor.FieldClasses.Start.init -> void
+Trailblazor.FieldFocusEventArgs
+Trailblazor.FieldFocusEventArgs.CrossesField.get -> bool
+Trailblazor.FieldFocusEventArgs.CrossesField.set -> void
+Trailblazor.FieldFocusEventArgs.FieldFocusEventArgs() -> void
 Trailblazor.FieldVariant
 Trailblazor.FieldVariant.Filled = 1 -> Trailblazor.FieldVariant
 Trailblazor.FieldVariant.Outlined = 0 -> Trailblazor.FieldVariant
@@ -1038,6 +1042,14 @@ Trailblazor.TbFieldBase<TValue>.ValueChanged.get -> Microsoft.AspNetCore.Compone
 Trailblazor.TbFieldBase<TValue>.ValueChanged.set -> void
 Trailblazor.TbFieldBase<TValue>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 Trailblazor.TbFieldBase<TValue>.ValueExpression.set -> void
+Trailblazor.TbFieldBase<TValue>.AriaLabel.get -> string?
+Trailblazor.TbFieldBase<TValue>.AriaLabel.set -> void
+Trailblazor.TbFieldBase<TValue>.AutoFocus.get -> bool
+Trailblazor.TbFieldBase<TValue>.AutoFocus.set -> void
+Trailblazor.TbFieldBase<TValue>.OnBlur.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.FocusEventArgs!>
+Trailblazor.TbFieldBase<TValue>.OnBlur.set -> void
+Trailblazor.TbFieldBase<TValue>.OnFocus.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.FocusEventArgs!>
+Trailblazor.TbFieldBase<TValue>.OnFocus.set -> void
 Trailblazor.TbFileUpload
 Trailblazor.TbFileUpload.Accept.get -> string?
 Trailblazor.TbFileUpload.Accept.set -> void
@@ -2441,6 +2453,7 @@ override Trailblazor.TbDialogDescription.OnInitialized() -> void
 ~override Trailblazor.TbFieldBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbFieldBase<TValue>.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbFieldBase<TValue>.OnParametersSet() -> void
+override Trailblazor.TbFieldBase<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 ~override Trailblazor.TbFileUpload.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbFileUpload.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbFileUpload.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!

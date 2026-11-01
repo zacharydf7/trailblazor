@@ -135,6 +135,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         try
         {
             if (firstRender)
