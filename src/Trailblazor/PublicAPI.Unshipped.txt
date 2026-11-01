@@ -1407,8 +1407,6 @@ Trailblazor.TbDialogActions.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbDialogActions.ChildContent.set -> void
 Trailblazor.TbDialogActions.TbDialogActions() -> void
 Trailblazor.TbDialogContent<TResult>
-Trailblazor.TbDialogContent<TResult>.CancelAsync() -> System.Threading.Tasks.Task!
-Trailblazor.TbDialogContent<TResult>.CloseAsync(TResult value) -> System.Threading.Tasks.Task!
 Trailblazor.TbDialogContent<TResult>.CloseButton.get -> bool
 Trailblazor.TbDialogContent<TResult>.CloseButton.set -> void
 Trailblazor.TbDialogContent<TResult>.Modal.get -> bool
@@ -1422,6 +1420,8 @@ Trailblazor.TbDialogContent<TResult>.Size.set -> void
 Trailblazor.TbDialogContent<TResult>.TbDialogContent() -> void
 Trailblazor.TbDialogContent<TResult>.WindowState.get -> Trailblazor.DialogWindowState
 Trailblazor.TbDialogContent<TResult>.WindowState.set -> void
+Trailblazor.TbDialogContent<TResult>.CancelDialogAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbDialogContent<TResult>.CloseDialogAsync(TResult value) -> System.Threading.Tasks.Task!
 Trailblazor.TbDialogDescription
 Trailblazor.TbDialogDescription.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDialogDescription.ChildContent.set -> void
@@ -2631,7 +2631,6 @@ Trailblazor.Viewport.Height.init -> void
 Trailblazor.Viewport.Viewport(int Width, int Height) -> void
 Trailblazor.Viewport.Width.get -> int
 Trailblazor.Viewport.Width.init -> void
-virtual Trailblazor.TbDialogContent<TResult>.CanDismissAsync(Trailblazor.DialogDismissReason reason) -> System.Threading.Tasks.Task<bool>!
 ~override Trailblazor.DateRange<TDate>.Equals(object obj) -> bool
 ~override Trailblazor.DateRange<TDate>.ToString() -> string
 ~override Trailblazor.GridSpan.Equals(object obj) -> bool
@@ -2718,3 +2717,11 @@ Trailblazor.TbTooltip.Disabled.get -> bool
 Trailblazor.TbTooltip.Disabled.set -> void
 Trailblazor.TbTooltip.MaxWidth.get -> string?
 Trailblazor.TbTooltip.MaxWidth.set -> void
+Trailblazor.TbDialogTitle
+Trailblazor.TbDialogTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDialogTitle.ChildContent.set -> void
+Trailblazor.TbDialogTitle.Dispose() -> void
+Trailblazor.TbDialogTitle.TbDialogTitle() -> void
+virtual Trailblazor.TbDialogContent<TResult>.OnDismissAsync(Trailblazor.DialogDismissReason reason) -> System.Threading.Tasks.Task!
+Trailblazor.DialogOptions.Width.get -> string?
+Trailblazor.DialogOptions.Width.init -> void

@@ -659,7 +659,7 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
-    public async Task Dismiss_ShouldAskTheContentWithTheReasonAndStayOpen_WhenTheContentRefuses()
+    public async Task Dismiss_ShouldTellTheContentTheReasonAndStayOpen_WhenTheContentKeepsItOpen()
     {
         var host = Render<DialogHost>();
         var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");
@@ -675,6 +675,18 @@ public class DialogServiceTests : BunitContext
         content.Instance.Allow = true;
         await host.Find("[data-part=close]").ClickAsync(new());
         Assert.Equal(DialogResult<bool>.Cancel(), await dialog.Result);
+    }
+
+    [Fact]
+    public async Task Dismiss_ShouldCloseAsTheContentChooses_WhenTheContentClosesItSomeOtherWay()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");
+        host.WaitForComponent<GuardedDialog>().Instance.CloseWith = true;
+
+        await host.InvokeAsync(() => host.FindComponent<DialogFrame>().Instance.Dismiss(DialogDismissReason.Escape));
+
+        Assert.Equal(DialogResult<bool>.Ok(true), await dialog.Result);
     }
 
     [Fact]
@@ -738,6 +750,33 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void Title_ShouldShowTheContentsTitleInTheHeaderAndNameTheDialog_WhenItsContentHasOne()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.Show<TitledDialog, bool>("Delete Pine Hollow");
+
+        var title = host.WaitForElement("[data-part=header] h2");
+        Assert.Equal("Delete Pine Hollow (3 trips)", title.TextContent);
+        Assert.Equal(title.Id, host.Find("dialog").GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
+    public async Task Title_ShouldFollowTheContentAndFallBackToTheTitle_WhenItChangesOrGoes()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.Show<TitledDialog, bool>("Delete Pine Hollow");
+        var content = host.WaitForComponent<TitledDialog>();
+
+        await content.InvokeAsync(() => content.Instance.Trips = 4);
+        host.WaitForAssertion(() =>
+            Assert.Equal("Delete Pine Hollow (4 trips)", host.Find("[data-part=header] h2").TextContent));
+        await content.InvokeAsync(() => content.Instance.Trips = null);
+
+        host.WaitForAssertion(() => Assert.Equal("Delete Pine Hollow", host.Find("[data-part=header] h2").TextContent));
+    }
+
+    [Fact]
     public void Description_ShouldLeaveTheDialogUndescribed_WhenItsContentHasNone()
     {
         var host = Render<DialogHost>();
@@ -755,10 +794,50 @@ public class DialogServiceTests : BunitContext
 
         public Exception? Failure { get; set; }
 
-        protected override Task<bool> CanDismissAsync(DialogDismissReason reason)
+        public bool? CloseWith { get; set; }
+
+        protected override async Task OnDismissAsync(DialogDismissReason reason)
         {
             Asked.Add(reason);
-            return Failure is not null ? Task.FromException<bool>(Failure) : Task.FromResult(Allow);
+            if (Failure is not null)
+            {
+                throw Failure;
+            }
+
+            if (CloseWith is { } value)
+            {
+                await CloseDialogAsync(value);
+            }
+            else if (Allow)
+            {
+                await CancelDialogAsync();
+            }
+        }
+    }
+
+    private sealed class TitledDialog : TbDialogContent<bool>
+    {
+        private int? _trips = 3;
+
+        public int? Trips
+        {
+            get => _trips;
+            set
+            {
+                _trips = value;
+                StateHasChanged();
+            }
+        }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            if (_trips is { } trips)
+            {
+                builder.OpenComponent<TbDialogTitle>(0);
+                builder.AddComponentParameter(1, nameof(TbDialogTitle.ChildContent),
+                    (RenderFragment)(title => title.AddContent(0, $"Delete Pine Hollow ({trips} trips)")));
+                builder.CloseComponent();
+            }
         }
     }
 
@@ -861,7 +940,7 @@ public class DialogServiceTests : BunitContext
             builder.AddContent(0, $"Hello {Name}");
             builder.OpenElement(1, "button");
             builder.AddAttribute(2, "data-testid", "accept");
-            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => CloseAsync(Name ?? "")));
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => CloseDialogAsync(Name ?? "")));
             builder.CloseElement();
         }
     }

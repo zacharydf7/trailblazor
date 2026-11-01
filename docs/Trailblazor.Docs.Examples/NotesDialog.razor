@@ -10,7 +10,7 @@
               OnClick="() => Size = Size == DialogSize.Small ? DialogSize.Medium : DialogSize.Small">
         @(Size == DialogSize.Small ? "Widen" : "Narrow")
     </TbButton>
-    <TbButton OnClick="() => CloseAsync(_notes ?? string.Empty)">Save</TbButton>
+    <TbButton OnClick="() => CloseDialogAsync(_notes ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {

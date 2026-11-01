@@ -3,8 +3,8 @@
 
 <TbTextField Label="Name" @bind-Value="Name" UpdateOnInput />
 <TbDialogActions>
-    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelAsync">Cancel</TbButton>
-    <TbButton OnClick="() => CloseAsync(Name ?? string.Empty)">Save</TbButton>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelEditAsync">Cancel</TbButton>
+    <TbButton OnClick="() => CloseDialogAsync(Name ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {
@@ -15,8 +15,15 @@
 
     protected override void OnInitialized() => _original = Name;
 
-    // Escape, the backdrop and the close button ask first once the name has changed.
-    protected override async Task<bool> CanDismissAsync(DialogDismissReason reason) =>
-        Name == _original || await Dialogs.ConfirmAsync("Discard the new name?",
-            $"The report keeps its name, {_original}.", "Discard", "Keep editing", Tone.Danger);
+    // Escape, the backdrop and the close button cancel as the Cancel button does, asking first once the name changed.
+    protected override Task OnDismissAsync(DialogDismissReason reason) => CancelEditAsync();
+
+    private async Task CancelEditAsync()
+    {
+        if (Name == _original || await Dialogs.ConfirmAsync("Discard the new name?",
+            $"The report keeps its name, {_original}.", "Discard", "Keep editing", Tone.Danger))
+        {
+            await CancelDialogAsync();
+        }
+    }
 }

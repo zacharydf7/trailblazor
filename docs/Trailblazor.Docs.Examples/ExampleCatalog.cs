@@ -1208,7 +1208,7 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
-                typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogDescription),
+                typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogDescription),
             ],
             Accessibility =
             [
@@ -1224,9 +1224,17 @@ public static class ExampleCatalog
                     + "is decorative, so say what happened in the message.",
                 "A `TbDialogDescription` describes any dialog with `aria-describedby`, so screen readers read it with "
                     + "the title as the dialog opens.",
-                "Escape, the backdrop and the close button ask the dialog first: override `CanDismissAsync` in a "
-                    + "`TbDialogContent`, or set `CanDismiss` on a `TbDialog`, to keep it open, as the rename dialog "
-                    + "does once its name has changed. Closing from code doesn't ask.",
+                "Escape, the backdrop and the close button go through the dialog: override `OnDismissAsync` in a "
+                    + "`TbDialogContent` to run its own cancel, as the rename dialog does to ask before discarding a "
+                    + "changed name, whichever way the user leaves. On a `TbDialog`, `CanDismiss` can keep it open. "
+                    + "Closing from code doesn't ask.",
+                "A `TbDialogTitle` shows richer content, such as the export dialog's icon, in place of the title "
+                    + "in the header. It names the dialog, so keep the title's text in it; an icon in it is hidden "
+                    + "from screen readers.",
+                "`Size` sets the widest a dialog grows, in rem so it follows the user's text size: `Small` 24rem "
+                    + "(384px), `Medium` 32rem (512px), `Large` 48rem (768px), `ExtraLarge` 64rem (1024px) and "
+                    + "`Full`. Pick the step nearest the content's need, or set `Width` to a CSS length for one "
+                    + "between the steps; no dialog grows past the window.",
                 "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
                     + "starts to fade out, the page takes input again and focus goes back to its opener, unless focus "
                     + "had already left the dialog.",

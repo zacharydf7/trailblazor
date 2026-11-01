@@ -1,0 +1,8 @@
+@inherits TbDialogContent<string>
+
+@* Picks its own size as it starts, before the dialog's script is ready. *@
+<TbText>A table needs room.</TbText>
+
+@code {
+    protected override void OnInitialized() => Size = DialogSize.Large;
+}

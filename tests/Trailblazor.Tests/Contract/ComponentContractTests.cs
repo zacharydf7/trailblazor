@@ -10,14 +10,15 @@ namespace Trailblazor.Tests.Contract;
 // Rules every public Trailblazor component must follow, checked against all of them by reflection.
 public class ComponentContractTests : BunitContext
 {
-    // TbRoot renders no element of its own, TbStyles only a <link> and TbThemeHead only a <script>, which take no class
-    // or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem,
-    // TbDialogDescription and TbColumn only render inside their parent (see their parents' tests).
+    // TbRoot and TbDialogTitle render no element of their own, TbStyles only a <link> and TbThemeHead only a <script>,
+    // which take no class or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane,
+    // TbTreeItem, TbMenuRadioItem, TbDialogDescription and TbColumn only render inside their parent (see their
+    // parents' tests).
     private static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbRadio<>), typeof(TbCheckboxItem<>),
         typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>), typeof(TbSplitterPane), typeof(TbTreeItem<>),
-        typeof(TbMenuRadioItem<>), typeof(TbDialogDescription), typeof(TbColumn<>),
+        typeof(TbMenuRadioItem<>), typeof(TbDialogDescription), typeof(TbColumn<>), typeof(TbDialogTitle),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.

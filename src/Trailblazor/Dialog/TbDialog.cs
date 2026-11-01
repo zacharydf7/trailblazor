@@ -23,7 +23,8 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
     [Parameter]
     public EventCallback<bool> OpenChanged { get; set; }
 
-    /// <summary>The dialog's title, which is also its accessible name.</summary>
+    /// <summary>The dialog's title, which is also its accessible name. A <see cref="TbDialogTitle"/> in the dialog
+    /// shows richer content in its place.</summary>
     [Parameter, EditorRequired]
     public string Title { get; set; } = "";
 
@@ -80,7 +81,13 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
     private void OpenDialog()
     {
         var dialog = Dialogs.OpenInPlace(Title, Options ?? new());
-        dialog.CanDismiss = reason => CanDismiss is { } ask ? ask(reason) : Task.FromResult(true);
+        dialog.Dismiss = async reason =>
+        {
+            if (CanDismiss is null || await CanDismiss(reason))
+            {
+                await dialog.CancelAsync();
+            }
+        };
         _dialog = dialog;
         _ = WatchAsync(dialog);
     }

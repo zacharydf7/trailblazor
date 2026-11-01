@@ -1,8 +1,10 @@
 @inherits TbDialogContent<bool>
 
+<TbDialogTitle><TbIcon Icon="ExampleIcons.Folder" /> Exporting report</TbDialogTitle>
+
 <TbProgress Value="Percent" AriaLabel="Export progress" Label="Writing the PDF" ShowValue />
 <TbDialogActions>
-    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelAsync">Stop</TbButton>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelDialogAsync">Stop</TbButton>
 </TbDialogActions>
 
 @code {

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components;
+
 namespace Trailblazor;
 
 /// <summary>A dialog that is open, as listed by <see cref="IDialogService.OpenDialogs"/>.</summary>
@@ -27,7 +29,8 @@ public abstract class DialogReference
         _position = options.Position;
     }
 
-    /// <summary>The dialog's title, which is also its accessible name. Setting it renames the open dialog.</summary>
+    /// <summary>The dialog's title, which is also its accessible name. Setting it renames the open dialog. A
+    /// <see cref="TbDialogTitle"/> in the dialog shows richer content in its place.</summary>
     public string Title
     {
         get => _title;
@@ -117,10 +120,16 @@ public abstract class DialogReference
 
     internal bool CloseButton { get; private set; }
 
-    // Asked before the user dismisses the dialog; set by its content.
-    internal Func<DialogDismissReason, Task<bool>>? CanDismiss { get; set; }
+    // Called when the user dismisses the dialog, in place of cancelling it; set by its content.
+    internal Func<DialogDismissReason, Task>? Dismiss { get; set; }
+
+    // Set while a TbDialogTitle is in the dialog, so the header shows it in place of the title's text.
+    internal RenderFragment? TitleContent { get; private set; }
 
     internal event Action? Changed;
+
+    // Only the header listens, since a frame-wide change would draw a markup dialog's TbDialogTitle again, endlessly.
+    internal event Action? TitleContentChanged;
 
     // Raised when the dialog starts or stops blocking the page, so toasts and announcements move with it.
     internal event Action? BlockingChanged;
@@ -160,6 +169,12 @@ public abstract class DialogReference
         }
     }
 
+    internal void SetTitleContent(RenderFragment? content)
+    {
+        TitleContent = content;
+        TitleContentChanged?.Invoke();
+    }
+
     internal void SetDescribed(bool described)
     {
         Described = described;
@@ -195,17 +210,19 @@ public abstract class DialogReference
         }
 
         _dismissing = true;
+        DismissedBy = reason;
         try
         {
-            if (CanDismiss is null || await CanDismiss(reason))
-            {
-                DismissedBy = reason;
-                await CancelAsync();
-            }
+            await (Dismiss is null ? CancelAsync() : Dismiss(reason));
         }
         finally
         {
             _dismissing = false;
+            // A dialog the content kept open isn't counted as dismissed if it closes some other way later.
+            if (!Closing)
+            {
+                DismissedBy = null;
+            }
         }
     }
 

@@ -3281,6 +3281,10 @@
         border-block-end: 1px solid var(--tb-border-subtle);
     }
 
+    .tb-dialog__title .tb-icon {
+        vertical-align: -0.2em;
+    }
+
     .tb-dialog__title {
         flex: 1 1 auto;
         margin: 0;

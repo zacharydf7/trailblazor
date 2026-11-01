@@ -101,6 +101,18 @@ public class TbDialogTests : BunitContext
     }
 
     [Fact]
+    public void Title_ShouldShowTheTitleContentAndFallBack_WhenItIsAddedAndRemoved()
+    {
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Share report")
+            .AddChildContent<TbDialogTitle>(title => title.AddChildContent("<b>Share</b> report")));
+        cut.WaitForAssertion(() => Assert.Equal("<b>Share</b> report", cut.Find("[data-part=header] h2").InnerHtml));
+
+        cut.Render(parameters => parameters.Add(d => d.ChildContent, (RenderFragment)(_ => { })));
+
+        cut.WaitForAssertion(() => Assert.Equal("Share report", cut.Find("[data-part=header] h2").InnerHtml));
+    }
+
+    [Fact]
     public async Task CloseButton_ShouldKeepTheDialogOpen_WhenCanDismissRefuses()
     {
         var asked = new List<DialogDismissReason>();

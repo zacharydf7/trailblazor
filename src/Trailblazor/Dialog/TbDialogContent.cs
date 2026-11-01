@@ -8,7 +8,7 @@ public abstract class TbDialogContent<TResult> : ComponentBase
 {
     private DialogReference? _dialog;
 
-    // The dialog asks its content before the user dismisses it, so the question is wired up as the content arrives.
+    // The user's dismissals go to the content, so the hook is wired up as the content arrives.
     [CascadingParameter]
     private DialogReference? Dialog
     {
@@ -18,7 +18,7 @@ public abstract class TbDialogContent<TResult> : ComponentBase
             _dialog = value;
             if (value is not null)
             {
-                value.CanDismiss = CanDismissAsync;
+                value.Dismiss = OnDismissAsync;
             }
         }
     }
@@ -72,14 +72,16 @@ public abstract class TbDialogContent<TResult> : ComponentBase
     }
 
     /// <summary>Closes the dialog as confirmed, with <paramref name="value"/> as its result.</summary>
-    protected Task CloseAsync(TResult value) => Reference.CloseAsync(true, value);
+    protected Task CloseDialogAsync(TResult value) => Reference.CloseAsync(true, value);
 
     /// <summary>Closes the dialog as cancelled.</summary>
-    protected Task CancelAsync() => Reference.CloseAsync(false, null);
+    protected Task CancelDialogAsync() => Reference.CloseAsync(false, null);
 
-    /// <summary>Asked when the user presses Escape, clicks the backdrop or presses the close button. Return false to
-    /// keep the dialog open, for example to ask about unsaved changes first. Closing from code doesn't ask.</summary>
-    protected virtual Task<bool> CanDismissAsync(DialogDismissReason reason) => Task.FromResult(true);
+    /// <summary>Called when the user presses Escape, clicks the backdrop or presses the close button, and cancels the
+    /// dialog unless overridden. Override it to send these through the dialog's own cancel, such as one that asks
+    /// about unsaved changes first; the dialog stays open unless it closes. Closing from code doesn't call it.
+    /// </summary>
+    protected virtual Task OnDismissAsync(DialogDismissReason reason) => CancelDialogAsync();
 
     private protected DialogReference Reference => Dialog
         ?? throw new InvalidOperationException($"Open {GetType().Name} with {nameof(IDialogService)}.");

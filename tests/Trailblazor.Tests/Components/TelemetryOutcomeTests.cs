@@ -26,6 +26,11 @@ public class TelemetryOutcomeTests : BunitContext
 
     private sealed class PickTrail<TTrail> : TbDialogContent<bool>;
 
+    private sealed class KeptTrail : TbDialogContent<bool>
+    {
+        protected override Task OnDismissAsync(DialogDismissReason reason) => Task.CompletedTask;
+    }
+
     [Fact]
     public async Task Dialog_ShouldCountItsOpenHowItClosedAndHowLongItStayed_WhenItHasATelemetryName()
     {
@@ -48,6 +53,21 @@ public class TelemetryOutcomeTests : BunitContext
         Assert.All(closed.GetMeasurementSnapshot(), measurement =>
             Assert.Equal(nameof(EditTrail), measurement.Tags["trailblazor.component"]));
         Assert.Equal(3, duration.GetMeasurementSnapshot()[0].Value);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldCountItAsCancelled_WhenItsContentKeptItOpenOnEscapeAndCodeCancelsItLater()
+    {
+        using var closed = Collect("trailblazor.dialog.closed");
+        var host = Render<DialogHost>();
+        var dialog = Services.GetRequiredService<IDialogService>().Show<KeptTrail, bool>("Edit Pine Hollow",
+            options: new() { TelemetryName = "edit-trail" });
+        host.WaitForComponent<KeptTrail>();
+
+        await host.InvokeAsync(() => dialog.DismissAsync(DialogDismissReason.Escape));
+        await host.InvokeAsync(dialog.CancelAsync);
+
+        Assert.Equal(["cancelled"], Outcomes(closed));
     }
 
     [Fact]

@@ -347,6 +347,7 @@ export function openDialog(dialog, dotNet, options) {
         },
         resizeTo(from, to) {
             delete dialog.dataset.sized;
+            dialog.style.removeProperty('--tb-dialog-width');
             dialog.classList.replace(from, to);
             keepInside();
         },

@@ -17,6 +17,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private bool _blocking;
     private DialogPosition _position;
     private DialogSize _size;
+    private bool _resized;
     private bool _disposed;
 
     [Parameter, EditorRequired]
@@ -56,7 +57,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.AddAttribute(3, "data-part", "dialog");
         builder.AddAttribute(4, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
-        builder.AddAttribute(6, "style", Style);
+        builder.AddAttribute(6, "style", string.IsNullOrWhiteSpace(options.Width) ? Style
+            : Styles.Join($"--tb-dialog-width: {options.Width}", Style));
         builder.AddAttribute(7, "class", ClassNames.Join("tb-dialog", SizeClass(Dialog.Size),
             PositionClass(Dialog.Position),
             Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null, Class));
@@ -129,8 +131,12 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
                 _handle = handle;
                 Dialog.CloseInBrowserAsync = CloseInBrowserAsync;
-                // The dialog may have changed while the script loaded.
+                // The dialog may have changed while the script loaded, and a new size replaces a custom width.
                 await ApplyStateAsync();
+                if (_resized)
+                {
+                    await handle.InvokeVoidAsync("resizeTo", SizeClass(_size), SizeClass(_size));
+                }
             }
 
             // The open dialog joins the accessibility tree with the next frame, so its live regions wait for that.
@@ -225,6 +231,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     {
         var from = SizeClass(_size);
         _size = size;
+        _resized = true;
         InvokeAsync(() =>
         {
             StateHasChanged();

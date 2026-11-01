@@ -60,7 +60,7 @@
     private async Task NotesAsync()
     {
         var result = await Dialogs.ShowAsync<NotesDialog, string>("Notes on the report",
-            options: new() { Minimizable = true, Maximizable = true });
+            options: new() { Minimizable = true, Maximizable = true, Width = "40rem" });
         if (result.Confirmed)
         {
             _status = $"Notes saved: {result.Value}";

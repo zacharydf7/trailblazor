@@ -195,6 +195,35 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldOpenAtItsWidthAndTakeASizeChosenLater_WhenOpenedWithAWidth(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Wide", Exact = true }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Wide" });
+        await Expect(dialog).ToBeVisibleAsync();
+        Assert.Equal(600, (await DialogTests.BoxAsync(page, "Wide")).Width, tolerance: 1);
+
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Resize" }).ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Large", Exact = true }).ClickAsync();
+
+        await Expect(dialog).ToHaveClassAsync(new Regex("tb-dialog--large"));
+        Assert.Equal(LargeWidth, (await DialogTests.BoxAsync(page, "Wide")).Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldTakeTheSizeItsContentSets_WhenItWasOpenedWithAWidth(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Sized", Exact = true }).ClickAsync();
+
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Sized" });
+        await Expect(dialog).ToHaveClassAsync(new Regex("tb-dialog--large"));
+        await Expect(dialog).Not.ToHaveAttributeAsync("style", new Regex("--tb-dialog-width"));
+        Assert.Equal(LargeWidth, (await DialogTests.BoxAsync(page, "Sized")).Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MoveMenu_ShouldStayClosed_WhenTheDialogIsDraggedByTheMoveButton(string browser)
     {
         var page = await OpenMovableAsync(browser);

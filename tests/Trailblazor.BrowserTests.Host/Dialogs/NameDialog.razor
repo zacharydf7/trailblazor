@@ -2,7 +2,7 @@
 
 <TbTextField Label="Name" @bind-Value="Name" />
 <TbDialogActions>
-    <TbButton OnClick="() => CloseAsync(Name ?? string.Empty)">Save</TbButton>
+    <TbButton OnClick="() => CloseDialogAsync(Name ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {

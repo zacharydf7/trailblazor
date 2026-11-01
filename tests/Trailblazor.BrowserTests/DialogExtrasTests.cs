@@ -17,7 +17,7 @@ public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Dialog_ShouldAskBeforeDiscardingTheNewName_WhenEscapeTheBackdropOrTheCloseButtonDismissIt(
+    public async Task Dialog_ShouldAskBeforeDiscardingTheNewName_WhenEscapeTheBackdropCancelOrTheCloseButtonLeaveIt(
         string browser)
     {
         var page = await OpenAsync(browser, "/examples/dialog");
@@ -30,6 +30,9 @@ public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
         await discard.GetByRole(AriaRole.Button, new() { Name = "Keep editing" }).ClickAsync();
         await Expect(discard).ToHaveCountAsync(0);
         await page.Mouse.ClickAsync(5, 5);
+        await discard.GetByRole(AriaRole.Button, new() { Name = "Keep editing" }).ClickAsync();
+        await Expect(discard).ToHaveCountAsync(0);
+        await rename.GetByRole(AriaRole.Button, new() { Name = "Cancel" }).ClickAsync();
         await discard.GetByRole(AriaRole.Button, new() { Name = "Keep editing" }).ClickAsync();
         await Expect(discard).ToHaveCountAsync(0);
         await Expect(rename.GetByLabel("Name")).ToHaveValueAsync("Quarterly report draft");
@@ -61,7 +64,8 @@ public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
         var export = page.GetByRole(AriaRole.Button, new() { Name = "Export report" });
 
         await export.ClickAsync();
-        var exporting = page.GetByRole(AriaRole.Dialog, new() { Name = "Exporting report" });
+        var exporting = page.GetByRole(AriaRole.Dialog, new() { Name = "Exporting report", Exact = true });
+        await Expect(exporting.Locator("[data-part=header] h2 svg")).ToBeVisibleAsync();
         await Expect(exporting.GetByRole(AriaRole.Progressbar))
             .ToHaveAttributeAsync("aria-valuenow", new Regex("^[1-9]"));
 

@@ -18,6 +18,11 @@ public sealed record DialogOptions
     /// <summary>How wide the dialog grows. Defaults to <see cref="DialogSize.Medium"/>.</summary>
     public DialogSize Size { get; init; } = DialogSize.Medium;
 
+    /// <summary>The widest the dialog grows, as a CSS length such as <c>40rem</c>, in place of <see cref="Size"/>, for
+    /// a width between its steps. The dialog is still never wider than the window, and a size set later replaces it.
+    /// </summary>
+    public string? Width { get; init; }
+
     /// <summary>Where the dialog sits in the window. Defaults to <see cref="DialogPosition.Center"/>.</summary>
     public DialogPosition Position { get; init; } = DialogPosition.Center;
 

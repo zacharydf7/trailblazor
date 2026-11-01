@@ -19,7 +19,11 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     [Inject]
     private Telemetry Telemetry { get; set; } = default!;
 
-    protected override void OnInitialized() => Dialog.Changed += OnChanged;
+    protected override void OnInitialized()
+    {
+        Dialog.Changed += OnChanged;
+        Dialog.TitleContentChanged += OnChanged;
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -40,12 +44,20 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.OpenElement(13, "h2");
         builder.AddAttribute(14, "id", TitleId);
         builder.AddAttribute(15, "class", "tb-dialog__title");
-        builder.AddContent(16, Dialog.Title);
+        if (Dialog.TitleContent is { } title)
+        {
+            builder.AddContent(16, title);
+        }
+        else
+        {
+            builder.AddContent(17, Dialog.Title);
+        }
+
         builder.CloseElement();
         var state = Dialog.WindowState;
         if (Dialog.Options.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal)
         {
-            DialogMenus.AddMove(builder, 17, Dialog, Localizer);
+            DialogMenus.AddMove(builder, 18, Dialog, Localizer);
         }
 
         if (Dialog.Options.Minimizable)
@@ -115,5 +127,9 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Dialog.Changed -= OnChanged;
+    public void Dispose()
+    {
+        Dialog.Changed -= OnChanged;
+        Dialog.TitleContentChanged -= OnChanged;
+    }
 }
