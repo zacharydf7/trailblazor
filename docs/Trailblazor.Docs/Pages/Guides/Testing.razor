@@ -27,6 +27,17 @@
 </TbText>
 <CodeBlock Label="A bUnit test" Code="@Bunit" />
 <TbText>
+    To drive fields the way a user does, <code>cut.Tb()</code> finds them by their labels, with the same names as the
+    Playwright helpers below: choose an option in a select or list box by its text, read what a select shows, type a
+    number, and pick a tab. As in Playwright, choosing keeps options already chosen and refuses a disabled field.
+    Choosing needs an interactive page, since a static select is a native one that posts with its form. A number field
+    without a <code>Format</code> reads what was typed through its own change event, which bUnit's
+    <code>Change</code> doesn't reach; <code>EnterAsync</code> types into either kind. A field's error is also announced
+    in <code>TbRoot</code>'s live region, so a check that the markup no longer holds an error looks at the field, not
+    the whole page.
+</TbText>
+<CodeBlock Label="Driving fields in bUnit" Code="@BunitDrivers" />
+<TbText>
     To test a dialog by itself, <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens it as a page would:
     it renders a <code>TbRoot</code> to host it and opens it through
     <code>IDialogService</code> with the title, parameters and options you give. Find what it shows through
@@ -123,6 +134,18 @@
                 Assert.Single(Services.GetRequiredService<IToastService>().Toasts);
             }
         }
+        """;
+
+    private const string BunitDrivers = """
+        var page = Render<OrderPage>();
+
+        await page.Tb().Select("Size").ChooseAsync("Medium");
+        await page.Tb().Select("Toppings").ChooseAsync("Olives", "Basil");
+        await page.Tb().ListBox("Camp").ChooseAsync("Meadow");
+        await page.Tb().NumberField("Copies").EnterAsync("12");
+        await page.Tb().Tabs().SelectAsync("Route");
+
+        Assert.Equal("Olives, Basil", page.Tb().Select("Toppings").Text);
         """;
 
     private const string BunitDialog = """

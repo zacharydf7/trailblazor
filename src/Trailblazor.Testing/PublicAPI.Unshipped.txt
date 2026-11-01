@@ -47,11 +47,32 @@ Trailblazor.Testing.ScrollRequest.Equals(Trailblazor.Testing.ScrollRequest? othe
 Trailblazor.Testing.ScrollRequest.ScrollRequest(Microsoft.AspNetCore.Components.ElementReference Element, Trailblazor.ScrollAlignment Alignment, bool Smooth) -> void
 Trailblazor.Testing.ScrollRequest.Smooth.get -> bool
 Trailblazor.Testing.ScrollRequest.Smooth.init -> void
+Trailblazor.Testing.TbListBoxDriver
+Trailblazor.Testing.TbListBoxDriver.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbListBoxDriver.Chosen.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbListBoxDriver.Options.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbNumberFieldDriver
+Trailblazor.Testing.TbNumberFieldDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbNumberFieldDriver.Text.get -> string?
+Trailblazor.Testing.TbSelectDriver
+Trailblazor.Testing.TbSelectDriver.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSelectDriver.Options.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbSelectDriver.Text.get -> string?
+Trailblazor.Testing.TbTabsDriver
+Trailblazor.Testing.TbTabsDriver.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTabsDriver.Selected.get -> string?
+Trailblazor.Testing.TbTabsDriver.Tabs.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TestDialog<TDialog, TResult>
 Trailblazor.Testing.TestDialog<TDialog, TResult>.Content.get -> Bunit.IRenderedComponent<TDialog!>!
 Trailblazor.Testing.TestDialog<TDialog, TResult>.Reference.get -> Trailblazor.DialogReference<TResult>!
 Trailblazor.Testing.TestDialog<TDialog, TResult>.Root.get -> Bunit.IRenderedComponent<Trailblazor.TbRoot!>!
 Trailblazor.Testing.TrailblazorBunitExtensions
+Trailblazor.Testing.TrailblazorMarkup
+Trailblazor.Testing.TrailblazorMarkup.ListBox(string! label) -> Trailblazor.Testing.TbListBoxDriver!
+Trailblazor.Testing.TrailblazorMarkup.NumberField(string! label) -> Trailblazor.Testing.TbNumberFieldDriver!
+Trailblazor.Testing.TrailblazorMarkup.Select(string! label) -> Trailblazor.Testing.TbSelectDriver!
+Trailblazor.Testing.TrailblazorMarkup.Tabs(string? name = null) -> Trailblazor.Testing.TbTabsDriver!
+Trailblazor.Testing.TrailblazorMarkupExtensions
 override Trailblazor.Testing.BrowserFile.Equals(object? obj) -> bool
 override Trailblazor.Testing.BrowserFile.GetHashCode() -> int
 override Trailblazor.Testing.BrowserFile.ToString() -> string!
@@ -64,3 +85,4 @@ static Trailblazor.Testing.ScrollRequest.operator !=(Trailblazor.Testing.ScrollR
 static Trailblazor.Testing.ScrollRequest.operator ==(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
 static Trailblazor.Testing.TrailblazorBunitExtensions.AddTrailblazor(this Bunit.BunitContext! context, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Bunit.BunitContext!
 static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.BunitContext! context, string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
+static Trailblazor.Testing.TrailblazorMarkupExtensions.Tb<TComponent>(this Bunit.IRenderedComponent<TComponent>! rendered) -> Trailblazor.Testing.TrailblazorMarkup!

@@ -722,6 +722,10 @@ public static class ExampleCatalog
             Target = new("spinbutton", "Quantity"),
             Blocks = ["tb-field"],
             DataParts = [.. FieldParts, "input", "decrement", "increment"],
+            TestingTip = "Without a `Format` the field reads what was typed through its own change event, which "
+                + "bUnit's `Change` doesn't reach; `await cut.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` "
+                + "from `Trailblazor.Testing` types into either kind. In Playwright, fill the `spinbutton` and press "
+                + "Tab.",
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
@@ -887,7 +891,8 @@ public static class ExampleCatalog
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
                 + "select a `Comparer` so they still match their options. The helper works the same on a `Filterable` "
-                + "select.",
+                + "select. In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
+                + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows.",
             Telemetry =
             [
                 "The select also counts `trailblazor.control.used` for each choice, with `trailblazor.input` `pointer` "
@@ -1045,7 +1050,9 @@ public static class ExampleCatalog
             DataParts = ["label", "helper", "error", "input", "group", "group-label", "option"],
             TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
                 + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
-                + "`<select>` too. For object values loaded again, give the list box a `Comparer`.",
+                + "`<select>` too. For object values loaded again, give the list box a `Comparer`. In bUnit, "
+                + "`await cut.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from `Trailblazor.Testing` "
+                + "does the same.",
             Telemetry =
             [
                 "An option with a `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` each "
@@ -1283,7 +1290,9 @@ public static class ExampleCatalog
             DataParts = ["list", "tab", "tab-anchor", "icon", "panel"],
             TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
                 + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. Wait for the tab list's "
-                + "`data-ready` attribute before testing the arrow keys.",
+                + "`data-ready` attribute before testing the arrow keys. In bUnit, "
+                + "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its "
+                + "text.",
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "
