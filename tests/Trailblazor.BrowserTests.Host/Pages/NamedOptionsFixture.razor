@@ -1,0 +1,18 @@
+@page "/named-options"
+
+@* Every way an option has a name, and a button that adds one with none each time. *@
+<TbSelect TValue="string" Label="Badge" @bind-Value="_badge">
+    <TbOption Value="@("bronze")">Bronze</TbOption>
+    <TbOption Value="@("silver")" Text="Silver"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></TbOption>
+    <TbOption Value="@("gold")"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Gold" /></TbOption>
+    @for (var added = 0; added < _unnamed; added++)
+    {
+        <TbOption Value="@($"plain-{added}")"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></TbOption>
+    }
+</TbSelect>
+<TbButton OnClick="() => _unnamed++">Add a badge</TbButton>
+
+@code {
+    private string? _badge;
+    private int _unnamed;
+}

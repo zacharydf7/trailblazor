@@ -1,5 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { createTypeahead } from './typeahead.js';
+import { watchForUnnamedOptions } from './unnamed-options.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
 export function createSelect(combobox, listbox, toggle) {
@@ -16,6 +17,7 @@ export function createSelect(combobox, listbox, toggle) {
     const label = document.getElementById(combobox.getAttribute('aria-labelledby'));
     // Marks that the keys work, which tests wait for.
     combobox.dataset.ready = '';
+    const unnamed = watchForUnnamedOptions(listbox);
     let position = null;
     let active = null;
     let wasOpen = false;
@@ -318,6 +320,7 @@ export function createSelect(combobox, listbox, toggle) {
             close();
             position?.dispose();
             observer?.disconnect();
+            unnamed.disconnect();
             popup.removeEventListener('beforetoggle', onBeforeToggle);
             popup.removeEventListener('toggle', onToggle);
             filter?.removeEventListener('input', onFilterInput);

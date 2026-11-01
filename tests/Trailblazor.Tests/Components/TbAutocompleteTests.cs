@@ -104,6 +104,19 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
+    public async Task Render_ShouldDescribeTheClearButtonByTheFieldsLabel_WhenThereIsTextToClear()
+    {
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.DebounceDelay, TimeSpan.Zero).Add(field => field.Clearable, true)
+            .Add(field => field.Search, (_, _) => Task.FromResult<IEnumerable<string>>([])));
+
+        await cut.InvokeAsync(() => cut.Find("input").Input("lak"));
+
+        var clear = cut.Find("[data-part=clear]");
+        Assert.Equal("Trail", cut.Find($"[id='{clear.GetAttribute("aria-describedby")}']").TextContent.Trim());
+    }
+
+    [Fact]
     public async Task Clear_ShouldStopTheSearch_WhenOneIsRunning()
     {
         var cut = Render<TbAutocomplete<string>>(parameters => parameters

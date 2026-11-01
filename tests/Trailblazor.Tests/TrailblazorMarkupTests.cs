@@ -54,6 +54,30 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Select_ShouldNameAnOptionByItsText_WhenItShowsContentOfItsOwn()
+    {
+        string? medal = null;
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Medal")
+            .Add(select => select.ValueChanged, (string value) => medal = value)
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<string>>(0);
+                builder.AddAttribute(1, nameof(TbOption<string>.Value), "gold");
+                builder.AddAttribute(2, nameof(TbOption<string>.Text), "Gold");
+                builder.AddAttribute(3, nameof(TbOption<string>.ChildContent),
+                    (RenderFragment)(content => content.AddMarkupContent(0, "<img src=\"gold.png\" /> gold.png")));
+                builder.CloseComponent();
+            })));
+        var select = cut.Tb().Select("Medal");
+
+        await select.ChooseAsync("Gold");
+
+        Assert.Equal(["Gold"], select.Options);
+        Assert.Equal("gold", medal);
+        Assert.Equal("Gold", select.Text);
+    }
+
+    [Fact]
     public async Task Select_ShouldChooseTheOptionThatReadsExactlyTheText_WhenAnotherOptionContainsIt()
     {
         var cut = RenderForm();

@@ -164,6 +164,10 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     private protected string? LabelHiddenClass => Label is null && AriaLabel is not null ? "tb-visually-hidden" : null;
 
+    // A clear button is described by the field's label, so a screen reader says which field it clears; its name stays
+    // "Clear", since a name holding the label would also match a test looking the field up by its label.
+    private protected string? ClearDescribedBy => ShownLabel is null ? null : LabelId;
+
     // The consumer's input attributes, marked for focus on an interactive page when asked, which the browser, dialogs
     // and focus scopes look for. It isn't the native autofocus, which browsers act on even where a closed dialog or a
     // focus scope should place focus. A field with several controls marks one itself: a group its root, a range its

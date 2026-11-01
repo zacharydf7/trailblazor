@@ -28,6 +28,25 @@ internal sealed class SelectDisplay : ComponentBase
 
     internal void Refresh() => StateHasChanged();
 
+    // Content an option names by its Text is hidden from screen readers, which read the Text instead.
+    private static void AddContent(RenderTreeBuilder builder, ISelectOption option)
+    {
+        if (option.Name is not { } name)
+        {
+            builder.AddContent(0, option.Content);
+            return;
+        }
+
+        builder.OpenElement(1, "span");
+        builder.AddAttribute(2, "aria-hidden", "true");
+        builder.AddContent(3, option.Content);
+        builder.CloseElement();
+        builder.OpenElement(4, "span");
+        builder.AddAttribute(5, "class", "tb-visually-hidden");
+        builder.AddContent(6, name);
+        builder.CloseElement();
+    }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var selected = Selected();
@@ -51,7 +70,8 @@ internal sealed class SelectDisplay : ComponentBase
                 builder.AddContent(4, ", ");
             }
 
-            builder.AddContent(5, selected[index].Content);
+            var option = selected[index];
+            builder.AddContent(5, content => AddContent(content, option));
         }
 
         builder.CloseElement();
@@ -69,7 +89,7 @@ internal sealed class SelectDisplay : ComponentBase
             builder.AddAttribute(4, "data-part", "chip");
             builder.AddAttribute(5, "data-option", option.Id);
             builder.AddAttribute(6, "class", "tb-select__chip");
-            builder.AddContent(7, option.Content);
+            builder.AddContent(7, content => AddContent(content, option));
             if (!Disabled && !option.Disabled)
             {
                 builder.OpenElement(8, "span");

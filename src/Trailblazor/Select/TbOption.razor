@@ -7,6 +7,7 @@
 @if (RendererInfo.IsInteractive)
 {
     <div @attributes="AdditionalAttributes" id="@_id" role="option" data-text="@Text"
+         aria-label="@(ChildContent is null ? null : Text)"
          aria-selected="@(Select!.IsSelected(Value) ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
          data-part="option" class="@ClassNames.Join("tb-select__option", Class)" style="@Style" @onclick="ChooseAsync">
         @Content
@@ -29,8 +30,9 @@ else
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;
 
-    /// <summary>The option's text, when it has no <see cref="ChildContent"/>, or for typing to find it when the
-    /// content isn't plain text. Defaults to the value's text.</summary>
+    /// <summary>The option's text, when it has no <see cref="ChildContent"/>, or for typing to find it and its name
+    /// for screen readers when the content isn't plain text, such as an image and a caption. Defaults to the value's
+    /// text.</summary>
     [Parameter]
     public string? Text { get; set; }
 
@@ -69,6 +71,8 @@ else
     string ISelectOption.Id => _id;
 
     RenderFragment ISelectOption.Content => Content;
+
+    string? ISelectOption.Name => ChildContent is null ? null : Text;
 
     /// <inheritdoc />
     protected override void OnInitialized()

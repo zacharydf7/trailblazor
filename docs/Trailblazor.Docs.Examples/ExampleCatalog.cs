@@ -680,9 +680,9 @@ public static class ExampleCatalog
                     + "browsers expose them.",
                 "`ReadOnly` keeps the field focusable and posted with its form, and screen readers hear it as read "
                     + "only; `Disabled` takes it out of the tab order and the post.",
-                "`Clearable` adds a button named \"Clear\" (or `ClearLabel`) while the field holds text it can "
-                    + "change; pressing it empties the field and puts focus back in it. A number needs a nullable "
-                    + "type, such as `int?`.",
+                "`Clearable` adds a button named \"Clear\" (or `ClearLabel`) and described by the field's label while "
+                    + "the field holds text it can change; pressing it empties the field and puts focus back in it. A "
+                    + "number needs a nullable type, such as `int?`.",
                 "`UpdateDelay` waits for typing to pause before updating the value, so a search doesn't run on "
                     + "every keystroke; Enter in a single-line field, or leaving the field, updates it at once.",
                 "`MaxLines` lets a text area grow with its text from `Lines` up to that many lines, and then scroll, "
@@ -879,8 +879,11 @@ public static class ExampleCatalog
                     + "select, Tab chooses the active option and moves on. A multi-select stays open as options are "
                     + "chosen.",
                 "Before the page is interactive it renders as the browser's own `<select>`, so it still works.",
-                "The clear button is named \"Clear\" and sends focus back to the field. A select bound to a value "
-                    + "type, such as `Guid`, clears to its default, which shows the placeholder.",
+                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
+                    + "which field it clears, and it sends focus back to the field. An option with content of its own, "
+                    + "such as an image and a caption, is named by its `Text`, chosen or not; one with neither text "
+                    + "nor a name gets a warning in the browser console. A select bound to a value type, such as "
+                    + "`Guid`, clears to its default, which shows the placeholder.",
                 "A value no option has, such as one that has left the list, still shows: as its text, or as "
                     + "`UnmatchedText` makes it. Before the page is interactive, the native select keeps it chosen. "
                     + "Options that load as the list opens aren't there yet, so give such a select `UnmatchedText`, "
@@ -943,6 +946,8 @@ public static class ExampleCatalog
                 "Before the page is interactive it is a plain text input, so a static form still posts what was "
                     + "typed.",
                 "`ReadOnly` keeps the list closed and hides the clear button.",
+                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
+                    + "which field it clears.",
             ],
             Target = new("combobox", "Trailhead"),
             Blocks = ["tb-field", "tb-select", "tb-autocomplete"],
@@ -973,7 +978,8 @@ public static class ExampleCatalog
                     + "with `Alpha`), so a static form posts a hex color, as typed.",
                 "`ReadOnly` keeps the color from changing: the text can't be edited, the picker buttons turn off and "
                     + "the clear button hides.",
-                "The clear button empties the color and puts focus back in the text box.",
+                "The clear button, named \"Clear\" and described by the field's label, empties the color and puts "
+                    + "focus back in the text box.",
             ],
             Target = new("textbox", "Trail marker"),
             Blocks = ["tb-field", "tb-color-picker"],
@@ -1038,6 +1044,8 @@ public static class ExampleCatalog
                     + "both dates.",
                 "`ReadOnly` keeps the dates from changing: the boxes can't be edited, the calendar button turns off "
                     + "and the clear button hides.",
+                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
+                    + "which field it clears.",
             ],
             Target = new("group", "Trip dates"),
             Blocks = ["tb-field", "tb-date-range"],
@@ -1062,6 +1070,8 @@ public static class ExampleCatalog
                     + "Space chooses or clears the active option, and Shift with Down or Up also chooses the next.",
                 "Before the page is interactive it renders as the browser's own `<select>` list, so it still works.",
                 "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
+                "An option with content of its own, such as an image and a caption, is named by its `Text`; one with "
+                    + "neither text nor a name gets a warning in the browser console.",
                 "`ReadOnly` keeps the list focusable, and the arrow keys still move through its options so they can "
                     + "be read, but nothing gets chosen; screen readers hear it as read only.",
             ],

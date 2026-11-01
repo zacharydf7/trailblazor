@@ -81,6 +81,7 @@
             @if (Clearable && !Disabled && !ReadOnly && HasChoice)
             {
                 <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.SelectClear])"
+                              aria-describedby="@ClearDescribedBy"
                               Size="Size.Small" OnClick="ClearAsync"
                               data-part="clear" />
             }

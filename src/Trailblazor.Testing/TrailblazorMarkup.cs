@@ -75,12 +75,12 @@ public sealed class TbSelectDriver
     internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
         (_find, _findAll) = (find, findAll);
 
-    /// <summary>The options' texts, in order, leaving out a static select's placeholder and the value it keeps when no
-    /// option has it.</summary>
-    public IReadOnlyList<string> Options => OptionElements().Select(option => option.TextContent.Trim()).ToList();
+    /// <summary>The options' names, in order, leaving out a static select's placeholder and the value it keeps when no
+    /// option has it. An option with content of its own is named by its <c>Text</c>.</summary>
+    public IReadOnlyList<string> Options => OptionElements().Select(Choices.NameOf).ToList();
 
-    /// <summary>The text the select shows for its value, or null while it shows its placeholder. A multiple select's
-    /// chosen options are joined with ", ".</summary>
+    /// <summary>The name of the select's value, as a screen reader hears it, or null while it shows its placeholder. A
+    /// multiple select's chosen options are joined with ", ".</summary>
     public string? Text
     {
         get
@@ -88,12 +88,12 @@ public sealed class TbSelectDriver
             var control = _find();
             var shown = control.TagName == "SELECT" ? control.QuerySelectorAll("option[selected]:not([value=''])")
                 : control.QuerySelectorAll("[data-part=value], [data-part=chip]");
-            var texts = shown.Select(part => part.TextContent.Trim()).ToList();
+            var texts = shown.Select(Choices.NameOf).ToList();
             return texts.Count > 0 ? string.Join(", ", texts) : null;
         }
     }
 
-    /// <summary>Chooses the options with these texts, as clicking them does: the one option of a select, or each one
+    /// <summary>Chooses the options with these names, as clicking them does: the one option of a select, or each one
     /// not yet chosen in a multiple select, keeping what is already chosen. On a static page the select is a native
     /// one that posts with its form, so there is nothing to choose in bUnit.</summary>
     public Task ChooseAsync(params string[] options) => Choices.ChooseAsync(() =>
@@ -119,16 +119,17 @@ public sealed class TbListBoxDriver
 
     internal TbListBoxDriver(Func<IElement> find) => _find = find;
 
-    /// <summary>The options' texts, in order.</summary>
+    /// <summary>The options' names, in order. An option with content of its own is named by its <c>Text</c>.
+    /// </summary>
     public IReadOnlyList<string> Options => _find().QuerySelectorAll("[role=option], option")
-        .Select(option => option.TextContent.Trim()).ToList();
+        .Select(Choices.NameOf).ToList();
 
-    /// <summary>The texts of the chosen options, in order.</summary>
+    /// <summary>The names of the chosen options, in order.</summary>
     public IReadOnlyList<string> Chosen => _find()
         .QuerySelectorAll("[role=option][aria-selected=true], option[selected]")
-        .Select(option => option.TextContent.Trim()).ToList();
+        .Select(Choices.NameOf).ToList();
 
-    /// <summary>Chooses the options with these texts, as clicking them does: the one option of a list box, or each one
+    /// <summary>Chooses the options with these names, as clicking them does: the one option of a list box, or each one
     /// not yet chosen in a multiple list box, keeping what is already chosen. On a static page there is nothing to
     /// choose in bUnit, as for a select.</summary>
     public Task ChooseAsync(params string[] options) => Choices.ChooseAsync(() =>
@@ -152,7 +153,7 @@ internal static class Choices
 
         foreach (var text in texts)
         {
-            var option = find().Options.SingleOrDefault(option => option.TextContent.Trim() == text)
+            var option = find().Options.SingleOrDefault(option => NameOf(option) == text)
                 ?? throw new InvalidOperationException($"No option reads \"{text}\".");
             if (option.GetAttribute("aria-selected") != "true")
             {
@@ -161,6 +162,13 @@ internal static class Choices
             }
         }
     }
+
+    // What a screen reader reads, as the Playwright helpers find it: an aria-label, else the text outside hidden parts.
+    internal static string NameOf(IElement element) => element.GetAttribute("aria-label")
+        ?? string.Concat(element.Descendants<IText>()
+            .Where(text => text.ParentElement?.Closest("[aria-hidden=true]") is not { } hidden
+                || !element.Contains(hidden))
+            .Select(text => text.Data)).Trim();
 
     internal static void ThrowIfStaticOrDisabled(IElement control)
     {

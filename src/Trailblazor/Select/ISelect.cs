@@ -30,4 +30,7 @@ internal interface ISelectOption
     bool Disabled { get; }
 
     RenderFragment Content { get; }
+
+    // The option's Text when it shows content of its own, which then names it in place of that content.
+    string? Name { get; }
 }

@@ -201,6 +201,18 @@ public class TbTextFieldTests : BunitContext
             .Add(field => field.Clearable, true)));
     }
 
+    [Fact]
+    public void Render_ShouldDescribeTheClearButtonByTheFieldsLabel_WhenTheFieldHasALabel()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Search")
+            .Add(field => field.Clearable, true).Add(field => field.Value, "tea"));
+
+        var clear = cut.Find("[data-part=clear]");
+        Assert.Equal("Search", cut.Find($"[id='{clear.GetAttribute("aria-describedby")}']").TextContent.Trim());
+        // A name holding the label would also match a test that finds the field by its label.
+        Assert.Empty(cut.FindAll("[aria-label*=Search]"));
+    }
+
     [Theory]
     [InlineData("tea", false, false, true)]
     [InlineData("", false, false, false)]

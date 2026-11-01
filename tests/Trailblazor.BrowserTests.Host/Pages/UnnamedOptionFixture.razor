@@ -1,0 +1,15 @@
+@page "/unnamed-option"
+
+@* Options that show only an image with no alt, which screen readers can't name; two in one list, which warns once. *@
+<TbSelect TValue="string" Label="Badge" @bind-Value="_badge">
+    <TbOption Value="@("gold")"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></TbOption>
+    <TbOption Value="@("silver")"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></TbOption>
+</TbSelect>
+<TbListBox TValue="string" Label="Medal" @bind-Value="_medal">
+    <TbOption Value="@("gold")"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></TbOption>
+</TbListBox>
+
+@code {
+    private string? _badge;
+    private string? _medal;
+}

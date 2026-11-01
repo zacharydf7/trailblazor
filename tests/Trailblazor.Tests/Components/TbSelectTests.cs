@@ -505,6 +505,46 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDescribeTheClearButtonByTheFieldsLabel_WhenTheSelectHasALabel()
+    {
+        var cut = RenderSelect("Small");
+
+        var clear = cut.Find("[data-part=clear]");
+        Assert.Equal("Clear", clear.GetAttribute("aria-label"));
+        Assert.Equal("Size", cut.Find($"[id='{clear.GetAttribute("aria-describedby")}']").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldNameAnOptionByItsText_WhenItShowsContentOfItsOwn()
+    {
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Badge")
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<string>>(0);
+                builder.AddAttribute(1, nameof(TbOption<string>.Value), "gold");
+                builder.AddAttribute(2, nameof(TbOption<string>.Text), "Gold");
+                builder.AddAttribute(3, nameof(TbOption<string>.ChildContent),
+                    (RenderFragment)(content => content.AddMarkupContent(0, "<img src=\"gold.png\" /> gold.png")));
+                builder.CloseComponent();
+                builder.OpenComponent<TbOption<string>>(4);
+                builder.AddAttribute(5, nameof(TbOption<string>.Value), "silver");
+                builder.AddAttribute(6, nameof(TbOption<string>.Text), "Silver");
+                builder.CloseComponent();
+            })));
+
+        var options = cut.FindAll("[role=option]");
+        Assert.Equal(["Gold", null], options.Select(option => option.GetAttribute("aria-label")));
+        Assert.Equal("Silver", options[1].TextContent.Trim());
+
+        options[0].Click();
+
+        // Chosen, it shows its content to the eye and its Text to screen readers.
+        var value = cut.Find("[data-part=value]");
+        Assert.Equal("true", value.QuerySelector("img")!.ParentElement!.GetAttribute("aria-hidden"));
+        Assert.Equal("Gold", value.QuerySelector(".tb-visually-hidden")!.TextContent);
+    }
+
+    [Fact]
     public void Render_ShouldNameTheClearButtonFromTheLabels_WhenGivenAClearLabel()
     {
         var cut = Render<TbSelect<DayOfWeek?>>(parameters => parameters

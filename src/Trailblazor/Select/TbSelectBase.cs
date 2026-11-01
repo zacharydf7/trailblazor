@@ -34,8 +34,8 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     public string? Placeholder { get; set; }
 
     /// <summary>Shows a button that clears the choice. A single select bound to a value type clears to its default,
-    /// such as <c>Guid.Empty</c> or an enum's <c>None</c>, which shows as no choice; bind the nullable form instead when
-    /// the default is one of the options.</summary>
+    /// such as <c>Guid.Empty</c> or an enum's <c>None</c>, which shows as no choice; bind the nullable form instead
+    /// when the default is one of the options.</summary>
     [Parameter]
     public bool Clearable { get; set; }
 
@@ -247,7 +247,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     }
 
     // The script reports a chip removed by its button or by Backspace, with the text the chip shows, which is said
-    // aloud; focus returns to the combobox, since the button went with its chip.
+    // aloud unless its option is named by its Text; focus returns to the combobox, since the button went with its chip.
     // A second removal can arrive before the first reaches the page, so a chip whose option is no longer chosen is
     // ignored rather than removing another.
     private async Task OnRemoveChipAsync(string optionId, string text)
@@ -261,7 +261,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
         Telemetry.Used(TelemetryName, "remove");
         await SetValueAsync(Choose(option.Value));
         StateHasChanged();
-        Announcer.Polite(string.Format(CultureInfo.CurrentCulture, RemovedFormat, text));
+        Announcer.Polite(string.Format(CultureInfo.CurrentCulture, RemovedFormat, option.Name ?? text));
         if (!_disposed)
         {
             await _combobox.FocusAsync();

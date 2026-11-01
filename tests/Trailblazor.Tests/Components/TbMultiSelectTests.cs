@@ -146,6 +146,26 @@ public class TbMultiSelectTests : BunitContext
     }
 
     [Fact]
+    public void Chip_ShouldBeNamedByItsOptionsText_WhenTheOptionShowsContentOfItsOwn()
+    {
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Chips, true)
+            .Add(select => select.Value, ["gold"])
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<string>>(0);
+                builder.AddAttribute(1, nameof(TbOption<string>.Value), "gold");
+                builder.AddAttribute(2, nameof(TbOption<string>.Text), "Gold");
+                builder.AddAttribute(3, nameof(TbOption<string>.ChildContent),
+                    (RenderFragment)(content => content.AddMarkupContent(0, "<img src=\"gold.png\" />")));
+                builder.CloseComponent();
+            })));
+
+        var chip = cut.Find("[data-part=chip]");
+        Assert.Equal("true", chip.QuerySelector("img")!.ParentElement!.GetAttribute("aria-hidden"));
+        Assert.Equal("Gold", chip.QuerySelector(".tb-visually-hidden")!.TextContent);
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenAnOptionsValueIsNotTheItemType()
     {
         var exception = Assert.Throws<InvalidOperationException>(() => Render<TbMultiSelect<long>>(parameters =>

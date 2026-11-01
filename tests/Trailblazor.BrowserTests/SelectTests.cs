@@ -213,6 +213,36 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldWarnOncePerListInTheConsole_WhenAnOptionHasNoTextOrName(string browser)
+    {
+        var page = await OpenAsync(browser, "/unnamed-option");
+
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Badge" })).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Medal" })).ToHaveAttributeAsync("data-ready", "");
+
+        Assert.Equal(2, await UnnamedWarningsAsync(page));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldWarnOnlyOnceAnOptionWithNoName_WhenItArrivesAfterNamedOnes(string browser)
+    {
+        var page = await OpenAsync(browser, "/named-options");
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Badge" })).ToHaveAttributeAsync("data-ready", "");
+        Assert.Equal(0, await UnnamedWarningsAsync(page));
+
+        var add = page.GetByRole(AriaRole.Button, new() { Name = "Add a badge" });
+        await page.RunAndWaitForConsoleMessageAsync(() => add.ClickAsync(),
+            new() { Predicate = message => message.Text.Contains("Give the TbOption a Text.") });
+        await add.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Option, new() { IncludeHidden = true })).ToHaveCountAsync(5);
+
+        Assert.Equal(1, await UnnamedWarningsAsync(page));
+    }
+
+    private static async Task<int> UnnamedWarningsAsync(IPage page) => (await page.ConsoleMessagesAsync())
+        .Count(message => message.Type == "warning" && message.Text.Contains("Give the TbOption a Text."));
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldClearTheChoice_WhenTheClearButtonIsClicked(string browser)
     {
         var page = await OpenSelectAsync(browser);

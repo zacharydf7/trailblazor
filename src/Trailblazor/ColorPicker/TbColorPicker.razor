@@ -41,8 +41,8 @@ else
     private RenderFragment Buttons => @<text>
         @if (Clearable && !Disabled && !ReadOnly && Value is not null)
         {
-            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" Size="Size.Small" OnClick="ClearAsync"
-                          data-part="clear" />
+            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" aria-describedby="@ClearDescribedBy"
+                          Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
         }
         @if (_canPickColor)
         {

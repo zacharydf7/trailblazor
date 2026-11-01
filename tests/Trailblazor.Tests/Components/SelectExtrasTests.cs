@@ -86,6 +86,29 @@ public class SelectExtrasTests : BunitContext
     }
 
     [Fact]
+    public async Task Chips_ShouldAnnounceTheOptionsText_WhenAChipThatShowsContentOfItsOwnIsRemoved()
+    {
+        var host = Render<AnnouncerHost>();
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Chips, true)
+            .Add(select => select.Label, "Medals").Add(select => select.Value, ["gold"])
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<string>>(0);
+                builder.AddAttribute(1, nameof(TbOption<string>.Value), "gold");
+                builder.AddAttribute(2, nameof(TbOption<string>.Text), "Gold");
+                builder.AddAttribute(3, nameof(TbOption<string>.ChildContent),
+                    (RenderFragment)(content => content.AddMarkupContent(0, "<img src=\"gold.png\" /> gold.png")));
+                builder.CloseComponent();
+            })));
+
+        await cut.InvokeAsync(() => Toggle().OnRemoveChip(
+            cut.Find("[data-part=chip]").GetAttribute("data-option")!, "gold.png Gold"));
+
+        host.WaitForAssertion(() => Assert.Contains("Gold removed", host.Markup));
+        Assert.DoesNotContain("gold.png", host.Find("[role=status]").TextContent);
+    }
+
+    [Fact]
     public async Task Chips_ShouldShowEachChoiceAndRemoveTheOneTheScriptReports_WhenOn()
     {
         var host = Render<AnnouncerHost>();

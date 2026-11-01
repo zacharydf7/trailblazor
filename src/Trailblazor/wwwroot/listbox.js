@@ -1,4 +1,5 @@
 import { createTypeahead } from './typeahead.js';
+import { watchForUnnamedOptions } from './unnamed-options.js';
 
 // Keys and the active option stay in the browser; choosing clicks the option, which reaches the server.
 export function attachListBox(listbox) {
@@ -9,6 +10,7 @@ export function attachListBox(listbox) {
 
     // Marks that the keys work, which tests wait for.
     listbox.dataset.ready = '';
+    const unnamed = watchForUnnamedOptions(listbox);
     const label = document.getElementById(listbox.getAttribute('aria-labelledby'));
     let active = null;
     const typing = createTypeahead();
@@ -114,6 +116,7 @@ export function attachListBox(listbox) {
     label?.addEventListener('click', onLabelClick);
     return {
         dispose() {
+            unnamed.disconnect();
             listbox.removeEventListener('pointerdown', onPointerDown);
             listbox.removeEventListener('focus', onFocus);
             listbox.removeEventListener('keydown', onKeyDown);

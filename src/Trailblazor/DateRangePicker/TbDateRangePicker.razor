@@ -53,8 +53,8 @@
             <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">
                 @if (Clearable && !Disabled && !ReadOnly && HasDates)
                 {
-                    <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" Size="Size.Small"
-                                  OnClick="ClearAsync" data-part="clear" />
+                    <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" aria-describedby="@ClearDescribedBy"
+                                  Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
                 }
                 <TbIconButton Icon="BuiltInIcons.Calendar" AriaLabel="@OpenLabel" Size="Size.Small"
                               Disabled="@(Disabled || ReadOnly)" data-part="trigger" popovertarget="@PanelId"

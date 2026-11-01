@@ -72,7 +72,8 @@
     [Parameter]
     public bool Clearable { get; set; }
 
-    /// <summary>The clear button's name. Defaults to the localizer's "Clear".</summary>
+    /// <summary>The clear button's name. Defaults to the localizer's "Clear"; the button is described by the field's
+    /// label.</summary>
     [Parameter]
     public string? ClearLabel { get; set; }
 
@@ -127,6 +128,7 @@
     private RenderFragment? EndWithClear => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(Shown) ? End :
         @<text>
             <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(ClearLabel ?? Localizer[TbStrings.TextFieldClear])"
+                          aria-describedby="@ClearDescribedBy"
                           Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
             @End
         </text>;

@@ -50,6 +50,6 @@
 @code {
     private RenderFragment? End => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
         @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.AutocompleteClear])"
-                       Size="Size.Small" OnClick="ClearAsync"
+                       aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="ClearAsync"
                        data-part="clear" />;
 }

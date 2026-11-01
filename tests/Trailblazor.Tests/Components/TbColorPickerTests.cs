@@ -144,6 +144,15 @@ public class TbColorPickerTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDescribeTheClearButtonByTheFieldsLabel_WhenClearable()
+    {
+        var cut = RenderPicker("#336699", parameters => parameters.Add(picker => picker.Clearable, true));
+
+        var clear = cut.Find("[data-part=clear]");
+        Assert.Equal("Accent", cut.Find($"[id='{clear.GetAttribute("aria-describedby")}']").TextContent.Trim());
+    }
+
+    [Fact]
     public void Clear_ShouldEmptyTheColor_WhenClicked()
     {
         var cut = RenderPicker("#336699", parameters => parameters.Add(picker => picker.Clearable, true));
