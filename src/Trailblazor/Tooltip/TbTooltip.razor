@@ -7,23 +7,28 @@
 @inject JsModuleLoader Modules
 @inject IOptions<TrailblazorOptions> TrailblazorOptions
 
+@* The bubble's width comes from the anchor, since the positioning script writes the bubble's own style. *@
 <span @ref="_anchor" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tooltip-anchor", Class)"
-      style="@Style">
+      style="@AnchorStyle">
     @ChildContent
-    <span @ref="_tooltip" id="@_id" popover="manual" role="tooltip" data-part="tooltip" class="tb-tooltip">
-        @if (TextContent is null)
-        {
-            @Text
-        }
-        else
-        {
-            @TextContent
-        }
-        @if (ShowArrow)
-        {
-            <span data-part="arrow" class="tb-tooltip__arrow"></span>
-        }
-    </span>
+    @if (Active)
+    {
+        <span @ref="_tooltip" id="@_id" popover="manual" role="tooltip" data-part="tooltip"
+              class="@ClassNames.Join("tb-tooltip", BubbleClass)">
+            @if (TextContent is null)
+            {
+                @Text
+            }
+            else
+            {
+                @TextContent
+            }
+            @if (ShowArrow)
+            {
+                <span data-part="arrow" class="tb-tooltip__arrow"></span>
+            }
+        </span>
+    }
 </span>
 
 @code {
@@ -31,10 +36,12 @@
     private ElementReference _anchor;
     private ElementReference _tooltip;
     private IJSObjectReference? _handle;
+    private bool _attaching;
     private bool _disposed;
 
     /// <summary>The tooltip's text. It also becomes the trigger's accessible description, unless it only repeats the
-    /// trigger's <c>aria-label</c>. Give this or <see cref="TextContent"/>.</summary>
+    /// trigger's <c>aria-label</c>. Blank text, with no <see cref="TextContent"/>, shows no tooltip, so one that is
+    /// only sometimes needed needs no <c>@if</c>.</summary>
     [Parameter]
     public string? Text { get; set; }
 
@@ -44,29 +51,43 @@
     [Parameter]
     public RenderFragment? TextContent { get; set; }
 
-    /// <summary>Which side of the trigger the tooltip appears on, read on the first render. It flips when there's no
-    /// room. Defaults to <see cref="Placement.Top"/>.</summary>
+    /// <summary>Which side of the trigger the tooltip appears on, read when the tooltip is set up. It flips when
+    /// there's no room. Defaults to <see cref="Placement.Top"/>.</summary>
     [Parameter]
     public Placement Placement { get; set; } = Placement.Top;
 
-    /// <summary>How the tooltip lines up with the trigger along that side, read on the first render. Defaults to
+    /// <summary>How the tooltip lines up with the trigger along that side, read when the tooltip is set up. Defaults to
     /// <see cref="PlacementAlign.Center"/>.</summary>
     [Parameter]
     public PlacementAlign Align { get; set; } = PlacementAlign.Center;
 
-    /// <summary>How long the pointer rests on the trigger before the tooltip appears, read on the first render.
-    /// Focus shows it at once. Defaults to the app's <see cref="TooltipSettings.ShowDelay"/>.</summary>
+    /// <summary>How long the pointer rests on the trigger before the tooltip appears, read when the tooltip is set
+    /// up. Focus shows it at once. Defaults to the app's <see cref="TooltipSettings.ShowDelay"/>.</summary>
     [Parameter]
     public TimeSpan? ShowDelay { get; set; }
 
-    /// <summary>How long the tooltip stays after the pointer leaves the trigger, read on the first render. Defaults to
-    /// the app's <see cref="TooltipSettings.HideDelay"/>.</summary>
+    /// <summary>How long the tooltip stays after the pointer leaves the trigger, read when the tooltip is set up.
+    /// Defaults to the app's <see cref="TooltipSettings.HideDelay"/>.</summary>
     [Parameter]
     public TimeSpan? HideDelay { get; set; }
 
     /// <summary>Adds an arrow that points at the middle of the trigger.</summary>
     [Parameter]
     public bool ShowArrow { get; set; }
+
+    /// <summary>Shows no tooltip, and leaves the trigger as it is without one.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Extra CSS classes for the tooltip's bubble, rather than its trigger, which <c>Class</c> styles.
+    /// </summary>
+    [Parameter]
+    public string? BubbleClass { get; set; }
+
+    /// <summary>The widest the bubble grows before its text wraps, as a CSS length such as <c>24rem</c>. Defaults to
+    /// 18rem.</summary>
+    [Parameter]
+    public string? MaxWidth { get; set; }
 
     /// <summary>The element the tooltip describes, usually a button.</summary>
     [Parameter]
@@ -75,12 +96,6 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (TextContent is null && string.IsNullOrWhiteSpace(Text))
-        {
-            throw new InvalidOperationException(
-                $"{nameof(TbTooltip)} needs a {nameof(Text)} or {nameof(TextContent)}.");
-        }
-
         if (!Fits(ShowDelay) || !Fits(HideDelay))
         {
             throw new ArgumentOutOfRangeException(Fits(ShowDelay) ? nameof(HideDelay) : nameof(ShowDelay),
@@ -94,15 +109,46 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        // The script follows the tooltip as it is turned on and off, or its text comes and goes.
+        if (Active && _handle is null && !_attaching)
         {
-            return;
-        }
+            _attaching = true;
+            string bubble;
+            do
+            {
+                bubble = _tooltip.Id;
+                await AttachAsync(bubble);
+            }
+            while (!_disposed && Active && _handle is null && _tooltip.Id != bubble);
 
+            _attaching = false;
+        }
+        else if (!Active && _handle is { } handle)
+        {
+            _handle = null;
+            try
+            {
+                await handle.DisposeHandleAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is gone, and the tooltip went with it.
+            }
+        }
+    }
+
+    private bool Active => !Disabled && (TextContent is not null || !string.IsNullOrWhiteSpace(Text));
+
+    private string? AnchorStyle => string.IsNullOrWhiteSpace(MaxWidth) ? Style
+        : Styles.Join($"--tb-tooltip-max-width: {MaxWidth}", Style);
+
+    // Turned off, or off and on again, while the script loaded, the tooltip's bubble is gone or is another one.
+    private async Task AttachAsync(string bubble)
+    {
         try
         {
             var module = await Modules.ImportAsync("./_content/Trailblazor/tooltip.js");
-            if (_disposed)
+            if (_disposed || !Active || _tooltip.Id != bubble)
             {
                 return;
             }
@@ -122,7 +168,7 @@
                 return;
             }
 
-            if (_disposed)
+            if (_disposed || !Active || _tooltip.Id != bubble)
             {
                 await handle.DisposeHandleAsync();
                 return;

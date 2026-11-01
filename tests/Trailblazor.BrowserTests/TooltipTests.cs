@@ -256,4 +256,25 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(arrow.Y + arrow.Height / 2 >= trigger.Y + trigger.Height || arrow.Y + arrow.Height / 2 <= trigger.Y,
             "The arrow should sit outside the trigger, between it and the tooltip.");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldNeitherShowNorDescribe_WhileItIsTurnedOff(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var delete = page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
+        var hints = page.GetByRole(AriaRole.Switch, new() { Name = "Show hints" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Delete the selection" });
+
+        await hints.ClickAsync();
+        await delete.FocusAsync();
+        await page.WaitForTimeoutAsync(300);
+        await Expect(page.GetByRole(AriaRole.Tooltip)).ToHaveCountAsync(0);
+        await Expect(delete).ToHaveAccessibleDescriptionAsync("");
+        await hints.ClickAsync();
+        await delete.FocusAsync();
+
+        await Expect(tooltip).ToBeVisibleAsync();
+        await Expect(delete).ToHaveAccessibleDescriptionAsync("Delete the selection");
+        Assert.Equal("192px", await tooltip.EvaluateAsync<string>("tooltip => getComputedStyle(tooltip).maxWidth"));
+    }
 }

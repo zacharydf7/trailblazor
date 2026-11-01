@@ -4,7 +4,8 @@
     <TbTooltip Text="Add an item">
         <TbIconButton Icon="ExampleIcons.Plus" AriaLabel="Add" />
     </TbTooltip>
-    <TbTooltip Text="Delete the selection">
+    @* Turned off with the switch, the button stands alone, with no tooltip and no description. *@
+    <TbTooltip Text="Delete the selection" Disabled="!_hints" MaxWidth="12rem">
         <TbIconButton Icon="ExampleIcons.Trash" AriaLabel="Delete" />
     </TbTooltip>
     <TbTooltip Text="Shown below the button" Placement="Placement.Bottom">
@@ -16,4 +17,9 @@
             <TbButton Variant="Variant.Outlined">Save</TbButton>
         </ChildContent>
     </TbTooltip>
+    <TbSwitch Label="Show hints" @bind-Value="_hints" />
 </TbStack>
+
+@code {
+    private bool _hints = true;
+}

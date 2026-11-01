@@ -68,12 +68,48 @@ public class TbTooltipTests : BunitContext
         Assert.Equal("Save Ctrl+S", tooltip.TextContent.Trim());
     }
 
-    [Fact]
-    public void Render_ShouldThrow_WhenThereIsNoTextOrTextContent()
+    [Theory]
+    [InlineData(" ", false)]
+    [InlineData("Delete the selection", true)]
+    public void Render_ShouldLeaveTheTriggerAlone_WhenTheTextIsBlankOrTheTooltipIsDisabled(string text, bool disabled)
     {
-        var failure = Assert.Throws<InvalidOperationException>(() => Render<TbTooltip>());
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, text)
+            .Add(tooltip => tooltip.Disabled, disabled).AddChildContent("<button>Delete</button>"));
 
-        Assert.Equal("TbTooltip needs a Text or TextContent.", failure.Message);
+        Assert.NotNull(cut.Find(".tb-tooltip-anchor > button"));
+        Assert.Empty(cut.FindAll("[role=tooltip]"));
+        Assert.DoesNotContain(JSInterop.Invocations, call => call.Identifier == "createTooltip");
+    }
+
+    [Fact]
+    public void Render_ShouldDetachAndAttachTheScript_WhenTheTooltipIsTurnedOffAndOn()
+    {
+        var handle = JSInterop.SetupModule(Module).SetupModule("createTooltip", _ => true);
+        handle.SetupVoid("dispose", _ => true);
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete the selection")
+            .AddChildContent("<button>Delete</button>"));
+
+        cut.Render(parameters => parameters.Add(tooltip => tooltip.Disabled, true));
+        Assert.Empty(cut.FindAll("[role=tooltip]"));
+        cut.Render(parameters => parameters.Add(tooltip => tooltip.Disabled, false));
+
+        Assert.NotNull(cut.Find("[role=tooltip]"));
+        Assert.Equal(2, JSInterop.Invocations.Count(call => call.Identifier == "createTooltip"));
+        Assert.Single(handle.Invocations, call => call.Identifier == "dispose");
+    }
+
+    [Fact]
+    public void Render_ShouldStyleAndSizeTheBubble_WhenGivenABubbleClassAndMaxWidth()
+    {
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete the selection")
+            .Add(tooltip => tooltip.Class, "trigger").Add(tooltip => tooltip.BubbleClass, "wide-tip")
+            .Add(tooltip => tooltip.MaxWidth, "24rem").AddChildContent("<button>Delete</button>"));
+
+        var bubble = cut.Find("[role=tooltip]");
+        Assert.Equal(["tb-tooltip", "wide-tip"], bubble.ClassList);
+        Assert.Null(bubble.GetAttribute("style"));
+        Assert.Equal("--tb-tooltip-max-width: 24rem", cut.Find(".tb-tooltip-anchor").GetAttribute("style"));
+        Assert.DoesNotContain("wide-tip", cut.Find(".tb-tooltip-anchor").ClassList);
     }
 
     [Theory]

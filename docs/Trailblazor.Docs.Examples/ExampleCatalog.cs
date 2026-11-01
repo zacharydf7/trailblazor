@@ -1130,6 +1130,10 @@ public static class ExampleCatalog
                     + "description. The tooltip can't be reached with the keyboard, so it holds no links or buttons; "
                     + "use a popover for those.",
                 "The arrow from `ShowArrow` is decoration and isn't read out.",
+                "`Disabled`, or `Text` left blank, shows no tooltip and adds no description, so a tooltip that only "
+                    + "sometimes applies needs no `@if`; the switch here turns the delete button's off. `BubbleClass` "
+                    + "styles the bubble, `MaxWidth` sets how wide it grows before wrapping, 18rem by default, and "
+                    + "`Class` styles the anchor.",
             ],
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
             Blocks = ["tb-tooltip", "tb-tooltip-anchor"],

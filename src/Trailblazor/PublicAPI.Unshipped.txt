@@ -2711,3 +2711,10 @@ virtual Trailblazor.TbDialogContent<TResult>.CanDismissAsync(Trailblazor.DialogD
 ~override Trailblazor.TbTooltip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeView<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+
+Trailblazor.TbTooltip.BubbleClass.get -> string?
+Trailblazor.TbTooltip.BubbleClass.set -> void
+Trailblazor.TbTooltip.Disabled.get -> bool
+Trailblazor.TbTooltip.Disabled.set -> void
+Trailblazor.TbTooltip.MaxWidth.get -> string?
+Trailblazor.TbTooltip.MaxWidth.set -> void

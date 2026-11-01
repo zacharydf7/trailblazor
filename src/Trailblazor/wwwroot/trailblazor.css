@@ -2821,7 +2821,7 @@
 
     /* The positioning script places the tooltip, so only its look is set here. */
     .tb-tooltip {
-        max-width: 18rem;
+        max-width: var(--tb-tooltip-max-width, 18rem);
         margin: 0;
         padding: var(--tb-space-1) var(--tb-space-2);
         border: none;
