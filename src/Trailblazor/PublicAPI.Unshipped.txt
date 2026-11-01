@@ -2738,3 +2738,7 @@ Trailblazor.TbTabs.RenderAllPanels.get -> bool
 Trailblazor.TbTabs.RenderAllPanels.set -> void
 Trailblazor.TbTable.StickyHeader.get -> bool
 Trailblazor.TbTable.StickyHeader.set -> void
+Trailblazor.TbAccordionItem.HeaderActions.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAccordionItem.HeaderActions.set -> void
+Trailblazor.TbAccordionItem.HeadingLevel.get -> int?
+Trailblazor.TbAccordionItem.HeadingLevel.set -> void

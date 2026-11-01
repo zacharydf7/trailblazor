@@ -6,9 +6,10 @@ export function attachAccordion(accordion) {
         return null;
     }
 
-    // Only header buttons count, not a menu's trigger in a panel, and a nested accordion's headers are its own.
+    // Only header buttons count, not a menu's trigger in a panel, and an item in a panel isn't this accordion's.
     const ownHeader = element => element.matches('.tb-accordion__trigger')
-        && element.closest('.tb-accordion') === accordion;
+        && element.closest('.tb-accordion__item').parentElement.closest('.tb-accordion, .tb-accordion__item')
+            === accordion;
     const headers = () => [...accordion.querySelectorAll('.tb-accordion__trigger')]
         .filter(header => ownHeader(header) && !header.disabled);
 

@@ -1415,10 +1415,18 @@ public static class ExampleCatalog
                     + "between the titles, wrapping at the ends, and Home and End go to the first and last.",
                 "A closed panel is `inert`, so its content can't be reached until it opens. Opening and closing "
                     + "slide, except with reduced motion.",
+                "`HeaderActions`, such as Returns' print button, sit at the end of the header beside its button, "
+                    + "not in it, so they stay usable and out of the title's name. Tab reaches them after the title; "
+                    + "Up and Down skip them.",
+                "An item works on its own, outside an accordion, as Care instructions does. One nested in another "
+                    + "item's panel, as Exchanges is, belongs to an accordion around it in that panel, or to none, "
+                    + "so opening it never closes the item it sits in. An item's own `HeadingLevel` overrides the "
+                    + "accordion's, so a nested one, like Exchanges at level 4, sits below the item around it in the "
+                    + "page's outline.",
             ],
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
-            DataParts = ["accordion", "item", "heading", "trigger", "chevron", "panel"],
+            DataParts = ["accordion", "item", "header", "heading", "trigger", "chevron", "actions", "panel"],
             TestingTip = "The arrow keys, Home and End work once the accordion's script has attached, which "
                 + "`data-ready` on its root, `[data-part=accordion]`, marks; wait for it before pressing them.",
         },

@@ -15,5 +15,23 @@
         </TbAccordion>
     </TbAccordionItem>
 </TbAccordion>
+@* Items with actions in their headers, one with an item nested in its panel, and an item on its own. *@
+<TbAccordion data-testid="trips">
+    <TbAccordionItem Title="Day one">
+        <HeaderActions>
+            <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _deleted++">Delete day one</TbButton>
+        </HeaderActions>
+        <ChildContent>
+            <TbAccordionItem Title="Gear list">Gear content</TbAccordionItem>
+        </ChildContent>
+    </TbAccordionItem>
+    <TbAccordionItem Title="Day two">Day two content</TbAccordionItem>
+</TbAccordion>
+<output data-testid="deleted">@_deleted</output>
+<TbAccordionItem Title="Packing tips">Packing content</TbAccordionItem>
 @* Taller than the window, so a key that isn't caught would scroll the page. *@
 <div style="block-size: 150vh"></div>
+
+@code {
+    private int _deleted;
+}

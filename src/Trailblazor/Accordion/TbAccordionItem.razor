@@ -4,12 +4,26 @@
 
 <div @attributes="AdditionalAttributes" data-part="item" style="@Style"
      class="@ClassNames.Join("tb-accordion__item", _expanded ? "tb-accordion__item--expanded" : null, Class)">
-    @Heading
+    @if (HeaderActions is null)
+    {
+        @Heading
+    }
+    else
+    {
+        @* Beside the heading, not in it, so the actions are neither inside the button nor part of its name. *@
+        <div data-part="header" class="tb-accordion__header">
+            @Heading
+            <div data-part="actions" class="tb-accordion__actions">@HeaderActions</div>
+        </div>
+    }
     @* The content stays rendered while closed, so fields inside keep what was typed; inert keeps it out of reach. *@
     <div id="@PanelId" role="region" aria-labelledby="@TriggerId" inert="@(!_expanded)" data-part="panel"
          class="tb-accordion__panel">
         <div class="tb-accordion__clip">
-            <div class="tb-accordion__body">@ChildContent</div>
+            @* An item in the panel belongs to an accordion of its own, or to none, never to this one. *@
+            <div class="tb-accordion__body">
+                <CascadingValue TValue="TbAccordion" Value="null" IsFixed="true">@ChildContent</CascadingValue>
+            </div>
         </div>
     </div>
 </div>
@@ -44,6 +58,18 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>The heading level of the item's header, from 1 to 6, in place of its accordion's
+    /// <see cref="TbAccordion.HeadingLevel"/>. Defaults to the accordion's, or to 3 on its own. Give an item nested in
+    /// another item's panel a level below that item's, so the page's outline stays in order.</summary>
+    [Parameter]
+    public int? HeadingLevel { get; set; }
+
+    /// <summary>Controls for the item, such as a delete button, shown at the end of its header. They sit beside the
+    /// header's button rather than in it, so they stay usable and out of its name, and Tab reaches them after it.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? HeaderActions { get; set; }
+
     [CascadingParameter]
     private TbAccordion? Accordion { get; set; }
 
@@ -54,7 +80,7 @@
     // Razor has no element whose tag is chosen at run time, so the h1-h6 heading is built here.
     private RenderFragment Heading => builder =>
     {
-        builder.OpenElement(0, $"h{Accordion?.HeadingLevel ?? 3}");
+        builder.OpenElement(0, $"h{HeadingLevel ?? Accordion?.HeadingLevel ?? 3}");
         builder.AddAttribute(1, "data-part", "heading");
         builder.AddAttribute(2, "class", "tb-accordion__heading");
         builder.AddContent(3, Trigger);
@@ -85,6 +111,12 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        if (HeadingLevel is { } level)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(level, 1, nameof(HeadingLevel));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(level, 6, nameof(HeadingLevel));
+        }
+
         // Only a new value from the parent opens or closes the item, so re-rendering with the old one keeps a click.
         if (Expanded != _lastExpanded)
         {

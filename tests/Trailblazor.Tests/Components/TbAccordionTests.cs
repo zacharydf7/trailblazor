@@ -145,6 +145,97 @@ public class TbAccordionTests : BunitContext
         handle.VerifyInvoke("dispose");
     }
 
+    [Fact]
+    public void Render_ShouldPutTheHeaderActionsBesideTheHeadingAndOutOfItsButton_WhenGivenThem()
+    {
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Day one")
+            .Add(item => item.HeaderActions, (RenderFragment)(actions => actions.AddMarkupContent(0,
+                "<button type=\"button\">Delete day one</button>"))));
+
+        var header = cut.Find("[data-part=header]");
+        Assert.Equal(["heading", "actions"], header.Children.Select(child => child.GetAttribute("data-part")));
+        Assert.Equal("Delete day one", header.QuerySelector("[data-part=actions] button")!.TextContent);
+        Assert.Equal("Day one", cut.Find("[data-part=trigger]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheHeadingOnItsOwn_WhenNoHeaderActionsAreGiven()
+    {
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Day one"));
+
+        Assert.Empty(cut.FindAll("[data-part=header]"));
+        Assert.Equal("item", cut.Find("[data-part=heading]").ParentElement!.GetAttribute("data-part"));
+    }
+
+    [Fact]
+    public void Click_ShouldOpenAndCloseTheItemUnderAnH3_WhenItIsOutsideAnAccordion()
+    {
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Notes")
+            .AddChildContent("Notes content"));
+
+        Assert.Equal("h3", cut.Find("[data-part=heading]").LocalName);
+        cut.Find("[data-part=trigger]").Click();
+        Assert.Equal("true", cut.Find("[data-part=trigger]").GetAttribute("aria-expanded"));
+        cut.Find("[data-part=trigger]").Click();
+        Assert.Equal("false", cut.Find("[data-part=trigger]").GetAttribute("aria-expanded"));
+    }
+
+    [Fact]
+    public void Render_ShouldUseTheItemsOwnHeadingLevel_WhenItGivesOneInsideAnAccordionOrOnItsOwn()
+    {
+        var cut = Render<TbAccordion>(parameters => parameters.Add(accordion => accordion.HeadingLevel, 2)
+            .Add(accordion => accordion.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbAccordionItem>(0);
+                builder.AddAttribute(1, nameof(TbAccordionItem.Title), "Day one");
+                builder.AddAttribute(2, nameof(TbAccordionItem.ChildContent), (RenderFragment)(panel =>
+                {
+                    panel.OpenComponent<TbAccordionItem>(0);
+                    panel.AddAttribute(1, nameof(TbAccordionItem.Title), "Gear list");
+                    panel.AddAttribute(2, nameof(TbAccordionItem.HeadingLevel), 5);
+                    panel.CloseComponent();
+                }));
+                builder.CloseComponent();
+                builder.OpenComponent<TbAccordionItem>(10);
+                builder.AddAttribute(11, nameof(TbAccordionItem.Title), "Day two");
+                builder.AddAttribute(12, nameof(TbAccordionItem.HeadingLevel), 4);
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal(["h2", "h5", "h4"], cut.FindAll("[data-part=heading]").Select(heading => heading.LocalName));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(7)]
+    public void Render_ShouldThrow_WhenGivenAnItemHeadingLevelOutsideOneToSix(int level) =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => Render<TbAccordionItem>(parameters => parameters
+            .Add(item => item.Title, "Day one").Add(item => item.HeadingLevel, level)));
+
+    [Fact]
+    public void Click_ShouldLeaveTheItemAroundItOpen_WhenAnItemInItsPanelOpens()
+    {
+        var cut = Render<TbAccordion>(parameters => parameters.Add(accordion => accordion.ChildContent,
+            (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbAccordionItem>(0);
+                builder.AddAttribute(1, nameof(TbAccordionItem.Title), "Day one");
+                builder.AddAttribute(2, nameof(TbAccordionItem.Expanded), true);
+                builder.AddAttribute(3, nameof(TbAccordionItem.ChildContent), (RenderFragment)(panel =>
+                {
+                    panel.OpenComponent<TbAccordionItem>(0);
+                    panel.AddAttribute(1, nameof(TbAccordionItem.Title), "Gear list");
+                    panel.CloseComponent();
+                }));
+                builder.CloseComponent();
+            })));
+
+        cut.FindAll("[data-part=trigger]")[1].Click();
+
+        Assert.Equal(["true", "true"],
+            cut.FindAll("[data-part=trigger]").Select(trigger => trigger.GetAttribute("aria-expanded")));
+    }
+
     private IRenderedComponent<TbAccordion> RenderAccordion(Action<string, bool>? onChanged = null,
         bool multiple = false, bool firstExpanded = false, bool secondExpanded = false) =>
         Render<TbAccordion>(parameters => parameters

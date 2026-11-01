@@ -4100,6 +4100,23 @@
         font: inherit;
     }
 
+    .tb-accordion__header {
+        display: flex;
+        align-items: center;
+    }
+
+    .tb-accordion__header > .tb-accordion__heading {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .tb-accordion__actions {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+        padding-inline: var(--tb-space-1) var(--tb-space-2);
+    }
+
     .tb-accordion__trigger {
         display: flex;
         align-items: center;
@@ -4141,7 +4158,8 @@
         transition: transform var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }
 
-    .tb-accordion__item--expanded .tb-accordion__chevron {
+    /* Only the item's own chevron turns, not those of items nested in its panel. */
+    .tb-accordion__item--expanded > :is(.tb-accordion__heading, .tb-accordion__header) .tb-accordion__chevron {
         transform: rotate(180deg);
     }
 

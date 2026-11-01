@@ -106,4 +106,48 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.All(opened[0][2].Split(", "), delay => Assert.Equal("0s", delay));
         Assert.All(opened[1][1].Split(", "), duration => Assert.Equal("0s", duration));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldReachItsActionsAfterItsHeaderButLeaveThemToTab_WhenItHasHeaderActions(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion");
+        await Expect(page.GetByTestId("trips")).ToHaveAttributeAsync("data-ready", "");
+        var dayOne = page.GetByRole(AriaRole.Button, new() { Name = "Day one", Exact = true });
+        var delete = page.GetByRole(AriaRole.Button, new() { Name = "Delete day one" });
+
+        await dayOne.FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(delete).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByTestId("deleted")).ToHaveTextAsync("1");
+        await Expect(dayOne).ToHaveAttributeAsync("aria-expanded", "false");
+        await dayOne.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Day two" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldOpenOnItsOwn_WhenNestedInAnotherItemsPanelOrOutsideAnAccordion(
+        string browser)
+    {
+        // Reduced motion turns a chevron at once, so a wrongly turned one shows as soon as Day one opens.
+        var page = await OpenAsync(browser, "/accordion", new() { ReducedMotion = ReducedMotion.Reduce });
+        var dayOne = page.GetByRole(AriaRole.Button, new() { Name = "Day one", Exact = true });
+        var gear = page.GetByRole(AriaRole.Button, new() { Name = "Gear list" });
+        var packingTips = page.GetByRole(AriaRole.Button, new() { Name = "Packing tips" });
+
+        await dayOne.ClickAsync();
+        await Expect(dayOne).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(gear.Locator("[data-part=chevron]")).ToHaveCSSAsync("transform", "none");
+        await gear.ClickAsync();
+        await Expect(gear).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(dayOne).ToHaveAttributeAsync("aria-expanded", "true");
+        await packingTips.ClickAsync();
+
+        await Expect(packingTips).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Packing tips" })).ToHaveTextAsync(
+            "Packing content");
+    }
 }
