@@ -24,6 +24,15 @@
     Register your own services, such as a <code>FakeTimeProvider</code>, before both calls.
 </TbText>
 <CodeBlock Label="A bUnit test" Code="@Bunit" />
+<TbText>
+    To test a dialog by itself, <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens it as a page would:
+    it renders a <code>TbRoot</code> to host it, sets an interactive renderer, and opens it through
+    <code>IDialogService</code> with the title, parameters and options you give. Find what it shows through
+    <code>Root</code>, its component through <code>Content</code>, and close it or await its result through
+    <code>Reference</code>. A second call in the same test opens its dialog in the same <code>TbRoot</code>, so
+    don't render one of your own as well.
+</TbText>
+<CodeBlock Label="Testing a dialog in bUnit" Code="@BunitDialog" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Playwright</TbText>
 <TbText>
@@ -115,6 +124,21 @@
 
                 Assert.Single(Services.GetRequiredService<IToastService>().Toasts);
             }
+        }
+        """;
+
+    private const string BunitDialog = """
+        [Fact]
+        public async Task Save_ShouldCloseWithTheNewName_WhenClicked()
+        {
+            this.AddTrailblazor();
+            var dialog = await this.ShowDialogAsync<RenameDialog, string>("Rename trail",
+                parameters => parameters.Set(rename => rename.Name, "Pine Hollow"));
+
+            await dialog.Root.Find("input").InputAsync(new() { Value = "Eagle Ridge" });
+            await dialog.Root.FindAll("button").Single(button => button.TextContent.Trim() == "Save").ClickAsync(new());
+
+            Assert.Equal("Eagle Ridge", (await dialog.Reference.Result).Value);
         }
         """;
 

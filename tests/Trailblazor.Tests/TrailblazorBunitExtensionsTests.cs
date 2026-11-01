@@ -78,6 +78,85 @@ public class TrailblazorBunitExtensionsTests : BunitContext
         Assert.Equal(1, Services.GetRequiredService<IOptions<TrailblazorOptions>>().Value.Toasts.MaxVisible);
     }
 
+    [Fact]
+    public async Task ShowDialogAsync_ShouldShowTheDialogWithItsTitleParametersAndOptions_WhenCalled()
+    {
+        this.AddTrailblazor();
+
+        var dialog = await this.ShowDialogAsync<RenameDialog, string>("Rename trail",
+            parameters => parameters.Set(rename => rename.Name, "Pine Hollow"), new() { Size = DialogSize.Small });
+
+        var shown = dialog.Root.Find("dialog");
+        Assert.Equal("Rename trail", dialog.Root.Find($"#{shown.GetAttribute("aria-labelledby")}").TextContent);
+        Assert.Contains("tb-dialog--small", shown.ClassList);
+        Assert.Equal("Pine Hollow", dialog.Root.Find("input").GetAttribute("value"));
+        Assert.Equal("Pine Hollow", dialog.Content.Instance.Name);
+        Assert.Equal("Save", dialog.Root.Find("[data-testid=save]").TextContent);
+        Assert.Same(dialog.Reference, Services.GetRequiredService<IDialogService>().OpenDialogs.Single());
+    }
+
+    [Fact]
+    public async Task ShowDialogAsync_ShouldFinishTheResult_WhenTheDialogCloses()
+    {
+        this.AddTrailblazor();
+        var dialog = await this.ShowDialogAsync<RenameDialog, string>("Rename trail",
+            parameters => parameters.Set(rename => rename.Name, "Pine Hollow"));
+
+        await dialog.Root.Find("[data-testid=save]").ClickAsync(new());
+
+        var result = await dialog.Reference.Result;
+        Assert.Equal("Pine Hollow", result.Value);
+        Assert.Empty(dialog.Root.FindAll("dialog"));
+    }
+
+    [Fact]
+    public async Task ShowDialogAsync_ShouldShowEachDialogInOneRootWithItsOwnContent_WhenCalledAgainInTheSameTest()
+    {
+        this.AddTrailblazor();
+        var first = await this.ShowDialogAsync<RenameDialog, string>("Rename trail",
+            parameters => parameters.Set(rename => rename.Name, "Pine Hollow"));
+
+        var second = await this.ShowDialogAsync<RenameDialog, string>("Rename camp",
+            parameters => parameters.Set(rename => rename.Name, "Lake camp"));
+
+        Assert.Same(first.Root, second.Root);
+        Assert.Equal("Pine Hollow", first.Content.Instance.Name);
+        Assert.Equal("Lake camp", second.Content.Instance.Name);
+    }
+
+    [Fact]
+    public async Task ShowDialogAsync_ShouldHostTheDialogAgain_WhenTheTestDisposedTheLastRoot()
+    {
+        this.AddTrailblazor();
+        var first = await this.ShowDialogAsync<RenameDialog, string>("Rename trail");
+        await DisposeComponentsAsync();
+
+        var second = await this.ShowDialogAsync<RenameDialog, string>("Rename camp");
+
+        Assert.NotSame(first.Root, second.Root);
+        Assert.Contains("Rename camp", second.Root.Markup);
+    }
+
+    // Content that reads how it renders, as fields and uploads do, finds itself interactive, as on a page.
+    private sealed class RenameDialog : TbDialogContent<string>
+    {
+        [Parameter]
+        public string Name { get; set; } = "";
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbTextField<string>>(0);
+            builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Name");
+            builder.AddAttribute(2, nameof(TbTextField<string>.Value), Name);
+            builder.CloseComponent();
+            builder.OpenElement(3, "button");
+            builder.AddAttribute(4, "data-testid", "save");
+            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () => CloseAsync(Name)));
+            builder.AddContent(6, RendererInfo.IsInteractive ? "Save" : "Not interactive");
+            builder.CloseElement();
+        }
+    }
+
     private static void AddSizes(RenderTreeBuilder builder)
     {
         builder.OpenComponent<TbOption<string>>(0);

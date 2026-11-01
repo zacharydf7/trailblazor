@@ -1170,7 +1170,9 @@ public static class ExampleCatalog
             Blocks = ["tb-dialog"],
             DataParts = ["dialog", "header", "icon", "move", "minimize", "maximize", "close", "description", "body",
                 "actions", "resize"],
-            TestingTip = "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
+            TestingTip = "In bUnit, `this.ShowDialogAsync<TDialog, TResult>(title)` from `Trailblazor.Testing` hosts "
+                + "and opens a dialog in one call, as the Testing guide shows. "
+                + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
                 + "finishes when the dialog closes.",
             Telemetry =
