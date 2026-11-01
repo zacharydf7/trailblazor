@@ -78,4 +78,6 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(string? name = null) -> Trai
 Trailblazor.Testing.Playwright.TrailblazorPage.Toasts.get -> Trailblazor.Testing.Playwright.TbToastsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TrailblazorPage(Microsoft.Playwright.IPage! page) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Tree(string! name) -> Trailblazor.Testing.Playwright.TbTreeLocator!
+Trailblazor.Testing.Playwright.TbTreeLocator.ExpandAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTreeLocator.ItemsAsync(params string![]! path) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Playwright.ILocator!>!>!
 Trailblazor.Testing.Playwright.TrailblazorPageExtensions

@@ -316,8 +316,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
         if (ChildContent is not null && Virtualize)
         {
-            throw new InvalidOperationException($"{nameof(TbTreeView<TItem, TKey>)} virtualizes only {nameof(Items)}, " +
-                $"since {nameof(TbTreeItem<TItem>)}s draw their rows where they are written.");
+            throw new InvalidOperationException($"{nameof(TbTreeView<TItem, TKey>)} virtualizes only " +
+                $"{nameof(Items)}, since {nameof(TbTreeItem<TItem>)}s draw their rows where they are written.");
         }
 
         if (KeySelector is null && !typeof(TKey).IsAssignableFrom(typeof(TItem)))
@@ -377,7 +377,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             if (ExpandedKeys is null)
             {
                 _expanded.UnionWith(_nodes.Values.Where(node => node.Level <= InitialExpandDepth)
-                    .Where(node => node.Children.Count > 0 && _declared.GetValueOrDefault(node.Key)?.ExpandedGiven != true)
+                    .Where(node => node.Children.Count > 0
+                        && _declared.GetValueOrDefault(node.Key)?.ExpandedGiven != true)
                     .Select(node => node.Key));
             }
         }
@@ -543,6 +544,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         StateHasChanged();
     }
 
+    // Declared items that have appeared become rows only after the render they appear in, such as those of a row
+    // that renders its rows once open, so until then the tree is busy.
+    private bool Building =>
+        ChildContent is not null && RendererInfo.IsInteractive && (_itemsChanged || !_itemsRegistered);
+
     private void BuildFromItems()
     {
         _itemsChanged = false;
@@ -579,7 +585,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     }
 
     private IEnumerable<object> Expandable(int depth) => _nodes.Values
-        .Where(node => (node.Children.Count > 0 || (node.MayHaveChildren && LoadChildren is null)) && node.Level <= depth)
+        .Where(node => (node.Children.Count > 0 || (node.MayHaveChildren && LoadChildren is null))
+            && node.Level <= depth)
         .Select(node => node.Key);
 
     /// <summary>Closes every row.</summary>

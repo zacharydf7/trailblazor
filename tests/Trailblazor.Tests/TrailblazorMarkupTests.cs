@@ -195,6 +195,100 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Tree_ShouldExpandSelectAndCheckRowsByTheirTexts_WhenRowsRepeatATextAndHoldATree()
+    {
+        IReadOnlyCollection<string> selected = [];
+        IReadOnlyCollection<string> checkedKeys = [];
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Outline")
+            .Add(tree => tree.Checkable, true)
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<string> keys) => selected = keys)
+            .Add(tree => tree.CheckedKeysChanged, (IReadOnlyCollection<string> keys) => checkedKeys = keys)
+            .Add(tree => tree.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTreeItem<string>>(0);
+                builder.AddAttribute(1, nameof(TbTreeItem<string>.Text), "Part one");
+                builder.AddAttribute(2, nameof(TbTreeItem<string>.TextContent), (RenderFragment)(row =>
+                {
+                    row.OpenComponent<TbTreeView<string, string>>(0);
+                    row.AddAttribute(1, nameof(TbTreeView<string, string>.AriaLabel), "Inner");
+                    row.AddAttribute(2, nameof(TbTreeView<string, string>.ChildContent), Items(("inner", "P")));
+                    row.CloseComponent();
+                }));
+                builder.AddAttribute(3, nameof(TbTreeItem<string>.ChildContent), Items(("p-1", "P"), ("p-2", "P")));
+                builder.CloseComponent();
+            })));
+        var outline = cut.Tb().Tree("Outline");
+
+        await outline.ExpandAsync("Part one");
+        await outline.SelectAsync("Part one", "P");
+        await outline.CheckAsync("Part one", "P");
+
+        Assert.Equal(["p-1", "p-2"], outline.Items("Part one", "P").Select(row => row.GetAttribute("data-key")));
+        Assert.Equal(["Part one", "P", "P"], outline.Texts);
+        Assert.Equal(["p-1"], selected);
+        Assert.Equal(["p-1"], checkedKeys);
+        Assert.Equal(["P"], cut.Tb().Tree("Inner").Texts);
+    }
+
+    [Fact]
+    public async Task Tree_ShouldFollowTheRowThatLeadsOn_WhenTheFirstRowWithTheTextDoesnt()
+    {
+        RenderFragment Part(string child) => builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddAttribute(1, nameof(TbTreeItem<string>.Text), "Part");
+            builder.AddAttribute(2, nameof(TbTreeItem<string>.ChildContent), Items((child, child)));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Book")
+            .Add(tree => tree.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.AddContent(0, Part("Note"));
+                builder.AddContent(1, Part("Q"));
+            })));
+
+        await cut.Tb().Tree().ExpandAllAsync();
+
+        Assert.Equal("Q", cut.Tb().Tree().Item("Part", "Q").GetAttribute("data-key"));
+    }
+
+    [Fact]
+    public async Task Tree_ShouldSayARowDidntOpen_WhenExpandingAllInADisabledTree()
+    {
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.Disabled, true).Add(tree => tree.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTreeItem<string>>(0);
+                builder.AddAttribute(1, nameof(TbTreeItem<string>.Value), "docs");
+                builder.AddAttribute(2, nameof(TbTreeItem<string>.ChildContent), Items(("guide", "guide")));
+                builder.CloseComponent();
+            })));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Tree().ExpandAllAsync());
+
+        Assert.Contains("didn't open", error.Message);
+    }
+
+    [Fact]
+    public async Task Tree_ShouldOpenRowsAsTheyAppear_WhenExpandingAll()
+    {
+        RenderFragment Lazy(string value, RenderFragment inside) => builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddAttribute(1, nameof(TbTreeItem<string>.Value), value);
+            builder.AddAttribute(2, nameof(TbTreeItem<string>.HasChildren), true);
+            builder.AddAttribute(3, nameof(TbTreeItem<string>.ChildContent), inside);
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.ChildContent, Lazy("docs", Lazy("guide", Items(("intro", "intro"))))));
+
+        await cut.Tb().Tree().ExpandAllAsync();
+
+        Assert.Equal(["docs", "guide", "intro"], cut.Tb().Tree().Texts);
+    }
+
+    [Fact]
     public void Field_ShouldSayNoFieldHasTheLabel_WhenNoneDoes()
     {
         var cut = RenderForm();
@@ -279,6 +373,17 @@ public class TrailblazorMarkupTests : BunitContext
         }));
         builder.CloseComponent();
     }
+
+    private static RenderFragment Items(params (string Value, string Text)[] items) => builder =>
+    {
+        foreach (var (index, (value, text)) in items.Index())
+        {
+            builder.OpenComponent<TbTreeItem<string>>(index * 3);
+            builder.AddAttribute(index * 3 + 1, nameof(TbTreeItem<string>.Value), value);
+            builder.AddAttribute(index * 3 + 2, nameof(TbTreeItem<string>.Text), text);
+            builder.CloseComponent();
+        }
+    };
 
     private static RenderFragment Options(params string[] values) => builder =>
     {

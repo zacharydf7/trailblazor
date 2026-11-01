@@ -13,7 +13,8 @@
 <CascadingValue Value="_version" Name="@TreeVersion">
 <div @ref="_tree" @attributes="AdditionalAttributes" role="tree" aria-label="@AriaLabel"
      aria-multiselectable="@(SelectionMode == SelectionMode.Multiple ? "true" : null)"
-     aria-disabled="@(Disabled ? "true" : null)" data-ready="@(_handle is null ? null : "")"
+     aria-disabled="@(Disabled ? "true" : null)" aria-busy="@(Building ? "true" : null)"
+     data-ready="@(_handle is null ? null : "")"
      data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
      data-row-size="@(Virtualize ? RowSize : null)"
      style="@(Virtualize ? Styles.Join($"--tb-tree-row-size: {RowSize}px", Style) : Style)"

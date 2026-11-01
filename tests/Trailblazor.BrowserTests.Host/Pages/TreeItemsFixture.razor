@@ -49,6 +49,29 @@
         <TbTreeItem Value="@("appendix")" Text="Appendix" />
     </TbTreeView>
     <output data-testid="outline">@string.Join(", ", _outline)</output>
+    @* Closed rows to open: two shelves with one name, a row that renders its rows once open, and a tree inside a row
+       whose heading, like the shelves, has no value, so the two trees share its key. *@
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Library">
+        <TbTreeItem Text="Shelf">
+            <TbTreeItem Value="@("book")" Text="Book">
+                <TextContent>
+                    Book
+                    <TbTreeView TItem="string" TKey="string" AriaLabel="Index">
+                        <TbTreeItem Text="Entries">
+                            <TbTreeItem Value="@("entry")" Text="Entry" />
+                        </TbTreeItem>
+                    </TbTreeView>
+                </TextContent>
+            </TbTreeItem>
+        </TbTreeItem>
+        <TbTreeItem Text="Shelf">
+            <TbTreeItem Value="@("atlas")" Text="Atlas" HasChildren>
+                <TbTreeItem Value="@("map")" Text="Map" HasChildren>
+                    <TbTreeItem Value="@("legend")" Text="Legend" />
+                </TbTreeItem>
+            </TbTreeItem>
+        </TbTreeItem>
+    </TbTreeView>
     <output data-testid="sections">@string.Join(", ", _sections)</output>
 </TbStack>
 

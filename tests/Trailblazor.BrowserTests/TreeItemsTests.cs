@@ -115,6 +115,27 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldOpenRowsAsTheyAppearAndFollowThePathThatLeadsOn_WhenRowsShareTextsAndKeys(
+        string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var library = page.Tb().Tree("Library");
+
+        await library.ExpandAllAsync();
+
+        // Legend's row appears only once Map opens, which only appears once Atlas opens.
+        await Expect(await library.ItemAsync("Shelf", "Atlas", "Map", "Legend")).ToBeVisibleAsync();
+        Assert.Equal(2, (await library.ItemsAsync("Shelf")).Count);
+        var index = page.GetByRole(AriaRole.Tree, new() { Name = "Index" });
+        await Expect(index.Locator("[role=treeitem][data-text='Entries']"))
+            .ToHaveAttributeAsync("aria-expanded", "false");
+        await page.Tb().Tree("Index").ExpandAsync("Entries");
+        await Expect(await page.Tb().Tree("Index").ItemAsync("Entries", "Entry")).ToBeVisibleAsync();
+        // The path to Page passes the rows of the Sections tree inside Chapter's row, which aren't Outline's.
+        await Expect(await page.Tb().Tree("Outline").ItemAsync("Part one", "Chapter", "Page")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TreeItems_ShouldHaveNoAccessibilityViolations_WhenOpen(string browser)
     {
         var page = await OpenItemsAsync(browser);

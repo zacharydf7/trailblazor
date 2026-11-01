@@ -1,3 +1,4 @@
+using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -42,6 +43,18 @@ public sealed class TrailblazorMarkup
             : throw new InvalidOperationException(name is null
                 ? $"Expected one tab list, found {lists.Count}; name the one to use."
                 : $"No tab list is named \"{name}\".");
+    });
+
+    /// <summary>The <c>TbTreeView</c> with this accessible name, or the only tree in the markup when no name is given.
+    /// </summary>
+    public TbTreeDriver Tree(string? name = null) => new(() =>
+    {
+        var trees = _findAll("[role=tree]").Where(tree => name is null || tree.GetAttribute("aria-label") == name)
+            .ToList();
+        return trees.Count == 1 ? trees[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one tree, found {trees.Count}; name the one to use."
+                : $"No tree is named \"{name}\".");
     });
 
     // A field's label names its control by for or aria-labelledby; a label's text ends with a required marker.
@@ -203,6 +216,108 @@ public sealed class TbNumberFieldDriver
         var input = _find();
         return input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
             : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text });
+    }
+}
+
+/// <summary>A <c>TbTreeView</c>, found by its accessible name. Rows are found by their path of texts from a root,
+/// such as <c>("Docs", "Guide")</c>, with the same names as the Playwright helpers.</summary>
+public sealed class TbTreeDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbTreeDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The texts of the rows that show, in order.</summary>
+    public IReadOnlyList<string> Texts => [.. OwnRows().Select(row => row.GetAttribute("data-text") ?? "")];
+
+    /// <summary>The row at this path, which must be showing. When several rows match, it is the first.</summary>
+    public IElement Item(params string[] path) => Items(path).FirstOrDefault()
+        ?? throw new InvalidOperationException($"No row shows at {string.Join(" > ", path)}.");
+
+    /// <summary>Every row at this path, for rows that share their text. Their parents must be open.</summary>
+    public IReadOnlyList<IElement> Items(params string[] path)
+    {
+        var rows = OwnRows();
+        List<IElement> found = [];
+        Walk(0, 0);
+        return found;
+
+        // Each name is looked for after its parent row and before the next row at the parent's level.
+        void Walk(int start, int depth)
+        {
+            for (var index = start; index < rows.Count; index++)
+            {
+                var level = int.Parse(rows[index].GetAttribute("aria-level")!, CultureInfo.InvariantCulture);
+                if (level <= depth)
+                {
+                    break;
+                }
+
+                if (level == depth + 1 && rows[index].GetAttribute("data-text") == path[depth])
+                {
+                    if (depth == path.Length - 1)
+                    {
+                        found.Add(rows[index]);
+                    }
+                    else
+                    {
+                        Walk(index + 1, depth + 1);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>Opens each row along the path, as clicking its toggle does.</summary>
+    public async Task ExpandAsync(params string[] path)
+    {
+        for (var depth = 1; depth <= path.Length; depth++)
+        {
+            var row = Item(path[..depth]);
+            if (row.GetAttribute("aria-expanded") == "false")
+            {
+                await row.QuerySelector("[data-part=toggle]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+            }
+        }
+    }
+
+    /// <summary>Opens every row, and the rows that appear inside them as they open.</summary>
+    public async Task ExpandAllAsync()
+    {
+        while (OwnRows().FirstOrDefault(row => row.GetAttribute("aria-expanded") == "false") is { } row)
+        {
+            var key = row.GetAttribute("data-key");
+            await row.QuerySelector("[data-part=toggle]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+            // A disabled tree doesn't open, so the same row would be clicked forever.
+            if (OwnRows().Any(again => again.GetAttribute("data-key") == key
+                && again.GetAttribute("aria-expanded") == "false"))
+            {
+                throw new InvalidOperationException($"The row {row.GetAttribute("data-text")} didn't open.");
+            }
+        }
+    }
+
+    /// <summary>Opens the rows above the one at this path and selects it, as clicking it does.</summary>
+    public async Task SelectAsync(params string[] path)
+    {
+        await ExpandAsync(path[..^1]);
+        await Item(path).ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    /// <summary>Opens the rows above the one at this path and checks it, as clicking its box does.</summary>
+    public async Task CheckAsync(params string[] path)
+    {
+        await ExpandAsync(path[..^1]);
+        await (Item(path).QuerySelector("[data-part=check]")
+            ?? throw new InvalidOperationException($"The row at {string.Join(" > ", path)} has no box to check."))
+            .ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    // A tree inside one of this tree's rows keeps its own rows.
+    private List<IElement> OwnRows()
+    {
+        var tree = _find();
+        return [.. tree.QuerySelectorAll("[role=treeitem][data-key]").Where(row => row.Closest("[role=tree]") == tree)];
     }
 }
 

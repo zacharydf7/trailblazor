@@ -291,10 +291,54 @@ public sealed class TbDateRangePickerLocator(IPage page, string label)
 /// such as <c>("North", "Ridge")</c>.</summary>
 public sealed class TbTreeLocator(IPage page, string name)
 {
+    private int? _depth;
+
     private ILocator Tree => page.GetByRole(AriaRole.Tree, new() { Name = name, Exact = true });
 
-    /// <summary>The row at this path, which must be showing.</summary>
+    /// <summary>The row at this path, which must be showing. When several rows match, as rows with the same text
+    /// do, it is the first.</summary>
     public Task<ILocator> ItemAsync(params string[] path) => RowAsync(path);
+
+    /// <summary>Every row at this path, for rows that share their text, such as several "P" rows under a heading. Their
+    /// parents must be open. A virtualized tree doesn't render every row, so it can't list them.</summary>
+    public async Task<IReadOnlyList<ILocator>> ItemsAsync(params string[] path)
+    {
+        await RowsBuiltAsync();
+        if (await Tree.GetAttributeAsync("data-virtual") is not null)
+        {
+            throw new InvalidOperationException(
+                $"The tree {name} is virtualized, so it can't list every row at a path.");
+        }
+
+        var keys = await Tree.EvaluateAsync<string[]>(FindRows, path);
+        return [.. await Task.WhenAll(keys.Select(RowByKeyAsync))];
+    }
+
+    /// <summary>Opens every row, and the rows that appear inside them as they open, waiting for children that load. A
+    /// virtualized tree opens the rows it has rendered.</summary>
+    public async Task ExpandAllAsync()
+    {
+        await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
+        await Assertions.Expect(Tree).Not.ToHaveAttributeAsync("aria-busy", "true");
+        while (await Tree.EvaluateAsync<string?>("""
+                   tree => [...tree.querySelectorAll('[role=treeitem][aria-expanded=false]')]
+                       .find(row => row.closest('[role=tree]') === tree)?.dataset.key ?? null
+                   """) is { } key)
+        {
+            var row = await RowByKeyAsync(key);
+            await row.Locator("[data-part=toggle]").ClickAsync();
+            await Assertions.Expect(row).ToHaveAttributeAsync("aria-expanded", "true");
+            await Assertions.Expect(Tree.Locator("[data-part=loading]")).ToHaveCountAsync(0);
+            await RowsBuiltAsync();
+        }
+    }
+
+    // Rows written as TbTreeItems that a row renders once open become rows a render later, while the tree is busy.
+    private async Task RowsBuiltAsync()
+    {
+        await Assertions.Expect(Tree.Locator("[role=treeitem]").First).ToBeAttachedAsync();
+        await Assertions.Expect(Tree).Not.ToHaveAttributeAsync("aria-busy", "true");
+    }
 
     /// <summary>Opens each row along the path, waiting for children that load.</summary>
     public async Task ExpandAsync(params string[] path)
@@ -349,7 +393,7 @@ public sealed class TbTreeLocator(IPage page, string name)
     {
         await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
         var sourceKey = await Key(row);
-        var source = Tree.Locator($"[role=treeitem][data-key=\"{sourceKey}\"]");
+        var source = await RowByKeyAsync(sourceKey);
         var destination = await RowAsync(target);
         await destination.EvaluateAsync("row => row.scrollIntoView({ block: 'center' })");
         if (!await ShowsAsync(sourceKey))
@@ -391,47 +435,67 @@ public sealed class TbTreeLocator(IPage page, string name)
         await row.BoundingBoxAsync() ?? throw new InvalidOperationException(
             $"The row {string.Join(" > ", path)} isn't showing.");
 
-    private async Task<ILocator> RowAsync(string[] path) =>
-        Tree.Locator($"[role=treeitem][data-key=\"{await Key(path)}\"]");
+    private async Task<ILocator> RowAsync(string[] path) => await RowByKeyAsync(await Key(path));
 
-    // Rows are flat, so each name is looked for after its parent row and before the next row at the parent's level.
+    // A tree inside a row numbers its keys afresh, so this tree's rows are the ones with as many trees around them.
+    private async Task<ILocator> RowByKeyAsync(string key)
+    {
+        _depth ??= await Tree.EvaluateAsync<int>("""
+            tree => {
+                let depth = 0;
+                for (let at = tree; at; at = at.parentElement?.closest('[role=tree]')) {
+                    depth++;
+                }
+
+                return depth;
+            }
+            """);
+        return Tree.Locator(
+            $"xpath=.//*[@role='treeitem'][@data-key={XPathText(key)}][count(ancestor::*[@role='tree'])={_depth}]");
+    }
+
+    // An XPath string literal, which has no escapes, so a key holding both quotes is joined from pieces.
+    private static string XPathText(string text) => !text.Contains('\'') ? $"'{text}'"
+        : !text.Contains('"') ? $"\"{text}\""
+        : $"concat('{text.Replace("'", "',\"'\",'", StringComparison.Ordinal)}')";
+
     private async Task<string> Key(string[] path)
     {
-        await Assertions.Expect(Tree.Locator("[role=treeitem]").First).ToBeAttachedAsync();
+        await RowsBuiltAsync();
         if (await Tree.GetAttributeAsync("data-virtual") is not null)
         {
             return await VirtualKeyAsync(path);
         }
 
-        return await Tree.EvaluateAsync<string?>("""
-            (tree, path) => {
-                const rows = [...tree.querySelectorAll('[role=treeitem][data-key]')];
-                let start = 0;
-                let found = null;
-                for (let depth = 0; depth < path.length; depth++) {
-                    found = null;
-                    for (let index = start; index < rows.length; index++) {
-                        const level = Number(rows[index].getAttribute('aria-level'));
-                        if (level <= depth) {
-                            break;
-                        }
+        return (await Tree.EvaluateAsync<string[]>(FindRows, path)).FirstOrDefault() ?? throw NoRow(path);
+    }
 
-                        if (level === depth + 1 && rows[index].dataset.text === path[depth]) {
-                            found = rows[index];
-                            start = index + 1;
-                            break;
-                        }
+    // Each name is looked for after its parent row and before the next row at the parent's level, in every match.
+    private const string FindRows = """
+        (tree, path) => {
+            const rows = [...tree.querySelectorAll('[role=treeitem][data-key]')]
+                .filter(row => row.closest('[role=tree]') === tree);
+            const found = [];
+            const walk = (start, depth) => {
+                for (let index = start; index < rows.length; index++) {
+                    const level = Number(rows[index].getAttribute('aria-level'));
+                    if (level <= depth) {
+                        break;
                     }
 
-                    if (!found) {
-                        return null;
+                    if (level === depth + 1 && rows[index].dataset.text === path[depth]) {
+                        if (depth === path.length - 1) {
+                            found.push(rows[index].dataset.key);
+                        } else {
+                            walk(index + 1, depth + 1);
+                        }
                     }
                 }
-
-                return found.dataset.key;
-            }
-            """, path) ?? throw NoRow(path);
-    }
+            };
+            walk(0, 0);
+            return found;
+        }
+        """;
 
     // A virtualized tree renders only the rows in view. Each row says how many rows its branch holds, so the walk
     // steps from sibling to sibling over branches it doesn't need, and scrolls on only when its next row isn't there.

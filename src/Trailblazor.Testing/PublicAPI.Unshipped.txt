@@ -86,3 +86,13 @@ static Trailblazor.Testing.ScrollRequest.operator ==(Trailblazor.Testing.ScrollR
 static Trailblazor.Testing.TrailblazorBunitExtensions.AddTrailblazor(this Bunit.BunitContext! context, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Bunit.BunitContext!
 static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.BunitContext! context, string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
 static Trailblazor.Testing.TrailblazorMarkupExtensions.Tb<TComponent>(this Bunit.IRenderedComponent<TComponent>! rendered) -> Trailblazor.Testing.TrailblazorMarkup!
+Trailblazor.Testing.TrailblazorMarkup.Tree(string? name = null) -> Trailblazor.Testing.TbTreeDriver!
+Trailblazor.Testing.TbTreeDriver
+Trailblazor.Testing.TbTreeDriver.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.ExpandAllAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.Item(params string![]! path) -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbTreeDriver.Items(params string![]! path) -> System.Collections.Generic.IReadOnlyList<AngleSharp.Dom.IElement!>!
+Trailblazor.Testing.TbTreeDriver.SelectAsync(params string![]! path) -> System.Threading.Tasks.Task!
+
+Trailblazor.Testing.TbTreeDriver.Texts.get -> System.Collections.Generic.IReadOnlyList<string!>!
