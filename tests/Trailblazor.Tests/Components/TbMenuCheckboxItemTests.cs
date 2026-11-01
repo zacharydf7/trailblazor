@@ -21,6 +21,17 @@ public class TbMenuCheckboxItemTests : BunitContext
         Assert.Equal(after, cut.Find("button").GetAttribute("aria-checked"));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldMarkTheItemToKeepTheMenuOpen_WhenKeepOpenIsSet(bool keepOpen)
+    {
+        var cut = Render<TbMenuCheckboxItem>(parameters => parameters.Add(item => item.KeepOpen, keepOpen)
+            .AddChildContent("Map"));
+
+        Assert.Equal(keepOpen, cut.Find("button").HasAttribute("data-keep-open"));
+    }
+
     [Fact]
     public void Render_ShouldBeACheckboxItemWithAMark_WhenChecked()
     {

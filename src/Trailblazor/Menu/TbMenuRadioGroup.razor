@@ -17,7 +17,8 @@
     [Parameter]
     public TValue? Value { get; set; }
 
-    /// <summary>Raised with the value of the item chosen; the menu then closes.</summary>
+    /// <summary>Raised with the value of the item chosen; the menu then closes, unless the item has
+    /// <c>KeepOpen</c>.</summary>
     [Parameter]
     public EventCallback<TValue?> ValueChanged { get; set; }
 

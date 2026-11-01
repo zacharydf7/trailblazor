@@ -50,7 +50,7 @@ public class TelemetryNameTests : BunitContext
             .Arguments[3]!).Value;
 
         cut.Find("[data-part=trigger]").Click();
-        await cut.InvokeAsync(events.OnOpened);
+        await cut.InvokeAsync(() => events.OnToggle(true));
         cut.Find("[role=menuitem]").Click();
 
         Assert.Equal(["row-actions"], Names(_shown));
@@ -58,12 +58,16 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
-    public void Menu_ShouldMakeNoCallsBack_WhenItHasNoTelemetryName()
+    public async Task Menu_ShouldCountNothing_WhenItOpensWithoutATelemetryName()
     {
-        Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
             .AddChildContent<TbMenuItem>(item => item.AddChildContent("Export")));
+        var events = ((DotNetObjectReference<MenuEvents>)JSInterop.Invocations["createMenu"].Single()
+            .Arguments[3]!).Value;
 
-        Assert.Null(JSInterop.Invocations["createMenu"].Single().Arguments[3]);
+        await cut.InvokeAsync(() => events.OnToggle(true));
+
+        Assert.Empty(Uses());
     }
 
     [Fact]

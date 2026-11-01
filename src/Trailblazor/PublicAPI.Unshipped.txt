@@ -1719,6 +1719,10 @@ Trailblazor.TbMenu.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbMenu.Icon.set -> void
 Trailblazor.TbMenu.Label.get -> string?
 Trailblazor.TbMenu.Label.set -> void
+Trailblazor.TbMenu.Open.get -> bool
+Trailblazor.TbMenu.Open.set -> void
+Trailblazor.TbMenu.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbMenu.OpenChanged.set -> void
 Trailblazor.TbMenu.Placement.get -> Trailblazor.Placement
 Trailblazor.TbMenu.Placement.set -> void
 Trailblazor.TbMenu.Size.get -> Trailblazor.Size
@@ -1741,6 +1745,8 @@ Trailblazor.TbMenuCheckboxItem.Disabled.get -> bool
 Trailblazor.TbMenuCheckboxItem.Disabled.set -> void
 Trailblazor.TbMenuCheckboxItem.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbMenuCheckboxItem.Icon.set -> void
+Trailblazor.TbMenuCheckboxItem.KeepOpen.get -> bool
+Trailblazor.TbMenuCheckboxItem.KeepOpen.set -> void
 Trailblazor.TbMenuCheckboxItem.TbMenuCheckboxItem() -> void
 Trailblazor.TbMenuGroup
 Trailblazor.TbMenuGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
@@ -1781,6 +1787,8 @@ Trailblazor.TbMenuRadioItem<TValue>.ChildContent.get -> Microsoft.AspNetCore.Com
 Trailblazor.TbMenuRadioItem<TValue>.ChildContent.set -> void
 Trailblazor.TbMenuRadioItem<TValue>.Disabled.get -> bool
 Trailblazor.TbMenuRadioItem<TValue>.Disabled.set -> void
+Trailblazor.TbMenuRadioItem<TValue>.KeepOpen.get -> bool
+Trailblazor.TbMenuRadioItem<TValue>.KeepOpen.set -> void
 Trailblazor.TbMenuRadioItem<TValue>.TbMenuRadioItem() -> void
 Trailblazor.TbMenuRadioItem<TValue>.Value.get -> TValue
 Trailblazor.TbMenuRadioItem<TValue>.Value.set -> void
@@ -1899,6 +1907,8 @@ Trailblazor.TbPopover.Align.get -> Trailblazor.PlacementAlign
 Trailblazor.TbPopover.Align.set -> void
 Trailblazor.TbPopover.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbPopover.ChildContent.set -> void
+Trailblazor.TbPopover.Disabled.get -> bool
+Trailblazor.TbPopover.Disabled.set -> void
 Trailblazor.TbPopover.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbPopover.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbPopover.Icon.set -> void

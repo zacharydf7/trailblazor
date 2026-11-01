@@ -1166,6 +1166,12 @@ public static class ExampleCatalog
                 "Checkbox items are `menuitemcheckbox`es and radio items `menuitemradio`s, with `aria-checked`. A "
                     + "`TbMenuGroup` or radio group is a `group` named by its `Label`, and `TbMenuSeparator` is a "
                     + "`separator`.",
+                "Choosing an item closes the menu, unless it is a checkbox or radio item with `KeepOpen`, such as "
+                    + "the filters here: a click, Enter or Space sets it and focus stays on it, so several can be set "
+                    + "in a row. Escape, Tab or a click outside closes the menu.",
+                "`@bind-Open` opens or closes the menu from code and hears when the user does. The items are drawn "
+                    + "again each time the menu opens, so one whose text or `Disabled` depends on state that changed "
+                    + "since the page last rendered, such as a file that finished loading, is up to date.",
                 "An item with `Href` is a link; Enter or Space follows it. With `NewTab` it opens in a new tab, and "
                     + "screen readers hear that it does.",
                 "Resting the pointer on a submenu's item opens it without moving focus. On the way there the pointer "
@@ -1298,7 +1304,9 @@ public static class ExampleCatalog
                     + "and stays open while the pointer is over it (WCAG 1.4.13). Escape still closes it. A click on "
                     + "the trigger, or working in the panel, keeps it open after the pointer leaves, and resting on "
                     + "the trigger doesn't open it over another popover that is already open.",
-                "A custom `Trigger` gets the same attributes through `context.Attributes`; put them on a button.",
+                "A custom `Trigger` gets the same attributes through `context.Attributes`; put them on a button. "
+                    + "`Disabled` turns either trigger off, so neither a click, the keyboard nor the pointer resting "
+                    + "on it opens the panel.",
             ],
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },
             Blocks = ["tb-popover"],

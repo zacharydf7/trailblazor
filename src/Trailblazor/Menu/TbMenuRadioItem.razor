@@ -4,6 +4,7 @@
 
 <button @attributes="AdditionalAttributes" type="button" role="menuitemradio" tabindex="-1" style="@Style"
         aria-checked="@(Chosen ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
+        data-keep-open="@(KeepOpen ? "" : null)"
         class="@ClassNames.Join("tb-menu__item", Class)" @onclick="ChooseAsync">
     <span data-part="indicator" class="tb-menu__indicator"></span>
     <span data-part="label">@ChildContent</span>
@@ -22,6 +23,11 @@
     /// <summary>Keeps the item in the menu but stops it from being chosen.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>Keeps the menu open when the item is chosen, by a click, Enter or Space, so other items can be set
+    /// next, as in a filter menu. Escape, Tab or a click outside closes it.</summary>
+    [Parameter]
+    public bool KeepOpen { get; set; }
 
     [CascadingParameter]
     private IMenuRadioGroup? Group { get; set; }

@@ -1,0 +1,10 @@
+@page "/popover-disabled"
+
+@* Disabled popovers, one with its own trigger and one that opens on hover, which neither a click nor a rest opens. *@
+<TbPopover Label="Help" Disabled OpenOnHover>
+    <TbText>Ask the team.</TbText>
+</TbPopover>
+<TbPopover Disabled>
+    <Trigger><button @attributes="context.Attributes">Account</button></Trigger>
+    <ChildContent><TbText>Signed in.</TbText></ChildContent>
+</TbPopover>

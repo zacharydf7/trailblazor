@@ -28,8 +28,9 @@
     {
         <span id="@DescriptionId" class="tb-visually-hidden">@Description</span>
     }
+    @* data-open comes with the items drawn as the menu opened, which tests wait for. *@
     <div @ref="_menu" id="@MenuId" popover="auto" role="menu" aria-labelledby="@TriggerId" data-part="menu"
-         class="tb-menu__list">
+         data-open="@(_open ? "" : null)" class="tb-menu__list">
         @ChildContent
     </div>
 </div>
@@ -42,6 +43,9 @@
     private bool _disposed;
     private ControlTelemetry? _telemetry;
     private DotNetObjectReference<MenuEvents>? _events;
+    private bool _open;
+    private bool _lastOpen;
+    private bool _openFromParent;
 
     /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required
     /// unless <see cref="Trigger"/> gives a trigger of your own.</summary>
@@ -56,6 +60,15 @@
     /// <summary>Stops the trigger from opening the menu.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>Whether the menu is open. Bind it with <c>@bind-Open</c> to open or close it from code and hear when
+    /// the user does; only a new value from the parent moves it.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the user opens or closes the menu.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>Shows an icon button as the trigger instead of a text button.</summary>
     [Parameter]
@@ -172,49 +185,87 @@
         {
             throw new InvalidOperationException($"{nameof(TbMenu)} needs a {nameof(Label)} or a {nameof(Trigger)}.");
         }
+
+        // Only a new value from the parent opens or closes the menu, so re-rendering with the old one keeps the menu
+        // as the user left it.
+        if (Open != _lastOpen)
+        {
+            _lastOpen = Open;
+            if (Open != _open)
+            {
+                _open = Open;
+                _openFromParent = true;
+            }
+        }
     }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         Telemetry.Rendered(TelemetryName);
-        if (!firstRender)
-        {
-            return;
-        }
-
         try
         {
-            var module = await Modules.ImportAsync("./_content/Trailblazor/menu.js");
-            if (_disposed)
+            if (firstRender)
             {
-                return;
+                await AttachAsync();
             }
 
-            var options = new AnchoredPositionOptions
+            if (_handle is not null && _openFromParent)
             {
-                Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 4,
-            };
-            // Only a labeled menu reports its opens, so an unlabeled one makes no calls back.
-            _events = TelemetryName is null ? null
-                : DotNetObjectReference.Create(new MenuEvents(() => Telemetry.Used(TelemetryName)));
-            var handle = await module.InvokeAsync<IJSObjectReference?>("createMenu", _root, _menu, options, _events);
-            if (handle is null)
-            {
-                return;
+                _openFromParent = false;
+                await _handle.InvokeVoidAsync("setOpen", _open);
             }
-
-            if (_disposed)
-            {
-                await handle.DisposeHandleAsync();
-                return;
-            }
-
-            _handle = handle;
         }
         catch (JSDisconnectedException)
         {
             // The circuit is gone, and the menu went with it.
+        }
+    }
+
+    private async Task AttachAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/menu.js");
+        if (_disposed)
+        {
+            return;
+        }
+
+        var options = new AnchoredPositionOptions
+        {
+            Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 4,
+        };
+        _events = DotNetObjectReference.Create(new MenuEvents(OnToggleAsync));
+        var handle = await module.InvokeAsync<IJSObjectReference?>("createMenu", _root, _menu, options, _events);
+        if (handle is null)
+        {
+            return;
+        }
+
+        if (_disposed)
+        {
+            await handle.DisposeHandleAsync();
+            return;
+        }
+
+        _handle = handle;
+    }
+
+    // The script reports the menu opening or closing, by pointer, key or code. The menu is drawn again each time, so
+    // items that depend on state changed since the page last rendered, such as a file that finished loading, show it.
+    internal async Task OnToggleAsync(bool open)
+    {
+        if (open)
+        {
+            Telemetry.Used(TelemetryName);
+        }
+
+        // Set before the render, which can run at once, outside any event.
+        var changed = open != _open;
+        _open = open;
+        StateHasChanged();
+        if (changed)
+        {
+            await OpenChanged.InvokeAsync(open);
         }
     }
 

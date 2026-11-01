@@ -1,0 +1,12 @@
+@* Marks the report ready and draws only itself, as a service finishing a load would. *@
+<TbButton OnClick="() => Report.Ready = true">Finish loading</TbButton>
+
+@code {
+    [Parameter, EditorRequired]
+    public State Report { get; set; } = default!;
+
+    public sealed class State
+    {
+        public bool Ready { get; set; }
+    }
+}

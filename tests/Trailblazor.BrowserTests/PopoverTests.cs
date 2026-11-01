@@ -187,4 +187,22 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().Popover("Ada Lovelace").CloseAsync();
         await Expect(panel).ToBeHiddenAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldOpenNeitherOnAClickNorOnHover_WhenDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/popover-disabled");
+        var help = Trigger(page, "Help");
+        var account = page.GetByRole(AriaRole.Button, new() { Name = "Account" });
+        await Expect(help).ToHaveAttributeAsync("data-ready", "");
+
+        await help.HoverAsync(new() { Force = true });
+        await page.WaitForTimeoutAsync(600);
+        await help.ClickAsync(new() { Force = true });
+        await account.ClickAsync(new() { Force = true });
+
+        await Expect(help).ToBeDisabledAsync();
+        await Expect(account).ToBeDisabledAsync();
+        await Expect(page.Locator("[data-part=panel]:popover-open")).ToHaveCountAsync(0);
+    }
 }

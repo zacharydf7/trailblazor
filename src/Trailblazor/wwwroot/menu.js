@@ -75,9 +75,9 @@ export function createMenu(root, menu, options, events) {
 
         const open = event.newState === 'open';
         opener(list).setAttribute('aria-expanded', String(open));
-        // A labeled menu counts its opens, however they came; its submenus aren't counted apart.
-        if (open && list === menu) {
-            events?.invokeMethodAsync('OnOpened');
+        // The server hears the menu itself open and close, however it happened; its submenus aren't reported apart.
+        if (list === menu) {
+            events?.invokeMethodAsync('OnToggle', open);
         }
 
         if (open) {
@@ -180,8 +180,8 @@ export function createMenu(root, menu, options, events) {
             return;
         }
 
-        // An item that opens a submenu toggles it through popovertarget instead.
-        if (item && item.getAttribute('aria-disabled') !== 'true' && !submenu) {
+        // An item that opens a submenu toggles it through popovertarget instead; a KeepOpen item leaves it open.
+        if (item && item.getAttribute('aria-disabled') !== 'true' && !submenu && !item.hasAttribute('data-keep-open')) {
             menu.hidePopover();
         }
     };
@@ -255,6 +255,11 @@ export function createMenu(root, menu, options, events) {
     trigger.addEventListener('keydown', onTriggerKeyDown);
 
     return {
+        setOpen(open) {
+            if (open !== menu.matches(':popover-open')) {
+                menu.togglePopover(open);
+            }
+        },
         dispose() {
             // Closing the menu closes any submenu open inside it.
             if (menu.matches(':popover-open')) {

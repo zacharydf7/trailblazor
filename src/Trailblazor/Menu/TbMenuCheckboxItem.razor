@@ -3,6 +3,7 @@
 
 <button @attributes="AdditionalAttributes" type="button" role="menuitemcheckbox" tabindex="-1" style="@Style"
         aria-checked="@(Checked ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
+        data-keep-open="@(KeepOpen ? "" : null)"
         class="@ClassNames.Join("tb-menu__item", Class)" @onclick="ToggleAsync">
     <span data-part="indicator" class="tb-menu__indicator">
         @if (Checked)
@@ -22,11 +23,17 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Keeps the menu open when the item is chosen, by a click, Enter or Space, so several can be set in a
+    /// row, as in a filter menu. Escape, Tab or a click outside closes it.</summary>
+    [Parameter]
+    public bool KeepOpen { get; set; }
+
     /// <summary>Whether the item is checked. Bind it with <c>@bind-Checked</c>.</summary>
     [Parameter]
     public bool Checked { get; set; }
 
-    /// <summary>Raised with the new state when the item is chosen; the menu then closes.</summary>
+    /// <summary>Raised with the new state when the item is chosen; the menu then closes, unless the item has
+    /// <see cref="KeepOpen"/>.</summary>
     [Parameter]
     public EventCallback<bool> CheckedChanged { get; set; }
 

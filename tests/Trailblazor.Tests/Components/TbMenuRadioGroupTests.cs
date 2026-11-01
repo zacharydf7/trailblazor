@@ -66,6 +66,19 @@ public class TbMenuRadioGroupTests : BunitContext
         Assert.Equal(3, stops);
     }
 
+    [Fact]
+    public void Render_ShouldMarkOnlyTheKeepOpenItemToKeepTheMenuOpen_WhenOneItemHasKeepOpen()
+    {
+        var cut = Render<TbMenuRadioGroup<string>>(parameters => parameters.Add(group => group.Label, "Units")
+            .AddChildContent<TbMenuRadioItem<string>>(item => item.Add(radio => radio.Value, "Miles")
+                .Add(radio => radio.KeepOpen, true).AddChildContent("Miles"))
+            .AddChildContent<TbMenuRadioItem<string>>(item => item.Add(radio => radio.Value, "Kilometers")
+                .AddChildContent("Kilometers")));
+
+        Assert.Equal([true, false],
+            cut.FindAll("[role=menuitemradio]").Select(item => item.HasAttribute("data-keep-open")));
+    }
+
     private IRenderedComponent<TbMenuRadioGroup<string>> RenderUnits(bool kilometersDisabled = false) =>
         Render<TbMenuRadioGroup<string>>(parameters => parameters.Add(group => group.Label, "Units")
             .Add(group => group.Value, _units).Add(group => group.ValueChanged, (string? value) => _units = value)

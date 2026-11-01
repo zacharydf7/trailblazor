@@ -1,6 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
 namespace Trailblazor.Tests.Components;
@@ -236,6 +237,74 @@ public class TbMenuTests : BunitContext
             }));
 
         Assert.True(cut.Find("[data-part=trigger]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public async Task Toggle_ShouldDrawTheItemsAgain_WhenAMenuWithNoBindingOpens()
+    {
+        var label = "Export";
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbMenuItem>(0);
+                builder.AddAttribute(1, nameof(TbMenuItem.ChildContent),
+                    (RenderFragment)(item => item.AddContent(0, label)));
+                builder.CloseComponent();
+            })));
+        var events = ((DotNetObjectReference<MenuEvents>)JSInterop.Invocations["createMenu"].Single()
+            .Arguments[3]!).Value;
+
+        label = "Export the report";
+        await cut.InvokeAsync(() => events.OnToggle(true));
+
+        Assert.Equal("Export the report", cut.Find("[role=menuitem]").TextContent.Trim());
+        Assert.True(cut.Find("[role=menu]").HasAttribute("data-open"));
+    }
+
+    [Fact]
+    public async Task Toggle_ShouldReportEachOpenAndClose_WhenOpenIsBound()
+    {
+        var reported = new List<bool>();
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.OpenChanged, (bool open) => reported.Add(open))
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Export")));
+        var events = ((DotNetObjectReference<MenuEvents>)JSInterop.Invocations["createMenu"].Single()
+            .Arguments[3]!).Value;
+
+        await cut.InvokeAsync(() => events.OnToggle(true));
+        await cut.InvokeAsync(() => events.OnToggle(false));
+
+        Assert.Equal([true, false], reported);
+    }
+
+    [Fact]
+    public async Task Open_ShouldLeaveTheMenuAsTheUserLeftIt_WhenTheParentPassesTheSameValueAgain()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/menu.js").SetupModule("createMenu", _ => true);
+        handle.SetupVoid("setOpen", _ => true);
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Open, true).AddChildContent<TbMenuItem>(item => item.AddChildContent("Export")));
+        var events = ((DotNetObjectReference<MenuEvents>)JSInterop.Invocations["createMenu"].Single()
+            .Arguments[3]!).Value;
+
+        await cut.InvokeAsync(() => events.OnToggle(false));
+        cut.Render(parameters => parameters.Add(menu => menu.Open, true));
+
+        Assert.Equal([true], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
+        Assert.False(cut.Find("[role=menu]").HasAttribute("data-open"));
+    }
+
+    [Fact]
+    public void Open_ShouldOpenTheMenu_WhenTheParentSetsIt()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/menu.js").SetupModule("createMenu", _ => true);
+        handle.SetupVoid("setOpen", _ => true);
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Export")));
+
+        cut.Render(parameters => parameters.Add(menu => menu.Open, true));
+
+        Assert.Equal([true], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
     }
 
     [Fact]

@@ -686,4 +686,75 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static ILocator Item(IPage page, string name) =>
         page.GetByRole(AriaRole.Menuitem, new() { Name = name });
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldStayOpen_WhenAKeepOpenItemIsChosenByClickSpaceOrEnter(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Filters" });
+        var openNow = page.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Open now" });
+        var dogs = page.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Dogs allowed" });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filters" }).ClickAsync();
+
+        await openNow.ClickAsync();
+        await Expect(openNow).ToBeCheckedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(dogs).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync(" ");
+        await Expect(dogs).ToBeCheckedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(dogs).Not.ToBeCheckedAsync();
+        await Expect(menu).ToBeVisibleAsync();
+        await Expect(page.GetByTestId("filters")).ToHaveTextAsync("open now by distance");
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(menu).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldWaitForAKeepOpenItemToTurnOver_WhenItIsChosen(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/examples/menu");
+
+        await page.Tb().Menu("Filters").ChooseAsync("Dogs allowed");
+        await page.Tb().Menu("Filters").ChooseAsync("Open now");
+        await page.Tb().Menu("Filters").ChooseAsync("Dogs allowed");
+        await page.Tb().Menu("Filters").ChooseAsync("Rating");
+        await page.Tb().Menu("Filters").ChooseAsync("Rating");
+
+        await Expect(page.GetByTestId("filters")).ToHaveTextAsync("open now by rating");
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Filters" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldOpenFromCodeAndShowItemsAsTheyAreNow_WhenOpened(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-open");
+        var tools = page.GetByRole(AriaRole.Menu, new() { Name = "Tools" });
+        var report = page.GetByRole(AriaRole.Button, new() { Name = "Report" });
+        await Expect(report).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the tools" }).ClickAsync();
+        await Expect(tools).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(tools).ToBeHiddenAsync();
+        await Expect(page.GetByTestId("open")).ToHaveTextAsync("closed");
+        // A first open leaves data-open behind until the server hears the close, which the helper waits out.
+        await report.ClickAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Finish loading" }).ClickAsync();
+
+        // The helper reads Export's state only once the menu has drawn it again, so it isn't refused as disabled.
+        await page.Tb().Menu("Report").ChooseAsync("Export");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFinish_WhenTheChosenItemRemovesItsMenu(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/menu-open");
+
+        await page.Tb().Menu("Draft").ChooseAsync("Discard");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Draft" })).ToHaveCountAsync(0);
+    }
 }

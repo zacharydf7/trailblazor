@@ -1,0 +1,26 @@
+@page "/menu-open"
+
+@* The page opens one menu from code. A sibling finishes loading the report without drawing the page again, and the
+   other menu, which has no binding to draw the page either, shows it once it opens. *@
+<TbButton OnClick="() => _open = true">Open the tools</TbButton>
+<TbMenu Label="Tools" @bind-Open="_open">
+    <TbMenuItem>Measure</TbMenuItem>
+</TbMenu>
+<output data-testid="open">@(_open ? "open" : "closed")</output>
+<TbMenu Label="Report">
+    <TbMenuItem Disabled="!_report.Ready">Export</TbMenuItem>
+</TbMenu>
+<ReportLoader Report="_report" />
+@* Discarding the draft removes its menu, as deleting a row removes the row's menu. *@
+@if (!_discarded)
+{
+    <TbMenu Label="Draft">
+        <TbMenuItem OnClick="() => _discarded = true">Discard</TbMenuItem>
+    </TbMenu>
+}
+
+@code {
+    private readonly ReportLoader.State _report = new();
+    private bool _open;
+    private bool _discarded;
+}

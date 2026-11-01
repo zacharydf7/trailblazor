@@ -65,6 +65,37 @@ public class TbPopoverTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDisableTheTrigger_WhenThePopoverIsDisabled()
+    {
+        var builtIn = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Help")
+            .Add(popover => popover.Disabled, true));
+        var custom = Render<TbPopover>(parameters => parameters.Add(popover => popover.Disabled, true)
+            .Add(popover => popover.Trigger, (RenderFragment<PopoverTrigger>)(trigger => builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddMultipleAttributes(1, trigger.Attributes);
+                builder.CloseElement();
+            })));
+
+        Assert.True(builtIn.Find("[data-part=trigger]").HasAttribute("disabled"));
+        Assert.True(custom.Find("button").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Render_ShouldDisableATbButtonTrigger_WhenItTakesOnlyTheTriggerAttributes()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Disabled, true)
+            .Add(popover => popover.Trigger, (RenderFragment<PopoverTrigger>)(trigger => builder =>
+            {
+                builder.OpenComponent<TbButton>(0);
+                builder.AddMultipleAttributes(1, trigger.Attributes);
+                builder.CloseComponent();
+            })));
+
+        Assert.True(cut.Find("[data-part=trigger]").HasAttribute("disabled"));
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenThereIsNoLabelOrTrigger()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbPopover>());

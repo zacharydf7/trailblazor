@@ -43,7 +43,18 @@
             <TbMenuItem OnClick="@(() => _last = "Sign out")">Sign out</TbMenuItem>
         </ChildContent>
     </TbMenu>
+    @* Filters stay open as they are ticked, so several can be set in a row. *@
+    <TbMenu Label="Filters">
+        <TbMenuCheckboxItem @bind-Checked="_openNow" KeepOpen>Open now</TbMenuCheckboxItem>
+        <TbMenuCheckboxItem @bind-Checked="_dogs" KeepOpen>Dogs allowed</TbMenuCheckboxItem>
+        <TbMenuSeparator />
+        <TbMenuRadioGroup Label="Sort by" @bind-Value="_sort">
+            <TbMenuRadioItem Value="@("distance")" KeepOpen>Distance</TbMenuRadioItem>
+            <TbMenuRadioItem Value="@("rating")" KeepOpen>Rating</TbMenuRadioItem>
+        </TbMenuRadioGroup>
+    </TbMenu>
     <output data-testid="view">@_units@(_showMap ? ", map" : "")@(_showElevation ? ", elevation" : "")</output>
+    <output data-testid="filters">@(_openNow ? "open now " : "")@(_dogs ? "dogs " : "")by @_sort</output>
 </TbStack>
 
 @code {
@@ -51,4 +62,7 @@
     private bool _showMap = true;
     private bool _showElevation;
     private string? _units = "Miles";
+    private bool _openNow;
+    private bool _dogs;
+    private string? _sort = "distance";
 }
