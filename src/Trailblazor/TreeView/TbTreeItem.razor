@@ -5,8 +5,12 @@
 
 @if (RendererInfo.IsInteractive)
 {
-    @* Hidden: the tree shows the rows, and this markup only gives the items' order. *@
-    <span data-tree-item="@_id"><CascadingValue Value="Inner" IsFixed="true">@ChildContent</CascadingValue></span>
+    @Tree!.RowOf(this)
+    @* The rows inside it, and anything else written there, shown while it is open. *@
+    <div role="@(ChildContent is null ? null : "group")" data-part="group" data-tree-item="@_id"
+         class="tb-tree__group" hidden="@(!Tree.IsOpen(this))">
+        <CascadingValue Value="Inner" IsFixed="true">@ChildContent</CascadingValue>
+    </div>
 }
 else
 {
@@ -53,12 +57,17 @@ else
     [Parameter]
     public RenderFragment? TextContent { get; set; }
 
-    /// <summary>The <see cref="TbTreeItem{TItem}"/>s inside this one.</summary>
+    /// <summary>The <see cref="TbTreeItem{TItem}"/>s inside this one, and any other content, shown where it is written
+    /// while this row is open.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter]
     private TreeScope<TItem>? Scope { get; set; }
+
+    // Changes each time the tree renders, so this item draws its row again.
+    [CascadingParameter(Name = TbTreeView<TItem, object>.TreeVersion)]
+    private int TreeVersion { get; set; }
 
     private ITreeItemHost<TItem>? Tree => Scope?.Tree;
 

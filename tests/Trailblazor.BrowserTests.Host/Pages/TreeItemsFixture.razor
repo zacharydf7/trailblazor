@@ -11,6 +11,8 @@
         {
             <TbTreeItem Value="@("notes")" Text="Notes" />
         }
+        @* Content between rows renders where it is written. *@
+        <div data-testid="between">Shared with you</div>
         <TbTreeItem Value="@("src")" Text="Source">
             <TextContent><strong>Source</strong> code</TextContent>
         </TbTreeItem>

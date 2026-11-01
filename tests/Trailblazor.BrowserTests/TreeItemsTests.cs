@@ -33,6 +33,13 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("checked")).ToHaveTextAsync("api, docs, guide");
         await Expect(Row(page, "Source").Locator("strong")).ToHaveTextAsync("Source");
+        // The arrows pass over what is written between the rows.
+        await Row(page, "Docs").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Row(page, "Docs")).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Row(page, "Source")).ToBeFocusedAsync();
+        await Expect(Tree(page).GetByTestId("between")).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

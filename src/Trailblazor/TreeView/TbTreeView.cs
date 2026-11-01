@@ -67,6 +67,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private object? _flattenedFor;
     private Func<TItem, bool>? _flattenedFilter;
     private TreeScope<TItem>? _scope;
+    private int _version;
 
     /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item. The rows are built again when this
     /// is a new collection; call <see cref="RefreshAsync"/> after changing it, or the children it holds, in place.
@@ -74,7 +75,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public IEnumerable<TItem> Items { get; set; } = [];
 
-    /// <summary>The rows as nested <see cref="TbTreeItem{TItem}"/>s, in place of <see cref="Items"/>.</summary>
+    /// <summary>The rows as nested <see cref="TbTreeItem{TItem}"/>s, in place of <see cref="Items"/>. Other content
+    /// written among them shows where it is written.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -236,7 +238,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     /// <summary>Renders only the rows in view, and a few either side, so a tree of tens of thousands of rows stays
     /// quick. Every row is then <see cref="ItemSize"/> tall. Give the tree a height to scroll in, or let the page
-    /// scroll it.</summary>
+    /// scroll it. It needs <see cref="Items"/>, since <see cref="TbTreeItem{TItem}"/>s draw their rows where they are
+    /// written.</summary>
     [Parameter]
     public bool Virtualize { get; set; }
 
@@ -303,6 +306,12 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 $"{nameof(ParentKeySelector)} or a {nameof(ChildrenSelector)} and {nameof(LoadChildren)}, not both.");
         }
 
+        if (ChildContent is not null && Virtualize)
+        {
+            throw new InvalidOperationException($"{nameof(TbTreeView<TItem, TKey>)} virtualizes only {nameof(Items)}, " +
+                $"since {nameof(TbTreeItem<TItem>)}s draw their rows where they are written.");
+        }
+
         if (KeySelector is null && !typeof(TKey).IsAssignableFrom(typeof(TItem)))
         {
             throw new InvalidOperationException($"{nameof(TbTreeView<TItem, TKey>)} needs a {nameof(KeySelector)} " +
@@ -360,6 +369,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     }
 
     private TreeScope<TItem> Scope => _scope ??= new(this, null);
+
+    // The name of the cascading render count that makes declared items draw their rows again.
+    internal const string TreeVersion = "TbTreeVersion";
 
     // Set for a tree inside another tree's row, whose clicks mustn't also select that row.
     [CascadingParameter]
@@ -1178,6 +1190,14 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     object ITreeItemHost<TItem>.KeyOf(TItem item) => KeyOf(item);
 
     void ITreeItemHost<TItem>.ItemChanged() => ItemChanged();
+
+    // A declared item's row, or nothing while its row is closed away, filtered out or not yet built.
+    RenderFragment? ITreeItemHost<TItem>.RowOf(TbTreeItem<TItem> item) => _rowIndex.TryGetValue(item.Key, out var index)
+        ? builder => RenderRow(builder, _rows[index], index, null, FocusId())
+        : null;
+
+    bool ITreeItemHost<TItem>.IsOpen(TbTreeItem<TItem> item) =>
+        _rowIndex.TryGetValue(item.Key, out var index) && IsOpen(_rows[index].Node);
 
     // Shift selects from the last row chosen without it; Ctrl or Cmd adds or removes one row.
     private Task SelectAsync(TreeNode<TItem> node, bool shift, bool toggle)

@@ -4630,6 +4630,15 @@
         }
     }
 
+    .tb-tree__group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tb-tree__group[hidden] {
+        display: none;
+    }
+
     .tb-tree__item {
         position: relative;
         display: flex;
@@ -4834,8 +4843,9 @@
         }
     }
 
-    /* While a drag runs, the slots let the pointer through to the rows. */
-    .tb-tree[data-dragging] > .tb-tree__item > .tb-tree__insert {
+    /* While a drag runs, the slots let the pointer through to the rows, in a tree inside a row too, which the drag
+       passes over anyway. */
+    .tb-tree[data-dragging] .tb-tree__insert {
         pointer-events: none;
     }
 

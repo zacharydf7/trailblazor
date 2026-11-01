@@ -112,9 +112,13 @@ public class TreeItemTests : BunitContext
 
         cut.Render(parameters => parameters.Add(tree => tree.ChildContent, Fragment([.. Docs.Reverse()], null)));
         var order = cut.FindAll("[data-tree-item]").Select(item => item.GetAttribute("data-tree-item")!).ToArray();
+        // Each item draws its row in place, so the page already shows the new order; the tree learns it from the
+        // browser, and the first row in it takes the tab stop.
+        Assert.Equal("docs", cut.Find("[data-part=item][tabindex='0']").GetAttribute("data-key"));
         await cut.InvokeAsync(() => Events().OnItemOrder(order));
 
         Assert.Equal(["src", "docs"], cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-key")));
+        Assert.Equal("src", cut.Find("[data-part=item][tabindex='0']").GetAttribute("data-key"));
     }
 
     [Fact]
@@ -360,6 +364,46 @@ public class TreeItemTests : BunitContext
 
         Assert.Equal([["intro"]], inner);
         Assert.Empty(_selectedChanges);
+    }
+
+    [Fact]
+    public void TreeItem_ShouldDrawItsRowAndWhatIsWrittenInsideItInPlace_WhenTheTreeIsInteractive()
+    {
+        var showNotes = false;
+        RenderFragment rows = builder =>
+        {
+            AddRow(builder, new Row("docs", new Row("guide")), null);
+            builder.AddMarkupContent(1, "<img alt=\"Divider\" data-testid=\"between\" />");
+            if (showNotes)
+            {
+                AddRow(builder, new Row("notes"), null);
+            }
+
+            AddRow(builder, new Row("src"), null);
+        };
+        var cut = RenderFiles([], parameters => parameters.Add(tree => tree.ChildContent, rows));
+        var group = cut.Find("[data-key=docs] + [data-part=group]");
+        Assert.True(group.HasAttribute("hidden"));
+        Assert.Equal("group", group.GetAttribute("role"));
+
+        showNotes = true;
+        cut.Render(parameters => parameters.Add(tree => tree.ChildContent, rows));
+        cut.Find("[data-key=docs] [data-part=toggle]").Click();
+
+        Assert.Equal(["docs", "guide", "notes", "src"],
+            cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-key")));
+        Assert.Equal("between", cut.Find("[data-key=docs] + [data-part=group] + img").GetAttribute("data-testid"));
+        Assert.False(cut.Find("[data-key=docs] + [data-part=group]").HasAttribute("hidden"));
+        Assert.Null(cut.Find("[data-key=guide]").GetAttribute("aria-setsize"));
+    }
+
+    [Fact]
+    public void Tree_ShouldThrow_WhenTreeItemsAreVirtualized()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => RenderFiles(Docs,
+            parameters => parameters.Add(tree => tree.Virtualize, true)));
+
+        Assert.Contains("virtualizes only Items", exception.Message);
     }
 
     [Fact]

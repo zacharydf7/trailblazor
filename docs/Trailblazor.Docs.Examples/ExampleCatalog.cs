@@ -1385,8 +1385,10 @@ public static class ExampleCatalog
                     + "offers to try again. The arrows reach both rows; Enter on the failed one tries again, and focus "
                     + "moves on to the children once they arrive.",
                 "In a right-to-left layout, Right and Left swap, as the chevrons do.",
-                "Rows written as nested `TbTreeItem`s work the same. Before the page is interactive, each renders a "
-                    + "plain row, open to `InitialExpandDepth`.",
+                "Rows written as nested `TbTreeItem`s work the same, from any component inside the tree. Each draws "
+                    + "its row where it is written, followed by a `group` holding what is written inside it, so other "
+                    + "content between rows shows in place and hides with its parent. Before the page is interactive, "
+                    + "each renders a plain row, open to `InitialExpandDepth`. `Virtualize` needs `Items`.",
                 "A `TbTreeItem` with no `Value`, such as the Trips heading, opens, closes and is found by typing, but "
                     + "can't be selected or activated, so it has no `aria-selected`. With cascading checks it checks "
                     + "the rows inside it, and it is never in the bound keys, so texts that repeat need no keys.",
