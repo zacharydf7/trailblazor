@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Components.Forms;
 namespace Trailblazor;
 
 /// <summary>What every Trailblazor form field shares: <c>@bind-Value</c>, a label, helper text and validation
-/// messages, inside or outside an <see cref="EditForm"/>.</summary>
+/// messages, inside or outside an <see cref="EditForm"/>. An <c>id</c> given to a field names its control, such as the
+/// input of a text field or the box of a checkbox, as on a native input; its other attributes go on the field's root.
+/// A field with two controls, such as a range, and a checkbox or radio group keep the <c>id</c> on their root.
+/// </summary>
 public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField, IDisposable
 {
     private readonly List<string> _messages = [];
@@ -103,7 +106,22 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     private protected string FieldId { get; } = $"tb-field-{Guid.NewGuid():N}";
 
-    private protected string InputId => $"{FieldId}-input";
+    // An id given to the field names its control, so the label, styles, scripts and tests using it reach the control.
+    private protected string InputId => IdOfControl ?? $"{FieldId}-input";
+
+    // A field with two controls, such as a range, keeps an id on its root. Groups do too, since their roots don't use
+    // RootAttributes.
+    private protected virtual bool IdNamesControl => true;
+
+    // An id bound to null or empty, as when it is set only sometimes, leaves the field its own.
+    private string? IdOfControl => IdNamesControl
+        && Convert.ToString(AdditionalAttributes?.GetValueOrDefault("id"), CultureInfo.InvariantCulture) is
+            { Length: > 0 } id ? id : null;
+
+    // The root's attributes, less an id that names the control. Attribute names ignore case, as in HTML.
+    private protected IReadOnlyDictionary<string, object>? RootAttributes => IdOfControl is null ? AdditionalAttributes
+        : AdditionalAttributes!
+            .Where(attribute => !string.Equals(attribute.Key, "id", StringComparison.OrdinalIgnoreCase)).ToDictionary();
 
     private protected string LabelId => $"{FieldId}-label";
 

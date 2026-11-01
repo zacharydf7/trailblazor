@@ -74,8 +74,14 @@ public class ComponentContractTests : BunitContext
         var root = cut.Nodes.OfType<IElement>().First();
         Assert.Contains("contract-class", root.ClassList);
         Assert.Contains("outline: 1px solid red", root.GetAttribute("style"));
-        Assert.Equal("contract-id", root.Id);
         Assert.Equal("yes", root.GetAttribute("data-contract"));
+        // A field's id names its control, apart from one with two controls or a group, which keeps it on its root.
+        var named = Assert.Single(cut.FindAll("#contract-id"));
+        if (named != root)
+        {
+            Assert.True(typeof(IFormField).IsAssignableFrom(component), $"{component.Name} moved its id off its root.");
+            Assert.Equal("input", named.GetAttribute("data-part"));
+        }
     }
 
     public static TheoryData<Type> Fields =>

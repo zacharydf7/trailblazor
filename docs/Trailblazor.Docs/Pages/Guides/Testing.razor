@@ -85,6 +85,13 @@
     <code>[data-part=polite]</code> or <code>[data-part=assertive]</code>; several can be there at once, so find
     the one with your text.
 </TbText>
+<TbText>
+    An <code>id</code> you give a field names its control, as on a native input: <code>&lt;TbTextField
+    id="email" /&gt;</code> puts <code>id="email"</code> on the input, and its label points to it, so
+    <code>#email</code> reaches what the user types into. A checkbox or switch gives it to its box and a select to its
+    combobox. A field with two controls, a date range picker or range slider, and a checkbox or radio group keep the id
+    on their root.
+</TbText>
 <CodeBlock Label="Finding components" Code="@Locators" />
 
 @code {

@@ -88,6 +88,9 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     // The server's clock can be in another time zone, so the browser's date wins once its script has attached.
     private DateOnly Today => _browserToday ?? DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
 
+    // Its two boxes are named from the field's own ids, so an id it is given stays on its root.
+    private protected override bool IdNamesControl => false;
+
     private string StartId => $"{InputId}-start";
 
     private string EndId => $"{InputId}-end";
