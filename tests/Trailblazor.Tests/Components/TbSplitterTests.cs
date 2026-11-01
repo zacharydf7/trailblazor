@@ -10,7 +10,6 @@ public class TbSplitterTests : BunitContext
     public TbSplitterTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

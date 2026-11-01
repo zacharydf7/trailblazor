@@ -1,6 +1,9 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Bunit;
+using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -16,8 +19,11 @@ public static class TrailblazorBunitExtensions
     /// to clicks in bUnit with no JSInterop setup. Calls into the modules return defaults, which Trailblazor's
     /// components take to mean the browser part isn't there. <see cref="IBrowserService"/> is a
     /// <see cref="FakeBrowserService"/>, to check and steer from the test. A module or service set up by the test
-    /// itself still wins. Call it before rendering or <c>SetRendererInfo</c>, since bUnit takes no new services once
-    /// one has been resolved.</summary>
+    /// itself still wins. Components render as on an interactive page: the renderer becomes an interactive Server one
+    /// when the first component is created, unless the test has called <c>SetRendererInfo</c> itself, as it does to
+    /// test what a static page shows; that call starts the services, so it comes after the test's own. The default is a
+    /// component factory, so clearing <c>ComponentFactories</c> removes it. Call this before rendering, since bUnit
+    /// takes no new services once one has been resolved.</summary>
     public static BunitContext AddTrailblazor(this BunitContext context, Action<TrailblazorOptions>? configure = null)
     {
         context.Services.TryAddSingleton<FakeBrowserService>();
@@ -29,6 +35,7 @@ public static class TrailblazorBunitExtensions
                     || path.StartsWith("./_content/Trailblazor.Primitives/", StringComparison.Ordinal)),
             isCatchAllHandler: true);
         modules.Mode = JSRuntimeMode.Loose;
+        context.ComponentFactories.Add(new InteractiveByDefault(context));
         return context;
     }
 
@@ -36,8 +43,8 @@ public static class TrailblazorBunitExtensions
     /// <typeparamref name="TDialog"/> through <see cref="IDialogService"/>, and returns both. Find what the dialog
     /// shows through its <see cref="TestDialog{TDialog, TResult}.Root"/> or
     /// <see cref="TestDialog{TDialog, TResult}.Content"/>, and close it or await its result through its
-    /// <see cref="TestDialog{TDialog, TResult}.Reference"/>. Dialogs open only in interactive sessions, so it sets an
-    /// interactive Server renderer. Call <see cref="AddTrailblazor"/> first. Later calls in the same test use the same
+    /// <see cref="TestDialog{TDialog, TResult}.Reference"/>. Call <see cref="AddTrailblazor"/> first, and leave the
+    /// renderer interactive, since dialogs open only in interactive sessions. Later calls in the same test use the same
     /// <see cref="TbRoot"/>; don't render another one yourself, or every dialog shows in both.</summary>
     public static async Task<TestDialog<TDialog, TResult>> ShowDialogAsync<TDialog, TResult>(this BunitContext context,
         string title, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
@@ -45,7 +52,6 @@ public static class TrailblazorBunitExtensions
     {
         if (!Roots.TryGetValue(context, out var root) || root.IsDisposed)
         {
-            context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
             root = context.Render<TbRoot>();
             Roots.AddOrUpdate(context, root);
         }
@@ -53,5 +59,36 @@ public static class TrailblazorBunitExtensions
         var dialogs = context.Services.GetRequiredService<IDialogService>();
         var reference = await root.InvokeAsync(() => dialogs.Show<TDialog, TResult>(title, parameters, options));
         return new(root, reference);
+    }
+
+    // bUnit consults its factories as it creates each component, after the services are fixed; this one creates none.
+    private sealed class InteractiveByDefault(BunitContext context) : IComponentFactory
+    {
+        // A renderer exposes its RendererInfo to subclasses only, so whether the test set one is read this way.
+        private static readonly PropertyInfo RendererInfoProperty =
+            typeof(Renderer).GetProperty(nameof(RendererInfo), BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+        private bool _checked;
+
+        public bool CanCreate(Type componentType)
+        {
+            if (!_checked)
+            {
+                _checked = true;
+                try
+                {
+                    RendererInfoProperty.GetValue(context.Renderer);
+                }
+                catch (TargetInvocationException exception)
+                    when (exception.InnerException is MissingRendererInfoException)
+                {
+                    context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+                }
+            }
+
+            return false;
+        }
+
+        public IComponent Create(Type componentType) => throw new NotSupportedException();
     }
 }

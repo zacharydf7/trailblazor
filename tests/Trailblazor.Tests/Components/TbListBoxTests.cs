@@ -11,11 +11,7 @@ public class TbListBoxTests : BunitContext
 
     private IReadOnlyList<string> Gear { get; set; } = [];
 
-    public TbListBoxTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public TbListBoxTests() => this.AddTrailblazor();
 
     [Fact]
     public void Render_ShouldBeAListboxNamedByItsLabel_WhenInteractive()

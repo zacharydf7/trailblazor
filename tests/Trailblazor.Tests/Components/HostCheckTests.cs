@@ -19,7 +19,6 @@ public class HostCheckTests : BunitContext
         Services.AddSingleton<ILogger<DialogService>>(new FakeLogger<DialogService>(_logs));
         Services.AddSingleton<ILogger<Announcer>>(new FakeLogger<Announcer>(_logs));
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     private IToastService Toasts => Services.GetRequiredService<IToastService>();

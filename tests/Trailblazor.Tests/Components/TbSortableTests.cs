@@ -15,7 +15,6 @@ public class TbSortableTests : BunitContext
     public TbSortableTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

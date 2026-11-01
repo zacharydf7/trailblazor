@@ -17,7 +17,6 @@ public class TbTreeViewTests : BunitContext
     public TbTreeViewTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     private sealed record Place(int Id, string Name, int? ParentId = null, IReadOnlyList<Place>? Children = null)

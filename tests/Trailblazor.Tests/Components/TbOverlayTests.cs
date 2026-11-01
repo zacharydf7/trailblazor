@@ -8,7 +8,6 @@ public class TbOverlayTests : BunitContext
     public TbOverlayTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

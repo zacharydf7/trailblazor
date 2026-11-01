@@ -21,7 +21,6 @@ public class TbFormTests : BunitContext
         Services.AddSingleton(new TakenNames("Robin"));
         // Only Expedition is marked for it, so Trip is still checked the way an app without it would be.
         Services.AddValidation();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

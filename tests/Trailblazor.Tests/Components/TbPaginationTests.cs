@@ -9,7 +9,6 @@ public class TbPaginationTests : BunitContext
     public TbPaginationTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

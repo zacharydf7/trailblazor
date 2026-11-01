@@ -16,7 +16,6 @@ public class TbAutocompleteTests : BunitContext
     {
         Services.AddSingleton<TimeProvider>(_time);
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

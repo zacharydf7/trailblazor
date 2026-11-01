@@ -10,11 +10,7 @@ public class SelectExtrasTests : BunitContext
 {
     private static readonly Trail[] Trails = [new(1, "Pine Hollow"), new(2, "Eagle Ridge"), new(3, "Cedar Flats")];
 
-    public SelectExtrasTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public SelectExtrasTests() => this.AddTrailblazor();
 
     // Reference equality, so a trail loaded again matches its option only through a comparer.
     private sealed class Trail(int id, string name)

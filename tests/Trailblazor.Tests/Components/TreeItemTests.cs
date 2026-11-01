@@ -12,11 +12,7 @@ public class TreeItemTests : BunitContext
     private readonly List<IReadOnlyCollection<string>> _selectedChanges = [];
     private readonly List<string> _activated = [];
 
-    public TreeItemTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public TreeItemTests() => this.AddTrailblazor();
 
     private sealed record Row(string Value, Row[] Children, string? Text = null, bool Disabled = false,
         string? Class = null)

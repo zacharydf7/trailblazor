@@ -9,11 +9,7 @@ namespace Trailblazor.Tests.Components;
 
 public class TreeVirtualizeTests : BunitContext
 {
-    public TreeVirtualizeTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public TreeVirtualizeTests() => this.AddTrailblazor();
 
     private sealed record Place(int Id, string Name, IReadOnlyList<Place>? Children = null);
 

@@ -17,7 +17,6 @@ public class TelemetryNameTests : BunitContext
     public TelemetryNameTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var meters = Services.GetRequiredService<IMeterFactory>();
         _shown = new(meters, "Trailblazor", "trailblazor.control.shown");
         _used = new(meters, "Trailblazor", "trailblazor.control.used");

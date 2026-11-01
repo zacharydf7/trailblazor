@@ -9,11 +9,7 @@ public class TbColorPickerTests : BunitContext
 {
     private readonly List<string?> _changes = [];
 
-    public TbColorPickerTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public TbColorPickerTests() => this.AddTrailblazor();
 
     private FakeBrowserService Browser => Services.GetRequiredService<FakeBrowserService>();
 

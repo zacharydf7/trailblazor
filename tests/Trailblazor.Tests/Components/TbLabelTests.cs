@@ -8,7 +8,6 @@ public class TbLabelTests : BunitContext
     public TbLabelTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

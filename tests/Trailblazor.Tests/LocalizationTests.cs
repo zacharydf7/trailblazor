@@ -22,7 +22,6 @@ public class LocalizationTests : BunitContext
             options.Strings[TbStrings.LabelInfo] = "Infos zu {0}";
             options.Strings[TbStrings.FileUploadKilobytes] = "{0} Ko";
         });
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     public static TheoryData<string> Keys => new(typeof(TbStrings).GetFields(BindingFlags.Public | BindingFlags.Static)

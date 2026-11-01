@@ -8,7 +8,6 @@ public class FieldIdTests : BunitContext
     public FieldIdTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

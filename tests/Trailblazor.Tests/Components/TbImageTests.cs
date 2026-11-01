@@ -9,7 +9,6 @@ public class TbImageTests : BunitContext
     public TbImageTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

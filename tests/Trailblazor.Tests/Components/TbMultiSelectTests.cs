@@ -10,11 +10,7 @@ public class TbMultiSelectTests : BunitContext
 {
     private IReadOnlyList<string> Toppings { get; set; } = [];
 
-    public TbMultiSelectTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public TbMultiSelectTests() => this.AddTrailblazor();
 
     [Fact]
     public void Click_ShouldAddOptionsInTheOrderChosen_WhenSeveralAreClicked()

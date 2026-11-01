@@ -162,7 +162,6 @@ public class TelemetryTests : BunitContext
     private void Start(Action<TrailblazorOptions>? configure = null)
     {
         this.AddTrailblazor(configure);
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     // Scoped to this test's meter factory, so tests running alongside it don't add to its counts.

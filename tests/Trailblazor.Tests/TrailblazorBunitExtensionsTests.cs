@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests;
@@ -15,7 +16,6 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     public async Task AddTrailblazor_ShouldLetScriptBackedComponentsRenderAndRespond_WhenNoJsInteropIsSetUp()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var cut = Render(builder =>
         {
             builder.OpenComponent<TbRoot>(0);
@@ -51,7 +51,6 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     public void AddTrailblazor_ShouldLeaveATestsOwnModuleSetupInCharge_WhenTheTestSetsOneUp()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var select = JSInterop.SetupModule("./_content/Trailblazor/select.js");
         select.SetupModule("createSelect", _ => true);
 
@@ -68,6 +67,41 @@ public class TrailblazorBunitExtensionsTests : BunitContext
 
         await Assert.ThrowsAsync<JSRuntimeUnhandledInvocationException>(() => js
             .InvokeAsync<IJSObjectReference>("import", ["./_content/TrailblazorExtras/extras.js"]).AsTask());
+    }
+
+    [Fact]
+    public void AddTrailblazor_ShouldRenderAsAnInteractivePage_WhenTheTestSetsNoRenderer()
+    {
+        this.AddTrailblazor();
+
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(component => component.ChildContent, AddSizes));
+
+        Assert.Single(cut.FindAll("[role=combobox]"));
+        Assert.Empty(cut.FindAll("select"));
+    }
+
+    [Fact]
+    public void AddTrailblazor_ShouldKeepTheTestsRenderer_WhenTheTestSetsAStaticOne()
+    {
+        this.AddTrailblazor();
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(component => component.ChildContent, AddSizes));
+
+        Assert.Single(cut.FindAll("select"));
+        Assert.Empty(cut.FindAll("[role=combobox]"));
+    }
+
+    [Fact]
+    public void AddTrailblazor_ShouldStillTakeServices_WhenTheTestAddsThemAfterward()
+    {
+        this.AddTrailblazor();
+        var time = new FakeTimeProvider();
+        Services.AddSingleton<TimeProvider>(time);
+
+        Render<TbSelect<string>>(parameters => parameters.Add(component => component.ChildContent, AddSizes));
+
+        Assert.Same(time, Services.GetRequiredService<TimeProvider>());
     }
 
     [Fact]

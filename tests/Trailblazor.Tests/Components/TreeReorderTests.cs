@@ -12,7 +12,6 @@ public class TreeReorderTests : BunitContext
     public TreeReorderTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     private sealed record Place(int Id, string Name, IReadOnlyList<Place>? Children = null)

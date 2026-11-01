@@ -241,7 +241,6 @@ public class TbTabsTests : BunitContext
         var handle = JSInterop.SetupModule("./_content/Trailblazor/tabs.js").SetupModule("attachTabs", _ => true);
         handle.Setup<bool>("reportsOrder").SetResult(true);
         handle.SetupVoid("dispose").SetVoidResult();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         RenderTabs();
 
         await DisposeComponentsAsync();
@@ -333,7 +332,6 @@ public class TbTabsTests : BunitContext
     [Fact]
     public void Render_ShouldApplyTheParentsIndex_WhenTheTabsScriptIsUnavailableAndATabRendersAfterOthers()
     {
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var cut = RenderTabs();
 
         cut.Render(parameters => parameters.Add(tabs => tabs.ActiveIndex, 1)
@@ -541,7 +539,6 @@ public class TbTabsTests : BunitContext
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/tabs.js");
         module.SetupModule("attachTabs", _ => true).Setup<bool>("reportsOrder").SetResult(true);
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         return () => (DotNetObjectReference<TabOrder>)module.Invocations["attachTabs"].Single().Arguments[1]!;
     }
 

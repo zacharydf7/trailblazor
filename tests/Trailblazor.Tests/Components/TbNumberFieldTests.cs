@@ -6,11 +6,7 @@ namespace Trailblazor.Tests.Components;
 
 public class TbNumberFieldTests : BunitContext
 {
-    public TbNumberFieldTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public TbNumberFieldTests() => this.AddTrailblazor();
 
     [Fact]
     public void Render_ShouldBeANumberInputWithItsLimits_WhenMinMaxAndStepAreSet()

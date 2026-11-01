@@ -12,7 +12,6 @@ public class TbFileUploadTests : BunitContext
     public TbFileUploadTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     private static InputFileContent Pdf(string name, int size = 10) =>

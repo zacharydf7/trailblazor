@@ -371,7 +371,6 @@
         public void Export_ShouldBeCounted_WhenClicked()
         {
             this.AddTrailblazor();
-            SetRendererInfo(new RendererInfo("Server", isInteractive: true));
             using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(),
                 "Trailblazor", "trailblazor.control.used");
             var page = Render<ReportsPage>();

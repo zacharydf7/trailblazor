@@ -17,16 +17,18 @@
     <a href="guides/browser">browser guide</a> shows it.
 </TbText>
 <TbText>
-    Then call <code>SetRendererInfo</code>, last, since it starts the services: components read it to know whether the
-    page is interactive, and bUnit throws if it is missing. Interactive mode renders what a user sees once the page is
-    interactive. Static mode renders what a statically rendered or prerendered page shows, which differs for a few
-    components, such as a select that renders a native <code>&lt;select&gt;</code>; each component's page says how.
-    Register your own services, such as a <code>FakeTimeProvider</code>, before both calls.
+    Components then render as they do once a page is interactive, with no renderer setup: the first component a test
+    renders makes bUnit's renderer an interactive one. To test what a statically rendered or prerendered page shows,
+    which differs for a few components, such as a select that renders a native <code>&lt;select&gt;</code>, call
+    <code>SetRendererInfo(new RendererInfo("Static", isInteractive: false))</code> before rendering; each
+    component's page says how it differs. Register your own services, such as a <code>FakeTimeProvider</code>,
+    first: bUnit takes none once a component renders, a service is resolved or <code>SetRendererInfo</code> is
+    called.
 </TbText>
 <CodeBlock Label="A bUnit test" Code="@Bunit" />
 <TbText>
     To test a dialog by itself, <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens it as a page would:
-    it renders a <code>TbRoot</code> to host it, sets an interactive renderer, and opens it through
+    it renders a <code>TbRoot</code> to host it and opens it through
     <code>IDialogService</code> with the title, parameters and options you give. Find what it shows through
     <code>Root</code>, its component through <code>Content</code>, and close it or await its result through
     <code>Reference</code>. A second call in the same test opens its dialog in the same <code>TbRoot</code>, so
@@ -109,11 +111,7 @@
 
         public class SettingsPageTests : BunitContext
         {
-            public SettingsPageTests()
-            {
-                this.AddTrailblazor();
-                SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-            }
+            public SettingsPageTests() => this.AddTrailblazor();
 
             [Fact]
             public void Save_ShouldShowAToast_WhenClicked()
@@ -163,7 +161,6 @@
         var time = new FakeTimeProvider();
         Services.AddSingleton<TimeProvider>(time);
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         time.Advance(TimeSpan.FromSeconds(5));
 
         // Playwright: a page with no transitions.

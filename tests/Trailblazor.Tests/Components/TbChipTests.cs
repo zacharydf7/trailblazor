@@ -9,7 +9,6 @@ public class TbChipTests : BunitContext
     public TbChipTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

@@ -30,7 +30,6 @@ public class TbThemePickerTests : BunitContext
     [Fact]
     public void Click_ShouldPressTheLoadedModeThenSetTheOnePressed_WhenInteractive()
     {
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var cut = Render<TbThemePicker>();
 
         cut.WaitForAssertion(() => Assert.Equal("true", Item(cut, "Light").GetAttribute("aria-pressed")));

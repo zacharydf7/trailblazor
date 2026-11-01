@@ -9,7 +9,6 @@ public class TbPopoverTests : BunitContext
     public TbPopoverTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

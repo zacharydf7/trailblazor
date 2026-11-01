@@ -13,7 +13,6 @@ public class TbToolbarTests : BunitContext
     public TbToolbarTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

@@ -13,7 +13,6 @@ public class TbSliderTests : BunitContext
     public TbSliderTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

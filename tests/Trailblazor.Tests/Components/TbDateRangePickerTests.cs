@@ -15,7 +15,6 @@ public class TbDateRangePickerTests : BunitContext
     {
         Services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(2026, 6, 15, 9, 0, 0, TimeSpan.Zero)));
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     private static DateRange<DateOnly> June3To10 => new(new DateOnly(2026, 6, 3), new DateOnly(2026, 6, 10));

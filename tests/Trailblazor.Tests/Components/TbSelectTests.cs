@@ -12,11 +12,7 @@ public class TbSelectTests : BunitContext
 {
     private string? Size { get; set; }
 
-    public TbSelectTests()
-    {
-        this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public TbSelectTests() => this.AddTrailblazor();
 
     [Fact]
     public void Render_ShouldBeAComboboxNamedByItsLabelThatControlsAListbox_WhenInteractive()

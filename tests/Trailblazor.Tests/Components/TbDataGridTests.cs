@@ -16,7 +16,6 @@ public class TbDataGridTests : BunitContext
     public TbDataGridTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     private sealed record Trail(int Id, string Name, double LengthKm, DateOnly LastHiked);

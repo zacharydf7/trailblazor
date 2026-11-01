@@ -19,7 +19,6 @@ public class TelemetryOutcomeTests : BunitContext
     {
         Services.AddSingleton<TimeProvider>(_time);
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         _meters = Services.GetRequiredService<IMeterFactory>();
     }
 

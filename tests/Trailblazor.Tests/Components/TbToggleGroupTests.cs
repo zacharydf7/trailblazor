@@ -15,7 +15,6 @@ public class TbToggleGroupTests : BunitContext
     public TbToggleGroupTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]

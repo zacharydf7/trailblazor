@@ -9,7 +9,6 @@ public class TbButtonGroupTests : BunitContext
     public TbButtonGroupTests()
     {
         this.AddTrailblazor();
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [Fact]
