@@ -33,6 +33,7 @@ function registerEvents(blazor) {
     const numberEventArgs = event => ({ value: event.target.value, badInput: event.target.validity.badInput });
     blazor.registerCustomEventType('tbnumberchange', { browserEventName: 'change', createEventArgs: numberEventArgs });
     blazor.registerCustomEventType('tbnumberleave', { browserEventName: 'focusout', createEventArgs: numberEventArgs });
+    blazor.registerCustomEventType('tbnumberinput', { browserEventName: 'input', createEventArgs: numberEventArgs });
 
     // A field's OnFocus and OnBlur count only focus that crosses its root, not moves between its own parts.
     const fieldFocusEventArgs = event => {

@@ -22,6 +22,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     private string? _parseError;
     private string? _unparsedText;
     private TValue? _valueAtParseError;
+    private string? _typedText;
+    private TValue? _typedValue;
     private string? _inputName;
     private string? _shownError;
     private TbForm? _form;
@@ -200,7 +202,10 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             (var ours, _) => ours,
         };
 
-    private protected string? Text => _unparsedText ?? FormatValue(Value);
+    // Typing that has updated the value stays as typed until the field commits it, unless the value has moved on.
+    private protected string? Text => _unparsedText
+        ?? (_typedText is not null && EqualityComparer<TValue>.Default.Equals(Value, _typedValue) ? _typedText
+            : FormatValue(Value));
 
     private protected bool HasParseError => _parseError is not null;
 
@@ -333,8 +338,10 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     private protected string Message(string key, params object?[] args) => string.Format(CultureInfo.CurrentCulture,
         Localizer[key], [ShownLabel ?? Localizer[TbStrings.FieldUnnamed], .. args]);
 
-    private protected async Task SetValueAsync(TValue? value)
+    // Typed text, from a field that updates as the user types, stays with the value it was typed for.
+    private protected async Task SetValueAsync(TValue? value, string? typedText = null)
     {
+        (_typedText, _typedValue) = (typedText, value);
         if (_parseError is null && EqualityComparer<TValue>.Default.Equals(value, Value))
         {
             return;
@@ -362,6 +369,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     // Text that doesn't parse leaves the value alone and stays in the input, so the user can fix it.
     private protected async Task SetTextAsync(string? text)
     {
+        _typedText = null;
         if (TryParse(text, out var value, out var error))
         {
             await SetValueAsync(value);
@@ -369,6 +377,24 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         }
 
         ShowParseError(error!, text);
+    }
+
+    // A field that updates as the user types takes text that parses; all of it stays as typed until the field commits,
+    // and an error the last commit showed stays with it.
+    private protected async Task SetTypedTextAsync(string? text, bool parse = true)
+    {
+        if (parse && TryParse(text, out var value, out _))
+        {
+            await SetValueAsync(value, text);
+        }
+        else if (_unparsedText is not null)
+        {
+            _unparsedText = text;
+        }
+        else
+        {
+            (_typedText, _typedValue) = (text, Value);
+        }
     }
 
     // The text stays in the input for the user to fix, and rendering what the browser sent doesn't write over it.

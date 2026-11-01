@@ -70,10 +70,15 @@
     [Parameter]
     public int? Decimals { get; set; }
 
-    /// <summary>Moves a typed value outside <see cref="Min"/> and <see cref="Max"/> to the nearer limit instead of
-    /// showing an error.</summary>
+    /// <summary>Moves a typed value outside <see cref="Min"/> and <see cref="Max"/>, or beyond what the value's type
+    /// can hold, to the nearer limit instead of showing an error.</summary>
     [Parameter]
     public bool ClampToRange { get; set; }
+
+    /// <summary>Updates the value as the user types, not only when they leave the field or press Enter. What they type
+    /// stays as typed until then; text that isn't a number yet, such as a lone minus sign, waits for it.</summary>
+    [Parameter]
+    public bool UpdateOnInput { get; set; }
 
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
@@ -120,6 +125,12 @@
             builder.SetUpdatesAttributeName("value");
             builder.AddAttribute(24, "onkeydown",
                 EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDownAsync));
+            if (UpdateOnInput)
+            {
+                builder.AddAttribute(30, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this,
+                    input => SetTypedTextAsync(input.Value as string)));
+                builder.SetUpdatesAttributeName("value");
+            }
         }
         else
         {
@@ -129,6 +140,13 @@
             builder.AddAttribute(26, "ontbnumberleave",
                 EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
             builder.SetUpdatesAttributeName("value");
+            if (UpdateOnInput)
+            {
+                // Text the browser can't read yet, such as "4-", waits for the change, which shows the error.
+                builder.AddAttribute(31, "ontbnumberinput", EventCallback.Factory.Create<NumberChangeEventArgs>(this,
+                    input => SetTypedTextAsync(input.Value, parse: !input.BadInput)));
+                builder.SetUpdatesAttributeName("value");
+            }
         }
 
         // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text.
@@ -237,7 +255,8 @@
 
     private protected override bool TryParse(string? text, out TValue? value, out string? error)
     {
-        if (!(Formatted ? TryConvertFormatted(text, out value) : TryConvert(text, out value)))
+        if (!(Formatted ? TryConvertFormatted(text, out value) : TryConvert(text, out value))
+            && !(ClampToRange && TryClampBeyondType(text, out value)))
         {
             error = NotANumber;
             return false;
@@ -248,9 +267,12 @@
             value = ToValue(Math.Round(exact, decimals, MidpointRounding.AwayFromZero));
         }
 
-        if (ClampToRange && TryToDecimal(value, out var unclamped))
+        // A double past decimal's range moves to the nearer of Min and Max too, when the field has one.
+        if (ClampToRange && value is not null)
         {
-            value = ToValue(Math.Clamp(unclamped, Lower, Upper));
+            value = TryToDecimal(value, out var unclamped) ? ToValue(Math.Clamp(unclamped, Lower, Upper))
+                : (Convert.ToDouble(value, CultureInfo.InvariantCulture) > 0 ? Max : Min) is { } limit ? ToValue(limit)
+                : value;
         }
 
         // Compared as doubles, which hold the range of every number type.
@@ -293,16 +315,13 @@
             return Nullable.GetUnderlyingType(typeof(TValue)) is not null;
         }
 
-        // The field's own format says whether it holds a percent, so "15" in a percent field is 15%, as "15%" is.
-        var symbol = NumberCulture.NumberFormat.PercentSymbol;
-        var percent = 1m.ToString(Format, NumberCulture).Contains(symbol, StringComparison.Ordinal);
-        if (!decimal.TryParse(text.Replace(symbol, "", StringComparison.Ordinal),
+        if (!decimal.TryParse(text.Replace(NumberCulture.NumberFormat.PercentSymbol, "", StringComparison.Ordinal),
                 NumberStyles.Currency | NumberStyles.AllowExponent, NumberCulture, out var number))
         {
             return false;
         }
 
-        number = percent ? number / 100 : number;
+        number = Percent ? number / 100 : number;
         var (lower, upper) = NumberTypes.Limits(NumberType);
         if (number < lower || number > upper || (NumberTypes.IsWhole(NumberType) && number != Math.Truncate(number)))
         {
@@ -310,6 +329,50 @@
         }
 
         value = ToValue(number);
+        return true;
+    }
+
+    // The field's own format says whether it holds a percent, so "15" in a percent field is 15%, as "15%" is.
+    private bool Percent => Formatted && 1m.ToString(Format, NumberCulture)
+        .Contains(NumberCulture.NumberFormat.PercentSymbol, StringComparison.Ordinal);
+
+    // A number beyond the value's type, read as a decimal, which holds every whole type exactly, or past that as a
+    // double; a fraction within a whole type's range stays an error, and so does NaN, which has no nearer limit.
+    private bool TryClampBeyondType(string? text, out TValue? value)
+    {
+        value = default;
+        var culture = Formatted ? NumberCulture : CultureInfo.InvariantCulture;
+        var digits = Formatted ? text?.Replace(culture.NumberFormat.PercentSymbol, "", StringComparison.Ordinal) : text;
+        var styles = Formatted ? NumberStyles.Currency | NumberStyles.AllowExponent : NumberStyles.Float;
+        if (string.IsNullOrWhiteSpace(digits))
+        {
+            return false;
+        }
+
+        if (decimal.TryParse(digits, styles, culture, out var number))
+        {
+            number = Percent ? number / 100 : number;
+            var (lower, upper) = NumberTypes.Limits(NumberType);
+            if (number >= lower && number <= upper)
+            {
+                return false;
+            }
+
+            value = ToValue(number > upper ? Upper : Lower);
+            return true;
+        }
+
+        if (!double.TryParse(digits, styles, culture, out var huge) || double.IsNaN(huge))
+        {
+            return false;
+        }
+
+        huge = Percent ? huge / 100 : huge;
+
+        // A float or double keeps the number within its own range; the clamp after this moves it within Min and Max.
+        value = NumberType == typeof(float) ? (TValue)(object)(float)Math.Clamp(huge, float.MinValue, float.MaxValue)
+            : NumberType == typeof(double) ? (TValue)(object)Math.Clamp(huge, double.MinValue, double.MaxValue)
+            : ToValue(huge > 0 ? Upper : Lower);
         return true;
     }
 

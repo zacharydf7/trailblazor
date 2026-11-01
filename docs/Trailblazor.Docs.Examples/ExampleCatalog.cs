@@ -720,7 +720,11 @@ public static class ExampleCatalog
                 "The Decrease and Increase buttons are left out of the tab order, since the arrow keys do the "
                     + "same, and they turn off at `Min` and `Max`.",
                 "A value out of range, or one that isn't a number, shows as an error with `aria-invalid`, unless "
-                    + "`ClampToRange` moves it to the nearer limit. `Decimals` rounds what is typed.",
+                    + "`ClampToRange` moves it to the nearer limit, as it does a number too large or small for the "
+                    + "value's type. `Decimals` rounds what is typed.",
+                "The value updates when the user leaves the field or presses Enter, or with `UpdateOnInput` as they "
+                    + "type. What they type stays as typed until then, so the format doesn't rewrite it under the "
+                    + "caret, and an error waits for that commit too.",
                 "The `Label` names the field. Helper text and validation messages are linked to the field with "
                     + "`aria-describedby`, an error sets `aria-invalid`, and `Required` sets `aria-required`; the "
                     + "asterisk it adds is hidden from screen readers.",

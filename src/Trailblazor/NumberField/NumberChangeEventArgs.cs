@@ -26,6 +26,7 @@ public sealed class FieldFocusEventArgs : EventArgs
 /// this name. The browser side is in Trailblazor.lib.module.js.</summary>
 [EventHandler("ontbnumberchange", typeof(NumberChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbnumberleave", typeof(NumberChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbnumberinput", typeof(NumberChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbfocusenter", typeof(FieldFocusEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbfocusleave", typeof(FieldFocusEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbrowclick", typeof(RowClickEventArgs), enableStopPropagation: true, enablePreventDefault: true)]

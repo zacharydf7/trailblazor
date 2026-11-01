@@ -394,6 +394,182 @@ public class TbNumberFieldTests : BunitContext
     }
 
     [Theory]
+    [InlineData(null, "99999999999", int.MaxValue)]
+    [InlineData(null, "-99999999999", int.MinValue)]
+    [InlineData(null, "1e400", int.MaxValue)]
+    [InlineData("N0", "99,999,999,999", int.MaxValue)]
+    [InlineData("P0", "-1e20", int.MinValue)]
+    public void Change_ShouldMoveANumberBeyondTheTypeToItsLimit_WhenClampToRangeIsSet(string? format, string text,
+        int expected)
+    {
+        var value = 5;
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Value, value)
+            .Add(field => field.Format, format).Add(field => field.Culture, new CultureInfo("en-US"))
+            .Add(field => field.ClampToRange, true).Add(field => field.ValueChanged, (int number) => value = number));
+
+        if (format is null)
+        {
+            Commit(cut, text);
+        }
+        else
+        {
+            cut.Find("input").Change(text);
+        }
+
+        Assert.Equal(expected, value);
+        Assert.Null(cut.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [Theory]
+    [InlineData(true, "3.5")]
+    [InlineData(true, "NaN")]
+    [InlineData(false, "99999999999")]
+    public void Change_ShouldSayItNeedsANumber_WhenTheTextIsAFractionOrBeyondTheTypeWithoutClampToRange(bool clamp,
+        string text)
+    {
+        var changed = false;
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Copies")
+            .Add(field => field.ClampToRange, clamp).Add(field => field.ValueChanged, (int _) => changed = true));
+
+        Commit(cut, text);
+
+        Assert.False(changed);
+        Assert.Equal("Copies must be a number.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Input_ShouldUpdateTheValueAndKeepTheTextAsTyped_WhenUpdateOnInputIsSetOnAPlainField()
+    {
+        double? value = null;
+        var cut = Render<TbNumberField<double?>>(parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.ValueChanged, (double? number) => value = number));
+        var input = cut.Find("input");
+
+        input.TriggerEvent("ontbnumberinput", new NumberChangeEventArgs { Value = "1.50" });
+        Assert.Equal(1.5, value);
+        Assert.Equal("1.50", cut.Find("input").GetAttribute("value"));
+
+        input.TriggerEvent("ontbnumberinput", new NumberChangeEventArgs { Value = "", BadInput = true });
+        Assert.Equal(1.5, value);
+        Assert.Equal("", cut.Find("input").GetAttribute("value"));
+        Assert.Null(cut.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [Fact]
+    public void Input_ShouldUpdateTheValueAndFormatItOnlyOnChange_WhenUpdateOnInputIsSetOnAFormattedField()
+    {
+        var value = 0m;
+        var cut = RenderFormatted("C2", "en-US", value, parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.ValueChanged, (decimal number) => value = number));
+
+        cut.Find("input").Input("12");
+        Assert.Equal(12m, value);
+        Assert.Equal("12", cut.Find("input").GetAttribute("value"));
+        cut.Find("input").Input("12x");
+        Assert.Equal(12m, value);
+        Assert.Equal("12x", cut.Find("input").GetAttribute("value"));
+        Assert.Null(cut.Find("input").GetAttribute("aria-invalid"));
+
+        cut.Find("input").Change("12");
+        Assert.Equal("$12.00", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Clamp_ShouldMoveANumberPastTheTypesEndToIt_WhenTheTypeIsLongOrDouble()
+    {
+        var whole = 0L;
+        var wide = 0d;
+        var capped = 0d;
+        var longField = Render<TbNumberField<long>>(parameters => parameters.Add(field => field.ClampToRange, true)
+            .Add(field => field.ValueChanged, (long number) => whole = number));
+        var doubleField = Render<TbNumberField<double>>(parameters => parameters.Add(field => field.ClampToRange, true)
+            .Add(field => field.ValueChanged, (double number) => wide = number));
+        var cappedField = Render<TbNumberField<double>>(parameters => parameters.Add(field => field.ClampToRange, true)
+            .Add(field => field.Max, 100m).Add(field => field.ValueChanged, (double number) => capped = number));
+
+        Commit(longField, "9223372036854775808");
+        Commit(doubleField, "1e400");
+        Commit(cappedField, "1e300");
+
+        Assert.Equal((long.MaxValue, double.MaxValue, 100d), (whole, wide, capped));
+    }
+
+    [Theory]
+    [InlineData("N0", "1e30", 1e30)]
+    [InlineData("P0", "1e32", 1e30)]
+    public void Clamp_ShouldKeepANumberAFormattedDoubleHolds_WhenItIsPastDecimalsRange(string format, string text,
+        double expected)
+    {
+        var value = 0d;
+        var cut = RenderFormatted(format, "en-US", value, parameters => parameters
+            .Add(field => field.ClampToRange, true)
+            .Add(field => field.ValueChanged, (double number) => value = number));
+
+        cut.Find("input").Change(text);
+
+        Assert.Equal(expected, value);
+    }
+
+    [Theory]
+    [InlineData(null, "15", "150")]
+    [InlineData("C2", "abc", "ab")]
+    public void Input_ShouldKeepTheTypedTextAndTheError_WhenTypingFollowsACommitThatShowedOne(string? format,
+        string committed, string typed)
+    {
+        var cut = Render<TbNumberField<decimal>>(parameters => parameters.Add(field => field.Label, "Budget")
+            .Add(field => field.UpdateOnInput, true).Add(field => field.Max, 10m).Add(field => field.Format, format)
+            .Add(field => field.Culture, new CultureInfo("en-US")));
+
+        if (format is null)
+        {
+            Commit(cut, committed);
+            cut.Find("input").TriggerEvent("ontbnumberinput", new NumberChangeEventArgs { Value = typed });
+        }
+        else
+        {
+            cut.Find("input").Change(committed);
+            cut.Find("input").Input(typed);
+        }
+
+        Assert.Equal(typed, cut.Find("input").GetAttribute("value"));
+        Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [Fact]
+    public void Input_ShouldShowTheFormattedValue_WhenTheArrowsStepAwayAndBack()
+    {
+        var cut = RenderFormatted("C2", "en-US", 0m, parameters => parameters.Add(field => field.UpdateOnInput, true));
+
+        cut.Find("input").Input("12");
+        cut.Find("input").KeyDown("ArrowUp");
+        cut.Find("input").KeyDown("ArrowDown");
+
+        Assert.Equal("$12.00", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task Input_ShouldShowTheFormattedValue_WhenTheParentChangesWhatWasTypedAfterAnAwait()
+    {
+        var cut = Render<CappingHost>();
+
+        cut.Find("input").Input("12");
+        await cut.InvokeAsync(() => cut.Instance.Checked.SetResult());
+
+        Assert.Equal("$10.00", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Input_ShouldShowTheValue_WhenTheParentSetsAnotherAfterTyping()
+    {
+        var cut = RenderFormatted("C2", "en-US", 0m, parameters => parameters.Add(field => field.UpdateOnInput, true));
+
+        cut.Find("input").Input("12");
+        cut.Render(parameters => parameters.Add(field => field.Value, 30m));
+
+        Assert.Equal("$30.00", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Theory]
     [InlineData("ArrowUp", false, 6)]
     [InlineData("ArrowDown", false, 4)]
     [InlineData("ArrowUp", true, 5)]
@@ -417,6 +593,30 @@ public class TbNumberFieldTests : BunitContext
                 .Add(field => field.Value, value);
             configure?.Invoke(parameters);
         });
+
+    // Caps what is typed at 10 once the test lets its await pass, as a handler that checks with a service would.
+    private sealed class CappingHost : ComponentBase
+    {
+        private decimal _budget;
+
+        public TaskCompletionSource Checked { get; } = new();
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbNumberField<decimal>>(0);
+            builder.AddAttribute(1, nameof(TbNumberField<decimal>.Format), "C2");
+            builder.AddAttribute(2, nameof(TbNumberField<decimal>.Culture), new CultureInfo("en-US"));
+            builder.AddAttribute(3, nameof(TbNumberField<decimal>.UpdateOnInput), true);
+            builder.AddAttribute(4, nameof(TbNumberField<decimal>.Value), _budget);
+            builder.AddAttribute(5, nameof(TbNumberField<decimal>.ValueChanged),
+                EventCallback.Factory.Create<decimal>(this, async budget =>
+                {
+                    await Checked.Task;
+                    _budget = Math.Min(budget, 10);
+                }));
+            builder.CloseComponent();
+        }
+    }
 
     private static void Commit<TValue>(IRenderedComponent<TbNumberField<TValue>> cut, string text) =>
         cut.Find("input").TriggerEvent("ontbnumberchange", new NumberChangeEventArgs { Value = text });

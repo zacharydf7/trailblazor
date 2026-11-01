@@ -230,4 +230,22 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("tip")).ToHaveTextAsync("10.50");
         await Expect(page.GetByTestId("rate")).ToHaveTextAsync("0.125");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldUpdateAsTypedAndFormatOnLeaving_WhenUpdateOnInputIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/number-live");
+        var budget = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Budget" });
+        var copies = page.GetByLabel("Copies");
+
+        await budget.FillAsync("");
+        await budget.PressSequentiallyAsync("125");
+        await Expect(page.GetByTestId("budget")).ToHaveTextAsync("125");
+        await Expect(budget).ToHaveValueAsync("125");
+        await copies.PressSequentiallyAsync("42");
+        await Expect(page.GetByTestId("copies")).ToHaveTextAsync("42");
+
+        await Expect(budget).ToHaveValueAsync("$125.00");
+        await Expect(copies).ToHaveValueAsync("42");
+    }
 }

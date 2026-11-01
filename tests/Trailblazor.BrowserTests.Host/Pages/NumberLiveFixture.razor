@@ -1,0 +1,14 @@
+@page "/number-live"
+@using System.Globalization
+
+@* Fields that update as the user types: a formatted one and the browser's own number box. *@
+<TbNumberField Label="Budget" @bind-Value="_budget" Format="C2" Culture="UsEnglish" UpdateOnInput />
+<output data-testid="budget">@_budget.ToString(CultureInfo.InvariantCulture)</output>
+<TbNumberField Label="Copies" @bind-Value="_copies" UpdateOnInput />
+<output data-testid="copies">@_copies</output>
+
+@code {
+    private static readonly CultureInfo UsEnglish = CultureInfo.GetCultureInfo("en-US");
+    private decimal _budget;
+    private int? _copies;
+}
