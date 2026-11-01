@@ -1394,6 +1394,10 @@ public static class ExampleCatalog
                     + "the rows inside it, and it is never in the bound keys, so texts that repeat need no keys.",
                 "A tree inside another tree's row is a tree of its own: its rows take their own keys, focus, clicks and "
                     + "drags, the outer tree's arrows pass over them, and the outer row isn't selected by them.",
+                "Controls in a row go in its end slot, `ItemEnd` or a `TbTreeItem`'s `EndContent`, whose clicks and "
+                    + "keys never select, open or activate the row. `@bind-Expanded` opens a `TbTreeItem` from code, "
+                    + "with or without a `Value`, and `HasChildren` shows its toggle while rendering what is inside it "
+                    + "only once it opens; `ExpandAllAsync` opens those rows too, and the rows that appear in them.",
                 "With `OnDrop`, rows move by dragging with a mouse, pen or finger (a finger holds still for a moment "
                     + "first, so a swipe still scrolls), or with Alt+Shift and the arrows: Up and Down past a "
                     + "neighbor, Right into the row above, Left out of the parent. Each movable row is described by "

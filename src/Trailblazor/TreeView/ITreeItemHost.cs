@@ -18,4 +18,6 @@ internal interface ITreeItemHost<TItem>
     RenderFragment? RowOf(TbTreeItem<TItem> item);
 
     bool IsOpen(TbTreeItem<TItem> item);
+
+    Task SetExpandedAsync(TbTreeItem<TItem> item, bool open);
 }

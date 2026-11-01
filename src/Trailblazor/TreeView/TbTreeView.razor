@@ -128,7 +128,8 @@
              aria-labelledby="@(InsertTemplate is null ? null : $"{nameId}-content {nameId}-end")"
              style="@(declared?.RowStyle ?? $"--tb-tree-level: {node.Level - 1}")"
              class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
-                        context.Matches ? "tb-tree__item--match" : null, declared?.Class)"
+                        context.Matches ? "tb-tree__item--match" : null, declared?.Class,
+                        valued ? ItemClass?.Invoke(node.Item) : null)"
              @onclick="args => OnRowClickAsync(node, args)" @ondblclick="() => OnRowDoubleClickAsync(node)">
             <span data-part="toggle" aria-hidden="true" class="tb-tree__toggle"
                   @onclick="() => ToggleAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
@@ -162,12 +163,12 @@
                     <span class="tb-tree__text">@TextOf(node)</span>
                 }
             </span>
-            @if (ItemEnd is not null && valued)
+            @if ((declared?.EndContent ?? (ItemEnd is not null && valued ? ItemEnd(context) : null)) is { } end)
             {
                 @* The end slot's own controls keep their clicks and keys from the row. *@
                 <span data-part="end" id="@(InsertTemplate is null ? null : $"{nameId}-end")" class="tb-tree__end"
                       @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown:stopPropagation>
-                    @ItemEnd(context)
+                    @end
                 </span>
             }
             @if (InsertTemplate is not null)

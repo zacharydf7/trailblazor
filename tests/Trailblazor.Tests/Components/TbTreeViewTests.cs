@@ -594,6 +594,16 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldAddTheItemsClassToItsRow_WhenGivenAnItemClass()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters
+            .Add(tree => tree.ItemClass, place => place.Id == 4 ? "needs-review" : null));
+
+        Assert.Contains("needs-review", Row(cut, "4").ClassList);
+        Assert.DoesNotContain("needs-review", Row(cut, "1").ClassList);
+    }
+
+    [Fact]
     public void Render_ShouldGiveTheFirstSelectedRowTheTabStop_WhenNoRowHasBeenFocused()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectedKeys, [4]));

@@ -398,6 +398,255 @@ public class TreeItemTests : BunitContext
     }
 
     [Fact]
+    public void TreeItem_ShouldOpenFromItsBindingAndReportTheUser_WhenExpandedIsBoundOnARowWithNoValue()
+    {
+        var open = true;
+        List<bool> reported = [];
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Text), "Guides");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Expanded), open);
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ExpandedChanged),
+                EventCallback.Factory.Create<bool>(this, value => reported.Add(open = value)));
+            builder.AddComponentParameter(4, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.ChildContent, rows));
+        Assert.Equal(["Guides", "guide"], cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")));
+
+        cut.Find("[data-text=Guides] [data-part=toggle]").Click();
+        cut.Render(parameters => parameters.Add(tree => tree.ChildContent, rows));
+
+        Assert.Equal([false], reported);
+        Assert.Single(cut.FindAll("[data-part=item]"));
+        open = true;
+        cut.Render(parameters => parameters.Add(tree => tree.ChildContent, rows));
+        Assert.Equal(2, cut.FindAll("[data-part=item]").Count);
+        Assert.Equal([false], reported);
+    }
+
+    [Fact]
+    public void TreeItem_ShouldStayClosed_WhenItsExpandedIsFalseAndTheTreeOpensToADepth()
+    {
+        RenderFragment rows = builder =>
+        {
+            // Keyed, as the rows AddRow writes beside it are.
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.SetKey("docs");
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Expanded), false);
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
+            builder.CloseComponent();
+            AddRow(builder, new Row("src", new Row("main")), null);
+        };
+        // Rendered directly, as RenderFiles would give the tree two ChildContents.
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.ChildContent, rows).Add(tree => tree.InitialExpandDepth, 1));
+
+        Assert.Equal(["docs", "src", "main"], cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-key")));
+        // A value given one way only opens or closes the row when it changes, so the user can still open it.
+        cut.Find("[data-key=docs] [data-part=toggle]").Click();
+        cut.Render(parameters => parameters.Add(tree => tree.ChildContent, rows));
+        Assert.Equal(["docs", "guide", "src", "main"],
+            cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-key")));
+    }
+
+    [Fact]
+    public void TreeItem_ShouldClose_WhenItsExpandedTurnsFalseWhileTheFilterHoldsItOpen()
+    {
+        var open = true;
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Expanded), open);
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.ChildContent, rows).Add(tree => tree.Filter, value => value == "guide"));
+        Assert.Equal(2, cut.FindAll("[data-part=item]").Count);
+
+        open = false;
+        cut.Render(parameters => parameters.Add(tree => tree.ChildContent, rows));
+
+        Assert.Single(cut.FindAll("[data-part=item]"));
+    }
+
+    [Fact]
+    public void TreeItem_ShouldOpen_WhenItsExpandedTurnsTrueAfterTheUserClosedItWhileFiltering()
+    {
+        var open = true;
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Expanded), open);
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ExpandedChanged),
+                EventCallback.Factory.Create<bool>(this, value => open = value));
+            builder.AddComponentParameter(4, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.ChildContent, rows).Add(tree => tree.Filter, value => value == "guide"));
+        cut.Find("[data-key=docs] [data-part=toggle]").Click();
+        cut.Render(parameters => parameters.Add(tree => tree.ChildContent, rows));
+        Assert.Single(cut.FindAll("[data-part=item]"));
+
+        open = true;
+        cut.Render(parameters => parameters.Add(tree => tree.ChildContent, rows));
+
+        Assert.Equal(2, cut.FindAll("[data-part=item]").Count);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ExpandAll_ShouldStopOpeningNewRows_WhenARowIsClosed(bool byTheUser)
+    {
+        RenderFragment Lazy(string value, RenderFragment? inside) => builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), value);
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.HasChildren), true);
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ChildContent), inside);
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.ChildContent, Lazy("docs", Lazy("guide", Fragment([new Row("intro")], null)))));
+        await cut.InvokeAsync(() => cut.Instance.ExpandAllAsync());
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll("[data-part=item]").Count));
+
+        if (byTheUser)
+        {
+            cut.Find("[data-key=docs] [data-part=toggle]").Click();
+        }
+        else
+        {
+            cut.Render(parameters => parameters.Add(tree => tree.ExpandedKeys, (IReadOnlyCollection<string>)[]));
+        }
+
+        Assert.Equal(["docs"], cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-key")));
+    }
+
+    [Fact]
+    public void TreeItem_ShouldTellItsParent_WhenTheTreesExpandedKeysOpenIt()
+    {
+        List<bool> reported = [];
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.ExpandedChanged),
+                EventCallback.Factory.Create<bool>(this, reported.Add));
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Files")
+            .Add(tree => tree.ChildContent, rows).Add(tree => tree.ExpandedKeys, (IReadOnlyCollection<string>)[]));
+
+        cut.Render(parameters => parameters.Add(tree => tree.ExpandedKeys, (IReadOnlyCollection<string>)["docs"]));
+
+        Assert.Equal([true], reported);
+    }
+
+    [Fact]
+    public void TreeItem_ShouldTellItsParent_WhenTheTreesInitialDepthOpensIt()
+    {
+        List<bool> reported = [];
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.ExpandedChanged),
+                EventCallback.Factory.Create<bool>(this, reported.Add));
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
+            builder.CloseComponent();
+        };
+
+        RenderFiles([], parameters => parameters.Add(tree => tree.ChildContent, rows).Add(tree => tree.InitialExpandDepth, 1));
+
+        Assert.Equal([true], reported);
+    }
+
+    [Fact]
+    public void TreeItem_ShouldFollowItsExpandedAndShowItsEndContent_WhenStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Expanded), false);
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.EndContent),
+                (RenderFragment)(end => end.AddContent(0, "3 new")));
+            builder.AddComponentParameter(4, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
+            builder.CloseComponent();
+        };
+
+        var cut = RenderFiles([], parameters => parameters.Add(tree => tree.ChildContent, rows)
+            .Add(tree => tree.InitialExpandDepth, 1));
+
+        Assert.Equal("false", cut.Find("[role=treeitem]").GetAttribute("aria-expanded"));
+        Assert.Equal("3 new", cut.Find("[data-part=end]").TextContent);
+        Assert.Single(cut.FindAll("[role=treeitem]"));
+    }
+
+    [Fact]
+    public async Task TreeItem_ShouldRenderWhatIsInsideItOnlyWhileOpen_WhenItHasChildren()
+    {
+        RenderFragment Lazy(string value, RenderFragment? inside) => builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), value);
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.HasChildren), true);
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ChildContent), (RenderFragment)(content =>
+            {
+                content.AddMarkupContent(0, $"<span data-testid=\"inside-{value}\"></span>");
+                content.AddContent(1, inside);
+            }));
+            builder.CloseComponent();
+        };
+        var cut = RenderFiles([], parameters => parameters.Add(tree => tree.ChildContent,
+            Lazy("docs", Lazy("guide", Fragment([new Row("intro")], null)))));
+        Assert.Equal("false", cut.Find("[data-key=docs]").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.FindAll("[data-testid=inside-docs]"));
+
+        await cut.InvokeAsync(() => cut.Instance.ExpandAllAsync());
+
+        cut.WaitForAssertion(() => Assert.Equal(["docs", "guide", "intro"],
+            cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-key"))));
+        Assert.Single(cut.FindAll("[data-testid=inside-guide]"));
+    }
+
+    [Fact]
+    public void TreeItem_ShouldKeepClicksInItsEndContentFromTheRow_WhenGivenEndContent()
+    {
+        var clicks = 0;
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.EndContent), (RenderFragment)(end =>
+            {
+                end.OpenElement(0, "button");
+                end.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, () => clicks++));
+                end.AddContent(2, "Hide");
+                end.CloseElement();
+            }));
+            builder.CloseComponent();
+        };
+        var cut = RenderFiles([], parameters => parameters.Add(tree => tree.ChildContent, rows));
+
+        cut.Find("[data-key=docs] [data-part=end] button").Click();
+
+        Assert.Equal(1, clicks);
+        Assert.Empty(_selectedChanges);
+    }
+
+    [Fact]
     public void Tree_ShouldThrow_WhenTreeItemsAreVirtualized()
     {
         var exception = Assert.Throws<InvalidOperationException>(() => RenderFiles(Docs,

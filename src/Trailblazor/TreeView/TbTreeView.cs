@@ -68,6 +68,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private Func<TItem, bool>? _flattenedFilter;
     private TreeScope<TItem>? _scope;
     private int _version;
+    // Set by ExpandAllAsync, so declared rows that appear as their parents open open too, until a row is closed.
+    private int? _expandAllDepth;
+    // The open rows before the parent gave new ExpandedKeys, so the declared rows that changed can be told.
+    private HashSet<object>? _expandedByParent;
 
     /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item. The rows are built again when this
     /// is a new collection; call <see cref="RefreshAsync"/> after changing it, or the children it holds, in place.
@@ -116,6 +120,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <summary>An icon before an item's text.</summary>
     [Parameter]
     public Func<TItem, Icon?>? ItemIcon { get; set; }
+
+    /// <summary>CSS classes for an item's row, such as one that marks rows needing attention.</summary>
+    [Parameter]
+    public Func<TItem, string?>? ItemClass { get; set; }
 
     /// <summary>Draws a row's content instead of its icon and text.</summary>
     [Parameter]
@@ -318,7 +326,14 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 "when its items aren't their own keys.");
         }
 
+        var expanded = _expanded;
         _expanded = TakeFromParent(ExpandedKeys, ref _expandedFromParent, _expanded);
+        _expandedByParent ??= ReferenceEquals(expanded, _expanded) ? null : expanded;
+        // A parent closing rows stops ExpandAllAsync opening new ones, as the user closing a row does.
+        if (!expanded.IsSubsetOf(_expanded))
+        {
+            _expandAllDepth = null;
+        }
         _selected = TakeFromParent(SelectedKeys, ref _selectedFromParent, _selected);
         _checked = TakeFromParent(CheckedKeys, ref _checkedFromParent, _checked);
         // A parent render builds or lays out the rows again only when what they come from changed.
@@ -354,14 +369,16 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private void Rebuild()
     {
         Build();
-        // Items that arrive after the first render, as loaded data does, still open to the initial depth.
+        // Items that arrive after the first render, as loaded data does, still open to the initial depth; a declared
+        // row given Expanded stays as its parent says.
         if (!_initialExpandDone && _nodes.Count > 0)
         {
             _initialExpandDone = true;
             if (ExpandedKeys is null)
             {
                 _expanded.UnionWith(_nodes.Values.Where(node => node.Level <= InitialExpandDepth)
-                    .Where(node => node.Children.Count > 0).Select(node => node.Key));
+                    .Where(node => node.Children.Count > 0 && _declared.GetValueOrDefault(node.Key)?.ExpandedGiven != true)
+                    .Select(node => node.Key));
             }
         }
 
@@ -432,7 +449,16 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     // Rows opened by a set from the parent, such as one saved earlier, load like rows the user opens.
     /// <inheritdoc />
-    protected override Task OnParametersSetAsync() => LoadOpenRowsAsync();
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_expandedByParent is { } before)
+        {
+            _expandedByParent = null;
+            await ReportExpansionAsync(before, null);
+        }
+
+        await LoadOpenRowsAsync();
+    }
 
     private Task LoadOpenRowsAsync() => Task.WhenAll(_expanded.Select(key => _nodes.GetValueOrDefault(key))
         .OfType<TreeNode<TItem>>().Where(node => node.MayHaveChildren && !_failed.Contains(node.Key))
@@ -451,7 +477,15 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
             if (RendererInfo.IsInteractive && (_itemsChanged || (firstRender && ChildContent is not null)))
             {
+                // Rows the initial depth opens are told, as rows opened any other way are.
+                var before = _expanded.ToHashSet();
                 BuildFromItems();
+                await ReportExpansionAsync(before, null);
+                // Rows that appeared inside rows ExpandAllAsync opened open too.
+                if (_expandAllDepth is { } depth)
+                {
+                    await SetExpandedAsync(_expanded.Union(Expandable(depth)));
+                }
             }
 
             if (_scrollAfterRender is { } scroll && scroll.Done == _scrollRendered)
@@ -536,9 +570,17 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     }
 
     /// <summary>Opens every row that has children, or only the rows down to <paramref name="depth"/>. Rows whose
-    /// children haven't loaded stay closed, so this never starts a load.</summary>
-    public Task ExpandAllAsync(int? depth = null) => SetExpandedAsync(_expanded.Union(_nodes.Values
-        .Where(node => node.Children.Count > 0 && node.Level <= (depth ?? int.MaxValue)).Select(node => node.Key)));
+    /// children haven't loaded stay closed, so this never starts a load; a <see cref="TbTreeItem{TItem}"/> with
+    /// <c>HasChildren</c> opens, and so do the rows that appear inside it.</summary>
+    public async Task ExpandAllAsync(int? depth = null)
+    {
+        _expandAllDepth = depth ?? int.MaxValue;
+        await SetExpandedAsync(_expanded.Union(Expandable(_expandAllDepth.Value)));
+    }
+
+    private IEnumerable<object> Expandable(int depth) => _nodes.Values
+        .Where(node => (node.Children.Count > 0 || (node.MayHaveChildren && LoadChildren is null)) && node.Level <= depth)
+        .Select(node => node.Key);
 
     /// <summary>Closes every row.</summary>
     public Task CollapseAllAsync() => SetExpandedAsync([]);
@@ -567,7 +609,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <summary>Closes the row with this key, even one the filter opened.</summary>
     public Task CollapseAsync(TKey key) => CloseAsync(key);
 
-    private async Task CloseAsync(object key)
+    private async Task CloseAsync(object key, TbTreeItem<TItem>? asking = null)
     {
         if (_matchAncestors.Contains(key) && _closedWhileFiltering.Add(key))
         {
@@ -575,7 +617,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             StateHasChanged();
         }
 
-        await SetExpandedAsync(_expanded.Where(other => !Equals(other, key)));
+        await SetExpandedAsync(_expanded.Where(other => !Equals(other, key)), asking);
     }
 
     /// <summary>Opens the rows the row with this key sits in, and scrolls it into view, focusing it if asked.
@@ -763,6 +805,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         var node = Add(item.Value, parent, item.Key);
         _declared[node.Key] = item;
         node.Children.AddRange(item.Children.Select(child => AddDeclared(child, node)));
+        node.MayHaveChildren = item.HasChildren && node.Children.Count == 0;
         return node;
     }
 
@@ -1196,6 +1239,23 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         ? builder => RenderRow(builder, _rows[index], index, null, FocusId())
         : null;
 
+    // Opening leaves the rows around it as they are, as their own Expanded may say, but undoes a close made while
+    // filtering.
+    Task ITreeItemHost<TItem>.SetExpandedAsync(TbTreeItem<TItem> item, bool open)
+    {
+        if (!open)
+        {
+            return CloseAsync(item.Key, item);
+        }
+
+        if (_nodes.TryGetValue(item.Key, out var node) && Reveal([node]))
+        {
+            Flatten();
+        }
+
+        return SetExpandedAsync(_expanded.Append(item.Key), item);
+    }
+
     bool ITreeItemHost<TItem>.IsOpen(TbTreeItem<TItem> item) =>
         _rowIndex.TryGetValue(item.Key, out var index) && IsOpen(_rows[index].Node);
 
@@ -1298,7 +1358,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private IEnumerable<TreeNode<TItem>> EnabledDescendants(TreeNode<TItem> node) =>
         node.Descendants().Where(descendant => !IsItemDisabled(descendant));
 
-    private async Task SetExpandedAsync(IEnumerable<object> keys)
+    private async Task SetExpandedAsync(IEnumerable<object> keys, TbTreeItem<TItem>? asking = null)
     {
         var expanded = keys.ToHashSet();
         if (expanded.SetEquals(_expanded))
@@ -1312,11 +1372,30 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             await _loads[closed].CancelAsync();
         }
 
+        if (!_expanded.IsSubsetOf(expanded))
+        {
+            _expandAllDepth = null;
+        }
+
+        var before = _expanded;
         _expanded = expanded;
         Flatten();
         // Called from code as well as from events, so the tree renders the change itself.
         StateHasChanged();
         await ExpandedKeysChanged.InvokeAsync(Reported(_expanded));
+        await ReportExpansionAsync(before, asking);
+    }
+
+    // Declared rows that opened or closed tell their parents, all but the one whose parent asked for it.
+    private async Task ReportExpansionAsync(HashSet<object> before, TbTreeItem<TItem>? asking)
+    {
+        foreach (var item in _declared.Values.Where(item => item != asking).ToList())
+        {
+            if (before.Contains(item.Key) != _expanded.Contains(item.Key))
+            {
+                await item.ReportExpandedAsync(_expanded.Contains(item.Key));
+            }
+        }
     }
 
     private async Task SetSelectedAsync(IEnumerable<object> keys)

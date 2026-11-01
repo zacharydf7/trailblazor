@@ -7,20 +7,28 @@
 {
     @Tree!.RowOf(this)
     @* The rows inside it, and anything else written there, shown while it is open. *@
+    var open = Tree.IsOpen(this);
     <div role="@(ChildContent is null ? null : "group")" data-part="group" data-tree-item="@_id"
-         class="tb-tree__group" hidden="@(!Tree.IsOpen(this))">
-        <CascadingValue Value="Inner" IsFixed="true">@ChildContent</CascadingValue>
+         class="tb-tree__group" hidden="@(!open)">
+        @if (open || !HasChildren)
+        {
+            <CascadingValue Value="Inner" IsFixed="true">@ChildContent</CascadingValue>
+        }
     </div>
 }
 else
 {
     @* Without a circuit the tree can't render rows from what registered, so each item renders its own. *@
-    var open = ChildContent is not null && Level <= Tree!.InitialExpandDepth;
+    var open = ChildContent is not null && (ExpandedGiven ? Expanded : Level <= Tree!.InitialExpandDepth);
     <div @attributes="AdditionalAttributes" role="treeitem" data-part="item" aria-level="@Level"
          aria-disabled="@(Disabled ? "true" : null)"
          aria-expanded="@(ChildContent is null ? null : open ? "true" : "false")" style="@RowStyle" class="@ClassNames.Join("tb-tree__item", Class)">
         <span class="tb-tree__toggle" aria-hidden="true"></span>
         <span data-part="content" class="tb-tree__content">@Row</span>
+        @if (EndContent is not null)
+        {
+            <span data-part="end" class="tb-tree__end">@EndContent</span>
+        }
     </div>
     @if (open)
     {
@@ -30,8 +38,9 @@ else
 
 @code {
     private readonly string _id = $"tb-tree-item-{Guid.NewGuid():N}";
-    private (object Key, string? Text, Icon? Icon, bool Disabled) _last;
+    private (object Key, string? Text, Icon? Icon, bool Disabled, bool HasChildren) _last;
     private TreeScope<TItem>? _inner;
+    private bool? _lastExpanded;
 
     /// <summary>The item this row stands for, and with no <c>KeySelector</c> on the tree, its key, so it must then
     /// stay equal across renders. Selection, checks and expansion report these keys. A row with no value, such as a
@@ -57,6 +66,25 @@ else
     [Parameter]
     public RenderFragment? TextContent { get; set; }
 
+    /// <summary>Content at the end of the row, such as badges or controls. Clicks and keys in it never select, expand
+    /// or activate the row, so a row's controls go here rather than in its <see cref="TextContent"/>.</summary>
+    [Parameter]
+    public RenderFragment? EndContent { get; set; }
+
+    /// <summary>Whether this row is open. Bind it with <c>@bind-Expanded</c> to open it from code or to know when the
+    /// user does, which also works for a row with no <see cref="Value"/>.</summary>
+    [Parameter]
+    public bool Expanded { get; set; }
+
+    /// <summary>Raised when the row opens or closes.</summary>
+    [Parameter]
+    public EventCallback<bool> ExpandedChanged { get; set; }
+
+    /// <summary>Shows the row's toggle before the rows inside it exist, and renders its <see cref="ChildContent"/> only
+    /// while it is open, for a large tree or rows that load their own content.</summary>
+    [Parameter]
+    public bool HasChildren { get; set; }
+
     /// <summary>The <see cref="TbTreeItem{TItem}"/>s inside this one, and any other content, shown where it is written
     /// while this row is open.</summary>
     [Parameter]
@@ -78,6 +106,9 @@ else
     internal string Id => _id;
 
     internal bool HasValue { get; private set; }
+
+    // Whether the parent gave Expanded, so the tree's initial depth leaves this row as the parent says.
+    internal bool ExpandedGiven { get; private set; }
 
     // A row with no value is keyed by the item itself, which stays the same while it renders in its place.
     internal object Key => HasValue ? Tree!.KeyOf(Value) : this;
@@ -111,6 +142,7 @@ else
     public override Task SetParametersAsync(ParameterView parameters)
     {
         HasValue = parameters.TryGetValue<TItem>(nameof(Value), out _);
+        ExpandedGiven = parameters.TryGetValue<bool>(nameof(Expanded), out _);
         return base.SetParametersAsync(parameters);
     }
 
@@ -122,21 +154,32 @@ else
             throw new InvalidOperationException($"{nameof(TbTreeItem<TItem>)} must be inside a TbTreeView.");
         }
 
-        _last = (Key, Text, Icon, Disabled);
+        _last = (Key, Text, Icon, Disabled, HasChildren);
         Tree.AddItem(this, Parent);
     }
 
     /// <inheritdoc />
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         // Keys rather than values, so a value made anew on each render doesn't rebuild the tree forever.
-        var current = (Key, Text, Icon, Disabled);
+        var current = (Key, Text, Icon, Disabled, HasChildren);
         if (!current.Equals(_last))
         {
             _last = current;
             Tree!.ItemChanged();
         }
+
+        // Only a new value from the parent opens or closes the row, so rendering again with the old one keeps what the
+        // user did.
+        if (ExpandedGiven && Expanded != _lastExpanded)
+        {
+            _lastExpanded = Expanded;
+            await Tree!.SetExpandedAsync(this, Expanded);
+        }
     }
+
+    // The tree says when the row opens or closes, other than when its parent asked.
+    internal Task ReportExpandedAsync(bool open) => ExpandedChanged.InvokeAsync(open);
 
     /// <inheritdoc />
     public void Dispose() => Tree?.RemoveItem(this, Parent);

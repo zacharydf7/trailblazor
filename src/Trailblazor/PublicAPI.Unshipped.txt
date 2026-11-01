@@ -2572,11 +2572,21 @@ override Trailblazor.TbTooltip.OnAfterRenderAsync(bool firstRender) -> System.Th
 override Trailblazor.TbTooltip.OnParametersSet() -> void
 ~override Trailblazor.TbTreeItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbTreeItem<TItem>.OnInitialized() -> void
-override Trailblazor.TbTreeItem<TItem>.OnParametersSet() -> void
+Trailblazor.TbTreeItem<TItem>.EndContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeItem<TItem>.EndContent.set -> void
+Trailblazor.TbTreeItem<TItem>.Expanded.get -> bool
+Trailblazor.TbTreeItem<TItem>.Expanded.set -> void
+Trailblazor.TbTreeItem<TItem>.ExpandedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbTreeItem<TItem>.ExpandedChanged.set -> void
+Trailblazor.TbTreeItem<TItem>.HasChildren.get -> bool
+Trailblazor.TbTreeItem<TItem>.HasChildren.set -> void
+override Trailblazor.TbTreeItem<TItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 ~override Trailblazor.TbTreeView<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbTreeView<TItem, TKey>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTreeView<TItem, TKey>.OnParametersSet() -> void
 override Trailblazor.TbTreeView<TItem, TKey>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbTreeView<TItem, TKey>.ItemClass.get -> System.Func<TItem, string?>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemClass.set -> void
 override Trailblazor.ToastAction.Equals(object? obj) -> bool
 override Trailblazor.ToastAction.GetHashCode() -> int
 override Trailblazor.ToastAction.ToString() -> string!
