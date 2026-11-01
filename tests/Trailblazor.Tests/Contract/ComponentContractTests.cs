@@ -76,12 +76,14 @@ public class ComponentContractTests : BunitContext
         Assert.Contains("contract-class", root.ClassList);
         Assert.Contains("outline: 1px solid red", root.GetAttribute("style"));
         Assert.Equal("yes", root.GetAttribute("data-contract"));
-        // A field's id names its control, apart from one with two controls or a group, which keeps it on its root.
+        // An id names the part users act on: a field's control, unless it has two or is a group, or a trigger.
         var named = Assert.Single(cut.FindAll("#contract-id"));
+        var field = typeof(IFormField).IsAssignableFrom(component);
         if (named != root)
         {
-            Assert.True(typeof(IFormField).IsAssignableFrom(component), $"{component.Name} moved its id off its root.");
-            Assert.Equal("input", named.GetAttribute("data-part"));
+            Assert.True(field || component == typeof(TbMenu) || component == typeof(TbPopover),
+                $"{component.Name} moved its id off its root.");
+            Assert.Equal(field ? "input" : "trigger", named.GetAttribute("data-part"));
         }
     }
 

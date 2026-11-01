@@ -6,7 +6,7 @@
 
 @if (RendererInfo.IsInteractive)
 {
-    <div @attributes="AdditionalAttributes" id="@_id" role="option" data-text="@Text"
+    <div @attributes="AdditionalAttributes" id="@OptionId" role="option" data-text="@Text"
          aria-label="@(ChildContent is null ? null : Text)"
          aria-selected="@(Select!.IsSelected(Value) ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
          data-part="option" class="@ClassNames.Join("tb-select__option", Class)" style="@Style" @onclick="ChooseAsync">
@@ -68,7 +68,10 @@ else
 
     bool ISelectOption.Disabled => Disabled;
 
-    string ISelectOption.Id => _id;
+    string ISelectOption.Id => OptionId;
+
+    // A given id names the option, and the list's active-descendant and selection follow it.
+    private string OptionId => GivenId ?? _id;
 
     RenderFragment ISelectOption.Content => Content;
 

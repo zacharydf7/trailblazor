@@ -106,6 +106,22 @@ public class TbCheckboxGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldPutAGivenIdOnTheItemsInput_WhenTheItemHasOne()
+    {
+        var cut = Render<TbCheckboxGroup<string>>(parameters => parameters.Add(group => group.ChildContent,
+            (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbCheckboxItem<string>>(0);
+                builder.AddComponentParameter(1, nameof(TbCheckboxItem<string>.Value), "Mon");
+                builder.AddAttribute(2, "id", "monday");
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal("checkbox", cut.Find("#monday").GetAttribute("type"));
+        Assert.Null(cut.Find("label.tb-checkbox__label").GetAttribute("id"));
+    }
+
+    [Fact]
     public void Render_ShouldMarkEachCheckboxReadOnlyButNotDisabled_WhenReadOnly()
     {
         var cut = Render<TbCheckboxGroup<string>>(parameters => parameters.Add(group => group.ReadOnly, true)

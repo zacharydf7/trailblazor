@@ -6,7 +6,7 @@
 @inject JsModuleLoader Modules
 
 @* popovertarget opens the panel natively before the script attaches; the script adds focus, hover and aria-expanded. *@
-<div @ref="_root" @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-popover", Class)">
+<div @ref="_root" @attributes="AttributesWithoutId" style="@Style" class="@ClassNames.Join("tb-popover", Class)">
     @if (Trigger is not null)
     {
         @Trigger(new PopoverTrigger { Attributes = TriggerAttributes })
@@ -113,7 +113,8 @@
         return base.SetParametersAsync(parameters);
     }
 
-    private string TriggerId => $"{_id}-trigger";
+    // A given id names the trigger, built in or the app's own, since Attributes sets a custom trigger's id.
+    private string TriggerId => GivenId ?? $"{_id}-trigger";
 
     private string PanelId => $"{_id}-panel";
 

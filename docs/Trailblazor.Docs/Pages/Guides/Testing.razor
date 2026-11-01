@@ -125,11 +125,14 @@
     the one with your text.
 </TbText>
 <TbText>
-    An <code>id</code> you give a field names its control, as on a native input: <code>&lt;TbTextField
-    id="email" /&gt;</code> puts <code>id="email"</code> on the input, and its label points to it, so
-    <code>#email</code> reaches what the user types into. A checkbox or switch gives it to its box and a select to its
-    combobox. A field with two controls, a date range picker or range slider, and a checkbox or radio group keep the id
-    on their root.
+    An <code>id</code> you give a field names its control, as on a native input: <code>&lt;TbTextField id="email"
+    /&gt;</code> puts <code>id="email"</code> on the input, and its label points to it, so <code>#email</code> reaches
+    what the user types into. A checkbox or switch gives it to its box and a select to its combobox. A field with two
+    controls, a date range picker or range slider, and a checkbox or radio group keep the id on their root. A radio or
+    checkbox in a group gives it to its input, an option to itself, and a tab to its tab button rather than its panel. A
+    menu or popover gives it to its trigger, built in or your own. A custom trigger gets its id from
+    <code>context.Attributes</code>, so put the id on the <code>TbMenu</code> or <code>TbPopover</code>, not on your
+    button.
 </TbText>
 <CodeBlock Label="Finding components" Code="@Locators" />
 

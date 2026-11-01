@@ -214,6 +214,29 @@ public class SelectExtrasTests : BunitContext
     private static string OptionId(IRenderedComponent<TbMultiSelect<Trail>> cut, int chip) =>
         cut.FindAll("[data-part=chip]")[chip].GetAttribute("data-option")!;
 
+    [Fact]
+    public async Task Option_ShouldTakeAGivenIdAndKeepItsChipLinkedToIt_WhenTheOptionHasOne()
+    {
+        IReadOnlyList<string>? chosen = null;
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Chips, true)
+            .Add(select => select.Value, ["gold"])
+            .Add(select => select.ValueChanged, (IReadOnlyList<string> values) => chosen = values)
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbOption<string>>(0);
+                builder.AddAttribute(1, nameof(TbOption<string>.Value), "gold");
+                builder.AddAttribute(2, "id", "gold-medal");
+                builder.AddAttribute(3, nameof(TbOption<string>.ChildContent),
+                    (RenderFragment)(content => content.AddContent(0, "Gold")));
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal("option", Assert.Single(cut.FindAll("#gold-medal")).GetAttribute("role"));
+        Assert.Equal("gold-medal", cut.Find("[data-part=chip]").GetAttribute("data-option"));
+        await cut.InvokeAsync(() => Toggle().OnRemoveChip("gold-medal", "Gold"));
+        Assert.Empty(chosen!);
+    }
+
     private SelectToggle Toggle() =>
         ((DotNetObjectReference<SelectToggle>)JSInterop.Invocations["createSelect"].Single().Arguments[2]!).Value;
 

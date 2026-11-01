@@ -55,6 +55,16 @@ public class TbPopoverTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldPutAGivenIdOnTheTriggerAndNameThePanelByIt_WhenThePopoverHasOne()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.AddUnmatched("id", "help").Add(popover => popover.Label,
+            "Help"));
+
+        Assert.Equal("trigger", Assert.Single(cut.FindAll("#help")).GetAttribute("data-part"));
+        Assert.Equal("help", cut.Find("[data-part=panel]").GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenThereIsNoLabelOrTrigger()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbPopover>());

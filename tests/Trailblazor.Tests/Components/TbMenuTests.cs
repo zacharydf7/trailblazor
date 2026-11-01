@@ -27,6 +27,23 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldPutAGivenIdOnACustomTriggerAndNameTheMenuByIt_WhenTheMenuHasOne()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.AddUnmatched("id", "account")
+            .Add(menu => menu.Trigger, trigger => builder =>
+            {
+                builder.OpenElement(0, "button");
+                builder.AddMultipleAttributes(1, trigger.Attributes);
+                builder.AddContent(2, "RB");
+                builder.CloseElement();
+            })
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Sign out")));
+
+        Assert.Equal("RB", Assert.Single(cut.FindAll("#account")).TextContent);
+        Assert.Equal("account", cut.Find("[role=menu]").GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
     public void Render_ShouldWireTheTriggerToTheMenu_WhenCalled()
     {
         var cut = Render<TbMenu>(parameters => parameters

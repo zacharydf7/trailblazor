@@ -143,17 +143,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     // RootAttributes.
     private protected virtual bool IdNamesControl => true;
 
-    // An id bound to null or empty, as when it is set only sometimes, leaves the field its own.
-    private string? IdOfControl => IdNamesControl
-        && Convert.ToString(AdditionalAttributes?.GetValueOrDefault("id"), CultureInfo.InvariantCulture) is
-            { Length: > 0 } id ? id : null;
+    private string? IdOfControl => IdNamesControl ? GivenId : null;
 
-    // The root's attributes, less an id that names the control. Attribute names ignore case, as in HTML.
-    private protected IReadOnlyDictionary<string, object>? RootAttributes => WithFocusEvents(IdOfControl is null
-        ? AdditionalAttributes
-        : AdditionalAttributes!
-            .Where(attribute => !string.Equals(attribute.Key, "id", StringComparison.OrdinalIgnoreCase))
-            .ToDictionary());
+    // The root's attributes, less an id that names the control.
+    private protected IReadOnlyDictionary<string, object>? RootAttributes =>
+        WithFocusEvents(IdOfControl is null ? AdditionalAttributes : AttributesWithoutId);
 
     // A group's root keeps its id, since its items each have their own, and carries the group's autofocus.
     private protected IReadOnlyDictionary<string, object>? GroupRootAttributes =>

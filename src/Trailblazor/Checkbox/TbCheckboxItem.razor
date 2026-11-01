@@ -2,10 +2,10 @@
 @typeparam TItem
 @inherits TbComponentBase
 
-@* Each option is drawn as a checkbox, so it shares the checkbox's label and input classes. *@
-<label @attributes="AdditionalAttributes" style="@Style"
+@* Each option is drawn as a checkbox, so it shares the checkbox's label and input classes; an id names its input. *@
+<label @attributes="AttributesWithoutId" style="@Style"
        class="@ClassNames.Join("tb-checkbox__label", Disabled ? "tb-checkbox-group__item--disabled" : null, Class)">
-    <input @attributes="Group!.InputAttributes" type="checkbox" data-part="input" name="@Group.ItemName"
+    <input @attributes="Group!.InputAttributes" type="checkbox" data-part="input" id="@GivenId" name="@Group.ItemName"
            class="@ClassNames.Join("tb-checkbox__input", Group.Classes?.Input)" value="@Group.FormatItem(Value)"
            checked="@Group.IsChecked(Value)" disabled="@Disabled" aria-readonly="@(Group.ReadOnly ? "true" : null)"
            aria-invalid="@(Group.Invalid ? "true" : null)"

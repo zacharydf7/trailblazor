@@ -250,6 +250,16 @@ public class TbRadioGroupTests : BunitContext
         Assert.Equal(true, call.Arguments[1]);
     }
 
+    [Fact]
+    public void Render_ShouldPutAGivenIdOnTheRadiosInput_WhenTheRadioHasOne()
+    {
+        var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Label, "Paper size")
+            .Add(group => group.ChildContent, (RenderFragment)(builder => AddOption(builder, 0, "A4", ("id", "a4")))));
+
+        Assert.Equal("radio", cut.Find("#a4").GetAttribute("type"));
+        Assert.Null(cut.Find("label.tb-radio").GetAttribute("id"));
+    }
+
     private IRenderedComponent<TbRadioGroup<string>> RenderGroup(string value, Action<string>? onChanged = null,
         string? helperText = null, bool disabled = false, bool required = false,
         Func<string?, IEnumerable<string>>? validation = null) =>

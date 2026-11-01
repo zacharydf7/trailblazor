@@ -6,7 +6,7 @@
 @inject JsModuleLoader Modules
 
 @* popovertarget opens the menu natively before the script attaches; the script adds keys and aria-expanded. *@
-<div @ref="_root" @attributes="AdditionalAttributes" style="@Style"
+<div @ref="_root" @attributes="AttributesWithoutId" style="@Style"
      class="@ClassNames.Join("tb-menu", FullWidth ? "tb-menu--full-width" : null, Class)">
     @if (Trigger is not null)
     {
@@ -125,7 +125,8 @@
         return base.SetParametersAsync(parameters);
     }
 
-    private string TriggerId => $"{_id}-trigger";
+    // A given id names the trigger, built in or the app's own, since Attributes sets a custom trigger's id.
+    private string TriggerId => GivenId ?? $"{_id}-trigger";
 
     private string MenuId => $"{_id}-list";
 

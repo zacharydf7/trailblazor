@@ -2,9 +2,10 @@
 @typeparam TValue
 @inherits TbComponentBase
 
-<label @attributes="AdditionalAttributes" style="@Style"
+@* An id names the radio's input, which users choose. *@
+<label @attributes="AttributesWithoutId" style="@Style"
        class="@ClassNames.Join("tb-radio", Disabled ? "tb-radio--disabled" : null, Class)">
-    <input @attributes="Group!.InputAttributes" type="radio" data-part="input" name="@Group.GroupName"
+    <input @attributes="Group!.InputAttributes" type="radio" data-part="input" id="@GivenId" name="@Group.GroupName"
            class="@ClassNames.Join("tb-radio__input", Group.Classes?.Input)"
            value="@Group.FormatOption(Value)" checked="@Group.IsSelected(Value)" disabled="@(Disabled || Held)"
            @onchange="() => Group.SelectAsync(Value)" />

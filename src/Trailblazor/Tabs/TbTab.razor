@@ -6,7 +6,7 @@
 <span hidden data-part="tab-anchor" data-tab="@TabId"></span>
 @if (IsPanelRendered)
 {
-    <div @attributes="AdditionalAttributes" role="tabpanel" id="@PanelId" aria-labelledby="@TabId" tabindex="0"
+    <div @attributes="AttributesWithoutId" role="tabpanel" id="@PanelId" aria-labelledby="@TabId" tabindex="0"
          hidden="@(!IsSelected)" data-part="panel" class="@ClassNames.Join("tb-tabs__panel", Class)"
          style="@Style">
         @ChildContent
@@ -18,6 +18,7 @@
     private bool _shown;
     private string? _text;
     private bool _disabled;
+    private string? _givenId;
     private string? _key;
     private Icon? _icon;
     private RenderFragment? _header;
@@ -64,7 +65,8 @@
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
-    internal string TabId => $"{_id}-tab";
+    // A given id names the tab users click, rather than its panel.
+    internal string TabId => GivenId ?? $"{_id}-tab";
 
     internal string PanelId => $"{_id}-panel";
 
@@ -99,6 +101,7 @@
         _disabled = Disabled;
         _key = Key;
         _icon = Icon;
+        _givenId = GivenId;
         Tabs.Add(this);
     }
 
@@ -117,10 +120,11 @@
         }
 
         _shown |= IsSelected;
-        if (Text != _text || Disabled != _disabled || Key != _key || Icon != _icon)
+        if (Text != _text || Disabled != _disabled || Key != _key || Icon != _icon || GivenId != _givenId)
         {
             _text = Text;
             _disabled = Disabled;
+            _givenId = GivenId;
             _key = Key;
             _icon = Icon;
             Tabs!.Refresh();

@@ -550,6 +550,38 @@ public class TbTabsTests : BunitContext
         AddTab(builder, 20, "Reviews", "Reviews panel");
     }
 
+    [Fact]
+    public void Render_ShouldPutAGivenIdOnTheTabAndNameItsPanelByIt_WhenTheTabHasOne()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.AriaLabel, "Product")
+            .Add(tabs => tabs.ChildContent, SpecsTab("specs")));
+
+        Assert.Equal("tab", Assert.Single(cut.FindAll("#specs")).GetAttribute("role"));
+        Assert.Equal("specs", cut.Find("[role=tabpanel]").GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
+    public void Render_ShouldMoveTheTabsIdAndItsPanelsName_WhenTheGivenIdChanges()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.AriaLabel, "Product")
+            .Add(tabs => tabs.ChildContent, SpecsTab("specs")));
+
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, SpecsTab("details")));
+
+        Assert.Equal("details", cut.Find("[role=tab]").Id);
+        Assert.Equal("details", cut.Find("[role=tabpanel]").GetAttribute("aria-labelledby"));
+    }
+
+    private static RenderFragment SpecsTab(string id) => builder =>
+    {
+        builder.OpenComponent<TbTab>(0);
+        builder.AddAttribute(1, nameof(TbTab.Text), "Specs");
+        builder.AddAttribute(2, "id", id);
+        builder.AddAttribute(3, nameof(TbTab.ChildContent),
+            (RenderFragment)(panel => panel.AddContent(0, "Specs panel")));
+        builder.CloseComponent();
+    };
+
     private IRenderedComponent<TbTabs> RenderTabs(int active = 0, Action<int>? changed = null, bool keepAlive = false,
         int disabledIndex = -1) =>
         Render<TbTabs>(parameters => parameters
