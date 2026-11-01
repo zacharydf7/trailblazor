@@ -28,4 +28,16 @@ public class SpacingTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("tight")).ToHaveCSSAsync("padding-top", "0px");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextClasses_ShouldAlignTheText_WhenApplied(string browser)
+    {
+        var page = await OpenAsync(browser, "/spacing");
+
+        await Expect(page.GetByTestId("centered")).ToHaveCSSAsync("text-align", "center");
+        // End is on the left on a right-to-left line.
+        Assert.True(await page.GetByTestId("ended").EvaluateAsync<bool>(
+            "p => { const range = document.createRange(); range.selectNodeContents(p); "
+            + "return range.getBoundingClientRect().left - p.getBoundingClientRect().left < 2; }"));
+    }
 }

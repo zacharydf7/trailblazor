@@ -27,6 +27,18 @@
         background-color: var(--tb-color-background);
         color: var(--tb-color-text);
     }
+
+    /* The marked page takes the theme's type too, so text outside the components matches them. The size goes on body,
+       so a smaller body size leaves rem, and every rem-based token, alone. A control that inherits its font sets its
+       own line height, so the page's never changes how tall it is. */
+    :where(html[data-tb-theme]) {
+        font-family: var(--tb-font-family);
+        line-height: var(--tb-line-height-normal);
+    }
+
+    :where(html[data-tb-theme] > body) {
+        font-size: var(--tb-font-size-md);
+    }
 }
 
 @layer tb.tokens {
@@ -809,6 +821,7 @@
         cursor: default;
     }
 
+    /* It sits in running text, so unlike other controls it keeps the text's line height. */
     .tb-link--button {
         padding: 0;
         border: 0;
@@ -1359,6 +1372,7 @@
         background: transparent;
         color: inherit;
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         text-align: start;
         text-decoration: none;
         cursor: pointer;
@@ -2441,6 +2455,7 @@
         background: transparent;
         color: inherit;
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         font-size: var(--tb-field-font-size, var(--tb-font-size-md));
         outline: none;
     }
@@ -2957,6 +2972,7 @@
         background: transparent;
         color: inherit;
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         font-size: var(--tb-font-size-sm);
         text-align: start;
         cursor: pointer;
@@ -3430,6 +3446,7 @@
         background: transparent;
         color: inherit;
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         font-size: var(--tb-font-size-sm);
     }
 
@@ -3980,6 +3997,7 @@
         background: transparent;
         color: var(--tb-color-text-muted);
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         font-size: var(--tb-font-size-sm);
         font-weight: var(--tb-font-weight-medium);
         cursor: pointer;
@@ -4129,6 +4147,7 @@
         background: transparent;
         color: var(--tb-color-text);
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         font-weight: var(--tb-font-weight-medium);
         text-align: start;
         cursor: pointer;
@@ -4535,6 +4554,7 @@
         background: none;
         color: inherit;
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         cursor: pointer;
     }
 
@@ -5041,6 +5061,7 @@
         background: transparent;
         color: inherit;
         font: inherit;
+        line-height: var(--tb-line-height-tight);
         cursor: pointer;
     }
 
@@ -5252,6 +5273,7 @@
         background: var(--tb-color-surface);
         color: var(--tb-color-text);
         font: inherit;
+        line-height: var(--tb-line-height-tight);
     }
 
     .tb-color-picker__number:focus-visible {
@@ -6185,5 +6207,18 @@
 
     .tb-gap-y-16 {
         row-gap: var(--tb-space-16);
+    }
+
+    /* Start and end follow the writing direction, like the spacing sides. */
+    .tb-text-start {
+        text-align: start;
+    }
+
+    .tb-text-center {
+        text-align: center;
+    }
+
+    .tb-text-end {
+        text-align: end;
     }
 }

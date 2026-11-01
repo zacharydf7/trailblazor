@@ -46,6 +46,26 @@
 </TbText>
 <CodeBlock Label="A palette for part of a page" Code="@Palette" />
 
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Typography</TbText>
+<TbText>
+    Every component sets its text in <code>--tb-font-family</code>, the system's interface font unless you change it.
+    The page that <code>TbThemeHead</code> marks takes the same font and <code>--tb-line-height-normal</code>, and its
+    <code>body</code> takes <code>--tb-font-size-md</code>, so text outside the components matches them without CSS
+    of your own.
+</TbText>
+<TbText>
+    To use your own font, set <code>--tb-font-family</code> rather than a font on <code>body</code>: the token changes
+    the page and every component at once, while a font on <code>body</code> alone changes only your own text and
+    leaves the components in the system font.
+</TbText>
+<CodeBlock Label="Your own font, everywhere" Code="@Font" />
+<TbText>
+    To keep the page's type your own instead, set it on <code>html</code> or <code>body</code> in your stylesheet. The
+    themed page's type sits in a cascade layer with no specificity, so any rule of yours outside a cascade layer wins.
+    Text fields, tabs, menu items and the other controls that take the text's font set their own line height, so a
+    line height of yours doesn't change how tall they are.
+</TbText>
+
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Density</TbText>
 <TbText>
     <code>data-tb-density="compact"</code> makes controls and rows shorter, for screens full of data.
@@ -104,6 +124,12 @@
         :root {
             --tb-font-family: "Inter", system-ui, sans-serif;
             --tb-radius-md: 2px;
+        }
+        """;
+
+    private const string Font = """
+        :root {
+            --tb-font-family: "Inter", system-ui, sans-serif;
         }
         """;
 

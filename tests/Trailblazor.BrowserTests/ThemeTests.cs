@@ -82,4 +82,24 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.NotEqual("rgba(0, 0, 0, 0)", colors[0]);
         Assert.NotEqual(colors[0], colors[2]);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ThemedPage_ShouldTakeTheThemesTypeUnlessTheAppSetsItsOwn_WhenTbThemeHeadMarksIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/theme");
+        const string Type = "() => { const html = getComputedStyle(document.documentElement); "
+            + "return [html.fontFamily, html.lineHeight, html.fontSize, getComputedStyle(document.body).fontSize]; }";
+        const string Token = "() => getComputedStyle(document.documentElement).getPropertyValue('--tb-font-family')";
+
+        var themed = await page.EvaluateAsync<string[]>(Type);
+        // WebKit drops the quotes around a font's name.
+        Assert.Equal((await page.EvaluateAsync<string>(Token)).Trim().Replace("\"", ""), themed[0].Replace("\"", ""));
+        Assert.Equal("24px", themed[1]);
+        await page.AddStyleTagAsync(new() { Content = ":root { --tb-font-size-md: 1.25rem; }" });
+        // The body takes the size, and rem stays the browser's.
+        Assert.Equal(["16px", "20px"], (await page.EvaluateAsync<string[]>(Type))[2..]);
+        await page.AddStyleTagAsync(new() { Content = "html { font-family: serif; line-height: 2; }" });
+
+        Assert.Equal(["serif", "32px"], (await page.EvaluateAsync<string[]>(Type))[..2]);
+    }
 }
