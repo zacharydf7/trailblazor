@@ -1558,7 +1558,7 @@ public static class ExampleCatalog
                 + "`Trailblazor.Testing` has the same `Row` and `SelectAsync`, and `ClickRowAsync(\"Cedar Flats\")` "
                 + "clicks a row as the browser reports it, raising `OnRowClick` and, with `RowClickSelects`, "
                 + "selecting it; a plain bUnit `Click()` on the row doesn't. A row draws again only when its item, "
-                + "its selection or the columns change, so a test "
+                + "its selection, its `RowClass`, its `RowLabel` or the columns change, so a test "
                 + "that changes what a `Cell` template shows calls `RenderRows`, as the app does, and one that "
                 + "changes `Items` in place calls `RefreshAsync`.",
             Telemetry =
@@ -1578,6 +1578,10 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "It is a native `table`: name it with a `<caption>` or `aria-label`, and give headers `scope`.",
+                "`StickyHeader` keeps the header row in view as the rows scroll, in a parent with a height and "
+                    + "`overflow: auto`, as the trail log has, or else in the page; `--tb-table-sticky-top` moves it "
+                    + "below an app bar fixed to the top. A scroll area of its own needs `tabindex=\"0\"` and a "
+                    + "name, so keyboard users can reach and scroll it.",
                 "For rows that sort, page or select, use the data grid.",
             ],
             Target = new("table", "Opening hours"),

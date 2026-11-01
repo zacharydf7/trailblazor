@@ -146,16 +146,16 @@
 </div>
 
 @code {
-    private RenderFragment Row(TItem item, object key, bool selected, int at) =>
+    private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
              @ontbrowclick="args => OnRowClickedAsync(item, args)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
-                        RowClass?.Invoke(item))">
+                        rowClass)">
             @if (CanReorder)
             {
                 <td class="tb-data-grid__handle">
                     @((RenderFragment)(handle => MoveHandle.Add(handle, 0, Format(TbStrings.SortableHandle,
-                        LabelOf(item)), at, _total, disabled: false, Localizer,
+                        label ?? LabelOf(item)), at, _total, disabled: false, Localizer,
                         (to, args) => MoveRowAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
                 </td>
             }
@@ -165,7 +165,7 @@
                     <input type="@(SelectionMode == SelectionMode.Single ? "radio" : "checkbox")"
                            class="tb-data-grid__check" checked="@selected"
                            name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
-                           aria-label="@Format(TbStrings.DataGridSelectRow, LabelOf(item))"
+                           aria-label="@Format(TbStrings.DataGridSelectRow, label ?? LabelOf(item))"
                            @onchange="() => ToggleAsync(item)" />
                 </td>
             }

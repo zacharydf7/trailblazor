@@ -105,12 +105,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public EventCallback<TItem> OnRowClick { get; set; }
 
     /// <summary>Names a row's selection box for screen readers, as "Select" and this. Defaults to the first column's
-    /// text. Call <see cref="RenderRows"/> when what it reads from outside the item changes.</summary>
+    /// text. A row whose label changes draws again, even when it reads from outside the item.</summary>
     [Parameter]
     public Func<TItem, string>? RowLabel { get; set; }
 
-    /// <summary>Extra CSS classes for a row. Call <see cref="RenderRows"/> when what it reads from outside the item
-    /// changes, such as which row is current.</summary>
+    /// <summary>Extra CSS classes for a row. A row whose classes change draws again, even when they come from outside
+    /// the item, such as which row is current.</summary>
     [Parameter]
     public Func<TItem, string?>? RowClass { get; set; }
 
@@ -255,9 +255,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             _pageSize = PageSize is > 0 ? PageSize : null;
         }
 
-        // Rows draw again for a new collection, whose items may have changed in place, and for options read through
-        // delegates only when the method changes, since markup makes a new delegate on every render.
-        object rowOptions = (Items, SelectionMode, RowClass?.Method, RowLabel?.Method);
+        // Rows draw again for a new collection, whose items may have changed in place. Each row compares its own class
+        // and label, which may read from outside the item.
+        object rowOptions = (Items, SelectionMode);
         if (!rowOptions.Equals(_rowOptions))
         {
             _rowOptions = rowOptions;
@@ -317,9 +317,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         StateHasChanged();
     }
 
-    /// <summary>Draws every row again. A row draws again by itself only when its item, its selection or the columns
-    /// change, so call this when a <see cref="TbColumn{TItem}.Cell"/> template, <see cref="RowClass"/> or
-    /// <see cref="RowLabel"/> shows something else that changed, such as which row is being edited.</summary>
+    /// <summary>Draws every row again. A row draws again by itself only when its item, its selection, its
+    /// <see cref="RowClass"/>, its <see cref="RowLabel"/> or the columns change, so call this when a
+    /// <see cref="TbColumn{TItem}.Cell"/> template shows something else that changed, such as which row is being
+    /// edited.</summary>
     public void RenderRows()
     {
         _rowVersion++;
@@ -353,13 +354,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             var item = _rows[index];
             var key = KeyOf(item);
             var selected = IsSelected(item);
+            var rowClass = RowClass?.Invoke(item);
+            var label = RowLabel?.Invoke(item);
             builder.OpenComponent<GridRow<TItem>>(0);
             builder.SetKey(key);
             builder.AddComponentParameter(1, nameof(GridRow<TItem>.Item), item);
             builder.AddComponentParameter(2, nameof(GridRow<TItem>.Selected), selected);
-            builder.AddComponentParameter(3, nameof(GridRow<TItem>.Version), _rowVersion);
-            builder.AddComponentParameter(4, nameof(GridRow<TItem>.ChildContent),
-                Row(item, key, selected, Offset + index));
+            builder.AddComponentParameter(3, nameof(GridRow<TItem>.Class), rowClass);
+            builder.AddComponentParameter(4, nameof(GridRow<TItem>.Label), label);
+            builder.AddComponentParameter(5, nameof(GridRow<TItem>.Version), _rowVersion);
+            builder.AddComponentParameter(6, nameof(GridRow<TItem>.ChildContent),
+                Row(item, key, selected, Offset + index, rowClass, label));
             builder.CloseComponent();
         }
     }

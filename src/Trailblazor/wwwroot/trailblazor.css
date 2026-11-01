@@ -4486,6 +4486,12 @@
         z-index: 1;
     }
 
+    .tb-table--sticky-header thead th {
+        position: sticky;
+        inset-block-start: var(--tb-table-sticky-top, 0);
+        z-index: 1;
+    }
+
     .tb-data-grid__header--center,
     .tb-data-grid__cell--center {
         text-align: center;

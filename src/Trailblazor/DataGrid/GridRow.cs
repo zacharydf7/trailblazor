@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor;
 
-// A grid row, drawn by the grid's own markup, that draws again only when its item, its selection or the grid's rows
-// changed, so a click on one row doesn't redraw the rest. C#, so it can stay internal.
+// A grid row, drawn by the grid's own markup, that draws again only when its item, its selection, its class, its label
+// or the grid's rows changed, so a click on one row doesn't redraw the rest. C#, so it can stay internal.
 internal sealed class GridRow<TItem> : ComponentBase
 {
     private TItem _item = default!;
     private bool _selected;
+    private string? _class;
+    private string? _label;
     private int _version;
     private bool _changed;
 
@@ -19,6 +21,12 @@ internal sealed class GridRow<TItem> : ComponentBase
     public bool Selected { get; set; }
 
     [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
     public int Version { get; set; }
 
     [Parameter, EditorRequired]
@@ -26,8 +34,9 @@ internal sealed class GridRow<TItem> : ComponentBase
 
     protected override void OnParametersSet()
     {
-        _changed = !Same(Item, _item) || Selected != _selected || Version != _version;
-        (_item, _selected, _version) = (Item, Selected, Version);
+        _changed = !Same(Item, _item) || Selected != _selected || Class != _class || Label != _label
+            || Version != _version;
+        (_item, _selected, _class, _label, _version) = (Item, Selected, Class, Label, Version);
     }
 
     protected override bool ShouldRender() => _changed;

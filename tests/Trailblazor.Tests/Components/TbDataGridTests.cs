@@ -746,6 +746,34 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void RowClass_ShouldRedrawTheRowsWhoseClassChanged_WhenWhatItReadsFromOutsideTheItemChanges()
+    {
+        var current = 1;
+        var cut = RenderTrails(configure: parameters =>
+            parameters.Add(grid => grid.RowClass, trail => trail.Id == current ? "is-current" : null));
+
+        current = 2;
+        cut.Render();
+
+        Assert.DoesNotContain("is-current", Row(cut, "1").ClassList);
+        Assert.Contains("is-current", Row(cut, "2").ClassList);
+    }
+
+    [Fact]
+    public void RowLabel_ShouldRenameTheRowsWhoseLabelChanged_WhenWhatItReadsFromOutsideTheItemChanges()
+    {
+        var suffix = "";
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.SelectionMode,
+            SelectionMode.Multiple).Add(grid => grid.RowLabel, trail => trail.Name + suffix));
+
+        suffix = " (closed)";
+        cut.Render();
+
+        Assert.Equal("Select Pine Hollow (closed)",
+            Row(cut, "1").QuerySelector("[data-part=select] input")!.GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public async Task Items_ShouldShowChangesMadeInPlace_WhenRefreshed()
     {
         List<Shelter> shelters = [new(1, "Pine Hut"), new(2, "Ridge Hut")];

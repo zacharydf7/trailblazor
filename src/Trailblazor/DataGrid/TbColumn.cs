@@ -53,9 +53,9 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     public Func<TItem, object?>? SortBy { get; set; }
 
     /// <summary>Draws each cell instead of the <see cref="Field"/>'s text. Its context is the row's item. Clicks on
-    /// buttons, links and fields in it don't select the row. A row draws again when its item, its selection or the
-    /// columns change; call the grid's <see cref="TbDataGrid{TItem}.RenderRows"/> when the template shows anything
-    /// else that changed.</summary>
+    /// buttons, links and fields in it don't select the row. A row draws again when its item, its selection, its class,
+    /// its label or the columns change; call the grid's <see cref="TbDataGrid{TItem}.RenderRows"/> when the template
+    /// shows anything else that changed.</summary>
     [Parameter]
     public RenderFragment<TItem>? Cell { get; set; }
 

@@ -3,7 +3,7 @@
 
 <table @attributes="AdditionalAttributes" style="@Style"
        class="@ClassNames.Join("tb-table", ClassNames.Modifier("tb-table", Size), Striped ? "tb-table--striped" : null,
-                  Class)">
+                  StickyHeader ? "tb-table--sticky-header" : null, Class)">
     @ChildContent
 </table>
 
@@ -16,6 +16,12 @@
     /// <summary>Shades every other row.</summary>
     [Parameter]
     public bool Striped { get; set; }
+
+    /// <summary>Keeps the header row in view as the rows scroll: in a parent with a height and <c>overflow: auto</c>,
+    /// or else in the page. <c>--tb-table-sticky-top</c> moves it down, such as below an app bar fixed to the top.
+    /// </summary>
+    [Parameter]
+    public bool StickyHeader { get; set; }
 
     /// <summary>How tall the rows are. Defaults to <see cref="Size.Medium"/>.</summary>
     [Parameter]

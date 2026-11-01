@@ -2736,3 +2736,5 @@ Trailblazor.TbTab.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<M
 Trailblazor.TbTab.OnClick.set -> void
 Trailblazor.TbTabs.RenderAllPanels.get -> bool
 Trailblazor.TbTabs.RenderAllPanels.set -> void
+Trailblazor.TbTable.StickyHeader.get -> bool
+Trailblazor.TbTable.StickyHeader.set -> void
