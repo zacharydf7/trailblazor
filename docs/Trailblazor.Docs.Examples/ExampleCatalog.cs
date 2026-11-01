@@ -1420,16 +1420,22 @@ public static class ExampleCatalog
                 "empty", "drop-reason"],
             TestingTip = "`page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows rows by "
                 + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
-                + "`CheckAsync(...)` and `ItemAsync(...)`; `DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` "
-                + "drag one row's path onto another's. Every row also carries `data-key`, `data-level` and "
+                + "`CheckAsync(...)` and `ItemAsync(...)`; `ItemsAsync(...)` returns every row at a path, for rows "
+                + "that share their text, and `ExpandAllAsync()` opens every row, waiting for rows that load or "
+                + "that a `TbTreeItem` renders once open. `DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` "
+                + "drag one row's path onto another's. The helpers follow only the tree's own rows, not those of a "
+                + "tree inside a row. Every row also carries `data-key`, `data-level` and "
                 + "`data-text`, and a row being dragged over carries `data-drop`. In a virtualized tree the helpers "
                 + "scroll until the row renders (a drag needs both rows in view together), and rows also carry "
                 + "`data-index` and `data-inside`, the number of rows in their branch. A row's `data-key` is its "
                 + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
                 + "the text is empty or when another key has it. Before pressing keys or dragging without the "
-                + "helpers, wait for the tree's `data-ready`. In bUnit, a test that changes `Items` in place calls "
-                + "`RefreshAsync`, as the app does; a new collection, or an `OnDrop`, builds the rows again by "
-                + "itself.",
+                + "helpers, wait for the tree's `data-ready`; a tree of `TbTreeItem`s also sets `aria-busy` while "
+                + "items it has just been given become rows. In bUnit, `cut.Tb().Tree(\"Trails by region\")` from "
+                + "`Trailblazor.Testing` has the same `ExpandAsync`, `ExpandAllAsync`, `SelectAsync` and "
+                + "`CheckAsync`, with `Texts` for the rows that show and `Item` and `Items` to find rows. A test "
+                + "that changes `Items` in place calls `RefreshAsync`, as the app does; a new collection, or an "
+                + "`OnDrop`, builds the rows again by itself.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"folders\"`, it counts `trailblazor.control.shown` as it first "
