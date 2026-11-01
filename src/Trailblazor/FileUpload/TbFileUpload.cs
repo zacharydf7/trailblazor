@@ -12,7 +12,7 @@ namespace Trailblazor;
 public partial class TbFileUpload
 {
     private readonly List<string> _rejected = [];
-    private InputFile? _input;
+    private ListeningInputFile? _input;
     // Counts the choices taken, which tests wait on.
     private int _choices;
     // InputFile hears the browser only after its first interactive render, so tests wait for this before choosing.
@@ -103,6 +103,39 @@ public partial class TbFileUpload
         }
     }
 
+    // Built here because its component is internal; InputFile puts the attributes it doesn't take on the input.
+    private RenderFragment Input => builder =>
+    {
+        builder.OpenComponent<ListeningInputFile>(0);
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddComponentParameter(5, nameof(InputFile.OnChange),
+            EventCallback.Factory.Create<InputFileChangeEventArgs>(this, OnChangeAsync));
+        builder.AddAttribute(6, "accept", Accept);
+        builder.AddAttribute(7, "multiple", Multiple);
+        builder.AddAttribute(8, "disabled", Disabled || ReadOnly);
+        builder.AddAttribute(9, "aria-label", AccessibleName);
+        builder.AddAttribute(10, "aria-required", Required ? "true" : null);
+        builder.AddAttribute(11, "aria-invalid", Errors.Count > 0 ? "true" : null);
+        builder.AddAttribute(12, "aria-describedby", Description);
+        builder.AddAttribute(13, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
+        builder.AddAttribute(14, "data-prerender",
+            AssignedRenderMode is not null && !RendererInfo.IsInteractive ? "" : null);
+        builder.AddAttribute(15, "data-choices", _choices);
+        builder.AddAttribute(16, "data-ready", _ready ? "" : null);
+        builder.AddAttribute(17, "tabindex", Hidden ? "-1" : null);
+        builder.AddComponentParameter(18, nameof(ListeningInputFile.OnListening),
+            EventCallback.Factory.Create(this, () => _ready = true));
+        builder.AddAttribute(19, "ondragenter", EventCallback.Factory.Create(this, () => _dragging = true));
+        builder.AddAttribute(20, "ondragleave", EventCallback.Factory.Create(this, () => _dragging = false));
+        builder.AddAttribute(21, "ondrop", EventCallback.Factory.Create(this, () => _dragging = false));
+        builder.AddAttribute(22, "class", ClassNames.Join("tb-file-upload__input", Classes?.Input));
+        builder.AddComponentReferenceCapture(23, component => _input = (ListeningInputFile)component);
+        builder.CloseComponent();
+    };
+
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) =>
         _input!.Element!.Value.FocusAsync(preventScroll);
@@ -115,10 +148,6 @@ public partial class TbFileUpload
         {
             // Loaded ahead, so OpenAsync is one call within the click's time limit; a failed load retries on that call.
             _ = Modules.ImportAsync(Script);
-            // InputFile starts listening in its own first after-render, which runs after this one, so it goes first.
-            await Task.Yield();
-            _ready = true;
-            StateHasChanged();
         }
     }
 

@@ -35,17 +35,7 @@
                 @ZoneLabel
             }
         </span>
-        <InputFile @ref="_input" @attributes="ControlAttributes" data-part="input" id="@InputId"
-                   name="@InputNameAttribute" OnChange="OnChangeAsync" accept="@Accept" multiple="@Multiple"
-                   disabled="@(Disabled || ReadOnly)" aria-label="@AccessibleName"
-                   aria-required="@(Required ? "true" : null)"
-                   aria-invalid="@(Errors.Count > 0 ? "true" : null)" aria-describedby="@Description"
-                   data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
-                   data-prerender="@(AssignedRenderMode is not null && !RendererInfo.IsInteractive ? "" : null)"
-                   data-choices="@_choices" data-ready="@(_ready ? "" : null)" tabindex="@(Hidden ? "-1" : null)"
-                   @ondragenter="() => _dragging = true" @ondragleave="() => _dragging = false"
-                   @ondrop="() => _dragging = false"
-                   class="@ClassNames.Join("tb-file-upload__input", Classes?.Input)" />
+        @Input
     </div>
     @if (Files.Count > 0 && !Hidden)
     {

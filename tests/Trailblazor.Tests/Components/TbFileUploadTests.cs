@@ -18,6 +18,16 @@ public class TbFileUploadTests : BunitContext
         InputFileContent.CreateFromBinary(new byte[size], name, contentType: "application/pdf");
 
     [Fact]
+    public async Task Render_ShouldLeaveTheFieldReadyWithNothingLeftToRun_WhenItReturns()
+    {
+        // Rendered from the dispatcher, so work the field leaves for a later turn can't run before the check.
+        var ready = await Renderer.Dispatcher.InvokeAsync(() =>
+            RenderUpload().Find("input[type=file]").HasAttribute("data-ready"));
+
+        Assert.True(ready);
+    }
+
+    [Fact]
     public void Render_ShouldTurnOffThePickerAndEveryButton_WhenReadOnly()
     {
         var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));

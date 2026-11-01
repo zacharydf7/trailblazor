@@ -1024,7 +1024,8 @@ public static class ExampleCatalog
             DataParts = ["label", "helper", "error", "zone", "input", "files", "file", "remove", "rejected", "clear"],
             TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
                 + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
-                + "taken them. In bUnit, `FindComponent<InputFile>().UploadFiles(...)` chooses files.",
+                + "taken them. In bUnit, `FindComponent<InputFile>().UploadFiles(...)` chooses files. The field is "
+                + "ready as soon as `Render` returns, with nothing left to run, so a test can raise events at once.",
         },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.",
