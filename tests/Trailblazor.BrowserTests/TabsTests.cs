@@ -1,9 +1,22 @@
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
 public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldSelectTheTab_WhenGivenItsNameAndTheTabsName(string browser)
+    {
+        // Not waiting for the page to be interactive, which the helper waits for itself.
+        var page = await OpenStaticAsync(browser, "/examples/tabs");
+
+        await page.Tb().Tabs("Trail settings").SelectAsync("Alerts");
+
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Alerts" }))
+            .ToHaveTextAsync("Tell me about closures and fire danger.");
+    }
+
     private static ILocator Tab(IPage page, string name) =>
         page.GetByRole(AriaRole.Tab, new() { Name = name, Exact = true });
 

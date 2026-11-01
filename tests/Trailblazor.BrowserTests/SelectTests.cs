@@ -4,6 +4,17 @@ namespace Trailblazor.BrowserTests;
 
 public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldChooseInTheGivenRowOrById_WhenSelectsShareTheirLabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/repeated-fields");
+
+        await page.Tb().Select(page.GetByTestId("row-1").GetByLabel("Size")).ChooseAsync("Large");
+        await page.Tb().Select(page.Locator("#second-size")).ChooseAsync("Small");
+
+        await Expect(page.GetByTestId("rows")).ToHaveTextAsync("large - | small -");
+    }
+
     private static ILocator Combobox(IPage page, string name = "Size") =>
         page.GetByRole(AriaRole.Combobox, new() { Name = name });
 

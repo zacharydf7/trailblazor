@@ -131,7 +131,10 @@
             builder.SetUpdatesAttributeName("value");
         }
 
-        builder.AddElementReferenceCapture(27, element => _input = element);
+        // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text.
+        builder.AddAttribute(27, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
+        builder.AddAttribute(28, "data-ready", RendererInfo.IsInteractive ? "" : null);
+        builder.AddElementReferenceCapture(29, element => _input = element);
         builder.CloseElement();
     };
 

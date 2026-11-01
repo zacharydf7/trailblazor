@@ -734,8 +734,9 @@ public static class ExampleCatalog
             DataParts = [.. FieldParts, "input", "decrement", "increment"],
             TestingTip = "Without a `Format` the field reads what was typed through its own change event, which "
                 + "bUnit's `Change` doesn't reach; `await cut.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` "
-                + "from `Trailblazor.Testing` types into either kind. In Playwright, fill the `spinbutton` and press "
-                + "Tab.",
+                + "from `Trailblazor.Testing` types into either kind. In Playwright, "
+                + "`await page.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from "
+                + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types and leaves it.",
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
@@ -913,7 +914,9 @@ public static class ExampleCatalog
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
                 + "select a `Comparer` so they still match their options. The helper works the same on a `Filterable` "
-                + "select. In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
+                + "select. For selects that share a label, as in rows of an editable list, pass a locator instead: "
+                + "`page.Tb().Select(row.GetByLabel(\"Size\"))`, or `page.Locator(\"#size\")` for one with an "
+                + "`id`. In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
                 + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows. "
                 + "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it.",
             Telemetry =
@@ -987,7 +990,8 @@ public static class ExampleCatalog
                 "eyedropper", "pad", "hue", "saturation", "brightness", "alpha", "red", "green", "blue", "swatches",
                 "swatch"],
             TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
-                + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it. In bUnit, "
+                + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it; for "
+                + "pickers that share a label, pass a locator, as `ColorPicker(row.GetByLabel(\"Color\"))`. In bUnit, "
                 + "set `FakeBrowserService.PickedColor` to test the eyedropper.",
         },
         new("file-upload", "File upload", ExampleCategory.Inputs,
@@ -1156,7 +1160,10 @@ public static class ExampleCatalog
             DataParts = ["trigger", "menu", "icon", "label", "indicator", "chevron", "submenu-trigger", "group-label"],
             TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
                 + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. A group is "
-                + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`.",
+                + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`. The trigger gets `data-ready` once a "
+                + "click on an item reaches the server; `await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", "
+                + "\"Email\")` from `Trailblazor.Testing.Playwright` waits for it, opens the menu and its submenus, "
+                + "and clicks the item.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"row-actions\"`, it counts `trailblazor.control.shown` as it "
@@ -1216,7 +1223,10 @@ public static class ExampleCatalog
                 + "and opens a dialog in one call, as the Testing guide shows. "
                 + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
-                + "finishes when the dialog closes.",
+                + "finishes when the dialog closes. In Playwright, `page.Tb().Dialog(\"Delete report?\")` from "
+                + "`Trailblazor.Testing.Playwright` finds a dialog by its title: `WaitForAsync()` returns it once "
+                + "open, `ChooseAsync(\"Delete\")` clicks a button and waits for it to close, and `CancelAsync()` "
+                + "presses Escape.",
             Telemetry =
             [
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
@@ -1321,9 +1331,10 @@ public static class ExampleCatalog
             DataParts = ["list", "tab", "tab-anchor", "icon", "panel"],
             TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
                 + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. Wait for the tab list's "
-                + "`data-ready` attribute before testing the arrow keys. In bUnit, "
+                + "`data-ready` attribute before testing the arrow keys. "
                 + "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its "
-                + "text.",
+                + "text in bUnit, and `await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
+                + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready.",
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "
@@ -1590,8 +1601,10 @@ public static class ExampleCatalog
             Blocks = ["tb-toast", "tb-toaster"],
             DataParts = ["toaster", "toast", "icon", "title", "message", "action", "close"],
             TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
-                + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. In bUnit, "
-                + "`await toast.Closed` says why it closed.",
+                + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. "
+                + "`await page.Tb().Toasts.WaitForAsync(\"Report archived\")` from `Trailblazor.Testing.Playwright` "
+                + "returns the toast that shows the text, to click its action. In bUnit, `await toast.Closed` says "
+                + "why it closed.",
             Telemetry =
             [
                 "With `ToastOptions.TelemetryName`, such as `\"trail-saved\"`, it counts `trailblazor.control.shown` "

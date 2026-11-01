@@ -51,8 +51,13 @@
 <TbText>
     Reference <code>Trailblazor.Testing.Playwright</code> for helpers that drive components the way a person does. A
     select is chosen by its label and option names, whether it renders as Trailblazor's list or, on a static page, as a
-    native <code>&lt;select&gt;</code>. A popover opens by its trigger's name and hands back its panel. The helpers
-    wait for the page to be ready.
+    native <code>&lt;select&gt;</code>. A popover opens by its trigger's name and hands back its panel. A menu item is
+    chosen by its trigger's name and the path to it through submenus, a dialog is found by its title and answered by a
+    button's name, a tab is selected by its name, and a toast is found by its text. A select or color picker that
+    shares its label with others, as in the rows of an editable list, is found by a locator instead, such as
+    <code>page.Tb().Select(row.GetByLabel("Size"))</code>. Each helper waits for its component
+    to be ready before it clicks or types. Check what follows, such as a value shown elsewhere on the page, with
+    Playwright's <code>Expect</code>, which retries until the page shows it.
 </TbText>
 <CodeBlock Label="A Playwright test" Code="@Playwright" />
 
@@ -69,10 +74,11 @@
         stays static, so put the marker on each interactive page's root instead.
     </li>
     <li>
-        For a component whose keys or pointer gestures need its script, wait for <code>data-ready</code> on it where
-        its page says so, such as a tree, a data grid, a splitter or an accordion.
+        For a component that needs the page to be interactive or its script attached, wait for
+        <code>data-ready</code>, an empty attribute, on the element its page's testing notes name, such as a tree, a
+        data grid, a select's combobox, a tab list, a menu's trigger or a number field's input. It is the wait the
+        helpers use, and it stays the same between versions.
     </li>
-    <li>A menu's trigger gets <code>aria-expanded</code> once its menu can open.</li>
     <li>
         A data grid with a <code>DataProvider</code> sets <code>aria-busy</code> on its table while rows load; read the
         rows once it clears.
@@ -177,6 +183,13 @@
         var filters = await page.Tb().Popover("Filters").OpenAsync();
         await filters.GetByLabel("Only open items").CheckAsync();
         await page.Tb().Popover("Filters").CloseAsync();
+
+        await page.Tb().NumberField("Copies").EnterAsync("12");
+        await page.Tb().Tabs("Trail settings").SelectAsync("Alerts");
+        await page.Tb().Menu("More options").ChooseAsync("Share", "Email");
+        await page.Tb().Dialog("Delete report?").ChooseAsync("Delete");
+        var toast = await page.Tb().Toasts.WaitForAsync("Report archived");
+        await toast.GetByRole(AriaRole.Button, new() { Name = "Undo" }).ClickAsync();
         """;
 
     private const string TimeAndMotion = """

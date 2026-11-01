@@ -299,6 +299,20 @@ public class TbNumberFieldTests : BunitContext
             .Add(field => field.Decimals, decimals)));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldMarkTheInputReadyOrStatic_WhenTheRendererIsOrIsntInteractive(bool interactive)
+    {
+        SetRendererInfo(new RendererInfo(interactive ? "Server" : "Static", interactive));
+
+        var input = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Copies"))
+            .Find("input");
+
+        Assert.Equal([interactive, !interactive],
+            [input.HasAttribute("data-ready"), input.HasAttribute("data-static")]);
+    }
+
     [Fact]
     public void Render_ShouldStayTheBrowsersNumberBox_WhenAFormattedFieldRendersWithoutACircuit()
     {

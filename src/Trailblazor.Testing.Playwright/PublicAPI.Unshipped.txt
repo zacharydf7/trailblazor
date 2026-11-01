@@ -5,10 +5,15 @@ Trailblazor.Testing.Playwright.TbAutocompleteLocator.ChooseAsync(string! text, s
 Trailblazor.Testing.Playwright.TbAutocompleteLocator.TbAutocompleteLocator(Microsoft.Playwright.IPage! page, string! label) -> void
 Trailblazor.Testing.Playwright.TbColorPickerLocator
 Trailblazor.Testing.Playwright.TbColorPickerLocator.ChooseAsync(string! color) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbColorPickerLocator.TbColorPickerLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TbColorPickerLocator.TbColorPickerLocator(Microsoft.Playwright.IPage! page, Microsoft.Playwright.ILocator! field) -> void
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.TbDateRangePickerLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TbDialogLocator
+Trailblazor.Testing.Playwright.TbDialogLocator.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDialogLocator.ChooseAsync(string! button) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDialogLocator.TbDialogLocator(Microsoft.Playwright.IPage! page, string! title) -> void
+Trailblazor.Testing.Playwright.TbDialogLocator.WaitForAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbFileUploadLocator
 Trailblazor.Testing.Playwright.TbFileUploadLocator.ChooseAsync(params Microsoft.Playwright.FilePayload![]! files) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbFileUploadLocator.ChooseAsync(params string![]! paths) -> System.Threading.Tasks.Task!
@@ -23,6 +28,12 @@ Trailblazor.Testing.Playwright.TbGridLocator.TbGridLocator(Microsoft.Playwright.
 Trailblazor.Testing.Playwright.TbListBoxLocator
 Trailblazor.Testing.Playwright.TbListBoxLocator.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbListBoxLocator.TbListBoxLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TbMenuLocator
+Trailblazor.Testing.Playwright.TbMenuLocator.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbMenuLocator.TbMenuLocator(Microsoft.Playwright.IPage! page, string! trigger) -> void
+Trailblazor.Testing.Playwright.TbNumberFieldLocator
+Trailblazor.Testing.Playwright.TbNumberFieldLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbNumberFieldLocator.TbNumberFieldLocator(Microsoft.Playwright.IPage! page, string! label) -> void
 Trailblazor.Testing.Playwright.TbPaginationLocator
 Trailblazor.Testing.Playwright.TbPaginationLocator.GoToPageAsync(int number) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbPaginationLocator.TbPaginationLocator(Microsoft.Playwright.IPage! page, string! name) -> void
@@ -32,7 +43,13 @@ Trailblazor.Testing.Playwright.TbPopoverLocator.OpenAsync() -> System.Threading.
 Trailblazor.Testing.Playwright.TbPopoverLocator.TbPopoverLocator(Microsoft.Playwright.IPage! page, string! trigger) -> void
 Trailblazor.Testing.Playwright.TbSelectLocator
 Trailblazor.Testing.Playwright.TbSelectLocator.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbSelectLocator.TbSelectLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TbSelectLocator.TbSelectLocator(Microsoft.Playwright.IPage! page, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TbTabsLocator
+Trailblazor.Testing.Playwright.TbTabsLocator.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTabsLocator.TbTabsLocator(Microsoft.Playwright.IPage! page, string? name) -> void
+Trailblazor.Testing.Playwright.TbToastsLocator
+Trailblazor.Testing.Playwright.TbToastsLocator.TbToastsLocator(Microsoft.Playwright.IPage! page) -> void
+Trailblazor.Testing.Playwright.TbToastsLocator.WaitForAsync(string! text) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbTreeLocator
 Trailblazor.Testing.Playwright.TbTreeLocator.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.DragAfterAsync(string![]! row, string![]! target) -> System.Threading.Tasks.Task!
@@ -44,14 +61,21 @@ Trailblazor.Testing.Playwright.TbTreeLocator.SelectAsync(params string![]! path)
 Trailblazor.Testing.Playwright.TbTreeLocator.TbTreeLocator(Microsoft.Playwright.IPage! page, string! name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage
 Trailblazor.Testing.Playwright.TrailblazorPage.Autocomplete(string! label) -> Trailblazor.Testing.Playwright.TbAutocompleteLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbColorPickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(string! label) -> Trailblazor.Testing.Playwright.TbColorPickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.DateRangePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateRangePickerLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Dialog(string! title) -> Trailblazor.Testing.Playwright.TbDialogLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.FileUpload(string! label) -> Trailblazor.Testing.Playwright.TbFileUploadLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Grid(string! name) -> Trailblazor.Testing.Playwright.TbGridLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ListBox(string! label) -> Trailblazor.Testing.Playwright.TbListBoxLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Menu(string! trigger) -> Trailblazor.Testing.Playwright.TbMenuLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.NumberField(string! label) -> Trailblazor.Testing.Playwright.TbNumberFieldLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Pagination(string! name) -> Trailblazor.Testing.Playwright.TbPaginationLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Popover(string! trigger) -> Trailblazor.Testing.Playwright.TbPopoverLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Select(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(string! label) -> Trailblazor.Testing.Playwright.TbSelectLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(string? name = null) -> Trailblazor.Testing.Playwright.TbTabsLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Toasts.get -> Trailblazor.Testing.Playwright.TbToastsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TrailblazorPage(Microsoft.Playwright.IPage! page) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Tree(string! name) -> Trailblazor.Testing.Playwright.TbTreeLocator!
 Trailblazor.Testing.Playwright.TrailblazorPageExtensions

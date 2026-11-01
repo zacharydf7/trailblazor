@@ -16,7 +16,11 @@ public static class TrailblazorPageExtensions
 public sealed class TrailblazorPage(IPage page)
 {
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label.</summary>
-    public TbSelectLocator Select(string label) => new(page, label);
+    public TbSelectLocator Select(string label) => new(page, page.GetByLabel(label, new() { Exact = true }));
+
+    /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> this finds, such as one in a row of fields that share
+    /// their labels, as <c>row.GetByLabel("Size")</c>, or one with an id, as <c>page.Locator("#size")</c>.</summary>
+    public TbSelectLocator Select(ILocator field) => new(page, field);
 
     /// <summary>The <c>TbAutocomplete</c> with this label.</summary>
     public TbAutocompleteLocator Autocomplete(string label) => new(page, label);
@@ -25,7 +29,11 @@ public sealed class TrailblazorPage(IPage page)
     public TbListBoxLocator ListBox(string label) => new(page, label);
 
     /// <summary>The <c>TbColorPicker</c> with this label.</summary>
-    public TbColorPickerLocator ColorPicker(string label) => new(page, label);
+    public TbColorPickerLocator ColorPicker(string label) => new(page, page.GetByLabel(label, new() { Exact = true }));
+
+    /// <summary>The <c>TbColorPicker</c> this finds, such as one in a row of fields that share their labels, as
+    /// <c>row.GetByLabel("Color")</c>, or one with an id, as <c>page.Locator("#color")</c>.</summary>
+    public TbColorPickerLocator ColorPicker(ILocator field) => new(page, field);
 
     /// <summary>The <c>TbFileUpload</c> with this label.</summary>
     public TbFileUploadLocator FileUpload(string label) => new(page, label);
@@ -44,6 +52,21 @@ public sealed class TrailblazorPage(IPage page)
 
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(page, trigger);
+
+    /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
+    public TbMenuLocator Menu(string trigger) => new(page, trigger);
+
+    /// <summary>The dialog with this title.</summary>
+    public TbDialogLocator Dialog(string title) => new(page, title);
+
+    /// <summary>The <c>TbTabs</c> with this accessible name, or with none, the only one on the page.</summary>
+    public TbTabsLocator Tabs(string? name = null) => new(page, name);
+
+    /// <summary>The toasts on the page.</summary>
+    public TbToastsLocator Toasts => new(page);
+
+    /// <summary>The <c>TbNumberField</c> with this label.</summary>
+    public TbNumberFieldLocator NumberField(string label) => new(page, label);
 }
 
 /// <summary>A <c>TbPopover</c>, found by its trigger's name.</summary>
@@ -99,8 +122,8 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
     }
 }
 
-/// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label.</summary>
-public sealed class TbSelectLocator(IPage page, string label)
+/// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label or a locator.</summary>
+public sealed class TbSelectLocator(IPage page, ILocator field)
 {
     /// <summary>Chooses the options with these names: the one option of a select, or each one not yet chosen in a
     /// multiple select, keeping what is already chosen. A statically rendered select is a native one, and is chosen
@@ -109,22 +132,22 @@ public sealed class TbSelectLocator(IPage page, string label)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
         // The list shares the label, so only the combobox, or the native select it replaces, counts as the field.
-        var field = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("[role=combobox], select"));
-        if (await NativeSelect.TryChooseAsync(field, options, "select"))
+        var control = field.And(page.Locator("[role=combobox], select"));
+        if (await NativeSelect.TryChooseAsync(control, options, "select"))
         {
             return;
         }
 
         // The keys and clicks work once the select's script has attached.
-        await Assertions.Expect(field).ToHaveAttributeAsync("data-ready", "");
-        var listbox = page.Locator($"[id='{await field.GetAttributeAsync("aria-controls")}']");
+        await Assertions.Expect(control).ToHaveAttributeAsync("data-ready", "");
+        var listbox = page.Locator($"[id='{await control.GetAttributeAsync("aria-controls")}']");
         NativeSelect.ThrowIfSeveral(options, await listbox.GetAttributeAsync("aria-multiselectable") == "true",
             "select");
         // The keyboard opens the list, since a click could land on a chip's remove button.
         if (!await listbox.IsVisibleAsync())
         {
-            await field.FocusAsync();
-            await field.PressAsync("ArrowDown");
+            await control.FocusAsync();
+            await control.PressAsync("ArrowDown");
         }
 
         foreach (var name in options)
@@ -142,7 +165,7 @@ public sealed class TbSelectLocator(IPage page, string label)
         // A multiple select stays open for more choices.
         if (await listbox.IsVisibleAsync())
         {
-            await field.PressAsync("Escape");
+            await control.PressAsync("Escape");
         }
     }
 
@@ -173,8 +196,8 @@ public sealed class TbAutocompleteLocator(IPage page, string label)
     }
 }
 
-/// <summary>A <c>TbColorPicker</c>, found by its label.</summary>
-public sealed partial class TbColorPickerLocator(IPage page, string label)
+/// <summary>A <c>TbColorPicker</c>, found by its label or a locator.</summary>
+public sealed partial class TbColorPickerLocator(IPage page, ILocator field)
 {
     /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and waits until
     /// the field has taken it. A statically rendered field just gets the text.</summary>
@@ -185,7 +208,7 @@ public sealed partial class TbColorPickerLocator(IPage page, string label)
             throw new ArgumentException($"Pass the color as #rrggbb or #rrggbbaa, not {color}.", nameof(color));
         }
 
-        var input = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("input"));
+        var input = field.And(page.Locator("input"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(color);

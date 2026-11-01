@@ -1,7 +1,29 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldAnswerAConfirmAndFillOrCancelADialog_WhenGivenItsTitle(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        var delete = page.GetByRole(AriaRole.Button, new() { Name = "Delete report" });
+
+        await delete.ClickAsync();
+        await page.Tb().Dialog("Delete report?").ChooseAsync("Delete");
+        await Expect(page.GetByText("Deleted", new() { Exact = true })).ToBeVisibleAsync();
+        await delete.ClickAsync();
+        await page.Tb().Dialog("Delete report?").CancelAsync();
+        await Expect(page.GetByText("Kept", new() { Exact = true })).ToBeVisibleAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Rename report" }).ClickAsync();
+        var dialog = await page.Tb().Dialog("Rename report").WaitForAsync();
+        await dialog.GetByLabel("Name").FillAsync("Annual report");
+        await page.Tb().Dialog("Rename report").ChooseAsync("Save");
+
+        await Expect(page.GetByText("Renamed to Annual report")).ToBeVisibleAsync();
+    }
+
     // A positioned dialog's distance from the window edge, --tb-space-4.
     private const double EdgeGap = 16;
 

@@ -1,0 +1,7 @@
+@page "/static-menu"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where the menu opens natively, its script never runs, and only its links work. *@
+<TbMenu Label="Go to">
+    <TbMenuItem Href="static-popover">Help page</TbMenuItem>
+</TbMenu>

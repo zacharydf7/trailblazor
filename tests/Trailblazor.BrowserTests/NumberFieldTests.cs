@@ -1,7 +1,34 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldCommitTheText_WhenAPlainOrFormattedFieldIsEntered(string browser)
+    {
+        // Not waiting for the page to be interactive, which the helper waits for itself.
+        var page = await OpenStaticAsync(browser, "/examples/number-field");
+
+        await page.Tb().NumberField("Quantity").EnterAsync("7");
+        await page.Tb().NumberField("Budget").EnterAsync("2,500");
+
+        await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync("7");
+        await Expect(page.GetByTestId("budget-echo")).ToHaveTextAsync("2500");
+        await Expect(page.GetByLabel("Budget")).ToHaveValueAsync("$2,500.00");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldPostTheText_WhenTheFieldIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-number");
+
+        await page.Tb().NumberField("Price").EnterAsync("12.5");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("12.5");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldStepWithTheArrowKeys_WhenFocused(string browser)
     {

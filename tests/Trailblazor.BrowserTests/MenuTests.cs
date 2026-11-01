@@ -1,11 +1,41 @@
 using System.Text.RegularExpressions;
 using Deque.AxeCore.Playwright;
+using Trailblazor.Testing.Playwright;
 using Box = Microsoft.Playwright.LocatorBoundingBoxResult;
 
 namespace Trailblazor.BrowserTests;
 
 public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFollowALink_WhenTheMenuIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-menu");
+
+        await page.Tb().Menu("Go to").ChooseAsync("Help page");
+
+        await Expect(page).ToHaveURLAsync(new Regex("/static-popover$"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldChooseItemsThroughSubmenusAndCustomTriggers_WhenGivenTheirPath(string browser)
+    {
+        // Not waiting for the page to be interactive, which the helper waits for itself.
+        var page = await OpenStaticAsync(browser, "/examples/menu");
+
+        await page.Tb().Menu("More options").ChooseAsync("Share", "Copy link");
+        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Copy link");
+        await page.Tb().Menu("View").ChooseAsync("Elevation");
+        await page.Tb().Menu("View").ChooseAsync("Kilometers");
+        await Expect(page.GetByTestId("view")).ToHaveTextAsync("Kilometers, map, elevation");
+        await page.Tb().Menu("RB account").ChooseAsync("Sign out");
+        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Sign out");
+
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            page.Tb().Menu("Actions").ChooseAsync("Archive"));
+        Assert.Equal("The menu item \"Archive\" is disabled.", disabled.Message);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldOpenWithTheFirstItemFocused_WhenTheTriggerIsClicked(string browser)
     {

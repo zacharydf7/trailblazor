@@ -15,6 +15,8 @@ export function createMenu(root, menu, options, events) {
 
     const trigger = root.querySelector('[aria-haspopup="menu"]');
     trigger.setAttribute('aria-expanded', String(menu.matches(':popover-open')));
+    // Set once the page is interactive, so tests know a click on an item reaches the server.
+    trigger.dataset.ready = '';
     const submenuOptions = { side: 'End', align: 'Start', offset: 0 };
     const positions = new Map();
     const returnFocus = new Set();

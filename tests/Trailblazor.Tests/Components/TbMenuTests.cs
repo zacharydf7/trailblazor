@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Trailblazor.Primitives;
 
@@ -10,6 +11,19 @@ public class TbMenuTests : BunitContext
     {
         this.AddTrailblazor();
         JSInterop.SetupModule("./_content/Trailblazor/menu.js").SetupModule("createMenu", _ => true);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldMarkTheTriggerStatic_WhenTheRendererIsntInteractive(bool interactive)
+    {
+        SetRendererInfo(new RendererInfo(interactive ? "Server" : "Static", interactive));
+
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        Assert.Equal(!interactive, cut.Find("[data-part=trigger]").HasAttribute("data-static"));
     }
 
     [Fact]

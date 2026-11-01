@@ -148,6 +148,12 @@
                 attributes["aria-describedby"] = DescriptionId;
             }
 
+            // A static page never runs the script, so tests know not to wait for it; popovertarget still opens it.
+            if (AssignedRenderMode is null && !RendererInfo.IsInteractive)
+            {
+                attributes["data-static"] = "";
+            }
+
             // The built-in triggers take Disabled as a parameter; a custom one gets the attribute.
             if (Disabled && Trigger is not null)
             {

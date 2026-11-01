@@ -1,0 +1,27 @@
+@page "/repeated-fields"
+
+@* Rows of fields that share their labels, as in an editable list; the second row's select has an id. *@
+@foreach (var row in _rows)
+{
+    <div data-testid="row-@row.Number">
+        <TbSelect TValue="string" Label="Size" @bind-Value="row.Size" id="@(row.Number == 2 ? "second-size" : null)">
+            <TbOption Value="@("small")">Small</TbOption>
+            <TbOption Value="@("large")">Large</TbOption>
+        </TbSelect>
+        <TbColorPicker Label="Color" @bind-Value="row.Color" />
+    </div>
+}
+<output data-testid="rows">@string.Join(" | ", _rows.Select(row => $"{row.Size ?? "-"} {row.Color ?? "-"}"))</output>
+
+@code {
+    private readonly Row[] _rows = [new(1), new(2)];
+
+    private sealed class Row(int number)
+    {
+        public int Number { get; } = number;
+
+        public string? Size { get; set; }
+
+        public string? Color { get; set; }
+    }
+}

@@ -5,6 +5,16 @@ namespace Trailblazor.BrowserTests;
 
 public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldChooseInTheGivenRow_WhenPickersShareTheirLabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/repeated-fields");
+
+        await page.Tb().ColorPicker(page.GetByTestId("row-2").GetByLabel("Color")).ChooseAsync("#336699");
+
+        await Expect(page.GetByTestId("rows")).ToHaveTextAsync("- - | - #336699");
+    }
+
     private static ILocator Box(IPage page, string label = "Accent") =>
         page.GetByRole(AriaRole.Textbox, new() { Name = label, Exact = true });
 

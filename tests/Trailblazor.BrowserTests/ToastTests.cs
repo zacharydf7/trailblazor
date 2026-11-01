@@ -1,10 +1,29 @@
 using Deque.AxeCore.Commons;
 using Deque.AxeCore.Playwright;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
 public class ToastTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFindTheNewestToastToClickItsAction_WhenGivenTextTwoToastsShow(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/toast");
+        var archive = page.GetByRole(AriaRole.Button, new() { Name = "Archive report" });
+        await archive.ClickAsync();
+        await archive.ClickAsync();
+        await Expect(page.Locator("[data-part=toast]")).ToHaveCountAsync(2);
+
+        var toast = await page.Tb().Toasts.WaitForAsync("Report archived");
+        Assert.True(await toast.EvaluateAsync<bool>(
+            "toast => [...document.querySelectorAll('[data-part=toast]')].at(-1) === toast"));
+        await toast.GetByRole(AriaRole.Button, new() { Name = "Undo" }).ClickAsync();
+
+        await Expect(page.GetByText("Restored", new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(page.Locator("[data-part=toast]:not([data-leaving])")).ToHaveCountAsync(1);
+    }
+
     private static ILocator Toast(IPage page, string message) =>
         page.Locator("[data-part=toast]").Filter(new() { HasText = message });
 
