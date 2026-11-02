@@ -48,6 +48,23 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
             }
             """, theme);
 
+    // Waits out fades and color transitions before a check reads colors, but not infinite animations like a spinner.
+    protected static Task WaitForFadesAsync(IPage page) => page.WaitForFunctionAsync("""
+        () => document.getAnimations().every(animation => animation.playState !== 'running'
+            || animation.effect?.getComputedTiming().iterations === Infinity)
+        """);
+
+    // What a system color, such as Highlight, computes to in this browser while colors are forced.
+    protected static Task<string> SystemColorAsync(IPage page, string color) => page.EvaluateAsync<string>("""
+        color => {
+            const probe = document.body.appendChild(document.createElement('div'));
+            probe.style.cssText = `forced-color-adjust: none; color: ${color}`;
+            const computed = getComputedStyle(probe).color;
+            probe.remove();
+            return computed;
+        }
+        """, color);
+
     public async ValueTask DisposeAsync()
     {
         foreach (var context in _contexts)

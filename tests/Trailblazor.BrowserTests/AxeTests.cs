@@ -103,12 +103,6 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
     }
 
-    // Waits out fade-ins so axe doesn't read half-faded colors, but not infinite animations like the loading spinner.
-    private static Task WaitForFadesAsync(IPage page) => page.WaitForFunctionAsync("""
-        () => document.getAnimations().every(animation => animation.playState !== 'running'
-            || animation.effect?.getComputedTiming().iterations === Infinity)
-        """);
-
     private static void AssertNoViolations(AxeResult result) => Assert.Empty(result.Violations.Select(violation =>
         $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
 }

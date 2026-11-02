@@ -122,4 +122,13 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByText("Showing photo")).ToHaveTextAsync("Showing photo 42 of 140");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldFillTheCurrentPageWithTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/pagination", new() { ForcedColors = ForcedColors.Active });
+
+        await Expect(Page(page, "Trail reports", 1))
+            .ToHaveCSSAsync("background-color", await SystemColorAsync(page, "Highlight"));
+    }
 }

@@ -117,4 +117,13 @@ public class ToggleGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Item(page, "Map view", "Satellite")).ToBeFocusedAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ToggleGroup_ShouldFillThePressedItemWithTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/toggle-group", new() { ForcedColors = ForcedColors.Active });
+
+        await Expect(Item(page, "Map view", "Trails"))
+            .ToHaveCSSAsync("background-color", await SystemColorAsync(page, "Highlight"));
+    }
 }

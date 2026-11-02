@@ -5,9 +5,10 @@ public class SplitterTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Separator(IPage page, string name) =>
         page.GetByRole(AriaRole.Separator, new() { Name = name, Exact = true });
 
-    private async Task<IPage> OpenSplitterAsync(string browser, string path = "/examples/splitter")
+    private async Task<IPage> OpenSplitterAsync(string browser, string path = "/examples/splitter",
+        BrowserNewContextOptions? options = null)
     {
-        var page = await OpenAsync(browser, path);
+        var page = await OpenAsync(browser, path, options);
         foreach (var splitter in await page.Locator(".tb-splitter").AllAsync())
         {
             await Expect(splitter).ToHaveAttributeAsync("data-ready", "");
@@ -164,6 +165,23 @@ public class SplitterTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Separator(page, "Resize Left")).ToHaveAttributeAsync("aria-valuenow", "30");
         await Expect(page.GetByText("Left pane")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldDrawTheFocusedSeparatorInTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenSplitterAsync(browser, options: new() { ForcedColors = ForcedColors.Active });
+        var separator = Separator(page, "Resize Trails");
+        var line = () => separator.EvaluateAsync<string>("line => getComputedStyle(line, '::before').backgroundColor");
+        Assert.Equal(await SystemColorAsync(page, "CanvasText"), await line());
+
+        await separator.FocusAsync();
+        // A key press puts the browser in keyboard mode, so :focus-visible matches after focus from a script.
+        await page.Keyboard.PressAsync("ArrowRight");
+        // The line's color eases in, so it is read once the transition ends.
+        await WaitForFadesAsync(page);
+
+        Assert.Equal(await SystemColorAsync(page, "Highlight"), await line());
     }
 }
 

@@ -286,4 +286,17 @@ public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(result.Violations.Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldOutlineTheSelectedRowInTheHighlight_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view", new() { ForcedColors = ForcedColors.Active });
+        var row = Row(page, "Pine Hollow loop", "Trails by region");
+
+        await row.ClickAsync();
+
+        await Expect(row).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(row).ToHaveCSSAsync("outline-style", "solid");
+        await Expect(row).ToHaveCSSAsync("outline-color", await SystemColorAsync(page, "Highlight"));
+    }
 }
