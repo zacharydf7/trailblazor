@@ -314,6 +314,9 @@
         --tb-focus-ring-width: 2px;
         --tb-focus-ring-offset: 2px;
 
+        --tb-disabled-opacity: 0.55;
+        --tb-color-scrim: oklch(0 0 0 / 0.45);
+
         --tb-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         --tb-font-family-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
         --tb-font-size-xs: 0.75rem;
@@ -394,6 +397,13 @@
         --tb-control-padding-inline: var(--tb-space-2);
         --tb-item-height: 1.75rem;
         --tb-row-height: 2rem;
+    }
+
+    /* Small and large controls follow the control height wherever a density is set, and a small one keeps room for
+       a field's own 24px buttons. */
+    :where(:root, [data-tb-density]) {
+        --tb-control-height-sm: max(26px, calc(var(--tb-control-height) - 8px));
+        --tb-control-height-lg: calc(var(--tb-control-height) + 8px);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -711,6 +721,13 @@
         --tb-color-neutral-text: light-dark(var(--tb-sage-700), var(--tb-sage-300));
         --tb-focus-ring-color: light-dark(var(--tb-teal-600), var(--tb-teal-300));
     }
+
+    /* Hover and press tint whatever is under them with the text color, so they show on any surface; a region with
+       its own palette tints with its own text color. */
+    :where(:root, [data-tb-palette]) {
+        --tb-color-hover: color-mix(in srgb, var(--tb-color-text) 6%, transparent);
+        --tb-color-pressed: color-mix(in srgb, var(--tb-color-text) 10%, transparent);
+    }
 }
 
 @layer tb.components {
@@ -964,6 +981,11 @@
         --tb-badge-on-fill: var(--tb-color-on-info);
     }
 
+    /* A textless dot is under 3:1 in amber on a light surface, so it takes the warning text tone. */
+    .tb-badge--dot.tb-badge--warning {
+        --tb-badge-fill: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
+    }
+
     /* Forced colors drop the fill, so an outline keeps the badge's shape and a dot stays visible. */
     @media (forced-colors: active) {
         .tb-badge {
@@ -1119,7 +1141,7 @@
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        background: oklch(0 0 0 / 0.45);
+        background: var(--tb-color-scrim);
     }
 
     .tb-overlay--transparent > .tb-overlay__scrim {
@@ -1244,7 +1266,7 @@
     }
 
     .tb-chip--disabled {
-        opacity: 0.5;
+        opacity: var(--tb-disabled-opacity);
     }
 
     .tb-chip__action {
@@ -1382,7 +1404,11 @@
     }
 
     .tb-list__action:hover {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
+    }
+
+    .tb-list__action:active {
+        background: var(--tb-color-pressed);
     }
 
     .tb-list__action:focus-visible {
@@ -1538,11 +1564,14 @@
         box-shadow: var(--tb-shadow-sm);
     }
 
+    /* Black shadows barely show on a dark page, so higher elevations take the raised surface, lighter in dark mode. */
     .tb-surface--medium {
+        background: var(--tb-color-surface-raised);
         box-shadow: var(--tb-shadow-md);
     }
 
     .tb-surface--high {
+        background: var(--tb-color-surface-raised);
         box-shadow: var(--tb-shadow-lg);
     }
 
@@ -1742,13 +1771,13 @@
     }
 
     .tb-button--small {
-        min-height: max(24px, calc(var(--tb-control-height) - 8px));
+        min-height: var(--tb-control-height-sm);
         padding: 0 var(--tb-space-2);
         font-size: var(--tb-font-size-xs);
     }
 
     .tb-button--large {
-        min-height: calc(var(--tb-control-height) + 8px);
+        min-height: var(--tb-control-height-lg);
         padding: 0 var(--tb-space-4);
         font-size: var(--tb-font-size-md);
     }
@@ -1756,7 +1785,7 @@
     .tb-button:disabled,
     .tb-button[aria-disabled="true"] {
         cursor: not-allowed;
-        opacity: 0.55;
+        opacity: var(--tb-disabled-opacity);
     }
 
     .tb-icon-button {
@@ -1765,11 +1794,11 @@
     }
 
     .tb-icon-button.tb-button--small {
-        min-width: max(24px, calc(var(--tb-control-height) - 8px));
+        min-width: var(--tb-control-height-sm);
     }
 
     .tb-icon-button.tb-button--large {
-        min-width: calc(var(--tb-control-height) + 8px);
+        min-width: var(--tb-control-height-lg);
     }
 
     .tb-button__spinner,
@@ -2466,7 +2495,7 @@
 
     /* A small box keeps room for its own 24px buttons, the smallest pointer target allowed, inside its borders. */
     .tb-field--small .tb-field__control {
-        min-height: max(26px, calc(var(--tb-control-height) - 8px));
+        min-height: var(--tb-control-height-sm);
         padding-inline: var(--tb-space-2);
     }
 
@@ -2485,7 +2514,7 @@
     }
 
     .tb-field--large .tb-field__control {
-        min-height: calc(var(--tb-control-height) + 8px);
+        min-height: var(--tb-control-height-lg);
         padding-inline: var(--tb-space-4);
     }
 
@@ -2540,7 +2569,7 @@
     }
 
     .tb-field--disabled .tb-field__control {
-        opacity: 0.55;
+        opacity: var(--tb-disabled-opacity);
     }
 
     .tb-field--readonly .tb-field__control {
@@ -2775,7 +2804,7 @@
     .tb-radio-group--disabled .tb-radio,
     .tb-checkbox-group__item--disabled,
     .tb-checkbox-group--disabled .tb-checkbox__label {
-        opacity: 0.55;
+        opacity: var(--tb-disabled-opacity);
         cursor: default;
     }
 
@@ -2978,7 +3007,11 @@
 
     .tb-menu__item:hover,
     .tb-menu__item:focus-visible {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
+    }
+
+    .tb-menu__item:active:not([aria-disabled="true"]) {
+        background: var(--tb-color-pressed);
     }
 
     .tb-menu__item:focus-visible {
@@ -2995,11 +3028,11 @@
     }
 
     .tb-menu__item[aria-expanded="true"] {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
     }
 
     .tb-menu__item[aria-disabled="true"] {
-        opacity: 0.55;
+        opacity: var(--tb-disabled-opacity);
         cursor: default;
     }
 
@@ -3122,11 +3155,11 @@
     }
 
     .tb-dialog[data-layer="page"][data-backdrop] {
-        box-shadow: var(--tb-shadow-lg), 0 0 0 100vmax oklch(0 0 0 / 0.45);
+        box-shadow: var(--tb-shadow-lg), 0 0 0 100vmax var(--tb-color-scrim);
     }
 
     .tb-dialog::backdrop {
-        background: oklch(0 0 0 / 0.45);
+        background: var(--tb-color-scrim);
         transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }
 
@@ -3362,33 +3395,26 @@
     .tb-select__chips {
         display: flex;
         flex-wrap: wrap;
+        min-inline-size: 0;
         gap: var(--tb-space-1);
         padding-block: var(--tb-space-1);
     }
 
     .tb-select__chip {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--tb-space-1);
+        min-inline-size: 0;
         max-inline-size: 100%;
-        padding-inline: var(--tb-space-2) var(--tb-space-1);
-        border-radius: var(--tb-radius-full);
-        background: var(--tb-color-neutral-subtle);
-        font-size: var(--tb-font-size-sm);
-        line-height: 1.5rem;
     }
 
-    .tb-select__chip-remove {
-        display: inline-grid;
-        place-items: center;
-        inline-size: 1.25rem;
-        block-size: 1.25rem;
-        border-radius: var(--tb-radius-full);
-        cursor: pointer;
+    .tb-select__chip > .tb-chip__action {
+        min-inline-size: 0;
     }
 
-    .tb-select__chip-remove:hover {
-        background: var(--tb-border-subtle);
+    /* A long label ends in an ellipsis, on a line tall enough that its box doesn't clip descenders. */
+    .tb-select__chip .tb-chip__label {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: var(--tb-line-height-tight);
     }
 
     .tb-select__group-label {
@@ -3491,7 +3517,7 @@
     }
 
     .tb-select__listbox .tb-select__option[data-active] {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
     }
@@ -3550,7 +3576,7 @@
     }
 
     .tb-listbox:focus .tb-select__option[data-active] {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
     }
 
     .tb-listbox:focus-visible .tb-select__option[data-active] {
@@ -3628,12 +3654,12 @@
 
     .tb-pagination--small .tb-pagination__page,
     .tb-pagination--small .tb-pagination__ellipsis {
-        min-inline-size: max(24px, calc(var(--tb-control-height) - 8px));
+        min-inline-size: var(--tb-control-height-sm);
     }
 
     .tb-pagination--large .tb-pagination__page,
     .tb-pagination--large .tb-pagination__ellipsis {
-        min-inline-size: calc(var(--tb-control-height) + 8px);
+        min-inline-size: var(--tb-control-height-lg);
     }
 
     .tb-pagination__ellipsis {
@@ -3869,7 +3895,7 @@
     }
 
     .tb-slider--disabled .tb-slider__control {
-        opacity: 0.55;
+        opacity: var(--tb-disabled-opacity);
     }
 
     .tb-slider--disabled .tb-slider__input {
@@ -4138,7 +4164,7 @@
 
     .tb-tabs--soft > .tb-tabs__list > .tb-tabs__tab:hover:not(:disabled, [aria-selected="true"]),
     .tb-tabs--filled > .tb-tabs__list > .tb-tabs__tab:hover:not(:disabled, [aria-selected="true"]) {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
     }
 
     .tb-tabs--soft > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
@@ -4238,7 +4264,11 @@
     }
 
     .tb-accordion__trigger:hover:not(:disabled) {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
+    }
+
+    .tb-accordion__trigger:active:not(:disabled) {
+        background: var(--tb-color-pressed);
     }
 
     .tb-accordion__trigger:focus-visible {
@@ -4582,13 +4612,18 @@
         height: calc(var(--tb-row-height) + 0.5rem);
     }
 
+    /* A grid's stripe yields to hover, press and selection. */
     .tb-table--striped tbody tr:nth-child(even),
-    .tb-data-grid--striped .tb-data-grid__row:nth-child(even) {
+    .tb-data-grid--striped :where(.tb-data-grid__row:nth-child(even)) {
         background: var(--tb-color-surface-sunken);
     }
 
     .tb-data-grid__row:hover {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
+    }
+
+    .tb-data-grid__row:active:not(.tb-data-grid__row--selected) {
+        background: var(--tb-color-pressed);
     }
 
     .tb-data-grid__row--selected,
@@ -4813,7 +4848,11 @@
     }
 
     .tb-tree__item:hover:not(.tb-tree__item--status) {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
+    }
+
+    .tb-tree__item:active:not(.tb-tree__item--status, .tb-tree__item--selected, [aria-disabled="true"]) {
+        background: var(--tb-color-pressed);
     }
 
     .tb-tree__item:focus-visible {
@@ -5133,7 +5172,7 @@
         align-items: center;
         justify-content: center;
         min-height: 2rem;
-        font-weight: 600;
+        font-weight: var(--tb-font-weight-semibold);
     }
 
     .tb-date-range__grid {
@@ -5144,7 +5183,7 @@
         width: calc(var(--tb-control-height) - 0.25rem);
         padding-block: var(--tb-space-1);
         color: var(--tb-color-text-muted);
-        font-weight: 400;
+        font-weight: var(--tb-font-weight-regular);
     }
 
     .tb-date-range__grid td {
@@ -5167,7 +5206,7 @@
     /* Days in or previewing the range keep their own colors under the pointer. */
     .tb-date-range__day:hover:not([aria-disabled="true"], .tb-date-range__day--selected, .tb-date-range__day--start,
         .tb-date-range__day--end, [data-preview]) {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
     }
 
     .tb-date-range__day:focus-visible {

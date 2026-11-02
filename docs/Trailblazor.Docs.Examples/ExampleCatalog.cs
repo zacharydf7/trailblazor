@@ -955,7 +955,7 @@ public static class ExampleCatalog
                     + "puts its choice back whenever the user changes it.",
             ],
             Target = new("combobox", "Shipping"),
-            Blocks = ["tb-field", "tb-select"],
+            Blocks = ["tb-field", "tb-select", "tb-chip"],
             DataParts = [.. FieldParts, "input", "placeholder", "value",
                 "chips", "chip", "chip-remove", "clear", "chevron", "popup", "filter", "listbox", "group",
                 "group-label", "option", "check", "select-all", "no-results"],

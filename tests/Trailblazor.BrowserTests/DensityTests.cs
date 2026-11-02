@@ -7,6 +7,7 @@ public class DensityTests(BrowserFixture fixture) : BrowserTest(fixture)
         string? Opener)[] Parts =
     [
         ("select", ".tb-field__control", "height", "40px", "32px", null),
+        ("button", ".tb-button--small", "height", "32px", "26px", null),
         ("tabs", ".tb-tabs__tab", "min-height", "40px", "32px", null),
         ("accordion", ".tb-accordion__trigger", "min-height", "44px", "32px", null),
         ("list", ".tb-list__item", "min-height", "44px", "32px", null),

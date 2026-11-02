@@ -88,17 +88,23 @@ internal sealed class SelectDisplay : ComponentBase
             builder.SetKey(option);
             builder.AddAttribute(4, "data-part", "chip");
             builder.AddAttribute(5, "data-option", option.Id);
-            builder.AddAttribute(6, "class", "tb-select__chip");
-            builder.AddContent(7, content => AddContent(content, option));
+            builder.AddAttribute(6, "class", "tb-chip tb-chip--small tb-chip--soft tb-chip--neutral tb-select__chip");
+            builder.OpenElement(7, "span");
+            builder.AddAttribute(8, "class", "tb-chip__action");
+            builder.OpenElement(9, "span");
+            builder.AddAttribute(10, "class", "tb-chip__label");
+            builder.AddContent(11, content => AddContent(content, option));
+            builder.CloseElement();
+            builder.CloseElement();
             if (!Disabled && !option.Disabled)
             {
-                builder.OpenElement(8, "span");
-                builder.AddAttribute(9, "data-part", "chip-remove");
-                builder.AddAttribute(10, "aria-hidden", "true");
-                builder.AddAttribute(11, "class", "tb-select__chip-remove");
-                builder.OpenComponent<TbIcon>(12);
-                builder.AddComponentParameter(13, nameof(TbIcon.Icon), BuiltInIcons.Close);
-                builder.AddComponentParameter(14, nameof(TbIcon.Size), Size.Small);
+                builder.OpenElement(12, "span");
+                builder.AddAttribute(13, "data-part", "chip-remove");
+                builder.AddAttribute(14, "aria-hidden", "true");
+                builder.AddAttribute(15, "class", "tb-chip__remove");
+                builder.OpenComponent<TbIcon>(16);
+                builder.AddComponentParameter(17, nameof(TbIcon.Icon), BuiltInIcons.Close);
+                builder.AddComponentParameter(18, nameof(TbIcon.Size), Size.Small);
                 builder.CloseComponent();
                 builder.CloseElement();
             }

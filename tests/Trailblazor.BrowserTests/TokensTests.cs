@@ -10,16 +10,22 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static readonly string[] Palettes = [.. PaletteCatalog.All.Select(palette => palette.Name)];
 
     // Reads a color token on a probe inside <main>, or inside an element with the given classes, as its sRGB
-    // channels, 0 to 255.
+    // channels, 0 to 255. When under is given, the token is painted over that color token first, so a translucent
+    // one reads as it shows.
     private const string ChannelsScript = """
-        ([token, classes]) => {
+        ([token, classes, under]) => {
             const host = document.createElement('div');
             host.className = classes ?? '';
             const probe = document.createElement('div');
-            probe.style.color = `var(${token})`;
             host.append(probe);
             document.querySelector('main').append(host);
             const context = document.createElement('canvas').getContext('2d');
+            if (under) {
+                probe.style.color = `var(${under})`;
+                context.fillStyle = getComputedStyle(probe).color;
+                context.fillRect(0, 0, 1, 1);
+            }
+            probe.style.color = `var(${token})`;
             const color = getComputedStyle(probe).color;
             host.remove();
             // A color the canvas can't parse leaves its last fill, which would read as two equal colors.
@@ -163,7 +169,38 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
             }
         }
 
+        // Hover and press are translucent, so each is painted over the surface: hover must stand out from the bare
+        // surface, and press from hover.
+        foreach (var surface in surfaces)
+        {
+            var bare = await GetLuminanceAsync(page, surface);
+            var hovered = await GetLuminanceAsync(page, "--tb-color-hover", under: surface);
+            var pressed = await GetLuminanceAsync(page, "--tb-color-pressed", under: surface);
+            foreach (var (layer, ratio) in new[] { ("hover", ContrastRatio(hovered, bare)),
+                ("pressed", ContrastRatio(pressed, hovered)) })
+            {
+                if (ratio < 1.04)
+                {
+                    failures.Add($"{layer} on {surface}: {ratio:F3}");
+                }
+            }
+        }
+
         Assert.Empty(failures);
+    }
+
+    [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
+    public async Task WarningDot_ShouldReachThreeToOneOnItsSurface_WhenAPaletteAndThemeAreApplied(string browser,
+        string palette, string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+        await SetThemeAsync(page, theme);
+
+        var dot = await GetLuminanceAsync(page, "--tb-badge-fill", "tb-badge tb-badge--dot tb-badge--warning");
+        var ratio = ContrastRatio(dot, await GetLuminanceAsync(page, "--tb-color-surface"));
+
+        Assert.True(ratio >= 3, $"{ratio:F2}");
     }
 
     [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
@@ -337,9 +374,10 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("comfortable-probe")).ToHaveCSSAsync("height", "40px");
     }
 
-    private static async Task<double> GetLuminanceAsync(IPage page, string token, string? classes = null)
+    private static async Task<double> GetLuminanceAsync(IPage page, string token, string? classes = null,
+        string? under = null)
     {
-        var (red, green, blue) = await GetChannelsAsync(page, token, classes);
+        var (red, green, blue) = await GetChannelsAsync(page, token, classes, under);
         return 0.2126 * Linear(red) + 0.7152 * Linear(green) + 0.0722 * Linear(blue);
     }
 
@@ -362,9 +400,9 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     private static async Task<(int Red, int Green, int Blue)> GetChannelsAsync(IPage page, string token,
-        string? classes = null)
+        string? classes = null, string? under = null)
     {
-        var channels = await page.EvaluateAsync<int[]>(ChannelsScript, new[] { token, classes });
+        var channels = await page.EvaluateAsync<int[]>(ChannelsScript, new[] { token, classes, under });
         return (channels[0], channels[1], channels[2]);
     }
 

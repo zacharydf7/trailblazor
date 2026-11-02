@@ -36,6 +36,34 @@ public class SelectExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Chips_ShouldBeSmallChipsWithA24PixelRemoveTarget_WhenShown(string browser)
+    {
+        var page = await OpenExtrasAsync(browser);
+        var chip = Combobox(page).Locator("[data-part=chip]").First;
+
+        await Expect(chip).ToHaveCSSAsync("height", "24px");
+        await Expect(chip.Locator("[data-part=chip-remove]")).ToHaveCSSAsync("width", "24px");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Chips_ShouldEndALongLabelInAnEllipsis_WhenTheSelectIsNarrow(string browser)
+    {
+        var page = await OpenExtrasAsync(browser);
+        var chip = Combobox(page).Locator("[data-part=chip]").First;
+
+        await chip.EvaluateAsync("chip => chip.closest('.tb-field').style.inlineSize = '7rem'");
+
+        await Expect(chip).ToHaveCSSAsync("height", "24px");
+        Assert.True(await chip.EvaluateAsync<bool>("""
+            chip => {
+                const label = chip.querySelector('.tb-chip__label');
+                const box = chip.closest('.tb-field__control').getBoundingClientRect();
+                return chip.getBoundingClientRect().right <= box.right && label.scrollWidth > label.clientWidth;
+            }
+            """));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Chips_ShouldAnnounceWhatTheChipShows_WhenTheOptionHasNoText(string browser)
     {
         var page = await OpenExtrasAsync(browser);

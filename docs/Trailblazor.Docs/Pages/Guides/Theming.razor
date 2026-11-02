@@ -82,8 +82,10 @@
 </TbText>
 <CodeBlock Label="A compact region" Code="@DensityRegion" />
 <TbText>
-    Density sets five tokens, and the components size themselves from them, so changing one changes every component
-    that uses it.
+    Density sets seven tokens, and the components size themselves from them, so changing one changes every component
+    that uses it. The small and large heights are worked out from <code>--tb-control-height</code> only where a density
+    is set: on the page or on a <code>data-tb-density</code> region. To change the control height on an element of
+    your own, set <code>--tb-control-height-sm</code> and <code>--tb-control-height-lg</code> there too.
 </TbText>
 <TbTable aria-label="Density tokens">
     <thead>
@@ -169,6 +171,8 @@
     [
         ("--tb-control-height", "40px", "32px",
             "Buttons, fields, selects, tabs, pagination and toggle groups; chips and calendar days are sized from it"),
+        ("--tb-control-height-sm", "32px", "26px", "Small buttons, fields, selects, pagination and toggle groups"),
+        ("--tb-control-height-lg", "48px", "40px", "Large buttons, fields, selects, pagination and toggle groups"),
         ("--tb-control-padding-block", "8px", "4px",
             "The space above and below the text in fields, tabs, list items and accordion headers; alerts use 1.5 "
                 + "times this"),
