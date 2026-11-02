@@ -20,7 +20,7 @@ else
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
 
-    /// <summary>Shows <see cref="AriaLabel"/> in a tooltip on hover and focus, so people who see the icon learn its
+    /// <summary>Shows <see cref="AriaLabel"/> in a tooltip on hover and keyboard focus, so people who see the icon learn its
     /// name too. Screen readers hear the name once, as the button's label.</summary>
     [Parameter]
     public bool ShowTooltip { get; set; }

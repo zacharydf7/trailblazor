@@ -103,6 +103,64 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldStayClosed_WhenTheTriggerIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).ClickAsync();
+        await page.WaitForTimeoutAsync(500);
+
+        await Expect(tooltip).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldStayClosed_WhenFocusReturnsToTheTriggerAfterAClickElsewhere(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" });
+        await page.GetByRole(AriaRole.Switch, new() { Name = "Show hints" }).ClickAsync();
+        await page.GetByRole(AriaRole.Switch, new() { Name = "Show hints" }).ClickAsync();
+
+        // As a dialog or menu closed with the mouse hands focus back to the button that opened it.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).EvaluateAsync("button => button.focus()");
+        await page.WaitForTimeoutAsync(500);
+
+        await Expect(tooltip).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldClose_WhenTheTriggerIsPressedWhileItShows(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).HoverAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+
+        await page.Mouse.DownAsync();
+
+        await Expect(tooltip).ToBeHiddenAsync();
+        await page.Mouse.UpAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldShow_WhenTheKeyboardBringsFocusBackAfterAClick(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var add = page.GetByRole(AriaRole.Button, new() { Name = "Add" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" });
+        await add.ClickAsync();
+        await add.FocusAsync();
+        await page.Mouse.MoveAsync(0, 0);
+
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.PressAsync("Shift+Tab");
+
+        await Expect(add).ToBeFocusedAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldStillDescribeTheTrigger_WhenTheTriggerRewritesItsDescription(string browser)
     {
         var page = await OpenAsync(browser, "/tooltip");
@@ -271,7 +329,8 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Tooltip)).ToHaveCountAsync(0);
         await Expect(delete).ToHaveAccessibleDescriptionAsync("");
         await hints.ClickAsync();
-        await delete.FocusAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
 
         await Expect(tooltip).ToBeVisibleAsync();
         await Expect(delete).ToHaveAccessibleDescriptionAsync("Delete the selection");

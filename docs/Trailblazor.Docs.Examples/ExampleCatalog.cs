@@ -245,7 +245,7 @@ public static class ExampleCatalog
                 "`AriaLabel` is required and names the button, since it shows no text; a blank label throws when "
                     + "it renders.",
                 "The icon itself is hidden from screen readers. Set `ShowTooltip` so sighted users can see the "
-                    + "name too, on hover and on focus. The tooltip repeats the name, so it isn't added as a "
+                    + "name too, on hover and on keyboard focus. The tooltip repeats the name, so it isn't added as a "
                     + "description, and screen readers hear the name once.",
                 "Keys, `Disabled`, `FocusableWhenDisabled`, `Loading`, `Href` and `@bind-Pressed` work as they do "
                     + "for a button. A toggle keeps the same `AriaLabel` either way; `aria-pressed` tells whether it "
@@ -1113,7 +1113,7 @@ public static class ExampleCatalog
             ],
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
-            "A short description that appears on hover or focus.", typeof(TooltipExample))
+            "A short description that appears on hover or keyboard focus.", typeof(TooltipExample))
         {
             Api = [typeof(TbTooltip), typeof(TooltipSettings)],
             Accessibility =
@@ -1122,8 +1122,11 @@ public static class ExampleCatalog
                     + "focusable element inside. It's a description, not a name, so that element still needs a name of "
                     + "its own. A tooltip that only repeats that element's `aria-label` isn't added, so it isn't read "
                     + "twice.",
-                "It shows at once on focus and after a short delay on hover. Moving the pointer onto the tooltip "
-                    + "keeps it open, and Escape hides it, without also closing a dialog it is in. `ShowDelay` and "
+                "It shows at once on keyboard focus and after a short delay on hover. A click or tap on a button "
+                    + "hides it, and the focus the click leaves doesn't show it, nor does focus a dialog closed with "
+                    + "the mouse hands back, so it doesn't cover what someone is working on. A text field shows it on "
+                    + "any focus, since its user is about to type. Moving the pointer onto the tooltip keeps it open, "
+                    + "and Escape hides it, without also closing a dialog it is in. `ShowDelay` and "
                     + "`HideDelay` change the delays for one tooltip, and `options.Tooltips` in `AddTrailblazor` for "
                     + "the whole app.",
                 "`TextContent` can hold formatted text, such as a shortcut in `<kbd>`, which is read as part of the "
@@ -1138,7 +1141,8 @@ public static class ExampleCatalog
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
             Blocks = ["tb-tooltip", "tb-tooltip-anchor"],
             DataParts = ["tooltip", "arrow"],
-            TestingTip = "Focus or hover the trigger, then find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
+            TestingTip = "Tab to or hover the trigger, since `FocusAsync` after a click isn't keyboard focus, then "
+                + "find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
                 + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit the "
                 + "tooltip's text is in the markup from the start, with `role=\"tooltip\"`.",
         },

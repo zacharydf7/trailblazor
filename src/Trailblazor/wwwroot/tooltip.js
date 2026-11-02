@@ -44,6 +44,13 @@ export function createTooltip(anchor, tooltip, options, delays) {
         clearTimeout(timer);
         timer = setTimeout(hide, delays.hide);
     };
+    // Focus a click or tap leaves, or that a dialog closed by one hands back, isn't :focus-visible: its user wants the
+    // control, not its description. A text field is, since its user is about to type.
+    const onFocusIn = event => {
+        if (event.target.matches(':focus-visible')) {
+            show();
+        }
+    };
     // The Escape that hides a shown tooltip is used up, so a dialog around it stays open.
     const onKeyDown = event => {
         if (event.key !== 'Escape') {
@@ -60,12 +67,13 @@ export function createTooltip(anchor, tooltip, options, delays) {
     // The tooltip is inside the anchor, so moving onto it keeps it open; Escape always dismisses it (WCAG 1.4.13).
     anchor.addEventListener('pointerenter', showSoon);
     anchor.addEventListener('pointerleave', hideSoon);
-    anchor.addEventListener('focusin', show);
+    anchor.addEventListener('focusin', onFocusIn);
     anchor.addEventListener('focusout', hide);
+    anchor.addEventListener('pointerdown', hide);
     document.addEventListener('keydown', onKeyDown);
 
     // Setup finishes after the first render, so focus or a pointer that arrived earlier still counts.
-    if (anchor.contains(document.activeElement)) {
+    if (anchor.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) {
         show();
     } else if (anchor.matches(':hover')) {
         showSoon();
@@ -77,8 +85,9 @@ export function createTooltip(anchor, tooltip, options, delays) {
             hide();
             anchor.removeEventListener('pointerenter', showSoon);
             anchor.removeEventListener('pointerleave', hideSoon);
-            anchor.removeEventListener('focusin', show);
+            anchor.removeEventListener('focusin', onFocusIn);
             anchor.removeEventListener('focusout', hide);
+            anchor.removeEventListener('pointerdown', hide);
             document.removeEventListener('keydown', onKeyDown);
             const ids = describedBy(trigger).filter(id => id !== tooltip.id);
             if (ids.length > 0) {
