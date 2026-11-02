@@ -19,22 +19,22 @@
 <TbText>
     Components then render as they do once a page is interactive, with no renderer setup: the first component a test
     renders makes bUnit's renderer an interactive one. To test what a statically rendered or prerendered page shows,
-    which differs for a few components, such as a select that renders a native <code>&lt;select&gt;</code>, call
+    where a few components differ (a select, for example, renders a native <code>&lt;select&gt;</code>), call
     <code>SetRendererInfo(new RendererInfo("Static", isInteractive: false))</code> before rendering; each
     component's page says how it differs. Register your own services, such as a <code>FakeTimeProvider</code>,
-    first: bUnit takes none once a component renders, a service is resolved or <code>SetRendererInfo</code> is
-    called.
+    first: bUnit accepts no new services once a component renders, a service is resolved or <code>SetRendererInfo</code>
+    is called.
 </TbText>
 <CodeBlock Label="A bUnit test" Code="@Bunit" />
 <TbText>
     To drive fields the way a user does, <code>cut.Tb()</code> finds them by their labels, with the same names as the
     Playwright helpers below: choose an option in a select or list box by its text, read what a select shows, type a
-    number, pick a tab, open, select or check a tree's rows by their path of texts, and click or select a grid's rows by
-    a cell's text. As in Playwright, choosing keeps options already chosen and refuses a disabled field. Choosing needs
-    an interactive page, since a static select is a native one that posts with its form. A number field without a
-    <code>Format</code> reads what was typed through its own change event, which bUnit's <code>Change</code> doesn't
-    reach; <code>EnterAsync</code> types into either kind. A field's error is also announced in <code>TbRoot</code>'s
-    live region, so a check that the markup no longer holds an error looks at the field, not the whole page.
+    number, pick a tab, open, select or check a tree's rows by the texts along their path, and click or select a grid's
+    rows by a cell's text. As in Playwright, choosing keeps options already chosen and refuses a disabled field.
+    Choosing needs an interactive page, since a static select is a native one that posts with its form. A number field
+    without a <code>Format</code> reads what was typed through its own change event, which bUnit's <code>Change</code>
+    doesn't reach; <code>EnterAsync</code> types into either kind. A field's error is also announced in
+    <code>TbRoot</code>'s live region, so to check that an error has cleared, look in the field, not the whole page.
 </TbText>
 <CodeBlock Label="Driving fields in bUnit" Code="@BunitDrivers" />
 <TbText>
@@ -60,15 +60,15 @@
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Playwright</TbText>
 <TbText>
-    Reference <code>Trailblazor.Testing.Playwright</code> for helpers that drive components the way a person does. A
-    select is chosen by its label and option names, whether it renders as Trailblazor's list or, on a static page, as a
-    native <code>&lt;select&gt;</code>. A popover opens by its trigger's name and hands back its panel. A menu item is
-    chosen by its trigger's name and the path to it through submenus, a dialog is found by its title and answered by a
-    button's name, a tab is selected by its name, and a toast is found by its text. A select or color picker that
-    shares its label with others, as in the rows of an editable list, is found by a locator instead, such as
-    <code>page.Tb().Select(row.GetByLabel("Size"))</code>. Each helper waits for its component
-    to be ready before it clicks or types. Check what follows, such as a value shown elsewhere on the page, with
-    Playwright's <code>Expect</code>, which retries until the page shows it.
+    Reference <code>Trailblazor.Testing.Playwright</code> for helpers that drive components the way a person does.
+    Options are chosen by the select's label and their names, whether the select renders as Trailblazor's list or, on a
+    static page, as a native <code>&lt;select&gt;</code>. A popover opens by its trigger's name and hands back its
+    panel. A menu item is chosen by its trigger's name and the path to it through submenus, a dialog is found by its
+    title and answered by a button's name, a tab is selected by its name, and a toast is found by its text. A select or
+    color picker that shares its label with others, as in the rows of an editable list, is found by a locator instead,
+    such as <code>page.Tb().Select(row.GetByLabel("Size"))</code>. Each helper waits for its component to be ready
+    before it clicks or types. Check what follows, such as a value shown elsewhere on the page, with Playwright's
+    <code>Expect</code>, which retries until the page shows it.
 </TbText>
 <CodeBlock Label="A Playwright test" Code="@Playwright" />
 
@@ -112,14 +112,14 @@
     Find components by role and accessible name rather than by CSS classes, which can change between versions. Buttons
     are buttons and text fields are found by their labels. A select or autocomplete is a <code>combobox</code> with
     <code>option</code>s; find it with <code>GetByRole(AriaRole.Combobox, new() { Name = "Size" })</code>, since its
-    label names its list of options too. A menu is a <code>menu</code> of <code>menuitem</code>s, a dialog is a
-    <code>dialog</code> named by its title, a popover's panel is a <code>dialog</code> named by its title or trigger,
-    and tabs are <code>tab</code>s with <code>tabpanel</code>s.
+    label also names its list of options, which <code>GetByLabel</code> would match as well. A menu is a
+    <code>menu</code> of <code>menuitem</code>s, a dialog is a <code>dialog</code> named by its title, a popover's panel
+    is a <code>dialog</code> named by its title or trigger, and tabs are <code>tab</code>s with <code>tabpanel</code>s.
 </TbText>
 <TbText>
     Every component also marks its parts with a stable <code>data-part</code> attribute, for the parts that have no
     role of their own, such as a field's <code>[data-part=helper]</code> text or <code>[data-part=error]</code>
-    message. Each component's page lists its parts. What is read out goes into <code>TbRoot</code>'s
+    message. Each component's page lists its parts. Announcements go into <code>TbRoot</code>'s
     <code>[data-part=announcer]</code>, or a modal dialog's own, as a <code>p</code> in
     <code>[data-part=polite]</code> or <code>[data-part=assertive]</code>; several can be there at once, so find
     the one with your text.
@@ -128,9 +128,9 @@
     An <code>id</code> you give a field names its control, as on a native input: <code>&lt;TbTextField id="email"
     /&gt;</code> puts <code>id="email"</code> on the input, and its label points to it, so <code>#email</code> reaches
     what the user types into. A checkbox or switch gives it to its box and a select to its combobox. A field with two
-    controls, a date range picker or range slider, and a checkbox or radio group keep the id on their root. A radio or
-    checkbox in a group gives it to its input, an option to itself, and a tab to its tab button rather than its panel. A
-    menu or popover gives it to its trigger, built in or your own. A custom trigger gets its id from
+    controls, such as a date range picker or range slider, keeps the id on its root, as do checkbox and radio groups. A
+    radio or checkbox in a group gives it to its input, an option to itself, and a tab to its tab button rather than its
+    panel. A menu or popover gives it to its trigger, built in or your own. A custom trigger gets its id from
     <code>context.Attributes</code>, so put the id on the <code>TbMenu</code> or <code>TbPopover</code>, not on your
     button.
 </TbText>

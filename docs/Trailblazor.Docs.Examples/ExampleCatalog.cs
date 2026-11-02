@@ -142,11 +142,11 @@ public static class ExampleCatalog
             ],
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
-            TestingTip = "Text cut off by `MaxLines` still holds all of it, so text assertions and `GetByText` match "
-                + "the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
+            TestingTip = "Text cut off by `MaxLines` is still all in the markup, so text assertions and `GetByText` "
+                + "match the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
         },
         new("image", "Image", ExampleCategory.Content,
-            "An image with required alternative text, that can scale to fit its container.", typeof(ImageExample))
+            "An image that requires alternative text and can scale to fit its container.", typeof(ImageExample))
         {
             Api = [typeof(TbImage)],
             Accessibility =
@@ -161,7 +161,7 @@ public static class ExampleCatalog
             Blocks = ["tb-image"],
         },
         new("divider", "Divider", ExampleCategory.Layout,
-            "A line that separates content, across or down.", typeof(DividerExample))
+            "A horizontal or vertical line that separates content.", typeof(DividerExample))
         {
             Api = [typeof(TbDivider)],
             Accessibility =
@@ -169,8 +169,8 @@ public static class ExampleCatalog
                 "A horizontal divider is an `<hr>`, which screen readers treat as a separator. A vertical one is "
                     + "a `div` with `role=\"separator\"` and `aria-orientation=\"vertical\"`.",
                 "It takes no focus and has no name.",
-                "A divider with content, such as \"or\", is a plain `div`: a separator's children aren't read aloud, "
-                    + "so the content is read as text and the lines are only drawn.",
+                "A divider with content, such as \"or\", is a plain `div` rather than a separator, whose children "
+                    + "screen readers skip, so the content is read as text and the lines are only drawn.",
             ],
             Target = null,
             Blocks = ["tb-divider"],
@@ -203,7 +203,7 @@ public static class ExampleCatalog
                 "With a `Label` it's an `img` named by the label. Give one whenever the icon means something that "
                     + "no text next to it says.",
                 "`Tone` colors it by meaning, with the same text colors as `TbText`, which meet contrast in both "
-                    + "themes. Color alone doesn't carry the meaning, so pair it with a label or text.",
+                    + "themes. Color alone can't carry the meaning, so pair it with a label or text.",
             ],
             Target = new("img", "Failed"),
             Blocks = ["tb-icon"],
@@ -286,7 +286,8 @@ public static class ExampleCatalog
                 "The group is one tab stop, landing on the pressed item, or the first one. Left and Right move "
                     + "between the items (Up and Down when `Vertical`), Home and End go to the first and last, and "
                     + "disabled items are skipped. Space or Enter presses the focused item.",
-                "In a single group, pressing the pressed item keeps it pressed unless the group is `Clearable`.",
+                "In a `TbToggleGroup`, pressing the pressed item again keeps it pressed unless the group is "
+                    + "`Clearable`.",
                 "In forced-colors mode a pressed item takes the system highlight.",
             ],
             Target = new("group", "Map view"),
@@ -334,8 +335,8 @@ public static class ExampleCatalog
                     + "the first and last. A text field keeps its arrow keys.",
                 "A `TbToolbarButton` with an `Icon` is an icon button named by its `Text`, which its tooltip shows "
                     + "too. A tooltip that repeats a button's name isn't read a second time as its description.",
-                "Toolbar buttons with no room move into the menu button named by `OverflowLabel` (\"More\"), where "
-                    + "each is a `menuitem` with the same text and action. Other content never moves.",
+                "Toolbar buttons with no room move into the overflow menu named by `OverflowLabel` (\"More\" by "
+                    + "default), where each is a `menuitem` with the same text and action. Other content never moves.",
             ],
             Target = new("toolbar", "Trail notes"),
             Blocks = ["tb-toolbar"],
@@ -416,12 +417,12 @@ public static class ExampleCatalog
             Api = [typeof(TbSplitter), typeof(TbSplitterPane)],
             Accessibility =
             [
-                "Each separator is a focusable `separator` named \"Resize\" and the `Label` of the pane before it, "
-                    + "with `aria-valuenow` giving that pane's size in percent and `aria-controls` pointing to it.",
+                "Each separator is a focusable `separator` named \"Resize\" followed by the `Label` of the pane before "
+                    + "it, with `aria-valuenow` giving that pane's size in percent and `aria-controls` pointing to it.",
                 "On a separator, the arrows resize by 1% (10% with Shift), Home and End take the pane before it to "
                     + "its smallest and largest, and Enter collapses or restores a `Collapsible` pane.",
                 "A collapsed pane keeps its content but hides it from sight and from the tab order.",
-                "Dragging has the keyboard as its alternative (WCAG 2.5.7), and works right to left.",
+                "Dragging has the keyboard as its alternative, and works in right-to-left layouts.",
             ],
             Target = new("separator", "Resize Trails"),
             Blocks = ["tb-splitter"],
@@ -474,9 +475,9 @@ public static class ExampleCatalog
                 "A `TbChipGroup` is a `list` named by its required `AriaLabel`, and each chip in it is a `listitem`.",
                 "A chip with `OnClick` is a `button`, with `Href` a `link`, and with `@bind-Selected` a toggle button "
                     + "with `aria-pressed`. Other chips are plain text.",
-                "A removable chip has a remove button named \"Remove\" and the chip's `Text`; Delete or Backspace on "
-                    + "the chip removes it too. In a group, focus then moves to the chip that takes its place, or "
-                    + "to the group when none is left.",
+                "A removable chip has a remove button named \"Remove\" followed by the chip's `Text`; Delete or "
+                    + "Backspace on the chip removes it too. In a group, focus then moves to the chip that takes its "
+                    + "place, or to the group when none is left.",
                 "In forced-colors mode, such as Windows high contrast, every chip keeps an outline and a selected "
                     + "one is outlined in the system's highlight color.",
             ],
@@ -489,8 +490,8 @@ public static class ExampleCatalog
             [
                 "With a `TelemetryName`, such as `\"filter-open\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, `trailblazor.control.used` for each click or toggle, and `trailblazor.control.used` "
-                    + "with `trailblazor.action` `remove` when it is removed. Leave it off chips that only show "
-                    + "something.",
+                    + "with `trailblazor.action` `remove` when it is removed. Leave the `TelemetryName` off chips that "
+                    + "only show something.",
             ],
         },
         new("list", "List", ExampleCategory.Content,
@@ -503,7 +504,7 @@ public static class ExampleCatalog
                 "A `list` of `listitem`s; name it with `aria-label` when the page has several lists.",
                 "An item with `Href` is a `link` and one with `OnClick` a `button`, each a stop in the tab order. "
                     + "It is named by its text and then its `Description`, so start the text with what the item is.",
-                "The `End` content sits outside the link or button, so its own buttons are tab stops of their own, "
+                "The `End` content sits outside the link or button, so buttons in it are separate tab stops, "
                     + "reached right after their item.",
                 "`Selected` sets `aria-current`: `page` on a link and `true` on a button or plain item.",
             ],
@@ -521,18 +522,18 @@ public static class ExampleCatalog
             Api = [typeof(TbSortable<>), typeof(SortableMove<>), typeof(MoveCheck)],
             Accessibility =
             [
-                "A `list` named by its `Label`. Each item has a handle, a menu `button` named \"Move\" and the item's "
-                    + "text, described by how its keys work.",
+                "A `list` named by its `Label`. Each item has a handle: a menu `button` named \"Move\" followed by the "
+                    + "item's text, described by how its keys work.",
                 "On a handle, the up and down arrows move the item one place, and Home and End move it to the start "
                     + "or end; focus stays on the handle as the item moves. Enter, Space or a click opens its menu: "
-                    + "Move up, Move down, Move to the start and Move to the end. The menu is the one-click way that "
-                    + "replaces dragging (WCAG 2.5.7), and it works where a screen reader keeps the arrow keys for "
-                    + "itself.",
+                    + "Move up, Move down, Move to the start and Move to the end. The menu is the single-pointer way "
+                    + "that replaces dragging (WCAG 2.5.7), and it works where a screen reader keeps the arrow keys "
+                    + "for itself.",
                 "Each move is announced with the item's new position, such as \"Storm warning moved to position 1 of "
                     + "4.\", and a move `CanMove` refuses is announced with its reason, which also shows beside the "
                     + "drop.",
-                "A drop lands before or after the item under the pointer, shown by a line; a place it can't go shows "
-                    + "dashed, so it doesn't rely on color.",
+                "A drop lands before or after the item under the pointer, shown by a line; where it can't go, the line "
+                    + "is dashed, so it doesn't rely on color.",
                 "`MoveAsync(from, to)` moves an item from the app's own buttons, such as \"Raise\" here, with the same "
                     + "check and announcement.",
             ],
@@ -565,7 +566,7 @@ public static class ExampleCatalog
                     + "which screen readers hear instead of the bare number; a dot with no `Label` isn't read out.",
                 "It takes no focus and never catches clicks, which reach the icon or button under it.",
                 "A count of 0 hides the badge, since there is nothing new; `ShowZero` shows it, such as for a "
-                    + "count of errors that reads well at zero.",
+                    + "count of errors, where zero is good news.",
                 "In forced-colors mode, such as Windows high contrast, the badge keeps an outline and a dot keeps its "
                     + "fill.",
             ],
@@ -694,11 +695,12 @@ public static class ExampleCatalog
                 "`MaxLines` lets a text area grow with its text from `Lines` up to that many lines, and then scroll, "
                     + "in browsers with CSS `field-sizing`.",
                 "`Mask` fits typing to a pattern such as `(000) 000-0000` (`0` a digit, `a` a letter, `*` either), "
-                    + "adding its brackets and dashes as you type and keeping the caret in place; Backspace after one "
-                    + "removes the character before it. Empty slots make the field invalid, the placeholder shows the "
-                    + "pattern, and a pattern of digits brings up a number keyboard. The value holds what was typed, "
-                    + "or the whole text with `IncludeMaskLiterals`. A static form post binds the text as it was "
-                    + "sent, so check it on the model too, with a `[RegularExpression]` for example.",
+                    + "adding its brackets and dashes as you type and keeping the caret in place; Backspace just after "
+                    + "a bracket or dash removes the character before it. Empty slots make the field invalid, the "
+                    + "placeholder shows the pattern, and a pattern of digits brings up a number keyboard. The value "
+                    + "holds what was typed, or the whole text with `IncludeMaskLiterals`. A static form post binds "
+                    + "the text as it was sent, so check it on the model too, with a `[RegularExpression]` for "
+                    + "example.",
                 "`Variant` and `Size` work the same on every boxed field: text, number, select, autocomplete, color "
                     + "and date range. `Filled` keeps a 3:1 line along the box's bottom, red when the field is "
                     + "invalid and dashed when it's read only. Each size is set from the theme's density, as a "
@@ -726,8 +728,8 @@ public static class ExampleCatalog
                 "The Decrease and Increase buttons are left out of the tab order, since the arrow keys do the "
                     + "same, and they turn off at `Min` and `Max`.",
                 "A value out of range, or one that isn't a number, shows as an error with `aria-invalid`, unless "
-                    + "`ClampToRange` moves it to the nearer limit, as it does a number too large or small for the "
-                    + "value's type. `Decimals` rounds what is typed.",
+                    + "`ClampToRange` moves it to the nearer limit, and does the same for a number too large or small "
+                    + "for the value's type. `Decimals` rounds what is typed.",
                 "The value updates when the user leaves the field or presses Enter, or with `UpdateOnInput` as they "
                     + "type. What they type stays as typed until then, so the format doesn't rewrite it under the "
                     + "caret, and an error waits for that commit too.",
@@ -737,7 +739,7 @@ public static class ExampleCatalog
                 "`ReadOnly` keeps the value from changing by typing, the arrow keys or the step buttons, which turn "
                     + "off.",
                 "Before the page is interactive, a field with a `Format` is a plain number box, since a static form "
-                    + "posts numbers in no culture.",
+                    + "posts numbers in the invariant culture.",
             ],
             Target = new("spinbutton", "Quantity"),
             Blocks = ["tb-field"],
@@ -768,7 +770,7 @@ public static class ExampleCatalog
                 "`ReadOnly` keeps the box focusable and posted, but neither a click nor Space changes it; screen "
                     + "readers hear it as read only.",
                 "`Tone` colors the checked box, standing out from the page by at least 3:1 in every tone; warning "
-                    + "takes its text color for that. `Size` scales the box and its label.",
+                    + "uses its text color to reach that contrast. `Size` scales the box and its label.",
                 "Rich content as `ChildContent` takes the place of `Label` and names the box, link text included, so "
                     + "keep it short. A link inside opens without ticking the box.",
             ],
@@ -816,7 +818,7 @@ public static class ExampleCatalog
                 "`ReadOnly` keeps the switch focusable and posted, but neither a click nor Space changes it; "
                     + "screen readers hear it as read only.",
                 "`Tone` colors the track when on, standing out from the page by at least 3:1 in every tone; warning "
-                    + "takes its text color for that. `Size` scales the track and its label.",
+                    + "uses its text color to reach that contrast. `Size` scales the track and its label.",
                 "Rich content as `ChildContent` takes the place of `Label` and names the switch, so keep it short.",
             ],
             Target = new("switch", "Auto-save"),
@@ -851,7 +853,7 @@ public static class ExampleCatalog
             TestingTip = "Set a slider with `await page.GetByRole(AriaRole.Slider, new() { Name = \"Map brightness\" "
                 + "}).FillAsync(\"80\")`, which Playwright supports for range inputs. Then check what the app "
                 + "did with it, such as `Expect(page.GetByText(\"Saved at\")).ToHaveTextAsync(\"Saved at 80%\")`: "
-                + "`ToHaveValueAsync(\"80\")` passes as soon as the box changes, before the app hears of it. A range "
+                + "`ToHaveValueAsync(\"80\")` passes as soon as the input changes, before the app hears of it. A range "
                 + "slider's thumbs are named \"Elevation Minimum\" and \"Elevation Maximum\".",
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
@@ -872,7 +874,7 @@ public static class ExampleCatalog
                 "`ReadOnly` turns off every option but the chosen one, which stays a tab stop and still posts; "
                     + "with nothing chosen, every option is off. Screen readers hear the group as read only.",
                 "`Tone` colors the chosen radio, standing out from the page by at least 3:1 in every tone; warning "
-                    + "takes its text color for that. `Size` scales the radios and their labels.",
+                    + "uses its text color to reach that contrast. `Size` scales the radios and their labels.",
             ],
             Target = new("radiogroup", "Paper size"),
             Blocks = ["tb-radio-group", "tb-radio"],
@@ -904,12 +906,13 @@ public static class ExampleCatalog
                     + "Options that load as the list opens aren't there yet, so give such a select `UnmatchedText`, "
                     + "such as a lookup of the value's name, rather than showing a key such as a `Guid`.",
                 "With `SelectAll`, a multi-select's list starts with a \"Select all\" option, named by "
-                    + "`Labels.SelectAll`, that the arrows reach like any other. It chooses every enabled option, and is "
-                    + "selected once they all are, when choosing it takes them out again. It hides while the filter "
+                    + "`Labels.SelectAll`, that the arrows reach like any other. It chooses every enabled option, and "
+                    + "is selected once they all are; choosing it then deselects them all. It hides while the filter "
                     + "has text.",
                 "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
                 "With `Chips`, each chosen option shows as a chip. Backspace removes the last one and each chip has a "
-                    + "remove button for the pointer; a removal is announced, and the list still deselects options.",
+                    + "remove button for the pointer; a removal is announced, and options can still be deselected in "
+                    + "the list.",
                 "With `Filterable`, opening the list moves focus to a filter box above it, a `combobox` with "
                     + "`aria-autocomplete=\"list\"` named by `Labels.Filter`. Typing on the closed select starts the "
                     + "filter. Matching ignores case and accents, groups with no matches hide, and `Labels.NoResults` "
@@ -957,7 +960,7 @@ public static class ExampleCatalog
                 "Down opens the list and moves through it, Up moves back, Enter chooses, and Escape closes. Alt+Down "
                     + "opens without moving. The arrow keys never take the caret out of the text.",
                 "While a search runs the list is `aria-busy` and says \"Searching…\"; when it finishes, the number "
-                    + "of suggestions is announced. Every word can be changed.",
+                    + "of suggestions is announced. Every word it shows or reads out can be changed through `Labels`.",
                 "A search that fails says \"Couldn't load suggestions.\" in the list and reads it out, raises "
                     + "`OnSearchFailed`, and leaves the field usable: typing again searches again.",
                 "Before the page is interactive it is a plain text input, so a static form still posts what was "
@@ -1028,13 +1031,13 @@ public static class ExampleCatalog
                     + "user chooses again.",
                 "`ReadOnly` turns off the picker and the remove and clear buttons, and leaves the chosen files "
                     + "listed. A file input can't be read only, so the picker can't be focused.",
-                "Before the page is interactive it is the same file input, named for its form, so a static form "
-                    + "posts the chosen files; the list of files and the reasons for any left out show once it is "
+                "Before the page is interactive it is the same file input, with a `name` for its form, so a static "
+                    + "form posts the chosen files; the list of files and the reasons for any left out show once it is "
                     + "interactive.",
                 "`Hidden` keeps the field out of sight, the tab order and the reading order, apart from the reasons "
-                    + "any files were left out and its messages, so your own button can call `OpenAsync()` from its "
-                    + "click; browsers open a file dialog only shortly after a user's click. `ClearAsync()` empties the "
-                    + "field from code.",
+                    + "any files were left out and its messages. Your own button can then call `OpenAsync()` from its "
+                    + "click; browsers open a file dialog only shortly after a user's click. `ClearAsync()` empties "
+                    + "the field from code.",
             ],
             Target = new("button", "Trail maps"),
             Blocks = ["tb-field", "tb-file-upload"],
@@ -1123,19 +1126,19 @@ public static class ExampleCatalog
                     + "its own. A tooltip that only repeats that element's `aria-label` isn't added, so it isn't read "
                     + "twice.",
                 "It shows at once on keyboard focus and after a short delay on hover. A click or tap on a button "
-                    + "hides it, and the focus the click leaves doesn't show it, nor does focus a dialog closed with "
-                    + "the mouse hands back, so it doesn't cover what someone is working on. A text field shows it on "
-                    + "any focus, since its user is about to type. Moving the pointer onto the tooltip keeps it open, "
-                    + "and Escape hides it, without also closing a dialog it is in. `ShowDelay` and "
-                    + "`HideDelay` change the delays for one tooltip, and `options.Tooltips` in `AddTrailblazor` for "
-                    + "the whole app.",
+                    + "hides it, and neither the focus that click leaves nor the focus handed back by a dialog closed "
+                    + "with the mouse shows it, so it doesn't cover what someone is working on. A text field shows it "
+                    + "on any focus, since its user is about to type. Moving the pointer onto the tooltip keeps it "
+                    + "open, and Escape hides it, without also closing a dialog it is in. `ShowDelay` and `HideDelay` "
+                    + "change the delays for one tooltip, and `options.Tooltips` in `AddTrailblazor` for the whole "
+                    + "app.",
                 "`TextContent` can hold formatted text, such as a shortcut in `<kbd>`, which is read as part of the "
                     + "description. The tooltip can't be reached with the keyboard, so it holds no links or buttons; "
                     + "use a popover for those.",
                 "The arrow from `ShowArrow` is decoration and isn't read out.",
                 "`Disabled`, or `Text` left blank, shows no tooltip and adds no description, so a tooltip that only "
                     + "sometimes applies needs no `@if`; the switch here turns the delete button's off. `BubbleClass` "
-                    + "styles the bubble, `MaxWidth` sets how wide it grows before wrapping, 18rem by default, and "
+                    + "styles the bubble, `MaxWidth` sets how wide it grows before wrapping (18rem by default), and "
                     + "`Class` styles the anchor.",
             ],
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
@@ -1177,7 +1180,7 @@ public static class ExampleCatalog
                 "Choosing an item closes the menu, unless it is a checkbox or radio item with `KeepOpen`, such as "
                     + "the filters here: a click, Enter or Space sets it and focus stays on it, so several can be set "
                     + "in a row. Escape, Tab or a click outside closes the menu.",
-                "`@bind-Open` opens or closes the menu from code and hears when the user does. The items are drawn "
+                "`@bind-Open` opens or closes the menu from code and tells you when the user does. The items are drawn "
                     + "again each time the menu opens, so one whose text or `Disabled` depends on state that changed "
                     + "since the page last rendered, such as a file that finished loading, is up to date.",
                 "An item with `Href` is a link; Enter or Space follows it. With `NewTab` it opens in a new tab, and "
@@ -1228,10 +1231,10 @@ public static class ExampleCatalog
                     + "is decorative, so say what happened in the message.",
                 "A `TbDialogDescription` describes any dialog with `aria-describedby`, so screen readers read it with "
                     + "the title as the dialog opens.",
-                "Escape, the backdrop and the close button go through the dialog: override `OnDismissAsync` in a "
-                    + "`TbDialogContent` to run its own cancel, as the rename dialog does to ask before discarding a "
-                    + "changed name, whichever way the user leaves. On a `TbDialog`, `CanDismiss` can keep it open. "
-                    + "Closing from code doesn't ask.",
+                "Escape, the backdrop and the close button call a `TbDialogContent`'s `OnDismissAsync`, which "
+                    + "cancels by default: override it to run its own cancel, as the rename dialog does to ask before "
+                    + "discarding a changed name, whichever way the user leaves. On a `TbDialog` they ask "
+                    + "`CanDismiss`, which can keep it open. Closing from code doesn't ask.",
                 "A `TbDialogTitle` shows richer content, such as the export dialog's icon, in place of the title "
                     + "in the header. It names the dialog, so keep the title's text in it; an icon in it is hidden "
                     + "from screen readers.",
@@ -1261,7 +1264,7 @@ public static class ExampleCatalog
                 "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't "
                     + "hide them.",
                 "An open dialog can change: set `Modal`, `Size`, `Position` or `WindowState` on its reference, or on "
-                    + "itself from a `TbDialogContent`. Turning modeless keeps focus where it was; turning modal "
+                    + "itself from a `TbDialogContent`. Becoming non-modal keeps focus where it was; becoming modal "
                     + "moves focus into the dialog unless it is already there, and makes the page inert again.",
                 "A `Minimizable` modal leaves the page usable while it is minimized, with its toasts and "
                     + "announcements back on the page, and blocks it again once restored; focus stays on the button "
@@ -1272,7 +1275,7 @@ public static class ExampleCatalog
             DataParts = ["dialog", "header", "icon", "move", "minimize", "maximize", "close", "description", "body",
                 "actions", "resize"],
             TestingTip = "In bUnit, `this.ShowDialogAsync<TDialog, TResult>(title)` from `Trailblazor.Testing` hosts "
-                + "and opens a dialog in one call, as the Testing guide shows. "
+                + "and opens a dialog in one call. "
                 + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
                 + "finishes when the dialog closes, and whose `ContentType` and `Parameters` say what it shows. In "
@@ -1370,12 +1373,12 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "A `tablist` of `tab`s, each controlling a `tabpanel`. Give the list an `AriaLabel`. A tab's "
-                    + "`TextContent` or `Text` is its name, so a count in it is read with it; its `Icon` isn't "
-                    + "read.",
+                    + "`TextContent` or `Text` is its name, so a count inside it is read as part of the name; its "
+                    + "`Icon` isn't read.",
                 "`Variant` marks the selected tab: `Text` (and, for now, `Outlined`) underlines it, and `Soft` and "
                     + "`Filled` make it a pill, in vertical lists too. `--tb-tabs-indicator-color` and "
-                    + "`--tb-tabs-indicator-size` restyle the underline. In forced colors, the selected pill keeps a "
-                    + "Highlight outline.",
+                    + "`--tb-tabs-indicator-size` restyle the underline. In forced-colors mode, the selected pill "
+                    + "keeps an outline in the system's highlight color.",
                 "The tab list is one tab stop. Left and Right move between tabs and wrap, mirrored on "
                     + "right-to-left pages, and Home and End jump to the ends. A `Vertical` list has "
                     + "`aria-orientation=\"vertical\"` and moves with Up and Down instead. With automatic activation, "
@@ -1385,9 +1388,10 @@ public static class ExampleCatalog
                     + "`RenderAllPanels` renders them all from the start, hidden, so a form across the tabs, like "
                     + "the trip plan, validates and saves every field. A hidden panel's fields can't take focus, so "
                     + "name the tab that needs attention, as the trip plan does with `Text` and a `HeaderClass`; a "
-                    + "class alone is only seen.",
+                    + "class alone changes only the look, which screen readers don't announce.",
                 "A tab's `OnClick` is raised each time its header is clicked, or Enter or Space is pressed on it, "
-                    + "even while it is selected, once it is selected; the arrow keys select without raising it.",
+                    + "even if it was already selected. It is raised after the tab is selected, and the arrow keys "
+                    + "select without raising it.",
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
                     + "system's highlight color.",
             ],
@@ -1423,7 +1427,7 @@ public static class ExampleCatalog
                     + "not in it, so they stay usable and out of the title's name. Tab reaches them after the title; "
                     + "Up and Down skip them.",
                 "An item works on its own, outside an accordion, as Care instructions does. One nested in another "
-                    + "item's panel, as Exchanges is, belongs to an accordion around it in that panel, or to none, "
+                    + "item's panel, as Exchanges is, belongs only to an accordion inside that panel, or to none, "
                     + "so opening it never closes the item it sits in. An item's own `HeadingLevel` overrides the "
                     + "accordion's, so a nested one, like Exchanges at level 4, sits below the item around it in the "
                     + "page's outline.",
@@ -1432,7 +1436,7 @@ public static class ExampleCatalog
             Blocks = ["tb-accordion"],
             DataParts = ["accordion", "item", "header", "heading", "trigger", "chevron", "actions", "panel"],
             TestingTip = "The arrow keys, Home and End work once the accordion's script has attached, which "
-                + "`data-ready` on its root, `[data-part=accordion]`, marks; wait for it before pressing them.",
+                + "is marked by `data-ready` on its root, `[data-part=accordion]`; wait for it before pressing them.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
@@ -1459,7 +1463,7 @@ public static class ExampleCatalog
                     + "single-letter shortcuts that should work while the tree has focus.",
                 "A row is named by everything it shows, its `ItemEnd` content included, so keep actions there short "
                     + "or give icon buttons an `AriaLabel`.",
-                "Children that load show a loading row, and a load that fails is read out and shows a row that "
+                "While children load, a loading row shows, and a load that fails is read out and shows a row that "
                     + "offers to try again. The arrows reach both rows; Enter on the failed one tries again, and focus "
                     + "moves on to the children once they arrive.",
                 "In a right-to-left layout, Right and Left swap, as the chevrons do.",
@@ -1469,7 +1473,8 @@ public static class ExampleCatalog
                     + "each renders a plain row, open to `InitialExpandDepth`. `Virtualize` needs `Items`.",
                 "A `TbTreeItem` with no `Value`, such as the Trips heading, opens, closes and is found by typing, but "
                     + "can't be selected or activated, so it has no `aria-selected`. With cascading checks it checks "
-                    + "the rows inside it, and it is never in the bound keys, so texts that repeat need no keys.",
+                    + "the rows inside it, and it is never in the bound keys, so several such rows can share a text "
+                    + "without needing keys.",
                 "A tree inside another tree's row is a tree of its own: its rows take their own keys, focus, clicks and "
                     + "drags, the outer tree's arrows pass over them, and the outer row isn't selected by them.",
                 "Controls in a row go in its end slot, `ItemEnd` or a `TbTreeItem`'s `EndContent`, whose clicks and "
@@ -1508,8 +1513,8 @@ public static class ExampleCatalog
                 + "`data-text`, and a row being dragged over carries `data-drop`. In a virtualized tree the helpers "
                 + "scroll until the row renders (a drag needs both rows in view together), and rows also carry "
                 + "`data-index` and `data-inside`, the number of rows in their branch. A row's `data-key` is its "
-                + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
-                + "the text is empty or when another key has it. Before pressing keys or dragging without the "
+                + "key's text for a string, number or date key, and a made-up id such as `key-3` for any other key, or "
+                + "when the text is empty or when another key has it. Before pressing keys or dragging without the "
                 + "helpers, wait for the tree's `data-ready`; a tree of `TbTreeItem`s also sets `aria-busy` while "
                 + "items it has just been given become rows. In bUnit, `cut.Tb().Tree(\"Trails by region\")` from "
                 + "`Trailblazor.Testing` has the same `ExpandAsync`, `ExpandAllAsync`, `SelectAsync` and "
@@ -1526,7 +1531,7 @@ public static class ExampleCatalog
             ],
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
-            "Shows items as rows of a table, with columns that sort, pages, and rows that can be selected.",
+            "Shows items as rows of a table, with sortable columns, paging and row selection.",
             typeof(DataGridExample))
         {
             Api =
@@ -1538,27 +1543,29 @@ public static class ExampleCatalog
             [
                 "It is a native `table` named by `AriaLabel`, with a header cell for each column, so screen readers "
                     + "read each cell with its column.",
-                "A sortable column's header is a button. A click sorts by it alone, then turns it around, then stops; "
-                    + "Shift adds it to the sorts. The first sort sets `aria-sort` on its header, later ones say "
-                    + "their place, and every change is read out, such as \"Sorted by Name, ascending.\"",
-                "`Multiple` selection gives each row a checkbox named \"Select\" and the row's label, and the header "
-                    + "a box for every row on the page that shows \"mixed\" when only some are. `Single` uses radio "
-                    + "buttons. Clicking a row selects it too, unless the click lands on a button, link or field in "
-                    + "it.",
+                "A sortable column's header is a button. A click sorts by it alone, the next reverses it, and the next "
+                    + "stops sorting by it; Shift adds it to the sorts. The first sort sets `aria-sort` on its header, "
+                    + "later ones say their place, and every change is read out, such as \"Sorted by Name, "
+                    + "ascending.\"",
+                "`Multiple` selection gives each row a checkbox named \"Select\" followed by the row's label, and the "
+                    + "header a checkbox that selects every row on the page and shows \"mixed\" when only some are "
+                    + "selected. `Single` uses radio buttons. Clicking a row selects it too, unless the click lands on "
+                    + "a button, link or field in it.",
                 "Pages come with a line such as \"1–5 of 7\" and a `TbPagination`; `PageSizes` adds a list of page "
                     + "sizes.",
-                "While rows load the table is `aria-busy`. A `DataProvider` gets the page and sorts it asks for, and "
-                    + "a new request cancels the last one. A failed load is read out and offers to try again, a load "
-                    + "with no rows is read out too, and `RefreshAsync` loads again after a filter changes. With "
-                    + "`EmptyContent`, set `Labels.Empty` to what screen readers should hear instead.",
+                "While rows load the table is `aria-busy`. A `DataProvider` receives the page and the sorts the grid "
+                    + "asks for, and a new request cancels the last one. A failed load is read out and offers to try "
+                    + "again, a load with no rows is read out too, and `RefreshAsync` loads again after a filter "
+                    + "changes. With `EmptyContent`, set `Labels.Empty` to what screen readers should hear instead.",
                 "Every control in it is a native button, link or input, reached with Tab. Only a pointer clicks a "
                     + "row, so whatever `OnRowClick` does needs a button in a cell too.",
                 "With `OnRowMove`, rows held in `Items` can be put in order while the grid isn't sorted. Each row "
-                    + "gains a handle in an \"Order\" column, a menu `button` named \"Move\" and the row's label: drag "
-                    + "it, press the up and down arrows, Home or End on it, or choose from its menu. Moves cross "
-                    + "pages, focus stays on the handle, and each is read out with the row's new position. `CanMoveRow` can "
-                    + "refuse a move, with a reason shown beside the drop and read out. Each handle is a menu with a "
-                    + "script of its own, so give a grid whose rows move a `PageSize` when it holds many rows.",
+                    + "gains a handle in an \"Order\" column: a menu `button` named \"Move\" followed by the row's "
+                    + "label. Drag it, press the up and down arrows, Home or End on it, or choose from its menu. Moves "
+                    + "cross pages, focus stays on the handle, and each is read out with the row's new position. "
+                    + "`CanMoveRow` can refuse a move, with a reason shown beside the drop and read out. Each handle "
+                    + "is a menu with a script of its own, so give a grid whose rows move a `PageSize` when it holds "
+                    + "many rows.",
             ],
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
@@ -1572,8 +1579,8 @@ public static class ExampleCatalog
                 + "table's `aria-busy` to clear, and for `data-ready` on the grid's root, `[data-part=grid]`, "
                 + "before clicking a row. Rows carry `data-key` and `data-selected`, and cells `data-column`, the "
                 + "field's path such as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its "
-                + "key's text for a string, number or date key, and a made-up id such as `key-3` otherwise, when "
-                + "the text is empty or when another key has it. In bUnit, `cut.Tb().Grid(\"Trails\")` from "
+                + "key's text for a string, number or date key, and a made-up id such as `key-3` for any other key, or "
+                + "when the text is empty or when another key has it. In bUnit, `cut.Tb().Grid(\"Trails\")` from "
                 + "`Trailblazor.Testing` has the same `Row` and `SelectAsync`, and `ClickRowAsync(\"Cedar Flats\")` "
                 + "clicks a row as the browser reports it, raising `OnRowClick` and, with `RowClickSelects`, "
                 + "selecting it; a plain bUnit `Click()` on the row doesn't. A row draws again only when its item, "
@@ -1597,10 +1604,10 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "It is a native `table`: name it with a `<caption>` or `aria-label`, and give headers `scope`.",
-                "`StickyHeader` keeps the header row in view as the rows scroll, in a parent with a height and "
-                    + "`overflow: auto`, as the trail log has, or else in the page; `--tb-table-sticky-top` moves it "
-                    + "below an app bar fixed to the top. A scroll area of its own needs `tabindex=\"0\"` and a "
-                    + "name, so keyboard users can reach and scroll it.",
+                "`StickyHeader` keeps the header row in view as the rows scroll, either inside a parent with a set "
+                    + "height and `overflow: auto`, like the trail log here, or as the page scrolls; "
+                    + "`--tb-table-sticky-top` moves it below an app bar fixed to the top. A scroll area of its own "
+                    + "needs `tabindex=\"0\"` and a name, so keyboard users can reach and scroll it.",
                 "For rows that sort, page or select, use the data grid.",
             ],
             Target = new("table", "Opening hours"),

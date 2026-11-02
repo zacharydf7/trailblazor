@@ -6,7 +6,7 @@ namespace Trailblazor.Testing.Playwright;
 public sealed class TbToastsLocator(IPage page)
 {
     /// <summary>Waits for a toast whose text contains this and returns it, to read it or click its action. When
-    /// several do, as when the same action ran twice, it is the newest.</summary>
+    /// several match, as when the same action ran twice, this returns the newest.</summary>
     public async Task<ILocator> WaitForAsync(string text)
     {
         // A toast that is leaving stays on the page while it fades; newer toasts come later on the page.

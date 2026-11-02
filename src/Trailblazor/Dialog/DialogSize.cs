@@ -1,7 +1,7 @@
 namespace Trailblazor;
 
-/// <summary>How wide a dialog grows, in rem so it follows the user's text size; the pixels are at the default 16px.
-/// A dialog is never wider than the window.</summary>
+/// <summary>How wide a dialog grows, in rem so it follows the user's text size; the pixel values assume the default
+/// 16px. A dialog is never wider than the window.</summary>
 public enum DialogSize
 {
     /// <summary>24rem (384px), for a short question or a single field.</summary>

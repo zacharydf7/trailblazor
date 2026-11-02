@@ -69,7 +69,7 @@ public sealed class TrailblazorMarkup
                 : $"No data grid is named \"{name}\".");
     });
 
-    // A field's label names its control by for or aria-labelledby; a label's text ends with a required marker.
+    // A field's label names its control by for or aria-labelledby; a required field's label ends with an asterisk.
     private IElement Field(string label, params string[] controls)
     {
         var labels = _findAll("label[data-part=label]").Where(element => LabelText(element) == label).ToList();
@@ -100,8 +100,8 @@ public sealed class TbSelectDriver
     internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
         (_find, _findAll) = (find, findAll);
 
-    /// <summary>The options' names, in order, leaving out a static select's placeholder and the value it keeps when no
-    /// option has it. An option with content of its own is named by its <c>Text</c>.</summary>
+    /// <summary>The options' names, in order, leaving out a static select's placeholder and the extra option it adds to
+    /// keep a value that matches no option. An option with content of its own is named by its <c>Text</c>.</summary>
     public IReadOnlyList<string> Options => OptionElements().Select(Choices.NameOf).ToList();
 
     /// <summary>The name of the select's value, as a screen reader hears it, or null while it shows its placeholder. A
@@ -120,7 +120,7 @@ public sealed class TbSelectDriver
 
     /// <summary>Chooses the options with these names, as clicking them does: the one option of a select, or each one
     /// not yet chosen in a multiple select, keeping what is already chosen. On a static page the select is a native
-    /// one that posts with its form, so there is nothing to choose in bUnit.</summary>
+    /// one that posts with its form, so this throws, as it does for a disabled select.</summary>
     public Task ChooseAsync(params string[] options) => Choices.ChooseAsync(() =>
     {
         var control = _find();
@@ -155,8 +155,8 @@ public sealed class TbListBoxDriver
         .Select(Choices.NameOf).ToList();
 
     /// <summary>Chooses the options with these names, as clicking them does: the one option of a list box, or each one
-    /// not yet chosen in a multiple list box, keeping what is already chosen. On a static page there is nothing to
-    /// choose in bUnit, as for a select.</summary>
+    /// not yet chosen in a multiple list box, keeping what is already chosen. On a static page, or when the list box is
+    /// disabled, this throws, as for a select.</summary>
     public Task ChooseAsync(params string[] options) => Choices.ChooseAsync(() =>
     {
         var list = _find();
@@ -325,7 +325,7 @@ public sealed class TbTreeDriver
             .ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
-    // A tree inside one of this tree's rows keeps its own rows.
+    // Leaves out the rows of a tree nested inside one of this tree's rows.
     private List<IElement> OwnRows()
     {
         var tree = _find();
@@ -351,8 +351,8 @@ public sealed class TbGridDriver
                 : $"{rows.Count} rows have a cell that reads \"{cell}\".");
     }
 
-    /// <summary>Clicks the row with a cell whose text is exactly this, away from its controls, as the browser reports
-    /// a click on a plain cell: the grid raises <c>OnRowClick</c> and, with <c>RowClickSelects</c>, selects it.
+    /// <summary>Clicks the row with a cell whose text is exactly this, as the browser reports a click on a plain cell
+    /// away from the row's controls: the grid raises <c>OnRowClick</c> and, with <c>RowClickSelects</c>, selects it.
     /// </summary>
     public Task ClickRowAsync(string cell) =>
         Row(cell).TriggerEventAsync("ontbrowclick", new RowClickEventArgs());

@@ -10,7 +10,7 @@ namespace Trailblazor;
 /// <summary>What every Trailblazor form field shares: <c>@bind-Value</c>, a label, helper text and validation
 /// messages, inside or outside an <see cref="EditForm"/>. An <c>id</c> given to a field names its control, such as the
 /// input of a text field or the box of a checkbox, as on a native input; its other attributes go on the field's root.
-/// A field with two controls, such as a range, and a checkbox or radio group keep the <c>id</c> on their root.
+/// A field with two controls, such as a range, keeps the <c>id</c> on its root, as do checkbox and radio groups.
 /// </summary>
 public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField, IDisposable
 {
@@ -62,8 +62,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     public bool ReadOnly { get; set; }
 
     /// <summary>Marks the field as required: screen readers hear it, the label shows a marker, and an empty value
-    /// shows <see cref="RequiredMessage"/> once the user changes the field or its form validates. A disabled or read
-    /// only field isn't checked, since the user can't fill it in.</summary>
+    /// shows <see cref="RequiredMessage"/> once the user changes the field or its form validates. A disabled or
+    /// read-only field isn't checked, since the user can't fill it in.</summary>
     [Parameter]
     public bool Required { get; set; }
 
@@ -109,15 +109,15 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Parameter]
     public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
-    /// <summary>Moves focus to the control, as a dialog or a search page does with its first field, as it appears on
+    /// <summary>Moves focus to the control, as a dialog or a search page does with its first field, when it appears on
     /// an interactive page, unless the user is typing in another field by then. In a dialog or focus scope it takes
     /// focus as that opens. Give it to one field at most.</summary>
     [Parameter]
     public bool AutoFocus { get; set; }
 
     /// <summary>A label this field's use is counted under, such as <c>"email"</c>, so the app can see how people use
-    /// it through the <c>Trailblazor</c> meter: shown when it first renders, and counted in
-    /// <c>trailblazor.field.invalid</c> each time its <see cref="TbForm"/> is submitted while it has an error. A
+    /// it through the <c>Trailblazor</c> meter: counted in <c>trailblazor.control.shown</c> when it first renders, and
+    /// in <c>trailblazor.field.invalid</c> each time its <see cref="TbForm"/> is submitted while it has an error. A
     /// checkbox, switch, select or list box also counts each change or choice. Its value is never recorded. It names
     /// what the field holds, never the user.</summary>
     [Parameter]

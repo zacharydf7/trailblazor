@@ -29,8 +29,8 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public bool Disabled { get; set; }
 
-    /// <summary>Keeps a disabled button in the tab order, marked <c>aria-disabled</c>, so a tooltip or a keyboard
-    /// user can still find it and learn why it is off.</summary>
+    /// <summary>Keeps a disabled button in the tab order, marked <c>aria-disabled</c>, so it can still show a tooltip,
+    /// and a keyboard user can still find it and learn why it is off.</summary>
     [Parameter]
     public bool FocusableWhenDisabled { get; set; }
 
@@ -60,9 +60,10 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-    /// <summary>A label this button's use is counted under, such as <c>"export-csv"</c>, so the app can see how often
+    /// <summary>A label this button's use is counted under, such as <c>"export-csv"</c>, so the app can count how often
     /// people see it and use it through the <c>Trailblazor</c> meter. Controls that share a label count together; a
-    /// control without one isn't counted. It names what the button does, never the user, and is no credential.
+    /// control without one isn't counted. It names what the button does, never the user, and must never hold a
+    /// credential.
     /// </summary>
     [Parameter]
     public string? TelemetryName { get; set; }

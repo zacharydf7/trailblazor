@@ -231,7 +231,8 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         _focus = _focus.AddMonths(months);
     }
 
-    // The first pick starts a range and the second ends it, unless it comes earlier, when it starts again.
+    // The first pick starts a range and the second ends it, unless it comes before the first, in which case it starts a
+    // new range.
     private async Task PickAsync(DateOnly day)
     {
         if (IsUnavailable(day))

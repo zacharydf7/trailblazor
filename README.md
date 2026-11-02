@@ -14,8 +14,8 @@ cascade layers, and built on the browser's native `<dialog>`, Popover API and an
   `Trailblazor.Testing.Playwright` drives components by their labels, the way users do:
   `await page.Tb().Select("Size").ChooseAsync("Medium")`.
 - **Built-in telemetry.** Label a control with `TelemetryName` and the components count how often people see it and
-  use it, through OpenTelemetry, into the dashboard you already have, so features that are shown but never used stand
-  out. Nothing is recorded until the app listens, and nothing about the user is recorded at all.
+  use it. The counts go through OpenTelemetry to the dashboard you already have, so features that are shown but never
+  used stand out. Nothing is recorded until the app listens, and nothing about the user is recorded at all.
 
 Trailblazor is in development (phase 2: parity with the components a large app needs). There are no packages yet. Try
 the components on the documentation site: https://zacharydf7.github.io/trailblazor/

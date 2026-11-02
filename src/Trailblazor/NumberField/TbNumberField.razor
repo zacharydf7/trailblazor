@@ -88,7 +88,8 @@
     private CultureInfo NumberCulture => Culture ?? CultureInfo.CurrentCulture;
 
     // A formatted field is a text box that acts as a spin button, since a number box can't show grouping or symbols.
-    // Without a circuit it stays the number box, since Blazor's form binding reads posted numbers in no culture.
+    // Without a circuit it stays the number box, since Blazor's form binding reads posted numbers in the invariant
+    // culture.
     private bool Formatted => Format is not null && RendererInfo.IsInteractive;
 
     // Built here to mark the events as updating value, as @bind does, so a round trip can't undo newer steps.
@@ -213,8 +214,8 @@
     private bool CanStep(int direction) =>
         TryGetSteppable(out var number) && (number is null || (direction < 0 ? number > Lower : number < Upper));
 
-    // A text box would move the caret on the arrows, so number-field.js holds it and the keys step instead, as a
-    // number box's do.
+    // A text box would move the caret on the arrows, so number-field.js holds the caret and the keys step instead, as
+    // in a number box.
     private Task OnKeyDownAsync(KeyboardEventArgs e) => ReadOnly ? Task.CompletedTask : e.Key switch
     {
         "ArrowUp" => StepAsync(1),

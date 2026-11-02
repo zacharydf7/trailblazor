@@ -11,8 +11,8 @@
 </button>
 
 @code {
-    /// <summary>The value the group takes when this item is chosen. A plain value fits a group of its nullable, such
-    /// as <c>Value="2"</c> in a group bound to an <c>int?</c>.</summary>
+    /// <summary>The value the group takes when this item is chosen. A plain value fits a group of its nullable type,
+    /// such as <c>Value="2"</c> in a group bound to an <c>int?</c>.</summary>
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;
 

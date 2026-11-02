@@ -14,8 +14,8 @@ public abstract class TbComponentBase : ComponentBase
     [Parameter]
     public string? Style { get; set; }
 
-    /// <summary>Any other attributes, such as <c>id</c> or <c>aria-*</c>, added to the root element, apart from an
-    /// <c>id</c> that some components give the part users act on, such as a field's input or a menu's trigger.
+    /// <summary>Any other attributes, such as <c>id</c> or <c>aria-*</c>, added to the root element. Some components
+    /// put the <c>id</c> on the part users act on instead, such as a field's input or a menu's trigger.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }

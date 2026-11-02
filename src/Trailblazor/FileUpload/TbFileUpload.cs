@@ -213,7 +213,7 @@ public partial class TbFileUpload
         await FocusAsync();
     }
 
-    // Accept, or else an accept given in InputAttributes, kept as an input name given there is.
+    // Accept, or else an accept given in InputAttributes, which is honored just as a name given there is.
     private string? AcceptList => Accept ?? InputAttributes?.GetValueOrDefault("accept") as string;
 
     // An accept list names extensions such as .pdf, types such as application/pdf, or families such as image/*.

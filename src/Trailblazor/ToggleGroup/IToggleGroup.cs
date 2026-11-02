@@ -15,6 +15,6 @@ internal interface IToggleGroup
 
     Task ToggleAsync(object? value);
 
-    // Throws when an item's value isn't the group's type, as the item registers.
+    // Throws when an item's value isn't the group's type; called as the item registers.
     void Accept(object? value);
 }

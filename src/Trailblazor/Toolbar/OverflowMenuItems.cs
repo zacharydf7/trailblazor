@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor;
 
-// The menu items for the toolbar buttons with no room. A separate component, so the toolbar can refresh it without
+// The menu items for the toolbar buttons that don't fit. A separate component, so the toolbar can refresh it without
 // re-rendering its content and every button again. C#, so it can stay internal.
 internal sealed class OverflowMenuItems : ComponentBase
 {

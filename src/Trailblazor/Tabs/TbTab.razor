@@ -48,13 +48,15 @@
     public bool Disabled { get; set; }
 
     /// <summary>Extra CSS classes for the tab's header, such as one marking a tab whose fields need attention.
-    /// <c>Class</c> styles its panel. A class alone is only seen, so say what it means in the header's text too.
+    /// <c>Class</c> styles its panel. A class only changes how the header looks, so say what it means in the header's
+    /// text too.
     /// </summary>
     [Parameter]
     public string? HeaderClass { get; set; }
 
     /// <summary>Raised each time the user clicks the tab's header, or presses Enter or Space on it, whether or not it
-    /// was already selected, once it is selected. The arrow keys select tabs without raising it.</summary>
+    /// was already selected. It is raised after the tab is selected. The arrow keys select tabs without raising
+    /// it.</summary>
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -63,7 +65,7 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>A label this tab's use is counted under, such as <c>"billing-tab"</c>, so the app can see how often
+    /// <summary>A label this tab's use is counted under, such as <c>"billing-tab"</c>, so the app can count how often
     /// people see it and switch to it through the <c>Trailblazor</c> meter. Its header counts as shown when it renders,
     /// and as used each time the user selects the tab. It names what the tab holds, never the user.</summary>
     [Parameter]

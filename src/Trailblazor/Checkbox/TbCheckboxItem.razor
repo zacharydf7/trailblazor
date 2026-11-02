@@ -14,8 +14,8 @@
 </label>
 
 @code {
-    /// <summary>The value the group gains while this option is checked. A plain value fits a group of its nullable,
-    /// such as <c>Value="2"</c> in a group bound to an <c>IReadOnlyList&lt;int?&gt;</c>.</summary>
+    /// <summary>The value the group gains while this option is checked. A plain value fits a group of its nullable
+    /// type, such as <c>Value="2"</c> in a group bound to an <c>IReadOnlyList&lt;int?&gt;</c>.</summary>
     [Parameter, EditorRequired]
     public TItem Value { get; set; } = default!;
 

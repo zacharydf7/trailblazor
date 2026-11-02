@@ -43,7 +43,7 @@
             <TbMenuItem OnClick="@(() => _last = "Sign out")">Sign out</TbMenuItem>
         </ChildContent>
     </TbMenu>
-    @* Filters stay open as they are ticked, so several can be set in a row. *@
+    @* Filters stay open as they are checked, so several can be set in a row. *@
     <TbMenu Label="Filters">
         <TbMenuCheckboxItem @bind-Checked="_openNow" KeepOpen>Open now</TbMenuCheckboxItem>
         <TbMenuCheckboxItem @bind-Checked="_dogs" KeepOpen>Dogs allowed</TbMenuCheckboxItem>

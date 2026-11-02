@@ -56,7 +56,7 @@
         }
     }
 
-    // Modal, but it can be minimized to use the page, and its content can let the page in or narrow itself.
+    // Modal, but it can be minimized to use the page, and its content can make it non-modal or change its width.
     private async Task NotesAsync()
     {
         var result = await Dialogs.ShowAsync<NotesDialog, string>("Notes on the report",

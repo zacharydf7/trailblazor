@@ -118,8 +118,8 @@
     <li>
         <strong>Selects, list boxes and their options:</strong> a labeled select or list box is shown as it renders
         and used for each choice,
-        tagged <code>trailblazor.input</code> <code>pointer</code> or <code>keyboard</code>, which shows how many people
-        choose by keyboard;
+        tagged with <code>trailblazor.input</code> set to <code>pointer</code> or <code>keyboard</code>, which shows how
+        many people choose by keyboard;
         a labeled option counts its uses only, since its list renders hidden, and counts nothing when a disabled or
         read-only list box refuses the choice. Which value was chosen is never recorded.
     </li>
@@ -127,7 +127,8 @@
         <strong>Fields and forms:</strong> every field takes a <code>TelemetryName</code>, shown as it renders and
         counted in <code>trailblazor.field.invalid</code> each time its <code>TbForm</code> is submitted while it has an
         error, so the fields people trip over stand out. A labeled form counts each submit it validates in
-        <code>trailblazor.form.submitted</code>, <code>valid</code> or <code>invalid</code>. No value is ever recorded.
+        <code>trailblazor.form.submitted</code>, with the outcome <code>valid</code> or <code>invalid</code>. No value
+        is ever recorded.
     </li>
     <li>
         <strong>Dialogs:</strong> give <code>DialogOptions.TelemetryName</code>, or <code>ConfirmAsync</code> and
@@ -150,7 +151,7 @@
         user does: a grid's <code>sort</code>, <code>page</code>, <code>page_size</code> and <code>select</code>; a
         tree's <code>expand</code>, <code>collapse</code>, <code>select</code>, <code>check</code>,
         <code>activate</code> and <code>move</code>. What code does, such as opening rows or scrolling to one, isn't
-        counted, and which rows or columns is never recorded.
+        counted, and which rows or columns were involved is never recorded.
     </li>
 </ul>
 
@@ -159,7 +160,7 @@
     Every instrument of the <code>@TelemetryCatalog.MeterName</code> meter, with its tags:
     <code>trailblazor.telemetry_name</code> is the control's <code>TelemetryName</code>,
     <code>trailblazor.component</code> its type, such as <code>TbButton</code>, and <code>trailblazor.action</code>,
-    on the uses of a component that does more than one thing, what it did. Each also carries any tags your app
+    what the component did, for components that do more than one thing. Each also carries any tags your app
     adds.
 </TbText>
 <div class="docs-api" tabindex="0" role="region" aria-label="The Trailblazor meter's instruments">
@@ -201,7 +202,7 @@
 <ul class="docs-notes">
     <li>
         Values, text people type, dialog and page titles, labels' text and anything about the user. Only the names you
-        give and the components' types, by design and not configurable.
+        give and the components' types are recorded; that's by design and can't be configured.
     </li>
     <li>
         Nothing is recorded until something listens to the meter, and nothing leaves the app unless the app exports
@@ -233,12 +234,12 @@
     </li>
     <li>
         <strong>WebAssembly:</strong> the components run in the browser. Turn on <code>MetricsSupport</code> in the
-        client project, which .NET 10 leaves off for WebAssembly, use OpenTelemetry .NET 1.15.2 or later, which can
-        export from the browser's single thread, and send over HTTP with protobuf to an endpoint on your own server
-        that forwards to your collector. Your server adds any keys, so none reach the browser and no CORS setup is
-        needed. WebAssembly runs no hosted services, so resolve OpenTelemetry's <code>MeterProvider</code> before
-        running the app, or nothing starts listening. The Aspire dashboard's guide to Blazor WebAssembly telemetry
-        shows the relay.
+        client project, which .NET 10 leaves off for WebAssembly. Use OpenTelemetry .NET 1.15.2 or later, which can
+        export from the browser's single thread. Send over HTTP with protobuf to an endpoint on your own server
+        that forwards to your collector. Your server adds any API keys the collector needs, so none reach the browser
+        and no CORS setup is needed. WebAssembly runs no hosted services, so resolve OpenTelemetry's
+        <code>MeterProvider</code> before running the app, or nothing starts listening. The Aspire dashboard's guide to
+        Blazor WebAssembly telemetry shows the relay.
     </li>
     <li>
         <strong>Auto:</strong> set up both: the server's export for its renders, and the client's for after the

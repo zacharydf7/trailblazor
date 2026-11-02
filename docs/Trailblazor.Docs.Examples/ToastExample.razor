@@ -15,7 +15,7 @@
     private void FailToSync() =>
         Toasts.Show("Check your connection and try again.", Tone.Danger, new() { Title = "Couldn't reach the server" });
 
-    // A link in the toast, and what closed it, shown below the buttons once it does.
+    // A toast with a link; once it closes, the reason shows below the buttons.
     private async Task ExportAsync()
     {
         var toast = Toasts.Show("Trail map exported", Tone.Info, new()

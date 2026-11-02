@@ -22,9 +22,9 @@ public static class TrailblazorBunitExtensions
     /// <see cref="FakeDialogService"/>, which records the dialogs opened. A module or service set up by the test
     /// itself still wins. Components render as on an interactive page: the renderer becomes an interactive Server one
     /// when the first component is created, unless the test has called <c>SetRendererInfo</c> itself, as it does to
-    /// test what a static page shows; that call starts the services, so it comes after the test's own. The default is a
-    /// component factory, so clearing <c>ComponentFactories</c> removes it. Call this before rendering, since bUnit
-    /// takes no new services once one has been resolved.</summary>
+    /// test what a static page shows; that call starts the services, so make it after the test registers its own
+    /// services. The interactive default is a component factory, so clearing <c>ComponentFactories</c> removes it. Call
+    /// this before rendering, since bUnit takes no new services once one has been resolved.</summary>
     public static BunitContext AddTrailblazor(this BunitContext context, Action<TrailblazorOptions>? configure = null)
     {
         context.Services.TryAddSingleton<FakeBrowserService>();

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Trailblazor;
 
-// A dialog's header, apart from the frame so the dialog can show or hide it while open. C#, so it can stay internal.
+// A dialog's header, separate from the frame so the dialog can show or hide it while open. C#, so it can stay internal.
 internal sealed class DialogHeader : ComponentBase, IDisposable
 {
     [Parameter, EditorRequired]

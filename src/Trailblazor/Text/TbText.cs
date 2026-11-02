@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Trailblazor;
 
 /// <summary>Text in the type scale. Its look (<see cref="TextStyle"/>) and its element (<see cref="As"/>) are set
-/// separately, so a heading level never has to change to change how it looks.</summary>
+/// separately, so restyling a heading never means changing its level.</summary>
 public sealed class TbText : TbComponentBase
 {
     /// <summary>The typographic style. Defaults to <see cref="TextStyle.Body"/>.</summary>

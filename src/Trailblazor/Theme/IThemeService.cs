@@ -1,6 +1,6 @@
 namespace Trailblazor;
 
-/// <summary>Reads and changes the page's theme: light, dark or the device's setting, and its palette.
+/// <summary>Reads and changes the page's theme mode (light, dark or the device's setting) and its palette.
 /// <c>AddTrailblazor()</c> registers it.</summary>
 public interface IThemeService
 {

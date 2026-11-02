@@ -42,7 +42,7 @@ else
     private TreeScope<TItem>? _inner;
     private bool? _lastExpanded;
 
-    /// <summary>The item this row stands for, and with no <c>KeySelector</c> on the tree, its key, so it must then
+    /// <summary>The item this row stands for. With no <c>KeySelector</c> on the tree, it is also the key, so it must
     /// stay equal across renders. Selection, checks and expansion report these keys. A row with no value, such as a
     /// heading for the rows inside it, opens, closes and is found by typing, but it can't be selected, dragged or
     /// activated, and the tree's item functions and templates aren't called for it. It has a checkbox only when checks

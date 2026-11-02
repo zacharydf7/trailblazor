@@ -17,7 +17,7 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
     [Parameter, EditorRequired]
     public ToastReference Toast { get; set; } = default!;
 
-    // A closed toast stays a moment to fade out, out of reach of the pointer and screen readers.
+    // A closed toast stays for a moment while it fades, out of reach of the pointer and screen readers.
     [Parameter]
     public bool Leaving { get; set; }
 

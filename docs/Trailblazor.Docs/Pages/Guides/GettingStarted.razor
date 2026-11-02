@@ -50,8 +50,8 @@
 <TbText>
     When interactivity is set page by page, as in the default Blazor template, the layout renders statically. Give
     <code>TbRoot</code> the render mode your interactive pages use, and it hosts dialogs, toasts and announcements in
-    that mode. Every page then starts an interactive session for
-    these hosts, even a fully static one, and only pages in that same render mode can open them.
+    that mode. Every page then starts an interactive session for <code>TbRoot</code>, even a fully static page, and only
+    pages in that same render mode can open its dialogs, toasts and announcements.
 </TbText>
 <CodeBlock Label="MainLayout.razor, interactivity per page" Code="@PerPageLayout" />
 <TbText>
@@ -65,7 +65,7 @@
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Render modes</TbText>
 <TbText>
-    Every component works in Interactive Server, Interactive WebAssembly and Interactive Auto. Pages rendered as static
+    Every component works in Interactive Server, Interactive WebAssembly and Interactive Auto. Pages that use static
     server-side rendering still show every component; fields post their values with a form, and a select renders the
     browser's own <code>&lt;select&gt;</code>. Anything that responds to clicks or keys, such as a dialog, a menu or
     tabs, needs an interactive render mode.

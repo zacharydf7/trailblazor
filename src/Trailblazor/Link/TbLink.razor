@@ -12,7 +12,7 @@
 }
 else
 {
-    @* An anchor without an address isn't a link to assistive technology, so a disabled one says it is. *@
+    @* An anchor without an address isn't a link to assistive technology, so a disabled one gets role="link". *@
     <a @ref="_element" @attributes="AdditionalAttributes" href="@(Disabled ? null : Href)" target="@TargetAttribute"
        rel="@RelAttribute" role="@(Disabled ? "link" : AdditionalAttributes?.GetValueOrDefault("role"))"
        tabindex="@(Disabled ? null : AdditionalAttributes?.GetValueOrDefault("tabindex"))"
@@ -53,9 +53,10 @@ else
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-    /// <summary>A label this link's use is counted under, such as <c>"trail-guide"</c>, so the app can see how often
+    /// <summary>A label this link's use is counted under, such as <c>"trail-guide"</c>, so the app can count how often
     /// people see it and use it through the <c>Trailblazor</c> meter. Controls that share a label count together; a
-    /// control without one isn't counted. It names what the link does, never the user, and is no credential.</summary>
+    /// control without one isn't counted. It names what the link does, never the user, and must never hold a
+    /// credential.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 

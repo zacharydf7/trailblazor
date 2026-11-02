@@ -17,7 +17,7 @@
     private bool _disposed;
 
     /// <summary>Keeps Tab and Shift+Tab inside the scope, and brings focus back if it leaves. When scopes nest, the
-    /// newest trapped one traps, and the one beneath it resumes when it goes.</summary>
+    /// newest one that traps takes over, and the one beneath it resumes when it goes.</summary>
     [Parameter]
     public bool Trapped { get; set; }
 

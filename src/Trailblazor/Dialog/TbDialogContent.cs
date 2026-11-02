@@ -74,12 +74,13 @@ public abstract class TbDialogContent<TResult> : ComponentBase
     /// <summary>Closes the dialog as confirmed, with <paramref name="value"/> as its result.</summary>
     protected Task CloseDialogAsync(TResult value) => Reference.CloseAsync(true, value);
 
-    /// <summary>Closes the dialog as cancelled.</summary>
+    /// <summary>Closes the dialog as canceled.</summary>
     protected Task CancelDialogAsync() => Reference.CloseAsync(false, null);
 
     /// <summary>Called when the user presses Escape, clicks the backdrop or presses the close button, and cancels the
     /// dialog unless overridden. Override it to send these through the dialog's own cancel, such as one that asks
-    /// about unsaved changes first; the dialog stays open unless it closes. Closing from code doesn't call it.
+    /// about unsaved changes first; the dialog stays open unless the override closes it. Closing from code doesn't call
+    /// it.
     /// </summary>
     protected virtual Task OnDismissAsync(DialogDismissReason reason) => CancelDialogAsync();
 

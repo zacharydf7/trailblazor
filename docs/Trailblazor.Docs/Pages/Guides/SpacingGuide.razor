@@ -40,8 +40,9 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">The classes</TbText>
 <TbText>
     Each class is a property, an optional side and a step: <code>tb-p-4</code> pads every side by step 4, and
-    <code>tb-mt-2</code> adds step 2 of margin before the element. <code>tb-m-auto</code> and its sides set
-    <code>auto</code> margins, and <code>tb-gap-*</code> spaces the children of your own flex and grid containers.
+    <code>tb-mt-2</code> adds step 2 of margin at the element's block start, the top in most languages.
+    <code>tb-m-auto</code> and its sides set <code>auto</code> margins, and <code>tb-gap-*</code> spaces the children of
+    your own flex and grid containers.
 </TbText>
 <div class="docs-api" tabindex="0" role="region" aria-label="Spacing classes">
     <table>
@@ -115,7 +116,7 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Which style wins</TbText>
 <TbText>
     The classes sit in their own cascade layer, <code>tb.utilities</code>, after the components' layer. A class on a
-    component therefore beats the component's own spacing, whatever its selectors, and your own CSS, outside any
+    component therefore beats the component's own spacing, whatever the selectors. Your own CSS, outside any
     layer, beats both, so nothing needs <code>!important</code>.
 </TbText>
 

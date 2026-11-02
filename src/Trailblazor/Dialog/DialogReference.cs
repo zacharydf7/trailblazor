@@ -120,7 +120,7 @@ public abstract class DialogReference
 
     internal bool CloseButton { get; private set; }
 
-    // Called when the user dismisses the dialog, in place of cancelling it; set by its content.
+    // Called when the user dismisses the dialog, in place of canceling it; set by its content.
     internal Func<DialogDismissReason, Task>? Dismiss { get; set; }
 
     // Set while a TbDialogTitle is in the dialog, so the header shows it in place of the title's text.
@@ -141,7 +141,7 @@ public abstract class DialogReference
 
     internal event Action<DialogSize>? ResizeRequested;
 
-    /// <summary>Closes the dialog as cancelled, without asking it first. Does nothing once it has closed.</summary>
+    /// <summary>Closes the dialog as canceled, without asking it first. Does nothing once it has closed.</summary>
     public Task CancelAsync() => CloseAsync(false, null);
 
     internal void SetHeader(bool showHeader, bool closeButton)
@@ -246,7 +246,7 @@ public sealed class DialogReference<TResult> : DialogReference
     {
     }
 
-    /// <summary>Finishes when the dialog closes, with its value or as cancelled.</summary>
+    /// <summary>Finishes when the dialog closes, with its value or as canceled.</summary>
     public Task<DialogResult<TResult>> Result => _result.Task;
 
     /// <summary>Closes the dialog as confirmed, with <paramref name="value"/> as its result. Does nothing once it has

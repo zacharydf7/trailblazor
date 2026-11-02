@@ -418,14 +418,14 @@ public static class TbStrings
     /// <summary>"{0} moved into {1}.": said after a tree move, with what moved and its new parent.</summary>
     public const string TreeViewMovedInside = "TreeView.MovedInside";
 
-    /// <summary>"{0} items": names several tree rows moved together.</summary>
+    /// <summary>"{0} items": names several tree rows moved together; {0} is how many.</summary>
     public const string TreeViewItemCount = "TreeView.ItemCount";
 
     /// <summary>"Move {0}": the name of the handle that drags or moves an item of a sortable list or a grid row, with
     /// the item's text.</summary>
     public const string SortableHandle = "Sortable.Handle";
 
-    /// <summary>"The arrow keys move it, and Home and End to the start or end. Enter opens a menu of moves.":
+    /// <summary>"Arrow keys move it, and Home and End move it to the start or end. Enter opens a menu of moves.":
     /// describes a move handle.</summary>
     public const string SortableHint = "Sortable.Hint";
 
@@ -586,7 +586,8 @@ public static class TbStrings
         [TreeViewItemCount] = "{0} items",
         [TreeViewCantMoveIntoItself] = "An item can't move into itself.",
         [SortableHandle] = "Move {0}",
-        [SortableHint] = "The arrow keys move it, and Home and End to the start or end. Enter opens a menu of moves.",
+        [SortableHint] =
+            "Arrow keys move it, and Home and End move it to the start or end. Enter opens a menu of moves.",
         [SortableMoveUp] = "Move up",
         [SortableMoveDown] = "Move down",
         [SortableMoveToStart] = "Move to the start",

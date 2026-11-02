@@ -126,7 +126,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     private protected virtual TValue? ChooseAll(IEnumerable<object?> items, bool choose) =>
         throw new NotSupportedException();
 
-    // Disabled, it is still a focusable element, kept so screen readers find it, so it refuses focus here.
+    // A disabled combobox stays focusable so screen readers can find it; FocusAsync leaves it alone.
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) =>
         Disabled ? ValueTask.CompletedTask : _combobox.FocusAsync(preventScroll);

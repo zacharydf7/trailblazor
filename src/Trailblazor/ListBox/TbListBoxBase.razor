@@ -5,7 +5,7 @@
 @Layout(Classes, @<text>
     @if (RendererInfo.IsInteractive)
     {
-        @* Focus stays on the listbox; the script moves an active option and points to it. *@
+        @* Focus stays on the listbox; the script moves the active option and points aria-activedescendant at it. *@
         <div @attributes="ControlAttributes" @ref="_listbox" data-part="input" id="@InputId" role="listbox"
              tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-multiselectable="@(Multiple ? "true" : null)" aria-disabled="@(Disabled ? "true" : null)"

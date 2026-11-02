@@ -11,7 +11,7 @@ public sealed class TbTabsLocator(IPage page, string? name)
     /// <summary>Clicks the tab with this name and waits until it is selected.</summary>
     public async Task SelectAsync(string tab)
     {
-        // The tabs' clicks reach the server once the page is interactive, which data-ready follows.
+        // Clicks on the tabs reach the server only once the page is interactive, which data-ready marks.
         await Assertions.Expect(List).ToHaveAttributeAsync("data-ready", "");
         var button = List.GetByRole(AriaRole.Tab, new() { Name = tab, Exact = true });
         await button.ClickAsync();

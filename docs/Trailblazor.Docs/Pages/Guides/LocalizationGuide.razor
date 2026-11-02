@@ -14,7 +14,7 @@
 <div class="docs-example">
     <TbStack Gap="4">
         <TbPagination @bind-Page="_page" PageCount="12" />
-        @* The page's own language changes for the Spanish words, so screen readers say them in Spanish. *@
+        @* Marked as Spanish so screen readers pronounce these labels in Spanish. *@
         <div lang="es">
             <TbPagination @bind-Page="_page" PageCount="12" Labels="Spanish" />
         </div>
@@ -22,7 +22,7 @@
 </div>
 <TbText>
     The first pagination says the localizer's words; the second sets its own, in Spanish, through its
-    <code>Labels</code>. Both move together, since they share a page.
+    <code>Labels</code>. Both move together, since they're bound to the same page number.
 </TbText>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Change a few words</TbText>
@@ -35,10 +35,10 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Translate the whole library</TbText>
 <TbText>
     For an app in several languages, register your own <code>ITbLocalizer</code> before
-    <code>AddTrailblazor()</code>, which then keeps it. It is scoped, so it can answer for each user's culture, for
-    example from resource files through <code>IStringLocalizer</code>. Fall back on <code>TbStrings.English</code> for
-    the keys you haven't translated. Text with placeholders such as <code>{0}</code> keeps them; the component fills
-    them in, and each key below says what they hold.
+    <code>AddTrailblazor()</code>, which then uses it instead of the default. It is scoped, so it can answer for each
+    user's culture, for example from resource files through <code>IStringLocalizer</code>. Fall back on
+    <code>TbStrings.English</code> for the keys you haven't translated. Text with placeholders such as <code>{0}</code>
+    keeps them; the component fills them in, and each key below says what they hold.
 </TbText>
 <CodeBlock Label="A localizer over resource files" Code="@Resources" />
 

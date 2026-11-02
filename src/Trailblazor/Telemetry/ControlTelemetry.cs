@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor;
 
-// What a control with a TelemetryName reports. The service is looked up only once a control has a name, so an unlabeled
+// What a control with a TelemetryName reports. The service is looked up only once a control has a name, so an unnamed
 // control renders without AddTrailblazor, as controls always have.
 internal sealed class ControlTelemetry(IServiceProvider services, Type component)
 {
@@ -10,7 +10,7 @@ internal sealed class ControlTelemetry(IServiceProvider services, Type component
     private Telemetry? _telemetry;
     private bool _lookedUp;
 
-    // A control is shown once for each name it takes, from its first interactive render; a static page never reports.
+    // A control counts as shown once per name it takes, from its first interactive render; a static page never reports.
     public void Rendered(string? telemetryName)
     {
         if (telemetryName is not null && telemetryName != _shownAs)

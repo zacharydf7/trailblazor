@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Trailblazor;
 
 // An item's move handle: a menu button that a drag starts from, whose arrow keys move the item while it has focus,
-// and whose menu moves it with one click or tap, and in a screen reader's browse mode, which keeps the arrow keys.
+// and whose menu moves it with one click or tap, and in a screen reader's browse mode, which keeps the arrow keys for
+// itself.
 internal static class MoveHandle
 {
     public static void Add(RenderTreeBuilder builder, int sequence, string label, int index, int count, bool disabled,

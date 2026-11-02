@@ -8,7 +8,7 @@ public enum SelectionMode
     None,
 
     /// <summary>One row at a time: a grid gives each row a radio button, and a tree selects the row clicked or chosen
-    /// with Enter or Space, or with <c>SelectionFollowsFocus</c> the row focus moves to.</summary>
+    /// with Enter or Space, or, with <c>SelectionFollowsFocus</c> on, the row that receives focus.</summary>
     Single,
 
     /// <summary>Any number of rows: a grid gives each row a checkbox, with one in the header for every row on the

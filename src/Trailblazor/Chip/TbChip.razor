@@ -91,11 +91,11 @@
     public EventCallback<bool> SelectedChanged { get; set; }
 
     /// <summary>Raised when the user removes the chip, with its remove button or the Delete or Backspace key. With
-    /// it, the chip has a remove button; the parent takes the chip away.</summary>
+    /// it, the chip has a remove button, but the chip stays until the parent takes it away.</summary>
     [Parameter]
     public EventCallback OnClose { get; set; }
 
-    /// <summary>A label this chip's use is counted under, such as <c>"filter-open-trails"</c>, so the app can see how
+    /// <summary>A label this chip's use is counted under, such as <c>"filter-open-trails"</c>, so the app can count how
     /// often people see it and use it through the <c>Trailblazor</c> meter. A click or toggle counts as a use, and a
     /// removal as a use with the action <c>remove</c>. Leave it off chips that only show something. It names what the
     /// chip does, never the user.</summary>

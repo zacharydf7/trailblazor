@@ -13,8 +13,8 @@
 </label>
 
 @code {
-    /// <summary>The value the group takes when this option is chosen. A plain value fits a group of its nullable, such
-    /// as <c>Value="2"</c> in a group bound to an <c>int?</c>; a null option names its type, as with
+    /// <summary>The value the group takes when this option is chosen. A plain value fits a group of its nullable type,
+    /// such as <c>Value="2"</c> in a group bound to an <c>int?</c>; a null option names its type, as with
     /// <c>TValue="int?" Value="null"</c>.</summary>
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;

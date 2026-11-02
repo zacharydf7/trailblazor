@@ -33,7 +33,7 @@ public sealed class FakeDialogService : IDialogService
         _opened.OfType<DialogReference<TResult>>().LastOrDefault(dialog => dialog.ContentType == typeof(TDialog))
             ?? throw new InvalidOperationException($"No {typeof(TDialog).Name} was opened.");
 
-    /// <summary>The last confirm or alert opened, to check its title and message and answer it, as
+    /// <summary>The last confirm or alert opened, to check its title and message and answer it:
     /// <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels.</summary>
     /// <exception cref="InvalidOperationException">No confirm or alert was opened.</exception>
     public DialogReference<bool> LastConfirm() =>

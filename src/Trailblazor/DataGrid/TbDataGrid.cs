@@ -7,7 +7,7 @@ using Trailblazor.Primitives;
 
 namespace Trailblazor;
 
-/// <summary>Shows items as rows of a table, with columns that sort, pages, and rows that can be selected. Give it
+/// <summary>Shows items as rows of a table, with sortable columns, paging and row selection. Give it
 /// <see cref="Items"/> held in memory, or a <see cref="DataProvider"/> that loads a page at a time, and its columns as
 /// <see cref="TbColumn{TItem}"/>s.</summary>
 [CascadingTypeParameter(nameof(TItem))]
@@ -73,7 +73,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public string? AriaLabel { get; set; }
 
     /// <summary>How many rows can be selected. Defaults to <see cref="SelectionMode.None"/>, since a grid's rows are
-    /// read more often than chosen; a tree view, whose focus selects, defaults to one.</summary>
+    /// read more often than chosen; a tree view defaults to one.</summary>
     [Parameter]
     public SelectionMode SelectionMode { get; set; }
 
@@ -625,7 +625,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     // Selection follows a row by its key, so no two rows may share one. A row that isn't shown has no element, so its
-    // reference goes before anything can scroll to it.
+    // reference is dropped before anything can scroll to it.
     private void ShowRows(List<TItem> rows)
     {
         var shown = rows.Select(KeyOf).ToHashSet();

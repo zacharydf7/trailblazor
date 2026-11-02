@@ -18,7 +18,7 @@ public readonly record struct GridSpan
     }
 
     /// <summary>Takes the room left in its row, shared evenly with the row's other growing items. It joins any row
-    /// with room to spare, so start its row with an item that ends the one before, or give it its own grid.</summary>
+    /// with room to spare, so to put it on a new row, fill the row before it, or give it its own grid.</summary>
     public static GridSpan Grow { get; } = new(0, Fit.Grow);
 
     /// <summary>Takes as much room as its content needs, up to the whole row.</summary>

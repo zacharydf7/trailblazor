@@ -59,7 +59,8 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The dialog with this title.</summary>
     public TbDialogLocator Dialog(string title) => new(page, title);
 
-    /// <summary>The <c>TbTabs</c> with this accessible name, or with none, the only one on the page.</summary>
+    /// <summary>The <c>TbTabs</c> with this accessible name, or the only one on the page when no name is
+    /// given.</summary>
     public TbTabsLocator Tabs(string? name = null) => new(page, name);
 
     /// <summary>The toasts on the page.</summary>
@@ -101,7 +102,8 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
         }
     }
 
-    // A browser can show or hide the panel before its toggle event moves focus, which sets aria-expanded as it does.
+    // A browser can show or hide the panel before its toggle handler moves focus and sets aria-expanded, so that is
+    // waited for.
     private async Task SettledAsync(bool open)
     {
         if (await Trigger.GetAttributeAsync("data-static") is null)
@@ -110,7 +112,7 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
         }
     }
 
-    // Focus and hover work once the popover's script has attached, which a static page never waits for.
+    // Focus and hover work once the popover's script has attached, and a static page has no script to wait for.
     private async Task<ILocator> PanelAsync()
     {
         if (await Trigger.GetAttributeAsync("data-static") is null)
@@ -249,8 +251,8 @@ public sealed class TbFileUploadLocator(IPage page, string label)
             return;
         }
 
-        // A prerendered field is replaced once the page is interactive, and its script listens only after that, which
-        // data-ready tells; the field counts the choices it has taken, which tells when it has this one.
+        // A prerendered field is replaced once the page is interactive, and its script listens only once
+        // data-ready is set; the field counts the choices it has taken, so a new count means it has this one.
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
         var choices = await input.GetAttributeAsync("data-choices");
         await choose(input);
@@ -333,7 +335,8 @@ public sealed class TbTreeLocator(IPage page, string name)
         }
     }
 
-    // Rows written as TbTreeItems that a row renders once open become rows a render later, while the tree is busy.
+    // Rows written as TbTreeItems that a row renders once open register as rows a render later, and the tree is busy
+    // until they do.
     private async Task RowsBuiltAsync()
     {
         await Assertions.Expect(Tree.Locator("[role=treeitem]").First).ToBeAttachedAsync();
@@ -388,7 +391,7 @@ public sealed class TbTreeLocator(IPage page, string name)
     public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, 0.5f);
 
     // A drag near the window's edge scrolls the page, so the target is brought to the middle first, and measured again
-    // once the drag has started with a short move. The drop lands at a share of the target row's height.
+    // once the drag has started with a short move. The drop lands at a fraction of the target row's height.
     private async Task DragAsync(string[] row, string[] target, float at)
     {
         await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
@@ -413,7 +416,7 @@ public sealed class TbTreeLocator(IPage page, string name)
     }
 
     // A virtualized tree renders only the rows in view, so a row it still has must show, clipped by the tree and the
-    // page as the browser measures it, to stay rendered through the drag. One look at the tree, so it never waits.
+    // page as the browser measures it, to stay rendered through the drag. It checks once and never waits.
     private Task<bool> ShowsAsync(string key) => Tree.EvaluateAsync<bool>("""
         (tree, key) => {
             const row = tree.querySelector(`[role=treeitem][data-key="${CSS.escape(key)}"]`);
@@ -437,7 +440,8 @@ public sealed class TbTreeLocator(IPage page, string name)
 
     private async Task<ILocator> RowAsync(string[] path) => await RowByKeyAsync(await Key(path));
 
-    // A tree inside a row numbers its keys afresh, so this tree's rows are the ones with as many trees around them.
+    // A tree inside a row numbers its keys afresh, so this tree's rows are the ones inside as many trees as this tree
+    // is.
     private async Task<ILocator> RowByKeyAsync(string key)
     {
         _depth ??= await Tree.EvaluateAsync<int>("""
@@ -561,7 +565,7 @@ public sealed class TbTreeLocator(IPage page, string name)
     private InvalidOperationException NoRow(string[] path) =>
         new($"The tree {name} shows no row at {string.Join(" > ", path)}; open the rows above it first.");
 
-    // Where a walk through a virtualized tree has got to; Found is the row's key, or empty when there's no such row.
+    // Where a walk through a virtualized tree has reached; Found is the row's key, or empty when there's no such row.
     // Playwright fills in a result's properties, so they are settable.
     private sealed class PathStep
     {
@@ -576,8 +580,8 @@ public sealed class TbTreeLocator(IPage page, string name)
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>
 public sealed class TbListBoxLocator(IPage page, string label)
 {
-    /// <summary>Chooses the options with these names: the one option of a listbox, or each one not yet chosen in a
-    /// multiple listbox, keeping what is already chosen. A statically rendered listbox is a native list, and is
+    /// <summary>Chooses the options with these names: the one option of a list box, or each one not yet chosen in a
+    /// multiple list box, keeping what is already chosen. A statically rendered list box is a native list, and is
     /// chosen the native way; one still prerendering is waited for.</summary>
     public async Task ChooseAsync(params string[] options)
     {
@@ -628,14 +632,14 @@ public sealed class TbGridLocator(IPage page, string name)
         return Row(row).Locator($"td[data-column=\"{id}\"]");
     }
 
-    /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it says so,
-    /// and waits for a <c>DataProvider</c>'s rows.</summary>
+    /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it shows that
+    /// order, and waits for a <c>DataProvider</c>'s rows.</summary>
     public async Task SortAsync(string column, bool descending = false)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
         var header = Header(column);
         var wanted = descending ? "descending" : "ascending";
-        // A plain click sorts by the column alone; after that it turns the column around, then stops sorting by it.
+        // A plain click sorts by the column alone; after that it reverses the order, then stops sorting by the column.
         const string state = "header => `${header.getAttribute('aria-sort')}|${header.closest('table')"
             + ".querySelectorAll('[data-part=sort-order]').length}`";
         for (var clicks = 0; clicks < 4; clicks++)
@@ -664,7 +668,7 @@ public sealed class TbGridLocator(IPage page, string name)
     }
 
     /// <summary>Goes to this page of the rows and waits until it is current and a <c>DataProvider</c>'s rows have
-    /// come.</summary>
+    /// loaded.</summary>
     public async Task GoToPageAsync(int number)
     {
         var pages = Root.Locator("[data-part=pager] nav");
@@ -673,7 +677,7 @@ public sealed class TbGridLocator(IPage page, string name)
         await RowsLoadedAsync();
     }
 
-    // The render that changes the header or pager marks the table busy until the rows come.
+    // The render that changes the header or pager marks the table busy until the rows load.
     private Task RowsLoadedAsync() => Assertions.Expect(Table).Not.ToHaveAttributeAsync("aria-busy", "true");
 
     private ILocator Header(string column) => Table.Locator($"thead th[data-title=\"{column}\"]");
@@ -685,13 +689,13 @@ public sealed class TbPaginationLocator(IPage page, string name)
     private ILocator Navigation => page.GetByRole(AriaRole.Navigation, new() { Name = name, Exact = true });
 
     /// <summary>Goes to this page and waits until it is current. A compact pagination gets the number typed into its
-    /// box; otherwise the page's button is clicked, after stepping toward it through the pages shown when it isn't.
-    /// Buttons wait for the page to be interactive; links, from <c>PageHref</c>, are followed at once. Throws for a
-    /// page past the last.</summary>
+    /// box; otherwise the page's button is clicked, after stepping toward it through the shown pages when it isn't
+    /// among them. Buttons wait for the page to be interactive; links, from <c>PageHref</c>, are followed at once.
+    /// Throws for a page past the last.</summary>
     public async Task GoToPageAsync(int number)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(number, 1);
-        // The pagination renders its current page and page count, which also waits for it to be on the page.
+        // Waiting for the current page and page count it renders also waits for the pagination to be on the page.
         await Assertions.Expect(Navigation).ToHaveAttributeAsync("data-page", new Regex(@"^\d+$"));
         var count = int.Parse((await Navigation.GetAttributeAsync("data-page-count"))!, CultureInfo.InvariantCulture);
         if (number > count)

@@ -42,8 +42,8 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Downloads and saves</TbText>
 <TbText>
     <code>DownloadAsync</code> downloads a stream as a file. <code>SaveAsync</code> opens the save dialog, so the user
-    chooses the folder and name, in browsers that have one, and downloads elsewhere. It returns false when the user
-    cancels. Neither closes the stream.
+    chooses the folder and name, in browsers that have one; in other browsers it downloads the file. It returns false
+    when the user cancels. Neither closes the stream.
 </TbText>
 <CodeBlock Label="Downloading and saving" Code="@Save" />
 

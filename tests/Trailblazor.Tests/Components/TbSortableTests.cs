@@ -26,7 +26,7 @@ public class TbSortableTests : BunitContext
         Assert.Equal(["Move Block spam", "Move Flag invoices", "Move Archive the rest"],
             Handles(cut).Select(handle => handle.GetAttribute("aria-label")));
         var hint = cut.Find($"#{Handles(cut)[0].GetAttribute("aria-describedby")}");
-        Assert.Contains("arrow keys", hint.TextContent);
+        Assert.Contains("Arrow keys", hint.TextContent);
     }
 
     [Fact]

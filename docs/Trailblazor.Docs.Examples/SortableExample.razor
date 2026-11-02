@@ -27,7 +27,7 @@
         Task.FromResult(move.Item == CatchAll || move.To == _rules.Count - 1
             ? MoveCheck.Refuse($"{CatchAll} stays last.") : MoveCheck.Allow);
 
-    // The app's own button moves an item through the list, which asks first and says what moved.
+    // The app's own button moves an item with the list's MoveAsync, which runs CanMove first and announces the move.
     private Task RaiseAsync(string rule)
     {
         var index = _rules.IndexOf(rule);

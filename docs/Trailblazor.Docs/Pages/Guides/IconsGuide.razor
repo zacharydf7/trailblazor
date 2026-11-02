@@ -54,8 +54,8 @@
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Your own icons</TbText>
 <TbText>
-    An <code>Icon</code> is the markup inside an <code>&lt;svg&gt;</code> and its view box, so any icon set works. The
-    markup is rendered as is, so build it in code, never from user input.
+    An <code>Icon</code> holds the markup that goes inside an <code>&lt;svg&gt;</code>, plus its view box, so any icon
+    set works. The markup is rendered as is, so build it in code, never from user input.
 </TbText>
 <CodeBlock Label="Icons.cs" Code="@Custom" />
 
@@ -81,7 +81,7 @@
     private string Summary => Matches.Count() switch
     {
         0 => "No icons match.",
-        var count and > MaxShown => $"{count} icons match; the first {MaxShown} show.",
+        var count and > MaxShown => $"{count} icons match; the first {MaxShown} are shown.",
         var count => count == 1 ? "1 icon matches." : $"{count} icons match.",
     };
 

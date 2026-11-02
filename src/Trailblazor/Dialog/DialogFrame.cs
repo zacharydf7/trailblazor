@@ -192,7 +192,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         return ApplyStateAsync();
     });
 
-    // The script opens the dialog modal or not and places it in the tray; the markup can't.
+    // Only the script can switch the dialog between modal and non-modal or move it to and from the tray.
     private async Task ApplyStateAsync()
     {
         if (_handle is null || (Dialog.WindowState == _windowState && Dialog.IsBlocking == _blocking))
@@ -219,8 +219,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         }
     }
 
-    // The class to replace is the one set last, so it moves on before the call, ready for a choice made meanwhile. The
-    // markup renders the new class too, for a change made before the script is ready.
+    // The class to replace is the one set last, so the field changes before the call, ready for a choice made
+    // meanwhile. The markup renders the new class too, for a change made before the script is ready.
     private void OnMoveRequested(DialogPosition position)
     {
         var from = PositionClass(_position);

@@ -16,9 +16,9 @@ public sealed class DialogSettings
     public bool TopLayer { get; set; } = true;
 
     /// <summary>CSS selectors for elements on the page's body that other libraries show popups in, such as a date
-    /// picker's calendar it makes once as the page loads. A modal kept out of the top layer makes the rest of the page
+    /// picker's calendar created once as the page loads. A modal kept out of the top layer makes the rest of the page
     /// inert as it opens, apart from these and from popups added after it opens. Blazor's reconnect dialog and error
-    /// bar are always left usable. An entry that isn't a valid selector stops such a dialog opening, with an error
+    /// bar are always left usable. An entry that isn't a valid selector stops such a dialog from opening, with an error
     /// quoting the selectors.</summary>
     public IList<string> OutsidePopups { get; } = [];
 }

@@ -57,7 +57,8 @@
     {
         var focusId = FocusId();
         var next = 0;
-        // Every spacer comes from one line: the browser drops a keyed spacer's attributes when it moves between two.
+        // Every spacer comes from this line: a keyed spacer that moves between lines loses its attributes in the
+        // browser.
         foreach (var index in ShownIndexes(focusId).Append(_rows.Count))
         {
             if (index > next)

@@ -229,7 +229,7 @@ public partial class TbColorPicker : IAsyncDisposable
 
     private bool IsChosen(string swatch) => Color == Read(swatch);
 
-    // Every palette color reads, since OnParametersSet checks them.
+    // Every palette color parses, since OnParametersSet checks them.
     private ColorValue Read(string swatch)
     {
         ColorValue.TryParse(swatch, Alpha, out var color);

@@ -6,6 +6,6 @@ namespace Trailblazor;
 public sealed class TelemetrySettings
 {
     /// <summary>Whether the components report at all. Defaults to true; turn it off for an app that listens to every
-    /// meter but doesn't want what its UI does.</summary>
+    /// meter but doesn't want its UI usage recorded.</summary>
     public bool Enabled { get; set; } = true;
 }

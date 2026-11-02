@@ -45,8 +45,8 @@
     private bool _selectsByKey;
 
     /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. A new index
-    /// from the parent applies on the render after, once that render's tabs have registered, and one set along with
-    /// a tab that renders after the others waits for the browser to report the tabs' order. Until then the tab
+    /// from the parent applies a render later, once the tabs rendered along with it have registered, and one set along
+    /// with a tab that renders after the others waits for the browser to report the tabs' order. Until then the tab
     /// selected before stays selected, so no other tab's panel renders in between.</summary>
     [Parameter]
     public int ActiveIndex { get; set; }

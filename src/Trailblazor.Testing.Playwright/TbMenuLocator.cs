@@ -9,7 +9,7 @@ public sealed class TbMenuLocator(IPage page, string trigger)
         .And(page.Locator("[aria-haspopup=menu]"));
 
     /// <summary>Opens the menu and clicks the item with this name, through the submenus named before it, as in
-    /// <c>ChooseAsync("Export", "PDF")</c>. Waits until the menu has closed, or for a <c>KeepOpen</c> item, until it
+    /// <c>ChooseAsync("Export", "PDF")</c>. Waits until the menu has closed or, for a <c>KeepOpen</c> item, until it
     /// is checked or unchecked. Throws for a disabled item. On a statically rendered page the menu opens natively, and
     /// only its links work.</summary>
     public async Task ChooseAsync(params string[] path)
@@ -34,7 +34,7 @@ public sealed class TbMenuLocator(IPage page, string trigger)
             await Trigger.ClickAsync();
         }
 
-        // The menu draws its items again as it opens, which data-open comes with; a static menu has no script.
+        // The menu redraws its items as it opens and sets data-open with them; a static menu has no script to set it.
         if (scripted)
         {
             await Assertions.Expect(menu).ToHaveAttributeAsync("data-open", "");
@@ -64,7 +64,7 @@ public sealed class TbMenuLocator(IPage page, string trigger)
             return;
         }
 
-        // A radio item is checked once chosen, and a checkbox item turns over.
+        // A radio item is checked once chosen, and a checkbox item toggles.
         var radio = await item.GetAttributeAsync("role") == "menuitemradio";
         var checkedAfter = radio || await item.GetAttributeAsync("aria-checked") != "true" ? "true" : "false";
         await item.ClickAsync();

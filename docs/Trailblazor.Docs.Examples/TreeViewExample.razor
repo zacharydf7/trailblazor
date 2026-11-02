@@ -121,7 +121,7 @@
         into.InsertRange(at, drop.Items);
     }
 
-    // A slot among the days adds a day; one in a day adds a stop. The list changes in place, so the tree is told.
+    // A slot among the days adds a day; one in a day adds a stop. The list changes in place, so refresh the tree.
     private Task Add(TreeInsertContext<Stop> insert)
     {
         var id = _nextStop++;

@@ -41,7 +41,7 @@
 
     /// <summary>The tooltip's text. It also becomes the trigger's accessible description, unless it only repeats the
     /// trigger's <c>aria-label</c>. Blank text, with no <see cref="TextContent"/>, shows no tooltip, so one that is
-    /// only sometimes needed needs no <c>@if</c>.</summary>
+    /// only sometimes wanted needs no <c>@if</c>.</summary>
     [Parameter]
     public string? Text { get; set; }
 
@@ -142,7 +142,7 @@
     private string? AnchorStyle => string.IsNullOrWhiteSpace(MaxWidth) ? Style
         : Styles.Join($"--tb-tooltip-max-width: {MaxWidth}", Style);
 
-    // Turned off, or off and on again, while the script loaded, the tooltip's bubble is gone or is another one.
+    // A tooltip turned off, or off and on again, while the script was loading has lost its bubble or has a new one.
     private async Task AttachAsync(string bubble)
     {
         try

@@ -7,7 +7,8 @@
         @<text>
             @if (Href is not null)
             {
-                @* An anchor without an address isn't a link to assistive technology, so a disabled one says it is. *@
+                @* An anchor without an address isn't a link to assistive technology, so a disabled one gets
+                   role="link". *@
                 <a @ref="_element" @attributes="AdditionalAttributes" href="@(Off ? null : Href)"
                    role="@(Off ? "link" : Theirs("role"))"
                    tabindex="@(Off ? (FocusableWhenDisabled ? "0" : null) : Theirs("tabindex"))"

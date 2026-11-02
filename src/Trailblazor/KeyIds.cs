@@ -3,7 +3,7 @@ using System.Globalization;
 namespace Trailblazor;
 
 // Gives each row's key a lasting id for the page: the key's own text when it has one, such as a number or a string,
-// so tests can find a row by it, and a made-up one for any other key or one whose text another key already has.
+// so tests can find a row by it. Other keys, and keys whose text is taken, get a made-up id.
 internal sealed class KeyIds
 {
     private readonly Dictionary<object, string> _ids = [];

@@ -207,8 +207,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
             + words[1..].ToLower(CultureInfo.CurrentCulture);
     }
 
-    // Where a new word starts: before a capital after a small letter or digit, and before the last capital of a run
-    // that a small letter follows, so "HTMLPage" becomes "HTML page".
+    // Where a new word starts: before a capital after a lowercase letter or digit, and before the last capital of a run
+    // that a lowercase letter follows, so "HTMLPage" becomes "HTML page".
     [GeneratedRegex("(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")]
     private static partial Regex WordStart();
 }

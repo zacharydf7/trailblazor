@@ -19,9 +19,9 @@
 </TbText>
 <CodeBlock Label="App.razor and Program.cs" Code="@Theme" />
 <TbText>
-    A standalone WebAssembly app has no server to render <code>&lt;head&gt;</code>, so put the script
-    <code>TbThemeHead</code> renders in <code>index.html</code> yourself, as this site does. There its attributes, not
-    <code>TrailblazorOptions.Theme</code>, choose how the first page looks, so keep the two the same.
+    A standalone WebAssembly app has no server to render <code>&lt;head&gt;</code>, so copy the script that
+    <code>TbThemeHead</code> would render into <code>index.html</code> yourself, as this site does. There the script's
+    attributes, not <code>TrailblazorOptions.Theme</code>, choose how the first page looks, so keep the two the same.
 </TbText>
 <CodeBlock Label="index.html" Code="@StandaloneTheme" />
 <TbText>
@@ -61,9 +61,9 @@
 <CodeBlock Label="Your own font, everywhere" Code="@Font" />
 <TbText>
     To keep the page's type your own instead, set it on <code>html</code> or <code>body</code> in your stylesheet. The
-    themed page's type sits in a cascade layer with no specificity, so any rule of yours outside a cascade layer wins.
-    Text fields, tabs, menu items and the other controls that take the text's font set their own line height, so a
-    line height of yours doesn't change how tall they are.
+    themed page's type sits in a cascade layer and uses zero-specificity selectors, so any rule of yours outside a
+    cascade layer wins. Text fields, tabs, menu items and the other controls that take the text's font set their own
+    line height, so a line height of yours doesn't change how tall they are.
 </TbText>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Density</TbText>
@@ -80,7 +80,7 @@
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Other stylesheets</TbText>
 <TbText>
-    The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global reset such as
+    The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global rule such as
     <code>* { margin: 0; padding: 0; }</code>, which many resets and some component libraries ship, then strips the
     components' own spacing, and nothing warns about it: dialogs sit in the page's top corner, fields lose their inner
     spacing and radio buttons lose their dot. If you see that, look for an unlayered rule from another stylesheet.

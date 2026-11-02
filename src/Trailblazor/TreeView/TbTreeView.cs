@@ -10,7 +10,7 @@ namespace Trailblazor;
 /// load when opened, and the full keyboard of a WAI-ARIA tree. Give it your own items, usually a
 /// <see cref="KeySelector"/>, and either a <see cref="ChildrenSelector"/> or a <see cref="ParentKeySelector"/>; or
 /// write its rows as nested <see cref="TbTreeItem{TItem}"/>s. <typeparamref name="TKey"/> is the type of its keys,
-/// which <see cref="KeySelector"/> gives; a tree whose items are their own keys names it, as with
+/// which <see cref="KeySelector"/> gives; a tree whose items are their own keys must name it, as with
 /// <c>TKey="string"</c>.</summary>
 [CascadingTypeParameter(nameof(TItem))]
 public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<TItem> where TKey : notnull
@@ -68,9 +68,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private Func<TItem, bool>? _flattenedFilter;
     private TreeScope<TItem>? _scope;
     private int _version;
-    // Set by ExpandAllAsync, so declared rows that appear as their parents open open too, until a row is closed.
+    // Set by ExpandAllAsync, so declared rows that appear as their parents open are opened too, until a row is closed.
     private int? _expandAllDepth;
-    // The open rows before the parent gave new ExpandedKeys, so the declared rows that changed can be told.
+    // The open rows before the parent gave new ExpandedKeys, so the declared rows that changed can raise
+    // ExpandedChanged.
     private HashSet<object>? _expandedByParent;
 
     /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item. The rows are built again when this
@@ -240,7 +241,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public EventCallback<TreeDrop<TItem>> OnDrop { get; set; }
 
-    /// <summary>Decides which rows can be moved. Every row that isn't disabled can when it is null.</summary>
+    /// <summary>Decides which rows can be moved. When null, every row that isn't disabled can be moved.</summary>
     [Parameter]
     public Func<TItem, bool>? CanDrag { get; set; }
 
@@ -491,11 +492,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
             if (RendererInfo.IsInteractive && (_itemsChanged || (firstRender && ChildContent is not null)))
             {
-                // Rows the initial depth opens are told, as rows opened any other way are.
+                // Declared rows the initial depth opens raise ExpandedChanged, as rows opened any other way do.
                 var before = _expanded.ToHashSet();
                 BuildFromItems();
                 await ReportExpansionAsync(before, null);
-                // Rows that appeared inside rows ExpandAllAsync opened open too.
+                // Rows that appeared inside rows ExpandAllAsync opened are opened too.
                 if (_expandAllDepth is { } depth)
                 {
                     await SetExpandedAsync(_expanded.Union(Expandable(depth)));
@@ -1272,7 +1273,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     void ITreeItemHost<TItem>.ItemChanged() => ItemChanged();
 
-    // A declared item's row, or nothing while its row is closed away, filtered out or not yet built.
+    // A declared item's row, or nothing while it is hidden in a closed row, filtered out or not yet built.
     RenderFragment? ITreeItemHost<TItem>.RowOf(TbTreeItem<TItem> item) => _rowIndex.TryGetValue(item.Key, out var index)
         ? builder => RenderRow(builder, _rows[index], index, null, FocusId())
         : null;
@@ -1424,7 +1425,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         await ReportExpansionAsync(before, asking);
     }
 
-    // Declared rows that opened or closed tell their parents, all but the one whose parent asked for it.
+    // Declared rows that opened or closed raise ExpandedChanged, all but the one whose parent asked for it.
     private async Task ReportExpansionAsync(HashSet<object> before, TbTreeItem<TItem>? asking)
     {
         foreach (var item in _declared.Values.Where(item => item != asking).ToList())
@@ -1489,7 +1490,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
-        // A row opened again before its cancelled load ended starts a new one now.
+        // A row opened again before its canceled load ended starts a new one now.
         if (cancel.IsCancellationRequested && _expanded.Contains(node.Key) && !_loaded.ContainsKey(node.Key))
         {
             await LoadIfNeededAsync(node);

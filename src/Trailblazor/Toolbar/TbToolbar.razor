@@ -39,12 +39,12 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Stacks the content and moves between the controls with Up and Down, read on the first render. A
-    /// vertical toolbar doesn't move buttons into the overflow menu.</summary>
+    /// <summary>Stacks the content and moves between the controls with Up and Down. A vertical toolbar never moves
+    /// buttons into the overflow menu, and only the first render's value decides that.</summary>
     [Parameter]
     public bool Vertical { get; set; }
 
-    /// <summary>The name of the menu button that holds the toolbar buttons with no room.
+    /// <summary>The name of the menu button that holds the toolbar buttons that don't fit.
     /// Defaults to the app's text for <see cref="TbStrings.ToolbarMore"/>, "More" in English.</summary>
     [Parameter]
     public string? OverflowLabel { get; set; }
