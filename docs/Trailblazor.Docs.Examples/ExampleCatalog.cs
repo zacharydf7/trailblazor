@@ -1480,8 +1480,10 @@ public static class ExampleCatalog
                     + "move is tried.",
                 "The tree never moves rows itself: `OnDrop` says what moved and where, and the app applies it, so it "
                     + "can be undone like any other change.",
-                "`InsertTemplate` content sits on each row's edge and shows on hover or focus; it is a tab stop "
-                    + "after its row, like `ItemEnd` content.",
+                "`InsertTemplate` content sits on each row's edge and shows when the pointer reaches that edge or "
+                    + "the content has focus. Until it shows, it takes the pointer only on that edge, clear of the "
+                    + "rows' content, so a click on a row's text selects the row. On a touch screen, the focused row's "
+                    + "slots show. Each is a tab stop after its row, like `ItemEnd` content.",
                 "`Virtualize` renders only the rows in view, every one `ItemSize` pixels tall, in a tree given a "
                     + "height or in the page's own scroll. Each row still says its level, size and place, the keys "
                     + "and typing reach rows that aren't rendered yet, and the focused row stays rendered. Before "

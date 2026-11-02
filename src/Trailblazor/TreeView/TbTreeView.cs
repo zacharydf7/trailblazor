@@ -238,9 +238,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public Func<TreeDrop<TItem>, Task<MoveCheck>>? CanDrop { get; set; }
 
-    /// <summary>A slot below each row, such as an "insert here" button, which shows while the row is hovered or the
-    /// slot has focus. Its context says where an item inserted there would go; the first row also has one above it.
-    /// </summary>
+    /// <summary>A slot below each row, such as an "insert here" button, which shows while the pointer is on the row's
+    /// lower edge or the slot has focus. Until it shows, it takes the pointer only on that edge, clear of the rows'
+    /// content, so a click on a row's text selects the row. Its context says where an item inserted there would go;
+    /// the first row also has one above it.</summary>
     [Parameter]
     public RenderFragment<TreeInsertContext<TItem>>? InsertTemplate { get; set; }
 

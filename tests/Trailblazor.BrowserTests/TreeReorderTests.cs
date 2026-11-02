@@ -71,7 +71,7 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Enter");
         await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Lake camp", "Trailhead", "Pine Hollow", "Day 2",
             "Stop 8", "Eagle Ridge", "Summit Gate"]);
-        await AddAsync(page, "Day 2", "Add a stop to Day 2 at 1");
+        await AddAsync(page, "Add a stop to Day 2 at 1");
 
         await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Lake camp", "Trailhead", "Pine Hollow", "Day 2",
             "Stop 9", "Stop 8", "Eagle Ridge", "Summit Gate"]);
@@ -108,7 +108,7 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
         // A touch screen keeps the slots taking the pointer; a rule in the library's own layer stands in for it here.
         await page.AddStyleTagAsync(new()
         {
-            Content = "@layer tb.components { .tb-tree__insert { opacity: 1; pointer-events: auto; } }",
+            Content = "@layer tb.components { .tb-tree__insert { opacity: 1; clip-path: none; } }",
         });
         await Expect(page.GetByRole(AriaRole.Tree, new() { Name = Plan })).ToHaveAttributeAsync("data-ready", "");
         await Row(page, "Pine Hollow").EvaluateAsync("row => row.scrollIntoView({ block: 'center' })");
@@ -197,19 +197,68 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/tree-view");
 
-        await AddAsync(page, "Trailhead", "Add a stop to Day 1 at 2");
+        await AddAsync(page, "Add a stop to Day 1 at 2");
 
         await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Trailhead", "Stop 8", "Pine Hollow", "Lake camp",
             "Day 2", "Eagle Ridge", "Summit Gate"]);
     }
 
-    // A slot takes the pointer while its row is hovered, so the pointer comes to its button from the row.
-    private static async Task AddAsync(IPage page, string row, string slot)
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldSelectTheRowAndAddNothing_WhenTheRowsTextIsClickedAtItsLowerEdge(string browser)
     {
-        await Row(page, row).HoverAsync();
-        await page.GetByRole(AriaRole.Button, new() { Name = slot })
-            .ClickAsync(new() { Position = new() { X = 4, Y = 4 } });
+        var page = await OpenAsync(browser, "/examples/tree-view");
+        await Expect(page.GetByRole(AriaRole.Tree, new() { Name = Plan })).ToHaveAttributeAsync("data-ready", "");
+        var text = (await Row(page, "Trailhead").Locator(".tb-tree__text").BoundingBoxAsync())!;
+
+        // The slot below Trailhead starts where its text does.
+        await page.Mouse.MoveAsync(text.X + 2, text.Y + text.Height / 2);
+        await page.Mouse.ClickAsync(text.X + 2, text.Y + text.Height - 1);
+
+        await Expect(Row(page, "Trailhead")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Trailhead", "Pine Hollow", "Lake camp", "Day 2",
+            "Eagle Ridge", "Summit Gate"]);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldShowAnInsertSlotOnlyOnTheRowsEdge_WhenThePointerIsOverTheRow(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view", new() { ReducedMotion = ReducedMotion.Reduce });
+        await Expect(page.GetByRole(AriaRole.Tree, new() { Name = Plan })).ToHaveAttributeAsync("data-ready", "");
+        var row = (await Row(page, "Trailhead").BoundingBoxAsync())!;
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Add a stop to Day 1 at 2" });
+        var slot = page.Locator("[data-part=insert]").Filter(new() { Has = button });
+        var box = (await button.BoundingBoxAsync())!;
+        var middle = box.X + box.Width / 2;
+        var buttonTop = box.Y + 2;
+
+        await page.Mouse.MoveAsync(middle, row.Y + row.Height / 2);
+        Assert.False(await page.EvaluateAsync<bool>(FormattableString.Invariant(
+            $"() => !!document.elementFromPoint({middle}, {buttonTop}).closest('[data-part=insert]')")),
+            "Over the row, the hidden button's top shouldn't take the pointer.");
+        await Expect(slot).ToHaveCSSAsync("opacity", "0");
+        await page.Mouse.MoveAsync(middle, row.Y + row.Height);
+
+        await Expect(slot).ToHaveCSSAsync("opacity", "1");
+    }
+
+    [Fact]
+    public async Task Tree_ShouldSelectTheRowAndAddNothing_WhenAHiddenSlotsEdgeIsTappedOnATouchScreen()
+    {
+        var page = await OpenAsync("chromium", "/examples/tree-view", new() { IsMobile = true, HasTouch = true });
+        await Expect(page.GetByRole(AriaRole.Tree, new() { Name = Plan })).ToHaveAttributeAsync("data-ready", "");
+        var row = (await Row(page, "Trailhead").BoundingBoxAsync())!;
+        var box = (await page.GetByRole(AriaRole.Button, new() { Name = "Add a stop to Day 1 at 2" })
+            .BoundingBoxAsync())!;
+
+        await page.Touchscreen.TapAsync(box.X + box.Width / 2, row.Y + row.Height - 2);
+
+        await Expect(Row(page, "Trailhead")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Trailhead", "Pine Hollow", "Lake camp", "Day 2",
+            "Eagle Ridge", "Summit Gate"]);
+    }
+
+    private static Task AddAsync(IPage page, string slot) =>
+        page.GetByRole(AriaRole.Button, new() { Name = slot }).ClickAsync();
 
     private static ILocator Rows(IPage page) =>
         page.GetByRole(AriaRole.Tree, new() { Name = Plan }).Locator("[role=treeitem] .tb-tree__text");

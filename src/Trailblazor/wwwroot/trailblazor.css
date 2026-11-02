@@ -4870,17 +4870,23 @@
         pointer-events: none;
     }
 
-    /* The insert slot sits on the row's lower edge, or the first row's upper one, where the row's content starts,
-       clear of the middle a drag starts from. It overlaps the next row, so it takes the pointer only while its own row
-       is hovered. */
+    /* The insert slot sits on the row's lower edge, or the first row's upper one, where the row's content starts. It
+       overlaps the rows on both sides, so until the pointer reaches the edge, the clip leaves it only a thin band
+       there, which the rows' padding keeps clear of their content; once shown, all of it takes clicks. */
+    .tb-tree--inserts .tb-tree__item {
+        box-sizing: border-box;
+        padding-block: 0.25rem;
+    }
+
     .tb-tree__insert {
         position: absolute;
         inset-block-end: 0;
         inset-inline-start: calc(var(--tb-tree-level) * var(--tb-tree-indent) + 1.5rem + var(--tb-space-2));
         z-index: 1;
+        display: flex;
         translate: 0 50%;
         opacity: 0;
-        pointer-events: none;
+        clip-path: inset(calc(50% - 0.25rem) 0);
         transition: opacity var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
@@ -4889,16 +4895,25 @@
         translate: 0 -50%;
     }
 
-    .tb-tree__item:hover > .tb-tree__insert,
+    .tb-tree__insert:hover,
     .tb-tree__insert:focus-within {
         opacity: 1;
-        pointer-events: auto;
+        clip-path: none;
     }
 
-    /* A touch screen can't hover, so there the focused row's slots show; a tap focuses a row. */
+    /* Where nothing can hover, a hidden slot takes no taps. With any touch screen, the focused row's slots show, since a
+       tap focuses a row; a touch laptop's mouse still finds the others on the edge, so a finger there can too. */
+    @media (hover: none) {
+        .tb-tree__insert {
+            pointer-events: none;
+        }
+    }
+
     @media (hover: none), (any-pointer: coarse) {
-        .tb-tree__item:focus > .tb-tree__insert {
+        .tb-tree__item:focus > .tb-tree__insert,
+        .tb-tree__insert:focus-within {
             opacity: 1;
+            clip-path: none;
             pointer-events: auto;
         }
     }

@@ -19,7 +19,7 @@
      data-row-size="@(Virtualize ? RowSize : null)"
      style="@(Virtualize ? Styles.Join($"--tb-tree-row-size: {RowSize}px", Style) : Style)"
      class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null,
-                Virtualize ? "tb-tree--virtual" : null, Class)"
+                Virtualize ? "tb-tree--virtual" : null, InsertTemplate is null ? null : "tb-tree--inserts", Class)"
      @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
     @ChildContent
     @if (_rows.Count == 0 && (ChildContent is null || _itemsRegistered))
