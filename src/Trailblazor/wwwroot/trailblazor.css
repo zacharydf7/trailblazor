@@ -2709,21 +2709,39 @@
         outline-offset: var(--tb-focus-ring-offset);
     }
 
-    .tb-checkbox__input {
-        width: var(--tb-choice-box);
-        height: var(--tb-choice-box);
+    /* One box and mark for everything checkable: checkboxes, grid rows, tree checks and the options of a multiple
+       select or listbox. Outside a checkbox component, which sets the tone and size tokens, a box falls back to the
+       primary tone and the medium size. */
+    .tb-checkbox__input,
+    .tb-tree__check,
+    .tb-select__box {
+        width: var(--tb-choice-box, 1.125rem);
+        height: var(--tb-choice-box, 1.125rem);
         border-radius: var(--tb-radius-sm);
     }
 
-    .tb-checkbox__input:checked,
-    .tb-checkbox__input:indeterminate {
-        border-color: var(--tb-choice-fill);
-        background: var(--tb-choice-fill);
+    .tb-tree__check,
+    .tb-select__box {
+        display: grid;
+        flex: none;
+        place-content: center;
+        box-sizing: border-box;
+        border: 1px solid var(--tb-border-strong);
+        background: var(--tb-color-surface);
     }
 
-    /* The tree's checks share the marks outside any checkbox, so they fall back to the primary tone and size. */
+    .tb-checkbox__input:checked,
+    .tb-checkbox__input:indeterminate,
+    .tb-tree__check--checked,
+    .tb-tree__check--mixed,
+    [aria-selected="true"] > .tb-select__box {
+        border-color: var(--tb-choice-fill, var(--tb-color-primary));
+        background: var(--tb-choice-fill, var(--tb-color-primary));
+    }
+
     .tb-checkbox__input:checked::before,
-    .tb-tree__check--checked::before {
+    .tb-tree__check--checked::before,
+    [aria-selected="true"] > .tb-select__box::before {
         content: "";
         width: calc(var(--tb-choice-box, 1.125rem) * 0.56);
         height: calc(var(--tb-choice-box, 1.125rem) * 0.56);
@@ -2822,6 +2840,23 @@
         .tb-switch__input::before,
         .tb-radio__input:checked::before {
             content: none;
+        }
+    }
+
+    /* Forced colors drop the fill, so a checked box that isn't a native checkbox takes the system highlight. */
+    @media (forced-colors: active) {
+        .tb-tree__check--checked,
+        .tb-tree__check--mixed,
+        [aria-selected="true"] > .tb-select__box {
+            forced-color-adjust: none;
+            border-color: Highlight;
+            background: Highlight;
+        }
+
+        .tb-tree__check--checked::before,
+        .tb-tree__check--mixed::before,
+        [aria-selected="true"] > .tb-select__box::before {
+            background: HighlightText;
         }
     }
 
@@ -3522,35 +3557,8 @@
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
     }
 
-    /* A box before each option of a multiple select or listbox shows which are chosen. */
-    .tb-select__listbox[aria-multiselectable="true"] .tb-select__option::before,
-    .tb-listbox[aria-multiselectable="true"] .tb-select__option::before {
-        content: "";
-        flex: none;
-        box-sizing: border-box;
-        width: 1rem;
-        height: 1rem;
+    .tb-select__box {
         margin-inline-end: var(--tb-space-2);
-        border: 1px solid var(--tb-border-strong);
-        border-radius: var(--tb-radius-sm);
-    }
-
-    .tb-select__listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before,
-    .tb-listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before {
-        border-color: var(--tb-color-primary);
-        background: var(--tb-color-primary);
-        box-shadow: inset 0 0 0 2px var(--tb-color-surface-raised);
-    }
-
-    /* Forced colors drop the fill and the inset ring, so a chosen box takes the system highlight instead. */
-    @media (forced-colors: active) {
-        .tb-select__listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before,
-        .tb-listbox[aria-multiselectable="true"] .tb-select__option[aria-selected="true"]::before {
-            forced-color-adjust: none;
-            border-color: Highlight;
-            background: Highlight;
-            box-shadow: none;
-        }
     }
 
     .tb-select__option[aria-disabled="true"] {
@@ -4734,12 +4742,22 @@
         border-block: 2px dashed var(--tb-sortable-drop);
     }
 
-    .tb-data-grid__check {
+    /* In single selection a row's radio stays the browser's own; the checkboxes are drawn like every other box. */
+    .tb-data-grid__check[type="radio"] {
         width: 1rem;
         height: 1rem;
         margin: 0;
         accent-color: var(--tb-color-primary);
         vertical-align: middle;
+    }
+
+    .tb-data-grid__check.tb-checkbox__input {
+        margin-inline: auto;
+    }
+
+    .tb-data-grid__check:disabled {
+        opacity: var(--tb-disabled-opacity);
+        cursor: default;
     }
 
     .tb-data-grid__status td {
@@ -4900,24 +4918,7 @@
     }
 
     .tb-tree__check {
-        display: flex;
-        flex: none;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-        inline-size: 1rem;
-        block-size: 1rem;
-        border: 1px solid var(--tb-border-strong);
-        border-radius: var(--tb-radius-sm);
-        background: var(--tb-color-surface);
         cursor: pointer;
-    }
-
-    /* After the base rule, whose surface fill would otherwise cover a checked or mixed check's primary fill. */
-    .tb-tree__check--checked,
-    .tb-tree__check--mixed {
-        border-color: var(--tb-color-primary);
-        background: var(--tb-color-primary);
     }
 
     .tb-tree__content {
@@ -5062,13 +5063,6 @@
             outline-offset: -2px;
         }
 
-        .tb-tree__check--checked,
-        .tb-tree__check--mixed {
-            forced-color-adjust: none;
-            border-color: Highlight;
-            background: Highlight;
-        }
-
         .tb-tree__item[data-drop="before"] {
             border-block-start: 2px solid Highlight;
         }
@@ -5084,11 +5078,6 @@
 
         .tb-tree__item[data-drop-refused] {
             border-style: dashed;
-        }
-
-        .tb-tree__check--checked::before,
-        .tb-tree__check--mixed::before {
-            background: HighlightText;
         }
     }
 

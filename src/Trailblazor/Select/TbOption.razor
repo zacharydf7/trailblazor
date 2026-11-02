@@ -10,6 +10,10 @@
          aria-label="@(ChildContent is null ? null : Text)"
          aria-selected="@(Select!.IsSelected(Value) ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
          data-part="option" class="@ClassNames.Join("tb-select__option", Class)" style="@Style" @onclick="ChooseAsync">
+        @if (Select.ShowsBox)
+        {
+            <span aria-hidden="true" class="tb-select__box"></span>
+        }
         @Content
         @if (Select.ShowsCheck && Select.IsSelected(Value))
         {

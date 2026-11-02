@@ -22,7 +22,7 @@
                     @if (SelectionMode == SelectionMode.Multiple)
                     {
                         <th scope="col" data-part="select" class="tb-data-grid__select">
-                            <input type="checkbox" data-part="select-all" class="tb-data-grid__check"
+                            <input type="checkbox" data-part="select-all" class="tb-checkbox__input tb-data-grid__check"
                                    aria-label="@(Labels.SelectAll ?? Localizer[TbStrings.DataGridSelectAll])"
                                    checked="@AllSelected" data-mixed="@(SomeSelected ? "" : null)"
                                    disabled="@(_rows.Count == 0)" @onchange="ToggleAllAsync" />
@@ -163,7 +163,8 @@
             {
                 <td data-part="select" class="tb-data-grid__select">
                     <input type="@(SelectionMode == SelectionMode.Single ? "radio" : "checkbox")"
-                           class="tb-data-grid__check" checked="@selected"
+                           class="@(SelectionMode == SelectionMode.Single ? "tb-data-grid__check"
+                                      : "tb-checkbox__input tb-data-grid__check")" checked="@selected"
                            name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
                            aria-label="@Format(TbStrings.DataGridSelectRow, label ?? LabelOf(item))"
                            @onchange="() => ToggleAsync(item)" />

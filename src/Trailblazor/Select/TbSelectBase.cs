@@ -204,6 +204,8 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
 
     bool ISelect.ShowsCheck => !Multiple;
 
+    bool ISelect.ShowsBox => Multiple;
+
     string? ISelect.Format(object? value) => FormatItem(value);
 
     async Task<bool> ISelect.ChooseAsync(object? value, string input)

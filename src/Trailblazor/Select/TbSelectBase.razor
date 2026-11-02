@@ -71,6 +71,7 @@
                 <div id="@ListboxId-all" role="option" aria-selected="@(AllChosen ? "true" : "false")"
                      aria-disabled="@(HasEnabledOptions ? null : "true")"
                      data-part="select-all" class="tb-select__option tb-select__select-all" @onclick="SelectAllAsync">
+                    <span aria-hidden="true" class="tb-select__box"></span>
                     @SelectAllText
                 </div>
             }

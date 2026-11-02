@@ -8,9 +8,11 @@ internal interface ISelect
 {
     bool IsSelected(object? value);
 
-    // A single select marks its chosen option with a check; multiple selection already shows checkboxes, and a single
-    // listbox a fill.
+    // A single select marks its chosen option with a check, and a single listbox with a fill.
     bool ShowsCheck { get; }
+
+    // Multiple selection draws a box before each option, checked when it's chosen.
+    bool ShowsBox { get; }
 
     string? Format(object? value);
 

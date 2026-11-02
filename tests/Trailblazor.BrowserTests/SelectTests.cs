@@ -385,8 +385,8 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         // Forced colors still give the box a fill, the page's own background color, so only Highlight stands out.
         var highlight = await SystemColorAsync(page, "Highlight");
-        var chosen = await Option(page, "Cheese")
-            .EvaluateAsync<string>("option => getComputedStyle(option, '::before').backgroundColor");
+        var chosen = await Option(page, "Cheese").Locator(".tb-select__box")
+            .EvaluateAsync<string>("box => getComputedStyle(box).backgroundColor");
 
         Assert.Equal(highlight, chosen);
     }
