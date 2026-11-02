@@ -192,6 +192,31 @@ a:focus-visible {
     font-weight: var(--tb-font-weight-semibold);
 }
 
+.docs-nav__upcoming {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tb-space-2);
+    padding: 0.3rem var(--tb-space-2);
+    color: var(--tb-color-text-muted);
+    font-size: var(--tb-font-size-sm);
+}
+
+.docs-nav__stage {
+    flex: none;
+    padding: 0 var(--tb-space-2);
+    border-radius: var(--tb-radius-full);
+    background: var(--tb-color-neutral-subtle);
+    color: var(--tb-color-text-muted);
+    font-size: var(--tb-font-size-xs);
+    white-space: nowrap;
+}
+
+.docs-nav__upcoming[data-stage="ComingSoon"] .docs-nav__stage {
+    background: var(--docs-brand-subtle);
+    color: var(--docs-brand-text);
+}
+
 /* ---- Articles ---- */
 
 .docs-main {
@@ -451,35 +476,6 @@ a:focus-visible {
     margin: var(--tb-space-3) 0 0;
     padding: 0;
     list-style: none;
-}
-
-/* ---- Roadmap ---- */
-
-.docs-roadmap__progress {
-    margin-block: var(--tb-space-2) var(--tb-space-3);
-}
-
-.docs-roadmap__other {
-    margin-block: var(--tb-space-3) var(--tb-space-1);
-}
-
-.docs-roadmap__status {
-    margin-inline-start: var(--tb-space-2);
-    padding: 0 var(--tb-space-2);
-    border-radius: var(--tb-radius-full);
-    background: var(--tb-color-neutral-subtle);
-    color: var(--tb-color-neutral-text);
-    font-size: var(--tb-font-size-xs);
-}
-
-.docs-roadmap__status[data-status="shipped"] {
-    background: var(--tb-color-success-subtle);
-    color: var(--tb-color-success-text);
-}
-
-.docs-roadmap__status[data-status="inprogress"] {
-    background: var(--tb-color-warning-subtle);
-    color: var(--tb-color-warning-text);
 }
 
 /* ---- Cards ---- */

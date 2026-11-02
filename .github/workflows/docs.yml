@@ -51,7 +51,8 @@ jobs:
         with:
           global-json-file: global.json
 
-      # The roadmap page shows the issues as they are now, not as they were when roadmap.json was last committed.
+      # The navigation's upcoming components follow the issues as they are now, not as they were when roadmap.json
+      # was last committed.
       - name: Refresh the roadmap
         env:
           GH_TOKEN: ${{ github.token }}

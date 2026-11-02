@@ -15,5 +15,12 @@
         {
             <li><NavLink href="@($"components/{example.Name}")" class="docs-nav__link">@example.Title</NavLink></li>
         }
+        @foreach (var upcoming in UpcomingCatalog.In(category))
+        {
+            <li class="docs-nav__upcoming" data-stage="@upcoming.Stage">
+                @upcoming.Component.Title
+                <span class="docs-nav__stage">@upcoming.Label</span>
+            </li>
+        }
     </ul>
 }

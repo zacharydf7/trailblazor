@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Writes the issues the docs site's roadmap shows. The Docs workflow runs it before each publish; run it from the
-# repository root, with the GitHub CLI signed in, to refresh the copy in git.
+# Writes the issues that set the docs site's upcoming components and their badges. The Docs workflow runs it before each
+# publish; run it from the repository root, with the GitHub CLI signed in, to refresh the copy in git.
 set -euo pipefail
 
 # An issue closed as not planned or as a duplicate is dropped, not shipped.

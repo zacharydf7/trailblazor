@@ -17,8 +17,10 @@ An issue is done when all of these hold:
 - A change to the public API is listed in its project's `PublicAPI.Unshipped.txt`. The build names each public member
   that isn't (RS0016), and the IDE's fix adds it; a release moves the lines to `PublicAPI.Shipped.txt`.
 
-## Roadmap
+## Upcoming components
 
-The docs site's roadmap is made from the issues: their phase milestones, the `component` label and the `in progress`
-label. Add `in progress` to an issue when work on it starts and close the issue when it ships. The Docs workflow
-refreshes the roadmap on every publish; `docs/update-roadmap.sh` refreshes the copy in git.
+The docs site's navigation lists each component still to come under its category. `UpcomingCatalog.All` names each
+one with its category and the issue that tracks it, and the issue sets its badge: "Coming soon" when the issue is in
+progress or in the current or next phase milestone, "Planned" otherwise. Add `in progress` to an issue when work on it
+starts and close it when the component ships; remove the component's entry from `All` in the change that adds its page.
+The Docs workflow fetches the issues again on every publish; `docs/update-roadmap.sh` refreshes the copy in git.
