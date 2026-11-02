@@ -669,9 +669,11 @@ public static class ExampleCatalog
                     + "sets `aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from "
                     + "screen readers.",
                 "A validation message that appears as someone edits the field is read out once. Checking the whole "
-                    + "form on submit reads none out, so a form with several errors doesn't speak them all at once.",
+                    + "form on submit reads none out, so a form with several errors doesn't speak them all at once. "
+                    + "When the error is fixed or the field goes away, its message leaves the live region.",
                 "An `Error` from the parent, such as a server's answer, is linked the same way and read out once when "
-                    + "it appears, even after a submit; it keeps its form from submitting until the parent clears it.",
+                    + "it appears, even after a submit; it keeps its form from submitting until the parent clears it, "
+                    + "which also takes it out of the live region.",
                 "`Required` checks the field too: once it is edited, or its form validates, an empty or blank value "
                     + "shows `RequiredMessage`, \"Name is required.\" by default. `Invalid` marks the field invalid "
                     + "without a message, for a form that lists its errors elsewhere.",

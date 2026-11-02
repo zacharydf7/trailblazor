@@ -31,6 +31,8 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
 
     public void Assertive(string message) => Add(ref _assertive, message);
 
+    public void Withdraw(string message) => Remove(announcement => announcement.Message == message);
+
     public void Clear()
     {
         lock (_lock)
@@ -60,7 +62,7 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
         ITimer? timer = null;
         timer = time.CreateTimer(_ =>
         {
-            Remove(announcement);
+            Remove(spoken => spoken == announcement);
             timer?.Dispose();
         }, null, ClearAfter, Timeout.InfiniteTimeSpan);
         Hosts.Shown();
@@ -68,15 +70,15 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
     }
 
     // A message already cleared or dropped leaves the hosts as they are.
-    private void Remove(Announcement announcement)
+    private void Remove(Predicate<Announcement> match)
     {
         bool removed;
         lock (_lock)
         {
-            var (polite, assertive) = (_polite, _assertive);
-            _polite = _polite.Remove(announcement);
-            _assertive = _assertive.Remove(announcement);
-            removed = _polite != polite || _assertive != assertive;
+            var count = _polite.Count + _assertive.Count;
+            _polite = _polite.RemoveAll(match);
+            _assertive = _assertive.RemoveAll(match);
+            removed = _polite.Count + _assertive.Count != count;
         }
 
         if (removed)

@@ -783,6 +783,7 @@ Trailblazor.IAnnouncer
 Trailblazor.IAnnouncer.Assertive(string! message) -> void
 Trailblazor.IAnnouncer.Clear() -> void
 Trailblazor.IAnnouncer.Polite(string! message) -> void
+Trailblazor.IAnnouncer.Withdraw(string! message) -> void
 Trailblazor.IBrowserService
 Trailblazor.IBrowserService.CanPickColorAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.IBrowserService.CopyTextAsync(string! text) -> System.Threading.Tasks.Task<bool>!

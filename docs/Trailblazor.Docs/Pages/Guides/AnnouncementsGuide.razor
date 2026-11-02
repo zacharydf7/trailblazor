@@ -33,8 +33,11 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Clearing</TbText>
 <TbText>
     Live regions are part of the page, so a screen reader user browsing it later could find old messages. Each
-    message is removed seven seconds after it is announced, long enough to be heard. Call <code>Clear</code> to
-    remove them all at once, for example when the view they describe goes away.
+    message is removed seven seconds after it is announced, long enough to be heard. Call <code>Withdraw</code> to
+    remove a message that is no longer true, such as an error the user has fixed. Call <code>Clear</code> to remove
+    all messages at once, for example when the view they describe goes away. A field withdraws its own errors once
+    they are fixed or the field goes away, so a test can check that a fixed error has left the page without waiting
+    out the seven seconds.
 </TbText>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>

@@ -12,6 +12,11 @@ public interface IAnnouncer
     /// messages the user must hear now.</summary>
     void Assertive(string message);
 
+    /// <summary>Removes every message with exactly this text, such as an error the user has fixed, so no one finds it
+    /// later. It matches on text alone, whoever announced the message. Fields withdraw their own errors this way.
+    /// </summary>
+    void Withdraw(string message);
+
     /// <summary>Removes every message now, such as when the view they were about goes away.</summary>
     void Clear();
 }

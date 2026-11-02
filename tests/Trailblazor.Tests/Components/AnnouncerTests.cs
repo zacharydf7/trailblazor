@@ -53,6 +53,19 @@ public class AnnouncerTests : BunitContext
     }
 
     [Fact]
+    public void Withdraw_ShouldRemoveOnlyMessagesWithThatText_WhenGivenOne()
+    {
+        var host = Render<AnnouncerHost>();
+        Announcer.Polite("Name is required.");
+        Announcer.Polite("Saved");
+        Announcer.Assertive("Name is required.");
+
+        Announcer.Withdraw("Name is required.");
+
+        host.WaitForAssertion(() => Assert.Equal(["Saved"], host.FindAll("p").Select(p => p.TextContent)));
+    }
+
+    [Fact]
     public void Announcer_ShouldRemoveEachMessage_WhenSevenSecondsHavePassedSinceItWasAnnounced()
     {
         var host = Render<AnnouncerHost>();

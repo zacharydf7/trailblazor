@@ -179,6 +179,7 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await handle.PressSequentiallyAsync("2");
 
         await Expect(handle).Not.ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(page.Locator("[data-part=announcer]")).Not.ToContainTextAsync("That handle is taken.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
