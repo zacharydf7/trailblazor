@@ -1,5 +1,6 @@
-@* Scrolls on its own, so it takes focus for keyboard users. *@
-<pre class="docs-source" role="region" tabindex="0" aria-label="@Label"><code>@Code</code></pre>
+@* Scrolls on a phone, so it takes focus for keyboard users; each line's span carries its own newline, so copied code
+   keeps its line breaks. *@
+<pre class="docs-source" role="region" tabindex="0" aria-label="@Label"><code>@foreach (var line in Lines()) {<span class="docs-source__line" style="--docs-indent: @(line.Indent)ch">@line.Text</span>}</code></pre>
 
 @code {
     [Parameter, EditorRequired]
@@ -7,4 +8,12 @@
 
     [Parameter, EditorRequired]
     public string Code { get; set; } = "";
+
+    // A wrapped line hangs under its own indent, so the indent is measured per line.
+    private IEnumerable<(int Indent, string Text)> Lines()
+    {
+        var lines = Code.ReplaceLineEndings("\n").Split('\n');
+        return lines.Select((line, index) => (line.Length - line.TrimStart(' ').Length,
+            index < lines.Length - 1 ? line + "\n" : line));
+    }
 }

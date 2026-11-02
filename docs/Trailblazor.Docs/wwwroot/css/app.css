@@ -222,7 +222,7 @@ a:focus-visible {
 .docs-main {
     grid-area: main;
     width: 100%;
-    max-width: 58rem;
+    max-width: 84rem;
     padding: var(--tb-space-8) var(--tb-space-10) var(--tb-space-16);
     box-sizing: border-box;
 }
@@ -242,7 +242,6 @@ a:focus-visible {
 
 .docs-lead {
     margin-block: var(--tb-space-2) var(--tb-space-8);
-    max-width: 44rem;
     color: var(--tb-color-text-muted);
     text-wrap: pretty;
 }
@@ -360,16 +359,26 @@ a:focus-visible {
 
 /* ---- Code ---- */
 
+/* Long lines wrap and hang a few characters in from their own indent; a phone scrolls them instead (below). */
 .docs-source {
+    --docs-hang: 6ch;
     margin: 0;
     padding: var(--tb-space-4) var(--tb-space-5);
     overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
     border: 1px solid var(--tb-border-subtle);
     border-radius: var(--tb-radius-xl);
     background: var(--tb-color-surface-raised);
     font-family: var(--tb-font-family-mono);
     font-size: var(--tb-font-size-sm);
     line-height: 1.65;
+}
+
+.docs-source__line {
+    display: block;
+    padding-inline-start: calc(var(--docs-indent) + var(--docs-hang));
+    text-indent: calc(-1 * (var(--docs-indent) + var(--docs-hang)));
 }
 
 .docs-source__file {
@@ -453,6 +462,11 @@ a:focus-visible {
     color: var(--docs-brand-text);
     font-family: var(--tb-font-family-mono);
     font-size: 0.86em;
+}
+
+/* A wide screen gives examples, code and tables room, while running text keeps a readable line length. */
+.docs-main > :is(p, ul, ol) {
+    max-width: 44rem;
 }
 
 .docs-main > p + p {
@@ -857,6 +871,12 @@ a:focus-visible {
 
     .docs-main {
         padding: var(--tb-space-5) var(--tb-space-4) var(--tb-space-10);
+    }
+
+    /* Deep indents leave a phone too little room to wrap code, so it scrolls. */
+    .docs-source {
+        white-space: pre;
+        overflow-wrap: normal;
     }
 
     .docs-hero,

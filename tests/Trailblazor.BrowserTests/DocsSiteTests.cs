@@ -197,6 +197,66 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldWrapLongCodeLinesUnderTheirIndent_WhenTheyDontFit(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view",
+            new() { ViewportSize = new() { Width = 1024, Height = 800 } });
+        var source = page.GetByRole(AriaRole.Region, new() { Name = "TreeViewExample.razor" });
+
+        Assert.True(await source.EvaluateAsync<bool>("pre => pre.scrollWidth <= pre.clientWidth"),
+            "No line should run past the code block's edge.");
+        // Every wrapped line's next row starts right of the line's first character, on a later row; a line break's
+        // empty box shares the first row, so it's skipped.
+        Assert.True(await source.EvaluateAsync<bool>("""
+            pre => {
+                const wrapped = [...pre.querySelectorAll('.docs-source__line')].flatMap(line => {
+                    const text = line.firstChild?.data ?? '';
+                    if (!text.trim()) {
+                        return [];
+                    }
+                    const indent = text.length - text.trimStart().length;
+                    const first = document.createRange();
+                    first.setStart(line.firstChild, indent);
+                    first.setEnd(line.firstChild, indent + 1);
+                    const start = first.getBoundingClientRect();
+                    const all = document.createRange();
+                    all.selectNodeContents(line);
+                    const next = [...all.getClientRects()].find(row => row.width > 0 && row.top >= start.bottom - 1);
+                    return next ? [next.left > start.left] : [];
+                });
+                return wrapped.length > 0 && wrapped.every(Boolean);
+            }
+            """), "Long lines should wrap, each continuing further in than the line's own first character.");
+        Assert.Contains("26rem\">\n    <TbTextField", await source.EvaluateAsync<string>("pre => pre.textContent"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldScrollCodeSideways_WhenTheScreenIsAPhone(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view",
+            new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        var source = page.GetByRole(AriaRole.Region, new() { Name = "TreeViewExample.razor" });
+
+        Assert.True(await source.EvaluateAsync<bool>("pre => pre.scrollWidth > pre.clientWidth"),
+            "On a phone, long lines should scroll rather than wrap.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldUseTheExtraWidth_WhenTheScreenIsWide(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view",
+            new() { ViewportSize = new() { Width = 1900, Height = 1000 } });
+
+        var main = await page.Locator(".docs-main").BoundingBoxAsync();
+        var lead = await page.Locator(".docs-lead").BoundingBoxAsync();
+        var notes = await page.Locator(".docs-notes li").First.BoundingBoxAsync();
+
+        Assert.True(main!.Width > 1200, $"The content column should widen on a wide screen, but is {main.Width}px.");
+        Assert.True(lead!.Width <= 44 * 16, $"A paragraph should keep a readable width, but is {lead.Width}px.");
+        Assert.True(notes!.Width <= 44 * 16, $"A list should keep a readable width, but is {notes.Width}px.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ComponentPage_ShouldShowEveryFileOfTheExample_WhenItHasMoreThanOne(string browser)
     {
         var page = await OpenDocsAsync(browser, "components/dialog");
