@@ -1383,8 +1383,11 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "The scrim is hidden from screen readers; the content in its center is read as usual.",
-                "It blocks the pointer, not the keyboard. Mark what it covers `inert` while it is shown, as the "
-                    + "loading report does, so Tab can't reach controls behind it.",
+                "It blocks the pointer. With `Blocking`, which both examples here set, it blocks the keyboard and "
+                    + "screen readers too: what it covers turns inert while it shows, so Tab can't reach controls "
+                    + "behind it, and if focus was behind it, it goes back there when the overlay closes. Dialogs "
+                    + "opened through `IDialogService`, toasts and announcements stay usable; content added beside it "
+                    + "after it opens isn't blocked.",
                 "With `CloseOnClick`, Escape closes it too, unless a menu or popover above it takes the key first.",
                 "For a message that needs an answer, use a dialog, which moves focus and traps it.",
             ],

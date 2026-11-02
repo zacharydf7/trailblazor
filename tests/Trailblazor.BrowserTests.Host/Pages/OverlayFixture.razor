@@ -1,0 +1,15 @@
+@page "/overlays"
+
+@* Two blocking page overlays, the second opened from the first and able to close it, so they close out of order. *@
+<TbButton OnClick="() => _first = true">First</TbButton>
+<TbOverlay Visible="_first" Blocking>
+    <TbButton OnClick="() => _second = true">Second</TbButton>
+</TbOverlay>
+<TbOverlay Visible="_second" Blocking>
+    <TbButton OnClick="() => _first = false">Close the first</TbButton>
+</TbOverlay>
+
+@code {
+    private bool _first;
+    private bool _second;
+}

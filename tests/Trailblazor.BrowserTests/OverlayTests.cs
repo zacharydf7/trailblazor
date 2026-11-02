@@ -24,6 +24,58 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Overlay_ShouldKeepFocusFromThePageAndGiveItBack_WhenAPageOverlayIsBlocking(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/overlay");
+        var show = page.GetByRole(AriaRole.Button, new() { Name = "Show page overlay" });
+
+        // From the keyboard, since a click doesn't focus a button in Safari.
+        await show.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Overlay(page)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(show).Not.ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        Assert.True(await page.EvaluateAsync<bool>("() => document.activeElement === document.body "
+            + "|| !!document.activeElement.closest('[data-part=overlay]')"));
+        Assert.False(await page.Locator("[data-part=announcer]")
+            .EvaluateAsync<bool>("live => !!live.closest('[inert]')"));
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(show).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Overlay_ShouldKeepThePageBlocked_WhenTheFirstOfTwoBlockingOverlaysClosesFirst(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var first = page.GetByRole(AriaRole.Button, new() { Name = "First", Exact = true });
+        await first.ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Second" }).ClickAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Close the first" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Second", IncludeHidden = true }))
+            .ToHaveCountAsync(0);
+
+        Assert.True(await first.EvaluateAsync<bool>("button => !!button.closest('[inert]')"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Overlay_ShouldMakeOnlyItsRegionInert_WhenAContainedOverlayIsBlocking(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/overlay");
+        var report = page.GetByTestId("report");
+        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Load the report" });
+
+        await toggle.ClickAsync();
+
+        await Expect(report.Locator("[inert]")).Not.ToHaveCountAsync(0);
+        Assert.True(await report.GetByRole(AriaRole.Button, new() { Name = "Open the details", IncludeHidden = true })
+            .EvaluateAsync<bool>("button => !!button.closest('[inert]')"));
+        await page.GetByRole(AriaRole.Button, new() { Name = "Finish loading" }).ClickAsync();
+        await Expect(report.Locator("[inert]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Overlay_ShouldStopThePageScrolling_WhileAPageOverlayLocksScroll(string browser)
     {
         var page = await OpenAsync(browser, "/examples/overlay");

@@ -1,5 +1,6 @@
 import { autofocusTarget } from '../Trailblazor.Primitives/focus-scope.js';
 import { focusOrigin } from '../Trailblazor.Primitives/pointer-origin.js';
+import { alwaysUsable, hold, release } from './inert.js';
 
 // What Tab reaches; controls kept out of the tab order, such as a number field's step buttons, don't count.
 const focusableSelector = ['a[href]', 'button:not([disabled])', 'input:not([disabled]):not([type="hidden"])',
@@ -73,9 +74,6 @@ function dialogFocusTarget(dialog, options) {
 // The elements the topmost modal on the page layer made inert, with that dialog.
 let pageBlock = { dialog: null, elements: [] };
 
-// Blazor's reconnect dialog and error bar, which must work whatever is open.
-const alwaysUsable = ['#components-reconnect-modal', '#blazor-error-ui'];
-
 // The top layer would make the page inert, popups other scripts add to it included, so a modal on the page layer
 // makes everything beside it and its ancestors inert itself. Only the topmost one counts, however they close.
 function blockPage() {
@@ -85,20 +83,18 @@ function blockPage() {
         return;
     }
 
-    for (const element of pageBlock.elements) {
-        element.inert = false;
-    }
-
     const elements = [];
     for (let node = top; node && node !== document.body; node = node.parentElement) {
         for (const sibling of node.parentElement?.children ?? []) {
-            if (sibling !== node && !sibling.inert && !sibling.matches(topEntry.usable)) {
-                sibling.inert = true;
+            if (sibling !== node && !sibling.matches(topEntry.usable)) {
                 elements.push(sibling);
             }
         }
     }
 
+    // Hold the new block before releasing the previous one, so what both cover never takes input in between.
+    hold(elements);
+    release(pageBlock.elements);
     pageBlock = { dialog: top, elements };
 }
 

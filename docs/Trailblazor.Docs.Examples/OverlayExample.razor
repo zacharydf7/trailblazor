@@ -6,16 +6,14 @@
         </TbButton>
     </TbStack>
     <TbSurface Outlined style="position: relative; padding: var(--tb-space-6)" data-testid="report">
-        <div inert="@_loading">
-            <TbText TextStyle="TextStyle.Subtitle">Quarterly report</TbText>
-            <TbText>Revenue grew in every region this quarter.</TbText>
-            <TbButton Variant="Variant.Text">Open the details</TbButton>
-        </div>
-        <TbOverlay Visible="_loading" Contained Blur>
+        <TbText TextStyle="TextStyle.Subtitle">Quarterly report</TbText>
+        <TbText>Revenue grew in every region this quarter.</TbText>
+        <TbButton Variant="Variant.Text">Open the details</TbButton>
+        <TbOverlay Visible="_loading" Contained Blur Blocking>
             <TbProgress Circular AriaLabel="Loading the report" />
         </TbOverlay>
     </TbSurface>
-    <TbOverlay @bind-Visible="_page" CloseOnClick LockScroll>
+    <TbOverlay @bind-Visible="_page" CloseOnClick LockScroll Blocking>
         <TbSurface style="padding: var(--tb-space-6)">
             <TbText>Click outside this box, or press Escape, to close the overlay.</TbText>
         </TbSurface>

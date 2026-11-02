@@ -1885,6 +1885,8 @@ Trailblazor.TbOptionGroup.Label.get -> string!
 Trailblazor.TbOptionGroup.Label.set -> void
 Trailblazor.TbOptionGroup.TbOptionGroup() -> void
 Trailblazor.TbOverlay
+Trailblazor.TbOverlay.Blocking.get -> bool
+Trailblazor.TbOverlay.Blocking.set -> void
 Trailblazor.TbOverlay.Blur.get -> bool
 Trailblazor.TbOverlay.Blur.set -> void
 Trailblazor.TbOverlay.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?

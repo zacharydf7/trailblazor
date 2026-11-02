@@ -10,6 +10,44 @@ public class TbOverlayTests : BunitContext
         this.AddTrailblazor();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Render_ShouldBlockWhatItCoversUntilHidden_WhenBlocking(bool contained)
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/overlay.js").SetupModule("blockBehind", _ => true);
+        handle.Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+            .Add(overlay => overlay.Blocking, true).Add(overlay => overlay.Contained, contained));
+        Assert.Equal(contained, JSInterop.Invocations["blockBehind"].Single().Arguments[1]);
+        Assert.Empty(handle.Invocations["dispose"]);
+
+        cut.Render(parameters => parameters.Add(overlay => overlay.Visible, false));
+
+        Assert.Single(handle.Invocations["dispose"]);
+    }
+
+    [Fact]
+    public async Task Dispose_ShouldUnblockThePage_WhenRemovedWhileBlocking()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/overlay.js").SetupModule("blockBehind", _ => true);
+        handle.Mode = JSRuntimeMode.Loose;
+        Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+            .Add(overlay => overlay.Blocking, true));
+
+        await DisposeComponentsAsync();
+
+        Assert.Single(handle.Invocations["dispose"]);
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveThePageAlone_WhenNotBlocking()
+    {
+        Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true));
+
+        Assert.Empty(JSInterop.Invocations["blockBehind"]);
+    }
+
     [Fact]
     public void Render_ShouldRenderNothing_WhenHidden()
     {

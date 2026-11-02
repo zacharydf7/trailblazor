@@ -1,8 +1,10 @@
 @namespace Trailblazor
 @inherits TbComponentBase
 @using Microsoft.JSInterop
+@using Microsoft.Extensions.Options
 @using Trailblazor.Primitives
 @inject JsModuleLoader Modules
+@inject IOptions<TrailblazorOptions> Settings
 @implements IAsyncDisposable
 
 @if (Visible)
@@ -24,6 +26,8 @@
 @code {
     private ElementReference _overlay;
     private DismissableLayer? _layer;
+    private IJSObjectReference? _block;
+    private bool _blocking;
     private bool _disposed;
 
     /// <summary>Shows the overlay. Bind it with <c>@bind-Visible</c> when clicks or Escape can close it.</summary>
@@ -60,6 +64,14 @@
     [Parameter]
     public bool LockScroll { get; set; }
 
+    /// <summary>Blocks the keyboard and screen readers as well as the pointer: what the overlay covers turns inert
+    /// while it shows, so Tab can't move focus behind it, and if focus was behind it, it goes back there when the
+    /// overlay closes. Dialogs opened through <see cref="IDialogService"/>, toasts, announcements and the app's
+    /// <see cref="DialogSettings.OutsidePopups"/> stay usable; content added beside it after it opens isn't blocked.
+    /// </summary>
+    [Parameter]
+    public bool Blocking { get; set; }
+
     /// <summary>Content shown in the overlay's center, such as a message or a <see cref="TbProgress"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -67,6 +79,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await BlockAsync();
         var wantsLayer = Visible && CloseOnClick && RendererInfo.IsInteractive;
         if (wantsLayer && _layer is null)
         {
@@ -92,6 +105,51 @@
         else if (!wantsLayer && _layer is not null)
         {
             await DisposeLayerAsync();
+        }
+    }
+
+    // A render that arrives while blockBehind is still running must not call it again, or the first block would never
+    // be undone.
+    private async Task BlockAsync()
+    {
+        var wantsBlock = Visible && Blocking && RendererInfo.IsInteractive;
+        if (wantsBlock && _block is null && !_blocking)
+        {
+            _blocking = true;
+            try
+            {
+                var module = await Modules.ImportAsync("./_content/Trailblazor/overlay.js");
+                _block = await module.InvokeAsync<IJSObjectReference?>("blockBehind", _overlay, Contained,
+                    Settings.Value.Dialogs.OutsidePopups);
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is gone, and the overlay went with it.
+            }
+            finally
+            {
+                _blocking = false;
+            }
+
+            // The overlay may have closed, or been disposed, while blockBehind was running.
+            if (_disposed || !Visible || !Blocking)
+            {
+                await UnblockAsync();
+            }
+        }
+        else if (!wantsBlock && _block is not null)
+        {
+            await UnblockAsync();
+        }
+    }
+
+    private async Task UnblockAsync()
+    {
+        var block = _block;
+        _block = null;
+        if (block is not null)
+        {
+            await block.DisposeHandleAsync();
         }
     }
 
@@ -128,6 +186,7 @@
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
+        await UnblockAsync();
         await DisposeLayerAsync();
     }
 }
