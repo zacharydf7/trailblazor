@@ -5,6 +5,41 @@ namespace Trailblazor.BrowserTests;
 
 public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldSelectEachRowTheArrowsReachButNotWithCtrl_WhenSelectionFollowsFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+        var tree = page.GetByRole(AriaRole.Tree, new() { Name = "Outline" });
+        var north = tree.GetByRole(AriaRole.Treeitem, new() { Name = "North", Exact = true });
+        await Expect(tree).ToHaveAttributeAsync("data-ready", "");
+        await north.ClickAsync();
+        await Expect(page.GetByTestId("outline")).ToHaveTextAsync("1");
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(page.GetByTestId("outline")).ToHaveTextAsync("4");
+        await page.Keyboard.PressAsync("Control+ArrowUp");
+
+        await Expect(north).ToBeFocusedAsync();
+        await Expect(page.GetByTestId("outline")).ToHaveTextAsync("4");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldLeaveALetterToThePage_WhenTypeAheadIsOff(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+        var tree = page.GetByRole(AriaRole.Tree, new() { Name = "Outline" });
+        var north = tree.GetByRole(AriaRole.Treeitem, new() { Name = "North", Exact = true });
+        await Expect(tree).ToHaveAttributeAsync("data-ready", "");
+        await north.ClickAsync();
+        await page.EvaluateAsync(
+            "() => document.addEventListener('keydown', event => window.taken = event.defaultPrevented, { once: true })");
+
+        await page.Keyboard.PressAsync("s");
+
+        Assert.False(await page.EvaluateAsync<bool>("() => window.taken"));
+        await Expect(north).ToBeFocusedAsync();
+    }
+
     private static ILocator Tree(IPage page, string name = "Places") =>
         page.GetByRole(AriaRole.Tree, new() { Name = name });
 

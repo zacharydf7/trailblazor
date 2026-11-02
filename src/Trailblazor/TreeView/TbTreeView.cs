@@ -149,10 +149,21 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public int InitialExpandDepth { get; set; }
 
-    /// <summary>How many rows can be selected. Defaults to <see cref="SelectionMode.Single"/>, since a tree selects the
-    /// row focus moves to, as the WAI-ARIA tree pattern does; a data grid defaults to none.</summary>
+    /// <summary>How many rows can be selected. Defaults to <see cref="SelectionMode.Single"/>, since a tree usually
+    /// selects one row, as in the WAI-ARIA tree pattern; a data grid defaults to none.</summary>
     [Parameter]
     public SelectionMode SelectionMode { get; set; } = SelectionMode.Single;
+
+    /// <summary>Selects each row the keys move focus to, with the arrows, Home, End or typing, so the selection is
+    /// always the focused row, as in a list of files with a preview beside it. Ctrl or Cmd with a key moves focus
+    /// alone. Applies to <see cref="SelectionMode.Single"/>.</summary>
+    [Parameter]
+    public bool SelectionFollowsFocus { get; set; }
+
+    /// <summary>Whether typing a row's first letters moves focus to it. Defaults to true; turn it off when the page has
+    /// single-letter shortcuts that should still work while the tree has focus.</summary>
+    [Parameter]
+    public bool TypeAhead { get; set; } = true;
 
     /// <summary>The keys of the selected rows. Bind it with <c>@bind-SelectedKeys</c>.</summary>
     [Parameter]
@@ -708,11 +719,16 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             .FirstOrDefault(node => TextOf(node).Trim().StartsWith(typed, StringComparison.CurrentCultureIgnoreCase));
         if (match is not null)
         {
+            if (FollowsFocus)
+            {
+                await SelectAsync(match, shift: false, toggle: false);
+            }
+
             await ScrollAfterRenderAsync(match, focus: true);
         }
     }
 
-    private async Task MoveFocusAsync(string id, string key, bool extend)
+    private async Task MoveFocusAsync(string id, string key, bool extend, bool follow)
     {
         if (!_byId.TryGetValue(id, out var node) || FocusTarget(node, key) is not { } target)
         {
@@ -722,6 +738,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         if (extend && key is "Next" or "Previous")
         {
             await SelectAsync(target, shift: true, toggle: false);
+        }
+        else if (follow)
+        {
+            await SelectAsync(target, shift: false, toggle: false);
         }
 
         await ScrollAfterRenderAsync(target, focus: true);
@@ -1001,7 +1021,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         // Moving focus works in a disabled tree too, as it does among rendered rows.
         if (key is "Next" or "Previous" or "First" or "Last" or "Parent")
         {
-            await MoveFocusAsync(Moving(id), key, shift && !Disabled);
+            await MoveFocusAsync(Moving(id), key, shift && !Disabled, FollowsFocus && !ctrl);
             return;
         }
 
@@ -1043,6 +1063,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 break;
             case "Extend":
                 await SelectAsync(node, shift: true, toggle: false);
+                break;
+            case "Follow" when FollowsFocus:
+                await SelectAsync(node, shift: false, toggle: false);
                 break;
             case "MoveUp" or "MoveDown" or "Indent" or "Outdent" when CanDragRow(node):
                 await MoveByKeyAsync(node, key);
@@ -1228,6 +1251,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         Telemetry.Used(TelemetryName, "activate");
         return OnActivate.InvokeAsync(node.Item);
     }
+
+    private bool FollowsFocus => SelectionFollowsFocus && SelectionMode == SelectionMode.Single && !Disabled;
 
     private bool CanSelect(TreeNode<TItem> node) => SelectionMode != SelectionMode.None && HasValue(node)
         && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);

@@ -1452,6 +1452,10 @@ public static class ExampleCatalog
                     + "finds a row by its text.",
                 "Enter selects and activates a row; Space selects it, or checks it in a `Checkable` tree. Shift with "
                     + "the arrows extends a `Multiple` selection, and Ctrl+A selects every row.",
+                "With `SelectionFollowsFocus`, as in the atlas here, a single-selection tree selects each row the "
+                    + "arrows, Home, End or typing move to, so the selection is always the focused row; Ctrl or Cmd "
+                    + "with a key moves focus alone. `TypeAhead=\"false\"` leaves letter keys to the page, for "
+                    + "single-letter shortcuts that should work while the tree has focus.",
                 "A row is named by everything it shows, its `ItemEnd` content included, so keep actions there short "
                     + "or give icon buttons an `AriaLabel`.",
                 "Children that load show a loading row, and a load that fails is read out and shows a row that "

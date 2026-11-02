@@ -373,6 +373,44 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public async Task OnKey_ShouldSelectTheRowFocusMovedTo_WhenSelectionFollowsFocus()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionFollowsFocus, true));
+
+        await cut.InvokeAsync(() => Events().OnKey("4", "Follow", false, false));
+
+        Assert.Equal([4], _selectedChanges.Single());
+        Assert.Equal("true", Row(cut, "4").GetAttribute("aria-selected"));
+        Assert.Equal("", cut.Find("[role=tree]").GetAttribute("data-follows-focus"));
+    }
+
+    [Theory]
+    [InlineData(SelectionMode.Single, false, false)]
+    [InlineData(SelectionMode.Multiple, true, false)]
+    [InlineData(SelectionMode.Single, true, true)]
+    public async Task OnKey_ShouldLeaveTheSelection_WhenFocusMovesWithoutFollowingASingleSelection(SelectionMode mode,
+        bool follows, bool disabled)
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode, mode)
+            .Add(tree => tree.SelectionFollowsFocus, follows).Add(tree => tree.Disabled, disabled));
+
+        await cut.InvokeAsync(() => Events().OnKey("4", "Follow", false, false));
+
+        Assert.Empty(_selectedChanges);
+        Assert.Null(cut.Find("[role=tree]").GetAttribute("data-follows-focus"));
+    }
+
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, "")]
+    public void Render_ShouldTellTheBrowserWhetherTypingFindsRows_WhenGivenTypeAhead(bool typeAhead, string? expected)
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.TypeAhead, typeAhead));
+
+        Assert.Equal(expected, cut.Find("[role=tree]").GetAttribute("data-no-typeahead"));
+    }
+
+    [Fact]
     public async Task Collapse_ShouldCloseARowTheFilterOpened_WhenTheUserClosesIt()
     {
         var cut = RenderPlaces(Nested,

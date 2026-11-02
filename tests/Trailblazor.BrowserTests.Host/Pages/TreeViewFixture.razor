@@ -20,6 +20,10 @@
                 LoadChildren="LoadAsync" />
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Flaky" Items="Flaky" KeySelector="place => place.Id"
                 LoadChildren="LoadFlakyAsync" />
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Outline" Items="Places" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" SelectionFollowsFocus TypeAhead="false"
+                @bind-SelectedKeys="_outline" />
+    <output data-testid="outline">@string.Join(", ", _outline)</output>
 </TbStack>
 
 @code {
@@ -35,6 +39,7 @@
 
     private IReadOnlyCollection<int> _selected = [];
     private IReadOnlyCollection<int> _gear = [];
+    private IReadOnlyCollection<int> _outline = [];
     private IReadOnlyCollection<int> _checked = [];
     private string? _activated;
     private string? _info;

@@ -2742,3 +2742,7 @@ Trailblazor.TbAccordionItem.HeaderActions.get -> Microsoft.AspNetCore.Components
 Trailblazor.TbAccordionItem.HeaderActions.set -> void
 Trailblazor.TbAccordionItem.HeadingLevel.get -> int?
 Trailblazor.TbAccordionItem.HeadingLevel.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.SelectionFollowsFocus.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.SelectionFollowsFocus.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.TypeAhead.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.TypeAhead.set -> void

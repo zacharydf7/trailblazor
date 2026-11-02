@@ -227,7 +227,8 @@ export function createTreeView(tree, events) {
             default:
                 if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
                     send('SelectAll');
-                } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
+                } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey
+                    && !('noTypeahead' in tree.dataset)) {
                     next = find(event.key);
                 } else {
                     return;
@@ -240,6 +241,8 @@ export function createTreeView(tree, events) {
             // Shift with an arrow extends a multiple selection to the row focus lands on.
             if (event.shiftKey && (event.key === 'ArrowDown' || event.key === 'ArrowUp') && next.dataset.key) {
                 events.invokeMethodAsync('OnKey', next.dataset.key, 'Extend', true, false);
+            } else if ('followsFocus' in tree.dataset && next.dataset.key && !event.ctrlKey && !event.metaKey) {
+                events.invokeMethodAsync('OnKey', next.dataset.key, 'Follow', false, false);
             }
         }
     };

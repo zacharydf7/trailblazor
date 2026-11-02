@@ -16,6 +16,7 @@
      aria-disabled="@(Disabled ? "true" : null)" aria-busy="@(Building ? "true" : null)"
      data-ready="@(_handle is null ? null : "")"
      data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
+     data-follows-focus="@(FollowsFocus ? "" : null)" data-no-typeahead="@(TypeAhead ? null : "")"
      data-row-size="@(Virtualize ? RowSize : null)"
      style="@(Virtualize ? Styles.Join($"--tb-tree-row-size: {RowSize}px", Style) : Style)"
      class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null,

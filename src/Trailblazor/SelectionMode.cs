@@ -7,8 +7,8 @@ public enum SelectionMode
     /// <summary>Rows can't be selected; a tree's rows can still be focused, expanded and activated.</summary>
     None,
 
-    /// <summary>One row at a time: a grid gives each row a radio button, and a tree selects the row focus moves to.
-    /// </summary>
+    /// <summary>One row at a time: a grid gives each row a radio button, and a tree selects the row clicked or chosen
+    /// with Enter or Space, or with <c>SelectionFollowsFocus</c> the row focus moves to.</summary>
     Single,
 
     /// <summary>Any number of rows: a grid gives each row a checkbox, with one in the header for every row on the

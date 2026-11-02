@@ -85,6 +85,36 @@ public class TreeVirtualizeTests : BunitContext
         Assert.Equal([40, 41], selected.Cast<int>().Order());
     }
 
+    [Theory]
+    [InlineData("Next", false, false, "41", new[] { 41 })]
+    [InlineData("Next", false, true, "41", new int[0])]
+    [InlineData("Last", true, false, "1000", new[] { 1000 })]
+    public async Task OnKey_ShouldSelectTheRowItMovesToUnlessCtrlIsHeld_WhenSelectionFollowsFocus(string key,
+        bool shift, bool ctrl, string to, int[] expected)
+    {
+        IReadOnlyCollection<int> selected = [];
+        var cut = RenderPlaces(Flat, parameters => parameters.Add(tree => tree.SelectionFollowsFocus, true)
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> keys) => selected = keys));
+        await cut.InvokeAsync(() => Events().OnView(39, 1));
+
+        await cut.InvokeAsync(() => Events().OnKey("40", key, shift, ctrl));
+
+        Assert.Equal("0", Row(cut, to).GetAttribute("tabindex"));
+        Assert.Equal(expected, selected);
+    }
+
+    [Fact]
+    public async Task OnFind_ShouldSelectTheRowItFinds_WhenSelectionFollowsFocus()
+    {
+        IReadOnlyCollection<int> selected = [];
+        var cut = RenderPlaces(Flat, parameters => parameters.Add(tree => tree.SelectionFollowsFocus, true)
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> keys) => selected = keys));
+
+        await cut.InvokeAsync(() => Events().OnFind("1", "place 70"));
+
+        Assert.Equal([70], selected);
+    }
+
     [Fact]
     public async Task OnKey_ShouldMoveFocusWithoutSelecting_WhenTheTreeIsDisabled()
     {
