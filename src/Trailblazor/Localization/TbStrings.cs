@@ -320,6 +320,9 @@ public static class TbStrings
     /// <summary>"Restore {0}": a grip menu item that restores a collapsed pane.</summary>
     public const string SplitterRestore = "Splitter.Restore";
 
+    /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
+    public const string TableOfContentsNavigation = "TableOfContents.Navigation";
+
     /// <summary>"Clear": names a text field's clear button.</summary>
     public const string TextFieldClear = "TextField.Clear";
 
@@ -568,6 +571,7 @@ public static class TbStrings
         [SplitterSmaller] = "Make {0} smaller",
         [SplitterCollapse] = "Collapse {0}",
         [SplitterRestore] = "Restore {0}",
+        [TableOfContentsNavigation] = "On this page",
         [TextFieldClear] = "Clear",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",
         [ThemePicker] = "Theme",

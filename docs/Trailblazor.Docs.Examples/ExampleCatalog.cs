@@ -1648,6 +1648,37 @@ public static class ExampleCatalog
                 + "`Trailblazor.Testing.Playwright` clicks it, types it into a compact pagination's box, or steps "
                 + "with Next and Previous, then waits for it to be current.",
         },
+        new("table-of-contents", "Table of contents", ExampleCategory.Navigation,
+            "Links to the sections of a page that mark the section in view as the page scrolls.",
+            typeof(TableOfContentsExample))
+        {
+            Api = [typeof(TbTableOfContents), typeof(TbTableOfContentsItem)],
+            Accessibility =
+            [
+                "A `navigation` landmark named by `AriaLabel` (\"On this page\" by default) holding a list of links, "
+                    + "with a nested list under an item for the sections inside it.",
+                "The link to the section in view has `aria-current=\"location\"`, and shows it with a wider line "
+                    + "beside it, not color alone. A section is in view once its start passes the top quarter of what "
+                    + "scrolls it, the page or a scrolling panel. At the top of the scroll the first section is in "
+                    + "view, and at the bottom the last section that shows is in view.",
+                "Following a link scrolls smoothly to the section, or jumps there when the user has asked for reduced "
+                    + "motion, and moves focus to the section, so Tab goes on from there.",
+                "Each link is its own tab stop. The links are plain addresses with the section's id, so they work "
+                    + "before the page is interactive, and open in a new tab with Ctrl or a middle click.",
+            ],
+            Target = new("navigation", "Trail guide"),
+            Blocks = ["tb-table-of-contents"],
+            DataParts = ["link"],
+            TestingTip = "Scroll a section into view and check its link with `ToHaveAttributeAsync(\"aria-current\", "
+                + "\"location\")`. Wait first for `data-ready` on the `navigation`, which marks that its script is "
+                + "tracking the scroll.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"guide-contents\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` for each link followed. Which link was followed "
+                    + "is never recorded.",
+            ],
+        },
         new("link", "Link", ExampleCategory.Navigation,
             "An underlined text link to an address, or a link-styled button that runs an action.", typeof(LinkExample))
         {

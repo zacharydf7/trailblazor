@@ -1,0 +1,45 @@
+<TbStack Row Gap="5" Wrap>
+    <TbTableOfContents AriaLabel="Trail guide" ActiveChanged="active => _active = active" Style="inline-size: 12rem">
+        <TbTableOfContentsItem TargetId="guide-getting-there" Text="Getting there" />
+        <TbTableOfContentsItem TargetId="guide-route" Text="The route">
+            <TbTableOfContentsItem TargetId="guide-climb" Text="The climb" />
+            <TbTableOfContentsItem TargetId="guide-ridge" Text="Along the ridge" />
+        </TbTableOfContentsItem>
+        <TbTableOfContentsItem TargetId="guide-water" Text="Water" />
+        <TbTableOfContentsItem TargetId="guide-camping" Text="Camping" />
+    </TbTableOfContents>
+    <TbStack Gap="2" Style="flex: 1 1 18rem; max-inline-size: 34rem">
+        <TbText>In view: @(_active ?? "none")</TbText>
+        <div role="region" aria-label="Ridge loop guide" tabindex="0"
+             style="block-size: 14rem; overflow: auto; padding-inline: var(--tb-space-3);
+                    border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H3" id="guide-getting-there">Getting there</TbText>
+            <TbText>Park at the Pine Hollow trailhead, a mile past the ranger station. The lot fills by nine on
+                weekends, so come early or take the shuttle from town.</TbText>
+            <TbText>The shuttle leaves the town square every half hour from seven, and the last one back leaves the
+                trailhead at six.</TbText>
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H3" id="guide-route">The route</TbText>
+            <TbText>The loop runs eleven miles and climbs about two thousand feet. Walk it clockwise from the lot, so
+                the steep part comes while your legs are fresh.</TbText>
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H4" id="guide-climb">The climb</TbText>
+            <TbText>Switchbacks take you through the pines to the saddle. Most of the climbing is done in the first
+                three miles, with shade most of the way.</TbText>
+            <TbText>Rest at the overlook at mile two; it is the last flat ground before the saddle.</TbText>
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H4" id="guide-ridge">Along the ridge</TbText>
+            <TbText>The ridge is open and windy, with views of both valleys. Turn back if storms build; there is no
+                shelter until the far end.</TbText>
+            <TbText>Cairns mark the way where the path crosses bare rock, so keep the next one in sight in fog.</TbText>
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H3" id="guide-water">Water</TbText>
+            <TbText>The creek at mile seven runs all year. Filter it; cattle graze upstream.</TbText>
+            <TbText>Carry at least two liters for the climb, since there is no water before the creek.</TbText>
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H3" id="guide-camping">Camping</TbText>
+            <TbText>Camp only at the marked sites by the lake, and keep food in the bear boxes.</TbText>
+            <TbText>Fires are allowed in the rings at the sites, except in the dry months when the forest bans them.
+            </TbText>
+        </div>
+    </TbStack>
+</TbStack>
+
+@code {
+    private string? _active;
+}

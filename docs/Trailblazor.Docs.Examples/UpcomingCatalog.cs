@@ -88,7 +88,6 @@ public static class UpcomingCatalog
         new("File manager", ExampleCategory.Navigation, 209),
         new("Menubar", ExampleCategory.Navigation, 187),
         new("Stepper", ExampleCategory.Navigation, 62),
-        new("Table of contents", ExampleCategory.Navigation, 173),
         new("Banner", ExampleCategory.Feedback, 71),
         new("Empty state", ExampleCategory.Feedback, 70),
     ];

@@ -1,0 +1,138 @@
+@namespace Trailblazor
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject NavigationManager Navigation
+@inject ITbLocalizer Localizer
+
+@* The script marks the section in view and scrolls to a section smoothly; without it, the links still jump there. *@
+<nav @ref="_root" @attributes="AdditionalAttributes" aria-label="@(AriaLabel ?? Localizer[TbStrings.TableOfContentsNavigation])"
+     style="@Style" class="@ClassNames.Join("tb-table-of-contents", Class)">
+    @* Safari drops the list role from a list without bullets, so it is set again. *@
+    <ul role="list" class="tb-table-of-contents__list">
+        <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    </ul>
+</nav>
+
+@code {
+    private readonly List<TbTableOfContentsItem> _items = [];
+    private ElementReference _root;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<TableOfContentsEvents>? _events;
+    private ControlTelemetry? _telemetry;
+    private bool _disposed;
+
+    /// <summary>The <see cref="TbTableOfContentsItem"/>s, one for each section, in the order of the page.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Names the navigation landmark. Defaults to the app's text for <see cref="TbStrings.TableOfContentsNavigation"/>,
+    /// "On this page" in English.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>Raised when another section comes into view as the page scrolls, with its
+    /// <see cref="TbTableOfContentsItem.TargetId"/>, or null when none is in view.</summary>
+    [Parameter]
+    public EventCallback<string?> ActiveChanged { get; set; }
+
+    /// <summary>A label this table of contents' use is counted under, such as <c>"guide-contents"</c>, so the app can
+    /// count how often people see it and follow its links through the <c>Trailblazor</c> meter. Controls that share a
+    /// label count together; a control without one isn't counted. It names what the control does, never the user, and
+    /// must never hold a credential.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    /// <summary>The <see cref="TbTableOfContentsItem.TargetId"/> of the section in view, or null when none is.
+    /// </summary>
+    public string? Active { get; private set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Telemetry.Rendered(TelemetryName);
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/table-of-contents.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            _events = DotNetObjectReference.Create(new TableOfContentsEvents(OnActiveAsync));
+            _handle = await module.InvokeAsync<IJSObjectReference?>("attachTableOfContents", _root, _events);
+            if (_disposed && _handle is not null)
+            {
+                await _handle.DisposeHandleAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the table of contents went with it.
+        }
+    }
+
+    internal void Add(TbTableOfContentsItem item) => _items.Add(item);
+
+    internal void Remove(TbTableOfContentsItem item) => _items.Remove(item);
+
+    // The page's own address with the section's id, so the link works under any base address.
+    internal string Href(string targetId) => $"{Navigation.Uri.Split('#')[0]}#{targetId}";
+
+    internal void Followed() => Telemetry.Used(TelemetryName);
+
+    private async Task OnActiveAsync(string? targetId)
+    {
+        if (targetId == Active)
+        {
+            return;
+        }
+
+        var previous = Active;
+        Active = targetId;
+        foreach (var item in _items.Where(item => item.TargetId == previous || item.TargetId == targetId))
+        {
+            item.Refresh();
+        }
+
+        await ActiveChanged.InvokeAsync(targetId);
+    }
+
+    // A page that keeps this component while its address changes needs links to the new address.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        foreach (var item in _items)
+        {
+            item.Refresh();
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        Navigation.LocationChanged -= OnLocationChanged;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
+}

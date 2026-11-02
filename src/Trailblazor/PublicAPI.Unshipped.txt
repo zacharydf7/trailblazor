@@ -1,4 +1,25 @@
 #nullable enable
+Trailblazor.TbTableOfContents
+Trailblazor.TbTableOfContents.Active.get -> string?
+Trailblazor.TbTableOfContents.ActiveChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+Trailblazor.TbTableOfContents.ActiveChanged.set -> void
+Trailblazor.TbTableOfContents.AriaLabel.get -> string?
+Trailblazor.TbTableOfContents.AriaLabel.set -> void
+Trailblazor.TbTableOfContents.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTableOfContents.ChildContent.set -> void
+Trailblazor.TbTableOfContents.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTableOfContents.TbTableOfContents() -> void
+Trailblazor.TbTableOfContents.TelemetryName.get -> string?
+Trailblazor.TbTableOfContents.TelemetryName.set -> void
+Trailblazor.TbTableOfContentsItem
+Trailblazor.TbTableOfContentsItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTableOfContentsItem.ChildContent.set -> void
+Trailblazor.TbTableOfContentsItem.Dispose() -> void
+Trailblazor.TbTableOfContentsItem.TargetId.get -> string!
+Trailblazor.TbTableOfContentsItem.TargetId.set -> void
+Trailblazor.TbTableOfContentsItem.TbTableOfContentsItem() -> void
+Trailblazor.TbTableOfContentsItem.Text.get -> string!
+Trailblazor.TbTableOfContentsItem.Text.set -> void
 abstract Trailblazor.TbFieldBase<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 const Trailblazor.TbStrings.AlertClose = "Alert.Close" -> string!
 const Trailblazor.TbStrings.AutocompleteClear = "Autocomplete.Clear" -> string!
@@ -127,6 +148,7 @@ const Trailblazor.TbStrings.SplitterPane = "Splitter.Pane" -> string!
 const Trailblazor.TbStrings.SplitterResize = "Splitter.Resize" -> string!
 const Trailblazor.TbStrings.SplitterRestore = "Splitter.Restore" -> string!
 const Trailblazor.TbStrings.SplitterSmaller = "Splitter.Smaller" -> string!
+const Trailblazor.TbStrings.TableOfContentsNavigation = "TableOfContents.Navigation" -> string!
 const Trailblazor.TbStrings.TextFieldClear = "TextField.Clear" -> string!
 const Trailblazor.TbStrings.TextFieldMaskIncomplete = "TextField.MaskIncomplete" -> string!
 const Trailblazor.TbStrings.ThemeDark = "Theme.Dark" -> string!
@@ -291,6 +313,9 @@ override Trailblazor.TbSplitterPane.OnParametersSet() -> void
 override Trailblazor.TbTab.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbTab.OnInitialized() -> void
 override Trailblazor.TbTab.OnParametersSet() -> void
+override Trailblazor.TbTableOfContents.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbTableOfContents.OnInitialized() -> void
+override Trailblazor.TbTableOfContentsItem.OnInitialized() -> void
 override Trailblazor.TbTabs.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTabs.OnParametersSet() -> void
 override Trailblazor.TbTabs.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
@@ -2705,6 +2730,8 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbSubMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTab.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTable.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTableOfContents.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTableOfContentsItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTabs.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTextField<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbThemeHead.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

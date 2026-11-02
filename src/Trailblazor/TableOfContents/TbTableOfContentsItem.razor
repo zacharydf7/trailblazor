@@ -1,0 +1,52 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+<li @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-table-of-contents__item", Class)">
+    <a href="@Contents!.Href(TargetId)" data-target="@TargetId" data-part="link" class="tb-table-of-contents__link"
+       style="--tb-table-of-contents-level: @Level" aria-current="@(Contents.Active == TargetId ? "location" : null)"
+       @onclick="Contents.Followed">@Text</a>
+    @if (ChildContent is not null)
+    {
+        <ul role="list" class="tb-table-of-contents__list">
+            <CascadingValue Name="TableOfContentsLevel" Value="Level + 1" IsFixed="true">@ChildContent</CascadingValue>
+        </ul>
+    }
+</li>
+
+@code {
+    /// <summary>The id of the element the link goes to, usually the section's heading.</summary>
+    [Parameter, EditorRequired]
+    public string TargetId { get; set; } = "";
+
+    /// <summary>The link's text, usually the section's heading.</summary>
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = "";
+
+    /// <summary>Items for the sections inside this one, listed under it.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TbTableOfContents? Contents { get; set; }
+
+    // How deep the item is nested, from 0 at the top, which indents its link.
+    [CascadingParameter(Name = "TableOfContentsLevel")]
+    private int Level { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Contents is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbTableOfContentsItem)} must be inside a TbTableOfContents.");
+        }
+
+        Contents.Add(this);
+    }
+
+    internal void Refresh() => StateHasChanged();
+
+    /// <inheritdoc />
+    public void Dispose() => Contents?.Remove(this);
+}

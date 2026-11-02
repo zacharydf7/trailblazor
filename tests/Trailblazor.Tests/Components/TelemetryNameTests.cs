@@ -40,6 +40,20 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public void TableOfContents_ShouldCountTheLinksFollowed_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbTableOfContents>(parameters => parameters.Add(contents => contents.TelemetryName,
+                "guide-contents")
+            .AddChildContent<TbTableOfContentsItem>(item => item.Add(link => link.TargetId, "water")
+                .Add(link => link.Text, "Water")));
+
+        cut.Find("a").Click();
+
+        Assert.Equal(["guide-contents"], Names(_shown));
+        Assert.Equal([("guide-contents", "TbTableOfContents", null)], Uses());
+    }
+
+    [Fact]
     public async Task Menu_ShouldCountItsOpensAndItsItemsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
