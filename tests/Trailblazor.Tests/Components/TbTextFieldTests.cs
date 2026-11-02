@@ -37,6 +37,25 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Change_ShouldShowOnlyTheRequiredMessage_WhenTheFieldsOwnValidationAlsoRejectsItsEmptiness()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Name")
+            .Add(field => field.Value, "Ada").Add(field => field.Required, true)
+            .Add(field => field.Validation, (string? name) => name?.Trim().Length switch
+            {
+                null or 0 => ["Enter a name."],
+                1 => ["Too short."],
+                _ => [],
+            }));
+
+        cut.Find("input").Change(" ");
+        Assert.Equal(["Name is required."], cut.FindAll("[data-part=error] > div").Select(error => error.TextContent));
+
+        cut.Find("input").Change("A");
+        Assert.Equal(["Too short."], cut.FindAll("[data-part=error] > div").Select(error => error.TextContent));
+    }
+
+    [Fact]
     public void Render_ShouldLinkTheLabelAndHelperToTheInput_WhenBothAreSet()
     {
         var cut = Render<TbTextField<string>>(parameters => parameters
@@ -655,6 +674,19 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Submit_ShouldShowOnlyTheRequiredMessage_WhenARequiredFieldsOwnValidationAlsoRejectsItsEmptiness()
+    {
+        var model = new Person();
+        var cut = Render<EditForm>(parameters => parameters
+            .Add(form => form.Model, model)
+            .Add(form => form.ChildContent, (EditContext _) => NameField(model, required: true)));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(["Name is required."], cut.FindAll("[data-part=error] > div").Select(error => error.TextContent));
+    }
+
+    [Fact]
     public void Render_ShouldNameTheInputAfterTheBoundProperty_WhenValueExpressionIsSet()
     {
         var model = new Person();
@@ -783,8 +815,8 @@ public class TbTextFieldTests : BunitContext
     private static IEnumerable<string> Spoken(IRenderedComponent<AnnouncerHost> announcer) =>
         announcer.FindAll("[role=status] p").Select(spoken => spoken.TextContent);
 
-    // A name field bound to the model, which requires a name.
-    private static RenderFragment NameField(Person model) => builder =>
+    // A name field bound to the model, whose own validation requires a name.
+    private static RenderFragment NameField(Person model, bool required = false) => builder =>
     {
         builder.OpenComponent<TbTextField<string>>(0);
         builder.AddAttribute(1, "Value", model.Name);
@@ -793,6 +825,8 @@ public class TbTextFieldTests : BunitContext
         builder.AddAttribute(3, "ValueExpression", (System.Linq.Expressions.Expression<Func<string>>)(() => model.Name!));
         builder.AddAttribute(4, "Validation", (Func<string?, IEnumerable<string>>)(name =>
             string.IsNullOrEmpty(name) ? ["Enter a name."] : []));
+        builder.AddAttribute(5, "Required", required);
+        builder.AddAttribute(6, "Label", "Name");
         builder.CloseComponent();
     };
 

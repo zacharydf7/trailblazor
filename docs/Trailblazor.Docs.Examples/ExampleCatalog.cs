@@ -675,8 +675,9 @@ public static class ExampleCatalog
                     + "it appears, even after a submit; it keeps its form from submitting until the parent clears it, "
                     + "which also takes it out of the live region.",
                 "`Required` checks the field too: once it is edited, or its form validates, an empty or blank value "
-                    + "shows `RequiredMessage`, \"Name is required.\" by default. `Invalid` marks the field invalid "
-                    + "without a message, for a form that lists its errors elsewhere.",
+                    + "shows `RequiredMessage`, \"Name is required.\" by default. While that message shows, the "
+                    + "field's own `Validation` doesn't run, so it is the only message. `Invalid` marks the field "
+                    + "invalid without a message, for a form that lists its errors elsewhere.",
                 "After a static-SSR form post, text that doesn't convert, such as letters in a number, stays in the "
                     + "field with the form's error, so nothing typed is lost. Blazor reports these errors for an "
                     + "`EditForm` whose model is supplied by `[SupplyParameterFromForm]` without its own `FormName`.",

@@ -87,7 +87,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     public string? Error { get; set; }
 
     /// <summary>Checks a new value and returns its error messages, if any. It runs when the value changes and
-    /// when the surrounding <see cref="EditForm"/> validates.</summary>
+    /// when the surrounding <see cref="EditForm"/> validates, but not while the field shows
+    /// <see cref="RequiredMessage"/>, so that message is the only one then.</summary>
     [Parameter]
     public Func<TValue?, IEnumerable<string>>? Validation { get; set; }
 
@@ -476,8 +477,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         {
             _messages.Add(RequiredMessage ?? Message(TbStrings.FieldRequired));
         }
-
-        if (Validation is not null)
+        else if (Validation is not null)
         {
             _messages.AddRange(Validation(Value));
         }
