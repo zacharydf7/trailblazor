@@ -579,6 +579,9 @@ Trailblazor.DataGridLabels.Retry.get -> string?
 Trailblazor.DataGridLabels.Retry.init -> void
 Trailblazor.DataGridLabels.SelectAll.get -> string?
 Trailblazor.DataGridLabels.SelectAll.init -> void
+Trailblazor.Density
+Trailblazor.Density.Comfortable = 0 -> Trailblazor.Density
+Trailblazor.Density.Compact = 1 -> Trailblazor.Density
 Trailblazor.DateRange<TDate>
 Trailblazor.DateRange<TDate>.DateRange() -> void
 Trailblazor.DateRange<TDate>.DateRange(TDate? Start, TDate? End) -> void
@@ -865,9 +868,11 @@ Trailblazor.ITelemetryTags
 Trailblazor.ITelemetryTags.Tags.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Trailblazor.IThemeService
 Trailblazor.IThemeService.Changed -> System.Action?
+Trailblazor.IThemeService.Density.get -> Trailblazor.Density
 Trailblazor.IThemeService.LoadAsync() -> System.Threading.Tasks.Task!
 Trailblazor.IThemeService.Mode.get -> Trailblazor.ThemeMode
 Trailblazor.IThemeService.Palette.get -> Trailblazor.Palette
+Trailblazor.IThemeService.SetDensityAsync(Trailblazor.Density density) -> System.Threading.Tasks.Task!
 Trailblazor.IThemeService.SetModeAsync(Trailblazor.ThemeMode mode) -> System.Threading.Tasks.Task!
 Trailblazor.IThemeService.SetPaletteAsync(Trailblazor.Palette palette) -> System.Threading.Tasks.Task!
 Trailblazor.IToastService
@@ -1069,8 +1074,6 @@ Trailblazor.TbAlert.Classes.get -> Trailblazor.AlertClasses?
 Trailblazor.TbAlert.Classes.set -> void
 Trailblazor.TbAlert.CloseLabel.get -> string?
 Trailblazor.TbAlert.CloseLabel.set -> void
-Trailblazor.TbAlert.Dense.get -> bool
-Trailblazor.TbAlert.Dense.set -> void
 Trailblazor.TbAlert.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbAlert.Icon.set -> void
 Trailblazor.TbAlert.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
@@ -1696,8 +1699,6 @@ Trailblazor.TbLink.TelemetryName.set -> void
 Trailblazor.TbList
 Trailblazor.TbList.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbList.ChildContent.set -> void
-Trailblazor.TbList.Dense.get -> bool
-Trailblazor.TbList.Dense.set -> void
 Trailblazor.TbList.Dividers.get -> bool
 Trailblazor.TbList.Dividers.set -> void
 Trailblazor.TbList.Ordered.get -> bool
@@ -2506,6 +2507,8 @@ Trailblazor.ThemeMode.Dark = 2 -> Trailblazor.ThemeMode
 Trailblazor.ThemeMode.Light = 1 -> Trailblazor.ThemeMode
 Trailblazor.ThemeMode.System = 0 -> Trailblazor.ThemeMode
 Trailblazor.ThemeSettings
+Trailblazor.ThemeSettings.Density.get -> Trailblazor.Density
+Trailblazor.ThemeSettings.Density.set -> void
 Trailblazor.ThemeSettings.Mode.get -> Trailblazor.ThemeMode
 Trailblazor.ThemeSettings.Mode.set -> void
 Trailblazor.ThemeSettings.Palette.get -> Trailblazor.Palette

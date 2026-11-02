@@ -197,12 +197,15 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task TextField_ShouldShrinkASmallBoxWithTheDensity_WhenTheThemeIsCompact(string browser)
+    public async Task TextField_ShouldShrinkEachSizeWithTheDensity_WhenTheThemeIsCompact(string browser)
     {
         var page = await OpenAsync(browser, "/examples/text-field");
         await page.EvaluateAsync("() => document.documentElement.dataset.tbDensity = 'compact'");
 
-        Assert.Equal("26px", await BoxStyleAsync(page, "Trail code", "height"));
+        string[] fields = ["Trail code", "Name", "Destination"];
+        var heights = await Task.WhenAll(fields.Select(field => BoxStyleAsync(page, field, "height")));
+
+        Assert.Equal(["26px", "32px", "40px"], heights);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

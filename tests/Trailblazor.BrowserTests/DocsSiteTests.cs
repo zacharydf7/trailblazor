@@ -77,8 +77,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from path in new[]
         {
             "", "components/dialog", "components/tree-view", "components/data-grid/api",
-            "preview/tree-view/many-rows", "guides/getting-started", "guides/palettes", "guides/spacing",
-            "guides/browser",
+            "preview/tree-view/many-rows", "guides/getting-started", "guides/theming", "guides/palettes",
+            "guides/spacing", "guides/browser",
             "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "search?q=dialog",
         }
         from theme in new[] { "light", "dark" }
@@ -109,7 +109,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task LookSwitcher_ShouldApplyAndRememberTheThemeAndPalette_WhenChosen(string browser)
+    public async Task LookSwitcher_ShouldApplyAndRememberTheThemePaletteAndDensity_WhenChosen(string browser)
     {
         var page = await OpenDocsAsync(browser, "components/button");
 
@@ -117,16 +117,20 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             .GetByRole(AriaRole.Button, new() { Name = "Dark" });
         await dark.ClickAsync();
         await page.Tb().Select("Palette").ChooseAsync("Cobalt");
+        await page.Tb().Select("Density").ChooseAsync("Compact");
 
         var html = page.Locator("html");
         await Expect(html).ToHaveAttributeAsync("data-tb-theme", "dark");
         await Expect(html).ToHaveAttributeAsync("data-tb-palette", "cobalt");
+        await Expect(html).ToHaveAttributeAsync("data-tb-density", "compact");
         await page.ReloadAsync();
         await page.Locator(".docs-main h1").WaitForAsync();
         await Expect(html).ToHaveAttributeAsync("data-tb-theme", "dark");
         await Expect(html).ToHaveAttributeAsync("data-tb-palette", "cobalt");
+        await Expect(html).ToHaveAttributeAsync("data-tb-density", "compact");
         await Expect(dark).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Palette" })).ToHaveTextAsync("Cobalt");
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Density" })).ToHaveTextAsync("Compact");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

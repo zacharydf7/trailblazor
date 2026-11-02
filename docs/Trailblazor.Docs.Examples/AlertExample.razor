@@ -6,7 +6,7 @@
         <TbAlert Tone="tone">A @tone.ToString().ToLowerInvariant() alert.</TbAlert>
     }
     <TbAlert Tone="Tone.Success" Icon="ExampleIcons.Check">Saved with an icon.</TbAlert>
-    <TbAlert Dense>A dense alert for tight spaces.</TbAlert>
+    <TbAlert data-tb-density="compact">A compact alert, for tight spaces.</TbAlert>
     <TbAlert Tone="Tone.Danger" Variant="AlertVariant.Filled" Title="Payment failed" data-testid="filled"
              OnClose="() => { }">
         <ChildContent>The card was declined. Check its details or use another card.</ChildContent>

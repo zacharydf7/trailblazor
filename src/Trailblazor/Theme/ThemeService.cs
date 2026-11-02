@@ -13,15 +13,18 @@ internal sealed class ThemeService(JsModuleLoader modules, IOptions<TrailblazorO
 
     public Palette Palette { get; private set; } = options.Value.Theme.Palette;
 
+    public Density Density { get; private set; } = options.Value.Theme.Density;
+
     public event Action? Changed;
 
     public async Task LoadAsync()
     {
         var module = await modules.ImportAsync(Module);
-        // A bUnit test without the browser answers null, which reads as a page that shows neither.
-        var shown = await module.InvokeAsync<string?[]?>("read") ?? [null, null];
+        // A bUnit test without the browser answers null, which reads as a page that shows none of them.
+        var shown = await module.InvokeAsync<string?[]?>("read") ?? [null, null, null];
         Mode = Enum.TryParse<ThemeMode>(shown[0], ignoreCase: true, out var mode) ? mode : _settings.Mode;
         Palette = Enum.TryParse<Palette>(shown[1], ignoreCase: true, out var palette) ? palette : _settings.Palette;
+        Density = Enum.TryParse<Density>(shown[2], ignoreCase: true, out var density) ? density : _settings.Density;
         Changed?.Invoke();
     }
 
@@ -36,6 +39,13 @@ internal sealed class ThemeService(JsModuleLoader modules, IOptions<TrailblazorO
     {
         await ApplyAsync("tbPalette", palette.ToString());
         Palette = palette;
+        Changed?.Invoke();
+    }
+
+    public async Task SetDensityAsync(Density density)
+    {
+        await ApplyAsync("tbDensity", density.ToString());
+        Density = density;
         Changed?.Invoke();
     }
 

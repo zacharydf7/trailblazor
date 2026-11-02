@@ -328,6 +328,15 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(probe).ToHaveCSSAsync("height", "32px");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ControlHeight_ShouldFollowTheNearestDensity_WhenRegionsSetTheirOwn(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        await Expect(page.GetByTestId("compact-probe")).ToHaveCSSAsync("height", "32px");
+        await Expect(page.GetByTestId("comfortable-probe")).ToHaveCSSAsync("height", "40px");
+    }
+
     private static async Task<double> GetLuminanceAsync(IPage page, string token, string? classes = null)
     {
         var (red, green, blue) = await GetChannelsAsync(page, token, classes);

@@ -358,10 +358,6 @@
         --tb-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
         --tb-motion-easing-emphasized: cubic-bezier(0.3, 0, 0, 1.3);
 
-        --tb-control-height: 2.5rem;
-        --tb-control-padding-inline: var(--tb-space-3);
-        --tb-row-height: 2.75rem;
-
         /* Media queries can't read custom properties; these document the scale and serve JS. */
         --tb-breakpoint-sm: 640px;
         --tb-breakpoint-md: 768px;
@@ -382,9 +378,21 @@
         color-scheme: light dark;
     }
 
+    /* A region can take either density for itself, so the defaults also answer to "comfortable". */
+    :root,
+    [data-tb-density="comfortable"] {
+        --tb-control-height: 2.5rem;
+        --tb-control-padding-block: var(--tb-space-2);
+        --tb-control-padding-inline: var(--tb-space-3);
+        --tb-item-height: 2rem;
+        --tb-row-height: 2.75rem;
+    }
+
     [data-tb-density="compact"] {
         --tb-control-height: 2rem;
+        --tb-control-padding-block: var(--tb-space-1);
         --tb-control-padding-inline: var(--tb-space-2);
+        --tb-item-height: 1.75rem;
         --tb-row-height: 2rem;
     }
 
@@ -1143,7 +1151,7 @@
     }
 
     .tb-chip {
-        --tb-chip-height: 2rem;
+        --tb-chip-height: calc(var(--tb-control-height) - 0.5rem);
         display: inline-flex;
         align-items: stretch;
         box-sizing: border-box;
@@ -1157,12 +1165,12 @@
     }
 
     .tb-chip--small {
-        --tb-chip-height: 1.5rem;
+        --tb-chip-height: max(1.5rem, calc(var(--tb-control-height) - 1rem));
         font-size: var(--tb-font-size-xs);
     }
 
     .tb-chip--large {
-        --tb-chip-height: 2.5rem;
+        --tb-chip-height: var(--tb-control-height);
         font-size: var(--tb-font-size-md);
     }
 
@@ -1320,8 +1328,8 @@
     }
 
     .tb-list {
-        --tb-list-item-height: 2.75rem;
-        --tb-list-item-padding: var(--tb-space-2) var(--tb-space-3);
+        --tb-list-item-height: var(--tb-row-height);
+        --tb-list-item-padding: var(--tb-control-padding-block) var(--tb-space-3);
         --tb-list-current: var(--tb-color-primary-subtle);
         --tb-list-on-current: var(--tb-color-primary-text);
         display: flex;
@@ -1332,11 +1340,6 @@
         list-style: none;
         color: var(--tb-color-text);
         font-family: var(--tb-font-family);
-    }
-
-    .tb-list--dense {
-        --tb-list-item-height: 2rem;
-        --tb-list-item-padding: var(--tb-space-1) var(--tb-space-3);
     }
 
     .tb-list--dividers {
@@ -2069,18 +2072,13 @@
         display: flex;
         align-items: flex-start;
         gap: var(--tb-space-3);
-        padding: var(--tb-space-3) var(--tb-space-4);
+        padding: calc(1.5 * var(--tb-control-padding-block)) var(--tb-space-4);
         border-inline-start: 4px solid var(--tb-alert-accent);
         border-radius: var(--tb-radius-md);
         background: var(--tb-alert-subtle);
         color: var(--tb-color-text);
         font-size: var(--tb-font-size-sm);
         line-height: var(--tb-line-height-normal);
-    }
-
-    .tb-alert--dense {
-        gap: var(--tb-space-2);
-        padding: var(--tb-space-1) var(--tb-space-3);
     }
 
     .tb-alert--primary {
@@ -2411,7 +2409,7 @@
     }
 
     .tb-field {
-        --tb-field-padding-block: var(--tb-space-2);
+        --tb-field-padding-block: var(--tb-control-padding-block);
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
@@ -2964,7 +2962,7 @@
         align-items: center;
         gap: var(--tb-space-2);
         box-sizing: border-box;
-        min-height: 2rem;
+        min-height: var(--tb-item-height);
         width: 100%;
         padding: var(--tb-space-1) var(--tb-space-3);
         border: none;
@@ -3340,7 +3338,7 @@
     .tb-select__trigger {
         display: flex;
         align-items: center;
-        min-height: 1.5em;
+        min-height: 1lh;
         cursor: pointer;
         user-select: none;
     }
@@ -3468,7 +3466,7 @@
     .tb-select__option {
         display: flex;
         align-items: center;
-        min-height: 2rem;
+        min-height: var(--tb-item-height);
         padding: var(--tb-space-1) var(--tb-space-3);
         border-radius: var(--tb-radius-sm);
         font-size: var(--tb-font-size-sm);
@@ -3541,7 +3539,7 @@
 
     .tb-listbox {
         box-sizing: border-box;
-        max-block-size: calc(var(--tb-listbox-rows) * 2rem);
+        max-block-size: calc(var(--tb-listbox-rows) * var(--tb-item-height));
         padding-block: 0;
         overflow-y: auto;
         font-size: var(--tb-font-size-sm);
@@ -4076,8 +4074,8 @@
         align-items: center;
         gap: var(--tb-space-2);
         flex: none;
-        min-height: 2.5rem;
-        padding: var(--tb-space-2) var(--tb-space-3);
+        min-height: var(--tb-control-height);
+        padding: var(--tb-control-padding-block) var(--tb-space-3);
         border: none;
         border-radius: var(--tb-radius-sm) var(--tb-radius-sm) 0 0;
         background: transparent;
@@ -4227,8 +4225,8 @@
         gap: var(--tb-space-2);
         box-sizing: border-box;
         width: 100%;
-        min-height: 2.75rem;
-        padding: var(--tb-space-2) var(--tb-space-3);
+        min-height: var(--tb-row-height);
+        padding: var(--tb-control-padding-block) var(--tb-space-3);
         border: none;
         background: transparent;
         color: var(--tb-color-text);
@@ -4575,7 +4573,7 @@
 
     .tb-table--small :is(th, td),
     .tb-data-grid--small .tb-data-grid__table :is(th, td) {
-        height: calc(var(--tb-row-height) - 0.75rem);
+        height: max(1.5rem, calc(var(--tb-row-height) - 0.75rem));
         padding-block: 0;
     }
 
@@ -4790,7 +4788,7 @@
         display: flex;
         align-items: center;
         gap: var(--tb-space-1);
-        min-block-size: 2rem;
+        min-block-size: var(--tb-item-height);
         padding-inline: calc(var(--tb-tree-level) * var(--tb-tree-indent)) var(--tb-space-2);
         border-radius: var(--tb-radius-sm);
         cursor: default;
@@ -5143,7 +5141,7 @@
     }
 
     .tb-date-range__grid th {
-        width: 2.25rem;
+        width: calc(var(--tb-control-height) - 0.25rem);
         padding-block: var(--tb-space-1);
         color: var(--tb-color-text-muted);
         font-weight: 400;
@@ -5154,8 +5152,8 @@
     }
 
     .tb-date-range__day {
-        width: 2.25rem;
-        height: 2.25rem;
+        width: calc(var(--tb-control-height) - 0.25rem);
+        height: calc(var(--tb-control-height) - 0.25rem);
         padding: 0;
         border: 1px solid transparent;
         border-radius: var(--tb-radius-sm);

@@ -12,10 +12,10 @@
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Light and dark</TbText>
 <TbText>
     Put <code>TbThemeHead</code> in <code>&lt;head&gt;</code>, next to <code>TbStyles</code>. It starts the page in the
-    mode and palette you set in <code>TrailblazorOptions.Theme</code>, or in the ones the user chose last time, and
-    does so before the page paints, so a dark page never flashes light. <code>System</code>, the default, follows the
-    device's setting. Without <code>TbThemeHead</code>, Trailblazor keeps the page's own color scheme, so adding the
-    library never darkens an app by itself.
+    mode, palette and density you set in <code>TrailblazorOptions.Theme</code>, or in the ones the user chose last
+    time, and does so before the page paints, so a dark page never flashes light. <code>System</code>, the default,
+    follows the device's setting. Without <code>TbThemeHead</code>, Trailblazor keeps the page's own color scheme, so
+    adding the library never darkens an app by itself.
 </TbText>
 <CodeBlock Label="App.razor and Program.cs" Code="@Theme" />
 <TbText>
@@ -26,8 +26,8 @@
 <CodeBlock Label="index.html" Code="@StandaloneTheme" />
 <TbText>
     The <a href="components/theme-picker">theme picker</a> lets people choose, as the one at the top of this site
-    does, and <code>IThemeService</code> changes the mode or palette from your own code. Both remember the choice in
-    the browser unless <code>Remember</code> is off.
+    does, and <code>IThemeService</code> changes the mode, palette or density from your own code. Both remember the
+    choice in the browser unless <code>Remember</code> is off.
 </TbText>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Palettes</TbText>
@@ -68,8 +68,44 @@
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Density</TbText>
 <TbText>
-    <code>data-tb-density="compact"</code> makes controls and rows shorter, for screens full of data.
+    Compact density makes controls, items and rows shorter, for screens full of data. Comfortable, the default, leaves
+    room for touch. Every pointer target stays at least 24 by 24 px in both. Choose the page's density with the
+    <code>Density</code> value in <code>TrailblazorOptions.Theme</code>, or change it while the app runs with
+    <code>IThemeService.SetDensityAsync</code>, which remembers the choice as it does the mode and palette. The density
+    menu at the top of this site switches every page, examples included.
 </TbText>
+<CodeBlock Label="Program.cs" Code="@DensityOption" />
+<TbText>
+    For one part of a page, set <code>data-tb-density</code> on any element or component; it applies to everything
+    inside it. Set <code>comfortable</code> inside a compact page to switch that part back. A virtualized tree view
+    keeps the row height its <code>ItemSize</code> gives, so set that to 28 in compact density.
+</TbText>
+<CodeBlock Label="A compact region" Code="@DensityRegion" />
+<TbText>
+    Density sets five tokens, and the components size themselves from them, so changing one changes every component
+    that uses it.
+</TbText>
+<TbTable aria-label="Density tokens">
+    <thead>
+        <tr>
+            <th scope="col">Token</th>
+            <th scope="col">Comfortable</th>
+            <th scope="col">Compact</th>
+            <th scope="col">Sizes</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var token in DensityTokens)
+        {
+            <tr>
+                <th scope="row"><code>@token.Name</code></th>
+                <td>@token.Comfortable</td>
+                <td>@token.Compact</td>
+                <td>@token.Sizes</td>
+            </tr>
+        }
+    </tbody>
+</TbTable>
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Changing tokens</TbText>
 <TbText>
@@ -126,7 +162,29 @@
 
     private const string StandaloneTheme = """
         <script src="_content/Trailblazor/theme-head.js" data-mode="system" data-palette="cobalt"
-            data-remember="true"></script>
+            data-density="comfortable" data-remember="true"></script>
+        """;
+
+    private static readonly (string Name, string Comfortable, string Compact, string Sizes)[] DensityTokens =
+    [
+        ("--tb-control-height", "40px", "32px",
+            "Buttons, fields, selects, tabs, pagination and toggle groups; chips and calendar days are sized from it"),
+        ("--tb-control-padding-block", "8px", "4px",
+            "The space above and below the text in fields, tabs, list items and accordion headers; alerts use 1.5 "
+                + "times this"),
+        ("--tb-control-padding-inline", "12px", "8px", "The space either side of a button's or a field's text"),
+        ("--tb-item-height", "32px", "28px", "Menu items, options in a select or list box, and tree rows"),
+        ("--tb-row-height", "44px", "32px", "Table and data grid rows, list items and accordion headers"),
+    ];
+
+    private const string DensityOption = """
+        builder.Services.AddTrailblazor(options => options.Theme.Density = Density.Compact);
+        """;
+
+    private const string DensityRegion = """
+        <section data-tb-density="compact">
+            ...
+        </section>
         """;
 
     private const string Palette = """

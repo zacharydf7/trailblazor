@@ -4,7 +4,7 @@
 
 <div role="@(Tone is Tone.Danger or Tone.Warning ? "alert" : "status")" @attributes="AdditionalAttributes"
      class="@ClassNames.Join("tb-alert", ClassNames.Modifier("tb-alert", Tone),
-                ClassNames.Modifier("tb-alert", Variant), Dense ? "tb-alert--dense" : null, Class)"
+                ClassNames.Modifier("tb-alert", Variant), Class)"
      style="@Style">
     @if (ShowIcon)
     {
@@ -55,10 +55,6 @@
     /// <summary>Buttons or links under the message that act on it, such as "Retry".</summary>
     [Parameter]
     public RenderFragment? Actions { get; set; }
-
-    /// <summary>Uses less padding, for alerts inside dense layouts.</summary>
-    [Parameter]
-    public bool Dense { get; set; }
 
     /// <summary>Raised when the close button is clicked. The close button is shown only when this is set.</summary>
     [Parameter]

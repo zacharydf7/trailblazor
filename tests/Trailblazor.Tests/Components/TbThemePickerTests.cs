@@ -13,7 +13,7 @@ public class TbThemePickerTests : BunitContext
         this.AddTrailblazor();
         _module = JSInterop.SetupModule("./_content/Trailblazor/theme.js");
         _module.SetupVoid("apply", _ => true).SetVoidResult();
-        _module.Setup<string?[]?>("read").SetResult(["light", "graphite"]);
+        _module.Setup<string?[]?>("read").SetResult(["light", "graphite", "comfortable"]);
         JSInterop.SetupModule("./_content/Trailblazor/toggle-group.js").SetupModule("attachToggleGroup", _ => true);
     }
 

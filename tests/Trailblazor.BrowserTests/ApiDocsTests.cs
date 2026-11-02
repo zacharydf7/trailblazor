@@ -13,8 +13,9 @@ public class ApiDocsTests
         var theme = ApiDocs.Describe(typeof(IThemeService)).Members;
         var localizer = ApiDocs.Describe(typeof(ITbLocalizer)).Members;
 
-        Assert.Equal(["Mode { get; }", "Palette { get; }", "event Changed", "LoadAsync()",
-            "SetModeAsync(ThemeMode mode)", "SetPaletteAsync(Palette palette)"], theme.Select(member => member.Name));
+        Assert.Equal(["Mode { get; }", "Palette { get; }", "Density { get; }", "event Changed", "LoadAsync()",
+            "SetModeAsync(ThemeMode mode)", "SetPaletteAsync(Palette palette)", "SetDensityAsync(Density density)"],
+            theme.Select(member => member.Name));
         Assert.Equal(["this[string key] { get; }"], localizer.Select(member => member.Name));
         Assert.All(theme.Concat(localizer), member => Assert.NotEmpty(member.Description));
     }

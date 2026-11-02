@@ -9,6 +9,10 @@ public sealed class ThemeSettings
     /// <summary>The page's colors. Defaults to <see cref="Trailblazor.Palette.Graphite"/>.</summary>
     public Palette Palette { get; set; } = Palette.Graphite;
 
+    /// <summary>How tall controls, items and rows are. Defaults to <see cref="Trailblazor.Density.Comfortable"/>.
+    /// </summary>
+    public Density Density { get; set; } = Density.Comfortable;
+
     /// <summary>Remembers the user's choice in the browser, so the next visit starts with it. On by default.</summary>
     public bool Remember { get; set; } = true;
 }

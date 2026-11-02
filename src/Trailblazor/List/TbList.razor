@@ -20,14 +20,9 @@ else
     [Parameter]
     public bool Ordered { get; set; }
 
-    /// <summary>Tightens the items, for lists that need to show more at once.</summary>
-    [Parameter]
-    public bool Dense { get; set; }
-
     /// <summary>Draws a line between the items.</summary>
     [Parameter]
     public bool Dividers { get; set; }
 
-    private string Classes => ClassNames.Join("tb-list", Dense ? "tb-list--dense" : null,
-        Dividers ? "tb-list--dividers" : null, Class);
+    private string Classes => ClassNames.Join("tb-list", Dividers ? "tb-list--dividers" : null, Class);
 }

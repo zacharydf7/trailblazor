@@ -55,11 +55,10 @@ public class TbAlertTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldAddPartClasses_WhenIconDenseAndClassesAreSet()
+    public void Render_ShouldAddPartClasses_WhenIconAndClassesAreSet()
     {
         var cut = Render<TbAlert>(parameters => parameters
             .Add(alert => alert.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />"))
-            .Add(alert => alert.Dense, true)
             .Add(alert => alert.OnClose, () => { })
             .Add(alert => alert.Title, "Heads up").Add(alert => alert.Actions, "<button>Undo</button>")
             .Add(alert => alert.Classes, new AlertClasses
@@ -68,7 +67,6 @@ public class TbAlertTests : BunitContext
                 Close = "my-close",
             }));
 
-        Assert.Contains("tb-alert--dense", cut.Find(".tb-alert").ClassList);
         Assert.Contains("my-icon", cut.Find("[data-part=icon]").ClassList);
         Assert.Equal("M4 4h16v16H4z", cut.Find("[data-part=icon] path").GetAttribute("d"));
         Assert.Contains("my-title", cut.Find("[data-part=title]").ClassList);

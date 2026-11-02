@@ -2,7 +2,7 @@
 @implements IDisposable
 @inject IThemeService Theme
 
-@* The palette's label stays its name for screen readers; the header has no room to show it. *@
+@* The palette and density keep their labels for screen readers; the header has no room to show them. *@
 <TbStack Row Gap="2" Align="Align.Center" class="docs-look">
     <TbThemePicker Size="Size.Small" />
     <TbSelect Label="Palette" Value="Theme.Palette" ValueChanged="(Palette palette) => Theme.SetPaletteAsync(palette)"
@@ -11,6 +11,11 @@
         {
             <TbOption Value="palette.Value">@palette.Title</TbOption>
         }
+    </TbSelect>
+    <TbSelect Label="Density" Value="Theme.Density" ValueChanged="(Density density) => Theme.SetDensityAsync(density)"
+              Classes="HiddenLabel">
+        <TbOption Value="Density.Comfortable">Comfortable</TbOption>
+        <TbOption Value="Density.Compact">Compact</TbOption>
     </TbSelect>
 </TbStack>
 

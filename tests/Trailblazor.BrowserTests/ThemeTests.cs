@@ -7,7 +7,7 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenStaticAsync(browser, "/theme");
 
-        Assert.Equal(["system", "graphite"], await ThemeAsync(page));
+        Assert.Equal(["system", "graphite", "comfortable"], await ThemeAsync(page));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -40,6 +40,18 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ThemeService_ShouldShowAndRememberTheDensity_WhenOneIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/theme");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Use compact" }).ClickAsync();
+
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-density", "compact");
+        await page.ReloadAsync(new() { WaitUntil = WaitUntilState.DOMContentLoaded });
+        Assert.Equal("compact", (await ThemeAsync(page))[2]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ThemeHead_ShouldKeepTheRememberedMode_WhenAnEnhancedNavigationReplacesThePage(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-theme");
@@ -56,8 +68,10 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal("dark", (await ThemeAsync(page))[0]);
     }
 
-    private static Task<string[]> ThemeAsync(IPage page) => page.EvaluateAsync<string[]>(
-        "() => [document.documentElement.dataset.tbTheme, document.documentElement.dataset.tbPalette]");
+    private static Task<string[]> ThemeAsync(IPage page) => page.EvaluateAsync<string[]>("""
+        () => [document.documentElement.dataset.tbTheme, document.documentElement.dataset.tbPalette,
+            document.documentElement.dataset.tbDensity]
+        """);
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Theme_ShouldPaintARegionWithItsThemesBackgroundAndText_WhenTheRegionSetsATheme(string browser)

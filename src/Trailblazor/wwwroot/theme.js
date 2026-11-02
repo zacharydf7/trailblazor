@@ -2,7 +2,7 @@
 const root = document.documentElement;
 
 export function read() {
-    return [root.dataset.tbTheme ?? null, root.dataset.tbPalette ?? null];
+    return [root.dataset.tbTheme ?? null, root.dataset.tbPalette ?? null, root.dataset.tbDensity ?? null];
 }
 
 export function apply(name, value, remember) {

@@ -265,7 +265,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public bool Virtualize { get; set; }
 
-    /// <summary>The height of every row, in pixels, when <see cref="Virtualize"/> is on. Defaults to 32.</summary>
+    /// <summary>The height of every row, in pixels, when <see cref="Virtualize"/> is on. Defaults to 32, the
+    /// comfortable row height; use 28 with <see cref="Density.Compact"/>.</summary>
     [Parameter]
     public float ItemSize { get; set; } = 32;
 

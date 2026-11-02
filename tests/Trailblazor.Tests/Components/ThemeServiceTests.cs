@@ -39,21 +39,35 @@ public class ThemeServiceTests : BunitContext
         Assert.Equal(Palette.Moss, Theme.Palette);
     }
 
+    [Fact]
+    public async Task SetDensity_ShouldApplyAndRememberTheDensityAndRaiseChanged_WhenCalled()
+    {
+        this.AddTrailblazor();
+        var changes = 0;
+        Theme.Changed += () => changes++;
+
+        await Theme.SetDensityAsync(Density.Compact);
+
+        Assert.Equal(["tbDensity", "compact", true], _module.VerifyInvoke("apply").Arguments);
+        Assert.Equal((Density.Compact, 1), (Theme.Density, changes));
+    }
+
     [Theory]
-    [InlineData("dark", "teal", ThemeMode.Dark, Palette.Teal)]
-    [InlineData(null, "unknown", ThemeMode.Light, Palette.Rose)]
+    [InlineData("dark", "teal", "comfortable", ThemeMode.Dark, Palette.Teal, Density.Comfortable)]
+    [InlineData(null, "unknown", "roomy", ThemeMode.Light, Palette.Rose, Density.Compact)]
     public async Task Load_ShouldReadWhatThePageShowsOrFallBackOnTheDefaults_WhenCalled(string? mode, string? palette,
-        ThemeMode expectedMode, Palette expectedPalette)
+        string? density, ThemeMode expectedMode, Palette expectedPalette, Density expectedDensity)
     {
         this.AddTrailblazor(options =>
         {
             options.Theme.Mode = ThemeMode.Light;
             options.Theme.Palette = Palette.Rose;
+            options.Theme.Density = Density.Compact;
         });
-        _module.Setup<string?[]?>("read").SetResult([mode, palette]);
+        _module.Setup<string?[]?>("read").SetResult([mode, palette, density]);
 
         await Theme.LoadAsync();
 
-        Assert.Equal((expectedMode, expectedPalette), (Theme.Mode, Theme.Palette));
+        Assert.Equal((expectedMode, expectedPalette, expectedDensity), (Theme.Mode, Theme.Palette, Theme.Density));
     }
 }
