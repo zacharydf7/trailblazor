@@ -16,7 +16,9 @@
     private async Task OnNavigateAsync(NavigationContext context)
     {
         var path = context.Path.Split('?', '#')[0].Trim('/');
-        if (!_iconsLoaded && IconPages.Contains(path, StringComparer.OrdinalIgnoreCase))
+        // The icon example's preview opens in a new tab, so the app can start on a preview that needs the icons too.
+        if (!_iconsLoaded && (IconPages.Contains(path, StringComparer.OrdinalIgnoreCase)
+            || path.StartsWith("preview/icon/", StringComparison.OrdinalIgnoreCase)))
         {
             await Assemblies.LoadAssembliesAsync(["Trailblazor.Icons.Material.wasm"]);
             _iconsLoaded = true;

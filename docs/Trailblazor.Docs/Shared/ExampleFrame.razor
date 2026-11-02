@@ -1,0 +1,58 @@
+@using Trailblazor.Docs.Examples
+@inject IBrowserService Browser
+@inject IAnnouncer Announcer
+
+@* The demo comes first and its code only on request, so a page with several sections stays short. *@
+<div class="docs-example docs-example--frame" data-full-width="@(FullWidth ? "" : null)">
+    <div class="docs-example__stage">
+        <div class="docs-example__demo"><DynamicComponent Type="Section.Component" /></div>
+    </div>
+    <div class="docs-example__bar">
+        <TbButton Variant="Variant.Text" Size="Size.Small" aria-controls="@CodeId"
+                  aria-expanded="@(_showCode ? "true" : "false")" OnClick="() => _showCode = !_showCode">
+            @(_showCode ? "Hide code" : "Show code")
+        </TbButton>
+        <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="CopyAsync">Copy code</TbButton>
+        <TbLink Href="@($"preview/{Name}/{Section.Id}")" NewTab class="docs-example__alone">Open on its own</TbLink>
+    </div>
+    <div id="@CodeId" class="docs-example__code" hidden="@(!_showCode)">
+        @if (Section.Sources.Count == 1)
+        {
+            <CodeBlock Label="@Section.Sources[0].File" Code="@Section.Sources[0].Text" />
+        }
+        else
+        {
+            <TbTabs AriaLabel="Files" @bind-ActiveIndex="_file">
+                @foreach (var source in Section.Sources)
+                {
+                    <TbTab Text="@source.File"><CodeBlock Label="@source.File" Code="@source.Text" /></TbTab>
+                }
+            </TbTabs>
+        }
+    </div>
+</div>
+
+@code {
+    private bool _showCode;
+    private int _file;
+
+    /// <summary>The component's name in the catalog, used in the URL of the section's preview page.</summary>
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public ExampleSection Section { get; set; } = null!;
+
+    /// <summary>Gives the demo the frame's whole width rather than centering it.</summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
+
+    private string CodeId => $"code-{Section.Id}";
+
+    private async Task CopyAsync()
+    {
+        var source = Section.Sources[_file];
+        Announcer.Polite(await Browser.CopyTextAsync(source.Text) ? $"Copied {source.File}."
+            : $"Couldn't copy {source.File}.");
+    }
+}

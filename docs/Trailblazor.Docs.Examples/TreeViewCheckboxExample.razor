@@ -1,0 +1,13 @@
+@* Rows written as markup, for a tree that is part of the page rather than data. *@
+<TbTreeView TItem="string" TKey="string" AriaLabel="Notifications" Checkable @bind-CheckedKeys="_notify"
+            InitialExpandDepth="1">
+    <TbTreeItem Text="Trips">
+        <TbTreeItem Value="@("trips-new")" Text="New trails near me" />
+        <TbTreeItem Value="@("trips-changed")" Text="Changes to saved trails" />
+    </TbTreeItem>
+    <TbTreeItem Value="@("weather")" Text="Weather alerts" />
+</TbTreeView>
+
+@code {
+    private IReadOnlyCollection<string> _notify = ["weather"];
+}

@@ -1,0 +1,24 @@
+@* Ten thousand rows, of which only those in view render; the arrows select as they move. *@
+<TbStack Gap="3" Style="inline-size: min(100%, 26rem)">
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Trail atlas" Items="Atlas" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" ItemText="place => place.Name" InitialExpandDepth="1"
+                Virtualize Style="block-size: 20rem" SelectionFollowsFocus @bind-SelectedKeys="_atlasSelected" />
+    <TbText>
+        @(_atlasSelected.Count == 0 ? "Move through the atlas with the arrow keys."
+            : $"Showing {AtlasNames[_atlasSelected.Single()]}.")
+    </TbText>
+</TbStack>
+
+@code {
+    // A hundred regions of a hundred trails each.
+    private static readonly Place[] Atlas = [.. Enumerable.Range(1, 100).Select(region => new Place(region * 1000,
+        $"Region {region}", [.. Enumerable.Range(1, 100).Select(trail =>
+            new Place(region * 1000 + trail, $"Trail {region}.{trail}"))]))];
+
+    private static readonly Dictionary<int, string> AtlasNames = Atlas
+        .Concat(Atlas.SelectMany(region => region.Children!)).ToDictionary(place => place.Id, place => place.Name);
+
+    private IReadOnlyCollection<int> _atlasSelected = [];
+
+    private sealed record Place(int Id, string Name, Place[]? Children = null);
+}

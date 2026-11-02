@@ -1,0 +1,29 @@
+@using Trailblazor.Docs.Examples
+
+<nav class="docs-pager" aria-label="Previous and next components">
+    @if (Neighbor(-1) is { } previous)
+    {
+        <a href="@($"components/{previous.Name}")" rel="prev" class="docs-pager__link">
+            <span class="docs-pager__label">Previous</span>@previous.Title
+        </a>
+    }
+    @if (Neighbor(1) is { } next)
+    {
+        <a href="@($"components/{next.Name}")" rel="next" class="docs-pager__link docs-pager__link--next">
+            <span class="docs-pager__label">Next</span>@next.Title
+        </a>
+    }
+</nav>
+
+@code {
+    // In the order the navigation lists them.
+    private static readonly Example[] Ordered =
+        [.. Enum.GetValues<ExampleCategory>().SelectMany(category => ExampleCatalog.All.Where(example =>
+            example.Category == category))];
+
+    [Parameter, EditorRequired]
+    public Example Example { get; set; } = null!;
+
+    private Example? Neighbor(int step) => Array.IndexOf(Ordered, Example) + step is var index and >= 0
+        && index < Ordered.Length ? Ordered[index] : null;
+}

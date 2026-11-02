@@ -1,6 +1,6 @@
 @using Trailblazor.Docs.Examples
 
-<TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" class="docs-api__name">
+<TbText TextStyle="TextStyle.Subtitle" As="HeadingLevel" class="docs-api__name" id="@IdOf(Type)">
     <code>@_api.Name</code>
 </TbText>
 <TbText class="docs-api__summary">@_api.Summary</TbText>
@@ -54,5 +54,13 @@ else
     [Parameter, EditorRequired]
     public Type Type { get; set; } = null!;
 
+    // A guide puts its types under an "API" heading, so they default to H3; the API page has no such heading and
+    // passes H2.
+    [Parameter]
+    public TextElement HeadingLevel { get; set; } = TextElement.H3;
+
     protected override void OnParametersSet() => _api = ApiDocs.Describe(Type);
+
+    // The type's anchor on its page, such as "tbtreeview" for TbTreeView<TItem, TKey>.
+    public static string IdOf(Type type) => type.Name.Split('`')[0].ToLowerInvariant();
 }

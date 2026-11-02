@@ -66,6 +66,21 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // The data-part names a test can find inside the component, in the order they appear.
     public IReadOnlyList<string> DataParts { get; init; } = [];
 
+    // A demo that needs the frame's whole width, such as a grid; others sit centered in it.
+    public bool FullWidth { get; init; }
+
+    // One section per feature for a component with many; without them, the page shows the example as one section.
+    public IReadOnlyList<ExampleSection> Sections { get; init; } = [];
+
+    public IReadOnlyList<ExampleSection> Shown =>
+        Sections.Count > 0 ? Sections : [new("example", "Example", null, Component, Parts)];
+
+    public IReadOnlyList<ExampleSource> Sources => [.. Shown.SelectMany(section => section.Sources)];
+}
+
+// One feature of a component: a heading, a sentence or two, the live demo and its code. The id names its anchor.
+public sealed record ExampleSection(string Id, string Title, string? Description, Type Component, params Type[] Parts)
+{
     public IReadOnlyList<ExampleSource> Sources => [.. new[] { Component }.Concat(Parts).Select(ExampleSource.Of)];
 }
 
@@ -368,6 +383,7 @@ public static class ExampleCatalog
         new("stack", "Stack", ExampleCategory.Layout,
             "Lays its children out in a row or a column, evenly spaced.", typeof(StackExample))
         {
+            FullWidth = true,
             Api = [typeof(TbStack)],
             Accessibility =
             [
@@ -386,6 +402,7 @@ public static class ExampleCatalog
         new("spacer", "Spacer", ExampleCategory.Layout,
             "Takes up the free space in a stack, pushing what follows to the end.", typeof(SpacerExample))
         {
+            FullWidth = true,
             Api = [typeof(TbSpacer)],
             Accessibility =
             [
@@ -397,6 +414,7 @@ public static class ExampleCatalog
         new("grid", "Grid", ExampleCategory.Layout,
             "A responsive 12-column grid for page layouts.", typeof(GridExample))
         {
+            FullWidth = true,
             Api = [typeof(TbGrid), typeof(TbGridItem)],
             Accessibility =
             [
@@ -414,6 +432,7 @@ public static class ExampleCatalog
             "Lays out panes side by side or stacked, with separators that resize them by dragging, with the "
                 + "keyboard or from a menu.", typeof(SplitterExample))
         {
+            FullWidth = true,
             Api = [typeof(TbSplitter), typeof(TbSplitterPane)],
             Accessibility =
             [
@@ -440,6 +459,7 @@ public static class ExampleCatalog
         new("container", "Container", ExampleCategory.Layout,
             "Centers content and caps its width at a readable size.", typeof(ContainerExample))
         {
+            FullWidth = true,
             Api = [typeof(TbContainer)],
             Accessibility =
             [
@@ -1377,6 +1397,7 @@ public static class ExampleCatalog
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.", typeof(TabsExample))
         {
+            FullWidth = true,
             Api = [typeof(TbTabs), typeof(TbTab)],
             Accessibility =
             [
@@ -1450,6 +1471,20 @@ public static class ExampleCatalog
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
                 + "when opened.", typeof(TreeViewExample))
         {
+            Sections =
+            [
+                new("filter-and-select", "Filter, select and open", "Rows come from `Items`. Typing in the field "
+                    + "filters them and keeps each match's parents. Only trails can be selected, and double-clicking "
+                    + "a trail or pressing Enter on it opens it.", typeof(TreeViewExample)),
+                new("checkboxes", "Checkboxes", "Rows written as markup suit a tree that is part of the page. With "
+                    + "`Checkable`, checking a parent checks its children, and a parent with only some of them "
+                    + "checked shows as mixed.", typeof(TreeViewCheckboxExample)),
+                new("move-and-insert", "Move and insert", "Rows move by dragging, or with Alt+Shift and the "
+                    + "arrows, and `CanDrop` can refuse a move and say why. The slots between rows add new rows.",
+                    typeof(TreeViewMoveExample)),
+                new("many-rows", "Many rows", "With `Virtualize`, only the rows in view render, so ten thousand "
+                    + "rows scroll smoothly. Here the arrows select as they move.", typeof(TreeViewVirtualExample)),
+            ],
             Api =
             [
                 typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
@@ -1542,6 +1577,17 @@ public static class ExampleCatalog
             "Shows items as rows of a table, with sortable columns, paging and row selection.",
             typeof(DataGridExample))
         {
+            FullWidth = true,
+            Sections =
+            [
+                new("sort-page-and-select", "Sort, page and select", "Click a header to sort by it, page through the "
+                    + "rows, and check rows to select them. A column's `Cell` template can hold buttons.",
+                    typeof(DataGridExample)),
+                new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
+                    + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
+                new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
+                    + "moves it with the arrow keys, and the app applies the move.", typeof(DataGridReorderExample)),
+            ],
             Api =
             [
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),

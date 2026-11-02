@@ -16,7 +16,9 @@
                 <TbText>@result.Summary</TbText>
                 @if (result.Parameters.Count > 0)
                 {
-                    <TbText class="docs-note">Has @string.Join(", ", result.Parameters)</TbText>
+                    <TbText class="docs-note">
+                        Has <a href="@($"{result.Path}/api")">@string.Join(", ", result.Parameters)</a>
+                    </TbText>
                 }
             </li>
         }

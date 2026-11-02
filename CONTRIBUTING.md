@@ -17,6 +17,14 @@ An issue is done when all of these hold:
 - A change to the public API is listed in its project's `PublicAPI.Unshipped.txt`. The build flags each public member
   that isn't listed (RS0016), and the IDE's code fix adds it; a release moves the lines to `PublicAPI.Shipped.txt`.
 
+## Component pages
+
+Each component's page comes from its entry in `ExampleCatalog.All`. A component with several features gives its entry
+`Sections`, one per feature, each with an id, a title, a sentence or two and its own example component. The page shows
+each section as a heading, its demo and its code on request, and lists the sections under "On this page". An entry
+without sections shows its single example under the heading "Example". Demos sit centered in their frame; set
+`FullWidth` on an entry whose demos need the frame's width, such as a grid or a layout component.
+
 ## Upcoming components
 
 The docs site's navigation lists each component still to come under its category. `UpcomingCatalog.All` names each one

@@ -1,0 +1,26 @@
+@page "/preview/{Name}/{Section}"
+@layout PreviewLayout
+@using Trailblazor.Docs.Examples
+
+@* One example on a page of its own, to try it at the window's full size. *@
+@if (ExampleCatalog.Find(Name) is { } example
+    && example.Shown.FirstOrDefault(shown => shown.Id == Section) is { } section)
+{
+    <PageTitle>@section.Title · @example.Title · Trailblazor</PageTitle>
+    <h1 class="tb-visually-hidden">@example.Title: @section.Title</h1>
+    <DynamicComponent Type="section.Component" />
+}
+else
+{
+    <PageTitle>Not found · Trailblazor</PageTitle>
+    <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Not found</TbText>
+    <TbText>There is no example named @Name/@Section.</TbText>
+}
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = "";
+
+    [Parameter]
+    public string Section { get; set; } = "";
+}

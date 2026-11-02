@@ -16,7 +16,14 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static string[] Links => [.. GuideCatalog.All.Select(guide => guide.Title), .. Titles];
 
     // The page's own heading; an example, such as the one for text, can show headings of its own.
-    private static ILocator PageTitle(IPage page) => page.Locator(".docs-main > h1");
+    private static ILocator PageTitle(IPage page) => page.Locator(":is(.docs-main, .docs-article__body) > h1");
+
+    // A section's code shows only once asked for.
+    private static async Task ShowCodeAsync(IPage page, string section)
+    {
+        var frame = page.Locator(".docs-example").Filter(new() { Has = page.Locator($"#code-{section}") });
+        await frame.GetByRole(AriaRole.Button, new() { Name = "Show code" }).ClickAsync();
+    }
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task IconsGuide_ShouldShowAndCopyTheMatchingIcons_WhenSearched(string browser)
@@ -69,7 +76,9 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from browser in AllBrowsers.Names
         from path in new[]
         {
-            "", "components/dialog", "guides/getting-started", "guides/palettes", "guides/spacing", "guides/browser",
+            "", "components/dialog", "components/tree-view", "components/data-grid/api",
+            "preview/tree-view/many-rows", "guides/getting-started", "guides/palettes", "guides/spacing",
+            "guides/browser",
             "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "search?q=dialog",
         }
         from theme in new[] { "light", "dark" }
@@ -201,6 +210,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "components/tree-view",
             new() { ViewportSize = new() { Width = 1024, Height = 800 } });
+        await ShowCodeAsync(page, "filter-and-select");
         var source = page.GetByRole(AriaRole.Region, new() { Name = "TreeViewExample.razor" });
 
         Assert.True(await source.EvaluateAsync<bool>("pre => pre.scrollWidth <= pre.clientWidth"),
@@ -235,6 +245,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "components/tree-view",
             new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        await ShowCodeAsync(page, "filter-and-select");
         var source = page.GetByRole(AriaRole.Region, new() { Name = "TreeViewExample.razor" });
 
         Assert.True(await source.EvaluateAsync<bool>("pre => pre.scrollWidth > pre.clientWidth"),
@@ -260,17 +271,141 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task ComponentPage_ShouldShowEveryFileOfTheExample_WhenItHasMoreThanOne(string browser)
     {
         var page = await OpenDocsAsync(browser, "components/dialog");
+        await ShowCodeAsync(page, "example");
 
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "DialogExample.razor" }))
             .ToContainTextAsync("ShowAsync<RenameDialog, string>");
+        await page.GetByRole(AriaRole.Tab, new() { Name = "RenameDialog.razor" }).ClickAsync();
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "RenameDialog.razor" }))
             .ToContainTextAsync("TbDialogContent<string>");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task ComponentPage_ShouldTableTheComponentsParameters_WhenOpened(string browser)
+    public async Task ComponentPage_ShouldShowEachFeatureWithItsCodeOnRequest_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view");
+        var code = page.GetByRole(AriaRole.Region, new() { Name = "TreeViewVirtualExample.razor" });
+        var frame = page.Locator(".docs-example").Filter(new() { Has = page.Locator("#code-many-rows") });
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Many rows", Level = 2 })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Tree, new() { Name = "Trail atlas" })).ToBeVisibleAsync();
+        await Expect(code).ToBeHiddenAsync();
+        await frame.GetByRole(AriaRole.Button, new() { Name = "Show code" }).ClickAsync();
+        await Expect(code).ToContainTextAsync("Virtualize");
+        await frame.GetByRole(AriaRole.Button, new() { Name = "Hide code" }).ClickAsync();
+
+        await Expect(code).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldSayWhichFileItCopied_WhenCopyCodeIsClicked(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view");
+        var frame = page.Locator(".docs-example").Filter(new() { Has = page.Locator("#code-many-rows") });
+
+        await frame.GetByRole(AriaRole.Button, new() { Name = "Copy code" }).ClickAsync();
+
+        // Whether the browser lets the page copy or not, the message names the file.
+        await Expect(page.Locator("[data-part=announcer]")).ToContainTextAsync("TreeViewVirtualExample.razor");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldListItsSectionsBesideIt_WhenTheScreenIsWide(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view",
+            new() { ViewportSize = new() { Width = 1600, Height = 900 } });
+        var contents = page.GetByRole(AriaRole.Navigation, new() { Name = "On this page" });
+        await Expect(contents).ToHaveAttributeAsync("data-ready", "");
+
+        await Expect(contents.GetByRole(AriaRole.Link)).ToHaveTextAsync(["Filter, select and open", "Checkboxes",
+            "Move and insert", "Many rows", "Accessibility", "Telemetry", "Design tokens", "Testing"]);
+        await contents.GetByRole(AriaRole.Link, new() { Name = "Many rows" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Many rows", Level = 2 })).ToBeInViewportAsync();
+        await Expect(contents.GetByRole(AriaRole.Link, new() { Name = "Many rows" }))
+            .ToHaveAttributeAsync("aria-current", "location");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldFoldItsSectionsUnderTheTitle_WhenTheScreenIsNarrow(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view",
+            new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        var contents = page.GetByRole(AriaRole.Navigation, new() { Name = "On this page" });
+
+        await Expect(contents).ToBeHiddenAsync();
+        await page.GetByText("On this page").ClickAsync();
+
+        await Expect(contents.GetByRole(AriaRole.Link, new() { Name = "Checkboxes" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldKeepTheApiOnAPageOfItsOwn_WhenApiIsChosen(string browser)
     {
         var page = await OpenDocsAsync(browser, "components/button");
+        var views = page.GetByRole(AriaRole.Navigation, new() { Name = "Button pages" });
+        await Expect(views.GetByRole(AriaRole.Link, new() { Name = "Overview" }))
+            .ToHaveAttributeAsync("aria-current", "page");
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "TbButton" })).ToHaveCountAsync(0);
+
+        await views.GetByRole(AriaRole.Link, new() { Name = "API" }).ClickAsync();
+
+        await Expect(page).ToHaveURLAsync(new Regex("components/button/api$"));
+        await Expect(views.GetByRole(AriaRole.Link, new() { Name = "API" }))
+            .ToHaveAttributeAsync("aria-current", "page");
+        await Expect(page.GetByRole(AriaRole.Region, new() { Name = "TbButton" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldLinkTheNextComponentInTheListsOrder_WhenNextIsFollowed(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+        var next = Titles[Array.IndexOf(Titles, "Button") + 1];
+        var pager = page.GetByRole(AriaRole.Navigation, new() { Name = "Previous and next components" });
+
+        await pager.GetByRole(AriaRole.Link, new() { Name = $"Next {next}" }).ClickAsync();
+
+        await Expect(PageTitle(page)).ToHaveTextAsync(next);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldStartTheNextComponentWithItsCodeHidden_WhenNextIsFollowedWithCodeShown(
+        string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/tree-view");
+        await ShowCodeAsync(page, "filter-and-select");
+        var next = Titles[Array.IndexOf(Titles, "Tree view") + 1];
+
+        await page.GetByRole(AriaRole.Navigation, new() { Name = "Previous and next components" })
+            .GetByRole(AriaRole.Link, new() { Name = $"Next {next}" }).ClickAsync();
+
+        await Expect(PageTitle(page)).ToHaveTextAsync(next);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Hide code" })).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Preview_ShouldLoadTheIconPack_WhenTheIconExampleIsOpenedOnItsOwn(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "preview/icon/example");
+
+        await Expect(page.GetByRole(AriaRole.Main).Locator("svg").First).ToBeVisibleAsync();
+        await Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Preview_ShouldShowTheExampleWithoutTheSite_WhenASectionIsOpenedOnItsOwn(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "preview/tree-view/many-rows");
+
+        await Expect(page.GetByRole(AriaRole.Tree, new() { Name = "Trail atlas" })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" })).ToHaveCountAsync(0);
+        await Expect(page).ToHaveTitleAsync("Many rows · Tree view · Trailblazor");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldTableTheComponentsParameters_WhenItsApiPageIsOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button/api");
 
         await Expect(page.Locator(".docs-api__summary").First).ToHaveTextAsync(new Regex("^A button with text"));
         var table = page.GetByRole(AriaRole.Region, new() { Name = "TbButton" });
@@ -352,6 +487,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(status).ToHaveTextAsync($"{DocsSearch.Find("placeholder").Count} results for “placeholder”.");
         var select = page.GetByRole(AriaRole.Listitem).Filter(new() { HasText = "Picks one or several options" });
         await Expect(select).ToContainTextAsync("Has Placeholder");
+        await Expect(select.GetByRole(AriaRole.Link, new() { Name = "Placeholder" }))
+            .ToHaveAttributeAsync("href", "components/select/api");
         await select.GetByRole(AriaRole.Link, new() { Name = "Select" }).ClickAsync();
         await Expect(PageTitle(page)).ToHaveTextAsync("Select");
     }
@@ -424,7 +561,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
             await Expect(PageTitle(page)).ToHaveTextAsync(title);
             // Not text: an example can be all icons.
-            await Expect(page.Locator(".docs-example > *")).Not.ToHaveCountAsync(0);
+            await Expect(page.Locator(".docs-example__demo > *")).Not.ToHaveCountAsync(0);
         }
 
         await Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();

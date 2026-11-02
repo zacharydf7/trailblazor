@@ -1,0 +1,43 @@
+@* Rows a server sorts and pages, a page at a time. *@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Hike" DataProvider="LoadHikesAsync" AriaLabel="Hike log" KeySelector="hike => hike.Id"
+                SelectionMode="SelectionMode.Single" @bind-SelectedItem="_hike" PageSize="4" Size="Size.Small">
+        <TbColumn Field="hike => hike.Date" Format="d" Sortable />
+        <TbColumn Field="hike => hike.Trail" Sortable />
+        <TbColumn Field="hike => hike.Hours" Format="N1" Sortable />
+    </TbDataGrid>
+    <TbText data-testid="hike">@(_hike is null ? "No hike chosen." : $"Hike on {_hike.Date:d} chosen.")</TbText>
+</TbStack>
+
+@code {
+    private static readonly string[] Trails =
+        ["Pine Hollow loop", "Eagle Ridge traverse", "Cedar Flats", "Fern Gully", "Waterfall spur", "Summit Gate",
+            "Lake camp"];
+
+    private static readonly Hike[] Hikes = [.. Enumerable.Range(1, 18).Select(day => new Hike(day,
+        new DateOnly(2026, 6, day), Trails[day % Trails.Length], 1 + day % 5 * 1.5))];
+
+    private Hike? _hike;
+
+    // Stands in for a server that sorts, counts and pages the hikes.
+    private static async Task<GridResult<Hike>> LoadHikesAsync(GridRequest request, CancellationToken cancel)
+    {
+        await Task.Delay(150, cancel);
+        IEnumerable<Hike> hikes = Hikes;
+        foreach (var sort in request.Sorts.Reverse())
+        {
+            Func<Hike, object> key = sort.Column switch
+            {
+                "Trail" => hike => hike.Trail,
+                "Hours" => hike => hike.Hours,
+                _ => hike => hike.Date,
+            };
+            hikes = sort.Direction == SortDirection.Ascending ? hikes.OrderBy(key) : hikes.OrderByDescending(key);
+        }
+
+        var page = hikes.Skip(request.StartIndex).Take(request.Count ?? Hikes.Length);
+        return new([.. page], Hikes.Length);
+    }
+
+    private sealed record Hike(int Id, DateOnly Date, string Trail, double Hours);
+}

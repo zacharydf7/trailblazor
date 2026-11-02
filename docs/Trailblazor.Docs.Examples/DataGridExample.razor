@@ -1,4 +1,4 @@
-<TbStack Gap="5">
+<TbStack Gap="3">
     <TbDataGrid @ref="_trailGrid" TItem="Trail" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail.Id"
                 SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_chosen" PageSize="5"
                 PageSizes="[5, 10]" Striped>
@@ -19,25 +19,9 @@
             : $"Chosen: {string.Join(", ", _chosen.Select(trail => trail.Name))}.")
         @(_planned is null ? null : $" Planning {_planned}.")
     </TbText>
-    @* Rows a server sorts and pages, a page at a time. *@
-    <TbDataGrid TItem="Hike" DataProvider="LoadHikesAsync" AriaLabel="Hike log" KeySelector="hike => hike.Id"
-                SelectionMode="SelectionMode.Single" @bind-SelectedItem="_hike" PageSize="4" Size="Size.Small">
-        <TbColumn Field="hike => hike.Date" Format="d" Sortable />
-        <TbColumn Field="hike => hike.Trail" Sortable />
-        <TbColumn Field="hike => hike.Hours" Format="N1" Sortable />
-    </TbDataGrid>
-    <TbText data-testid="hike">@(_hike is null ? "No hike chosen." : $"Hike on {_hike.Date:d} chosen.")</TbText>
-    @* Rows the user puts in order, by a row's handle or the arrow keys on it; the app applies each move. *@
-    <TbDataGrid TItem="Stop" Items="_stops" AriaLabel="Route stops" KeySelector="stop => stop.Name"
-                OnRowMove="move => move.ApplyTo(_stops)" Size="Size.Small">
-        <TbColumn Field="stop => stop.Name" />
-        <TbColumn Field="stop => stop.Distance" Title="Distance (km)" Format="N1" />
-    </TbDataGrid>
 </TbStack>
 
 @code {
-    private readonly List<Stop> _stops = [new("Trailhead", 0), new("Lake camp", 4.2), new("Summit Gate", 7.9)];
-
     private static readonly Trail[] Trails =
     [
         new(1, "Pine Hollow loop", "North ridge", 6.4, new(2026, 5, 2)),
@@ -49,13 +33,9 @@
         new(7, "Lake camp", "High peaks", 8.5, new(2026, 8, 23)),
     ];
 
-    private static readonly Hike[] Hikes = [.. Enumerable.Range(1, 18).Select(day => new Hike(day,
-        new DateOnly(2026, 6, day), Trails[day % Trails.Length].Name, 1 + day % 5 * 1.5))];
-
     private TbDataGrid<Trail> _trailGrid = default!;
     private IReadOnlyCollection<Trail> _chosen = [];
     private string? _planned;
-    private Hike? _hike;
 
     // Which trail is planned isn't part of a row's item, so the grid is asked to draw its rows again.
     private void Plan(Trail trail, bool pressed)
@@ -64,29 +44,5 @@
         _trailGrid.RenderRows();
     }
 
-    // Stands in for a server that sorts, counts and pages the hikes.
-    private static async Task<GridResult<Hike>> LoadHikesAsync(GridRequest request, CancellationToken cancel)
-    {
-        await Task.Delay(150, cancel);
-        IEnumerable<Hike> hikes = Hikes;
-        foreach (var sort in request.Sorts.Reverse())
-        {
-            Func<Hike, object> key = sort.Column switch
-            {
-                "Trail" => hike => hike.Trail,
-                "Hours" => hike => hike.Hours,
-                _ => hike => hike.Date,
-            };
-            hikes = sort.Direction == SortDirection.Ascending ? hikes.OrderBy(key) : hikes.OrderByDescending(key);
-        }
-
-        var page = hikes.Skip(request.StartIndex).Take(request.Count ?? Hikes.Length);
-        return new([.. page], Hikes.Length);
-    }
-
     private sealed record Trail(int Id, string Name, string Region, double LengthKm, DateOnly LastHiked);
-
-    private sealed record Hike(int Id, DateOnly Date, string Trail, double Hours);
-
-    private sealed record Stop(string Name, double Distance);
 }

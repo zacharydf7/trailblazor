@@ -232,7 +232,7 @@ a:focus-visible {
     padding: 0;
 }
 
-.docs-main > h1 {
+:is(.docs-main, .docs-article__body) > h1 {
     margin-block-end: var(--tb-space-2);
     font-family: var(--docs-display);
     font-size: clamp(2rem, 4vw, 2.6rem);
@@ -262,6 +262,158 @@ a:focus-visible {
     border-radius: var(--tb-radius-xl);
     background: var(--tb-color-surface);
     box-shadow: var(--tb-shadow-sm);
+}
+
+/* A component page's frame holds the demo, a toolbar and the code, each with padding of its own. */
+.docs-example--frame {
+    margin-block-start: var(--tb-space-4);
+    padding: 0;
+}
+
+/* A small demo sits centered in its frame, so a wide screen doesn't leave it stranded at one edge. */
+.docs-example__stage {
+    display: grid;
+    justify-items: center;
+    padding: var(--tb-space-8) var(--tb-space-6);
+}
+
+.docs-example__demo {
+    max-width: 100%;
+}
+
+.docs-example[data-full-width] .docs-example__stage {
+    justify-items: stretch;
+}
+
+.docs-example__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--tb-space-1) var(--tb-space-3);
+    padding: var(--tb-space-1) var(--tb-space-3);
+    border-block-start: 1px solid var(--tb-border-subtle);
+}
+
+.docs-example__alone {
+    font-size: var(--tb-font-size-sm);
+}
+
+.docs-example__code {
+    padding: var(--tb-space-3);
+    border-block-start: 1px solid var(--tb-border-subtle);
+}
+
+/* ---- Page frame: the article, its contents and the overview and API links ---- */
+
+.docs-main:has(.docs-article) {
+    max-width: none;
+}
+
+.docs-article__rail {
+    display: none;
+}
+
+.docs-article__folded {
+    margin-block-end: var(--tb-space-6);
+    padding: var(--tb-space-2) var(--tb-space-3);
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-lg);
+}
+
+.docs-article__folded > summary {
+    cursor: pointer;
+    font-weight: var(--tb-font-weight-semibold);
+}
+
+.docs-article__folded[open] > summary {
+    margin-block-end: var(--tb-space-2);
+}
+
+@media (min-width: 80rem) {
+    .docs-article {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 13rem;
+        gap: var(--tb-space-12);
+    }
+
+    .docs-article__folded {
+        display: none;
+    }
+
+    .docs-article__rail {
+        display: block;
+        position: sticky;
+        top: calc(var(--docs-header-height) + var(--tb-space-8));
+        align-self: start;
+        max-height: calc(100vh - var(--docs-header-height) - var(--tb-space-12));
+        overflow-y: auto;
+    }
+}
+
+/* The overview and API links already rule off the header, so the first section needs no rule of its own. */
+.docs-article__folded + .docs-section {
+    margin-block-start: var(--tb-space-8);
+    padding-block-start: 0;
+    border-block-start: none;
+}
+
+.docs-views {
+    display: flex;
+    gap: var(--tb-space-1);
+    margin-block-end: var(--tb-space-4);
+    border-block-end: 1px solid var(--tb-border-subtle);
+}
+
+.docs-views__link {
+    margin-block-end: -1px;
+    padding: var(--tb-space-2) var(--tb-space-3);
+    border-block-end: 2px solid transparent;
+    color: var(--tb-color-text-muted);
+    font-weight: var(--tb-font-weight-semibold);
+    text-decoration: none;
+}
+
+.docs-views__link:hover {
+    color: var(--tb-color-text);
+}
+
+.docs-views__link[aria-current="page"] {
+    border-block-end-color: var(--docs-brand);
+    color: var(--docs-brand-text);
+}
+
+.docs-pager {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tb-space-3);
+    margin-block-start: var(--tb-space-16);
+}
+
+.docs-pager__link {
+    display: grid;
+    flex: 1 1 14rem;
+    gap: var(--tb-space-1);
+    padding: var(--tb-space-3) var(--tb-space-4);
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-lg);
+    font-weight: var(--tb-font-weight-semibold);
+    text-decoration: none;
+}
+
+.docs-pager__link:hover {
+    border-color: var(--docs-brand);
+}
+
+.docs-pager__link--next {
+    margin-inline-start: auto;
+    text-align: end;
+}
+
+.docs-pager__label {
+    color: var(--tb-color-text-muted);
+    font-size: var(--tb-font-size-sm);
+    font-weight: var(--tb-font-weight-regular);
 }
 
 /* The spacing demo's box sets no padding or margin of its own, since this unlayered CSS would beat the class it shows.
@@ -452,7 +604,7 @@ a:focus-visible {
 }
 
 /* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
-.docs-main > :is(p, h3) code,
+:is(.docs-main, .docs-article__body) > :is(p, h3) code,
 .docs-notes code,
 .docs-tokens code,
 .docs-api code {
@@ -465,11 +617,11 @@ a:focus-visible {
 }
 
 /* A wide screen gives examples, code and tables room, while running text keeps a readable line length. */
-.docs-main > :is(p, ul, ol) {
+:is(.docs-main, .docs-article__body) > :is(p, ul, ol) {
     max-width: 44rem;
 }
 
-.docs-main > p + p {
+:is(.docs-main, .docs-article__body) > p + p {
     margin-block-start: var(--tb-space-3);
 }
 

@@ -2,7 +2,11 @@
 @using Trailblazor.Docs.Examples
 
 <PageTitle>@Example.Title example</PageTitle>
-<DynamicComponent Type="Example.Component" />
+@* An example with sections shows them all, as its page does. *@
+@foreach (var section in Example.Shown)
+{
+    <DynamicComponent Type="section.Component" />
+}
 
 @code {
     [Parameter]

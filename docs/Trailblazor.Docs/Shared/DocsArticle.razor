@@ -1,0 +1,28 @@
+@* A wide screen keeps the page's contents beside it; a narrow one folds them above the text. *@
+<div class="docs-article">
+    <div class="docs-article__body">
+        @Header
+        <details class="docs-article__folded">
+            <summary>On this page</summary>
+            <TbTableOfContents>@Contents</TbTableOfContents>
+        </details>
+        @ChildContent
+    </div>
+    <div class="docs-article__rail">
+        <TbTableOfContents>@Contents</TbTableOfContents>
+    </div>
+</div>
+
+@code {
+    /// <summary>The page's title and lead, above the folded contents.</summary>
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    /// <summary>The page's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>A <see cref="TbTableOfContentsItem"/> for each section.</summary>
+    [Parameter]
+    public RenderFragment? Contents { get; set; }
+}

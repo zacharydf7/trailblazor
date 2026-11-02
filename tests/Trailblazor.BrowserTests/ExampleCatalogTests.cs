@@ -15,6 +15,16 @@ public class ExampleCatalogTests
         Assert.All(example.Sources, source => Assert.Contains("<Tb", source.Text));
     }
 
+    // Each section's id is an anchor on the page, so it must be unique and can't reuse one of the page's fixed ids.
+    [Theory, MemberData(nameof(Names))]
+    public void Example_ShouldGiveEachSectionAnIdOfItsOwn_WhenInTheCatalog(string name)
+    {
+        var ids = ExampleCatalog.Find(name)!.Shown.Select(section => section.Id).ToList();
+
+        Assert.Equal(ids.Count, ids.Distinct().Count());
+        Assert.DoesNotContain(ids, id => id is "accessibility" or "telemetry" or "design-tokens" or "testing");
+    }
+
     [Theory, MemberData(nameof(Names))]
     public void Example_ShouldListTheTypeOfEachClassesParameter_WhenItsComponentsHaveOne(string name)
     {

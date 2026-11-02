@@ -1,0 +1,18 @@
+@using Trailblazor.Docs.Examples
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">@Example.Title</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">@Example.Summary</TbText>
+<nav class="docs-views" aria-label="@($"{Example.Title} pages")">
+    <a href="@($"components/{Example.Name}")" class="docs-views__link"
+       aria-current="@(Api ? null : "page")">Overview</a>
+    <a href="@($"components/{Example.Name}/api")" class="docs-views__link" aria-current="@(Api ? "page" : null)">API</a>
+</nav>
+
+@code {
+    [Parameter, EditorRequired]
+    public Example Example { get; set; } = null!;
+
+    /// <summary>Whether this is the API page rather than the overview.</summary>
+    [Parameter]
+    public bool Api { get; set; }
+}
