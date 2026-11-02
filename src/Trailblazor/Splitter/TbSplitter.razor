@@ -163,16 +163,46 @@
         await SaveAsync();
     }
 
-    // Enter on a separator collapses or restores the pane before it, or the one after when that one can't collapse.
-    private async Task OnToggleAsync(string before)
+    // Whether moving a separator by delta percent would change its panes, which both have to be open and within limits.
+    internal bool CanMove(TbSplitterPane before, TbSplitterPane after, double delta)
     {
-        var index = _panes.FindIndex(pane => pane.Id == before);
-        var pane = index >= 0 && _panes[index].Collapsible ? _panes[index]
+        var (growing, shrinking) = delta > 0 ? (before, after) : (after, before);
+        return !before.IsCollapsed && !after.IsCollapsed
+            && Math.Round(Percent(growing), 2) < Math.Round(InOpenSpace(growing.MaxSize), 2)
+            && Math.Round(Percent(shrinking), 2) > Math.Round(InOpenSpace(shrinking.MinSize), 2);
+    }
+
+    // The script moves the separator as its keys do, so the panes' limits are kept the same way.
+    internal async Task StepAsync(ElementReference separator, double delta)
+    {
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync("step", separator, delta);
+        }
+    }
+
+    // A separator collapses or restores the pane before it, or the one after when that one can't collapse.
+    internal TbSplitterPane? ToggleTarget(TbSplitterPane before)
+    {
+        var index = _panes.IndexOf(before);
+        return before.Collapsible ? before
             : index >= 0 && index + 1 < _panes.Count && _panes[index + 1].Collapsible ? _panes[index + 1] : null;
-        if (pane is not null)
+    }
+
+    internal async Task ToggleAsync(TbSplitterPane before)
+    {
+        if (ToggleTarget(before) is { } pane)
         {
             await pane.SetCollapsedAsync(!pane.IsCollapsed);
             await SaveAsync();
+        }
+    }
+
+    private async Task OnToggleAsync(string before)
+    {
+        if (_panes.Find(pane => pane.Id == before) is { } pane)
+        {
+            await ToggleAsync(pane);
         }
     }
 

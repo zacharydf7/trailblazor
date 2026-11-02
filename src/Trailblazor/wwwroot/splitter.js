@@ -1,6 +1,6 @@
-// Dragging and the keys resize panes in the browser, keeping every pane's share, and report the new sizes when they
-// stop; Enter asks the server to collapse or restore. `reporter` hears both, and the panes' order in the markup, and
-// `key` names the saved layout. Panes are named by id in every report.
+// Dragging, the keys and the grip's menu resize panes in the browser, keeping every pane's share, and report the new
+// sizes when they stop; Enter asks the server to collapse or restore. `reporter` hears both, and the panes' order in
+// the markup, and `key` names the saved layout. Panes are named by id in every report.
 export function attachSplitter(root, reporter, key) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root) {
@@ -23,7 +23,7 @@ export function attachSplitter(root, reporter, key) {
     // Moves the separator's two panes by delta percent from the given shares, within both panes' limits.
     const move = (separator, from, delta) => {
         const list = panes();
-        const before = list.indexOf(separator.previousElementSibling);
+        const before = list.indexOf(separator.parentElement.previousElementSibling);
         const after = before + 1;
         if (before < 0 || after >= list.length || list[before].hasAttribute('data-collapsed')
             || list[after].hasAttribute('data-collapsed')) {
@@ -48,19 +48,34 @@ export function attachSplitter(root, reporter, key) {
                 sizes.map(size => Math.round(size * 100) / 100));
         }
     };
-    const isSeparator = target => target.parentElement === root && target.dataset.part === 'separator';
+    // The separator that a press on it, or on its grip's button, drags, unless it belongs to a nested splitter.
+    const separatorFor = target => {
+        const pressed = target.closest?.('[data-part="separator"], [data-part="grip"] [data-part="trigger"]');
+        const bar = pressed?.closest('[data-part="bar"]');
+        return bar?.parentElement === root ? bar.querySelector(':scope > [data-part="separator"]') : null;
+    };
 
     let drag = null;
+    // The grip a drag was released on, whose click would open its menu. A touch drag sends no click, so the next
+    // press clears it.
+    let draggedGrip = null;
     const onPointerDown = event => {
-        if (!isSeparator(event.target) || event.button !== 0) {
+        draggedGrip = null;
+        const separator = separatorFor(event.target);
+        if (!separator || event.button !== 0) {
             return;
         }
 
-        event.preventDefault();
-        event.target.setPointerCapture(event.pointerId);
-        event.target.focus();
+        const pressed = separator === event.target ? separator : event.target.closest('[data-part="trigger"]');
+        if (pressed === separator) {
+            event.preventDefault();
+            separator.focus();
+        }
+
+        pressed.setPointerCapture(event.pointerId);
         const start = vertical() ? event.clientY : event.clientX;
-        drag = { separator: event.target, from: shares(), start, sizes: null };
+        drag = { separator, grip: pressed === separator ? null : pressed, from: shares(), start, sizes: null,
+            dragged: false };
     };
     const onPointerMove = event => {
         if (!drag) {
@@ -69,16 +84,32 @@ export function attachSplitter(root, reporter, key) {
 
         const moved = (vertical() ? event.clientY : event.clientX) - drag.start;
         const ltr = vertical() || getComputedStyle(root).direction !== 'rtl';
+        // A tap on the grip wanders a few pixels, more with a finger, and still opens its menu without resizing.
+        drag.dragged ||= Math.abs(moved) >= (event.pointerType === 'mouse' ? 4 : 10);
+        if (drag.grip && !drag.dragged) {
+            return;
+        }
+
         drag.sizes = move(drag.separator, drag.from, (ltr ? moved : -moved) / length(root) * 100) ?? drag.sizes;
     };
     const onPointerUp = () => {
         if (drag) {
+            draggedGrip = drag.dragged ? drag.grip : null;
             report(drag.sizes);
             drag = null;
         }
     };
+    // A drag's release would open the grip's menu, so that click goes nowhere.
+    const onClick = event => {
+        if (draggedGrip?.contains(event.target)) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        draggedGrip = null;
+    };
     const onKeyDown = event => {
-        if (!isSeparator(event.target)) {
+        if (separatorFor(event.target) !== event.target) {
             return;
         }
 
@@ -103,7 +134,7 @@ export function attachSplitter(root, reporter, key) {
                 sizes = move(separator, from, 100);
                 break;
             case 'Enter':
-                reporter.invokeMethodAsync('OnToggle', separator.previousElementSibling.id);
+                reporter.invokeMethodAsync('OnToggle', separator.parentElement.previousElementSibling.id);
                 event.preventDefault();
                 return;
             default:
@@ -119,6 +150,7 @@ export function attachSplitter(root, reporter, key) {
     root.addEventListener('pointerup', onPointerUp);
     root.addEventListener('pointercancel', onPointerUp);
     root.addEventListener('keydown', onKeyDown);
+    root.addEventListener('click', onClick, { capture: true });
 
     // Panes register on the server as they first render, so one added later in the middle needs its place reported.
     let order = '';
@@ -155,6 +187,10 @@ export function attachSplitter(root, reporter, key) {
     root.dataset.ready = '';
     return {
         saved: () => saved,
+        // The grip's menu moves a separator by delta percent, as its keys do.
+        step(separator, delta) {
+            report(move(separator, shares(), delta));
+        },
         save(sizes, collapsed) {
             // Storage can be full or turned off, and then the layout just isn't kept.
             try {
@@ -169,6 +205,7 @@ export function attachSplitter(root, reporter, key) {
             root.removeEventListener('pointerup', onPointerUp);
             root.removeEventListener('pointercancel', onPointerUp);
             root.removeEventListener('keydown', onKeyDown);
+            root.removeEventListener('click', onClick, { capture: true });
         },
     };
 }

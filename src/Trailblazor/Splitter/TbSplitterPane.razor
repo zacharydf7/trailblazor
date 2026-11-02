@@ -5,14 +5,40 @@
 @inject ITbLocalizer Localizer
 
 @* Each pane after the first puts the separator between itself and the pane before, which the separator resizes. *@
+@* The grip's menu resizes with single clicks or taps (WCAG 2.5.7). It stays out of the tab order, since the
+   separator's keys do the same. *@
 @if (Splitter!.Before(this) is { } before)
 {
-    <div role="separator" tabindex="0" data-part="separator" class="tb-splitter__separator"
-         aria-orientation="@(Splitter.Vertical ? "horizontal" : "vertical")" aria-controls="@before.Id"
-         aria-label="@SeparatorName(before)"
-         aria-valuenow="@Whole(Splitter.Percent(before))"
-         aria-valuemin="@(before.Collapsible ? "0" : Whole(Splitter.InOpenSpace(before.MinSize)))"
-         aria-valuemax="@Whole(Splitter.InOpenSpace(before.MaxSize))">
+    <div data-part="bar" class="tb-splitter__bar">
+        <div @ref="_separator" role="separator" tabindex="0" data-part="separator" class="tb-splitter__separator"
+             aria-orientation="@(Splitter.Vertical ? "horizontal" : "vertical")" aria-controls="@before.Id"
+             aria-label="@Format(TbStrings.SplitterResize, before)"
+             aria-valuenow="@Whole(Splitter.Percent(before))"
+             aria-valuemin="@(before.Collapsible ? "0" : Whole(Splitter.InOpenSpace(before.MinSize)))"
+             aria-valuemax="@Whole(Splitter.InOpenSpace(before.MaxSize))">
+        </div>
+        <TbMenu Class="tb-splitter__grip" data-part="grip">
+            <Trigger>
+                <TbIconButton Icon="BuiltInIcons.DragHandle" AriaLabel="@Format(TbStrings.SplitterMenu, before)"
+                              Size="Trailblazor.Size.Small" @attributes="context.Attributes" tabindex="-1" />
+            </Trigger>
+            <ChildContent>
+                <TbMenuItem Disabled="!Splitter.CanMove(before, this, 10)"
+                            OnClick="() => Splitter.StepAsync(_separator, 10)">
+                    @Format(TbStrings.SplitterLarger, before)
+                </TbMenuItem>
+                <TbMenuItem Disabled="!Splitter.CanMove(before, this, -10)"
+                            OnClick="() => Splitter.StepAsync(_separator, -10)">
+                    @Format(TbStrings.SplitterSmaller, before)
+                </TbMenuItem>
+                @if (Splitter.ToggleTarget(before) is { } toggled)
+                {
+                    <TbMenuItem OnClick="() => Splitter.ToggleAsync(before)">
+                        @Format(toggled.IsCollapsed ? TbStrings.SplitterRestore : TbStrings.SplitterCollapse, toggled)
+                    </TbMenuItem>
+                }
+            </ChildContent>
+        </TbMenu>
     </div>
 }
 <div @attributes="AdditionalAttributes" id="@Id" data-part="pane" data-min="@Round(Splitter.InOpenSpace(MinSize))"
@@ -23,6 +49,7 @@
 </div>
 
 @code {
+    private ElementReference _separator;
     private double? _size;
     private double? _sizeFromParent;
     private bool _collapsed;
@@ -50,7 +77,7 @@
     public double MaxSize { get; set; } = 100;
 
     /// <summary>Lets Enter on the separator before the pane, or after it for the first pane, collapse it and restore
-    /// it.</summary>
+    /// it, as does that separator's grip menu.</summary>
     [Parameter]
     public bool Collapsible { get; set; }
 
@@ -146,10 +173,10 @@
         }
     }
 
-    // Named after the pane it resizes, or its number when it has no label.
-    private string SeparatorName(TbSplitterPane before) => string.Format(CultureInfo.CurrentCulture,
-        Localizer[TbStrings.SplitterResize], before.Label ?? string.Format(CultureInfo.CurrentCulture,
-            Localizer[TbStrings.SplitterPane], Splitter!.IndexOf(before) + 1));
+    // Names the pane by its label, or by its number when it has none.
+    private string Format(string key, TbSplitterPane pane) => string.Format(CultureInfo.CurrentCulture,
+        Localizer[key], pane.Label ?? string.Format(CultureInfo.CurrentCulture,
+            Localizer[TbStrings.SplitterPane], Splitter!.IndexOf(pane) + 1));
 
     private static string Round(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
 

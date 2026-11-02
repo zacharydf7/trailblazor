@@ -162,6 +162,66 @@ public class TbSplitterTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldGiveEachSeparatorAGripMenuOutOfTheTabOrder_WhenGivenPanes()
+    {
+        var cut = RenderSplitter(new Pane("Trails", 25, Collapsible: true), new Pane("Map"), new Pane("Details", 25));
+
+        var grips = cut.FindAll("[data-part=grip] > [data-part=trigger]");
+        Assert.Equal(["Size of Trails", "Size of Map"], grips.Select(grip => grip.GetAttribute("aria-label")));
+        Assert.All(grips, grip => Assert.Equal("-1", grip.GetAttribute("tabindex")));
+        Assert.Equal(["Make Trails larger", "Make Trails smaller", "Collapse Trails"], MenuItems(cut, 0));
+        Assert.Equal(["Make Map larger", "Make Map smaller"], MenuItems(cut, 1));
+    }
+
+    [Theory]
+    [InlineData(10, "Make Left larger")]
+    [InlineData(-10, "Make Left smaller")]
+    public void Grip_ShouldStepTheSeparatorBy10_WhenItsMenuResizes(double delta, string item)
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/splitter.js")
+            .SetupModule("attachSplitter", _ => true);
+        handle.Mode = JSRuntimeMode.Loose;
+        var cut = RenderSplitter(new Pane("Left", 30), new Pane("Right"));
+
+        MenuItem(cut, item).Click();
+
+        var step = handle.Invocations["step"].Single();
+        Assert.IsType<ElementReference>(step.Arguments[0]);
+        Assert.Equal(delta, step.Arguments[1]);
+    }
+
+    [Theory]
+    [InlineData(true, false, "Left", 0)]
+    [InlineData(false, true, "Right", 1)]
+    public void Grip_ShouldCollapseAndRestoreThePaneBeforeOrElseAfter_WhenItsMenuToggles(bool first, bool second,
+        string name, int collapsed)
+    {
+        SetUpScript();
+        var cut = RenderSplitter(new Pane("Left", 30, Collapsible: first), new Pane("Right", Collapsible: second));
+        var pane = () => cut.FindAll("[data-part=pane]")[collapsed];
+
+        MenuItem(cut, $"Collapse {name}").Click();
+        Assert.True(pane().HasAttribute("data-collapsed"));
+        MenuItem(cut, $"Restore {name}").Click();
+
+        Assert.False(pane().HasAttribute("data-collapsed"));
+    }
+
+    [Theory]
+    [InlineData(40, false, "true", null)]
+    [InlineData(15, false, null, "true")]
+    [InlineData(30, true, "true", "true")]
+    public void Render_ShouldDisableTheGripsSteps_WhenAPaneIsAtItsLimitOrCollapsed(double size, bool collapsed,
+        string? larger, string? smaller)
+    {
+        var cut = RenderSplitter(new Pane("Left", size, Collapsible: true, Collapsed: collapsed, MinSize: 15,
+            MaxSize: 40), new Pane("Right", MinSize: 10));
+
+        Assert.Equal(larger, MenuItem(cut, "Make Left larger").GetAttribute("aria-disabled"));
+        Assert.Equal(smaller, MenuItem(cut, "Make Left smaller").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenAPanesLimitsAreOutOfRange()
     {
         Assert.Throws<InvalidOperationException>(() => RenderSplitter(new Pane("Left", MinSize: 60, MaxSize: 40)));
@@ -180,6 +240,13 @@ public class TbSplitterTests : BunitContext
         module.SetupModule("attachSplitter", _ => true).Mode = JSRuntimeMode.Loose;
         return module;
     }
+
+    private static IEnumerable<string> MenuItems(IRenderedComponent<TbSplitter> cut, int grip) =>
+        cut.FindAll("[data-part=grip]")[grip].QuerySelectorAll("[role=menuitem]")
+            .Select(item => item.TextContent.Trim());
+
+    private static AngleSharp.Dom.IElement MenuItem(IRenderedComponent<TbSplitter> cut, string text) =>
+        cut.FindAll("[data-part=grip] [role=menuitem]").Single(item => item.TextContent.Trim() == text);
 
     private static string[] PaneIds(IRenderedComponent<TbSplitter> cut) =>
         [.. cut.FindAll(".tb-splitter > [data-part=pane]").Select(pane => pane.Id!)];

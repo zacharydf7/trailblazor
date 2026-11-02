@@ -411,8 +411,8 @@ public static class ExampleCatalog
             Blocks = ["tb-grid", "tb-grid-item"],
         },
         new("splitter", "Splitter", ExampleCategory.Layout,
-            "Lays out panes side by side or stacked, with separators that resize them by dragging or with the "
-                + "keyboard.", typeof(SplitterExample))
+            "Lays out panes side by side or stacked, with separators that resize them by dragging, with the "
+                + "keyboard or from a menu.", typeof(SplitterExample))
         {
             Api = [typeof(TbSplitter), typeof(TbSplitterPane)],
             Accessibility =
@@ -422,11 +422,16 @@ public static class ExampleCatalog
                 "On a separator, the arrows resize by 1% (10% with Shift), Home and End take the pane before it to "
                     + "its smallest and largest, and Enter collapses or restores a `Collapsible` pane.",
                 "A collapsed pane keeps its content but hides it from sight and from the tab order.",
-                "Dragging has the keyboard as its alternative, and works in right-to-left layouts.",
+                "Each separator has a grip in its middle, a menu `button` named \"Size of\" followed by the `Label` "
+                    + "of the pane before it. Dragging the grip resizes like dragging the separator, and a click or "
+                    + "tap opens its menu: Make larger and Make smaller (by 10%), plus Collapse or Restore for a "
+                    + "`Collapsible` pane. The menu is the single-pointer alternative to dragging (WCAG 2.5.7). The "
+                    + "grip stays out of the tab order, since the separator's keys do the same.",
+                "Dragging works in right-to-left layouts.",
             ],
             Target = new("separator", "Resize Trails"),
             Blocks = ["tb-splitter"],
-            DataParts = ["splitter", "pane", "separator"],
+            DataParts = ["splitter", "pane", "bar", "separator", "grip"],
             TestingTip = "Resize with the keys, as `var separator = page.GetByRole(AriaRole.Separator, new() { Name "
                 + "= \"Resize Trails\" }); await separator.FocusAsync(); await page.Keyboard.PressAsync(\"End\");`, "
                 + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`. Wait first for `data-ready` "

@@ -3885,22 +3885,59 @@
     }
 
     /* The pointer strip is wider than the 1px line but overlaps each pane by less than a scrollbar's width. */
-    .tb-splitter__separator {
+    .tb-splitter__bar {
         position: relative;
         z-index: 1;
+        display: flex;
         flex: none;
+        align-items: center;
+        justify-content: center;
         inline-size: 9px;
         margin-inline: -4px;
-        cursor: col-resize;
-        touch-action: none;
     }
 
-    .tb-splitter--vertical > .tb-splitter__separator {
+    .tb-splitter--vertical > .tb-splitter__bar {
         inline-size: auto;
         block-size: 9px;
         margin-inline: 0;
         margin-block: -4px;
+    }
+
+    .tb-splitter__separator {
+        position: absolute;
+        inset: 0;
+        cursor: col-resize;
+        touch-action: none;
+    }
+
+    .tb-splitter--vertical > .tb-splitter__bar > .tb-splitter__separator {
         cursor: row-resize;
+    }
+
+    /* The grip sits on the line's middle, and a drag from it resizes as the line does. It is kept to 24px across the
+       line, the smallest target WCAG 2.5.8 allows, because it covers the middle of each pane's edge, scrollbar
+       included. */
+    .tb-splitter__grip > [data-part="trigger"] {
+        position: relative;
+        min-inline-size: 24px;
+        inline-size: 24px;
+        border: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text-muted);
+        cursor: col-resize;
+        touch-action: none;
+        user-select: none;
+    }
+
+    .tb-splitter--vertical > .tb-splitter__bar > .tb-splitter__grip > [data-part="trigger"] {
+        inline-size: auto;
+        min-inline-size: max(24px, calc(var(--tb-control-height) - 8px));
+        block-size: 24px;
+        cursor: row-resize;
+    }
+
+    .tb-splitter--vertical > .tb-splitter__bar > .tb-splitter__grip svg {
+        rotate: 90deg;
     }
 
     .tb-splitter__separator::before {
@@ -3913,7 +3950,7 @@
         transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
-    .tb-splitter--vertical > .tb-splitter__separator::before {
+    .tb-splitter--vertical > .tb-splitter__bar > .tb-splitter__separator::before {
         inset-inline: 0;
         inset-block-start: 50%;
         inline-size: auto;

@@ -301,9 +301,24 @@ public static class TbStrings
     /// <summary>"Resize {0}": names a splitter's separator; {0} is the pane before it.</summary>
     public const string SplitterResize = "Splitter.Resize";
 
-    /// <summary>"pane {0}": stands in for a pane's label in a separator's name when it has none; {0} is its number.
-    /// </summary>
+    /// <summary>"pane {0}": stands in for a pane's label in a separator's name and its grip menu when the pane has
+    /// none; {0} is its number.</summary>
     public const string SplitterPane = "Splitter.Pane";
+
+    /// <summary>"Size of {0}": names the menu on a splitter's grip; {0} is the pane before it.</summary>
+    public const string SplitterMenu = "Splitter.Menu";
+
+    /// <summary>"Make {0} larger": a grip menu item that grows the pane before the grip by 10%.</summary>
+    public const string SplitterLarger = "Splitter.Larger";
+
+    /// <summary>"Make {0} smaller": a grip menu item that shrinks the pane before the grip by 10%.</summary>
+    public const string SplitterSmaller = "Splitter.Smaller";
+
+    /// <summary>"Collapse {0}": a grip menu item that collapses a collapsible pane.</summary>
+    public const string SplitterCollapse = "Splitter.Collapse";
+
+    /// <summary>"Restore {0}": a grip menu item that restores a collapsed pane.</summary>
+    public const string SplitterRestore = "Splitter.Restore";
 
     /// <summary>"Clear": names a text field's clear button.</summary>
     public const string TextFieldClear = "TextField.Clear";
@@ -548,6 +563,11 @@ public static class TbStrings
         [SelectClear] = "Clear",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
+        [SplitterMenu] = "Size of {0}",
+        [SplitterLarger] = "Make {0} larger",
+        [SplitterSmaller] = "Make {0} smaller",
+        [SplitterCollapse] = "Collapse {0}",
+        [SplitterRestore] = "Restore {0}",
         [TextFieldClear] = "Clear",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",
         [ThemePicker] = "Theme",
