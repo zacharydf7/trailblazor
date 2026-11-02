@@ -78,6 +78,21 @@
 </TbText>
 <CodeBlock Label="Token overrides" Code="@Overrides" />
 
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Other stylesheets</TbText>
+<TbText>
+    The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global reset such as
+    <code>* { margin: 0; padding: 0; }</code>, which many resets and some component libraries ship, then strips the
+    components' own spacing, and nothing warns about it: dialogs sit in the page's top corner, fields lose their inner
+    spacing and radio buttons lose their dot. If you see that, look for an unlayered rule from another stylesheet.
+</TbText>
+<TbText>
+    Put that stylesheet in a cascade layer of its own, ordered before Trailblazor's, so Trailblazor's styles win over
+    it and yours still win over both. The order has to be stated before <code>TbStyles</code> loads Trailblazor's
+    layers, and a stylesheet joins a layer when it is imported with <code>layer()</code>.
+</TbText>
+<CodeBlock Label="App.razor" Code="@LayerOrder" />
+<CodeBlock Label="app.css" Code="@LayerImport" />
+
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Your own palette</TbText>
 <TbText>
     A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
@@ -125,6 +140,21 @@
             --tb-font-family: "Inter", system-ui, sans-serif;
             --tb-radius-md: 2px;
         }
+        """;
+
+    private const string LayerOrder = """
+        <head>
+            @* Razor writes a literal @ as @@. *@
+            <style>@@layer vendor, tb;</style>
+            <TbStyles />
+            <link rel="stylesheet" href="app.css" />
+        </head>
+        """;
+
+    private const string LayerImport = """
+        @import url("_content/OtherLibrary/other.css") layer(vendor);
+
+        /* Your own rules stay outside any layer, so they win over both. */
         """;
 
     private const string Font = """

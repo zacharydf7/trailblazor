@@ -28,7 +28,9 @@
 <TbText>
     Put <code>&lt;TbStyles /&gt;</code> in the <code>&lt;head&gt;</code> of App.razor, outside the
     <code>HeadOutlet</code>. It renders once with the page, so the styles never drop out when the page becomes
-    interactive. A standalone WebAssembly app links the file in its index.html instead.
+    interactive. A standalone WebAssembly app links the file in its index.html instead. If the app also loads another
+    library's CSS, see <a href="guides/theming">Other stylesheets</a> in the theming guide, since a reset in it can
+    strip the components' spacing.
 </TbText>
 <CodeBlock Label="App.razor" Code="@Head" />
 <CodeBlock Label="index.html, standalone WebAssembly" Code="@IndexHead" />
