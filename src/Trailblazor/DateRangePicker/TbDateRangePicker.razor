@@ -128,7 +128,7 @@
                                     <td aria-selected="@(IsSelected(date) ? "true" : null)">
                                         <button type="button" data-part="day" data-date="@Iso(date)"
                                                 tabindex="@(date == _focus ? 0 : -1)"
-                                                aria-label="@date.ToString("D", DateCulture)"
+                                                aria-label="@DayName(date)"
                                                 aria-disabled="@(IsUnavailable(date) ? "true" : null)"
                                                 aria-current="@(date == Today ? "date" : null)" class="@DayClass(date)"
                                                 @onclick="() => PickAsync(date)">

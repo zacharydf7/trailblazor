@@ -249,6 +249,8 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         }
 
         await CommitAsync(start, day);
+        Announcer.Polite(string.Format(DateCulture, ChosenLabel, start.ToString("D", DateCulture),
+            day.ToString("D", DateCulture)));
         await CloseAsync();
     }
 
@@ -371,10 +373,23 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
             _ => false,
         };
 
+    private bool IsStart(DateOnly date) => date == (_anchor ?? StartDate);
+
+    private bool IsEnd(DateOnly date) => _anchor is null && date == EndDate;
+
+    // The ends of the range name which end they are; the days between keep just their date, and aria-selected marks
+    // them.
+    private string DayName(DateOnly date)
+    {
+        var name = date.ToString("D", DateCulture);
+        name = IsStart(date) ? $"{name}, {StartLabel}" : name;
+        return IsEnd(date) ? $"{name}, {EndLabel}" : name;
+    }
+
     private string DayClass(DateOnly date) => ClassNames.Join("tb-date-range__day",
         IsSelected(date) ? "tb-date-range__day--selected" : null,
-        date == (_anchor ?? StartDate) ? "tb-date-range__day--start" : null,
-        _anchor is null && date == EndDate ? "tb-date-range__day--end" : null,
+        IsStart(date) ? "tb-date-range__day--start" : null,
+        IsEnd(date) ? "tb-date-range__day--end" : null,
         date == Today ? "tb-date-range__day--today" : null);
 
     // The month's days in weeks, with null for the days of the months either side.
@@ -435,6 +450,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private string PresetsLabel => Labels.Presets ?? Localizer[TbStrings.DateRangePickerPresets];
     private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.DateRangePickerClear];
     private string ChooseEndLabel => Labels.ChooseEnd ?? Localizer[TbStrings.DateRangePickerChooseEnd];
+    private string ChosenLabel => Labels.Chosen ?? Localizer[TbStrings.DateRangePickerChosen];
     private string BadStartLabel => Labels.BadStart ?? Localizer[TbStrings.DateRangePickerBadStart];
     private string BadEndLabel => Labels.BadEnd ?? Localizer[TbStrings.DateRangePickerBadEnd];
     private string UnavailableLabel => Labels.Unavailable ?? Localizer[TbStrings.DateRangePickerUnavailable];

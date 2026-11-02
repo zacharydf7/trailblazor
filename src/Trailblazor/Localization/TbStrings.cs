@@ -70,10 +70,12 @@ public static class TbStrings
     /// <summary>"Enter a color as #RRGGBB.": shown when the typed color can't be read.</summary>
     public const string ColorPickerBadColor = "ColorPicker.BadColor";
 
-    /// <summary>"Start date": names a date range's start field.</summary>
+    /// <summary>"Start date": names a date range's start field, and is added to the start day's name in the calendar.
+    /// </summary>
     public const string DateRangePickerStart = "DateRangePicker.Start";
 
-    /// <summary>"End date": names a date range's end field.</summary>
+    /// <summary>"End date": names a date range's end field, and is added to the end day's name in the calendar.
+    /// </summary>
     public const string DateRangePickerEnd = "DateRangePicker.End";
 
     /// <summary>"Choose dates": names the button that opens the calendar.</summary>
@@ -93,6 +95,9 @@ public static class TbStrings
 
     /// <summary>"Now choose the end date.": announced once the start date is chosen.</summary>
     public const string DateRangePickerChooseEnd = "DateRangePicker.ChooseEnd";
+
+    /// <summary>"{0} to {1}": announced once the end date is chosen; {0} and {1} are the two dates.</summary>
+    public const string DateRangePickerChosen = "DateRangePicker.Chosen";
 
     /// <summary>"Enter the start date as {0}.": shown when the start can't be read; {0} is the date format.</summary>
     public const string DateRangePickerBadStart = "DateRangePicker.BadStart";
@@ -497,6 +502,7 @@ public static class TbStrings
         [DateRangePickerPresets] = "Presets",
         [DateRangePickerClear] = "Clear",
         [DateRangePickerChooseEnd] = "Now choose the end date.",
+        [DateRangePickerChosen] = "{0} to {1}",
         [DateRangePickerBadStart] = "Enter the start date as {0}.",
         [DateRangePickerBadEnd] = "Enter the end date as {0}.",
         [DateRangePickerUnavailable] = "{0} can't be chosen.",

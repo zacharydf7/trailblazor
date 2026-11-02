@@ -5390,15 +5390,32 @@
         }
     }
 
-    /* Forced colors drop the backgrounds, so chosen days are drawn in the system's highlight colors. */
+    /* Forced colors drop the backgrounds, so chosen days are drawn in the system's highlight colors, the ends with an
+       outline as well, and a preview only with a dashed outline, so it can't be taken for a chosen range. */
     @media (forced-colors: active) {
         .tb-date-range__day--selected,
-        .tb-date-range__day[data-preview],
         .tb-date-range__day--start,
         .tb-date-range__day--end {
             forced-color-adjust: none;
             background: Highlight;
             color: HighlightText;
+        }
+
+        .tb-date-range__day[data-preview] {
+            forced-color-adjust: none;
+            background: Canvas;
+            color: CanvasText;
+        }
+
+        /* A focused day keeps its focus ring instead. */
+        .tb-date-range__day:is(.tb-date-range__day--start, .tb-date-range__day--end):not(:focus-visible) {
+            outline: 2px solid CanvasText;
+            outline-offset: -2px;
+        }
+
+        .tb-date-range__day[data-preview]:not(:focus-visible) {
+            outline: 1px dashed Highlight;
+            outline-offset: -1px;
         }
 
         .tb-date-range__day[aria-disabled="true"] {

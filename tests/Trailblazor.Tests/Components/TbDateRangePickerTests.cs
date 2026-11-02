@@ -62,6 +62,30 @@ public class TbDateRangePickerTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldSayWhichEndOfTheRangeADayIs_WhenGivenARange()
+    {
+        var cut = RenderPicker(June3To10);
+
+        Assert.Equal("Wednesday, June 3, 2026, Start date", Day(cut, "2026-06-03").GetAttribute("aria-label"));
+        Assert.Equal("Friday, June 5, 2026", Day(cut, "2026-06-05").GetAttribute("aria-label"));
+        Assert.Equal("Wednesday, June 10, 2026, End date", Day(cut, "2026-06-10").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Pick_ShouldAnnounceTheChosenRange_WhenTheEndIsPicked()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPicker(June3To10);
+
+        Day(cut, "2026-06-12").Click();
+        Assert.Equal("Friday, June 12, 2026, Start date", Day(cut, "2026-06-12").GetAttribute("aria-label"));
+        Day(cut, "2026-06-15").Click();
+
+        Assert.Contains("Friday, June 12, 2026 to Monday, June 15, 2026",
+            announcer.Find("[role=status]").TextContent);
+    }
+
+    [Fact]
     public void Pick_ShouldRaiseTheRangeOnce_WhenTheEndIsPicked()
     {
         var cut = RenderPicker(June3To10);

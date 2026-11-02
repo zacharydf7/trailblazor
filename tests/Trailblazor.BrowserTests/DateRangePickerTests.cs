@@ -32,7 +32,7 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Calendar_ShouldOpenOnTheStartAndCommitTheRange_WhenTwoDaysArePicked(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);
-        await Expect(Day(page, "Wednesday, June 3, 2026")).ToBeFocusedAsync();
+        await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
         await Expect(Calendar(page).GetByRole(AriaRole.Grid)).ToHaveCountAsync(2);
 
         await Day(page, "Friday, June 12, 2026").ClickAsync();
@@ -105,6 +105,25 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldOutlineTheEndsAndDashThePreview_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser, options: new() { ForcedColors = ForcedColors.Active });
+        await Day(page, "Monday, June 22, 2026").ClickAsync();
+        var start = Day(page, "Monday, June 22, 2026, Start date");
+
+        await Day(page, "Friday, June 26, 2026").HoverAsync();
+
+        await Expect(start).ToHaveCSSAsync("outline-style", "solid");
+        await Expect(Calendar(page).Locator("[data-preview]").Last).ToHaveCSSAsync("outline-style", "dashed");
+        // A day the arrows move to keeps its focus ring inside the preview.
+        await page.Keyboard.PressAsync("ArrowRight");
+        var focused = Day(page, "Tuesday, June 23, 2026");
+        await Expect(focused).ToBeFocusedAsync();
+        await Expect(focused).ToHaveAttributeAsync("data-preview", "");
+        await Expect(focused).ToHaveCSSAsync("outline-style", "solid");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldPreviewTheRange_WhenThePointerRestsOnALaterDay(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);
@@ -127,7 +146,7 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Escape");
         await trigger.ClickAsync();
 
-        await Expect(Day(page, "Wednesday, June 3, 2026")).ToBeFocusedAsync();
+        await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
         await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(0);
     }
 
@@ -278,7 +297,8 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenWithCalendarAsync(browser);
         await Day(page, "Monday, June 15, 2026").HoverAsync();
         var hovered = await page.RunAxe(AxeTests.WcagAA);
-        var day = Day(page, "Monday, June 22, 2026");
+        // Found by its date, since picking it adds "Start date" to its name.
+        var day = Calendar(page).Locator("[data-date='2026-06-22']");
         await day.ClickAsync();
         // The click's round trip to the server adds the start class after ClickAsync returns.
         await Expect(day).ToHaveClassAsync(new Regex("tb-date-range__day--start"));

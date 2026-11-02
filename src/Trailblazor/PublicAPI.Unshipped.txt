@@ -62,6 +62,7 @@ const Trailblazor.TbStrings.DataGridUnsorted = "DataGrid.Unsorted" -> string!
 const Trailblazor.TbStrings.DateRangePickerBadEnd = "DateRangePicker.BadEnd" -> string!
 const Trailblazor.TbStrings.DateRangePickerBadStart = "DateRangePicker.BadStart" -> string!
 const Trailblazor.TbStrings.DateRangePickerChooseEnd = "DateRangePicker.ChooseEnd" -> string!
+const Trailblazor.TbStrings.DateRangePickerChosen = "DateRangePicker.Chosen" -> string!
 const Trailblazor.TbStrings.DateRangePickerClear = "DateRangePicker.Clear" -> string!
 const Trailblazor.TbStrings.DateRangePickerEnd = "DateRangePicker.End" -> string!
 const Trailblazor.TbStrings.DateRangePickerEndBeforeStart = "DateRangePicker.EndBeforeStart" -> string!
@@ -595,6 +596,8 @@ Trailblazor.DateRangePickerLabels.BadStart.get -> string?
 Trailblazor.DateRangePickerLabels.BadStart.init -> void
 Trailblazor.DateRangePickerLabels.ChooseEnd.get -> string?
 Trailblazor.DateRangePickerLabels.ChooseEnd.init -> void
+Trailblazor.DateRangePickerLabels.Chosen.get -> string?
+Trailblazor.DateRangePickerLabels.Chosen.init -> void
 Trailblazor.DateRangePickerLabels.Clear.get -> string?
 Trailblazor.DateRangePickerLabels.Clear.init -> void
 Trailblazor.DateRangePickerLabels.DateRangePickerLabels() -> void

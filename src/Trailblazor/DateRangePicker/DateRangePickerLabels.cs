@@ -3,12 +3,12 @@ namespace Trailblazor;
 /// <summary>The words a <see cref="TbDateRangePicker{TDate}"/> shows and says to screen readers.</summary>
 public sealed record DateRangePickerLabels
 {
-    /// <summary>Names the start date's box, after the field's label. Leave it null for the app's text for <see
-    /// cref="TbStrings.DateRangePickerStart"/>.</summary>
+    /// <summary>Names the start date's box, after the field's label, and is added to the start day's name in the
+    /// calendar. Leave it null for the app's text for <see cref="TbStrings.DateRangePickerStart"/>.</summary>
     public string? Start { get; init; }
 
-    /// <summary>Names the end date's box, after the field's label. Leave it null for the app's text for <see
-    /// cref="TbStrings.DateRangePickerEnd"/>.</summary>
+    /// <summary>Names the end date's box, after the field's label, and is added to the end day's name in the
+    /// calendar. Leave it null for the app's text for <see cref="TbStrings.DateRangePickerEnd"/>.</summary>
     public string? End { get; init; }
 
     /// <summary>Names the button that opens the calendar, and the calendar itself. Leave it null for the app's text for
@@ -34,6 +34,10 @@ public sealed record DateRangePickerLabels
     /// <summary>Said once the start is picked in the calendar. Leave it null for the app's text for <see
     /// cref="TbStrings.DateRangePickerChooseEnd"/>.</summary>
     public string? ChooseEnd { get; init; }
+
+    /// <summary>Said once the end is picked in the calendar, with <c>{0}</c> and <c>{1}</c> for the two dates. Leave
+    /// it null for the app's text for <see cref="TbStrings.DateRangePickerChosen"/>.</summary>
+    public string? Chosen { get; init; }
 
     /// <summary>The message for a start date that can't be read, with <c>{0}</c> for the format, such as MM/DD/YYYY.
     /// Leave it null for the app's text for <see cref="TbStrings.DateRangePickerBadStart"/>.</summary>

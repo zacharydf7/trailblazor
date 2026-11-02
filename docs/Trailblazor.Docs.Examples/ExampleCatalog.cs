@@ -1089,10 +1089,15 @@ public static class ExampleCatalog
                 "The calendar is a `dialog` with a `grid` for each month. Arrows move by a day or a week, Home and End "
                     + "go to the start or end of the week, Page Up and Page Down change the month, and with Shift the "
                     + "year. Enter or Space picks a day; Escape closes and returns focus to the button.",
-                "Days in the range are `aria-selected`, today is `aria-current=\"date\"`, and days that can't be "
-                    + "chosen are `aria-disabled` but can still be reached, so the user hears why.",
+                "Days in the range are `aria-selected`, and its first and last days add \"Start date\" and \"End "
+                    + "date\" to their names. Today is `aria-current=\"date\"`, and days that can't be chosen are "
+                    + "`aria-disabled` but can still be reached, so the user hears why.",
                 "A date that can't be read says which box and the format to use, and marks that box `aria-invalid`. "
-                    + "Picking the start announces that the end comes next.",
+                    + "Picking the start announces that the end comes next, and picking the end announces the range, "
+                    + "such as \"Friday, June 12, 2026 to Monday, June 15, 2026\".",
+                "In forced-colors mode, such as Windows high contrast, the range's days take the system's highlight, "
+                    + "its first and last days add an outline, and the range previewed under the pointer has only a "
+                    + "dashed outline, so it can't be taken for a chosen range.",
                 "Before the page is interactive it shows the browser's own date boxes, so a static form still posts "
                     + "both dates.",
                 "`ReadOnly` keeps the dates from changing: the boxes can't be edited, the calendar button turns off "
