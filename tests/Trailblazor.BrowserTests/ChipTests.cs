@@ -61,19 +61,14 @@ public class ChipTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/chip", new() { ForcedColors = ForcedColors.Active });
 
-        var colors = await page.EvaluateAsync<string[]>("""
-            () => ['CanvasText', 'Highlight'].map(color => {
-                const probe = document.body.appendChild(document.createElement('div'));
-                probe.style.cssText = `forced-color-adjust: none; color: ${color}`;
-                return getComputedStyle(probe).color;
-            })
-            """);
+        var text = await SystemColorAsync(page, "CanvasText");
 
         foreach (var chip in await page.Locator(".tb-chip:not(.tb-chip--selected)").AllAsync())
         {
-            await Expect(chip).ToHaveCSSAsync("border-top-color", colors[0]);
+            await Expect(chip).ToHaveCSSAsync("border-top-color", text);
         }
 
-        await Expect(page.Locator(".tb-chip--selected")).ToHaveCSSAsync("border-top-color", colors[1]);
+        await Expect(page.Locator(".tb-chip--selected"))
+            .ToHaveCSSAsync("border-top-color", await SystemColorAsync(page, "Highlight"));
     }
 }

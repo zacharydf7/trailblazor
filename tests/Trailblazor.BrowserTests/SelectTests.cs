@@ -384,13 +384,7 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Option(page, "Cheese")).ToHaveAttributeAsync("aria-selected", "true");
 
         // Forced colors still give the box a fill, the page's own background color, so only Highlight stands out.
-        var highlight = await page.EvaluateAsync<string>("""
-            () => {
-                const probe = document.body.appendChild(document.createElement('div'));
-                probe.style.cssText = 'forced-color-adjust: none; background: Highlight';
-                return getComputedStyle(probe).backgroundColor;
-            }
-            """);
+        var highlight = await SystemColorAsync(page, "Highlight");
         var chosen = await Option(page, "Cheese")
             .EvaluateAsync<string>("option => getComputedStyle(option, '::before').backgroundColor");
 

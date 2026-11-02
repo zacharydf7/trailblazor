@@ -32,24 +32,53 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         AssertNoViolations(await page.RunAxe(WcagAA));
     }
 
-    // Overlays aren't on the page until they open, so examples with an opener are also checked while open. A menu's
-    // and a toggletip's example targets are their buttons, so the popups those buttons open are listed here.
-    private static readonly Dictionary<string, TestTarget> Opened = new()
+    // Popups aren't on the page until they open, so examples with one are also checked while open: those whose
+    // target has an opener, and those listed here, whose target is the control or field the popup opens from.
+    private sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
+
+    private static readonly Dictionary<string, Opening> Opened = new()
     {
-        ["menu"] = new("menu", "Actions") { OpenedBy = new("button", "Actions") },
-        ["label"] = new("dialog", "Information about Project code")
+        ["menu"] = new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync()),
+        ["label"] = new(new("dialog", "Information about Project code"),
+            page => Button(page, "Information about Project code").ClickAsync()),
+        ["select"] = new(new("listbox", "Shipping"),
+            page => ClickWhenReadyAsync(page.GetByRole(AriaRole.Combobox, new() { Name = "Shipping" }))),
+        ["autocomplete"] = new(new("listbox", "Trailhead"), async page =>
         {
-            OpenedBy = new("button", "Information about Project code"),
-        },
+            var field = page.GetByRole(AriaRole.Combobox, new() { Name = "Trailhead" });
+            await Expect(field).ToHaveAttributeAsync("data-ready", "");
+            await field.PressSequentiallyAsync("ridge");
+            await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Trailhead" }).GetByRole(AriaRole.Option))
+                .ToHaveCountAsync(2);
+        }),
+        ["date-range-picker"] = new(new("dialog", "Choose dates"),
+            page => ClickWhenReadyAsync(page.GetByRole(AriaRole.Group, new() { Name = "Trip dates" })
+                .GetByRole(AriaRole.Button, new() { Name = "Choose dates" }))),
+        ["color-picker"] = new(new("dialog", "Choose a color"),
+            page => ClickWhenReadyAsync(ColorPickerTests.Field(page, "Trail marker")
+                .GetByRole(AriaRole.Button, new() { Name = "Choose a color" }))),
     };
 
-    private static TestTarget? OpenedTarget(Example example) =>
-        Opened.GetValueOrDefault(example.Name) ?? (example.Target?.OpenedBy is null ? null : example.Target);
+    private static ILocator Button(IPage page, string name) =>
+        page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
+    // A control whose script opens its popup is clicked once the script has attached.
+    private static async Task ClickWhenReadyAsync(ILocator control)
+    {
+        await Expect(control).ToHaveAttributeAsync("data-ready", "");
+        await control.ClickAsync();
+    }
+
+    private static Opening? OpeningOf(Example example) =>
+        Opened.GetValueOrDefault(example.Name) ?? (example.Target is { OpenedBy: { } opener } target
+            ? new(target, page => target.OpenOnHover ? ExampleTargetTests.Find(page, opener).HoverAsync()
+                : ExampleTargetTests.Find(page, opener).ClickAsync(), target.OpenOnHover)
+            : null);
 
     public static TheoryData<string, string, string> OpenedExamplesInBothThemes => new(
         from browser in AllBrowsers.Names
         from example in ExampleCatalog.All
-        where OpenedTarget(example) is not null
+        where OpeningOf(example) is not null
         from theme in new[] { "light", "dark" }
         select (browser, example.Name, theme));
 
@@ -57,15 +86,14 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Example_ShouldHaveNoAccessibilityViolations_WhenOpenInTheme(string browser, string example,
         string theme)
     {
-        var target = OpenedTarget(ExampleCatalog.Find(example)!)!;
+        var opening = OpeningOf(ExampleCatalog.Find(example)!)!;
         var page = await OpenAsync(browser, $"/examples/{example}");
         await SetThemeAsync(page, theme);
-        var opener = ExampleTargetTests.Find(page, target.OpenedBy!);
-        await (target.OpenOnHover ? opener.HoverAsync() : opener.ClickAsync());
-        var shown = ExampleTargetTests.Find(page, target);
+        await opening.OpenAsync(page);
+        var shown = ExampleTargetTests.Find(page, opening.Shown);
         await Expect(shown).ToBeVisibleAsync();
         // Hovering the shown component keeps a toast from timing out while axe runs.
-        if (!target.OpenOnHover)
+        if (!opening.ByHover)
         {
             await shown.HoverAsync();
         }

@@ -104,13 +104,7 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/badge", new() { ForcedColors = ForcedColors.Active });
 
-        var text = await page.EvaluateAsync<string>("""
-            () => {
-                const probe = document.body.appendChild(document.createElement('div'));
-                probe.style.cssText = 'forced-color-adjust: none; color: CanvasText';
-                return getComputedStyle(probe).color;
-            }
-            """);
+        var text = await SystemColorAsync(page, "CanvasText");
 
         foreach (var badge in await page.Locator("[data-part=badge]").AllAsync())
         {

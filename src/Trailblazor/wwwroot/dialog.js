@@ -164,7 +164,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
             || event.clientY < box.top || event.clientY > box.bottom;
     };
 
-    // Escape is stopped on keydown: cancelling the dialog's cancel event fails on a second press in every engine.
+    // Escape is stopped on keydown: canceling the dialog's cancel event fails on a second press in every engine.
     // It is heard as it bubbles, so whatever inside used it first, such as an autocomplete list or a drag, keeps it.
     // An open menu, a shown tooltip and a focused toast take Escape first too. The newest dialog takes it, and so does
     // a modeless one with focus, since that is the window the user is working in; focus in a dialog nested inside it
