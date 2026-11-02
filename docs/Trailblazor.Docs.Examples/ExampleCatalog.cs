@@ -917,7 +917,8 @@ public static class ExampleCatalog
             [
                 "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
                 "A `combobox` named by its `Label` that opens a `listbox` of `option`s. Focus stays on the "
-                    + "combobox, which points to the active option with `aria-activedescendant`.",
+                    + "combobox, which points to the active option with `aria-activedescendant`. In a single select "
+                    + "the chosen option shows a check, not only bolder text.",
                 "While closed: Down, Up, Enter or Space opens it, Home and End open it on the first or last "
                     + "option, and typing jumps to an option that starts with what was typed.",
                 "While open: the arrows, Home and End move; Enter or Space chooses; Escape closes. In a single "
@@ -941,11 +942,12 @@ public static class ExampleCatalog
                 "With `Chips`, each chosen option shows as a chip. Backspace removes the last one and each chip has a "
                     + "remove button for the pointer; a removal is announced, and options can still be deselected in "
                     + "the list.",
-                "With `Filterable`, opening the list moves focus to a filter box above it, a `combobox` with "
-                    + "`aria-autocomplete=\"list\"` named by `Labels.Filter`. Typing on the closed select starts the "
-                    + "filter. Matching ignores case and accents, groups with no matches hide, and `Labels.NoResults` "
-                    + "is announced when nothing matches. Up and Down move, Enter chooses, Escape closes and returns "
-                    + "focus to the select.",
+                "With `Filterable`, the select's popup is a `dialog` named by its `Label`, and the select announces "
+                    + "it with `aria-haspopup=\"dialog\"`. Opening it moves focus to a filter box above the list, a "
+                    + "`combobox` with `aria-autocomplete=\"list\"` named by `Labels.Filter`. Typing on the closed "
+                    + "select starts the filter. Matching ignores case and accents, groups with no matches hide, and "
+                    + "`Labels.NoResults` is announced when nothing matches. Up and Down move, Enter chooses, Escape "
+                    + "closes and returns focus to the select.",
                 "`ReadOnly` keeps the select focusable and posted, but it doesn't open and its chips can't be "
                     + "removed; screen readers hear it as read only. Before the page is interactive, the native select "
                     + "puts its choice back whenever the user changes it.",
@@ -954,7 +956,7 @@ public static class ExampleCatalog
             Blocks = ["tb-field", "tb-select"],
             DataParts = [.. FieldParts, "input", "placeholder", "value",
                 "chips", "chip", "chip-remove", "clear", "chevron", "popup", "filter", "listbox", "group",
-                "group-label", "option", "select-all", "no-results"],
+                "group-label", "option", "check", "select-all", "no-results"],
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "

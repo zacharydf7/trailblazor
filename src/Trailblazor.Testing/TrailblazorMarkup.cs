@@ -125,8 +125,10 @@ public sealed class TbSelectDriver
     {
         var control = _find();
         Choices.ThrowIfStaticOrDisabled(control);
-        return (OptionElements(),
-            _findAll($"[id='{control.GetAttribute("aria-controls")}'][aria-multiselectable=true]").Count > 0);
+        // A filterable select points to the dialog that holds its filter and listbox.
+        var controls = control.GetAttribute("aria-controls");
+        return (OptionElements(), _findAll($"[id='{controls}'][aria-multiselectable=true], "
+            + $"[id='{controls}'] [aria-multiselectable=true]").Count > 0);
     }, options);
 
     private IEnumerable<IElement> OptionElements()

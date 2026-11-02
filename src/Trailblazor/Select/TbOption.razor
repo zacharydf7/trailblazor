@@ -11,6 +11,11 @@
          aria-selected="@(Select!.IsSelected(Value) ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
          data-part="option" class="@ClassNames.Join("tb-select__option", Class)" style="@Style" @onclick="ChooseAsync">
         @Content
+        @if (Select.ShowsCheck && Select.IsSelected(Value))
+        {
+            <TbIcon Icon="BuiltInIcons.Check" Size="Size.Small" Tone="Tone.Primary" data-part="check"
+                    class="tb-select__check" />
+        }
     </div>
 }
 else

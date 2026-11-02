@@ -142,7 +142,9 @@ public sealed class TbSelectLocator(IPage page, ILocator field)
 
         // The keys and clicks work once the select's script has attached.
         await Assertions.Expect(control).ToHaveAttributeAsync("data-ready", "");
-        var listbox = page.Locator($"[id='{await control.GetAttributeAsync("aria-controls")}']");
+        // A filterable select points to the dialog that holds its filter and listbox.
+        var controls = await control.GetAttributeAsync("aria-controls");
+        var listbox = page.Locator($"[id='{controls}'][role=listbox], [id='{controls}'] [role=listbox]");
         NativeSelect.ThrowIfSeveral(options, await listbox.GetAttributeAsync("aria-multiselectable") == "true",
             "select");
         // The keyboard opens the list, since a click could land on a chip's remove button.

@@ -3479,6 +3479,12 @@
         font-weight: var(--tb-font-weight-medium);
     }
 
+    .tb-select__check {
+        flex: none;
+        margin-inline-start: auto;
+        padding-inline-start: var(--tb-space-2);
+    }
+
     .tb-select__select-all {
         margin-block-end: var(--tb-space-1);
         border-block-end: 1px solid var(--tb-border-subtle);

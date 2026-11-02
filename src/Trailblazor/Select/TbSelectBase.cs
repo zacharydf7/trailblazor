@@ -98,6 +98,8 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
 
     private string ListboxId => $"{FieldId}-listbox";
 
+    private string PopupId => $"{FieldId}-popup";
+
     // Razor only finds public components by tag, so the internal display is added here.
     private RenderFragment Display => builder =>
     {
@@ -199,6 +201,8 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
     }
 
     bool ISelect.IsSelected(object? value) => IsChosen(value);
+
+    bool ISelect.ShowsCheck => !Multiple;
 
     string? ISelect.Format(object? value) => FormatItem(value);
 

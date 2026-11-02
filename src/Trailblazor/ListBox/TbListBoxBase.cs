@@ -82,6 +82,8 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
 
     bool ISelect.IsSelected(object? value) => IsChosen(value);
 
+    bool ISelect.ShowsCheck => false;
+
     string? ISelect.Format(object? value) => FormatItem(value);
 
     async Task<bool> ISelect.ChooseAsync(object? value, string input)

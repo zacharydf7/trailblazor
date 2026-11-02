@@ -99,6 +99,19 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Select_ShouldChooseEachOption_WhenAMultipleSelectIsFilterable()
+    {
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Label, "Toppings")
+            .Add(select => select.Filterable, true).Add(select => select.Value, _toppings)
+            .Add(select => select.ValueChanged, (IReadOnlyList<string> value) => _toppings = value)
+            .Add(select => select.ChildContent, Options("Olives", "Basil", "Garlic")));
+
+        await cut.Tb().Select("Toppings").ChooseAsync("Olives", "Basil");
+
+        Assert.Equal(["Olives", "Basil"], _toppings);
+    }
+
+    [Fact]
     public async Task Select_ShouldChooseEachOptionAndShowThemAll_WhenTheSelectIsMultiple()
     {
         var cut = RenderForm();

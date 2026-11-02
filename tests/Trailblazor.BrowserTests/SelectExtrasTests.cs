@@ -254,6 +254,16 @@ public class SelectExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldChooseEachOption_WhenAMultipleSelectIsFilterable(string browser)
+    {
+        var page = await OpenExtrasAsync(browser);
+
+        await page.Tb().Select("Parks").ChooseAsync("Pine Hollow", "Cedar Flats");
+
+        await Expect(page.GetByTestId("parks")).ToHaveTextAsync("Pine Hollow, Cedar Flats");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldHaveNoAccessibilityViolations_WhenOpenWithAFilter(string browser)
     {
         var page = await OpenExtrasAsync(browser);

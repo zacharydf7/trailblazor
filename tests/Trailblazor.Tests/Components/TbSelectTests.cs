@@ -37,6 +37,41 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldControlADialogNamedByTheLabel_WhenFilterable()
+    {
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Size")
+            .Add(select => select.Filterable, true)
+            .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "Small")));
+
+        var combobox = cut.Find("[role=combobox]");
+        Assert.Equal("dialog", combobox.GetAttribute("aria-haspopup"));
+        var popup = cut.Find($"#{combobox.GetAttribute("aria-controls")}");
+        Assert.Equal("dialog", popup.GetAttribute("role"));
+        Assert.Equal(cut.Find("label").Id, popup.GetAttribute("aria-labelledby"));
+        Assert.Single(popup.QuerySelectorAll("[role=listbox]"));
+    }
+
+    [Fact]
+    public void Render_ShouldCheckOnlyTheChosenOption_WhenASingleSelectHasAValue()
+    {
+        var cut = RenderSelect("Medium");
+
+        Assert.Equal(["Medium"], cut.FindAll("[role=option]:has([data-part=check])")
+            .Select(option => option.TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheChecksToTheBoxes_WhenTheSelectIsMultiple()
+    {
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Label, "Toppings")
+            .Add(select => select.Value, ["Olives"])
+            .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "Olives")));
+
+        Assert.Equal("true", cut.Find("[role=option]").GetAttribute("aria-selected"));
+        Assert.Empty(cut.FindAll("[data-part=check]"));
+    }
+
+    [Fact]
     public void Click_ShouldKeepTheValueAndHideClear_WhenReadOnly()
     {
         var cut = RenderSelect("Small");

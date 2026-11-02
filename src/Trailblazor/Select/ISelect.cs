@@ -8,6 +8,10 @@ internal interface ISelect
 {
     bool IsSelected(object? value);
 
+    // A single select marks its chosen option with a check; multiple selection already shows checkboxes, and a single
+    // listbox a fill.
+    bool ShowsCheck { get; }
+
     string? Format(object? value);
 
     Task<bool> ChooseAsync(object? value, string input);
