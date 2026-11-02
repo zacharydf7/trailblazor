@@ -27,7 +27,7 @@ public class ExampleTargetTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Find(page, target)).ToBeVisibleAsync();
     }
 
-    private static ILocator Find(IPage page, TestTarget target)
+    internal static ILocator Find(IPage page, TestTarget target)
     {
         var role = Enum.Parse<AriaRole>(target.Role, ignoreCase: true);
         return target.Text is null
