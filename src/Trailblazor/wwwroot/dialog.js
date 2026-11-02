@@ -7,7 +7,8 @@ const focusableSelector = ['a[href]', 'button:not([disabled])', 'input:not([disa
     .map(selector => `${selector}:not([tabindex="-1"])`)
     .join(', ');
 
-// Open dialogs, oldest first; keys go to the newest, so a nested dialog closes before the one beneath it.
+// Open dialogs, oldest first; keys go to the newest, or to a modeless one that has focus, so a nested dialog closes
+// before the one beneath it.
 const stack = [];
 
 // Minimized dialogs, in the order they were minimized, set out in rows from the bottom-end corner.
@@ -169,9 +170,13 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
 
     // Escape is stopped on keydown: cancelling the dialog's cancel event fails on a second press in every engine.
     // It is heard as it bubbles, so whatever inside used it first, such as an autocomplete list or a drag, keeps it.
-    // An open menu, a shown tooltip and a focused toast take Escape first too.
+    // An open menu, a shown tooltip and a focused toast take Escape first too. The newest dialog takes it, and so does
+    // a modeless one with focus, since that is the window the user is working in; focus in a dialog nested inside it
+    // belongs to the nested one.
     const onKeyDown = event => {
-        if (event.key !== 'Escape' || event.defaultPrevented || stack.at(-1) !== entry
+        const newest = stack.at(-1) === entry;
+        if (event.key !== 'Escape' || event.defaultPrevented
+            || !(newest || !entry.modal && document.activeElement?.closest('dialog') === dialog)
             || dialog.querySelector('[popover]:not([popover="manual"]):popover-open, [role="tooltip"]:popover-open')
             || event.target.closest?.('[data-part="toaster"]')) {
             return;

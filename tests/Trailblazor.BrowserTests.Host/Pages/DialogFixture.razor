@@ -34,14 +34,25 @@
     <TbButton OnClick="SuggestAsync">Suggest</TbButton>
     <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
     <input aria-label="Page note" />
+    <TbButton OnClick="() => _outer = true">Outer</TbButton>
 </TbStack>
 <output data-testid="result">@_result</output>
+@* A modeless dialog with another written inside it, so the inner one is in the outer one's markup. *@
+<TbDialog @bind-Open="_outer" Title="Outer" Options="Modeless">
+    <TbButton OnClick="() => _inner = true">Inner</TbButton>
+    <TbDialog @bind-Open="_inner" Title="Inner" Options="Modeless">
+        <TbButton>Inside</TbButton>
+    </TbDialog>
+</TbDialog>
 <output data-testid="page-clicks">@_pageClicks</output>
 @* Tall enough to scroll, so the scroll lock can be seen. *@
 <div style="height: 200vh"></div>
 
 @code {
+    private static readonly DialogOptions Modeless = new() { Modal = false };
     private string _result = "";
+    private bool _outer;
+    private bool _inner;
     private int _pageClicks;
 
     private async Task RenameAsync()

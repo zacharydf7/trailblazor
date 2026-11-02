@@ -1252,9 +1252,10 @@ public static class ExampleCatalog
                 "On opening, focus goes to an element marked `autofocus`, or else the first field, or the dialog "
                     + "itself with `InitialFocus = DialogFocus.Dialog`. On closing, it goes back to whatever opened "
                     + "the dialog.",
-                "Escape cancels the topmost dialog unless `DismissOnEscape` is false; a menu, select, autocomplete "
-                    + "list or tooltip open inside it, or a drag, takes the key first. A click that starts and ends "
-                    + "on the backdrop cancels a modal unless `DismissOnBackdrop` is false.",
+                "Escape cancels the topmost dialog, or a modeless one that has focus, unless `DismissOnEscape` is "
+                    + "false; a menu, select, autocomplete list or tooltip open inside it, or a drag, takes the key "
+                    + "first. A click that starts and ends on the backdrop cancels a modal unless `DismissOnBackdrop` "
+                    + "is false.",
                 "`ConfirmAsync` and `AlertAsync` open an `alertdialog` described by its message. The alert's tone icon "
                     + "is decorative, so say what happened in the message.",
                 "A `TbDialogDescription` describes any dialog with `aria-describedby`, so screen readers read it with "

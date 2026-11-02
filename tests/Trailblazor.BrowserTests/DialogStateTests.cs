@@ -51,6 +51,41 @@ public class DialogStateTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldCloseTheModelessDialogWithFocus_WhenEscapeIsPressedInAnOlderOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Panel" }).ClickAsync();
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Panel" });
+        await Expect(panel).ToBeVisibleAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Docked" }).ClickAsync();
+        var docked = page.GetByRole(AriaRole.Dialog, new() { Name = "Placed BottomEnd" });
+        await Expect(docked).ToBeVisibleAsync();
+
+        await panel.GetByLabel("Name").FocusAsync();
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("panel cancelled");
+        await Expect(docked).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldCloseOnlyTheInnerDialog_WhenEscapeIsPressedInOneWrittenInsideAModelessOne(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Outer" }).ClickAsync();
+        var outer = page.GetByRole(AriaRole.Dialog, new() { Name = "Outer" });
+        await outer.GetByRole(AriaRole.Button, new() { Name = "Inner" }).ClickAsync();
+        var inner = page.GetByRole(AriaRole.Dialog, new() { Name = "Inner" });
+
+        await inner.GetByRole(AriaRole.Button, new() { Name = "Inside" }).FocusAsync();
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(inner).ToBeHiddenAsync();
+        await Expect(outer).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldKeepEscapeFromClosingIt_WhenRestoredAboveADialogOpenedLater(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");
