@@ -201,7 +201,6 @@ public class TreeItemTests : BunitContext
         Assert.Empty(heading.QuerySelectorAll("[data-part=check]"));
         heading.Click();
         heading.DoubleClick();
-        cut.Find("[data-text=Guides] [data-part=toggle]").Click();
         cut.Find("[data-key=guide] [data-part=check]").Click();
         cut.Find("[data-key=api] [data-part=check]").Click();
 

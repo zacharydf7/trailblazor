@@ -173,7 +173,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public EventCallback<IReadOnlyCollection<TKey>> SelectedKeysChanged { get; set; }
 
-    /// <summary>Raised when a row is opened with Enter or a double-click.</summary>
+    /// <summary>Raised when a row is activated with Enter or a double-click. Either one also opens or closes a row with
+    /// children.</summary>
     [Parameter]
     public EventCallback<TItem> OnActivate { get; set; }
 
@@ -1054,6 +1055,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             case "Enter":
                 await SelectAsync(node, shift: false, toggle: false);
                 await ActivateAsync(node);
+                await ToggleIfParentAsync(node);
                 break;
             case " " when Checkable:
                 await ToggleCheckAsync(node);
@@ -1210,8 +1212,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         if (!Disabled)
         {
             await ActivateAsync(node);
+            await ToggleIfParentAsync(node);
         }
     }
+
+    private Task ToggleIfParentAsync(TreeNode<TItem> node) => node.HasChildren ? ToggleAsync(node) : Task.CompletedTask;
 
     private async Task ToggleAsync(TreeNode<TItem> node)
     {

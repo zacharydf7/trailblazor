@@ -220,7 +220,7 @@ public class TelemetryNameTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.ExpandAsync(4));
 
         Assert.Equal(["places"], Names(_shown));
-        Assert.Equal(["expand", "collapse", "select", "expand", "check", "activate", "move"],
+        Assert.Equal(["expand", "collapse", "select", "expand", "check", "activate", "collapse", "move"],
             Uses().Select(use => use.Action));
     }
 

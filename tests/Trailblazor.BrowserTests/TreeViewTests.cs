@@ -116,7 +116,7 @@ public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Mouse_ShouldSelectOnClickActivateOnDoubleClickAndOnlyToggleOnTheChevron_WhenUsed(string browser)
+    public async Task Mouse_ShouldSelectOnClickAndActivateOnDoubleClick_WhenUsed(string browser)
     {
         var page = await OpenTreeAsync(browser);
 
@@ -128,6 +128,19 @@ public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Row(page, "Ridge").DblClickAsync();
 
         await Expect(page.GetByTestId("activated")).ToHaveTextAsync("Ridge");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldOpenAndCloseAndBeActivated_WhenARowWithChildrenIsDoubleClicked(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+
+        await Row(page, "North").DblClickAsync();
+        await Expect(Row(page, "North")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByTestId("activated")).ToHaveTextAsync("North");
+        await Row(page, "North").DblClickAsync();
+
+        await Expect(Row(page, "North")).ToHaveAttributeAsync("aria-expanded", "false");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

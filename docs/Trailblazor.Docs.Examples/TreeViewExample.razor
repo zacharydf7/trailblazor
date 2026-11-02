@@ -1,11 +1,15 @@
 <TbStack Gap="3" Style="max-inline-size: 26rem">
     <TbTextField Label="Find a trail" @bind-Value="_search" @bind-Value:event="oninput" Clearable />
+    <TbText>
+        @(_opened is null ? "Double-click or press Enter on a trail to open it, or on a region to open or close it."
+            : $"Opened {_opened}.")
+    </TbText>
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Trails by region" Items="Regions" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" ItemText="place => place.Name"
                 ItemIcon="place => place.Children is null ? ExampleIcons.Trail : ExampleIcons.Folder"
                 IsSelectable="place => place.Children is null" InitialExpandDepth="1"
                 Filter="@(string.IsNullOrWhiteSpace(_search) ? null : Matches)" @bind-SelectedKeys="_selected"
-                OnActivate="place => _opened = place.Name">
+                OnActivate="Open">
         <ItemEnd>
             @if (context.Item.Children is { } trails)
             {
@@ -13,7 +17,6 @@
             }
         </ItemEnd>
     </TbTreeView>
-    <TbText>@(_opened is null ? "Double-click or press Enter on a trail to open it." : $"Opened {_opened}.")</TbText>
     @* Rows written as markup, for a tree that is part of the page rather than data. *@
     <TbTreeView TItem="string" TKey="string" AriaLabel="Notifications" Checkable @bind-CheckedKeys="_notify"
                 InitialExpandDepth="1">
@@ -73,6 +76,15 @@
 
     private TbTreeView<Stop, int> _planTree = default!;
     private int _nextStop = 8;
+
+    // A region opens and closes in place, so only a trail counts as opened.
+    private void Open(Place place)
+    {
+        if (place.Children is null)
+        {
+            _opened = place.Name;
+        }
+    }
 
     private bool Matches(Place place) => place.Name.Contains(_search!, StringComparison.OrdinalIgnoreCase);
 

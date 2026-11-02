@@ -172,16 +172,6 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
-    public void DoubleClick_ShouldActivateTheItem_WhenTheRowIsEnabled()
-    {
-        var cut = RenderPlaces(Nested);
-
-        Row(cut, "1").DoubleClick();
-
-        Assert.Equal(["North"], _activated);
-    }
-
-    [Fact]
     public void Check_ShouldCheckEveryRowInsideAndShowParentsAsMixed_WhenARowIsChecked()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Checkable, true)
@@ -408,6 +398,48 @@ public class TbTreeViewTests : BunitContext
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.TypeAhead, typeAhead));
 
         Assert.Equal(expected, cut.Find("[role=tree]").GetAttribute("data-no-typeahead"));
+    }
+
+    [Fact]
+    public async Task OnKey_ShouldOpenAndCloseARowWithChildrenAndActivateIt_WhenEnterIsPressed()
+    {
+        var cut = RenderPlaces(Nested);
+
+        await cut.InvokeAsync(() => Events().OnKey("4", "Enter", false, false));
+        Assert.Equal("true", Row(cut, "4").GetAttribute("aria-expanded"));
+        await cut.InvokeAsync(() => Events().OnKey("4", "Enter", false, false));
+
+        Assert.Equal("false", Row(cut, "4").GetAttribute("aria-expanded"));
+        Assert.Equal(["South", "South"], _activated);
+    }
+
+    [Fact]
+    public void DoubleClick_ShouldOpenAndActivateARowWithChildrenButOnlyActivateALeaf_WhenEachIsDoubleClicked()
+    {
+        var cut = RenderPlaces(Nested);
+
+        Row(cut, "1").DoubleClick();
+        Row(cut, "6").DoubleClick();
+
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.DoesNotContain(_expandedChanges, keys => keys.Contains(6));
+        Assert.Equal(["North", "Pass"], _activated);
+    }
+
+    [Fact]
+    public async Task OnKey_ShouldSelectAndActivateTheRowAtOnce_WhenEnterOpensChildrenThatAreStillLoading()
+    {
+        var load = new TaskCompletionSource<IEnumerable<Place>>();
+        var cut = RenderPlaces([new(1, "North")], parameters => parameters
+            .Add(tree => tree.LoadChildren, (_, _) => load.Task), nested: false);
+
+        var enter = cut.InvokeAsync(() => Events().OnKey("1", "Enter", false, false));
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("[data-part=loading]")));
+        Assert.Equal(["North"], _activated);
+        Assert.Equal([1], _selectedChanges.Single());
+        await cut.InvokeAsync(() => load.SetResult([]));
+        await enter;
     }
 
     [Fact]

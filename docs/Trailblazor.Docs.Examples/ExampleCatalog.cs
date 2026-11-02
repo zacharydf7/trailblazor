@@ -1450,7 +1450,8 @@ public static class ExampleCatalog
                 "The tree is one tab stop. Up and Down move between rows, Home and End go to the ends, Right opens a "
                     + "row or moves into it, Left closes it or moves to its parent, `*` opens its siblings, and typing "
                     + "finds a row by its text.",
-                "Enter selects and activates a row; Space selects it, or checks it in a `Checkable` tree. Shift with "
+                "Enter selects and activates a row and, like a double-click, opens or closes it if it has "
+                    + "children; Space selects it, or checks it in a `Checkable` tree. Shift with "
                     + "the arrows extends a `Multiple` selection, and Ctrl+A selects every row.",
                 "With `SelectionFollowsFocus`, as in the atlas here, a single-selection tree selects each row the "
                     + "arrows, Home, End or typing move to, so the selection is always the focused row; Ctrl or Cmd "
