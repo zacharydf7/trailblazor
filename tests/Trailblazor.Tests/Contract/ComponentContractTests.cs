@@ -30,14 +30,15 @@ public class ComponentContractTests : BunitContext
         [typeof(TbDateRangePicker<>)] = typeof(DateOnly),
     };
 
-    // Components that render nothing until they are shown are checked shown; a popover, a menu and a tooltip get the
-    // label or text they need when they are given neither.
+    // Components that render nothing until they are shown are checked shown; a popover, a menu, a tooltip and a
+    // progress get the label or text they need when they are given neither.
     private static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
     {
         [typeof(TbOverlay)] = (nameof(TbOverlay.Visible), true),
         [typeof(TbPopover)] = (nameof(TbPopover.Label), "Sample"),
         [typeof(TbMenu)] = (nameof(TbMenu.Label), "Sample"),
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
+        [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
         [typeof(TbDialog)] = (nameof(TbDialog.Open), true),
     };
 

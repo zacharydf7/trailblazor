@@ -2,7 +2,8 @@
 @using System.Globalization
 @inherits TbComponentBase
 
-<div role="progressbar" aria-label="@AriaLabel" aria-valuemin="@Format(Min)" aria-valuemax="@Format(Max)"
+<div role="progressbar" aria-label="@Name" aria-labelledby="@(Name is null ? _labelId : null)"
+     aria-valuemin="@Format(Min)" aria-valuemax="@Format(Max)"
      aria-valuenow="@ValueNow" aria-valuetext="@(ValueFormatter is null ? null : _valueText)"
      @attributes="AdditionalAttributes"
      class="@ClassNames.Join("tb-progress", Circular ? "tb-progress--circular" : "tb-progress--linear",
@@ -23,7 +24,7 @@
         </span>
         @if (Label is not null)
         {
-            <span data-part="label" class="tb-progress__label">@Label</span>
+            <span id="@_labelId" data-part="label" class="tb-progress__label">@Label</span>
         }
     }
     else
@@ -33,7 +34,7 @@
             <div class="tb-progress__header">
                 @if (Label is not null)
                 {
-                    <span data-part="label" class="tb-progress__label">@Label</span>
+                    <span id="@_labelId" data-part="label" class="tb-progress__label">@Label</span>
                 }
                 @if (ShownValue is not null)
                 {
@@ -48,6 +49,7 @@
 </div>
 
 @code {
+    private readonly string _labelId = $"tb-progress-{Guid.NewGuid():N}-label";
     private string? _valueText;
 
     /// <summary>How far along the work is, from <see cref="Min"/> to <see cref="Max"/>. Leave it null when the
@@ -75,11 +77,14 @@
     [Parameter]
     public Size Size { get; set; } = Size.Medium;
 
-    /// <summary>The accessible name, saying what is in progress. Screen readers announce it with the value.</summary>
-    [Parameter, EditorRequired]
-    public string AriaLabel { get; set; } = "";
+    /// <summary>The accessible name, saying what is in progress. Required without a <see cref="Label"/>; set it as well
+    /// when the label alone doesn't say what is in progress, such as a file name. Screen readers announce it with the
+    /// value.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
 
-    /// <summary>Text shown above the bar or beside the ring, such as the file being uploaded.</summary>
+    /// <summary>Text shown above the bar or beside the ring, such as the file being uploaded. It names the progress
+    /// unless <see cref="AriaLabel"/> is set.</summary>
     [Parameter]
     public string? Label { get; set; }
 
@@ -96,9 +101,10 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (string.IsNullOrWhiteSpace(AriaLabel))
+        if (Name is null && string.IsNullOrWhiteSpace(Label))
         {
-            throw new InvalidOperationException($"{nameof(TbProgress)} needs an {nameof(AriaLabel)}.");
+            throw new InvalidOperationException(
+                $"{nameof(TbProgress)} needs a {nameof(Label)} or an {nameof(AriaLabel)} to name it.");
         }
 
         if (Max <= Min)
@@ -110,6 +116,8 @@
         _valueText = Value is not { } value ? null : ValueFormatter?.Invoke(Math.Clamp(value, Min, Max))
             ?? Fraction!.Value.ToString("P0", CultureInfo.CurrentCulture);
     }
+
+    private string? Name => string.IsNullOrWhiteSpace(AriaLabel) ? null : AriaLabel;
 
     private string? ValueNow => Value is { } value ? Format(Math.Clamp(value, Min, Max)) : null;
 

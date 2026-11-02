@@ -135,12 +135,38 @@ public class TbProgressTests : BunitContext
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void Render_ShouldThrow_WhenGivenABlankAriaLabel(string ariaLabel)
+    [InlineData(false, null)]
+    [InlineData(true, null)]
+    [InlineData(false, " ")]
+    public void Render_ShouldBeNamedByItsLabel_WhenItHasNoAriaLabel(bool circular, string? ariaLabel)
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.Label, "Importing trails")
+            .Add(progress => progress.Circular, circular).Add(progress => progress.AriaLabel, ariaLabel));
+
+        var progress = cut.Find("[role=progressbar]");
+        Assert.Equal(cut.Find("[data-part=label]").Id, progress.GetAttribute("aria-labelledby"));
+        Assert.Null(progress.GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldBeNamedByItsAriaLabel_WhenItHasBoth()
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.Label, "report.pdf")
+            .Add(progress => progress.AriaLabel, "Attachment"));
+
+        var progress = cut.Find("[role=progressbar]");
+        Assert.Equal("Attachment", progress.GetAttribute("aria-label"));
+        Assert.Null(progress.GetAttribute("aria-labelledby"));
+    }
+
+    [Theory]
+    [InlineData("", null)]
+    [InlineData(" ", null)]
+    [InlineData(null, " ")]
+    public void Render_ShouldThrow_WhenGivenNeitherALabelNorAnAriaLabel(string? ariaLabel, string? label)
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbProgress>(parameters => parameters
-            .Add(progress => progress.AriaLabel, ariaLabel)));
+            .Add(progress => progress.AriaLabel, ariaLabel).Add(progress => progress.Label, label)));
     }
 
     [Fact]

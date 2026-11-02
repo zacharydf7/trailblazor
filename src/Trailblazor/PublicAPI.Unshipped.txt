@@ -1968,7 +1968,7 @@ Trailblazor.TbPopover.Trigger.set -> void
 Trailblazor.TbPopover.Variant.get -> Trailblazor.Variant
 Trailblazor.TbPopover.Variant.set -> void
 Trailblazor.TbProgress
-Trailblazor.TbProgress.AriaLabel.get -> string!
+Trailblazor.TbProgress.AriaLabel.get -> string?
 Trailblazor.TbProgress.AriaLabel.set -> void
 Trailblazor.TbProgress.Circular.get -> bool
 Trailblazor.TbProgress.Circular.set -> void

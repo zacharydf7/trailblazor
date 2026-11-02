@@ -609,7 +609,9 @@ public static class ExampleCatalog
             [
                 "A `progressbar` with its range and current value. Leaving `Value` null makes it indeterminate, "
                     + "with no current value.",
-                "`AriaLabel` is required and names it; a blank label throws when it renders.",
+                "A `Label` names it through `aria-labelledby`, as \"Importing trails\" does. Without one, give an "
+                    + "`AriaLabel`. Also give one when the label alone doesn't say what is in progress, such as a file "
+                    + "name; the `AriaLabel` then names it instead. With neither, it throws when it renders.",
                 "`Label` and `ShowValue` add visible text. With `ValueFormatter`, screen readers announce that "
                     + "text, such as \"3 of 10 files\", in place of the number. Show a ring's value at `Size.Large`, "
                     + "where it is big enough to read.",
