@@ -52,7 +52,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public Func<TItem, object?>? SortBy { get; set; }
 
-    /// <summary>Lets the user filter the rows by this column, from the grid's filter row. The filter suits the
+    /// <summary>Lets the user filter the rows by this column, from the grid's filter row or filter menu (see
+    /// <see cref="TbDataGrid{TItem}.FilterMode"/>). The filter suits the
     /// <see cref="Field"/>'s type: text the cell contains, a number it equals, a range of dates, one of an enum's
     /// values, or yes or no for a bool.</summary>
     [Parameter]
@@ -63,6 +64,18 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     /// <see cref="TbDataGrid{TItem}.RefreshAsync"/> when what it reads from outside the item changes.</summary>
     [Parameter]
     public Func<TItem, object?>? FilterBy { get; set; }
+
+    /// <summary>The values the filter offers, such as a column's regions, shown as the cells show them. The filter
+    /// becomes a list the user picks any of: a multiple select in the filter row, or checkboxes in the filter menu. In
+    /// the menu, an enum or bool column gets checkboxes of its values without this.</summary>
+    [Parameter]
+    public IEnumerable<object?>? FilterChoices { get; set; }
+
+    /// <summary>Draws the column's filter instead of the built-in one, in the filter row or the filter menu. Its
+    /// context holds the column's filters and replaces them; in memory, rows are matched against the
+    /// <see cref="Field"/>'s or <see cref="FilterBy"/>'s value.</summary>
+    [Parameter]
+    public RenderFragment<GridFilterContext>? FilterTemplate { get; set; }
 
     /// <summary>Draws each cell instead of the <see cref="Field"/>'s text. Its context is the row's item. Clicks on
     /// buttons, links and fields in it don't select the row. A row draws again when its item, its selection, its class,
@@ -98,7 +111,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal bool CanSort => Sortable && (SortBy is not null || _value is not null);
 
-    internal bool CanFilter => Filterable && (FilterBy is not null || _value is not null);
+    internal bool CanFilter =>
+        Filterable && (FilterBy is not null || _value is not null || FilterTemplate is not null);
 
     internal ColumnFilterKind FilterKind => ValueType switch
     {
@@ -144,8 +158,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
             _compiled++;
         }
 
-        object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method, Width,
-            Align, Class, Cell is null, Header is null);
+        object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method,
+            FilterChoices is null, FilterTemplate is null, Width, Align, Class, Cell is null, Header is null);
         if (!shown.Equals(_shown))
         {
             _shown = shown;

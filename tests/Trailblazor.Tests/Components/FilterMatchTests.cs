@@ -35,6 +35,14 @@ public class FilterMatchTests
         { "", "", FilterOperator.IsEmpty, null, true },
         { 0, "0", FilterOperator.IsEmpty, null, false },
         { 0, "0", FilterOperator.IsNotEmpty, null, true },
+        { 8, "8", FilterOperator.IsAnyOf, new object[] { 3, 8m }, true },
+        { DayOfWeek.Monday, "Monday", FilterOperator.IsAnyOf, new object[] { DayOfWeek.Friday }, false },
+        // Typed text is compared with the shown text of a value that isn't text.
+        { new TimeOnly(10, 0), "10:00", FilterOperator.EqualTo, "10:00", true },
+        { new TimeOnly(10, 0), "10:00", FilterOperator.NotEqualTo, "10:00", false },
+        { new TimeOnly(10, 0), "10:00", FilterOperator.NotEqualTo, "11:00", true },
+        // Text isn't a list of values.
+        { "ridge", "ridge", FilterOperator.IsAnyOf, "ridge", false },
     };
 
     [Theory]

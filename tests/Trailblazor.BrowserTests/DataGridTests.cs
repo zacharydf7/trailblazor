@@ -140,7 +140,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");
 
-        await page.GetByLabel("Filter Name", new() { Exact = true }).PressSequentiallyAsync("ridge");
+        await Table(page, "Hikes").GetByLabel("Filter Name", new() { Exact = true }).PressSequentiallyAsync("ridge");
 
         await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse"]);
         await Expect(page.Locator("[data-part=announcer] [role=status] p").Last).ToHaveTextAsync("Rows shown: 1.");
@@ -161,6 +161,125 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Summit Gate"]);
         await hikes.FilterAsync("Length (km)", "");
         await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse", "Summit Gate"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldFilterByAConditionAndCheckedChoices_WhenApplied(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var camps = page.Tb().Grid("Campsites");
+
+        await camps.FilterAsync("Sites", "At least", "16");
+        await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Aspen Flat", "Dune Point", "Elk Meadow"]);
+        await camps.FilterChoicesAsync("Region", "River valley");
+
+        await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Dune Point"]);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Filter Region, on" })).ToBeVisibleAsync();
+        await Expect(page.GetByTestId("camp-filters"))
+            .ToHaveTextAsync("Filters: Sites GreaterThanOrEqualTo 16; Region IsAnyOf River valley.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldLeaveTheRowsAlone_WhenClosedWithEscapeBeforeApplying(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Filter Sites", Exact = true });
+        var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Sites" });
+
+        await button.ClickAsync();
+        // A number column's end alignment stays out of its menu.
+        await Expect(menu.Locator(".tb-data-grid__filter-form")).ToHaveCSSAsync("text-align", "start");
+        await menu.GetByLabel("Value").FillAsync("40");
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(button).ToBeFocusedAsync();
+        await Expect(Names(page, "Campsites")).ToHaveCountAsync(5);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldApplyTheValue_WhenEnterIsPressedInIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Name" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Name", Exact = true }).ClickAsync();
+        // The menu focuses its first field as it opens, so typing waits for that.
+        await Expect(menu.GetByRole(AriaRole.Combobox)).ToBeFocusedAsync();
+        await menu.GetByLabel("Value").PressSequentiallyAsync("dune");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Dune Point"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Filters_ShouldApplyWithoutSubmittingThePagesForm_WhenEnterIsPressedInThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-in-form");
+        var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Trail" });
+
+        await page.Tb().Grid("Row trails").FilterAsync("Trail", "ridge");
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Trail", Exact = true }).ClickAsync();
+        await Expect(menu.GetByRole(AriaRole.Combobox)).ToBeFocusedAsync();
+        await menu.GetByLabel("Value").PressSequentiallyAsync("cedar");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Table(page, "Row trails").Locator("tbody td")).ToHaveTextAsync(["Eagle Ridge"]);
+        await Expect(Table(page, "Menu trails").Locator("tbody td[data-column=Trail]")).ToHaveTextAsync(["Cedar Flats"]);
+        await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldLeaveThePagesFormUnsubmitted_WhenEnterIsPressedOnAChoice(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-in-form");
+        var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Pick" });
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Pick", Exact = true }).ClickAsync();
+        // The menu focuses its first choice as it opens, so the test waits for that before focusing another.
+        await Expect(menu.GetByRole(AriaRole.Checkbox, new() { Name = "Pine Hollow" })).ToBeFocusedAsync();
+        await menu.GetByRole(AriaRole.Checkbox, new() { Name = "Eagle Ridge" }).FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.PressAsync("Space");
+        await menu.GetByRole(AriaRole.Button, new() { Name = "Apply" }).ClickAsync();
+
+        await Expect(Table(page, "Menu trails").Locator("tbody td[data-column=pick]"))
+            .ToHaveTextAsync(["Eagle Ridge"]);
+        await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldApply_WhenEnterIsPressedOnItsApplyButton(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-in-form");
+        var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Trail" });
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Trail", Exact = true }).ClickAsync();
+        await Expect(menu.GetByRole(AriaRole.Combobox)).ToBeFocusedAsync();
+        await menu.GetByLabel("Value").FillAsync("pine");
+        await menu.GetByRole(AriaRole.Button, new() { Name = "Apply" }).FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Table(page, "Menu trails").Locator("tbody td[data-column=Trail]")).ToHaveTextAsync(["Pine Hollow"]);
+        await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilterMenu_ShouldShowWhatATemplatesFilterApplies_WhenItsControlIsUsed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Water", Exact = true }).ClickAsync();
+        await page.GetByRole(AriaRole.Switch, new() { Name = "Only with water" }).ClickAsync();
+
+        await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Aspen Flat", "Dune Point", "Elk Meadow"]);
     }
 
     private static ILocator Table(IPage page, string name) =>

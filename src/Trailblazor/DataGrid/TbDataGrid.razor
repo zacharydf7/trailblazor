@@ -1,4 +1,5 @@
 @namespace Trailblazor
+@using Microsoft.AspNetCore.Components.Forms
 @typeparam TItem
 @inherits TbComponentBase
 
@@ -71,6 +72,10 @@
                             {
                                 @(column.Header ?? (RenderFragment)(builder => builder.AddContent(0, column.Heading)))
                             }
+                            @if (HasFilterMenu(column))
+                            {
+                                @FilterMenu(column)
+                            }
                         </th>
                     }
                 </tr>
@@ -91,7 +96,11 @@
                                 class="@FilterClass(column)">
                                 @if (column.CanFilter)
                                 {
-                                    @FilterField(column)
+                                    @* A page's form doesn't own the grid's filters, which neither change it nor count
+                                       toward its errors. *@
+                                    <CascadingValue TValue="EditContext" Value="null">
+                                        <CascadingValue TValue="TbForm" Value="null">@FilterField(column)</CascadingValue>
+                                    </CascadingValue>
                                 }
                             </td>
                         }
@@ -209,8 +218,19 @@
         </tr>;
 
     // A text filter applies when typing pauses; the other fields apply as soon as they change.
+    // A template or a list of choices takes the place of the field the column's type would have.
     private RenderFragment FilterField(TbColumn<TItem> column) => column.FilterKind switch
     {
+        _ when column.FilterTemplate is { } template => template(FilterContext(column)),
+        _ when column.FilterChoices is not null =>
+            @<TbMultiSelect TItem="string" AriaLabel="@FilterLabel(column)" Size="Size.Small" Clearable
+                            Placeholder="@Localizer[TbStrings.DataGridFilterAny]" Value="ChoicesFilter(column)"
+                            ValueChanged="chosen => FilterChoicesAsync(column, chosen)">
+                @foreach (var (key, label, _) in ChoicesOf(column))
+                {
+                    <TbOption Value="key">@label</TbOption>
+                }
+            </TbMultiSelect>,
         ColumnFilterKind.Number =>
             @<TbNumberField TValue="decimal?" AriaLabel="@FilterLabel(column)" Size="Size.Small" HideStepButtons
                             Value="NumberFilter(column)" ValueChanged="number => FilterNumberAsync(column, number)" />,
@@ -221,17 +241,9 @@
             @<TbSelect TValue="string" AriaLabel="@FilterLabel(column)" Size="Size.Small" Clearable
                        Placeholder="@Localizer[TbStrings.DataGridFilterAny]" Value="ChoiceFilter(column)"
                        ValueChanged="choice => FilterChoiceAsync(column, choice)">
-                @if (column.FilterKind == ColumnFilterKind.YesNo)
+                @foreach (var (key, label, _) in ChoicesOf(column))
                 {
-                    <TbOption Value="@bool.TrueString">@Localizer[TbStrings.DataGridFilterYes]</TbOption>
-                    <TbOption Value="@bool.FalseString">@Localizer[TbStrings.DataGridFilterNo]</TbOption>
-                }
-                else
-                {
-                    @foreach (var (value, label) in column.Choices)
-                    {
-                        <TbOption Value="@value.ToString()">@label</TbOption>
-                    }
+                    <TbOption Value="key">@label</TbOption>
                 }
             </TbSelect>,
         _ =>
@@ -241,6 +253,83 @@
     };
 
     private static readonly TimeSpan FilterDelay = TimeSpan.FromMilliseconds(300);
+
+    // A menu holds a draft of the column's filter, applied with its Apply button; a template applies its own.
+    private RenderFragment FilterMenu(TbColumn<TItem> column)
+    {
+        var draft = DraftFor(column);
+        var label = IsFiltered(column) ? Format(TbStrings.DataGridFilterOn, column.Heading) : FilterLabel(column);
+        return @<TbPopover Icon="BuiltInIcons.Filter" Label="@label" Title="@FilterLabel(column)"
+                           Variant="Variant.Text" Size="Size.Small" Open="draft.Open"
+                           OpenChanged="open => OpenFilterMenu(column, open)" data-part="filter-menu"
+                           class="tb-data-grid__filter-menu">
+            @* As in the filter row, a page's form around the grid doesn't own or track the menu's fields. *@
+            <CascadingValue TValue="EditContext" Value="null">
+                <CascadingValue TValue="TbForm" Value="null">
+                    @if (column.FilterTemplate is { } template)
+                    {
+                        <div class="tb-data-grid__filter-form">@template(FilterContext(column))</div>
+                    }
+                    else
+                    {
+                        <div class="tb-data-grid__filter-form">
+                            @if (HasChoiceList(column))
+                            {
+                                <TbCheckboxGroup TItem="string" AriaLabel="@FilterLabel(column)" Size="Size.Small"
+                                                 @bind-Value="draft.Chosen">
+                                    @foreach (var (key, label, _) in ChoicesOf(column))
+                                    {
+                                        <TbCheckboxItem Value="key">@label</TbCheckboxItem>
+                                    }
+                                </TbCheckboxGroup>
+                            }
+                            else if (column.FilterKind == ColumnFilterKind.Date)
+                            {
+                                <TbDateRangePicker TDate="DateOnly" Label="@Localizer[TbStrings.DataGridFilterValue]"
+                                                   Size="Size.Small" @bind-Value="draft.Range" />
+                            }
+                            else
+                            {
+                                <TbSelect TValue="FilterOperator" Label="@Localizer[TbStrings.DataGridFilterCondition]"
+                                          Size="Size.Small" @bind-Value="draft.Operator">
+                                    @foreach (var op in FilterOperators(column))
+                                    {
+                                        <TbOption Value="op">@OperatorLabel(op)</TbOption>
+                                    }
+                                </TbSelect>
+                                @if (NeedsValue(draft.Operator))
+                                {
+                                    <div @onkeydown="args => ApplyOnEnterAsync(column, args)">
+                                        @if (column.FilterKind == ColumnFilterKind.Number)
+                                        {
+                                            <TbNumberField TValue="decimal?" Size="Size.Small" HideStepButtons
+                                                           Label="@Localizer[TbStrings.DataGridFilterValue]"
+                                                           UpdateOnInput @bind-Value="draft.Number" />
+                                        }
+                                        else
+                                        {
+                                            <TbTextField TValue="string" Label="@Localizer[TbStrings.DataGridFilterValue]"
+                                                         Size="Size.Small" UpdateOnInput @bind-Value="draft.Text" />
+                                        }
+                                    </div>
+                                }
+                            }
+                            <div class="tb-data-grid__filter-actions">
+                                <TbButton Variant="Variant.Text" Size="Size.Small" data-part="filter-clear"
+                                          OnClick="() => ClearFilterMenuAsync(column)">
+                                    @Localizer[TbStrings.DataGridFilterClear]
+                                </TbButton>
+                                <TbButton Size="Size.Small" data-part="filter-apply"
+                                          OnClick="() => ApplyFilterMenuAsync(column)">
+                                    @Localizer[TbStrings.DataGridFilterApply]
+                                </TbButton>
+                            </div>
+                        </div>
+                    }
+                </CascadingValue>
+            </CascadingValue>
+        </TbPopover>;
+    }
 
     // Single selection's radio buttons need a group of their own on the page.
     private readonly string _radioName = $"tb-data-grid-{Guid.NewGuid():N}";

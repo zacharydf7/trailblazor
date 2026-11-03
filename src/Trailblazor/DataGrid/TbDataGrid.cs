@@ -136,6 +136,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<IReadOnlyList<GridFilter>> FiltersChanged { get; set; }
 
+    /// <summary>Where the <see cref="TbColumn{TItem}.Filterable"/> columns' filters are: a row under the headers, the
+    /// default, or a menu on each header.</summary>
+    [Parameter]
+    public GridFilterMode FilterMode { get; set; }
+
     /// <summary>How many rows a page holds. Null, the default, shows every row with no pages.</summary>
     [Parameter]
     public int? PageSize { get; set; }
@@ -270,6 +275,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             if (!(Filters ?? []).SequenceEqual(_filters))
             {
                 _filters = [.. Filters ?? []];
+                ForgetClosedDrafts();
             }
         }
 
@@ -575,7 +581,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             Filters = [.. _filters],
         };
-        var asked = $"{request.StartIndex}|{request.Count}|{string.Join(",", _sorts)}|{string.Join(",", _filters)}";
+        var asked = $"{request.StartIndex}|{request.Count}|{string.Join(",", _sorts)}|{FiltersKey}";
         if (!force && asked == _loaded)
         {
             return;

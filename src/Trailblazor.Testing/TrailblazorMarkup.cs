@@ -59,7 +59,7 @@ public sealed class TrailblazorMarkup
 
     /// <summary>The <c>TbDataGrid</c> whose table has this accessible name, or the only grid in the markup when no
     /// name is given.</summary>
-    public TbGridDriver Grid(string? name = null) => new(() =>
+    public TbGridDriver Grid(string? name = null) => new(_findAll, () =>
     {
         var tables = _findAll("[data-part=grid] table")
             .Where(table => name is null || table.GetAttribute("aria-label") == name).ToList();
@@ -339,8 +339,10 @@ public sealed class TbTreeDriver
 public sealed class TbGridDriver
 {
     private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
 
-    internal TbGridDriver(Func<IElement> find) => _find = find;
+    internal TbGridDriver(Func<string, IReadOnlyList<IElement>> findAll, Func<IElement> find) =>
+        (_findAll, _find) = (findAll, find);
 
     /// <summary>The row with a cell whose text is exactly this.</summary>
     public IElement Row(string cell)
@@ -369,15 +371,22 @@ public sealed class TbGridDriver
         return found.HasAttribute("data-selected") ? Task.CompletedTask : box.ChangeAsync(new ChangeEventArgs());
     }
 
-    /// <summary>Types this into the filter of the column with this title and commits it, as pressing Enter does, so a
-    /// text filter applies without waiting for typing to pause. For a text or number filter; choose a choice filter's
-    /// value with <c>cut.Tb().Select("Filter Status")</c> instead.</summary>
+    /// <summary>Filters the column with this title by this text. In the filter row, it types the text and commits it,
+    /// as pressing Enter does, so a text filter applies without waiting for typing to pause; in a filter menu, it types
+    /// the text as the value and applies the menu. For a text or number filter; choose a row's choice filter with
+    /// <c>cut.Tb().Select("Filter Status")</c>, or a list filter's choices with <see cref="FilterChoicesAsync"/>.
+    /// </summary>
     public async Task FilterAsync(string column, string text)
     {
-        var grid = _find();
-        var id = grid.QuerySelectorAll("thead th").FirstOrDefault(header => header.GetAttribute("data-title") == column)
-            ?.GetAttribute("data-column") ?? throw new InvalidOperationException($"No column is titled \"{column}\".");
-        var input = grid.QuerySelector($"[data-part=filter][data-column=\"{id}\"] input")
+        if (Menu(column) is not null)
+        {
+            await EnterAsync(ValueInput(column) ?? throw new InvalidOperationException(
+                $"The \"{column}\" column's filter takes no typed value."), text);
+            await ApplyAsync(column);
+            return;
+        }
+
+        var input = FilterCell(column).QuerySelector("input")
             ?? throw new InvalidOperationException($"The \"{column}\" column has no filter; make it Filterable.");
         if (input.Matches("input[type=number], input[role=spinbutton]"))
         {
@@ -389,6 +398,112 @@ public sealed class TbGridDriver
         await input.InputAsync(new ChangeEventArgs { Value = text });
         await input.ChangeAsync(new ChangeEventArgs { Value = text });
     }
+
+    /// <summary>In the filter menu of the column with this title, chooses the condition with this name, such as
+    /// "At least", types the text as the value, unless the condition takes none, and applies the menu.</summary>
+    public async Task FilterAsync(string column, string condition, string text)
+    {
+        var menu = Menu(column) ?? throw new InvalidOperationException(
+            $"The \"{column}\" column has no filter menu; set the grid's FilterMode to Menu.");
+        var conditions = menu.QuerySelector("[role=combobox]") ?? throw new InvalidOperationException(
+            $"The \"{column}\" column's filter has no conditions; use FilterAsync(column, text) or FilterChoicesAsync.");
+        await new TbSelectDriver(() => conditions, _findAll).ChooseAsync(condition);
+        // Choosing renders the menu again, without a value field for a condition that takes none.
+        if (ValueInput(column) is { } input)
+        {
+            await EnterAsync(input, text);
+        }
+
+        await ApplyAsync(column);
+    }
+
+    /// <summary>Leaves exactly these choices picked in the list filter of the column with this title, naming each as
+    /// the filter shows it; pass none to clear the filter. Works with the filter row's multiple select and with a
+    /// filter menu's checkboxes, which it then applies.</summary>
+    public async Task FilterChoicesAsync(string column, params string[] choices)
+    {
+        if (Menu(column) is null)
+        {
+            var cell = FilterCell(column);
+            if (!IsList(cell))
+            {
+                throw NotAList(column);
+            }
+
+            if (cell.QuerySelector("[data-part=clear]") is { } clear)
+            {
+                await clear.ClickAsync(new MouseEventArgs { Detail = 1 });
+            }
+
+            if (choices.Length > 0)
+            {
+                await new TbSelectDriver(() => FilterCell(column).QuerySelector("[role=combobox]")!, _findAll)
+                    .ChooseAsync(choices);
+            }
+
+            return;
+        }
+
+        var names = Menu(column)!.QuerySelectorAll("input[type=checkbox]")
+            .Select(box => Choices.NameOf(box.Closest("label")!)).ToList();
+        if (names.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"The \"{column}\" column's filter isn't a list; give the column FilterChoices.");
+        }
+
+        if (choices.FirstOrDefault(choice => !names.Contains(choice)) is { } missing)
+        {
+            throw new InvalidOperationException($"The \"{column}\" column's filter has no choice \"{missing}\".");
+        }
+
+        foreach (var name in names)
+        {
+            // Each change renders the menu again, so the box is found afresh.
+            var box = Menu(column)!.QuerySelectorAll("input[type=checkbox]")
+                .Single(other => Choices.NameOf(other.Closest("label")!) == name);
+            if (box.HasAttribute("checked") != choices.Contains(name))
+            {
+                await box.ChangeAsync(new ChangeEventArgs { Value = choices.Contains(name) });
+            }
+        }
+
+        await ApplyAsync(column);
+    }
+
+    private const string ValueSelector = "[data-part=input]:not([role=combobox]):not([type=checkbox])";
+
+    private IElement Header(string column) => _find().QuerySelectorAll("thead th")
+        .FirstOrDefault(header => header.GetAttribute("data-title") == column)
+        ?? throw new InvalidOperationException($"No column is titled \"{column}\".");
+
+    private IElement? Menu(string column) => Header(column).QuerySelector("[data-part=filter-menu]");
+
+    private IElement FilterCell(string column) =>
+        _find().QuerySelector($"[data-part=filter][data-column=\"{Header(column).GetAttribute("data-column")}\"]")
+        ?? throw new InvalidOperationException($"The \"{column}\" column has no filter; make it Filterable.");
+
+    private IElement? ValueInput(string column) => Menu(column)!.QuerySelector(ValueSelector);
+
+    // A row's list filter is a multiple select; an enum's or a bool's is a select of one.
+    private static bool IsList(IElement cell) =>
+        cell.QuerySelector("[role=combobox]")?.GetAttribute("aria-controls") is { } list
+        && cell.QuerySelector($"[id='{list}'][aria-multiselectable=true]") is not null;
+
+    private static InvalidOperationException NotAList(string column) => new($"The \"{column}\" column's filter "
+        + "isn't a list; give the column FilterChoices, or set the grid's FilterMode to Menu for an enum or bool.");
+
+    private Task ApplyAsync(string column) => (Menu(column)!.QuerySelector("[data-part=filter-apply]")
+        ?? throw new InvalidOperationException(
+            $"The \"{column}\" column's filter is a template; use the controls it draws."))
+        .ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    // A text field that updates as the user types takes input; the rest commit on change.
+    private static Task EnterAsync(IElement input, string text) =>
+        input.Matches("input[type=number], input[role=spinbutton]")
+            ? new TbNumberFieldDriver(() => input).EnterAsync(text)
+            : input.HasAttribute("blazor:oninput") ? input.InputAsync(new ChangeEventArgs { Value = text })
+            : input.ChangeAsync(new ChangeEventArgs { Value = text });
 }
 
 /// <summary>A <c>TbTabs</c>, found by its accessible name.</summary>

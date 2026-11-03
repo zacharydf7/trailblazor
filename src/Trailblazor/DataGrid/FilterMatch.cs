@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 
 namespace Trailblazor;
@@ -18,7 +19,14 @@ internal static class FilterMatch
             FilterOperator.DoesNotContain => compare.IndexOf(text() ?? "", wanted, CompareOptions.IgnoreCase) < 0,
             FilterOperator.StartsWith => compare.IsPrefix(text() ?? "", wanted, CompareOptions.IgnoreCase),
             FilterOperator.EndsWith => compare.IsSuffix(text() ?? "", wanted, CompareOptions.IgnoreCase),
+            // Typed text compares with the text of a value that isn't text, such as a time.
+            FilterOperator.EqualTo or FilterOperator.NotEqualTo
+                when filter.Value is string && value is not (null or string) =>
+                compare.Compare(text() ?? "", wanted, CompareOptions.IgnoreCase) == 0
+                    == (filter.Operator == FilterOperator.EqualTo),
             FilterOperator.NotEqualTo => Compare(value, filter.Value) != 0,
+            FilterOperator.IsAnyOf => filter.Value is IEnumerable and not string
+                && filter.Values.Any(option => Compare(value, option) == 0),
             _ => Compare(value, filter.Value) is { } order && filter.Operator switch
             {
                 FilterOperator.EqualTo => order == 0,

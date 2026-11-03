@@ -398,6 +398,10 @@ public static class TbStrings
     /// <summary>"Filter {0}": names a data grid's filter for a column; {0} is the column.</summary>
     public const string DataGridFilter = "DataGrid.Filter";
 
+    /// <summary>"Filter {0}, on": names a data grid's filter menu button while its column is filtered; {0} is the
+    /// column.</summary>
+    public const string DataGridFilterOn = "DataGrid.FilterOn";
+
     /// <summary>"Any": shown in a data grid's choice filter when it filters nothing.</summary>
     public const string DataGridFilterAny = "DataGrid.FilterAny";
 
@@ -406,6 +410,54 @@ public static class TbStrings
 
     /// <summary>"No": the choice that shows a data grid's rows whose yes-or-no column is false.</summary>
     public const string DataGridFilterNo = "DataGrid.FilterNo";
+
+    /// <summary>"Apply": the button that applies a data grid's filter menu.</summary>
+    public const string DataGridFilterApply = "DataGrid.FilterApply";
+
+    /// <summary>"Clear": the button that clears a data grid column's filter.</summary>
+    public const string DataGridFilterClear = "DataGrid.FilterClear";
+
+    /// <summary>"Condition": names the list of conditions in a data grid's filter menu.</summary>
+    public const string DataGridFilterCondition = "DataGrid.FilterCondition";
+
+    /// <summary>"Value": names the value field in a data grid's filter menu.</summary>
+    public const string DataGridFilterValue = "DataGrid.FilterValue";
+
+    /// <summary>"Contains": the condition that the column's text contains the filter's value.</summary>
+    public const string DataGridFilterContains = "DataGrid.FilterContains";
+
+    /// <summary>"Doesn't contain": the condition that the column's text doesn't contain the filter's value.</summary>
+    public const string DataGridFilterDoesNotContain = "DataGrid.FilterDoesNotContain";
+
+    /// <summary>"Starts with": the condition that the column's text starts with the filter's value.</summary>
+    public const string DataGridFilterStartsWith = "DataGrid.FilterStartsWith";
+
+    /// <summary>"Ends with": the condition that the column's text ends with the filter's value.</summary>
+    public const string DataGridFilterEndsWith = "DataGrid.FilterEndsWith";
+
+    /// <summary>"Is": the condition that the column's value equals the filter's value.</summary>
+    public const string DataGridFilterEqualTo = "DataGrid.FilterEqualTo";
+
+    /// <summary>"Isn't": the condition that the column's value differs from the filter's value.</summary>
+    public const string DataGridFilterNotEqualTo = "DataGrid.FilterNotEqualTo";
+
+    /// <summary>"Less than": the condition that the column's value is less than the filter's value.</summary>
+    public const string DataGridFilterLessThan = "DataGrid.FilterLessThan";
+
+    /// <summary>"At most": the condition that the column's value is at most the filter's value.</summary>
+    public const string DataGridFilterAtMost = "DataGrid.FilterAtMost";
+
+    /// <summary>"More than": the condition that the column's value is more than the filter's value.</summary>
+    public const string DataGridFilterGreaterThan = "DataGrid.FilterGreaterThan";
+
+    /// <summary>"At least": the condition that the column's value is at least the filter's value.</summary>
+    public const string DataGridFilterAtLeast = "DataGrid.FilterAtLeast";
+
+    /// <summary>"Is empty": the condition that the column has no value.</summary>
+    public const string DataGridFilterIsEmpty = "DataGrid.FilterIsEmpty";
+
+    /// <summary>"Isn't empty": the condition that the column has a value.</summary>
+    public const string DataGridFilterIsNotEmpty = "DataGrid.FilterIsNotEmpty";
 
     /// <summary>"Rows shown: {0}.": read out when a data grid's filters change; {0} is how many rows meet them.
     /// </summary>
@@ -616,10 +668,27 @@ public static class TbStrings
         [DataGridPages] = "Pages of {0}",
         [DataGridPageSize] = "Rows per page",
         [DataGridFilter] = "Filter {0}",
+        [DataGridFilterOn] = "Filter {0}, on",
         [DataGridFilterAny] = "Any",
         [DataGridFilterYes] = "Yes",
         [DataGridFilterNo] = "No",
         [DataGridRowsShown] = "Rows shown: {0}.",
+        [DataGridFilterApply] = "Apply",
+        [DataGridFilterClear] = "Clear",
+        [DataGridFilterCondition] = "Condition",
+        [DataGridFilterValue] = "Value",
+        [DataGridFilterContains] = "Contains",
+        [DataGridFilterDoesNotContain] = "Doesn't contain",
+        [DataGridFilterStartsWith] = "Starts with",
+        [DataGridFilterEndsWith] = "Ends with",
+        [DataGridFilterEqualTo] = "Is",
+        [DataGridFilterNotEqualTo] = "Isn't",
+        [DataGridFilterLessThan] = "Less than",
+        [DataGridFilterAtMost] = "At most",
+        [DataGridFilterGreaterThan] = "More than",
+        [DataGridFilterAtLeast] = "At least",
+        [DataGridFilterIsEmpty] = "Is empty",
+        [DataGridFilterIsNotEmpty] = "Isn't empty",
         [DataGridSortedAscending] = "Sorted by {0}, ascending.",
         [DataGridSortedDescending] = "Sorted by {0}, descending.",
         [DataGridUnsorted] = "No longer sorted by {0}.",

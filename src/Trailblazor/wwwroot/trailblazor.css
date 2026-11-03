@@ -4623,6 +4623,32 @@
         min-inline-size: 8rem;
     }
 
+    /* The menu sits in a header, so it starts its text afresh rather than taking the column's alignment. */
+    .tb-data-grid__filter-menu {
+        display: inline-flex;
+        margin-inline-start: var(--tb-space-1);
+        text-align: start;
+        vertical-align: middle;
+    }
+
+    .tb-data-grid__header[data-filtered] .tb-data-grid__filter-menu .tb-icon-button {
+        color: var(--tb-color-primary-text);
+    }
+
+    .tb-data-grid__filter-form {
+        display: grid;
+        gap: var(--tb-space-3);
+        min-inline-size: 15rem;
+        font-weight: var(--tb-font-weight-regular);
+        white-space: normal;
+    }
+
+    .tb-data-grid__filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--tb-space-2);
+    }
+
     /* A range shows two dates side by side. */
     .tb-data-grid__filter--date > .tb-field {
         min-inline-size: 15rem;

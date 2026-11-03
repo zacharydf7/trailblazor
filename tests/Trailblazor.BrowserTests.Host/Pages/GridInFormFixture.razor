@@ -1,0 +1,22 @@
+@page "/grid-in-form"
+
+@* Grids whose filters sit inside a page's form, which only its own Save button should submit. *@
+<TbForm aria-label="Trip" OnSubmit="() => _saves++">
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Row trails">
+        <TbColumn Field="trail => trail" Title="Trail" Filterable />
+    </TbDataGrid>
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Menu trails" FilterMode="GridFilterMode.Menu">
+        <TbColumn Field="trail => trail" Title="Trail" Filterable />
+        <TbColumn Field="trail => trail" Title="Pick" Id="pick" Filterable FilterChoices="Choices" />
+    </TbDataGrid>
+    <TbButton Type="ButtonType.Submit">Save</TbButton>
+</TbForm>
+<p data-testid="saves">Saves: @_saves</p>
+
+@code {
+    private static readonly string[] Trails = ["Pine Hollow", "Eagle Ridge", "Cedar Flats"];
+
+    private static readonly object?[] Choices = [.. Trails];
+
+    private int _saves;
+}

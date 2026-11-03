@@ -669,13 +669,23 @@ public sealed class TbGridLocator(IPage page, string name)
         await Assertions.Expect(Row(row)).ToHaveAttributeAsync("data-selected", "");
     }
 
-    /// <summary>Types this into the filter of the column with this title and presses Enter, so a text filter applies
-    /// without waiting for typing to pause, then waits for a <c>DataProvider</c>'s rows. For a text or number filter;
-    /// choose a choice filter's value with <c>page.Tb().Select("Filter Status")</c> instead. Empty text clears the
-    /// filter.</summary>
+    /// <summary>Filters the column with this title by this text, then waits for a <c>DataProvider</c>'s rows. In the
+    /// filter row it types the text and presses Enter, so a text filter applies without waiting for typing to pause;
+    /// in a filter menu it types the text as the value and applies the menu. For a text or number filter; choose a
+    /// row's choice filter with <c>page.Tb().Select("Filter Status")</c>, or a list filter's choices with
+    /// <see cref="FilterChoicesAsync"/>. Empty text clears the filter.</summary>
     public async Task FilterAsync(string column, string text)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var menu = Menu(column);
+        if (await menu.CountAsync() > 0)
+        {
+            var panel = await OpenAsync(menu);
+            await panel.Locator(ValueSelector).FillAsync(text);
+            await ApplyAsync(panel);
+            return;
+        }
+
         var id = await Header(column).GetAttributeAsync("data-column");
         var cell = Table.Locator($"[data-part=filter][data-column=\"{id}\"]");
         var input = cell.Locator("input");
@@ -695,6 +705,103 @@ public sealed class TbGridLocator(IPage page, string name)
             await Assertions.Expect(cell).ToHaveAttributeAsync("data-value", applied);
         }
 
+        await RowsLoadedAsync();
+    }
+
+    /// <summary>In the filter menu of the column with this title, chooses the condition with this name, such as
+    /// "At least", types the text as the value, unless the condition takes none, applies the menu, and waits for a
+    /// <c>DataProvider</c>'s rows.</summary>
+    public async Task FilterAsync(string column, string condition, string text)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var panel = await OpenAsync(Menu(column));
+        await new TbSelectLocator(page, panel.Locator("[role=combobox]")).ChooseAsync(condition);
+        if (await panel.Locator(ValueSelector).CountAsync() > 0)
+        {
+            await panel.Locator(ValueSelector).FillAsync(text);
+        }
+
+        await ApplyAsync(panel);
+    }
+
+    /// <summary>Leaves exactly these choices picked in the list filter of the column with this title, naming each as
+    /// the filter shows it; pass none to clear the filter. Works with the filter row's multiple select and with a
+    /// filter menu's checkboxes, which it then applies. Then it waits for a <c>DataProvider</c>'s rows.</summary>
+    public async Task FilterChoicesAsync(string column, params string[] choices)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var menu = Menu(column);
+        if (await menu.CountAsync() == 0)
+        {
+            var id = await Header(column).GetAttributeAsync("data-column");
+            var cell = Table.Locator($"[data-part=filter][data-column=\"{id}\"]");
+            // Clearing first leaves only the choices asked for; the filter's value goes in the same render.
+            if (await cell.GetAttributeAsync("data-value") is not null)
+            {
+                await cell.Locator("[data-part=clear]").ClickAsync();
+                await Assertions.Expect(cell).Not.ToHaveAttributeAsync("data-value", new Regex(""));
+            }
+
+            if (choices.Length > 0)
+            {
+                await new TbSelectLocator(page, cell.Locator("[role=combobox]")).ChooseAsync(choices);
+            }
+
+            await RowsLoadedAsync();
+            return;
+        }
+
+        // A menu without checkboxes isn't a list, so reject it before opening the menu.
+        var labels = await menu.Locator("[data-part=panel] label:has(input[type=checkbox])").AllAsync();
+        if (labels.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"The \"{column}\" column's filter isn't a list; give the column FilterChoices.");
+        }
+
+        var names = new List<string>();
+        foreach (var label in labels)
+        {
+            names.Add((await label.TextContentAsync() ?? "").Trim());
+        }
+
+        if (choices.FirstOrDefault(choice => !names.Contains(choice)) is { } missing)
+        {
+            throw new InvalidOperationException($"The \"{column}\" column's filter has no choice \"{missing}\".");
+        }
+
+        var panel = await OpenAsync(menu);
+        for (var at = 0; at < labels.Count; at++)
+        {
+            var check = choices.Contains(names[at]);
+            await labels[at].Locator("input").SetCheckedAsync(check);
+        }
+
+        await ApplyAsync(panel);
+    }
+
+    private const string ValueSelector = "[data-part=input]:not([role=combobox]):not([type=checkbox])";
+
+    private ILocator Menu(string column) => Header(column).Locator("[data-part=filter-menu]");
+
+    private static async Task<ILocator> OpenAsync(ILocator menu)
+    {
+        var panel = menu.Locator("[data-part=panel]");
+        await menu.Locator("button").First.ClickAsync();
+        await Assertions.Expect(panel).ToBeVisibleAsync();
+        return panel;
+    }
+
+    // Applying closes the menu in the render that starts loading the rows.
+    private async Task ApplyAsync(ILocator panel)
+    {
+        if (await panel.Locator("[data-part=filter-apply]").CountAsync() == 0)
+        {
+            throw new InvalidOperationException("The column's filter is a template; use the controls it draws.");
+        }
+
+        await panel.Locator("[data-part=filter-apply]").ClickAsync();
+        await Assertions.Expect(panel).ToBeHiddenAsync();
         await RowsLoadedAsync();
     }
 

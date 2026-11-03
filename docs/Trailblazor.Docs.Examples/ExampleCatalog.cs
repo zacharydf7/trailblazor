@@ -1601,6 +1601,10 @@ public static class ExampleCatalog
                 new("filter", "Filter", "A `Filterable` column gets a filter under its header that suits its "
                     + "field: text it contains, a number it equals, a range of dates, a choice of an enum's values, "
                     + "or yes or no for a bool. Bind `Filters` to read or set them.", typeof(DataGridFilterExample)),
+                new("filter-menu", "Filter menu", "With `FilterMode` set to `Menu`, each filterable header gets a "
+                    + "filter button whose menu takes a condition and a value, or has checkboxes for the values of an "
+                    + "enum, a bool or a column's `FilterChoices`. A `FilterTemplate` draws a filter of your own.",
+                    typeof(DataGridFilterMenuExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
@@ -1610,6 +1614,7 @@ public static class ExampleCatalog
             [
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
+                typeof(GridFilterMode), typeof(GridFilterContext),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Accessibility =
@@ -1630,6 +1635,11 @@ public static class ExampleCatalog
                     + "followed by the column's title. A text filter applies when typing pauses; the others apply "
                     + "as soon as they change. A filtered column's header gets `data-filtered`, the grid goes back "
                     + "to its first page, and the count of rows shown is read out, such as \"Rows shown: 2.\"",
+                "In `Menu` mode each filter is a `TbPopover` behind an icon button named \"Filter\" and the "
+                    + "column's title, with \", on\" added while the column is filtered. The menu holds a labeled "
+                    + "\"Condition\" select and \"Value\" field, a \"Value\" date range, or a checkbox group of "
+                    + "values, and applies nothing until Apply, or Enter in the value, is pressed; Clear removes the "
+                    + "column's filter. A `FilterTemplate` replaces the menu's contents.",
                 "While rows load the table is `aria-busy`. A `DataProvider` receives the page, the sorts and the "
                     + "filters the grid asks for, and a new request cancels the last one. A failed load is read out "
                     + "and offers to try again, a load with no rows is read out too, and after the page changes a "
@@ -1647,15 +1657,19 @@ public static class ExampleCatalog
             ],
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
-            DataParts = ["grid", "scroll", "sort", "sort-order", "filters", "filter", "select-all", "row", "select",
+            DataParts = ["grid", "scroll", "sort", "sort-order", "filters", "filter", "filter-menu", "filter-apply",
+                "filter-clear", "select-all", "row", "select",
                 "order", "handle", "drop-reason", "loading", "empty", "failed", "summary", "pager"],
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
                 + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
                 + "`SortAsync(\"Name\", descending: true)`, `FilterAsync(\"Name\", \"ridge\")`, "
                 + "`SelectAsync(...)` and `GoToPageAsync(2)` drive it; sorting, filtering and paging wait for a "
-                + "`DataProvider`'s rows. A choice filter is a select named for its column, such as \"Filter "
-                + "Difficulty\", driven with `page.Tb().Select(\"Filter Difficulty\").ChooseAsync(\"Easy\")`. "
+                + "`DataProvider`'s rows. In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` "
+                + "picks a condition too, and `FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly "
+                + "those values picked, in a menu's checkboxes or the filter row's multiple select. A row's choice filter is a select named "
+                + "for its column, such as \"Filter Difficulty\", driven with "
+                + "`page.Tb().Select(\"Filter Difficulty\").ChooseAsync(\"Easy\")`. "
                 + "A filter cell's `data-value` holds the column's applied filter values as invariant text, with "
                 + "a range's two dates separated by a space. Without the helpers, wait for the "
                 + "table's `aria-busy` to clear, and for `data-ready` on the grid's root, `[data-part=grid]`, "

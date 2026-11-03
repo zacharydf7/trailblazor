@@ -38,4 +38,7 @@ public enum FilterOperator
 
     /// <summary>There is a value, and it isn't an empty string.</summary>
     IsNotEmpty,
+
+    /// <summary>The value equals one of the values in the filter's list.</summary>
+    IsAnyOf,
 }

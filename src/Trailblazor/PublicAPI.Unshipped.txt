@@ -2841,3 +2841,34 @@ override Trailblazor.GridFilter.GetHashCode() -> int
 override Trailblazor.GridFilter.ToString() -> string!
 static Trailblazor.GridFilter.operator !=(Trailblazor.GridFilter? left, Trailblazor.GridFilter? right) -> bool
 static Trailblazor.GridFilter.operator ==(Trailblazor.GridFilter? left, Trailblazor.GridFilter? right) -> bool
+Trailblazor.FilterOperator.IsAnyOf = 12 -> Trailblazor.FilterOperator
+Trailblazor.GridFilterContext
+Trailblazor.GridFilterContext.ApplyAsync(params System.Collections.Generic.IReadOnlyList<Trailblazor.GridFilter!>! filters) -> System.Threading.Tasks.Task!
+Trailblazor.GridFilterContext.Column.get -> string!
+Trailblazor.GridFilterContext.Filters.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridFilter!>!
+Trailblazor.GridFilterMode
+Trailblazor.GridFilterMode.Menu = 1 -> Trailblazor.GridFilterMode
+Trailblazor.GridFilterMode.Row = 0 -> Trailblazor.GridFilterMode
+Trailblazor.TbColumn<TItem>.FilterChoices.get -> System.Collections.Generic.IEnumerable<object?>?
+Trailblazor.TbColumn<TItem>.FilterChoices.set -> void
+Trailblazor.TbColumn<TItem>.FilterTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.GridFilterContext!>?
+Trailblazor.TbColumn<TItem>.FilterTemplate.set -> void
+Trailblazor.TbDataGrid<TItem>.FilterMode.get -> Trailblazor.GridFilterMode
+Trailblazor.TbDataGrid<TItem>.FilterMode.set -> void
+const Trailblazor.TbStrings.DataGridFilterApply = "DataGrid.FilterApply" -> string!
+const Trailblazor.TbStrings.DataGridFilterAtLeast = "DataGrid.FilterAtLeast" -> string!
+const Trailblazor.TbStrings.DataGridFilterAtMost = "DataGrid.FilterAtMost" -> string!
+const Trailblazor.TbStrings.DataGridFilterClear = "DataGrid.FilterClear" -> string!
+const Trailblazor.TbStrings.DataGridFilterCondition = "DataGrid.FilterCondition" -> string!
+const Trailblazor.TbStrings.DataGridFilterContains = "DataGrid.FilterContains" -> string!
+const Trailblazor.TbStrings.DataGridFilterDoesNotContain = "DataGrid.FilterDoesNotContain" -> string!
+const Trailblazor.TbStrings.DataGridFilterEndsWith = "DataGrid.FilterEndsWith" -> string!
+const Trailblazor.TbStrings.DataGridFilterEqualTo = "DataGrid.FilterEqualTo" -> string!
+const Trailblazor.TbStrings.DataGridFilterGreaterThan = "DataGrid.FilterGreaterThan" -> string!
+const Trailblazor.TbStrings.DataGridFilterIsEmpty = "DataGrid.FilterIsEmpty" -> string!
+const Trailblazor.TbStrings.DataGridFilterIsNotEmpty = "DataGrid.FilterIsNotEmpty" -> string!
+const Trailblazor.TbStrings.DataGridFilterLessThan = "DataGrid.FilterLessThan" -> string!
+const Trailblazor.TbStrings.DataGridFilterNotEqualTo = "DataGrid.FilterNotEqualTo" -> string!
+const Trailblazor.TbStrings.DataGridFilterStartsWith = "DataGrid.FilterStartsWith" -> string!
+const Trailblazor.TbStrings.DataGridFilterValue = "DataGrid.FilterValue" -> string!
+const Trailblazor.TbStrings.DataGridFilterOn = "DataGrid.FilterOn" -> string!

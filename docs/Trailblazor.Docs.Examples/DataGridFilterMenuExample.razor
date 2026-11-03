@@ -1,0 +1,47 @@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Camp" Items="Camps" AriaLabel="Campsites" KeySelector="camp => camp.Id"
+                FilterMode="GridFilterMode.Menu" @bind-Filters="_filters">
+        <TbColumn Field="camp => camp.Name" Filterable Sortable />
+        <TbColumn Field="camp => camp.Region" Filterable FilterChoices="Regions" />
+        <TbColumn Field="camp => camp.Sites" Filterable Sortable />
+        <TbColumn Field="camp => camp.Season" Filterable />
+        <TbColumn Field="camp => camp.Water" Title="Water" Filterable>
+            <FilterTemplate>
+                <TbSwitch Label="Only with water" Value="context.Filters.Count > 0"
+                          ValueChanged="(bool on) => context.ApplyAsync(on
+                              ? [new GridFilter(context.Column, FilterOperator.EqualTo, true)] : [])" />
+            </FilterTemplate>
+        </TbColumn>
+    </TbDataGrid>
+    <TbText data-testid="camp-filters">
+        @(_filters.Count == 0 ? "No filters." : $"Filters: {string.Join("; ", _filters.Select(Describe))}.")
+    </TbText>
+</TbStack>
+
+@code {
+    private static readonly Camp[] Camps =
+    [
+        new(1, "Aspen Flat", "North ridge", 24, Season.Summer, true),
+        new(2, "Boulder Cove", "River valley", 8, Season.AllYear, false),
+        new(3, "Cinder Hill", "High peaks", 12, Season.Summer, false),
+        new(4, "Dune Point", "River valley", 40, Season.AllYear, true),
+        new(5, "Elk Meadow", "North ridge", 16, Season.Winter, true),
+    ];
+
+    private static readonly object?[] Regions = ["North ridge", "River valley", "High peaks"];
+
+    private IReadOnlyList<GridFilter> _filters = [];
+
+    private static string Describe(GridFilter filter) => filter.Value is IEnumerable<object> values
+        ? $"{filter.Column} {filter.Operator} {string.Join(", ", values)}"
+        : $"{filter.Column} {filter.Operator} {filter.Value}";
+
+    private enum Season
+    {
+        Summer,
+        Winter,
+        AllYear,
+    }
+
+    private sealed record Camp(int Id, string Name, string Region, int Sites, Season Season, bool Water);
+}
