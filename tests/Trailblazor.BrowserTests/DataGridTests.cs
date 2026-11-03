@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -81,11 +82,11 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Plan Pine Hollow loop" }).ClickAsync();
         await Expect(chosen).ToContainTextAsync("Planning Pine Hollow loop.");
         await Expect(chosen).ToContainTextAsync("Chosen: Cedar Flats, Fern Gully.");
-        var all = page.GetByRole(AriaRole.Checkbox, new() { Name = "Select all rows" });
+        var all = Table(page, "Trails").GetByRole(AriaRole.Checkbox, new() { Name = "Select all rows" });
         Assert.True(await all.EvaluateAsync<bool>("box => box.indeterminate"));
         await all.CheckAsync();
 
-        await Expect(page.Locator("tr[data-part=row][data-selected]")).ToHaveCountAsync(5);
+        await Expect(Table(page, "Trails").Locator("tr[data-part=row][data-selected]")).ToHaveCountAsync(5);
         Assert.False(await all.EvaluateAsync<bool>("box => box.indeterminate"));
     }
 
@@ -280,6 +281,95 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Switch, new() { Name = "Only with water" }).ClickAsync();
 
         await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Aspen Flat", "Dune Point", "Elk Meadow"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PinnedColumns_ShouldStayAtTheirSidesOverTheOtherCells_WhenTheRowsScrollSideways(string browser)
+    {
+        var page = await OpenAsync(browser, "/pinned-grid");
+        var table = Table(page, "Numbers");
+        var scroll = table.Locator("xpath=..");
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+
+        await scroll.EvaluateAsync("box => box.scrollLeft = 150");
+
+        var view = await scroll.EvaluateAsync<double[]>(
+            "box => [box.getBoundingClientRect().left + box.clientLeft, box.clientWidth]");
+        var select = (await table.Locator("tbody td[data-part=select]").First.BoundingBoxAsync())!;
+        var number = table.Locator("tbody td[data-column=Number]").First;
+        var start = (await number.BoundingBoxAsync())!;
+        var end = (await table.Locator("tbody td[data-column=Quadruple]").First.BoundingBoxAsync())!;
+        Assert.Equal(view[0], select.X, 0.5);
+        Assert.Equal(select.X + select.Width, start.X, 0.5);
+        Assert.Equal(view[0] + view[1], end.X + end.Width, 0.5);
+        Assert.True(await number.EvaluateAsync<bool>("cell => document.elementFromPoint(cell.getBoundingClientRect()"
+            + ".left + 4, cell.getBoundingClientRect().top + 4)?.closest('td') === cell"));
+        Assert.NotEqual("rgba(0, 0, 0, 0)", await number.EvaluateAsync<string>(
+            "cell => getComputedStyle(cell).backgroundColor"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PinnedColumns_ShouldScrollAFocusedControlClearOfThem_WhenItWasUnderThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/pinned-grid");
+        var table = Table(page, "Numbers");
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+        await table.Locator("xpath=..").EvaluateAsync("box => box.scrollLeft = 100");
+        var sort = table.Locator("th[data-column=double] [data-part=sort]");
+        Assert.False(await sort.EvaluateAsync<bool>("button => { const box = button.getBoundingClientRect();"
+            + " return button.contains(document.elementFromPoint(box.left + 2, box.top + box.height / 2)); }"));
+
+        await sort.FocusAsync();
+
+        Assert.True(await sort.EvaluateAsync<bool>("button => { const box = button.getBoundingClientRect();"
+            + " return button.contains(document.elementFromPoint(box.left + 2, box.top + box.height / 2)); }"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PinnedColumns_ShouldStickPastTheColumnsBefore_WhenAColumnIsPinnedAfterLoading(string browser)
+    {
+        var page = await OpenAsync(browser, "/pinned-grid");
+        var table = Table(page, "Numbers");
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Pin tripled" }).ClickAsync();
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-2"));
+        await table.Locator("xpath=..").EvaluateAsync("box => box.scrollLeft = box.scrollWidth");
+
+        var number = (await table.Locator("tbody td[data-column=Number]").First.BoundingBoxAsync())!;
+        var triple = (await table.Locator("tbody td[data-column=triple]").First.BoundingBoxAsync())!;
+        Assert.Equal(number.X + number.Width, triple.X, 0.5);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PinnedColumns_ShouldLeaveNoScrollPadding_WhenTheLastIsUnpinned(string browser)
+    {
+        var page = await OpenAsync(browser, "/pinned-grid");
+        var table = Table(page, "Numbers");
+        var scroll = table.Locator("xpath=..");
+        await Expect(scroll).ToHaveAttributeAsync("style", new Regex("scroll-padding"));
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Unpin all" }).ClickAsync();
+
+        await Expect(table.Locator("[data-pinned]")).ToHaveCountAsync(0);
+        await Expect(scroll).Not.ToHaveAttributeAsync("style", new Regex("scroll-padding"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PinnedColumns_ShouldPassUnderTheHeader_WhenTheRowsScrollDown(string browser)
+    {
+        var page = await OpenAsync(browser, "/pinned-grid");
+        var table = Table(page, "Numbers");
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+
+        await table.Locator("xpath=..").EvaluateAsync("box => box.scrollTop = 100");
+
+        foreach (var column in new[] { "Number", "Quadruple" })
+        {
+            Assert.True(await table.Locator($"thead th[data-column={column}]").EvaluateAsync<bool>(
+                "header => { const box = header.getBoundingClientRect();"
+                + " return document.elementFromPoint(box.left + 4, box.bottom - 4)?.closest('th') === header; }"));
+        }
     }
 
     private static ILocator Table(IPage page, string name) =>

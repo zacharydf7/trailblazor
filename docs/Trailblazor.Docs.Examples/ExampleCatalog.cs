@@ -1605,6 +1605,9 @@ public static class ExampleCatalog
                     + "filter button whose menu takes a condition and a value, or has checkboxes for the values of an "
                     + "enum, a bool or a column's `FilterChoices`. A `FilterTemplate` draws a filter of your own.",
                     typeof(DataGridFilterMenuExample)),
+                new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
+                    + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
+                    + "column with it.", typeof(DataGridPinnedExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
@@ -1614,7 +1617,7 @@ public static class ExampleCatalog
             [
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
-                typeof(GridFilterMode), typeof(GridFilterContext),
+                typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Accessibility =
@@ -1640,6 +1643,8 @@ public static class ExampleCatalog
                     + "\"Condition\" select and \"Value\" field, a \"Value\" date range, or a checkbox group of "
                     + "values, and applies nothing until Apply, or Enter in the value, is pressed; Clear removes the "
                     + "column's filter. A `FilterTemplate` replaces the menu's contents.",
+                "A pinned column moves to its side of the table in the page's order too, so screen readers and Tab "
+                    + "reach its cells in the order they show.",
                 "While rows load the table is `aria-busy`. A `DataProvider` receives the page, the sorts and the "
                     + "filters the grid asks for, and a new request cancels the last one. A failed load is read out "
                     + "and offers to try again, a load with no rows is read out too, and after the page changes a "
@@ -1674,7 +1679,8 @@ public static class ExampleCatalog
                 + "a range's two dates separated by a space. Without the helpers, wait for the "
                 + "table's `aria-busy` to clear, and for `data-ready` on the grid's root, `[data-part=grid]`, "
                 + "before clicking a row. Rows carry `data-key` and `data-selected`, and cells `data-column`, the "
-                + "field's path such as `Shipping.City` unless the column has an `Id`. A row's `data-key` is its "
+                + "field's path such as `Shipping.City` unless the column has an `Id`. A pinned column's header "
+                + "and cells also carry `data-pinned`, `start` or `end`. A row's `data-key` is its "
                 + "key's text for a string, number or date key, and a made-up id such as `key-3` for any other key, or "
                 + "when the text is empty or when another key has it. In bUnit, `cut.Tb().Grid(\"Trails\")` from "
                 + "`Trailblazor.Testing` has the same `Row`, `SelectAsync` and `FilterAsync`, and "

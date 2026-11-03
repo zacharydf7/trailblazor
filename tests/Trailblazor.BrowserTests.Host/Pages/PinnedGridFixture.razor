@@ -1,0 +1,23 @@
+@page "/pinned-grid"
+
+@* A narrow grid whose rows scroll both ways under its header and its columns pinned at each side; headers don't wrap,
+   so their long titles make the rows wider than the grid. *@
+<div style="inline-size: 30rem">
+    <TbDataGrid TItem="int" Items="Rows" AriaLabel="Numbers" SelectionMode="SelectionMode.Multiple" Height="12rem">
+        <TbColumn Field="row => row" Title="Number" Pinned="_unpinned ? ColumnPin.None : ColumnPin.Start" />
+        <TbColumn Field="row => row * 2" Title="Doubled" Id="double" Sortable />
+        <TbColumn Field="row => row * 3" Title="The number tripled, for the wide middle" Id="triple"
+                  Pinned="_pinTriple ? ColumnPin.Start : ColumnPin.None" />
+        <TbColumn Field="row => row * 4" Title="Quadruple" Pinned="_unpinned ? ColumnPin.None : ColumnPin.End" />
+    </TbDataGrid>
+</div>
+<TbButton OnClick="() => _pinTriple = true">Pin tripled</TbButton>
+<TbButton OnClick="() => _unpinned = true">Unpin all</TbButton>
+
+@code {
+    private static readonly int[] Rows = [.. Enumerable.Range(1, 20)];
+
+    private bool _pinTriple;
+
+    private bool _unpinned;
+}

@@ -967,6 +967,66 @@ public class TbDataGridTests : BunitContext
         Assert.Single(cut.FindAll("[data-part=order]"));
     }
 
+    [Fact]
+    public void Render_ShouldMovePinnedColumnsToTheirSides_WhenColumnsArePinned()
+    {
+        var cut = RenderTrails(columns: PinnedColumns(ColumnPin.End, ColumnPin.None, ColumnPin.Start));
+
+        var headers = cut.FindAll("thead tr:first-child th");
+        Assert.Equal(["LastHiked", "LengthKm", "Name"], headers.Select(header => header.GetAttribute("data-column")));
+        Assert.Equal(["start", null, "end"], headers.Select(header => header.GetAttribute("data-pinned")));
+        Assert.Equal("width: 9rem; inset-inline-start: var(--tb-data-grid-pin-0, 0px)",
+            headers[0].GetAttribute("style"));
+        Assert.Null(headers[1].GetAttribute("style"));
+        var cells = Row(cut, "1").QuerySelectorAll("td");
+        Assert.Equal(["LastHiked", "LengthKm", "Name"], cells.Select(cell => cell.GetAttribute("data-column")));
+        Assert.Equal(["start", null, "end"], cells.Select(cell => cell.GetAttribute("data-pinned")));
+        Assert.Equal("inset-inline-end: var(--tb-data-grid-pin-end-0, 0px)", cells[2].GetAttribute("style"));
+    }
+
+    [Fact]
+    public void Render_ShouldPinTheOrderAndSelectionColumnsFirst_WhenAColumnIsPinnedAtTheStart()
+    {
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails, parameters => parameters.Add(grid => grid.SelectionMode,
+            SelectionMode.Multiple).Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)),
+            PinnedColumns(ColumnPin.Start, ColumnPin.Start, ColumnPin.None));
+
+        var styles = Enumerable.Range(0, 4).Select(slot => $"inset-inline-start: var(--tb-data-grid-pin-{slot}, 0px)");
+        Assert.All(cut.FindAll("tr"), row =>
+        {
+            var cells = row.Children;
+            Assert.Equal(["start", "start", "start", "start", null],
+                cells.Select(cell => cell.GetAttribute("data-pinned")));
+            Assert.Equal(styles, cells.Take(4).Select(cell => cell.GetAttribute("style")));
+        });
+    }
+
+    [Fact]
+    public void Render_ShouldCountEndPinsFromTheEndAndLeaveTheSelectionColumnUnpinned_WhenOnlyEndIsPinned()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.SelectionMode,
+            SelectionMode.Single), columns: PinnedColumns(ColumnPin.None, ColumnPin.End, ColumnPin.End));
+
+        var cells = Row(cut, "1").Children;
+        Assert.Equal([null, null, "end", "end"], cells.Select(cell => cell.GetAttribute("data-pinned")));
+        Assert.Equal([null, null, "inset-inline-end: var(--tb-data-grid-pin-end-1, 0px)",
+            "inset-inline-end: var(--tb-data-grid-pin-end-0, 0px)"], cells.Select(cell => cell.GetAttribute("style")));
+    }
+
+    [Fact]
+    public void Render_ShouldMoveTheColumnInEveryRow_WhenItIsPinnedAfterTheFirstRender()
+    {
+        var cut = RenderTrails(columns: PinnedColumns(ColumnPin.None, ColumnPin.None, ColumnPin.None));
+
+        cut.Render(parameters => parameters.Add(grid => grid.ChildContent,
+            PinnedColumns(ColumnPin.None, ColumnPin.Start, ColumnPin.None)));
+
+        Assert.Equal(["LengthKm", "Name", "LastHiked"],
+            Row(cut, "1").QuerySelectorAll("td").Select(cell => cell.GetAttribute("data-column")));
+        Assert.Equal("start", Row(cut, "1").QuerySelector("td[data-column=LengthKm]")!.GetAttribute("data-pinned"));
+    }
+
     private SortableEvents MoveEvents() =>
         ((DotNetObjectReference<SortableEvents>)JSInterop.Invocations["attachSortable"].Single().Arguments[1]!).Value;
 
@@ -1019,6 +1079,28 @@ public class TbDataGridTests : BunitContext
         builder.AddAttribute(8, nameof(TbColumn<Trail>.Format), "d");
         builder.CloseComponent();
     }
+
+    // Name, which is filterable, then LengthKm and LastHiked, each pinned as given.
+    private static RenderFragment PinnedColumns(ColumnPin name, ColumnPin length, ColumnPin hiked) => builder =>
+    {
+        builder.OpenComponent<TbColumn<Trail>>(0);
+        builder.AddAttribute(1, nameof(TbColumn<Trail>.Field),
+            (Expression<Func<Trail, object?>>)(trail => trail.Name));
+        builder.AddAttribute(2, nameof(TbColumn<Trail>.Filterable), true);
+        builder.AddAttribute(3, nameof(TbColumn<Trail>.Pinned), name);
+        builder.CloseComponent();
+        builder.OpenComponent<TbColumn<Trail>>(4);
+        builder.AddAttribute(5, nameof(TbColumn<Trail>.Field),
+            (Expression<Func<Trail, object?>>)(trail => trail.LengthKm));
+        builder.AddAttribute(6, nameof(TbColumn<Trail>.Pinned), length);
+        builder.CloseComponent();
+        builder.OpenComponent<TbColumn<Trail>>(7);
+        builder.AddAttribute(8, nameof(TbColumn<Trail>.Field),
+            (Expression<Func<Trail, object?>>)(trail => trail.LastHiked));
+        builder.AddAttribute(9, nameof(TbColumn<Trail>.Width), "9rem");
+        builder.AddAttribute(10, nameof(TbColumn<Trail>.Pinned), hiked);
+        builder.CloseComponent();
+    };
 
     // Requests hold lists, which records compare by reference, so their sorts are compared one by one.
     private sealed class RequestComparer : IEqualityComparer<GridRequest>

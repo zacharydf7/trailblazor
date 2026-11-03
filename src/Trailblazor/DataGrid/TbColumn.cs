@@ -93,6 +93,12 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public string? Width { get; set; }
 
+    /// <summary>Keeps the column in view at the start or end of the row while the rows scroll sideways. A pinned
+    /// column moves to its side, after any earlier column pinned to the same side. A column pinned at the start pins
+    /// the selection and order columns with it.</summary>
+    [Parameter]
+    public ColumnPin Pinned { get; set; }
+
     /// <summary>Where the header and cells sit. Defaults to the end for numbers and the start for everything else.
     /// </summary>
     [Parameter]
@@ -159,7 +165,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
         }
 
         object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method,
-            FilterChoices is null, FilterTemplate is null, Width, Align, Class, Cell is null, Header is null);
+            FilterChoices is null, FilterTemplate is null, Width, Pinned, Align, Class, Cell is null, Header is null);
         if (!shown.Equals(_shown))
         {
             _shown = shown;

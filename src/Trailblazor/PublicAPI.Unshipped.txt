@@ -2872,3 +2872,9 @@ const Trailblazor.TbStrings.DataGridFilterNotEqualTo = "DataGrid.FilterNotEqualT
 const Trailblazor.TbStrings.DataGridFilterStartsWith = "DataGrid.FilterStartsWith" -> string!
 const Trailblazor.TbStrings.DataGridFilterValue = "DataGrid.FilterValue" -> string!
 const Trailblazor.TbStrings.DataGridFilterOn = "DataGrid.FilterOn" -> string!
+Trailblazor.ColumnPin
+Trailblazor.ColumnPin.End = 2 -> Trailblazor.ColumnPin
+Trailblazor.ColumnPin.None = 0 -> Trailblazor.ColumnPin
+Trailblazor.ColumnPin.Start = 1 -> Trailblazor.ColumnPin
+Trailblazor.TbColumn<TItem>.Pinned.get -> Trailblazor.ColumnPin
+Trailblazor.TbColumn<TItem>.Pinned.set -> void

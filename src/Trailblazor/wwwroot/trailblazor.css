@@ -4587,19 +4587,23 @@
     /* A grid's stripe yields to hover, press and selection. */
     .tb-table--striped tbody tr:nth-child(even),
     .tb-data-grid--striped :where(.tb-data-grid__row:nth-child(even)) {
+        --tb-data-grid-row-shade: var(--tb-color-surface-sunken);
         background: var(--tb-color-surface-sunken);
     }
 
     .tb-data-grid__row:hover {
+        --tb-data-grid-row-shade: var(--tb-color-hover);
         background: var(--tb-color-hover);
     }
 
     .tb-data-grid__row:active:not(.tb-data-grid__row--selected) {
+        --tb-data-grid-row-shade: var(--tb-color-pressed);
         background: var(--tb-color-pressed);
     }
 
     .tb-data-grid__row--selected,
     .tb-data-grid__row--selected:hover {
+        --tb-data-grid-row-shade: var(--tb-color-primary-subtle);
         background: var(--tb-color-primary-subtle);
     }
 
@@ -4607,11 +4611,33 @@
         overflow: auto;
     }
 
-    /* Rows that scroll in a set height keep the header and its filters in view above them. */
+    /* Rows that scroll in a set height keep the header and its filters in view, above the rows and their pinned
+       cells. */
     .tb-data-grid--scrolls thead {
         position: sticky;
         inset-block-start: 0;
+        z-index: 2;
+    }
+
+    /* A pinned cell stays in view while the rows scroll sideways, so it hides the cells passing under it. */
+    .tb-data-grid__table [data-pinned] {
+        position: sticky;
         z-index: 1;
+    }
+
+    /* A row's shade may be see-through, so a pinned cell lays it over the surface. */
+    .tb-data-grid__row > [data-pinned] {
+        background: linear-gradient(var(--tb-data-grid-row-shade, transparent),
+            var(--tb-data-grid-row-shade, transparent)), var(--tb-color-surface);
+    }
+
+    /* The last cell pinned at the start and the first pinned at the end draw a line where the others pass under. */
+    .tb-data-grid__table [data-pinned="start"]:not(:has(+ [data-pinned="start"])) {
+        border-inline-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-data-grid__table :not([data-pinned="end"]) + [data-pinned="end"] {
+        border-inline-start: 1px solid var(--tb-border-subtle);
     }
 
     .tb-data-grid__filters td {

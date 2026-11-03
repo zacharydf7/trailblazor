@@ -14,6 +14,7 @@ namespace Trailblazor;
 public partial class TbDataGrid<TItem> : IAsyncDisposable
 {
     private readonly List<TbColumn<TItem>> _columns = [];
+    private List<TbColumn<TItem>> _shownColumns = [];
     private readonly Dictionary<object, TItem> _selection = [];
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
     private readonly KeyIds _ids = new();
@@ -113,7 +114,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public Func<TItem, string>? RowLabel { get; set; }
 
     /// <summary>Extra CSS classes for a row. A row whose classes change draws again, even when they come from outside
-    /// the item, such as which row is current.</summary>
+    /// the item, such as which row is current. A class that shades the row should also set
+    /// <c>--tb-data-grid-row-shade</c> to that color, so the row's pinned cells, which paint a background of their own,
+    /// take the shade too.</summary>
     [Parameter]
     public Func<TItem, string?>? RowClass { get; set; }
 
@@ -229,7 +232,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int PageCount => _pageSize is { } size ? Math.Max(1, (_total + size - 1) / size) : 1;
 
-    private int ColumnCount => _columns.Count + (SelectionMode == SelectionMode.None ? 0 : 1) + (CanReorder ? 1 : 0);
+    private int ColumnCount => _columns.Count + LeadCount;
 
     // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
     private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0
@@ -410,6 +413,44 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _columns.Add(column);
         StateHasChanged();
     }
+
+    // Pinned columns show at their side, those pinned at the start first and those pinned at the end last.
+    private void ArrangeColumns() => _shownColumns = [.. _columns.OrderBy(column => column.Pinned switch
+    {
+        ColumnPin.Start => 0,
+        ColumnPin.End => 2,
+        _ => 1,
+    })];
+
+    // The selection and order columns lead each row, so they stay with the columns pinned at the start.
+    private bool PinsLead => _shownColumns is [{ Pinned: ColumnPin.Start }, ..];
+
+    private int LeadCount => (CanReorder ? 1 : 0) + (SelectionMode == SelectionMode.None ? 0 : 1);
+
+    private string? LeadPin => PinsLead ? "start" : null;
+
+    private string? LeadStyle(int slot) => PinsLead ? StartPinStyle(slot) : null;
+
+    private static string? PinSide(TbColumn<TItem> column) =>
+        column.Pinned == ColumnPin.None ? null : column.Pinned.ToString().ToLowerInvariant();
+
+    // A pinned cell sticks just after the cells pinned before it on its side; the grid's script measures their widths
+    // into variables numbered from that side.
+    private string? PinStyle(TbColumn<TItem> column)
+    {
+        var at = _shownColumns.IndexOf(column);
+        return column.Pinned switch
+        {
+            ColumnPin.Start => StartPinStyle(LeadCount + at),
+            ColumnPin.End => $"inset-inline-end: var(--tb-data-grid-pin-end-{_shownColumns.Count - 1 - at}, 0px)",
+            _ => null,
+        };
+    }
+
+    private string? HeaderStyle(TbColumn<TItem> column) =>
+        Styles.Join(column.Width is null ? null : $"width: {column.Width}", PinStyle(column));
+
+    private static string StartPinStyle(int slot) => $"inset-inline-start: var(--tb-data-grid-pin-{slot}, 0px)";
 
     // A sort names its column by key, so two columns with one key would sort and mark each other. Checked as the grid
     // renders, once every column has its parameters, since columns reordered in a loop change one at a time.

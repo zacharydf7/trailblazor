@@ -8,7 +8,7 @@
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
-    @{ CheckColumnKeys(); ArrangeForColumns(); DrawRowsForReorder(); }
+    @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); DrawRowsForReorder(); }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
         <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
                class="tb-data-grid__table">
@@ -16,13 +16,15 @@
                 <tr>
                     @if (CanReorder)
                     {
-                        <th scope="col" data-part="order" class="tb-data-grid__handle">
+                        <th scope="col" data-part="order" data-pinned="@LeadPin" style="@LeadStyle(0)"
+                            class="tb-data-grid__handle">
                             <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridOrder]</span>
                         </th>
                     }
                     @if (SelectionMode == SelectionMode.Multiple)
                     {
-                        <th scope="col" data-part="select" class="tb-data-grid__select">
+                        <th scope="col" data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
+                            class="tb-data-grid__select">
                             <input type="checkbox" data-part="select-all" class="tb-checkbox__input tb-data-grid__check"
                                    aria-label="@(Labels.SelectAll ?? Localizer[TbStrings.DataGridSelectAll])"
                                    checked="@AllSelected" data-mixed="@(SomeSelected ? "" : null)"
@@ -31,17 +33,19 @@
                     }
                     else if (SelectionMode == SelectionMode.Single)
                     {
-                        <th scope="col" data-part="select" class="tb-data-grid__select">
+                        <th scope="col" data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
+                            class="tb-data-grid__select">
                             <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridSelect]</span>
                         </th>
                     }
-                    @foreach (var column in _columns)
+                    @foreach (var column in _shownColumns)
                     {
                         var at = _sorts.FindIndex(sort => sort.Column == column.Key);
                         var sort = at < 0 ? null : _sorts[at];
                         <th scope="col" data-column="@column.Key" data-title="@column.Heading"
                             data-filtered="@(IsFiltered(column) ? "" : null)" aria-sort="@AriaSort(at, sort)"
-                            style="@(column.Width is null ? null : $"width: {column.Width}")"
+                            data-pinned="@PinSide(column)"
+                            style="@HeaderStyle(column)"
                             class="@ClassNames.Join("tb-data-grid__header",
                                        ClassNames.Modifier("tb-data-grid__header", column.Alignment))">
                             @if (column.CanSort)
@@ -84,16 +88,17 @@
                     <tr data-part="filters" class="tb-data-grid__filters">
                         @if (CanReorder)
                         {
-                            <td class="tb-data-grid__handle"></td>
+                            <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
                         }
                         @if (SelectionMode != SelectionMode.None)
                         {
-                            <td class="tb-data-grid__select"></td>
+                            <td data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)" class="tb-data-grid__select">
+                            </td>
                         }
-                        @foreach (var column in _columns)
+                        @foreach (var column in _shownColumns)
                         {
                             <td data-column="@column.Key" data-part="filter" data-value="@FilterText(column)"
-                                class="@FilterClass(column)">
+                                data-pinned="@PinSide(column)" style="@PinStyle(column)" class="@FilterClass(column)">
                                 @if (column.CanFilter)
                                 {
                                     @* A page's form doesn't own the grid's filters, which neither change it nor count
@@ -185,7 +190,7 @@
                         rowClass)">
             @if (CanReorder)
             {
-                <td class="tb-data-grid__handle">
+                <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle">
                     @((RenderFragment)(handle => MoveHandle.Add(handle, 0, Format(TbStrings.SortableHandle,
                         label ?? LabelOf(item)), at, _total, disabled: false, Localizer,
                         (to, args) => MoveRowAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
@@ -193,7 +198,8 @@
             }
             @if (SelectionMode != SelectionMode.None)
             {
-                <td data-part="select" class="tb-data-grid__select">
+                <td data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
+                    class="tb-data-grid__select">
                     <input type="@(SelectionMode == SelectionMode.Single ? "radio" : "checkbox")"
                            class="@(SelectionMode == SelectionMode.Single ? "tb-data-grid__check"
                                       : "tb-checkbox__input tb-data-grid__check")" checked="@selected"
@@ -202,9 +208,10 @@
                            @onchange="() => ToggleAsync(item)" />
                 </td>
             }
-            @foreach (var column in _columns)
+            @foreach (var column in _shownColumns)
             {
-                <td data-column="@column.Key" class="@column.CellClass">
+                <td data-column="@column.Key" data-pinned="@PinSide(column)" style="@PinStyle(column)"
+                    class="@column.CellClass">
                     @if (column.Cell is not null)
                     {
                         @column.Cell(item)
