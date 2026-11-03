@@ -39,7 +39,7 @@
                         var at = _sorts.FindIndex(sort => sort.Column == column.Key);
                         var sort = at < 0 ? null : _sorts[at];
                         <th scope="col" data-column="@column.Key" data-title="@column.Heading"
-                            aria-sort="@AriaSort(at, sort)"
+                            data-filtered="@(IsFiltered(column) ? "" : null)" aria-sort="@AriaSort(at, sort)"
                             style="@(column.Width is null ? null : $"width: {column.Width}")"
                             class="@ClassNames.Join("tb-data-grid__header",
                                        ClassNames.Modifier("tb-data-grid__header", column.Alignment))">
@@ -74,6 +74,29 @@
                         </th>
                     }
                 </tr>
+                @if (HasFilterRow)
+                {
+                    <tr data-part="filters" class="tb-data-grid__filters">
+                        @if (CanReorder)
+                        {
+                            <td class="tb-data-grid__handle"></td>
+                        }
+                        @if (SelectionMode != SelectionMode.None)
+                        {
+                            <td class="tb-data-grid__select"></td>
+                        }
+                        @foreach (var column in _columns)
+                        {
+                            <td data-column="@column.Key" data-part="filter" data-value="@FilterText(column)"
+                                class="@FilterClass(column)">
+                                @if (column.CanFilter)
+                                {
+                                    @FilterField(column)
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
             </thead>
             <tbody @ref="_body" data-sortable="@(CanReorder ? "" : null)">
                 @if (_failed)
@@ -184,6 +207,40 @@
                 </td>
             }
         </tr>;
+
+    // A text filter applies when typing pauses; the other fields apply as soon as they change.
+    private RenderFragment FilterField(TbColumn<TItem> column) => column.FilterKind switch
+    {
+        ColumnFilterKind.Number =>
+            @<TbNumberField TValue="decimal?" AriaLabel="@FilterLabel(column)" Size="Size.Small" HideStepButtons
+                            Value="NumberFilter(column)" ValueChanged="number => FilterNumberAsync(column, number)" />,
+        ColumnFilterKind.Date =>
+            @<TbDateRangePicker TDate="DateOnly" AriaLabel="@FilterLabel(column)" Size="Size.Small"
+                                Value="DateFilter(column)" ValueChanged="range => FilterDatesAsync(column, range)" />,
+        ColumnFilterKind.Choice or ColumnFilterKind.YesNo =>
+            @<TbSelect TValue="string" AriaLabel="@FilterLabel(column)" Size="Size.Small" Clearable
+                       Placeholder="@Localizer[TbStrings.DataGridFilterAny]" Value="ChoiceFilter(column)"
+                       ValueChanged="choice => FilterChoiceAsync(column, choice)">
+                @if (column.FilterKind == ColumnFilterKind.YesNo)
+                {
+                    <TbOption Value="@bool.TrueString">@Localizer[TbStrings.DataGridFilterYes]</TbOption>
+                    <TbOption Value="@bool.FalseString">@Localizer[TbStrings.DataGridFilterNo]</TbOption>
+                }
+                else
+                {
+                    @foreach (var (value, label) in column.Choices)
+                    {
+                        <TbOption Value="@value.ToString()">@label</TbOption>
+                    }
+                }
+            </TbSelect>,
+        _ =>
+            @<TbTextField TValue="string" AriaLabel="@FilterLabel(column)" Size="Size.Small" Type="TextFieldType.Search"
+                          UpdateOnInput UpdateDelay="FilterDelay" Value="TextFilter(column)"
+                          ValueChanged="text => FilterTextAsync(column, text)" />,
+    };
+
+    private static readonly TimeSpan FilterDelay = TimeSpan.FromMilliseconds(300);
 
     // Single selection's radio buttons need a group of their own on the page.
     private readonly string _radioName = $"tb-data-grid-{Guid.NewGuid():N}";

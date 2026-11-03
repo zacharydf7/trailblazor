@@ -4606,11 +4606,25 @@
         overflow: auto;
     }
 
-    /* Rows that scroll in a set height keep the header in view above them. */
-    .tb-data-grid--scrolls thead th {
+    /* Rows that scroll in a set height keep the header and its filters in view above them. */
+    .tb-data-grid--scrolls thead {
         position: sticky;
         inset-block-start: 0;
         z-index: 1;
+    }
+
+    .tb-data-grid__filters td {
+        background: var(--tb-color-surface);
+    }
+
+    .tb-data-grid__filter > .tb-field {
+        inline-size: 100%;
+        min-inline-size: 8rem;
+    }
+
+    /* A range shows two dates side by side. */
+    .tb-data-grid__filter--date > .tb-field {
+        min-inline-size: 15rem;
     }
 
     .tb-table--sticky-header thead th {

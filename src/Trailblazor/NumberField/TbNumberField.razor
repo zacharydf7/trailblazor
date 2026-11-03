@@ -189,25 +189,12 @@
             return true;
         }
 
-        if (!TryToDecimal(Value, out var exact))
+        if (!NumberTypes.TryToDecimal(Value, out var exact))
         {
             return false;
         }
 
         number = exact;
-        return true;
-    }
-
-    private static bool TryToDecimal(TValue? value, out decimal number)
-    {
-        number = 0;
-        if (value is null
-            || !(Math.Abs(Convert.ToDouble(value, CultureInfo.InvariantCulture)) < (double)decimal.MaxValue))
-        {
-            return false;
-        }
-
-        number = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
         return true;
     }
 
@@ -263,7 +250,7 @@
             return false;
         }
 
-        if (Decimals is int decimals && TryToDecimal(value, out var exact))
+        if (Decimals is int decimals && NumberTypes.TryToDecimal(value, out var exact))
         {
             value = ToValue(Math.Round(exact, decimals, MidpointRounding.AwayFromZero));
         }
@@ -271,7 +258,8 @@
         // A double past decimal's range moves to the nearer of Min and Max too, when the field has one.
         if (ClampToRange && value is not null)
         {
-            value = TryToDecimal(value, out var unclamped) ? ToValue(Math.Clamp(unclamped, Lower, Upper))
+            value = NumberTypes.TryToDecimal(value, out var unclamped)
+                ? ToValue(Math.Clamp(unclamped, Lower, Upper))
                 : (Convert.ToDouble(value, CultureInfo.InvariantCulture) > 0 ? Max : Min) is { } limit ? ToValue(limit)
                 : value;
         }

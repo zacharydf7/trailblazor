@@ -2797,3 +2797,47 @@ Trailblazor.TbTreeView<TItem, TKey>.SelectionFollowsFocus.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.SelectionFollowsFocus.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.TypeAhead.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.TypeAhead.set -> void
+Trailblazor.FilterOperator
+Trailblazor.FilterOperator.Contains = 0 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.DoesNotContain = 1 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.EndsWith = 3 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.EqualTo = 4 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.GreaterThan = 8 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.GreaterThanOrEqualTo = 9 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.IsEmpty = 10 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.IsNotEmpty = 11 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.LessThan = 6 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.LessThanOrEqualTo = 7 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.NotEqualTo = 5 -> Trailblazor.FilterOperator
+Trailblazor.FilterOperator.StartsWith = 2 -> Trailblazor.FilterOperator
+Trailblazor.GridFilter
+Trailblazor.GridFilter.<Clone>$() -> Trailblazor.GridFilter!
+Trailblazor.GridFilter.Column.get -> string!
+Trailblazor.GridFilter.Column.init -> void
+Trailblazor.GridFilter.Deconstruct(out string! Column, out Trailblazor.FilterOperator Operator, out object? Value) -> void
+Trailblazor.GridFilter.Equals(Trailblazor.GridFilter? other) -> bool
+Trailblazor.GridFilter.GridFilter(string! Column, Trailblazor.FilterOperator Operator, object? Value = null) -> void
+Trailblazor.GridFilter.Operator.get -> Trailblazor.FilterOperator
+Trailblazor.GridFilter.Operator.init -> void
+Trailblazor.GridFilter.Value.get -> object?
+Trailblazor.GridFilter.Value.init -> void
+Trailblazor.GridRequest.Filters.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridFilter!>!
+Trailblazor.GridRequest.Filters.init -> void
+Trailblazor.TbColumn<TItem>.FilterBy.get -> System.Func<TItem, object?>?
+Trailblazor.TbColumn<TItem>.FilterBy.set -> void
+Trailblazor.TbColumn<TItem>.Filterable.get -> bool
+Trailblazor.TbColumn<TItem>.Filterable.set -> void
+Trailblazor.TbDataGrid<TItem>.Filters.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridFilter!>?
+Trailblazor.TbDataGrid<TItem>.Filters.set -> void
+Trailblazor.TbDataGrid<TItem>.FiltersChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<Trailblazor.GridFilter!>!>
+Trailblazor.TbDataGrid<TItem>.FiltersChanged.set -> void
+const Trailblazor.TbStrings.DataGridFilter = "DataGrid.Filter" -> string!
+const Trailblazor.TbStrings.DataGridFilterAny = "DataGrid.FilterAny" -> string!
+const Trailblazor.TbStrings.DataGridFilterNo = "DataGrid.FilterNo" -> string!
+const Trailblazor.TbStrings.DataGridFilterYes = "DataGrid.FilterYes" -> string!
+const Trailblazor.TbStrings.DataGridRowsShown = "DataGrid.RowsShown" -> string!
+override Trailblazor.GridFilter.Equals(object? obj) -> bool
+override Trailblazor.GridFilter.GetHashCode() -> int
+override Trailblazor.GridFilter.ToString() -> string!
+static Trailblazor.GridFilter.operator !=(Trailblazor.GridFilter? left, Trailblazor.GridFilter? right) -> bool
+static Trailblazor.GridFilter.operator ==(Trailblazor.GridFilter? left, Trailblazor.GridFilter? right) -> bool

@@ -196,16 +196,17 @@ public class TelemetryNameTests : BunitContext
             .Add(grid => grid.TelemetryName, "trails").Add(grid => grid.PageSize, 1)
             .Add(grid => grid.PageSizes, [1, 2]).Add(grid => grid.SelectionMode, SelectionMode.Multiple)
             .AddChildContent<TbColumn<Trail>>(column => column.Add(name => name.Field, trail => trail.Name)
-                .Add(name => name.Sortable, true)));
+                .Add(name => name.Sortable, true).Add(name => name.Filterable, true)));
 
         cut.Find("th button").Click();
         cut.Find("nav [data-part=next]").Click();
         cut.Find("[role=option]:last-child").Click();
         cut.Find("tr[data-part=row] input").Change(true);
+        await cut.Tb().Grid("Trails").FilterAsync("Name", "a");
         await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(trails[1]));
 
         Assert.Equal(["trails"], Names(_shown));
-        Assert.Equal(["sort", "page", "page_size", "select"], Uses().Where(use => Equals(use.Name, "trails"))
+        Assert.Equal(["sort", "page", "page_size", "select", "filter"], Uses().Where(use => Equals(use.Name, "trails"))
             .Select(use => use.Action));
     }
 

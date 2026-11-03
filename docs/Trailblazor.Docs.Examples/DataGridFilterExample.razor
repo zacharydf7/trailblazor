@@ -1,0 +1,37 @@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Hike" Items="Hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" @bind-Filters="_filters">
+        <TbColumn Field="hike => hike.Name" Filterable Sortable />
+        <TbColumn Field="hike => hike.Difficulty" Filterable />
+        <TbColumn Field="hike => hike.LengthKm" Title="Length (km)" Format="N1" Filterable Sortable />
+        <TbColumn Field="hike => hike.Date" Format="d" Filterable Sortable />
+        <TbColumn Field="hike => hike.Loop" Filterable />
+    </TbDataGrid>
+    <TbText data-testid="filters">
+        @(_filters.Count == 0 ? "No filters." : $"Filters: {string.Join("; ", _filters.Select(Describe))}.")
+    </TbText>
+</TbStack>
+
+@code {
+    private static readonly Hike[] Hikes =
+    [
+        new(1, "Pine Hollow loop", Difficulty.Easy, 6.4, new(2026, 5, 2), true),
+        new(2, "Eagle Ridge traverse", Difficulty.Hard, 14.2, new(2026, 6, 14), false),
+        new(3, "Cedar Flats", Difficulty.Easy, 3.1, new(2026, 4, 20), false),
+        new(4, "Fern Gully", Difficulty.Moderate, 5.8, new(2026, 7, 4), true),
+        new(5, "Summit Gate", Difficulty.Hard, 11.9, new(2026, 8, 9), false),
+        new(6, "Lake camp", Difficulty.Moderate, 8.5, new(2026, 8, 23), true),
+    ];
+
+    private IReadOnlyList<GridFilter> _filters = [];
+
+    private static string Describe(GridFilter filter) => $"{filter.Column} {filter.Operator} {filter.Value}";
+
+    private enum Difficulty
+    {
+        Easy,
+        Moderate,
+        Hard,
+    }
+
+    private sealed record Hike(int Id, string Name, Difficulty Difficulty, double LengthKm, DateOnly Date, bool Loop);
+}

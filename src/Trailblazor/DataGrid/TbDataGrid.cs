@@ -19,6 +19,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly KeyIds _ids = new();
     private List<TItem> _rows = [];
     private List<GridSort> _sorts = [];
+    private List<GridFilter> _filters = [];
     private int _total;
     private int _page = 1;
     private int? _pageSize;
@@ -27,6 +28,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private string? _loaded;
     private CancellationTokenSource? _load;
     private IReadOnlyList<GridSort>? _sortsFromParent;
+    private IReadOnlyList<GridFilter>? _filtersFromParent;
     private int? _pageFromParent;
     private int? _pageSizeFromParent;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
@@ -47,13 +49,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private object? _arrangedFor;
     private object? _rowOptions;
 
-    /// <summary>The rows, held in memory. The grid sorts and pages them itself, again when this is a new collection;
-    /// call <see cref="RefreshAsync"/> after changing the same collection or its items in place.</summary>
+    /// <summary>The rows, held in memory. The grid filters, sorts and pages them itself, again when this is a new
+    /// collection; call <see cref="RefreshAsync"/> after changing the same collection or its items in place.</summary>
     [Parameter]
     public IEnumerable<TItem>? Items { get; set; }
 
-    /// <summary>Loads the rows a page at a time, sorted as asked, in place of <see cref="Items"/>. A new request
-    /// cancels the last one. Call <see cref="RefreshAsync"/> to load again, such as when a filter changes.</summary>
+    /// <summary>Loads the rows a page at a time, filtered and sorted as asked, in place of <see cref="Items"/>. A new
+    /// request cancels the last one. Call <see cref="RefreshAsync"/> to load again, such as after the page changes a
+    /// filter of its own.</summary>
     [Parameter]
     public Func<GridRequest, CancellationToken, Task<GridResult<TItem>>>? DataProvider { get; set; }
 
@@ -123,6 +126,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<IReadOnlyList<GridSort>> SortsChanged { get; set; }
 
+    /// <summary>The conditions rows must all meet to show, which the user sets in the filter row of each
+    /// <see cref="TbColumn{TItem}.Filterable"/> column. Bind it with <c>@bind-Filters</c> to filter from code or to
+    /// save it. A <see cref="DataProvider"/> gets them in its <see cref="GridRequest"/>.</summary>
+    [Parameter]
+    public IReadOnlyList<GridFilter>? Filters { get; set; }
+
+    /// <summary>Raised when the user changes a filter.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<GridFilter>> FiltersChanged { get; set; }
+
     /// <summary>How many rows a page holds. Null, the default, shows every row with no pages.</summary>
     [Parameter]
     public int? PageSize { get; set; }
@@ -174,7 +187,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public DataGridLabels Labels { get; set; } = new();
 
     /// <summary>Lets the user reorder rows held in <see cref="Items"/>, by dragging a row's handle or with the arrow
-    /// keys on it, while the grid isn't sorted. Raised with the move; apply it to the items, as
+    /// keys on it, while the grid isn't sorted or filtered. Raised with the move; apply it to the items, as
     /// <see cref="SortableMove{TItem}.ApplyTo"/> does, and the grid shows the new order. Each row's handle is a menu
     /// with a script of its own, so give a grid of many rows a <see cref="PageSize"/>.</summary>
     [Parameter]
@@ -186,9 +199,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public Func<SortableMove<TItem>, Task<MoveCheck>>? CanMoveRow { get; set; }
 
     /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
-    /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>, <c>page</c>,
-    /// <c>page_size</c>, <c>select</c> or <c>move</c> each time the user does one. Which column, page or rows is never
-    /// recorded. It names the grid, never the user.</summary>
+    /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>,
+    /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c> or <c>move</c> each time the user does one. Which
+    /// column, filter value, page or rows is never recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -213,8 +226,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int ColumnCount => _columns.Count + (SelectionMode == SelectionMode.None ? 0 : 1) + (CanReorder ? 1 : 0);
 
-    // Rows move among all the items, so only rows held in memory, in their own order, can be moved.
-    private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0;
+    // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
+    private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0
+        && !AppliedFilters.Any();
+
+    // A filter on a column that isn't there, or can't filter, is kept but hides no rows.
+    private IEnumerable<(GridFilter Filter, TbColumn<TItem> Column)> AppliedFilters =>
+        from filter in _filters
+        from column in _columns
+        where column.Key == filter.Column && column.CanFilter
+        select (filter, column);
 
     private ItemMover<TItem> Mover => _mover ??= new(Announcer, Localizer);
 
@@ -240,6 +261,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             if (!(Sorts ?? []).SequenceEqual(_sorts))
             {
                 _sorts = [.. Sorts ?? []];
+            }
+        }
+
+        if (!ReferenceEquals(Filters, _filtersFromParent))
+        {
+            _filtersFromParent = Filters;
+            if (!(Filters ?? []).SequenceEqual(_filters))
+            {
+                _filters = [.. Filters ?? []];
             }
         }
 
@@ -541,8 +571,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
-        var request = new GridRequest((_page - 1) * (_pageSize ?? 0), _pageSize, [.. _sorts]);
-        var asked = $"{request.StartIndex}|{request.Count}|{string.Join(",", _sorts)}";
+        var request = new GridRequest((_page - 1) * (_pageSize ?? 0), _pageSize, [.. _sorts])
+        {
+            Filters = [.. _filters],
+        };
+        var asked = $"{request.StartIndex}|{request.Count}|{string.Join(",", _sorts)}|{string.Join(",", _filters)}";
         if (!force && asked == _loaded)
         {
             return;
@@ -613,7 +646,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _arrangedFor = ArrangedFor;
     }
 
-    private object ArrangedFor => (Items, _sorts, _page, _pageSize, _columnVersion);
+    private object ArrangedFor => (Items, _sorts, _filters, _page, _pageSize, _columnVersion);
 
     // Columns report their changes after the grid renders, so their rows sort again as it next renders, once for all.
     private void ArrangeForColumns()
@@ -645,7 +678,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private IEnumerable<TItem> Arranged()
     {
-        IEnumerable<TItem> items = Items ?? [];
+        var filters = AppliedFilters.ToList();
+        IEnumerable<TItem> items = (Items ?? []).Where(item => filters.All(applied =>
+        {
+            var value = applied.Column.FilterValueOf(item);
+            return FilterMatch.Matches(value, () => applied.Column.TextOf(value), applied.Filter);
+        }));
         IOrderedEnumerable<TItem>? sorted = null;
         foreach (var sort in _sorts)
         {

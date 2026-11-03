@@ -81,3 +81,4 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Tree(string! name) -> Trailblazor
 Trailblazor.Testing.Playwright.TbTreeLocator.ExpandAllAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.ItemsAsync(params string![]! path) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Playwright.ILocator!>!>!
 Trailblazor.Testing.Playwright.TrailblazorPageExtensions
+Trailblazor.Testing.Playwright.TbGridLocator.FilterAsync(string! column, string! text) -> System.Threading.Tasks.Task!

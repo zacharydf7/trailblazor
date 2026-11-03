@@ -395,6 +395,22 @@ public static class TbStrings
     /// <summary>"Rows per page": names a data grid's list of page sizes.</summary>
     public const string DataGridPageSize = "DataGrid.PageSize";
 
+    /// <summary>"Filter {0}": names a data grid's filter for a column; {0} is the column.</summary>
+    public const string DataGridFilter = "DataGrid.Filter";
+
+    /// <summary>"Any": shown in a data grid's choice filter when it filters nothing.</summary>
+    public const string DataGridFilterAny = "DataGrid.FilterAny";
+
+    /// <summary>"Yes": the choice that shows a data grid's rows whose yes-or-no column is true.</summary>
+    public const string DataGridFilterYes = "DataGrid.FilterYes";
+
+    /// <summary>"No": the choice that shows a data grid's rows whose yes-or-no column is false.</summary>
+    public const string DataGridFilterNo = "DataGrid.FilterNo";
+
+    /// <summary>"Rows shown: {0}.": read out when a data grid's filters change; {0} is how many rows meet them.
+    /// </summary>
+    public const string DataGridRowsShown = "DataGrid.RowsShown";
+
     /// <summary>"Sorted by {0}, ascending.": read out when a column sorts its rows smallest first; {0} is the column.
     /// </summary>
     public const string DataGridSortedAscending = "DataGrid.SortedAscending";
@@ -599,6 +615,11 @@ public static class TbStrings
         [DataGridRange] = "{0}–{1} of {2}",
         [DataGridPages] = "Pages of {0}",
         [DataGridPageSize] = "Rows per page",
+        [DataGridFilter] = "Filter {0}",
+        [DataGridFilterAny] = "Any",
+        [DataGridFilterYes] = "Yes",
+        [DataGridFilterNo] = "No",
+        [DataGridRowsShown] = "Rows shown: {0}.",
         [DataGridSortedAscending] = "Sorted by {0}, ascending.",
         [DataGridSortedDescending] = "Sorted by {0}, descending.",
         [DataGridUnsorted] = "No longer sorted by {0}.",

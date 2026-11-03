@@ -123,8 +123,37 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("hike")).ToContainTextAsync("chosen");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldShowOnlyMatchingRowsAndCountThem_WhenFilterTextIsTyped(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+
+        await page.GetByLabel("Filter Name", new() { Exact = true }).PressSequentiallyAsync("ridge");
+
+        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse"]);
+        await Expect(page.Locator("[data-part=announcer] [role=status] p").Last).ToHaveTextAsync("Rows shown: 1.");
+        await Expect(page.GetByTestId("filters")).ToHaveTextAsync("Filters: Name Contains ridge.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldShowRowsMeetingEveryColumnsFilter_WhenSeveralAreSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var hikes = page.Tb().Grid("Hikes");
+
+        await page.Tb().Select("Filter Difficulty").ChooseAsync("Hard");
+        await hikes.FilterAsync("Length (km)", "14.2");
+
+        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse"]);
+        await hikes.FilterAsync("Length (km)", "11.9");
+        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Summit Gate"]);
+        await hikes.FilterAsync("Length (km)", "");
+        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse", "Summit Gate"]);
+    }
+
     private static ILocator Table(IPage page, string name) =>
         page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
 
-    private static ILocator Names(IPage page) => Table(page, "Trails").Locator("tbody td[data-column=Name]");
+    private static ILocator Names(IPage page, string grid = "Trails") =>
+        Table(page, grid).Locator("tbody td[data-column=Name]");
 }

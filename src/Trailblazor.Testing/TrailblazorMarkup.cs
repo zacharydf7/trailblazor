@@ -368,6 +368,27 @@ public sealed class TbGridDriver
             ?? throw new InvalidOperationException("The grid's rows can't be selected; set its SelectionMode.");
         return found.HasAttribute("data-selected") ? Task.CompletedTask : box.ChangeAsync(new ChangeEventArgs());
     }
+
+    /// <summary>Types this into the filter of the column with this title and commits it, as pressing Enter does, so a
+    /// text filter applies without waiting for typing to pause. For a text or number filter; choose a choice filter's
+    /// value with <c>cut.Tb().Select("Filter Status")</c> instead.</summary>
+    public async Task FilterAsync(string column, string text)
+    {
+        var grid = _find();
+        var id = grid.QuerySelectorAll("thead th").FirstOrDefault(header => header.GetAttribute("data-title") == column)
+            ?.GetAttribute("data-column") ?? throw new InvalidOperationException($"No column is titled \"{column}\".");
+        var input = grid.QuerySelector($"[data-part=filter][data-column=\"{id}\"] input")
+            ?? throw new InvalidOperationException($"The \"{column}\" column has no filter; make it Filterable.");
+        if (input.Matches("input[type=number], input[role=spinbutton]"))
+        {
+            await new TbNumberFieldDriver(() => input).EnterAsync(text);
+            return;
+        }
+
+        // A text filter updates as the user types, after a pause that committing the text cuts short.
+        await input.InputAsync(new ChangeEventArgs { Value = text });
+        await input.ChangeAsync(new ChangeEventArgs { Value = text });
+    }
 }
 
 /// <summary>A <c>TbTabs</c>, found by its accessible name.</summary>

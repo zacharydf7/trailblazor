@@ -669,6 +669,35 @@ public sealed class TbGridLocator(IPage page, string name)
         await Assertions.Expect(Row(row)).ToHaveAttributeAsync("data-selected", "");
     }
 
+    /// <summary>Types this into the filter of the column with this title and presses Enter, so a text filter applies
+    /// without waiting for typing to pause, then waits for a <c>DataProvider</c>'s rows. For a text or number filter;
+    /// choose a choice filter's value with <c>page.Tb().Select("Filter Status")</c> instead. Empty text clears the
+    /// filter.</summary>
+    public async Task FilterAsync(string column, string text)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var id = await Header(column).GetAttributeAsync("data-column");
+        var cell = Table.Locator($"[data-part=filter][data-column=\"{id}\"]");
+        var input = cell.Locator("input");
+        await input.FillAsync(text);
+        await input.PressAsync("Enter");
+        // The cell shows the filter the grid applied, as invariant text, in the render that starts loading its rows. A
+        // number box holds invariant text too, but rewrites what was typed, such as .5 as 0.5.
+        if (text.Length == 0)
+        {
+            await Assertions.Expect(cell).Not.ToHaveAttributeAsync("data-value", new Regex(""));
+        }
+        else
+        {
+            var applied = await input.GetAttributeAsync("type") == "number"
+                && decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+                ? number.ToString(CultureInfo.InvariantCulture) : text;
+            await Assertions.Expect(cell).ToHaveAttributeAsync("data-value", applied);
+        }
+
+        await RowsLoadedAsync();
+    }
+
     /// <summary>Goes to this page of the rows and waits until it is current and a <c>DataProvider</c>'s rows have
     /// loaded.</summary>
     public async Task GoToPageAsync(int number)

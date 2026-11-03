@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Trailblazor;
 
 // What the number field and the sliders need to know about the number types they hold.
@@ -5,6 +7,20 @@ internal static class NumberTypes
 {
     public static bool IsNumber(Type type) =>
         !type.IsEnum && Type.GetTypeCode(type) is >= TypeCode.SByte and <= TypeCode.Decimal;
+
+    // Convert.ToDecimal throws for NaN, the infinities and doubles past decimal's range, so those return false.
+    public static bool TryToDecimal(object? value, out decimal number)
+    {
+        number = 0;
+        if (value is null || !IsNumber(value.GetType())
+            || !(Math.Abs(Convert.ToDouble(value, CultureInfo.InvariantCulture)) < (double)decimal.MaxValue))
+        {
+            return false;
+        }
+
+        number = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+        return true;
+    }
 
     public static bool IsWhole(Type type) => Type.GetTypeCode(type) is >= TypeCode.SByte and <= TypeCode.UInt64;
 

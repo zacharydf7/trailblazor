@@ -52,6 +52,18 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public Func<TItem, object?>? SortBy { get; set; }
 
+    /// <summary>Lets the user filter the rows by this column, from the grid's filter row. The filter suits the
+    /// <see cref="Field"/>'s type: text the cell contains, a number it equals, a range of dates, one of an enum's
+    /// values, or yes or no for a bool.</summary>
+    [Parameter]
+    public bool Filterable { get; set; }
+
+    /// <summary>The value rows filter by, when it isn't the <see cref="Field"/>'s, such as a name without accents.
+    /// The filter still suits the <see cref="Field"/>'s type. Call the grid's
+    /// <see cref="TbDataGrid{TItem}.RefreshAsync"/> when what it reads from outside the item changes.</summary>
+    [Parameter]
+    public Func<TItem, object?>? FilterBy { get; set; }
+
     /// <summary>Draws each cell instead of the <see cref="Field"/>'s text. Its context is the row's item. Clicks on
     /// buttons, links and fields in it don't select the row. A row draws again when its item, its selection, its class,
     /// its label or the columns change; call the grid's <see cref="TbDataGrid{TItem}.RenderRows"/> when the template
@@ -86,6 +98,23 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal bool CanSort => Sortable && (SortBy is not null || _value is not null);
 
+    internal bool CanFilter => Filterable && (FilterBy is not null || _value is not null);
+
+    internal ColumnFilterKind FilterKind => ValueType switch
+    {
+        { IsEnum: true } => ColumnFilterKind.Choice,
+        var type when type == typeof(bool) => ColumnFilterKind.YesNo,
+        var type when type == typeof(DateOnly) || type == typeof(DateTime) || type == typeof(DateTimeOffset) =>
+            ColumnFilterKind.Date,
+        var type when IsNumber(type) => ColumnFilterKind.Number,
+        _ => ColumnFilterKind.Text,
+    };
+
+    // An enum's values, each named in words, for a choice filter.
+    internal IEnumerable<(object Value, string Label)> Choices => ValueType is { IsEnum: true } type
+        ? Enum.GetValues(type).Cast<object>().Select(value => (value, Words(value.ToString()!)))
+        : [];
+
     internal string CellClass { get; private set; } = "";
 
     private string? MemberName => (Body(_field) as MemberExpression)?.Member.Name;
@@ -94,6 +123,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     private string? MemberPath => Body(_field) is MemberExpression member ? PathOf(member) : null;
 
     private Type? FieldType => Body(_field)?.Type;
+
+    private Type? ValueType => FieldType is null ? null : Nullable.GetUnderlyingType(FieldType) ?? FieldType;
 
     /// <inheritdoc />
     protected override void OnInitialized() => Grid.AddColumn(this);
@@ -113,8 +144,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
             _compiled++;
         }
 
-        object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Width, Align, Class, Cell is null,
-            Header is null);
+        object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method, Width,
+            Align, Class, Cell is null, Header is null);
         if (!shown.Equals(_shown))
         {
             _shown = shown;
@@ -128,12 +159,16 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal object? SortValueOf(TItem item) => SortBy is not null ? SortBy(item) : ValueOf(item);
 
-    internal string? TextOf(TItem item) => ValueOf(item) switch
+    internal object? FilterValueOf(TItem item) => FilterBy is not null ? FilterBy(item) : ValueOf(item);
+
+    internal string? TextOf(TItem item) => TextOf(ValueOf(item));
+
+    internal string? TextOf(object? value) => value switch
     {
         null => null,
         IFormattable formattable when Format is not null => formattable.ToString(Format, CultureInfo.CurrentCulture),
         IFormattable formattable => formattable.ToString(null, CultureInfo.CurrentCulture),
-        var value => value.ToString(),
+        _ => value.ToString(),
     };
 
     /// <inheritdoc />
