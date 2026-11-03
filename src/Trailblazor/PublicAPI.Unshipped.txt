@@ -2892,3 +2892,5 @@ Trailblazor.TbDataGrid<TItem>.Groups.get -> System.Collections.Generic.IReadOnly
 Trailblazor.TbDataGrid<TItem>.Groups.set -> void
 Trailblazor.TbDataGrid<TItem>.GroupsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<string!>!>
 Trailblazor.TbDataGrid<TItem>.GroupsChanged.set -> void
+Trailblazor.TbDataGrid<TItem>.CellNavigation.get -> bool
+Trailblazor.TbDataGrid<TItem>.CellNavigation.set -> void

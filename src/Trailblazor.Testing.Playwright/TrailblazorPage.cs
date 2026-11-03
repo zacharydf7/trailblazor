@@ -616,7 +616,9 @@ public sealed class TbListBoxLocator(IPage page, string label)
 /// their cells, and columns by their header's title.</summary>
 public sealed class TbGridLocator(IPage page, string name)
 {
-    private ILocator Table => page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
+    // With cell navigation the table is a grid to assistive technology.
+    private ILocator Table => page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true })
+        .Or(page.GetByRole(AriaRole.Grid, new() { Name = name, Exact = true }));
 
     private ILocator Root => page.Locator("[data-part=grid]").Filter(new() { Has = Table });
 

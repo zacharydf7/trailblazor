@@ -1141,6 +1141,40 @@ public class TbDataGridTests : BunitContext
         Assert.NotNull(cut.Find("[data-part=empty]"));
     }
 
+    [Fact]
+    public void CellNavigation_ShouldMakeTheTableAGridWhoseRowsSayIfSelected_WhenOn()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.CellNavigation, true)
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.SelectedItems, [Trails[1]]));
+
+        Assert.Equal("grid", cut.Find("table").GetAttribute("role"));
+        Assert.Equal("true", cut.Find("table").GetAttribute("aria-multiselectable"));
+        Assert.Equal("false", Row(cut, "1").GetAttribute("aria-selected"));
+        Assert.Equal("true", Row(cut, "2").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public void CellNavigation_ShouldTakeSelectionOffTheRows_WhenTurnedOff()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.CellNavigation, true)
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.SelectedItems, [Trails[1]]));
+
+        cut.Render(parameters => parameters.Add(grid => grid.CellNavigation, false));
+
+        Assert.Null(Row(cut, "2").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public void CellNavigation_ShouldLeaveAPlainTable_WhenOff()
+    {
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.SelectedItems, [Trails[1]]));
+
+        Assert.Null(cut.Find("table").GetAttribute("role"));
+        Assert.Null(cut.Find("table").GetAttribute("aria-multiselectable"));
+        Assert.Null(Row(cut, "2").GetAttribute("aria-selected"));
+    }
+
     private SortableEvents MoveEvents() =>
         ((DotNetObjectReference<SortableEvents>)JSInterop.Invocations["attachSortable"].Single().Arguments[1]!).Value;
 

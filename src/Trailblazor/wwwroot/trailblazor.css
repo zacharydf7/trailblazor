@@ -4724,6 +4724,12 @@
         text-decoration: underline;
     }
 
+    /* A grid's cells take focus themselves, and the ring sits inside them so neighbors don't cover it. */
+    .tb-data-grid__table[role="grid"] :is(td, th):focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
     .tb-data-grid__sort:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);

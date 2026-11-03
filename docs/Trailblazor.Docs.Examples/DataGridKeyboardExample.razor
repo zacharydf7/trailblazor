@@ -1,0 +1,33 @@
+@* Tab reaches the grid once; the arrow keys move between its cells. *@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail keys" KeySelector="trail => trail.Id" CellNavigation
+                SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_chosen">
+        <TbColumn Field="trail => trail.Name" Sortable Filterable />
+        <TbColumn Field="trail => trail.Region" Sortable />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
+        <TbColumn Title="Map" Id="map">
+            <Cell>
+                <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _opened = context.Name"
+                          aria-label="@($"Map of {context.Name}")">Map</TbButton>
+            </Cell>
+        </TbColumn>
+    </TbDataGrid>
+    <TbText data-testid="keys">
+        @($"Chosen: {_chosen.Count}.") @(_opened is null ? null : $" Map of {_opened}.")
+    </TbText>
+</TbStack>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", "North ridge", 6.4),
+        new(2, "Eagle Ridge traverse", "North ridge", 14.2),
+        new(3, "Cedar Flats", "River valley", 3.1),
+        new(4, "Fern Gully", "River valley", 5.8),
+    ];
+
+    private IReadOnlyCollection<Trail> _chosen = [];
+    private string? _opened;
+
+    private sealed record Trail(int Id, string Name, string Region, double LengthKm);
+}

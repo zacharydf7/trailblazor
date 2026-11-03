@@ -1617,6 +1617,9 @@ public static class ExampleCatalog
                     + "row held in memory. With a `DataProvider`, rows load as they scroll into view, and "
                     + "`ScrollToAsync` finds only a loaded row.",
                     typeof(DataGridVirtualExample)),
+                new("cell-navigation", "Cell navigation", "With `CellNavigation`, the grid is one stop for Tab, and "
+                    + "the arrow keys move between its cells. Enter goes into a cell's fields, Escape comes back out, "
+                    + "and Space selects or unselects the row.", typeof(DataGridKeyboardExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
@@ -1666,8 +1669,16 @@ public static class ExampleCatalog
                     + "and offers to try again, a load with no rows is read out too, and after the page changes a "
                     + "filter of its own, `RefreshAsync` loads again. With `EmptyContent`, set `Labels.Empty` to "
                     + "what screen readers should hear instead.",
-                "Every control in it is a native button, link or input, reached with Tab. Only a pointer clicks a "
-                    + "row, so whatever `OnRowClick` does needs a button in a cell too.",
+                "With `CellNavigation` the table takes the ARIA grid role, so Tab reaches it once and the arrow keys "
+                    + "move between cells: Home and End go to a row's ends, Ctrl+Home and Ctrl+End to the first and "
+                    + "last cells, and Page Up and Page Down by a screenful, scrolling a virtualized grid to rows not "
+                    + "yet drawn. A cell holding just a button, link, checkbox or radio button hands focus to it, "
+                    + "unless it is a menu's button or a row's move handle, which use the arrow keys themselves. Enter "
+                    + "or F2 moves into any other cell's fields, where Tab cycles through them and Escape comes back "
+                    + "out. Space selects or unselects the row of the cell in focus, and rows say whether they are "
+                    + "selected with `aria-selected`.",
+                "Without `CellNavigation`, Tab reaches every control in the grid, each a native button, link or input. "
+                    + "Only a pointer clicks a row, so whatever `OnRowClick` does needs a button in a cell too.",
                 "With `OnRowMove`, rows held in `Items` can be put in order while the grid isn't sorted or "
                     + "filtered. Each row gains a handle in an \"Order\" column: a menu `button` named \"Move\" "
                     + "followed by the row's label. Drag it, press the up and down arrows, Home or End on it, or "

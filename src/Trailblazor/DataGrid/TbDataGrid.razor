@@ -28,8 +28,11 @@
         </div>
     }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
-        <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
-               aria-rowcount="@(Virtualize ? HeaderRowCount + _total : null)" class="tb-data-grid__table">
+        <table @ref="_table" role="@(CellNavigation ? "grid" : null)" aria-label="@AriaLabel"
+               aria-multiselectable="@(CellNavigation && SelectionMode == SelectionMode.Multiple ? "true" : null)"
+               aria-busy="@(IsLoading ? "true" : null)"
+               aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) : null)"
+               class="tb-data-grid__table">
             <thead>
                 <tr aria-rowindex="@(Virtualize ? 1 : null)">
                     @if (CanReorder)
@@ -133,7 +136,8 @@
             <tbody @ref="_body" data-sortable="@(CanReorder ? "" : null)">
                 @if (_failed)
                 {
-                    <tr data-part="failed" class="tb-data-grid__status">
+                    <tr data-part="failed" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
+                        class="tb-data-grid__status">
                         <td colspan="@ColumnCount">
                             <span>@LoadFailedLabel</span>
                             <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="RefreshAsync">
@@ -144,13 +148,15 @@
                 }
                 else if (HasNoRows && IsLoading)
                 {
-                    <tr data-part="loading" class="tb-data-grid__status">
+                    <tr data-part="loading" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
+                        class="tb-data-grid__status">
                         <td colspan="@ColumnCount">@(Labels.Loading ?? Localizer[TbStrings.DataGridLoading])</td>
                     </tr>
                 }
                 else if (HasNoRows)
                 {
-                    <tr data-part="empty" class="tb-data-grid__status">
+                    <tr data-part="empty" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
+                        class="tb-data-grid__status">
                         <td colspan="@ColumnCount">
                             @if (EmptyContent is null)
                             {
@@ -213,7 +219,7 @@
 @code {
     private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
-             aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)"
+             aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
              @ontbrowclick="args => OnRowClickedAsync(item, args)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
                         Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, rowClass)">
@@ -388,6 +394,10 @@
             </CascadingValue>
         </TbPopover>;
     }
+
+    // Only a grid's rows say whether they are selected; a table's rows can't.
+    private string? AriaSelected(bool selected) =>
+        CellNavigation && SelectionMode != SelectionMode.None ? (selected ? "true" : "false") : null;
 
     // Single selection's radio buttons need a group of their own on the page.
     private readonly string _radioName = $"tb-data-grid-{Guid.NewGuid():N}";

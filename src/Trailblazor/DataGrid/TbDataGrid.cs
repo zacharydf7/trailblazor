@@ -211,6 +211,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public bool Virtualize { get; set; }
 
+    /// <summary>Makes the grid an ARIA grid that Tab reaches once: the arrow keys move between its cells, Home and End
+    /// to a row's ends, Ctrl+Home and Ctrl+End to its first and last cells, and Page Up and Page Down by a screenful. A
+    /// cell holding just a button, link, checkbox or radio button hands focus to it, unless it is a menu's button or a
+    /// row's move handle, which use the arrow keys themselves. Enter or F2 moves into any other cell's fields, Tab
+    /// cycles through them and Escape comes back out. Space selects or unselects the row of the cell in focus.
+    /// </summary>
+    [Parameter]
+    public bool CellNavigation { get; set; }
+
     /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>.</summary>
     [Parameter]
     public bool Loading { get; set; }
@@ -271,6 +280,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     // A virtualized table's aria-rowcount and aria-rowindex count its header rows too.
     private int HeaderRowCount => HasFilterRow ? 2 : 1;
+
+    // A failed, loading or empty grid shows one row saying so, which a virtualized table counts and numbers too, so
+    // the keyboard can reach it.
+    private bool ShowsStatus => _failed || HasNoRows;
 
     // A virtualized grid's provider loads a few rows at a time, so only its count says whether there are any.
     private bool HasNoRows => Virtualize && DataProvider is not null ? _total == 0 : _lines.Count == 0;
@@ -372,9 +385,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             _pageSize = PageSize is > 0 ? PageSize : null;
         }
 
-        // Rows draw again for a new collection, whose items may have changed in place. Each row compares its own class
-        // and label, which may read from outside the item.
-        object rowOptions = (Items, SelectionMode);
+        // Rows draw again for a new collection, whose items may have changed in place, or when the selection mode or
+        // cell navigation changes what each row says. Each row compares its own class and label, which may read from
+        // outside the item.
+        object rowOptions = (Items, SelectionMode, CellNavigation);
         if (!rowOptions.Equals(_rowOptions))
         {
             _rowOptions = rowOptions;

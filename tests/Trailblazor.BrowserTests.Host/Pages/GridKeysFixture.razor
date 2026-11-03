@@ -1,0 +1,69 @@
+@page "/grid-keys"
+
+@* Grids with cell navigation: a virtualized one with far more rows than it draws; a grouped one whose cells hold two
+   buttons and whose cell navigation can be turned off; one whose rows move, whose buttons disable themselves and whose
+   cells hold menus; and a virtualized one whose rows fail to load. *@
+<TbDataGrid TItem="int" Items="Rows" AriaLabel="Many numbers" CellNavigation Virtualize Height="12rem"
+            SelectionMode="SelectionMode.Single">
+    <TbColumn Field="row => row" Title="Number" />
+    <TbColumn Field="row => row * 2" Title="Double" Id="double" />
+</TbDataGrid>
+<button type="button">After the grid</button>
+<TbDataGrid TItem="int" Items="Few" AriaLabel="Grouped numbers" CellNavigation="_keys" Groups="Parity">
+    <TbColumn Field="row => row" Title="Number" />
+    <TbColumn Title="Odd" Id="odd" Groupable GroupBy="row => row % 2 == 1" />
+    <TbColumn Title="Actions" Id="actions">
+        <Cell>
+            <button type="button">Up @context</button>
+            <button type="button">Down @context</button>
+        </Cell>
+    </TbColumn>
+</TbDataGrid>
+<button type="button" @onclick="() => _keys = false">Turn off keys</button>
+<TbDataGrid @ref="_stopGrid" TItem="string" Items="_stops" AriaLabel="Stops in order" CellNavigation
+            OnRowMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
+    <TbColumn Field="stop => stop" Title="Stop" Id="stop" />
+    <TbColumn Title="Visit" Id="visit">
+        <Cell>
+            <button type="button" disabled="@_visited.Contains(context)" @onclick="() => Visit(context)">
+                Visit @context
+            </button>
+        </Cell>
+    </TbColumn>
+    <TbColumn Title="More" Id="more">
+        <Cell>
+            <TbMenu Label="@($"More for {context}")">
+                <TbMenuItem>Skip</TbMenuItem>
+            </TbMenu>
+        </Cell>
+    </TbColumn>
+</TbDataGrid>
+<TbDataGrid TItem="int" DataProvider="FailAsync" AriaLabel="Broken numbers" CellNavigation Virtualize Height="8rem">
+    <TbColumn Field="row => row" Title="Number" />
+</TbDataGrid>
+
+@code {
+    private static readonly int[] Rows = [.. Enumerable.Range(1, 300)];
+
+    private static readonly int[] Few = [.. Enumerable.Range(1, 6)];
+
+    private static readonly string[] Parity = ["odd"];
+
+    private bool _keys = true;
+
+    private readonly List<string> _stops = ["Trailhead", "Lake camp", "Summit Gate"];
+
+    private readonly HashSet<string> _visited = [];
+
+    private TbDataGrid<string> _stopGrid = default!;
+
+    private static Task<GridResult<int>> FailAsync(GridRequest request, CancellationToken cancel) =>
+        Task.FromException<GridResult<int>>(new InvalidOperationException("The numbers are down."));
+
+    // Which stops were visited isn't part of a row's item, so the grid is asked to draw its rows again.
+    private void Visit(string stop)
+    {
+        _visited.Add(stop);
+        _stopGrid.RenderRows();
+    }
+}

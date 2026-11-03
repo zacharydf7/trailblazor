@@ -522,6 +522,206 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldMoveBetweenCellsIntoAFieldAndBack_WhenDrivenByKeys(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail keys" });
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        await Expect(grid.Locator("[tabindex='0']")).ToHaveCountAsync(1);
+        var selectAll = grid.GetByRole(AriaRole.Checkbox, new() { Name = "Select all rows" });
+        await selectAll.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(grid.GetByRole(AriaRole.Button, new() { Name = "Name", Exact = true })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        var filter = grid.Locator("td[data-part=filter][data-column=Name]");
+        await Expect(filter).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(filter.Locator("input")).ToBeFocusedAsync();
+        await page.Keyboard.TypeAsync("cedar");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(filter).ToBeFocusedAsync();
+        await Expect(grid.Locator("tbody tr[data-part=row]")).ToHaveCountAsync(1);
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync(" ");
+        await page.Keyboard.PressAsync("End");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(grid.Locator("tbody tr[data-part=row]")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByTestId("keys")).ToHaveTextAsync("Chosen: 1. Map of Cedar Flats.");
+        await Expect(grid.Locator("[tabindex='0']")).ToHaveCountAsync(1);
+        await Expect(page.Tb().Grid("Trail keys").Row("Cedar Flats")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldLeaveTheRowsUnselected_WhenSpaceIsPressedOnAHeader(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail keys" });
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        await grid.Locator("thead th[data-column=map]").ClickAsync();
+        var scrolled = await page.EvaluateAsync<double>("() => window.scrollY");
+
+        await page.Keyboard.PressAsync(" ");
+        Assert.Equal(scrolled, await page.EvaluateAsync<double>("() => window.scrollY"));
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync(" ");
+
+        // Only the body row's Space selects; had the header's selected every row, this one would now be left out.
+        await Expect(page.GetByTestId("keys")).ToHaveTextAsync("Chosen: 1.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldMoveOverRowHandlesWithoutMovingRows_WhenArrowsArePressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Stops in order" });
+        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        await grid.Locator("tbody td[data-column=stop]").First.ClickAsync();
+
+        await page.Keyboard.PressAsync("Home");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(grid.Locator("tbody tr[data-part=row]").Nth(1).Locator("td").First).ToBeFocusedAsync();
+        await Expect(grid.Locator("tbody td[data-column=stop]")).ToHaveTextAsync(["Trailhead", "Lake camp",
+            "Summit Gate"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldKeepAStopForTab_WhenTheButtonHoldingItTurnsItselfOff(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Stops in order" });
+        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        var visit = grid.GetByRole(AriaRole.Button, new() { Name = "Visit Lake camp" });
+
+        await visit.ClickAsync();
+
+        await Expect(visit).ToBeDisabledAsync();
+        await Expect(grid.Locator("[tabindex='0']:not(:disabled)")).ToHaveCountAsync(1);
+        await Expect(grid.Locator("[tabindex='0']")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldScrollToRowsNotYetDrawn_WhenControlEndAndHomeArePressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Many numbers" });
+        await Expect(page.Locator("[data-part=grid]").First).ToHaveAttributeAsync("data-ready", "");
+        await grid.Locator("tbody td[data-column=Number]").First.ClickAsync();
+
+        await page.Keyboard.PressAsync("PageDown");
+        await Expect(grid.Locator("tbody td:focus")).ToHaveAttributeAsync("data-column", "Number");
+        Assert.True(await grid.Locator("tbody tr:has(td:focus)").EvaluateAsync<int>("row => +row.ariaRowIndex") > 4);
+        await page.Keyboard.PressAsync("Control+End");
+        await Expect(grid.Locator("tr[aria-rowindex='301'] td[data-column=double]")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Control+Home");
+        await Expect(grid.Locator("thead th").First).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "After the grid" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldMoveFromARowsRadioWithoutChoosingIt_WhenAnArrowIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Many numbers" });
+        await Expect(page.Locator("[data-part=grid]").First).ToHaveAttributeAsync("data-ready", "");
+        // Rows are found by their place, since a virtualized grid may drop the first as it scrolls.
+        await grid.Locator("tr[aria-rowindex='2'] input[type=radio]").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(grid.Locator("tr[aria-rowindex='3'] input[type=radio]")).ToBeFocusedAsync();
+        await Expect(grid.Locator("tbody tr[aria-selected='true']")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldKeepItsColumnThroughAGroupsHeading_WhenMovingDown(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Grouped numbers" });
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+        await grid.Locator("tbody tr[data-part=row]").Nth(2).Locator("td[data-column=odd]").ClickAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(grid.GetByRole(AriaRole.Button, new() { Name = "Odd: True Rows: 3" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(grid.Locator("tbody tr[data-part=row]").Nth(3).Locator("td[data-column=odd]")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldGoRoundACellsButtonsAndBackOut_WhenEnteredWithEnter(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Grouped numbers" });
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+        var cell = grid.Locator("tbody tr[data-part=row]").First.Locator("td[data-column=actions]");
+        await cell.ClickAsync(new() { Position = new() { X = 1, Y = 1 } });
+        await Expect(cell).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cell.GetByRole(AriaRole.Button, new() { Name = "Up 2" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(cell.GetByRole(AriaRole.Button, new() { Name = "Down 2" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(cell.GetByRole(AriaRole.Button, new() { Name = "Up 2" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(cell).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldGiveBackEveryTabStop_WhenTurnedOff(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.GetByRole(AriaRole.Grid, new() { Name = "Grouped numbers" }).Locator("button[tabindex='-1']"))
+            .Not.ToHaveCountAsync(0);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Turn off keys" }).ClickAsync();
+
+        var table = Table(page, "Grouped numbers");
+        await Expect(table.Locator("[tabindex]")).ToHaveCountAsync(0);
+        await Expect(table.Locator("[data-tb-tab]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldMoveOverAMenusCellWithoutOpeningIt_WhenArrowsArePressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Stops in order" });
+        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        await grid.Locator("tbody td[data-column=stop]").First.ClickAsync();
+
+        await page.Keyboard.PressAsync("End");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(grid.Locator("tbody tr[data-part=row]").Nth(1).Locator("td[data-column=more]")).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Menu)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldReachRetry_WhenAVirtualizedGridsRowsFailToLoad(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Broken numbers" });
+        await Expect(page.Locator("[data-part=grid]").Nth(3)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(grid.Locator("[data-part=failed]")).ToBeVisibleAsync();
+        await grid.Locator("thead th").First.ClickAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(grid.GetByRole(AriaRole.Button, new() { Name = "Retry" })).ToBeFocusedAsync();
+    }
+
     private static ILocator Table(IPage page, string name) =>
         page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
 
