@@ -1680,10 +1680,10 @@
         justify-content: center;
         gap: var(--tb-space-2);
         box-sizing: border-box;
-        min-height: var(--tb-control-height);
+        min-height: var(--tb-button-height, var(--tb-control-height));
         padding: 0 var(--tb-control-padding-inline);
         border: 1px solid transparent;
-        border-radius: var(--tb-radius-md);
+        border-radius: var(--tb-button-radius, var(--tb-radius-md));
         font-family: var(--tb-font-family);
         font-size: var(--tb-font-size-sm);
         font-weight: var(--tb-font-weight-medium);
@@ -1789,7 +1789,7 @@
     }
 
     .tb-icon-button {
-        min-width: var(--tb-control-height);
+        min-width: var(--tb-button-height, var(--tb-control-height));
         padding: 0;
     }
 
@@ -2462,10 +2462,10 @@
         align-items: center;
         gap: var(--tb-space-2);
         box-sizing: border-box;
-        min-height: var(--tb-control-height);
+        min-height: var(--tb-field-height, var(--tb-control-height));
         padding-inline: var(--tb-control-padding-inline);
         border: 1px solid var(--tb-border-strong);
-        border-radius: var(--tb-radius-md);
+        border-radius: var(--tb-field-radius, var(--tb-radius-md));
         background: var(--tb-color-surface);
     }
 
@@ -2580,7 +2580,7 @@
     .tb-field--filled .tb-field__control {
         border-color: transparent;
         border-block-end-color: var(--tb-border-strong);
-        border-radius: var(--tb-radius-md) var(--tb-radius-md) 0 0;
+        border-radius: var(--tb-field-radius, var(--tb-radius-md)) var(--tb-field-radius, var(--tb-radius-md)) 0 0;
         background: var(--tb-color-surface-sunken);
     }
 
@@ -3009,7 +3009,7 @@
         margin: 0;
         padding: var(--tb-space-1);
         border: 1px solid var(--tb-border-subtle);
-        border-radius: var(--tb-radius-md);
+        border-radius: var(--tb-menu-radius, var(--tb-radius-md));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
         box-shadow: var(--tb-shadow-md);
@@ -3026,7 +3026,7 @@
         align-items: center;
         gap: var(--tb-space-2);
         box-sizing: border-box;
-        min-height: var(--tb-item-height);
+        min-height: var(--tb-menu-item-height, var(--tb-item-height));
         width: 100%;
         padding: var(--tb-space-1) var(--tb-space-3);
         border: none;
@@ -3138,7 +3138,7 @@
         margin: 0;
         padding: var(--tb-space-4);
         border: 1px solid var(--tb-border-subtle);
-        border-radius: var(--tb-radius-md);
+        border-radius: var(--tb-popover-radius, var(--tb-radius-md));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
         box-shadow: var(--tb-shadow-md);
@@ -3169,7 +3169,7 @@
         max-height: calc(100vh - 2 * var(--tb-space-8));
         padding: 0;
         border: 1px solid var(--tb-border-subtle);
-        border-radius: var(--tb-radius-lg);
+        border-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
         font-family: var(--tb-font-family);
@@ -3655,7 +3655,7 @@
     .tb-pagination__page,
     .tb-pagination__ellipsis {
         box-sizing: border-box;
-        min-inline-size: var(--tb-control-height);
+        min-inline-size: var(--tb-button-height, var(--tb-control-height));
         padding-inline: var(--tb-space-2);
         font-variant-numeric: tabular-nums;
     }
@@ -4586,10 +4586,15 @@
         font-variant-numeric: tabular-nums;
     }
 
+    /* A grid shares the table's cell rules, so its own row-height hook feeds the table's. */
+    .tb-data-grid {
+        --tb-table-row-height: var(--tb-data-grid-row-height, var(--tb-row-height));
+    }
+
     .tb-table :is(th, td),
     .tb-data-grid__table :is(th, td) {
         box-sizing: border-box;
-        height: var(--tb-row-height);
+        height: var(--tb-table-row-height, var(--tb-row-height));
         padding: var(--tb-space-1) var(--tb-space-3);
         border-block-end: 1px solid var(--tb-border-subtle);
         text-align: start;
@@ -4611,13 +4616,13 @@
 
     .tb-table--small :is(th, td),
     .tb-data-grid--small .tb-data-grid__table :is(th, td) {
-        height: max(1.5rem, calc(var(--tb-row-height) - 0.75rem));
+        height: max(1.5rem, calc(var(--tb-table-row-height, var(--tb-row-height)) - 0.75rem));
         padding-block: 0;
     }
 
     .tb-table--large :is(th, td),
     .tb-data-grid--large .tb-data-grid__table :is(th, td) {
-        height: calc(var(--tb-row-height) + 0.5rem);
+        height: calc(var(--tb-table-row-height, var(--tb-row-height)) + 0.5rem);
     }
 
     /* A grid's stripe yields to hover, press and selection. */
@@ -4841,9 +4846,9 @@
         display: flex;
         align-items: center;
         gap: var(--tb-space-1);
-        min-block-size: var(--tb-item-height);
+        min-block-size: var(--tb-tree-item-height, var(--tb-item-height));
         padding-inline: calc(var(--tb-tree-level) * var(--tb-tree-indent)) var(--tb-space-2);
-        border-radius: var(--tb-radius-sm);
+        border-radius: var(--tb-tree-item-radius, var(--tb-radius-sm));
         cursor: default;
         outline: none;
     }

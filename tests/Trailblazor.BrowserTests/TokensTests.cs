@@ -189,6 +189,63 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(failures);
     }
 
+    // A case's name, the component token it sets to 37px, the markup whose last element reads it, the property read
+    // there and the value expected.
+    private static readonly (string Name, string Token, string Html, string Property, string Expected)[]
+        ComponentTokens =
+    [
+        ("button radius", "--tb-button-radius", "<button class='tb-button'>Go</button>", "border-top-left-radius",
+            "37px"),
+        ("button height", "--tb-button-height", "<button class='tb-button'>Go</button>", "min-height", "37px"),
+        ("icon button width", "--tb-button-height", "<button class='tb-button tb-icon-button'></button>", "min-width",
+            "37px"),
+        ("pagination page width", "--tb-button-height", "<button class='tb-button tb-pagination__page'>1</button>",
+            "min-inline-size", "37px"),
+        ("field radius", "--tb-field-radius", "<div class='tb-field__control'></div>", "border-top-left-radius",
+            "37px"),
+        ("field height", "--tb-field-height", "<div class='tb-field__control'></div>", "min-height", "37px"),
+        ("menu radius", "--tb-menu-radius", "<div class='tb-menu__list'></div>", "border-top-left-radius", "37px"),
+        ("menu item height", "--tb-menu-item-height", "<div class='tb-menu__item'></div>", "min-height", "37px"),
+        ("popover radius", "--tb-popover-radius", "<div class='tb-popover__panel'></div>", "border-top-left-radius",
+            "37px"),
+        ("dialog radius", "--tb-dialog-radius", "<dialog class='tb-dialog'></dialog>", "border-top-left-radius",
+            "37px"),
+        ("tree item height", "--tb-tree-item-height", "<div class='tb-tree__item'></div>", "min-block-size", "37px"),
+        ("tree item radius", "--tb-tree-item-radius", "<div class='tb-tree__item'></div>", "border-top-left-radius",
+            "37px"),
+        ("table row height", "--tb-table-row-height", "<table class='tb-table'><tr><td>Row</td></tr></table>",
+            "height", "37px"),
+        ("grid row height", "--tb-data-grid-row-height", Grid, "height", "37px"),
+        ("grid ignores table row height", "--tb-table-row-height", Grid, "height", "44px"),
+    ];
+
+    private const string Grid =
+        "<div class='tb-data-grid'><table class='tb-data-grid__table'><tr><td>Row</td></tr></table></div>";
+
+    public static TheoryData<string, string> ComponentTokensInEveryBrowser => new(
+        from browser in AllBrowsers.Names from entry in ComponentTokens select (browser, entry.Name));
+
+    [Theory, MemberData(nameof(ComponentTokensInEveryBrowser))]
+    public async Task ComponentToken_ShouldRestyleOnlyItsComponent_WhenSetAroundIt(string browser, string name)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+        var (_, token, html, property, expected) = ComponentTokens.Single(entry => entry.Name == name);
+
+        var value = await page.EvaluateAsync<string>("""
+            ([token, html, property]) => {
+                const host = document.querySelector('main').appendChild(document.createElement('div'));
+                host.style.setProperty(token, '37px');
+                host.innerHTML = html;
+                const part = [...host.querySelectorAll('*')].at(-1);
+                const value = getComputedStyle(part).getPropertyValue(property);
+                host.remove();
+                return value;
+            }
+            """, new[] { token, html, property });
+
+        Assert.Equal(expected, value);
+    }
+
     [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
     public async Task WarningDot_ShouldReachThreeToOneOnItsSurface_WhenAPaletteAndThemeAreApplied(string browser,
         string palette, string theme)
