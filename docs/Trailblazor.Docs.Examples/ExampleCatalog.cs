@@ -1624,6 +1624,10 @@ public static class ExampleCatalog
                     + "or press Enter or F2 on it, then Enter saves and Escape cancels. Each value is checked by its "
                     + "field's data annotations and the column's `Validate`, and `OnCellEdit` gets each saved edit.",
                     typeof(DataGridEditExample)),
+                new("edit-rows", "Edit rows", "With `EditMode` set to `Row`, an edit opens every editable cell of "
+                    + "the row: Tab moves between its fields and its Save and Cancel buttons, Enter saves the row, "
+                    + "Escape cancels it, and `OnRowEdit` gets all of its values at once.",
+                    typeof(DataGridRowEditExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
@@ -1634,7 +1638,7 @@ public static class ExampleCatalog
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
-                typeof(GridCellEditContext<>),
+                typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Accessibility =
@@ -1685,7 +1689,9 @@ public static class ExampleCatalog
                 "An `Editable` column turns on cell navigation, so the table is an ARIA grid even without "
                     + "`CellNavigation`. An edit's field is named "
                     + "by its column, its error shows under it and is read out, and focus goes back to the cell when "
-                    + "Enter or Escape ends the edit. Leaving the field saves it.",
+                    + "Enter or Escape ends the edit. Leaving the field saves it. In `Row` mode, focus leaving the "
+                    + "row saves it, and its Save and Cancel buttons are named for the row, such as \"Save Cedar "
+                    + "Flats\".",
                 "Without `CellNavigation`, Tab reaches every control in the grid, each a native button, link or input. "
                     + "Only a pointer clicks a row, so whatever `OnRowClick` does needs a button in a cell too.",
                 "With `OnRowMove`, rows held in `Items` can be put in order while the grid isn't sorted or "
@@ -1700,8 +1706,8 @@ public static class ExampleCatalog
             Blocks = ["tb-data-grid"],
             DataParts = ["grid", "scroll", "sort", "sort-order", "filters", "filter", "filter-menu", "filter-apply",
                 "filter-clear", "group-by", "group", "group-toggle", "select-all", "row", "placeholder", "editor",
-                "select",
-                "order", "handle", "drop-reason", "loading", "empty", "failed", "summary", "pager"],
+                "row-actions", "row-error", "select", "order", "handle", "drop-reason", "loading", "empty", "failed",
+                "summary", "pager"],
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
                 + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "

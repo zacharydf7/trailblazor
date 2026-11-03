@@ -903,6 +903,109 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(grid.Locator(":focus")).ToHaveCountAsync(1);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RowEdit_ShouldKeepTabInTheRowAndSaveItWhole_WhenEnterIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail rows" });
+        var row = grid.Locator("tr[data-key='3']");
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        await row.Locator("td[data-column=Name]").ClickAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(row.Locator("td[data-column=Name] input")).ToBeFocusedAsync();
+        await row.Locator("td[data-column=Name] input").FillAsync("Cedar Flats loop");
+        await page.Keyboard.PressAsync("Tab");
+        await row.GetByRole(AriaRole.Spinbutton).FillAsync("4.5");
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(row.GetByRole(AriaRole.Button, new() { Name = "Save Cedar Flats" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(row.Locator("td[data-column=Name] input")).ToBeFocusedAsync();
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("Saved Cedar Flats loop.");
+        await Expect(row.Locator("td")).ToHaveTextAsync(["Cedar Flats loop", "4.5", "Easy", "South"]);
+        await Expect(row.Locator("td[data-column=Name]")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RowEdit_ShouldSave_WhenFocusLeavesTheRow(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail rows" });
+        var row = grid.Locator("tr[data-key='2']");
+
+        await row.Locator("td[data-column=LengthKm]").DblClickAsync();
+        await row.GetByRole(AriaRole.Spinbutton).FillAsync("15");
+        await row.Locator("td[data-column=Name] input").ClickAsync();
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+        await page.GetByTestId("row-saved").ClickAsync();
+
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("Saved Eagle Ridge traverse.");
+        await Expect(row.Locator("td[data-column=LengthKm]")).ToHaveTextAsync("15.0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RowEdit_ShouldSave_WhenFocusLeavesTheRowFromACellWithNoField(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail rows" });
+        var row = grid.Locator("tr[data-key='3']");
+
+        await row.Locator("td[data-column=Name]").DblClickAsync();
+        await row.Locator("td[data-column=Name] input").FillAsync("Cedar Flats loop");
+        await row.Locator("td[data-column=Region]").ClickAsync();
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+        await page.GetByTestId("row-saved").ClickAsync();
+
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("Saved Cedar Flats loop.");
+        await Expect(row.Locator("[data-part=editor]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RowEdit_ShouldSaveNothing_WhenCancelIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail rows" });
+        var row = grid.Locator("tr[data-key='2']");
+
+        await row.Locator("td[data-column=Name]").DblClickAsync();
+        await row.Locator("td[data-column=Name] input").FillAsync("Eagle Ridge");
+        // Some browsers, such as Safari, don't focus a pressed button, so pressing one mustn't take focus at all.
+        await row.GetByRole(AriaRole.Button, new() { Name = "Cancel editing Eagle Ridge traverse" }).HoverAsync();
+        await page.Mouse.DownAsync();
+        await Expect(row.Locator("td[data-column=Name] input")).ToBeFocusedAsync();
+        await page.Mouse.UpAsync();
+
+        await Expect(row.Locator("[data-part=editor]")).ToHaveCountAsync(0);
+        await Expect(row.Locator("td[data-column=Name]")).ToHaveTextAsync("Eagle Ridge traverse");
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RowEdit_ShouldLeaveTheRow_WhenEscapeIsPressedOnItsButtons(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail rows" });
+        var row = grid.Locator("tr[data-key='1']");
+        await page.EvaluateAsync("() => document.addEventListener('keydown', event => "
+            + "window.escapeUsed = event.key === 'Escape' && event.defaultPrevented)");
+
+        await row.Locator("td[data-column=Name]").DblClickAsync();
+        await row.Locator("td[data-column=Name] input").FillAsync("Changed");
+        await row.GetByRole(AriaRole.Button, new() { Name = "Save Pine Hollow loop" }).FocusAsync();
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(row.Locator("[data-part=editor], [data-part=row-actions]")).ToHaveCountAsync(0);
+        await Expect(row.Locator("td[data-column=Name]")).ToHaveTextAsync("Pine Hollow loop");
+        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+        Assert.True(await page.EvaluateAsync<bool>("() => window.escapeUsed"));
+    }
+
     private static ILocator Table(IPage page, string name) =>
         page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
 

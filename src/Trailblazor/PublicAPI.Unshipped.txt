@@ -2936,3 +2936,30 @@ Trailblazor.GridEditKeyEventArgs.IsComposing.get -> bool
 Trailblazor.GridEditKeyEventArgs.IsComposing.set -> void
 Trailblazor.GridEditKeyEventArgs.Key.get -> string!
 Trailblazor.GridEditKeyEventArgs.Key.set -> void
+Trailblazor.GridEditMode
+Trailblazor.GridEditMode.Cell = 0 -> Trailblazor.GridEditMode
+Trailblazor.GridEditMode.Row = 1 -> Trailblazor.GridEditMode
+Trailblazor.GridRowEdit<TItem>
+Trailblazor.GridRowEdit<TItem>.<Clone>$() -> Trailblazor.GridRowEdit<TItem>!
+Trailblazor.GridRowEdit<TItem>.Deconstruct(out TItem Item, out System.Collections.Generic.IReadOnlyDictionary<string!, object?>! Values) -> void
+Trailblazor.GridRowEdit<TItem>.Equals(Trailblazor.GridRowEdit<TItem>? other) -> bool
+Trailblazor.GridRowEdit<TItem>.Error.get -> string?
+Trailblazor.GridRowEdit<TItem>.Error.set -> void
+Trailblazor.GridRowEdit<TItem>.GridRowEdit(TItem Item, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! Values) -> void
+Trailblazor.GridRowEdit<TItem>.Item.get -> TItem
+Trailblazor.GridRowEdit<TItem>.Item.init -> void
+Trailblazor.GridRowEdit<TItem>.Values.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Trailblazor.GridRowEdit<TItem>.Values.init -> void
+Trailblazor.TbDataGrid<TItem>.EditMode.get -> Trailblazor.GridEditMode
+Trailblazor.TbDataGrid<TItem>.EditMode.set -> void
+Trailblazor.TbDataGrid<TItem>.OnRowEdit.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.GridRowEdit<TItem>!>
+Trailblazor.TbDataGrid<TItem>.OnRowEdit.set -> void
+const Trailblazor.TbStrings.DataGridCancel = "DataGrid.Cancel" -> string!
+const Trailblazor.TbStrings.DataGridCancelRow = "DataGrid.CancelRow" -> string!
+const Trailblazor.TbStrings.DataGridSave = "DataGrid.Save" -> string!
+const Trailblazor.TbStrings.DataGridSaveRow = "DataGrid.SaveRow" -> string!
+override Trailblazor.GridRowEdit<TItem>.Equals(object? obj) -> bool
+override Trailblazor.GridRowEdit<TItem>.GetHashCode() -> int
+override Trailblazor.GridRowEdit<TItem>.ToString() -> string!
+static Trailblazor.GridRowEdit<TItem>.operator !=(Trailblazor.GridRowEdit<TItem>? left, Trailblazor.GridRowEdit<TItem>? right) -> bool
+static Trailblazor.GridRowEdit<TItem>.operator ==(Trailblazor.GridRowEdit<TItem>? left, Trailblazor.GridRowEdit<TItem>? right) -> bool

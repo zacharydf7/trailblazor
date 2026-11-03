@@ -4656,6 +4656,19 @@
         min-inline-size: 0;
     }
 
+    /* A row's Save and Cancel sit under its last cell. */
+    .tb-data-grid__row-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--tb-space-1);
+        margin-block-start: var(--tb-space-1);
+    }
+
+    .tb-data-grid__row-error {
+        margin-inline-end: auto;
+        color: var(--tb-color-danger-text);
+    }
+
     .tb-data-grid__filter > .tb-field {
         inline-size: 100%;
         min-inline-size: 8rem;

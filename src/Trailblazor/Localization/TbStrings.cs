@@ -467,6 +467,19 @@ public static class TbStrings
     /// as a number too large; {0} is the column.</summary>
     public const string DataGridEditInvalid = "DataGrid.EditInvalid";
 
+    /// <summary>"Save": the button that saves a data grid row's edit.</summary>
+    public const string DataGridSave = "DataGrid.Save";
+
+    /// <summary>"Save {0}": names the button that saves a data grid row's edit; {0} is the row's label.</summary>
+    public const string DataGridSaveRow = "DataGrid.SaveRow";
+
+    /// <summary>"Cancel": the button that cancels a data grid row's edit.</summary>
+    public const string DataGridCancel = "DataGrid.Cancel";
+
+    /// <summary>"Cancel editing {0}": names the button that cancels a data grid row's edit; {0} is the row's label.
+    /// </summary>
+    public const string DataGridCancelRow = "DataGrid.CancelRow";
+
     /// <summary>"Group by": labels the list of columns a data grid's rows can be grouped by.</summary>
     public const string DataGridGroupBy = "DataGrid.GroupBy";
 
@@ -690,6 +703,10 @@ public static class TbStrings
         [DataGridFilterNo] = "No",
         [DataGridRowsShown] = "Rows shown: {0}.",
         [DataGridEditInvalid] = "{0} can't hold that value.",
+        [DataGridSave] = "Save",
+        [DataGridSaveRow] = "Save {0}",
+        [DataGridCancel] = "Cancel",
+        [DataGridCancelRow] = "Cancel editing {0}",
         [DataGridGroupBy] = "Group by",
         [DataGridGroupHeading] = "{0}: {1}",
         [DataGridGroupCount] = "Rows: {0}",

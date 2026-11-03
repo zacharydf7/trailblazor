@@ -220,6 +220,9 @@
     private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
+             data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "" : null)"
+             @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is not null ? OnEditLeftAsync
+                                 : (Func<FieldFocusEventArgs, Task>?)null)!)"
              @ontbrowclick="args => OnRowClickedAsync(item, args)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
                         Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, rowClass)">
@@ -250,9 +253,9 @@
                     data-editable="@(editable ? "" : null)" class="@column.CellClass"
                     @ondblclick="@((editable ? () => StartEditAsync(item, column) : null)!)"
                     @onkeydown="@((editable ? (KeyboardEventArgs args) => OnCellKeyAsync(item, column, args) : null)!)">
-                    @if (_edit is { } edit && edit.Column == column && Equals(edit.Key, key))
+                    @if (RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
                     {
-                        @Editor(edit)
+                        @Editor(edit, cell)
                     }
                     else if (column.Cell is not null)
                     {
@@ -262,47 +265,75 @@
                     {
                         @column.TextOf(item)
                     }
+                    @if (EditMode == GridEditMode.Row && column == _shownColumns[^1] && RowEditOf(key) is { } rowEdit)
+                    {
+                        @RowActions(rowEdit, label ?? LabelOf(item))
+                    }
                 </td>
             }
         </tr>;
 
-    // A cell being edited holds its field, saved when focus leaves it; like the filters, a page's form doesn't own it,
-    // and its keys go no further than the edit.
-    private RenderFragment Editor(CellEdit edit) =>
-        @<div data-part="editor" data-tb-focus-root class="tb-data-grid__editor" @ontbeditkey="OnEditKeyAsync"
-              @onkeydown:stopPropagation @ontbfocusleave="OnEditLeftAsync">
+    // A row's edit offers its own Save and Cancel, so a pointer can cancel it too, and Escape on them cancels. Why the
+    // app turned the row down shows beside them, since it may not concern any one field.
+    private RenderFragment RowActions(GridEdit edit, string label) =>
+        @<div data-part="row-actions" class="tb-data-grid__row-actions" @ontbeditkey="OnRowActionKeyAsync"
+              @onkeydown:stopPropagation>
+            @if (edit.Error is not null)
+            {
+                <span data-part="row-error" class="tb-data-grid__row-error">@edit.Error</span>
+            }
+            <TbButton Size="Size.Small" aria-label="@Format(TbStrings.DataGridSaveRow, label)"
+                      OnClick="() => SaveEditAsync(refocus: true)">
+                @Localizer[TbStrings.DataGridSave]
+            </TbButton>
+            <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@Format(TbStrings.DataGridCancelRow, label)"
+                      OnClick="CancelEditAsync">
+                @Localizer[TbStrings.DataGridCancel]
+            </TbButton>
+        </div>;
+
+    private GridEdit? RowEditOf(object key) => _edit is { } edit && Equals(edit.Key, key) ? edit : null;
+
+    // A cell being edited holds its field, saved when focus leaves it, or in row mode when focus leaves the row; like
+    // the filters, a page's form doesn't own it, and its keys go no further than the edit.
+    private RenderFragment Editor(GridEdit edit, CellEdit cell) =>
+        @<div data-part="editor" data-tb-focus-root="@(EditMode == GridEditMode.Cell ? "" : null)"
+              class="tb-data-grid__editor" @ontbeditkey="OnEditKeyAsync" @onkeydown:stopPropagation
+              @ontbfocusleave="@((EditMode == GridEditMode.Cell ? OnEditLeftAsync
+                                  : (Func<FieldFocusEventArgs, Task>?)null)!)">
             <CascadingValue TValue="EditContext" Value="null">
                 <CascadingValue TValue="TbForm" Value="null">
-                    @switch (edit.Column.Editor)
+                    @switch (cell.Column.Editor)
                     {
                         case ColumnEditor.Custom:
-                            @edit.Column.EditTemplate!(ContextOf(edit))
+                            @cell.Column.EditTemplate!(ContextOf(edit, cell))
                             break;
                         case ColumnEditor.Number:
-                            <TbNumberField TValue="decimal?" AriaLabel="@edit.Column.Heading" Size="Size.Small"
-                                           HideStepButtons AutoFocus Value="NumberOf(edit.Value)"
-                                           ValueChanged="number => edit.Value = number" Error="@edit.Error" />
+                            <TbNumberField TValue="decimal?" AriaLabel="@cell.Column.Heading" Size="Size.Small"
+                                           HideStepButtons AutoFocus="cell.Column == edit.Start"
+                                           Value="NumberOf(cell.Value)" ValueChanged="number => cell.Value = number"
+                                           Error="@cell.Error" />
                             break;
                         case ColumnEditor.Choice:
-                            @* A select takes Enter to open its list, so choosing from it saves the edit. *@
-                            <TbSelect TValue="string" AriaLabel="@edit.Column.Heading" Size="Size.Small" AutoFocus
-                                      Value="@edit.Value?.ToString()" ValueChanged="choice => ChooseAsync(edit, choice)"
-                                      Error="@edit.Error">
-                                @foreach (var (value, label) in edit.Column.Choices)
+                            <TbSelect TValue="string" AriaLabel="@cell.Column.Heading" Size="Size.Small"
+                                      AutoFocus="cell.Column == edit.Start" Value="@cell.Value?.ToString()"
+                                      ValueChanged="choice => ChooseAsync(cell, choice)" Error="@cell.Error">
+                                @foreach (var (value, label) in cell.Column.Choices)
                                 {
                                     <TbOption Value="value.ToString()">@label</TbOption>
                                 }
                             </TbSelect>
                             break;
                         case ColumnEditor.YesNo:
-                            <TbCheckbox TValue="bool" AriaLabel="@edit.Column.Heading" AutoFocus
-                                        Value="edit.Value is true" ValueChanged="yes => edit.Value = yes"
-                                        Error="@edit.Error" />
+                            <TbCheckbox TValue="bool" AriaLabel="@cell.Column.Heading"
+                                        AutoFocus="cell.Column == edit.Start" Value="cell.Value is true"
+                                        ValueChanged="yes => cell.Value = yes" Error="@cell.Error" />
                             break;
                         default:
-                            <TbTextField TValue="string" AriaLabel="@edit.Column.Heading" Size="Size.Small" AutoFocus
-                                         UpdateOnInput Value="@(edit.Value as string)"
-                                         ValueChanged="text => edit.Value = text" Error="@edit.Error" />
+                            <TbTextField TValue="string" AriaLabel="@cell.Column.Heading" Size="Size.Small"
+                                         AutoFocus="cell.Column == edit.Start" UpdateOnInput
+                                         Value="@(cell.Value as string)" ValueChanged="text => cell.Value = text"
+                                         Error="@cell.Error" />
                             break;
                     }
                 </CascadingValue>

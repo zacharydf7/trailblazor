@@ -123,16 +123,18 @@ export function createDataGrid(table) {
     // Escape that ends a cell's edit is marked used, so a dialog around the grid stays open; one a field has already
     // used, such as a select closing its list, is already marked.
     const keepEscapeInEdit = event => {
-        if (event.key === 'Escape' && !event.defaultPrevented && event.target.closest?.('.tb-data-grid__editor')) {
+        if (event.key === 'Escape' && !event.defaultPrevented
+            && event.target.closest?.('.tb-data-grid__editor, .tb-data-grid__row-actions')) {
             event.preventDefault();
             event.tbGridGuarded = true;
         }
     };
     table.addEventListener('keydown', keepEscapeInEdit);
 
-    // Pressing an option in a cell's field would take focus from it, which saves the edit before the click arrives.
+    // Pressing an option in a cell's field, or a row's Save or Cancel in browsers where a click doesn't focus a
+    // button, would take focus from the field, which saves the edit before the click arrives.
     const keepEditFocused = event => {
-        if (event.target.closest?.('[data-part=editor] [role=listbox]')) {
+        if (event.target.closest?.('[data-part=editor] [role=listbox], [data-part=row-actions] button')) {
             event.preventDefault();
         }
     };
@@ -310,8 +312,18 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             return;
         }
 
+        // A row's edit keeps Tab among its fields and its Save and Cancel buttons.
+        if (event.key === 'Tab' && cell.parentElement.querySelector('[data-part=row-actions]')) {
+            const stops = [...cell.parentElement.cells].flatMap(controlsOf)
+                .filter(element => element.closest('[data-part=editor], [data-part=row-actions]'));
+            const at = stops.indexOf(event.target);
+            event.preventDefault();
+            stops[(at + (event.shiftKey ? stops.length - 1 : 1)) % stops.length]?.focus();
+            return;
+        }
+
         // A cell being edited, or one Enter or F2 starts editing, leaves those keys to the grid.
-        const editing = cell.querySelector('[data-part=editor]');
+        const editing = cell.querySelector('[data-part=editor], [data-part=row-actions]');
         if (editing && ['Enter', 'Escape', 'Tab'].includes(event.key)
             || cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)) {
             return;

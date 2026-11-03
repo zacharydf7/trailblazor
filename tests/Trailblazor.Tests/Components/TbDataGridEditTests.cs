@@ -237,6 +237,122 @@ public class TbDataGridEditTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=editor]"));
     }
 
+    [Fact]
+    public async Task RowEdit_ShouldOpenEveryEditableCellAndSaveThemTogether_WhenEnterIsPressed()
+    {
+        GridRowEdit<Hike>? saved = null;
+        var cut = RenderRows(parameters => parameters.Add(grid => grid.OnRowEdit,
+            (GridRowEdit<Hike> edit) => saved = edit));
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+        Assert.Equal(4, cut.FindAll("tr[data-key='1'] [data-part=editor]").Count);
+
+        await cut.Find("td[data-column=Name] input").InputAsync(new ChangeEventArgs { Value = "Pine loop" });
+        await cut.Tb().NumberField("Length km").EnterAsync("8");
+        await EditorKeyAsync(cut, "Enter");
+
+        Assert.Equal(new Dictionary<string, object?>
+        {
+            ["Name"] = "Pine loop", ["LengthKm"] = 8, ["Difficulty"] = Difficulty.Easy, ["Loop"] = true,
+        }, saved!.Values);
+        Assert.Empty(cut.FindAll("[data-part=editor]"));
+    }
+
+    [Fact]
+    public async Task RowEdit_ShouldSaveNothingAndShowWhy_WhenOneCellFailsItsCheck()
+    {
+        GridRowEdit<Hike>? saved = null;
+        var cut = RenderRows(parameters => parameters.Add(grid => grid.OnRowEdit,
+            (GridRowEdit<Hike> edit) => saved = edit));
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+
+        await cut.Tb().NumberField("Length km").EnterAsync("500");
+        await EditorKeyAsync(cut, "Enter");
+
+        Assert.Null(saved);
+        Assert.Contains("must be between 1 and 100", Cell(cut, 1, "LengthKm").TextContent);
+        Assert.Equal(4, cut.FindAll("[data-part=editor]").Count);
+    }
+
+    [Fact]
+    public async Task RowEdit_ShouldSetEveryValueOnTheItem_WhenTheGridHasNoRowHandler()
+    {
+        var cut = RenderRows();
+        await Cell(cut, 1, "Loop").DoubleClickAsync(new());
+
+        await cut.Find("td[data-column=Name] input").InputAsync(new ChangeEventArgs { Value = "Pine loop" });
+        await cut.Find("td[data-column=Loop] input").ChangeAsync(new ChangeEventArgs { Value = false });
+        await EditorKeyAsync(cut, "Enter");
+
+        Assert.Equal("Pine loop", _hikes[0].Name);
+        Assert.False(_hikes[0].Loop);
+    }
+
+    [Fact]
+    public async Task RowEdit_ShouldKeepTheRowOpenWithWhy_WhenTheHandlerTurnsItDown()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderRows(parameters => parameters.Add(grid => grid.OnRowEdit,
+            (GridRowEdit<Hike> edit) => edit.Error = "Someone else changed this hike."));
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+
+        await EditorKeyAsync(cut, "Enter");
+
+        Assert.Equal("Someone else changed this hike.", cut.Find("[data-part=row-error]").TextContent);
+        Assert.Equal("Someone else changed this hike.", announcer.Find("[role=alert] p").TextContent);
+        Assert.Empty(cut.FindAll("[aria-invalid=true]"));
+        Assert.Equal(4, cut.FindAll("[data-part=editor]").Count);
+    }
+
+    [Fact]
+    public async Task RowEdit_ShouldDropTheHandlersReason_WhenTheRowIsSavedAgain()
+    {
+        var cut = RenderRows(parameters => parameters.Add(grid => grid.OnRowEdit,
+            (GridRowEdit<Hike> edit) => edit.Error = "Someone else changed this hike."));
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+        await EditorKeyAsync(cut, "Enter");
+
+        await cut.Tb().NumberField("Length km").EnterAsync("500");
+        await EditorKeyAsync(cut, "Enter");
+
+        Assert.Empty(cut.FindAll("[data-part=row-error]"));
+        Assert.Contains("must be between 1 and 100", Cell(cut, 1, "LengthKm").TextContent);
+    }
+
+    [Fact]
+    public async Task RowEdit_ShouldKeepTheRowOpen_WhenAChoiceIsMade()
+    {
+        var cut = RenderRows();
+        await Cell(cut, 1, "Difficulty").DoubleClickAsync(new());
+
+        await cut.Tb().Select("Difficulty").ChooseAsync("Hard");
+
+        Assert.Equal(4, cut.FindAll("[data-part=editor]").Count);
+        Assert.Equal(Difficulty.Easy, _hikes[0].Difficulty);
+    }
+
+    [Theory]
+    [InlineData("Save Pine Hollow", "Pine loop")]
+    [InlineData("Cancel editing Pine Hollow", "Pine Hollow")]
+    public async Task RowActions_ShouldSaveOrCancelTheRow_WhenTheirButtonIsClicked(string button, string name)
+    {
+        var cut = RenderRows();
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+
+        await cut.Find("td[data-column=Name] input").InputAsync(new ChangeEventArgs { Value = "Pine loop" });
+        await cut.Find($"[data-part=row-actions] button[aria-label='{button}']").ClickAsync(new());
+
+        Assert.Equal(name, _hikes[0].Name);
+        Assert.Empty(cut.FindAll("[data-part=editor], [data-part=row-actions]"));
+    }
+
+    private IRenderedComponent<TbDataGrid<Hike>> RenderRows(
+        Action<ComponentParameterCollectionBuilder<TbDataGrid<Hike>>>? configure = null) =>
+        RenderHikes(parameters =>
+        {
+            parameters.Add(grid => grid.EditMode, GridEditMode.Row);
+            configure?.Invoke(parameters);
+        });
+
     private static Task EditorKeyAsync(IRenderedComponent<TbDataGrid<Hike>> cut, string key, bool handled = false) =>
         cut.Find("[data-part=editor]").TriggerEventAsync("ontbeditkey",
             new GridEditKeyEventArgs { Key = key, Handled = handled });

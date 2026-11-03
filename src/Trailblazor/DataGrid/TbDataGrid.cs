@@ -48,7 +48,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private TItem? _selectedItemFromParent;
     private (object Key, TaskCompletionSource Done)? _scrollAfterRender;
     private TaskCompletionSource? _nextRender;
-    private CellEdit? _edit;
+    private GridEdit? _edit;
     private int _editVersion;
     private ElementReference _table;
     private ElementReference _body;
@@ -228,6 +228,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<GridCellEdit<TItem>> OnCellEdit { get; set; }
 
+    /// <summary>What one edit covers: a cell, the default, or in <see cref="GridEditMode.Row"/> every
+    /// <see cref="TbColumn{TItem}.Editable"/> cell of a row, where Enter saves the row, Escape cancels it, Tab moves
+    /// between its fields and Save and Cancel buttons, and leaving the row saves it.</summary>
+    [Parameter]
+    public GridEditMode EditMode { get; set; }
+
+    /// <summary>Raised with each row the user saves when <see cref="EditMode"/> is <see cref="GridEditMode.Row"/>,
+    /// once every cell's checks pass; apply it to the item, or save it, and the grid shows the rows again. Without
+    /// it, each value is set on the item when its column's field is a property or field the grid can set.</summary>
+    [Parameter]
+    public EventCallback<GridRowEdit<TItem>> OnRowEdit { get; set; }
+
     /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>.</summary>
     [Parameter]
     public bool Loading { get; set; }
@@ -292,8 +304,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // Editing a cell, as much as moving between them, makes the table an ARIA grid.
     private bool IsGrid => CellNavigation || _columns.Any(CanEdit);
 
-    private bool CanEdit(TbColumn<TItem> column) =>
-        column.Editor != ColumnEditor.None && (OnCellEdit.HasDelegate || column.CanSet);
+    private bool CanEdit(TbColumn<TItem> column) => column.Editor != ColumnEditor.None
+        && (HasEditHandler || column.CanSet);
+
+    private bool HasEditHandler => EditMode == GridEditMode.Row ? OnRowEdit.HasDelegate : OnCellEdit.HasDelegate;
 
     // A failed, loading or empty grid shows one row saying so, which a virtualized table counts and numbers too, so
     // the keyboard can reach it.
@@ -565,7 +579,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         builder.AddComponentParameter(4, nameof(GridRow<TItem>.Label), label);
         builder.AddComponentParameter(5, nameof(GridRow<TItem>.Version), _rowVersion);
         builder.AddComponentParameter(6, nameof(GridRow<TItem>.Editing),
-            _edit is { } edit && Equals(edit.Key, key) ? (edit.Column, _editVersion) : null);
+            _edit is { } edit && Equals(edit.Key, key) ? (edit, _editVersion) : null);
         builder.AddComponentParameter(7, nameof(GridRow<TItem>.ChildContent),
             Row(item, key, selected, at, rowClass, label));
         builder.CloseComponent();
@@ -635,24 +649,27 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return rendered.Task;
     }
 
-    // An edit already open is saved before another starts, and stays open when it can't be.
+    // An edit already open is saved before another starts, and stays open when it can't be. In row mode an edit covers
+    // every editable cell of the row, starting in the one asked for.
     private async Task StartEditAsync(TItem item, TbColumn<TItem> column)
     {
         var key = KeyOf(item);
-        if (_edit is { } open
-            && (Equals(open.Key, key) && open.Column == column || !await SaveEditAsync(refocus: false)))
+        if (_edit is { } open && (Equals(open.Key, key) && (EditMode == GridEditMode.Row || open.Start == column)
+                || !await SaveEditAsync(refocus: false)))
         {
             return;
         }
 
-        _edit = new(item, key, column, column.ValueOf(item));
+        var columns = EditMode == GridEditMode.Row ? _shownColumns.Where(CanEdit) : [column];
+        _edit = new(item, key, column, [.. columns.Select(editable => new CellEdit(editable, editable.ValueOf(item)))]);
         _editVersion++;
     }
 
-    private Task ChooseAsync(CellEdit edit, string? choice)
+    // A select takes Enter to open its list, so choosing from it saves a cell's edit; a row's edit is saved whole.
+    private Task ChooseAsync(CellEdit cell, string? choice)
     {
-        edit.Value = choice;
-        return SaveEditAsync(refocus: true);
+        cell.Value = choice;
+        return EditMode == GridEditMode.Cell ? SaveEditAsync(refocus: true) : Task.CompletedTask;
     }
 
     private Task OnCellKeyAsync(TItem item, TbColumn<TItem> column, KeyboardEventArgs args) =>
@@ -675,6 +692,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             await CancelEditAsync();
         }
     }
+
+    // Enter on a row's Save or Cancel button clicks it, so only Escape is handled here.
+    private Task OnRowActionKeyAsync(GridEditKeyEventArgs args) =>
+        args is { Key: "Escape", Handled: false } ? CancelEditAsync() : Task.CompletedTask;
 
     private async Task OnEditLeftAsync(FieldFocusEventArgs args)
     {
@@ -703,31 +724,45 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return edit.Saving = SaveAsync(edit, refocus);
     }
 
-    private async Task<bool> SaveAsync(CellEdit edit, bool refocus)
+    // A row is saved only when every one of its cells passes its checks.
+    private async Task<bool> SaveAsync(GridEdit edit, bool refocus)
     {
-        if (CheckEdit(edit, out var value) is { } error)
+        edit.Error = null;
+        Dictionary<CellEdit, object?> values = [];
+        foreach (var cell in edit.Cells)
         {
-            edit.Error = error;
-            _editVersion++;
-            StateHasChanged();
+            cell.Error = CheckEdit(edit.Item, cell, out var value);
+            values[cell] = value;
+        }
+
+        if (edit.Cells.Any(cell => cell.Error is not null))
+        {
+            ShowEditErrors();
             return false;
         }
 
-        if (OnCellEdit.HasDelegate)
+        if (await RejectionOfAsync(edit, values) is { } rejected)
         {
-            var change = new GridCellEdit<TItem>(edit.Item, edit.Column.Key, value);
-            await OnCellEdit.InvokeAsync(change);
-            if (change.Error is { } rejected)
+            if (EditMode == GridEditMode.Row)
             {
                 edit.Error = rejected;
-                _editVersion++;
-                StateHasChanged();
-                return false;
+                Announcer.Assertive(rejected);
             }
+            else
+            {
+                edit.StartCell.Error = rejected;
+            }
+
+            ShowEditErrors();
+            return false;
         }
-        else
+
+        if (!HasEditHandler)
         {
-            edit.Column.SetValue(edit.Item, value);
+            foreach (var (cell, value) in values)
+            {
+                cell.Column.SetValue(edit.Item, value);
+            }
         }
 
         _edit = null;
@@ -740,6 +775,33 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         return true;
+    }
+
+    private void ShowEditErrors()
+    {
+        _editVersion++;
+        StateHasChanged();
+    }
+
+    // The app's handler takes the edit, or turns it down with an error.
+    private async Task<string?> RejectionOfAsync(GridEdit edit, Dictionary<CellEdit, object?> values)
+    {
+        if (!HasEditHandler)
+        {
+            return null;
+        }
+
+        if (EditMode == GridEditMode.Row)
+        {
+            var row = new GridRowEdit<TItem>(edit.Item,
+                values.ToDictionary(pair => pair.Key.Column.Key, pair => pair.Value));
+            await OnRowEdit.InvokeAsync(row);
+            return row.Error;
+        }
+
+        var change = new GridCellEdit<TItem>(edit.Item, edit.Start.Key, values[edit.StartCell]);
+        await OnCellEdit.InvokeAsync(change);
+        return change.Error;
     }
 
     private async Task CancelEditAsync()
@@ -755,66 +817,81 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     // Focus goes back to the cell once its field is gone, unless another edit has opened since.
-    private async Task FocusCellAsync(CellEdit edit)
+    private async Task FocusCellAsync(GridEdit edit)
     {
         await NextRenderAsync();
         if (_handle is not null && _edit is null)
         {
-            await _handle.InvokeVoidAsync("focusCell", IdOf(edit.Item), edit.Column.Key);
+            await _handle.InvokeVoidAsync("focusCell", IdOf(edit.Item), edit.Start.Key);
         }
     }
 
     // A value the field can't hold, such as a fraction for a whole number, or no value for a field that can't be
     // null, fails before the column's own checks.
-    private string? CheckEdit(CellEdit edit, out object? value)
+    private string? CheckEdit(TItem item, CellEdit cell, out object? value)
     {
         value = null;
-        if (edit.Column.HoldsWholeNumbers && edit.Value is decimal number && number != decimal.Truncate(number))
+        if (cell.Column.HoldsWholeNumbers && cell.Value is decimal number && number != decimal.Truncate(number))
         {
-            return Format(TbStrings.DataGridEditInvalid, edit.Column.Heading);
+            return Format(TbStrings.DataGridEditInvalid, cell.Column.Heading);
         }
 
         try
         {
-            value = edit.Column.ConvertForField(edit.Value);
+            value = cell.Column.ConvertForField(cell.Value);
         }
         catch (OverflowException)
         {
-            return Format(TbStrings.DataGridEditInvalid, edit.Column.Heading);
+            return Format(TbStrings.DataGridEditInvalid, cell.Column.Heading);
         }
 
-        if (value is null && !edit.Column.AcceptsNull)
+        if (value is null && !cell.Column.AcceptsNull)
         {
-            return Format(TbStrings.FieldRequired, edit.Column.Heading);
+            return Format(TbStrings.FieldRequired, cell.Column.Heading);
         }
 
-        return edit.Column.AnnotationErrorOf(edit.Item, value) ?? edit.Column.Validate?.Invoke(edit.Item, value);
+        return cell.Column.AnnotationErrorOf(item, value) ?? cell.Column.Validate?.Invoke(item, value);
     }
 
     // A template that shows its value draws again as the value changes.
-    private GridCellEditContext<TItem> ContextOf(CellEdit edit) => new(edit.Item, edit.Value, edit.Error, value =>
-    {
-        edit.Value = value;
-        _editVersion++;
-        StateHasChanged();
-    }, () => SaveEditAsync(refocus: true), CancelEditAsync);
+    private GridCellEditContext<TItem> ContextOf(GridEdit edit, CellEdit cell) => new(edit.Item, cell.Value,
+        cell.Error, value =>
+        {
+            cell.Value = value;
+            _editVersion++;
+            StateHasChanged();
+        }, () => SaveEditAsync(refocus: true), CancelEditAsync);
 
     private static decimal? NumberOf(object? value) => NumberTypes.TryToDecimal(value, out var number) ? number : null;
 
-    // The cell being edited, and the value its field holds so far.
-    private sealed class CellEdit(TItem item, object key, TbColumn<TItem> column, object? value)
+    // What is being edited: one cell, or in row mode every editable cell of a row, starting in one.
+    private sealed class GridEdit(TItem item, object key, TbColumn<TItem> start, IReadOnlyList<CellEdit> cells)
     {
         public TItem Item { get; } = item;
 
         public object Key { get; } = key;
 
+        public TbColumn<TItem> Start { get; } = start;
+
+        public IReadOnlyList<CellEdit> Cells { get; } = cells;
+
+        public CellEdit StartCell => Cells.First(cell => cell.Column == Start);
+
+        public Task<bool>? Saving { get; set; }
+
+        public string? Error { get; set; }
+
+        public CellEdit? CellOf(TbColumn<TItem> column) => Cells.FirstOrDefault(cell => cell.Column == column);
+    }
+
+    // A cell being edited, and the value its field holds so far.
+    private sealed class CellEdit(TbColumn<TItem> column, object? value)
+    {
         public TbColumn<TItem> Column { get; } = column;
 
         public object? Value { get; set; } = value;
 
         public string? Error { get; set; }
-
-        public Task<bool>? Saving { get; set; }
     }
 
     // A line the grid draws: an item's row, or a group's heading, with its place among all the lines.

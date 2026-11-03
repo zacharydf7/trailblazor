@@ -1,0 +1,47 @@
+@* With EditMode set to Row, an edit covers the whole row and saves it whole. *@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trail rows" KeySelector="trail => trail.Id"
+                EditMode="GridEditMode.Row" OnRowEdit="Save">
+        <TbColumn Field="trail => trail.Name" Editable Validate="(_, name) => NeedsName(name)" />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Editable />
+        <TbColumn Field="trail => trail.Difficulty" Editable />
+        <TbColumn Field="trail => trail.Region" />
+    </TbDataGrid>
+    <TbText data-testid="row-saved">@(_saved ?? "No row saved yet.")</TbText>
+</TbStack>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new(1, "Pine Hollow loop", 6.4, Difficulty.Easy, "North"),
+        new(2, "Eagle Ridge traverse", 14.2, Difficulty.Hard, "West"),
+        new(3, "Cedar Flats", 3.1, Difficulty.Easy, "South"),
+    ];
+
+    private string? _saved;
+
+    private static string? NeedsName(object? name) =>
+        string.IsNullOrWhiteSpace(name as string) ? "Give the trail a name." : null;
+
+    // The trails are records, so a saved row replaces its trail with a copy holding the row's new values.
+    private void Save(GridRowEdit<Trail> edit)
+    {
+        var at = _trails.FindIndex(trail => trail.Id == edit.Item.Id);
+        _trails[at] = edit.Item with
+        {
+            Name = (string)edit.Values["Name"]!,
+            LengthKm = (double)edit.Values["LengthKm"]!,
+            Difficulty = (Difficulty)edit.Values["Difficulty"]!,
+        };
+        _saved = $"Saved {_trails[at].Name}.";
+    }
+
+    private enum Difficulty
+    {
+        Easy,
+        Moderate,
+        Hard,
+    }
+
+    private sealed record Trail(int Id, string Name, double LengthKm, Difficulty Difficulty, string Region);
+}
