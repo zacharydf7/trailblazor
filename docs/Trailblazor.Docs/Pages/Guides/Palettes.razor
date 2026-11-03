@@ -3,71 +3,98 @@
 
 <PageTitle>Palettes · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Palettes</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    Every built-in palette, light and dark, on real components. Choose one with <code>data-tb-palette</code>, as the
-    <a href="guides/theming">theming guide</a> shows, or with the palette switcher at the top of this site.
-</TbText>
-
-@foreach (var palette in PaletteCatalog.All)
-{
-    <section class="docs-palette" aria-labelledby="@($"palette-{palette.Name}")">
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" id="@($"palette-{palette.Name}")">
-            @palette.Title
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        @foreach (var palette in PaletteCatalog.All)
+        {
+            <TbTableOfContentsItem TargetId="@($"palette-{palette.Name}")" Text="@palette.Title" />
+        }
+        <TbTableOfContentsItem TargetId="ramps" Text="Color ramps" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Palettes</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Every built-in palette, light and dark, on real components. Choose one with <code>data-tb-palette</code>,
+            as the <a href="guides/theming#palettes">theming guide</a> shows, or with the palette switcher at the top
+            of this site.
         </TbText>
-        <TbText class="docs-palette__summary">@palette.Summary <code>data-tb-palette="@palette.Name"</code></TbText>
-        <div class="docs-palette__panels">
-            @foreach (var (theme, label) in Themes)
-            {
-                <div class="docs-palette__panel" data-tb-palette="@palette.Name" data-tb-theme="@theme">
-                    <TbText TextStyle="TextStyle.Caption" class="docs-palette__theme">@label</TbText>
-                    <TbStack Row Gap="2" Wrap>
-                        <TbButton>Save</TbButton>
-                        <TbButton Tone="Tone.Neutral" Variant="Variant.Outlined">Cancel</TbButton>
-                        <TbButton Tone="Tone.Danger" Variant="Variant.Soft">Delete</TbButton>
-                        <TbButton Disabled>Publish</TbButton>
-                    </TbStack>
-                    <TbTextField Label="Project name" @bind-Value="_projectName" />
-                    <TbTextField Label="Owner email" @bind-Value="_ownerEmail" Invalid
-                                 HelperText="Enter a whole email address." />
-                    <TbList aria-label="@($"Trails, {palette.Title} {label}")">
-                        <TbListItem Selected OnClick="() => { }">Ridge loop</TbListItem>
-                        <TbListItem OnClick="() => { }">Creek path</TbListItem>
-                    </TbList>
-                    <TbStack Row Gap="2" Wrap>
-                        <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
-                        <TbChip Text="Closed" SelectedChanged="(bool _) => { }" />
-                    </TbStack>
-                    <TbStack Row Gap="4" Wrap>
-                        <TbCheckbox Label="Share with team" @bind-Value="_share" />
-                        <TbSwitch Label="Notifications" @bind-Value="_notify" />
-                    </TbStack>
+    </Header>
+    <ChildContent>
+        @foreach (var palette in PaletteCatalog.All)
+        {
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section"
+                    id="@($"palette-{palette.Name}")">
+                @palette.Title
+            </TbText>
+            <section class="docs-palette" aria-labelledby="@($"palette-{palette.Name}")">
+                <TbText class="docs-palette__summary">
+                    @palette.Summary <code>data-tb-palette="@palette.Name"</code>
+                </TbText>
+                <div class="docs-palette__panels">
+                    @foreach (var (theme, label) in Themes)
+                    {
+                        <div class="docs-palette__panel" data-tb-palette="@palette.Name" data-tb-theme="@theme">
+                            <TbText TextStyle="TextStyle.Caption" class="docs-palette__theme">@label</TbText>
+                            <TbStack Row Gap="2" Wrap>
+                                <TbButton>Save</TbButton>
+                                <TbButton Tone="Tone.Neutral" Variant="Variant.Outlined">Cancel</TbButton>
+                                <TbButton Tone="Tone.Danger" Variant="Variant.Soft">Delete</TbButton>
+                                <TbButton Disabled>Publish</TbButton>
+                            </TbStack>
+                            <TbTextField Label="Project name" @bind-Value="_projectName" />
+                            <TbTextField Label="Owner email" @bind-Value="_ownerEmail" Invalid
+                                         HelperText="Enter a whole email address." />
+                            <TbList aria-label="@($"Trails, {palette.Title} {label}")">
+                                <TbListItem Selected OnClick="() => { }">Ridge loop</TbListItem>
+                                <TbListItem OnClick="() => { }">Creek path</TbListItem>
+                            </TbList>
+                            <TbStack Row Gap="2" Wrap>
+                                <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
+                                <TbChip Text="Closed" SelectedChanged="(bool _) => { }" />
+                            </TbStack>
+                            <TbStack Row Gap="4" Wrap>
+                                <TbCheckbox Label="Share with team" @bind-Value="_share" />
+                                <TbSwitch Label="Notifications" @bind-Value="_notify" />
+                            </TbStack>
+                        </div>
+                    }
                 </div>
-            }
-        </div>
-    </section>
-}
+            </section>
+        }
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Color ramps</TbText>
-<TbText>
-    The palettes are built from these tonal ramps, from the lightest step, 50, to the darkest. Components never read
-    them directly, but your own palettes can.
-</TbText>
-@foreach (var (name, tokens) in DesignTokens.Ramps())
-{
-    <section class="docs-ramp" aria-label="@($"{name} ramp")">
-        <TbText class="docs-ramp__name"><code>--tb-@name-*</code></TbText>
-        <ol class="docs-ramp__steps">
-            @foreach (var token in tokens)
-            {
-                <li class="docs-ramp__step">
-                    <span class="docs-ramp__swatch" style="background: var(@token)"></span>
-                    <span class="docs-ramp__label">@token[(token.LastIndexOf('-') + 1)..]</span>
-                </li>
-            }
-        </ol>
-    </section>
-}
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="ramps">Color ramps</TbText>
+        <TbText>
+            The palettes are built from these tonal ramps, from the lightest step, 50, to the darkest. Components never
+            read them directly, but <a href="guides/theming#custom-palette">your own palettes</a> can.
+        </TbText>
+        @foreach (var (name, tokens) in DesignTokens.Ramps())
+        {
+            <section class="docs-ramp" aria-label="@($"{name} ramp")">
+                <TbText class="docs-ramp__name"><code>--tb-@name-*</code></TbText>
+                <ol class="docs-ramp__steps">
+                    @foreach (var token in tokens)
+                    {
+                        <li class="docs-ramp__step">
+                            <span class="docs-ramp__swatch" style="background: var(@token)"></span>
+                            <span class="docs-ramp__label">@token[(token.LastIndexOf('-') + 1)..]</span>
+                        </li>
+                    }
+                </ol>
+            </section>
+        }
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li><a href="guides/theming#palettes">Theming</a>: choose a palette for the page or part of it.</li>
+            <li>
+                <a href="guides/theming#custom-palette">Your own palette</a>: define one with these ramps or any colors
+                you choose.
+            </li>
+            <li><a href="components/theme-picker">Theme picker</a>: let people choose a palette.</li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
     private static readonly (string Theme, string Label)[] Themes = [("light", "Light"), ("dark", "Dark")];

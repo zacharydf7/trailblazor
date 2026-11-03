@@ -2,81 +2,134 @@
 
 <PageTitle>Getting started · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Getting started</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    Add Trailblazor to a Blazor app for .NET 10, render your first component, and choose a render mode.
-</TbText>
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="set-up" Text="Set up an app" />
+        <TbTableOfContentsItem TargetId="host" Text="Host dialogs and toasts" />
+        <TbTableOfContentsItem TargetId="render-modes" Text="Render modes" />
+        <TbTableOfContentsItem TargetId="options" Text="App-wide options" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Getting started</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Add Trailblazor to a Blazor app for .NET 10, render your first component, and choose a render mode.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="set-up">Set up an app</TbText>
+        <TbText>Six steps add Trailblazor to an app and render its first component.</TbText>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">1. Add the library</TbText>
-<TbText>
-    Trailblazor isn't on NuGet yet. Until it is, clone the repository and reference the library from your app's
-    project file.
-</TbText>
-<CodeBlock Label="Project reference" Code="@ProjectReference" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">1. Add the library</TbText>
+        <TbText>
+            Trailblazor isn't on NuGet yet. Until it is, clone the repository and reference the library from your
+            app's project file.
+        </TbText>
+        <CodeBlock Label="Project reference" Code="@ProjectReference" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">2. Register the services</TbText>
-<TbText>
-    In <code>Program.cs</code>, register Trailblazor's services: dialogs, toasts, screen-reader announcements and
-    the <a href="guides/browser">browser service</a>.
-</TbText>
-<CodeBlock Label="Program.cs" Code="@Services" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">2. Register the services</TbText>
+        <TbText>
+            In <code>Program.cs</code>, register Trailblazor's services: dialogs, toasts, screen-reader announcements
+            and the <a href="guides/browser">browser service</a>.
+        </TbText>
+        <CodeBlock Label="Program.cs" Code="@Services" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">3. Import the namespace</TbText>
-<CodeBlock Label="_Imports.razor" Code="@Imports" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">3. Import the namespace</TbText>
+        <CodeBlock Label="_Imports.razor" Code="@Imports" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">4. Link the stylesheet</TbText>
-<TbText>
-    Put <code>&lt;TbStyles /&gt;</code> in the <code>&lt;head&gt;</code> of App.razor, outside the
-    <code>HeadOutlet</code>. It renders once with the page, so the styles never drop out when the page becomes
-    interactive. A standalone WebAssembly app links the file in its index.html instead. If the app also loads another
-    library's CSS, see <a href="guides/theming#other-stylesheets">Other stylesheets</a> in the theming guide, since a
-    reset in it can strip the components' spacing.
-</TbText>
-<CodeBlock Label="App.razor" Code="@Head" />
-<CodeBlock Label="index.html, standalone WebAssembly" Code="@IndexHead" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">4. Link the stylesheet</TbText>
+        <TbText>
+            Put <code>&lt;TbStyles /&gt;</code> in the <code>&lt;head&gt;</code> of App.razor, outside the
+            <code>HeadOutlet</code>. It renders once with the page, so the styles never drop out when the page becomes
+            interactive.
+        </TbText>
+        <CodeBlock Label="App.razor" Code="@Head" />
+        <TbText>A standalone WebAssembly app links the file in its index.html instead.</TbText>
+        <CodeBlock Label="index.html, standalone WebAssembly" Code="@IndexHead" />
+        <DocsCallout Tone="Tone.Warning" Title="Another library's CSS">
+            A reset in another library's stylesheet can strip the components' spacing. See
+            <a href="guides/theming#other-stylesheets">Other stylesheets</a> in the theming guide.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">5. Add TbRoot to the layout</TbText>
-<TbText>
-    Put one <code>&lt;TbRoot /&gt;</code> in the main layout. It hosts the dialogs, toasts and announcements that
-    services open from code.
-</TbText>
-<CodeBlock Label="MainLayout.razor" Code="@Layout" />
-<TbText>
-    The dialogs and toasts a page opens show only when <code>TbRoot</code> hosts them in the same interactive session
-    as that page. When the whole app is interactive, with the same render mode on <code>Routes</code> and
-    <code>HeadOutlet</code>, it already does.
-</TbText>
-<CodeBlock Label="App.razor" Code="@App" />
-<TbText>
-    When interactivity is set page by page, as in the default Blazor template, the layout renders statically. Give
-    <code>TbRoot</code> the render mode your interactive pages use, and it hosts dialogs, toasts and announcements in
-    that mode. Every page then starts an interactive session for <code>TbRoot</code>, even a fully static page, and only
-    pages in that same render mode can open its dialogs, toasts and announcements.
-</TbText>
-<CodeBlock Label="MainLayout.razor, interactivity per page" Code="@PerPageLayout" />
-<TbText>
-    If a page shows a dialog, toast or announcement and no <code>TbRoot</code> in its session hosts it within a
-    second, Trailblazor logs a warning saying so. The dialog and toast services can be called from any thread, such
-    as a SignalR hub handler.
-</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">5. Add TbRoot to the layout</TbText>
+        <TbText>
+            Put one <code>&lt;TbRoot /&gt;</code> in the main layout. It hosts the dialogs, toasts and announcements
+            that services open from code. <a href="guides/getting-started#host">Host dialogs and toasts</a> explains
+            what it needs from the app's render mode.
+        </TbText>
+        <CodeBlock Label="MainLayout.razor" Code="@Layout" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">6. Use a component</TbText>
-<CodeBlock Label="A first component" Code="@FirstComponent" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">6. Use a component</TbText>
+        <CodeBlock Label="A first component" Code="@FirstComponent" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Render modes</TbText>
-<TbText>
-    Every component works in Interactive Server, Interactive WebAssembly and Interactive Auto. Pages that use static
-    server-side rendering still show every component; fields post their values with a form, and a select renders the
-    browser's own <code>&lt;select&gt;</code>. Anything that responds to clicks or keys, such as a dialog, a menu or
-    tabs, needs an interactive render mode.
-</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="host">
+            Host dialogs and toasts
+        </TbText>
+        <TbText>
+            The dialogs and toasts a page opens show only when <code>TbRoot</code> hosts them in the same interactive
+            session as that page. How to set that up depends on where the app sets its render mode.
+        </TbText>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">When the whole app is interactive</TbText>
+        <TbText>
+            With the same render mode on <code>Routes</code> and <code>HeadOutlet</code>, the layout is interactive
+            too, so <code>TbRoot</code> already shares each page's session.
+        </TbText>
+        <CodeBlock Label="App.razor" Code="@App" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">When interactivity is set page by page</TbText>
+        <TbText>
+            Here, as in the default Blazor template, the layout renders statically. Give <code>TbRoot</code> the render
+            mode your interactive pages use, and it hosts dialogs, toasts and announcements in that mode.
+        </TbText>
+        <CodeBlock Label="MainLayout.razor, interactivity per page" Code="@PerPageLayout" />
+        <DocsCallout Tone="Tone.Warning" Title="Every page starts a session">
+            With a render mode on <code>TbRoot</code>, every page starts an interactive session for it, even a fully
+            static page. Only pages in that same render mode can open its dialogs, toasts and announcements.
+        </DocsCallout>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">In either setup</TbText>
+        <ul>
+            <li>
+                If a page shows a dialog, toast or announcement and no <code>TbRoot</code> in its session hosts it
+                within a second, Trailblazor logs a warning saying so.
+            </li>
+            <li>The dialog and toast services can be called from any thread, such as a SignalR hub handler.</li>
+        </ul>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">App-wide options</TbText>
-<TbText>
-    <code>AddTrailblazor</code> takes the settings that apply to every dialog and toast. A dialog's own options still
-    override them.
-</TbText>
-<CodeBlock Label="App-wide options" Code="@Options" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="render-modes">
+            Render modes
+        </TbText>
+        <TbText>
+            Every component works in Interactive Server, Interactive WebAssembly and Interactive Auto. Pages rendered
+            statically on the server still show every component, with these differences:
+        </TbText>
+        <ul>
+            <li>Fields post their values with a form.</li>
+            <li>A select renders the browser's own <code>&lt;select&gt;</code>.</li>
+            <li>
+                Anything that responds to clicks or keys, such as a dialog, a menu or tabs, needs an interactive render
+                mode.
+            </li>
+        </ul>
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="options">
+            App-wide options
+        </TbText>
+        <TbText>
+            <code>AddTrailblazor</code> takes the settings that apply to every dialog and toast. A dialog's own options
+            still override them.
+        </TbText>
+        <CodeBlock Label="App-wide options" Code="@Options" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li><a href="guides/theming">Theming</a>: light and dark, palettes, density and design tokens.</li>
+            <li><a href="guides/testing">Testing</a>: bUnit and Playwright helpers for your pages.</li>
+            <li><a href="guides/analyzers">Analyzers</a>: warnings that catch unnamed controls as you build.</li>
+            <li>
+                <a href="components/button">Button</a>, the first component above, and every other component's page.
+            </li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
     private const string ProjectReference = """

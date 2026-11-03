@@ -264,17 +264,22 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             "blocks => blocks.every(pre => pre.scrollWidth <= pre.clientWidth)"), "A card's code should fit it.");
     }
 
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Guide_ShouldListEachSectionOnThePage_WhenOpened(string browser)
+    public static TheoryData<string, string> Guides => new(
+        from browser in AllBrowsers.Names
+        from path in new[] { "guides/getting-started", "guides/theming", "guides/palettes", "guides/spacing",
+            "guides/testing" }
+        select (browser, path));
+
+    [Theory, MemberData(nameof(Guides))]
+    public async Task Guide_ShouldListEachSectionOnThePage_WhenOpened(string browser, string path)
     {
-        var page = await OpenDocsAsync(browser, "guides/testing");
+        var page = await OpenDocsAsync(browser, path);
         var sections = page.Locator(".docs-article__body > h2");
         var rail = page.Locator(".docs-article__rail").GetByRole(AriaRole.Link);
 
         await Expect(rail).ToHaveTextAsync([.. (await sections.AllTextContentsAsync()).Select(text => text.Trim())]);
         // A guide's notes are part of its text, so none is a live region that a screen reader would read out at once.
-        await Expect(page.Locator(".docs-article__body [role=note]").First).ToBeVisibleAsync();
-        await Expect(page.Locator(".docs-article__body").Locator("[role=alert], [role=status]")).ToHaveCountAsync(0);
+        await Expect(page.Locator(".docs-article__body .tb-alert:not([role=note])")).ToHaveCountAsync(0);
         Assert.Equal(await sections.EvaluateAllAsync<string[]>("headings => headings.map(heading => '#' + heading.id)"),
             await rail.EvaluateAllAsync<string[]>("links => links.map(link => new URL(link.href).hash)"));
     }

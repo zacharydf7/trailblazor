@@ -480,7 +480,8 @@
                 parameters => parameters.Set(rename => rename.Name, "Pine Hollow"));
 
             await dialog.Root.Find("input").InputAsync(new() { Value = "Eagle Ridge" });
-            await dialog.Root.FindAll("button").Single(button => button.TextContent.Trim() == "Save").ClickAsync(new());
+            await dialog.Root.FindAll("button")
+                .Single(button => button.TextContent.Trim() == "Save").ClickAsync(new());
 
             Assert.Equal("Eagle Ridge", (await dialog.Reference.Result).Value);
         }
@@ -508,8 +509,10 @@
         await page.Tb().ListBox("Gear to pack").ChooseAsync("Tent", "Stove");
         await page.Tb().ColorPicker("Trail marker").ChooseAsync("#d1242f");
         await page.Tb().FileUpload("Trail maps").ChooseAsync("map.pdf");
-        await page.Tb().Tree("Trails by region").SelectAsync("River valley", "Fern Gully", "Waterfall spur");
-        await page.Tb().DateRangePicker("Trip dates").ChooseAsync(new DateOnly(2026, 7, 2), new DateOnly(2026, 7, 9));
+        await page.Tb().Tree("Trails by region")
+            .SelectAsync("River valley", "Fern Gully", "Waterfall spur");
+        await page.Tb().DateRangePicker("Trip dates")
+            .ChooseAsync(new DateOnly(2026, 7, 2), new DateOnly(2026, 7, 9));
 
         var filters = await page.Tb().Popover("Filters").OpenAsync();
         await filters.GetByLabel("Only open items").CheckAsync();
@@ -540,7 +543,10 @@
         time.Advance(TimeSpan.FromSeconds(5));
 
         // Playwright: a page with no transitions.
-        var page = await browser.NewPageAsync(new() { ReducedMotion = ReducedMotion.Reduce });
+        var page = await browser.NewPageAsync(new()
+        {
+            ReducedMotion = ReducedMotion.Reduce,
+        });
         """;
 
     private const string Locators = """
@@ -549,7 +555,7 @@
         await page.GetByRole(AriaRole.Combobox, new() { Name = "Size" }).ClickAsync();
         await page.GetByRole(AriaRole.Dialog, new() { Name = "Rename" })
             .GetByRole(AriaRole.Button, new() { Name = "Close" }).ClickAsync();
-        await Expect(page.Locator("[data-part=polite] p").Filter(new() { HasText = "Saved." }).Last)
-            .ToBeAttachedAsync();
+        var polite = page.Locator("[data-part=polite] p");
+        await Expect(polite.Filter(new() { HasText = "Saved." }).Last).ToBeAttachedAsync();
         """;
 }

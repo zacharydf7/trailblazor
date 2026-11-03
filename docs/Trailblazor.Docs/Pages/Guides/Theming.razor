@@ -3,229 +3,340 @@
 
 <PageTitle>Theming · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Theming</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    Every component draws its colors, spacing, shapes and type from design tokens: CSS custom properties named
-    <code>--tb-*</code>. Attributes switch between the ready-made looks, and your own CSS can change any token.
-</TbText>
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="light-and-dark" Text="Light and dark" />
+        <TbTableOfContentsItem TargetId="palettes" Text="Palettes" />
+        <TbTableOfContentsItem TargetId="typography" Text="Typography" />
+        <TbTableOfContentsItem TargetId="density" Text="Density" />
+        <TbTableOfContentsItem TargetId="tokens" Text="Change tokens" />
+        <TbTableOfContentsItem TargetId="restyle" Text="Restyle one component" />
+        <TbTableOfContentsItem TargetId="brand" Text="Try a brand color" />
+        <TbTableOfContentsItem TargetId="other-stylesheets" Text="Other stylesheets" />
+        <TbTableOfContentsItem TargetId="custom-palette" Text="Your own palette" />
+        <TbTableOfContentsItem TargetId="reduced-motion" Text="Reduced motion" />
+        <TbTableOfContentsItem TargetId="token-reference" Text="Token reference" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Theming</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Every component draws its colors, spacing, shapes and type from design tokens: CSS custom properties named
+            <code>--tb-*</code>. Attributes switch between the ready-made looks, and your own CSS can change any token.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="light-and-dark">
+            Light and dark
+        </TbText>
+        <TbText>
+            Put <code>TbThemeHead</code> in <code>&lt;head&gt;</code>, next to <code>TbStyles</code>. It starts the
+            page in the mode, palette and density you set in <code>TrailblazorOptions.Theme</code>, or in the ones the
+            user chose last time, before the page paints, so a dark page never flashes light.
+        </TbText>
+        <ul>
+            <li><code>System</code>, the default, follows the device's setting.</li>
+            <li>
+                Without <code>TbThemeHead</code>, Trailblazor keeps the page's own color scheme, so adding the library
+                never darkens an app by itself.
+            </li>
+        </ul>
+        <CodeBlock Label="App.razor and Program.cs" Code="@Theme" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Light and dark</TbText>
-<TbText>
-    Put <code>TbThemeHead</code> in <code>&lt;head&gt;</code>, next to <code>TbStyles</code>. It starts the page in the
-    mode, palette and density you set in <code>TrailblazorOptions.Theme</code>, or in the ones the user chose last
-    time, and does so before the page paints, so a dark page never flashes light. <code>System</code>, the default,
-    follows the device's setting. Without <code>TbThemeHead</code>, Trailblazor keeps the page's own color scheme, so
-    adding the library never darkens an app by itself.
-</TbText>
-<CodeBlock Label="App.razor and Program.cs" Code="@Theme" />
-<TbText>
-    A standalone WebAssembly app has no server to render <code>&lt;head&gt;</code>, so copy the script that
-    <code>TbThemeHead</code> would render into <code>index.html</code> yourself, as this site does. There the script's
-    attributes, not <code>TrailblazorOptions.Theme</code>, choose how the first page looks, so keep the two the same.
-</TbText>
-<CodeBlock Label="index.html" Code="@StandaloneTheme" />
-<TbText>
-    The <a href="components/theme-picker">theme picker</a> lets people choose, as the one at the top of this site
-    does, and <code>IThemeService</code> changes the mode, palette or density from your own code. Both remember the
-    choice in the browser unless <code>Remember</code> is off.
-</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">In a standalone WebAssembly app</TbText>
+        <TbText>
+            A standalone WebAssembly app has no server to render <code>&lt;head&gt;</code>, so copy the script that
+            <code>TbThemeHead</code> would render into <code>index.html</code> yourself, as this site does.
+        </TbText>
+        <CodeBlock Label="index.html" Code="@StandaloneTheme" />
+        <DocsCallout Tone="Tone.Warning" Title="Keep the script and the options the same">
+            In a standalone app, the script's attributes, not <code>TrailblazorOptions.Theme</code>, choose how the
+            first page looks, so keep the two the same.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Palettes</TbText>
-<TbText>
-    A palette sets the colors for both light and dark. Graphite, a near-monochrome look with ink-colored primary
-    actions, is the default. The others are
-    @string.Join(", ", PaletteCatalog.All.Skip(1).Select(palette => palette.Name)), and the
-    <a href="guides/palettes">palette gallery</a> shows each one on real components. Choose the page's palette with the
-    <code>Palette</code> value in <code>TrailblazorOptions.Theme</code>, or with
-    <code>IThemeService.SetPaletteAsync</code>. For one part of a page, set <code>data-tb-palette</code> or
-    <code>data-tb-theme</code> on any element; it applies to everything inside it. An element with
-    <code>data-tb-theme</code> also takes that theme's background and text color, and <code>TbThemeHead</code> marks
-    the page itself, so the page follows the theme without CSS of its own. To give the page another background, set
-    it on <code>html</code> or change <code>--tb-color-background</code>; a background on <code>body</code> alone
-    leaves the theme's color around it.
-</TbText>
-<CodeBlock Label="A palette for part of a page" Code="@Palette" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Let people choose</TbText>
+        <TbText>
+            The <a href="components/theme-picker">theme picker</a> lets people choose, as the one at the top of this
+            site does, and <code>IThemeService</code> changes the mode, palette or density from your own code. Both
+            remember the choice in the browser unless <code>Remember</code> is off.
+        </TbText>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Typography</TbText>
-<TbText>
-    Every component sets its text in <code>--tb-font-family</code>, the system's interface font unless you change it.
-    The page that <code>TbThemeHead</code> marks takes the same font and <code>--tb-line-height-normal</code>, and its
-    <code>body</code> takes <code>--tb-font-size-md</code>, so text outside the components matches them without CSS
-    of your own.
-</TbText>
-<TbText>
-    To use your own font, set <code>--tb-font-family</code> rather than a font on <code>body</code>: the token changes
-    the page and every component at once, while a font on <code>body</code> alone changes only your own text and
-    leaves the components in the system font.
-</TbText>
-<CodeBlock Label="Your own font, everywhere" Code="@Font" />
-<TbText>
-    To keep the page's type your own instead, set it on <code>html</code> or <code>body</code> in your stylesheet. The
-    themed page's type sits in a cascade layer and uses zero-specificity selectors, so any rule of yours outside a
-    cascade layer wins. Text fields, tabs, menu items and the other controls that take the text's font set their own
-    line height, so a line height of yours doesn't change how tall they are.
-</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="palettes">Palettes</TbText>
+        <TbText>
+            A palette sets the colors for both light and dark. Graphite, a near-monochrome look with ink-colored primary
+            actions, is the default. The others are
+            @string.Join(", ", PaletteCatalog.All.Skip(1).Select(palette => palette.Name)), and the
+            <a href="guides/palettes">palette gallery</a> shows each one on real components.
+        </TbText>
+        <ul>
+            <li>
+                For the page, set the <code>Palette</code> value in <code>TrailblazorOptions.Theme</code>, or call
+                <code>IThemeService.SetPaletteAsync</code>.
+            </li>
+            <li>
+                For one part of a page, set <code>data-tb-palette</code> or <code>data-tb-theme</code> on any element;
+                it applies to everything inside it. An element with <code>data-tb-theme</code> also takes that theme's
+                background and text color.
+            </li>
+        </ul>
+        <CodeBlock Label="A palette for part of a page" Code="@Palette" />
+        <DocsCallout Title="Give the page another background on html">
+            <code>TbThemeHead</code> marks the page itself, so the page follows the theme without CSS of its own. To
+            give it another background, set it on <code>html</code> or change <code>--tb-color-background</code>; a
+            background on <code>body</code> alone leaves the theme's color around it.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Density</TbText>
-<TbText>
-    Compact density makes controls, items and rows shorter, for screens full of data. Comfortable, the default, leaves
-    room for touch. Every pointer target stays at least 24 by 24 px in both. Choose the page's density with the
-    <code>Density</code> value in <code>TrailblazorOptions.Theme</code>, or change it while the app runs with
-    <code>IThemeService.SetDensityAsync</code>, which remembers the choice as it does the mode and palette. The density
-    menu at the top of this site switches every page, examples included.
-</TbText>
-<CodeBlock Label="Program.cs" Code="@DensityOption" />
-<TbText>
-    For one part of a page, set <code>data-tb-density</code> on any element or component; it applies to everything
-    inside it. Set <code>comfortable</code> inside a compact page to switch that part back. A virtualized tree view
-    keeps the row height its <code>ItemSize</code> gives, so set that to 28 in compact density.
-</TbText>
-<CodeBlock Label="A compact region" Code="@DensityRegion" />
-<TbText>
-    Density sets seven tokens, and the components size themselves from them, so changing one changes every component
-    that uses it. The small and large heights are worked out from <code>--tb-control-height</code> only where a density
-    is set: on the page or on a <code>data-tb-density</code> region. To change the control height on an element of
-    your own, set <code>--tb-control-height-sm</code> and <code>--tb-control-height-lg</code> there too.
-</TbText>
-<TbTable aria-label="Density tokens">
-    <thead>
-        <tr>
-            <th scope="col">Token</th>
-            <th scope="col">Comfortable</th>
-            <th scope="col">Compact</th>
-            <th scope="col">Sizes</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var token in DensityTokens)
-        {
-            <tr>
-                <th scope="row"><code>@token.Name</code></th>
-                <td>@token.Comfortable</td>
-                <td>@token.Compact</td>
-                <td>@token.Sizes</td>
-            </tr>
-        }
-    </tbody>
-</TbTable>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="typography">Typography</TbText>
+        <TbText>
+            Every component sets its text in <code>--tb-font-family</code>, the system's interface font unless you
+            change it. The page that <code>TbThemeHead</code> marks takes the same font and
+            <code>--tb-line-height-normal</code>, and its <code>body</code> takes <code>--tb-font-size-md</code>, so
+            text outside the components matches them without CSS of your own.
+        </TbText>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Changing tokens</TbText>
-<TbText>
-    Trailblazor's CSS sits in cascade layers named <code>tb.*</code>, and your own CSS outside any layer always wins
-    over it, whatever the selectors. So set any token in your stylesheet to change it everywhere.
-</TbText>
-<CodeBlock Label="Token overrides" Code="@Overrides" />
-<TbText>
-    The primary's hover, pressed, subtle and text colors and the focus ring are worked out from
-    <code>--tb-color-primary</code> wherever it is set: on the page, in a palette, or in an element's
-    <code>style</code>. So one color re-themes a part of a page, states included. If you set the primary from a class
-    in your stylesheet instead, also put an empty <code>data-tb-palette</code> attribute on that element so its states
-    follow. You can still set any of the derived tokens yourself, on the same element as the primary.
-</TbText>
-<CodeBlock Label="A primary for part of a page" Code="@RegionPrimary" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Your own font, everywhere</TbText>
+        <TbText>
+            Set <code>--tb-font-family</code> rather than a font on <code>body</code>. The token changes the page and
+            every component at once, while a font on <code>body</code> alone changes only your own text and leaves the
+            components in the system font.
+        </TbText>
+        <CodeBlock Label="Your own font, everywhere" Code="@Font" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Restyling one component</TbText>
-<TbText>
-    To change one component rather than the whole theme, reach for these in order. First, its own tokens, such as
-    <code>--tb-button-radius</code>, listed under Design tokens on its page: set one on the page to change the component
-    everywhere, or on an element to change it only inside that element. Next, its <code>Classes</code> parameter, a
-    <code>ButtonClasses</code> or <code>FieldClasses</code> record for example, which adds your class names to its
-    parts. Last, its <code>data-part</code> names, also on its page, and the ARIA attributes that mark its states, such
-    as <code>aria-selected</code>, <code>aria-invalid</code> and <code>aria-disabled</code>, which let your stylesheet
-    reach one part in one state.
-</TbText>
-<CodeBlock Label="app.css" Code="@Restyle" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Your own type for the page</TbText>
+        <TbText>
+            To keep the page's type your own instead, set it on <code>html</code> or <code>body</code> in your
+            stylesheet. The themed page's type sits in a cascade layer and uses zero-specificity selectors, so any rule
+            of yours outside a cascade layer wins.
+        </TbText>
+        <TbText>
+            Text fields, tabs, menu items and the other controls that take the text's font set their own line height,
+            so a line height of yours doesn't change how tall they are.
+        </TbText>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try a brand color</TbText>
-<TbText>
-    Pick a color to see it as the primary, with the hover, pressed, selected and focus colors that follow from it, then
-    copy the CSS. If the color is too light for readable text on it in light mode, or too dark in dark mode, it is
-    darkened or lightened just that far; otherwise it is used as picked.
-</TbText>
-<TbColorPicker Label="Brand color" @bind-Value="_brand" />
-<div class="docs-brand" style="@($"--tb-color-primary: {BrandPrimary}")">
-    <TbStack Row Gap="2" Wrap Align="Align.Center">
-        <TbButton>Save</TbButton>
-        <TbButton Variant="Variant.Soft">Preview</TbButton>
-        <TbCheckbox Label="Share with team" @bind-Value="_share" />
-        <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
-    </TbStack>
-    <TbList aria-label="Trails with your brand color">
-        <TbListItem Selected OnClick="() => { }">Ridge loop</TbListItem>
-        <TbListItem OnClick="() => { }">Creek path</TbListItem>
-    </TbList>
-</div>
-<CodeBlock Label="app.css" Code="@BrandCss" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="density">Density</TbText>
+        <TbText>
+            Compact density makes controls, items and rows shorter, for screens full of data. Comfortable, the default,
+            leaves room for touch. Every pointer target stays at least 24 by 24 px in both.
+        </TbText>
+        <ul>
+            <li>For the page, set the <code>Density</code> value in <code>TrailblazorOptions.Theme</code>.</li>
+            <li>
+                While the app runs, call <code>IThemeService.SetDensityAsync</code>, which remembers the choice as it
+                does the mode and palette. The density menu at the top of this site switches every page, examples
+                included.
+            </li>
+        </ul>
+        <CodeBlock Label="Program.cs" Code="@DensityOption" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="other-stylesheets">
-    Other stylesheets
-</TbText>
-<TbText>
-    The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global rule such as
-    <code>* { margin: 0; padding: 0; }</code>, which many resets and some component libraries ship, then strips the
-    components' own spacing, and nothing warns about it: dialogs sit in the page's top corner, fields lose their inner
-    spacing and radio buttons lose their dot. If you see that, look for an unlayered rule from another stylesheet.
-</TbText>
-<TbText>
-    Put that stylesheet in a cascade layer of its own, ordered before Trailblazor's, so Trailblazor's styles win over
-    it and yours still win over both. The order has to be stated before <code>TbStyles</code> loads Trailblazor's
-    layers, and a stylesheet joins a layer when it is imported with <code>layer()</code>.
-</TbText>
-<CodeBlock Label="App.razor" Code="@LayerOrder" />
-<CodeBlock Label="app.css" Code="@LayerImport" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">One part of a page</TbText>
+        <TbText>
+            Set <code>data-tb-density</code> on any element or component; it applies to everything inside it. Set
+            <code>comfortable</code> inside a compact page to switch that part back.
+        </TbText>
+        <CodeBlock Label="A compact region" Code="@DensityRegion" />
+        <DocsCallout Tone="Tone.Warning" Title="Set a virtualized tree's row height">
+            A virtualized tree view keeps the row height its <code>ItemSize</code> gives, so set that to 28 in compact
+            density.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Your own palette</TbText>
-<TbText>
-    A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
-    <code>light-dark()</code> so each color has its light and dark value, and set the background, surface, text,
-    border, primary and neutral tokens; the primary's states and the focus ring follow from the primary. The built-in
-    palettes in <code>trailblazor.css</code> list every token a palette sets.
-</TbText>
-<CodeBlock Label="A custom palette" Code="@CustomPalette" />
-<TbText>
-    Choose it by the name its rule matches, as you would a built-in palette: <code>new Palette("forest")</code> in
-    <code>TrailblazorOptions.Theme</code> or <code>IThemeService.SetPaletteAsync</code>. It is applied before the page
-    first paints and remembered like any other palette. For a picker of your own, <code>Palette.BuiltIn</code> lists the
-    built-in palettes.
-</TbText>
-<CodeBlock Label="Program.cs" Code="@CustomPaletteOption" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">The density tokens</TbText>
+        <TbText>
+            Density sets seven tokens, and the components size themselves from them, so changing one changes every
+            component that uses it.
+        </TbText>
+        <TbTable aria-label="Density tokens">
+            <thead>
+                <tr>
+                    <th scope="col">Token</th>
+                    <th scope="col">Comfortable</th>
+                    <th scope="col">Compact</th>
+                    <th scope="col">Sizes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var token in DensityTokens)
+                {
+                    <tr>
+                        <th scope="row"><code>@token.Name</code></th>
+                        <td>@token.Comfortable</td>
+                        <td>@token.Compact</td>
+                        <td>@token.Sizes</td>
+                    </tr>
+                }
+            </tbody>
+        </TbTable>
+        <DocsCallout Tone="Tone.Warning" Title="Changing the control height on your own element">
+            The small and large heights are worked out from <code>--tb-control-height</code> only where a density is
+            set: on the page or on a <code>data-tb-density</code> region. To change <code>--tb-control-height</code> on
+            an element of your own, set <code>--tb-control-height-sm</code> and <code>--tb-control-height-lg</code>
+            there too.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Reduced motion</TbText>
-<TbText>
-    When the device asks for reduced motion, transitions finish at once and a busy button's spinner stops. An
-    indeterminate progress bar or circle fills and gently pulses in place instead of moving.
-</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="tokens">Change tokens</TbText>
+        <TbText>
+            Trailblazor's CSS sits in cascade layers named <code>tb.*</code>, and your own CSS outside any layer always
+            wins over it, whatever the selectors. So set any token in your stylesheet to change it everywhere.
+        </TbText>
+        <CodeBlock Label="Token overrides" Code="@Overrides" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Token reference</TbText>
-<TbText>
-    Every theme token, with the value the default palette and density give it, read from <code>trailblazor.css</code>.
-    A color's sample follows the palette and mode chosen at the top of this site.
-</TbText>
-<TbTable aria-label="Theme tokens" Size="Size.Small">
-    <thead>
-        <tr>
-            <th scope="col">Token</th>
-            <th scope="col">Role</th>
-            <th scope="col">Default</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var (name, value) in DesignTokens.Reference())
-        {
-            <tr>
-                <th scope="row"><code>@name</code></th>
-                <td>@DesignTokens.Role(name)</td>
-                <td>
-                    @if (DesignTokens.IsColor(name))
-                    {
-                        <span class="docs-swatch" style="@($"background: var({name})")"></span>
-                    }
-                    <code>@(value.Contains("from var(--tb-color-primary)") ? "From the primary" : value)</code>
-                </td>
-            </tr>
-        }
-    </tbody>
-</TbTable>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A primary for part of a page</TbText>
+        <TbText>
+            The primary's hover, pressed, subtle and text colors and the focus ring are worked out from
+            <code>--tb-color-primary</code> wherever it is set: on the page, in a palette, or in an element's
+            <code>style</code>. So one color re-themes a part of a page, states included. You can still set any of the
+            derived tokens yourself, on the same element as the primary.
+        </TbText>
+        <CodeBlock Label="A primary for part of a page" Code="@RegionPrimary" />
+        <DocsCallout Tone="Tone.Warning" Title="A primary set from a class">
+            If you set the primary from a class in your stylesheet instead of <code>style</code>, also put an empty
+            <code>data-tb-palette</code> attribute on that element so its states follow.
+        </DocsCallout>
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="restyle">
+            Restyle one component
+        </TbText>
+        <TbText>To change one component rather than the whole theme, reach for these in order:</TbText>
+        <ol>
+            <li>
+                Its own tokens, such as <code>--tb-button-radius</code>, listed under Design tokens on its page. Set one
+                on the page to change the component everywhere, or on an element to change it only inside that element.
+            </li>
+            <li>
+                Its <code>Classes</code> parameter, a <code>ButtonClasses</code> or <code>FieldClasses</code> record for
+                example, which adds your class names to its parts.
+            </li>
+            <li>
+                Its <code>data-part</code> names, also on its page, and the ARIA attributes that mark its states, such
+                as <code>aria-selected</code>, <code>aria-invalid</code> and <code>aria-disabled</code>. These let your
+                stylesheet reach one part in one state.
+            </li>
+        </ol>
+        <CodeBlock Label="app.css" Code="@Restyle" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="brand">
+            Try a brand color
+        </TbText>
+        <TbText>
+            Pick a color to see it as the primary, with the hover, pressed, selected and focus colors that follow from
+            it, then copy the CSS. If the color is too light for readable text on it in light mode, or too dark in dark
+            mode, it is darkened or lightened just that far; otherwise it is used as picked.
+        </TbText>
+        <TbColorPicker Label="Brand color" @bind-Value="_brand" />
+        <div class="docs-brand" style="@($"--tb-color-primary: {BrandPrimary}")">
+            <TbStack Row Gap="2" Wrap Align="Align.Center">
+                <TbButton>Save</TbButton>
+                <TbButton Variant="Variant.Soft">Preview</TbButton>
+                <TbCheckbox Label="Share with team" @bind-Value="_share" />
+                <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
+            </TbStack>
+            <TbList aria-label="Trails with your brand color">
+                <TbListItem Selected OnClick="() => { }">Ridge loop</TbListItem>
+                <TbListItem OnClick="() => { }">Creek path</TbListItem>
+            </TbList>
+        </div>
+        <CodeBlock Label="app.css" Code="@BrandCss" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="other-stylesheets">
+            Other stylesheets
+        </TbText>
+        <TbText>
+            The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global rule such as
+            <code>* { margin: 0; padding: 0; }</code>, which many resets and some component libraries ship, then strips
+            the components' own spacing, and nothing warns about it:
+        </TbText>
+        <ul>
+            <li>Dialogs sit in the page's top corner.</li>
+            <li>Fields lose their inner spacing.</li>
+            <li>Radio buttons lose their dot.</li>
+        </ul>
+        <TbText>
+            If you see that, look for an unlayered rule from another stylesheet. Put that stylesheet in a cascade layer
+            of its own, ordered before Trailblazor's, so Trailblazor's styles win over it and yours still win over both:
+        </TbText>
+        <ol>
+            <li>In App.razor, state the layer order before <code>TbStyles</code> loads Trailblazor's layers.</li>
+            <li>In app.css, import the stylesheet with <code>layer()</code>, which puts it in its layer.</li>
+        </ol>
+        <CodeBlock Label="App.razor" Code="@LayerOrder" />
+        <CodeBlock Label="app.css" Code="@LayerImport" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="custom-palette">
+            Your own palette
+        </TbText>
+        <TbText>
+            A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
+            <code>light-dark()</code> so each color has its light and dark value, and set the background, surface, text,
+            border, primary and neutral tokens; the primary's states and the focus ring follow from the primary. The
+            built-in palettes in <code>trailblazor.css</code> list every token a palette sets.
+        </TbText>
+        <CodeBlock Label="A custom palette" Code="@CustomPalette" />
+        <TbText>
+            Choose it by the name its rule matches, as you would a built-in palette: <code>new Palette("forest")</code>
+            in <code>TrailblazorOptions.Theme</code> or <code>IThemeService.SetPaletteAsync</code>. It is applied before
+            the page first paints and remembered like any other palette. For a picker of your own,
+            <code>Palette.BuiltIn</code> lists the built-in palettes.
+        </TbText>
+        <CodeBlock Label="Program.cs" Code="@CustomPaletteOption" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="reduced-motion">
+            Reduced motion
+        </TbText>
+        <TbText>When the device asks for reduced motion:</TbText>
+        <ul>
+            <li>Transitions finish at once.</li>
+            <li>A busy button's spinner stops.</li>
+            <li>An indeterminate progress bar or circle fills and gently pulses in place instead of moving.</li>
+        </ul>
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="token-reference">
+            Token reference
+        </TbText>
+        <TbText>
+            Every theme token, with the value the default palette and density give it, read from
+            <code>trailblazor.css</code>. A color's sample follows the palette and mode chosen at the top of this site.
+        </TbText>
+        <TbTable aria-label="Theme tokens" Size="Size.Small">
+            <thead>
+                <tr>
+                    <th scope="col">Token</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Default</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (name, value) in DesignTokens.Reference())
+                {
+                    <tr>
+                        <th scope="row"><code>@name</code></th>
+                        <td>@DesignTokens.Role(name)</td>
+                        <td>
+                            @if (DesignTokens.IsColor(name))
+                            {
+                                <span class="docs-swatch" style="@($"background: var({name})")"></span>
+                            }
+                            <code>@(value.Contains("from var(--tb-color-primary)") ? "From the primary" : value)</code>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </TbTable>
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li>
+                <a href="guides/palettes">Palettes</a>: every built-in palette on real components, in light and dark.
+            </li>
+            <li><a href="guides/spacing">Spacing</a>: the spacing scale and its utility classes.</li>
+            <li>
+                <a href="components/theme-picker">Theme picker</a>: a ready-made control for mode, palette and density.
+            </li>
+            <li>
+                Each component's page lists its own design tokens and parts, such as the
+                <a href="components/button#design-tokens">button's</a>.
+            </li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
     private const string DefaultBrand = "#0f766e";
@@ -277,7 +388,8 @@
         """;
 
     private const string StandaloneTheme = """
-        <script src="_content/Trailblazor/theme-head.js" data-mode="system" data-palette="cobalt"
+        <script src="_content/Trailblazor/theme-head.js"
+            data-mode="system" data-palette="cobalt"
             data-density="comfortable" data-remember="true"></script>
         """;
 
@@ -296,7 +408,8 @@
     ];
 
     private const string DensityOption = """
-        builder.Services.AddTrailblazor(options => options.Theme.Density = Density.Compact);
+        builder.Services.AddTrailblazor(options =>
+            options.Theme.Density = Density.Compact);
         """;
 
     private const string DensityRegion = """
@@ -346,7 +459,8 @@
         """;
 
     private const string CustomPaletteOption = """
-        builder.Services.AddTrailblazor(options => options.Theme.Palette = new Palette("forest"));
+        builder.Services.AddTrailblazor(options =>
+            options.Theme.Palette = new Palette("forest"));
         """;
 
     private const string CustomPalette = """
