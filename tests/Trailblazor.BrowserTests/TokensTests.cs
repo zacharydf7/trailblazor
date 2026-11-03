@@ -246,6 +246,83 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(expected, value);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PrimaryStates_ShouldFollowAPrimarySetOnARegion_WhenOnlyThePrimaryIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        // Reads each state's hue under a region with a teal primary, and the hover under one that also pins it.
+        var hues = await page.EvaluateAsync<double[]>("""
+            () => {
+                const read = (style, token) => {
+                    const host = document.querySelector('main').appendChild(document.createElement('div'));
+                    host.setAttribute('style', style);
+                    const probe = host.appendChild(document.createElement('div'));
+                    probe.style.color = `oklch(from var(${token}) l c h)`;
+                    const hue = Number(getComputedStyle(probe).color.match(/oklch\(\S+ \S+ ([\d.]+)/)[1]);
+                    host.remove();
+                    return hue;
+                };
+                const teal = '--tb-color-primary: oklch(0.52 0.12 190)';
+                return [read(teal, '--tb-color-primary-hover'), read(teal, '--tb-color-primary-active'),
+                    read(teal, '--tb-color-primary-subtle'), read(teal, '--tb-color-primary-text'),
+                    read(teal, '--tb-focus-ring-color'),
+                    read(`${teal}; --tb-color-primary-hover: oklch(0.5 0.1 30)`, '--tb-color-primary-hover')];
+            }
+            """);
+
+        Assert.All(hues[..5], hue => Assert.Equal(190, hue, 1.0));
+        Assert.Equal(30, hues[5], 1.0);
+    }
+
+    [Theory, MemberData(nameof(BrowsersAndThemes))]
+    public async Task PrimaryStates_ShouldMoveAndKeepTheFocusRingVisible_WhenARegionSetsAnyPrimary(string browser,
+        string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        // For primaries from near black to near white: the lightness of the primary, hover and press, then the focus
+        // ring and surface as sRGB channels.
+        var regions = await page.EvaluateAsync<double[][]>("""
+            theme => [0.12, 0.18, 0.3, 0.5, 0.7, 0.85, 0.92, 0.97].map(lightness => {
+                const host = document.querySelector('main').appendChild(document.createElement('div'));
+                host.dataset.tbTheme = theme;
+                host.setAttribute('style', `--tb-color-primary: oklch(${lightness} 0.1 85)`);
+                const probe = host.appendChild(document.createElement('div'));
+                const context = document.createElement('canvas').getContext('2d');
+                const read = color => { probe.style.color = color; return getComputedStyle(probe).color; };
+                const l = token => Number(read(`oklch(from var(${token}) l c h)`).match(/oklch\(([\d.]+)/)[1]);
+                const rgb = token => {
+                    // A color the canvas can't parse leaves its last fill, which would read as a passing color.
+                    context.fillStyle = '#010203';
+                    context.fillStyle = read(`var(${token})`);
+                    if (context.fillStyle === '#010203') {
+                        throw new Error(`The canvas can't paint ${token}.`);
+                    }
+                    context.fillRect(0, 0, 1, 1);
+                    return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
+                };
+                const values = [l('--tb-color-primary'), l('--tb-color-primary-hover'),
+                    l('--tb-color-primary-active'), ...rgb('--tb-focus-ring-color'), ...rgb('--tb-color-surface')];
+                host.remove();
+                return values;
+            })
+            """, theme);
+
+        Assert.All(regions, region =>
+        {
+            Assert.True(Math.Abs(region[1] - region[0]) >= 0.05, $"hover {region[1]} from {region[0]}");
+            Assert.True(Math.Abs(region[2] - region[0]) >= 0.05, $"press {region[2]} from {region[0]}");
+            Assert.True(Math.Sign(region[1] - region[0]) == Math.Sign(region[2] - region[0]),
+                $"hover {region[1]} and press {region[2]} move in opposite directions from {region[0]}");
+            var ring = ContrastRatio(Luminance(region[3..6]), Luminance(region[6..9]));
+            Assert.True(ring >= 3, $"focus ring {ring:F2} for a primary at {region[0]}");
+        });
+    }
+
+    private static double Luminance(double[] channels) =>
+        0.2126 * Linear((int)channels[0]) + 0.7152 * Linear((int)channels[1]) + 0.0722 * Linear((int)channels[2]);
+
     [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
     public async Task WarningDot_ShouldReachThreeToOneOnItsSurface_WhenAPaletteAndThemeAreApplied(string browser,
         string palette, string theme)
@@ -435,7 +512,7 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         string? under = null)
     {
         var (red, green, blue) = await GetChannelsAsync(page, token, classes, under);
-        return 0.2126 * Linear(red) + 0.7152 * Linear(green) + 0.0722 * Linear(blue);
+        return Luminance([red, green, blue]);
     }
 
     private static double Linear(int channel)

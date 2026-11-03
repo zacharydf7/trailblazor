@@ -431,11 +431,7 @@
 
         /* The primary action is ink: near-black in light mode, near-white in dark. */
         --tb-color-primary: light-dark(var(--tb-graphite-900), var(--tb-graphite-50));
-        --tb-color-primary-hover: light-dark(var(--tb-graphite-950), var(--tb-graphite-200));
-        --tb-color-primary-active: light-dark(var(--tb-graphite-975), var(--tb-graphite-300));
         --tb-color-on-primary: light-dark(white, var(--tb-graphite-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-graphite-200), var(--tb-graphite-700));
-        --tb-color-primary-text: light-dark(var(--tb-graphite-900), var(--tb-graphite-50));
 
         --tb-color-neutral: light-dark(var(--tb-graphite-700), var(--tb-graphite-300));
         --tb-color-neutral-hover: light-dark(var(--tb-graphite-800), var(--tb-graphite-200));
@@ -444,7 +440,6 @@
         --tb-color-neutral-subtle: light-dark(var(--tb-graphite-100), var(--tb-graphite-800));
         --tb-color-neutral-text: light-dark(var(--tb-graphite-700), var(--tb-graphite-300));
 
-        --tb-focus-ring-color: light-dark(var(--tb-graphite-900), var(--tb-graphite-100));
     }
 
     [data-tb-palette="cobalt"] {
@@ -458,18 +453,13 @@
         --tb-border-subtle: light-dark(var(--tb-gray-200), var(--tb-gray-800));
         --tb-border-strong: light-dark(var(--tb-gray-500), var(--tb-gray-400));
         --tb-color-primary: light-dark(var(--tb-blue-600), var(--tb-blue-400));
-        --tb-color-primary-hover: light-dark(var(--tb-blue-700), var(--tb-blue-300));
-        --tb-color-primary-active: light-dark(var(--tb-blue-800), var(--tb-blue-200));
         --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-blue-100), var(--tb-blue-900));
-        --tb-color-primary-text: light-dark(var(--tb-blue-700), var(--tb-blue-300));
         --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
         --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
         --tb-color-neutral-active: light-dark(var(--tb-gray-900), var(--tb-gray-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-gray-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-gray-100), var(--tb-gray-800));
         --tb-color-neutral-text: light-dark(var(--tb-gray-700), var(--tb-gray-300));
-        --tb-focus-ring-color: light-dark(var(--tb-blue-600), var(--tb-blue-300));
     }
 
     [data-tb-palette="slate"] {
@@ -483,18 +473,13 @@
         --tb-border-subtle: light-dark(var(--tb-gray-200), var(--tb-gray-800));
         --tb-border-strong: light-dark(var(--tb-gray-500), var(--tb-gray-400));
         --tb-color-primary: light-dark(var(--tb-gray-800), var(--tb-gray-100));
-        --tb-color-primary-hover: light-dark(var(--tb-gray-900), var(--tb-gray-200));
-        --tb-color-primary-active: light-dark(var(--tb-gray-950), var(--tb-gray-300));
         --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-gray-200), var(--tb-gray-700));
-        --tb-color-primary-text: light-dark(var(--tb-gray-900), var(--tb-gray-100));
         --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
         --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
         --tb-color-neutral-active: light-dark(var(--tb-gray-900), var(--tb-gray-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-gray-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-gray-100), var(--tb-gray-800));
         --tb-color-neutral-text: light-dark(var(--tb-gray-700), var(--tb-gray-300));
-        --tb-focus-ring-color: light-dark(var(--tb-gray-900), var(--tb-gray-100));
     }
 
     [data-tb-palette="sand"] {
@@ -508,18 +493,13 @@
         --tb-border-subtle: light-dark(var(--tb-stone-200), var(--tb-stone-800));
         --tb-border-strong: light-dark(var(--tb-stone-500), var(--tb-stone-400));
         --tb-color-primary: light-dark(var(--tb-stone-800), var(--tb-stone-100));
-        --tb-color-primary-hover: light-dark(var(--tb-stone-900), var(--tb-stone-200));
-        --tb-color-primary-active: light-dark(var(--tb-stone-950), var(--tb-stone-300));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-stone-200), var(--tb-stone-700));
-        --tb-color-primary-text: light-dark(var(--tb-stone-900), var(--tb-stone-100));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
         --tb-color-neutral-active: light-dark(var(--tb-stone-900), var(--tb-stone-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-stone-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-stone-100), var(--tb-stone-800));
         --tb-color-neutral-text: light-dark(var(--tb-stone-700), var(--tb-stone-300));
-        --tb-focus-ring-color: light-dark(var(--tb-stone-900), var(--tb-stone-100));
     }
 
     [data-tb-palette="clay"] {
@@ -533,18 +513,13 @@
         --tb-border-subtle: light-dark(var(--tb-stone-200), var(--tb-stone-800));
         --tb-border-strong: light-dark(var(--tb-stone-500), var(--tb-stone-400));
         --tb-color-primary: light-dark(var(--tb-clay-600), var(--tb-clay-400));
-        --tb-color-primary-hover: light-dark(var(--tb-clay-700), var(--tb-clay-300));
-        --tb-color-primary-active: light-dark(var(--tb-clay-800), var(--tb-clay-200));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-clay-200), var(--tb-clay-900));
-        --tb-color-primary-text: light-dark(var(--tb-clay-700), var(--tb-clay-300));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
         --tb-color-neutral-active: light-dark(var(--tb-stone-900), var(--tb-stone-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-stone-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-stone-100), var(--tb-stone-800));
         --tb-color-neutral-text: light-dark(var(--tb-stone-700), var(--tb-stone-300));
-        --tb-focus-ring-color: light-dark(var(--tb-clay-600), var(--tb-clay-300));
     }
 
     [data-tb-palette="indigo"] {
@@ -558,18 +533,13 @@
         --tb-border-subtle: light-dark(var(--tb-gray-200), var(--tb-gray-800));
         --tb-border-strong: light-dark(var(--tb-gray-500), var(--tb-gray-400));
         --tb-color-primary: light-dark(var(--tb-indigo-600), var(--tb-indigo-400));
-        --tb-color-primary-hover: light-dark(var(--tb-indigo-700), var(--tb-indigo-300));
-        --tb-color-primary-active: light-dark(var(--tb-indigo-800), var(--tb-indigo-200));
         --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-indigo-100), var(--tb-indigo-900));
-        --tb-color-primary-text: light-dark(var(--tb-indigo-700), var(--tb-indigo-300));
         --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
         --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
         --tb-color-neutral-active: light-dark(var(--tb-gray-900), var(--tb-gray-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-gray-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-gray-100), var(--tb-gray-800));
         --tb-color-neutral-text: light-dark(var(--tb-gray-700), var(--tb-gray-300));
-        --tb-focus-ring-color: light-dark(var(--tb-indigo-600), var(--tb-indigo-300));
     }
 
     [data-tb-palette="violet"] {
@@ -583,18 +553,13 @@
         --tb-border-subtle: light-dark(var(--tb-mauve-200), var(--tb-mauve-800));
         --tb-border-strong: light-dark(var(--tb-mauve-500), var(--tb-mauve-400));
         --tb-color-primary: light-dark(var(--tb-violet-600), var(--tb-violet-400));
-        --tb-color-primary-hover: light-dark(var(--tb-violet-700), var(--tb-violet-300));
-        --tb-color-primary-active: light-dark(var(--tb-violet-800), var(--tb-violet-200));
         --tb-color-on-primary: light-dark(white, var(--tb-mauve-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-violet-100), var(--tb-violet-900));
-        --tb-color-primary-text: light-dark(var(--tb-violet-700), var(--tb-violet-300));
         --tb-color-neutral: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
         --tb-color-neutral-hover: light-dark(var(--tb-mauve-800), var(--tb-mauve-200));
         --tb-color-neutral-active: light-dark(var(--tb-mauve-900), var(--tb-mauve-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-mauve-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-mauve-100), var(--tb-mauve-800));
         --tb-color-neutral-text: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
-        --tb-focus-ring-color: light-dark(var(--tb-violet-600), var(--tb-violet-300));
     }
 
     [data-tb-palette="plum"] {
@@ -608,18 +573,13 @@
         --tb-border-subtle: light-dark(var(--tb-mauve-200), var(--tb-mauve-800));
         --tb-border-strong: light-dark(var(--tb-mauve-500), var(--tb-mauve-400));
         --tb-color-primary: light-dark(var(--tb-plum-600), var(--tb-plum-400));
-        --tb-color-primary-hover: light-dark(var(--tb-plum-700), var(--tb-plum-300));
-        --tb-color-primary-active: light-dark(var(--tb-plum-800), var(--tb-plum-200));
         --tb-color-on-primary: light-dark(white, var(--tb-mauve-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-plum-100), var(--tb-plum-900));
-        --tb-color-primary-text: light-dark(var(--tb-plum-700), var(--tb-plum-300));
         --tb-color-neutral: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
         --tb-color-neutral-hover: light-dark(var(--tb-mauve-800), var(--tb-mauve-200));
         --tb-color-neutral-active: light-dark(var(--tb-mauve-900), var(--tb-mauve-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-mauve-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-mauve-100), var(--tb-mauve-800));
         --tb-color-neutral-text: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
-        --tb-focus-ring-color: light-dark(var(--tb-plum-600), var(--tb-plum-300));
     }
 
     [data-tb-palette="fuchsia"] {
@@ -633,18 +593,13 @@
         --tb-border-subtle: light-dark(var(--tb-mauve-200), var(--tb-mauve-800));
         --tb-border-strong: light-dark(var(--tb-mauve-500), var(--tb-mauve-400));
         --tb-color-primary: light-dark(var(--tb-fuchsia-600), var(--tb-fuchsia-400));
-        --tb-color-primary-hover: light-dark(var(--tb-fuchsia-700), var(--tb-fuchsia-300));
-        --tb-color-primary-active: light-dark(var(--tb-fuchsia-800), var(--tb-fuchsia-200));
         --tb-color-on-primary: light-dark(white, var(--tb-mauve-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-fuchsia-100), var(--tb-fuchsia-900));
-        --tb-color-primary-text: light-dark(var(--tb-fuchsia-700), var(--tb-fuchsia-300));
         --tb-color-neutral: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
         --tb-color-neutral-hover: light-dark(var(--tb-mauve-800), var(--tb-mauve-200));
         --tb-color-neutral-active: light-dark(var(--tb-mauve-900), var(--tb-mauve-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-mauve-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-mauve-100), var(--tb-mauve-800));
         --tb-color-neutral-text: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
-        --tb-focus-ring-color: light-dark(var(--tb-fuchsia-600), var(--tb-fuchsia-300));
     }
 
     [data-tb-palette="rose"] {
@@ -658,18 +613,13 @@
         --tb-border-subtle: light-dark(var(--tb-stone-200), var(--tb-stone-800));
         --tb-border-strong: light-dark(var(--tb-stone-500), var(--tb-stone-400));
         --tb-color-primary: light-dark(var(--tb-rose-600), var(--tb-rose-400));
-        --tb-color-primary-hover: light-dark(var(--tb-rose-700), var(--tb-rose-300));
-        --tb-color-primary-active: light-dark(var(--tb-rose-800), var(--tb-rose-200));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-rose-100), var(--tb-rose-900));
-        --tb-color-primary-text: light-dark(var(--tb-rose-700), var(--tb-rose-300));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
         --tb-color-neutral-active: light-dark(var(--tb-stone-900), var(--tb-stone-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-stone-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-stone-100), var(--tb-stone-800));
         --tb-color-neutral-text: light-dark(var(--tb-stone-700), var(--tb-stone-300));
-        --tb-focus-ring-color: light-dark(var(--tb-rose-600), var(--tb-rose-300));
     }
 
     [data-tb-palette="moss"] {
@@ -683,18 +633,13 @@
         --tb-border-subtle: light-dark(var(--tb-sage-200), var(--tb-sage-800));
         --tb-border-strong: light-dark(var(--tb-sage-500), var(--tb-sage-400));
         --tb-color-primary: light-dark(var(--tb-moss-600), var(--tb-moss-400));
-        --tb-color-primary-hover: light-dark(var(--tb-moss-700), var(--tb-moss-300));
-        --tb-color-primary-active: light-dark(var(--tb-moss-800), var(--tb-moss-200));
         --tb-color-on-primary: light-dark(white, var(--tb-sage-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-moss-100), var(--tb-moss-900));
-        --tb-color-primary-text: light-dark(var(--tb-moss-700), var(--tb-moss-300));
         --tb-color-neutral: light-dark(var(--tb-sage-700), var(--tb-sage-300));
         --tb-color-neutral-hover: light-dark(var(--tb-sage-800), var(--tb-sage-200));
         --tb-color-neutral-active: light-dark(var(--tb-sage-900), var(--tb-sage-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-sage-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-sage-100), var(--tb-sage-800));
         --tb-color-neutral-text: light-dark(var(--tb-sage-700), var(--tb-sage-300));
-        --tb-focus-ring-color: light-dark(var(--tb-moss-600), var(--tb-moss-300));
     }
 
     [data-tb-palette="teal"] {
@@ -708,18 +653,33 @@
         --tb-border-subtle: light-dark(var(--tb-sage-200), var(--tb-sage-800));
         --tb-border-strong: light-dark(var(--tb-sage-500), var(--tb-sage-400));
         --tb-color-primary: light-dark(var(--tb-teal-600), var(--tb-teal-400));
-        --tb-color-primary-hover: light-dark(var(--tb-teal-700), var(--tb-teal-300));
-        --tb-color-primary-active: light-dark(var(--tb-teal-800), var(--tb-teal-200));
         --tb-color-on-primary: light-dark(white, var(--tb-sage-950));
-        --tb-color-primary-subtle: light-dark(var(--tb-teal-100), var(--tb-teal-900));
-        --tb-color-primary-text: light-dark(var(--tb-teal-700), var(--tb-teal-300));
         --tb-color-neutral: light-dark(var(--tb-sage-700), var(--tb-sage-300));
         --tb-color-neutral-hover: light-dark(var(--tb-sage-800), var(--tb-sage-200));
         --tb-color-neutral-active: light-dark(var(--tb-sage-900), var(--tb-sage-100));
         --tb-color-on-neutral: light-dark(white, var(--tb-sage-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-sage-100), var(--tb-sage-800));
         --tb-color-neutral-text: light-dark(var(--tb-sage-700), var(--tb-sage-300));
-        --tb-focus-ring-color: light-dark(var(--tb-teal-600), var(--tb-teal-300));
+    }
+
+    /* Derived wherever a primary is set, and pinnable there. Hover and press step the other way near black or white,
+       a gray primary gets a stronger subtle fill, and the focus ring stays dark or light enough to show. */
+    :where(:root, [data-tb-palette], [style*="--tb-color-primary:"]) {
+        --tb-color-primary-hover: light-dark(
+            oklch(from var(--tb-color-primary) calc(l - 0.06 + 0.12 * clamp(0, (0.2 - l) * 1000, 1)) calc(c * 0.92) h),
+            oklch(from var(--tb-color-primary) calc(l + 0.1 - 0.16 * clamp(0, (l - 0.79) * 1000, 1)) calc(c * 0.72) h));
+        --tb-color-primary-active: light-dark(
+            oklch(from var(--tb-color-primary) calc(l - 0.12 + 0.24 * clamp(0, (0.2 - l) * 1000, 1)) calc(c * 0.78) h),
+            oklch(from var(--tb-color-primary) calc(l + 0.18 - 0.32 * clamp(0, (l - 0.79) * 1000, 1))
+                calc(c * 0.48) h));
+        --tb-color-primary-subtle: light-dark(
+            oklch(from var(--tb-color-primary) calc(0.89 + 0.055 * min(c / 0.05, 1)) calc(c * 0.3) h),
+            oklch(from var(--tb-color-primary) calc(0.47 - 0.14 * min(c / 0.05, 1)) calc(c * 0.75) h));
+        --tb-color-primary-text: light-dark(
+            oklch(from var(--tb-color-primary) min(l, 0.47) calc(c * 0.92) h),
+            oklch(from var(--tb-color-primary) max(l, 0.81) calc(c * 0.72) h));
+        --tb-focus-ring-color: light-dark(oklch(from var(--tb-color-primary) min(l, 0.55) c h),
+            oklch(from var(--tb-color-primary) max(l, 0.81) calc(c * 0.72) h));
     }
 
     /* Hover and press tint whatever is under them with the text color, so they show on any surface; a region with

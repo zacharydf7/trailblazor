@@ -115,6 +115,14 @@
     over it, whatever the selectors. So set any token in your stylesheet to change it everywhere.
 </TbText>
 <CodeBlock Label="Token overrides" Code="@Overrides" />
+<TbText>
+    The primary's hover, pressed, subtle and text colors and the focus ring are worked out from
+    <code>--tb-color-primary</code> wherever it is set: on the page, in a palette, or in an element's
+    <code>style</code>. So one color re-themes a part of a page, states included. If you set the primary from a class
+    in your stylesheet instead, also put an empty <code>data-tb-palette</code> attribute on that element so its states
+    follow. You can still set any of the derived tokens yourself, on the same element as the primary.
+</TbText>
+<CodeBlock Label="A primary for part of a page" Code="@RegionPrimary" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Other stylesheets</TbText>
 <TbText>
@@ -135,8 +143,8 @@
 <TbText>
     A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
     <code>light-dark()</code> so each color has its light and dark value, and set the background, surface, text,
-    border, primary, neutral and focus-ring tokens. The built-in palettes in <code>trailblazor.css</code> list them
-    all.
+    border, primary and neutral tokens; the primary's states and the focus ring follow from the primary. The built-in
+    palettes in <code>trailblazor.css</code> list every token a palette sets.
 </TbText>
 <CodeBlock Label="A custom palette" Code="@CustomPalette" />
 
@@ -225,13 +233,19 @@
         }
         """;
 
+    private const string RegionPrimary = """
+        <section style="--tb-color-primary: light-dark(#0f766e, #5eead4)">
+            ...
+        </section>
+        """;
+
     private const string CustomPalette = """
         [data-tb-palette="forest"] {
             --tb-color-background: light-dark(white, #0f1a14);
             --tb-color-text: light-dark(#14231a, #e8f2ec);
             --tb-color-primary: light-dark(#1e6b45, #7fd1a5);
             --tb-color-on-primary: light-dark(white, #0f1a14);
-            /* ...and the remaining surface, border, neutral and focus-ring tokens. */
+            /* ...and the remaining surface, border and neutral tokens. */
         }
         """;
 }
