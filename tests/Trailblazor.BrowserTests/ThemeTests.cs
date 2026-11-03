@@ -40,6 +40,18 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ThemeService_ShouldShowAndRememberACustomPalette_WhenOneIsSetByName(string browser)
+    {
+        var page = await OpenAsync(browser, "/theme");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Use forest" }).ClickAsync();
+
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-palette", "forest");
+        await page.ReloadAsync(new() { WaitUntil = WaitUntilState.DOMContentLoaded });
+        Assert.Equal("forest", (await ThemeAsync(page))[1]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ThemeService_ShouldShowAndRememberTheDensity_WhenOneIsSet(string browser)
     {
         var page = await OpenAsync(browser, "/theme");

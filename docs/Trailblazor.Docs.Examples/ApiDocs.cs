@@ -91,8 +91,8 @@ public static partial class ApiDocs
             Summary($"P:{DocId(property.DeclaringType!)}.{property.Name}({types})"), false);
     }
 
-    /// <summary>The summary the XML documentation gives one value of an enum, such as a palette.</summary>
-    public static string Describe(Enum value) => Summary($"F:{value.GetType().FullName}.{value}");
+    /// <summary>The summary the XML documentation gives a property, such as a built-in palette.</summary>
+    public static string Describe(PropertyInfo property) => Summary(property);
 
     private static ApiMember Method(MethodInfo method)
     {

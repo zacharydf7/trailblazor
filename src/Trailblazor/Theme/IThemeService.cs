@@ -23,8 +23,8 @@ public interface IThemeService
     /// <summary>Shows the page in a mode, and remembers it when <see cref="ThemeSettings.Remember"/> is on.</summary>
     Task SetModeAsync(ThemeMode mode);
 
-    /// <summary>Shows the page in a palette, and remembers it when <see cref="ThemeSettings.Remember"/> is on.
-    /// </summary>
+    /// <summary>Shows the page in a palette, built in or your own, and remembers it when
+    /// <see cref="ThemeSettings.Remember"/> is on.</summary>
     Task SetPaletteAsync(Palette palette);
 
     /// <summary>Shows the page in a density, and remembers it when <see cref="ThemeSettings.Remember"/> is on.

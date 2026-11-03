@@ -3,4 +3,5 @@
 
 <TbThemePicker />
 <button type="button" @onclick="() => Theme.SetPaletteAsync(Palette.Cobalt)">Use cobalt</button>
+<button type="button" @onclick='() => Theme.SetPaletteAsync(new Palette("forest"))'>Use forest</button>
 <button type="button" @onclick="() => Theme.SetDensityAsync(Density.Compact)">Use compact</button>

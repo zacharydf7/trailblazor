@@ -871,10 +871,10 @@ Trailblazor.IThemeService.Changed -> System.Action?
 Trailblazor.IThemeService.Density.get -> Trailblazor.Density
 Trailblazor.IThemeService.LoadAsync() -> System.Threading.Tasks.Task!
 Trailblazor.IThemeService.Mode.get -> Trailblazor.ThemeMode
-Trailblazor.IThemeService.Palette.get -> Trailblazor.Palette
+Trailblazor.IThemeService.Palette.get -> Trailblazor.Palette!
 Trailblazor.IThemeService.SetDensityAsync(Trailblazor.Density density) -> System.Threading.Tasks.Task!
 Trailblazor.IThemeService.SetModeAsync(Trailblazor.ThemeMode mode) -> System.Threading.Tasks.Task!
-Trailblazor.IThemeService.SetPaletteAsync(Trailblazor.Palette palette) -> System.Threading.Tasks.Task!
+Trailblazor.IThemeService.SetPaletteAsync(Trailblazor.Palette! palette) -> System.Threading.Tasks.Task!
 Trailblazor.IToastService
 Trailblazor.IToastService.DismissAll() -> void
 Trailblazor.IToastService.Show(string! message, Trailblazor.Tone tone = Trailblazor.Tone.Neutral, Trailblazor.ToastOptions? options = null) -> Trailblazor.ToastReference!
@@ -940,18 +940,28 @@ Trailblazor.PaginationLabels.PaginationLabels() -> void
 Trailblazor.PaginationLabels.Previous.get -> string?
 Trailblazor.PaginationLabels.Previous.init -> void
 Trailblazor.Palette
-Trailblazor.Palette.Clay = 9 -> Trailblazor.Palette
-Trailblazor.Palette.Cobalt = 1 -> Trailblazor.Palette
-Trailblazor.Palette.Fuchsia = 7 -> Trailblazor.Palette
-Trailblazor.Palette.Graphite = 0 -> Trailblazor.Palette
-Trailblazor.Palette.Indigo = 4 -> Trailblazor.Palette
-Trailblazor.Palette.Moss = 10 -> Trailblazor.Palette
-Trailblazor.Palette.Plum = 6 -> Trailblazor.Palette
-Trailblazor.Palette.Rose = 8 -> Trailblazor.Palette
-Trailblazor.Palette.Sand = 3 -> Trailblazor.Palette
-Trailblazor.Palette.Slate = 2 -> Trailblazor.Palette
-Trailblazor.Palette.Teal = 11 -> Trailblazor.Palette
-Trailblazor.Palette.Violet = 5 -> Trailblazor.Palette
+Trailblazor.Palette.<Clone>$() -> Trailblazor.Palette!
+Trailblazor.Palette.Equals(Trailblazor.Palette? other) -> bool
+Trailblazor.Palette.Name.get -> string!
+Trailblazor.Palette.Palette(string! name) -> void
+override Trailblazor.Palette.Equals(object? obj) -> bool
+override Trailblazor.Palette.GetHashCode() -> int
+override Trailblazor.Palette.ToString() -> string!
+static Trailblazor.Palette.BuiltIn.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Palette!>!
+static Trailblazor.Palette.operator !=(Trailblazor.Palette? left, Trailblazor.Palette? right) -> bool
+static Trailblazor.Palette.operator ==(Trailblazor.Palette? left, Trailblazor.Palette? right) -> bool
+static Trailblazor.Palette.Clay.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Cobalt.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Fuchsia.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Graphite.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Indigo.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Moss.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Plum.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Rose.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Sand.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Slate.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Teal.get -> Trailblazor.Palette!
+static Trailblazor.Palette.Violet.get -> Trailblazor.Palette!
 Trailblazor.Placement
 Trailblazor.Placement.Bottom = 1 -> Trailblazor.Placement
 Trailblazor.Placement.End = 3 -> Trailblazor.Placement
@@ -2511,7 +2521,7 @@ Trailblazor.ThemeSettings.Density.get -> Trailblazor.Density
 Trailblazor.ThemeSettings.Density.set -> void
 Trailblazor.ThemeSettings.Mode.get -> Trailblazor.ThemeMode
 Trailblazor.ThemeSettings.Mode.set -> void
-Trailblazor.ThemeSettings.Palette.get -> Trailblazor.Palette
+Trailblazor.ThemeSettings.Palette.get -> Trailblazor.Palette!
 Trailblazor.ThemeSettings.Palette.set -> void
 Trailblazor.ThemeSettings.Remember.get -> bool
 Trailblazor.ThemeSettings.Remember.set -> void

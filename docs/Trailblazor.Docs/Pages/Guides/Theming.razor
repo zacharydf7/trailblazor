@@ -147,6 +147,13 @@
     palettes in <code>trailblazor.css</code> list every token a palette sets.
 </TbText>
 <CodeBlock Label="A custom palette" Code="@CustomPalette" />
+<TbText>
+    Choose it by the name its rule matches, as you would a built-in palette: <code>new Palette("forest")</code> in
+    <code>TrailblazorOptions.Theme</code> or <code>IThemeService.SetPaletteAsync</code>. It is applied before the page
+    first paints and remembered like any other palette. For a picker of your own, <code>Palette.BuiltIn</code> lists the
+    built-in palettes.
+</TbText>
+<CodeBlock Label="Program.cs" Code="@CustomPaletteOption" />
 
 <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Reduced motion</TbText>
 <TbText>
@@ -237,6 +244,10 @@
         <section style="--tb-color-primary: light-dark(#0f766e, #5eead4)">
             ...
         </section>
+        """;
+
+    private const string CustomPaletteOption = """
+        builder.Services.AddTrailblazor(options => options.Theme.Palette = new Palette("forest"));
         """;
 
     private const string CustomPalette = """

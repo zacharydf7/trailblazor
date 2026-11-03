@@ -22,4 +22,14 @@ public class TbThemeHeadTests : BunitContext
             script.GetAttribute("data-palette"), script.GetAttribute("data-density"),
             script.GetAttribute("data-remember")]);
     }
+
+    [Fact]
+    public void Render_ShouldGiveItsScriptACustomPaletteByItsExactName_WhenOneIsSet()
+    {
+        this.AddTrailblazor(options => options.Theme.Palette = new Palette("Forest"));
+
+        var script = Render<TbThemeHead>().Find("script");
+
+        Assert.Equal("Forest", script.GetAttribute("data-palette"));
+    }
 }
