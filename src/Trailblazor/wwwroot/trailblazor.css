@@ -4549,8 +4549,9 @@
         --tb-table-row-height: var(--tb-data-grid-row-height, var(--tb-row-height));
     }
 
-    .tb-table :is(th, td),
-    .tb-data-grid__table :is(th, td) {
+    /* :where adds no weight for th/td, so a later cell class, such as its alignment, overrides these. */
+    .tb-table :where(th, td),
+    .tb-data-grid__table :where(th, td) {
         box-sizing: border-box;
         height: var(--tb-table-row-height, var(--tb-row-height));
         padding: var(--tb-space-1) var(--tb-space-3);

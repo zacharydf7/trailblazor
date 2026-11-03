@@ -124,6 +124,18 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldAlignEachCellAsItsColumnSays_WhenShown(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var table = Table(page, "Trails");
+
+        await Expect(table.Locator("thead th[data-column=LengthKm]")).ToHaveCSSAsync("text-align", "end");
+        await Expect(table.Locator("tbody td[data-column=LengthKm]").First).ToHaveCSSAsync("text-align", "end");
+        await Expect(table.Locator("tbody td[data-column=Name]").First).ToHaveCSSAsync("text-align", "start");
+        await Expect(table.Locator("tbody td[data-part=select]").First).ToHaveCSSAsync("text-align", "center");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Grid_ShouldShowOnlyMatchingRowsAndCountThem_WhenFilterTextIsTyped(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");
