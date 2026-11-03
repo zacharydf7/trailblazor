@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!-- A page with one mistake for each rule. The repo's build props add the analyzer to it, as to every Razor
+       project here. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Trailblazor\Trailblazor.csproj" />
+  </ItemGroup>
+
+</Project>

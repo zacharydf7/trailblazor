@@ -1,5 +1,5 @@
 <TbStack Gap="3" Style="max-inline-size: 26rem">
-    <TbTextField Label="Find a trail" @bind-Value="_search" @bind-Value:event="oninput" Clearable />
+    <TbTextField Label="Find a trail" @bind-Value="_search" UpdateOnInput Clearable />
     <TbText>
         @(_opened is null ? "Double-click or press Enter on a trail to open it, or on a region to open or close it."
             : $"Opened {_opened}.")

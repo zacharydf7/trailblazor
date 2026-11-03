@@ -23,6 +23,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The analyzer ships in the package, so an app's build checks its markup. -->
+    <None Include="..\Trailblazor.Analyzers\bin\$(Configuration)\netstandard2.0\Trailblazor.Analyzers.dll" Pack="true"
+          PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Trailblazor.Tests" />
     <!-- So a test's dialog can find its own content among others of its type. -->
     <InternalsVisibleTo Include="Trailblazor.Testing" />

@@ -22,6 +22,9 @@ public static class GuideCatalog
             "Change the words components say and show, or translate them all for each user's culture."),
         new("guides/testing", "Testing",
             "Test pages built with Trailblazor in bUnit and Playwright, and find components the way users do."),
+        new("guides/analyzers", "Analyzers",
+            "As your app builds, catch an unnamed control or field, an untitled dialog, or a value that snaps back "
+                + "after the user changes it."),
         new("guides/telemetry", "Telemetry",
             "See which features people use and which they never touch, in the dashboard you already have."),
     ];

@@ -147,7 +147,7 @@
     <TbStack Row Gap="2" Wrap Align="Align.Center">
         <TbButton>Save</TbButton>
         <TbButton Variant="Variant.Soft">Preview</TbButton>
-        <TbCheckbox TValue="bool" Label="Share with team" Value="true" />
+        <TbCheckbox Label="Share with team" @bind-Value="_share" />
         <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
     </TbStack>
     <TbList aria-label="Trails with your brand color">
@@ -231,6 +231,8 @@
     private const string DefaultBrand = "#0f766e";
 
     private string? _brand = DefaultBrand;
+
+    private bool _share = true;
 
     private string Brand => _brand ?? DefaultBrand;
 

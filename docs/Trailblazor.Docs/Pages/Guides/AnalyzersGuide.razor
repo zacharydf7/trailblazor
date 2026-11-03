@@ -1,0 +1,105 @@
+@page "/guides/analyzers"
+
+<PageTitle>Analyzers · Trailblazor</PageTitle>
+
+<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Analyzers</TbText>
+<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+    The Trailblazor package includes an analyzer that reads your markup as the app builds. It warns, at the line in
+    the <code>.razor</code> file, about a control or field screen readers can't name, a dialog with no title, and a
+    value that snaps back after the user changes it.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Rules</TbText>
+<TbTable aria-label="Analyzer rules">
+    <thead>
+        <tr>
+            <th scope="col">Rule</th>
+            <th scope="col">Warns when</th>
+            <th scope="col">Fix</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th scope="row">TB001</th>
+            <td>
+                A control that needs a name has none, or a blank one: an icon button, menu, popover, toolbar, toolbar
+                button, chip group, toggle group, progress, tab, tree, submenu, option group, sortable list or insert
+                divider.
+            </td>
+            <td>Set the parameter the warning names, such as <code>AriaLabel</code>.</td>
+        </tr>
+        <tr>
+            <th scope="row">TB002</th>
+            <td>
+                A <code>TbDialog</code>'s <code>Title</code>, or the title passed to <code>IDialogService</code>, is
+                blank.
+            </td>
+            <td>Give the dialog a title. It names the dialog and is announced as the dialog opens.</td>
+        </tr>
+        <tr>
+            <th scope="row">TB003</th>
+            <td>
+                An input is given a <code>Value</code> without <code>ValueChanged</code>, so the page's next render
+                undoes the user's change.
+            </td>
+            <td>
+                Use <code>@@bind-Value</code> or handle <code>ValueChanged</code>. A field can set
+                <code>ReadOnly</code> instead.
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">TB004</th>
+            <td>A field has no <code>Label</code> and no <code>AriaLabel</code>.</td>
+            <td>Set <code>Label</code>, or <code>AriaLabel</code> when the layout has no room for one.</td>
+        </tr>
+    </tbody>
+</TbTable>
+<CodeBlock Label="Search.razor" Code="@Mistakes" />
+<CodeBlock Label="The build's warnings" Code="@Warnings" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">What it can see</TbText>
+<TbText>
+    The analyzer reads the values written in markup. A name held in a variable or worked out by an expression isn't
+    known until the page runs, so the analyzer leaves it to the component. Most of the controls above check it when
+    they render and throw if it's blank.
+</TbText>
+<TbText>
+    An attribute written on a field goes on its wrapper, not its input, so it doesn't name the field. Put an
+    <code>aria-label</code> in <code>InputAttributes</code> instead. A field with a native input, such as a text
+    field or checkbox, can also take an <code>id</code> so a <code>TbLabel</code> elsewhere can name it; a select, list
+    box or range can't be named that way. A radio or checkbox group is the exception: its attributes go on its
+    fieldset, so <code>aria-label</code> or <code>aria-labelledby</code> written on it does name it. A tree can also be
+    named by another element with <code>aria-labelledby</code>. Attributes spread with
+    <code>@@attributes</code> may hold a name, so a component given them isn't checked. A required parameter that's
+    left out, such as an icon button's <code>AriaLabel</code>, already gets Razor's own RZ2012 warning, so TB001 warns
+    only when it is blank.
+</TbText>
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Turning a rule off</TbText>
+<TbText>
+    The rules are warnings, or errors in a project that treats warnings as errors. To turn one off for a whole
+    project, list it in <code>NoWarn</code>.
+</TbText>
+<CodeBlock Label="MyApp.csproj" Code="@NoWarn" />
+
+@code {
+    private const string Mistakes = """
+        <TbIconButton Icon="Icons.Search" AriaLabel="" />
+        <TbTextField @bind-Value="_query" />
+        <TbCheckbox Label="Only open trails" Value="true" />
+        """;
+
+    private const string Warnings = """
+        Search.razor(1,35): warning TB001: TbIconButton has no accessible name. Set AriaLabel.
+        Search.razor(2,20): warning TB004: TbTextField has no label. Set Label, or AriaLabel when the layout has no
+            room for one.
+        Search.razor(3,38): warning TB003: TbCheckbox sets Value without ValueChanged, so the parent's next render
+            undoes the user's change. Use @bind-Value, handle ValueChanged, or set ReadOnly.
+        """;
+
+    private const string NoWarn = """
+        <PropertyGroup>
+          <NoWarn>$(NoWarn);TB003</NoWarn>
+        </PropertyGroup>
+        """;
+}

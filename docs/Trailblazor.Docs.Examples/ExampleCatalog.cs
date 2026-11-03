@@ -41,7 +41,8 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
         : Accessibility;
 
     private const string FieldAccessibility = "With no room for a label, an `AriaLabel` names the field through a "
-        + "label only screen readers see. `OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
+        + "label only screen readers see. A field with neither gets build warning TB004, and a `Value` set without "
+        + "`ValueChanged` gets TB003. `OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
         + "between its own parts, so they suit checking or saving when the user moves on. `AutoFocus` moves focus to "
         + "it as it appears on an interactive page, unless the user is typing in another field by then, or, in a "
         + "dialog or focus scope, as that opens.";
@@ -257,8 +258,8 @@ public static class ExampleCatalog
             Api = [typeof(TbIconButton), typeof(IconButtonClasses)],
             Accessibility =
             [
-                "`AriaLabel` is required and names the button, since it shows no text; a blank label throws when "
-                    + "it renders.",
+                "`AriaLabel` is required and names the button, since it shows no text. A blank label written as "
+                    + "text in markup gets build warning TB001, and any blank label throws when it renders.",
                 "The icon itself is hidden from screen readers. Set `ShowTooltip` so sighted users can see the "
                     + "name too, on hover and on keyboard focus. The tooltip repeats the name, so it isn't added as a "
                     + "description, and screen readers hear the name once.",
@@ -1257,7 +1258,8 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "A native `<dialog>` named by its title. A modal one makes the rest of the page inert, so focus "
-                    + "and screen readers stay inside; a non-modal one leaves the page usable.",
+                    + "and screen readers stay inside; a non-modal one leaves the page usable. A blank title, in "
+                    + "markup or passed to `IDialogService`, gets build warning TB002.",
                 "On opening, focus goes to an element marked `autofocus`, or else the first field, or the dialog "
                     + "itself with `InitialFocus = DialogFocus.Dialog`. On closing, it goes back to whatever opened "
                     + "the dialog.",

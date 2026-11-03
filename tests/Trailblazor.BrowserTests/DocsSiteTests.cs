@@ -79,7 +79,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             "", "components/dialog", "components/tree-view", "components/data-grid/api",
             "preview/tree-view/many-rows", "guides/getting-started", "guides/theming", "guides/palettes",
             "guides/spacing", "guides/browser",
-            "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "search?q=dialog",
+            "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "guides/analyzers",
+            "search?q=dialog",
         }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
@@ -558,6 +559,22 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         var status = page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Status);
         await Expect(status).ToHaveTextAsync("Nothing matches “zebra”.");
         await Expect(page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Listitem)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AnalyzersGuide_ShouldListEveryRuleTheAnalyzerReleases_WhenOpened(string browser)
+    {
+        var releases = Path.Combine(Repository.Root, "src", "Trailblazor.Analyzers");
+        var released = new[] { "AnalyzerReleases.Shipped.md", "AnalyzerReleases.Unshipped.md" }
+            .SelectMany(file => File.ReadLines(Path.Combine(releases, file)))
+            .Select(line => Regex.Match(line, @"^(TB\d+) \|")).Where(match => match.Success)
+            .Select(match => match.Groups[1].Value).Order().ToArray();
+        var page = await OpenDocsAsync(browser, "guides/analyzers");
+
+        var rules = page.GetByRole(AriaRole.Table, new() { Name = "Analyzer rules" }).GetByRole(AriaRole.Rowheader);
+
+        Assert.NotEmpty(released);
+        await Expect(rules).ToHaveTextAsync(released);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -32,4 +32,10 @@
     <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
+  <!-- Every project with Razor markup runs the components' analyzer on itself, as an app using the package does. -->
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkRazor)' == 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)src/Trailblazor.Analyzers/Trailblazor.Analyzers.csproj"
+                      ReferenceOutputAssembly="false" OutputItemType="Analyzer" PrivateAssets="all" />
+  </ItemGroup>
+
 </Project>

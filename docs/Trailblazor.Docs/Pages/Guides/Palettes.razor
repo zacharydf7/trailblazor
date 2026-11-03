@@ -27,8 +27,8 @@
                         <TbButton Tone="Tone.Danger" Variant="Variant.Soft">Delete</TbButton>
                         <TbButton Disabled>Publish</TbButton>
                     </TbStack>
-                    <TbTextField TValue="string" Label="Project name" Value="@("Trail map")" />
-                    <TbTextField TValue="string" Label="Owner email" Value="@("ana@")" Invalid
+                    <TbTextField Label="Project name" @bind-Value="_projectName" />
+                    <TbTextField Label="Owner email" @bind-Value="_ownerEmail" Invalid
                                  HelperText="Enter a whole email address." />
                     <TbList aria-label="@($"Trails, {palette.Title} {label}")">
                         <TbListItem Selected OnClick="() => { }">Ridge loop</TbListItem>
@@ -39,8 +39,8 @@
                         <TbChip Text="Closed" SelectedChanged="(bool _) => { }" />
                     </TbStack>
                     <TbStack Row Gap="4" Wrap>
-                        <TbCheckbox TValue="bool" Label="Share with team" Value="true" />
-                        <TbSwitch Label="Notifications" Value="true" />
+                        <TbCheckbox Label="Share with team" @bind-Value="_share" />
+                        <TbSwitch Label="Notifications" @bind-Value="_notify" />
                     </TbStack>
                 </div>
             }
@@ -71,4 +71,9 @@
 
 @code {
     private static readonly (string Theme, string Label)[] Themes = [("light", "Light"), ("dark", "Dark")];
+
+    private string? _projectName = "Trail map";
+    private string? _ownerEmail = "ana@";
+    private bool _share = true;
+    private bool _notify = true;
 }

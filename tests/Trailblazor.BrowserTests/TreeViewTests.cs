@@ -288,6 +288,17 @@ public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeExample_ShouldShowOnlyMatchingTrails_WhenSearchTextIsTyped(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+
+        await page.GetByLabel("Find a trail").PressSequentiallyAsync("cedar");
+
+        await Expect(Row(page, "Cedar Flats", "Trails by region")).ToBeVisibleAsync();
+        await Expect(Row(page, "Pine Hollow loop", "Trails by region")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldOutlineTheSelectedRowInTheHighlight_WhenColorsAreForced(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-view", new() { ForcedColors = ForcedColors.Active });

@@ -143,13 +143,7 @@ public class ExampleCatalogTests
 
     private static Dictionary<string, HashSet<string>> SourceParts()
     {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (!File.Exists(Path.Combine(root.FullName, "Trailblazor.slnx")))
-        {
-            root = root.Parent!;
-        }
-
-        var library = Path.Combine(root.FullName, "src", "Trailblazor");
+        var library = Path.Combine(Repository.Root, "src", "Trailblazor");
         // Markup, a render tree attribute and an attribute dictionary entry.
         var part = new Regex(@"data-part=""([a-z0-9-]+)""|""data-part"",\s*""([a-z0-9-]+)""|"
             + @"\[""data-part""\]\s*=\s*""([a-z0-9-]+)""");

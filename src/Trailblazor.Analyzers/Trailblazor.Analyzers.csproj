@@ -4,6 +4,20 @@
     <!-- Roslyn loads analyzers into every compiler host, so they must target netstandard2.0 -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent>true</IsRoslynComponent>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The oldest compiler the analyzer runs in: the one in the .NET 9 SDK and Visual Studio 2022 17.14. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+    <InternalsVisibleTo Include="Trailblazor.Analyzers.Tests" />
+  </ItemGroup>
 
 </Project>

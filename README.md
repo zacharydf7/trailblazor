@@ -26,7 +26,7 @@ the components on the documentation site: https://zacharydf7.github.io/trailblaz
 src/
   Trailblazor/               styled components, CSS, JS module
   Trailblazor.Primitives/    headless behaviors (focus scope, dismissable layer, anchored positioning)
-  Trailblazor.Analyzers/     Roslyn analyzers and code fixes
+  Trailblazor.Analyzers/     build warnings for unnamed controls and fields, untitled dialogs and stuck values
   Trailblazor.Icons.Material/  Google's Material Symbols as icons for TbIcon (paths under Apache 2.0)
   Trailblazor.Testing/       bUnit setup for consumers: this.AddTrailblazor()
   Trailblazor.Testing.Playwright/  Playwright helpers for consumers: page.Tb().Select("Size").ChooseAsync("Medium")
@@ -34,6 +34,7 @@ docs/Trailblazor.Docs/       WebAssembly docs site
 tools/Trailblazor.Icons.Generator/  writes the icon pack's classes from the Material Symbols npm package
 tests/
   Trailblazor.Tests/         bUnit unit tests
+  Trailblazor.Analyzers.Tests/  analyzer tests, on generated code and on a real Razor build
   Trailblazor.BrowserTests/  Playwright browser tests
 ```
 
