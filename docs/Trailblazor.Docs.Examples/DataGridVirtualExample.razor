@@ -1,0 +1,24 @@
+@* Ten thousand rows held in memory, of which only those in view are drawn. *@
+<TbStack Gap="3">
+    <TbDataGrid @ref="_grid" TItem="Reading" Items="Readings" AriaLabel="Readings" KeySelector="reading => reading.Id"
+                Virtualize Height="24rem" Size="Size.Small" Striped>
+        <TbColumn Field="reading => reading.Id" Title="Reading" />
+        <TbColumn Field="reading => reading.Station" Filterable />
+        <TbColumn Field="reading => reading.TakenAt" Title="Taken" Format="g" />
+        <TbColumn Field="reading => reading.TemperatureC" Title="Temperature (°C)" Format="N1" Sortable />
+    </TbDataGrid>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _grid.ScrollToAsync(Readings[4999])">
+        Go to reading 5000
+    </TbButton>
+</TbStack>
+
+@code {
+    private static readonly string[] Stations = ["Pine Hollow", "Eagle Ridge", "Cedar Flats", "Fern Gully"];
+
+    private static readonly Reading[] Readings = [.. Enumerable.Range(1, 10_000).Select(id => new Reading(id,
+        Stations[id % Stations.Length], new DateTime(2026, 6, 1).AddMinutes(id * 15), 12 + id * 7 % 150 / 10.0))];
+
+    private TbDataGrid<Reading> _grid = default!;
+
+    private sealed record Reading(int Id, string Station, DateTime TakenAt, double TemperatureC);
+}

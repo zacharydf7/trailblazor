@@ -1,0 +1,38 @@
+@page "/virtual-grid"
+
+@* A virtualized grid whose rows a provider loads as they scroll into view, counting what it was asked for, and one
+   whose rows move. *@
+<TbDataGrid TItem="int" DataProvider="LoadAsync" AriaLabel="Numbers" Virtualize Height="15rem"
+            SelectionMode="SelectionMode.Multiple">
+    <TbColumn Field="row => row" Title="Number" Sortable Filterable />
+</TbDataGrid>
+<p data-testid="asked">@_asked</p>
+<TbDataGrid TItem="string" Items="_stops" AriaLabel="Stops" Virtualize Height="15rem"
+            OnRowMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
+    <TbColumn Field="stop => stop" Title="Stop" Id="stop" />
+</TbDataGrid>
+
+@code {
+    private string _asked = "";
+
+    private readonly List<string> _stops = [.. Enumerable.Range(1, 200).Select(stop => $"Stop {stop}")];
+
+    private async Task<GridResult<int>> LoadAsync(GridRequest request, CancellationToken cancel)
+    {
+        await Task.Delay(50, cancel);
+        _asked = $"{request.StartIndex} {request.Count} {string.Join(",", request.Sorts)}";
+        IEnumerable<int> rows = Enumerable.Range(1, 1000);
+        if (request.Sorts is [{ Direction: SortDirection.Descending }])
+        {
+            rows = rows.Reverse();
+        }
+
+        if (request.Filters is [{ Value: decimal number }])
+        {
+            rows = rows.Where(row => row == number);
+        }
+
+        StateHasChanged();
+        return new([.. rows.Skip(request.StartIndex).Take(request.Count ?? 1000)], rows.Count());
+    }
+}

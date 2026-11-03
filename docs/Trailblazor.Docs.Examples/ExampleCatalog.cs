@@ -1608,6 +1608,11 @@ public static class ExampleCatalog
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
+                new("virtual-rows", "Virtual rows", "With `Virtualize` and a `Height`, only the rows in view are "
+                    + "drawn, so the grid can hold thousands of rows without pages. `ScrollToAsync` scrolls to any "
+                    + "row held in memory. With a `DataProvider`, rows load as they scroll into view, and "
+                    + "`ScrollToAsync` finds only a loaded row.",
+                    typeof(DataGridVirtualExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
@@ -1645,6 +1650,9 @@ public static class ExampleCatalog
                     + "column's filter. A `FilterTemplate` replaces the menu's contents.",
                 "A pinned column moves to its side of the table in the page's order too, so screen readers and Tab "
                     + "reach its cells in the order they show.",
+                "With `Virtualize`, the table's `aria-rowcount` holds the number of rows, headers included, and "
+                    + "each drawn row's `aria-rowindex` its place, so screen readers can say where a row is among "
+                    + "rows that aren't drawn.",
                 "While rows load the table is `aria-busy`. A `DataProvider` receives the page, the sorts and the "
                     + "filters the grid asks for, and a new request cancels the last one. A failed load is read out "
                     + "and offers to try again, a load with no rows is read out too, and after the page changes a "
@@ -1663,7 +1671,7 @@ public static class ExampleCatalog
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
             DataParts = ["grid", "scroll", "sort", "sort-order", "filters", "filter", "filter-menu", "filter-apply",
-                "filter-clear", "select-all", "row", "select",
+                "filter-clear", "select-all", "row", "placeholder", "select",
                 "order", "handle", "drop-reason", "loading", "empty", "failed", "summary", "pager"],
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
@@ -1689,7 +1697,9 @@ public static class ExampleCatalog
                 + "draws again only when its item, its selection, its `RowClass`, its `RowLabel` or the columns "
                 + "change, so a test "
                 + "that changes what a `Cell` template shows calls `RenderRows`, as the app does, and one that "
-                + "changes `Items` in place calls `RefreshAsync`.",
+                + "changes `Items` in place calls `RefreshAsync`. A virtualized grid draws only the rows in view, so "
+                + "a test scrolls its `[data-part=scroll]` box, or calls `ScrollToAsync`, before it looks for a "
+                + "row further down.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "

@@ -347,12 +347,13 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/pinned-grid");
         var table = Table(page, "Numbers");
         var scroll = table.Locator("xpath=..");
-        await Expect(scroll).ToHaveAttributeAsync("style", new Regex("scroll-padding"));
+        await Expect(scroll).Not.ToHaveCSSAsync("scroll-padding-left", "auto");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Unpin all" }).ClickAsync();
 
         await Expect(table.Locator("[data-pinned]")).ToHaveCountAsync(0);
-        await Expect(scroll).Not.ToHaveAttributeAsync("style", new Regex("scroll-padding"));
+        await Expect(scroll).ToHaveCSSAsync("scroll-padding-left", "auto");
+        await Expect(scroll).ToHaveCSSAsync("scroll-padding-right", "auto");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -370,6 +371,121 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
                 "header => { const box = header.getBoundingClientRect();"
                 + " return document.elementFromPoint(box.left + 4, box.bottom - 4)?.closest('th') === header; }"));
         }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldShadeEverySelectedRowAlike_WhenStripedRowsAreSelected(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var trails = page.Tb().Grid("Trails");
+
+        await trails.SelectAsync("Pine Hollow loop");
+        await trails.SelectAsync("Eagle Ridge traverse");
+        await page.Mouse.MoveAsync(0, 0);
+
+        var rows = Table(page, "Trails").Locator("tbody tr[data-part=row]");
+        var odd = await rows.Nth(0).EvaluateAsync<string>("row => getComputedStyle(row).backgroundColor");
+        await Expect(rows.Nth(1)).ToHaveCSSAsync("background-color", odd);
+        Assert.NotEqual(odd, await rows.Nth(3).EvaluateAsync<string>("row => getComputedStyle(row).backgroundColor"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldScrollAFocusedControlOutFromUnderItsHeader_WhenTheRowsScrollInAHeight(string browser)
+    {
+        var page = await OpenAsync(browser, "/pinned-grid");
+        var table = Table(page, "Numbers");
+        await Expect(table).ToHaveAttributeAsync("style", new Regex("--tb-data-grid-pin-end-0"));
+        var box = table.Locator("tbody tr[data-part=row]").Nth(1).Locator("input[type=checkbox]");
+        await box.EvaluateAsync("box => { const scroll = box.closest('.tb-data-grid__scroll');"
+            + " const header = box.closest('table').tHead.getBoundingClientRect();"
+            + " scroll.scrollTop += box.getBoundingClientRect().top - header.top - 4; }");
+        Assert.False(await box.EvaluateAsync<bool>("box => { const at = box.getBoundingClientRect();"
+            + " return document.elementFromPoint(at.left + at.width / 2, at.top + at.height / 2) === box; }"));
+
+        await box.FocusAsync();
+
+        Assert.True(await box.EvaluateAsync<bool>("box => { const at = box.getBoundingClientRect();"
+            + " return document.elementFromPoint(at.left + at.width / 2, at.top + at.height / 2) === box; }"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task VirtualRows_ShouldDrawOnlyTheRowsInViewAndCountThemAll_WhenThousandsAreHeld(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var table = Table(page, "Readings");
+        await Expect(table.Locator("tbody tr[data-part=row]").First).ToHaveAttributeAsync("aria-rowindex", "3");
+        await Expect(table).ToHaveAttributeAsync("aria-rowcount", "10002");
+        Assert.InRange(await table.Locator("tbody tr[data-part=row]").CountAsync(), 1, 60);
+
+        await table.Locator("xpath=..").EvaluateAsync("box => box.scrollTop = box.scrollHeight");
+
+        await Expect(table.Locator("tr[aria-rowindex='10002']")).ToContainTextAsync("10000");
+        Assert.InRange(await table.Locator("tbody tr[data-part=row]").CountAsync(), 1, 60);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task VirtualRows_ShouldScrollToARowClearOfTheHeader_WhenItIsntDrawnYet(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var table = Table(page, "Readings");
+        await Expect(table.Locator("tbody tr[data-part=row]").First).ToBeVisibleAsync();
+        await Expect(table.Locator("tr[data-key='5000']")).ToHaveCountAsync(0);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Go to reading 5000" }).ClickAsync();
+
+        var row = table.Locator("tr[data-key='5000']");
+        await Expect(row).ToBeInViewportAsync();
+        Assert.True(await row.EvaluateAsync<bool>("row => { const box = row.getBoundingClientRect();"
+            + " return row.contains(document.elementFromPoint(box.left + 4, box.top + 4)); }"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task VirtualRows_ShouldLoadOnlyTheRowsInViewAndAgainWhenSorted_WhenAProviderGivesThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/virtual-grid");
+        var table = Table(page, "Numbers");
+        var asked = page.GetByTestId("asked");
+        await Expect(table.Locator("tbody tr[data-part=row]").First).ToContainTextAsync("1");
+        Assert.InRange(int.Parse((await asked.InnerTextAsync()).Split(' ')[1]), 1, 50);
+        await Expect(table.Locator("[data-part=select-all]")).ToHaveCountAsync(0);
+
+        await table.Locator("xpath=..").EvaluateAsync("box => box.scrollTop = box.scrollHeight");
+
+        await Expect(table.Locator("tr[aria-rowindex='1002']")).ToContainTextAsync("1000");
+        await table.Locator("xpath=..").EvaluateAsync("box => box.scrollTop = 0");
+        await page.Tb().Grid("Numbers").SortAsync("Number", descending: true);
+        await Expect(table.Locator("tr[aria-rowindex='3']")).ToContainTextAsync("1000");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task VirtualRows_ShouldShowTheRowsAFilterLeaves_WhenFilteredWhileScrolledDown(string browser)
+    {
+        var page = await OpenAsync(browser, "/virtual-grid");
+        var table = Table(page, "Numbers");
+        await Expect(table.Locator("tbody tr[data-part=row]").First).ToContainTextAsync("1");
+        await table.Locator("xpath=..").EvaluateAsync("box => box.scrollTop = box.scrollHeight");
+        await Expect(table.Locator("tr[aria-rowindex='1002']")).ToContainTextAsync("1000");
+
+        await page.Tb().Grid("Numbers").FilterAsync("Number", "5");
+
+        await Expect(table.Locator("tbody tr[data-part=row]")).ToHaveTextAsync(["5"]);
+        await Expect(table.Locator("[data-part=empty]")).ToHaveCountAsync(0);
+        await Expect(table).ToHaveAttributeAsync("aria-rowcount", "3");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task VirtualRows_ShouldKeepFocusOnAMovedRowsHandle_WhenItMovesOutOfView(string browser)
+    {
+        var page = await OpenAsync(browser, "/virtual-grid");
+        var table = Table(page, "Stops");
+        await Expect(page.Locator("[data-part=grid]:not([data-ready])")).ToHaveCountAsync(0);
+        var handle = page.GetByRole(AriaRole.Button, new() { Name = "Move Stop 1", Exact = true });
+
+        await handle.FocusAsync();
+        await page.Keyboard.PressAsync("End");
+
+        await Expect(handle).ToBeFocusedAsync();
+        await Expect(table.Locator("tr[aria-rowindex='201']")).ToContainTextAsync("Stop 1");
     }
 
     private static ILocator Table(IPage page, string name) =>

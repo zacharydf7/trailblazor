@@ -1,19 +1,20 @@
 @namespace Trailblazor
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 @typeparam TItem
 @inherits TbComponentBase
 
 <div @attributes="AdditionalAttributes" data-part="grid" data-ready="@(IsReady ? "" : null)" style="@Style"
      class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
-                Height is null ? null : "tb-data-grid--scrolls", Class)">
+                Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
     @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); DrawRowsForReorder(); }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
         <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
-               class="tb-data-grid__table">
+               aria-rowcount="@(Virtualize ? HeaderRowCount + _total : null)" class="tb-data-grid__table">
             <thead>
-                <tr>
+                <tr aria-rowindex="@(Virtualize ? 1 : null)">
                     @if (CanReorder)
                     {
                         <th scope="col" data-part="order" data-pinned="@LeadPin" style="@LeadStyle(0)"
@@ -21,7 +22,7 @@
                             <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridOrder]</span>
                         </th>
                     }
-                    @if (SelectionMode == SelectionMode.Multiple)
+                    @if (SelectionMode == SelectionMode.Multiple && CanSelectAll)
                     {
                         <th scope="col" data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
                             class="tb-data-grid__select">
@@ -31,7 +32,7 @@
                                    disabled="@(_rows.Count == 0)" @onchange="ToggleAllAsync" />
                         </th>
                     }
-                    else if (SelectionMode == SelectionMode.Single)
+                    else if (SelectionMode != SelectionMode.None)
                     {
                         <th scope="col" data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
                             class="tb-data-grid__select">
@@ -85,7 +86,7 @@
                 </tr>
                 @if (HasFilterRow)
                 {
-                    <tr data-part="filters" class="tb-data-grid__filters">
+                    <tr data-part="filters" aria-rowindex="@(Virtualize ? 2 : null)" class="tb-data-grid__filters">
                         @if (CanReorder)
                         {
                             <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
@@ -124,13 +125,13 @@
                         </td>
                     </tr>
                 }
-                else if (_rows.Count == 0 && IsLoading)
+                else if (HasNoRows && IsLoading)
                 {
                     <tr data-part="loading" class="tb-data-grid__status">
                         <td colspan="@ColumnCount">@(Labels.Loading ?? Localizer[TbStrings.DataGridLoading])</td>
                     </tr>
                 }
-                else if (_rows.Count == 0)
+                else if (HasNoRows)
                 {
                     <tr data-part="empty" class="tb-data-grid__status">
                         <td colspan="@ColumnCount">
@@ -145,7 +146,17 @@
                         </td>
                     </tr>
                 }
-                @Rows
+                @if (Virtualize)
+                {
+                    <Virtualize @ref="_virtualize" TItem="VirtualRow" ItemSize="RowSize" SpacerElement="tr"
+                                Items="@(DataProvider is null ? _virtualRows : null)"
+                                ItemsProvider="VirtualRowsProvider" ItemContent="VirtualRowContent"
+                                Placeholder="VirtualPlaceholder" />
+                }
+                else
+                {
+                    @Rows
+                }
             </tbody>
         </table>
     </div>
@@ -185,9 +196,10 @@
 @code {
     private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
+             aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)"
              @ontbrowclick="args => OnRowClickedAsync(item, args)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
-                        rowClass)">
+                        Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, rowClass)">
             @if (CanReorder)
             {
                 <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle">
@@ -222,6 +234,12 @@
                     }
                 </td>
             }
+        </tr>;
+
+    // A row Virtualize hasn't loaded yet holds its place, and says nothing to screen readers.
+    private RenderFragment<PlaceholderContext> VirtualPlaceholder => _ =>
+        @<tr data-part="placeholder" aria-hidden="true" class="tb-data-grid__placeholder">
+            <td colspan="@ColumnCount"></td>
         </tr>;
 
     // A text filter applies when typing pauses; the other fields apply as soon as they change.

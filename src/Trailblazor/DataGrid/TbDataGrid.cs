@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
@@ -19,6 +20,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
     private readonly KeyIds _ids = new();
     private List<TItem> _rows = [];
+    // A virtualized grid's rows with their places, which Virtualize draws a few at a time.
+    private List<VirtualRow> _virtualRows = [];
+    // The index, among all rows, of the first row a virtualized grid's provider last loaded.
+    private int _rowsStart;
+    private Virtualize<VirtualRow>? _virtualize;
     private List<GridSort> _sorts = [];
     private List<GridFilter> _filters = [];
     private int _total;
@@ -178,6 +184,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public string? Height { get; set; }
 
+    /// <summary>Draws only the rows scrolled into view, and a few around them, instead of pages, so the grid can hold
+    /// thousands of rows. It needs a <see cref="Height"/> for the rows to scroll in, and can't have a
+    /// <see cref="PageSize"/>. With a <see cref="DataProvider"/>, rows load as they scroll into view, and the header
+    /// has no box that selects every row, since most of them aren't loaded.</summary>
+    [Parameter]
+    public bool Virtualize { get; set; }
+
     /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>.</summary>
     [Parameter]
     public bool Loading { get; set; }
@@ -232,6 +245,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int PageCount => _pageSize is { } size ? Math.Max(1, (_total + size - 1) / size) : 1;
 
+    // A provider's rows aren't all loaded, so a box can't select them all.
+    private bool CanSelectAll => !(Virtualize && DataProvider is not null);
+
+    // A virtualized table's aria-rowcount and aria-rowindex count its header rows too.
+    private int HeaderRowCount => HasFilterRow ? 2 : 1;
+
+    // A virtualized grid's provider loads a few rows at a time, so only its count says whether there are any.
+    private bool HasNoRows => Virtualize && DataProvider is not null ? _total == 0 : _rows.Count == 0;
+
     private int ColumnCount => _columns.Count + LeadCount;
 
     // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
@@ -260,6 +282,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             throw new InvalidOperationException(
                 $"{nameof(TbDataGrid<TItem>)} takes {nameof(Items)} or a {nameof(DataProvider)}, not both.");
+        }
+
+        // Without a height the rows' box grows with them, so every row would count as in view.
+        if (Virtualize && (Height is null || PageSize is not null))
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} that virtualizes its rows needs a " +
+                $"{nameof(Height)} and no {nameof(PageSize)}.");
         }
 
         // The grid's own sorts passed back, as a binding does, keep them, so the rows aren't sorted again for nothing.
@@ -367,10 +396,21 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     /// <summary>Goes to the page that holds this item's row, found by its <see cref="KeySelector"/> key, and scrolls
-    /// the row into view. With a <see cref="DataProvider"/>, only a row on the current page can be found.</summary>
+    /// the row into view. With a <see cref="DataProvider"/>, only a row on the current page can be found or, when
+    /// <see cref="Virtualize"/> is set, only a loaded row.</summary>
     public async Task ScrollToAsync(TItem item)
     {
         var key = KeyOf(item);
+        if (Virtualize)
+        {
+            if (_handle is not null && _rows.FindIndex(row => Equals(KeyOf(row), key)) is var at and >= 0)
+            {
+                await _handle.InvokeVoidAsync("scrollToRow", IdOf(item), _rowsStart + at);
+            }
+
+            return;
+        }
+
         if (_pageSize is { } size && Items is not null
             && Arranged().ToList().FindIndex(other => Equals(KeyOf(other), key)) is var index and >= 0)
         {
@@ -390,23 +430,89 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         for (var index = 0; index < _rows.Count; index++)
         {
-            var item = _rows[index];
-            var key = KeyOf(item);
-            var selected = IsSelected(item);
-            var rowClass = RowClass?.Invoke(item);
-            var label = RowLabel?.Invoke(item);
-            builder.OpenComponent<GridRow<TItem>>(0);
-            builder.SetKey(key);
-            builder.AddComponentParameter(1, nameof(GridRow<TItem>.Item), item);
-            builder.AddComponentParameter(2, nameof(GridRow<TItem>.Selected), selected);
-            builder.AddComponentParameter(3, nameof(GridRow<TItem>.Class), rowClass);
-            builder.AddComponentParameter(4, nameof(GridRow<TItem>.Label), label);
-            builder.AddComponentParameter(5, nameof(GridRow<TItem>.Version), _rowVersion);
-            builder.AddComponentParameter(6, nameof(GridRow<TItem>.ChildContent),
-                Row(item, key, selected, Offset + index, rowClass, label));
-            builder.CloseComponent();
+            AddRow(builder, _rows[index], Offset + index);
         }
     }
+
+    // Virtualize draws each row it shows in one region, so the rows keep their keys among themselves.
+    private RenderFragment<VirtualRow> VirtualRowContent => row => builder => AddRow(builder, row.Item, row.Index);
+
+    private void AddRow(RenderTreeBuilder builder, TItem item, int at)
+    {
+        var key = KeyOf(item);
+        var selected = IsSelected(item);
+        var rowClass = RowClass?.Invoke(item);
+        var label = RowLabel?.Invoke(item);
+        builder.OpenComponent<GridRow<TItem>>(0);
+        builder.SetKey(key);
+        builder.AddComponentParameter(1, nameof(GridRow<TItem>.Item), item);
+        builder.AddComponentParameter(2, nameof(GridRow<TItem>.Selected), selected);
+        builder.AddComponentParameter(3, nameof(GridRow<TItem>.Class), rowClass);
+        builder.AddComponentParameter(4, nameof(GridRow<TItem>.Label), label);
+        builder.AddComponentParameter(5, nameof(GridRow<TItem>.Version), _rowVersion);
+        builder.AddComponentParameter(6, nameof(GridRow<TItem>.ChildContent),
+            Row(item, key, selected, at, rowClass, label));
+        builder.CloseComponent();
+    }
+
+    private ItemsProviderDelegate<VirtualRow>? VirtualRowsProvider =>
+        DataProvider is null ? null : LoadVirtualRowsAsync;
+
+    // A guess at a row's height, which Virtualize corrects from the rows it draws.
+    private float RowSize => Size switch
+    {
+        Size.Small => 28,
+        Size.Large => 52,
+        _ => 44,
+    };
+
+    // A virtualized grid's provider loads the rows Virtualize asks for, sorted and filtered as the grid is.
+    private async ValueTask<ItemsProviderResult<VirtualRow>> LoadVirtualRowsAsync(ItemsProviderRequest request)
+    {
+        var asked = new GridRequest(request.StartIndex, request.Count, [.. _sorts]) { Filters = [.. _filters] };
+        _loading = true;
+        _failed = false;
+        GridResult<TItem> result;
+        try
+        {
+            result = await DataProvider!(asked, request.CancellationToken);
+        }
+        // Virtualize drops a load it has moved past and expects that load to throw OperationCanceledException.
+        catch (Exception) when (request.CancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(request.CancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _loading = false;
+            _total = 0;
+            await ShowLoadFailedAsync(exception);
+            StateHasChanged();
+            return new([], 0);
+        }
+
+        // A load the provider finished after Virtualize moved past it mustn't replace the rows of a newer one.
+        if (request.CancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(request.CancellationToken);
+        }
+
+        _loading = false;
+        List<TItem> rows = [.. result.Items];
+        ShowRows(rows);
+        _rowsStart = request.StartIndex;
+        _total = result.TotalCount;
+        if (_total == 0)
+        {
+            Announcer.Polite(EmptyLabel);
+        }
+
+        StateHasChanged();
+        return new(rows.Select((row, index) => new VirtualRow(row, request.StartIndex + index)), result.TotalCount);
+    }
+
+    // A row Virtualize draws, with its place among all the rows.
+    private readonly record struct VirtualRow(TItem Item, int Index);
 
     internal void AddColumn(TbColumn<TItem> column)
     {
@@ -597,6 +703,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         await RefreshAsync();
+        if (input == "keyboard" && Virtualize && _handle is not null)
+        {
+            await _handle.InvokeVoidAsync("scrollToRow", IdOf(moved), to);
+        }
+
         if (input == "keyboard" && _reorder is not null)
         {
             await _reorder.InvokeVoidAsync("focusHandle", IdOf(moved));
@@ -606,6 +717,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // In memory the rows are sorted and paged here; a provider is asked only when the request differs from the last.
     private async Task ShowAsync(bool force)
     {
+        if (DataProvider is not null && Virtualize)
+        {
+            await ReloadVirtualRowsAsync(force);
+            return;
+        }
+
         if (DataProvider is null)
         {
             var page = _page;
@@ -645,10 +762,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
         catch (Exception exception)
         {
-            _failed = true;
-            ShowRows([]);
-            Announcer.Polite(LoadFailedLabel);
-            await OnLoadFailed.InvokeAsync(exception);
+            await ShowLoadFailedAsync(exception);
         }
         finally
         {
@@ -675,6 +789,32 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         if (_page > PageCount)
         {
             await GoToPageAsync(PageCount);
+        }
+    }
+
+    private async Task ShowLoadFailedAsync(Exception exception)
+    {
+        _failed = true;
+        ShowRows([]);
+        Announcer.Polite(LoadFailedLabel);
+        await OnLoadFailed.InvokeAsync(exception);
+    }
+
+    // Virtualize asks a provider for the rows it draws, so a new sort or filter only tells it to ask again. Before it
+    // first renders, it asks of its own accord.
+    private async Task ReloadVirtualRowsAsync(bool force)
+    {
+        var asked = $"{string.Join(",", _sorts)}|{FiltersKey}";
+        if (!force && asked == _loaded)
+        {
+            return;
+        }
+
+        _loaded = asked;
+        _loading = true;
+        if (_virtualize is not null)
+        {
+            await _virtualize.RefreshDataAsync();
         }
     }
 
@@ -716,6 +856,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         _rows = rows;
+        _virtualRows = Virtualize && DataProvider is null ? [.. rows.Select((row, at) => new VirtualRow(row, at))] : [];
         _ids.Keep(shown);
         foreach (var gone in _rowRefs.Keys.Where(key => !shown.Contains(key)).ToList())
         {

@@ -18,8 +18,8 @@ export function createDataGrid(table) {
     syncMixed();
 
     // A pinned cell sticks just after the cells pinned before it on its side, so their widths are measured into the
-    // variables its style reads, numbered from that side. Scroll padding as wide as the pinned cells keeps a focused
-    // cell from scrolling in under them.
+    // variables its style reads, numbered from that side. Scroll padding as wide as the pinned cells, and as tall as
+    // a header that stays in view, keeps a focused cell or a row scrolled to from landing under them.
     const headers = table.tHead.rows[0];
     const scroll = table.parentElement;
     const measurePins = () => {
@@ -34,13 +34,19 @@ export function createDataGrid(table) {
         if (scroll.style.scrollPaddingInline !== padding) {
             scroll.style.scrollPaddingInline = padding;
         }
+
+        const top = scroll.parentElement.classList.contains('tb-data-grid--scrolls')
+            ? `${table.tHead.getBoundingClientRect().height}px` : '';
+        if (scroll.style.scrollPaddingBlockStart !== top) {
+            scroll.style.scrollPaddingBlockStart = top;
+        }
     };
     const resizes = new ResizeObserver(measurePins);
     const watchPins = () => {
         resizes.disconnect();
         [...headers.cells].filter(cell => cell.dataset.pinned).forEach(cell => resizes.observe(cell));
-        // With nothing left pinned, no cell reports a size, so the padding is cleared here.
-        measurePins();
+        // The header always reports its size, so the padding is measured again even when nothing is left pinned.
+        resizes.observe(table.tHead);
     };
     // Changes inside a header, such as its filter menu opening, leave the pins alone. Blazor rewrites the scroll
     // box's style when the grid's height changes, which drops its padding.
@@ -73,6 +79,28 @@ export function createDataGrid(table) {
     };
     table.addEventListener('keydown', keepPageFormUnsubmitted);
     return {
+        // A virtualized grid draws only the rows in view, so it scrolls near a row's place before the row is drawn.
+        async scrollToRow(id, index) {
+            const find = () => [...table.tBodies[0].rows].find(row => row.dataset.key === id);
+            if (!find()) {
+                const rows = [...table.tBodies[0].rows].filter(row => row.dataset.part === 'row');
+                const height = rows.reduce((sum, row) => sum + row.getBoundingClientRect().height, 0) / rows.length;
+                scroll.scrollTop = index * (height || 0);
+            }
+
+            // Drawing the row can take a trip to the server, so this waits up to five seconds for it to appear.
+            const row = find() ?? await new Promise(resolve => {
+                const done = () => {
+                    watch.disconnect();
+                    clearTimeout(timer);
+                    resolve(find());
+                };
+                const watch = new MutationObserver(() => find() && done());
+                const timer = setTimeout(done, 5000);
+                watch.observe(table.tBodies[0], { childList: true, subtree: true, attributeFilter: ['data-key'] });
+            });
+            row?.scrollIntoView({ block: 'nearest' });
+        },
         dispose() {
             observer.disconnect();
             resizes.disconnect();

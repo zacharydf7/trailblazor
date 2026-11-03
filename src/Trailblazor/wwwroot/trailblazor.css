@@ -4584,9 +4584,11 @@
         height: calc(var(--tb-table-row-height, var(--tb-row-height)) + 0.5rem);
     }
 
-    /* A grid's stripe yields to hover, press and selection. */
+    /* A grid's stripe yields to hover, press and selection. A virtualized grid's rows come and go and share their
+       body with spacer rows, so each row says whether it is striped. */
     .tb-table--striped tbody tr:nth-child(even),
-    .tb-data-grid--striped :where(.tb-data-grid__row:nth-child(even)) {
+    .tb-data-grid--striped:where(:not(.tb-data-grid--virtual)) :where(.tb-data-grid__row:nth-child(even)),
+    .tb-data-grid--striped :where(.tb-data-grid__row--stripe) {
         --tb-data-grid-row-shade: var(--tb-color-surface-sunken);
         background: var(--tb-color-surface-sunken);
     }
@@ -4701,9 +4703,11 @@
         color: var(--tb-color-text);
     }
 
+    /* At least the 24px target WCAG 2.5.8 asks for, even in a small, compact grid. */
     .tb-data-grid__sort {
         display: inline-flex;
         align-items: center;
+        min-block-size: 24px;
         gap: var(--tb-space-1);
         padding: 0;
         border: none;

@@ -1027,6 +1027,120 @@ public class TbDataGridTests : BunitContext
         Assert.Equal("start", Row(cut, "1").QuerySelector("td[data-column=LengthKm]")!.GetAttribute("data-pinned"));
     }
 
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("10rem", 2)]
+    public void Virtualize_ShouldThrow_WhenGivenNoHeightOrAPageSize(string? height, int? pageSize)
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.Virtualize, true).Add(grid => grid.Height, height).Add(grid => grid.PageSize, pageSize)));
+
+        Assert.Contains("Height", error.Message);
+    }
+
+    [Fact]
+    public void Virtualize_ShouldCountEveryRowAndPlaceEachDrawnOne_WhenItemsAreHeld()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.Virtualize, true)
+            .Add(grid => grid.Height, "10rem").Add(grid => grid.Striped, true)
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple));
+
+        Assert.Equal("6", cut.Find("table").GetAttribute("aria-rowcount"));
+        Assert.Equal("2", Row(cut, "1").GetAttribute("aria-rowindex"));
+        Assert.Equal("3", Row(cut, "2").GetAttribute("aria-rowindex"));
+        Assert.DoesNotContain("tb-data-grid__row--stripe", Row(cut, "1").ClassList);
+        Assert.Contains("tb-data-grid__row--stripe", Row(cut, "2").ClassList);
+        Assert.Single(cut.FindAll("[data-part=select-all]"));
+    }
+
+    [Fact]
+    public void Virtualize_ShouldOfferNoBoxThatSelectsEveryRow_WhenAProviderLoadsThem()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.DataProvider, (_, _) => Task.FromResult(new GridResult<Trail>(Trails, Trails.Count)))
+            .Add(grid => grid.Virtualize, true).Add(grid => grid.Height, "10rem")
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.ChildContent, Columns));
+
+        Assert.Empty(cut.FindAll("[data-part=select-all]"));
+        Assert.Equal("Select", cut.Find("th[data-part=select]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Virtualize_ShouldAskTheProviderAgainSorted_WhenAColumnIsSorted()
+    {
+        List<GridRequest> requests = [];
+        var cut = RenderVirtualProvided((request, _) =>
+        {
+            requests.Add(request);
+            return Task.FromResult(new GridResult<Trail>([.. Trails.Skip(request.StartIndex)], Trails.Count));
+        });
+        cut.WaitForAssertion(() => Assert.Equal("Pine Hollow", Names(cut).FirstOrDefault()));
+
+        await cut.Find("th[data-column=Name] [data-part=sort]").ClickAsync(new());
+
+        cut.WaitForAssertion(() => Assert.Equal([new GridSort("Name", SortDirection.Ascending)], requests[^1].Sorts));
+        Assert.Equal(0, requests[^1].StartIndex);
+    }
+
+    [Fact]
+    public void Virtualize_ShouldOfferToTryAgain_WhenTheProviderFails()
+    {
+        Exception? failed = null;
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.DataProvider, (_, _) => Task.FromException<GridResult<Trail>>(new IOException("Down")))
+            .Add(grid => grid.OnLoadFailed, (Exception exception) => failed = exception)
+            .Add(grid => grid.Virtualize, true).Add(grid => grid.Height, "10rem")
+            .Add(grid => grid.ChildContent, Columns));
+
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-part=failed]")));
+        Assert.IsType<IOException>(failed);
+        Assert.Null(cut.Find("table").GetAttribute("aria-busy"));
+    }
+
+    [Fact]
+    public async Task Virtualize_ShouldKeepTheNewerRows_WhenAnOlderLoadFinishesLast()
+    {
+        List<TaskCompletionSource<GridResult<Trail>>> loads = [];
+        var cut = RenderVirtualProvided((_, _) =>
+        {
+            loads.Add(new());
+            return loads[^1].Task;
+        });
+        cut.WaitForAssertion(() => Assert.Single(loads));
+        // The sort doesn't finish until its rows load, so it's awaited after they arrive.
+        var sorting = cut.Find("th[data-column=Name] [data-part=sort]").ClickAsync(new());
+        cut.WaitForAssertion(() => Assert.Equal(2, loads.Count));
+
+        await cut.InvokeAsync(() => loads[1].SetResult(new(Trails, Trails.Count)));
+        await sorting;
+        cut.WaitForAssertion(() => Assert.Equal(Trails.Count, Names(cut).Count));
+        await cut.InvokeAsync(() => loads[0].SetResult(new([], 0)));
+
+        Assert.Empty(cut.FindAll("[data-part=empty]"));
+        Assert.Equal("6", cut.Find("table").GetAttribute("aria-rowcount"));
+    }
+
+    [Fact]
+    public void Virtualize_ShouldShowNoEmptyRow_WhenALoadReturnsNoRowsButCountsSome()
+    {
+        var cut = RenderVirtualProvided((_, _) => Task.FromResult(new GridResult<Trail>([], Trails.Count)));
+
+        cut.WaitForAssertion(() => Assert.Equal("6", cut.Find("table").GetAttribute("aria-rowcount")));
+        Assert.Empty(cut.FindAll("[data-part=empty]"));
+    }
+
+    [Fact]
+    public void Virtualize_ShouldSayThereIsNothingToShow_WhenTheFirstLoadFindsNoRows()
+    {
+        var announcer = Render<AnnouncerHost>();
+
+        var cut = RenderVirtualProvided((_, _) => Task.FromResult(new GridResult<Trail>([], 0)));
+
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Nothing to show.", announcer.Find("[role=status] p").TextContent));
+        Assert.NotNull(cut.Find("[data-part=empty]"));
+    }
+
     private SortableEvents MoveEvents() =>
         ((DotNetObjectReference<SortableEvents>)JSInterop.Invocations["attachSortable"].Single().Arguments[1]!).Value;
 
@@ -1060,6 +1174,12 @@ public class TbDataGridTests : BunitContext
                 .Add(grid => grid.PageSize, 2).Add(grid => grid.ChildContent, (RenderFragment)Columns);
             configure?.Invoke(parameters);
         });
+
+    private IRenderedComponent<TbDataGrid<Trail>> RenderVirtualProvided(
+        Func<GridRequest, CancellationToken, Task<GridResult<Trail>>> load) =>
+        Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.DataProvider, load).Add(grid => grid.Virtualize, true).Add(grid => grid.Height, "10rem")
+            .Add(grid => grid.ChildContent, Columns));
 
     private static void Columns(RenderTreeBuilder builder)
     {

@@ -2878,3 +2878,5 @@ Trailblazor.ColumnPin.None = 0 -> Trailblazor.ColumnPin
 Trailblazor.ColumnPin.Start = 1 -> Trailblazor.ColumnPin
 Trailblazor.TbColumn<TItem>.Pinned.get -> Trailblazor.ColumnPin
 Trailblazor.TbColumn<TItem>.Pinned.set -> void
+Trailblazor.TbDataGrid<TItem>.Virtualize.get -> bool
+Trailblazor.TbDataGrid<TItem>.Virtualize.set -> void
