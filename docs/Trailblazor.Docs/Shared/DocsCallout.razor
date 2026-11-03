@@ -1,0 +1,16 @@
+@* A note in a guide's text. An alert is a live region, so a screen reader would read it out as the page opens. *@
+<TbAlert Tone="Tone" Title="@Title" role="note">@ChildContent</TbAlert>
+
+@code {
+    /// <summary>The note's tone: <see cref="Tone.Warning"/> for a gotcha, <see cref="Tone.Info"/> for a tip.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Info;
+
+    /// <summary>The note's title, which says the point in a few words.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    /// <summary>The note's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

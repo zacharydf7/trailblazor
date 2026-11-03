@@ -1,5 +1,5 @@
 @* A wide screen keeps the page's contents beside it; a narrow one folds them above the text. *@
-<div class="docs-article">
+<div class="docs-article @Class">
     <div class="docs-article__body">
         @Header
         <details class="docs-article__folded">
@@ -25,4 +25,8 @@
     /// <summary>A <see cref="TbTableOfContentsItem"/> for each section.</summary>
     [Parameter]
     public RenderFragment? Contents { get; set; }
+
+    /// <summary>More classes for the article, such as <c>docs-article--guide</c>.</summary>
+    [Parameter]
+    public string? Class { get; set; }
 }

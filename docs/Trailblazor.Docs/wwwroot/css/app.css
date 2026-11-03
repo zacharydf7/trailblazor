@@ -511,26 +511,18 @@ a:focus-visible {
 
 /* ---- Code ---- */
 
-/* Long lines wrap and hang a few characters in from their own indent; a phone scrolls them instead (below). */
+/* Code keeps its own line breaks and scrolls sideways when a line is too long, so it never breaks inside a word. */
 .docs-source {
-    --docs-hang: 6ch;
     margin: 0;
     padding: var(--tb-space-4) var(--tb-space-5);
     overflow-x: auto;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    white-space: pre;
     border: 1px solid var(--tb-border-subtle);
     border-radius: var(--tb-radius-xl);
     background: var(--tb-color-surface-raised);
     font-family: var(--tb-font-family-mono);
     font-size: var(--tb-font-size-sm);
-    line-height: 1.65;
-}
-
-.docs-source__line {
-    display: block;
-    padding-inline-start: calc(var(--docs-indent) + var(--docs-hang));
-    text-indent: calc(-1 * (var(--docs-indent) + var(--docs-hang)));
+    line-height: 1.5;
 }
 
 .docs-source__file {
@@ -604,7 +596,7 @@ a:focus-visible {
 }
 
 /* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
-:is(.docs-main, .docs-article__body) > :is(p, h3) code,
+:is(.docs-main, .docs-article__body) > :is(p, h3, ul, ol, .tb-alert) code,
 .docs-notes code,
 .docs-tokens code,
 .docs-api code {
@@ -623,6 +615,25 @@ a:focus-visible {
 
 :is(.docs-main, .docs-article__body) > p + p {
     margin-block-start: var(--tb-space-3);
+}
+
+/* A guide's text, code, tables and callouts share one column, spaced alike; headings keep their own spacing. */
+.docs-article--guide .docs-article__body > :is(.docs-source, .docs-api, .tb-alert) {
+    box-sizing: border-box;
+    max-width: 44rem;
+}
+
+.docs-article--guide .docs-article__body > :not(h1, h2, h3) + :not(h2, h3, .docs-article__folded) {
+    margin-block-start: var(--tb-space-4);
+}
+
+.docs-article--guide .docs-article__body > h3 {
+    margin-block: var(--tb-space-8) 0;
+    font-family: var(--docs-display);
+}
+
+.docs-article--guide .docs-article__body > h3 + * {
+    margin-block-start: var(--tb-space-2);
 }
 
 .docs-notes {
@@ -942,6 +953,12 @@ a:focus-visible {
     align-self: stretch;
 }
 
+.docs-pillar > :last-child {
+    margin-block-start: auto;
+    padding-block-start: var(--tb-space-2);
+    font-weight: var(--tb-font-weight-medium);
+}
+
 .docs-telemetry {
     display: grid;
     gap: var(--tb-space-4);
@@ -1040,12 +1057,6 @@ a:focus-visible {
 
     .docs-main {
         padding: var(--tb-space-5) var(--tb-space-4) var(--tb-space-10);
-    }
-
-    /* Deep indents leave a phone too little room to wrap code, so it scrolls. */
-    .docs-source {
-        white-space: pre;
-        overflow-wrap: normal;
     }
 
     .docs-hero,

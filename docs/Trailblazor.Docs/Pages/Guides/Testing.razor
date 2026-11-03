@@ -2,141 +2,438 @@
 
 <PageTitle>Testing · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Testing</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    Pages built with Trailblazor are meant to be easy to test. One small library sets up bUnit, another drives
-    components in Playwright, and every component can be found by its role and name, the way users find it.
-</TbText>
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="bunit" Text="Set up bUnit" />
+        <TbTableOfContentsItem TargetId="bunit-fields" Text="Drive fields in bUnit" />
+        <TbTableOfContentsItem TargetId="bunit-dialogs" Text="Test dialogs in bUnit" />
+        <TbTableOfContentsItem TargetId="playwright" Text="Drive components in Playwright" />
+        <TbTableOfContentsItem TargetId="waiting" Text="Wait for the page" />
+        <TbTableOfContentsItem TargetId="time" Text="Time and motion" />
+        <TbTableOfContentsItem TargetId="finding" Text="Find components" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Testing</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Pages built with Trailblazor are meant to be easy to test. One small library sets up bUnit, another drives
+            components in Playwright, and every component can be found by its role and name, the way users find it.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="bunit">Set up bUnit</TbText>
+        <ol>
+            <li>Reference <code>Trailblazor.Testing</code> from the test project.</li>
+            <li>Register any services of your own, such as a <code>FakeTimeProvider</code>.</li>
+            <li>
+                Call <code>this.AddTrailblazor()</code> before anything renders, usually in the test class's
+                constructor.
+            </li>
+            <li>Render components and use them as in any bUnit test.</li>
+        </ol>
+        <DocsCallout Tone="Tone.Warning" Title="Register your services first">
+            bUnit accepts no new services once a component renders, a service is resolved or
+            <code>SetRendererInfo</code> is called.
+        </DocsCallout>
+        <CodeBlock Label="A bUnit test" Code="@Bunit" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">bUnit</TbText>
-<TbText>
-    Reference <code>Trailblazor.Testing</code> and call <code>this.AddTrailblazor()</code> in the test class, before
-    anything renders. It registers Trailblazor's services and answers its JavaScript calls, so components render and
-    respond to clicks with no JSInterop setup. A call you set up yourself still wins. The browser service is a
-    <code>FakeBrowserService</code> that records what was copied, downloaded and saved; the
-    <a href="guides/browser">browser guide</a> shows it.
-</TbText>
-<TbText>
-    Components then render as they do once a page is interactive, with no renderer setup: the first component a test
-    renders makes bUnit's renderer an interactive one. To test what a statically rendered or prerendered page shows,
-    where a few components differ (a select, for example, renders a native <code>&lt;select&gt;</code>), call
-    <code>SetRendererInfo(new RendererInfo("Static", isInteractive: false))</code> before rendering; each
-    component's page says how it differs. Register your own services, such as a <code>FakeTimeProvider</code>,
-    first: bUnit accepts no new services once a component renders, a service is resolved or <code>SetRendererInfo</code>
-    is called.
-</TbText>
-<CodeBlock Label="A bUnit test" Code="@Bunit" />
-<TbText>
-    To drive fields the way a user does, <code>cut.Tb()</code> finds them by their labels, with the same names as the
-    Playwright helpers below: choose an option in a select or list box by its text, read what a select shows, type a
-    number, pick a tab, open, select or check a tree's rows by the texts along their path, and click or select a grid's
-    rows by a cell's text. As in Playwright, choosing keeps options already chosen and refuses a disabled field.
-    Choosing needs an interactive page, since a static select is a native one that posts with its form. A number field
-    without a <code>Format</code> reads what was typed through its own change event, which bUnit's <code>Change</code>
-    doesn't reach; <code>EnterAsync</code> types into either kind. A field's error is also announced in
-    <code>TbRoot</code>'s live region, so to check that an error has cleared, look in the field, not the whole page.
-</TbText>
-<CodeBlock Label="Driving fields in bUnit" Code="@BunitDrivers" />
-<TbText>
-    To test a dialog by itself, <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens it as a page would:
-    it renders a <code>TbRoot</code> to host it and opens it through
-    <code>IDialogService</code> with the title, parameters and options you give. Find what it shows through
-    <code>Root</code>, its component through <code>Content</code>, and close it or await its result through
-    <code>Reference</code>. A second call in the same test opens its dialog in the same <code>TbRoot</code>, so
-    don't render one of your own as well.
-</TbText>
-<CodeBlock Label="Testing a dialog in bUnit" Code="@BunitDialog" />
-<TbText>
-    To test a page that opens dialogs, get the <code>FakeDialogService</code> from <code>Services</code>;
-    <code>AddTrailblazor()</code> makes it the <code>IDialogService</code>. Dialogs open as they otherwise would, and
-    it records each one opened through the service in <code>Opened</code>, with its <code>Title</code>,
-    <code>ContentType</code> and <code>Parameters</code>. <code>Last&lt;TDialog, TResult&gt;()</code> finds the last
-    one of a type, and <code>LastConfirm()</code> the last confirm or alert, to check and close. A click whose handler
-    awaits a dialog finishes only once the dialog closes, so start the click, close the dialog, then await the click.
-    Set <code>Answer</code> to answer each confirm and alert as it opens: true confirms, false cancels, and null leaves
-    it open.
-</TbText>
-<CodeBlock Label="Checking the dialogs a page opens" Code="@FakeDialogs" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">What AddTrailblazor sets up</TbText>
+        <ul>
+            <li>Trailblazor's services.</li>
+            <li>
+                Answers to its JavaScript calls, so components render and respond to clicks with no JSInterop setup. A
+                call you set up yourself still wins.
+            </li>
+            <li>
+                A <code>FakeBrowserService</code>, which records what was copied, downloaded and saved. The
+                <a href="guides/browser">browser guide</a> shows it.
+            </li>
+            <li>
+                A <code>FakeDialogService</code>, described under
+                <a href="guides/testing#bunit-dialogs">Test dialogs in bUnit</a>.
+            </li>
+            <li>
+                An interactive renderer, so components render as they do once a page is interactive, with no renderer
+                setup.
+            </li>
+        </ul>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Playwright</TbText>
-<TbText>
-    Reference <code>Trailblazor.Testing.Playwright</code> for helpers that drive components the way a person does.
-    Options are chosen by the select's label and their names, whether the select renders as Trailblazor's list or, on a
-    static page, as a native <code>&lt;select&gt;</code>. A popover opens by its trigger's name and hands back its
-    panel. A menu item is chosen by its trigger's name and the path to it through submenus, a dialog is found by its
-    title and answered by a button's name, a tab is selected by its name, and a toast is found by its text. A select or
-    color picker that shares its label with others, as in the rows of an editable list, is found by a locator instead,
-    such as <code>page.Tb().Select(row.GetByLabel("Size"))</code>. Each helper waits for its component to be ready
-    before it clicks or types. Check what follows, such as a value shown elsewhere on the page, with Playwright's
-    <code>Expect</code>, which retries until the page shows it.
-</TbText>
-<CodeBlock Label="A Playwright test" Code="@Playwright" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Static and prerendered pages</TbText>
+        <TbText>
+            A few components render differently before a page is interactive: a select, for example, renders a native
+            <code>&lt;select&gt;</code>. Each component's page says how it differs. To test what a statically rendered
+            or prerendered page shows, call this before rendering:
+        </TbText>
+        <CodeBlock Label="A static renderer" Code="@StaticRenderer" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Waiting for the page</TbText>
-<TbText>
-    A page shows before its event handlers are attached, so a click that comes too soon does nothing. Playwright's
-    <code>Expect</code> assertions retry, but clicks and key presses don't, so wait first:
-</TbText>
-<ul class="docs-notes">
-    <li>
-        For the page, when <code>Routes</code> is interactive, mark your layout once it is, as with
-        <code>&lt;main data-interactive="@@RendererInfo.IsInteractive"&gt;</code>, and wait for
-        <code>main[data-interactive]</code> after each navigation. When interactivity is set page by page, the layout
-        stays static, so put the marker on each interactive page's root instead.
-    </li>
-    <li>
-        For a component that needs the page to be interactive or its script attached, wait for
-        <code>data-ready</code>, an empty attribute, on the element its page's testing notes name, such as a tree, a
-        data grid, a select's combobox, a tab list, a menu's trigger or a number field's input. It is the wait the
-        helpers use, and it stays the same between versions.
-    </li>
-    <li>
-        A data grid with a <code>DataProvider</code> sets <code>aria-busy</code> on its table while rows load; read the
-        rows once it clears.
-    </li>
-</ul>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="bunit-fields">
+            Drive fields in bUnit
+        </TbText>
+        <TbText>
+            <code>cut.Tb()</code> finds fields by their labels and drives them the way a user does. The helpers have
+            the same names as the <a href="guides/testing#playwright">Playwright helpers</a>.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="bUnit helpers">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Helper</th>
+                        <th scope="col">What it does</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><code>Select(label).ChooseAsync(options)</code></th>
+                        <td>Chooses options by their text, keeping those already chosen.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Select(label).Text</code></th>
+                        <td>Reads what the select shows.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>ListBox(label).ChooseAsync(options)</code></th>
+                        <td>Chooses options in a list box by their text.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>NumberField(label).EnterAsync(text)</code></th>
+                        <td>Types a number.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Tabs(name).SelectAsync(tab)</code></th>
+                        <td>Selects a tab by its name.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Tree(name)</code></th>
+                        <td>
+                            Opens, selects or checks a row by the texts along its path, with <code>ExpandAsync</code>,
+                            <code>SelectAsync</code> and <code>CheckAsync</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Grid(name)</code></th>
+                        <td>
+                            Clicks or selects a row by a cell's text, with <code>ClickRowAsync</code> and
+                            <code>SelectAsync</code>, and filters a column with <code>FilterAsync</code>.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <CodeBlock Label="Driving fields in bUnit" Code="@BunitDrivers" />
+        <ul>
+            <li>As in Playwright, choosing refuses a disabled field.</li>
+            <li>Choosing needs an interactive page, since a static select is a native one that posts with its form.</li>
+            <li>
+                A number field without a <code>Format</code> reads what was typed through its own change event, which
+                bUnit's <code>Change</code> doesn't reach. <code>EnterAsync</code> types into either kind.
+            </li>
+        </ul>
+        <DocsCallout Title="Check a field's error in the field">
+            A field's error is also announced in <code>TbRoot</code>'s live region. To check that an error has
+            cleared, look in the field, not the whole page.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Time and motion</TbText>
-<TbText>
-    Toasts, announcements, a text field's <code>UpdateDelay</code> and an autocomplete's
-    <code>DebounceDelay</code> run on timers. In bUnit, register a <code>FakeTimeProvider</code> as the
-    <code>TimeProvider</code> before <code>AddTrailblazor()</code> and advance it, rather than waiting. A tooltip's
-    delays run in the browser instead, so set its <code>ShowDelay</code> to zero or use Playwright's
-    <code>page.Clock</code>. In Playwright, open pages with <code>ReducedMotion = ReducedMotion.Reduce</code>, and
-    transitions finish at once.
-</TbText>
-<CodeBlock Label="Time and motion" Code="@TimeAndMotion" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="bunit-dialogs">
+            Test dialogs in bUnit
+        </TbText>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A dialog on its own</TbText>
+        <TbText>
+            <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens a dialog as a page would. It renders a
+            <code>TbRoot</code> to host the dialog and opens it through <code>IDialogService</code> with the title,
+            parameters and options you give. The result has three properties:
+        </TbText>
+        <ul>
+            <li><code>Root</code>, to find what the dialog shows.</li>
+            <li><code>Content</code>, the dialog's component.</li>
+            <li><code>Reference</code>, to close the dialog or await its result.</li>
+        </ul>
+        <DocsCallout Tone="Tone.Warning" Title="Don't render a TbRoot of your own">
+            <code>ShowDialogAsync</code> renders one for you, and a second call in the same test opens its dialog in
+            that same <code>TbRoot</code>.
+        </DocsCallout>
+        <CodeBlock Label="Testing a dialog in bUnit" Code="@BunitDialog" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Finding components</TbText>
-<TbText>
-    Find components by role and accessible name rather than by CSS classes, which can change between versions. Buttons
-    are buttons and text fields are found by their labels. A select or autocomplete is a <code>combobox</code> with
-    <code>option</code>s; find it with <code>GetByRole(AriaRole.Combobox, new() { Name = "Size" })</code>, since its
-    label also names its list of options, which <code>GetByLabel</code> would match as well. A menu is a
-    <code>menu</code> of <code>menuitem</code>s, a dialog is a <code>dialog</code> named by its title, a popover's panel
-    is a <code>dialog</code> named by its title or trigger, and tabs are <code>tab</code>s with <code>tabpanel</code>s.
-</TbText>
-<TbText>
-    Every component also marks its parts with a stable <code>data-part</code> attribute, for the parts that have no
-    role of their own, such as a field's <code>[data-part=helper]</code> text or <code>[data-part=error]</code>
-    message. Each component's page lists its parts. Announcements go into <code>TbRoot</code>'s
-    <code>[data-part=announcer]</code>, or a modal dialog's own, as a <code>p</code> in
-    <code>[data-part=polite]</code> or <code>[data-part=assertive]</code>; several can be there at once, so find
-    the one with your text.
-</TbText>
-<TbText>
-    An <code>id</code> you give a field names its control, as on a native input: <code>&lt;TbTextField id="email"
-    /&gt;</code> puts <code>id="email"</code> on the input, and its label points to it, so <code>#email</code> reaches
-    what the user types into. A checkbox or switch gives it to its box and a select to its combobox. A field with two
-    controls, such as a date range picker or range slider, keeps the id on its root, as do checkbox and radio groups. A
-    radio or checkbox in a group gives it to its input, an option to itself, and a tab to its tab button rather than its
-    panel. A menu or popover gives it to its trigger, built in or your own. A custom trigger gets its id from
-    <code>context.Attributes</code>, so put the id on the <code>TbMenu</code> or <code>TbPopover</code>, not on your
-    button.
-</TbText>
-<CodeBlock Label="Finding components" Code="@Locators" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Dialogs a page opens</TbText>
+        <TbText>
+            <code>AddTrailblazor()</code> makes a <code>FakeDialogService</code> the <code>IDialogService</code>; get it
+            from <code>Services</code>. Dialogs open as they otherwise would, and the service records each one in
+            <code>Opened</code>, with its <code>Title</code>, <code>ContentType</code> and <code>Parameters</code>.
+        </TbText>
+        <ul>
+            <li><code>Last&lt;TDialog, TResult&gt;()</code> finds the last dialog of a type, to check and close.</li>
+            <li><code>LastConfirm()</code> finds the last confirm or alert.</li>
+            <li>
+                <code>Answer</code> answers each confirm and alert as it opens: true confirms, false cancels, and null
+                leaves it open.
+            </li>
+        </ul>
+        <TbText>A click whose handler awaits a dialog finishes only once the dialog closes, so:</TbText>
+        <ol>
+            <li>Start the click without awaiting it.</li>
+            <li>Find the dialog and close it.</li>
+            <li>Await the click.</li>
+        </ol>
+        <CodeBlock Label="Checking the dialogs a page opens" Code="@FakeDialogs" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="playwright">
+            Drive components in Playwright
+        </TbText>
+        <TbText>
+            Reference <code>Trailblazor.Testing.Playwright</code>, and <code>page.Tb()</code> drives components the way
+            a person does. Each helper waits for its component to be ready before it clicks or types.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Playwright helpers">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">Found by</th>
+                        <th scope="col">What the helper does</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var use in Helpers)
+                    {
+                        <tr>
+                            <th scope="row">@use.Component</th>
+                            <td>@use.FoundBy</td>
+                            <td>@DocsText.WithCode(use.Does)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <DocsCallout Title="Fields that share a label">
+            A select or color picker that shares its label with others, as in the rows of an editable list, is found by
+            a locator instead, such as <code>page.Tb().Select(row.GetByLabel("Size"))</code>.
+        </DocsCallout>
+        <TbText>
+            Check what a helper's action changes, such as a value shown elsewhere on the page, with Playwright's
+            <code>Expect</code>, which retries until the page shows it.
+        </TbText>
+        <CodeBlock Label="A Playwright test" Code="@Playwright" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="waiting">
+            Wait for the page
+        </TbText>
+        <TbText>
+            A page shows before its event handlers are attached, so a click that comes too soon does nothing.
+        </TbText>
+        <DocsCallout Tone="Tone.Warning" Title="Clicks don't retry">
+            Playwright's <code>Expect</code> assertions retry, but clicks and key presses don't, so wait first.
+        </DocsCallout>
+        <div class="docs-api" tabindex="0" role="region" aria-label="What to wait for">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Before using</th>
+                        <th scope="col">Wait for</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">The page</th>
+                        <td>
+                            A marker your layout sets once it's interactive, such as <code>main[data-interactive]</code>
+                            below, checked after each navigation. That works when <code>Routes</code> is interactive;
+                            when interactivity is set page by page, the layout stays static, so put the marker on each
+                            interactive page's root instead.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A component</th>
+                        <td>
+                            <code>data-ready</code>, an empty attribute, on the element its page's testing notes name,
+                            such as a tree, a data grid, a select's combobox, a tab list, a menu's trigger or a number
+                            field's input. The helpers wait for it too, and it stays the same between versions.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A data grid's rows</th>
+                        <td>
+                            <code>aria-busy</code> to clear from its table, which a grid with a
+                            <code>DataProvider</code> sets while rows load.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <CodeBlock Label="Waiting for the page" Code="@Waiting" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="time">Time and motion</TbText>
+        <TbText>Some components wait on timers or transitions. Skip the wait rather than sleep through it.</TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Skipping waits">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">What waits</th>
+                        <th scope="col">How to skip it</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">
+                            Toasts, announcements, a text field's <code>UpdateDelay</code> and an autocomplete's
+                            <code>DebounceDelay</code>
+                        </th>
+                        <td>
+                            In bUnit, register a <code>FakeTimeProvider</code> as the <code>TimeProvider</code> before
+                            <code>AddTrailblazor()</code>, and advance it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A tooltip's delays, which run in the browser</th>
+                        <td>Set its <code>ShowDelay</code> to zero, or use Playwright's <code>page.Clock</code>.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Transitions</th>
+                        <td>
+                            In Playwright, open pages with <code>ReducedMotion = ReducedMotion.Reduce</code>, and they
+                            finish at once.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <CodeBlock Label="Time and motion" Code="@TimeAndMotion" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="finding">
+            Find components
+        </TbText>
+        <TbText>
+            Find components by role and accessible name rather than by CSS classes, which can change between versions.
+        </TbText>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">By role</TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Roles">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Named by</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><th scope="row">Button</th><td><code>button</code></td><td>Its text</td></tr>
+                    <tr>
+                        <th scope="row">Text field and other inputs</th>
+                        <td>The input's own role</td>
+                        <td>Its label, so <code>GetByLabel</code> finds it</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Select and autocomplete</th>
+                        <td><code>combobox</code> with <code>option</code>s</td>
+                        <td>Its label</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Menu</th>
+                        <td><code>menu</code> of <code>menuitem</code>s</td>
+                        <td>Its trigger</td>
+                    </tr>
+                    <tr><th scope="row">Dialog</th><td><code>dialog</code></td><td>Its title</td></tr>
+                    <tr>
+                        <th scope="row">Popover's panel</th>
+                        <td><code>dialog</code></td>
+                        <td>Its title or trigger</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Tabs</th>
+                        <td><code>tab</code>s with <code>tabpanel</code>s</td>
+                        <td>Their text</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <DocsCallout Title="Find a select or autocomplete by its role">
+            Its label also names its list of options, which <code>GetByLabel</code> would match as well. Use
+            <code>GetByRole(AriaRole.Combobox, new() { Name = "Size" })</code>.
+        </DocsCallout>
+
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">By part</TbText>
+        <TbText>
+            Every component marks the parts that have no role of their own with a stable <code>data-part</code>
+            attribute, such as a field's <code>[data-part=helper]</code> text or <code>[data-part=error]</code>
+            message. Each component's page lists its parts.
+        </TbText>
+        <TbText>
+            Announcements go into <code>TbRoot</code>'s <code>[data-part=announcer]</code>, or a modal dialog's own, as
+            a <code>p</code> in <code>[data-part=polite]</code> or <code>[data-part=assertive]</code>. Several can be
+            there at once, so find the one with your text.
+        </TbText>
+
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">By id</TbText>
+        <TbText>
+            An <code>id</code> you give a field names its control, as on a native input: <code>&lt;TbTextField
+            id="email" /&gt;</code> puts <code>id="email"</code> on the input, and its label points to it, so
+            <code>#email</code> reaches what the user types into.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Where an id goes">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">Its id goes on</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><th scope="row">Text field and other single fields</th><td>Its control</td></tr>
+                    <tr><th scope="row">Checkbox and switch</th><td>Its box</td></tr>
+                    <tr><th scope="row">Select</th><td>Its combobox</td></tr>
+                    <tr>
+                        <th scope="row">Date range picker, range slider, checkbox group and radio group</th>
+                        <td>Its root, since it has two or more controls</td>
+                    </tr>
+                    <tr><th scope="row">A radio or checkbox in a group</th><td>Its input</td></tr>
+                    <tr><th scope="row">Option</th><td>Itself</td></tr>
+                    <tr><th scope="row">Tab</th><td>Its tab button, not its panel</td></tr>
+                    <tr><th scope="row">Menu and popover</th><td>Its trigger, built in or your own</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <DocsCallout Tone="Tone.Warning" Title="A custom trigger's id">
+            A custom trigger gets its id from <code>context.Attributes</code>, so put the id on the
+            <code>TbMenu</code> or <code>TbPopover</code>, not on your button.
+        </DocsCallout>
+        <CodeBlock Label="Finding components" Code="@Locators" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li><a href="guides/browser">Browser</a>: the fake browser service and what it records.</li>
+            <li><a href="guides/announcements">Announcements</a>: the live regions tests read.</li>
+            <li><a href="guides/telemetry">Telemetry</a>: counting what people use.</li>
+            <li>
+                Each component's page ends with a Testing section naming its roles, parts and readiness, such as the
+                <a href="components/data-grid#testing">data grid's</a>.
+            </li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
+    private sealed record Helper(string Component, string FoundBy, string Does);
+
+    private static readonly Helper[] Helpers =
+    [
+        new("Select", "Its label", "`Select(label).ChooseAsync(options)` chooses by option names, whether the select "
+            + "renders as Trailblazor's list or, on a static page, as a native `<select>`."),
+        new("Autocomplete", "Its label",
+            "`Autocomplete(label).ChooseAsync(text, option)` types and picks an option."),
+        new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names."),
+        new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color."),
+        new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files."),
+        new("Date range picker", "Its label",
+            "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates."),
+        new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number."),
+        new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path."),
+        new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
+            + "and pages."),
+        new("Popover", "Its trigger", "`Popover(trigger).OpenAsync()` opens it and hands back its panel."),
+        new("Menu", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its submenus."),
+        new("Tabs", "Their list's name", "`Tabs(name).SelectAsync(tab)` selects a tab by its name."),
+        new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name."),
+        new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows."),
+    ];
+
     private const string Bunit = """
         using Trailblazor.Testing;
 
@@ -154,6 +451,10 @@
                 Assert.Single(Services.GetRequiredService<IToastService>().Toasts);
             }
         }
+        """;
+
+    private const string StaticRenderer = """
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         """;
 
     private const string BunitDrivers = """
@@ -220,6 +521,15 @@
         await page.Tb().Dialog("Delete report?").ChooseAsync("Delete");
         var toast = await page.Tb().Toasts.WaitForAsync("Report archived");
         await toast.GetByRole(AriaRole.Button, new() { Name = "Undo" }).ClickAsync();
+        """;
+
+    private const string Waiting = """
+        <!-- MainLayout.razor -->
+        <main data-interactive="@RendererInfo.IsInteractive">@Body</main>
+
+        // The test, after each navigation
+        await page.Locator("main[data-interactive]").WaitForAsync();
+        await Expect(page.Locator("[role=tree][data-ready]")).ToBeVisibleAsync();
         """;
 
     private const string TimeAndMotion = """

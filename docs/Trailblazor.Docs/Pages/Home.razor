@@ -87,7 +87,7 @@
                         <li><code>@category @count</code></li>
                     }
                 </ul>
-                <TbButton Href="#components" Variant="Variant.Text">Browse the components</TbButton>
+                <TbLink Href="#components">Browse the components</TbLink>
             </li>
             <li class="docs-pillar">
                 <TbText TextStyle="TextStyle.Title" As="TextElement.H3">Easy to test</TbText>
@@ -97,7 +97,7 @@
                     labels, the way users do, with <code>page.Tb()</code>.
                 </TbText>
                 <CodeBlock Label="A Playwright test" Code="@PillarTest" />
-                <TbButton Href="guides/testing" Variant="Variant.Text">Read the testing guide</TbButton>
+                <TbLink Href="guides/testing">Read the testing guide</TbLink>
             </li>
             <li class="docs-pillar">
                 <TbText TextStyle="TextStyle.Title" As="TextElement.H3">Built-in telemetry</TbText>
@@ -107,7 +107,7 @@
                     shown but never used stand out, and nothing about the user is recorded.
                 </TbText>
                 <CodeBlock Label="A counted button" Code="@PillarTelemetry" />
-                <TbButton Href="guides/telemetry" Variant="Variant.Text">Read the telemetry guide</TbButton>
+                <TbLink Href="guides/telemetry">Read the telemetry guide</TbLink>
             </li>
         </ul>
     </div>
@@ -211,16 +211,23 @@
             + "right-to-left layouts mirror, without extra work in your app."),
     ];
 
+    // Keep each card's sample narrow enough to fit the card on a phone without scrolling; DocsSiteTests checks it.
     private const string PillarTest = """
-        await page.Tb().Select("Difficulty").ChooseAsync("Moderate");
-        await page.Tb().Tree("Trails").SelectAsync("River valley", "Fern Gully");
+        await page.Tb()
+            .Select("Difficulty")
+            .ChooseAsync("Hard");
+
+        await page.Tb()
+            .Grid("Trails")
+            .SortAsync("Name");
         """;
 
     private const string PillarTelemetry = """
-        <TbButton TelemetryName="export-csv" OnClick="ExportAsync">Export</TbButton>
-
-        builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics => metrics.AddMeter("Trailblazor").AddOtlpExporter());
+        <TbButton
+            TelemetryName="save"
+            OnClick="SaveAsync">
+            Save
+        </TbButton>
         """;
 
     // The preview's own markup, so the Code tab shows exactly what renders beside it.

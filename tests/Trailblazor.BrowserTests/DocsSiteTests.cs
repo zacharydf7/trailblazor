@@ -78,7 +78,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         {
             "", "components/dialog", "components/tree-view", "components/data-grid/api",
             "preview/tree-view/many-rows", "guides/getting-started", "guides/theming", "guides/palettes",
-            "guides/spacing", "guides/browser",
+            "guides/spacing", "guides/browser", "guides/testing",
             "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "guides/analyzers",
             "search?q=dialog",
         }
@@ -238,6 +238,48 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Home_ShouldEndEachCardWithItsLinkAtOneHeightAndFitItsCode_WhenWide(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "", new() { ViewportSize = new() { Width = 1280, Height = 800 } });
+        var cards = page.Locator(".docs-pillar");
+
+        var links = await cards.EvaluateAllAsync<double[]>(
+            "cards => cards.map(card => card.lastElementChild.getBoundingClientRect().bottom)");
+        var starts = await cards.EvaluateAllAsync<double[]>("cards => cards.map(card => card.lastElementChild"
+            + ".getBoundingClientRect().left - card.querySelector('h3').getBoundingClientRect().left)");
+
+        Assert.Equal(3, links.Length);
+        Assert.All(links, bottom => Assert.Equal(links[0], bottom, 1));
+        Assert.All(starts, start => Assert.Equal(0, start, 1));
+        Assert.True(await cards.Locator("pre").EvaluateAllAsync<bool>(
+            "blocks => blocks.every(pre => pre.scrollWidth <= pre.clientWidth)"), "A card's code should fit it.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Home_ShouldFitEachCardsCode_WhenTheScreenIsANarrowPhone(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "", new() { ViewportSize = new() { Width = 360, Height = 800 } });
+
+        Assert.True(await page.Locator(".docs-pillar pre").EvaluateAllAsync<bool>(
+            "blocks => blocks.every(pre => pre.scrollWidth <= pre.clientWidth)"), "A card's code should fit it.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Guide_ShouldListEachSectionOnThePage_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/testing");
+        var sections = page.Locator(".docs-article__body > h2");
+        var rail = page.Locator(".docs-article__rail").GetByRole(AriaRole.Link);
+
+        await Expect(rail).ToHaveTextAsync([.. (await sections.AllTextContentsAsync()).Select(text => text.Trim())]);
+        // A guide's notes are part of its text, so none is a live region that a screen reader would read out at once.
+        await Expect(page.Locator(".docs-article__body [role=note]").First).ToBeVisibleAsync();
+        await Expect(page.Locator(".docs-article__body").Locator("[role=alert], [role=status]")).ToHaveCountAsync(0);
+        Assert.Equal(await sections.EvaluateAllAsync<string[]>("headings => headings.map(heading => '#' + heading.id)"),
+            await rail.EvaluateAllAsync<string[]>("links => links.map(link => new URL(link.href).hash)"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Home_ShouldLinkEveryComponentWithItsSummary_WhenOpened(string browser)
     {
         var page = await OpenDocsAsync(browser, "");
@@ -249,38 +291,31 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task ComponentPage_ShouldWrapLongCodeLinesUnderTheirIndent_WhenTheyDontFit(string browser)
+    public async Task ComponentPage_ShouldScrollLongCodeLinesWithoutWrapping_WhenTheyDontFit(string browser)
     {
         var page = await OpenDocsAsync(browser, "components/tree-view",
             new() { ViewportSize = new() { Width = 1024, Height = 800 } });
         await ShowCodeAsync(page, "filter-and-select");
         var source = page.GetByRole(AriaRole.Region, new() { Name = "TreeViewExample.razor" });
+        var code = await source.EvaluateAsync<string>("pre => pre.textContent");
 
-        Assert.True(await source.EvaluateAsync<bool>("pre => pre.scrollWidth <= pre.clientWidth"),
-            "No line should run past the code block's edge.");
-        // Every wrapped line's next row starts right of the line's first character, on a later row; a line break's
-        // empty box shares the first row, so it's skipped.
+        Assert.True(await source.EvaluateAsync<bool>("pre => pre.scrollWidth > pre.clientWidth"),
+            "A line too long for the block should scroll it sideways.");
+        // A line that doesn't wrap lays its text out in a single box.
         Assert.True(await source.EvaluateAsync<bool>("""
             pre => {
-                const wrapped = [...pre.querySelectorAll('.docs-source__line')].flatMap(line => {
-                    const text = line.firstChild?.data ?? '';
-                    if (!text.trim()) {
-                        return [];
-                    }
-                    const indent = text.length - text.trimStart().length;
-                    const first = document.createRange();
-                    first.setStart(line.firstChild, indent);
-                    first.setEnd(line.firstChild, indent + 1);
-                    const start = first.getBoundingClientRect();
-                    const all = document.createRange();
-                    all.selectNodeContents(line);
-                    const next = [...all.getClientRects()].find(row => row.width > 0 && row.top >= start.bottom - 1);
-                    return next ? [next.left > start.left] : [];
+                const text = pre.querySelector('code').firstChild;
+                const range = document.createRange();
+                let start = 0;
+                return text.data.split('\n').every(line => {
+                    range.setStart(text, start);
+                    range.setEnd(text, start + line.length);
+                    start += line.length + 1;
+                    return !line.trim() || range.getClientRects().length === 1;
                 });
-                return wrapped.length > 0 && wrapped.every(Boolean);
             }
-            """), "Long lines should wrap, each continuing further in than the line's own first character.");
-        Assert.Contains("26rem\">\n    <TbTextField", await source.EvaluateAsync<string>("pre => pre.textContent"));
+            """), "No line should wrap onto a second row.");
+        Assert.Contains("26rem\">\n    <TbTextField", code);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
