@@ -6,6 +6,18 @@ namespace Trailblazor.BrowserTests;
 public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldTakeTheIndicatorSizeFromAroundThem_WhenThePageSetsIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        var selected = page.GetByRole(AriaRole.Tab, new() { Name = "Summary" });
+
+        await page.EvaluateAsync(
+            "() => document.querySelector('main').style.setProperty('--tb-tabs-indicator-size', '5px')");
+
+        await Expect(selected).ToHaveCSSAsync("box-shadow", new Regex("-5px"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldSelectTheTab_WhenGivenItsNameAndTheTabsName(string browser)
     {
         // Not waiting for the page to be interactive, which the helper waits for itself.

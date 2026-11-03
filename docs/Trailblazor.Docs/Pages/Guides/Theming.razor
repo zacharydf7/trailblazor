@@ -124,7 +124,42 @@
 </TbText>
 <CodeBlock Label="A primary for part of a page" Code="@RegionPrimary" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Other stylesheets</TbText>
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Restyling one component</TbText>
+<TbText>
+    To change one component rather than the whole theme, reach for these in order. First, its own tokens, such as
+    <code>--tb-button-radius</code>, listed under Design tokens on its page: set one on the page to change the component
+    everywhere, or on an element to change it only inside that element. Next, its <code>Classes</code> parameter, a
+    <code>ButtonClasses</code> or <code>FieldClasses</code> record for example, which adds your class names to its
+    parts. Last, its <code>data-part</code> names, also on its page, and the ARIA attributes that mark its states, such
+    as <code>aria-selected</code>, <code>aria-invalid</code> and <code>aria-disabled</code>, which let your stylesheet
+    reach one part in one state.
+</TbText>
+<CodeBlock Label="app.css" Code="@Restyle" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try a brand color</TbText>
+<TbText>
+    Pick a color to see it as the primary, with the hover, pressed, selected and focus colors that follow from it, then
+    copy the CSS. If the color is too light for readable text on it in light mode, or too dark in dark mode, it is
+    darkened or lightened just that far; otherwise it is used as picked.
+</TbText>
+<TbColorPicker Label="Brand color" @bind-Value="_brand" />
+<div class="docs-brand" style="@($"--tb-color-primary: {BrandPrimary}")">
+    <TbStack Row Gap="2" Wrap Align="Align.Center">
+        <TbButton>Save</TbButton>
+        <TbButton Variant="Variant.Soft">Preview</TbButton>
+        <TbCheckbox TValue="bool" Label="Share with team" Value="true" />
+        <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
+    </TbStack>
+    <TbList aria-label="Trails with your brand color">
+        <TbListItem Selected OnClick="() => { }">Ridge loop</TbListItem>
+        <TbListItem OnClick="() => { }">Creek path</TbListItem>
+    </TbList>
+</div>
+<CodeBlock Label="app.css" Code="@BrandCss" />
+
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="other-stylesheets">
+    Other stylesheets
+</TbText>
 <TbText>
     The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global rule such as
     <code>* { margin: 0; padding: 0; }</code>, which many resets and some component libraries ship, then strips the
@@ -161,7 +196,69 @@
     indeterminate progress bar or circle fills and gently pulses in place instead of moving.
 </TbText>
 
+<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Token reference</TbText>
+<TbText>
+    Every theme token, with the value the default palette and density give it, read from <code>trailblazor.css</code>.
+    A color's sample follows the palette and mode chosen at the top of this site.
+</TbText>
+<TbTable aria-label="Theme tokens" Size="Size.Small">
+    <thead>
+        <tr>
+            <th scope="col">Token</th>
+            <th scope="col">Role</th>
+            <th scope="col">Default</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var (name, value) in DesignTokens.Reference())
+        {
+            <tr>
+                <th scope="row"><code>@name</code></th>
+                <td>@DesignTokens.Role(name)</td>
+                <td>
+                    @if (DesignTokens.IsColor(name))
+                    {
+                        <span class="docs-swatch" style="@($"background: var({name})")"></span>
+                    }
+                    <code>@(value.Contains("from var(--tb-color-primary)") ? "From the primary" : value)</code>
+                </td>
+            </tr>
+        }
+    </tbody>
+</TbTable>
+
 @code {
+    private const string DefaultBrand = "#0f766e";
+
+    private string? _brand = DefaultBrand;
+
+    private string Brand => _brand ?? DefaultBrand;
+
+    private string BrandPrimary =>
+        $"light-dark(oklch(from {Brand} min(l, 0.55) c h), oklch(from {Brand} max(l, 0.75) c h))";
+
+    private string BrandCss => $$"""
+        :root {
+            --tb-color-primary: {{BrandPrimary}};
+        }
+        """;
+
+    private const string Restyle = """
+        /* Square buttons everywhere, and taller ones in the editor's toolbar. */
+        :root {
+            --tb-button-radius: 0;
+        }
+
+        .editor-toolbar {
+            --tb-button-height: 2.75rem;
+        }
+
+        /* A chosen option in bold. */
+        [data-part="option"][aria-selected="true"] {
+            font-weight: 600;
+        }
+        """;
+
     private const string Theme = """
         @* App.razor *@
         <head>

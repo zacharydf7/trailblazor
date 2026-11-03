@@ -635,6 +635,23 @@ a:focus-visible {
     margin-block-start: var(--tb-space-2);
 }
 
+.docs-swatch {
+    display: inline-block;
+    inline-size: 1.25rem;
+    block-size: 0.875rem;
+    margin-inline-end: var(--tb-space-2);
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-sm);
+    vertical-align: middle;
+}
+
+.docs-brand {
+    display: grid;
+    gap: var(--tb-space-3);
+    max-inline-size: 28rem;
+    margin-block: var(--tb-space-3);
+}
+
 .docs-tokens {
     display: flex;
     flex-wrap: wrap;

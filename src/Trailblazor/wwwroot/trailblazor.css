@@ -4089,18 +4089,14 @@
         color: var(--tb-color-text);
     }
 
-    .tb-tabs {
-        --tb-tabs-indicator-color: var(--tb-color-primary);
-        --tb-tabs-indicator-size: 2px;
-    }
-
     .tb-tabs__tab[aria-selected="true"] {
         color: var(--tb-color-text);
     }
 
     /* Text and outlined lists underline the selected tab; the pill variants fill it instead. */
     :is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list > .tb-tabs__tab[aria-selected="true"] {
-        box-shadow: inset 0 calc(-1 * var(--tb-tabs-indicator-size)) 0 var(--tb-tabs-indicator-color);
+        box-shadow: inset 0 calc(-1 * var(--tb-tabs-indicator-size, 2px)) 0
+            var(--tb-tabs-indicator-color, var(--tb-color-primary));
     }
 
     /* Beside a vertical list, the selected tab's line runs down its inner edge instead. */
@@ -4113,12 +4109,14 @@
 
     .tb-tabs--vertical:is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list
         > .tb-tabs__tab[aria-selected="true"] {
-        box-shadow: inset calc(-1 * var(--tb-tabs-indicator-size)) 0 0 var(--tb-tabs-indicator-color);
+        box-shadow: inset calc(-1 * var(--tb-tabs-indicator-size, 2px)) 0 0
+            var(--tb-tabs-indicator-color, var(--tb-color-primary));
     }
 
     .tb-tabs--vertical:is(.tb-tabs--text, .tb-tabs--outlined) > .tb-tabs__list
         > .tb-tabs__tab[aria-selected="true"]:dir(rtl) {
-        box-shadow: inset var(--tb-tabs-indicator-size) 0 0 var(--tb-tabs-indicator-color);
+        box-shadow: inset var(--tb-tabs-indicator-size, 2px) 0 0
+            var(--tb-tabs-indicator-color, var(--tb-color-primary));
     }
 
     /* Soft and filled tabs are pills with no line under the list; the selected one takes the variant's fill. */

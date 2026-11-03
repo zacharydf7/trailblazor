@@ -84,6 +84,30 @@
             {
                 <TbText>Its styles read no theme tokens.</TbText>
             }
+            @if (DesignTokens.Hooks(example.Blocks) is { Count: > 0 } hooks)
+            {
+                <TbText>
+                    It also has tokens of its own, which change only this component. Set one on the page or on any
+                    element that contains it; a token you don't set keeps the default shown here.
+                </TbText>
+                <TbTable aria-label="Its own tokens" Size="Size.Small">
+                    <thead>
+                        <tr>
+                            <th scope="col">Token</th>
+                            <th scope="col">Default</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (name, fallback) in hooks)
+                        {
+                            <tr>
+                                <th scope="row"><code>@name</code></th>
+                                <td><code>@fallback</code></td>
+                            </tr>
+                        }
+                    </tbody>
+                </TbTable>
+            }
 
             <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">
                 Testing

@@ -25,8 +25,19 @@
                         <TbButton>Save</TbButton>
                         <TbButton Tone="Tone.Neutral" Variant="Variant.Outlined">Cancel</TbButton>
                         <TbButton Tone="Tone.Danger" Variant="Variant.Soft">Delete</TbButton>
+                        <TbButton Disabled>Publish</TbButton>
                     </TbStack>
                     <TbTextField TValue="string" Label="Project name" Value="@("Trail map")" />
+                    <TbTextField TValue="string" Label="Owner email" Value="@("ana@")" Invalid
+                                 HelperText="Enter a whole email address." />
+                    <TbList aria-label="@($"Trails, {palette.Title} {label}")">
+                        <TbListItem Selected OnClick="() => { }">Ridge loop</TbListItem>
+                        <TbListItem OnClick="() => { }">Creek path</TbListItem>
+                    </TbList>
+                    <TbStack Row Gap="2" Wrap>
+                        <TbChip Text="Open" Selected SelectedChanged="(bool _) => { }" />
+                        <TbChip Text="Closed" SelectedChanged="(bool _) => { }" />
+                    </TbStack>
                     <TbStack Row Gap="4" Wrap>
                         <TbCheckbox TValue="bool" Label="Share with team" Value="true" />
                         <TbSwitch Label="Notifications" Value="true" />

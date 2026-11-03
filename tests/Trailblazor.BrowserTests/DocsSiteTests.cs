@@ -109,6 +109,44 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ThemingGuide_ShouldRestyleThePreviewAndItsCss_WhenABrandColorIsPicked(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/theming");
+        var color = page.GetByRole(AriaRole.Textbox, new() { Name = "Brand color" });
+        var save = page.Locator(".docs-brand").GetByRole(AriaRole.Button, new() { Name = "Save" });
+        var before = await save.EvaluateAsync<string>("button => getComputedStyle(button).backgroundColor");
+
+        await color.FillAsync("#b91c1c");
+        await color.PressAsync("Enter");
+
+        await Expect(page.GetByText("from #b91c1c min(l, 0.55)").First).ToBeVisibleAsync();
+        await Expect(save).Not.ToHaveCSSAsync("background-color", before);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PalettesGuide_ShouldShowDisabledInvalidAndSelectedStates_WhenOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/palettes");
+        var cobalt = page.Locator(".docs-palette__panel[data-tb-palette=cobalt][data-tb-theme=light]");
+
+        await Expect(cobalt.GetByRole(AriaRole.Button, new() { Name = "Publish" })).ToBeDisabledAsync();
+        await Expect(cobalt.GetByRole(AriaRole.Textbox, new() { Name = "Owner email" }))
+            .ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(cobalt.GetByRole(AriaRole.Button, new() { Name = "Open", Pressed = true })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldTableItsOwnTokensWithTheirDefaults_WhenItHasSome(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+
+        var hooks = page.GetByRole(AriaRole.Table, new() { Name = "Its own tokens" });
+
+        await Expect(hooks.GetByRole(AriaRole.Row, new() { Name = "--tb-button-radius var(--tb-radius-md)" }))
+            .ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task LookSwitcher_ShouldApplyAndRememberTheThemePaletteAndDensity_WhenChosen(string browser)
     {
         var page = await OpenDocsAsync(browser, "components/button");
