@@ -236,6 +236,8 @@ public partial class TbDataGrid<TItem>
             await PageChanged.InvokeAsync(1);
         }
 
+        await StateChangedAsync();
+
         await show;
         // A provider that finds nothing says so itself.
         if (ReferenceEquals(next, _filters) && !_failed && (RowCount > 0 || DataProvider is null))

@@ -239,6 +239,9 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal object? FilterValueOf(TItem item) => FilterBy is not null ? FilterBy(item) : ValueOf(item);
 
+    // A FilterBy value's type isn't known until it is read.
+    internal Type? FilterType => FilterBy is null ? ValueType : null;
+
     internal bool HoldsWholeNumbers => ValueType is { } type && NumberTypes.IsWhole(type);
 
     // The edited value in the field's own type, such as a number or an enum parsed from its name; throws an

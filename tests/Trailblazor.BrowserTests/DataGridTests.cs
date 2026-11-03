@@ -1006,6 +1006,26 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(await page.EvaluateAsync<bool>("() => window.escapeUsed"));
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task State_ShouldBringBackTheSortAndFilters_WhenASavedViewIsRestored(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.Tb().Grid("Saved view");
+        var names = Table(page, "Saved view").Locator("tbody td[data-column=Name]");
+        await page.Tb().Select("Filter Surface").ChooseAsync("Dirt");
+        await grid.SortAsync("Name", descending: true);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save view" }).ClickAsync();
+        await Expect(page.GetByTestId("saved-view")).ToContainTextAsync("\"Direction\":\"Descending\"");
+
+        await page.Tb().Select("Filter Surface").ChooseAsync("Paved");
+        await grid.SortAsync("Name");
+        await Expect(names).ToHaveTextAsync(["Cedar Flats", "Lake Shore"]);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Restore view" }).ClickAsync();
+
+        await Expect(names).ToHaveTextAsync(["Ridge Loop", "Pine Hollow loop", "Fern Gully"]);
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Filter Surface" })).ToContainTextAsync("Dirt");
+    }
+
     private static ILocator Table(IPage page, string name) =>
         page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
 

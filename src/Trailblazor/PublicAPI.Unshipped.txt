@@ -2963,3 +2963,26 @@ override Trailblazor.GridRowEdit<TItem>.GetHashCode() -> int
 override Trailblazor.GridRowEdit<TItem>.ToString() -> string!
 static Trailblazor.GridRowEdit<TItem>.operator !=(Trailblazor.GridRowEdit<TItem>? left, Trailblazor.GridRowEdit<TItem>? right) -> bool
 static Trailblazor.GridRowEdit<TItem>.operator ==(Trailblazor.GridRowEdit<TItem>? left, Trailblazor.GridRowEdit<TItem>? right) -> bool
+Trailblazor.GridState
+Trailblazor.GridState.<Clone>$() -> Trailblazor.GridState!
+Trailblazor.GridState.Equals(Trailblazor.GridState? other) -> bool
+Trailblazor.GridState.Filters.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridFilter!>!
+Trailblazor.GridState.Filters.init -> void
+Trailblazor.GridState.GridState() -> void
+Trailblazor.GridState.Groups.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.GridState.Groups.init -> void
+Trailblazor.GridState.Page.get -> int
+Trailblazor.GridState.Page.init -> void
+Trailblazor.GridState.PageSize.get -> int?
+Trailblazor.GridState.PageSize.init -> void
+Trailblazor.GridState.Sorts.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridSort!>!
+Trailblazor.GridState.Sorts.init -> void
+Trailblazor.TbDataGrid<TItem>.State.get -> Trailblazor.GridState?
+Trailblazor.TbDataGrid<TItem>.State.set -> void
+Trailblazor.TbDataGrid<TItem>.StateChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.GridState!>
+Trailblazor.TbDataGrid<TItem>.StateChanged.set -> void
+override Trailblazor.GridState.Equals(object? obj) -> bool
+override Trailblazor.GridState.GetHashCode() -> int
+override Trailblazor.GridState.ToString() -> string!
+static Trailblazor.GridState.operator !=(Trailblazor.GridState? left, Trailblazor.GridState? right) -> bool
+static Trailblazor.GridState.operator ==(Trailblazor.GridState? left, Trailblazor.GridState? right) -> bool

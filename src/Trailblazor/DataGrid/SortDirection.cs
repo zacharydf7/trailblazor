@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace Trailblazor;
 
 /// <summary>Which way a column sorts its rows.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<SortDirection>))]
 public enum SortDirection
 {
     /// <summary>Smallest first: A to Z, 1 to 9, oldest to newest.</summary>

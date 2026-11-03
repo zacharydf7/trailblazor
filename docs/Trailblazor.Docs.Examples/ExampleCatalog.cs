@@ -1628,6 +1628,10 @@ public static class ExampleCatalog
                     + "the row: Tab moves between its fields and its Save and Cancel buttons, Enter saves the row, "
                     + "Escape cancels it, and `OnRowEdit` gets all of its values at once.",
                     typeof(DataGridRowEditExample)),
+                new("save-state", "Save the view", "`State` holds the rows' sorts, filters, groups, page and page size "
+                    + "in one `GridState`. Bind it to save how the user arranged the rows, such as to local storage "
+                    + "as JSON, and set it to restore them; filter values read back from JSON take their columns' "
+                    + "types.", typeof(DataGridStateExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
@@ -1639,6 +1643,7 @@ public static class ExampleCatalog
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
                 typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>),
+                typeof(GridState),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Accessibility =

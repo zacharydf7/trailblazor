@@ -1,0 +1,46 @@
+@using System.Text.Json
+
+@* Bind State to keep how the user arranged the rows, and set it to bring that back. *@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Saved view" KeySelector="trail => trail.Id"
+                @bind-State="_state">
+        <TbColumn Field="trail => trail.Name" Sortable Filterable />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable Filterable />
+        <TbColumn Field="trail => trail.Surface" Filterable Groupable />
+    </TbDataGrid>
+    <TbStack Row Gap="2">
+        <TbButton OnClick="Save">Save view</TbButton>
+        <TbButton Variant="Variant.Outlined" Disabled="_saved is null" OnClick="Restore">Restore view</TbButton>
+    </TbStack>
+    <TbText data-testid="saved-view">@(_saved ?? "No view saved yet.")</TbText>
+</TbStack>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new(1, "Pine Hollow loop", 6.4, Surface.Dirt),
+        new(2, "Eagle Ridge traverse", 14.2, Surface.Gravel),
+        new(3, "Cedar Flats", 3.1, Surface.Paved),
+        new(4, "Ridge Loop", 9.8, Surface.Dirt),
+        new(5, "Lake Shore", 11.5, Surface.Paved),
+        new(6, "Fern Gully", 4.7, Surface.Dirt),
+    ];
+
+    // The state starts the grid off too, here with four rows to a page.
+    private GridState _state = new() { PageSize = 4 };
+    private string? _saved;
+
+    // Kept as JSON, as an app would keep it in local storage or the user's settings.
+    private void Save() => _saved = JsonSerializer.Serialize(_state);
+
+    private void Restore() => _state = JsonSerializer.Deserialize<GridState>(_saved!)!;
+
+    private enum Surface
+    {
+        Paved,
+        Gravel,
+        Dirt,
+    }
+
+    private sealed record Trail(int Id, string Name, double LengthKm, Surface Surface);
+}

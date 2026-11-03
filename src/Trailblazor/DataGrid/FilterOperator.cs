@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace Trailblazor;
 
 /// <summary>How a <see cref="GridFilter"/> compares a column's values with its own.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<FilterOperator>))]
 public enum FilterOperator
 {
     /// <summary>The column's text contains the filter's, ignoring case.</summary>

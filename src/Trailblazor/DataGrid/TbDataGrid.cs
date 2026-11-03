@@ -44,6 +44,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private IReadOnlyList<string>? _groupsFromParent;
     private int? _pageFromParent;
     private int? _pageSizeFromParent;
+    private GridState? _stateFromParent;
+    // A provider's first load waits for the columns when a filter read back from JSON needs their types.
+    private bool _showForColumns;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
     private TItem? _selectedItemFromParent;
     private (object Key, TaskCompletionSource Done)? _scrollAfterRender;
@@ -191,6 +194,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <summary>Raised when the page changes.</summary>
     [Parameter]
     public EventCallback<int> PageChanged { get; set; }
+
+    /// <summary>The rows' sorts, filters, groups, page and page size in one value. Bind it with <c>@bind-State</c> to
+    /// save how the user has arranged the rows, such as to local storage as JSON, and to restore it later; a state set
+    /// here replaces the grid's sorts, filters, groups, page and page size. A virtualized grid has no pages, so it
+    /// ignores the state's page and page size.</summary>
+    [Parameter]
+    public GridState? State { get; set; }
+
+    /// <summary>Raised when the user sorts, filters, groups or pages the rows, or picks another page size.</summary>
+    [Parameter]
+    public EventCallback<GridState> StateChanged { get; set; }
 
     /// <summary>Shades every other row.</summary>
     [Parameter]
@@ -371,34 +385,22 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 $"{nameof(Height)} and no {nameof(PageSize)}.");
         }
 
-        // The grid's own sorts passed back, as a binding does, keep them, so the rows aren't sorted again for nothing.
         if (!ReferenceEquals(Sorts, _sortsFromParent))
         {
             _sortsFromParent = Sorts;
-            if (!(Sorts ?? []).SequenceEqual(_sorts))
-            {
-                _sorts = [.. Sorts ?? []];
-            }
+            TakeSorts(Sorts ?? []);
         }
 
         if (!ReferenceEquals(Filters, _filtersFromParent))
         {
             _filtersFromParent = Filters;
-            if (!(Filters ?? []).SequenceEqual(_filters))
-            {
-                _filters = [.. Filters ?? []];
-                ForgetClosedDrafts();
-            }
+            TakeFilters(Filters ?? []);
         }
 
         if (!ReferenceEquals(Groups, _groupsFromParent))
         {
             _groupsFromParent = Groups;
-            if (!(Groups ?? []).SequenceEqual(_groups))
-            {
-                _groups = [.. Groups ?? []];
-                _closedGroups.Clear();
-            }
+            TakeGroups(Groups ?? []);
         }
 
         if (Page != _pageFromParent)
@@ -411,6 +413,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             _pageSizeFromParent = PageSize;
             _pageSize = PageSize is > 0 ? PageSize : null;
+        }
+
+        if (!ReferenceEquals(State, _stateFromParent))
+        {
+            _stateFromParent = State;
+            if (State is { } state)
+            {
+                TakeState(state);
+            }
         }
 
         // Rows draw again for a new collection, whose items may have changed in place, or when the selection mode or
@@ -469,6 +480,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         catch (JSDisconnectedException)
         {
             // The circuit is gone, and the grid went with it.
+        }
+
+        if (_showForColumns)
+        {
+            _showForColumns = false;
+            await ShowAsync(force: false);
+            // With still no columns, ShowAsync waits again for the app's next render; otherwise the loaded rows need
+            // drawing.
+            if (!_showForColumns)
+            {
+                StateHasChanged();
+            }
         }
     }
 
@@ -599,6 +622,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A virtualized grid's provider loads the rows Virtualize asks for, sorted and filtered as the grid is.
     private async ValueTask<ItemsProviderResult<GridLine>> LoadVirtualRowsAsync(ItemsProviderRequest request)
     {
+        TypeFilters();
         var asked = new GridRequest(request.StartIndex, request.Count, [.. _sorts]) { Filters = [.. _filters] };
         _loading = true;
         _failed = false;
@@ -1089,6 +1113,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             _page = page;
             await PageChanged.InvokeAsync(_page);
+            await StateChangedAsync();
         }
 
         await RefreshAsync();
@@ -1106,6 +1131,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // In memory the rows are sorted and paged here; a provider is asked only when the request differs from the last.
     private async Task ShowAsync(bool force)
     {
+        TypeFilters();
         if (DataProvider is not null && Virtualize)
         {
             await ReloadVirtualRowsAsync(force);
@@ -1119,8 +1145,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             if (_page != page)
             {
                 await PageChanged.InvokeAsync(_page);
+                await StateChangedAsync();
             }
 
+            return;
+        }
+
+        if (_columns.Count == 0 && _filters.Any(FilterJson.IsUntyped))
+        {
+            _showForColumns = true;
+            _loading = true;
             return;
         }
 
@@ -1318,6 +1352,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             await PageChanged.InvokeAsync(1);
         }
 
+        await StateChangedAsync();
+
         await show;
     }
 
@@ -1326,6 +1362,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         if (DataProvider is null)
         {
+            TypeFilters();
             Arrange(force: false);
         }
     }
@@ -1419,6 +1456,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             await PageChanged.InvokeAsync(1);
         }
 
+        await StateChangedAsync();
+
         Announcer.Polite(sorts.FirstOrDefault(sort => sort.Column == column.Key) is { } now
             ? Format(now.Direction == SortDirection.Ascending ? TbStrings.DataGridSortedAscending
                 : TbStrings.DataGridSortedDescending, column.Heading)
@@ -1431,6 +1470,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _page = Math.Clamp(page, 1, PageCount);
         var show = ShowAsync(force: false);
         await PageChanged.InvokeAsync(_page);
+        await StateChangedAsync();
         await show;
     }
 
@@ -1449,7 +1489,75 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         var show = ShowAsync(force: false);
         await PageSizeChanged.InvokeAsync(size);
         await PageChanged.InvokeAsync(1);
+        await StateChangedAsync();
         await show;
+    }
+
+    private GridState CurrentState => new()
+    {
+        Sorts = [.. _sorts],
+        Filters = [.. _filters],
+        Groups = [.. _groups],
+        Page = _page,
+        PageSize = _pageSize,
+    };
+
+    private Task StateChangedAsync() => StateChanged.InvokeAsync(CurrentState);
+
+    // A virtualized grid has no pages, so a state's page and page size don't apply to it.
+    private void TakeState(GridState state)
+    {
+        TakeSorts(state.Sorts);
+        TakeFilters(state.Filters);
+        TakeGroups(state.Groups);
+        _page = Virtualize ? 1 : Math.Max(1, state.Page);
+        _pageSize = !Virtualize && state.PageSize is > 0 ? state.PageSize : null;
+    }
+
+    // When a binding passes the grid's own sorts, filters or groups back, the grid keeps its own, so the rows aren't
+    // arranged again for nothing and groups the user closed stay closed.
+    private void TakeSorts(IReadOnlyList<GridSort> sorts)
+    {
+        if (!sorts.SequenceEqual(_sorts))
+        {
+            _sorts = [.. sorts];
+        }
+    }
+
+    private void TakeFilters(IReadOnlyList<GridFilter> filters)
+    {
+        if (!filters.SequenceEqual(_filters))
+        {
+            _filters = [.. filters];
+            ForgetClosedDrafts();
+        }
+    }
+
+    private void TakeGroups(IReadOnlyList<string> groups)
+    {
+        if (!groups.SequenceEqual(_groups))
+        {
+            _groups = [.. groups];
+            _closedGroups.Clear();
+        }
+    }
+
+    // Filters read back from JSON take their columns' types once the columns are known. Until then, or when a filter's
+    // column is gone, they stay as they are and the list isn't replaced, so the rows aren't arranged again.
+    private void TypeFilters()
+    {
+        if (!_filters.Any(FilterJson.IsUntyped))
+        {
+            return;
+        }
+
+        List<GridFilter> typed = [.. _filters.Select(filter => FilterJson.IsUntyped(filter)
+            && _columns.FirstOrDefault(column => column.Key == filter.Column) is { } column
+                ? FilterJson.Typed(filter, column.FilterType) : filter)];
+        if (!typed.SequenceEqual(_filters))
+        {
+            _filters = typed;
+        }
     }
 
     private void TakeSelectionFromParent()
