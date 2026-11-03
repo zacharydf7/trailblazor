@@ -32,6 +32,54 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         AssertNoViolations(await page.RunAxe(WcagAA));
     }
 
+    // Examples full of states (selection, fills, tones), checked in every palette in chromium alone, since colors don't
+    // differ between engines. Graphite, the host's default, is included so the list follows PaletteCatalog. Examples
+    // with a popup are also checked open, where their chosen and selected states show.
+    private static readonly string[] StatefulExamples =
+    [
+        "button", "toggle-group", "chip", "alert", "badge", "checkbox", "select", "listbox", "tabs", "data-grid",
+        "tree-view", "date-range-picker",
+    ];
+
+    public static TheoryData<string, string, string> StatefulExamplesInEachPaletteAndTheme => new(
+        from example in StatefulExamples
+        from palette in PaletteCatalog.All
+        from theme in new[] { "light", "dark" }
+        select (example, palette.Name, theme));
+
+    [Theory, MemberData(nameof(StatefulExamplesInEachPaletteAndTheme))]
+    public async Task Example_ShouldHaveNoAccessibilityViolations_WhenShownInEachPalette(string example, string palette,
+        string theme)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}");
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+        await SetThemeAsync(page, theme);
+
+        AssertNoViolations(await page.RunAxe(WcagAA));
+        if (OpeningOf(ExampleCatalog.Find(example)!) is { } opening)
+        {
+            await CheckOpenAsync(page, opening);
+        }
+    }
+
+    public static TheoryData<string> AllExamples => new(ExampleCatalog.All.Select(example => example.Name));
+
+    // Compact density shrinks controls toward the 24px target size, so every example is checked in it in chromium, and
+    // those with a popup are also checked open.
+    [Theory, MemberData(nameof(AllExamples))]
+    public async Task Example_ShouldHaveNoAccessibilityViolations_WhenTheDensityIsCompact(string example)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}");
+        await page.EvaluateAsync("() => document.documentElement.dataset.tbDensity = 'compact'");
+        await WaitForFadesAsync(page);
+
+        AssertNoViolations(await page.RunAxe(WcagAA));
+        if (OpeningOf(ExampleCatalog.Find(example)!) is { } opening)
+        {
+            await CheckOpenAsync(page, opening);
+        }
+    }
+
     // Popups aren't on the page until they open, so examples with one are also checked while open: those whose
     // target has an opener, and those listed here, whose target is the control or field the popup opens from.
     private sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
@@ -86,9 +134,14 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Example_ShouldHaveNoAccessibilityViolations_WhenOpenInTheme(string browser, string example,
         string theme)
     {
-        var opening = OpeningOf(ExampleCatalog.Find(example)!)!;
         var page = await OpenAsync(browser, $"/examples/{example}");
         await SetThemeAsync(page, theme);
+
+        await CheckOpenAsync(page, OpeningOf(ExampleCatalog.Find(example)!)!);
+    }
+
+    private static async Task CheckOpenAsync(IPage page, Opening opening)
+    {
         await opening.OpenAsync(page);
         var shown = ExampleTargetTests.Find(page, opening.Shown);
         await Expect(shown).ToBeVisibleAsync();
