@@ -30,6 +30,7 @@ public sealed class FieldFocusEventArgs : EventArgs
 [EventHandler("ontbfocusenter", typeof(FieldFocusEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbfocusleave", typeof(FieldFocusEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbrowclick", typeof(RowClickEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbeditkey", typeof(GridEditKeyEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 public static class EventHandlers
 {
 }

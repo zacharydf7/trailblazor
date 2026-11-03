@@ -463,6 +463,10 @@ public static class TbStrings
     /// </summary>
     public const string DataGridRowsShown = "DataGrid.RowsShown";
 
+    /// <summary>"{0} can't hold that value.": shown when an edited data grid cell's value doesn't fit its field, such
+    /// as a number too large; {0} is the column.</summary>
+    public const string DataGridEditInvalid = "DataGrid.EditInvalid";
+
     /// <summary>"Group by": labels the list of columns a data grid's rows can be grouped by.</summary>
     public const string DataGridGroupBy = "DataGrid.GroupBy";
 
@@ -685,6 +689,7 @@ public static class TbStrings
         [DataGridFilterYes] = "Yes",
         [DataGridFilterNo] = "No",
         [DataGridRowsShown] = "Rows shown: {0}.",
+        [DataGridEditInvalid] = "{0} can't hold that value.",
         [DataGridGroupBy] = "Group by",
         [DataGridGroupHeading] = "{0}: {1}",
         [DataGridGroupCount] = "Rows: {0}",

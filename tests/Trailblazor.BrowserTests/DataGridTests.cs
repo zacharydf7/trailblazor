@@ -722,6 +722,187 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(grid.GetByRole(AriaRole.Button, new() { Name = "Retry" })).ToBeFocusedAsync();
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldSaveAndFocusTheCellAgain_WhenEnterStartsAndEndsIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        var cell = grid.Locator("tr[data-key='3'] td[data-column=Name]");
+        await cell.ClickAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cell.Locator("input")).ToBeFocusedAsync();
+        await cell.Locator("input").FillAsync("Cedar Flats loop");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Name of Cedar Flats loop.");
+        await Expect(cell).ToHaveTextAsync("Cedar Flats loop");
+        await Expect(cell).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldStayOpenWithWhyAndCancel_WhenACheckFailsAndEscapeIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        var cell = grid.Locator("tr[data-key='1'] td[data-column=LengthKm]");
+
+        await cell.DblClickAsync();
+        await cell.GetByRole(AriaRole.Spinbutton).FillAsync("99");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cell).ToContainTextAsync("between 0.5 and 50");
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(cell.Locator("[data-part=editor]")).ToHaveCountAsync(0);
+        await Expect(cell).ToHaveTextAsync("6.4");
+        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Nothing saved yet.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldSave_WhenFocusLeavesItsField(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        var cell = grid.Locator("tr[data-key='2'] td[data-column=Name]");
+
+        await cell.DblClickAsync();
+        await cell.Locator("input").FillAsync("Eagle Ridge");
+        await page.GetByTestId("saved").ClickAsync();
+
+        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Name of Eagle Ridge.");
+        await Expect(cell).ToHaveTextAsync("Eagle Ridge");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldSaveWithoutSubmittingThePagesForm_WhenEnterIsPressedInIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-in-form");
+        var cell = page.GetByRole(AriaRole.Grid, new() { Name = "Edited trails" }).Locator("tbody td").First;
+
+        await cell.DblClickAsync();
+        await cell.Locator("input").FillAsync("Pine Hollow loop");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(cell).ToHaveTextAsync("Pine Hollow loop");
+        await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldLeaveTheValue_WhenEscapeCancelsAChange(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        var cell = grid.Locator("tr[data-key='2'] td[data-column=Name]");
+        // A dialog around the grid would close on an Escape nothing has used; this page listener sees what it would.
+        await page.EvaluateAsync("() => document.addEventListener('keydown', event => "
+            + "window.escapeUsed = event.key === 'Escape' && event.defaultPrevented)");
+
+        await cell.DblClickAsync();
+        await cell.Locator("input").FillAsync("Changed");
+        await page.Keyboard.PressAsync("Escape");
+
+        Assert.True(await page.EvaluateAsync<bool>("() => window.escapeUsed"));
+
+        await Expect(cell).ToHaveTextAsync("Eagle Ridge traverse");
+        await Expect(cell).ToBeFocusedAsync();
+        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Nothing saved yet.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldSaveAChoicePickedByKeysAlone_WhenItsListOpensAndClosesInTheEdit(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        var cell = grid.Locator("tr[data-key='1'] td[data-column=Difficulty]");
+        await cell.ClickAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cell.GetByRole(AriaRole.Combobox)).ToBeFocusedAsync();
+        await Expect(cell.GetByRole(AriaRole.Combobox)).ToHaveAttributeAsync("data-ready", "");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cell.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(cell.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        await Expect(cell.GetByRole(AriaRole.Combobox)).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(cell.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Difficulty of Pine Hollow loop.");
+        await Expect(cell).ToHaveTextAsync("Moderate");
+        await Expect(cell).ToBeFocusedAsync();
+        await Expect(grid.Locator("tr[data-key='1']")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldSaveAChoiceClickedInItsList_WhenTheListIsOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        var cell = grid.Locator("tr[data-key='2'] td[data-column=Difficulty]");
+
+        await cell.DblClickAsync();
+        await cell.GetByRole(AriaRole.Combobox).ClickAsync();
+        await cell.GetByRole(AriaRole.Option, new() { Name = "Moderate" }).ClickAsync();
+
+        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Difficulty of Eagle Ridge traverse.");
+        await Expect(cell).ToHaveTextAsync("Moderate");
+        await Expect(grid.Locator("tr[data-key='2']")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldKeepFocusInTheGrid_WhenTheSavedRowSortsElsewhere(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        await page.Tb().Grid("Trail edits").SortAsync("Name");
+        var cell = grid.Locator("tr[data-key='3'] td[data-column=Name]");
+        await cell.ClickAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await cell.Locator("input").FillAsync("Zion Flats");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(grid.Locator("tbody tr[data-part=row]").Last).ToContainTextAsync("Zion Flats");
+        await Expect(grid.Locator("tbody td:focus")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldSelectTheRowOnce_WhenADoubleClickOpensAnEdit(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
+        var row = grid.Locator("tr[data-key='1']");
+
+        await row.Locator("td[data-column=Name]").DblClickAsync();
+
+        await Expect(row.Locator("[data-part=editor]")).ToHaveCountAsync(1);
+        await Expect(row).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldKeepFocusInTheGrid_WhenTheSavedRowNoLongerMatchesItsFilter(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-in-form");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Edited trails" });
+        await page.Tb().Grid("Edited trails").FilterAsync("Trail", "eagle");
+        var cell = grid.Locator("tbody td[data-column=trail]");
+        await Expect(cell).ToHaveTextAsync(["Eagle Ridge"]);
+        await cell.ClickAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await cell.Locator("input").FillAsync("Lake shore");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(grid.Locator("[data-part=empty]")).ToBeVisibleAsync();
+        await Expect(grid.Locator(":focus")).ToHaveCountAsync(1);
+    }
+
     private static ILocator Table(IPage page, string name) =>
         page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
 

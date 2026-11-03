@@ -28,8 +28,8 @@
         </div>
     }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
-        <table @ref="_table" role="@(CellNavigation ? "grid" : null)" aria-label="@AriaLabel"
-               aria-multiselectable="@(CellNavigation && SelectionMode == SelectionMode.Multiple ? "true" : null)"
+        <table @ref="_table" role="@(IsGrid ? "grid" : null)" aria-label="@AriaLabel"
+               aria-multiselectable="@(IsGrid && SelectionMode == SelectionMode.Multiple ? "true" : null)"
                aria-busy="@(IsLoading ? "true" : null)"
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) : null)"
                class="tb-data-grid__table">
@@ -245,9 +245,16 @@
             }
             @foreach (var column in _shownColumns)
             {
+                var editable = CanEdit(column);
                 <td data-column="@column.Key" data-pinned="@PinSide(column)" style="@PinStyle(column)"
-                    class="@column.CellClass">
-                    @if (column.Cell is not null)
+                    data-editable="@(editable ? "" : null)" class="@column.CellClass"
+                    @ondblclick="@((editable ? () => StartEditAsync(item, column) : null)!)"
+                    @onkeydown="@((editable ? (KeyboardEventArgs args) => OnCellKeyAsync(item, column, args) : null)!)">
+                    @if (_edit is { } edit && edit.Column == column && Equals(edit.Key, key))
+                    {
+                        @Editor(edit)
+                    }
+                    else if (column.Cell is not null)
                     {
                         @column.Cell(item)
                     }
@@ -258,6 +265,49 @@
                 </td>
             }
         </tr>;
+
+    // A cell being edited holds its field, saved when focus leaves it; like the filters, a page's form doesn't own it,
+    // and its keys go no further than the edit.
+    private RenderFragment Editor(CellEdit edit) =>
+        @<div data-part="editor" data-tb-focus-root class="tb-data-grid__editor" @ontbeditkey="OnEditKeyAsync"
+              @onkeydown:stopPropagation @ontbfocusleave="OnEditLeftAsync">
+            <CascadingValue TValue="EditContext" Value="null">
+                <CascadingValue TValue="TbForm" Value="null">
+                    @switch (edit.Column.Editor)
+                    {
+                        case ColumnEditor.Custom:
+                            @edit.Column.EditTemplate!(ContextOf(edit))
+                            break;
+                        case ColumnEditor.Number:
+                            <TbNumberField TValue="decimal?" AriaLabel="@edit.Column.Heading" Size="Size.Small"
+                                           HideStepButtons AutoFocus Value="NumberOf(edit.Value)"
+                                           ValueChanged="number => edit.Value = number" Error="@edit.Error" />
+                            break;
+                        case ColumnEditor.Choice:
+                            @* A select takes Enter to open its list, so choosing from it saves the edit. *@
+                            <TbSelect TValue="string" AriaLabel="@edit.Column.Heading" Size="Size.Small" AutoFocus
+                                      Value="@edit.Value?.ToString()" ValueChanged="choice => ChooseAsync(edit, choice)"
+                                      Error="@edit.Error">
+                                @foreach (var (value, label) in edit.Column.Choices)
+                                {
+                                    <TbOption Value="value.ToString()">@label</TbOption>
+                                }
+                            </TbSelect>
+                            break;
+                        case ColumnEditor.YesNo:
+                            <TbCheckbox TValue="bool" AriaLabel="@edit.Column.Heading" AutoFocus
+                                        Value="edit.Value is true" ValueChanged="yes => edit.Value = yes"
+                                        Error="@edit.Error" />
+                            break;
+                        default:
+                            <TbTextField TValue="string" AriaLabel="@edit.Column.Heading" Size="Size.Small" AutoFocus
+                                         UpdateOnInput Value="@(edit.Value as string)"
+                                         ValueChanged="text => edit.Value = text" Error="@edit.Error" />
+                            break;
+                    }
+                </CascadingValue>
+            </CascadingValue>
+        </div>;
 
     // A group's heading spans the row, and its button stays in view while the rows scroll sideways.
     private RenderFragment GroupRow(GroupHeading group, int at) =>
@@ -397,7 +447,7 @@
 
     // Only a grid's rows say whether they are selected; a table's rows can't.
     private string? AriaSelected(bool selected) =>
-        CellNavigation && SelectionMode != SelectionMode.None ? (selected ? "true" : "false") : null;
+        IsGrid && SelectionMode != SelectionMode.None ? (selected ? "true" : "false") : null;
 
     // Single selection's radio buttons need a group of their own on the page.
     private readonly string _radioName = $"tb-data-grid-{Guid.NewGuid():N}";

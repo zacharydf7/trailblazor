@@ -1,0 +1,51 @@
+@using System.ComponentModel.DataAnnotations
+
+@* Double-click a cell, or press Enter on it, to edit it. *@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trail edits" KeySelector="trail => trail.Id"
+                OnCellEdit="Save" SelectionMode="SelectionMode.Multiple">
+        <TbColumn Field="trail => trail.Name" Sortable Editable Validate="(_, name) => NeedsName(name)" />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Editable />
+        <TbColumn Field="trail => trail.Difficulty" Editable />
+        <TbColumn Field="trail => trail.Open" Editable />
+    </TbDataGrid>
+    <TbText data-testid="saved">@(_saved ?? "Nothing saved yet.")</TbText>
+</TbStack>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new(1, "Pine Hollow loop", 6.4, Difficulty.Easy, true),
+        new(2, "Eagle Ridge traverse", 14.2, Difficulty.Hard, false),
+        new(3, "Cedar Flats", 3.1, Difficulty.Easy, true),
+    ];
+
+    private string? _saved;
+
+    private static string? NeedsName(object? name) =>
+        string.IsNullOrWhiteSpace(name as string) ? "Give the trail a name." : null;
+
+    // The trails are records, so each edit replaces one with a copy holding the new value.
+    private void Save(GridCellEdit<Trail> edit)
+    {
+        var at = _trails.FindIndex(trail => trail.Id == edit.Item.Id);
+        _trails[at] = edit.Column switch
+        {
+            "Name" => edit.Item with { Name = (string)edit.Value! },
+            "LengthKm" => edit.Item with { LengthKm = (double)edit.Value! },
+            "Difficulty" => edit.Item with { Difficulty = (Difficulty)edit.Value! },
+            _ => edit.Item with { Open = (bool)edit.Value! },
+        };
+        _saved = $"Saved {edit.Column} of {_trails[at].Name}.";
+    }
+
+    private enum Difficulty
+    {
+        Easy,
+        Moderate,
+        Hard,
+    }
+
+    private sealed record Trail(int Id, string Name, [property: Range(0.5, 50)] double LengthKm, Difficulty Difficulty,
+        bool Open);
+}

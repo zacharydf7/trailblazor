@@ -46,8 +46,23 @@ function registerEvents(blazor) {
     // A click on a data grid row says whether it landed on a control in the row, whose click is the control's own.
     const rowControls = 'a[href], button, input, select, textarea, label, summary, [contenteditable], '
         + '[role="button"], [role="checkbox"], [role="combobox"], [role="switch"], [role="link"]';
+    // The second click of a double-click that edits a cell leaves the row alone, so it doesn't toggle the row's
+    // selection back or raise its click again. Any click in an edit, such as choosing an option, leaves it alone too.
     blazor.registerCustomEventType('tbrowclick', {
         browserEventName: 'click',
-        createEventArgs: event => ({ onControl: !!event.target.closest?.(rowControls) }),
+        createEventArgs: event => ({
+            onControl: !!event.target.closest?.(rowControls) || !!event.target.closest?.('[data-part=editor]')
+                || event.detail > 1 && !!event.target.closest?.('[data-editable]'),
+        }),
+    });
+
+    // A key in a grid cell's edit says whether its field used it; the grid's own Enter and Escape guards don't count.
+    blazor.registerCustomEventType('tbeditkey', {
+        browserEventName: 'keydown',
+        createEventArgs: event => ({
+            key: event.key,
+            isComposing: event.isComposing,
+            handled: event.defaultPrevented && !event.tbGridGuarded,
+        }),
     });
 }

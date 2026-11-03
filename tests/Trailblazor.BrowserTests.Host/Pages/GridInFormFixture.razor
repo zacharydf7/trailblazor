@@ -12,6 +12,10 @@
     <TbDataGrid TItem="string" Items="Trails" AriaLabel="Grouped trails">
         <TbColumn Field="trail => trail" Title="Trail" Groupable />
     </TbDataGrid>
+    <TbDataGrid TItem="string" Items="_names" AriaLabel="Edited trails"
+                OnCellEdit="(GridCellEdit<string> edit) => _names[_names.IndexOf(edit.Item)] = (string)edit.Value!">
+        <TbColumn Field="trail => trail" Title="Trail" Id="trail" Editable Filterable />
+    </TbDataGrid>
     <TbButton Type="ButtonType.Submit">Save</TbButton>
 </TbForm>
 <p data-testid="saves">Saves: @_saves</p>
@@ -22,4 +26,6 @@
     private static readonly object?[] Choices = [.. Trails];
 
     private int _saves;
+
+    private readonly List<string> _names = [.. Trails];
 }

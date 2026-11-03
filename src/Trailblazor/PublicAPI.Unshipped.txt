@@ -2894,3 +2894,45 @@ Trailblazor.TbDataGrid<TItem>.GroupsChanged.get -> Microsoft.AspNetCore.Componen
 Trailblazor.TbDataGrid<TItem>.GroupsChanged.set -> void
 Trailblazor.TbDataGrid<TItem>.CellNavigation.get -> bool
 Trailblazor.TbDataGrid<TItem>.CellNavigation.set -> void
+Trailblazor.GridCellEdit<TItem>
+Trailblazor.GridCellEdit<TItem>.<Clone>$() -> Trailblazor.GridCellEdit<TItem>!
+Trailblazor.GridCellEdit<TItem>.Column.get -> string!
+Trailblazor.GridCellEdit<TItem>.Column.init -> void
+Trailblazor.GridCellEdit<TItem>.Deconstruct(out TItem Item, out string! Column, out object? Value) -> void
+Trailblazor.GridCellEdit<TItem>.Equals(Trailblazor.GridCellEdit<TItem>? other) -> bool
+Trailblazor.GridCellEdit<TItem>.GridCellEdit(TItem Item, string! Column, object? Value) -> void
+Trailblazor.GridCellEdit<TItem>.Item.get -> TItem
+Trailblazor.GridCellEdit<TItem>.Item.init -> void
+Trailblazor.GridCellEdit<TItem>.Value.get -> object?
+Trailblazor.GridCellEdit<TItem>.Value.init -> void
+Trailblazor.GridCellEditContext<TItem>
+Trailblazor.GridCellEditContext<TItem>.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.GridCellEditContext<TItem>.Error.get -> string?
+Trailblazor.GridCellEditContext<TItem>.Item.get -> TItem
+Trailblazor.GridCellEditContext<TItem>.SaveAsync() -> System.Threading.Tasks.Task!
+Trailblazor.GridCellEditContext<TItem>.SetValue(object? value) -> void
+Trailblazor.GridCellEditContext<TItem>.Value.get -> object?
+Trailblazor.TbColumn<TItem>.EditTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.GridCellEditContext<TItem>!>?
+Trailblazor.TbColumn<TItem>.EditTemplate.set -> void
+Trailblazor.TbColumn<TItem>.Editable.get -> bool
+Trailblazor.TbColumn<TItem>.Editable.set -> void
+Trailblazor.TbColumn<TItem>.Validate.get -> System.Func<TItem, object?, string?>?
+Trailblazor.TbColumn<TItem>.Validate.set -> void
+Trailblazor.TbDataGrid<TItem>.OnCellEdit.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.GridCellEdit<TItem>!>
+Trailblazor.TbDataGrid<TItem>.OnCellEdit.set -> void
+const Trailblazor.TbStrings.DataGridEditInvalid = "DataGrid.EditInvalid" -> string!
+override Trailblazor.GridCellEdit<TItem>.Equals(object? obj) -> bool
+override Trailblazor.GridCellEdit<TItem>.GetHashCode() -> int
+override Trailblazor.GridCellEdit<TItem>.ToString() -> string!
+static Trailblazor.GridCellEdit<TItem>.operator !=(Trailblazor.GridCellEdit<TItem>? left, Trailblazor.GridCellEdit<TItem>? right) -> bool
+static Trailblazor.GridCellEdit<TItem>.operator ==(Trailblazor.GridCellEdit<TItem>? left, Trailblazor.GridCellEdit<TItem>? right) -> bool
+Trailblazor.GridCellEdit<TItem>.Error.get -> string?
+Trailblazor.GridCellEdit<TItem>.Error.set -> void
+Trailblazor.GridEditKeyEventArgs
+Trailblazor.GridEditKeyEventArgs.GridEditKeyEventArgs() -> void
+Trailblazor.GridEditKeyEventArgs.Handled.get -> bool
+Trailblazor.GridEditKeyEventArgs.Handled.set -> void
+Trailblazor.GridEditKeyEventArgs.IsComposing.get -> bool
+Trailblazor.GridEditKeyEventArgs.IsComposing.set -> void
+Trailblazor.GridEditKeyEventArgs.Key.get -> string!
+Trailblazor.GridEditKeyEventArgs.Key.set -> void

@@ -4646,6 +4646,16 @@
         background: var(--tb-color-surface);
     }
 
+    /* A cell's field fills the width its column already has, so the column doesn't widen as an edit opens. */
+    .tb-data-grid__editor {
+        contain: inline-size;
+    }
+
+    .tb-data-grid__editor > .tb-field {
+        inline-size: 100%;
+        min-inline-size: 0;
+    }
+
     .tb-data-grid__filter > .tb-field {
         inline-size: 100%;
         min-inline-size: 8rem;

@@ -1620,6 +1620,10 @@ public static class ExampleCatalog
                 new("cell-navigation", "Cell navigation", "With `CellNavigation`, the grid is one stop for Tab, and "
                     + "the arrow keys move between its cells. Enter goes into a cell's fields, Escape comes back out, "
                     + "and Space selects or unselects the row.", typeof(DataGridKeyboardExample)),
+                new("edit-cells", "Edit cells", "An `Editable` column's cells are edited in place: double-click one, "
+                    + "or press Enter or F2 on it, then Enter saves and Escape cancels. Each value is checked by its "
+                    + "field's data annotations and the column's `Validate`, and `OnCellEdit` gets each saved edit.",
+                    typeof(DataGridEditExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
@@ -1629,7 +1633,8 @@ public static class ExampleCatalog
             [
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
-                typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin),
+                typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
+                typeof(GridCellEditContext<>),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Accessibility =
@@ -1677,6 +1682,10 @@ public static class ExampleCatalog
                     + "or F2 moves into any other cell's fields, where Tab cycles through them and Escape comes back "
                     + "out. Space selects or unselects the row of the cell in focus, and rows say whether they are "
                     + "selected with `aria-selected`.",
+                "An `Editable` column turns on cell navigation, so the table is an ARIA grid even without "
+                    + "`CellNavigation`. An edit's field is named "
+                    + "by its column, its error shows under it and is read out, and focus goes back to the cell when "
+                    + "Enter or Escape ends the edit. Leaving the field saves it.",
                 "Without `CellNavigation`, Tab reaches every control in the grid, each a native button, link or input. "
                     + "Only a pointer clicks a row, so whatever `OnRowClick` does needs a button in a cell too.",
                 "With `OnRowMove`, rows held in `Items` can be put in order while the grid isn't sorted or "
@@ -1690,7 +1699,8 @@ public static class ExampleCatalog
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
             DataParts = ["grid", "scroll", "sort", "sort-order", "filters", "filter", "filter-menu", "filter-apply",
-                "filter-clear", "group-by", "group", "group-toggle", "select-all", "row", "placeholder", "select",
+                "filter-clear", "group-by", "group", "group-toggle", "select-all", "row", "placeholder", "editor",
+                "select",
                 "order", "handle", "drop-reason", "loading", "empty", "failed", "summary", "pager"],
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
@@ -1720,16 +1730,17 @@ public static class ExampleCatalog
                 + "a test scrolls its `[data-part=scroll]` box, or calls `ScrollToAsync`, before it looks for a "
                 + "row further down. `page.Tb().Select(\"Group by\").ChooseAsync(\"Region\")` groups the rows; each "
                 + "group's heading is a `[data-part=group]` row whose `[data-part=group-toggle]` button opens or "
-                + "closes it.",
+                + "closes it. Double-click a cell, or press Enter on it, to edit it; its field is named for its "
+                + "column, so `cut.Tb().NumberField(\"Length (km)\")` finds it in bUnit, and Enter saves.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
-                    + "`page_size`, `select`, `move`, `group`, `expand` or `collapse` for each of those the user "
-                    + "does; a move also says whether a "
+                    + "`page_size`, `select`, `move`, `group`, `expand`, `collapse` or `edit` for each of those the "
+                    + "user does; a move also says whether a "
                     + "`pointer` or the `keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
-                    + "value, page, group or rows were used is never recorded.",
+                    + "value, page, group or rows were used, or what value an edit saved, is never recorded.",
             ],
         },
         new("table", "Table", ExampleCategory.Content,

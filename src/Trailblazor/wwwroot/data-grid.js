@@ -108,17 +108,47 @@ export function createDataGrid(table) {
         const input = event.target;
         if (event.key !== 'Enter' || event.isComposing || event.defaultPrevented
             || !(input instanceof HTMLInputElement) || actOnEnter.has(input.type)
-            || !input.closest('.tb-data-grid__filters, .tb-data-grid__filter-form')) {
+            || !input.closest('.tb-data-grid__filters, .tb-data-grid__filter-form, .tb-data-grid__editor')) {
             return;
         }
 
         event.preventDefault();
+        event.tbGridGuarded = true;
         if (!untyped.has(input.type)) {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         }
     };
     table.addEventListener('keydown', keepPageFormUnsubmitted);
+
+    // Escape that ends a cell's edit is marked used, so a dialog around the grid stays open; one a field has already
+    // used, such as a select closing its list, is already marked.
+    const keepEscapeInEdit = event => {
+        if (event.key === 'Escape' && !event.defaultPrevented && event.target.closest?.('.tb-data-grid__editor')) {
+            event.preventDefault();
+            event.tbGridGuarded = true;
+        }
+    };
+    table.addEventListener('keydown', keepEscapeInEdit);
+
+    // Pressing an option in a cell's field would take focus from it, which saves the edit before the click arrives.
+    const keepEditFocused = event => {
+        if (event.target.closest?.('[data-part=editor] [role=listbox]')) {
+            event.preventDefault();
+        }
+    };
+    table.addEventListener('pointerdown', keepEditFocused);
     return {
+        // A cell whose edit ended takes focus back once its field is gone, or its place does when the edit moved
+        // its row away, such as by its sort.
+        focusCell(id, column) {
+            const row = [...table.tBodies[0].rows].find(line => line.dataset.key === id);
+            const cell = row && [...row.cells].find(other => other.dataset.column === column);
+            if (cell) {
+                navigation.focusCell(cell);
+            } else {
+                navigation.focusPlace();
+            }
+        },
         // A virtualized grid draws only the rows in view, so it scrolls near a row's place before the row is drawn.
         async scrollToRow(id, index) {
             const find = () => [...table.tBodies[0].rows].find(row => row.dataset.key === id);
@@ -135,6 +165,8 @@ export function createDataGrid(table) {
             columns.disconnect();
             navigation.dispose();
             table.removeEventListener('keydown', keepPageFormUnsubmitted);
+            table.removeEventListener('keydown', keepEscapeInEdit);
+            table.removeEventListener('pointerdown', keepEditFocused);
         },
     };
 }
@@ -278,6 +310,13 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             return;
         }
 
+        // A cell being edited, or one Enter or F2 starts editing, leaves those keys to the grid.
+        const editing = cell.querySelector('[data-part=editor]');
+        if (editing && ['Enter', 'Escape', 'Tab'].includes(event.key)
+            || cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)) {
+            return;
+        }
+
         if (event.target !== stopOf(cell)) {
             const controls = controlsOf(cell);
             if (event.key === 'Escape') {
@@ -379,6 +418,14 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     table.addEventListener('keydown', onKeyDown);
     table.addEventListener('focusin', followFocus);
     return {
+        focusCell,
+        focusPlace() {
+            const rows = linesOf(table);
+            const row = rowAt(place.index, rows) ?? rows.at(-1);
+            if (row) {
+                focusCell(cellAt(row, place.column));
+            }
+        },
         dispose() {
             observer.disconnect();
             table.removeEventListener('keydown', onKeyDown);

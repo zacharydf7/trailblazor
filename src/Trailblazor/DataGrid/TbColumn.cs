@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -16,6 +17,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     private object?[] _captured = [];
     private int _compiled;
     private object? _shown;
+    private Action<TItem, object?>? _setter;
 
     [CascadingParameter]
     private TbDataGrid<TItem> Grid { get; set; } = default!;
@@ -89,6 +91,30 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public Func<TItem, object?>? GroupBy { get; set; }
 
+    /// <summary>Lets the user edit the column's cells: double-click a cell, or press Enter or F2 on it, then Enter
+    /// saves and Escape cancels; leaving the cell, or choosing an enum's value, saves too. A text, number, enum or bool
+    /// <see cref="Field"/> gets a
+    /// field to edit it with; any other type needs an <see cref="EditTemplate"/>. Each value is checked by the field's
+    /// data annotations, such as <c>[Range]</c>, and by <see cref="Validate"/>, and a failed check keeps the edit open
+    /// with its error. A saved value goes to the grid's <see cref="TbDataGrid{TItem}.OnCellEdit"/>, or, without one,
+    /// is set on the item when the field is a property or field the grid can set. An editable column makes the grid an
+    /// ARIA grid with cell navigation, as <see cref="TbDataGrid{TItem}.CellNavigation"/> does. The second click of the
+    /// double-click that opens an edit, and any click in an edit, don't raise
+    /// <see cref="TbDataGrid{TItem}.OnRowClick"/> or toggle the row's selection.</summary>
+    [Parameter]
+    public bool Editable { get; set; }
+
+    /// <summary>Draws the field a cell is edited with, in place of the built-in one. Its context holds the value and
+    /// changes it, saves or cancels the edit, and has the error from the last attempt to save.</summary>
+    [Parameter]
+    public RenderFragment<GridCellEditContext<TItem>>? EditTemplate { get; set; }
+
+    /// <summary>Checks a value before it is saved, returning why it can't be, such as <c>"Pick a later date."</c>, or
+    /// null when it can. Give it as a lambda, such as <c>(hike, value) =&gt; ...</c>, so the column still takes its
+    /// item type from the grid.</summary>
+    [Parameter]
+    public Func<TItem, object?, string?>? Validate { get; set; }
+
     /// <summary>Draws each cell instead of the <see cref="Field"/>'s text. Its context is the row's item. Clicks on
     /// buttons, links and fields in it don't select the row. A row draws again when its item, its selection, its class,
     /// its label or the columns change; call the grid's <see cref="TbDataGrid{TItem}.RenderRows"/> when the template
@@ -134,6 +160,22 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal bool CanGroup => Groupable && (GroupBy is not null || _value is not null);
 
+    internal ColumnEditor Editor => !Editable ? ColumnEditor.None : EditTemplate is not null ? ColumnEditor.Custom
+        : ValueType switch
+        {
+            null => ColumnEditor.None,
+            { IsEnum: true } => ColumnEditor.Choice,
+            var type when type == typeof(bool) => ColumnEditor.YesNo,
+            var type when type == typeof(string) => ColumnEditor.Text,
+            var type when IsNumber(type) => ColumnEditor.Number,
+            _ => ColumnEditor.None,
+        };
+
+    internal bool CanSet => _setter is not null;
+
+    internal bool AcceptsNull =>
+        FieldType is not { IsValueType: true } || Nullable.GetUnderlyingType(FieldType) is not null;
+
     internal ColumnFilterKind FilterKind => ValueType switch
     {
         { IsEnum: true } => ColumnFilterKind.Choice,
@@ -175,12 +217,13 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
             _field = Field;
             _captured = captured;
             _value = Field?.Compile();
+            _setter = SetterOf(Field);
             _compiled++;
         }
 
         object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method,
             FilterChoices is null, FilterTemplate is null, Groupable, GroupBy?.Method, Width, Pinned, Align, Class,
-            Cell is null, Header is null);
+            Cell is null, Header is null, Editable, EditTemplate is null, Validate?.Method);
         if (!shown.Equals(_shown))
         {
             _shown = shown;
@@ -195,6 +238,38 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     internal object? SortValueOf(TItem item) => SortBy is not null ? SortBy(item) : ValueOf(item);
 
     internal object? FilterValueOf(TItem item) => FilterBy is not null ? FilterBy(item) : ValueOf(item);
+
+    internal bool HoldsWholeNumbers => ValueType is { } type && NumberTypes.IsWhole(type);
+
+    // The edited value in the field's own type, such as a number or an enum parsed from its name; throws an
+    // OverflowException when a number doesn't fit.
+    internal object? ConvertForField(object? value)
+    {
+        if (value is null || ValueType is not { } type || value.GetType() == type || Editor == ColumnEditor.Custom)
+        {
+            return value;
+        }
+
+        return type.IsEnum && value is string name ? Enum.Parse(type, name)
+            : Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
+    }
+
+    // The field's data annotations, such as [Range], when it is a property.
+    internal string? AnnotationErrorOf(TItem item, object? value)
+    {
+        if ((Body(_field) as MemberExpression)?.Member is not PropertyInfo property || item is null)
+        {
+            return null;
+        }
+
+        var attributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true).ToList();
+        List<ValidationResult> results = [];
+        var context = new ValidationContext(item) { MemberName = property.Name, DisplayName = Heading };
+        return attributes.Count == 0 || Validator.TryValidateValue(value, context, results, attributes) ? null
+            : results.FirstOrDefault()?.ErrorMessage;
+    }
+
+    internal void SetValue(TItem item, object? value) => _setter!(item, value);
 
     internal object? GroupValueOf(TItem item) => GroupBy is not null ? GroupBy(item) : ValueOf(item);
 
@@ -257,6 +332,26 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
                 property.GetValue(target),
             _ => null,
         };
+    }
+
+    // A field the grid can set on an item held by reference, through a property with a public setter that isn't
+    // init-only, or a field that isn't read-only.
+    private static Action<TItem, object?>? SetterOf(Expression<Func<TItem, object?>>? field)
+    {
+        if (typeof(TItem).IsValueType || Body(field) is not MemberExpression member || member.Member switch
+            {
+                PropertyInfo property => property.SetMethod is not { IsPublic: true } setter || setter.ReturnParameter
+                    .GetRequiredCustomModifiers().Contains(typeof(System.Runtime.CompilerServices.IsExternalInit)),
+                FieldInfo info => info.IsInitOnly || !info.IsPublic,
+                _ => true,
+            })
+        {
+            return null;
+        }
+
+        var value = Expression.Parameter(typeof(object), "value");
+        var assign = Expression.Assign(member, Expression.Convert(value, member.Type));
+        return Expression.Lambda<Action<TItem, object?>>(assign, field!.Parameters[0], value).Compile();
     }
 
     private static string? PathOf(MemberExpression member) => member.Expression switch

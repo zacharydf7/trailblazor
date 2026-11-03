@@ -23,13 +23,15 @@ public sealed class TrailblazorMarkup
 
     internal TrailblazorMarkup(Func<string, IReadOnlyList<IElement>> findAll) => _findAll = findAll;
 
-    /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label.</summary>
+    /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label, or with this <c>AriaLabel</c> when it
+    /// has no label.</summary>
     public TbSelectDriver Select(string label) => new(() => Field(label, "[role=combobox]", "select"), _findAll);
 
-    /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
+    /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label, or with this <c>AriaLabel</c> when it
+    /// has no label.</summary>
     public TbListBoxDriver ListBox(string label) => new(() => Field(label, "[role=listbox]", "select"));
 
-    /// <summary>The <c>TbNumberField</c> with this label.</summary>
+    /// <summary>The <c>TbNumberField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbNumberFieldDriver NumberField(string label) =>
         new(() => Field(label, "input[type=number]", "input[role=spinbutton]"));
 
@@ -69,10 +71,17 @@ public sealed class TrailblazorMarkup
                 : $"No data grid is named \"{name}\".");
     });
 
-    // A field's label names its control by for or aria-labelledby; a required field's label ends with an asterisk.
+    // A field's label names its control by for or aria-labelledby; a required field's label ends with an asterisk. A
+    // field with no label, such as one editing a grid's cell, is named by its aria-label, as Playwright finds it too.
     private IElement Field(string label, params string[] controls)
     {
         var labels = _findAll("label[data-part=label]").Where(element => LabelText(element) == label).ToList();
+        if (labels.Count == 0 && _findAll(string.Join(", ", controls)).Where(control =>
+                control.GetAttribute("aria-label") == label).ToList() is [var unlabeled])
+        {
+            return unlabeled;
+        }
+
         if (labels.Count != 1)
         {
             throw new InvalidOperationException(labels.Count == 0

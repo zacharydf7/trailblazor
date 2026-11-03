@@ -197,7 +197,8 @@ public class TelemetryNameTests : BunitContext
             .Add(grid => grid.PageSizes, [1, 2]).Add(grid => grid.SelectionMode, SelectionMode.Multiple)
             .AddChildContent<TbColumn<Trail>>(column => column.Add(name => name.Field, trail => trail.Name)
                 .Add(name => name.Sortable, true).Add(name => name.Filterable, true)
-                .Add(name => name.Groupable, true)));
+                .Add(name => name.Groupable, true).Add(name => name.Editable, true))
+            .Add(grid => grid.OnCellEdit, (GridCellEdit<Trail> _) => { }));
 
         cut.Find("th button").Click();
         cut.Find("nav [data-part=next]").Click();
@@ -205,12 +206,14 @@ public class TelemetryNameTests : BunitContext
         cut.Find("tr[data-part=row] input").Change(true);
         await cut.Tb().Grid("Trails").FilterAsync("Name", "a");
         await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(trails[1]));
+        cut.Find("tbody td[data-column=Name]").DoubleClick();
+        cut.Find("[data-part=editor]").TriggerEvent("ontbeditkey", new GridEditKeyEventArgs { Key = "Enter" });
         await cut.Tb().Select("Group by").ChooseAsync("Name");
         cut.Find("[data-part=group-toggle]").Click();
         cut.Find("[data-part=group-toggle]").Click();
 
         Assert.Equal(["trails"], Names(_shown));
-        Assert.Equal(["sort", "page", "page_size", "select", "filter", "group", "collapse", "expand"],
+        Assert.Equal(["sort", "page", "page_size", "select", "filter", "edit", "group", "collapse", "expand"],
             Uses().Where(use => Equals(use.Name, "trails")).Select(use => use.Action));
     }
 
