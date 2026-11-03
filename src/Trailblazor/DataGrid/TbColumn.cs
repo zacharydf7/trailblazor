@@ -77,6 +77,18 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public RenderFragment<GridFilterContext>? FilterTemplate { get; set; }
 
+    /// <summary>Lets the rows be grouped by this column, by the user from the grid's "Group by" list or from code
+    /// through the grid's <see cref="TbDataGrid{TItem}.Groups"/>. With a <see cref="Format"/> and no
+    /// <see cref="GroupBy"/>, rows group by the text their cells show, so times shown as dates group by day.</summary>
+    [Parameter]
+    public bool Groupable { get; set; }
+
+    /// <summary>The value rows group by, when it isn't the <see cref="Field"/>'s, such as a date's month. A group's
+    /// heading shows it as the cells show their values. Call the grid's <see cref="TbDataGrid{TItem}.RefreshAsync"/>
+    /// when what it reads from outside the item changes.</summary>
+    [Parameter]
+    public Func<TItem, object?>? GroupBy { get; set; }
+
     /// <summary>Draws each cell instead of the <see cref="Field"/>'s text. Its context is the row's item. Clicks on
     /// buttons, links and fields in it don't select the row. A row draws again when its item, its selection, its class,
     /// its label or the columns change; call the grid's <see cref="TbDataGrid{TItem}.RenderRows"/> when the template
@@ -119,6 +131,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal bool CanFilter =>
         Filterable && (FilterBy is not null || _value is not null || FilterTemplate is not null);
+
+    internal bool CanGroup => Groupable && (GroupBy is not null || _value is not null);
 
     internal ColumnFilterKind FilterKind => ValueType switch
     {
@@ -165,7 +179,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
         }
 
         object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method,
-            FilterChoices is null, FilterTemplate is null, Width, Pinned, Align, Class, Cell is null, Header is null);
+            FilterChoices is null, FilterTemplate is null, Groupable, GroupBy?.Method, Width, Pinned, Align, Class,
+            Cell is null, Header is null);
         if (!shown.Equals(_shown))
         {
             _shown = shown;
@@ -180,6 +195,11 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     internal object? SortValueOf(TItem item) => SortBy is not null ? SortBy(item) : ValueOf(item);
 
     internal object? FilterValueOf(TItem item) => FilterBy is not null ? FilterBy(item) : ValueOf(item);
+
+    internal object? GroupValueOf(TItem item) => GroupBy is not null ? GroupBy(item) : ValueOf(item);
+
+    internal object? GroupKeyOf(TItem item) =>
+        GroupBy is null && Format is not null ? TextOf(ValueOf(item)) : GroupValueOf(item);
 
     internal string? TextOf(TItem item) => TextOf(ValueOf(item));
 

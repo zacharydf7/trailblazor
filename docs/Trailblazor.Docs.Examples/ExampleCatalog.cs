@@ -1605,6 +1605,10 @@ public static class ExampleCatalog
                     + "filter button whose menu takes a condition and a value, or has checkboxes for the values of an "
                     + "enum, a bool or a column's `FilterChoices`. A `FilterTemplate` draws a filter of your own.",
                     typeof(DataGridFilterMenuExample)),
+                new("group-rows", "Group rows", "The rows can be grouped by any `Groupable` column, picked from the "
+                    + "\"Group by\" list or set from code through `Groups`. Groups nest in the order they are picked, "
+                    + "and each starts with a heading that shows its row count and opens or closes the group.",
+                    typeof(DataGridGroupExample)),
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
@@ -1648,6 +1652,10 @@ public static class ExampleCatalog
                     + "\"Condition\" select and \"Value\" field, a \"Value\" date range, or a checkbox group of "
                     + "values, and applies nothing until Apply, or Enter in the value, is pressed; Clear removes the "
                     + "column's filter. A `FilterTemplate` replaces the menu's contents.",
+                "Each group's rows follow a heading row with a button that opens or closes the group and reports "
+                    + "its state with `aria-expanded`. The button is named by the column, the group's value and its "
+                    + "row count, such as \"Region: North ridge Rows: 2\". The \"Group by\" list is a "
+                    + "`TbMultiSelect`.",
                 "A pinned column moves to its side of the table in the page's order too, so screen readers and Tab "
                     + "reach its cells in the order they show.",
                 "With `Virtualize`, the table's `aria-rowcount` holds the number of rows, headers included, and "
@@ -1671,7 +1679,7 @@ public static class ExampleCatalog
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
             DataParts = ["grid", "scroll", "sort", "sort-order", "filters", "filter", "filter-menu", "filter-apply",
-                "filter-clear", "select-all", "row", "placeholder", "select",
+                "filter-clear", "group-by", "group", "group-toggle", "select-all", "row", "placeholder", "select",
                 "order", "handle", "drop-reason", "loading", "empty", "failed", "summary", "pager"],
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
@@ -1699,15 +1707,18 @@ public static class ExampleCatalog
                 + "that changes what a `Cell` template shows calls `RenderRows`, as the app does, and one that "
                 + "changes `Items` in place calls `RefreshAsync`. A virtualized grid draws only the rows in view, so "
                 + "a test scrolls its `[data-part=scroll]` box, or calls `ScrollToAsync`, before it looks for a "
-                + "row further down.",
+                + "row further down. `page.Tb().Select(\"Group by\").ChooseAsync(\"Region\")` groups the rows; each "
+                + "group's heading is a `[data-part=group]` row whose `[data-part=group-toggle]` button opens or "
+                + "closes it.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
-                    + "`page_size`, `select` or `move` for each of those the user does; a move also says whether a "
+                    + "`page_size`, `select`, `move`, `group`, `expand` or `collapse` for each of those the user "
+                    + "does; a move also says whether a "
                     + "`pointer` or the `keyboard` made it.",
-                "A page `ScrollToAsync` moves to isn't counted, and which column, filter value, page or rows were "
-                    + "used is never recorded.",
+                "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
+                    + "value, page, group or rows were used is never recorded.",
             ],
         },
         new("table", "Table", ExampleCategory.Content,

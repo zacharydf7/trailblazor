@@ -488,6 +488,40 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(table.Locator("tr[aria-rowindex='201']")).ToContainTextAsync("Stop 1");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GroupToggle_ShouldCloseItsGroupAndKeepFocus_WhenEnterIsPressedOnIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var table = Table(page, "Routes by region");
+        var toggle = table.GetByRole(AriaRole.Button, new() { Name = "Region: North ridge Rows: 2" });
+
+        await toggle.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(toggle).ToBeFocusedAsync();
+        await Expect(table.Locator("tbody td[data-column=Name]")).ToHaveTextAsync(["Summit Gate", "Lake camp",
+            "Cedar Flats", "Fern Gully", "Waterfall spur"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GroupBy_ShouldGroupWithoutSubmittingThePagesForm_WhenPickedWithTheKeyboard(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-in-form");
+        var table = Table(page, "Grouped trails");
+
+        var groupBy = page.GetByRole(AriaRole.Combobox, new() { Name = "Group by" });
+        await Expect(groupBy).ToHaveAttributeAsync("data-ready", "");
+        await groupBy.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(table.Locator("tr[data-part=group]")).ToHaveCountAsync(3);
+        await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
+    }
+
     private static ILocator Table(IPage page, string name) =>
         page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true });
 

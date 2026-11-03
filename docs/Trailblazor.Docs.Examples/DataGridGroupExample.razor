@@ -1,0 +1,36 @@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Routes by region" KeySelector="trail => trail.Id"
+                @bind-Groups="_groups">
+        <TbColumn Field="trail => trail.Name" Sortable />
+        <TbColumn Field="trail => trail.Region" Groupable Sortable />
+        <TbColumn Field="trail => trail.Difficulty" Groupable Sortable />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
+    </TbDataGrid>
+    <TbText data-testid="groups">
+        @(_groups.Count == 0 ? "Not grouped." : $"Grouped by {string.Join(", then ", _groups)}.")
+    </TbText>
+</TbStack>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", "North ridge", Difficulty.Easy, 6.4),
+        new(2, "Eagle Ridge traverse", "North ridge", Difficulty.Hard, 14.2),
+        new(3, "Cedar Flats", "River valley", Difficulty.Easy, 3.1),
+        new(4, "Fern Gully", "River valley", Difficulty.Moderate, 5.8),
+        new(5, "Waterfall spur", "River valley", Difficulty.Easy, 1.2),
+        new(6, "Summit Gate", "High peaks", Difficulty.Hard, 11.9),
+        new(7, "Lake camp", "High peaks", Difficulty.Moderate, 8.5),
+    ];
+
+    private IReadOnlyList<string> _groups = ["Region"];
+
+    private enum Difficulty
+    {
+        Easy,
+        Moderate,
+        Hard,
+    }
+
+    private sealed record Trail(int Id, string Name, string Region, Difficulty Difficulty, double LengthKm);
+}

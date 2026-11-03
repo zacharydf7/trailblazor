@@ -10,6 +10,23 @@
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
     @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); DrawRowsForReorder(); }
+    @if (HasGroupBy)
+    {
+        @* As with the filters, a page's form around the grid doesn't own the list. *@
+        <div data-part="group-by" class="tb-data-grid__toolbar">
+            <CascadingValue TValue="EditContext" Value="null">
+                <CascadingValue TValue="TbForm" Value="null">
+                    <TbMultiSelect TItem="string" Label="@Localizer[TbStrings.DataGridGroupBy]" Size="Size.Small"
+                                   Clearable Value="_groups" ValueChanged="GroupByAsync" class="tb-data-grid__group-by">
+                        @foreach (var column in _shownColumns.Where(column => column.CanGroup))
+                        {
+                            <TbOption Value="column.Key">@column.Heading</TbOption>
+                        }
+                    </TbMultiSelect>
+                </CascadingValue>
+            </CascadingValue>
+        </div>
+    }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
         <table @ref="_table" aria-label="@AriaLabel" aria-busy="@(IsLoading ? "true" : null)"
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total : null)" class="tb-data-grid__table">
@@ -148,9 +165,9 @@
                 }
                 @if (Virtualize)
                 {
-                    <Virtualize @ref="_virtualize" TItem="VirtualRow" ItemSize="RowSize" SpacerElement="tr"
-                                Items="@(DataProvider is null ? _virtualRows : null)"
-                                ItemsProvider="VirtualRowsProvider" ItemContent="VirtualRowContent"
+                    <Virtualize @ref="_virtualize" TItem="GridLine" ItemSize="RowSize" SpacerElement="tr"
+                                Items="@(DataProvider is null ? _lines : null)"
+                                ItemsProvider="VirtualRowsProvider" ItemContent="LineContent"
                                 Placeholder="VirtualPlaceholder" />
                 }
                 else
@@ -234,6 +251,22 @@
                     }
                 </td>
             }
+        </tr>;
+
+    // A group's heading spans the row, and its button stays in view while the rows scroll sideways.
+    private RenderFragment GroupRow(GroupHeading group, int at) =>
+        @<tr data-part="group" data-level="@group.Level" aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)"
+             class="tb-data-grid__group">
+            <td colspan="@ColumnCount" style="--tb-data-grid-group-level: @(group.Level - 1)"
+                class="tb-data-grid__group-cell">
+                <button type="button" data-part="group-toggle" aria-expanded="@(group.Open ? "true" : "false")"
+                        class="tb-data-grid__group-toggle" @onclick="() => ToggleGroup(group)">
+                    <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__group-chevron" />
+                    <span>@Format(TbStrings.DataGridGroupHeading, group.Column,
+                        group.Value ?? Localizer[TbStrings.DataGridGroupNone])</span>
+                    <span class="tb-data-grid__group-count">@Format(TbStrings.DataGridGroupCount, group.Count)</span>
+                </button>
+            </td>
         </tr>;
 
     // A row Virtualize hasn't loaded yet holds its place, and says nothing to screen readers.

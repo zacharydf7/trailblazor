@@ -4794,6 +4794,69 @@
         cursor: default;
     }
 
+    .tb-data-grid__toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: var(--tb-space-2);
+        padding-block-end: var(--tb-space-2);
+    }
+
+    .tb-data-grid__group-by.tb-field {
+        min-inline-size: 14rem;
+    }
+
+    /* A group's heading is a band across the rows, set further in for each group it sits in. */
+    .tb-data-grid__group-cell {
+        padding-inline-start: calc(var(--tb-space-2) + var(--tb-data-grid-group-level, 0) * var(--tb-space-5));
+        background: var(--tb-color-surface-sunken);
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    /* The heading's button stays in view at the start while the rows scroll sideways. */
+    .tb-data-grid__group-toggle {
+        position: sticky;
+        inset-inline-start: var(--tb-space-2);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        min-block-size: 24px;
+        padding: 0 var(--tb-space-1);
+        border: none;
+        border-radius: var(--tb-radius-sm);
+        background: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .tb-data-grid__group-toggle:hover {
+        background: var(--tb-color-hover);
+    }
+
+    .tb-data-grid__group-toggle:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-data-grid__group-chevron {
+        transition: transform var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    /* A closed group's chevron points toward the reading direction's end; an open one points down either way. */
+    .tb-data-grid__group-chevron:dir(rtl) {
+        transform: scaleX(-1);
+    }
+
+    .tb-data-grid__group-toggle[aria-expanded="true"] > .tb-data-grid__group-chevron {
+        transform: rotate(90deg);
+    }
+
+    .tb-data-grid__group-count {
+        color: var(--tb-color-text-muted);
+        font-weight: var(--tb-font-weight-regular);
+    }
+
     .tb-data-grid__status td {
         padding-block: var(--tb-space-6);
         color: var(--tb-color-text-muted);

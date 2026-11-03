@@ -463,6 +463,18 @@ public static class TbStrings
     /// </summary>
     public const string DataGridRowsShown = "DataGrid.RowsShown";
 
+    /// <summary>"Group by": labels the list of columns a data grid's rows can be grouped by.</summary>
+    public const string DataGridGroupBy = "DataGrid.GroupBy";
+
+    /// <summary>"{0}: {1}": a group's heading; {0} is the column and {1} the group's value.</summary>
+    public const string DataGridGroupHeading = "DataGrid.GroupHeading";
+
+    /// <summary>"Rows: {0}": how many rows a group holds; {0} is the count.</summary>
+    public const string DataGridGroupCount = "DataGrid.GroupCount";
+
+    /// <summary>"None": the value of a group whose rows have no value in its column.</summary>
+    public const string DataGridGroupNone = "DataGrid.GroupNone";
+
     /// <summary>"Sorted by {0}, ascending.": read out when a column sorts its rows smallest first; {0} is the column.
     /// </summary>
     public const string DataGridSortedAscending = "DataGrid.SortedAscending";
@@ -673,6 +685,10 @@ public static class TbStrings
         [DataGridFilterYes] = "Yes",
         [DataGridFilterNo] = "No",
         [DataGridRowsShown] = "Rows shown: {0}.",
+        [DataGridGroupBy] = "Group by",
+        [DataGridGroupHeading] = "{0}: {1}",
+        [DataGridGroupCount] = "Rows: {0}",
+        [DataGridGroupNone] = "None",
         [DataGridFilterApply] = "Apply",
         [DataGridFilterClear] = "Clear",
         [DataGridFilterCondition] = "Condition",

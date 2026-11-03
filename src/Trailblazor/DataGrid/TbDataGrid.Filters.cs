@@ -238,9 +238,9 @@ public partial class TbDataGrid<TItem>
 
         await show;
         // A provider that finds nothing says so itself.
-        if (ReferenceEquals(next, _filters) && !_failed && (_total > 0 || DataProvider is null))
+        if (ReferenceEquals(next, _filters) && !_failed && (RowCount > 0 || DataProvider is null))
         {
-            Announcer.Polite(Format(TbStrings.DataGridRowsShown, _total));
+            Announcer.Polite(Format(TbStrings.DataGridRowsShown, RowCount));
         }
     }
 

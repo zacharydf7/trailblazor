@@ -9,6 +9,9 @@
         <TbColumn Field="trail => trail" Title="Trail" Filterable />
         <TbColumn Field="trail => trail" Title="Pick" Id="pick" Filterable FilterChoices="Choices" />
     </TbDataGrid>
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Grouped trails">
+        <TbColumn Field="trail => trail" Title="Trail" Groupable />
+    </TbDataGrid>
     <TbButton Type="ButtonType.Submit">Save</TbButton>
 </TbForm>
 <p data-testid="saves">Saves: @_saves</p>

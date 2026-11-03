@@ -2880,3 +2880,15 @@ Trailblazor.TbColumn<TItem>.Pinned.get -> Trailblazor.ColumnPin
 Trailblazor.TbColumn<TItem>.Pinned.set -> void
 Trailblazor.TbDataGrid<TItem>.Virtualize.get -> bool
 Trailblazor.TbDataGrid<TItem>.Virtualize.set -> void
+const Trailblazor.TbStrings.DataGridGroupBy = "DataGrid.GroupBy" -> string!
+const Trailblazor.TbStrings.DataGridGroupCount = "DataGrid.GroupCount" -> string!
+const Trailblazor.TbStrings.DataGridGroupHeading = "DataGrid.GroupHeading" -> string!
+const Trailblazor.TbStrings.DataGridGroupNone = "DataGrid.GroupNone" -> string!
+Trailblazor.TbColumn<TItem>.GroupBy.get -> System.Func<TItem, object?>?
+Trailblazor.TbColumn<TItem>.GroupBy.set -> void
+Trailblazor.TbColumn<TItem>.Groupable.get -> bool
+Trailblazor.TbColumn<TItem>.Groupable.set -> void
+Trailblazor.TbDataGrid<TItem>.Groups.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Trailblazor.TbDataGrid<TItem>.Groups.set -> void
+Trailblazor.TbDataGrid<TItem>.GroupsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<string!>!>
+Trailblazor.TbDataGrid<TItem>.GroupsChanged.set -> void

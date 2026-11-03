@@ -20,13 +20,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
     private readonly KeyIds _ids = new();
     private List<TItem> _rows = [];
-    // A virtualized grid's rows with their places, which Virtualize draws a few at a time.
-    private List<VirtualRow> _virtualRows = [];
+    // The lines the grid draws, its rows and its groups' headings, each with its place among all the lines.
+    private List<GridLine> _lines = [];
     // The index, among all rows, of the first row a virtualized grid's provider last loaded.
     private int _rowsStart;
-    private Virtualize<VirtualRow>? _virtualize;
+    private Virtualize<GridLine>? _virtualize;
     private List<GridSort> _sorts = [];
     private List<GridFilter> _filters = [];
+    private List<string> _groups = [];
+    // A group is open until the user closes it.
+    private readonly HashSet<GroupKey> _closedGroups = [];
+    // How many rows the filters leave; unlike _total, it doesn't count group headings.
+    private int _matched;
     private int _total;
     private int _page = 1;
     private int? _pageSize;
@@ -36,11 +41,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private CancellationTokenSource? _load;
     private IReadOnlyList<GridSort>? _sortsFromParent;
     private IReadOnlyList<GridFilter>? _filtersFromParent;
+    private IReadOnlyList<string>? _groupsFromParent;
     private int? _pageFromParent;
     private int? _pageSizeFromParent;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
     private TItem? _selectedItemFromParent;
     private (object Key, TaskCompletionSource Done)? _scrollAfterRender;
+    private TaskCompletionSource? _nextRender;
     private ElementReference _table;
     private ElementReference _body;
     private IJSObjectReference? _handle;
@@ -150,6 +157,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public GridFilterMode FilterMode { get; set; }
 
+    /// <summary>The columns the rows are grouped by, outermost first, named by their <see cref="TbColumn{TItem}.Id"/>s.
+    /// The user picks them, in order, from the "Group by" list of <see cref="TbColumn{TItem}.Groupable"/> columns; bind
+    /// it with <c>@bind-Groups</c> to group from code or to save it. Groups sort by their values, in the column's own
+    /// direction when it is sorted, and each starts with a heading that shows its row count and opens or closes the
+    /// group. Only rows held in <see cref="Items"/> can be grouped, and with a <see cref="PageSize"/> the
+    /// headings count among a page's rows.</summary>
+    [Parameter]
+    public IReadOnlyList<string>? Groups { get; set; }
+
+    /// <summary>Raised when the user changes which columns group the rows.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<string>> GroupsChanged { get; set; }
+
     /// <summary>How many rows a page holds. Null, the default, shows every row with no pages.</summary>
     [Parameter]
     public int? PageSize { get; set; }
@@ -221,8 +241,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>,
-    /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c> or <c>move</c> each time the user does one. Which
-    /// column, filter value, page or rows is never recorded. It names the grid, never the user.</summary>
+    /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c>, <c>move</c>, <c>group</c>, <c>expand</c> or
+    /// <c>collapse</c> each time the user does one. Which column, filter value, page, group or rows is never
+    /// recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -252,13 +273,25 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private int HeaderRowCount => HasFilterRow ? 2 : 1;
 
     // A virtualized grid's provider loads a few rows at a time, so only its count says whether there are any.
-    private bool HasNoRows => Virtualize && DataProvider is not null ? _total == 0 : _rows.Count == 0;
+    private bool HasNoRows => Virtualize && DataProvider is not null ? _total == 0 : _lines.Count == 0;
+
+    // A grouped grid's lines count headings too, so the rows the filters leave are counted apart.
+    private int RowCount => DataProvider is null ? _matched : _total;
 
     private int ColumnCount => _columns.Count + LeadCount;
 
     // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
     private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0
-        && !AppliedFilters.Any();
+        && !AppliedFilters.Any() && !AppliedGroups.Any();
+
+    // A group on a column that isn't there, or can't group, is kept but doesn't group the rows.
+    private IEnumerable<TbColumn<TItem>> AppliedGroups =>
+        from key in _groups
+        from column in _columns
+        where column.Key == key && column.CanGroup
+        select column;
+
+    private bool HasGroupBy => Items is not null && _columns.Any(column => column.CanGroup);
 
     // A filter on a column that isn't there, or can't filter, is kept but hides no rows.
     private IEnumerable<(GridFilter Filter, TbColumn<TItem> Column)> AppliedFilters =>
@@ -282,6 +315,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             throw new InvalidOperationException(
                 $"{nameof(TbDataGrid<TItem>)} takes {nameof(Items)} or a {nameof(DataProvider)}, not both.");
+        }
+
+        if (DataProvider is not null && Groups is { Count: > 0 })
+        {
+            throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} groups only rows held in " +
+                $"{nameof(Items)}, not rows from a {nameof(DataProvider)}.");
         }
 
         // Without a height the rows' box grows with them, so every row would count as in view.
@@ -308,6 +347,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             {
                 _filters = [.. Filters ?? []];
                 ForgetClosedDrafts();
+            }
+        }
+
+        if (!ReferenceEquals(Groups, _groupsFromParent))
+        {
+            _groupsFromParent = Groups;
+            if (!(Groups ?? []).SequenceEqual(_groups))
+            {
+                _groups = [.. Groups ?? []];
+                _closedGroups.Clear();
             }
         }
 
@@ -340,6 +389,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         _columnsChanged = false;
+        if (_nextRender is { } rendered)
+        {
+            _nextRender = null;
+            rendered.TrySetResult();
+        }
         Telemetry.Rendered(TelemetryName);
         try
         {
@@ -401,18 +455,29 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public async Task ScrollToAsync(TItem item)
     {
         var key = KeyOf(item);
+        var opened = Items is not null && OpenGroupsOf(item);
         if (Virtualize)
         {
-            if (_handle is not null && _rows.FindIndex(row => Equals(KeyOf(row), key)) is var at and >= 0)
+            // Virtualize draws the opened groups' lines only once the grid renders, so the scroll waits for it.
+            if (opened)
             {
-                await _handle.InvokeVoidAsync("scrollToRow", IdOf(item), _rowsStart + at);
+                var rendered = _nextRender ??= new();
+                StateHasChanged();
+                await rendered.Task;
+            }
+
+            var at = DataProvider is null ? PlaceOf(_lines, key)
+                : _rows.FindIndex(row => Equals(KeyOf(row), key)) is var loaded and >= 0 ? _rowsStart + loaded : -1;
+            if (_handle is not null && at >= 0)
+            {
+                await _handle.InvokeVoidAsync("scrollToRow", IdOf(item), at);
             }
 
             return;
         }
 
-        if (_pageSize is { } size && Items is not null
-            && Arranged().ToList().FindIndex(other => Equals(KeyOf(other), key)) is var index and >= 0)
+        if (_pageSize is { } size && Items is not null && PlaceOf(Lines(Arranged().ToList()), key) is var index
+            and >= 0)
         {
             await GoToPageAsync(index / size + 1);
         }
@@ -428,14 +493,37 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // can't name an internal component.
     private void Rows(RenderTreeBuilder builder)
     {
-        for (var index = 0; index < _rows.Count; index++)
+        foreach (var line in _lines)
         {
-            AddRow(builder, _rows[index], Offset + index);
+            AddLine(builder, line);
         }
     }
 
-    // Virtualize draws each row it shows in one region, so the rows keep their keys among themselves.
-    private RenderFragment<VirtualRow> VirtualRowContent => row => builder => AddRow(builder, row.Item, row.Index);
+    // Virtualize draws each line it shows in one region, so the lines keep their keys among themselves.
+    private RenderFragment<GridLine> LineContent => line => builder => AddLine(builder, line);
+
+    private void AddLine(RenderTreeBuilder builder, GridLine line)
+    {
+        if (line.Group is { } group)
+        {
+            AddGroupRow(builder, group, line.Index);
+        }
+        else
+        {
+            AddRow(builder, line.Item, line.Index);
+        }
+    }
+
+    // A heading keeps its key as it opens and closes, so focus stays on its button.
+    private void AddGroupRow(RenderTreeBuilder builder, GroupHeading group, int at)
+    {
+        builder.OpenComponent<GridRow<GroupHeading>>(0);
+        builder.SetKey(group.Key);
+        builder.AddComponentParameter(1, nameof(GridRow<GroupHeading>.Item), group);
+        builder.AddComponentParameter(2, nameof(GridRow<GroupHeading>.Version), _rowVersion);
+        builder.AddComponentParameter(3, nameof(GridRow<GroupHeading>.ChildContent), GroupRow(group, at));
+        builder.CloseComponent();
+    }
 
     private void AddRow(RenderTreeBuilder builder, TItem item, int at)
     {
@@ -455,7 +543,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         builder.CloseComponent();
     }
 
-    private ItemsProviderDelegate<VirtualRow>? VirtualRowsProvider =>
+    private ItemsProviderDelegate<GridLine>? VirtualRowsProvider =>
         DataProvider is null ? null : LoadVirtualRowsAsync;
 
     // A guess at a row's height, which Virtualize corrects from the rows it draws.
@@ -467,7 +555,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     };
 
     // A virtualized grid's provider loads the rows Virtualize asks for, sorted and filtered as the grid is.
-    private async ValueTask<ItemsProviderResult<VirtualRow>> LoadVirtualRowsAsync(ItemsProviderRequest request)
+    private async ValueTask<ItemsProviderResult<GridLine>> LoadVirtualRowsAsync(ItemsProviderRequest request)
     {
         var asked = new GridRequest(request.StartIndex, request.Count, [.. _sorts]) { Filters = [.. _filters] };
         _loading = true;
@@ -508,11 +596,17 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         StateHasChanged();
-        return new(rows.Select((row, index) => new VirtualRow(row, request.StartIndex + index)), result.TotalCount);
+        return new(rows.Select((row, index) => new GridLine(row, request.StartIndex + index)), result.TotalCount);
     }
 
-    // A row Virtualize draws, with its place among all the rows.
-    private readonly record struct VirtualRow(TItem Item, int Index);
+    // A line the grid draws: an item's row, or a group's heading, with its place among all the lines.
+    private readonly record struct GridLine(TItem Item, int Index, GroupHeading? Group = null);
+
+    private sealed record GroupHeading(GroupKey Key, int Level, string Column, string? Value, int Count, bool Open);
+
+    // A group's column and value within its outer group. As its own type, it also keys the heading apart from every
+    // row.
+    private sealed record GroupKey(GroupKey? Outer, string Column, object? Value);
 
     internal void AddColumn(TbColumn<TItem> column)
     {
@@ -827,13 +921,110 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         var arranged = Arranged().ToList();
-        _total = arranged.Count;
+        var lines = Lines(arranged);
+        _matched = arranged.Count;
+        _total = lines.Count;
+        // A virtualized row shows its place among the lines, which may have moved, so the rows draw again.
+        if (Virtualize)
+        {
+            _rowVersion++;
+        }
+
         _page = Math.Min(_page, PageCount);
-        ShowRows(_pageSize is { } size ? [.. arranged.Skip((_page - 1) * size).Take(size)] : arranged);
+        ShowLines(_pageSize is { } size ? [.. lines.Skip((_page - 1) * size).Take(size)] : lines);
         _arrangedFor = ArrangedFor;
     }
 
-    private object ArrangedFor => (Items, _sorts, _filters, _page, _pageSize, _columnVersion);
+    private object ArrangedFor => (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion);
+
+    // Each group starts with its heading; an open group then lists its inner groups, or its rows in their sorted
+    // order. Groups sort by their first row's value, not their key, since a formatted column's key is text.
+    private List<GridLine> Lines(List<TItem> arranged)
+    {
+        var groups = AppliedGroups.ToList();
+        List<GridLine> lines = [];
+        void Add(IEnumerable<TItem> items, int level, GroupKey? outer)
+        {
+            if (level == groups.Count)
+            {
+                lines.AddRange(items.Select(item => new GridLine(item, lines.Count)));
+                return;
+            }
+
+            var column = groups[level];
+            var grouped = items.GroupBy(column.GroupKeyOf);
+            var descending = _sorts.Any(sort =>
+                sort.Column == column.Key && sort.Direction == SortDirection.Descending);
+            Func<IGrouping<object?, TItem>, object?> value = group => column.GroupValueOf(group.First());
+            foreach (var group in descending ? grouped.OrderByDescending(value, Comparer<object?>.Default)
+                         : grouped.OrderBy(value, Comparer<object?>.Default))
+            {
+                var key = new GroupKey(outer, column.Key, group.Key);
+                var open = !_closedGroups.Contains(key);
+                lines.Add(new(default!, lines.Count, new(key, level + 1, column.Heading, column.TextOf(value(group)),
+                    group.Count(), open)));
+                if (open)
+                {
+                    Add(group, level + 1, key);
+                }
+            }
+        }
+
+        Add(arranged, 0, null);
+        return lines;
+    }
+
+    private int PlaceOf(List<GridLine> lines, object key) =>
+        lines.FindIndex(line => line.Group is null && Equals(KeyOf(line.Item), key)) is var at and >= 0
+            ? lines[at].Index : -1;
+
+    // A row in a closed group is shown before the grid goes to it.
+    private bool OpenGroupsOf(TItem item)
+    {
+        GroupKey? key = null;
+        var opened = false;
+        foreach (var column in AppliedGroups)
+        {
+            key = new(key, column.Key, column.GroupKeyOf(item));
+            opened |= _closedGroups.Remove(key);
+        }
+
+        if (opened)
+        {
+            Arrange(force: true);
+        }
+
+        return opened;
+    }
+
+    private void ToggleGroup(GroupHeading group)
+    {
+        Telemetry.Used(TelemetryName, group.Open ? "collapse" : "expand");
+        if (!_closedGroups.Remove(group.Key))
+        {
+            _closedGroups.Add(group.Key);
+        }
+
+        Arrange(force: true);
+    }
+
+    // Groups nest in the order the user picks them, and a new grouping starts with every group open.
+    private async Task GroupByAsync(IReadOnlyList<string> keys)
+    {
+        Telemetry.Used(TelemetryName, "group");
+        _groups = [.. keys];
+        _closedGroups.Clear();
+        var pageMoved = _page != 1;
+        _page = 1;
+        var show = ShowAsync(force: false);
+        await GroupsChanged.InvokeAsync(_groups);
+        if (pageMoved)
+        {
+            await PageChanged.InvokeAsync(1);
+        }
+
+        await show;
+    }
 
     // Columns report their changes after the grid renders, so their rows sort again as it next renders, once for all.
     private void ArrangeForColumns()
@@ -846,8 +1037,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     // Selection follows a row by its key, so no two rows may share one. A row that isn't shown has no element, so its
     // reference is dropped before anything can scroll to it.
-    private void ShowRows(List<TItem> rows)
+    private void ShowRows(List<TItem> rows) => ShowLines([.. rows.Select((row, at) => new GridLine(row, Offset + at))]);
+
+    private void ShowLines(List<GridLine> lines)
     {
+        List<TItem> rows = [.. lines.Where(line => line.Group is null).Select(line => line.Item)];
         var shown = rows.Select(KeyOf).ToHashSet();
         if (shown.Count != rows.Count)
         {
@@ -856,7 +1050,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         _rows = rows;
-        _virtualRows = Virtualize && DataProvider is null ? [.. rows.Select((row, at) => new VirtualRow(row, at))] : [];
+        _lines = lines;
         _ids.Keep(shown);
         foreach (var gone in _rowRefs.Keys.Where(key => !shown.Contains(key)).ToList())
         {
@@ -1055,6 +1249,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _disposed = true;
         _load?.Cancel();
         _scrollAfterRender?.Done.TrySetResult();
+        _nextRender?.TrySetResult();
         if (_handle is not null)
         {
             await _handle.DisposeHandleAsync();
