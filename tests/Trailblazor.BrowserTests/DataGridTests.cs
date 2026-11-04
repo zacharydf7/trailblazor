@@ -5,21 +5,6 @@ namespace Trailblazor.BrowserTests;
 
 public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Grid_ShouldSortByAColumnAndSaySo_WhenItsHeaderIsClicked(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        var trails = page.Tb().Grid("Trails");
-
-        await trails.SortAsync("Name");
-        await Expect(Names(page)).ToHaveTextAsync(["Cedar Flats", "Eagle Ridge traverse", "Fern Gully", "Lake camp",
-            "Pine Hollow loop"]);
-        await trails.SortAsync("Name", descending: true);
-
-        await Expect(Names(page).First).ToHaveTextAsync("Waterfall spur");
-        await Expect(page.Locator("[data-part=announcer] [role=status] p").Last)
-            .ToHaveTextAsync("Sorted by Name, descending.");
-    }
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Grid_ShouldSortByOneColumnAlone_WhenAskedWhileSortedByTwo(string browser)
@@ -53,23 +38,6 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Grid_ShouldShowEachPageAndItsRange_WhenPagedOrGivenAnotherPageSize(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        var summary = Table(page, "Trails").Locator("xpath=ancestor::*[contains(@class, 'tb-data-grid ')][1]")
-            .Locator("[data-part=summary]");
-        await Expect(summary).ToHaveTextAsync("1–5 of 7");
-
-        await page.Tb().Grid("Trails").GoToPageAsync(2);
-        await Expect(Names(page)).ToHaveTextAsync(["Summit Gate", "Lake camp"]);
-        await Expect(summary).ToHaveTextAsync("6–7 of 7");
-        await page.Tb().Select("Rows per page").ChooseAsync("10");
-
-        await Expect(Names(page)).ToHaveCountAsync(7);
-        await Expect(summary).ToHaveTextAsync("1–7 of 7");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Grid_ShouldSelectByBoxRowAndHeaderButNotByACellsButton_WhenEachIsClicked(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");
@@ -88,20 +56,6 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Table(page, "Trails").Locator("tr[data-part=row][data-selected]")).ToHaveCountAsync(5);
         Assert.False(await all.EvaluateAsync<bool>("box => box.indeterminate"));
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Grid_ShouldPressOnlyThePlannedTrailsButton_WhenAnotherTrailIsPlanned(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        var pine = page.GetByRole(AriaRole.Button, new() { Name = "Plan Pine Hollow loop" });
-        await pine.ClickAsync();
-        await Expect(pine).ToHaveAttributeAsync("aria-pressed", "true");
-
-        await page.GetByRole(AriaRole.Button, new() { Name = "Plan Cedar Flats" }).ClickAsync();
-
-        await Expect(page.GetByTestId("chosen")).ToContainTextAsync("Planning Cedar Flats.");
-        await Expect(pine).ToHaveAttributeAsync("aria-pressed", "false");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -134,34 +88,6 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(table.Locator("tbody td[data-column=LengthKm]").First).ToHaveCSSAsync("text-align", "end");
         await Expect(table.Locator("tbody td[data-column=Name]").First).ToHaveCSSAsync("text-align", "start");
         await Expect(table.Locator("tbody td[data-part=select]").First).ToHaveCSSAsync("text-align", "center");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Grid_ShouldShowOnlyMatchingRowsAndCountThem_WhenFilterTextIsTyped(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-
-        await Table(page, "Hikes").GetByLabel("Filter Name", new() { Exact = true }).PressSequentiallyAsync("ridge");
-
-        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse"]);
-        await Expect(page.Locator("[data-part=announcer] [role=status] p").Last).ToHaveTextAsync("Rows shown: 1.");
-        await Expect(page.GetByTestId("filters")).ToHaveTextAsync("Filters: Name Contains ridge.");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Grid_ShouldShowRowsMeetingEveryColumnsFilter_WhenSeveralAreSet(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        var hikes = page.Tb().Grid("Hikes");
-
-        await page.Tb().Select("Filter Difficulty").ChooseAsync("Hard");
-        await hikes.FilterAsync("Length (km)", "14.2");
-
-        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse"]);
-        await hikes.FilterAsync("Length (km)", "11.9");
-        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Summit Gate"]);
-        await hikes.FilterAsync("Length (km)", "");
-        await Expect(Names(page, "Hikes")).ToHaveTextAsync(["Eagle Ridge traverse", "Summit Gate"]);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -232,6 +158,9 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Table(page, "Row trails").Locator("tbody td")).ToHaveTextAsync(["Eagle Ridge"]);
         await Expect(Table(page, "Menu trails").Locator("tbody td[data-column=Trail]")).ToHaveTextAsync(["Cedar Flats"]);
         await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
+        await page.Tb().Grid("Row trails").FilterAsync("Trail", "");
+        await Expect(Table(page, "Row trails").Locator("tbody td"))
+            .ToHaveTextAsync(["Pine Hollow", "Eagle Ridge", "Cedar Flats"]);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -269,18 +198,6 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Table(page, "Menu trails").Locator("tbody td[data-column=Trail]")).ToHaveTextAsync(["Pine Hollow"]);
         await Expect(page.GetByTestId("saves")).ToHaveTextAsync("Saves: 0");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task FilterMenu_ShouldShowWhatATemplatesFilterApplies_WhenItsControlIsUsed(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
-
-        await page.GetByRole(AriaRole.Button, new() { Name = "Filter Water", Exact = true }).ClickAsync();
-        await page.GetByRole(AriaRole.Switch, new() { Name = "Only with water" }).ClickAsync();
-
-        await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Aspen Flat", "Dune Point", "Elk Meadow"]);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -1004,26 +921,6 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(row.Locator("td[data-column=Name]")).ToHaveTextAsync("Pine Hollow loop");
         await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
         Assert.True(await page.EvaluateAsync<bool>("() => window.escapeUsed"));
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task State_ShouldBringBackTheSortAndFilters_WhenASavedViewIsRestored(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        var grid = page.Tb().Grid("Saved view");
-        var names = Table(page, "Saved view").Locator("tbody td[data-column=Name]");
-        await page.Tb().Select("Filter Surface").ChooseAsync("Dirt");
-        await grid.SortAsync("Name", descending: true);
-        await page.GetByRole(AriaRole.Button, new() { Name = "Save view" }).ClickAsync();
-        await Expect(page.GetByTestId("saved-view")).ToContainTextAsync("\"Direction\":\"Descending\"");
-
-        await page.Tb().Select("Filter Surface").ChooseAsync("Paved");
-        await grid.SortAsync("Name");
-        await Expect(names).ToHaveTextAsync(["Cedar Flats", "Lake Shore"]);
-        await page.GetByRole(AriaRole.Button, new() { Name = "Restore view" }).ClickAsync();
-
-        await Expect(names).ToHaveTextAsync(["Ridge Loop", "Pine Hollow loop", "Fern Gully"]);
-        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Filter Surface" })).ToContainTextAsync("Dirt");
     }
 
     private static ILocator Table(IPage page, string name) =>

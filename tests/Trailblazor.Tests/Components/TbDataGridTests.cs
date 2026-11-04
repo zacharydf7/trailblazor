@@ -383,9 +383,12 @@ public class TbDataGridTests : BunitContext
         var cut = RenderTrails();
 
         cut.Find("th[data-column=Name] button").Click();
-
         announcer.WaitForAssertion(() =>
             Assert.Equal("Sorted by Name, ascending.", announcer.Find("[role=status] p").TextContent));
+        cut.Find("th[data-column=Name] button").Click();
+
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Sorted by Name, descending.", announcer.FindAll("[role=status] p")[^1].TextContent));
     }
 
     [Fact]
@@ -402,6 +405,23 @@ public class TbDataGridTests : BunitContext
         Assert.Equal(2, page);
         Assert.Equal(["Cedar Flats", "Fern Gully"], Names(cut));
         Assert.Equal("3–4 of 5", cut.Find("[data-part=summary]").TextContent.Trim());
+        cut.Find("nav[aria-label='Pages of Trails'] [data-part=next]").Click();
+
+        Assert.Equal(["Lake Camp"], Names(cut));
+        Assert.Equal("5–5 of 5", cut.Find("[data-part=summary]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task PageSize_ShouldShowThatManyRowsFromTheFirstPage_WhenAnotherIsChosen()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.PageSizes, [2, 3]));
+        cut.Find("nav[aria-label='Pages of Trails'] [data-part=next]").Click();
+
+        await cut.Tb().Select("Rows per page").ChooseAsync("3");
+
+        Assert.Equal(["Pine Hollow", "Eagle Ridge", "Cedar Flats"], Names(cut));
+        Assert.Equal("1–3 of 5", cut.Find("[data-part=summary]").TextContent.Trim());
     }
 
     [Fact]
