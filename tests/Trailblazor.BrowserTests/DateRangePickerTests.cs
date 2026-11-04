@@ -76,6 +76,17 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldMoveToTheNextDayWithTheLeftArrow_WhenThePageIsRightToLeft(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(Day(page, "Thursday, June 4, 2026")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldCloseAndKeepTheRange_WhenEscapeIsPressed(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);

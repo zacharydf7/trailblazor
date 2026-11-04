@@ -68,6 +68,15 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
+    public static TheoryData<string, string> DirectionSensitivePages => new(
+        from browser in AllBrowsers.Names
+        from component in new[]
+        {
+            "slider", "splitter", "menu", "tabs", "toggle-group", "toolbar", "tree-view", "pagination",
+            "date-range-picker", "sortable", "accordion", "icon",
+        }
+        select (browser, $"components/{component}"));
+
     public static TheoryData<string, string> BrowsersInBothThemes => new(
         from browser in AllBrowsers.Names
         from theme in new[] { "light", "dark" }
@@ -361,6 +370,23 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
 
+    [Theory, MemberData(nameof(DirectionSensitivePages))]
+    public async Task Site_ShouldHaveNoAccessibilityViolations_WhenOpenedRightToLeft(string browser, string path)
+    {
+        var page = await OpenDocsAsync(browser, path);
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        var violations = new List<string>();
+
+        foreach (var theme in new[] { "light", "dark" })
+        {
+            await SetThemeAsync(page, theme);
+            violations.AddRange((await page.RunAxe(AxeTests.WcagAA)).Violations.Select(violation =>
+                $"{theme} {violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+        }
+
+        Assert.Empty(violations);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ApiPage_ShouldScrollToTheMemberBelowTheHeader_WhenItsAnchorIsOpened(string browser)
     {
@@ -605,6 +631,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
         Assert.True((await contents.BoundingBoxAsync())!.X > (await page.Locator("main").BoundingBoxAsync())!.X,
             "The contents should move to the right of the page.");
+        await Expect(page.Locator(".docs-article p code").First).ToHaveCSSAsync("direction", "ltr");
+        await Expect(page.Locator(".docs-source").First).ToHaveCSSAsync("direction", "ltr");
         await page.ReloadAsync();
 
         await Expect(page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");

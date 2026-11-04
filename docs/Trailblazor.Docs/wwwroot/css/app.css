@@ -642,6 +642,14 @@ a:focus-visible {
     line-height: 1.5;
 }
 
+/* Code stays left to right on a right-to-left page; otherwise a leading -- or a trailing ) jumps to the other end. */
+code,
+.docs-source,
+.docs-install {
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
 .docs-code {
     border: 1px solid var(--tb-border-subtle);
     border-radius: var(--tb-radius-xl);
