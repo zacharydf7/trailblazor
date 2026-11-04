@@ -378,10 +378,11 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private bool IsEnd(DateOnly date) => _anchor is null && date == EndDate;
 
     // The ends of the range name which end they are; the days between keep just their date, and aria-selected marks
-    // them.
+    // them. The day is written unpadded, as the button shows it: a culture's long date can pad it (the invariant
+    // culture writes "04"), and the accessible name must contain the visible label.
     private string DayName(DateOnly date)
     {
-        var name = date.ToString("D", DateCulture);
+        var name = date.ToString(PaddedDay().Replace(DateCulture.DateTimeFormat.LongDatePattern, "d"), DateCulture);
         name = IsStart(date) ? $"{name}, {StartLabel}" : name;
         return IsEnd(date) ? $"{name}, {EndLabel}" : name;
     }
@@ -427,6 +428,9 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
     [GeneratedRegex("(?<![dM])(?:d{1,2}|M{1,2})(?![dM])")]
     private static partial Regex DayOrMonth();
+
+    [GeneratedRegex("(?<!d)dd(?!d)")]
+    private static partial Regex PaddedDay();
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

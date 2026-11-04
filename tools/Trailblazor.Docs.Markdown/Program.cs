@@ -8,5 +8,12 @@ if (args.Length != 1)
     return 1;
 }
 
+// A wrong folder would otherwise be created and written to, and the site would quietly publish without its Markdown.
+if (!File.Exists(Path.Combine(args[0], "index.html")))
+{
+    Console.Error.WriteLine($"{args[0]} isn't a published site: it has no index.html.");
+    return 1;
+}
+
 await DocsMarkdown.WriteAsync(args[0]);
 return 0;

@@ -72,6 +72,17 @@ public class TbDateRangePickerTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameEachDayWithTheNumberItShows_WhenTheCulturesLongDatePadsTheDay()
+    {
+        var cut = Render<TbDateRangePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Value, June3To10)
+            .Add(picker => picker.Culture, CultureInfo.InvariantCulture));
+
+        Assert.Equal("5", Day(cut, "2026-06-05").TextContent.Trim());
+        Assert.Equal("Friday, 5 June 2026", Day(cut, "2026-06-05").GetAttribute("aria-label"));
+        Assert.Equal("Friday, 12 June 2026", Day(cut, "2026-06-12").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public void Pick_ShouldAnnounceTheChosenRange_WhenTheEndIsPicked()
     {
         var announcer = Render<AnnouncerHost>();

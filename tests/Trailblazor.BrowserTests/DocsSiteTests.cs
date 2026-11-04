@@ -682,6 +682,12 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(0, box.Y, 1);
         // The brand row is 4rem; a second row would be at least as tall again.
         Assert.InRange(box.Height, 60, 70);
+        // A row too wide for the window would spill sideways rather than wrap.
+        Assert.True(await page.EvaluateAsync<bool>("""
+            () => document.querySelector('.docs-header__inner').scrollWidth
+                <= document.querySelector('.docs-header__inner').clientWidth
+                && document.documentElement.scrollWidth <= document.documentElement.clientWidth
+            """), "The header's row should fit the window.");
     }
 
     [Theory, MemberData(nameof(PhonePagesInBothThemes))]

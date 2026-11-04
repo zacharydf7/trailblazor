@@ -74,7 +74,6 @@ a:focus-visible {
 
 .docs-header__inner {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: var(--tb-space-3) var(--tb-space-5);
     min-height: var(--docs-header-height);
@@ -125,8 +124,17 @@ a:focus-visible {
     display: none;
 }
 
+/* Only the search box shrinks to keep the header on one row, since how wide the header's text runs depends on the
+   system's fonts. */
+.docs-brand,
+.docs-site-nav,
+.docs-look {
+    flex-shrink: 0;
+}
+
 .docs-search {
-    width: min(100%, 15rem);
+    flex: 0 1 15rem;
+    min-width: 7rem;
 }
 
 /* A suggestion shows where it matched, with the words around the match below. */
@@ -1235,6 +1243,7 @@ kbd {
     /* The header keeps to one row: the brand, then buttons that open the search or the rest of the header below it.
        The padding alone makes that row 4rem tall, so it doesn't shift when a panel opens below. */
     .docs-header__inner {
+        flex-wrap: wrap;
         padding-block: var(--tb-space-3);
     }
 

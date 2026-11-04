@@ -32,7 +32,8 @@
              Properties="Configuration=$(Configuration)">
       <Output TaskParameter="TargetOutputs" ItemName="DocsMarkdownTool" />
     </MSBuild>
-    <Exec Command="dotnet &quot;@(DocsMarkdownTool)&quot; &quot;$(TargetDir)docs-site\wwwroot&quot;" />
+    <!-- A forward slash, since Linux reads a backslash as part of the folder's name. -->
+    <Exec Command="dotnet &quot;@(DocsMarkdownTool)&quot; &quot;$(TargetDir)docs-site/wwwroot&quot;" />
   </Target>
 
   <ItemGroup>
