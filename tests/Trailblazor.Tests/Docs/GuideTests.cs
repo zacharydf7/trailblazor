@@ -26,6 +26,33 @@ public class GuideTests : DocsTest
     }
 
     [Theory, MemberData(nameof(Guides))]
+    public void GuideText_ShouldReadEachSectionTheGuideShowsWithoutItsMarkup_WhenIndexed(string path)
+    {
+        var cut = PageAt(path);
+
+        var text = GuideText.Of(GuideCatalog.All.Single(guide => guide.Path == path));
+
+        // The palettes guide builds a section for each palette; search reads those from PaletteCatalog, not from the
+        // page's source.
+        var shown = cut.FindAll(".docs-article__body > .docs-section > h2")
+            .Where(heading => !heading.Id!.StartsWith("palette-", StringComparison.Ordinal));
+        Assert.Equal(shown.Select(heading => (heading.Id!, heading.TextContent.Trim())),
+            text.Sections.Select(section => (section.Id, section.Title)));
+        // Code the guide shows, such as <TbStack Gap="4"> or @bind-Value, is text; Razor it runs is not.
+        Assert.All(text.Sections.Select(section => section.Text).Prepend(text.Intro),
+            words => Assert.DoesNotMatch(@"@(?:\(|if\b|foreach\b|for\b)|PageTitle|· Trailblazor", words));
+    }
+
+    [Fact]
+    public void GuideText_ShouldKeepALiteralAt_WhenTheGuideEscapesIt()
+    {
+        var text = GuideText.Of(GuideCatalog.All.Single(guide => guide.Path == "guides/analyzers"));
+
+        Assert.Contains(text.Sections, section => section.Text.Contains("Use @bind-Value or handle ValueChanged"));
+        Assert.Contains(text.Sections, section => section.Text.Contains("Attributes spread with @attributes"));
+    }
+
+    [Theory, MemberData(nameof(Guides))]
     public void Guide_ShouldTableTheTypesItsEntryLists_WhenOpened(string path)
     {
         var cut = PageAt(path);

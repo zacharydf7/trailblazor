@@ -16,6 +16,7 @@
   <ItemGroup>
     <EmbeddedResource Include="*.razor" Exclude="_Imports.razor;CodeBlock.razor" LogicalName="Source/%(Filename)%(Extension)" />
     <EmbeddedResource Include="roadmap.json" LogicalName="Roadmap/roadmap.json" />
+    <EmbeddedResource Include="..\Trailblazor.Docs\Pages\Guides\*.razor" LogicalName="Guides/%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\src\Trailblazor\wwwroot\trailblazor.css" LogicalName="Css/trailblazor.css" />
   </ItemGroup>
 

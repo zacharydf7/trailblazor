@@ -1,17 +1,17 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
+using Trailblazor.Docs.Examples;
 
 namespace Trailblazor.Docs.Shared;
 
 // Notes written as plain text, as the example catalog keeps them.
-public static partial class DocsText
+public static class DocsText
 {
-    // Text between backticks shows as code, and [text](path) links to another page, such as
-    // [text field](components/text-field).
+    // Renders the catalog's code as a <code> element and its links as <a> elements, using CatalogMarkup's syntax.
     public static RenderFragment Render(string text) => builder =>
     {
         var at = 0;
-        foreach (Match match in Markup().Matches(text))
+        foreach (Match match in CatalogMarkup.Pattern().Matches(text))
         {
             builder.AddContent(0, text[at..match.Index]);
             if (match.Groups["code"].Success)
@@ -33,7 +33,4 @@ public static partial class DocsText
 
         builder.AddContent(6, text[at..]);
     };
-
-    [GeneratedRegex(@"`(?<code>[^`]*)`|\[(?<link>[^\]]+)\]\((?<path>[^)\s]+)\)")]
-    private static partial Regex Markup();
 }

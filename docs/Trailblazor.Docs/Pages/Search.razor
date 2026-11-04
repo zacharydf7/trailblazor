@@ -6,18 +6,38 @@
 <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Search</TbText>
 <TbText role="status" TextStyle="TextStyle.Subtitle" class="docs-lead">@Status</TbText>
 
-@if (_results.Count > 0)
+@if (_pages.Count > 0)
 {
     <ul class="docs-results">
-        @foreach (var result in _results)
+        @foreach (var hits in _pages)
         {
             <li>
-                <a href="@result.Path" class="docs-card__title">@result.Title</a>
-                <TbText>@result.Summary</TbText>
-                @if (result.Parameters.Count > 0)
+                <a href="@hits.Key" class="docs-card__title">@hits.First().Page</a>
+                <ul class="docs-results__matches">
+                    @foreach (var result in hits.Take(MatchesShown))
+                    {
+                        <li>
+                            @if (result.Section is { } section)
+                            {
+                                <a href="@result.Path" class="docs-results__section">
+                                    @if (result.Match == SearchMatch.Member)
+                                    {
+                                        <code>@section</code>
+                                    }
+                                    else
+                                    {
+                                        @section
+                                    }
+                                </a>
+                            }
+                            <TbText class="docs-note">@result.Snippet</TbText>
+                        </li>
+                    }
+                </ul>
+                @if (hits.Count() > MatchesShown)
                 {
-                    <TbText class="docs-note">
-                        Has <a href="@($"{result.Path}/api")">@string.Join(", ", result.Parameters)</a>
+                    <TbText class="docs-note docs-results__more">
+                        @MoreText(hits.Count() - MatchesShown, hits.First().Page)
                     </TbText>
                 }
             </li>
@@ -26,18 +46,25 @@
 }
 
 @code {
-    private IReadOnlyList<SearchResult> _results = [];
+    private const int MatchesShown = 4;
+
+    private IReadOnlyList<IGrouping<string, SearchResult>> _pages = [];
 
     [SupplyParameterFromQuery(Name = "q")]
     public string? Query { get; set; }
 
-    private string Status => _results.Count switch
+    private string Status => _pages.Count switch
     {
         _ when string.IsNullOrWhiteSpace(Query) => "Type in the search box at the top of the page.",
         0 => $"Nothing matches “{Query}”.",
-        1 => $"1 result for “{Query}”.",
-        var count => $"{count} results for “{Query}”.",
+        1 => $"1 page matches “{Query}”.",
+        var count => $"{count} pages match “{Query}”.",
     };
 
-    protected override void OnParametersSet() => _results = DocsSearch.Find(Query);
+    private static string MoreText(int count, string page) =>
+        count == 1 ? $"1 more match on {page}." : $"{count} more matches on {page}.";
+
+    // Each page shows once, where its best match ranks, with its matches in rank order.
+    protected override void OnParametersSet() =>
+        _pages = [.. DocsSearch.Find(Query).GroupBy(result => result.PagePath)];
 }

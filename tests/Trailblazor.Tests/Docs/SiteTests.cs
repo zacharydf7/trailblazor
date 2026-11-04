@@ -135,20 +135,38 @@ public class SiteTests : DocsTest
     }
 
     [Fact]
-    public void Search_ShouldListTheComponentsWithAParameterAndLinkTheirApi_WhenItsNameIsSearched()
+    public void Search_ShouldGroupTheMatchesByPageAndLinkEachMembersRow_WhenAParameterIsSearched()
     {
         Navigation.NavigateTo("search?q=placeholder");
         var cut = Render<Search>();
+        var results = DocsSearch.Find("placeholder");
+        var pages = results.Select(result => result.Page).Distinct().ToList();
 
-        Assert.Equal($"{DocsSearch.Find("placeholder").Count} results for “placeholder”.",
-            cut.Find("[role=status]").TextContent.Trim());
-        var select = cut.FindAll(".docs-results li")
-            .Single(item => item.TextContent.Contains("Picks one or several options"));
-        Assert.Contains("Has Placeholder", select.TextContent);
-        Assert.Equal("components/select/api",
-            select.QuerySelectorAll("a").Single(link => link.TextContent == "Placeholder").GetAttribute("href"));
-        Assert.Equal("components/select",
-            select.QuerySelectorAll("a").Single(link => link.TextContent == "Select").GetAttribute("href"));
+        Assert.Equal($"{pages.Count} pages match “placeholder”.", cut.Find("[role=status]").TextContent.Trim());
+        var items = cut.FindAll(".docs-results > li");
+        Assert.Equal(pages, items.Select(item => item.QuerySelector(".docs-card__title")!.TextContent));
+        var select = items.Single(item => item.QuerySelector(".docs-card__title")!.TextContent == "Select");
+        Assert.Equal("components/select", select.QuerySelector(".docs-card__title")!.GetAttribute("href"));
+        var member = select.QuerySelectorAll(".docs-results__matches > li")
+            .Single(match => match.QuerySelector("a code")?.TextContent == "TbSelect<TValue>.Placeholder");
+        Assert.Equal("components/select/api#tbselect-placeholder", member.QuerySelector("a")!.GetAttribute("href"));
+        Assert.Equal(results.Single(result => result.Path == "components/select/api#tbselect-placeholder").Snippet,
+            member.QuerySelector(".docs-note")!.TextContent);
+    }
+
+    [Fact]
+    public void Search_ShouldShowAPagesFirstFourMatchesAndCountTheRest_WhenItHasMore()
+    {
+        Navigation.NavigateTo("search?q=dialog");
+        var cut = Render<Search>();
+        var dialog = DocsSearch.Find("dialog").Where(result => result.Page == "Dialog").ToList();
+
+        var item = cut.FindAll(".docs-results > li").First();
+
+        Assert.Equal(dialog.Take(4).Select(result => result.Section ?? result.Snippet), item
+            .QuerySelectorAll(".docs-results__matches > li")
+            .Select(match => match.QuerySelector("a")?.TextContent.Trim() ?? match.TextContent.Trim()));
+        Assert.Equal($"{dialog.Count - 4} more matches on Dialog.", item.Children.Last().TextContent.Trim());
     }
 
     [Fact]

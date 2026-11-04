@@ -137,6 +137,23 @@ a:focus-visible {
     list-style: none;
 }
 
+.docs-results__matches {
+    display: grid;
+    gap: var(--tb-space-2);
+    margin: var(--tb-space-2) 0 0;
+    padding-inline-start: var(--tb-space-4);
+    list-style: none;
+}
+
+.docs-results__section {
+    font-weight: var(--tb-font-weight-medium);
+}
+
+.docs-results__more {
+    margin-block-start: var(--tb-space-2);
+    padding-inline-start: var(--tb-space-4);
+}
+
 /* ---- Sidebar ---- */
 
 .docs-nav {
