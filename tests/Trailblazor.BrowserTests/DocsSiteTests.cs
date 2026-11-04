@@ -66,6 +66,11 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
+    public static TheoryData<string, string> BrowsersInBothThemes => new(
+        from browser in AllBrowsers.Names
+        from theme in new[] { "light", "dark" }
+        select (browser, theme));
+
     [Fact]
     public async Task Site_ShouldLinkTheStylesheetBeforeTheAppStarts_WhenItsPageIsServed()
     {
@@ -476,17 +481,71 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         ILocator Counts(string name) => counts.Locator("tbody tr").Filter(new() { HasText = name }).Locator("td");
     }
 
-    // SiteTests covers the toggle's state; this checks only that the stylesheet hides and shows the list.
+    // SiteTests covers the buttons' state; this checks only that the stylesheet hides and shows what they open.
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Navigation_ShouldStayHiddenUntilAskedFor_WhenTheScreenIsNarrow(string browser)
+    public async Task Header_ShouldKeepTheRestHiddenUntilAskedFor_WhenTheScreenIsAPhone(string browser)
     {
         var page = await OpenDocsAsync(browser, "guides/getting-started",
             new() { ViewportSize = new() { Width = 390, Height = 844 } });
-        var nav = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
-        await Expect(nav).ToBeHiddenAsync();
+        var contents = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
+        var site = page.GetByRole(AriaRole.Navigation, new() { Name = "Site" });
+        var search = page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" });
+        await Expect(contents).ToBeHiddenAsync();
+        await Expect(site).ToBeHiddenAsync();
+        await Expect(search).ToBeHiddenAsync();
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Palette" })).ToBeHiddenAsync();
+        var menu = page.GetByRole(AriaRole.Button, new() { Name = "Menu", Exact = true });
+        var row = (await menu.BoundingBoxAsync())!.Y;
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Contents" }).ClickAsync();
+        await menu.ClickAsync();
+        await Expect(contents.GetByRole(AriaRole.Link, new() { Name = "Menu", Exact = true })).ToBeVisibleAsync();
+        Assert.Equal(row, (await menu.BoundingBoxAsync())!.Y, 1);
+        await Expect(site.GetByRole(AriaRole.Link, new() { Name = "Get started" })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Palette" })).ToBeVisibleAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }).ClickAsync();
 
-        await Expect(nav.GetByRole(AriaRole.Link, new() { Name = "Menu", Exact = true })).ToBeVisibleAsync();
+        await Expect(search).ToBeFocusedAsync();
+        await Expect(site).ToBeHiddenAsync();
+        // The field fills the row inside the header's 16px padding.
+        Assert.InRange((await page.Locator("#docs-search > .tb-field").BoundingBoxAsync())!.Width, 357, 359);
+    }
+
+    public static TheoryData<string, string, int> HeaderWidths => new(
+        from browser in AllBrowsers.Names
+        from screen in new[] { (Path: "components/button", Width: 320), (Path: "components/button", Width: 360),
+            (Path: "components/button", Width: 390),
+            (Path: "components/button", Width: 1000), (Path: "components/button", Width: 1160),
+            (Path: "", Width: 1160), (Path: "", Width: 1440) }
+        select (browser, screen.Path, screen.Width));
+
+    [Theory, MemberData(nameof(HeaderWidths))]
+    public async Task Header_ShouldStayOneRowHighAtTheTop_WhenThePageIsScrolled(string browser, string path, int width)
+    {
+        var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = width, Height = 800 } });
+        var header = page.Locator(".docs-header");
+        await Expect(page.GetByRole(AriaRole.Link, new() { Name = "Trailblazor", Exact = true })).ToBeVisibleAsync();
+
+        await page.EvaluateAsync("() => window.scrollTo(0, document.body.scrollHeight)");
+
+        await Expect(header).ToBeInViewportAsync();
+        var box = (await header.BoundingBoxAsync())!;
+        Assert.Equal(0, box.Y, 1);
+        // The brand row is 4rem; a second row would be at least as tall again.
+        Assert.InRange(box.Height, 60, 70);
+    }
+
+    [Theory, MemberData(nameof(BrowsersInBothThemes))]
+    public async Task Site_ShouldHaveNoAccessibilityViolations_WhenThePhoneMenuIsOpen(string browser, string theme)
+    {
+        var page = await OpenDocsAsync(browser, "components/button",
+            new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        await SetThemeAsync(page, theme);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Menu", Exact = true }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Navigation, new() { Name = "Site" })).ToBeVisibleAsync();
+
+        var result = await page.RunAxe(AxeTests.WcagAA);
+
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
 }

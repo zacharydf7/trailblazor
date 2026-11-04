@@ -121,16 +121,12 @@ a:focus-visible {
     color: var(--tb-color-text);
 }
 
-.docs-nav-toggle {
+.docs-header__toggle {
     display: none;
 }
 
 .docs-search {
     width: min(100%, 15rem);
-}
-
-.docs-look {
-    width: min(100%, 27rem);
 }
 
 .docs-results {
@@ -1189,18 +1185,46 @@ kbd {
 /* ---- Narrow screens ---- */
 
 @media (max-width: 72rem) {
-    html {
-        scroll-padding-top: var(--tb-space-4);
+    /* The header keeps to one row: the brand, then buttons that open the search or the rest of the header below it.
+       The padding alone makes that row 4rem tall, so it doesn't shift when a panel opens below. */
+    .docs-header__inner {
+        padding-block: var(--tb-space-3);
     }
 
-    /* The header wraps to more than one row here, too tall to keep on screen. */
-    .docs-header {
-        position: static;
+    .docs-brand {
+        margin-inline-end: auto;
     }
 
-    .docs-nav {
-        top: 0;
-        max-height: 100vh;
+    .docs-header__toggle {
+        display: inline-flex;
+    }
+
+    .docs-site-nav,
+    .docs-search,
+    .docs-look {
+        display: none;
+        flex-basis: 100%;
+    }
+
+    .docs-header__inner--menu :is(.docs-site-nav, .docs-look) {
+        display: flex;
+    }
+
+    /* A block, not a flex row, so the field fills the row. */
+    .docs-header__inner--search .docs-search {
+        display: block;
+    }
+}
+
+/* The narrowest phones have no room for the name beside the buttons; screen readers still hear it. */
+@media (max-width: 22rem) {
+    .docs-brand__name {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 }
 
@@ -1217,10 +1241,6 @@ kbd {
 
     .docs-header__inner {
         padding-inline: var(--tb-space-4);
-    }
-
-    .docs-nav-toggle {
-        display: inline-flex;
     }
 
     .docs-nav {

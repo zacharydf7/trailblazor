@@ -8,23 +8,27 @@
    @onclick:preventDefault>Skip to content</a>
 <div class="@ClassNames">
     <header class="docs-header">
-        <div class="docs-header__inner">
-            <a href="" class="docs-brand"><img src="icon.svg" alt="" width="36" height="36" /><span>Trail<span class="docs-brand__fade">blazor</span></span></a>
-            <nav class="docs-site-nav" aria-label="Site">
+        <div class="@HeaderClass">
+            <a href="" class="docs-brand">
+                <img src="icon.svg" alt="" width="36" height="36" />
+                <span class="docs-brand__name">Trail<span class="docs-brand__fade">blazor</span></span>
+            </a>
+            @* On a narrow screen the header shows only the brand and these buttons, which open the rest below them. *@
+            <TbButton Variant="Variant.Outlined" class="docs-header__toggle" aria-controls="docs-search"
+                      aria-expanded="@(_searchOpen ? "true" : "false")" OnClick="ToggleSearch">
+                Search
+            </TbButton>
+            <TbButton Variant="Variant.Outlined" class="docs-header__toggle" aria-controls="@MenuTargets"
+                      aria-expanded="@(_menuOpen ? "true" : "false")" OnClick="ToggleMenu">
+                Menu
+            </TbButton>
+            <nav id="docs-site-nav" class="docs-site-nav" aria-label="Site">
                 <NavLink href="guides/getting-started" class="docs-site-nav__link">Get started</NavLink>
                 @* Relative to the base, so it opens the home page's catalog from any page. *@
                 <a href="#components" class="docs-site-nav__link">Components</a>
                 <a href="https://github.com/zacharydf7/trailblazor" class="docs-site-nav__link">GitHub</a>
             </nav>
-            <SearchBox />
-            @* A narrow screen keeps the list closed until asked for, so the page shows first. *@
-            @if (!IsHome)
-            {
-                <TbButton Variant="Variant.Outlined" class="docs-nav-toggle" aria-controls="docs-nav"
-                          aria-expanded="@(_navOpen ? "true" : "false")" OnClick="() => _navOpen = !_navOpen">
-                    Contents
-                </TbButton>
-            }
+            <SearchBox @ref="_search" />
             <LookSwitcher />
         </div>
     </header>
@@ -44,23 +48,56 @@
 </div>
 
 @code {
-    private bool _navOpen;
+    private bool _menuOpen;
+    private bool _searchOpen;
+    private bool _focusSearch;
     private ElementReference _main;
+    private SearchBox _search = null!;
 
     // The home page is the whole map, so it spans the window without the sidebar.
     private bool IsHome => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0] == "";
 
     private string ClassNames => IsHome ? "docs docs--home" : "docs";
 
-    private string NavClass => _navOpen ? "docs-nav docs-nav--open" : "docs-nav";
+    private string HeaderClass => _menuOpen ? "docs-header__inner docs-header__inner--menu"
+        : _searchOpen ? "docs-header__inner docs-header__inner--search" : "docs-header__inner";
+
+    // On a phone the menu also opens the contents, which a wider screen keeps beside the page.
+    private string MenuTargets => IsHome ? "docs-site-nav docs-look" : "docs-site-nav docs-look docs-nav";
+
+    private string NavClass => _menuOpen ? "docs-nav docs-nav--open" : "docs-nav";
+
+    private void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+        _searchOpen = false;
+    }
+
+    private void ToggleSearch()
+    {
+        _searchOpen = !_searchOpen;
+        _menuOpen = false;
+        _focusSearch = _searchOpen;
+    }
 
     private async Task SkipAsync() => await _main.FocusAsync();
 
     protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
 
+    // The field shows only once the open class has rendered, so it can't take focus before then.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusSearch)
+        {
+            _focusSearch = false;
+            await _search.FocusAsync();
+        }
+    }
+
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        _navOpen = false;
+        _menuOpen = false;
+        _searchOpen = false;
         StateHasChanged();
     }
 

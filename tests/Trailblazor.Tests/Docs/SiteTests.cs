@@ -55,27 +55,50 @@ public class SiteTests : DocsTest
     }
 
     [Fact]
-    public void MainLayout_ShouldLeaveOutTheSidebarAndItsToggle_WhenTheHomePageIsOpen()
+    public void MainLayout_ShouldLeaveOutTheSidebarAndMenuOnlyTheHeader_WhenTheHomePageIsOpen()
     {
         var cut = Render<MainLayout>();
 
         Assert.Empty(cut.FindAll("nav[aria-label=Contents]"));
-        Assert.DoesNotContain("Contents", Texts(cut.FindAll("button")));
+        Assert.Equal("docs-site-nav docs-look", Button(cut, "Menu").GetAttribute("aria-controls"));
     }
 
     [Fact]
-    public void MainLayout_ShouldOpenTheSidebarAndCloseItOnTheNextPage_WhenContentsIsPressedOnANarrowScreen()
+    public void MainLayout_ShouldOpenTheSiteLinksTheLookAndTheContentsAndCloseThemOnTheNextPage_WhenMenuIsPressed()
     {
         Navigation.NavigateTo("guides/getting-started");
         var cut = Render<MainLayout>();
+        var controls = Button(cut, "Menu").GetAttribute("aria-controls")!.Split(' ');
 
-        Button(cut, "Contents").Click();
-        Assert.Equal("true", Button(cut, "Contents").GetAttribute("aria-expanded"));
+        Button(cut, "Menu").Click();
+        Assert.Equal(["docs-site-nav", "docs-look", "docs-nav"], controls);
+        Assert.All(controls, id => cut.Find($"#{id}"));
+        Assert.Equal("true", Button(cut, "Menu").GetAttribute("aria-expanded"));
+        Assert.Contains("docs-header__inner--menu", cut.Find(".docs-header__inner").ClassList);
         Assert.Contains("docs-nav--open", cut.Find("nav[aria-label=Contents]").ClassList);
         Navigation.NavigateTo("components/menu");
 
-        Assert.Equal("false", Button(cut, "Contents").GetAttribute("aria-expanded"));
+        Assert.Equal("false", Button(cut, "Menu").GetAttribute("aria-expanded"));
+        Assert.DoesNotContain("docs-header__inner--menu", cut.Find(".docs-header__inner").ClassList);
         Assert.DoesNotContain("docs-nav--open", cut.Find("nav[aria-label=Contents]").ClassList);
+    }
+
+    [Fact]
+    public void MainLayout_ShouldOpenAndFocusTheSearchInPlaceOfTheMenu_WhenSearchIsPressed()
+    {
+        Navigation.NavigateTo("guides/getting-started");
+        var cut = Render<MainLayout>();
+        Button(cut, "Menu").Click();
+
+        Button(cut, "Search").Click();
+
+        Assert.Equal("docs-search", Button(cut, "Search").GetAttribute("aria-controls"));
+        Assert.Equal("true", Button(cut, "Search").GetAttribute("aria-expanded"));
+        Assert.Equal("false", Button(cut, "Menu").GetAttribute("aria-expanded"));
+        Assert.Equal(["docs-header__inner", "docs-header__inner--search"], cut.Find(".docs-header__inner").ClassList);
+        JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(cut.Find("#docs-search input"));
+        Navigation.NavigateTo("components/menu");
+        Assert.Equal("false", Button(cut, "Search").GetAttribute("aria-expanded"));
     }
 
     [Fact]

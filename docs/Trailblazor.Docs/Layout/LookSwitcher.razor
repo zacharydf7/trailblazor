@@ -3,7 +3,7 @@
 @inject IThemeService Theme
 
 @* The palette and density keep their labels for screen readers; the header has no room to show them. *@
-<TbStack Row Gap="2" Align="Align.Center" class="docs-look">
+<TbStack Row Gap="2" Align="Align.Center" Wrap id="docs-look" class="docs-look">
     <TbThemePicker Size="Size.Small" />
     <TbSelect Label="Palette" Value="Theme.Palette" ValueChanged="(Palette palette) => Theme.SetPaletteAsync(palette)"
               Classes="HiddenLabel">
