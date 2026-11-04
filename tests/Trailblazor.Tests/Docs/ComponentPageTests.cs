@@ -208,6 +208,21 @@ public class ComponentPageTests : DocsTest
     }
 
     [Fact]
+    public void ComponentHeader_ShouldLinkTheSourceAnIssueAndTheCatalogEntry_WhenOpened()
+    {
+        var stack = ExampleCatalog.Find("stack")!;
+
+        var links = ComponentPage("stack").FindAll("ul[aria-label='On GitHub'] a");
+
+        Assert.Equal(["Source", "Report an issue", "Edit this page"], Texts(links));
+        Assert.Equal($"{DocsRepository.Url}/tree/main/src/Trailblazor/Layout", links[0].GetAttribute("href"));
+        Assert.Equal($"{DocsRepository.Url}/issues/new?title=Stack%3A%20", links[1].GetAttribute("href"));
+        Assert.Equal(
+            $"{DocsRepository.Url}/blob/main/docs/Trailblazor.Docs.Examples/ExampleCatalog.cs#L{stack.CatalogLine}",
+            links[2].GetAttribute("href"));
+    }
+
+    [Fact]
     public void ComponentPage_ShouldTableTheKeys_WhenTheEntryHasKeyboardRows()
     {
         var keys = ComponentPage("select").Find("[role=region][aria-label=Keyboard] table");

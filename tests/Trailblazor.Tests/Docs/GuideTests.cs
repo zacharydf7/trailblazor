@@ -34,6 +34,25 @@ public class GuideTests : DocsTest
             cut.FindAll(".docs-api__name").Select(heading => heading.Id));
     }
 
+    [Theory, MemberData(nameof(Guides))]
+    public void Guide_ShouldLinkItsNeighborsAndItsSource_WhenOpened(string path)
+    {
+        var guides = GuideCatalog.All.ToList();
+        var index = guides.FindIndex(guide => guide.Path == path);
+        var cut = PageAt(path);
+
+        var pager = cut.Find("nav[aria-label='Previous and next guides']");
+
+        Assert.Equal(index > 0 ? guides[index - 1].Path : null,
+            pager.QuerySelector("a[rel=prev]")?.GetAttribute("href"));
+        Assert.Equal(index < guides.Count - 1 ? guides[index + 1].Path : null,
+            pager.QuerySelector("a[rel=next]")?.GetAttribute("href"));
+        Assert.Equal($"{DocsRepository.Url}/edit/main/docs/Trailblazor.Docs/Pages/Guides/{PageType(path).Name}.razor",
+            cut.FindAll("a").Single(link => link.TextContent == "Edit this page").GetAttribute("href"));
+        Assert.True(File.Exists(Path.Combine(Repository.Root, "docs", "Trailblazor.Docs", "Pages", "Guides",
+            $"{PageType(path).Name}.razor")));
+    }
+
     [Fact]
     public void AnalyzersGuide_ShouldListEveryRuleTheAnalyzerReleases_WhenOpened()
     {

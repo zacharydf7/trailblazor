@@ -4,6 +4,7 @@
 
 <TbRoot />
 
+<a href="@SkipTarget" class="docs-skip" @onclick="SkipAsync" @onclick:preventDefault>Skip to content</a>
 <div class="@ClassNames">
     <header class="docs-header">
         <div class="docs-header__inner">
@@ -32,7 +33,7 @@
             <NavMenu />
         </nav>
     }
-    <main class="docs-main">
+    <main @ref="_main" id="main" class="docs-main" tabindex="-1">
         @Body
     </main>
     <footer class="docs-footer">
@@ -43,6 +44,7 @@
 
 @code {
     private bool _navOpen;
+    private ElementReference _main;
 
     // The home page is the whole map, so it spans the window without the sidebar.
     private bool IsHome => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0] == "";
@@ -50,6 +52,11 @@
     private string ClassNames => IsHome ? "docs docs--home" : "docs";
 
     private string NavClass => _navOpen ? "docs-nav docs-nav--open" : "docs-nav";
+
+    // The site sets <base href>, so a bare #main would point at the home page when the link is copied or opened.
+    private string SkipTarget => $"{Navigation.ToBaseRelativePath(Navigation.Uri).Split('#')[0]}#main";
+
+    private async Task SkipAsync() => await _main.FocusAsync();
 
     protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
 

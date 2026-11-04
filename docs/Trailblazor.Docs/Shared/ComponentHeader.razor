@@ -7,6 +7,15 @@
        aria-current="@(Api ? null : "page")">Overview</a>
     <a href="@($"components/{Example.Name}/api")" class="docs-views__link" aria-current="@(Api ? "page" : null)">API</a>
 </nav>
+<ul class="docs-page-links" aria-label="On GitHub">
+    <li><a href="@DocsRepository.Folder($"src/Trailblazor/{Example.SourceFolder}")">Source</a></li>
+    <li><a href="@DocsRepository.NewIssue($"{Example.Title}: ")">Report an issue</a></li>
+    <li>
+        <a href="@DocsRepository.File("docs/Trailblazor.Docs.Examples/ExampleCatalog.cs", Example.CatalogLine)">
+            Edit this page
+        </a>
+    </li>
+</ul>
 
 @code {
     [Parameter, EditorRequired]

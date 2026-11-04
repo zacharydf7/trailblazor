@@ -30,10 +30,12 @@ public abstract class DocsTest : BunitContext
         Render<ComponentApiPage>(parameters => parameters.Add(page => page.Name, name));
 
     // A page with no route parameters, found by its address as the site's router finds it.
+    protected static Type PageType(string path) => typeof(ComponentPage).Assembly.GetTypes().Single(type =>
+        type.GetCustomAttributes<RouteAttribute>().Any(route => route.Template == $"/{path}"));
+
     protected IRenderedComponent<ContainerFragment> PageAt(string path)
     {
-        var type = typeof(ComponentPage).Assembly.GetTypes().Single(type =>
-            type.GetCustomAttributes<RouteAttribute>().Any(route => route.Template == $"/{path}"));
+        var type = PageType(path);
         return Render(builder =>
         {
             builder.OpenComponent(0, type);

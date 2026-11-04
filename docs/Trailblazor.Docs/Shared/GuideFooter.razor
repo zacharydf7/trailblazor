@@ -1,0 +1,34 @@
+@using System.Reflection
+@using Trailblazor.Docs.Examples
+
+<TbText class="docs-note docs-edit">
+    <a href="@DocsRepository.Edit($"docs/Trailblazor.Docs/Pages/Guides/{Page.Name}.razor")">Edit this page</a>
+    on GitHub.
+</TbText>
+<nav class="docs-pager" aria-label="Previous and next guides">
+    @if (Neighbor(-1) is { } previous)
+    {
+        <a href="@previous.Path" rel="prev" class="docs-pager__link">
+            <span class="docs-pager__label">Previous</span>@previous.Title
+        </a>
+    }
+    @if (Neighbor(1) is { } next)
+    {
+        <a href="@next.Path" rel="next" class="docs-pager__link docs-pager__link--next">
+            <span class="docs-pager__label">Next</span>@next.Title
+        </a>
+    }
+</nav>
+
+@code {
+    /// <summary>The guide's page component, whose route places it in the guides' order.</summary>
+    [Parameter, EditorRequired]
+    public Type Page { get; set; } = null!;
+
+    private Guide? Neighbor(int step)
+    {
+        var path = Page.GetCustomAttribute<RouteAttribute>()!.Template.TrimStart('/');
+        var index = GuideCatalog.All.ToList().FindIndex(guide => guide.Path == path) + step;
+        return index >= 0 && index < GuideCatalog.All.Count ? GuideCatalog.All[index] : null;
+    }
+}

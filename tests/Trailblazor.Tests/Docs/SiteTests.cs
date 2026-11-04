@@ -42,6 +42,19 @@ public class SiteTests : DocsTest
     }
 
     [Fact]
+    public void MainLayout_ShouldStartWithALinkThatSkipsToTheContent_WhenRendered()
+    {
+        Navigation.NavigateTo("guides/testing#bunit");
+        var cut = Render<MainLayout>();
+
+        var first = cut.FindAll("a[href], button, input").First();
+
+        Assert.Equal("Skip to content", first.TextContent);
+        Assert.Equal("guides/testing#main", first.GetAttribute("href"));
+        Assert.Equal("-1", cut.Find("main#main").GetAttribute("tabindex"));
+    }
+
+    [Fact]
     public void MainLayout_ShouldLeaveOutTheSidebarAndItsToggle_WhenTheHomePageIsOpen()
     {
         var cut = Render<MainLayout>();

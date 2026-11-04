@@ -383,6 +383,41 @@ a:focus-visible {
     color: var(--docs-brand-text);
 }
 
+/* The skip link waits above the page until a keyboard user tabs to it. */
+.docs-skip {
+    position: absolute;
+    inset-block-start: -10rem;
+    inset-inline-start: var(--tb-space-4);
+    z-index: 20;
+    padding: var(--tb-space-2) var(--tb-space-4);
+    border-radius: var(--tb-radius-md);
+    background: var(--tb-color-surface-raised);
+    box-shadow: var(--tb-shadow-md);
+}
+
+.docs-skip:focus {
+    inset-block-start: var(--tb-space-2);
+}
+
+/* Focus lands on the content only to start the reader there, so it draws no ring. */
+.docs-main:focus {
+    outline: none;
+}
+
+.docs-page-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tb-space-1) var(--tb-space-4);
+    margin: var(--tb-space-3) 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--tb-font-size-sm);
+}
+
+.docs-edit {
+    margin-block-start: var(--tb-space-10);
+}
+
 .docs-pager {
     display: flex;
     flex-wrap: wrap;

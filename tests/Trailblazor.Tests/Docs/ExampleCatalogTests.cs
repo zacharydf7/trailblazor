@@ -155,6 +155,24 @@ public class ExampleCatalogTests
     }
 
     [Fact]
+    public void SourceFolder_ShouldBeALibraryFolder_WhenTheHeaderLinksToIt()
+    {
+        Assert.All(ExampleCatalog.All, example =>
+            Assert.True(Directory.Exists(Path.Combine(Repository.Root, "src", "Trailblazor", example.SourceFolder)),
+                $"{example.Name} has no folder {example.SourceFolder}"));
+    }
+
+    [Fact]
+    public void CatalogLine_ShouldBeWhereTheEntryStarts_WhenTheHeaderLinksToIt()
+    {
+        var lines = File.ReadAllLines(Path.Combine(Repository.Root, "docs", "Trailblazor.Docs.Examples",
+            "ExampleCatalog.cs"));
+
+        Assert.All(ExampleCatalog.All, example => Assert.StartsWith($"new(\"{example.Name}\", \"{example.Title}\", ",
+            lines[example.CatalogLine - 1].TrimStart()));
+    }
+
+    [Fact]
     public void Anatomy_ShouldBeGiven_WhenTheComponentIsMadeOfParts()
     {
         string[] composed = ["dialog", "select", "listbox", "tabs", "menu", "accordion", "toolbar", "data-grid",

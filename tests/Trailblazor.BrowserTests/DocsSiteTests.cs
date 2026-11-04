@@ -388,6 +388,19 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SkipLink_ShouldShowAndMoveFocusToTheContent_WhenFollowed(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+        var skip = page.GetByRole(AriaRole.Link, new() { Name = "Skip to content" });
+
+        await skip.FocusAsync();
+        await Expect(skip).ToBeInViewportAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.Locator("main#main")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Browser_ShouldFollowTheViewportAndDownloadTheList_WhenUsed(string browser)
     {
         var page = await OpenDocsAsync(browser, "guides/browser");
