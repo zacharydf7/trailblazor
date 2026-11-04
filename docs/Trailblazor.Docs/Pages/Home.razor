@@ -25,7 +25,8 @@
                 <TbButton Href="https://github.com/zacharydf7/trailblazor" Variant="Variant.Outlined"
                           Size="Size.Large">GitHub</TbButton>
             </div>
-            <p class="docs-install">
+            @* On a phone the command can scroll sideways, so it takes focus for keyboard users. *@
+            <p class="docs-install" role="region" tabindex="0" aria-label="Clone command">
                 <span aria-hidden="true">$</span> <b>git clone</b> https://github.com/zacharydf7/trailblazor.git
             </p>
         </div>

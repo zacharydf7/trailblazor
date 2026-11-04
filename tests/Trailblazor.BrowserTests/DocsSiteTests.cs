@@ -1,3 +1,4 @@
+using Deque.AxeCore.Commons;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Docs.Examples;
 using Trailblazor.Testing.Playwright;
@@ -66,10 +67,11 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
-    public static TheoryData<string, string> BrowsersInBothThemes => new(
+    public static TheoryData<string, string, string> PhonePagesInBothThemes => new(
         from browser in AllBrowsers.Names
+        from path in new[] { "", "components/button", "guides/getting-started" }
         from theme in new[] { "light", "dark" }
-        select (browser, theme));
+        select (browser, path, theme));
 
     [Fact]
     public async Task Site_ShouldLinkTheStylesheetBeforeTheAppStarts_WhenItsPageIsServed()
@@ -534,18 +536,21 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.InRange(box.Height, 60, 70);
     }
 
-    [Theory, MemberData(nameof(BrowsersInBothThemes))]
-    public async Task Site_ShouldHaveNoAccessibilityViolations_WhenThePhoneMenuIsOpen(string browser, string theme)
+    [Theory, MemberData(nameof(PhonePagesInBothThemes))]
+    public async Task Site_ShouldHaveNoAccessibilityViolations_WhenThePhoneMenuIsClosedOrOpen(string browser,
+        string path, string theme)
     {
-        var page = await OpenDocsAsync(browser, "components/button",
-            new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 390, Height = 844 } });
         await SetThemeAsync(page, theme);
+        var closed = await page.RunAxe(AxeTests.WcagAA);
         await page.GetByRole(AriaRole.Button, new() { Name = "Menu", Exact = true }).ClickAsync();
         await Expect(page.GetByRole(AriaRole.Navigation, new() { Name = "Site" })).ToBeVisibleAsync();
 
-        var result = await page.RunAxe(AxeTests.WcagAA);
+        var open = await page.RunAxe(AxeTests.WcagAA);
 
-        Assert.Empty(result.Violations.Select(violation =>
-            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+        Assert.Empty(Describe("closed", closed).Concat(Describe("open", open)));
+
+        static IEnumerable<string> Describe(string state, AxeResult result) => result.Violations.Select(violation =>
+            $"{state} {violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}");
     }
 }

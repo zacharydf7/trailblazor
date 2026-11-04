@@ -633,7 +633,8 @@ a:focus-visible {
 }
 
 .docs-source:focus-visible,
-.docs-api:focus-visible {
+.docs-api:focus-visible,
+.docs-install:focus-visible {
     outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
     outline-offset: var(--tb-focus-ring-offset);
 }
