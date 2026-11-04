@@ -144,27 +144,29 @@
             Density sets seven tokens, and the components size themselves from them, so changing one changes every
             component that uses it.
         </TbText>
-        <TbTable aria-label="Density tokens">
-            <thead>
-                <tr>
-                    <th scope="col">Token</th>
-                    <th scope="col">Comfortable</th>
-                    <th scope="col">Compact</th>
-                    <th scope="col">Sizes</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var token in DensityTokens)
-                {
+        <div class="docs-api" tabindex="0" role="region" aria-label="Density tokens">
+            <table>
+                <thead>
                     <tr>
-                        <th scope="row"><code>@token.Name</code></th>
-                        <td>@token.Comfortable</td>
-                        <td>@token.Compact</td>
-                        <td>@token.Sizes</td>
+                        <th scope="col">Token</th>
+                        <th scope="col">Comfortable</th>
+                        <th scope="col">Compact</th>
+                        <th scope="col">Sizes</th>
                     </tr>
-                }
-            </tbody>
-        </TbTable>
+                </thead>
+                <tbody>
+                    @foreach (var token in DensityTokens)
+                    {
+                        <tr>
+                            <th scope="row"><code>@token.Name</code></th>
+                            <td>@token.Comfortable</td>
+                            <td>@token.Compact</td>
+                            <td>@token.Sizes</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
         <DocsCallout Tone="Tone.Warning" Title="Changing the control height on your own element">
             The small and large heights are worked out from <code>--tb-control-height</code> only where a density is
             set: on the page or on a <code>data-tb-density</code> region. To change <code>--tb-control-height</code> on
@@ -295,31 +297,33 @@
             Every theme token, with the value the default palette and density give it, read from
             <code>trailblazor.css</code>. A color's sample follows the palette and mode chosen at the top of this site.
         </TbText>
-        <TbTable aria-label="Theme tokens" Size="Size.Small">
-            <thead>
-                <tr>
-                    <th scope="col">Token</th>
-                    <th scope="col">Role</th>
-                    <th scope="col">Default</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var (name, value) in DesignTokens.Reference())
-                {
+        <div class="docs-api" tabindex="0" role="region" aria-label="Theme tokens">
+            <table>
+                <thead>
                     <tr>
-                        <th scope="row"><code>@name</code></th>
-                        <td>@DesignTokens.Role(name)</td>
-                        <td>
-                            @if (DesignTokens.IsColor(name))
-                            {
-                                <span class="docs-swatch" style="@($"background: var({name})")"></span>
-                            }
-                            <code>@(value.Contains("from var(--tb-color-primary)") ? "From the primary" : value)</code>
-                        </td>
+                        <th scope="col">Token</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Default</th>
                     </tr>
-                }
-            </tbody>
-        </TbTable>
+                </thead>
+                <tbody>
+                    @foreach (var (name, value) in DesignTokens.Reference())
+                    {
+                        <tr>
+                            <th scope="row"><code>@name</code></th>
+                            <td>@DesignTokens.Role(name)</td>
+                            <td>
+                                @if (DesignTokens.IsColor(name))
+                                {
+                                    <span class="docs-swatch" style="@($"background: var({name})")"></span>
+                                }
+                                <code>@TokenValue(value)</code>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
         <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
         <ul>
@@ -339,6 +343,9 @@
 </DocsArticle>
 
 @code {
+    private static string TokenValue(string value) =>
+        value.Contains("from var(--tb-color-primary)") ? "From the primary" : value;
+
     private const string DefaultBrand = "#0f766e";
 
     private string? _brand = DefaultBrand;

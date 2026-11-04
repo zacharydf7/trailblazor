@@ -585,6 +585,15 @@ a:focus-visible {
     white-space: nowrap;
 }
 
+/* A guide's row headers can be prose, so they wrap rather than push the answers off a phone's screen. */
+.docs-article--guide .docs-api tbody th {
+    white-space: normal;
+}
+
+.docs-article--guide .docs-api tbody th code {
+    white-space: nowrap;
+}
+
 .docs-api__required {
     display: block;
     color: var(--tb-color-text-muted);

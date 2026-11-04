@@ -266,9 +266,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     public static TheoryData<string, string> Guides => new(
         from browser in AllBrowsers.Names
-        from path in new[] { "guides/getting-started", "guides/theming", "guides/palettes", "guides/spacing",
-            "guides/browser", "guides/announcements", "guides/icons", "guides/localization", "guides/testing" }
-        select (browser, path));
+        from guide in GuideCatalog.All
+        select (browser, guide.Path));
 
     [Theory, MemberData(nameof(Guides))]
     public async Task Guide_ShouldListEachSectionOnThePage_WhenOpened(string browser, string path)
@@ -282,6 +281,16 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Locator(".docs-article__body .tb-alert:not([role=note])")).ToHaveCountAsync(0);
         Assert.Equal(await sections.EvaluateAllAsync<string[]>("headings => headings.map(heading => '#' + heading.id)"),
             await rail.EvaluateAllAsync<string[]>("links => links.map(link => new URL(link.href).hash)"));
+    }
+
+    [Theory, MemberData(nameof(Guides))]
+    public async Task Guide_ShouldFitThePageWidth_WhenTheScreenIsAPhone(string browser, string path)
+    {
+        var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        await Expect(page.Locator(".docs-article__body > h2").First).ToBeVisibleAsync();
+
+        Assert.True(await page.Locator("html").EvaluateAsync<bool>("html => html.scrollWidth <= html.clientWidth"),
+            "Wide code and tables should scroll inside their own box, not the page.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
