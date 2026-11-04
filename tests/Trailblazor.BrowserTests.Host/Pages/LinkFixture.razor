@@ -2,7 +2,6 @@
 
 <p><TbLink @ref="_link" Href="link#guides">Trail guides</TbLink></p>
 <p><TbLink Href="link#report" Disabled OnClick="() => _ran = true">Run the report</TbLink></p>
-<p><TbLink Disabled OnClick="() => _ran = true">Run it later</TbLink></p>
 <button type="button" @onclick="() => _link.FocusAsync()">Focus the guides link</button>
 @* Events reach the server in order, so once Check shows, an earlier click that ran would show too. *@
 <button type="button" @onclick="() => _checked = true">Check</button>

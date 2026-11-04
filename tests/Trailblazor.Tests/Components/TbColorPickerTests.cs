@@ -83,14 +83,21 @@ public class TbColorPickerTests : BunitContext
         Assert.Equal("210", cut.Find("[data-part=hue]").GetAttribute("value"));
     }
 
-    [Fact]
-    public void Channel_ShouldChangeOnlyItsPart_WhenANumberIsEntered()
+    [Theory]
+    [InlineData("red", "Red", "51", "255", "#ff6699")]
+    [InlineData("green", "Green", "102", "0", "#330099")]
+    [InlineData("blue", "Blue", "153", "0", "#336600")]
+    public void Channel_ShouldShowAndChangeOnlyItsPart_WhenANumberIsEntered(string part, string label, string shown,
+        string entered, string color)
     {
         var cut = RenderPicker("#336699");
+        var channel = cut.Find($"[data-part={part}]");
+        Assert.Equal(label, channel.ParentElement!.QuerySelector(".tb-color-picker__row-label")!.TextContent);
+        Assert.Equal(shown, channel.GetAttribute("value"));
 
-        cut.Find("[data-part=green]").Change("0");
+        channel.Change(entered);
 
-        Assert.Equal(["#330099"], _changes);
+        Assert.Equal([color], _changes);
     }
 
     [Fact]

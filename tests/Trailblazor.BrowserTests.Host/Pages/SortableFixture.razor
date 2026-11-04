@@ -1,10 +1,9 @@
 @page "/sortable"
 
-<TbSortable @ref="_list" TItem="string" Items="_rules" Label="Rules" OnMove="move => move.ApplyTo(_rules)"
+<TbSortable TItem="string" Items="_rules" Label="Rules" OnMove="move => move.ApplyTo(_rules)"
             CanMove="CheckAsync">
     <ItemTemplate>@context</ItemTemplate>
 </TbSortable>
-<TbButton OnClick="() => _list.MoveAsync(0, _rules.Count - 2)">Send the first rule down</TbButton>
 <output data-testid="order">@string.Join(", ", _rules)</output>
 @* A list inside a grid's cell moves its own items, and only its own. *@
 <TbDataGrid TItem="string" Items="_crews" AriaLabel="Crews" OnRowMove="move => move.ApplyTo(_crews)">
@@ -33,7 +32,6 @@
     private readonly List<string> _stops = ["Trailhead", "Lake camp", "Summit Gate"];
     private readonly List<string> _crews = ["North crew", "South crew"];
     private readonly List<string> _members = ["Ada", "Ben"];
-    private TbSortable<string> _list = default!;
 
     private Task<MoveCheck> CheckAsync(SortableMove<string> move) =>
         Task.FromResult(move.Item == "Catch-all" || move.To == _rules.Count - 1

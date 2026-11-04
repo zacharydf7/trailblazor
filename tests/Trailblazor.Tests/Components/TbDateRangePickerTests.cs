@@ -147,6 +147,7 @@ public class TbDateRangePickerTests : BunitContext
 
         Assert.Empty(_changes);
         Assert.Equal("9/1/2026", cut.Find("[data-part=start-input]").GetAttribute("value"));
+        Assert.Equal("9/5/2026", cut.Find("[data-part=end-input]").GetAttribute("value"));
     }
 
     [Fact]

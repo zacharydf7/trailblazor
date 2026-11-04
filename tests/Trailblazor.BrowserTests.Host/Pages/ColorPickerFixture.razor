@@ -7,7 +7,6 @@
     <output data-testid="changes">@_changes</output>
     <TbColorPicker Label="Highlight" @bind-Value="_highlight" Alpha />
     <output data-testid="highlight">@(_highlight ?? "none")</output>
-    <TbButton OnClick="SetFromParent">Set from parent</TbButton>
 </TbStack>
 
 @code {
@@ -24,6 +23,4 @@
     };
 
     private void Count() => _changes++;
-
-    private void SetFromParent() => _accent = "#00FF00";
 }

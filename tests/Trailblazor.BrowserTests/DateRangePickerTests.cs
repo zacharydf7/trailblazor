@@ -233,18 +233,6 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Value_ShouldShowWithoutRaisingAChange_WhenTheParentSetsIt(string browser)
-    {
-        var page = await OpenAsync(browser, "/date-range");
-
-        await page.GetByRole(AriaRole.Button, new() { Name = "Set from parent" }).ClickAsync();
-
-        await Expect(Box(page, "Start date")).ToHaveValueAsync("9/1/2026");
-        await Expect(Box(page, "End date")).ToHaveValueAsync("9/5/2026");
-        await Expect(page.GetByTestId("changes")).ToHaveTextAsync("0");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Typing_ShouldKeepTheTimeOfTheDateLeftAlone_WhenTheOtherChanges(string browser)
     {
         var page = await OpenAsync(browser, "/date-range");

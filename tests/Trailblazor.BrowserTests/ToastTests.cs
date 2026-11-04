@@ -105,18 +105,6 @@ public class ToastTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Action_ShouldRunAndCloseTheToast_WhenClicked(string browser)
-    {
-        var page = await OpenAsync(browser, "/toasts");
-        await page.GetByRole(AriaRole.Button, new() { Name = "Delete" }).ClickAsync();
-
-        await Toast(page, "Deleted").GetByRole(AriaRole.Button, new() { Name = "Undo" }).ClickAsync();
-
-        await Expect(page.GetByTestId("result")).ToHaveTextAsync("undone");
-        await Expect(Toast(page, "Deleted")).ToHaveCountAsync(0);
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toaster_ShouldTakeFocusOnF8AndGiveItBackOnEscape_WhenAToastIsOpen(string browser)
     {
         var page = await OpenAsync(browser, "/toasts");

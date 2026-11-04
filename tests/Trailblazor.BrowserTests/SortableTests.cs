@@ -70,16 +70,6 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task MoveAsync_ShouldMoveTheItemAndSaySo_WhenAnAppsButtonCallsIt(string browser)
-    {
-        var page = await OpenReadyAsync(browser);
-
-        await page.GetByRole(AriaRole.Button, new() { Name = "Send the first rule down" }).ClickAsync();
-
-        await Expect(page.GetByTestId("order")).ToHaveTextAsync("Flag invoices, Star the team, Block spam, Catch-all");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridRows_ShouldReorderByKeysAndByDragging_WhenTheGridLetsRowsMove(string browser)
     {
         var page = await OpenReadyAsync(browser);

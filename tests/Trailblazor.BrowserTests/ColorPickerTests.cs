@@ -90,19 +90,6 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Channels_ShouldSetOneOfRedGreenAndBlue_WhenANumberIsEntered(string browser)
-    {
-        var page = await OpenPickerAsync(browser);
-        var red = Picker(page).GetByRole(AriaRole.Spinbutton, new() { Name = "Red" });
-        await Expect(red).ToHaveValueAsync("51");
-
-        await red.FillAsync("255");
-        await red.BlurAsync();
-
-        await Expect(page.GetByTestId("accent")).ToHaveTextAsync("#ff6699");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Opacity_ShouldShowAndSetTheAlpha_WhenAlphaIsOn(string browser)
     {
         var page = await OpenPickerAsync(browser, "Highlight");
@@ -154,18 +141,6 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("accent")).ToHaveTextAsync("none");
         await Expect(Box(page)).ToHaveValueAsync("");
         await Expect(Box(page)).ToBeFocusedAsync();
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Value_ShouldShowNormalizedWithoutRaisingAChange_WhenTheParentSetsIt(string browser)
-    {
-        var page = await OpenAsync(browser, "/color-picker");
-
-        await page.GetByRole(AriaRole.Button, new() { Name = "Set from parent" }).ClickAsync();
-
-        await Expect(Box(page)).ToHaveValueAsync("#00ff00");
-        await Expect(page.GetByTestId("accent")).ToHaveTextAsync("#00FF00");
-        await Expect(page.GetByTestId("changes")).ToHaveTextAsync("0");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

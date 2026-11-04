@@ -7,7 +7,6 @@
                        Max="new DateOnly(2026, 12, 31)" IsDateDisabled="IsClosed" />
     <output data-testid="trip">@Show(_trip.Start) to @Show(_trip.End)</output>
     <output data-testid="changes">@_changes</output>
-    <TbButton OnClick="SetFromParent">Set from parent</TbButton>
     <TbDateRangePicker TDate="DateTime" Label="Created" @bind-Value="_created" Culture="_culture"
                        Format="MM/dd/yyyy" />
     <output data-testid="created">@_created.Start?.ToString("O") to @_created.End?.ToString("O")</output>
@@ -33,6 +32,4 @@
     private static string Show(DateOnly? date) => date?.ToString("yyyy-MM-dd") ?? "none";
 
     private void Count() => _changes++;
-
-    private void SetFromParent() => _trip = new(new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 5));
 }
