@@ -359,6 +359,34 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True((await row.BoundingBoxAsync())!.Y >= header.Y + header.Height, "The row is under the header.");
     }
 
+    public static TheoryData<string, string, string, string> PhoneApiTables => new(
+        from browser in AllBrowsers.Names
+        from table in new[]
+        {
+            ("components/data-grid/api", "tr#tbdatagrid-items", "The rows, held in memory"),
+            ("guides/browser", "tr#ibrowserservice-scrollintoviewasync", "Scrolls"),
+        }
+        select (browser, table.Item1, table.Item2, table.Item3));
+
+    [Theory, MemberData(nameof(PhoneApiTables))]
+    public async Task ApiPage_ShouldShowEachDescriptionWithoutScrolling_WhenTheScreenIsAPhone(string browser,
+        string path, string row, string text)
+    {
+        var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        var member = page.Locator(row);
+        await Expect(member).ToBeVisibleAsync();
+
+        Assert.True(await page.Locator(".docs-api--members").EvaluateAllAsync<bool>(
+            "regions => regions.every(region => region.scrollWidth <= region.clientWidth)"),
+            "A member table should fit a phone without scrolling sideways.");
+        var name = member.GetByRole(AriaRole.Rowheader);
+        var description = member.GetByRole(AriaRole.Cell).Last;
+        await Expect(description).ToContainTextAsync(text);
+        // Stacked under the name, the description starts where the name does rather than in a squeezed column.
+        Assert.Equal((await name.BoundingBoxAsync())!.X, (await description.BoundingBoxAsync())!.X, 1);
+        Assert.Empty((await page.RunAxe(AxeTests.WcagAA)).Violations.Select(violation => violation.Id));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Browser_ShouldFollowTheViewportAndDownloadTheList_WhenUsed(string browser)
     {

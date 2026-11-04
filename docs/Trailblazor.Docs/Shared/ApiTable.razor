@@ -14,25 +14,27 @@
     <TbText TextStyle="TextStyle.Label" As="GroupLevel" class="docs-api__group" id="@GroupId(_api, group)">
         @group.Name
     </TbText>
-    @* Scrolls sideways on a narrow screen, so it takes focus for keyboard users. *@
-    <div class="docs-api" role="region" tabindex="0" aria-label="@($"{_api.Name} {group.Name.ToLowerInvariant()}")">
-        <table>
-            <thead>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Type</th>
+    @* Above 48rem it can scroll sideways, so it takes focus for keyboard users. *@
+    @* A phone restyles the rows as grids, which can strip the table semantics, so the roles are spelled out. *@
+    <div class="docs-api docs-api--members" role="region" tabindex="0"
+         aria-label="@($"{_api.Name} {group.Name.ToLowerInvariant()}")">
+        <table role="table">
+            <thead role="rowgroup">
+                <tr role="row">
+                    <th scope="col" role="columnheader">Name</th>
+                    <th scope="col" role="columnheader">Type</th>
                     @if (group.Defaults)
                     {
-                        <th scope="col">Default</th>
+                        <th scope="col" role="columnheader">Default</th>
                     }
-                    <th scope="col">Description</th>
+                    <th scope="col" role="columnheader">Description</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody role="rowgroup">
                 @foreach (var member in group.Members)
                 {
-                    <tr id="@member.Id">
-                        <th scope="row">
+                    <tr id="@member.Id" role="row">
+                        <th scope="row" role="rowheader">
                             <code>@member.Name</code>
                             <a href="@LinkTo(member.Id)" class="docs-api__anchor"
                                aria-label="@($"Link to {member.ShortName}")">#</a>
@@ -41,7 +43,8 @@
                                 <span class="docs-api__required">Required</span>
                             }
                         </th>
-                        <td>
+                        <td role="cell">
+                            <span class="docs-api__label" aria-hidden="true">Type</span>
                             <code>@member.Type</code>
                             @if (member.Values.Count > 0)
                             {
@@ -63,9 +66,15 @@
                         </td>
                         @if (group.Defaults)
                         {
-                            <td>@if (member.Default.Length > 0) { <code>@member.Default</code> }</td>
+                            <td role="cell" class="@(member.Default.Length == 0 ? "docs-api__none" : null)">
+                                @if (member.Default.Length > 0)
+                                {
+                                    <span class="docs-api__label" aria-hidden="true">Default</span>
+                                    <code>@member.Default</code>
+                                }
+                            </td>
                         }
-                        <td>@DocsText.Render(member.Description)</td>
+                        <td role="cell">@DocsText.Render(member.Description)</td>
                     </tr>
                 }
             </tbody>

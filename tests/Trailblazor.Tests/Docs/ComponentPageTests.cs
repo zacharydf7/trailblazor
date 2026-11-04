@@ -120,7 +120,7 @@ public class ComponentPageTests : DocsTest
             .Single(row => row.QuerySelector("th[scope=row] code")!.TextContent == "Variant");
         var cells = variant.QuerySelectorAll("td");
         Assert.Equal("Variant", cells[0].QuerySelector("code")!.TextContent);
-        Assert.Equal("Variant.Filled", cells[1].TextContent.Trim());
+        Assert.Equal("Variant.Filled", cells[1].QuerySelector("code")!.TextContent);
         Assert.StartsWith("How strongly the button is drawn", cells[2].TextContent.Trim());
     }
 
@@ -140,6 +140,25 @@ public class ComponentPageTests : DocsTest
         Assert.Equal("Link to FocusAsync",
             cut.Find("tr#tbbutton-focusasync a.docs-api__anchor").GetAttribute("aria-label"));
         Assert.NotNull(cut.Find("[role=region][aria-label='TbButton events'] tr#tbbutton-onclick"));
+    }
+
+    [Fact]
+    public void ApiPage_ShouldLabelEachCellForPhonesButNotScreenReaders_WhenItsApiPageIsOpened()
+    {
+        var cut = ApiPage("button");
+
+        Assert.All(cut.FindAll(".docs-api__label"), label => Assert.Equal("true", label.GetAttribute("aria-hidden")));
+        Assert.Equal(["Type", "Default"], Texts(cut.FindAll("tr#tbbutton-variant .docs-api__label")));
+        Assert.Single(cut.FindAll("tr#tbbutton-starticon td.docs-api__none"));
+        // A phone restyles the rows as grids, so the table's roles are spelled out rather than left to its tags.
+        IEnumerable<string?> Roles(string selector) => cut.FindAll($"[aria-label='TbButton parameters'] {selector}")
+            .Select(element => element.GetAttribute("role"));
+        Assert.Equal(["table"], Roles("table"));
+        Assert.Equal(["rowgroup", "row", "rowgroup"], Roles(":is(thead, thead > tr, tbody)"));
+        Assert.Equal(["columnheader", "columnheader", "columnheader", "columnheader"], Roles("thead th"));
+        Assert.Equal(["row", "rowheader", "cell", "cell", "cell"],
+            Roles("tr#tbbutton-variant, tr#tbbutton-variant > *"));
+        Assert.Equal(["Type"], Texts(cut.FindAll("tr#tbbutton-starticon .docs-api__label")));
     }
 
     [Fact]

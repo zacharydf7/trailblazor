@@ -685,6 +685,11 @@ kbd {
     white-space: nowrap;
 }
 
+/* On a phone the header row is visually hidden, so each cell shows its own column name. */
+.docs-api__label {
+    display: none;
+}
+
 /* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
 :is(.docs-main, .docs-article__body) > :is(p, h3, ul, ol, .tb-alert) code,
 .docs-notes code,
@@ -1156,6 +1161,48 @@ kbd {
     .docs-hero,
     .docs-band {
         padding-block: var(--tb-space-10);
+    }
+
+    /* A member's type, default and description stack under its name, so nothing scrolls sideways. The header row
+       and an empty cell stay in the table for screen readers, so the cells keep their columns. */
+    .docs-api--members thead,
+    .docs-api--members .docs-api__none {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .docs-api--members tbody tr {
+        display: grid;
+        gap: var(--tb-space-1);
+        padding: var(--tb-space-3) var(--tb-space-4);
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .docs-api--members tbody tr:last-child {
+        border-block-end: none;
+    }
+
+    .docs-api--members tbody :is(th, td) {
+        padding: 0;
+        border: none;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    /* Matches the guide rule's specificity and comes after it, so a long member name wraps. */
+    .docs-article .docs-api--members tbody th code {
+        white-space: normal;
+    }
+
+    .docs-api--members .docs-api__label {
+        display: inline;
+        margin-inline-end: var(--tb-space-1);
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-xs);
     }
 }
 
