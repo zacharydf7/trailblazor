@@ -409,9 +409,11 @@ a:focus-visible {
 }
 
 @media (min-width: 80rem) {
+    /* Centered with its contents beside it, so a wide screen's spare width is split rather than left on one side. */
     .docs-article {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 13rem;
+        grid-template-columns: minmax(0, 60rem) 13rem;
+        justify-content: center;
         gap: var(--tb-space-12);
     }
 
@@ -841,19 +843,15 @@ kbd {
 
 /* A wide screen gives examples, code and tables room, while running text keeps a readable line length. */
 :is(.docs-main, .docs-article__body) > :is(p, ul, ol) {
-    max-width: 44rem;
+    box-sizing: border-box;
+    max-width: 52rem;
 }
 
 :is(.docs-main, .docs-article__body) > p + p {
     margin-block-start: var(--tb-space-3);
 }
 
-/* A guide's text, code, tables and callouts share one column, spaced alike; headings keep their own spacing. */
-.docs-article--guide .docs-article__body > :is(ul, ol, .docs-code, .docs-api, .tb-alert, .tb-table) {
-    box-sizing: border-box;
-    max-width: 44rem;
-}
-
+/* A guide's text, code, tables and callouts are spaced alike; headings keep their own spacing. */
 .docs-article--guide .docs-article__body > :not(h1, h2, h3, .docs-heading)
     + :not(h2, h3, .docs-heading, .docs-article__folded) {
     margin-block-start: var(--tb-space-4);

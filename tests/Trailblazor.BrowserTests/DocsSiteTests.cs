@@ -261,19 +261,28 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             "On a phone, long lines should scroll rather than wrap.");
     }
 
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task ComponentPage_ShouldUseTheExtraWidth_WhenTheScreenIsWide(string browser)
+    public static TheoryData<string, string> WidePages => new(
+        from browser in AllBrowsers.Names from path in new[] { "components/tree-view", "guides/getting-started" }
+        select (browser, path));
+
+    [Theory, MemberData(nameof(WidePages))]
+    public async Task Article_ShouldCenterItsColumnBesideItsContentsAndKeepTextReadable_WhenTheScreenIsWide(
+        string browser, string path)
     {
-        var page = await OpenDocsAsync(browser, "components/tree-view",
-            new() { ViewportSize = new() { Width = 1900, Height = 1000 } });
+        var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 2000, Height = 1000 } });
 
-        var main = await page.Locator(".docs-main").BoundingBoxAsync();
-        var lead = await page.Locator(".docs-lead").BoundingBoxAsync();
-        var notes = await page.Locator(".docs-notes li").First.BoundingBoxAsync();
+        var article = (await page.Locator(".docs-article").BoundingBoxAsync())!;
+        var body = (await page.Locator(".docs-article__body").BoundingBoxAsync())!;
+        var rail = (await page.Locator(".docs-article__rail").BoundingBoxAsync())!;
+        var lead = (await page.Locator(".docs-lead").BoundingBoxAsync())!;
+        var code = (await page.Locator(".docs-article__body > .docs-code, .docs-example").First.BoundingBoxAsync())!;
 
-        Assert.True(main!.Width > 1200, $"The content column should widen on a wide screen, but is {main.Width}px.");
-        Assert.True(lead!.Width <= 44 * 16, $"A paragraph should keep a readable width, but is {lead.Width}px.");
-        Assert.True(notes!.Width <= 44 * 16, $"A list should keep a readable width, but is {notes.Width}px.");
+        Assert.Equal(60 * 16, body.Width, 1);
+        Assert.Equal(body.X - article.X, article.X + article.Width - rail.X - rail.Width, 1);
+        Assert.True(rail.X - body.X - body.Width <= 3 * 16 + 1, "The contents should sit beside the column.");
+        Assert.True(lead.Width is > 44 * 16 and <= 52 * 16,
+            $"A paragraph should be wider than 44rem and at most 52rem, but is {lead.Width}px.");
+        Assert.Equal(body.Width, code.Width, 1);
     }
 
     // CodeBlockTests covers the spans; this checks only that the stylesheet colors them.
