@@ -158,7 +158,8 @@ public class ExampleCatalogTests
     public void Anatomy_ShouldBeGiven_WhenTheComponentIsMadeOfParts()
     {
         string[] composed = ["dialog", "select", "listbox", "tabs", "menu", "accordion", "toolbar", "data-grid",
-            "tree-view", "radio-group", "checkbox-group", "splitter"];
+            "tree-view", "radio-group", "checkbox-group", "splitter", "toggle-group", "grid", "chip", "list",
+            "table-of-contents", "button-group"];
 
         Assert.All(composed, name => Assert.NotNull(ExampleCatalog.Find(name)!.Anatomy));
     }
@@ -184,6 +185,11 @@ public class ExampleCatalogTests
             .GetProperties().Where(property => property.IsDefined(typeof(ParameterAttribute)))
             .Select(property => property.Name))];
         string[] typeArguments = ["TItem", "TKey", "TValue"];
+        // An aria-* attribute passes through to the component's outer element, but if the component has the matching
+        // parameter (AriaLabel for aria-label), the anatomy has to use the parameter instead.
+        bool Allowed(string component, string attribute) => Parameters(component).Contains(attribute)
+            || (attribute.StartsWith("aria-") && !Parameters(component).Any(parameter =>
+                parameter.Equals(attribute.Replace("-", ""), StringComparison.OrdinalIgnoreCase)));
 
         var wrong = ExampleCatalog.All.Where(example => example.Anatomy is not null).SelectMany(example =>
         {
@@ -204,7 +210,7 @@ public class ExampleCatalogTests
                 var attributes = Regex.Replace(tag.Groups["attributes"].Value, "\"[^\"]*\"", "")
                     .Split([' ', '/'], StringSplitOptions.RemoveEmptyEntries)
                     .Select(attribute => attribute.TrimEnd('=').Replace("@bind-", ""));
-                return attributes.Except(typeArguments).Where(attribute => !Parameters(name).Contains(attribute))
+                return attributes.Except(typeArguments).Where(attribute => !Allowed(name, attribute))
                     .Select(attribute => $"{example.Name}: {name}.{attribute}");
             });
         });

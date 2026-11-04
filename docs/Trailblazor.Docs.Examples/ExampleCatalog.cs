@@ -363,6 +363,13 @@ public static class ExampleCatalog
             typeof(ButtonGroupExample))
         {
             Api = [typeof(TbButtonGroup)],
+            Anatomy = """
+                <TbButtonGroup aria-label="…">
+                    <TbButton>…</TbButton>
+                    <TbButton>…</TbButton>
+                    <TbMenu Label="…">…</TbMenu>
+                </TbButtonGroup>
+                """,
             Accessibility =
             [
                 "A `div` with `role=\"group\"`. Give it an `aria-label` that says what the buttons do together.",
@@ -379,6 +386,16 @@ public static class ExampleCatalog
             "A row of toggle buttons where one, or any number, can be pressed.", typeof(ToggleGroupExample))
         {
             Api = [typeof(TbToggleGroup<>), typeof(TbMultiToggleGroup<>), typeof(TbToggleItem<>)],
+            Anatomy = """
+                <TbToggleGroup AriaLabel="…" @bind-Value="_value">
+                    <TbToggleItem Value="…">…</TbToggleItem>
+                    <TbToggleItem Value="…">…</TbToggleItem>
+                </TbToggleGroup>
+
+                <TbMultiToggleGroup AriaLabel="…" @bind-Value="_values">
+                    <TbToggleItem Value="…">…</TbToggleItem>
+                </TbMultiToggleGroup>
+                """,
             Accessibility =
             [
                 "A `group` named by its required `AriaLabel`, holding toggle buttons with `aria-pressed`. An item "
@@ -516,6 +533,12 @@ public static class ExampleCatalog
         {
             FullWidth = true,
             Api = [typeof(TbGrid), typeof(TbGridItem)],
+            Anatomy = """
+                <TbGrid>
+                    <TbGridItem SpanMd="6">…</TbGridItem>
+                    <TbGridItem SpanMd="6">…</TbGridItem>
+                </TbGrid>
+                """,
             Accessibility =
             [
                 "Plain `div`s by default; they only lay out what they hold. Render the grid `As` `LayoutElement.Ul` "
@@ -617,6 +640,17 @@ public static class ExampleCatalog
             typeof(ChipExample))
         {
             Api = [typeof(TbChip), typeof(TbChipGroup)],
+            Anatomy = """
+                <TbChipGroup AriaLabel="…">
+                    <TbChip Text="…" OnClose="…" />
+                    <TbChip Text="…" OnClose="…" />
+                </TbChipGroup>
+
+                <TbChipGroup AriaLabel="…">
+                    <TbChip Text="…" @bind-Selected="_on" />
+                    <TbChip Text="…" @bind-Selected="_off" />
+                </TbChipGroup>
+                """,
             Accessibility =
             [
                 "A `TbChipGroup` is a `list` named by its required `AriaLabel`, and each chip in it is a `listitem`.",
@@ -654,6 +688,16 @@ public static class ExampleCatalog
                 + "links or buttons, and one can be marked as the current item.", typeof(ListExample))
         {
             Api = [typeof(TbList), typeof(TbListItem)],
+            Anatomy = """
+                <TbList aria-label="…">
+                    <TbListItem OnClick="…">
+                        <Start>…</Start>
+                        <ChildContent>…</ChildContent>
+                        <Description>…</Description>
+                        <End>…</End>
+                    </TbListItem>
+                </TbList>
+                """,
             Accessibility =
             [
                 "A `list` of `listitem`s; name it with `aria-label` when the page has several lists.",
@@ -2367,6 +2411,13 @@ public static class ExampleCatalog
             typeof(TableOfContentsExample))
         {
             Api = [typeof(TbTableOfContents), typeof(TbTableOfContentsItem)],
+            Anatomy = """
+                <TbTableOfContents AriaLabel="…">
+                    <TbTableOfContentsItem TargetId="…" Text="…">
+                        <TbTableOfContentsItem TargetId="…" Text="…" />
+                    </TbTableOfContentsItem>
+                </TbTableOfContents>
+                """,
             Accessibility =
             [
                 "A `navigation` landmark named by `AriaLabel` (\"On this page\" by default) holding a list of links, "
