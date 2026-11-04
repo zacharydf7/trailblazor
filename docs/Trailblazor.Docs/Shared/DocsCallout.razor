@@ -6,9 +6,9 @@
     [Parameter]
     public Tone Tone { get; set; } = Tone.Info;
 
-    /// <summary>The note's title, which says the point in a few words.</summary>
-    [Parameter, EditorRequired]
-    public string Title { get; set; } = "";
+    /// <summary>The note's title, which says the point in a few words, or none for a one-sentence note.</summary>
+    [Parameter]
+    public string? Title { get; set; }
 
     /// <summary>The note's text.</summary>
     [Parameter]

@@ -585,6 +585,33 @@ a:focus-visible {
     white-space: nowrap;
 }
 
+/* A key, as the keyboard tables show them. */
+kbd {
+    display: inline-block;
+    min-inline-size: 1.6em;
+    padding: 0.05em 0.45em;
+    border: 1px solid var(--tb-border-strong);
+    border-block-end-width: 2px;
+    border-radius: var(--tb-radius-sm);
+    background: var(--tb-color-surface-raised);
+    color: var(--tb-color-text);
+    font-family: var(--tb-font-family-mono);
+    font-size: 0.85em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+    kbd {
+        border-color: CanvasText;
+    }
+}
+
+.docs-api .docs-keys__when {
+    background: var(--tb-color-surface-raised);
+    font-weight: var(--tb-font-weight-medium);
+}
+
 /* A guide's row headers can be prose, so they wrap rather than push the answers off a phone's screen. */
 .docs-article--guide .docs-api tbody th {
     white-space: normal;
@@ -632,12 +659,16 @@ a:focus-visible {
     margin-block-start: var(--tb-space-4);
 }
 
-.docs-article--guide .docs-article__body > h3 {
+.docs-article__body > h3 {
     margin-block: var(--tb-space-8) 0;
     font-family: var(--docs-display);
 }
 
-.docs-article--guide .docs-article__body > h3 + * {
+.docs-article__body > .tb-alert {
+    margin-block: var(--tb-space-3);
+}
+
+.docs-article__body > h3 + * {
     margin-block-start: var(--tb-space-2);
 }
 

@@ -27,6 +27,30 @@ each section as a heading, its demo and its code on request, and lists the secti
 without sections shows its single example under the heading "Example". Demos sit centered in their frame; set
 `FullWidth` on an entry whose demos need the frame's width, such as a grid or a layout component.
 
+The rest of the page comes from the entry's other slots. Apart from `Accessibility`, `Blocks` and `Target`, every slot
+is optional, and an empty one renders nothing. "On this page" lists the H2 sections: Usage, Notes and limitations, and
+Related only when filled, and the rest always. The H3s under Usage and Accessibility have ids of their own, such as
+`#keyboard`, for linking. The page shows the slots in this order:
+
+| Slot | Shown under | Holds |
+| --- | --- | --- |
+| `WhenToUse`, `WhenNotToUse` | Usage | When it fits, and which look-alike to use instead, linked |
+| `Sections` | A heading each | One feature each, with its demo |
+| `Pattern` | Accessibility | The WAI-ARIA Authoring Practices pattern it follows, by name and URL |
+| `Keyboard`, `RightToLeftKeys` | Accessibility: Keyboard | Keys per action, grouped by `When`; keys that swap in RTL |
+| `Labeling` | Accessibility: Labeling | How it and each of its parts get their accessible names |
+| `Announcements` | Accessibility: What screen readers announce | What is said on focus, change, error and updates |
+| `Accessibility` | Accessibility: What the component does | Its roles, states and behavior for assistive technology |
+| `AppDuties` | Accessibility: What your app must do | What the app must still give or do |
+| `BeforeInteractive` | Accessibility: Before the page is interactive | What renders, works and posts then |
+| `Notes` | Notes and limitations | Behavior, limitations and known issues; a `Pitfall` shows as a warning |
+| `Telemetry`, `Blocks`, `Target`, `TestingTip`, `DataParts` | Their own sections | Counts, styles and how to test it |
+| `Related` | Related | Catalog names of related components, linked with their summaries |
+
+A field's page adds the shared `AriaLabel` advice to Labeling and the focus events to Notes. Catalog text shows text
+between backticks as code, and `[text](components/name)` links to a component's page, or `[text](guides/name)` to a
+guide's; a test checks that every such link, and every `Related` name, reaches a page in the catalogs.
+
 ## Docs checklist
 
 A docs reviewer reads the component's page and API page against this list before the issue closes. Tick an item, or

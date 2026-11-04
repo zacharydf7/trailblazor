@@ -76,7 +76,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from browser in AllBrowsers.Names
         from path in new[]
         {
-            "", "components/dialog", "components/tree-view", "components/data-grid/api",
+            "", "components/dialog", "components/select", "components/tree-view", "components/data-grid/api",
             "preview/tree-view/many-rows", "guides/getting-started", "guides/theming", "guides/palettes",
             "guides/spacing", "guides/browser", "guides/testing",
             "guides/announcements", "guides/icons", "guides/localization", "guides/telemetry", "guides/analyzers",
@@ -508,6 +508,81 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(cells.Nth(0)).ToHaveTextAsync("Variant");
         await Expect(cells.Nth(1)).ToHaveTextAsync("Variant.Filled");
         await Expect(cells.Nth(2)).ToHaveTextAsync(new Regex("^How strongly the button is drawn"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldTableTheKeys_WhenTheEntryHasKeyboardRows(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/select");
+        var keys = page.GetByRole(AriaRole.Region, new() { Name = "Keyboard" }).GetByRole(AriaRole.Table);
+        var rows = ExampleCatalog.Find("select")!.Keyboard;
+
+        await Expect(keys.Locator("tbody th[scope=row]")).ToHaveCountAsync(rows.Count);
+        await Expect(keys.Locator("tbody th[scope=rowgroup]"))
+            .ToHaveTextAsync(["While closed", "While open", "With Chips", "With Filterable"]);
+        await Expect(keys.Locator("tbody th[scope=row]").First.Locator("kbd"))
+            .ToHaveTextAsync(["Down", "Up", "Enter", "Space"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldSplitAccessibilityIntoHeadingsAndLinkThePattern_WhenTheEntryFillsThem(
+        string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/select");
+
+        var headings = "#keyboard, #labeling, #announcements, #what-it-does, #app-duties, #before-interactive";
+        await Expect(page.Locator(headings))
+            .ToHaveTextAsync(["Keyboard", "Labeling", "What screen readers announce", "What the component does",
+                "What your app must do", "Before the page is interactive"]);
+        await Expect(page.GetByRole(AriaRole.Link, new() { Name = "combobox pattern" }))
+            .ToHaveAttributeAsync("href", ExampleCatalog.Find("select")!.Pattern!.Url);
+        await Expect(page.GetByRole(AriaRole.List, new() { Name = "Notes and limitations" })
+            .GetByRole(AriaRole.Link, new() { Name = "text field" }))
+            .ToHaveAttributeAsync("href", "components/text-field");
+        await Expect(page.GetByRole(AriaRole.Note)).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldPutTheFieldAdviceInLabelingAndNotes_WhenItIsAField(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/text-field");
+        var labeling = page.GetByRole(AriaRole.List, new() { Name = "Labeling" });
+        var notes = page.GetByRole(AriaRole.List, new() { Name = "Notes and limitations" });
+        var accessibility = page.GetByRole(AriaRole.List, new() { Name = "Accessibility" });
+
+        await Expect(labeling.GetByRole(AriaRole.Listitem).Last).ToContainTextAsync("AriaLabel");
+        await Expect(notes.GetByRole(AriaRole.Listitem).Last).ToContainTextAsync("OnFocus");
+        await Expect(accessibility).Not.ToContainTextAsync("OnFocus");
+        await Expect(accessibility).Not.ToContainTextAsync("TB004");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldLinkTheRelatedComponents_WhenTheEntryNamesThem(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/select");
+        var related = page.GetByRole(AriaRole.List, new() { Name = "Related" }).GetByRole(AriaRole.Link);
+        var names = ExampleCatalog.Find("select")!.Related;
+
+        await Expect(related).ToHaveTextAsync([.. names.Select(name => ExampleCatalog.Find(name)!.Title)]);
+        await Expect(page.GetByRole(AriaRole.Navigation, new() { Name = "On this page" }).First
+            .GetByRole(AriaRole.Link, new() { Name = "Usage" })).ToHaveCountAsync(1);
+        await related.First.ClickAsync();
+
+        await Expect(page).ToHaveURLAsync(new Regex($"/components/{names[0]}$"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldLeaveOutUsageNotesAndRelated_WhenTheEntryHasNone(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+        var contents = page.GetByRole(AriaRole.Navigation, new() { Name = "On this page" }).First;
+        await Expect(contents.GetByRole(AriaRole.Link).First).ToBeAttachedAsync();
+
+        foreach (var heading in new[] { "Usage", "Notes and limitations", "Related" })
+        {
+            await Expect(page.GetByRole(AriaRole.Heading, new() { Name = heading, Level = 2 })).ToHaveCountAsync(0);
+            await Expect(contents.GetByRole(AriaRole.Link, new() { Name = heading })).ToHaveCountAsync(0);
+        }
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

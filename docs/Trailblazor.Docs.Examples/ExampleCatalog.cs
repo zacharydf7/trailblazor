@@ -18,8 +18,41 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // The types whose parameters or options the example's page tables.
     public required IReadOnlyList<Type> Api { get; init; }
 
-    // Keyboard, roles and the names a developer must give; text in backticks shows as code.
+    // What the component does for people using assistive technology, such as its roles and states; text in backticks
+    // shows as code, and [text](path) links to another page.
     public required IReadOnlyList<string> Accessibility { get; init; }
+
+    // When the component fits, and when another does instead; both can link to the other component.
+    public IReadOnlyList<string> WhenToUse { get; init; } = [];
+
+    public IReadOnlyList<string> WhenNotToUse { get; init; } = [];
+
+    // The catalog names of related components, linked at the end of the page.
+    public IReadOnlyList<string> Related { get; init; } = [];
+
+    // The WAI-ARIA Authoring Practices pattern the component follows.
+    public AriaPattern? Pattern { get; init; }
+
+    // Every key the component handles, in the order a table shows them.
+    public IReadOnlyList<KeyboardRow> Keyboard { get; init; } = [];
+
+    // Keys that swap in right-to-left layouts, said in a line under the keyboard table.
+    public string? RightToLeftKeys { get; init; }
+
+    // How the component gets its accessible name, and what each of its parts is named by.
+    public IReadOnlyList<string> Labeling { get; init; } = [];
+
+    // What a screen reader says as focus arrives, as the value changes, on an error and for live updates.
+    public IReadOnlyList<string> Announcements { get; init; } = [];
+
+    // What the app must still do, apart from what the component does.
+    public IReadOnlyList<string> AppDuties { get; init; } = [];
+
+    // What renders before the page is interactive, what works then, and what a static form posts.
+    public IReadOnlyList<string> BeforeInteractive { get; init; } = [];
+
+    // Behavior, limitations and known issues that belong to no other section; a pitfall shows as a warning.
+    public IReadOnlyList<ExampleNote> Notes { get; init; } = [];
 
     // How a test finds the component in the example; null for a layout component with no role of its own.
     public required TestTarget? Target { get; init; }
@@ -36,16 +69,24 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // Every field takes a TelemetryName, so a field's page says what that counts before its own notes.
     public IReadOnlyList<string> TelemetryNotes => Api.Any(IsField) ? [FieldTelemetry, .. Telemetry] : Telemetry;
 
-    // Every field takes AriaLabel, OnFocus, OnBlur and AutoFocus, so a field's page ends its notes with them.
-    public IReadOnlyList<string> AccessibilityNotes => Api.Any(IsField) ? [.. Accessibility, FieldAccessibility]
-        : Accessibility;
+    // Every field takes AriaLabel, so a field's page ends its labeling with it.
+    public IReadOnlyList<string> LabelingNotes => Api.Any(IsField) ? [.. Labeling, FieldLabeling] : Labeling;
 
-    private const string FieldAccessibility = "With no room for a label, an `AriaLabel` names the field through a "
-        + "label only screen readers see. A field with neither gets build warning TB004, and a `Value` set without "
-        + "`ValueChanged` gets TB003. `OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
+    // Every field takes OnFocus, OnBlur and AutoFocus, and warns about a Value without ValueChanged, so a field's page
+    // ends its notes with them.
+    public IReadOnlyList<ExampleNote> NotesShown => Api.Any(IsField) ? [.. Notes, new(FieldNote)] : Notes;
+
+    // The accessibility section splits into headings once the entry fills any part beyond what the component does.
+    public bool HasAccessibilityParts => Keyboard.Count > 0 || LabelingNotes.Count > 0 || Announcements.Count > 0
+        || AppDuties.Count > 0 || BeforeInteractive.Count > 0;
+
+    private const string FieldLabeling = "With no room for a label, an `AriaLabel` names the field through a label "
+        + "only screen readers see. A field with neither gets build warning TB004.";
+
+    private const string FieldNote = "`OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
         + "between its own parts, so they suit checking or saving when the user moves on. `AutoFocus` moves focus to "
         + "it as it appears on an interactive page, unless the user is typing in another field by then, or, in a "
-        + "dialog or focus scope, as that opens.";
+        + "dialog or focus scope, as that opens. A `Value` set without `ValueChanged` gets build warning TB003.";
 
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
@@ -77,6 +118,22 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
         Sections.Count > 0 ? Sections : [new("example", "Example", null, Component, Parts)];
 
     public IReadOnlyList<ExampleSource> Sources => [.. Shown.SelectMany(section => section.Sources)];
+}
+
+// A pattern from the WAI-ARIA Authoring Practices Guide, by its name there and its page.
+public sealed record AriaPattern(string Name, string Url);
+
+// A keyboard table row: keys that share an action, such as ["Home", "End"]; a combination is written as "Alt+Down".
+// When, such as "While open", names the state or mode the keys work in, and rows that share it are grouped under it.
+public sealed record KeyboardRow(IReadOnlyList<string> Keys, string Action)
+{
+    public string? When { get; init; }
+}
+
+// A note on behavior or a limitation; a pitfall, which costs the reader if missed, shows as a warning.
+public sealed record ExampleNote(string Text)
+{
+    public bool Pitfall { get; init; }
 }
 
 // One feature of a component: a heading, a sentence or two, the live demo and its code. The id names its anchor.
@@ -916,44 +973,127 @@ public static class ExampleCatalog
         {
             Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>), typeof(TbOptionGroup),
                 typeof(SelectLabels), typeof(FieldClasses)],
+            WhenToUse =
+            [
+                "To choose one option, or several, from a known list too long to show at once.",
+                "With `Filterable`, for a list long enough that the user would rather search it than scroll.",
+            ],
+            WhenNotToUse =
+            [
+                "For a few options that fit on the page, use a [radio group](components/radio-group) or a "
+                    + "[checkbox group](components/checkbox-group), which show every choice at once.",
+                "When the user may type a value the list doesn't have, or the options come from a search as they "
+                    + "type, use an [autocomplete](components/autocomplete).",
+                "For a list that stays open on the page, use a [list box](components/listbox).",
+            ],
+            Related = ["autocomplete", "listbox", "radio-group", "checkbox-group", "text-field"],
+            Pattern = new("combobox", "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"),
+            Keyboard =
+            [
+                new(["Down", "Up", "Enter", "Space"], "Opens the list.") { When = "While closed" },
+                new(["Home", "End"], "Opens the list on the first or last option.") { When = "While closed" },
+                new(["A letter"], "Opens the list on an option that starts with what was typed.")
+                {
+                    When = "While closed",
+                },
+                new(["Down", "Up"], "Moves to the next or previous option.") { When = "While open" },
+                new(["Home", "End"], "Moves to the first or last option.") { When = "While open" },
+                new(["A letter"], "Moves to an option that starts with what was typed. A Space typed mid-search adds "
+                    + "to the search rather than choosing.")
+                {
+                    When = "While open",
+                },
+                new(["Enter", "Space"], "Chooses the active option. A multi-select stays open as options are chosen.")
+                {
+                    When = "While open",
+                },
+                new(["Alt+Up"], "Closes the list; a single select first chooses the active option.")
+                {
+                    When = "While open",
+                },
+                new(["Escape"], "Closes the list.") { When = "While open" },
+                new(["Tab"], "Closes the list and moves focus on; a single select first chooses the active option.")
+                {
+                    When = "While open",
+                },
+                new(["Backspace"], "Removes the last chosen option.") { When = "With `Chips`" },
+                new(["A letter"], "While closed, opens the list and starts the filter.")
+                {
+                    When = "With `Filterable`",
+                },
+                new(["A letter"], "While open, types in the filter and narrows the list.")
+                {
+                    When = "With `Filterable`",
+                },
+                new(["Down", "Up"], "Moves through the matching options.") { When = "With `Filterable`" },
+                new(["Home", "End"], "Moves within the filter's text.") { When = "With `Filterable`" },
+                new(["Enter"], "Chooses the active option.") { When = "With `Filterable`" },
+                new(["Escape"], "Closes the list and returns focus to the select.") { When = "With `Filterable`" },
+            ],
+            Labeling =
+            [
+                "The combobox is named by the `Label`.",
+                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
+                    + "which field it clears.",
+                "An option with content of its own, such as an image and a caption, is named by its `Text`, chosen or "
+                    + "not; one with neither text nor a name gets a warning in the browser console.",
+                "A `TbOptionGroup` is a `group` named by its `Label`.",
+                "The \"Select all\" option is named by `Labels.SelectAll`.",
+                "With `Filterable`, the popup is a `dialog` named by the `Label`, and the filter box by "
+                    + "`Labels.Filter`.",
+            ],
+            Announcements =
+            [
+                "On focus, its label, the value it shows and whether its list is open, then its helper text or error.",
+                "Focus stays on the combobox, which points to the active option with `aria-activedescendant`, so a "
+                    + "screen reader reads each option as it becomes active.",
+                "Choosing in a single select closes the list with focus on the combobox, which then shows the chosen "
+                    + "value.",
+                "A new validation error from an edit is announced as it appears, and so is an `Error` the app sets, "
+                    + "such as one a server returned. A submit's validation errors aren't read out all at once; each "
+                    + "field reads its own on focus.",
+                "The field is marked `aria-invalid`, and once an error is fixed, its message leaves the live region, "
+                    + "so no one comes across it there later.",
+                "With `Chips`, a removal is announced.",
+                "With `Filterable`, `Labels.NoResults` is announced when nothing matches.",
+                "A `ReadOnly` select is heard as read only.",
+            ],
             Accessibility =
             [
-                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
-                "A `combobox` named by its `Label` that opens a `listbox` of `option`s. Focus stays on the "
-                    + "combobox, which points to the active option with `aria-activedescendant`. In a single select "
-                    + "the chosen option shows a check, not only bolder text.",
-                "While closed: Down, Up, Enter or Space opens it, Home and End open it on the first or last "
-                    + "option, and typing jumps to an option that starts with what was typed.",
-                "While open: the arrows, Home and End move; Enter or Space chooses; Escape closes. In a single "
-                    + "select, Tab chooses the active option and moves on. A multi-select stays open as options are "
-                    + "chosen.",
-                "Before the page is interactive it renders as the browser's own `<select>`, so it still works.",
-                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
-                    + "which field it clears, and it sends focus back to the field. An option with content of its own, "
-                    + "such as an image and a caption, is named by its `Text`, chosen or not; one with neither text "
-                    + "nor a name gets a warning in the browser console. A select bound to a value type, such as "
-                    + "`Guid`, clears to its default, which shows the placeholder.",
-                "A value no option has, such as one that has left the list, still shows: as its text, or as "
-                    + "`UnmatchedText` makes it. Before the page is interactive, the native select keeps it chosen. "
-                    + "Options that load as the list opens aren't there yet, so give such a select `UnmatchedText`, "
-                    + "such as a lookup of the value's name, rather than showing a key such as a `Guid`.",
-                "With `SelectAll`, a multi-select's list starts with a \"Select all\" option, named by "
-                    + "`Labels.SelectAll`, that the arrows reach like any other. It chooses every enabled option, and "
-                    + "is selected once they all are; choosing it then deselects them all. It hides while the filter "
-                    + "has text.",
-                "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
-                "With `Chips`, each chosen option shows as a chip. Backspace removes the last one and each chip has a "
-                    + "remove button for the pointer; a removal is announced, and options can still be deselected in "
-                    + "the list.",
-                "With `Filterable`, the select's popup is a `dialog` named by its `Label`, and the select announces "
-                    + "it with `aria-haspopup=\"dialog\"`. Opening it moves focus to a filter box above the list, a "
-                    + "`combobox` with `aria-autocomplete=\"list\"` named by `Labels.Filter`. Typing on the closed "
-                    + "select starts the filter. Matching ignores case and accents, groups with no matches hide, and "
-                    + "`Labels.NoResults` is announced when nothing matches. Up and Down move, Enter chooses, Escape "
-                    + "closes and returns focus to the select.",
-                "`ReadOnly` keeps the select focusable and posted, but it doesn't open and its chips can't be "
-                    + "removed; screen readers hear it as read only. Before the page is interactive, the native select "
-                    + "puts its choice back whenever the user changes it.",
+                "A `combobox` that opens a `listbox` of `option`s. In a single select the chosen option shows a check, "
+                    + "not only bolder text.",
+                "The clear button sends focus back to the field.",
+                "The arrows and typing move through every `TbOptionGroup`, and \"Select all\" is an option the arrows "
+                    + "reach like any other.",
+                "With `Chips`, each chosen option shows as a chip with a remove button for the pointer, and options "
+                    + "can still be deselected in the list.",
+                "With `Filterable`, the select says it opens a dialog with `aria-haspopup=\"dialog\"`. Opening it "
+                    + "moves focus to a filter box above the list, a `combobox` with `aria-autocomplete=\"list\"`.",
+                "`ReadOnly` keeps the select focusable and posted, but it doesn't open and its chips can't be removed.",
+            ],
+            AppDuties =
+            [
+                "If a select's options load as the list opens, give it an `UnmatchedText`, such as a lookup of the "
+                    + "value's name, so the chosen value doesn't show as a key such as a `Guid` before they arrive.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as the browser's own `<select>`, so it still works and posts with its form.",
+                "A value no option has stays chosen in the native select.",
+                "A `ReadOnly` native select puts its choice back whenever the user changes it.",
+            ],
+            Notes =
+            [
+                new("`Variant` (`Outlined` or `Filled`) and `Size` work as on the "
+                    + "[text field](components/text-field)."),
+                new("A value no option has, such as one that has left the list, still shows: as its text, or as "
+                    + "`UnmatchedText` makes it."),
+                new("With `SelectAll`, a multi-select's list starts with a \"Select all\" option. It chooses every "
+                    + "enabled option, and is selected once they all are; choosing it then deselects them all. It "
+                    + "hides while the filter has text."),
+                new("With `Filterable`, matching ignores case and accents, and groups with no matches hide."),
+                new("A select bound to a value type, such as `Guid`, clears to its default, which shows the "
+                    + "placeholder.") { Pitfall = true },
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select", "tb-chip"],

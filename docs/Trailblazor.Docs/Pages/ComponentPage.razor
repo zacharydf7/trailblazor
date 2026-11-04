@@ -7,19 +7,47 @@
     @* Keyed, so the next component starts with its code hidden and its contents folded. *@
     <DocsArticle @key="example.Name">
         <Contents>
+            @if (HasUsage(example))
+            {
+                <TbTableOfContentsItem TargetId="usage" Text="Usage" />
+            }
             @foreach (var section in example.Shown)
             {
                 <TbTableOfContentsItem TargetId="@section.Id" Text="@section.Title" />
             }
             <TbTableOfContentsItem TargetId="accessibility" Text="Accessibility" />
+            @if (example.NotesShown.Count > 0)
+            {
+                <TbTableOfContentsItem TargetId="notes" Text="Notes and limitations" />
+            }
             <TbTableOfContentsItem TargetId="telemetry" Text="Telemetry" />
             <TbTableOfContentsItem TargetId="design-tokens" Text="Design tokens" />
             <TbTableOfContentsItem TargetId="testing" Text="Testing" />
+            @if (example.Related.Count > 0)
+            {
+                <TbTableOfContentsItem TargetId="related" Text="Related" />
+            }
         </Contents>
         <Header>
             <ComponentHeader Example="example" />
         </Header>
         <ChildContent>
+            @if (HasUsage(example))
+            {
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="usage">Usage</TbText>
+                @if (example.WhenToUse.Count > 0)
+                {
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="when-to-use">When to use</TbText>
+                    @Notes("When to use", example.WhenToUse)
+                }
+                @if (example.WhenNotToUse.Count > 0)
+                {
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="when-not-to-use">
+                        When not to use
+                    </TbText>
+                    @Notes("When not to use", example.WhenNotToUse)
+                }
+            }
 
             @foreach (var section in example.Shown)
             {
@@ -28,7 +56,7 @@
                 </TbText>
                 @if (section.Description is { } description)
                 {
-                    <TbText>@DocsText.WithCode(description)</TbText>
+                    <TbText>@DocsText.Render(description)</TbText>
                 }
                 <ExampleFrame Name="@example.Name" Section="section" FullWidth="example.FullWidth" />
             }
@@ -36,24 +64,78 @@
             <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="accessibility">
                 Accessibility
             </TbText>
-            <ul class="docs-notes" aria-label="Accessibility">
-                @foreach (var note in example.AccessibilityNotes)
+            @if (example.Pattern is { } pattern)
+            {
+                <TbText>
+                    It follows the <a href="@pattern.Url">@pattern.Name pattern</a> from the WAI-ARIA Authoring
+                    Practices.
+                </TbText>
+            }
+            @if (example.HasAccessibilityParts)
+            {
+                @if (example.Keyboard.Count > 0)
                 {
-                    <li>@DocsText.WithCode(note)</li>
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="keyboard">Keyboard</TbText>
+                    <KeyboardTable Rows="example.Keyboard" />
+                    @if (example.RightToLeftKeys is { } swapped)
+                    {
+                        <TbText>@DocsText.Render(swapped)</TbText>
+                    }
                 }
-            </ul>
+                @if (example.LabelingNotes.Count > 0)
+                {
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="labeling">Labeling</TbText>
+                    @Notes("Labeling", example.LabelingNotes)
+                }
+                @if (example.Announcements.Count > 0)
+                {
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="announcements">
+                        What screen readers announce
+                    </TbText>
+                    @Notes("What screen readers announce", example.Announcements)
+                }
+                <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="what-it-does">
+                    What the component does
+                </TbText>
+                @Notes("Accessibility", example.Accessibility)
+                @if (example.AppDuties.Count > 0)
+                {
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="app-duties">
+                        What your app must do
+                    </TbText>
+                    @Notes("What your app must do", example.AppDuties)
+                }
+                @if (example.BeforeInteractive.Count > 0)
+                {
+                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="before-interactive">
+                        Before the page is interactive
+                    </TbText>
+                    @Notes("Before the page is interactive", example.BeforeInteractive)
+                }
+            }
+            else
+            {
+                @Notes("Accessibility", example.Accessibility)
+            }
+
+            @if (example.NotesShown.Count > 0)
+            {
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="notes">
+                    Notes and limitations
+                </TbText>
+                @foreach (var pitfall in example.NotesShown.Where(note => note.Pitfall))
+                {
+                    <DocsCallout Tone="Tone.Warning">@DocsText.Render(pitfall.Text)</DocsCallout>
+                }
+                @Notes("Notes and limitations", PlainNotes(example))
+            }
 
             <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="telemetry">
                 Telemetry
             </TbText>
             @if (example.TelemetryNotes.Count > 0)
             {
-                <ul class="docs-notes" aria-label="Telemetry">
-                    @foreach (var note in example.TelemetryNotes)
-                    {
-                        <li>@DocsText.WithCode(note)</li>
-                    }
-                </ul>
+                @Notes("Telemetry", example.TelemetryNotes)
             }
             else
             {
@@ -125,7 +207,7 @@
             }
             @if (example.TestingTip is { } tip)
             {
-                <TbText>@DocsText.WithCode(tip)</TbText>
+                <TbText>@DocsText.Render(tip)</TbText>
             }
             @if (example.DataParts.Count > 0)
             {
@@ -144,6 +226,19 @@
                 The <a href="guides/testing">testing guide</a> shows how to set up bUnit and Playwright.
             </TbText>
 
+            @if (example.Related.Count > 0)
+            {
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">
+                    Related
+                </TbText>
+                <ul class="docs-notes" aria-label="Related">
+                    @foreach (var related in example.Related.Select(name => ExampleCatalog.Find(name)!))
+                    {
+                        <li><a href="@($"components/{related.Name}")">@related.Title</a>: @related.Summary</li>
+                    }
+                </ul>
+            }
+
             <ComponentPager Example="example" />
         </ChildContent>
     </DocsArticle>
@@ -158,4 +253,18 @@ else
 @code {
     [Parameter]
     public string Name { get; set; } = "";
+
+    private static bool HasUsage(Example example) => example.WhenToUse.Count > 0 || example.WhenNotToUse.Count > 0;
+
+    private static IReadOnlyList<string> PlainNotes(Example example) =>
+        [.. example.NotesShown.Where(note => !note.Pitfall).Select(note => note.Text)];
+
+    // A list of catalog notes, named so a test and a screen reader can tell the lists apart.
+    private static RenderFragment Notes(string name, IReadOnlyList<string> notes) =>
+        @<ul class="docs-notes" aria-label="@name">
+            @foreach (var note in notes)
+            {
+                <li>@DocsText.Render(note)</li>
+            }
+        </ul>;
 }

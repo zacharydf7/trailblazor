@@ -22,7 +22,47 @@ public class ExampleCatalogTests
         var ids = ExampleCatalog.Find(name)!.Shown.Select(section => section.Id).ToList();
 
         Assert.Equal(ids.Count, ids.Distinct().Count());
-        Assert.DoesNotContain(ids, id => id is "accessibility" or "telemetry" or "design-tokens" or "testing");
+        Assert.Empty(ids.Intersect(["usage", "when-to-use", "when-not-to-use", "accessibility", "keyboard", "labeling",
+            "announcements", "what-it-does", "app-duties", "before-interactive", "notes", "telemetry", "design-tokens",
+            "testing", "related"]));
+    }
+
+    [Theory, MemberData(nameof(Names))]
+    public void Example_ShouldNameOnlyComponentsInTheCatalog_WhenItListsRelatedOnes(string name)
+    {
+        var example = ExampleCatalog.Find(name)!;
+
+        Assert.All(example.Related, related => Assert.NotNull(ExampleCatalog.Find(related)));
+        Assert.DoesNotContain(name, example.Related);
+    }
+
+    // A link in catalog text, written [text](components/name) or [text](guides/name), must reach a page the site has.
+    [Theory, MemberData(nameof(Names))]
+    public void Example_ShouldLinkOnlyToPagesTheSiteHas_WhenItsTextHasLinks(string name)
+    {
+        var example = ExampleCatalog.Find(name)!;
+        IEnumerable<string?> texts = [.. example.Accessibility, .. example.WhenToUse, .. example.WhenNotToUse,
+            .. example.LabelingNotes, .. example.Announcements, .. example.AppDuties, .. example.BeforeInteractive,
+            .. example.NotesShown.Select(note => note.Text), .. example.Keyboard.Select(row => row.Action),
+            .. example.Keyboard.Select(row => row.When), .. example.TelemetryNotes,
+            .. example.Shown.Select(section => section.Description), example.TestingTip, example.RightToLeftKeys];
+
+        // Matches the path of every link DocsText renders, and anything else written like one.
+        var paths = texts.OfType<string>().SelectMany(text => Regex.Matches(text, @"\]\(([^)\s]+)\)"))
+            .Select(match => match.Groups[1].Value.Split('#')[0]);
+
+        Assert.All(paths, path => Assert.True(
+            path.StartsWith("components/") && ExampleCatalog.Find(path["components/".Length..]) is not null
+                || GuideCatalog.All.Any(guide => guide.Path == path), $"{path} isn't a page the site has."));
+    }
+
+    [Theory, MemberData(nameof(Names))]
+    public void Example_ShouldLinkAnAuthoringPracticesPattern_WhenItNamesOne(string name)
+    {
+        if (ExampleCatalog.Find(name)!.Pattern is { } pattern)
+        {
+            Assert.StartsWith("https://www.w3.org/WAI/ARIA/apg/patterns/", pattern.Url);
+        }
     }
 
     [Theory, MemberData(nameof(Names))]

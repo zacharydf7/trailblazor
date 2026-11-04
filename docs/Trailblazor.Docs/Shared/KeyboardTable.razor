@@ -1,0 +1,60 @@
+@using Trailblazor.Docs.Examples
+
+@* Rows that share a state or mode, such as "While open", sit in one row group under it. *@
+<div class="docs-api" tabindex="0" role="region" aria-label="Keyboard">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Key</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        @foreach (var group in Rows.GroupBy(row => row.When))
+        {
+            <tbody>
+                @if (group.Key is { } when)
+                {
+                    <tr>
+                        <th scope="rowgroup" colspan="2" class="docs-keys__when">@DocsText.Render(when)</th>
+                    </tr>
+                }
+                @foreach (var row in group)
+                {
+                    <tr>
+                        <th scope="row">@Keys(row)</th>
+                        <td>@DocsText.Render(row.Action)</td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<KeyboardRow> Rows { get; set; } = [];
+
+    // Each key is its own <kbd>, and a combination such as Alt+Down joins its keys with a plus.
+    private static RenderFragment Keys(KeyboardRow row) => builder =>
+    {
+        foreach (var (key, index) in row.Keys.Select((key, index) => (key, index)))
+        {
+            if (index > 0)
+            {
+                builder.AddContent(0, " ");
+            }
+
+            foreach (var (part, at) in key.Split('+').Select((part, at) => (part, at)))
+            {
+                if (at > 0)
+                {
+                    builder.AddContent(1, "+");
+                }
+
+                builder.OpenElement(2, "kbd");
+                builder.AddContent(3, part);
+                builder.CloseElement();
+            }
+        }
+    };
+}
