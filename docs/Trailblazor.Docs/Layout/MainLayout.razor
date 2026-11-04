@@ -4,7 +4,8 @@
 
 <TbRoot />
 
-<a href="@SkipTarget" class="docs-skip" @onclick="SkipAsync" @onclick:preventDefault>Skip to content</a>
+<a href="@Navigation.ToSection("main")" class="docs-skip" @onclick="SkipAsync"
+   @onclick:preventDefault>Skip to content</a>
 <div class="@ClassNames">
     <header class="docs-header">
         <div class="docs-header__inner">
@@ -52,9 +53,6 @@
     private string ClassNames => IsHome ? "docs docs--home" : "docs";
 
     private string NavClass => _navOpen ? "docs-nav docs-nav--open" : "docs-nav";
-
-    // The site sets <base href>, so a bare #main would point at the home page when the link is copied or opened.
-    private string SkipTarget => $"{Navigation.ToBaseRelativePath(Navigation.Uri).Split('#')[0]}#main";
 
     private async Task SkipAsync() => await _main.FocusAsync();
 

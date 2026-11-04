@@ -195,7 +195,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Guide_ShouldFitThePageWidth_WhenTheScreenIsAPhone(string browser, string path)
     {
         var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 390, Height = 844 } });
-        await Expect(page.Locator(".docs-article__body > h2").First).ToBeVisibleAsync();
+        await Expect(page.Locator(".docs-article__body > .docs-section > h2").First).ToBeVisibleAsync();
 
         Assert.True(await page.Locator("html").EvaluateAsync<bool>("html => html.scrollWidth <= html.clientWidth"),
             "Wide code and tables should scroll inside their own box, not the page.");
@@ -398,6 +398,44 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(page.Locator("main#main")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task HeadingLink_ShouldShowOnlyWhileItsHeadingIsHoveredOrItHasFocus_WhenThePointerCanHover(
+        string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/testing");
+        var link = page.GetByRole(AriaRole.Link, new() { Name = "Link to Set up bUnit" });
+        await Expect(link).ToHaveCSSAsync("opacity", "0");
+
+        await page.Locator("h2#bunit").HoverAsync();
+        await Expect(link).ToHaveCSSAsync("opacity", "1");
+        await page.Locator("h1").HoverAsync();
+        await Expect(link).ToHaveCSSAsync("opacity", "0");
+        await link.FocusAsync();
+
+        await Expect(link).ToHaveCSSAsync("opacity", "1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SectionLink_ShouldScrollTheSectionsRuleClearOfTheHeader_WhenFollowed(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+
+        await page.Locator(".docs-article__rail").GetByRole(AriaRole.Link, new() { Name = "Accessibility" }).ClickAsync();
+
+        // The table of contents scrolls smoothly, so the page has arrived once two frames in a row share a position.
+        await page.WaitForFunctionAsync("""
+            () => {
+                const y = window.scrollY, settled = y > 0 && y === window.lastScrollY;
+                window.lastScrollY = y;
+                return settled;
+            }
+            """);
+        Assert.True(await page.EvaluateAsync<bool>("""
+            () => document.getElementById('accessibility').parentElement.getBoundingClientRect().top
+                >= document.querySelector('.docs-header').getBoundingClientRect().bottom
+            """), "The section's rule should show below the header, not behind it.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

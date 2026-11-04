@@ -1,0 +1,48 @@
+@inject NavigationManager Navigation
+@inject IBrowserService Browser
+@inject IAnnouncer Announcer
+
+@* The link sits beside the heading, not in it, so a screen reader's list of headings reads only their text. *@
+<div class="@ClassNames">
+    <TbText TextStyle="TextStyle" As="Level" id="@Id">
+        @if (ChildContent is null)
+        {
+            @Text
+        }
+        else
+        {
+            @ChildContent
+        }
+    </TbText>
+    <a href="@Navigation.ToSection(Id)" class="docs-heading__link" aria-label="@($"Link to {Text}")"
+       @onclick="CopyAsync">#</a>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Id { get; set; } = "";
+
+    /// <summary>The section's name, which the link's label uses; the heading shows it unless
+    /// <see cref="ChildContent"/> is given.</summary>
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = "";
+
+    /// <summary>What the heading shows in place of <see cref="Text"/>, such as a type name as code.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public TextElement Level { get; set; } = TextElement.H2;
+
+    [Parameter]
+    public TextStyle TextStyle { get; set; } = TextStyle.Title;
+
+    /// <summary>More classes for the heading and its link together, such as <c>docs-section</c>.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string ClassNames => $"docs-heading docs-heading--{Level.ToString().ToLowerInvariant()} {Class}".TrimEnd();
+
+    private Task CopyAsync() => CodeCopier.CopyAsync(Browser, Announcer, $"the link to {Text}",
+        Navigation.ToAbsoluteUri(Navigation.ToSection(Id)).ToString());
+}

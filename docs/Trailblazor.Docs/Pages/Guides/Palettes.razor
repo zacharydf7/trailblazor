@@ -23,10 +23,7 @@
     <ChildContent>
         @foreach (var palette in PaletteCatalog.All)
         {
-            <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section"
-                    id="@($"palette-{palette.Name}")">
-                @palette.Title
-            </TbText>
+            <DocsHeading Id="@($"palette-{palette.Name}")" Text="@palette.Title" Class="docs-section" />
             <section class="docs-palette" aria-labelledby="@($"palette-{palette.Name}")">
                 <TbText class="docs-palette__summary">
                     @palette.Summary <code>data-tb-palette="@palette.Name"</code>
@@ -63,7 +60,7 @@
             </section>
         }
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="ramps">Color ramps</TbText>
+        <DocsHeading Id="ramps" Text="Color ramps" Class="docs-section" />
         <TbText>
             The palettes are built from these tonal ramps, from the lightest step, 50, to the darkest. Components never
             read them directly, but <a href="guides/theming#custom-palette">your own palettes</a> can.
@@ -84,7 +81,7 @@
             </section>
         }
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="guides/theming#palettes">Theming</a>: choose a palette for the page or part of it.</li>
             <li>

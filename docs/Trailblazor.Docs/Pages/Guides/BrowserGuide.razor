@@ -28,7 +28,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
         <div class="docs-example">
             <TbStack Gap="3">
                 <TbStack Row Gap="2" Wrap>
@@ -48,15 +48,13 @@
             </TbStack>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="when-to-call-it">
-            When to call it
-        </TbText>
+        <DocsHeading Id="when-to-call-it" Text="When to call it" Class="docs-section" />
         <DocsCallout Tone="Tone.Warning" Title="Only once the page is interactive">
             The service talks to the browser, so call it in an event handler or in <code>OnAfterRenderAsync</code>, not
             while the page prerenders or renders as static SSR.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="clipboard">Clipboard</TbText>
+        <DocsHeading Id="clipboard" Text="Clipboard" Class="docs-section" />
         <TbText><code>CopyTextAsync</code> returns whether the text was copied.</TbText>
         <ul>
             <li>
@@ -66,9 +64,7 @@
         </ul>
         <CodeBlock Label="Copying" Code="@Copy" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="downloads-and-saves">
-            Downloads and saves
-        </TbText>
+        <DocsHeading Id="downloads-and-saves" Text="Downloads and saves" Class="docs-section" />
         <ul>
             <li><code>DownloadAsync</code> downloads a stream as a file.</li>
             <li>
@@ -79,7 +75,7 @@
         <TbText>Neither closes the stream.</TbText>
         <CodeBlock Label="Downloading and saving" Code="@Save" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="eyedropper">Eyedropper</TbText>
+        <DocsHeading Id="eyedropper" Text="Eyedropper" Class="docs-section" />
         <TbText>
             <code>PickColorAsync</code> lets the user pick a color from anywhere on the screen and returns it as
             <code>#rrggbb</code>, or null when they cancel.
@@ -90,7 +86,7 @@
             let the color be typed too: the eyedropper is made for a pointer.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="scrolling">Scrolling</TbText>
+        <DocsHeading Id="scrolling" Text="Scrolling" Class="docs-section" />
         <ul>
             <li>
                 <code>ScrollIntoViewAsync</code> scrolls an element into view, as little as needed unless you pass a
@@ -104,9 +100,7 @@
         </ul>
         <CodeBlock Label="Scrolling" Code="@Scroll" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="viewport-and-breakpoints">
-            Viewport and breakpoints
-        </TbText>
+        <DocsHeading Id="viewport-and-breakpoints" Text="Viewport and breakpoints" Class="docs-section" />
         <TbText>
             <code>GetViewportAsync</code> gives the viewport's size and its <code>Breakpoint</code>: <code>Xs</code>
             below 640px, then <code>Sm</code>, <code>Md</code>, <code>Lg</code> and <code>Xl</code> from the
@@ -123,7 +117,7 @@
             table that becomes a list of cards.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">Testing</TbText>
+        <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
         <TbText>
             In bUnit, <code>this.AddTrailblazor()</code> from <code>Trailblazor.Testing</code> registers a
             <code>FakeBrowserService</code>. Get it from <code>Services</code> to:
@@ -135,10 +129,10 @@
         <TbText>Register your own <code>IBrowserService</code> first to use a mock instead.</TbText>
         <CodeBlock Label="A bUnit test" Code="@Test" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="api">API</TbText>
+        <DocsHeading Id="api" Text="API" Class="docs-section" />
         <ApiTable Type="typeof(IBrowserService)" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="guides/testing#bunit">Testing</a>: what <code>AddTrailblazor()</code> sets up in bUnit.</li>
             <li>

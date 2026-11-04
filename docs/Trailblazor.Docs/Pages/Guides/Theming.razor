@@ -26,9 +26,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="light-and-dark">
-            Light and dark
-        </TbText>
+        <DocsHeading Id="light-and-dark" Text="Light and dark" Class="docs-section" />
         <TbText>
             Put <code>TbThemeHead</code> in <code>&lt;head&gt;</code>, next to <code>TbStyles</code>. It starts the
             page in the mode, palette and density you set in <code>TrailblazorOptions.Theme</code>, or in the ones the
@@ -61,7 +59,7 @@
             remember the choice in the browser unless <code>Remember</code> is off.
         </TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="palettes">Palettes</TbText>
+        <DocsHeading Id="palettes" Text="Palettes" Class="docs-section" />
         <TbText>
             A palette sets the colors for both light and dark. Graphite, a near-monochrome look with ink-colored primary
             actions, is the default. The others are
@@ -86,7 +84,7 @@
             background on <code>body</code> alone leaves the theme's color around it.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="typography">Typography</TbText>
+        <DocsHeading Id="typography" Text="Typography" Class="docs-section" />
         <TbText>
             Every component sets its text in <code>--tb-font-family</code>, the system's interface font unless you
             change it. The page that <code>TbThemeHead</code> marks takes the same font and
@@ -113,7 +111,7 @@
             so a line height of yours doesn't change how tall they are.
         </TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="density">Density</TbText>
+        <DocsHeading Id="density" Text="Density" Class="docs-section" />
         <TbText>
             Compact density makes controls, items and rows shorter, for screens full of data. Comfortable, the default,
             leaves room for touch. Every pointer target stays at least 24 by 24 px in both.
@@ -174,7 +172,7 @@
             there too.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="tokens">Change tokens</TbText>
+        <DocsHeading Id="tokens" Text="Change tokens" Class="docs-section" />
         <TbText>
             Trailblazor's CSS sits in cascade layers named <code>tb.*</code>, and your own CSS outside any layer always
             wins over it, whatever the selectors. So set any token in your stylesheet to change it everywhere.
@@ -194,9 +192,7 @@
             <code>data-tb-palette</code> attribute on that element so its states follow.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="restyle">
-            Restyle one component
-        </TbText>
+        <DocsHeading Id="restyle" Text="Restyle one component" Class="docs-section" />
         <TbText>To change one component rather than the whole theme, reach for these in order:</TbText>
         <ol>
             <li>
@@ -215,9 +211,7 @@
         </ol>
         <CodeBlock Label="app.css" Code="@Restyle" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="brand">
-            Try a brand color
-        </TbText>
+        <DocsHeading Id="brand" Text="Try a brand color" Class="docs-section" />
         <TbText>
             Pick a color to see it as the primary, with the hover, pressed, selected and focus colors that follow from
             it, then copy the CSS. If the color is too light for readable text on it in light mode, or too dark in dark
@@ -238,9 +232,7 @@
         </div>
         <CodeBlock Label="app.css" Code="@BrandCss" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="other-stylesheets">
-            Other stylesheets
-        </TbText>
+        <DocsHeading Id="other-stylesheets" Text="Other stylesheets" Class="docs-section" />
         <TbText>
             The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global rule such as
             <code>* { margin: 0; padding: 0; }</code>, which many resets and some component libraries ship, then strips
@@ -262,9 +254,7 @@
         <CodeBlock Label="App.razor" Code="@LayerOrder" />
         <CodeBlock Label="app.css" Code="@LayerImport" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="custom-palette">
-            Your own palette
-        </TbText>
+        <DocsHeading Id="custom-palette" Text="Your own palette" Class="docs-section" />
         <TbText>
             A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
             <code>light-dark()</code> so each color has its light and dark value, and set the background, surface, text,
@@ -280,9 +270,7 @@
         </TbText>
         <CodeBlock Label="Program.cs" Code="@CustomPaletteOption" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="reduced-motion">
-            Reduced motion
-        </TbText>
+        <DocsHeading Id="reduced-motion" Text="Reduced motion" Class="docs-section" />
         <TbText>When the device asks for reduced motion:</TbText>
         <ul>
             <li>Transitions finish at once.</li>
@@ -290,9 +278,7 @@
             <li>An indeterminate progress bar or circle fills and gently pulses in place instead of moving.</li>
         </ul>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="token-reference">
-            Token reference
-        </TbText>
+        <DocsHeading Id="token-reference" Text="Token reference" Class="docs-section" />
         <TbText>
             Every theme token, with the value the default palette and density give it, read from
             <code>trailblazor.css</code>. A color's sample follows the palette and mode chosen at the top of this site.
@@ -325,7 +311,7 @@
             </table>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li>
                 <a href="guides/palettes">Palettes</a>: every built-in palette on real components, in light and dark.

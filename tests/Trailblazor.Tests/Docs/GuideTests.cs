@@ -12,7 +12,7 @@ public class GuideTests : DocsTest
     public void Guide_ShouldListEachSectionOnThePageAndKeepItsNotesQuiet_WhenOpened(string path)
     {
         var cut = PageAt(path);
-        var sections = cut.FindAll(".docs-article__body > h2");
+        var sections = cut.FindAll(".docs-article__body > .docs-section > h2");
 
         var rail = cut.FindAll(".docs-article__rail a");
 
@@ -31,7 +31,7 @@ public class GuideTests : DocsTest
         var cut = PageAt(path);
 
         Assert.Equal(GuideCatalog.All.Single(guide => guide.Path == path).Api.Select(ApiDocs.IdOf),
-            cut.FindAll(".docs-api__name").Select(heading => heading.Id));
+            cut.FindAll(".docs-api__name > [id]").Select(heading => heading.Id));
     }
 
     [Theory, MemberData(nameof(Guides))]

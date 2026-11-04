@@ -23,7 +23,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
         <div class="docs-example">
             <TbStack Gap="4">
                 <TbPagination @bind-Page="_page" PageCount="12" />
@@ -38,9 +38,7 @@
             <code>Labels</code>. Both move together, since they're bound to the same page number.
         </TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="change-a-few-words">
-            Change a few words
-        </TbText>
+        <DocsHeading Id="change-a-few-words" Text="Change a few words" Class="docs-section" />
         <TbText>
             The default localizer reads <code>options.Strings</code> first, so give it the keys you want to say
             differently. The keys are constants on <code>TbStrings</code>, listed under
@@ -48,9 +46,7 @@
         </TbText>
         <CodeBlock Label="Program.cs" Code="@Overrides" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="translate-the-whole-library">
-            Translate the whole library
-        </TbText>
+        <DocsHeading Id="translate-the-whole-library" Text="Translate the whole library" Class="docs-section" />
         <TbText>For an app in several languages:</TbText>
         <ol>
             <li>
@@ -69,9 +65,7 @@
             <code>TbStrings</code> constant's documentation says what its placeholders hold.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="words-for-one-component">
-            Words for one component
-        </TbText>
+        <DocsHeading Id="words-for-one-component" Text="Words for one component" Class="docs-section" />
         <ul>
             <li>
                 A component's own label parameter, such as <code>CloseLabel</code> on an alert, wins over the localizer
@@ -84,14 +78,14 @@
         </ul>
         <CodeBlock Label="One pagination's words" Code="@OneComponent" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">Testing</TbText>
+        <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
         <TbText>
             <code>this.AddTrailblazor(options => ...)</code> in bUnit takes the same options, so a test can check a
             translated name the way a screen reader user would hear it.
         </TbText>
         <CodeBlock Label="A bUnit test" Code="@Test" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="keys">Keys</TbText>
+        <DocsHeading Id="keys" Text="Keys" Class="docs-section" />
         <div class="docs-api" tabindex="0" role="region" aria-label="Keys and their English text">
             <table>
                 <thead>
@@ -106,10 +100,10 @@
             </table>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="api">API</TbText>
+        <DocsHeading Id="api" Text="API" Class="docs-section" />
         <ApiTable Type="typeof(ITbLocalizer)" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="guides/announcements">Announcements</a>: messages components say to screen readers.</li>
             <li><a href="components/pagination">Pagination</a>: the labels record used above.</li>

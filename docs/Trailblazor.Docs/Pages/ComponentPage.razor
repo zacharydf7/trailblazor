@@ -34,26 +34,24 @@
         <ChildContent>
             @if (HasUsage(example))
             {
-                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="usage">Usage</TbText>
+                <DocsHeading Id="usage" Text="Usage" Class="docs-section" />
                 @if (example.WhenToUse.Count > 0)
                 {
-                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="when-to-use">When to use</TbText>
+                    <DocsHeading Id="when-to-use" Text="When to use" Level="TextElement.H3"
+                                 TextStyle="TextStyle.Subtitle" />
                     @Notes("When to use", example.WhenToUse)
                 }
                 @if (example.WhenNotToUse.Count > 0)
                 {
-                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="when-not-to-use">
-                        When not to use
-                    </TbText>
+                    <DocsHeading Id="when-not-to-use" Text="When not to use" Level="TextElement.H3"
+                                 TextStyle="TextStyle.Subtitle" />
                     @Notes("When not to use", example.WhenNotToUse)
                 }
             }
 
             @foreach (var section in example.Shown)
             {
-                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="@section.Id">
-                    @section.Title
-                </TbText>
+                <DocsHeading Id="@section.Id" Text="@section.Title" Class="docs-section" />
                 @if (section.Description is { } description)
                 {
                     <TbText>@DocsText.Render(description)</TbText>
@@ -61,9 +59,7 @@
                 <ExampleFrame Name="@example.Name" Section="section" FullWidth="example.FullWidth" />
             }
 
-            <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="accessibility">
-                Accessibility
-            </TbText>
+            <DocsHeading Id="accessibility" Text="Accessibility" Class="docs-section" />
             @if (example.Pattern is { } pattern)
             {
                 <TbText>
@@ -75,7 +71,7 @@
             {
                 @if (example.Keyboard.Count > 0)
                 {
-                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="keyboard">Keyboard</TbText>
+                    <DocsHeading Id="keyboard" Text="Keyboard" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
                     <KeyboardTable Rows="example.Keyboard" />
                     @if (example.RightToLeftKeys is { } swapped)
                     {
@@ -84,32 +80,28 @@
                 }
                 @if (example.LabelingNotes.Count > 0)
                 {
-                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="labeling">Labeling</TbText>
+                    <DocsHeading Id="labeling" Text="Labeling" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
                     @Notes("Labeling", example.LabelingNotes)
                 }
                 @if (example.Announcements.Count > 0)
                 {
-                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="announcements">
-                        What screen readers announce
-                    </TbText>
+                    <DocsHeading Id="announcements" Text="What screen readers announce" Level="TextElement.H3"
+                                 TextStyle="TextStyle.Subtitle" />
                     @Notes("What screen readers announce", example.Announcements)
                 }
-                <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="what-it-does">
-                    What the component does
-                </TbText>
+                <DocsHeading Id="what-it-does" Text="What the component does" Level="TextElement.H3"
+                             TextStyle="TextStyle.Subtitle" />
                 @Notes("Accessibility", example.Accessibility)
                 @if (example.AppDuties.Count > 0)
                 {
-                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="app-duties">
-                        What your app must do
-                    </TbText>
+                    <DocsHeading Id="app-duties" Text="What your app must do" Level="TextElement.H3"
+                                 TextStyle="TextStyle.Subtitle" />
                     @Notes("What your app must do", example.AppDuties)
                 }
                 @if (example.BeforeInteractive.Count > 0)
                 {
-                    <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3" id="before-interactive">
-                        Before the page is interactive
-                    </TbText>
+                    <DocsHeading Id="before-interactive" Text="Before the page is interactive" Level="TextElement.H3"
+                                 TextStyle="TextStyle.Subtitle" />
                     @Notes("Before the page is interactive", example.BeforeInteractive)
                 }
             }
@@ -120,9 +112,7 @@
 
             @if (example.NotesShown.Count > 0)
             {
-                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="notes">
-                    Notes and limitations
-                </TbText>
+                <DocsHeading Id="notes" Text="Notes and limitations" Class="docs-section" />
                 @foreach (var pitfall in example.NotesShown.Where(note => note.Pitfall))
                 {
                     <DocsCallout Tone="Tone.Warning">@DocsText.Render(pitfall.Text)</DocsCallout>
@@ -130,9 +120,7 @@
                 @Notes("Notes and limitations", PlainNotes(example))
             }
 
-            <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="telemetry">
-                Telemetry
-            </TbText>
+            <DocsHeading Id="telemetry" Text="Telemetry" Class="docs-section" />
             @if (example.TelemetryNotes.Count > 0)
             {
                 @Notes("Telemetry", example.TelemetryNotes)
@@ -146,9 +134,7 @@
                 you already have.
             </TbText>
 
-            <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="design-tokens">
-                Design tokens
-            </TbText>
+            <DocsHeading Id="design-tokens" Text="Design tokens" Class="docs-section" />
             @if (DesignTokens.Read(example.Blocks) is { Count: > 0 } tokens)
             {
                 <TbText>
@@ -191,9 +177,7 @@
                 </TbTable>
             }
 
-            <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">
-                Testing
-            </TbText>
+            <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
             @if (example.Target is { } target)
             {
                 <TbText>Find it by its role, the way a person finds it:</TbText>
@@ -223,9 +207,7 @@
 
             @if (example.Related.Count > 0)
             {
-                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">
-                    Related
-                </TbText>
+                <DocsHeading Id="related" Text="Related" Class="docs-section" />
                 <ul class="docs-notes" aria-label="Related">
                     @foreach (var related in example.Related.Select(name => ExampleCatalog.Find(name)!))
                     {

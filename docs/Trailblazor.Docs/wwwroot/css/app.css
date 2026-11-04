@@ -256,6 +256,45 @@ a:focus-visible {
     text-wrap: balance;
 }
 
+/* The heading holds the section's id, so a link to it scrolls the rule above it into view too. */
+.docs-section > [id] {
+    scroll-margin-block-start: calc(var(--tb-space-6) + 1px);
+}
+
+/* A heading's link sits beside it and shows while the pointer is over the heading or the link has focus. */
+.docs-heading {
+    display: flex;
+    align-items: baseline;
+    gap: var(--tb-space-2);
+}
+
+/* The heading takes the font its section sets, as a bare heading would. */
+.docs-heading > .tb-text {
+    font-family: inherit;
+}
+
+.docs-heading__link {
+    color: var(--tb-color-text-muted);
+    text-decoration: none;
+    opacity: 0;
+}
+
+.docs-heading:hover .docs-heading__link,
+.docs-heading__link:focus {
+    opacity: 1;
+}
+
+.docs-heading__link:hover {
+    color: var(--docs-brand-text);
+}
+
+/* Without a pointer that hovers, as on a phone, the link always shows. */
+@media (hover: none) {
+    .docs-heading__link {
+        opacity: 1;
+    }
+}
+
 .docs-example {
     padding: var(--tb-space-8) var(--tb-space-6);
     border: 1px solid var(--tb-border-subtle);
@@ -726,7 +765,7 @@ kbd {
 }
 
 /* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
-:is(.docs-main, .docs-article__body) > :is(p, h3, ul, ol, .tb-alert) code,
+:is(.docs-main, .docs-article__body) > :is(p, h3, .docs-heading--h3, ul, ol, .tb-alert) code,
 .docs-notes code,
 .docs-tokens code,
 .docs-api code {
@@ -753,7 +792,8 @@ kbd {
     max-width: 44rem;
 }
 
-.docs-article--guide .docs-article__body > :not(h1, h2, h3) + :not(h2, h3, .docs-article__folded) {
+.docs-article--guide .docs-article__body > :not(h1, h2, h3, .docs-heading)
+    + :not(h2, h3, .docs-heading, .docs-article__folded) {
     margin-block-start: var(--tb-space-4);
 }
 
@@ -762,7 +802,7 @@ kbd {
     margin-block-start: var(--tb-space-4);
 }
 
-.docs-article__body > h3 {
+.docs-article__body > :is(h3, .docs-heading--h3) {
     margin-block: var(--tb-space-8) 0;
     font-family: var(--docs-display);
 }
@@ -771,7 +811,7 @@ kbd {
     margin-block: var(--tb-space-3);
 }
 
-.docs-article__body > h3 + * {
+.docs-article__body > :is(h3, .docs-heading--h3) + * {
     margin-block-start: var(--tb-space-2);
 }
 

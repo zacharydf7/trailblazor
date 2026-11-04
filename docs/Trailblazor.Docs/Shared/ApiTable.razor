@@ -1,9 +1,9 @@
 @using Trailblazor.Docs.Examples
 @inject NavigationManager Navigation
 
-<TbText TextStyle="TextStyle.Subtitle" As="HeadingLevel" class="docs-api__name" id="@_api.Id">
+<DocsHeading Id="@_api.Id" Text="@_api.Name" Level="HeadingLevel" TextStyle="TextStyle.Subtitle" Class="docs-api__name">
     <code>@_api.Name</code>
-</TbText>
+</DocsHeading>
 <TbText class="docs-api__summary">@DocsText.Render(_api.Summary)</TbText>
 @if (_api.Groups.Count == 0)
 {
@@ -11,9 +11,10 @@
 }
 @foreach (var group in _api.Groups)
 {
-    <TbText TextStyle="TextStyle.Label" As="GroupLevel" class="docs-api__group" id="@GroupId(_api, group)">
+    <DocsHeading Id="@GroupId(_api, group)" Text="@($"{_api.Name} {group.Name.ToLowerInvariant()}")" Level="GroupLevel"
+                 TextStyle="TextStyle.Label" Class="docs-api__group">
         @group.Name
-    </TbText>
+    </DocsHeading>
     @* Above 48rem it can scroll sideways, so it takes focus for keyboard users. *@
     @* A phone restyles the rows as grids, which can strip the table semantics, so the roles are spelled out. *@
     <div class="docs-api docs-api--members" role="region" tabindex="0"
@@ -36,7 +37,7 @@
                     <tr id="@member.Id" role="row">
                         <th scope="row" role="rowheader">
                             <code>@member.Name</code>
-                            <a href="@LinkTo(member.Id)" class="docs-api__anchor"
+                            <a href="@Navigation.ToSection(member.Id)" class="docs-api__anchor"
                                aria-label="@($"Link to {member.ShortName}")">#</a>
                             @if (member.Required)
                             {
@@ -100,7 +101,4 @@
     /// <summary>A group's anchor on its page, such as "tbbutton--events"; the two hyphens keep it apart from a
     /// member's.</summary>
     public static string GroupId(ApiType api, ApiGroup group) => $"{api.Id}--{group.Name.ToLowerInvariant()}";
-
-    // The site sets <base href>, so a bare #id would resolve against the home page.
-    private string LinkTo(string id) => $"{Navigation.ToBaseRelativePath(Navigation.Uri).Split('#')[0]}#{id}";
 }

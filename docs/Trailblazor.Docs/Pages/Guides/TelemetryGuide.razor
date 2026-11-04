@@ -31,7 +31,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
         <TbText>
             These buttons carry a <code>TelemetryName</code>, and this page listens to the <code>Trailblazor</code>
             meter in your browser, as your app's OpenTelemetry setup would.
@@ -48,9 +48,7 @@
         </ul>
         <TelemetryDemo />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="what-its-for">
-            What it's for
-        </TbText>
+        <DocsHeading Id="what-its-for" Text="What it's for" Class="docs-section" />
         <ul class="docs-notes">
             <li>
                 <strong>Feature adoption, with the zeros.</strong> Analytics tools count the clicks they see, so a
@@ -70,7 +68,7 @@
             </li>
         </ul>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="use-cases">Use cases</TbText>
+        <DocsHeading Id="use-cases" Text="Use cases" Class="docs-section" />
         <TbText>
             Different apps ask different questions. Each row says what to label and which counts answer it. Start with a
             few names on the features you're least sure about, then add more as the questions come.
@@ -99,7 +97,7 @@
             </table>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="set-it-up">Set it up</TbText>
+        <DocsHeading Id="set-it-up" Text="Set it up" Class="docs-section" />
         <ol>
             <li>
                 Listen to the meter in your OpenTelemetry setup, with the exporter for your backend.
@@ -110,9 +108,7 @@
         <CodeBlock Label="Program.cs" Code="@Setup" />
         <CodeBlock Label="Labeled buttons" Code="@Labels" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="choosing-names">
-            Choosing names
-        </TbText>
+        <DocsHeading Id="choosing-names" Text="Choosing names" Class="docs-section" />
         <ul class="docs-notes">
             <li>
                 A <code>TelemetryName</code> is a label you put on a control so the app can count how often people see
@@ -134,9 +130,7 @@
             leak what users work on.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="what-each-control-counts">
-            What each control counts
-        </TbText>
+        <DocsHeading Id="what-each-control-counts" Text="What each control counts" Class="docs-section" />
         <ul class="docs-notes">
             <li>
                 <strong>Buttons, icon buttons, links, toggle items, checkboxes and switches:</strong> shown as they
@@ -200,9 +194,7 @@
             </li>
         </ul>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="whats-recorded">
-            What's recorded
-        </TbText>
+        <DocsHeading Id="whats-recorded" Text="What's recorded" Class="docs-section" />
         <TbText>Every instrument of the <code>@TelemetryCatalog.MeterName</code> meter carries:</TbText>
         <ul>
             <li><code>trailblazor.telemetry_name</code>: the control's <code>TelemetryName</code>.</li>
@@ -249,9 +241,7 @@
             twice.
         </TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="whats-never-recorded">
-            What's never recorded
-        </TbText>
+        <DocsHeading Id="whats-never-recorded" Text="What's never recorded" Class="docs-section" />
         <ul class="docs-notes">
             <li>
                 Values, text people type, dialog and page titles, labels' text and anything about the user. Only the
@@ -270,9 +260,7 @@
             even when no personal data is in it. Ask your own privacy advisers; the app decides when to export.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="your-own-tags">
-            Your own tags
-        </TbText>
+        <DocsHeading Id="your-own-tags" Text="Your own tags" Class="docs-section" />
         <TbText>
             Register an <code>ITelemetryTags</code>, scoped when the tags depend on who is signed in, and its tags go on
             every count. Keep each tag to a small set of values, such as a customer or a plan, since every value is a
@@ -280,9 +268,7 @@
         </TbText>
         <CodeBlock Label="Tags for the user's customer" Code="@Tags" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="render-modes">
-            Render modes
-        </TbText>
+        <DocsHeading Id="render-modes" Text="Render modes" Class="docs-section" />
         <ul class="docs-notes">
             <li>
                 <strong>Interactive Server:</strong> the components run on the server, so the server's OpenTelemetry
@@ -317,9 +303,7 @@
         <CodeBlock Label="The WebAssembly client" Code="@WebAssembly" />
         <TbText>The Aspire dashboard's guide to Blazor WebAssembly telemetry shows the relay.</TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="reading-the-counts">
-            Reading the counts
-        </TbText>
+        <DocsHeading Id="reading-the-counts" Text="Reading the counts" Class="docs-section" />
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">In the Aspire dashboard</TbText>
         <ol>
             <li>Open Metrics and choose the app.</li>
@@ -334,7 +318,7 @@
         </TbText>
         <CodeBlock Label="Shown but never used, in PromQL" Code="@NeverUsed" Language="CodeLanguage.Plain" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">Testing</TbText>
+        <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
         <TbText>
             Check what a page reports in bUnit with <code>MetricCollector&lt;T&gt;</code> from
             <code>Microsoft.Extensions.Diagnostics.Testing</code>. Pass it the test's <code>IMeterFactory</code>, so it
@@ -342,9 +326,7 @@
         </TbText>
         <CodeBlock Label="A bUnit test" Code="@Test" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="cost-and-turning-it-off">
-            Cost and turning it off
-        </TbText>
+        <DocsHeading Id="cost-and-turning-it-off" Text="Cost and turning it off" Class="docs-section" />
         <ul>
             <li>When nothing listens, a count is one check, well under a nanosecond.</li>
             <li>When something listens, a count costs tens of nanoseconds, far less than a render.</li>
@@ -352,11 +334,11 @@
         <TbText>An app that listens to every meter but doesn't want its UI counted turns the components off:</TbText>
         <CodeBlock Label="Turning the counts off" Code="@Off" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="api">API</TbText>
+        <DocsHeading Id="api" Text="API" Class="docs-section" />
         <ApiTable Type="typeof(TelemetrySettings)" />
         <ApiTable Type="typeof(ITelemetryTags)" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="guides/testing">Testing</a>: bUnit and Playwright helpers for your pages.</li>
             <li><a href="components/data-grid#telemetry">Data grid</a>: what one component reports.</li>

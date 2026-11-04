@@ -21,7 +21,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="bunit">Set up bUnit</TbText>
+        <DocsHeading Id="bunit" Text="Set up bUnit" Class="docs-section" />
         <ol>
             <li>Reference <code>Trailblazor.Testing</code> from the test project.</li>
             <li>Register any services of your own, such as a <code>FakeTimeProvider</code>.</li>
@@ -66,9 +66,7 @@
         </TbText>
         <CodeBlock Label="A static renderer" Code="@StaticRenderer" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="bunit-fields">
-            Drive fields in bUnit
-        </TbText>
+        <DocsHeading Id="bunit-fields" Text="Drive fields in bUnit" Class="docs-section" />
         <TbText>
             <code>cut.Tb()</code> finds fields by their labels and drives them the way a user does. The helpers have
             the same names as the <a href="guides/testing#playwright">Playwright helpers</a>.
@@ -133,9 +131,7 @@
             cleared, look in the field, not the whole page.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="bunit-dialogs">
-            Test dialogs in bUnit
-        </TbText>
+        <DocsHeading Id="bunit-dialogs" Text="Test dialogs in bUnit" Class="docs-section" />
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A dialog on its own</TbText>
         <TbText>
             <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens a dialog as a page would. It renders a
@@ -175,9 +171,7 @@
         </ol>
         <CodeBlock Label="Checking the dialogs a page opens" Code="@FakeDialogs" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="playwright">
-            Drive components in Playwright
-        </TbText>
+        <DocsHeading Id="playwright" Text="Drive components in Playwright" Class="docs-section" />
         <TbText>
             Reference <code>Trailblazor.Testing.Playwright</code>, and <code>page.Tb()</code> drives components the way
             a person does. Each helper waits for its component to be ready before it clicks or types.
@@ -213,9 +207,7 @@
         </TbText>
         <CodeBlock Label="A Playwright test" Code="@Playwright" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="waiting">
-            Wait for the page
-        </TbText>
+        <DocsHeading Id="waiting" Text="Wait for the page" Class="docs-section" />
         <TbText>
             A page shows before its event handlers are attached, so a click that comes too soon does nothing.
         </TbText>
@@ -260,7 +252,7 @@
         </div>
         <CodeBlock Label="Waiting for the page" Code="@Waiting" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="time">Time and motion</TbText>
+        <DocsHeading Id="time" Text="Time and motion" Class="docs-section" />
         <TbText>Some components wait on timers or transitions. Skip the wait rather than sleep through it.</TbText>
         <div class="docs-api" tabindex="0" role="region" aria-label="Skipping waits">
             <table>
@@ -297,9 +289,7 @@
         </div>
         <CodeBlock Label="Time and motion" Code="@TimeAndMotion" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="finding">
-            Find components
-        </TbText>
+        <DocsHeading Id="finding" Text="Find components" Class="docs-section" />
         <TbText>
             Find components by role and accessible name rather than by CSS classes, which can change between versions.
         </TbText>
@@ -396,7 +386,7 @@
         </DocsCallout>
         <CodeBlock Label="Finding components" Code="@Locators" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="guides/browser">Browser</a>: the fake browser service and what it records.</li>
             <li><a href="guides/announcements">Announcements</a>: the live regions tests read.</li>

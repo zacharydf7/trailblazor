@@ -30,9 +30,7 @@
         <ChildContent>
             @if (example.Anatomy is { } anatomy)
             {
-                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="anatomy">
-                    Anatomy
-                </TbText>
+                <DocsHeading Id="anatomy" Text="Anatomy" Class="docs-section" />
                 <TbText>Which parts go inside which:</TbText>
                 <CodeBlock Label="Anatomy" Code="@anatomy" />
             }
@@ -50,7 +48,7 @@
             }
             @if (example.DataParts.Count > 0)
             {
-                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="parts">Parts</TbText>
+                <DocsHeading Id="parts" Text="Parts" Class="docs-section" />
                 <TbText>
                     Each part carries a stable <code>data-part</code> name: a test can find it when a role can't, and
                     a stylesheet can target it, as with <code>[data-part=@example.DataParts[0].Name]</code>.

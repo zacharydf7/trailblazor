@@ -22,9 +22,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="find-an-icon">
-            Find an icon
-        </TbText>
+        <DocsHeading Id="find-an-icon" Text="Find an icon" Class="docs-section" />
         <div class="docs-example">
             <TbStack Gap="4">
                 <TbStack Row Gap="3" Wrap>
@@ -54,7 +52,7 @@
         </div>
         <TbText>Press an icon to copy its C# name.</TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="use-one">Use one</TbText>
+        <DocsHeading Id="use-one" Text="Use one" Class="docs-section" />
         <ol>
             <li>Add the package.</li>
             <li>Pass a symbol to <code>TbIcon</code>, or to any component that takes an icon.</li>
@@ -76,9 +74,7 @@
             </li>
         </ul>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="your-own-icons">
-            Your own icons
-        </TbText>
+        <DocsHeading Id="your-own-icons" Text="Your own icons" Class="docs-section" />
         <TbText>
             An <code>Icon</code> holds the markup that goes inside an <code>&lt;svg&gt;</code>, plus its view box, so
             any icon set works.
@@ -88,9 +84,7 @@
             The markup is rendered as is, so build it in code.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="size-and-license">
-            Size and license
-        </TbText>
+        <DocsHeading Id="size-and-license" Text="Size and license" Class="docs-section" />
         <ul>
             <li>
                 Each icon is its own property and the package is marked trimmable, so a WebAssembly app published with
@@ -99,7 +93,7 @@
             <li>The paths are Google's, under the Apache License 2.0; the package carries the notice.</li>
         </ul>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="components/icon">Icon</a>: sizes, colors and labels for <code>TbIcon</code>.</li>
             <li><a href="components/icon-button">Icon button</a>: a button that shows only an icon.</li>

@@ -21,7 +21,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
         <div class="docs-example">
             <TbStack Row Gap="2" Wrap>
                 <TbButton OnClick="@(() => Announcer.Polite($"Trail saved at {DateTime.Now:t}"))">
@@ -35,9 +35,7 @@
             </TbStack>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="polite-or-now">
-            Polite or now
-        </TbText>
+        <DocsHeading Id="polite-or-now" Text="Polite or now" Class="docs-section" />
         <ul>
             <li>
                 <code>Polite</code> waits until the screen reader finishes what it is saying. Use it for nearly
@@ -54,7 +52,7 @@
         </TbText>
         <CodeBlock Label="Announcing" Code="@Announce" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="clearing">Clearing</TbText>
+        <DocsHeading Id="clearing" Text="Clearing" Class="docs-section" />
         <TbText>
             Live regions are part of the page, so a screen reader user browsing it later could find old messages. Each
             message is removed seven seconds after it is announced, long enough to be heard. To remove one sooner:
@@ -74,7 +72,7 @@
             fixed error has left the page without waiting out the seven seconds.
         </TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">Testing</TbText>
+        <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
         <TbText>
             The live regions are in <code>TbRoot</code>, so render it alongside your component, and look for the message
             in the <code>status</code> region (polite) or the <code>alert</code> region (assertive).
@@ -85,10 +83,10 @@
             <code>AddTrailblazor()</code> to move past the seven seconds without waiting.
         </DocsCallout>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="api">API</TbText>
+        <DocsHeading Id="api" Text="API" Class="docs-section" />
         <ApiTable Type="typeof(IAnnouncer)" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="guides/testing#finding">Testing</a>: find announcements in the live regions.</li>
             <li><a href="components/toast">Toast</a>: a visible message that is announced too.</li>

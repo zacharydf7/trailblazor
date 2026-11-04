@@ -21,7 +21,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
         <div class="docs-example">
             <TbStack Gap="4">
                 <TbStack Row Gap="3" Wrap>
@@ -50,7 +50,7 @@
             </TbStack>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="classes">The classes</TbText>
+        <DocsHeading Id="classes" Text="The classes" Class="docs-section" />
         <TbText>
             Each class is a property, an optional side and a step: <code>tb-p-4</code> pads every side by step 4, and
             <code>tb-mt-2</code> adds step 2 of margin at the element's block start, the top in most languages.
@@ -79,7 +79,7 @@
             </table>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="scale">The scale</TbText>
+        <DocsHeading Id="scale" Text="The scale" Class="docs-section" />
         <TbText>
             The steps are the <code>--tb-space-*</code> tokens, so a theme that changes them changes every class too.
         </TbText>
@@ -105,9 +105,7 @@
             </table>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="sides">
-            Sides follow the writing direction
-        </TbText>
+        <DocsHeading Id="sides" Text="Sides follow the writing direction" Class="docs-section" />
         <TbText>
             The sides are logical, so <code>tb-ms-2</code> is a left margin on an English page and a right margin on an
             Arabic or Hebrew one, with no extra classes.
@@ -140,18 +138,14 @@
             </table>
         </div>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="text-alignment">
-            Text alignment
-        </TbText>
+        <DocsHeading Id="text-alignment" Text="Text alignment" Class="docs-section" />
         <TbText>
             <code>tb-text-start</code>, <code>tb-text-center</code> and <code>tb-text-end</code> align text within its
             box. Start and end follow the writing direction, as the sides do, so <code>tb-text-end</code> puts text on
             the right of an English page and on the left of an Arabic or Hebrew one.
         </TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="layouts">
-            With TbStack and TbGrid
-        </TbText>
+        <DocsHeading Id="layouts" Text="With TbStack and TbGrid" Class="docs-section" />
         <TbText>
             For space between siblings, use the layouts' own <code>Gap</code>: <code>&lt;TbStack Gap="4"&gt;</code> and
             <code>&lt;TbGrid Gap="6"&gt;</code> take the same steps as the classes. Reach for the classes for space
@@ -159,16 +153,14 @@
         </TbText>
         <CodeBlock Label="Layouts and classes together" Code="@Together" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="which-wins">
-            Which style wins
-        </TbText>
+        <DocsHeading Id="which-wins" Text="Which style wins" Class="docs-section" />
         <TbText>
             The classes sit in their own cascade layer, <code>tb.utilities</code>, after the components' layer. A class
             on a component therefore beats the component's own spacing, whatever the selectors. Your own CSS, outside
             any layer, beats both, so nothing needs <code>!important</code>.
         </TbText>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li>
                 <a href="components/stack">Stack</a> and <a href="components/grid">Grid</a>: layouts with a

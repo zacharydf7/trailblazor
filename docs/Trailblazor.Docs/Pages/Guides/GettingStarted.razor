@@ -17,7 +17,7 @@
         </TbText>
     </Header>
     <ChildContent>
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="set-up">Set up an app</TbText>
+        <DocsHeading Id="set-up" Text="Set up an app" Class="docs-section" />
         <TbText>Six steps add Trailblazor to an app and render its first component.</TbText>
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">1. Add the library</TbText>
@@ -62,9 +62,7 @@
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">6. Use a component</TbText>
         <CodeBlock Label="A first component" Code="@FirstComponent" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="host">
-            Host dialogs and toasts
-        </TbText>
+        <DocsHeading Id="host" Text="Host dialogs and toasts" Class="docs-section" />
         <TbText>
             The dialogs and toasts a page opens show only when <code>TbRoot</code> hosts them in the same interactive
             session as that page. How to set that up depends on where the app sets its render mode.
@@ -94,9 +92,7 @@
             <li>The dialog and toast services can be called from any thread, such as a SignalR hub handler.</li>
         </ul>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="render-modes">
-            Render modes
-        </TbText>
+        <DocsHeading Id="render-modes" Text="Render modes" Class="docs-section" />
         <TbText>
             Every component works in Interactive Server, Interactive WebAssembly and Interactive Auto. Pages rendered
             statically on the server still show every component, with these differences:
@@ -110,16 +106,14 @@
             </li>
         </ul>
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="options">
-            App-wide options
-        </TbText>
+        <DocsHeading Id="options" Text="App-wide options" Class="docs-section" />
         <TbText>
             <code>AddTrailblazor</code> takes the settings that apply to every dialog and toast. A dialog's own options
             still override them.
         </TbText>
         <CodeBlock Label="App-wide options" Code="@Options" />
 
-        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="guides/theming">Theming</a>: light and dark, palettes, density and design tokens.</li>
             <li><a href="guides/testing">Testing</a>: bUnit and Playwright helpers for your pages.</li>
