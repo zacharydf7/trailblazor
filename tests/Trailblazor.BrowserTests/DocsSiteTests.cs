@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Deque.AxeCore.Commons;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Docs.Examples;
@@ -66,6 +67,11 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
+
+    public static TheoryData<string, string> BrowsersInBothThemes => new(
+        from browser in AllBrowsers.Names
+        from theme in new[] { "light", "dark" }
+        select (browser, theme));
 
     public static TheoryData<string, string, string> PhonePagesInBothThemes => new(
         from browser in AllBrowsers.Names
@@ -445,6 +451,110 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             """), "The section's rule should show below the header, not behind it.");
     }
 
+    // SiteTests covers what the suggestions say and where choosing one goes; these need the browser's keys.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SearchBox_ShouldListResultsAsYouTypeAndOpenOneChosenWithTheKeys_WhenAWordIsTyped(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/testing");
+        var search = page.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
+        await Expect(search).ToHaveAttributeAsync("data-ready", "");
+
+        await search.PressSequentiallyAsync("set up bunit");
+        await Expect(page.GetByRole(AriaRole.Option).First).ToContainTextAsync("Testing › Set up bUnit");
+        await search.PressAsync("ArrowDown");
+        await search.PressAsync("Enter");
+
+        // Choosing a section of the page that's already open changes only the fragment, and the field still empties.
+        await Expect(page).ToHaveURLAsync(new Regex("/guides/testing#bunit$"));
+        await Expect(search).ToHaveValueAsync("");
+    }
+
+    // The form can submit before the field settles what was typed, so this checks the event order a real browser uses.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SearchBox_ShouldOpenTheResultsForWhatWasTyped_WhenEnterIsPressedWithNoSuggestionActive(
+        string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/testing");
+        var search = page.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
+        await Expect(search).ToHaveAttributeAsync("data-ready", "");
+        await search.PressSequentiallyAsync("focus trap");
+
+        await search.PressAsync("Enter");
+
+        await Expect(page).ToHaveURLAsync(new Regex("/search\\?q=focus%20trap$"));
+        await Expect(page.Locator(".docs-lead[role=status]")).ToContainTextAsync("match “focus trap”");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SearchBox_ShouldTakeFocus_WhenSlashOrControlKIsPressedOutsideAField(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/testing");
+        var search = page.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
+        var phone = await OpenDocsAsync(browser, "guides/testing",
+            new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        var phoneSearch = phone.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
+        await Expect(page.Locator("html[data-shortcuts]")).ToHaveCountAsync(1);
+        await Expect(phone.Locator("html[data-shortcuts]")).ToHaveCountAsync(1);
+        await Expect(search).ToHaveAttributeAsync("aria-keyshortcuts", "/ Control+K");
+
+        await page.Keyboard.PressAsync("/");
+        await Expect(search).ToBeFocusedAsync();
+        await Expect(search).ToHaveValueAsync("");
+        await page.Keyboard.PressAsync("/");
+        await Expect(search).ToHaveValueAsync("/");
+        await Expect(phoneSearch).ToBeHiddenAsync();
+        await phone.Keyboard.PressAsync("Control+k");
+
+        await Expect(phoneSearch).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SearchBox_ShouldLeaveControlKToTheFieldsAndTakeCommandK_WhenTheDeviceIsAMac(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/testing");
+        var search = page.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
+        var errors = new List<string>();
+        page.PageError += (_, error) => errors.Add(error);
+        await Expect(page.Locator("html[data-shortcuts]")).ToHaveCountAsync(1);
+        await page.EvaluateAsync("() => Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' })");
+        // Autofill sends keydown events without a key.
+        await page.EvaluateAsync("() => document.dispatchEvent(new Event('keydown'))");
+
+        // dispatchEvent runs the listener synchronously, so defaultPrevented shows at once whether it took the key.
+        Assert.False(await TakesAsync("ctrlKey"));
+        Assert.True(await TakesAsync("metaKey"));
+        await page.Keyboard.PressAsync("Meta+k");
+
+        await Expect(search).ToBeFocusedAsync();
+        Assert.Empty(errors);
+
+        Task<bool> TakesAsync(string modifier) => page.EvaluateAsync<bool>($$"""
+            () => {
+                const key = new KeyboardEvent('keydown',
+                    { key: 'k', {{modifier}}: true, bubbles: true, cancelable: true });
+                document.body.dispatchEvent(key);
+                return key.defaultPrevented;
+            }
+            """);
+    }
+
+    [Theory, MemberData(nameof(BrowsersInBothThemes))]
+    public async Task Site_ShouldHaveNoAccessibilityViolations_WhenSearchSuggestionsAreOpen(string browser,
+        string theme)
+    {
+        var page = await OpenDocsAsync(browser, "guides/testing");
+        await SetThemeAsync(page, theme);
+        var search = page.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
+        await Expect(search).ToHaveAttributeAsync("data-ready", "");
+        await search.PressSequentiallyAsync("dialog");
+        await Expect(page.GetByRole(AriaRole.Option).First).ToBeVisibleAsync();
+
+        var result = await page.RunAxe(AxeTests.WcagAA);
+
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Browser_ShouldFollowTheViewportAndDownloadTheList_WhenUsed(string browser)
     {
@@ -491,7 +601,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             new() { ViewportSize = new() { Width = 390, Height = 844 } });
         var contents = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
         var site = page.GetByRole(AriaRole.Navigation, new() { Name = "Site" });
-        var search = page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" });
+        var search = page.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
         await Expect(contents).ToBeHiddenAsync();
         await Expect(site).ToBeHiddenAsync();
         await Expect(search).ToBeHiddenAsync();

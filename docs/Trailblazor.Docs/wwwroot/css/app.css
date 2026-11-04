@@ -129,6 +129,21 @@ a:focus-visible {
     width: min(100%, 15rem);
 }
 
+/* A suggestion shows where it matched, with the words around the match below. */
+.docs-suggestion__title {
+    display: block;
+    font-weight: var(--tb-font-weight-medium);
+}
+
+.docs-suggestion__snippet {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--tb-color-text-muted);
+    font-size: var(--tb-font-size-sm);
+}
+
 .docs-results {
     display: grid;
     gap: var(--tb-space-4);

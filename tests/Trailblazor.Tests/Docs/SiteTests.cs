@@ -1,6 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Trailblazor.Docs.Examples;
 using Trailblazor.Docs.Layout;
 using Trailblazor.Docs.Pages;
@@ -109,6 +110,64 @@ public class SiteTests : DocsTest
         Assert.Equal("Guides and components", catalog.QuerySelector("#components")!.TextContent.Trim());
         Assert.Equal(Links, Texts(catalog.QuerySelectorAll("a")));
         Assert.Contains(ExampleCatalog.Find("menu")!.Summary, catalog.TextContent);
+    }
+
+    [Fact]
+    public void SearchBox_ShouldSuggestEachPagesBestMatchAndSayHowMany_WhenAWordIsTyped()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = Render<SearchBox>();
+
+        cut.Find("input").Input("dialog");
+
+        var titles = Texts(cut.FindAll("[role=option] .docs-suggestion__title"));
+        Assert.Equal(8, titles.Count);
+        Assert.Equal("Dialog", titles[0]);
+        Assert.Contains("Getting started › Host dialogs and toasts", titles);
+        Assert.Equal(titles.Count, titles.Select(title => title.Split(" › ")[0]).Distinct().Count());
+        Assert.All(cut.FindAll("[role=option] .docs-suggestion__snippet"),
+            snippet => Assert.NotEmpty(snippet.TextContent));
+        announcer.WaitForAssertion(() => Assert.Equal(["Suggestions: 8"],
+            announcer.FindAll("[role=status] p").Select(p => p.TextContent)));
+    }
+
+    [Fact]
+    public void SearchBox_ShouldOpenTheSuggestionsSpot_WhenItIsChosen()
+    {
+        var cut = Render<SearchBox>();
+        cut.Find("input").Input("stack gap");
+
+        cut.FindAll("[role=option]").Single(option => option.TextContent.Contains("Stack › Gap")).Click();
+
+        Assert.EndsWith("components/stack/api#tbstack-gap", Navigation.Uri);
+        Assert.Equal("", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void SearchBox_ShouldKeepTheTextAndStayOnThePage_WhenTheFieldIsLeftWithoutChoosing()
+    {
+        Navigation.NavigateTo("guides/testing");
+        var cut = Render<SearchBox>();
+        cut.Find("input").Input("dialog");
+
+        cut.Find("input").Change("dialog");
+
+        Assert.EndsWith("guides/testing", Navigation.Uri);
+        Assert.Equal("dialog", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void MainLayout_ShouldOpenAndFocusTheSearch_WhenAShortcutAsksForIt()
+    {
+        Navigation.NavigateTo("guides/testing");
+        var module = JSInterop.SetupModule("./js/shortcuts.js");
+        var cut = Render<MainLayout>();
+        var layout = (DotNetObjectReference<MainLayout>)module.VerifyInvoke("listen").Arguments[0]!;
+
+        cut.InvokeAsync(layout.Value.OpenSearch);
+
+        Assert.Equal("true", Button(cut, "Search").GetAttribute("aria-expanded"));
+        JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(cut.Find("#docs-search input"));
     }
 
     [Fact]

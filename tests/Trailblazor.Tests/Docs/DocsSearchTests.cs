@@ -63,7 +63,8 @@ public class DocsSearchTests
 
         Assert.Contains(results, result => result.Section == "TbDialog.ChildContent");
         Assert.Contains(results, result => result.Section == "TbDialogTitle.ChildContent");
-        // The type prefix in a member's label isn't searched, so searching a type's name doesn't return all its members.
+        // The type prefix in a member's label isn't searched, so searching a type's name doesn't return all its
+        // members.
         Assert.DoesNotContain(DocsSearch.Find("select"), result =>
             result is { Page: "Select", Match: SearchMatch.Member }
             && !result.Section!.Split('.')[^1].Contains("select", StringComparison.OrdinalIgnoreCase));

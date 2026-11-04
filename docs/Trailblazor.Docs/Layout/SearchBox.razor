@@ -1,23 +1,60 @@
 @inject NavigationManager Navigation
 
 <form id="docs-search" role="search" class="docs-search" @onsubmit="Search" @onsubmit:preventDefault>
-    @* Enter submits before a change event is guaranteed, so the value follows every keystroke. *@
-    <TbTextField @ref="_field" Label="Search" Type="TextFieldType.Search" UpdateOnInput @bind-Value="_query"
-                 Placeholder="Search"
-                 Classes="@(new FieldClasses { Label = "tb-visually-hidden" })" />
+    <TbAutocomplete @ref="_field" TValue="string" Label="Search" Value="_value" ValueChanged="Choose" FreeText
+                    Search="Suggest" DebounceDelay="TimeSpan.Zero" Placeholder="Search"
+                    Classes="@(new FieldClasses { Label = "tb-visually-hidden" })">
+        <ItemTemplate>
+            <span class="docs-suggestion__title">@TitleOf(_found[context])</span>
+            <span class="docs-suggestion__snippet">@_found[context].Snippet</span>
+        </ItemTemplate>
+    </TbAutocomplete>
 </form>
 
 @code {
-    private string? _query;
-    private TbTextField<string> _field = null!;
+    private const int Suggestions = 8;
+
+    private string? _value;
+    private string? _typed;
+    private Dictionary<string, SearchResult> _found = [];
+    private TbAutocomplete<string> _field = null!;
 
     // A results page opened from a link or by going back shows its query in the box, ready to refine.
     [SupplyParameterFromQuery(Name = "q")]
     public string? Query { get; set; }
 
-    protected override void OnParametersSet() => _query = Query;
+    protected override void OnParametersSet() => _value = _typed = Query;
 
     public ValueTask FocusAsync() => _field.FocusAsync();
 
-    private void Search() => Navigation.NavigateTo($"search?q={Uri.EscapeDataString(_query ?? "")}");
+    // Each page's best match, so one page doesn't fill the list. A suggestion's value is its address, which no one
+    // types, so typed text never chooses one by matching its words. With no debounce, this runs on every keystroke, so
+    // Search submits what was typed even when Enter fires before the field settles.
+    private Task<IEnumerable<string>> Suggest(string text, CancellationToken token)
+    {
+        _typed = text;
+        _found = DocsSearch.Find(text).DistinctBy(result => result.PagePath).Take(Suggestions)
+            .ToDictionary(result => result.Path);
+        return Task.FromResult<IEnumerable<string>>(_found.Keys);
+    }
+
+    // Typed text also arrives here once the field settles; only a suggestion's address opens a page. Opening one clears
+    // the field instead of leaving the address in it, because a page without a query wouldn't clear it.
+    private void Choose(string? value)
+    {
+        if (value is not null && _found.ContainsKey(value))
+        {
+            _value = _typed = null;
+            Navigation.NavigateTo(value);
+        }
+        else
+        {
+            _value = value;
+        }
+    }
+
+    private static string TitleOf(SearchResult result) =>
+        result.Section is { } section ? $"{result.Page} › {section}" : result.Page;
+
+    private void Search() => Navigation.NavigateTo($"search?q={Uri.EscapeDataString(_typed ?? "")}");
 }

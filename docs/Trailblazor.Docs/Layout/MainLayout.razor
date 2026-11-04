@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
-@implements IDisposable
+@implements IAsyncDisposable
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <TbRoot />
 
@@ -53,6 +54,8 @@
     private bool _focusSearch;
     private ElementReference _main;
     private SearchBox _search = null!;
+    private DotNetObjectReference<MainLayout>? _self;
+    private IJSObjectReference? _shortcuts;
 
     // The home page is the whole map, so it spans the window without the sidebar.
     private bool IsHome => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0] == "";
@@ -80,6 +83,17 @@
         _focusSearch = _searchOpen;
     }
 
+    /// <summary>Focuses the search for the "/" and Ctrl+K or Cmd+K shortcuts, opening it first on a narrow
+    /// screen.</summary>
+    [JSInvokable]
+    public Task OpenSearch() => InvokeAsync(() =>
+    {
+        _searchOpen = true;
+        _menuOpen = false;
+        _focusSearch = true;
+        StateHasChanged();
+    });
+
     private async Task SkipAsync() => await _main.FocusAsync();
 
     protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
@@ -87,6 +101,13 @@
     // The field shows only once the open class has rendered, so it can't take focus before then.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            _self = DotNetObjectReference.Create(this);
+            await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/shortcuts.js");
+            _shortcuts = await module.InvokeAsync<IJSObjectReference>("listen", _self);
+        }
+
         if (_focusSearch)
         {
             _focusSearch = false;
@@ -101,5 +122,15 @@
         StateHasChanged();
     }
 
-    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+    public async ValueTask DisposeAsync()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        if (_shortcuts is not null)
+        {
+            await _shortcuts.InvokeVoidAsync("dispose");
+            await _shortcuts.DisposeAsync();
+        }
+
+        _self?.Dispose();
+    }
 }
