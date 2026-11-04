@@ -3,54 +3,99 @@
 
 <PageTitle>Announcements · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Announcements</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    <code>IAnnouncer</code> tells screen reader users about changes they can't see, such as "Saved" or "3 results",
-    through live regions that <code>TbRoot</code> and each modal dialog render. <code>AddTrailblazor()</code> registers
-    it, so inject it where you need it.
-</TbText>
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="polite-or-now" Text="Polite or now" />
+        <TbTableOfContentsItem TargetId="clearing" Text="Clearing" />
+        <TbTableOfContentsItem TargetId="testing" Text="Testing" />
+        <TbTableOfContentsItem TargetId="api" Text="API" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Announcements</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            <code>IAnnouncer</code> tells screen reader users about changes they can't see, such as "Saved" or "3
+            results", through live regions that <code>TbRoot</code> and each modal dialog render.
+            <code>AddTrailblazor()</code> registers it, so inject it where you need it.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <div class="docs-example">
+            <TbStack Row Gap="2" Wrap>
+                <TbButton OnClick="@(() => Announcer.Polite($"Trail saved at {DateTime.Now:t}"))">
+                    Announce politely
+                </TbButton>
+                <TbButton Variant="Variant.Outlined"
+                          OnClick="@(() => Announcer.Assertive("Couldn't reach the server"))">
+                    Announce now
+                </TbButton>
+                <TbButton Variant="Variant.Outlined" OnClick="Announcer.Clear">Clear</TbButton>
+            </TbStack>
+        </div>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try it</TbText>
-<div class="docs-example">
-    <TbStack Row Gap="2" Wrap>
-        <TbButton OnClick="@(() => Announcer.Polite($"Trail saved at {DateTime.Now:t}"))">Announce politely</TbButton>
-        <TbButton Variant="Variant.Outlined" OnClick="@(() => Announcer.Assertive("Couldn't reach the server"))">
-            Announce now
-        </TbButton>
-        <TbButton Variant="Variant.Outlined" OnClick="Announcer.Clear">Clear</TbButton>
-    </TbStack>
-</div>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="polite-or-now">
+            Polite or now
+        </TbText>
+        <ul>
+            <li>
+                <code>Polite</code> waits until the screen reader finishes what it is saying. Use it for nearly
+                everything.
+            </li>
+            <li>
+                <code>Assertive</code> interrupts, so keep it for errors and other messages the user must hear right
+                away.
+            </li>
+        </ul>
+        <TbText>
+            The same message said twice is announced twice. While a modal dialog is open, messages go to its own live
+            regions, since a modal hides the rest of the page from screen readers.
+        </TbText>
+        <CodeBlock Label="Announcing" Code="@Announce" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Polite or now</TbText>
-<TbText>
-    <code>Polite</code> waits until the screen reader finishes what it is saying; use it for nearly everything.
-    <code>Assertive</code> interrupts, so keep it for errors and other messages the user must hear right away. The
-    same message said twice is announced twice. While a modal dialog is open, messages go to its own live regions,
-    since a modal hides the rest of the page from screen readers.
-</TbText>
-<CodeBlock Label="Announcing" Code="@Announce" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="clearing">Clearing</TbText>
+        <TbText>
+            Live regions are part of the page, so a screen reader user browsing it later could find old messages. Each
+            message is removed seven seconds after it is announced, long enough to be heard. To remove one sooner:
+        </TbText>
+        <ul>
+            <li>
+                Call <code>Withdraw</code> to remove a message that is no longer true, such as an error the user has
+                fixed.
+            </li>
+            <li>
+                Call <code>Clear</code> to remove all messages at once, for example when the view they describe goes
+                away.
+            </li>
+        </ul>
+        <TbText>
+            A field withdraws its own errors once they are fixed or the field goes away, so a test can check that a
+            fixed error has left the page without waiting out the seven seconds.
+        </TbText>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Clearing</TbText>
-<TbText>
-    Live regions are part of the page, so a screen reader user browsing it later could find old messages. Each
-    message is removed seven seconds after it is announced, long enough to be heard. Call <code>Withdraw</code> to
-    remove a message that is no longer true, such as an error the user has fixed. Call <code>Clear</code> to remove
-    all messages at once, for example when the view they describe goes away. A field withdraws its own errors once
-    they are fixed or the field goes away, so a test can check that a fixed error has left the page without waiting
-    out the seven seconds.
-</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">Testing</TbText>
+        <TbText>
+            The live regions are in <code>TbRoot</code>, so render it alongside your component, and look for the message
+            in the <code>status</code> region (polite) or the <code>alert</code> region (assertive).
+        </TbText>
+        <CodeBlock Label="A bUnit test" Code="@Test" />
+        <DocsCallout Title="Skip the seven seconds">
+            Register a <code>FakeTimeProvider</code> as the <code>TimeProvider</code> before
+            <code>AddTrailblazor()</code> to move past the seven seconds without waiting.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
-<TbText>
-    The live regions are in <code>TbRoot</code>, so render it alongside your component, and look for the message in the
-    <code>status</code> region (polite) or the <code>alert</code> region (assertive). Register a
-    <code>FakeTimeProvider</code> as the <code>TimeProvider</code> before <code>AddTrailblazor()</code> to move past
-    the seven seconds without waiting.
-</TbText>
-<CodeBlock Label="A bUnit test" Code="@Test" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="api">API</TbText>
+        <ApiTable Type="typeof(IAnnouncer)" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>
-<ApiTable Type="typeof(IAnnouncer)" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li><a href="guides/testing#finding">Testing</a>: find announcements in the live regions.</li>
+            <li><a href="components/toast">Toast</a>: a visible message that is announced too.</li>
+            <li><a href="guides/localization">Localization</a>: the words components announce on their own.</li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
     private const string Announce = """
@@ -71,6 +116,7 @@
 
         editor.Find("button.save").Click();
 
-        root.WaitForAssertion(() => Assert.Equal("Trail saved", root.Find("[role=status]").TextContent));
+        root.WaitForAssertion(() =>
+            Assert.Equal("Trail saved", root.Find("[role=status]").TextContent));
         """;
 }

@@ -267,7 +267,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     public static TheoryData<string, string> Guides => new(
         from browser in AllBrowsers.Names
         from path in new[] { "guides/getting-started", "guides/theming", "guides/palettes", "guides/spacing",
-            "guides/testing" }
+            "guides/browser", "guides/announcements", "guides/icons", "guides/localization", "guides/testing" }
         select (browser, path));
 
     [Theory, MemberData(nameof(Guides))]

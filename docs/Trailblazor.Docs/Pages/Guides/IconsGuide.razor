@@ -6,65 +6,105 @@
 
 <PageTitle>Icons · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Icons</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    <code>TbIcon</code> draws any SVG icon. The <code>Trailblazor.Icons.Material</code> package adds Google's Material
-    Symbols, more than 3,900 of them in six styles, as values you pass to it.
-</TbText>
-
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Find an icon</TbText>
-<div class="docs-example">
-    <TbStack Gap="4">
-        <TbStack Row Gap="3" Wrap>
-            <TbTextField Label="Icon name" @bind-Value="_query" Type="TextFieldType.Search" UpdateOnInput
-                         Placeholder="hiking, map, star" />
-            <TbSelect Label="Style" @bind-Value="_style">
-                @foreach (var style in Styles)
-                {
-                    <TbOption Value="style">@style.Name</TbOption>
-                }
-            </TbSelect>
-        </TbStack>
-        <TbText Muted role="status">@Summary</TbText>
-        <div role="list" aria-label="Matching icons" class="docs-icon-grid">
-            @foreach (var icon in Shown)
-            {
-                <div role="listitem">
-                    <TbButton Variant="Variant.Text" OnClick="() => CopyAsync(icon.Name)" class="docs-icon-choice">
-                        <TbIcon Icon="@((Icon)icon.GetValue(null)!)" Size="Size.Large" />
-                        <span>@icon.Name</span>
-                    </TbButton>
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="find-an-icon" Text="Find an icon" />
+        <TbTableOfContentsItem TargetId="use-one" Text="Use one" />
+        <TbTableOfContentsItem TargetId="your-own-icons" Text="Your own icons" />
+        <TbTableOfContentsItem TargetId="size-and-license" Text="Size and license" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Icons</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            <code>TbIcon</code> draws any SVG icon. The <code>Trailblazor.Icons.Material</code> package adds Google's
+            Material Symbols, more than 3,900 of them in six styles, as values you pass to it.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="find-an-icon">
+            Find an icon
+        </TbText>
+        <div class="docs-example">
+            <TbStack Gap="4">
+                <TbStack Row Gap="3" Wrap>
+                    <TbTextField Label="Icon name" @bind-Value="_query" Type="TextFieldType.Search" UpdateOnInput
+                                 Placeholder="hiking, map, star" />
+                    <TbSelect Label="Style" @bind-Value="_style">
+                        @foreach (var style in Styles)
+                        {
+                            <TbOption Value="style">@style.Name</TbOption>
+                        }
+                    </TbSelect>
+                </TbStack>
+                <TbText Muted role="status">@Summary</TbText>
+                <div role="list" aria-label="Matching icons" class="docs-icon-grid">
+                    @foreach (var icon in Shown)
+                    {
+                        <div role="listitem">
+                            <TbButton Variant="Variant.Text" OnClick="() => CopyAsync(icon.Name)"
+                                      class="docs-icon-choice">
+                                <TbIcon Icon="@((Icon)icon.GetValue(null)!)" Size="Size.Large" />
+                                <span>@icon.Name</span>
+                            </TbButton>
+                        </div>
+                    }
                 </div>
-            }
+            </TbStack>
         </div>
-    </TbStack>
-</div>
-<TbText>Press an icon to copy its C# name.</TbText>
+        <TbText>Press an icon to copy its C# name.</TbText>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Use one</TbText>
-<TbText>Add the package, then pass a symbol to <code>TbIcon</code>, or to any component that takes an icon.</TbText>
-<CodeBlock Label="Terminal" Code="dotnet add package Trailblazor.Icons.Material" />
-<CodeBlock Label="A page" Code="@Usage" />
-<TbText>
-    Names follow the symbols' own, as Google's <a href="https://fonts.google.com/icons">Material Symbols</a> page
-    lists them: <code>add_circle</code> is <code>AddCircle</code>, and a name that starts with a digit gets an
-    underscore, so <code>10k</code> is <code>_10k</code>. Each icon is in Outlined, Rounded and Sharp, plain or
-    filled. A filled icon whose shape has no filled form is the same as the plain one.
-</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="use-one">Use one</TbText>
+        <ol>
+            <li>Add the package.</li>
+            <li>Pass a symbol to <code>TbIcon</code>, or to any component that takes an icon.</li>
+        </ol>
+        <CodeBlock Label="Terminal" Code="dotnet add package Trailblazor.Icons.Material" />
+        <CodeBlock Label="A page" Code="@Usage" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Your own icons</TbText>
-<TbText>
-    An <code>Icon</code> holds the markup that goes inside an <code>&lt;svg&gt;</code>, plus its view box, so any icon
-    set works. The markup is rendered as is, so build it in code, never from user input.
-</TbText>
-<CodeBlock Label="Icons.cs" Code="@Custom" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Names and styles</TbText>
+        <ul>
+            <li>
+                Names follow the symbols' own, as Google's <a href="https://fonts.google.com/icons">Material
+                Symbols</a> page lists them: <code>add_circle</code> is <code>AddCircle</code>.
+            </li>
+            <li>A name that starts with a digit gets an underscore, so <code>10k</code> is <code>_10k</code>.</li>
+            <li>
+                Each icon is in Outlined, Rounded and Sharp, plain or filled. A filled icon whose shape has no filled
+                form is the same as the plain one.
+            </li>
+        </ul>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Size and license</TbText>
-<TbText>
-    Each icon is its own property and the package is marked trimmable, so a WebAssembly app published with trimming
-    can leave out the icons it never uses. The paths are Google's, under the Apache License 2.0; the package carries
-    the notice.
-</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="your-own-icons">
+            Your own icons
+        </TbText>
+        <TbText>
+            An <code>Icon</code> holds the markup that goes inside an <code>&lt;svg&gt;</code>, plus its view box, so
+            any icon set works.
+        </TbText>
+        <CodeBlock Label="Icons.cs" Code="@Custom" />
+        <DocsCallout Tone="Tone.Warning" Title="Never build an icon from user input">
+            The markup is rendered as is, so build it in code.
+        </DocsCallout>
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="size-and-license">
+            Size and license
+        </TbText>
+        <ul>
+            <li>
+                Each icon is its own property and the package is marked trimmable, so a WebAssembly app published with
+                trimming can leave out the icons it never uses.
+            </li>
+            <li>The paths are Google's, under the Apache License 2.0; the package carries the notice.</li>
+        </ul>
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li><a href="components/icon">Icon</a>: sizes, colors and labels for <code>TbIcon</code>.</li>
+            <li><a href="components/icon-button">Icon button</a>: a button that shows only an icon.</li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
     private const int MaxShown = 60;
@@ -96,7 +136,8 @@
         @using Trailblazor.Icons.Material
 
         <TbIcon Icon="MaterialSymbols.Outlined.Hiking" />
-        <TbIconButton Icon="MaterialSymbols.RoundedFilled.Star" AriaLabel="Add to favorites" />
+        <TbIconButton Icon="MaterialSymbols.RoundedFilled.Star"
+                      AriaLabel="Add to favorites" />
         """;
 
     private const string Custom = """
@@ -105,7 +146,8 @@
             public static Icon Trail => new("<path d=\"M4 20 12 4l8 16z\" />");
 
             // Another set's own grid, such as a 16-unit one.
-            public static Icon Pin => new("<circle cx=\"8\" cy=\"8\" r=\"5\" />", "0 0 16 16");
+            public static Icon Pin =>
+                new("<circle cx=\"8\" cy=\"8\" r=\"5\" />", "0 0 16 16");
         }
         """;
 }

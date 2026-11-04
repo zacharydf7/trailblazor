@@ -3,77 +3,120 @@
 
 <PageTitle>Localization · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Localization</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    Every word Trailblazor's components say or show on their own, such as "Close", "Next page" or "Quantity must be a
-    number.", comes from <code>ITbLocalizer</code>. It answers in English unless you change it, one key at a time or a
-    whole language at once. Numbers and dates follow the current culture already.
-</TbText>
-
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try it</TbText>
-<div class="docs-example">
-    <TbStack Gap="4">
-        <TbPagination @bind-Page="_page" PageCount="12" />
-        @* Marked as Spanish so screen readers pronounce these labels in Spanish. *@
-        <div lang="es">
-            <TbPagination @bind-Page="_page" PageCount="12" Labels="Spanish" />
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="change-a-few-words" Text="Change a few words" />
+        <TbTableOfContentsItem TargetId="translate-the-whole-library" Text="Translate the whole library" />
+        <TbTableOfContentsItem TargetId="words-for-one-component" Text="Words for one component" />
+        <TbTableOfContentsItem TargetId="testing" Text="Testing" />
+        <TbTableOfContentsItem TargetId="keys" Text="Keys" />
+        <TbTableOfContentsItem TargetId="api" Text="API" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Localization</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Every word Trailblazor's components say or show on their own, such as "Close", "Next page" or "Quantity
+            must be a number.", comes from <code>ITbLocalizer</code>. It answers in English unless you change it, one
+            key at a time or a whole language at once. Numbers and dates follow the current culture already.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <div class="docs-example">
+            <TbStack Gap="4">
+                <TbPagination @bind-Page="_page" PageCount="12" />
+                @* Marked as Spanish so screen readers pronounce these labels in Spanish. *@
+                <div lang="es">
+                    <TbPagination @bind-Page="_page" PageCount="12" Labels="Spanish" />
+                </div>
+            </TbStack>
         </div>
-    </TbStack>
-</div>
-<TbText>
-    The first pagination says the localizer's words; the second sets its own, in Spanish, through its
-    <code>Labels</code>. Both move together, since they're bound to the same page number.
-</TbText>
+        <TbText>
+            The first pagination says the localizer's words; the second sets its own, in Spanish, through its
+            <code>Labels</code>. Both move together, since they're bound to the same page number.
+        </TbText>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Change a few words</TbText>
-<TbText>
-    The default localizer reads <code>options.Strings</code> first, so give it the keys you want to say differently.
-    The keys are constants on <code>TbStrings</code>, listed below with their English text.
-</TbText>
-<CodeBlock Label="Program.cs" Code="@Overrides" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="change-a-few-words">
+            Change a few words
+        </TbText>
+        <TbText>
+            The default localizer reads <code>options.Strings</code> first, so give it the keys you want to say
+            differently. The keys are constants on <code>TbStrings</code>, listed under
+            <a href="guides/localization#keys">Keys</a> with their English text.
+        </TbText>
+        <CodeBlock Label="Program.cs" Code="@Overrides" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Translate the whole library</TbText>
-<TbText>
-    For an app in several languages, register your own <code>ITbLocalizer</code> before
-    <code>AddTrailblazor()</code>, which then uses it instead of the default. It is scoped, so it can answer for each
-    user's culture, for example from resource files through <code>IStringLocalizer</code>. Fall back on
-    <code>TbStrings.English</code> for the keys you haven't translated. Text with placeholders such as <code>{0}</code>
-    keeps them; the component fills them in, and each key below says what they hold.
-</TbText>
-<CodeBlock Label="A localizer over resource files" Code="@Resources" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="translate-the-whole-library">
+            Translate the whole library
+        </TbText>
+        <TbText>For an app in several languages:</TbText>
+        <ol>
+            <li>
+                Write an <code>ITbLocalizer</code>, for example one that reads resource files through
+                <code>IStringLocalizer</code>.
+            </li>
+            <li>Fall back on <code>TbStrings.English</code> for the keys you haven't translated.</li>
+            <li>
+                Register it with <code>AddScoped</code> before <code>AddTrailblazor()</code>, which then uses it
+                instead of the default. A scoped localizer can answer in each user's culture.
+            </li>
+        </ol>
+        <CodeBlock Label="A localizer over resource files" Code="@Resources" />
+        <DocsCallout Title="Keep the placeholders">
+            Keep placeholders such as <code>{0}</code> in your translations; the component fills them in. Each
+            <code>TbStrings</code> constant's documentation says what its placeholders hold.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Words for one component</TbText>
-<TbText>
-    A component's own label parameter, such as <code>CloseLabel</code> on an alert, wins over the localizer for that
-    component alone. Components with many words take a labels record, such as <code>PaginationLabels</code>; the
-    labels you set win, and the ones you leave out still come from the localizer.
-</TbText>
-<CodeBlock Label="One pagination's words" Code="@OneComponent" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="words-for-one-component">
+            Words for one component
+        </TbText>
+        <ul>
+            <li>
+                A component's own label parameter, such as <code>CloseLabel</code> on an alert, wins over the localizer
+                for that component alone.
+            </li>
+            <li>
+                Components with many words take a labels record, such as <code>PaginationLabels</code>. The labels you
+                set win, and the ones you leave out still come from the localizer.
+            </li>
+        </ul>
+        <CodeBlock Label="One pagination's words" Code="@OneComponent" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
-<TbText>
-    <code>this.AddTrailblazor(options => ...)</code> in bUnit takes the same options, so a test can check a translated
-    name the way a screen reader user would hear it.
-</TbText>
-<CodeBlock Label="A bUnit test" Code="@Test" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">Testing</TbText>
+        <TbText>
+            <code>this.AddTrailblazor(options => ...)</code> in bUnit takes the same options, so a test can check a
+            translated name the way a screen reader user would hear it.
+        </TbText>
+        <CodeBlock Label="A bUnit test" Code="@Test" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Keys</TbText>
-<div class="docs-api" tabindex="0" role="region" aria-label="Keys and their English text">
-    <table>
-        <thead>
-            <tr><th scope="col">Key</th><th scope="col">English</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var (name, key) in Keys)
-            {
-                <tr><th scope="row"><code>TbStrings.@name</code></th><td>@TbStrings.English(key)</td></tr>
-            }
-        </tbody>
-    </table>
-</div>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="keys">Keys</TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Keys and their English text">
+            <table>
+                <thead>
+                    <tr><th scope="col">Key</th><th scope="col">English</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var (name, key) in Keys)
+                    {
+                        <tr><th scope="row"><code>TbStrings.@name</code></th><td>@TbStrings.English(key)</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>
-<ApiTable Type="typeof(ITbLocalizer)" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="api">API</TbText>
+        <ApiTable Type="typeof(ITbLocalizer)" />
+
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li><a href="guides/announcements">Announcements</a>: messages components say to screen readers.</li>
+            <li><a href="components/pagination">Pagination</a>: the labels record used above.</li>
+            <li><a href="guides/testing#bunit">Testing</a>: what <code>AddTrailblazor()</code> sets up in bUnit.</li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
     private static readonly PaginationLabels Spanish = new()
@@ -96,10 +139,13 @@
         """;
 
     private const string Resources = """
-        public sealed class ResourceLocalizer(IStringLocalizer<TrailblazorText> text) : ITbLocalizer
+        public sealed class ResourceLocalizer(IStringLocalizer<TrailblazorText> text)
+            : ITbLocalizer
         {
-            public string this[string key] => text[key] is { ResourceNotFound: false } found
-                ? found.Value : TbStrings.English(key);
+            public string this[string key] =>
+                text[key] is { ResourceNotFound: false } found
+                    ? found.Value
+                    : TbStrings.English(key);
         }
 
         // Program.cs
@@ -109,15 +155,25 @@
         """;
 
     private const string OneComponent = """
-        <TbPagination @bind-Page="page" PageCount="20"
-                      Labels="@(new PaginationLabels { Previous = "Newer trails", Next = "Older trails" })" />
+        <TbPagination @bind-Page="page" PageCount="20" Labels="Labels" />
+
+        @code {
+            private static readonly PaginationLabels Labels = new()
+            {
+                Previous = "Newer trails",
+                Next = "Older trails",
+            };
+        }
         """;
 
     private const string Test = """
-        this.AddTrailblazor(options => options.Strings[TbStrings.AlertClose] = "Schließen");
+        this.AddTrailblazor(options =>
+            options.Strings[TbStrings.AlertClose] = "Schließen");
 
-        var alert = Render<TbAlert>(parameters => parameters.Add(a => a.OnClose, () => { }));
+        var alert = Render<TbAlert>(parameters =>
+            parameters.Add(a => a.OnClose, () => { }));
 
-        Assert.Equal("Schließen", alert.Find("[data-part=close]").GetAttribute("aria-label"));
+        var close = alert.Find("[data-part=close]");
+        Assert.Equal("Schließen", close.GetAttribute("aria-label"));
         """;
 }

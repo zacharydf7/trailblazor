@@ -614,7 +614,7 @@ a:focus-visible {
 }
 
 /* A guide's text, code, tables and callouts share one column, spaced alike; headings keep their own spacing. */
-.docs-article--guide .docs-article__body > :is(.docs-source, .docs-api, .tb-alert, .tb-table) {
+.docs-article--guide .docs-article__body > :is(ul, ol, .docs-source, .docs-api, .tb-alert, .tb-table) {
     box-sizing: border-box;
     max-width: 44rem;
 }

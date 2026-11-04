@@ -6,92 +6,151 @@
 
 <PageTitle>Browser · Trailblazor</PageTitle>
 
-<TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Browser</TbText>
-<TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-    <code>IBrowserService</code> reaches browser features from C#: the clipboard, downloads and saves, the eyedropper,
-    scrolling, and the viewport's size. <code>AddTrailblazor()</code> registers it, so inject it where you need it.
-</TbText>
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="when-to-call-it" Text="When to call it" />
+        <TbTableOfContentsItem TargetId="clipboard" Text="Clipboard" />
+        <TbTableOfContentsItem TargetId="downloads-and-saves" Text="Downloads and saves" />
+        <TbTableOfContentsItem TargetId="eyedropper" Text="Eyedropper" />
+        <TbTableOfContentsItem TargetId="scrolling" Text="Scrolling" />
+        <TbTableOfContentsItem TargetId="viewport-and-breakpoints" Text="Viewport and breakpoints" />
+        <TbTableOfContentsItem TargetId="testing" Text="Testing" />
+        <TbTableOfContentsItem TargetId="api" Text="API" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Browser</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            <code>IBrowserService</code> reaches browser features from C#: the clipboard, downloads and saves, the
+            eyedropper, scrolling, and the viewport's size. <code>AddTrailblazor()</code> registers it, so inject it
+            where you need it.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="try-it">Try it</TbText>
+        <div class="docs-example">
+            <TbStack Gap="3">
+                <TbStack Row Gap="2" Wrap>
+                    <TbButton OnClick="CopyAsync">Copy the link</TbButton>
+                    <TbButton Variant="Variant.Outlined" OnClick="DownloadAsync">Download the list</TbButton>
+                    <TbButton Variant="Variant.Outlined" OnClick="SaveAsync">Save the list</TbButton>
+                    @if (_canPickColor)
+                    {
+                        <TbButton Variant="Variant.Outlined" OnClick="PickColorAsync">Pick a color</TbButton>
+                    }
+                </TbStack>
+                @if (_color is not null)
+                {
+                    <TbText>You picked <code>@_color</code>.</TbText>
+                }
+                <TbText>@_viewport</TbText>
+            </TbStack>
+        </div>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Try it</TbText>
-<div class="docs-example">
-    <TbStack Gap="3">
-        <TbStack Row Gap="2" Wrap>
-            <TbButton OnClick="CopyAsync">Copy the link</TbButton>
-            <TbButton Variant="Variant.Outlined" OnClick="DownloadAsync">Download the list</TbButton>
-            <TbButton Variant="Variant.Outlined" OnClick="SaveAsync">Save the list</TbButton>
-            @if (_canPickColor)
-            {
-                <TbButton Variant="Variant.Outlined" OnClick="PickColorAsync">Pick a color</TbButton>
-            }
-        </TbStack>
-        @if (_color is not null)
-        {
-            <TbText>You picked <code>@_color</code>.</TbText>
-        }
-        <TbText>@_viewport</TbText>
-    </TbStack>
-</div>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="when-to-call-it">
+            When to call it
+        </TbText>
+        <DocsCallout Tone="Tone.Warning" Title="Only once the page is interactive">
+            The service talks to the browser, so call it in an event handler or in <code>OnAfterRenderAsync</code>, not
+            while the page prerenders or renders as static SSR.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Clipboard</TbText>
-<TbText>
-    <code>CopyTextAsync</code> returns whether the text was copied. Browsers allow it only on a secure page and soon
-    after the user acts, so call it from a click handler. It is silent, so tell the user how it went.
-</TbText>
-<CodeBlock Label="Copying" Code="@Copy" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="clipboard">Clipboard</TbText>
+        <TbText><code>CopyTextAsync</code> returns whether the text was copied.</TbText>
+        <ul>
+            <li>
+                Browsers allow it only on a secure page and soon after the user acts, so call it from a click handler.
+            </li>
+            <li>It is silent, so tell the user how it went.</li>
+        </ul>
+        <CodeBlock Label="Copying" Code="@Copy" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Downloads and saves</TbText>
-<TbText>
-    <code>DownloadAsync</code> downloads a stream as a file. <code>SaveAsync</code> opens the save dialog, so the user
-    chooses the folder and name, in browsers that have one; in other browsers it downloads the file. It returns false
-    when the user cancels. Neither closes the stream.
-</TbText>
-<CodeBlock Label="Downloading and saving" Code="@Save" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="downloads-and-saves">
+            Downloads and saves
+        </TbText>
+        <ul>
+            <li><code>DownloadAsync</code> downloads a stream as a file.</li>
+            <li>
+                In browsers with a save dialog, <code>SaveAsync</code> opens it so the user chooses the folder and name;
+                in others it downloads the file. It returns false when the user cancels.
+            </li>
+        </ul>
+        <TbText>Neither closes the stream.</TbText>
+        <CodeBlock Label="Downloading and saving" Code="@Save" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Eyedropper</TbText>
-<TbText>
-    <code>PickColorAsync</code> lets the user pick a color from anywhere on the screen and returns it as
-    <code>#rrggbb</code>, or null when they cancel. Only some browsers have an eyedropper, so check
-    <code>CanPickColorAsync</code> before offering it, and always let the color be typed too: the eyedropper is made
-    for a pointer.
-</TbText>
-<CodeBlock Label="Picking a color" Code="@Pick" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="eyedropper">Eyedropper</TbText>
+        <TbText>
+            <code>PickColorAsync</code> lets the user pick a color from anywhere on the screen and returns it as
+            <code>#rrggbb</code>, or null when they cancel.
+        </TbText>
+        <CodeBlock Label="Picking a color" Code="@Pick" />
+        <DocsCallout Tone="Tone.Warning" Title="Check for support, and let users type a color">
+            Only some browsers have an eyedropper, so check <code>CanPickColorAsync</code> before offering it. Always
+            let the color be typed too: the eyedropper is made for a pointer.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Scrolling</TbText>
-<TbText>
-    <code>ScrollIntoViewAsync</code> scrolls an element into view, as little as needed unless you pass a
-    <code>ScrollAlignment</code>. A smooth scroll jumps instead for users who ask for reduced motion. Scrolling
-    doesn't move focus; call <code>FocusAsync</code> on the element when the user should land there.
-</TbText>
-<CodeBlock Label="Scrolling" Code="@Scroll" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="scrolling">Scrolling</TbText>
+        <ul>
+            <li>
+                <code>ScrollIntoViewAsync</code> scrolls an element into view, as little as needed unless you pass a
+                <code>ScrollAlignment</code>.
+            </li>
+            <li>A smooth scroll jumps instead for users who ask for reduced motion.</li>
+            <li>
+                Scrolling doesn't move focus; call <code>FocusAsync</code> on the element when the user should land
+                there.
+            </li>
+        </ul>
+        <CodeBlock Label="Scrolling" Code="@Scroll" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Viewport and breakpoints</TbText>
-<TbText>
-    <code>GetViewportAsync</code> gives the viewport's size and its <code>Breakpoint</code>: <code>Xs</code> below
-    640px, then <code>Sm</code>, <code>Md</code>, <code>Lg</code> and <code>Xl</code> from the
-    <code>--tb-breakpoint-*</code> tokens. <code>ObserveBreakpointAsync</code> calls back with the breakpoint now
-    and each time it changes, and <code>ObserveViewportAsync</code> does the same with the size once resizing pauses.
-    Dispose the result to stop. Prefer CSS media queries for layout, and these for when the markup itself must
-    change, such as a table that becomes a list of cards.
-</TbText>
-<CodeBlock Label="Following the breakpoint" Code="@Observe" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="viewport-and-breakpoints">
+            Viewport and breakpoints
+        </TbText>
+        <TbText>
+            <code>GetViewportAsync</code> gives the viewport's size and its <code>Breakpoint</code>: <code>Xs</code>
+            below 640px, then <code>Sm</code>, <code>Md</code>, <code>Lg</code> and <code>Xl</code> from the
+            <code>--tb-breakpoint-*</code> tokens. To follow changes:
+        </TbText>
+        <ul>
+            <li><code>ObserveBreakpointAsync</code> calls back with the breakpoint now and each time it changes.</li>
+            <li><code>ObserveViewportAsync</code> does the same with the size, once resizing pauses.</li>
+            <li>Dispose the result to stop.</li>
+        </ul>
+        <CodeBlock Label="Following the breakpoint" Code="@Observe" />
+        <DocsCallout Title="Prefer CSS for layout">
+            Use CSS media queries for layout, and the breakpoint observers when the markup itself must change, such as a
+            table that becomes a list of cards.
+        </DocsCallout>
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">When to call it</TbText>
-<TbText>
-    The service talks to the browser, so it works once the page is interactive: in an event handler or in
-    <code>OnAfterRenderAsync</code>, not while the page prerenders or renders as static SSR.
-</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="testing">Testing</TbText>
+        <TbText>
+            In bUnit, <code>this.AddTrailblazor()</code> from <code>Trailblazor.Testing</code> registers a
+            <code>FakeBrowserService</code>. Get it from <code>Services</code> to:
+        </TbText>
+        <ul>
+            <li>Check what a component copied, downloaded, saved or scrolled to.</li>
+            <li>Set what the browser answers, such as the color the user picks or the viewport's size.</li>
+        </ul>
+        <TbText>Register your own <code>IBrowserService</code> first to use a mock instead.</TbText>
+        <CodeBlock Label="A bUnit test" Code="@Test" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">Testing</TbText>
-<TbText>
-    In bUnit, <code>this.AddTrailblazor()</code> from <code>Trailblazor.Testing</code> registers a
-    <code>FakeBrowserService</code>. Get it from <code>Services</code> to check what a component copied, downloaded,
-    saved or scrolled to, and to set what the browser answers, such as the color the user picks or the viewport's size.
-    Register your own <code>IBrowserService</code> first to use a mock instead.
-</TbText>
-<CodeBlock Label="A bUnit test" Code="@Test" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="api">API</TbText>
+        <ApiTable Type="typeof(IBrowserService)" />
 
-<TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section">API</TbText>
-<ApiTable Type="typeof(IBrowserService)" />
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="related">Related</TbText>
+        <ul>
+            <li><a href="guides/testing#bunit">Testing</a>: what <code>AddTrailblazor()</code> sets up in bUnit.</li>
+            <li>
+                <a href="components/color-picker">Color picker</a>: offers the eyedropper where the browser has one.
+            </li>
+            <li>
+                <a href="guides/getting-started#render-modes">Render modes</a>: what works before a page is
+                interactive.
+            </li>
+        </ul>
+    </ChildContent>
+</DocsArticle>
 
 @code {
     private const string Csv = "Item,Packed\nWater,yes\nMap,no\n";
@@ -157,7 +216,8 @@
             private async Task CopyAsync()
             {
                 var copied = await Browser.CopyTextAsync(link);
-                Toasts.Show(copied ? "Link copied" : "Couldn't copy the link", copied ? Tone.Success : Tone.Danger);
+                Toasts.Show(copied ? "Link copied" : "Couldn't copy the link",
+                    copied ? Tone.Success : Tone.Danger);
             }
         }
         """;
@@ -191,7 +251,8 @@
                 }
             }
 
-            private async Task PickAsync() => color = await Browser.PickColorAsync() ?? color;
+            private async Task PickAsync() =>
+                color = await Browser.PickColorAsync() ?? color;
         }
         """;
 
@@ -245,7 +306,8 @@
         {
             public TripPageTests() => this.AddTrailblazor();
 
-            private FakeBrowserService Browser => Services.GetRequiredService<FakeBrowserService>();
+            private FakeBrowserService Browser =>
+                Services.GetRequiredService<FakeBrowserService>();
 
             [Fact]
             public void CopyLink_ShouldCopyTheTripsLink_WhenClicked()
