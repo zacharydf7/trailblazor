@@ -1,0 +1,242 @@
+@page "/guides/right-to-left"
+@using System.Globalization
+
+<PageTitle>Right-to-left and culture · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="set-the-direction" Text="Set the direction" />
+        <TbTableOfContentsItem TargetId="what-mirrors" Text="What mirrors" />
+        <TbTableOfContentsItem TargetId="what-keeps-its-direction" Text="What keeps its direction" />
+        <TbTableOfContentsItem TargetId="keys-that-swap" Text="Keys that swap" />
+        <TbTableOfContentsItem TargetId="numbers-and-dates" Text="Numbers and dates" />
+        <TbTableOfContentsItem TargetId="static-forms" Text="Static forms" />
+        <TbTableOfContentsItem TargetId="testing" Text="Testing" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Right-to-left and culture</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Trailblazor's components follow the direction of the page around them. Set <code>dir="rtl"</code> and
+            their layout, arrows and arrow keys turn around, with nothing to set on each one. Numbers and dates follow
+            the current culture.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <TbStack Gap="4">
+                <TbSwitch Label="Right to left" @bind-Value="_rightToLeft" />
+                <div dir="@(_rightToLeft ? "rtl" : "ltr")">
+                    <TbStack Gap="4" Style="max-inline-size: 28rem">
+                        <TbTabs AriaLabel="Trail sections">
+                            <TbTab Key="route" Text="Route"><TbText>Twelve kilometers along the ridge.</TbText></TbTab>
+                            <TbTab Key="weather" Text="Weather"><TbText>Clear until the afternoon.</TbText></TbTab>
+                            <TbTab Key="reviews" Text="Reviews"><TbText>Most hikers rate it hard.</TbText></TbTab>
+                        </TbTabs>
+                        <TbSlider @bind-Value="_distance" Label="Kilometers" Max="40" ShowValue />
+                        <TbPagination @bind-Page="_page" PageCount="8" AriaLabel="Trail pages" />
+                    </TbStack>
+                </div>
+            </TbStack>
+        </div>
+        <TbText>
+            The switch sets <code>dir</code> on the box around these three: the tabs line up from the right, the slider
+            fills from the right, the page arrows turn around, and Left moves to the next tab. The button beside the
+            theme picker in the site's header turns every page of these docs right to left.
+        </TbText>
+
+        <DocsHeading Id="set-the-direction" Text="Set the direction" Class="docs-section" />
+        <TbText>
+            Put <code>dir</code> on the <code>html</code> element, from the culture the request runs in, so the page is
+            the right way around from its first paint. <code>lang</code> beside it tells screen readers which language
+            to speak.
+        </TbText>
+        <CodeBlock Label="App.razor" Code="@AppRazor" />
+        <TbText>
+            A <code>dir</code> on any other element works the same for what is inside it, such as a Hebrew comment on an
+            English page. Components read the direction when they lay out and when a key is pressed, so changing it
+            later, as the switch above does, needs nothing else.
+        </TbText>
+
+        <DocsHeading Id="what-mirrors" Text="What mirrors" Class="docs-section" />
+        <ul>
+            <li>
+                Padding, borders, alignment and the start and end slots of fields and buttons: the styles say start and
+                end rather than left and right, so they swap sides.
+            </li>
+            <li>
+                Arrows that show a direction: the menu's submenu chevron, pagination's Previous and Next, and the tree
+                view's chevrons point the other way.
+            </li>
+            <li>
+                The slider fills from the right, a switch's thumb moves left when it turns on, and an indeterminate
+                progress bar slides from right to left.
+            </li>
+            <li>
+                Menus, popovers and tooltips placed at <code>Start</code> or <code>End</code> open on the start or end
+                side in that direction.
+            </li>
+            <li>
+                A dialog's resize grip sits in the bottom-left corner and grows it to the left. Dragging a splitter, a
+                sortable item or a tree row follows the pointer as it does left to right.
+            </li>
+        </ul>
+
+        <DocsHeading Id="what-keeps-its-direction" Text="What keeps its direction" Class="docs-section" />
+        <ul>
+            <li>
+                Icons you pass in. <code>TbIcon</code> shows an icon as designed, which suits most: a check mark, a
+                clock or a play button doesn't turn around. An icon that shows movement, such as a forward arrow or a
+                send icon, should; until <code>TbIcon</code> has an option for it
+                (<a href="https://github.com/zacharydf7/trailblazor/issues/286">#286</a>), flip it with a class, as
+                below.
+            </li>
+            <li>The color picker's square, which is a color space rather than text.</li>
+            <li>
+                The arrow keys that move a dialog, which go the way they point: Right moves it right in either
+                direction.
+            </li>
+            <li>Code, numbers and Latin text inside right-to-left text, which the browser keeps left to right.</li>
+        </ul>
+        <CodeBlock Label="An icon that turns around" Code="@FlippedIcon" />
+
+        <DocsHeading Id="keys-that-swap" Text="Keys that swap" Class="docs-section" />
+        <TbText>
+            Left and Right follow the screen, so on a right-to-left page Left moves toward the end. Up and Down, Home
+            and End, and Page Up and Page Down don't change.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Keys that swap right to left">
+            <table>
+                <thead>
+                    <tr><th scope="col">Component</th><th scope="col">Right to left</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var example in ExampleCatalog.All.Where(example => example.RightToLeftKeys is not null))
+                    {
+                        <tr>
+                            <th scope="row"><a href="components/@example.Name">@example.Title</a></th>
+                            <td>@DocsText.Render(example.RightToLeftKeys!)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <DocsHeading Id="numbers-and-dates" Text="Numbers and dates" Class="docs-section" />
+        <div class="docs-example">
+            <TbStack Gap="4" Style="max-inline-size: 24rem">
+                <TbSelect Label="Culture" @bind-Value="_culture">
+                    @foreach (var culture in Cultures)
+                    {
+                        <TbOption Value="culture.Name">@culture.NativeName</TbOption>
+                    }
+                </TbSelect>
+                <TbNumberField Label="Permit fee" @bind-Value="_fee" Format="C2" Culture="Culture" />
+                <TbDateRangePicker TDate="DateOnly" Label="Trip dates" @bind-Value="_trip" Culture="Culture" />
+            </TbStack>
+        </div>
+        <TbText>
+            Components format numbers and dates in <code>CultureInfo.CurrentCulture</code>, as the rest of .NET does,
+            so set it for each request with ASP.NET Core's request localization. Two take a <code>Culture</code> of
+            their own, as above:
+        </TbText>
+        <ul>
+            <li>
+                A <a href="components/number-field">number field</a> with a <code>Format</code>, such as
+                <code>C2</code>, writes and reads numbers in its culture's separators and symbols.
+            </li>
+            <li>
+                A <a href="components/date-range-picker">date range picker</a> takes its date format, the month and
+                day names and the first day of the week from its culture.
+            </li>
+        </ul>
+
+        <DocsHeading Id="static-forms" Text="Static forms" Class="docs-section" />
+        <TbText>
+            When a page that isn't interactive posts a form, Blazor reads the values in the invariant culture, whatever
+            culture the request runs in. So the fields show values that will post back correctly:
+        </TbText>
+        <ul>
+            <li>
+                On a static page, a <a href="components/text-field">text field</a> bound to a number or date shows it in
+                the invariant culture, such as 1.5 and 06/15/2026. For numbers typed in the user's own format, use a
+                number field.
+            </li>
+            <li>
+                Until the page is interactive, a number field with a <code>Format</code> is a plain number box, and a
+                date range picker shows the browser's own date boxes, which post both dates.
+            </li>
+        </ul>
+        <TbText>Once the page is interactive, the number field and date range picker use their culture.</TbText>
+
+        <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
+        <TbText>
+            bUnit doesn't lay out the page or run the components' JavaScript, which reads the direction and handles
+            the arrow keys, so check right-to-left behavior in Playwright: set <code>dir</code> on the page, then press
+            keys as a user would.
+        </TbText>
+        <CodeBlock Label="A Playwright test" Code="@Test" />
+        <TbText>
+            A culture is plain .NET, so a bUnit test can set <code>CultureInfo.CurrentCulture</code>, or pass a
+            component its <code>Culture</code>, and check the text it renders.
+        </TbText>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="guides/localization">Localization</a>: the words components say, in each user's language.</li>
+            <li><a href="guides/icons">Icons</a>: Material Symbols and your own icons.</li>
+            <li><a href="guides/testing">Testing</a>: setting up bUnit and Playwright.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    // WebAssembly loads only the ICU data for the browser's locale, which for Western locales covers these.
+    private static readonly CultureInfo[] Cultures =
+        [new("en-US"), new("en-GB"), new("de-DE"), new("fr-FR"), new("es-ES")];
+
+    private bool _rightToLeft = true;
+    private int _distance = 12;
+    private int _page = 3;
+    private string _culture = "de-DE";
+    private decimal _fee = 1250.5m;
+    private DateRange<DateOnly> _trip = new(new DateOnly(2026, 6, 12), new DateOnly(2026, 6, 15));
+
+    private CultureInfo Culture => Cultures.First(culture => culture.Name == _culture);
+
+    private const string AppRazor = """
+        @using System.Globalization
+
+        <!DOCTYPE html>
+        <html lang="@Culture.Name" dir="@Direction">
+            ...
+        </html>
+
+        @code {
+            private static CultureInfo Culture => CultureInfo.CurrentUICulture;
+            private static string Direction => Culture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+        }
+        """;
+
+    private const string FlippedIcon = """
+        <TbIcon Icon="MaterialSymbols.Outlined.ArrowForward" Class="turns-around" />
+
+        /* app.css */
+        .turns-around:dir(rtl) {
+            transform: scaleX(-1);
+        }
+        """;
+
+    private const string Test = """
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Route" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Weather" }))
+            .ToBeFocusedAsync();
+        """;
+}

@@ -130,7 +130,7 @@
             {
                 <li class="docs-feature">
                     <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">@feature.Title</TbText>
-                    <TbText TextStyle="TextStyle.BodySmall" Muted>@feature.Text</TbText>
+                    <TbText TextStyle="TextStyle.BodySmall" Muted>@DocsText.Render(feature.Text)</TbText>
                 </li>
             }
         </ul>
@@ -209,7 +209,7 @@
         ("Works before it's interactive", "Rendered statically, fields fall back to native controls and forms still "
             + "post, so pages work before a circuit connects or without one."),
         ("Respects your users", "Reduced motion stops animations, forced colors keep outlines and fills, and "
-            + "right-to-left layouts mirror, without extra work in your app."),
+            + "[right-to-left layouts mirror](guides/right-to-left), without extra work in your app."),
     ];
 
     // Keep each card's sample narrow enough to fit the card on a phone without scrolling; DocsSiteTests checks it.

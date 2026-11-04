@@ -34,6 +34,8 @@ public static class GuideCatalog
         {
             Api = [typeof(ITbLocalizer)],
         },
+        new("guides/right-to-left", "Right-to-left and culture",
+            "Mirror layouts and arrow keys for right-to-left languages, and show numbers and dates in each culture."),
         new("guides/testing", "Testing",
             "Test pages built with Trailblazor in bUnit and Playwright, and find components the way users do."),
         new("guides/analyzers", "Analyzers",

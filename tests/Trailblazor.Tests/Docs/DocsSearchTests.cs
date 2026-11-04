@@ -82,12 +82,20 @@ public class DocsSearchTests
     [InlineData("overlays", new[] { "Tooltip", "Menu", "Dialog", "Focus scope", "Popover", "Overlay" })]
     [InlineData("guides",
         new[] { "Getting started", "Theming", "Palettes", "Spacing", "Browser", "Announcements", "Icons",
-            "Localization", "Testing", "Analyzers", "Telemetry" })]
+            "Localization", "Right-to-left and culture", "Testing", "Analyzers", "Telemetry" })]
     public void Find_ShouldRankEverythingInACategoryAsATitleMatch_WhenGivenItsName(string category, string[] titles)
     {
         var results = DocsSearch.Find(category);
 
         Assert.Equal(titles, results.Where(result => result.Match == SearchMatch.Title).Select(result => result.Page));
+    }
+
+    [Fact]
+    public void Find_ShouldFindAComponentsAccessibility_WhenTheWordsAreInItsRightToLeftKeys()
+    {
+        var results = DocsSearch.Find("safari swap");
+
+        Assert.Contains(results, result => result is { Page: "Slider", Section: "Accessibility" });
     }
 
     [Fact]

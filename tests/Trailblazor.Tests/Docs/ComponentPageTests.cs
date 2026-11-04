@@ -11,6 +11,18 @@ public class ComponentPageTests : DocsTest
     private static string[] Titles => [.. ExampleCatalog.All.OrderBy(example => example.Category)
         .Select(example => example.Title)];
 
+    public static TheoryData<string> WithSwappedKeys =>
+        new(ExampleCatalog.All.Where(example => example.RightToLeftKeys is not null).Select(example => example.Name));
+
+    [Theory, MemberData(nameof(WithSwappedKeys))]
+    public void ComponentPage_ShouldSayWhichKeysSwapRightToLeft_WhenTheComponentHasSome(string name)
+    {
+        var cut = ComponentPage(name);
+
+        Assert.Contains(cut.FindAll("p"), paragraph =>
+            paragraph.TextContent.Trim() == $"Right to left: {ExampleCatalog.Find(name)!.RightToLeftKeys}");
+    }
+
     [Fact]
     public void ComponentPage_ShouldTableItsOwnTokensWithTheirDefaults_WhenItHasSome()
     {

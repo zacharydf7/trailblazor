@@ -122,8 +122,8 @@ public static class DocsSearch
         yield return page.Passage("Accessibility", $"{path}#accessibility", "Accessibility", Plain([
             example.Pattern?.Name ?? "",
             .. example.Keyboard.Select(row => $"{string.Join(' ', row.Keys)} {row.Action}"),
-            .. example.LabelingNotes, .. example.Announcements, .. example.Accessibility, .. example.AppDuties,
-            .. example.BeforeInteractive]), SearchMatch.Heading);
+            example.RightToLeftKeys ?? "", .. example.LabelingNotes, .. example.Announcements, .. example.Accessibility,
+            .. example.AppDuties, .. example.BeforeInteractive]), SearchMatch.Heading);
         yield return page.Passage("Notes and limitations", $"{path}#notes", "Notes and limitations",
             Plain([.. example.NotesShown.Select(note => note.Text)]), SearchMatch.Heading);
         yield return page.Passage("Telemetry", $"{path}#telemetry", "Telemetry", Plain(example.TelemetryNotes),

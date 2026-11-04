@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Bunit;
 using Trailblazor.Docs.Examples;
@@ -118,6 +119,28 @@ public class GuideTests : DocsTest
         Assert.Contains("tb-mt-8", box.ClassList);
         Assert.Matches(@"\.tb-mt-8 \{\s*margin-block-start: var\(--tb-space-8\);",
             File.ReadAllText(Path.Combine(Repository.Root, "src", "Trailblazor", "wwwroot", "trailblazor.css")));
+    }
+
+    [Fact]
+    public void RightToLeftGuide_ShouldTurnTheDemoAround_WhenTheSwitchIsToggled()
+    {
+        var cut = PageAt("guides/right-to-left");
+        Assert.Equal("rtl", cut.Find("[role=tablist]").Closest("[dir]")?.GetAttribute("dir"));
+
+        cut.Find("[role=switch]").Change(false);
+
+        Assert.Equal("ltr", cut.Find("[role=tablist]").Closest("[dir]")?.GetAttribute("dir"));
+    }
+
+    [Fact]
+    public async Task RightToLeftGuide_ShouldFormatTheFeeInTheChosenCulture_WhenACultureIsPicked()
+    {
+        var french = new CultureInfo("fr-FR");
+        var cut = PageAt("guides/right-to-left");
+
+        await cut.Tb().Select("Culture").ChooseAsync(french.NativeName);
+
+        Assert.Equal(1250.5m.ToString("C2", french), cut.Tb().NumberField("Permit fee").Text);
     }
 
     [Fact]

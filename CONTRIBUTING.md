@@ -41,7 +41,8 @@ Related only when filled, and the rest always. The H3s under Usage and Accessibi
 | `WhenToUse`, `WhenNotToUse` | Usage | When it fits, and which look-alike to use instead, linked |
 | `Sections` | A heading each | One feature each, with its demo |
 | `Pattern` | Accessibility | The WAI-ARIA Authoring Practices pattern it follows, by name and URL |
-| `Keyboard`, `RightToLeftKeys` | Accessibility: Keyboard | Keys per action, grouped by `When`; keys that swap in RTL |
+| `Keyboard` | Accessibility: Keyboard | Keys per action, grouped by `When` |
+| `RightToLeftKeys` | Accessibility: under the keyboard table, or after the accessibility notes when there is none | Keys that swap in RTL |
 | `Labeling` | Accessibility: Labeling | How it and each of its parts get their accessible names |
 | `Announcements` | Accessibility: What screen readers announce | What is said on focus, change, error and updates |
 | `Accessibility` | Accessibility: What the component does | Its roles, states and behavior for assistive technology |

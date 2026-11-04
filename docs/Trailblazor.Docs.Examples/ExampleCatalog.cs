@@ -44,7 +44,7 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // Every key the component handles, in the order a table shows them.
     public IReadOnlyList<KeyboardRow> Keyboard { get; init; } = [];
 
-    // Keys that swap in right-to-left layouts, said in a line under the keyboard table.
+    // Keys that swap in right-to-left layouts, said in a line in the accessibility section.
     public string? RightToLeftKeys { get; init; }
 
     // How the component gets its accessible name, and what each of its parts is named by.
@@ -400,6 +400,7 @@ public static class ExampleCatalog
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
             "A row of toggle buttons where one, or any number, can be pressed.", typeof(ToggleGroupExample))
         {
+            RightToLeftKeys = "Left moves to the next item and Right to the previous one.",
             Api = [typeof(TbToggleGroup<>), typeof(TbMultiToggleGroup<>), typeof(TbToggleItem<>)],
             Anatomy = """
                 <TbToggleGroup AriaLabel="…" @bind-Value="_value">
@@ -463,6 +464,7 @@ public static class ExampleCatalog
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
                 + "its end.", typeof(ToolbarExample))
         {
+            RightToLeftKeys = "Left moves to the next control and Right to the previous one.",
             Api = [typeof(TbToolbar), typeof(TbToolbarButton)],
             Accessibility =
             [
@@ -574,6 +576,8 @@ public static class ExampleCatalog
             "Lays out panes side by side or stacked, with separators that resize them by dragging, with the "
                 + "keyboard or from a menu.", typeof(SplitterExample))
         {
+            RightToLeftKeys = "Left and Right move the separator the way they point, so Left grows the start pane, "
+                + "now on the right.",
             FullWidth = true,
             Api = [typeof(TbSplitter), typeof(TbSplitterPane)],
             Accessibility =
@@ -1121,6 +1125,8 @@ public static class ExampleCatalog
             "Chooses a number, or a range, by dragging a thumb along a track or with the arrow keys.",
             typeof(SliderExample))
         {
+            RightToLeftKeys = "Left raises the value and Right lowers it, so the thumb moves the way the key points. "
+                + "Safari doesn't swap them yet (issue #287 on GitHub).",
             Api = [typeof(TbSlider<>), typeof(TbRangeSlider<>), typeof(SliderMark), typeof(SliderRange<>),
                 typeof(ChoiceClasses)],
             Accessibility =
@@ -1516,6 +1522,7 @@ public static class ExampleCatalog
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.",
             typeof(DateRangePickerExample))
         {
+            RightToLeftKeys = "Left moves to the next day and Right to the previous one.",
             Api = [typeof(TbDateRangePicker<>), typeof(DateRangePickerLabels), typeof(FieldClasses)],
             Accessibility =
             [
@@ -1661,6 +1668,7 @@ public static class ExampleCatalog
             "A list of actions, options and links that opens from a button, with groups and submenus.",
             typeof(MenuExample))
         {
+            RightToLeftKeys = "Left opens a submenu and Right closes it.",
             Api =
             [
                 typeof(TbMenu), typeof(MenuTrigger), typeof(TbMenuItem), typeof(TbMenuCheckboxItem),
@@ -1674,8 +1682,7 @@ public static class ExampleCatalog
                     + "`menuitem`s.",
                 "Enter, Space or Down opens the menu on its first item; Up opens it on the last.",
                 "In the menu, Up and Down move and wrap, Home and End jump to the ends, and a letter jumps to the "
-                    + "next item that starts with it. Right opens a submenu and Left closes it, mirrored on "
-                    + "right-to-left pages.",
+                    + "next item that starts with it. Right opens a submenu and Left closes it.",
                 "Escape closes the menu and returns focus to the trigger; Tab closes it and moves on. Disabled "
                     + "items stay focusable, marked `aria-disabled`, so people can still find them.",
                 "`Description` adds text that screen readers read after the trigger's name, such as a hint about "
@@ -1951,6 +1958,7 @@ public static class ExampleCatalog
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.", typeof(TabsExample))
         {
+            RightToLeftKeys = "Left moves to the next tab and Right to the previous one.",
             FullWidth = true,
             Api = [typeof(TbTabs), typeof(TbTab)],
             Accessibility =
@@ -1962,10 +1970,10 @@ public static class ExampleCatalog
                     + "`Filled` make it a pill, in vertical lists too. `--tb-tabs-indicator-color` and "
                     + "`--tb-tabs-indicator-size` restyle the underline. In forced-colors mode, the selected pill "
                     + "keeps an outline in the system's highlight color.",
-                "The tab list is one tab stop. Left and Right move between tabs and wrap, mirrored on "
-                    + "right-to-left pages, and Home and End jump to the ends. A `Vertical` list has "
-                    + "`aria-orientation=\"vertical\"` and moves with Up and Down instead. With automatic activation, "
-                    + "moving also selects; with manual activation, Enter or Space selects.",
+                "The tab list is one tab stop. Left and Right move between tabs and wrap, and Home and End jump "
+                    + "to the ends. A `Vertical` list has `aria-orientation=\"vertical\"` and moves with Up and Down "
+                    + "instead. With automatic activation, moving also selects; with manual activation, Enter or Space "
+                    + "selects.",
                 "Each panel is focusable, so keyboard users can reach content that has no controls.",
                 "Only the selected panel renders, unless `KeepAlive` keeps each one once shown or "
                     + "`RenderAllPanels` renders them all from the start, hidden, so a form across the tabs, like "
@@ -2054,6 +2062,8 @@ public static class ExampleCatalog
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
                 + "when opened.", typeof(TreeViewExample))
         {
+            RightToLeftKeys = "Left opens a row or moves into it, and Right closes it or moves to its parent. "
+                + "Alt+Shift with Left or Right moves a row in or out the same way.",
             Sections =
             [
                 new("filter-and-select", "Filter, select and open", "Rows come from `Items`. Typing in the field "
@@ -2092,7 +2102,6 @@ public static class ExampleCatalog
                 "While children load, a loading row shows, and a load that fails is read out and shows a row that "
                     + "offers to try again. The arrows reach both rows; Enter on the failed one tries again, and focus "
                     + "moves on to the children once they arrive.",
-                "In a right-to-left layout, Right and Left swap, as the chevrons do.",
                 "Rows written as nested `TbTreeItem`s work the same, from any component inside the tree. Each draws "
                     + "its row where it is written, followed by a `group` holding what is written inside it, so other "
                     + "content between rows shows in place and hides with its parent. Before the page is interactive, "
@@ -2181,6 +2190,7 @@ public static class ExampleCatalog
             "Shows items as rows of a table, with sortable and filterable columns, paging and row selection.",
             typeof(DataGridExample))
         {
+            RightToLeftKeys = "Left moves to the next cell and Right to the previous one.",
             FullWidth = true,
             Sections =
             [
