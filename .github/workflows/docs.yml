@@ -60,6 +60,11 @@ jobs:
 
       - run: dotnet publish docs/Trailblazor.Docs --configuration Release --output publish
 
+      # Search engines and coding assistants don't run the site's WebAssembly, so each page is also published as
+      # Markdown, with llms.txt to list them.
+      - name: Write the pages as Markdown
+        run: dotnet run --project tools/Trailblazor.Docs.Markdown --configuration Release -- publish/wwwroot
+
       # Pages serves the site under the repository's name and answers a link to any page with 404.html.
       - name: Prepare the site for Pages
         working-directory: publish/wwwroot

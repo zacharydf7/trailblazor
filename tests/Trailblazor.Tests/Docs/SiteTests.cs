@@ -56,6 +56,17 @@ public class SiteTests : DocsTest
     }
 
     [Fact]
+    public void MainLayout_ShouldLinkTheMarkdownIndexInANewTab_WhenRendered()
+    {
+        var cut = Render<MainLayout>();
+
+        var index = cut.Find("footer a[href='llms.txt']");
+
+        Assert.StartsWith("llms.txt", index.TextContent);
+        Assert.Equal("_blank", index.GetAttribute("target"));
+    }
+
+    [Fact]
     public void MainLayout_ShouldLeaveOutTheSidebarAndMenuOnlyTheHeader_WhenTheHomePageIsOpen()
     {
         var cut = Render<MainLayout>();

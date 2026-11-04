@@ -16,9 +16,13 @@
         <TbLink Href="@($"preview/{Name}/{Section.Id}")" NewTab class="docs-example__alone">Open on its own</TbLink>
     </div>
     <div id="@CodeId" class="docs-example__code" hidden="@(!_showCode)">
-        @if (Section.Sources.Count == 1)
+        @* Tabs can't switch before the app runs, so a statically rendered page shows every file. *@
+        @if (Section.Sources.Count == 1 || !RendererInfo.IsInteractive)
         {
-            <CodeBlock Label="@Section.Sources[0].File" Code="@Section.Sources[0].Text" />
+            @foreach (var source in Section.Sources)
+            {
+                <CodeBlock Label="@source.File" Code="@source.Text" />
+            }
         }
         else
         {

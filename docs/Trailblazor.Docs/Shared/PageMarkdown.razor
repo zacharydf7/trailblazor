@@ -1,0 +1,51 @@
+@using Trailblazor.Docs.Examples
+@inject HttpClient Http
+@inject IBrowserService Browser
+@inject IAnnouncer Announcer
+
+@* Opens in a new tab so the browser fetches the .md file; a link the app routes would look for a page instead. *@
+<li><TbLink Href="@($"{Path}.md")" NewTab>View as Markdown</TbLink></li>
+<li>
+    <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="CopyAsync">Copy page as Markdown</TbButton>
+</li>
+
+@code {
+    private Task<string?>? _markdown;
+
+    /// <summary>The page's address, such as <c>components/select</c>; its Markdown is published beside it.</summary>
+    [Parameter, EditorRequired]
+    public string Path { get; set; } = "";
+
+    // Fetched once the page shows, so a click copies at once: Safari refuses a clipboard write that waits on a fetch.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _markdown = FetchAsync();
+        }
+    }
+
+    private async Task<string?> FetchAsync()
+    {
+        try
+        {
+            return await Http.GetStringAsync($"{Path}.md");
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    // A fetch that failed, as on a dropped connection, is tried again on the next click.
+    private async Task CopyAsync()
+    {
+        var markdown = await (_markdown ??= FetchAsync());
+        if (markdown is null)
+        {
+            _markdown = null;
+        }
+
+        await CodeCopier.CopyAsync(Browser, Announcer, "the page as Markdown", markdown);
+    }
+}

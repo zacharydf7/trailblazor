@@ -481,6 +481,20 @@ a:focus-visible {
     font-size: var(--tb-font-size-sm);
 }
 
+/* The page's GitHub links and Markdown links share a row when there's room. */
+.docs-page-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--tb-space-1) var(--tb-space-6);
+    margin-block-start: var(--tb-space-3);
+}
+
+.docs-page-tools .docs-page-links {
+    align-items: center;
+    margin: 0;
+}
+
 .docs-edit {
     margin-block-start: var(--tb-space-10);
 }

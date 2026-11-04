@@ -46,7 +46,10 @@ public sealed class BrowserFixture : IAsyncLifetime
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         _docs = builder.Build();
         // The runtime's ICU data files end in .dat, which has no registered content type.
-        var types = new FileExtensionContentTypeProvider { Mappings = { [".dat"] = "application/octet-stream" } };
+        var types = new FileExtensionContentTypeProvider
+        {
+            Mappings = { [".dat"] = "application/octet-stream", [".md"] = "text/markdown" },
+        };
         _docs.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = types });
         _docs.MapFallbackToFile("index.html");
         await _docs.StartAsync();

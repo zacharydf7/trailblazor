@@ -15,11 +15,14 @@ public abstract class DocsTest : BunitContext
     protected DocsTest()
     {
         Services.AddSingleton<TimeProvider>(Time);
+        Services.AddSingleton(new HttpClient(Site) { BaseAddress = new Uri("http://localhost/") });
         this.AddTrailblazor();
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
     protected FakeTimeProvider Time { get; } = new();
+
+    protected FakeSite Site { get; } = new();
 
     protected FakeBrowserService Browser => Services.GetRequiredService<FakeBrowserService>();
 

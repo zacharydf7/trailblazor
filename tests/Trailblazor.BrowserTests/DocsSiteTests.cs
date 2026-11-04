@@ -555,6 +555,44 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
 
+    [Fact]
+    public async Task Site_ShouldServeEachPageAsMarkdownAndAnIndexOfThem_WhenPublished()
+    {
+        using var client = new HttpClient { BaseAddress = Fixture.DocsAddress };
+
+        var cancel = TestContext.Current.CancellationToken;
+
+        var index = await client.GetStringAsync("llms.txt", cancel);
+        using var select = await client.GetAsync("components/select.md", cancel);
+
+        Assert.StartsWith("# Trailblazor\n", index);
+        Assert.Contains("(https://zacharydf7.github.io/trailblazor/components/select.md)", index);
+        Assert.StartsWith("# Select\n", await select.Content.ReadAsStringAsync(cancel));
+        Assert.Contains("# Getting started\n", await client.GetStringAsync("llms-full.txt", cancel));
+    }
+
+    // PageMarkdownTests covers what is copied and said; this checks the clipboard and the tab a browser opens.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ComponentPage_ShouldCopyThePageAsMarkdown_WhenCopyIsClicked(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/select", browser == "chromium"
+            ? new() { Permissions = ["clipboard-read", "clipboard-write"] } : null);
+        var copy = page.GetByRole(AriaRole.Button, new() { Name = "Copy page as Markdown" });
+
+        await copy.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Status).Filter(new() { HasText = "Copied the page as Markdown." }))
+            .ToHaveCountAsync(1);
+        var popup = await page.RunAndWaitForPopupAsync(() =>
+            page.GetByRole(AriaRole.Link, new() { Name = "View as Markdown" }).ClickAsync());
+
+        await Expect(popup).ToHaveURLAsync(new Regex("/components/select\\.md$"));
+        if (browser == "chromium")
+        {
+            // The clipboard may turn the line breaks into the system's own.
+            Assert.StartsWith("# Select", await page.EvaluateAsync<string>("() => navigator.clipboard.readText()"));
+        }
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Browser_ShouldFollowTheViewportAndDownloadTheList_WhenUsed(string browser)
     {

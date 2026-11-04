@@ -1,10 +1,15 @@
 @using System.Reflection
 @using Trailblazor.Docs.Examples
 
-<TbText class="docs-note docs-edit">
-    <a href="@DocsRepository.Edit($"docs/Trailblazor.Docs/Pages/Guides/{Page.Name}.razor")">Edit this page</a>
-    on GitHub.
-</TbText>
+<div class="docs-page-tools docs-edit">
+    <TbText class="docs-note">
+        <a href="@DocsRepository.Edit($"docs/Trailblazor.Docs/Pages/Guides/{Page.Name}.razor")">Edit this page</a>
+        on GitHub.
+    </TbText>
+    <ul class="docs-page-links" aria-label="As Markdown">
+        <PageMarkdown Path="@Path" />
+    </ul>
+</div>
 <nav class="docs-pager" aria-label="Previous and next guides">
     @if (Neighbor(-1) is { } previous)
     {
@@ -25,10 +30,11 @@
     [Parameter, EditorRequired]
     public Type Page { get; set; } = null!;
 
+    private string Path => Page.GetCustomAttribute<RouteAttribute>()!.Template.TrimStart('/');
+
     private Guide? Neighbor(int step)
     {
-        var path = Page.GetCustomAttribute<RouteAttribute>()!.Template.TrimStart('/');
-        var index = GuideCatalog.All.ToList().FindIndex(guide => guide.Path == path) + step;
+        var index = GuideCatalog.All.ToList().FindIndex(guide => guide.Path == Path) + step;
         return index >= 0 && index < GuideCatalog.All.Count ? GuideCatalog.All[index] : null;
     }
 }

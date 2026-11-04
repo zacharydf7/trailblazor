@@ -217,8 +217,8 @@
             it, then copy the CSS. If the color is too light for readable text on it in light mode, or too dark in dark
             mode, it is darkened or lightened just that far; otherwise it is used as picked.
         </TbText>
-        <TbColorPicker Label="Brand color" @bind-Value="_brand" />
-        <div class="docs-brand-preview" style="@($"--tb-color-primary: {BrandPrimary}")">
+        <TbColorPicker Label="Brand color" @bind-Value="_brand" class="docs-demo" />
+        <div class="docs-brand-preview docs-demo" style="@($"--tb-color-primary: {BrandPrimary}")">
             <TbStack Row Gap="2" Wrap Align="Align.Center">
                 <TbButton>Save</TbButton>
                 <TbButton Variant="Variant.Soft">Preview</TbButton>

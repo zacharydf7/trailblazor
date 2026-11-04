@@ -27,6 +27,12 @@
   <Target Name="PublishDocsSite" AfterTargets="Build">
     <MSBuild Projects="..\..\docs\Trailblazor.Docs\Trailblazor.Docs.csproj" Targets="Publish"
              Properties="Configuration=$(Configuration);PublishDir=$(TargetDir)docs-site\" />
+    <!-- The Docs workflow writes each page's Markdown into the published site the same way. -->
+    <MSBuild Projects="..\..\tools\Trailblazor.Docs.Markdown\Trailblazor.Docs.Markdown.csproj" Targets="Build"
+             Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="DocsMarkdownTool" />
+    </MSBuild>
+    <Exec Command="dotnet &quot;@(DocsMarkdownTool)&quot; &quot;$(TargetDir)docs-site\wwwroot&quot;" />
   </Target>
 
   <ItemGroup>
