@@ -49,10 +49,6 @@
 
     private string CodeId => $"code-{Section.Id}";
 
-    private async Task CopyAsync()
-    {
-        var source = Section.Sources[_file];
-        Announcer.Polite(await Browser.CopyTextAsync(source.Text) ? $"Copied {source.File}."
-            : $"Couldn't copy {source.File}.");
-    }
+    private Task CopyAsync() =>
+        CodeCopier.CopyAsync(Browser, Announcer, Section.Sources[_file].File, Section.Sources[_file].Text);
 }

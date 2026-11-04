@@ -315,18 +315,15 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.True(await source.EvaluateAsync<bool>("pre => pre.scrollWidth > pre.clientWidth"),
             "A line too long for the block should scroll it sideways.");
-        // A line that doesn't wrap lays its text out in a single box.
+        // A line that doesn't wrap takes one row, so the code has a row for each line with text.
         Assert.True(await source.EvaluateAsync<bool>("""
             pre => {
-                const text = pre.querySelector('code').firstChild;
+                const code = pre.querySelector('code');
                 const range = document.createRange();
-                let start = 0;
-                return text.data.split('\n').every(line => {
-                    range.setStart(text, start);
-                    range.setEnd(text, start + line.length);
-                    start += line.length + 1;
-                    return !line.trim() || range.getClientRects().length === 1;
-                });
+                range.selectNodeContents(code);
+                const rows = new Set([...range.getClientRects()].filter(rect => rect.width > 0)
+                    .map(rect => Math.round(rect.top)));
+                return rows.size === code.textContent.split('\n').filter(line => line.length > 0).length;
             }
             """), "No line should wrap onto a second row.");
         Assert.Contains("26rem\">\n    <TbTextField", code);
@@ -399,6 +396,21 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         // Whether the browser lets the page copy or not, the message names the file.
         await Expect(page.Locator("[data-part=announcer]")).ToContainTextAsync("TreeViewVirtualExample.razor");
+    }
+
+    // CodeBlockTests covers the spans; this checks only that the stylesheet colors them.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CodeBlock_ShouldColorTokensApartFromPlainText_WhenItShowsRazor(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/getting-started");
+        var code = page.GetByRole(AriaRole.Region, new() { Name = "A first component" });
+
+        var colors = await code.EvaluateAsync<string[]>("""
+            pre => ['tag', 'attribute', 'string', 'keyword'].map(kind => getComputedStyle(
+                pre.querySelector(`.docs-code__${kind}`)).color).concat(getComputedStyle(pre).color)
+            """);
+
+        Assert.Equal(colors.Length, colors.Distinct().Count());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

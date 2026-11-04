@@ -100,7 +100,7 @@
             every component at once, while a font on <code>body</code> alone changes only your own text and leaves the
             components in the system font.
         </TbText>
-        <CodeBlock Label="Your own font, everywhere" Code="@Font" />
+        <CodeBlock Label="Your own font, everywhere" Code="@Font" Language="CodeLanguage.Css" />
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Your own type for the page</TbText>
         <TbText>
@@ -179,7 +179,7 @@
             Trailblazor's CSS sits in cascade layers named <code>tb.*</code>, and your own CSS outside any layer always
             wins over it, whatever the selectors. So set any token in your stylesheet to change it everywhere.
         </TbText>
-        <CodeBlock Label="Token overrides" Code="@Overrides" />
+        <CodeBlock Label="Token overrides" Code="@Overrides" Language="CodeLanguage.Css" />
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A primary for part of a page</TbText>
         <TbText>
@@ -271,7 +271,7 @@
             border, primary and neutral tokens; the primary's states and the focus ring follow from the primary. The
             built-in palettes in <code>trailblazor.css</code> list every token a palette sets.
         </TbText>
-        <CodeBlock Label="A custom palette" Code="@CustomPalette" />
+        <CodeBlock Label="A custom palette" Code="@CustomPalette" Language="CodeLanguage.Css" />
         <TbText>
             Choose it by the name its rule matches, as you would a built-in palette: <code>new Palette("forest")</code>
             in <code>TrailblazorOptions.Theme</code> or <code>IThemeService.SetPaletteAsync</code>. It is applied before

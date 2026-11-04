@@ -510,15 +510,50 @@ a:focus-visible {
 /* Code keeps its own line breaks and scrolls sideways when a line is too long, so it never breaks inside a word. */
 .docs-source {
     margin: 0;
-    padding: var(--tb-space-4) var(--tb-space-5);
+    padding: 0 var(--tb-space-5) var(--tb-space-4);
     overflow-x: auto;
     white-space: pre;
-    border: 1px solid var(--tb-border-subtle);
-    border-radius: var(--tb-radius-xl);
-    background: var(--tb-color-surface-raised);
     font-family: var(--tb-font-family-mono);
     font-size: var(--tb-font-size-sm);
     line-height: 1.5;
+}
+
+.docs-code {
+    border: 1px solid var(--tb-border-subtle);
+    border-radius: var(--tb-radius-xl);
+    background: var(--tb-color-surface-raised);
+}
+
+.docs-code__bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--tb-space-1) var(--tb-space-2) 0;
+}
+
+/* Token colors meet 4.5:1 on the code's background in both themes; forced-colors mode swaps in the system colors. */
+.docs-code__keyword {
+    color: light-dark(#6d28d9, #c4b5fd);
+}
+
+.docs-code__string {
+    color: light-dark(#166534, #86efac);
+}
+
+.docs-code__comment {
+    color: light-dark(#4b5563, #a1a1aa);
+    font-style: italic;
+}
+
+.docs-code__tag {
+    color: light-dark(#1d4ed8, #93c5fd);
+}
+
+.docs-code__attribute {
+    color: light-dark(#9a3412, #fdba74);
+}
+
+.docs-code__number {
+    color: light-dark(#0f766e, #5eead4);
 }
 
 .docs-source__file {
@@ -650,7 +685,7 @@ kbd {
 }
 
 /* A guide's text, code, tables and callouts share one column, spaced alike; headings keep their own spacing. */
-.docs-article--guide .docs-article__body > :is(ul, ol, .docs-source, .docs-api, .tb-alert, .tb-table) {
+.docs-article--guide .docs-article__body > :is(ul, ol, .docs-code, .docs-api, .tb-alert, .tb-table) {
     box-sizing: border-box;
     max-width: 44rem;
 }
@@ -882,7 +917,7 @@ kbd {
     padding: var(--tb-space-4) var(--tb-space-1) var(--tb-space-5);
 }
 
-.docs-window .docs-source {
+.docs-window .docs-code {
     margin-block: var(--tb-space-3) var(--tb-space-4);
 }
 
@@ -985,7 +1020,7 @@ kbd {
     line-height: 1.6;
 }
 
-.docs-pillar .docs-source {
+.docs-pillar .docs-code {
     align-self: stretch;
 }
 

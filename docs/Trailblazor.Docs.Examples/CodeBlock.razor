@@ -1,0 +1,47 @@
+@inject IBrowserService Browser
+@inject IAnnouncer Announcer
+
+@* Long lines scroll rather than wrap, so a word never breaks; scrolling needs focus for keyboard users. *@
+<div class="docs-code">
+    <div class="docs-code__bar">
+        <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@($"Copy {Label}")" OnClick="CopyAsync">
+            Copy
+        </TbButton>
+    </div>
+    <pre class="docs-source" role="region" tabindex="0" aria-label="@Label"><code>@Highlighted</code></pre>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Code { get; set; } = "";
+
+    /// <summary>The code's language, for coloring. By default the label's file extension decides it, and code under a
+    /// .cs label or one without an extension is Razor if it starts with markup or a directive, C# otherwise.</summary>
+    [Parameter]
+    public CodeLanguage? Language { get; set; }
+
+    private string Text => Code.ReplaceLineEndings("\n");
+
+    private RenderFragment Highlighted => builder =>
+    {
+        foreach (var (text, kind) in CodeHighlighter.Tokens(Text, Language ?? CodeHighlighter.LanguageOf(Label, Text)))
+        {
+            if (kind is null)
+            {
+                builder.AddContent(0, text);
+            }
+            else
+            {
+                builder.OpenElement(1, "span");
+                builder.AddAttribute(2, "class", $"docs-code__{kind}");
+                builder.AddContent(3, text);
+                builder.CloseElement();
+            }
+        }
+    };
+
+    private Task CopyAsync() => CodeCopier.CopyAsync(Browser, Announcer, Label, Text);
+}
