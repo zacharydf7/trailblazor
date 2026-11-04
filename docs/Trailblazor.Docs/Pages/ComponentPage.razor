@@ -213,14 +213,9 @@
             {
                 <TbText>
                     Its parts carry a stable <code>data-part</code> name, for finding what a role can't, as with
-                    <code>[data-part=@example.DataParts[0]]</code>:
+                    <code>[data-part=@example.DataParts[0].Name]</code>. The
+                    <a href="@($"components/{example.Name}/api#parts")">API page lists each part</a> and what it is.
                 </TbText>
-                <ul class="docs-tokens" aria-label="Data parts">
-                    @foreach (var part in example.DataParts)
-                    {
-                        <li><code>@part</code></li>
-                    }
-                </ul>
             }
             <TbText class="docs-note">
                 The <a href="guides/testing">testing guide</a> shows how to set up bUnit and Playwright.

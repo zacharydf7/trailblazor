@@ -162,6 +162,31 @@ public class ComponentPageTests : DocsTest
     }
 
     [Fact]
+    public void ApiPage_ShouldShowTheAnatomyAndDescribeEachPart_WhenTheComponentHasParts()
+    {
+        var dialog = ExampleCatalog.Find("dialog")!;
+        var cut = ApiPage("dialog");
+
+        Assert.Contains("<TbDialogActions>", cut.Find("[role=region][aria-label=Anatomy]").TextContent);
+        var rows = cut.FindAll("[role=region][aria-label=Parts] tbody tr");
+        Assert.Equal(dialog.DataParts.Select(part => part.Name),
+            rows.Select(row => row.QuerySelector("th")!.TextContent));
+        Assert.Equal(dialog.DataParts.Select(part => part.Description),
+            rows.Select(row => row.QuerySelector("td")!.TextContent));
+        var rail = Texts(cut.FindAll(".docs-article__rail a"));
+        Assert.Equal("Anatomy", rail[0]);
+        Assert.Equal("Parts", rail[^1]);
+    }
+
+    [Fact]
+    public void ComponentPage_ShouldLinkTheTestingSectionToTheApiPagesParts_WhenTheComponentHasParts()
+    {
+        var link = ComponentPage("dialog").FindAll("a").Single(link => link.TextContent == "API page lists each part");
+
+        Assert.Equal("components/dialog/api#parts", link.GetAttribute("href"));
+    }
+
+    [Fact]
     public void ApiPage_ShouldListEachTypesGroupsUnderItInTheContents_WhenOpened()
     {
         var rail = ApiPage("button").Find(".docs-article__rail");

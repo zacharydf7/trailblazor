@@ -1,4 +1,6 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components;
 using Trailblazor.Docs.Examples;
 
 namespace Trailblazor.Tests.Docs;
@@ -143,9 +145,78 @@ public class ExampleCatalogTests
     };
 
     [Fact]
+    public void DataParts_ShouldDescribeEachPartOnceInASentence_WhenAComponentHasParts()
+    {
+        Assert.All(ExampleCatalog.All, example =>
+        {
+            Assert.Equal(example.DataParts.Count, example.DataParts.DistinctBy(part => part.Name).Count());
+            Assert.All(example.DataParts, part => Assert.Matches(@"^[A-Z].*\.$", part.Description));
+        });
+    }
+
+    [Fact]
+    public void Anatomy_ShouldBeGiven_WhenTheComponentIsMadeOfParts()
+    {
+        string[] composed = ["dialog", "select", "listbox", "tabs", "menu", "accordion", "toolbar", "data-grid",
+            "tree-view", "radio-group", "checkbox-group", "splitter"];
+
+        Assert.All(composed, name => Assert.NotNull(ExampleCatalog.Find(name)!.Anatomy));
+    }
+
+    [Fact]
+    public void Anatomy_ShouldNameOnlyComponentsTheLibraryHas_WhenGiven()
+    {
+        var components = typeof(TbButton).Assembly.GetTypes().Select(type => type.Name.Split('`')[0]).ToHashSet();
+
+        var named = ExampleCatalog.All.Where(example => example.Anatomy is not null)
+            .SelectMany(example => Regex.Matches(example.Anatomy!, @"(?<=<|@inherits )(Tb\w+)"))
+            .Select(match => match.Value);
+
+        Assert.All(named, name => Assert.Contains(name, components));
+    }
+
+    [Fact]
+    public void Anatomy_ShouldUseOnlyParametersTheComponentsHave_WhenGiven()
+    {
+        var components = typeof(TbButton).Assembly.GetTypes().Where(type => type.IsAssignableTo(typeof(IComponent)))
+            .ToLookup(type => type.Name.Split('`')[0]);
+        HashSet<string> Parameters(string component) => [.. components[component].SelectMany(type => type
+            .GetProperties().Where(property => property.IsDefined(typeof(ParameterAttribute)))
+            .Select(property => property.Name))];
+        string[] typeArguments = ["TItem", "TKey", "TValue"];
+
+        var wrong = ExampleCatalog.All.Where(example => example.Anatomy is not null).SelectMany(example =>
+        {
+            // A < right after a name, as in TbDialogContent<TResult>, doesn't start a tag; a quoted value can hold >.
+            var tags = Regex.Matches(example.Anatomy!,
+                @"(?<!\w)<(?<name>[A-Z]\w*)(?<attributes>(?:""[^""]*""|[^>""])*)>").ToList();
+            var named = tags.Select(tag => tag.Groups["name"].Value).Where(name => name.StartsWith("Tb")).ToList();
+            return tags.SelectMany(tag =>
+            {
+                var name = tag.Groups["name"].Value;
+                // A tag that isn't a component, such as <Cell>, is a fragment parameter of a component around it.
+                if (!name.StartsWith("Tb"))
+                {
+                    return named.Any(component => Parameters(component).Contains(name))
+                        ? [] : [$"{example.Name}: {name}"];
+                }
+
+                var attributes = Regex.Replace(tag.Groups["attributes"].Value, "\"[^\"]*\"", "")
+                    .Split([' ', '/'], StringSplitOptions.RemoveEmptyEntries)
+                    .Select(attribute => attribute.TrimEnd('=').Replace("@bind-", ""));
+                return attributes.Except(typeArguments).Where(attribute => !Parameters(name).Contains(attribute))
+                    .Select(attribute => $"{example.Name}: {name}.{attribute}");
+            });
+        });
+
+        Assert.Empty(wrong);
+    }
+
+    [Fact]
     public void DataParts_ShouldNameEveryPartTheLibraryHasAndNoOthers_WhenComparedWithItsSource()
     {
-        var documented = ExampleCatalog.All.SelectMany(example => example.DataParts).Concat(RootParts).ToHashSet();
+        var documented = ExampleCatalog.All.SelectMany(example => example.DataParts).Select(part => part.Name)
+            .Concat(RootParts).ToHashSet();
         var inSource = SourceParts().SelectMany(folder => folder.Value).ToHashSet();
 
         Assert.Empty(inSource.Except(documented).Order());
@@ -169,9 +240,10 @@ public class ExampleCatalogTests
                 return [];
             }
 
-            var unlisted = folder.Value.Except(examples.SelectMany(example => example.DataParts))
+            var unlisted = folder.Value
+                .Except(examples.SelectMany(example => example.DataParts).Select(part => part.Name))
                 .Select(part => $"{folder.Key} has {part}");
-            var gone = examples.SelectMany(example => example.DataParts.Except(folder.Value)
+            var gone = examples.SelectMany(example => example.DataParts.Select(part => part.Name).Except(folder.Value)
                 .Except(SharedFolders.Where(shared => shared.Value.Contains(example.Name))
                     .SelectMany(shared => folders[shared.Key]))
                 .Select(part => $"{example.Name} lists {part}"));

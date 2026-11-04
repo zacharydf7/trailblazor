@@ -4,8 +4,12 @@
 @if (ExampleCatalog.Find(Name) is { } example)
 {
     <PageTitle>@example.Title API · Trailblazor</PageTitle>
-    <DocsArticle @key="example.Name">
+    <DocsArticle @key="example.Name" Class="docs-article--api">
         <Contents>
+            @if (example.Anatomy is not null)
+            {
+                <TbTableOfContentsItem TargetId="anatomy" Text="Anatomy" />
+            }
             @foreach (var api in example.Api.Select(ApiDocs.Describe))
             {
                 <TbTableOfContentsItem TargetId="@api.Id" Text="@api.Name">
@@ -15,11 +19,23 @@
                     }
                 </TbTableOfContentsItem>
             }
+            @if (example.DataParts.Count > 0)
+            {
+                <TbTableOfContentsItem TargetId="parts" Text="Parts" />
+            }
         </Contents>
         <Header>
             <ComponentHeader Example="example" Api />
         </Header>
         <ChildContent>
+            @if (example.Anatomy is { } anatomy)
+            {
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="anatomy">
+                    Anatomy
+                </TbText>
+                <TbText>Which parts go inside which:</TbText>
+                <CodeBlock Label="Anatomy" Code="@anatomy" />
+            }
             @if (example.Api.Any(type => type.IsAssignableTo(typeof(IComponent))))
             {
                 <TbText class="docs-note">
@@ -31,6 +47,33 @@
             @foreach (var type in example.Api)
             {
                 <ApiTable Type="type" HeadingLevel="TextElement.H2" />
+            }
+            @if (example.DataParts.Count > 0)
+            {
+                <TbText TextStyle="TextStyle.Title" As="TextElement.H2" class="docs-section" id="parts">Parts</TbText>
+                <TbText>
+                    Each part carries a stable <code>data-part</code> name: a test can find it when a role can't, and
+                    a stylesheet can target it, as with <code>[data-part=@example.DataParts[0].Name]</code>.
+                </TbText>
+                <div class="docs-api" role="region" tabindex="0" aria-label="Parts">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Part</th>
+                                <th scope="col">What it is</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var part in example.DataParts)
+                            {
+                                <tr>
+                                    <th scope="row"><code>@part.Name</code></th>
+                                    <td>@part.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
 
             <ComponentPager Example="example" />

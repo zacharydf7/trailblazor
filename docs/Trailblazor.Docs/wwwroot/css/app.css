@@ -722,6 +722,11 @@ kbd {
     margin-block-start: var(--tb-space-4);
 }
 
+/* An API page's anatomy, notes and parts table are spaced as a guide's are. */
+.docs-article--api .docs-article__body > :is(p, .docs-code, .docs-api) + :is(p, .docs-code, .docs-api) {
+    margin-block-start: var(--tb-space-4);
+}
+
 .docs-article__body > h3 {
     margin-block: var(--tb-space-8) 0;
     font-family: var(--docs-display);

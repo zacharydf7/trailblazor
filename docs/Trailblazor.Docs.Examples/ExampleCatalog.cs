@@ -12,6 +12,8 @@ public enum ExampleCategory
     Feedback,
 }
 
+public sealed record DataPart(string Name, string Description);
+
 public sealed record Example(string Name, string Title, ExampleCategory Category, string Summary, Type Component,
     params Type[] Parts)
 {
@@ -105,8 +107,11 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
         return false;
     }
 
-    // The data-part names a test can find inside the component, in the order they appear.
-    public IReadOnlyList<string> DataParts { get; init; } = [];
+    // The data-part names a test or a stylesheet can find inside the component, in the order they appear.
+    public IReadOnlyList<DataPart> DataParts { get; init; } = [];
+
+    // A short skeleton of a component made of parts, showing which goes inside which.
+    public string? Anatomy { get; init; }
 
     // A demo that needs the frame's whole width, such as a grid; others sit centered in it.
     public bool FullWidth { get; init; }
@@ -196,7 +201,15 @@ public static class ExampleCatalog
     ];
 
     // The parts every labeled field has; start and end hold its adornments.
-    private static readonly string[] FieldParts = ["label", "control", "start", "end", "helper", "error"];
+    private static readonly DataPart[] FieldParts =
+    [
+        new("label", "The field's visible label."),
+        new("control", "The box around the input and its start and end content."),
+        new("start", "Content before the input, such as an icon or a prefix."),
+        new("end", "Content after the input, such as a unit or a button."),
+        new("helper", "The help text under the field."),
+        new("error", "The validation message, shown while the value is invalid."),
+    ];
 
     public static IReadOnlyList<Example> All { get; } =
     [
@@ -247,7 +260,10 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-divider"],
-            DataParts = ["content"],
+            DataParts =
+            [
+                new("content", "The content between the two lines, such as \"or\"."),
+            ],
         },
         new("surface", "Surface", ExampleCategory.Layout,
             "A raised panel with the app's surface color, an optional border and a shadow, for grouping content.",
@@ -303,7 +319,14 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Add item"),
             Blocks = ["tb-button"],
-            DataParts = ["start", "icon", "label", "spinner", "end"],
+            DataParts =
+            [
+                new("start", "The start icon or content, before the label."),
+                new("icon", "An icon button's icon."),
+                new("label", "The button's text."),
+                new("spinner", "The spinner shown while the button is loading."),
+                new("end", "The end icon or content, after the label."),
+            ],
             TestingTip = "Check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, and a disabled "
                 + "button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`. To move focus to a "
                 + "button from code, `@ref` it and call `FocusAsync()`.",
@@ -326,7 +349,11 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Add"),
             Blocks = ["tb-button", "tb-icon-button"],
-            DataParts = ["icon", "spinner"],
+            DataParts =
+            [
+                new("icon", "The icon the button shows."),
+                new("spinner", "The spinner shown in place of the icon while loading."),
+            ],
             TestingTip = "Find it by its name: `GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`. With "
                 + "`ShowTooltip`, focusing it shows a `tooltip` role with the same text.",
             Telemetry = ButtonTelemetry("TbIconButton"),
@@ -365,7 +392,10 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Map view"),
             Blocks = ["tb-toggle-group", "tb-button"],
-            DataParts = ["item"],
+            DataParts =
+            [
+                new("item", "One toggle button in the group."),
+            ],
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
                 + "`data-ready` attribute before testing the arrow keys.",
@@ -413,7 +443,16 @@ public static class ExampleCatalog
             ],
             Target = new("toolbar", "Trail notes"),
             Blocks = ["tb-toolbar"],
-            DataParts = ["overflow"],
+            DataParts =
+            [
+                new("overflow", "The More menu that holds the items a narrow toolbar can't fit."),
+            ],
+            Anatomy = """
+                <TbToolbar AriaLabel="…">
+                    <TbToolbarButton Text="…" Icon="…" OnClick="…" />
+                    <TbToolbarButton Text="…" Icon="…" OnClick="…" />
+                </TbToolbar>
+                """,
             TestingTip = "Find a toolbar button by its `Text`, as `GetByRole(AriaRole.Button, new() { Name = \"Add a "
                 + "note\" })`. To test the overflow, set the page's viewport narrow, wait for the toolbar's "
                 + "`data-ready`, open the menu button named \"More\" and choose the `menuitem`.",
@@ -434,7 +473,10 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Add a step after Pack the tent"),
             Blocks = ["tb-insert-divider"],
-            DataParts = ["insert"],
+            DataParts =
+            [
+                new("insert", "The button that inserts content at the divider."),
+            ],
             TestingTip = "Click the insert button by its name, as `GetByRole(AriaRole.Button, new() { Name = "
                 + "\"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
         },
@@ -508,7 +550,22 @@ public static class ExampleCatalog
             ],
             Target = new("separator", "Resize Trails"),
             Blocks = ["tb-splitter"],
-            DataParts = ["splitter", "pane", "bar", "separator", "grip"],
+            DataParts =
+            [
+                new("splitter", "The splitter itself, around its panes."),
+                new("pane", "One pane, sized by the splitter."),
+                new("bar", "The bar between two panes."),
+                new("separator", "The bar's focusable separator, dragged or moved with the keyboard to resize."),
+                new("grip",
+                    "The bar's handle menu: its button drags the bar or opens options that resize the panes on "
+                        + "either side."),
+            ],
+            Anatomy = """
+                <TbSplitter>
+                    <TbSplitterPane Label="…" @bind-Size="_size">…</TbSplitterPane>
+                    <TbSplitterPane Label="…">…</TbSplitterPane>
+                </TbSplitter>
+                """,
             TestingTip = "Resize with the keys, as `var separator = page.GetByRole(AriaRole.Separator, new() { Name "
                 + "= \"Resize Trails\" }); await separator.FocusAsync(); await page.Keyboard.PressAsync(\"End\");`, "
                 + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`. Wait first for `data-ready` "
@@ -546,7 +603,14 @@ public static class ExampleCatalog
             ],
             Target = new("alert") { Text = "A danger alert." },
             Blocks = ["tb-alert"],
-            DataParts = ["icon", "title", "message", "actions", "close"],
+            DataParts =
+            [
+                new("icon", "The icon that shows the alert's tone."),
+                new("title", "The alert's title."),
+                new("message", "The alert's text."),
+                new("actions", "The buttons the alert offers."),
+                new("close", "The button that dismisses the alert."),
+            ],
         },
         new("chip", "Chip", ExampleCategory.Content,
             "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.",
@@ -566,7 +630,15 @@ public static class ExampleCatalog
             ],
             Target = new("list", "Selected tags"),
             Blocks = ["tb-chip", "tb-chip-group"],
-            DataParts = ["check", "icon", "label", "action", "remove"],
+            DataParts =
+            [
+                new("check", "The check a selected filter chip shows."),
+                new("icon", "The chip's icon, before its label."),
+                new("label", "The chip's text."),
+                new("action",
+                    "The chip's body, around its icon and label: a button or link when it acts, otherwise text."),
+                new("remove", "The button that removes the chip."),
+            ],
             TestingTip = "Remove a chip with `GetByRole(AriaRole.Button, new() { Name = \"Remove Archive\" })`, and "
                 + "check a filter chip with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`.",
             Telemetry =
@@ -593,7 +665,16 @@ public static class ExampleCatalog
             ],
             Target = new("list", "Campsites"),
             Blocks = ["tb-list"],
-            DataParts = ["start", "text", "description", "content", "end", "action"],
+            DataParts =
+            [
+                new("start", "Content before the item's text, such as an icon or an avatar."),
+                new("text", "The item's main text."),
+                new("description", "The item's second line, under its text."),
+                new("content", "The start content, text and description of an item that doesn't act."),
+                new("end", "Content after the item's text, such as a badge or a menu."),
+                new("action",
+                    "The button or link around the start content, text and description of an item that acts."),
+            ],
             TestingTip = "Find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
                 + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
                 + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`.",
@@ -622,7 +703,13 @@ public static class ExampleCatalog
             ],
             Target = new("list", "Trail alerts, first match wins"),
             Blocks = ["tb-sortable"],
-            DataParts = ["list", "item", "handle", "drop-reason"],
+            DataParts =
+            [
+                new("list", "The list that holds the items."),
+                new("item", "One item."),
+                new("handle", "The item's drag handle, which also moves it with the keyboard or its menu."),
+                new("drop-reason", "The reason shown while a dragged item is held over a place it may not go."),
+            ],
             TestingTip = "Wait for `data-ready` on the list's root, then press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
@@ -655,7 +742,10 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-badge"],
-            DataParts = ["badge"],
+            DataParts =
+            [
+                new("badge", "The badge itself, over or beside what it marks."),
+            ],
             TestingTip = "The badge's element has `data-part=\"badge\"`. Its text holds the count, then the `Label` "
                 + "when there is one, so check it with `ToContainTextAsync`.",
         },
@@ -678,7 +768,14 @@ public static class ExampleCatalog
             ],
             Target = new("progressbar", "Upload"),
             Blocks = ["tb-progress"],
-            DataParts = ["bar", "ring", "indicator", "value", "label"],
+            DataParts =
+            [
+                new("bar", "A linear progress bar's track."),
+                new("ring", "A circular progress's ring."),
+                new("indicator", "The filled part that shows how far along it is."),
+                new("value", "The value shown as text, such as \"40%\"."),
+                new("label", "The progress's visible label."),
+            ],
             TestingTip = "Find it with `GetByRole(AriaRole.Progressbar, new() { Name = \"Upload\" })` and check "
                 + "`aria-valuenow`, or `aria-valuetext` when it has a `ValueFormatter`. The shown text is in "
                 + "`[data-part=label]` and `[data-part=value]`.",
@@ -698,7 +795,11 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Information about Project code"),
             Blocks = ["tb-label"],
-            DataParts = ["text", "info"],
+            DataParts =
+            [
+                new("text", "The label's text."),
+                new("info", "The info popover: its button and the text it shows about the field."),
+            ],
             TestingTip = "Open the info with "
                 + "`await page.Tb().Popover(\"Information about Project code\").OpenAsync()`, which returns its panel. "
                 + "The info button's name contains the label, so find the control by role with an exact name, as "
@@ -796,7 +897,12 @@ public static class ExampleCatalog
             ],
             Target = new("textbox", "Name"),
             Blocks = ["tb-field"],
-            DataParts = [.. FieldParts, "input", "clear"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The text input."),
+                new("clear", "The button that clears the text."),
+            ],
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, register a `FakeTimeProvider` "
                 + "as the `TimeProvider` and advance it past the delay.",
@@ -831,7 +937,13 @@ public static class ExampleCatalog
             ],
             Target = new("spinbutton", "Quantity"),
             Blocks = ["tb-field"],
-            DataParts = [.. FieldParts, "input", "decrement", "increment"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The number input."),
+                new("decrement", "The button that steps the value down."),
+                new("increment", "The button that steps the value up."),
+            ],
             TestingTip = "Without a `Format` the field reads what was typed through its own change event, which "
                 + "bUnit's `Change` doesn't reach; `await cut.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` "
                 + "from `Trailblazor.Testing` types into either kind. In Playwright, "
@@ -864,7 +976,13 @@ public static class ExampleCatalog
             ],
             Target = new("checkbox", "Email me updates"),
             Blocks = ["tb-checkbox"],
-            DataParts = ["input", "label", "helper", "error"],
+            DataParts =
+            [
+                new("input", "The checkbox input."),
+                new("label", "The checkbox's label."),
+                new("helper", "The help text under the checkbox."),
+                new("error", "The validation message, shown while the value is invalid."),
+            ],
             Telemetry = CheckboxTelemetry,
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
@@ -887,7 +1005,20 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Trail days"),
             Blocks = ["tb-checkbox-group", "tb-checkbox"],
-            DataParts = ["label", "helper", "error", "options", "input"],
+            DataParts =
+            [
+                new("label", "The group's legend, and each option's text."),
+                new("helper", "The help text under the group."),
+                new("error", "The validation message, shown while the value is invalid."),
+                new("options", "The list of checkboxes."),
+                new("input", "One checkbox input."),
+            ],
+            Anatomy = """
+                <TbCheckboxGroup Label="…" @bind-Value="_values">
+                    <TbCheckboxItem Value="…">…</TbCheckboxItem>
+                    <TbCheckboxItem Value="…">…</TbCheckboxItem>
+                </TbCheckboxGroup>
+                """,
             TestingTip = "Each option is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work "
                 + "on `GetByRole(AriaRole.Checkbox, ...)` inside the group. In bUnit, `Change(true)` or "
                 + "`Change(false)` on an option's `input` checks or unchecks it.",
@@ -911,7 +1042,13 @@ public static class ExampleCatalog
             ],
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],
-            DataParts = ["input", "label", "helper", "error"],
+            DataParts =
+            [
+                new("input", "The switch's input."),
+                new("label", "The switch's label."),
+                new("helper", "The help text under the switch."),
+                new("error", "The validation message, shown while the value is invalid."),
+            ],
             Telemetry = CheckboxTelemetry,
         },
         new("slider", "Slider", ExampleCategory.Inputs,
@@ -936,8 +1073,19 @@ public static class ExampleCatalog
             ],
             Target = new("slider", "Map brightness"),
             Blocks = ["tb-slider"],
-            DataParts = ["label", "helper", "error", "value", "track", "fill", "mark", "input", "start-thumb",
-                "end-thumb"],
+            DataParts =
+            [
+                new("label", "The slider's label."),
+                new("helper", "The help text under the slider."),
+                new("error", "The validation message, shown while the value is invalid."),
+                new("value", "The value shown as text beside the label."),
+                new("track", "The track the thumbs move along."),
+                new("fill", "The part of the track up to the value, or between a range's two values."),
+                new("mark", "A step mark on the track."),
+                new("input", "A single slider's range input."),
+                new("start-thumb", "A range slider's input for its low end."),
+                new("end-thumb", "A range slider's input for its high end."),
+            ],
             TestingTip = "Set a slider with `await page.GetByRole(AriaRole.Slider, new() { Name = \"Map brightness\" "
                 + "}).FillAsync(\"80\")`, which Playwright supports for range inputs. Then check what the app "
                 + "did with it, such as `Expect(page.GetByText(\"Saved at\")).ToHaveTextAsync(\"Saved at 80%\")`: "
@@ -966,7 +1114,20 @@ public static class ExampleCatalog
             ],
             Target = new("radiogroup", "Paper size"),
             Blocks = ["tb-radio-group", "tb-radio"],
-            DataParts = ["label", "helper", "error", "options", "input"],
+            DataParts =
+            [
+                new("label", "The group's legend, and each option's text."),
+                new("helper", "The help text under the group."),
+                new("error", "The validation message, shown while the value is invalid."),
+                new("options", "The list of radios."),
+                new("input", "One radio input."),
+            ],
+            Anatomy = """
+                <TbRadioGroup Label="…" @bind-Value="_value">
+                    <TbRadio Value="…">…</TbRadio>
+                    <TbRadio Value="…">…</TbRadio>
+                </TbRadioGroup>
+                """,
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
@@ -1097,9 +1258,39 @@ public static class ExampleCatalog
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select", "tb-chip"],
-            DataParts = [.. FieldParts, "input", "placeholder", "value",
-                "chips", "chip", "chip-remove", "clear", "chevron", "popup", "filter", "listbox", "group",
-                "group-label", "option", "check", "select-all", "no-results"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The combobox the user opens and types in."),
+                new("placeholder", "The text shown while nothing is chosen."),
+                new("value", "The chosen option's text."),
+                new("chips", "The chips that show a multiple select's choices."),
+                new("chip", "One chosen option, as a chip."),
+                new("chip-remove", "The button that removes a chip's option."),
+                new("clear", "The button that clears the choice."),
+                new("chevron", "The arrow that shows the list can open."),
+                new("popup", "The popup that holds the filter and the list."),
+                new("filter", "The box that filters the options."),
+                new("listbox", "The list of options."),
+                new("group", "A group of options."),
+                new("group-label", "A group's heading."),
+                new("option", "One option."),
+                new("check", "The check beside a chosen option."),
+                new("select-all", "The option that chooses every option."),
+                new("no-results", "The message shown when the filter matches nothing."),
+            ],
+            Anatomy = """
+                <TbSelect Label="…" @bind-Value="_value">
+                    <TbOptionGroup Label="…">
+                        <TbOption Value="…" />
+                    </TbOptionGroup>
+                    <TbOption Value="…" />
+                </TbSelect>
+
+                <TbMultiSelect Label="…" @bind-Value="_values">
+                    <TbOption Value="…" />
+                </TbMultiSelect>
+                """,
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
@@ -1144,8 +1335,15 @@ public static class ExampleCatalog
             ],
             Target = new("combobox", "Trailhead"),
             Blocks = ["tb-field", "tb-select", "tb-autocomplete"],
-            DataParts = [.. FieldParts, "input", "clear", "listbox", "option",
-                "status"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The combobox the user types in."),
+                new("clear", "The button that clears the text."),
+                new("listbox", "The list of suggestions."),
+                new("option", "One suggestion."),
+                new("status", "The message shown while suggestions load or when none match."),
+            ],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
                 + "search, and clicks the option by its name. In bUnit, `Search` runs once `DebounceDelay` has passed "
@@ -1176,9 +1374,24 @@ public static class ExampleCatalog
             ],
             Target = new("textbox", "Trail marker"),
             Blocks = ["tb-field", "tb-color-picker"],
-            DataParts = [.. FieldParts, "input", "swatch-preview", "clear",
-                "eyedropper", "pad", "hue", "saturation", "brightness", "alpha", "red", "green", "blue", "swatches",
-                "swatch"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The box that holds the color as text."),
+                new("swatch-preview", "The swatch beside the box that shows the color."),
+                new("clear", "The button that clears the color."),
+                new("eyedropper", "The button that picks a color from the screen."),
+                new("pad", "The square that sets saturation and brightness."),
+                new("hue", "The hue slider."),
+                new("saturation", "The saturation slider."),
+                new("brightness", "The brightness slider."),
+                new("alpha", "The opacity slider."),
+                new("red", "The red channel box."),
+                new("green", "The green channel box."),
+                new("blue", "The blue channel box."),
+                new("swatches", "The palette of preset colors."),
+                new("swatch", "One preset color."),
+            ],
             TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
                 + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it; for "
                 + "pickers that share a label, pass a locator, as `ColorPicker(row.GetByLabel(\"Color\"))`. In bUnit, "
@@ -1214,7 +1427,19 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Trail maps"),
             Blocks = ["tb-field", "tb-file-upload"],
-            DataParts = ["label", "helper", "error", "zone", "input", "files", "file", "remove", "rejected", "clear"],
+            DataParts =
+            [
+                new("label", "The field's label."),
+                new("helper", "The help text under the field."),
+                new("error", "The validation message, shown while the value is invalid."),
+                new("zone", "The drop zone, which also opens the file picker."),
+                new("input", "The file input."),
+                new("files", "The list of chosen files."),
+                new("file", "One chosen file."),
+                new("remove", "The button that removes a file."),
+                new("rejected", "The message that lists dropped files the field didn't take."),
+                new("clear", "The button that removes every file."),
+            ],
             TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
                 + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
                 + "taken them. In bUnit, `FindComponent<InputFile>().UploadFiles(...)` chooses files. The field is "
@@ -1252,8 +1477,21 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Trip dates"),
             Blocks = ["tb-field", "tb-date-range"],
-            DataParts = [.. FieldParts, "start-input", "end-input", "trigger",
-                "clear", "panel", "presets", "preset", "previous-month", "next-month", "month", "day"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("start-input", "The box for the first date."),
+                new("end-input", "The box for the last date."),
+                new("trigger", "The button that opens the calendar."),
+                new("clear", "The button that clears both dates."),
+                new("panel", "The calendar popup."),
+                new("presets", "The list of preset ranges."),
+                new("preset", "One preset range."),
+                new("previous-month", "The button that shows the month before."),
+                new("next-month", "The button that shows the month after."),
+                new("month", "One month of days."),
+                new("day", "One day."),
+            ],
             TestingTip = "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
                 + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until the "
                 + "field has taken them. Its boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`.",
@@ -1280,7 +1518,28 @@ public static class ExampleCatalog
             ],
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],
-            DataParts = ["label", "helper", "error", "input", "group", "group-label", "option"],
+            DataParts =
+            [
+                new("label", "The list box's label."),
+                new("helper", "The help text under the list box."),
+                new("error", "The validation message, shown while the value is invalid."),
+                new("input", "The list box itself, which takes focus."),
+                new("group", "A group of options."),
+                new("group-label", "A group's heading."),
+                new("option", "One option."),
+            ],
+            Anatomy = """
+                <TbListBox Label="…" @bind-Value="_value">
+                    <TbOptionGroup Label="…">
+                        <TbOption Value="…" />
+                    </TbOptionGroup>
+                    <TbOption Value="…" />
+                </TbListBox>
+
+                <TbMultiListBox Label="…" @bind-Value="_values">
+                    <TbOption Value="…" />
+                </TbMultiListBox>
+                """,
             TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
                 + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
                 + "`<select>` too. For object values loaded again, give the list box a `Comparer`. In bUnit, "
@@ -1321,7 +1580,11 @@ public static class ExampleCatalog
             ],
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
             Blocks = ["tb-tooltip", "tb-tooltip-anchor"],
-            DataParts = ["tooltip", "arrow"],
+            DataParts =
+            [
+                new("tooltip", "The tooltip bubble."),
+                new("arrow", "The arrow that points at the trigger."),
+            ],
             TestingTip = "Tab to or hover the trigger, since `FocusAsync` after a click isn't keyboard focus, then "
                 + "find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
                 + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit the "
@@ -1370,7 +1633,32 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Actions"),
             Blocks = ["tb-menu"],
-            DataParts = ["trigger", "menu", "icon", "label", "indicator", "chevron", "submenu-trigger", "group-label"],
+            DataParts =
+            [
+                new("trigger", "The button that opens the menu."),
+                new("menu", "The menu popup."),
+                new("icon", "An item's icon."),
+                new("label", "An item's text."),
+                new("indicator", "The check or dot a checkbox or radio item shows."),
+                new("chevron", "The arrow that shows an item opens a submenu."),
+                new("submenu-trigger", "The item that opens a submenu."),
+                new("group-label", "A group's heading."),
+            ],
+            Anatomy = """
+                <TbMenu Label="…">
+                    <TbMenuItem OnClick="…">…</TbMenuItem>
+                    <TbMenuSeparator />
+                    <TbMenuGroup Label="…">
+                        <TbMenuCheckboxItem @bind-Checked="_on">…</TbMenuCheckboxItem>
+                    </TbMenuGroup>
+                    <TbMenuRadioGroup Label="…" @bind-Value="_value">
+                        <TbMenuRadioItem Value="…">…</TbMenuRadioItem>
+                    </TbMenuRadioGroup>
+                    <TbSubMenu Label="…">
+                        <TbMenuItem OnClick="…">…</TbMenuItem>
+                    </TbSubMenu>
+                </TbMenu>
+                """,
             TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
                 + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. A group is "
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`. The trigger gets `data-ready` once a "
@@ -1452,8 +1740,38 @@ public static class ExampleCatalog
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
-            DataParts = ["dialog", "header", "icon", "move", "minimize", "maximize", "close", "description", "body",
-                "actions", "resize"],
+            DataParts =
+            [
+                new("dialog", "The dialog window."),
+                new("header", "The title bar, with the title and the window buttons."),
+                new("icon", "The tone icon beside a confirmation dialog's message."),
+                new("move", "The Move menu: its button and its list of places for the dialog."),
+                new("minimize", "The button that minimizes the dialog."),
+                new("maximize", "The button that maximizes or restores the dialog."),
+                new("close", "The button that closes the dialog."),
+                new("description", "The dialog's description, under its title."),
+                new("body", "The dialog's content."),
+                new("actions", "The buttons at the bottom of the dialog."),
+                new("resize",
+                    "The Size menu: its button, which also drags to resize the dialog, and its list of sizes."),
+            ],
+            Anatomy = """
+                @* A dialog as its own component, opened with IDialogService.ShowAsync *@
+                @inherits TbDialogContent<TResult>
+
+                <TbDialogDescription>…</TbDialogDescription>
+                …
+                <TbDialogActions>
+                    <TbButton>…</TbButton>
+                </TbDialogActions>
+
+                @* A dialog written in the page's markup *@
+                <TbDialog Title="…" @bind-Open="_open">
+                    <TbDialogTitle>…</TbDialogTitle>
+                    …
+                    <TbDialogActions>…</TbDialogActions>
+                </TbDialog>
+                """,
             TestingTip = "In bUnit, `this.ShowDialogAsync<TDialog, TResult>(title)` from `Trailblazor.Testing` hosts "
                 + "and opens a dialog in one call. "
                 + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
@@ -1498,7 +1816,10 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Find a trail") { OpenedBy = new("button", "Find a trail") },
             Blocks = ["tb-focus-scope"],
-            DataParts = ["focus-scope"],
+            DataParts =
+            [
+                new("focus-scope", "The element that keeps focus inside it."),
+            ],
         },
         new("popover", "Popover", ExampleCategory.Overlays,
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "
@@ -1521,7 +1842,12 @@ public static class ExampleCatalog
             ],
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },
             Blocks = ["tb-popover"],
-            DataParts = ["trigger", "panel", "title"],
+            DataParts =
+            [
+                new("trigger", "The button that opens the popover."),
+                new("panel", "The popover panel."),
+                new("title", "The panel's title."),
+            ],
             TestingTip = "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens it and returns the panel, a "
                 + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
                 + "ready.",
@@ -1544,7 +1870,12 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-overlay"],
-            DataParts = ["overlay", "scrim", "content"],
+            DataParts =
+            [
+                new("overlay", "The overlay itself."),
+                new("scrim", "The shade over the page behind the content."),
+                new("content", "The overlay's content."),
+            ],
             TestingTip = "The overlay's element has `data-part=\"overlay\"`; click its `data-part=\"scrim\"` to "
                 + "close one with `CloseOnClick`. Before pressing Escape, wait for the overlay's `data-ready` "
                 + "attribute, which appears once Escape is wired.",
@@ -1581,7 +1912,20 @@ public static class ExampleCatalog
             ],
             Target = new("tablist", "Report sections"),
             Blocks = ["tb-tabs"],
-            DataParts = ["list", "tab", "tab-anchor", "icon", "panel"],
+            DataParts =
+            [
+                new("list", "The row of tabs."),
+                new("tab", "One tab."),
+                new("tab-anchor", "A hidden marker that keeps a tab's place when tabs move."),
+                new("icon", "A tab's icon."),
+                new("panel", "A tab's panel."),
+            ],
+            Anatomy = """
+                <TbTabs AriaLabel="…" @bind-ActiveIndex="_index">
+                    <TbTab Text="…">…</TbTab>
+                    <TbTab Text="…">…</TbTab>
+                </TbTabs>
+                """,
             TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
                 + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. Wait for the tab list's "
                 + "`data-ready` attribute before testing the arrow keys. "
@@ -1618,7 +1962,23 @@ public static class ExampleCatalog
             ],
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
-            DataParts = ["accordion", "item", "header", "heading", "trigger", "chevron", "actions", "panel"],
+            DataParts =
+            [
+                new("accordion", "The accordion itself."),
+                new("item", "One section."),
+                new("header", "A section's header, with its button and actions."),
+                new("heading", "The heading that holds a section's button."),
+                new("trigger", "The button that opens and closes a section."),
+                new("chevron", "The arrow that shows whether a section is open."),
+                new("actions", "The buttons beside a section's trigger."),
+                new("panel", "A section's content."),
+            ],
+            Anatomy = """
+                <TbAccordion>
+                    <TbAccordionItem Title="…">…</TbAccordionItem>
+                    <TbAccordionItem Title="…">…</TbAccordionItem>
+                </TbAccordion>
+                """,
             TestingTip = "The arrow keys, Home and End work once the accordion's script has attached, which "
                 + "is marked by `data-ready` on its root, `[data-part=accordion]`; wait for it before pressing them.",
         },
@@ -1699,8 +2059,29 @@ public static class ExampleCatalog
             ],
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],
-            DataParts = ["item", "group", "spacer", "toggle", "check", "content", "end", "insert", "loading", "failed",
-                "empty", "drop-reason"],
+            DataParts =
+            [
+                new("item", "One row."),
+                new("group", "A row's children."),
+                new("spacer", "Space that stands in for rows a large tree leaves out of the page."),
+                new("toggle", "The arrow that opens and closes a row."),
+                new("check", "A checkable tree's checkbox."),
+                new("content", "The row's text or template."),
+                new("end", "Content at the end of the row, such as a count or a menu."),
+                new("insert", "The slot between rows that holds InsertTemplate content, such as an add button."),
+                new("loading", "The message shown while rows load."),
+                new("failed", "The message and Retry button shown when rows fail to load."),
+                new("empty", "The message shown when there are no rows."),
+                new("drop-reason", "The reason shown while a dragged row is held over a place it may not go."),
+            ],
+            Anatomy = """
+                <TbTreeView TItem="string" TKey="string" AriaLabel="…">
+                    <TbTreeItem Value="…" Text="…">
+                        <TbTreeItem Value="…" Text="…" />
+                    </TbTreeItem>
+                    <TbTreeItem Value="…" Text="…" />
+                </TbTreeView>
+                """,
             TestingTip = "`page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows rows by "
                 + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
                 + "`CheckAsync(...)` and `ItemAsync(...)`; `ItemsAsync(...)` returns every row at a path, for rows "
@@ -1849,10 +2230,44 @@ public static class ExampleCatalog
             ],
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
-            DataParts = ["grid", "scroll", "sort", "sort-order", "filters", "filter", "filter-menu", "filter-apply",
-                "filter-clear", "group-by", "group", "group-toggle", "select-all", "row", "placeholder", "editor",
-                "row-actions", "row-error", "select", "order", "handle", "drop-reason", "loading", "empty", "failed",
-                "summary", "pager"],
+            DataParts =
+            [
+                new("grid", "The grid itself."),
+                new("scroll", "The box that scrolls the rows."),
+                new("sort", "A column header's sort button."),
+                new("sort-order", "The number that shows a column's place when sorting by several."),
+                new("filters", "The row of filter fields under the headers."),
+                new("filter", "One column's cell in the row of filter fields."),
+                new("filter-menu", "A column's filter menu: its button in the header and the popup of conditions."),
+                new("filter-apply", "The filter menu's Apply button."),
+                new("filter-clear", "The filter menu's Clear button."),
+                new("group-by", "The bar that chooses the columns to group by."),
+                new("group", "A group's heading row."),
+                new("group-toggle", "The button that opens and closes a group."),
+                new("select-all", "The checkbox that selects every row on the page."),
+                new("row", "One row."),
+                new("placeholder", "A row a large grid hasn't loaded yet."),
+                new("editor", "The field that edits a cell."),
+                new("row-actions", "The Save and Cancel buttons of a row that's being edited."),
+                new("row-error", "The message that says why a row could not be saved."),
+                new("select", "The cell that holds a row's checkbox or radio, and its header cell."),
+                new("order", "The header cell of the column that holds the rows' drag handles."),
+                new("handle", "A row's drag handle."),
+                new("drop-reason", "The reason shown while a dragged row is held over a place it may not go."),
+                new("loading", "The message shown while rows load."),
+                new("empty", "The message shown when there are no rows."),
+                new("failed", "The message and Retry button shown when rows fail to load."),
+                new("summary", "The text that says which rows the page shows, such as \"1–10 of 42\"."),
+                new("pager", "The pagination under the grid."),
+            ],
+            Anatomy = """
+                <TbDataGrid Items="_items" AriaLabel="…" KeySelector="item => item.Id">
+                    <TbColumn Field="item => item.Name" Sortable Filterable />
+                    <TbColumn Title="…">
+                        <Cell>…</Cell>
+                    </TbColumn>
+                </TbDataGrid>
+                """,
             TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
                 + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
                 + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
@@ -1932,7 +2347,17 @@ public static class ExampleCatalog
             ],
             Target = new("navigation", "Trail reports"),
             Blocks = ["tb-pagination"],
-            DataParts = ["first", "previous", "page", "ellipsis", "page-box", "page-count", "next", "last"],
+            DataParts =
+            [
+                new("first", "The button that goes to the first page."),
+                new("previous", "The button that goes to the page before."),
+                new("page", "A page button."),
+                new("ellipsis", "The gap that stands in for pages not shown."),
+                new("page-box", "The box for typing a page number to go to."),
+                new("page-count", "The text after the box that says how many pages there are."),
+                new("next", "The button that goes to the page after."),
+                new("last", "The button that goes to the last page."),
+            ],
             TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
                 + "`Trailblazor.Testing.Playwright` clicks it, types it into a compact pagination's box, or steps "
                 + "with Next and Previous, then waits for it to be current.",
@@ -1957,7 +2382,10 @@ public static class ExampleCatalog
             ],
             Target = new("navigation", "Trail guide"),
             Blocks = ["tb-table-of-contents"],
-            DataParts = ["link"],
+            DataParts =
+            [
+                new("link", "A link to one section."),
+            ],
             TestingTip = "Scroll a section into view and check its link with `ToHaveAttributeAsync(\"aria-current\", "
                 + "\"location\")`. Wait first for `data-ready` on the `navigation`, which marks that its script is "
                 + "tracking the scroll.",
@@ -2011,7 +2439,10 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-skeleton"],
-            DataParts = ["content"],
+            DataParts =
+            [
+                new("content", "The content the skeleton stands in for, shown once it loads."),
+            ],
             TestingTip = "Skeletons have no role, so wait for the loaded content rather than for them to go, or check "
                 + "that the region's `aria-busy` is `false`. Wrapped content is in the page while it loads, but "
                 + "hidden, so `ToBeVisibleAsync` waits for it to load.",
@@ -2038,7 +2469,16 @@ public static class ExampleCatalog
             ],
             Target = new("listitem") { Text = "Report saved", OpenedBy = new("button", "Save report") },
             Blocks = ["tb-toast", "tb-toaster"],
-            DataParts = ["toaster", "toast", "icon", "title", "message", "action", "close"],
+            DataParts =
+            [
+                new("toaster", "The region that holds the toasts."),
+                new("toast", "One toast."),
+                new("icon", "The icon that shows the toast's tone."),
+                new("title", "The toast's title."),
+                new("message", "The toast's text."),
+                new("action", "The toast's action button, such as Undo."),
+                new("close", "The button that dismisses the toast."),
+            ],
             TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
                 + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. "
                 + "`await page.Tb().Toasts.WaitForAsync(\"Report archived\")` from `Trailblazor.Testing.Playwright` "
