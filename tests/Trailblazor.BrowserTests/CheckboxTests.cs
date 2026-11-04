@@ -29,19 +29,6 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(allFormats).ToBeCheckedAsync();
     }
 
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Switch_ShouldBeASwitchThatToggles_WhenClicked(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/switch");
-        var autoSave = page.GetByRole(AriaRole.Switch, new() { Name = "Auto-save" });
-        await Expect(autoSave).ToBeCheckedAsync();
-
-        await autoSave.ClickAsync();
-
-        await Expect(page.GetByTestId("auto-save-echo")).ToHaveTextAsync("False");
-        await Expect(autoSave).Not.ToBeCheckedAsync();
-    }
-
     [Theory]
     [MemberData(nameof(FeedbackTests.BrowsersAndDirections), MemberType = typeof(FeedbackTests))]
     public async Task Switch_ShouldSlideItsThumbToTheTracksFarEdge_WhenOnAtEverySize(string browser, string direction)

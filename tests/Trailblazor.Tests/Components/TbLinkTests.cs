@@ -66,6 +66,15 @@ public class TbLinkTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldSayItOpensANewTab_WhenNewTabIsSetWithoutAHint()
+    {
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "https://example.com")
+            .Add(link => link.NewTab, true).AddChildContent("Example"));
+
+        Assert.Equal("(opens in a new tab)", cut.Find("a .tb-visually-hidden").TextContent.Trim());
+    }
+
+    [Fact]
     public void Render_ShouldDropTheAddressAndSayItIsDisabled_WhenADisabledLinkHasAnHref()
     {
         var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "guides/theming")

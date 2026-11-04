@@ -40,6 +40,12 @@ public class TbChipTests : BunitContext
         Assert.Contains("tb-chip--selected", cut.Find(".tb-chip").ClassList);
         Assert.Single(cut.FindAll("[data-part=check]"));
         Assert.Empty(cut.FindAll("[data-part=icon]"));
+        cut.Find("button").Click();
+
+        Assert.False(selected);
+        Assert.Equal("false", cut.Find("button").GetAttribute("aria-pressed"));
+        Assert.DoesNotContain("tb-chip--selected", cut.Find(".tb-chip").ClassList);
+        Assert.Single(cut.FindAll("[data-part=icon]"));
     }
 
     [Fact]

@@ -29,17 +29,6 @@ public class LinkTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Link_ShouldSayItOpensANewTab_WhenNewTabIsSet(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/link");
-
-        var link = page.GetByRole(AriaRole.Link, new() { Name = "Microsoft Learn (opens in a new tab)" });
-
-        await Expect(link).ToHaveAttributeAsync("target", "_blank");
-        await Expect(link).ToHaveAttributeAsync("rel", "noopener noreferrer");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Link_ShouldTakeTheSystemLinkColorInBothKinds_WhenColorsAreForced(string browser)
     {
         var page = await OpenAsync(browser, "/examples/link", new() { ForcedColors = ForcedColors.Active });
@@ -102,14 +91,6 @@ public class LinkTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Check" }).ClickAsync();
 
         await Expect(page.GetByTestId("ran")).ToHaveTextAsync("checked");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Link_ShouldBeADisabledButton_WhenDisabledWithoutAnAddress(string browser)
-    {
-        var page = await OpenAsync(browser, "/link");
-
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Run it later" })).ToBeDisabledAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

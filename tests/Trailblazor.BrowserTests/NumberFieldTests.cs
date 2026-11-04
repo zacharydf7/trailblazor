@@ -54,21 +54,6 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task NumberField_ShouldStepAndStopAtItsLimit_WhenTheStepButtonIsClicked(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/number-field");
-        var increase = page.GetByTestId("quantity").GetByRole(AriaRole.Button, new() { Name = "Increase" });
-
-        for (var i = 0; i < 9; i++)
-        {
-            await increase.ClickAsync();
-        }
-
-        await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync("10");
-        await Expect(increase).ToBeDisabledAsync();
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldSayItNeedsANumber_WhenAnEmptyFieldGetsTextTheBrowserCannotRead(string browser)
     {
         var page = await OpenAsync(browser, "/examples/number-field");

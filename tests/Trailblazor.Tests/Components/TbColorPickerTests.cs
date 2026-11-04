@@ -207,6 +207,17 @@ public class TbColorPickerTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=panel]"));
     }
 
+    [Fact]
+    public void Render_ShouldTurnOffItsButtonsAndLeaveOutClear_WhenReadOnlyAndClearable()
+    {
+        var cut = RenderPicker("#336699", parameters => parameters.Add(picker => picker.ReadOnly, true)
+            .Add(picker => picker.Clearable, true));
+
+        Assert.NotEmpty(cut.FindAll("button"));
+        Assert.All(cut.FindAll("button"), button => Assert.True(button.HasAttribute("disabled"), button.OuterHtml));
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
+    }
+
     private IRenderedComponent<TbColorPicker> RenderPicker(string? value,
         Action<ComponentParameterCollectionBuilder<TbColorPicker>>? configure = null) =>
         Render<TbColorPicker>(parameters =>

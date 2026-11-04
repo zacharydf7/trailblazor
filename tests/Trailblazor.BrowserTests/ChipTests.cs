@@ -24,21 +24,6 @@ public class ChipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Chip_ShouldTurnAFilterOnAndOff_WhenClicked(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/chip");
-        var queued = page.GetByRole(AriaRole.Button, new() { Name = "Queued" });
-        var running = page.GetByRole(AriaRole.Button, new() { Name = "Running" });
-        await Expect(running).ToHaveAttributeAsync("aria-pressed", "true");
-
-        await queued.ClickAsync();
-        await running.ClickAsync();
-
-        await Expect(queued).ToHaveAttributeAsync("aria-pressed", "true");
-        await Expect(running).ToHaveAttributeAsync("aria-pressed", "false");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Chip_ShouldBeFilledWithReadableText_WhenAnOutlinedFilterIsSelected(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chip");

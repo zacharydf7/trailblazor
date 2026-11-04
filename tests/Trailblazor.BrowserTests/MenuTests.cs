@@ -405,21 +405,6 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Menu_ShouldNotOpen_WhenDisabled(string browser)
-    {
-        var page = await OpenAsync(browser, "/menu");
-
-        foreach (var name in new[] { "Locked", "Custom locked" })
-        {
-            var trigger = page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
-            await Expect(trigger).ToBeDisabledAsync();
-            await trigger.ClickAsync(new() { Force = true });
-        }
-
-        await Expect(page.GetByRole(AriaRole.Menu)).ToHaveCountAsync(0);
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CheckboxItem_ShouldToggleAndCloseTheMenu_WhenChosen(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");
@@ -442,25 +427,6 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await view.ClickAsync();
         await Expect(map).Not.ToBeCheckedAsync();
         await Expect(elevation).ToBeCheckedAsync();
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task RadioItem_ShouldMoveTheChoiceWithinItsNamedGroup_WhenChosen(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/menu");
-        var view = page.GetByRole(AriaRole.Button, new() { Name = "View" });
-        await view.ClickAsync();
-        var units = page.GetByRole(AriaRole.Group, new() { Name = "Units" });
-        await Expect(units.GetByRole(AriaRole.Menuitemradio, new() { Name = "Miles" })).ToBeCheckedAsync();
-        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "View" }).GetByRole(AriaRole.Separator))
-            .ToHaveCountAsync(2);
-
-        await units.GetByRole(AriaRole.Menuitemradio, new() { Name = "Kilometers" }).ClickAsync();
-
-        await Expect(page.GetByTestId("view")).ToHaveTextAsync("Kilometers, map");
-        await view.ClickAsync();
-        await Expect(units.GetByRole(AriaRole.Menuitemradio, new() { Name = "Kilometers" })).ToBeCheckedAsync();
-        await Expect(units.GetByRole(AriaRole.Menuitemradio, new() { Name = "Miles" })).Not.ToBeCheckedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

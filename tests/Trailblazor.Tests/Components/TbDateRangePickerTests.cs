@@ -295,6 +295,19 @@ public class TbDateRangePickerTests : BunitContext
     private static AngleSharp.Dom.IElement Day(IRenderedComponent<TbDateRangePicker<DateOnly>> cut, string date) =>
         cut.Find($"[data-part=day][data-date='{date}']");
 
+    [Fact]
+    public void Render_ShouldTurnOffItsButtonsAndLeaveOutClear_WhenReadOnlyAndClearable()
+    {
+        var cut = RenderPicker(June3To10, parameters => parameters.Add(picker => picker.ReadOnly, true)
+            .Add(picker => picker.Clearable, true));
+
+        // The panel's own buttons stay hidden, since a read-only field's panel can't open.
+        var buttons = cut.FindAll("button").Where(button => button.Closest("[popover]") is null).ToList();
+        Assert.NotEmpty(buttons);
+        Assert.All(buttons, button => Assert.True(button.HasAttribute("disabled"), button.OuterHtml));
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
+    }
+
     private IRenderedComponent<TbDateRangePicker<DateOnly>> RenderPicker(DateRange<DateOnly> value,
         Action<ComponentParameterCollectionBuilder<TbDateRangePicker<DateOnly>>>? configure = null) =>
         Render<TbDateRangePicker<DateOnly>>(parameters =>

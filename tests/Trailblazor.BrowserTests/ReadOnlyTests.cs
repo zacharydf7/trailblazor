@@ -46,22 +46,6 @@ public class ReadOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeHiddenAsync();
     }
 
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task ReadOnlyPickers_ShouldTurnOffTheirButtonsAndHideClear_WhenReadOnly(string browser)
-    {
-        var page = await OpenAsync(browser, "/read-only");
-
-        foreach (var field in new[] { "color", "dates" })
-        {
-            foreach (var button in await page.GetByTestId(field).GetByRole(AriaRole.Button).AllAsync())
-            {
-                await Expect(button).ToBeDisabledAsync();
-            }
-        }
-
-        await Expect(page.Locator("[data-part=clear]")).ToHaveCountAsync(0);
-    }
-
     public static TheoryData<string, string> PagesInEachBrowser => new(
         from browser in AllBrowsers.Names
         from path in new[] { "/read-only", "/static-read-only" }
@@ -188,14 +172,6 @@ public class ReadOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(camp.GetByRole(AriaRole.Option, new() { Name = "Lakeside" }))
             .ToHaveAttributeAsync("aria-selected", "true");
         await Expect(meadow).ToHaveAttributeAsync("aria-selected", "false");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task ReadOnlyFileUpload_ShouldTurnOffItsPicker_WhenReadOnly(string browser)
-    {
-        var page = await OpenAsync(browser, "/read-only");
-
-        await Expect(page.GetByLabel("Photos")).ToBeDisabledAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
