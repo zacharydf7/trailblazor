@@ -1,6 +1,6 @@
 using Trailblazor.Docs.Examples;
 
-namespace Trailblazor.BrowserTests;
+namespace Trailblazor.Tests.Docs;
 
 public class UpcomingCatalogTests
 {

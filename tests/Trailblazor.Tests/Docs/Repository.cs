@@ -1,4 +1,4 @@
-namespace Trailblazor.BrowserTests;
+namespace Trailblazor.Tests.Docs;
 
 // The repository's checkout, for tests that read its sources.
 internal static class Repository

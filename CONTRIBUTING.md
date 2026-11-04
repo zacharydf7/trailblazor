@@ -4,8 +4,12 @@
 
 An issue is done when all of these hold:
 
-- The change has bUnit tests and Playwright tests in chromium, firefox and webkit, and the new tests fail when the
-  change is undone.
+- The change has tests that fail when the change is undone. Anything bUnit or a plain unit test can check accurately
+  is tested there: markup, ARIA attributes, text, parameters, events, announcements, and browser and dialog calls
+  checked through the fakes in `Trailblazor.Testing`. The docs site's pages render in bUnit too
+  (`tests/Trailblazor.Tests/Docs`). Playwright tests, which run in chromium, firefox and webkit, cover only what needs a
+  real browser: JavaScript interop, real focus and keyboard behavior, layout, scrolling and positioning, the top layer,
+  computed styles, and axe.
 - `dotnet build` passes with warnings as errors, and `dotnet test` passes locally in every browser. CI runs the
   browser tests in chromium on each push to save minutes, and in all three every Monday or when run by hand;
   `TRAILBLAZOR_BROWSERS=chromium` narrows a local run the same way. If five minutes pass with no test finishing, the run
