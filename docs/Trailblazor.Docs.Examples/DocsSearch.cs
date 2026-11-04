@@ -31,7 +31,7 @@ public static class DocsSearch
         .. GuideCatalog.All.Select(guide => new Entry(guide.Title, guide.Path, guide.Summary, "Guides", [])),
         .. ExampleCatalog.All.Select(example => new Entry(example.Title, $"components/{example.Name}",
             example.Summary, example.Category.ToString(), [.. example.Api
-                .SelectMany(type => ApiDocs.Describe(type).Members).Select(member => member.Name)])),
+                .SelectMany(type => ApiDocs.Describe(type).Members).Select(member => member.ShortName)])),
     ];
 
     private sealed record Entry(string Title, string Path, string Summary, string Category,

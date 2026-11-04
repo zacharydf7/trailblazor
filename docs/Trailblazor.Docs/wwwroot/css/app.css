@@ -662,6 +662,29 @@ kbd {
     font-size: var(--tb-font-size-xs);
 }
 
+.docs-api__group {
+    margin-block: var(--tb-space-4) var(--tb-space-2);
+}
+
+.docs-api__anchor {
+    margin-inline-start: var(--tb-space-1);
+    color: var(--tb-color-text-muted);
+}
+
+.docs-api__anchor:hover {
+    color: var(--docs-brand-text);
+}
+
+.docs-api__values {
+    margin: var(--tb-space-1) 0 0;
+    padding-inline-start: var(--tb-space-4);
+    color: var(--tb-color-text-muted);
+}
+
+.docs-api__value {
+    white-space: nowrap;
+}
+
 /* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
 :is(.docs-main, .docs-article__body) > :is(p, h3, ul, ol, .tb-alert) code,
 .docs-notes code,
@@ -727,7 +750,7 @@ kbd {
     vertical-align: middle;
 }
 
-.docs-brand {
+.docs-brand-preview {
     display: grid;
     gap: var(--tb-space-3);
     max-inline-size: 28rem;

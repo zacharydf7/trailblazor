@@ -1,23 +1,27 @@
 @using Trailblazor.Docs.Examples
+@inject NavigationManager Navigation
 
-<TbText TextStyle="TextStyle.Subtitle" As="HeadingLevel" class="docs-api__name" id="@IdOf(Type)">
+<TbText TextStyle="TextStyle.Subtitle" As="HeadingLevel" class="docs-api__name" id="@_api.Id">
     <code>@_api.Name</code>
 </TbText>
-<TbText class="docs-api__summary">@_api.Summary</TbText>
-@if (_api.Members.Count == 0)
+<TbText class="docs-api__summary">@DocsText.Render(_api.Summary)</TbText>
+@if (_api.Groups.Count == 0)
 {
     <TbText>No parameters of its own.</TbText>
 }
-else
+@foreach (var group in _api.Groups)
 {
+    <TbText TextStyle="TextStyle.Label" As="GroupLevel" class="docs-api__group" id="@GroupId(_api, group)">
+        @group.Name
+    </TbText>
     @* Scrolls sideways on a narrow screen, so it takes focus for keyboard users. *@
-    <div class="docs-api" role="region" tabindex="0" aria-label="@_api.Name">
+    <div class="docs-api" role="region" tabindex="0" aria-label="@($"{_api.Name} {group.Name.ToLowerInvariant()}")">
         <table>
             <thead>
                 <tr>
-                    <th scope="col">@(_api.Methods ? "Member" : "Name")</th>
+                    <th scope="col">Name</th>
                     <th scope="col">Type</th>
-                    @if (!_api.Methods)
+                    @if (group.Defaults)
                     {
                         <th scope="col">Default</th>
                     }
@@ -25,22 +29,43 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var member in _api.Members)
+                @foreach (var member in group.Members)
                 {
-                    <tr>
+                    <tr id="@member.Id">
                         <th scope="row">
                             <code>@member.Name</code>
+                            <a href="@LinkTo(member.Id)" class="docs-api__anchor"
+                               aria-label="@($"Link to {member.ShortName}")">#</a>
                             @if (member.Required)
                             {
                                 <span class="docs-api__required">Required</span>
                             }
                         </th>
-                        <td><code>@member.Type</code></td>
-                        @if (!_api.Methods)
+                        <td>
+                            <code>@member.Type</code>
+                            @if (member.Values.Count > 0)
+                            {
+                                <ul class="docs-api__values" aria-label="@($"Values of {member.Name}")">
+                                    @foreach (var value in member.Values)
+                                    {
+                                        <li>
+                                            <span class="docs-api__value">
+                                                <code>@value.Name</code>@(value.Default ? " (default)" : null)
+                                            </span>
+                                            @if (value.Description.Length > 0)
+                                            {
+                                                <span>: @DocsText.Render(value.Description)</span>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </td>
+                        @if (group.Defaults)
                         {
                             <td>@if (member.Default.Length > 0) { <code>@member.Default</code> }</td>
                         }
-                        <td>@member.Description</td>
+                        <td>@DocsText.Render(member.Description)</td>
                     </tr>
                 }
             </tbody>
@@ -59,8 +84,14 @@ else
     [Parameter]
     public TextElement HeadingLevel { get; set; } = TextElement.H3;
 
+    private TextElement GroupLevel => HeadingLevel + 1;
+
     protected override void OnParametersSet() => _api = ApiDocs.Describe(Type);
 
-    // The type's anchor on its page, such as "tbtreeview" for TbTreeView<TItem, TKey>.
-    public static string IdOf(Type type) => type.Name.Split('`')[0].ToLowerInvariant();
+    /// <summary>A group's anchor on its page, such as "tbbutton--events"; the two hyphens keep it apart from a
+    /// member's.</summary>
+    public static string GroupId(ApiType api, ApiGroup group) => $"{api.Id}--{group.Name.ToLowerInvariant()}";
+
+    // The site sets <base href>, so a bare #id would resolve against the home page.
+    private string LinkTo(string id) => $"{Navigation.ToBaseRelativePath(Navigation.Uri).Split('#')[0]}#{id}";
 }

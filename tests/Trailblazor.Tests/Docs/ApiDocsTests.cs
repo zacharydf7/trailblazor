@@ -95,7 +95,7 @@ public class ApiDocsTests
     {
         var api = ApiDocs.Describe(typeof(IBrowserService));
 
-        Assert.True(api.Methods);
+        Assert.Equal(["Methods"], api.Groups.Select(group => group.Name));
         Assert.NotEmpty(api.Summary);
         Assert.All(api.Members, member => Assert.NotEmpty(member.Description));
         Assert.Contains(api.Members, member => member is
@@ -109,6 +109,77 @@ public class ApiDocsTests
         {
             Name: "ObserveViewportAsync(Func<Viewport, Task> onChange)", Type: "Task<IAsyncDisposable>",
         });
+    }
+
+    [Fact]
+    public void Describe_ShouldListPublicMethodsButNotThoseEveryComponentHas_WhenGivenAComponent()
+    {
+        var grid = ApiDocs.Describe(typeof(TbDataGrid<>)).Groups.Single(group => group.Name == "Methods").Members;
+        var button = ApiDocs.Describe(typeof(TbButton)).Groups.Single(group => group.Name == "Methods").Members;
+
+        Assert.Contains(grid, member => member is { Name: "RefreshAsync()", Type: "Task" });
+        Assert.Contains(grid, member => member is { Name: "RenderRows()", Type: "void" });
+        Assert.Contains(grid, member => member.Name.StartsWith("ScrollToAsync(", StringComparison.Ordinal)
+            && member.Id == "tbdatagrid-scrolltoasync");
+        Assert.Contains(button, member => member.Name.StartsWith("FocusAsync(", StringComparison.Ordinal));
+        Assert.DoesNotContain(grid.Concat(button),
+            member => member.Name.StartsWith("SetParametersAsync", StringComparison.Ordinal)
+                || member.Name.StartsWith("Dispose", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Describe_ShouldGroupValuesContentEventsAndMethods_WhenGivenAComponent()
+    {
+        var groups = ApiDocs.Describe(typeof(TbButton)).Groups;
+
+        Assert.Equal(["Parameters", "Content", "Events", "Methods"], groups.Select(group => group.Name));
+        Assert.Equal([true, false, false, false], groups.Select(group => group.Defaults));
+        Assert.Contains(groups[1].Members, member => member.Name == "ChildContent");
+        Assert.Contains(groups[2].Members,
+            member => member is { Name: "OnClick", Type: "EventCallback<MouseEventArgs>" });
+        Assert.DoesNotContain(groups[0].Members,
+            member => member.Type.StartsWith("EventCallback", StringComparison.Ordinal)
+                || member.Type.StartsWith("RenderFragment", StringComparison.Ordinal));
+        Assert.Contains(ApiDocs.Describe(typeof(TbChip)).Groups.Single(group => group.Name == "Events").Members,
+            member => member is { Name: "OnClose", Type: "EventCallback" });
+    }
+
+    [Fact]
+    public void Describe_ShouldListEnumValuesAndMarkTheDefault_WhenAParameterIsAnEnum()
+    {
+        var variant = ApiDocs.Describe(typeof(TbButton)).Members.Single(member => member.Name == "Variant");
+
+        Assert.Equal(Enum.GetNames<Variant>(), variant.Values.Select(value => value.Name));
+        Assert.Equal(["Filled"], variant.Values.Where(value => value.Default).Select(value => value.Name));
+        Assert.Empty(ApiDocs.Describe(typeof(TbButton)).Members.Single(member => member.Name == "Disabled").Values);
+    }
+
+    [Theory, MemberData(nameof(Types))]
+    public void Describe_ShouldGiveEveryMemberItsOwnAnchorUnderTheType_WhenGivenATypeTheDocsTable(string type)
+    {
+        var api = ApiDocs.Describe(Type.GetType(type)!);
+
+        Assert.All(api.Members, member => Assert.StartsWith($"{api.Id}-", member.Id));
+        Assert.Equal(api.Members.Count, api.Members.Select(member => member.Id).Distinct().Count());
+    }
+
+    [Fact]
+    public void Describe_ShouldLinkACrossReference_WhenItsTargetHasATable()
+    {
+        var items = ApiDocs.Describe(typeof(TbDataGrid<>)).Members.Single(member => member.Name == "Items");
+
+        Assert.Contains("[TbDataGrid.RefreshAsync](components/data-grid/api#tbdatagrid-refreshasync)",
+            items.Description);
+    }
+
+    [Fact]
+    public void Describe_ShouldLinkACrossReferenceToAGuide_WhenItsTargetIsTabledThere()
+    {
+        var check = ApiDocs.Describe(typeof(IBrowserService)).Members
+            .Single(member => member.ShortName == "CanPickColorAsync");
+
+        Assert.Contains("[IBrowserService.PickColorAsync](guides/browser#ibrowserservice-pickcolorasync)",
+            check.Description);
     }
 
     [Fact]

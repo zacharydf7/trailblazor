@@ -1,4 +1,6 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Trailblazor.Docs.Examples;
 
 namespace Trailblazor.Tests.Docs;
@@ -79,8 +81,8 @@ public class ComponentPageTests : DocsTest
         Assert.Equal("Overview", overview.Find("nav[aria-label='Button pages'] a[aria-current=page]").TextContent);
         Assert.Equal("components/button/api", api.Find("nav[aria-label='Button pages'] a[aria-current=page]")
             .GetAttribute("href"));
-        Assert.Empty(overview.FindAll("[role=region][aria-label='TbButton']"));
-        Assert.NotNull(api.Find("[role=region][aria-label='TbButton']"));
+        Assert.Empty(overview.FindAll("[role=region][aria-label='TbButton parameters']"));
+        Assert.NotNull(api.Find("[role=region][aria-label='TbButton parameters']"));
     }
 
     [Fact]
@@ -114,12 +116,51 @@ public class ComponentPageTests : DocsTest
         var cut = ApiPage("button");
 
         Assert.StartsWith("A button with text", cut.Find(".docs-api__summary").TextContent);
-        var variant = cut.FindAll("[role=region][aria-label='TbButton'] tbody tr")
-            .Single(row => row.QuerySelector("th[scope=row]")!.TextContent.Trim() == "Variant");
+        var variant = cut.FindAll("[role=region][aria-label='TbButton parameters'] tbody tr")
+            .Single(row => row.QuerySelector("th[scope=row] code")!.TextContent == "Variant");
         var cells = variant.QuerySelectorAll("td");
-        Assert.Equal("Variant", cells[0].TextContent.Trim());
+        Assert.Equal("Variant", cells[0].QuerySelector("code")!.TextContent);
         Assert.Equal("Variant.Filled", cells[1].TextContent.Trim());
         Assert.StartsWith("How strongly the button is drawn", cells[2].TextContent.Trim());
+    }
+
+    [Fact]
+    public void ApiPage_ShouldListAnEnumsValuesWithTheDefaultAndLinkEachRow_WhenItsApiPageIsOpened()
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo("components/button/api");
+        var cut = ApiPage("button");
+
+        var variant = cut.Find("tr#tbbutton-variant");
+        Assert.Equal(Enum.GetNames<Variant>(), variant.QuerySelectorAll("ul[aria-label='Values of Variant'] li code")
+            .Select(code => code.TextContent));
+        Assert.Contains("(default)", variant.QuerySelectorAll("li").Single(item => item.TextContent.Contains("Filled"))
+            .TextContent);
+        Assert.Equal("components/button/api#tbbutton-variant", variant.QuerySelector("a.docs-api__anchor")!
+            .GetAttribute("href"));
+        Assert.Equal("Link to FocusAsync",
+            cut.Find("tr#tbbutton-focusasync a.docs-api__anchor").GetAttribute("aria-label"));
+        Assert.NotNull(cut.Find("[role=region][aria-label='TbButton events'] tr#tbbutton-onclick"));
+    }
+
+    [Fact]
+    public void ApiPage_ShouldListEachTypesGroupsUnderItInTheContents_WhenOpened()
+    {
+        var rail = ApiPage("button").Find(".docs-article__rail");
+
+        Assert.Equal(["TbButton", "Parameters", "Content", "Events", "Methods"],
+            Texts(rail.QuerySelectorAll("a")).Take(5));
+        Assert.EndsWith("#tbbutton--events", rail.QuerySelectorAll("a")[3].GetAttribute("href"));
+    }
+
+    [Fact]
+    public void ApiPage_ShouldListTheGridsMethods_WhenItsApiPageIsOpened()
+    {
+        var methods = ApiPage("data-grid").Find("[role=region][aria-label='TbDataGrid<TItem> methods']");
+
+        Assert.Contains(Texts(methods.QuerySelectorAll("tbody th code")), name => name == "RefreshAsync()");
+        Assert.Contains(Texts(methods.QuerySelectorAll("tbody th code")), name => name == "RenderRows()");
+        Assert.Equal("components/data-grid/api#tbdatagrid-refreshasync",
+            ApiPage("data-grid").Find("tr#tbdatagrid-items a[href*=refreshasync]").GetAttribute("href"));
     }
 
     [Fact]

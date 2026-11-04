@@ -81,7 +81,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "guides/theming");
         var color = page.GetByRole(AriaRole.Textbox, new() { Name = "Brand color" });
-        var save = page.Locator(".docs-brand").GetByRole(AriaRole.Button, new() { Name = "Save" });
+        var save = page.Locator(".docs-brand-preview").GetByRole(AriaRole.Button, new() { Name = "Save" });
         var before = await save.EvaluateAsync<string>("button => getComputedStyle(button).backgroundColor");
 
         await color.FillAsync("#b91c1c");
@@ -349,6 +349,17 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ApiPage_ShouldScrollToTheMemberBelowTheHeader_WhenItsAnchorIsOpened(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/data-grid/api#tbdatagrid-refreshasync");
+        var row = page.Locator("tr#tbdatagrid-refreshasync");
+
+        await Expect(row).ToBeInViewportAsync();
+        var header = (await page.Locator(".docs-header").BoundingBoxAsync())!;
+        Assert.True((await row.BoundingBoxAsync())!.Y >= header.Y + header.Height, "The row is under the header.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Browser_ShouldFollowTheViewportAndDownloadTheList_WhenUsed(string browser)
     {
         var page = await OpenDocsAsync(browser, "guides/browser");
@@ -360,9 +371,6 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             page.GetByRole(AriaRole.Button, new() { Name = "Download the list" }).ClickAsync());
 
         Assert.Equal("packing-list.csv", download.SuggestedFilename);
-        var methods = page.GetByRole(AriaRole.Region, new() { Name = "IBrowserService" });
-        await Expect(methods.GetByRole(AriaRole.Columnheader)).ToHaveTextAsync(["Member", "Type", "Description"]);
-        await Expect(methods.GetByRole(AriaRole.Rowheader, new() { Name = "PickColorAsync()", Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

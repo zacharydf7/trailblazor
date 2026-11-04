@@ -5,6 +5,14 @@ namespace Trailblazor.Tests.Docs;
 public class DocsSearchTests
 {
     [Fact]
+    public void Find_ShouldNotMatchAMethodsParameters_WhenGivenAParameterName()
+    {
+        var results = DocsSearch.Find("preventScroll");
+
+        Assert.DoesNotContain(results, result => result.Title == "Button");
+    }
+
+    [Fact]
     public void Find_ShouldRankTitleMatchesFirst_WhenOthersMatchOnlyInTheirSummaries()
     {
         var results = DocsSearch.Find("group");

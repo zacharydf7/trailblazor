@@ -25,6 +25,15 @@ public class GuideTests : DocsTest
         Assert.Empty(cut.FindAll(".docs-article__body .tb-alert:not([role=note])"));
     }
 
+    [Theory, MemberData(nameof(Guides))]
+    public void Guide_ShouldTableTheTypesItsEntryLists_WhenOpened(string path)
+    {
+        var cut = PageAt(path);
+
+        Assert.Equal(GuideCatalog.All.Single(guide => guide.Path == path).Api.Select(ApiDocs.IdOf),
+            cut.FindAll(".docs-api__name").Select(heading => heading.Id));
+    }
+
     [Fact]
     public void AnalyzersGuide_ShouldListEveryRuleTheAnalyzerReleases_WhenOpened()
     {
@@ -38,6 +47,15 @@ public class GuideTests : DocsTest
 
         Assert.NotEmpty(released);
         Assert.Equal(released, Texts(rules));
+    }
+
+    [Fact]
+    public void BrowserGuide_ShouldTableTheBrowserServicesMethods_WhenOpened()
+    {
+        var methods = PageAt("guides/browser").Find("[role=region][aria-label='IBrowserService methods']");
+
+        Assert.Equal(["Name", "Type", "Description"], Texts(methods.QuerySelectorAll("thead th")));
+        Assert.Contains("PickColorAsync()", Texts(methods.QuerySelectorAll("tbody th code")));
     }
 
     [Fact]

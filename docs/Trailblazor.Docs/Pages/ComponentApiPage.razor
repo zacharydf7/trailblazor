@@ -6,9 +6,14 @@
     <PageTitle>@example.Title API · Trailblazor</PageTitle>
     <DocsArticle @key="example.Name">
         <Contents>
-            @foreach (var type in example.Api)
+            @foreach (var api in example.Api.Select(ApiDocs.Describe))
             {
-                <TbTableOfContentsItem TargetId="@ApiTable.IdOf(type)" Text="@ApiDocs.Describe(type).Name" />
+                <TbTableOfContentsItem TargetId="@api.Id" Text="@api.Name">
+                    @foreach (var group in api.Groups)
+                    {
+                        <TbTableOfContentsItem TargetId="@ApiTable.GroupId(api, group)" Text="@group.Name" />
+                    }
+                </TbTableOfContentsItem>
             }
         </Contents>
         <Header>
