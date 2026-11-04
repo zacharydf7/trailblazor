@@ -55,6 +55,47 @@ public class SiteTests : DocsTest
         Assert.Equal("-1", cut.Find("main#main").GetAttribute("tabindex"));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LookSwitcher_ShouldShowTheDirectionThePageStartedIn_WhenRendered(bool rightToLeft)
+    {
+        JSInterop.SetupModule("./js/direction.js").Setup<bool>("isRightToLeft").SetResult(rightToLeft);
+
+        var cut = Render<LookSwitcher>();
+
+        Assert.Equal(rightToLeft ? "true" : "false", Button(cut, "Right to left").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public void LookSwitcher_ShouldSetAndRememberTheDirection_WhenRightToLeftIsPressed()
+    {
+        var direction = JSInterop.SetupModule("./js/direction.js");
+        direction.Setup<bool>("isRightToLeft").SetResult(false);
+        var cut = Render<LookSwitcher>();
+
+        Button(cut, "Right to left").Click();
+        Assert.Equal("true", Button(cut, "Right to left").GetAttribute("aria-pressed"));
+        Button(cut, "Right to left").Click();
+
+        Assert.Equal([true, false], direction.Invocations["set"].Select(call => (bool)call.Arguments[0]!));
+        Assert.Equal("false", Button(cut, "Right to left").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public void LookSwitcher_ShouldKeepTheChoice_WhenPressedBeforeThePagesDirectionIsRead()
+    {
+        var direction = JSInterop.SetupModule("./js/direction.js");
+        var read = direction.Setup<bool>("isRightToLeft");
+        var cut = Render<LookSwitcher>();
+
+        Button(cut, "Right to left").Click();
+        read.SetResult(false);
+
+        Assert.Equal([true], direction.Invocations["set"].Select(call => (bool)call.Arguments[0]!));
+        Assert.Equal("true", Button(cut, "Right to left").GetAttribute("aria-pressed"));
+    }
+
     [Fact]
     public void MainLayout_ShouldLinkTheMarkdownIndexInANewTab_WhenRendered()
     {

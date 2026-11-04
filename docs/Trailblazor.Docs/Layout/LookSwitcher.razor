@@ -1,10 +1,13 @@
 @using Trailblazor.Docs.Examples
-@implements IDisposable
+@implements IAsyncDisposable
 @inject IThemeService Theme
+@inject IJSRuntime JS
 
 @* The palette and density keep their labels for screen readers; the header has no room to show them. *@
 <TbStack Row Gap="2" Align="Align.Center" Wrap id="docs-look" class="docs-look">
     <TbThemePicker Size="Size.Small" />
+    <TbIconButton Icon="RightToLeft" AriaLabel="Right to left" Variant="Variant.Outlined" Size="Size.Small"
+                  Pressed="_rightToLeft" PressedChanged="SetDirectionAsync" />
     <TbSelect Label="Palette" Value="Theme.Palette" ValueChanged="(Palette palette) => Theme.SetPaletteAsync(palette)"
               Classes="HiddenLabel">
         @foreach (var palette in PaletteCatalog.All)
@@ -22,9 +25,52 @@
 @code {
     private static readonly FieldClasses HiddenLabel = new() { Label = "tb-visually-hidden" };
 
+    // Material Symbols' format_textdirection_r_to_l, copied here because the icon pack loads only with the pages that
+    // use it.
+    private static readonly Icon RightToLeft = new("<path d=\"M390-360v-220q-66 0-113-43t-47-106.5q0-63.5 43.5-107"
+        + "T380-880h280v60h-90v460h-60v-460h-60v460h-60ZM234-196l74 74-42 42-146-146 146-146 42 42-74 74h606v60H234Zm"
+        + "156-444v-180q-42 0-71 24t-29 66q0 42 29 66t71 24Zm0-90Z\" />", "0 -960 960 960");
+
+    private Task<IJSObjectReference>? _direction;
+    private bool _rightToLeft;
+    private bool _chosen;
+
+    // Reading and setting share one import, so a click before it loads waits for it rather than being dropped.
+    private Task<IJSObjectReference> Direction =>
+        _direction ??= JS.InvokeAsync<IJSObjectReference>("import", "./js/direction.js").AsTask();
+
     protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
+
+    // The head script may already have applied a remembered right-to-left direction before the app started. If the
+    // switch is pressed while the component is still reading the page's direction, the press wins.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var rightToLeft = await (await Direction).InvokeAsync<bool>("isRightToLeft");
+            if (!_chosen)
+            {
+                _rightToLeft = rightToLeft;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task SetDirectionAsync(bool rightToLeft)
+    {
+        _chosen = true;
+        _rightToLeft = rightToLeft;
+        await (await Direction).InvokeVoidAsync("set", rightToLeft);
+    }
 
     private void OnThemeChanged() => InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Theme.Changed -= OnThemeChanged;
+    public async ValueTask DisposeAsync()
+    {
+        Theme.Changed -= OnThemeChanged;
+        if (_direction is not null)
+        {
+            await (await _direction).DisposeAsync();
+        }
+    }
 }

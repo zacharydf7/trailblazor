@@ -593,6 +593,24 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
     }
 
+    // SiteTests covers the switch's state; this checks the page mirroring and the choice outlasting a reload.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task LookSwitcher_ShouldMirrorThePageAndRememberIt_WhenRightToLeftIsChosen(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/slider");
+        var rightToLeft = page.GetByRole(AriaRole.Button, new() { Name = "Right to left" });
+        var contents = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
+
+        await rightToLeft.ClickAsync();
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
+        Assert.True((await contents.BoundingBoxAsync())!.X > (await page.Locator("main").BoundingBoxAsync())!.X,
+            "The contents should move to the right of the page.");
+        await page.ReloadAsync();
+
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
+        await Expect(rightToLeft).ToHaveAttributeAsync("aria-pressed", "true");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Browser_ShouldFollowTheViewportAndDownloadTheList_WhenUsed(string browser)
     {

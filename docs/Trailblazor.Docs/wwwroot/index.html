@@ -15,6 +15,10 @@
          paint. -->
     <script src="_content/Trailblazor/theme-head.js" data-mode="system" data-palette="graphite"
         data-density="comfortable" data-remember="true"></script>
+    <!-- The direction switch's choice goes on before the first paint too, so a right-to-left page doesn't flip. -->
+    <script>
+        try { if (localStorage.getItem('docs-direction') === 'rtl') document.documentElement.dir = 'rtl'; } catch { }
+    </script>
     <script type="importmap"></script>
 </head>
 
