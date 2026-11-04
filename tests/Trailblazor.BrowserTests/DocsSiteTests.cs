@@ -737,6 +737,29 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             """), "The header's row should fit the window.");
     }
 
+    public static TheoryData<string, string> BrowsersInBothDirections => new(
+        from browser in AllBrowsers.Names from direction in new[] { "ltr", "rtl" } select (browser, direction));
+
+    [Theory, MemberData(nameof(BrowsersInBothDirections))]
+    public async Task Sidebar_ShouldEndAboveTheFooterWithItsLastLinkInView_WhenThePageIsScrolledToTheBottom(
+        string browser, string direction)
+    {
+        var page = await OpenDocsAsync(browser, "components/button",
+            new() { ViewportSize = new() { Width = 1440, Height = 900 } });
+        var sidebar = page.GetByRole(AriaRole.Navigation, new() { Name = "Contents" });
+        await page.EvaluateAsync("direction => document.documentElement.dir = direction", direction);
+
+        await page.EvaluateAsync("() => window.scrollTo(0, document.body.scrollHeight)");
+        await sidebar.EvaluateAsync("sidebar => sidebar.scrollTop = sidebar.scrollHeight");
+
+        var footer = (await page.Locator(".docs-footer").BoundingBoxAsync())!;
+        Assert.True(footer.Y < 900, "The footer should be in view.");
+        var box = (await sidebar.BoundingBoxAsync())!;
+        Assert.True(box.Y + box.Height <= footer.Y + 1, "The sidebar should end above the footer.");
+        var last = (await sidebar.GetByRole(AriaRole.Link).Last.BoundingBoxAsync())!;
+        Assert.True(last.Y >= 0 && last.Y + last.Height <= footer.Y + 1, "The sidebar's last link should be in view.");
+    }
+
     [Theory, MemberData(nameof(PhonePagesInBothThemes))]
     public async Task Site_ShouldHaveNoAccessibilityViolations_WhenThePhoneMenuIsClosedOrOpen(string browser,
         string path, string theme)

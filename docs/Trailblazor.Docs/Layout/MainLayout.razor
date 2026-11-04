@@ -35,9 +35,11 @@
     </header>
     @if (!IsHome)
     {
-        <nav id="docs-nav" class="@NavClass" aria-label="Contents">
-            <NavMenu />
-        </nav>
+        <div class="docs-sidebar">
+            <nav id="docs-nav" class="@NavClass" aria-label="Contents">
+                <NavMenu />
+            </nav>
+        </div>
     }
     <main @ref="_main" id="main" class="docs-main" tabindex="-1">
         @Body

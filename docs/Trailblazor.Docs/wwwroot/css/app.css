@@ -179,11 +179,14 @@ a:focus-visible {
 
 /* ---- Sidebar ---- */
 
-.docs-nav {
+/* A sticky element stops at the end of its parent; this column ends above the footer, so the sidebar does too. */
+.docs-sidebar {
     grid-area: nav;
+}
+
+.docs-nav {
     position: sticky;
     top: var(--docs-header-height);
-    align-self: start;
     max-height: calc(100vh - var(--docs-header-height));
     overflow-y: auto;
     padding: var(--tb-space-4) var(--tb-space-3) var(--tb-space-8) var(--tb-space-5);
