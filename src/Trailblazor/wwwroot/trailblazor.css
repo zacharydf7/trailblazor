@@ -4613,6 +4613,11 @@
         overflow: auto;
     }
 
+    .tb-data-grid__scroll:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
     /* Rows that scroll in a set height keep the header and its filters in view, above the rows and their pinned
        cells. */
     .tb-data-grid--scrolls thead {

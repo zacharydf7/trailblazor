@@ -27,7 +27,9 @@
             </CascadingValue>
         </div>
     }
-    <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")">
+    <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")"
+         role="@(ScrollIsTabStop ? "region" : null)" aria-label="@(ScrollIsTabStop ? AriaLabel : null)"
+         tabindex="@(ScrollIsTabStop ? 0 : null)">
         <table @ref="_table" role="@(IsGrid ? "grid" : null)" aria-label="@AriaLabel"
                aria-multiselectable="@(IsGrid && SelectionMode == SelectionMode.Multiple ? "true" : null)"
                aria-busy="@(IsLoading ? "true" : null)"
@@ -72,7 +74,7 @@
                             @if (column.CanSort)
                             {
                                 <button type="button" data-part="sort" class="tb-data-grid__sort"
-                                        @onclick="args => SortAsync(column, args)">
+                                        @onkeydown="OnSortKeyDown" @onclick="args => SortAsync(column, args)">
                                     <span>@column.Heading</span>
                                     @if (sort is not null)
                                     {

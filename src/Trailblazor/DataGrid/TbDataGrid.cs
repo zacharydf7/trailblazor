@@ -927,6 +927,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // row.
     private sealed record GroupKey(GroupKey? Outer, string Column, object? Value);
 
+    // Rows in a set height scroll in their own box. It's a tab stop so keys can scroll it, unless cell navigation does.
+    private bool ScrollIsTabStop => Height is not null && !IsGrid;
+
+    private bool _sortKeyHasShift;
+
     internal void AddColumn(TbColumn<TItem> column)
     {
         _columns.Add(column);
@@ -1419,13 +1424,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return sorted ?? items;
     }
 
+    // Firefox leaves Shift off the click that Enter or Space makes, so the key says whether Shift is held.
+    private void OnSortKeyDown(KeyboardEventArgs args) => _sortKeyHasShift = args.ShiftKey && args.Key is "Enter" or " ";
+
     // A plain click sorts by the column alone, then turns it around, then stops; Shift adds it to the sorts instead.
     private async Task SortAsync(TbColumn<TItem> column, MouseEventArgs args)
     {
         Telemetry.Used(TelemetryName, "sort");
         var at = _sorts.FindIndex(sort => sort.Column == column.Key);
         List<GridSort> sorts = [.. _sorts];
-        if (!args.ShiftKey && !(at == 0 && _sorts.Count == 1))
+        // A pointer's click has a detail, so a key let go elsewhere doesn't carry over to it.
+        var adding = args.ShiftKey || (_sortKeyHasShift && args.Detail == 0);
+        _sortKeyHasShift = false;
+        if (!adding && !(at == 0 && _sorts.Count == 1))
         {
             sorts.Clear();
             at = -1;

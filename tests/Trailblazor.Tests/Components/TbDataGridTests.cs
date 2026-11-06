@@ -681,6 +681,70 @@ public class TbDataGridTests : BunitContext
         Assert.Equal("Plan Cedar Flats", Row(cut, "3").QuerySelector("button")!.TextContent);
     }
 
+    [Fact]
+    public void Sort_ShouldAddToTheSorts_WhenTheKeyHasShiftButItsClickDoesnt()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
+            .AddChildContent(Columns));
+        cut.FindAll("[data-part=sort]")[0].Click();
+
+        var next = cut.FindAll("[data-part=sort]")[1];
+        next.KeyDown(new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+        cut.FindAll("[data-part=sort]")[1].Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.Equal(2, cut.FindAll(".tb-data-grid__sort-order").Count);
+    }
+
+    [Fact]
+    public void ScrollBox_ShouldBeANamedTabStop_WhenTheGridHasAHeight()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.Height, "10rem")
+            .Add(grid => grid.KeySelector, trail => trail.Id).AddChildContent(Columns));
+
+        var scroll = cut.Find("[data-part=scroll]");
+
+        Assert.Equal("0", scroll.GetAttribute("tabindex"));
+        Assert.Equal("region", scroll.GetAttribute("role"));
+        Assert.Equal("Trails", scroll.GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void ScrollBox_ShouldNotBeATabStop_WhenCellNavigationScrollsIt()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.Height, "10rem")
+            .Add(grid => grid.CellNavigation, true).Add(grid => grid.KeySelector, trail => trail.Id)
+            .AddChildContent(Columns));
+
+        Assert.False(cut.Find("[data-part=scroll]").HasAttribute("tabindex"));
+    }
+
+    [Fact]
+    public void Sort_ShouldReplaceTheSorts_WhenAPointerClicksAfterAKeyWasLetGoElsewhere()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
+            .AddChildContent(Columns));
+        cut.FindAll("[data-part=sort]")[0].Click();
+
+        cut.FindAll("[data-part=sort]")[1].KeyDown(new KeyboardEventArgs { Key = " ", ShiftKey = true });
+        cut.FindAll("[data-part=sort]")[1].Click(new MouseEventArgs { Detail = 1 });
+
+        Assert.Empty(cut.FindAll(".tb-data-grid__sort-order"));
+    }
+
+    [Fact]
+    public void ScrollBox_ShouldNotBeATabStop_WhenTheGridHasNoHeight()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
+            .AddChildContent(Columns));
+
+        Assert.False(cut.Find("[data-part=scroll]").HasAttribute("tabindex"));
+    }
+
     // The browser reports a row's clicks through its tbrowclick event, saying whether they landed on a control.
     private static Task ClickAsync(IElement row, bool onControl = false) =>
         row.TriggerEventAsync("ontbrowclick", new RowClickEventArgs { OnControl = onControl });
