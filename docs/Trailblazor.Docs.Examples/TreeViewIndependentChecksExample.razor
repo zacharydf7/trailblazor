@@ -1,0 +1,11 @@
+<TbTreeView TItem="string" TKey="string" AriaLabel="Gear to pack" Checkable CascadeChecks="false"
+            @bind-CheckedKeys="_gear" InitialExpandDepth="1">
+    <TbTreeItem Value="@("kitchen")" Text="Kitchen kit">
+        <TbTreeItem Value="@("stove")" Text="Stove" />
+        <TbTreeItem Value="@("pot")" Text="Pot" />
+    </TbTreeItem>
+</TbTreeView>
+
+@code {
+    private IReadOnlyCollection<string> _gear = [];
+}

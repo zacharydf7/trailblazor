@@ -51,7 +51,7 @@ public sealed class TrailblazorMarkup
     /// </summary>
     public TbTreeDriver Tree(string? name = null) => new(() =>
     {
-        var trees = _findAll("[role=tree]").Where(tree => name is null || tree.GetAttribute("aria-label") == name)
+        var trees = _findAll(".tb-tree").Where(tree => name is null || tree.GetAttribute("aria-label") == name)
             .ToList();
         return trees.Count == 1 ? trees[0]
             : throw new InvalidOperationException(name is null

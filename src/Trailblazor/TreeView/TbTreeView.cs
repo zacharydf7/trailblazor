@@ -367,6 +367,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private object BuiltFor => (Items, ChildContent, KeySelector?.Method, ChildrenSelector?.Method,
         ParentKeySelector?.Method, HasChildren?.Method, LoadChildren is null);
 
+    // A tree must hold rows, so one with none is a group around its message, which can hold a button of the app's own.
+    private bool ShowsEmpty => _rows.Count == 0 && (ChildContent is null || _itemsRegistered);
+
     private object FlattenedFor => (FilterKeepsDescendants, Checkable, CascadeChecks, _expanded, _checked);
 
     /// <summary>Builds the rows again from <see cref="Items"/> after they, or the children they hold, changed in
@@ -994,9 +997,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         bool? StateOf(TreeNode<TItem> node)
         {
             bool? state = _checked.Contains(node.Key);
-            if (CascadeChecks && node.Children.Count > 0)
+            var states = node.Children.Select(StateOf).Distinct().ToList();
+            if (CascadeChecks && states.Count > 0)
             {
-                var states = node.Children.Select(StateOf).Distinct().ToList();
                 state = states.Count == 1 ? states[0] : null;
             }
 

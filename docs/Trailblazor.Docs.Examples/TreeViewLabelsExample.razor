@@ -1,0 +1,23 @@
+<TbTreeView TItem="Place" TKey="int" AriaLabel="Regions on the old map" Items="Regions" KeySelector="place => place.Id"
+            ItemText="place => place.Name" LoadChildren="LoadTrailsAsync" HasChildren="place => place.Id < 10"
+            Labels="MapLabels" />
+
+@code {
+    private static readonly Place[] Regions = [new(1, "North ridge")];
+
+    private static readonly TreeViewLabels MapLabels = new()
+    {
+        Loading = "Reading the old map...",
+        LoadFailed = "The old map wouldn't load.",
+        Retry = "Ask again",
+    };
+
+    // Always fails, to show the words for it.
+    private static async Task<IEnumerable<Place>> LoadTrailsAsync(Place region, CancellationToken cancel)
+    {
+        await Task.Delay(1000, cancel);
+        throw new InvalidOperationException("The old map is offline.");
+    }
+
+    private sealed record Place(int Id, string Name);
+}

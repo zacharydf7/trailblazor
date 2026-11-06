@@ -1,0 +1,23 @@
+<TbStack Gap="4">
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Closed regions" Items="None" KeySelector="place => place.Id"
+                ItemText="place => place.Name" />
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Saved regions" Items="_saved" KeySelector="place => place.Id"
+                ItemText="place => place.Name">
+        <EmptyContent>
+            <TbStack Gap="2" Align="Align.Start">
+                <TbText>Regions you save show here.</TbText>
+                <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="SaveARegion">Save a region</TbButton>
+            </TbStack>
+        </EmptyContent>
+    </TbTreeView>
+</TbStack>
+
+@code {
+    private static readonly Place[] None = [];
+
+    private Place[] _saved = [];
+
+    private void SaveARegion() => _saved = [new(1, "North ridge")];
+
+    private sealed record Place(int Id, string Name);
+}

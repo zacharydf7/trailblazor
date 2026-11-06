@@ -6,6 +6,16 @@ namespace Trailblazor.BrowserTests;
 public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeLocator_ShouldFindTheTreeAndReturn_WhenItHasNoRowsToExpand(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+
+        await page.Tb().Tree("Closed regions").ExpandAllAsync();
+
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Closed regions" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldSelectEachRowTheArrowsReachButNotWithCtrl_WhenSelectionFollowsFocus(string browser)
     {
         var page = await OpenAsync(browser, "/tree-view");

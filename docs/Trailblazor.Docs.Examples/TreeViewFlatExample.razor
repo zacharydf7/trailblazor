@@ -1,0 +1,16 @@
+<TbTreeView TItem="Place" TKey="int" AriaLabel="Park map" Items="Places" KeySelector="place => place.Id"
+            ParentKeySelector="place => place.ParentId" ItemText="place => place.Name" InitialExpandDepth="1" />
+
+@code {
+    // One list of every place, the way a database table holds it.
+    private static readonly Place[] Places =
+    [
+        new(1, null, "North ridge"),
+        new(2, 1, "Pine Hollow loop"),
+        new(3, 1, "Eagle Ridge traverse"),
+        new(4, null, "River valley"),
+        new(5, 4, "Cedar Flats"),
+    ];
+
+    private sealed record Place(int Id, int? ParentId, string Name);
+}

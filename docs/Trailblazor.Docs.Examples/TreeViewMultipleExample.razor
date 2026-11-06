@@ -1,0 +1,13 @@
+<TbStack Gap="3">
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Regions to visit" Items="Regions" KeySelector="place => place.Id"
+                ItemText="place => place.Name" SelectionMode="SelectionMode.Multiple" @bind-SelectedKeys="_chosen" />
+    <output aria-label="Chosen regions">Chosen: @_chosen.Count</output>
+</TbStack>
+
+@code {
+    private static readonly Place[] Regions = [new(1, "North ridge"), new(2, "River valley"), new(3, "High peaks")];
+
+    private IReadOnlyCollection<int> _chosen = [];
+
+    private sealed record Place(int Id, string Name);
+}

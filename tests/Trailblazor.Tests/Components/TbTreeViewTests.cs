@@ -198,6 +198,35 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Tree_ShouldBeANamedGroupThatItsDriverFinds_WhenItHasNoRows()
+    {
+        var cut = RenderPlaces([]);
+
+        Assert.Equal("group", cut.Find(".tb-tree").GetAttribute("role"));
+        Assert.Empty(cut.Tb().Tree().Texts);
+    }
+
+    [Fact]
+    public void Tree_ShouldLeaveOutMultiselectable_WhenItHasNoRows()
+    {
+        var cut = RenderPlaces([], parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.Multiple));
+
+        Assert.False(cut.Find(".tb-tree").HasAttribute("aria-multiselectable"));
+    }
+
+    [Fact]
+    public void Check_ShouldLeaveAChildUnchecked_WhenChecksDontCascade()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Checkable, true)
+            .Add(tree => tree.CascadeChecks, false).Add(tree => tree.InitialExpandDepth, 1));
+
+        Check(cut, "1");
+
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-checked"));
+        Assert.Equal("false", Row(cut, "2").GetAttribute("aria-checked"));
+    }
+
+    [Fact]
     public void Filter_ShouldShowTheMatchesInsideTheirOpenParents_WhenSet()
     {
         var cut = RenderPlaces(Nested,

@@ -1,0 +1,29 @@
+<TbStack Gap="3">
+    <TbCheckbox Label="Make the next load fail" @bind-Value="_failNext" />
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Regions to open" Items="Regions" KeySelector="place => place.Id"
+                ItemText="place => place.Name" LoadChildren="LoadTrailsAsync" HasChildren="place => place.Id < 10"
+                OnLoadFailed="() => _failures++" />
+    <output aria-label="Failed loads">Failed loads: @_failures</output>
+</TbStack>
+
+@code {
+    private static readonly Place[] Regions = [new(1, "North ridge"), new(2, "River valley")];
+
+    private bool _failNext;
+    private int _failures;
+
+    // Stands in for a server that's slow, and that fails when asked to.
+    private async Task<IEnumerable<Place>> LoadTrailsAsync(Place region, CancellationToken cancel)
+    {
+        await Task.Delay(1000, cancel);
+        if (_failNext)
+        {
+            _failNext = false;
+            throw new InvalidOperationException("The trail list is offline.");
+        }
+
+        return [new(region.Id * 10 + 1, $"{region.Name} loop"), new(region.Id * 10 + 2, $"{region.Name} spur")];
+    }
+
+    private sealed record Place(int Id, string Name);
+}

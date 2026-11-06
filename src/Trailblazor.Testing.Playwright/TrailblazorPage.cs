@@ -297,7 +297,9 @@ public sealed class TbTreeLocator(IPage page, string name)
 {
     private int? _depth;
 
-    private ILocator Tree => page.GetByRole(AriaRole.Tree, new() { Name = name, Exact = true });
+    // A tree with no rows is a group, so that it can hold its message.
+    private ILocator Tree => page.GetByRole(AriaRole.Tree, new() { Name = name, Exact = true })
+        .Or(page.GetByRole(AriaRole.Group, new() { Name = name, Exact = true }).And(page.Locator(".tb-tree")));
 
     /// <summary>The row at this path, which must be showing. When several rows match, as rows with the same text
     /// do, it is the first.</summary>

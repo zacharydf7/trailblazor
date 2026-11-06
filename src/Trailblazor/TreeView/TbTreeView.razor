@@ -11,8 +11,8 @@
 @{ _version++; }
 <CascadingValue Value="Scope" IsFixed="true">
 <CascadingValue Value="_version" Name="@TreeVersion">
-<div @ref="_tree" @attributes="AdditionalAttributes" role="tree" aria-label="@AriaLabel"
-     aria-multiselectable="@(SelectionMode == SelectionMode.Multiple ? "true" : null)"
+<div @ref="_tree" @attributes="AdditionalAttributes" role="@(ShowsEmpty ? "group" : "tree")" aria-label="@AriaLabel"
+     aria-multiselectable="@(!ShowsEmpty && SelectionMode == SelectionMode.Multiple ? "true" : null)"
      aria-disabled="@(Disabled ? "true" : null)" aria-busy="@(Building ? "true" : null)"
      data-ready="@(_handle is null ? null : "")"
      data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
@@ -23,7 +23,7 @@
                 Virtualize ? "tb-tree--virtual" : null, InsertTemplate is null ? null : "tb-tree--inserts", Class)"
      @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
     @ChildContent
-    @if (_rows.Count == 0 && (ChildContent is null || _itemsRegistered))
+    @if (ShowsEmpty)
     {
         <div data-part="empty" class="tb-tree__empty">
             @if (EmptyContent is null)

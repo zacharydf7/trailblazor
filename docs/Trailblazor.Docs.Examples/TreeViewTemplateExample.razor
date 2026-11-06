@@ -1,0 +1,16 @@
+<TbTreeView TItem="Place" TKey="int" AriaLabel="Regions and hours" Items="Regions" KeySelector="place => place.Id"
+            ItemText="place => place.Name">
+    <ItemTemplate>
+        <TbStack Row Gap="2" Align="Align.Center">
+            <strong>@context.Item.Name</strong>
+            <span>@context.Item.Hours</span>
+        </TbStack>
+    </ItemTemplate>
+</TbTreeView>
+
+@code {
+    private static readonly Place[] Regions =
+        [new(1, "North ridge", "Open 8 to 6"), new(2, "River valley", "Open all day")];
+
+    private sealed record Place(int Id, string Name, string Hours);
+}

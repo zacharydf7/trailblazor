@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<TbStack Gap="4">
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Regions to find" Items="Regions" KeySelector="place => place.Id"
+                ItemText="place => place.Name" />
+    <TbStack Gap="2">
+        <div @onkeydown="OnKeyDown">
+            <TbTreeView TItem="Place" TKey="int" AriaLabel="Regions to flag" Items="Regions"
+                        KeySelector="place => place.Id" ItemText="place => place.Name" TypeAhead="false" />
+        </div>
+        <output aria-label="Flags">Press F on a row to flag it. Flags: @_flags</output>
+    </TbStack>
+</TbStack>
+
+@code {
+    private static readonly Place[] Regions = [new(1, "Fern Gully"), new(2, "North ridge"), new(3, "River valley")];
+
+    private int _flags;
+
+    private void OnKeyDown(KeyboardEventArgs key)
+    {
+        if (key.Key is "f" or "F")
+        {
+            _flags++;
+        }
+    }
+
+    private sealed record Place(int Id, string Name);
+}

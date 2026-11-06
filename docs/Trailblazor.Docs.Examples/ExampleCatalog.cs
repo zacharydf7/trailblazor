@@ -3042,31 +3042,132 @@ public static class ExampleCatalog
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
                 + "when opened.", typeof(TreeViewExample))
         {
+            FullWidth = true,
             RightToLeftKeys = "Left opens a row or moves into it, and Right closes it or moves to its parent. "
                 + "Alt+Shift with Left or Right moves a row in or out the same way.",
+            WhenToUse =
+            [
+                "Use it for items nested inside each other, such as folders or regions and their trails, where people "
+                    + "open branches and pick items.",
+            ],
+            WhenNotToUse =
+            [
+                "To show and hide sections of content on a page, use an [accordion](components/accordion).",
+                "For a flat list of options to pick from, use a [list box](components/listbox).",
+                "For rows with several columns, use a [data grid](components/data-grid).",
+            ],
+            Related = ["accordion", "listbox", "data-grid", "menu"],
+            Pattern = new("tree view", "https://www.w3.org/WAI/ARIA/apg/patterns/treeview/"),
             Sections =
             [
                 new("filter-and-select", "Filter, select and open", "Rows come from `Items`. Typing in the field "
                     + "filters them and keeps each match's parents. Only trails can be selected, and double-clicking "
-                    + "a trail or pressing Enter on it opens it.", typeof(TreeViewExample)),
+                    + "a trail or pressing Enter on it opens it. `ItemEnd`, or a `TbTreeItem`'s `EndContent`, holds "
+                    + "what sits at the end of a row, such as a count or a button. Clicks and keys there never select, "
+                    + "open or activate the row.",
+                    typeof(TreeViewExample)),
+                new("multiple-selection", "Multiple selection", "`SelectionMode.Multiple` lets several rows be "
+                    + "selected, and `SelectedKeys` holds their keys. A click selects one row, Ctrl or Cmd with a click "
+                    + "adds or removes a row, and Shift with a click extends the selection.",
+                    typeof(TreeViewMultipleExample)),
                 new("checkboxes", "Checkboxes", "Rows written as markup suit a tree that is part of the page. With "
                     + "`Checkable`, checking a parent checks its children, and a parent with only some of them "
-                    + "checked shows as mixed.", typeof(TreeViewCheckboxExample)),
-                new("move-and-insert", "Move and insert", "Rows move by dragging, or with Alt+Shift and the "
-                    + "arrows, and `CanDrop` can refuse a move and say why. The slots between rows add new rows.",
+                    + "checked shows as mixed. A `TbTreeItem` with no `Value`, such as Trips, opens, closes and is "
+                    + "found by typing, but can't be selected or activated, and it is never in the bound keys.",
+                    typeof(TreeViewCheckboxExample)),
+                new("independent-checks", "Independent checks", "`CascadeChecks=\"false\"` checks only the row itself, "
+                    + "so a parent and its children each keep their own check.",
+                    typeof(TreeViewIndependentChecksExample)),
+                new("disabled", "Disabled rows", "`IsDisabled` turns off single rows, and `Disabled` turns off the "
+                    + "whole tree.", typeof(TreeViewDisabledExample)),
+                new("item-template", "Item template", "`ItemTemplate` draws a row's content. Keep `ItemText` so typing "
+                    + "still finds the row.", typeof(TreeViewTemplateExample)),
+                new("flat-data", "Flat data", "`ParentKeySelector` builds the tree from one list of every item, each "
+                    + "naming its parent's key, with null for a root. Children keep the list's order.",
+                    typeof(TreeViewFlatExample)),
+                new("type-ahead", "Type-ahead", "Typing finds a row by its text. `TypeAhead=\"false\"` leaves letter "
+                    + "keys to the page, for single-letter shortcuts that should work while the tree has focus.",
+                    typeof(TreeViewTypeAheadExample)),
+                new("load-on-open", "Children that load when opened", "`LoadChildren` loads a row's children the first "
+                    + "time it opens, and `HasChildren` says which rows have a toggle before then. A loading row "
+                    + "shows while they load. If the load fails, a row offers to try again, and `OnLoadFailed` gets the "
+                    + "exception.", typeof(TreeViewLoadExample)),
+                new("empty", "Empty", "With no rows, the tree says so. `EmptyContent` shows your own content, such as "
+                    + "a way to add the first row.", typeof(TreeViewEmptyExample)),
+                new("move-and-insert", "Move and insert", "With `OnDrop`, rows move by dragging with a mouse, pen or "
+                    + "finger, or with Alt+Shift and the arrows. A finger holds still for a moment first, so a swipe "
+                    + "still scrolls. `OnDrop` says what moved and where, and the app applies it, so it can be undone "
+                    + "like any other change. `CanDrop` can refuse a move and say why. `InsertTemplate` puts content on "
+                    + "each row's edge, such as the buttons here that add a row. It shows when the pointer reaches that "
+                    + "edge or the content has focus, and on a touch screen for the focused row.",
                     typeof(TreeViewMoveExample)),
-                new("many-rows", "Many rows", "With `Virtualize`, only the rows in view render, so ten thousand "
-                    + "rows scroll smoothly. Here the arrows select as they move.", typeof(TreeViewVirtualExample)),
+                new("many-rows", "Many rows", "With `Virtualize`, only the rows in view render, so ten thousand rows "
+                    + "scroll smoothly. Every row is `ItemSize` pixels tall, and the rows scroll in a tree given a "
+                    + "height or in the page's own scroll. Here `SelectionFollowsFocus`, which applies to single "
+                    + "selection, selects each row the arrows, Home, End or typing move to. `Virtualize` needs `Items`.",
+                    typeof(TreeViewVirtualExample)),
                 new("content-instead-of-rows", "Content instead of rows", "A row shows its toggle once a `TbTreeItem` "
                     + "inside it exists. Other content doesn't count, so a row holding only other content needs "
                     + "`HasChildren`. With `HasChildren`, the content renders only while the row is open: none of it "
-                    + "exists or runs until the row opens, and closing the row removes all of it.",
-                    typeof(TreeViewContentExample)),
+                    + "exists or runs until the row opens, and closing the row removes all of it. `@bind-Expanded` "
+                    + "opens a `TbTreeItem` from code.", typeof(TreeViewContentExample)),
+                new("labels", "Built-in text", "`Labels` replaces the words the tree shows and reads out while "
+                    + "children load, when they fail and when it has no rows.", typeof(TreeViewLabelsExample)),
             ],
             Api =
             [
                 typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
                 typeof(MoveCheck), typeof(TreeInsertContext<>),
+            ],
+            Keyboard =
+            [
+                new(["Tab"], "Reaches the tree once. Each control at a row's end and each insert slot is a tab stop "
+                    + "after its row.") { When = "Moving around" },
+                new(["Up", "Down"], "Moves between rows.") { When = "Moving around" },
+                new(["Home", "End"], "Goes to the first or last row.") { When = "Moving around" },
+                new(["Right"], "Opens a row, or moves into it.") { When = "Moving around" },
+                new(["Left"], "Closes a row, or moves to its parent.") { When = "Moving around" },
+                new(["*"], "Opens the row's siblings.") { When = "Moving around" },
+                new(["A letter"], "Finds a row by its text.") { When = "Moving around" },
+                new(["Enter"], "Selects and activates the row and, like a double-click, opens or closes it if it has "
+                    + "children. On a failed row, tries again.") { When = "Selecting" },
+                new(["Space"], "Selects the row, or checks it in a `Checkable` tree. In a `Multiple` tree, selects or "
+                    + "unselects it.") { When = "Selecting" },
+                new(["Shift+Up", "Shift+Down", "Shift+Space"], "Extends a `Multiple` selection.")
+                    { When = "Selecting" },
+                new(["Ctrl+A"], "In a `Multiple` tree, selects every row that can be selected and isn't inside a closed "
+                    + "row.")
+                    { When = "Selecting" },
+                new(["Ctrl+Up", "Ctrl+Down", "Ctrl+Home", "Ctrl+End"], "With `SelectionFollowsFocus`, moves focus "
+                    + "alone. Cmd does the same.") { When = "Selecting" },
+                new(["Alt+Shift+Up", "Alt+Shift+Down"], "Moves the row past its neighbor.") { When = "Moving rows" },
+                new(["Alt+Shift+Right"], "Moves the row into the row above.") { When = "Moving rows" },
+                new(["Alt+Shift+Left"], "Moves the row out of its parent.") { When = "Moving rows" },
+                new(["Escape"], "Cancels a drag.") { When = "Moving rows" },
+            ],
+            Labeling =
+            [
+                "It is a `tree` named by `AriaLabel`. With no rows, it is a `group` with that name, holding its "
+                    + "message.",
+                "A row is named by everything it shows, what's at its end included, so keep actions there short or "
+                    + "give icon buttons an `AriaLabel`.",
+            ],
+            Announcements =
+            [
+                "A load that fails is read out.",
+                "A move is read out, such as \"Lake camp moved before Pine Hollow.\"",
+                "The reason `CanDrop` gives for refusing a place is read out when the move is tried.",
+            ],
+            Accessibility =
+            [
+                "Each visible row is a `treeitem` carrying `aria-level`, `aria-setsize`, `aria-posinset`, "
+                    + "`aria-expanded`, and `aria-selected` or `aria-checked`.",
+                "The arrows reach the loading row and the failed row, and focus moves on to the children once they "
+                    + "arrive.",
+                "A `TbTreeItem` with no `Value` has no `aria-selected`.",
+                "Each movable row is described by the keys that move it.",
+                "With `Virtualize`, each row still says its level, size and place, the keys and typing reach rows that "
+                    + "aren't rendered yet, and the focused row stays rendered.",
             ],
             AppDuties =
             [
@@ -3074,56 +3175,26 @@ public static class ExampleCatalog
                     + "miss it. Keep what people need in the rows, or show it beside the tree for the selected row, as "
                     + "the [Master and detail recipe](recipes/master-detail) does.",
             ],
-            Accessibility =
+            BeforeInteractive =
             [
-                "It is a `tree` named by `AriaLabel`, with one `treeitem` per visible row carrying `aria-level`, "
-                    + "`aria-setsize`, `aria-posinset`, `aria-expanded`, and `aria-selected` or `aria-checked`.",
-                "The tree is one tab stop. Up and Down move between rows, Home and End go to the ends, Right opens a "
-                    + "row or moves into it, Left closes it or moves to its parent, `*` opens its siblings, and typing "
-                    + "finds a row by its text.",
-                "Enter selects and activates a row and, like a double-click, opens or closes it if it has "
-                    + "children; Space selects it, or checks it in a `Checkable` tree. Shift with "
-                    + "the arrows extends a `Multiple` selection, and Ctrl+A selects every row.",
-                "With `SelectionFollowsFocus`, as in the atlas here, a single-selection tree selects each row the "
-                    + "arrows, Home, End or typing move to, so the selection is always the focused row; Ctrl or Cmd "
-                    + "with a key moves focus alone. `TypeAhead=\"false\"` leaves letter keys to the page, for "
-                    + "single-letter shortcuts that should work while the tree has focus.",
-                "A row is named by everything it shows, its `ItemEnd` content included, so keep actions there short "
-                    + "or give icon buttons an `AriaLabel`.",
-                "While children load, a loading row shows, and a load that fails is read out and shows a row that "
-                    + "offers to try again. The arrows reach both rows; Enter on the failed one tries again, and focus "
-                    + "moves on to the children once they arrive.",
-                "Rows written as nested `TbTreeItem`s work the same, from any component inside the tree. Each draws "
-                    + "its row where it is written, followed by a `group` holding what is written inside it, so other "
-                    + "content between rows shows in place and hides with its parent. Before the page is interactive, "
-                    + "each renders a plain row, open to `InitialExpandDepth`. `Virtualize` needs `Items`.",
-                "A `TbTreeItem` with no `Value`, such as the Trips heading, opens, closes and is found by typing, but "
-                    + "can't be selected or activated, so it has no `aria-selected`. With cascading checks it checks "
-                    + "the rows inside it, and it is never in the bound keys, so several such rows can share a text "
-                    + "without needing keys.",
-                "A tree inside another tree's row is a tree of its own: its rows take their own keys, focus, clicks and "
-                    + "drags, the outer tree's arrows pass over them, and the outer row isn't selected by them.",
-                "Controls in a row go in its end slot, `ItemEnd` or a `TbTreeItem`'s `EndContent`, whose clicks and "
-                    + "keys never select, open or activate the row. `@bind-Expanded` opens a `TbTreeItem` from code, "
-                    + "with or without a `Value`, and `HasChildren` shows its toggle while rendering what is inside it "
-                    + "only once it opens; `ExpandAllAsync` opens those rows too, and the rows that appear in them.",
-                "With `OnDrop`, rows move by dragging with a mouse, pen or finger (a finger holds still for a moment "
-                    + "first, so a swipe still scrolls), or with Alt+Shift and the arrows: Up and Down past a "
-                    + "neighbor, Right into the row above, Left out of the parent. Each movable row is described by "
-                    + "those keys, and Escape cancels a drag.",
-                "A move is read out, such as \"Lake camp moved before Pine Hollow.\" A place `CanDrop` refuses "
-                    + "shows its reason beside the row, in the danger color, and the reason is read out when the "
-                    + "move is tried.",
-                "The tree never moves rows itself: `OnDrop` says what moved and where, and the app applies it, so it "
-                    + "can be undone like any other change.",
-                "`InsertTemplate` content sits on each row's edge and shows when the pointer reaches that edge or "
-                    + "the content has focus. Until it shows, it takes the pointer only on that edge, clear of the "
-                    + "rows' content, so a click on a row's text selects the row. On a touch screen, the focused row's "
-                    + "slots show. Each is a tab stop after its row, like `ItemEnd` content.",
-                "`Virtualize` renders only the rows in view, every one `ItemSize` pixels tall, in a tree given a "
-                    + "height or in the page's own scroll. Each row still says its level, size and place, the keys "
-                    + "and typing reach rows that aren't rendered yet, and the focused row stays rendered. Before "
-                    + "the page is interactive every row renders.",
+                "A `TbTreeItem` renders a plain row, open to `InitialExpandDepth`.",
+                "With `Virtualize`, every row renders.",
+            ],
+            Notes =
+            [
+                new("After changing `Items` in place, call `RefreshAsync`. A new collection, or an `OnDrop`, builds the "
+                    + "rows again by itself.") { Pitfall = true },
+                new("Rows written as nested `TbTreeItem`s work from any component inside the tree. Each draws its row "
+                    + "where it is written, followed by a `group` holding what is written inside it, so other content "
+                    + "between rows shows in place and hides with its parent."),
+                new("A tree inside another tree's row is a tree of its own: its rows take their own keys, focus, clicks "
+                    + "and drags, the outer tree's arrows pass over them, and the outer row isn't selected by them."),
+                new("With cascading checks, a `TbTreeItem` with no `Value` checks the rows inside it. Such a row is "
+                    + "never in the bound keys, so several of them can share a text without needing keys."),
+                new("`ExpandAllAsync` opens rows with `HasChildren` too, and the rows that appear in them."),
+                new("A row's `data-key` is its key's text for a string, number or date key. Any other key gets a "
+                    + "made-up id such as `key-3`, and so does a key whose text is empty or that another key already "
+                    + "has."),
             ],
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],
@@ -3150,24 +3221,25 @@ public static class ExampleCatalog
                     <TbTreeItem Value="…" Text="…" />
                 </TbTreeView>
                 """,
-            TestingTip = "`page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows rows by "
-                + "their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, `SelectAsync(...)`, "
-                + "`CheckAsync(...)` and `ItemAsync(...)`; `ItemsAsync(...)` returns every row at a path, for rows "
-                + "that share their text, and `ExpandAllAsync()` opens every row, waiting for rows that load or "
-                + "that a `TbTreeItem` renders once open. `DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` "
-                + "drag one row's path onto another's. The helpers follow only the tree's own rows, not those of a "
-                + "tree inside a row. Every row also carries `data-key`, `data-level` and "
-                + "`data-text`, and a row being dragged over carries `data-drop`. In a virtualized tree the helpers "
-                + "scroll until the row renders (a drag needs both rows in view together), and rows also carry "
-                + "`data-index` and `data-inside`, the number of rows in their branch. A row's `data-key` is its "
-                + "key's text for a string, number or date key, and a made-up id such as `key-3` for any other key, or "
-                + "when the text is empty or when another key has it. Before pressing keys or dragging without the "
-                + "helpers, wait for the tree's `data-ready`; a tree of `TbTreeItem`s also sets `aria-busy` while "
-                + "items it has just been given become rows. In bUnit, `cut.Tb().Tree(\"Trails by region\")` from "
-                + "`Trailblazor.Testing` has the same `ExpandAsync`, `ExpandAllAsync`, `SelectAsync` and "
-                + "`CheckAsync`, with `Texts` for the rows that show and `Item` and `Items` to find rows. A test "
-                + "that changes `Items` in place calls `RefreshAsync`, as the app does; a new collection, or an "
-                + "`OnDrop`, builds the rows again by itself.",
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows "
+                    + "rows by their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, "
+                    + "`SelectAsync(...)`, `CheckAsync(...)` and `ItemAsync(...)`.",
+                "`ItemsAsync(...)` returns every row at a path, for rows that share their text. `ExpandAllAsync()` "
+                    + "opens every row, waiting for rows that load or that a `TbTreeItem` renders once open.",
+                "`DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` drag one row's path onto another's.",
+                "The helpers follow only the tree's own rows, not those of a tree inside a row.",
+                "In a virtualized tree, the helpers scroll until the row renders, and a drag needs both rows in view "
+                    + "together. Rows also carry `data-index` and `data-inside`, the number of rows in their branch.",
+                "Every row carries `data-key`, `data-level` and `data-text`, and a row being dragged over carries "
+                    + "`data-drop`.",
+                "Without the helpers, wait for the tree's `data-ready` before pressing keys or dragging. A tree of "
+                    + "`TbTreeItem`s also sets `aria-busy` while items it has just been given become rows.",
+                "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same `ExpandAsync`, "
+                    + "`ExpandAllAsync`, `SelectAsync` and `CheckAsync`, with `Texts` for the rows that show and `Item` "
+                    + "and `Items` to find rows.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"folders\"`, it counts `trailblazor.control.shown` as it first "

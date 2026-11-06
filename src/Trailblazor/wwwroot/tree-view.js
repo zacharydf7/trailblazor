@@ -13,7 +13,7 @@ export function createTreeView(tree, events) {
 
     const typing = createTypeahead();
     // A tree inside one of this tree's rows has rows, keys and drags of its own.
-    const owns = element => element.closest('[role="tree"]') === tree;
+    const owns = element => element.closest('.tb-tree') === tree;
     const own = selector => [...tree.querySelectorAll(selector)].filter(owns);
     const rows = () => own('[role="treeitem"][data-key]');
     // The arrows also reach a branch's loading or failed row, which has no key of its own.

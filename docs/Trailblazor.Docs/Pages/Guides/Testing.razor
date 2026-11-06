@@ -523,7 +523,7 @@
 
         // The test, after each navigation
         await page.Locator("main[data-interactive]").WaitForAsync();
-        await Expect(page.Locator("[role=tree][data-ready]")).ToBeVisibleAsync();
+        await Expect(page.Locator(".tb-tree[data-ready]")).ToBeVisibleAsync();
         """;
 
     private const string TimeAndMotion = """
