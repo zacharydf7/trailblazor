@@ -13,6 +13,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
+    <!-- Built with the site so the recipe code has to compile, and not referenced so browsers don't download it. -->
+    <ProjectReference Include="..\Trailblazor.Docs.Recipes\Trailblazor.Docs.Recipes.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <!-- The icon pack is large, so it loads with the pages that draw its icons (App.razor). -->

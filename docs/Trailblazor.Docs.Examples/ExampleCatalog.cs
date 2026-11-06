@@ -177,10 +177,14 @@ public sealed record TestTarget(string Role, string? Name = null)
 
 public sealed record ExampleSource(string File, string Text)
 {
-    public static ExampleSource Of(Type component)
+    public static ExampleSource Of(Type component) => Read("Source", $"{component.Name}.razor");
+
+    // A recipe's file that the site shows without running.
+    public static ExampleSource OfRecipeFile(string file) => Read("Recipes", file);
+
+    private static ExampleSource Read(string folder, string file)
     {
-        var file = $"{component.Name}.razor";
-        using var stream = typeof(ExampleSource).Assembly.GetManifestResourceStream($"Source/{file}")
+        using var stream = typeof(ExampleSource).Assembly.GetManifestResourceStream($"{folder}/{file}")
             ?? throw new InvalidOperationException($"{file} isn't embedded as source.");
         using var reader = new StreamReader(stream);
         return new(file, reader.ReadToEnd());
@@ -3340,7 +3344,8 @@ public static class ExampleCatalog
                     typeof(DataGridFailedLoadExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
                     + "server, which says how many rows there are in all. It receives the page, the sorts and the "
-                    + "filters the grid asks for, and a new request cancels the last one.",
+                    + "filters the grid asks for, and a new request cancels the last one. The [data grid from a "
+                    + "database](recipes/grid-from-database) recipe does this with an EF Core query.",
                     typeof(DataGridServerExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, rows held in `Items` can be put in order while "
                     + "the grid isn't sorted or filtered. Each row gets a handle in an \"Order\" column: drag it, press "

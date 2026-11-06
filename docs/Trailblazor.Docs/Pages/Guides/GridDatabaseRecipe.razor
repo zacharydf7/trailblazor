@@ -1,0 +1,95 @@
+@page "/recipes/grid-from-database"
+
+<PageTitle>A data grid from a database · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="the-code" Text="The code" />
+        <TbTableOfContentsItem TargetId="how-it-works" Text="How it works" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">A data grid from a database</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Turn what a grid asks for into an EF Core query, so only one page of rows leaves the database, and reload
+            the grid after the data changes.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="the-code" Text="The code" Class="docs-section" />
+        <TbText>
+            This site has no database, so this page shows the code without running it. The two files compile with the
+            site, so they keep up with the library. <a href="components/data-grid#server-data">Rows from a server</a>
+            has a similar grid you can try.
+        </TbText>
+        <CodeBlock Label="HikeLog.razor" Code="@HikeLogSource" />
+        <CodeBlock Label="HikeContext.cs" Code="@HikeContextSource" />
+        <CodeBlock Label="Program.cs" Code="@Registration" />
+
+        <DocsHeading Id="how-it-works" Text="How it works" Class="docs-section" />
+        <ul>
+            <li>
+                <code>DataProvider</code> gets a <code>GridRequest</code> with the filters, the sorts, and which rows to
+                give. It answers with those rows and the count of all the rows that pass the filters.
+            </li>
+            <li>
+                Each filter and sort becomes part of the query, so the database does the work. The request identifies
+                each column by its field name, and <code>nameof</code> keeps those names in step with the class.
+            </li>
+            <li>
+                If the query can't apply a filter or sort, it throws, so the grid shows that the load failed instead of
+                seeming to ignore a control. Add a case for each column you make sortable or filterable.
+            </li>
+            <li>
+                A <code>Contains</code> here follows the database's collation, so it can be case-sensitive, where a grid
+                given <code>Items</code> ignores case. Check how your database compares text.
+            </li>
+            <li>
+                The id comes last in the sort. Without it, rows with the same values can change places between pages,
+                and a row can show twice or not at all.
+            </li>
+            <li>
+                <code>RefreshAsync</code> loads the rows again after a save, because the grid can't tell that the
+                database changed.
+            </li>
+            <li>
+                When a load fails, the grid says so and offers to try again, but it doesn't log anything, so
+                <code>OnLoadFailed</code> logs the exception. A failed save is the page's own to catch, since it would
+                otherwise end a server page's connection.
+            </li>
+            <li>
+                <code>IDbContextFactory</code> gives each load a context of its own, since a grid can ask for new rows
+                while the last load is still running. Register it with your database's provider, as
+                <code>Program.cs</code> shows for SQL Server, which needs the
+                <code>Microsoft.EntityFrameworkCore.SqlServer</code> package.
+            </li>
+            <li>
+                The token passed to <code>DataProvider</code> cancels the query when a newer request replaces it.
+            </li>
+            <li>
+                EF Core needs to run on the server. On a WebAssembly page, have <code>DataProvider</code> call an API that runs
+                this query, and send it the request's filters, sorts, start index and count.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="components/data-grid">Data grid</a>: every feature, and the API.</li>
+            <li>
+                <a href="recipes/filter-and-grid">A filter bar with a data grid</a>: fields of your own above the grid.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string HikeLogSource = ExampleSource.OfRecipeFile("HikeLog.razor").Text;
+    private static readonly string HikeContextSource = ExampleSource.OfRecipeFile("HikeContext.cs").Text;
+
+    private const string Registration = """
+        using Microsoft.EntityFrameworkCore;
+
+        builder.Services.AddDbContextFactory<HikeContext>(options => options.UseSqlServer(connectionString));
+        """;
+}

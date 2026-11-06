@@ -1,0 +1,103 @@
+@using System.Linq.Expressions
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Logging
+@inject IDbContextFactory<HikeContext> Contexts
+@inject ILogger<HikeLog> Log
+
+<TbStack Gap="3">
+    <TbDataGrid @ref="_grid" TItem="Hike" DataProvider="LoadHikesAsync" AriaLabel="Hike log"
+                KeySelector="hike => hike.Id" PageSize="20"
+                OnLoadFailed="@(failure => Log.LogError(failure, "Couldn't load the hike log."))">
+        <TbColumn Field="hike => hike.Date" Format="d" Sortable />
+        <TbColumn Field="hike => hike.Trail" Sortable Filterable />
+        <TbColumn Field="hike => hike.Hours" Format="N1" Sortable />
+    </TbDataGrid>
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="LogAHikeAsync">Log today's hike</TbButton>
+    </TbStack>
+    @if (_saveFailed)
+    {
+        <TbAlert Tone="Tone.Danger">Couldn't save the hike. Try again.</TbAlert>
+    }
+</TbStack>
+
+@code {
+    private TbDataGrid<Hike> _grid = default!;
+    private bool _saveFailed;
+
+    // A context of its own for each load, since the grid can ask again while the last load is still running.
+    private async Task<GridResult<Hike>> LoadHikesAsync(GridRequest request, CancellationToken cancel)
+    {
+        await using var context = await Contexts.CreateDbContextAsync(cancel);
+        var hikes = Filter(context.Hikes.AsNoTracking(), request.Filters);
+        var total = await hikes.CountAsync(cancel);
+        var page = await Sort(hikes, request.Sorts).Skip(request.StartIndex).Take(request.Count ?? total)
+            .ToListAsync(cancel);
+        return new(page, total);
+    }
+
+    private static IQueryable<Hike> Filter(IQueryable<Hike> hikes, IReadOnlyList<GridFilter> filters)
+    {
+        foreach (var filter in filters)
+        {
+            hikes = filter switch
+            {
+                { Column: nameof(Hike.Trail), Operator: FilterOperator.Contains, Value: string text } =>
+                    hikes.Where(hike => hike.Trail.Contains(text)),
+                _ => throw new NotSupportedException($"This query has no way to apply {filter}."),
+            };
+        }
+
+        return hikes;
+    }
+
+    private static IQueryable<Hike> Sort(IQueryable<Hike> hikes, IReadOnlyList<GridSort> sorts)
+    {
+        IOrderedQueryable<Hike>? sorted = null;
+
+        IOrderedQueryable<Hike> By<TKey>(Expression<Func<Hike, TKey>> key, bool descending)
+        {
+            if (sorted is null)
+            {
+                return descending ? hikes.OrderByDescending(key) : hikes.OrderBy(key);
+            }
+
+            return descending ? sorted.ThenByDescending(key) : sorted.ThenBy(key);
+        }
+
+        foreach (var sort in sorts)
+        {
+            var descending = sort.Direction == SortDirection.Descending;
+            sorted = sort.Column switch
+            {
+                nameof(Hike.Date) => By(hike => hike.Date, descending),
+                nameof(Hike.Trail) => By(hike => hike.Trail, descending),
+                nameof(Hike.Hours) => By(hike => hike.Hours, descending),
+                _ => throw new NotSupportedException($"This query has no way to sort by {sort.Column}."),
+            };
+        }
+
+        // The id comes last, so rows with the same values stay in order from one page to the next.
+        return By(hike => hike.Id, descending: false);
+    }
+
+    private async Task LogAHikeAsync()
+    {
+        try
+        {
+            await using var context = await Contexts.CreateDbContextAsync();
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            context.Hikes.Add(new() { Date = today, Trail = "Pine Hollow loop", Hours = 2 });
+            await context.SaveChangesAsync();
+            _saveFailed = false;
+        }
+        catch (Exception failure)
+        {
+            Log.LogError(failure, "Couldn't save the hike.");
+            _saveFailed = true;
+            return;
+        }
+
+        await _grid.RefreshAsync();
+    }
+}

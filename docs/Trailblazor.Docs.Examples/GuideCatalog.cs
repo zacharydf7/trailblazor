@@ -57,6 +57,8 @@ public static class GuideCatalog
         },
         new("recipes/filter-and-grid", "A filter bar with a data grid",
             "Narrow a long list from a server, with fields above a grid that loads a page at a time."),
+        new("recipes/grid-from-database", "A data grid from a database",
+            "Turn what a grid asks for into an EF Core query, and reload the grid after the data changes."),
         new("recipes/edit-in-dialog", "Edit in a dialog",
             "Open a form in a dialog from a row, and save what comes back."),
         new("recipes/confirm-and-delete", "Confirm and delete",

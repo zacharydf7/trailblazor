@@ -1,6 +1,11 @@
 using Bunit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Trailblazor.Docs.Examples;
+using Trailblazor.Docs.Recipes;
 using Trailblazor.Docs.Layout;
 
 namespace Trailblazor.Tests.Docs;
@@ -20,6 +25,156 @@ public class RecipeTests : DocsTest
         Assert.DoesNotContain(guides, link => link.GetAttribute("href")!.StartsWith("recipes/"));
         Assert.Equal(GuideCatalog.All.Where(guide => guide.IsRecipe).Select(guide => guide.Path),
             recipes.Select(link => link.GetAttribute("href")));
+    }
+
+    [Fact]
+    public void GridDatabaseRecipe_ShouldShowCodeThatQueriesAndRefreshes_WhenRendered()
+    {
+        var cut = PageAt("recipes/grid-from-database");
+
+        var code = string.Join(' ', cut.FindAll("pre").Select(block => block.TextContent));
+
+        Assert.Contains("ToListAsync", code);
+        Assert.Contains("RefreshAsync", code);
+        Assert.Contains("class HikeContext", code);
+        Assert.Contains("AddDbContextFactory", code);
+    }
+
+    // The ties' ids run against the order they're added in, so only the id in the sort puts them in order.
+    private static readonly Hike[] Hikes =
+    [
+        new() { Id = 3, Date = new(2026, 6, 1), Trail = "Pine Hollow loop", Hours = 3 },
+        new() { Id = 2, Date = new(2026, 6, 2), Trail = "Cedar Flats", Hours = 1 },
+        new() { Id = 1, Date = new(2026, 6, 3), Trail = "Eagle Ridge", Hours = 3 },
+    ];
+
+    private static readonly TimeSpan QueryTimeout = TimeSpan.FromSeconds(5);
+
+    private IRenderedComponent<HikeLog> RenderHikeLog(Hike[] hikes, IInterceptor? interceptor = null)
+    {
+        var database = Guid.NewGuid().ToString();
+        Services.AddDbContextFactory<HikeContext>(options =>
+        {
+            options.UseInMemoryDatabase(database);
+            if (interceptor is not null)
+            {
+                options.AddInterceptors(interceptor);
+            }
+        });
+        using var context = Services.GetRequiredService<IDbContextFactory<HikeContext>>().CreateDbContext();
+        context.Hikes.AddRange(hikes);
+        context.SaveChanges();
+        var cut = Render<HikeLog>();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-part=row]")), QueryTimeout);
+        return cut;
+    }
+
+    private static IReadOnlyList<string> TrailsIn(IRenderedComponent<HikeLog> cut) =>
+        [.. cut.FindAll("tr[data-part=row] td[data-column=Trail]").Select(cell => cell.TextContent.Trim())];
+
+    [Fact]
+    public void HikeLog_ShouldBreakTiesByTheId_WhenAColumnIsSortedDescending()
+    {
+        var cut = RenderHikeLog(Hikes);
+
+        cut.Find("th[data-title=Hours] [data-part=sort]").Click();
+        cut.WaitForAssertion(() => Assert.Equal("Cedar Flats", TrailsIn(cut)[0]), QueryTimeout);
+        cut.Find("th[data-title=Hours] [data-part=sort]").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(["Eagle Ridge", "Pine Hollow loop", "Cedar Flats"], TrailsIn(cut)),
+            QueryTimeout);
+    }
+
+    [Fact]
+    public async Task HikeLog_ShouldShowOnlyMatchingRows_WhenATrailIsTyped()
+    {
+        var cut = RenderHikeLog(Hikes);
+
+        await cut.Tb().Grid("Hike log").FilterAsync("Trail", "Ridge");
+
+        cut.WaitForAssertion(() => Assert.Equal(["Eagle Ridge"], TrailsIn(cut)), QueryTimeout);
+    }
+
+    [Fact]
+    public void HikeLog_ShouldShowTheNextPageAndTheFullCount_WhenThereAreMoreRowsThanFit()
+    {
+        var hikes = Enumerable.Range(1, 25).Select(id =>
+            new Hike { Id = id, Date = new(2026, 6, 1), Trail = $"Trail {id}", Hours = 1 }).ToArray();
+        var cut = RenderHikeLog(hikes);
+        Assert.Equal(20, TrailsIn(cut).Count);
+        Assert.Contains("of 25", cut.Find("[data-part=summary]").TextContent);
+
+        cut.Find("button[aria-label='Page 2']").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(["Trail 21", "Trail 22", "Trail 23", "Trail 24", "Trail 25"],
+            TrailsIn(cut)), QueryTimeout);
+    }
+
+    [Fact]
+    public void HikeLog_ShouldShowTheNewRow_WhenAHikeIsSaved()
+    {
+        var cut = RenderHikeLog(Hikes);
+
+        Button(cut, "Log today's hike").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(4, cut.FindAll("[data-part=row]").Count), QueryTimeout);
+    }
+
+    [Fact]
+    public void HikeLog_ShouldLogAndSayItFailedWithoutAddingARow_WhenASaveFails()
+    {
+        var log = new FakeLogger<HikeLog>();
+        Services.AddSingleton<ILogger<HikeLog>>(log);
+        var cut = RenderHikeLog(Hikes, new FailingSave());
+
+        Button(cut, "Log today's hike").Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("Couldn't save the hike.", cut.Markup), QueryTimeout);
+        Assert.Equal(3, cut.FindAll("[data-part=row]").Count);
+        Assert.Equal("Couldn't save the hike.", log.LatestRecord.Message);
+        Assert.IsType<InvalidOperationException>(log.LatestRecord.Exception);
+
+        Button(cut, "Log today's hike").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(4, cut.FindAll("[data-part=row]").Count), QueryTimeout);
+        Assert.DoesNotContain("Couldn't save the hike.", cut.Markup);
+    }
+
+    [Fact]
+    public void HikeLog_ShouldLogAndShowTheFailedRow_WhenALoadFails()
+    {
+        var log = new FakeLogger<HikeLog>();
+        Services.AddSingleton<ILogger<HikeLog>>(log);
+        Services.AddSingleton<IDbContextFactory<HikeContext>>(new FailingFactory());
+
+        var cut = Render<HikeLog>();
+
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find("[data-part=failed]")), QueryTimeout);
+        Assert.Equal("Couldn't load the hike log.", log.LatestRecord.Message);
+        Assert.IsType<InvalidOperationException>(log.LatestRecord.Exception);
+    }
+
+    // Fails the first save, so the test can try again.
+    private sealed class FailingSave : SaveChangesInterceptor
+    {
+        private bool _failed;
+
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
+            InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            if (_failed)
+            {
+                return ValueTask.FromResult(result);
+            }
+
+            _failed = true;
+            throw new InvalidOperationException("The database is offline.");
+        }
+    }
+
+    private sealed class FailingFactory : IDbContextFactory<HikeContext>
+    {
+        public HikeContext CreateDbContext() => throw new InvalidOperationException("The database is offline.");
     }
 
     [Fact]
