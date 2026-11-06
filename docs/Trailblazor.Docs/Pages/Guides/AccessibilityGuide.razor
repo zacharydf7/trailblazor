@@ -1,0 +1,264 @@
+@page "/guides/accessibility"
+
+<PageTitle>Accessibility · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="the-target" Text="The target" />
+        <TbTableOfContentsItem TargetId="what-components-do" Text="What components do" />
+        <TbTableOfContentsItem TargetId="what-your-app-must-do" Text="What your app must do" />
+        <TbTableOfContentsItem TargetId="labels-and-headings" Text="Labels and headings" />
+        <TbTableOfContentsItem TargetId="how-its-tested" Text="How it's tested" />
+        <TbTableOfContentsItem TargetId="status" Text="Status of each component" />
+        <TbTableOfContentsItem TargetId="known-issues" Text="Known issues and reporting" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Accessibility</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            What Trailblazor does for people using a keyboard, a screen reader or other assistive technology, what your
+            app must still do, and exactly what has and hasn't been tested.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="the-target" Text="The target" Class="docs-section" />
+        <TbText>
+            Trailblazor aims for <a href="https://www.w3.org/TR/WCAG22/">WCAG 2.2</a> Level AA. That is a target, not a
+            certificate: the library hasn't had an independent audit, and a conformance claim applies to a whole page, so
+            accessible components don't make an app accessible on their own.
+        </TbText>
+
+        <DocsHeading Id="what-components-do" Text="What components do" Class="docs-section" />
+        <ul>
+            <li>
+                <strong>Roles and states.</strong> Components use native elements where they can, and follow the matching
+                <a href="https://www.w3.org/WAI/ARIA/apg/patterns/">WAI-ARIA pattern</a> where they can't.
+            </li>
+            <li>
+                <strong>Keyboard.</strong> Components are built so that what a pointer can do also works from the
+                keyboard, with a visible focus indicator. A component's page links its pattern and lists its keys where
+                they've been documented, as on the <a href="components/select">select</a> page.
+            </li>
+            <li>
+                <strong>Focus.</strong> A dialog keeps focus inside while it's open and returns it to its opener on
+                closing, and a form sends focus to its first error.
+            </li>
+            <li>
+                <strong>Announcements.</strong> Messages that appear as someone edits a field are read out, and the
+                <a href="guides/announcements">announcer</a> reads out anything else you need.
+            </li>
+            <li>
+                <strong>Build warnings.</strong> The <a href="guides/analyzers">analyzers</a> warn about an unnamed
+                control (TB001), an untitled dialog (TB002) and a field without a label (TB004) as your app builds.
+            </li>
+            <li>
+                <strong>User settings.</strong> Components keep their outlines and fills in forced colors and stop moving
+                under reduced motion, where an indeterminate progress bar or circle pulses instead.
+                <a href="guides/right-to-left">Right-to-left</a> layouts mirror.
+            </li>
+        </ul>
+
+        <DocsHeading Id="what-your-app-must-do" Text="What your app must do" Class="docs-section" />
+        <TbText>A component can't know these, so they stay your job:</TbText>
+        <ul>
+            <li>
+                Set <code>lang</code> on the <code>html</code> element, and <code>dir</code> for right-to-left languages.
+            </li>
+            <li>Give every page a title of its own, which is the first thing a screen reader says.</li>
+            <li>
+                Move focus after navigation, as Blazor's <code>FocusOnNavigate</code> does, and offer a skip link past
+                your navigation.
+            </li>
+            <li>
+                Mark up the page with landmarks, such as <code>main</code> and <code>nav</code>, and a sensible heading
+                outline.
+            </li>
+            <li>
+                Name every control, and describe every meaningful image with <code>Alt</code> in words that fit your
+                page. A decorative image takes an empty <code>Alt</code>.
+            </li>
+            <li>
+                Tell screen reader users about changes they can't see, such as a saved form or a finished search, with
+                the <a href="guides/announcements">announcer</a> or an <code>output</code> element.
+            </li>
+            <li>Word <a href="guides/forms#wording">labels, hints and error messages</a> so people know what to do.</li>
+            <li>Don't rely on color alone to say what something means.</li>
+            <li>
+                Check contrast if you <a href="guides/theming">change the theme's colors</a>: the built-in palettes are
+                tested, and your own aren't.
+            </li>
+            <li>
+                Test your own pages, as <a href="guides/testing">the testing guide</a> describes, and try them with a
+                keyboard.
+            </li>
+        </ul>
+
+        <DocsHeading Id="labels-and-headings" Text="Labels and headings" Class="docs-section" />
+        <ul>
+            <li>
+                <strong>A visible label comes first.</strong> Everyone can read a field's <code>Label</code>, and
+                clicking it focuses the field. Use <code>AriaLabel</code> only where there is truly no room, such as a
+                search box marked by an icon.
+            </li>
+            <li>
+                <strong>Icon buttons need a name.</strong> An icon has no text for a screen reader to say, so give each
+                one an <code>AriaLabel</code> that says what it does.
+            </li>
+            <li>
+                <strong>A group's label is its legend.</strong> The <code>Label</code> of a radio or checkbox group
+                renders a <code>legend</code>, which screen readers say with each option.
+            </li>
+            <li>
+                <strong>A question can be the page's heading.</strong> On a page that asks one thing, make the question
+                the heading, and give the field an <code>AriaLabel</code> with the same words.
+            </li>
+            <li>
+                <strong>Heading levels are yours to choose.</strong> <code>TextStyle</code> only changes how text looks,
+                so set <code>As</code> on a <a href="components/text"><code>TbText</code></a> to fit the page's
+                outline. An
+                <a href="components/accordion">accordion</a>'s headers are level 3 until you set its
+                <code>HeadingLevel</code>.
+            </li>
+        </ul>
+        <CodeBlock Label="A question as the page's heading" Code="@QuestionHeading" />
+
+        <DocsHeading Id="how-its-tested" Text="How it's tested" Class="docs-section" />
+        <TbText>
+            Continuous integration runs these in Chromium on every change, and in Firefox and WebKit as well every week:
+        </TbText>
+        <ul>
+            <li>
+                <strong>Axe.</strong> Every example on these pages is checked against the WCAG 2.0 and 2.1 A and AA rules
+                and the 2.2 AA rules, in light and dark. That covers contrast and target size. Some examples with a popup
+                are also checked with it open.
+            </li>
+            <li>
+                <strong>Palettes and density.</strong> In Chromium only, axe also checks examples with many states in
+                every palette, and every example in compact density.
+            </li>
+            <li>
+                <strong>Keyboard.</strong> Browser tests press real keys and check where focus goes and what happens.
+            </li>
+            <li>
+                <strong>Forced colors and reduced motion.</strong> Browser tests turn on each setting and check what
+                changes. The motion tokens that transitions read drop to zero, which is tested once for all components.
+            </li>
+        </ul>
+        <TbText>Here is what that doesn't cover:</TbText>
+        <ul>
+            <li>
+                <strong>Screen readers.</strong> No check with NVDA, JAWS, VoiceOver or TalkBack is on record. Roles and
+                names are tested, but what a screen reader actually says is not.
+            </li>
+            <li>
+                <strong>Judgment.</strong> Axe finds only what a tool can decide. It can tell that a button has a name,
+                but not that the name makes sense.
+            </li>
+            <li>
+                <strong>Real settings.</strong> Forced colors are emulated in the browser rather than set in Windows, and
+                WebKit is the engine behind Safari rather than Safari itself.
+            </li>
+            <li>
+                <strong>Other ways of using a page.</strong> Voice control, switch devices, and zooming to 400% have no
+                tests of their own.
+            </li>
+            <li>
+                <strong>Every popup.</strong> Some examples with a popup, such as the toolbar and data grid, never have it
+                open while axe runs, and others have only their first popup checked
+                (<a href="https://github.com/zacharydf7/trailblazor/issues/262">#262</a>).
+            </li>
+            <li>
+                <strong>Every engine on every change.</strong> A problem only Firefox or WebKit shows can go unnoticed
+                until the weekly run.
+            </li>
+        </ul>
+
+        <DocsHeading Id="status" Text="Status of each component" Class="docs-section" />
+        <TbText>
+            "Tested" means a test aimed at it runs in Chromium on every change, and in Firefox and WebKit every week. "n/a"
+            means it doesn't apply: the component handles no keys of its own, draws nothing forced colors could lose, or
+            has no motion of its own. "Not yet" means no test is aimed at it. A date is the last time a person
+            checked that component with a screen reader.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Accessibility status of each component">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">Axe</th>
+                        <th scope="col">Keyboard</th>
+                        <th scope="col">Forced colors</th>
+                        <th scope="col">Reduced motion</th>
+                        <th scope="col">Screen reader</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var status in AccessibilityStatusCatalog.All)
+                    {
+                        <tr>
+                            <th scope="row">
+                                <a href="components/@status.Component">@Title(status)</a>
+                            </th>
+                            <td>Tested</td>
+                            <td>@Shown(status.Keyboard)</td>
+                            <td>@Shown(status.ForcedColors)</td>
+                            <td>@Shown(status.ReducedMotion)</td>
+                            <td>@ScreenReader(status)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <DocsHeading Id="known-issues" Text="Known issues and reporting" Class="docs-section" />
+        <ul>
+            <li>
+                A message announced just as a modal dialog opens may not be spoken
+                (<a href="https://github.com/zacharydf7/trailblazor/issues/87">#87</a>).
+            </li>
+            <li>
+                On a right-to-left page, the Left and Right arrow keys move a slider the wrong way in WebKit
+                (<a href="https://github.com/zacharydf7/trailblazor/issues/287">#287</a>).
+            </li>
+        </ul>
+        <TbText>
+            <a href="@AccessibilityIssues">Open issues labeled accessibility</a> track these and any others. To report a
+            problem,
+            <a href="@ReportIssue">open an issue</a> and say which component, browser and assistive technology you used,
+            with their versions, what you expected, and what happened.
+        </TbText>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="guides/forms">Forms and validation</a>: errors people can find and fix.</li>
+            <li><a href="guides/announcements">Announcements</a>: telling screen reader users about changes.</li>
+            <li><a href="guides/analyzers">Analyzers</a>: warnings as your app builds.</li>
+            <li><a href="guides/right-to-left">Right-to-left and culture</a>: mirrored layouts and arrow keys.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private const string AccessibilityIssues =
+        $"{DocsRepository.Url}/issues?q=is%3Aissue+is%3Aopen+label%3Aaccessibility";
+
+    private static readonly string ReportIssue = DocsRepository.NewIssue("Accessibility: ");
+
+    private static string Title(AccessibilityStatus status) => ExampleCatalog.Find(status.Component)!.Title;
+
+    private static string ScreenReader(AccessibilityStatus status) =>
+        status.ScreenReaderChecked?.ToString("yyyy-MM-dd") ?? "Not yet";
+
+    private static string Shown(CheckState check) => check switch
+    {
+        CheckState.Tested => "Tested",
+        CheckState.NotApplicable => "n/a",
+        _ => "Not yet",
+    };
+
+    private const string QuestionHeading = """
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">How many are going?</TbText>
+        <TbNumberField AriaLabel="How many are going?" @bind-Value="_partySize" />
+        """;
+}

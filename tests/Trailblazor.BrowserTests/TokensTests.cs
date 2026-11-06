@@ -484,7 +484,9 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/tokens", new() { ReducedMotion = ReducedMotion.Reduce });
 
+        Assert.Equal("0ms", await GetRootTokenAsync(page, "--tb-motion-duration-fast"));
         Assert.Equal("0ms", await GetRootTokenAsync(page, "--tb-motion-duration-normal"));
+        Assert.Equal("0ms", await GetRootTokenAsync(page, "--tb-motion-duration-slow"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
