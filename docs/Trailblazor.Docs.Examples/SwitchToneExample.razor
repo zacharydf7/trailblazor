@@ -1,0 +1,9 @@
+<TbStack Row Gap="5" Wrap>
+    <TbSwitch Label="Wi-Fi" @bind-Value="_wifi" Size="Size.Small" Tone="Tone.Success" />
+    <TbSwitch Label="Alarms" @bind-Value="_alarms" Size="Size.Large" Tone="Tone.Danger" />
+</TbStack>
+
+@code {
+    private bool _wifi = true;
+    private bool _alarms = true;
+}

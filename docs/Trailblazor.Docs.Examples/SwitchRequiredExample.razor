@@ -1,0 +1,18 @@
+<TbForm @ref="_form" aria-label="Guided trip">
+    <TbSwitch Label="Share my location with the guide" @bind-Value="_share" Required
+              RequiredMessage="Turn on location sharing to join a guided trip." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private bool _share;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

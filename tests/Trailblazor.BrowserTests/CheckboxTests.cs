@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Trailblazor.BrowserTests;
 
 public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -68,6 +70,23 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
             "track => new DOMMatrix(getComputedStyle(track, '::before').transform).m41");
 
         Assert.True(direction == "rtl" ? shift < 0 : shift > 0, $"The thumb moved {shift}px in {direction}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Switch_ShouldOpenTheLinkWithoutToggling_WhenALinkInItsRichLabelIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/switch");
+        var quiet = page.GetByRole(AriaRole.Switch, new() { Name = "Follow the quiet hours" });
+        await Expect(quiet).ToHaveAccessibleNameAsync("Follow the quiet hours (opens in a new tab)");
+
+        var opened = await page.RunAndWaitForPopupAsync(
+            () => page.GetByRole(AriaRole.Link, new() { Name = "quiet hours" }).ClickAsync());
+        await Expect(opened).ToHaveURLAsync(new Regex("guides/accessibility$"));
+        await Expect(quiet).Not.ToBeCheckedAsync();
+        // The middle of this label can be the link, so the click stays on the text before it.
+        await page.GetByText("Follow the").ClickAsync(new() { Position = new() { X = 2, Y = 8 } });
+
+        await Expect(quiet).ToBeCheckedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

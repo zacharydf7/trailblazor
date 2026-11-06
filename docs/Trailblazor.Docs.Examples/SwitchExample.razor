@@ -1,16 +1,11 @@
-<TbStack Gap="4">
-    <TbSwitch Label="Auto-save" @bind-Value="_autoSave" data-testid="auto-save" />
-    <output data-testid="auto-save-echo">@_autoSave</output>
-    <TbSwitch Label="Offline mode" Value="true" Disabled />
-    <TbSwitch Label="Two-step sign-in" Value="true" ReadOnly HelperText="Your organization requires it." />
-    <TbStack Row Gap="5" Wrap>
-        <TbSwitch Label="Wi-Fi" @bind-Value="_wifi" Size="Size.Small" Tone="Tone.Success" />
-        <TbSwitch Label="Alarms" @bind-Value="_alarms" Size="Size.Large" Tone="Tone.Danger" />
-    </TbStack>
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbSwitch Label="Auto-save" @bind-Value="_autoSave" HelperText="Saves each change as you make it." />
+    <output>Auto-save value: @_autoSave</output>
+    <TbSwitch Label="Dim the screen after one minute of inactivity, and turn the screen off after five minutes"
+              @bind-Value="_dim" />
 </TbStack>
 
 @code {
     private bool _autoSave = true;
-    private bool _wifi = true;
-    private bool _alarms = true;
+    private bool _dim;
 }

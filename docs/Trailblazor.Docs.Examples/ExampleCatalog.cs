@@ -1408,19 +1408,71 @@ public static class ExampleCatalog
             "Turns a setting on or off right away.", typeof(SwitchExample))
         {
             Folder = "Checkbox",
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a setting that takes effect as soon as it changes, with nothing to submit.",
+            ],
+            WhenNotToUse =
+            [
+                "For a choice saved when a form is submitted, a [checkbox](components/checkbox) is usually the "
+                    + "better fit.",
+                "For two or more named options, use a [radio group](components/radio-group) or a "
+                    + "[toggle group](components/toggle-group).",
+            ],
+            Related = ["checkbox", "radio-group", "toggle-group"],
+            Pattern = new("switch", "https://www.w3.org/WAI/ARIA/apg/patterns/switch/"),
+            Sections =
+            [
+                new("label-and-help", "Label and help text", "`Label` names the switch, and clicking the label toggles "
+                    + "it. `HelperText` adds a hint. A long label wraps beside the switch.", typeof(SwitchExample)),
+                new("required", "Required", "A `Required` switch must be on, as when someone has to accept a setting "
+                    + "before continuing. Once it is changed or its form validates, a switch that's off shows a "
+                    + "message. `RequiredMessage` replaces the default, which uses the label, with one that says what to "
+                    + "do.",
+                    typeof(SwitchRequiredExample)),
+                new("rich-content", "Rich content", "`ChildContent` takes the place of `Label` for a label with a link "
+                    + "in it. Clicking the link doesn't toggle the switch, and opening it in a new tab keeps what's "
+                    + "been entered on the page. With no `Label`, the default required message is just \"The field is "
+                    + "required.\", so set `RequiredMessage`.", typeof(SwitchContentExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the switch focusable, and "
+                    + "posted if it's on, but neither a click nor Space changes it. `Disabled` takes it out of the tab "
+                    + "order and the post.", typeof(SwitchStatesExample)),
+                new("tone-and-size", "Tone and size", "`Tone` colors the track when on, and `Size` scales the track "
+                    + "and its label.", typeof(SwitchToneExample)),
+            ],
             Api = [typeof(TbSwitch), typeof(ChoiceClasses)],
+            Keyboard =
+            [
+                new(["Space"], "Toggles the switch."),
+            ],
+            Labeling =
+            [
+                "A native checkbox with `role=\"switch\"`, named by its `Label`.",
+                "`ChildContent` names the switch in place of `Label`, including any link text and a `NewTab` link's "
+                    + "hint, so keep it short.",
+            ],
+            Announcements =
+            [
+                "Screen readers read it as on or off, and a `ReadOnly` switch as read only.",
+                "A validation message that appears as someone changes the switch is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+            ],
             Accessibility =
             [
-                "A native checkbox with `role=\"switch\"`, read as on or off; the `Label` names it and Space "
-                    + "toggles it.",
-                "Use it for a setting that takes effect at once. For a choice saved with a form, use a checkbox.",
+                "Helper text and validation messages are linked to the field with `aria-describedby`, an error sets "
+                    + "`aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from screen "
+                    + "readers.",
+                "With reduced motion, the thumb moves without sliding.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
-                "`ReadOnly` keeps the switch focusable and posted, but neither a click nor Space changes it; "
-                    + "screen readers hear it as read only.",
-                "`Tone` colors the track when on, standing out from the page by at least 3:1 in every tone; warning "
-                    + "uses its text color to reach that contrast. `Size` scales the track and its label.",
-                "Rich content as `ChildContent` takes the place of `Label` and names the switch, so keep it short.",
+                "Every `Tone` stands out from the page by at least 3:1 when on; warning uses its text color to reach "
+                    + "that contrast.",
+            ],
+            BeforeInteractive =
+            [
+                "`ReadOnly` already works on a static page, so a click or Space doesn't change the switch.",
+                "A switch that's off posts nothing, so a static form binds it as `false`.",
             ],
             Target = new("switch", "Auto-save"),
             Blocks = ["tb-switch"],
@@ -1431,6 +1483,10 @@ public static class ExampleCatalog
                 new("helper", "The help text under the switch."),
                 new("error", "The validation message, shown while the value is invalid."),
             ],
+            TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
+                + "`GetByRole(AriaRole.Switch, ...)`. In bUnit, `Change(true)` on the `input` turns it on, but a "
+                + "browser script is what stops a `ReadOnly` switch from changing, so a `Change` on one still changes "
+                + "the value. Test read-only behavior in Playwright.",
             Telemetry = CheckboxTelemetry,
         },
         new("slider", "Slider", ExampleCategory.Inputs,

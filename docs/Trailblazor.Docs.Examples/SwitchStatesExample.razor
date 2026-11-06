@@ -1,0 +1,9 @@
+<TbStack Gap="4">
+    <TbSwitch Label="Two-step sign-in" @bind-Value="_twoStep" ReadOnly HelperText="Your organization requires it." />
+    <TbSwitch Label="Offline mode" @bind-Value="_offline" Disabled HelperText="Can't be focused, and doesn't post." />
+</TbStack>
+
+@code {
+    private bool _twoStep = true;
+    private bool _offline = true;
+}
