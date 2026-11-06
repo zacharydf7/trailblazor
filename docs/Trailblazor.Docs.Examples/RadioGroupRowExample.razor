@@ -1,0 +1,18 @@
+<TbRadioGroup Label="Orientation" @bind-Value="_orientation" Row Style="max-inline-size: 24rem">
+    <TbRadio Value="PageOrientation.Portrait">Portrait</TbRadio>
+    <TbRadio Value="PageOrientation.Landscape">Landscape</TbRadio>
+    <TbRadio Value="PageOrientation.Fit">
+        Best fit for the map, turning it when it wouldn't otherwise fit on the page
+    </TbRadio>
+</TbRadioGroup>
+
+@code {
+    private PageOrientation _orientation = PageOrientation.Portrait;
+
+    private enum PageOrientation
+    {
+        Portrait,
+        Landscape,
+        Fit,
+    }
+}

@@ -64,7 +64,4 @@ public class CheckboxGroupExampleTests : DocsTest
         Assert.DoesNotContain("ReadOnly", cut.Find("ul[aria-label=Accessibility]").TextContent);
         Assert.DoesNotContain("FocusAsync", cut.Find("ul[aria-label=Accessibility]").TextContent);
     }
-
-    private static IElement Option(IElement group, string text) =>
-        group.QuerySelectorAll("label").Single(label => label.TextContent.Contains(text)).QuerySelector("input")!;
 }

@@ -1,0 +1,8 @@
+<TbRadioGroup Label="Membership" @bind-Value="_membership">
+    <TbRadio Value="@("day")">Day pass</TbRadio>
+    <TbRadio Value="@("season")">Season pass <TbBadge>Popular</TbBadge></TbRadio>
+</TbRadioGroup>
+
+@code {
+    private string _membership = "season";
+}

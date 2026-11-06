@@ -1,29 +1,12 @@
-<TbStack Gap="6">
-    <TbRadioGroup Label="Paper size" @bind-Value="_paper" HelperText="Used for the next print run." data-testid="paper">
+<TbStack Gap="4">
+    <TbRadioGroup Label="Paper size" @bind-Value="_paper" HelperText="Used for the next print run.">
         <TbRadio Value="@("Letter")">Letter</TbRadio>
         <TbRadio Value="@("A4")">A4</TbRadio>
         <TbRadio Value="@("Legal")" Disabled>Legal (out of stock)</TbRadio>
     </TbRadioGroup>
-    <output data-testid="paper-echo">@_paper</output>
-    <TbRadioGroup Label="Orientation" @bind-Value="_orientation" Row Size="Size.Small" Tone="Tone.Info">
-        @foreach (var orientation in Enum.GetValues<PageOrientation>())
-        {
-            <TbRadio Value="orientation">@orientation</TbRadio>
-        }
-    </TbRadioGroup>
-    <TbRadioGroup TValue="string" Label="Plan" Value="@("Hiker")" ReadOnly HelperText="Change it from billing.">
-        <TbRadio Value="@("Free")">Free</TbRadio>
-        <TbRadio Value="@("Hiker")">Hiker</TbRadio>
-    </TbRadioGroup>
+    <output>Paper size value: @_paper</output>
 </TbStack>
 
 @code {
     private string _paper = "Letter";
-    private PageOrientation _orientation = PageOrientation.Portrait;
-
-    private enum PageOrientation
-    {
-        Portrait,
-        Landscape,
-    }
 }

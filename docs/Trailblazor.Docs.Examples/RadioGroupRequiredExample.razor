@@ -1,0 +1,21 @@
+<TbForm @ref="_form" aria-label="Meeting">
+    <TbRadioGroup Label="Meeting point" @bind-Value="_point" Required RequiredMessage="Choose where to meet the group.">
+        <TbRadio Value="@("parking")">Parking lot</TbRadio>
+        <TbRadio Value="@("station")">Ranger station</TbRadio>
+        <TbRadio Value="@("trailhead")">Trailhead</TbRadio>
+    </TbRadioGroup>
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _point;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

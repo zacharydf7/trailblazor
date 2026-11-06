@@ -56,6 +56,9 @@ public abstract class DocsTest : BunitContext
         scope.QuerySelectorAll("input").Single(input =>
             scope.QuerySelector($"label[for='{input.Id}']")?.TextContent.Trim() == label);
 
+    protected static IElement Option(IElement group, string text) =>
+        group.QuerySelectorAll("label").Single(label => label.TextContent.Contains(text)).QuerySelector("input")!;
+
     protected static IReadOnlyList<string> Texts(IEnumerable<IElement> elements) =>
         [.. elements.Select(element => element.TextContent.Trim())];
 }

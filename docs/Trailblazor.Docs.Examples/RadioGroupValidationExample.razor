@@ -1,0 +1,24 @@
+<TbForm @ref="_form" aria-label="Campsite booking">
+    <TbRadioGroup Label="Campsite" @bind-Value="_site" Validation="CheckSite">
+        <TbRadio Value="@("lake")">Lake</TbRadio>
+        <TbRadio Value="@("ridge")">Ridge</TbRadio>
+        <TbRadio Value="@("valley")">Valley</TbRadio>
+    </TbRadioGroup>
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string _site = "lake";
+
+    private static IEnumerable<string> CheckSite(string? site) =>
+        site == "lake" ? ["The lake site is full this week."] : [];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

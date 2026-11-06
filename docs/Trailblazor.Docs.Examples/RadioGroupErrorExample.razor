@@ -1,0 +1,23 @@
+<TbStack Gap="2">
+    <TbRadioGroup TValue="string" Label="Arrival day" Value="@_day" ValueChanged="ChangeDay" Error="@_error">
+        <TbRadio Value="@("friday")">Friday</TbRadio>
+        <TbRadio Value="@("saturday")">Saturday</TbRadio>
+    </TbRadioGroup>
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="CheckDay">Check the day</TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private string? _day = "saturday";
+    private string? _error;
+
+    private void ChangeDay(string? day)
+    {
+        _day = day;
+        _error = null;
+    }
+
+    // Stands in for asking a server, which answers with an error the group shows until the day changes.
+    private void CheckDay() => _error = _day == "saturday" ? "Saturday is fully booked." : null;
+}

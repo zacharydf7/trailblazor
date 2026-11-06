@@ -1603,22 +1603,91 @@ public static class ExampleCatalog
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
         {
             Folder = "Radio",
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for one choice from a short list, when seeing every option helps someone choose.",
+            ],
+            WhenNotToUse =
+            [
+                "For a long list, use a [select](components/select).",
+                "For a compact row where a choice takes effect right away, use a "
+                    + "[toggle group](components/toggle-group).",
+                "For any number of choices, use a [checkbox group](components/checkbox-group).",
+                "For one setting that's on or off, use a [switch](components/switch).",
+            ],
+            Related = ["select", "toggle-group", "checkbox-group", "switch", "form"],
+            Pattern = new("radio group", "https://www.w3.org/WAI/ARIA/apg/patterns/radio/"),
+            RightToLeftKeys = "Left moves to the next option and Right to the previous one, except in Safari, which "
+                + "doesn't swap them.",
+            Sections =
+            [
+                new("options-and-value", "Options and value", "Each `TbRadio` is an option, and the group's `Value` "
+                    + "holds the chosen option's value, which can be any type, such as an enum. `Disabled` on an option "
+                    + "turns off that option alone.",
+                    typeof(RadioGroupExample)),
+                new("row", "Row", "`Row` lays the options out in a row, wrapping when they don't fit. A long option "
+                    + "wraps beside its radio.", typeof(RadioGroupRowExample)),
+                new("required", "Required", "`Required` shows a marker. Once its form validates, a message shows "
+                    + "while nothing is chosen. A non-nullable enum or number always counts as chosen, so bind a "
+                    + "nullable one. `RequiredMessage` replaces the default, which uses the label.",
+                    typeof(RadioGroupRequiredExample)),
+                new("validation", "Validation", "`Validation` checks the choice once it is changed or its form "
+                    + "validates.", typeof(RadioGroupValidationExample)),
+                new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
+                    + "Until your app clears it, the form won't submit, so clear it when the choice changes.",
+                    typeof(RadioGroupErrorExample)),
+                new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
+                    + "as a badge. All of it names the radio, so keep it short.", typeof(RadioGroupContentExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off every option but the "
+                    + "chosen one, which stays a tab stop and still posts; with nothing chosen, every option is off. "
+                    + "`Disabled` on the group turns off every option.", typeof(RadioGroupStatesExample)),
+                new("tone-and-size", "Tone and size", "`Tone` colors the chosen radio, and `Size` scales the radios "
+                    + "and their labels.", typeof(RadioGroupToneExample)),
+            ],
             Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>), typeof(ChoiceClasses)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the group and out of it, as one tab stop. Focus lands on the chosen radio. "
+                    + "With nothing chosen, it lands on the first radio that isn't disabled."),
+                new(["Down", "Right"], "Moves to the next option that isn't disabled and chooses it. Most browsers wrap "
+                    + "at the end of the group, but Safari stops there."),
+                new(["Up", "Left"], "Moves to the previous option that isn't disabled and chooses it, wrapping the same "
+                    + "way."),
+                new(["Space"], "Chooses the focused radio, when nothing is chosen yet."),
+            ],
+            Labeling =
+            [
+                "The `Label` is the `fieldset`'s legend and names the group. Each option is a native radio, named by "
+                    + "its content.",
+            ],
+            Announcements =
+            [
+                "Screen readers read a `ReadOnly` group as read only.",
+                "An `Error` your app sets is read out once when it appears, even after a submit.",
+                "A validation message that appears as someone changes the choice is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+            ],
             Accessibility =
             [
-                "A `fieldset` with `role=\"radiogroup\"`, named by its `Label` as the legend. Required, error and "
-                    + "helper text apply to the whole group.",
-                "The group is one tab stop, and the arrow keys move between options and choose them, as browsers "
-                    + "do for native radios.",
-                "`Disabled` on the group turns off every option.",
-                "`FocusAsync()` moves focus where Tab would: to the checked radio, or else the first radio that "
-                    + "isn't disabled.",
+                "A `fieldset` with `role=\"radiogroup\"`. Helper text and messages describe the whole group, an error "
+                    + "sets `aria-invalid` on it, and `Required` sets `aria-required`; the asterisk it adds is hidden "
+                    + "from screen readers.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
-                "`ReadOnly` turns off every option but the chosen one, which stays a tab stop and still posts; "
-                    + "with nothing chosen, every option is off. Screen readers hear the group as read only.",
-                "`Tone` colors the chosen radio, standing out from the page by at least 3:1 in every tone; warning "
-                    + "uses its text color to reach that contrast. `Size` scales the radios and their labels.",
+                "Every `Tone` stands out from the page by at least 3:1 when chosen; warning uses its text color to "
+                    + "reach that contrast.",
+            ],
+            Notes =
+            [
+                new("`@ref` the group and call `FocusAsync()` to move focus where Tab would: to the chosen radio, or "
+                    + "else the first radio that isn't disabled."),
+            ],
+            BeforeInteractive =
+            [
+                "Native radios give the tab stop and the arrow keys, so choosing works before the page is interactive, "
+                    + "and a static form posts the chosen value.",
+                "`ReadOnly` already works on a static page, since the other options render disabled.",
             ],
             Target = new("radiogroup", "Paper size"),
             Blocks = ["tb-radio-group", "tb-radio"],
@@ -1636,6 +1705,9 @@ public static class ExampleCatalog
                     <TbRadio Value="…">…</TbRadio>
                 </TbRadioGroup>
                 """,
+            TestingTip = "Each option is a native radio, so Playwright's `CheckAsync()` works on "
+                + "`GetByRole(AriaRole.Radio, ...)` inside the group. In bUnit, `Change(true)` on an option's `input` "
+                + "chooses it.",
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))

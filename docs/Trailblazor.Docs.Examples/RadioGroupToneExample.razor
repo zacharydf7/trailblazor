@@ -1,0 +1,15 @@
+<TbStack Gap="4">
+    <TbRadioGroup Label="Map style" @bind-Value="_style" Size="Size.Small" Tone="Tone.Info">
+        <TbRadio Value="@("topographic")">Topographic</TbRadio>
+        <TbRadio Value="@("satellite")">Satellite</TbRadio>
+    </TbRadioGroup>
+    <TbRadioGroup Label="Weather alerts" @bind-Value="_alerts" Size="Size.Large" Tone="Tone.Warning">
+        <TbRadio Value="@("all")">All alerts</TbRadio>
+        <TbRadio Value="@("severe")">Severe only</TbRadio>
+    </TbRadioGroup>
+</TbStack>
+
+@code {
+    private string _style = "topographic";
+    private string _alerts = "severe";
+}
