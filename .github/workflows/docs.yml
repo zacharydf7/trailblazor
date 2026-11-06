@@ -41,6 +41,7 @@ jobs:
     permissions:
       contents: read
       issues: read
+      pages: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -65,12 +66,16 @@ jobs:
       - name: Write the pages as Markdown
         run: dotnet run --project tools/Trailblazor.Docs.Markdown --configuration Release -- publish/wwwroot
 
-      # Pages serves the site under the repository's name and answers a link to any page with 404.html.
+      # The base follows Pages' settings: a custom domain serves the site at its root, and otherwise it's under the
+      # repository's name. Pages answers a link to any page with 404.html.
       - name: Prepare the site for Pages
         working-directory: publish/wwwroot
         env:
-          BASE: /${{ github.event.repository.name }}/
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
+          BASE=$(gh api "repos/$REPO/pages" --jq '.html_url | sub("^https?://[^/]+"; "")')
+          case "$BASE" in /|/*/) ;; *) echo "::error::Unexpected Pages base: '$BASE'"; exit 1 ;; esac
           sed -i "s|<base href=\"/\" />|<base href=\"$BASE\" />|" index.html
           grep -q "<base href=\"$BASE\" />" index.html
           cp index.html 404.html
