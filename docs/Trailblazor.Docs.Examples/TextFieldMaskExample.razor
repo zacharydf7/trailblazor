@@ -1,0 +1,11 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbTextField Label="Phone" @bind-Value="_phone" Mask="(000) 000-0000" />
+    <output>Digits: @_phone</output>
+    <TbTextField Label="Contact number" @bind-Value="_contact" Mask="(000) 000-0000" IncludeMaskLiterals />
+    <output>Whole text: @_contact</output>
+</TbStack>
+
+@code {
+    private string? _phone;
+    private string? _contact;
+}

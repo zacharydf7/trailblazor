@@ -1,0 +1,10 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbTextField Label="Trail fee" @bind-Value="_fee">
+        <Start>$</Start>
+        <End>USD</End>
+    </TbTextField>
+</TbStack>
+
+@code {
+    private string? _fee = "25";
+}

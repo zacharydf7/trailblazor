@@ -984,54 +984,117 @@ public static class ExampleCatalog
         new("text-field", "Text field", ExampleCategory.Inputs,
             "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
         {
+            WhenToUse =
+            [
+                "Use it for free text, such as names, notes and searches, or with a `Mask` for a fixed pattern, such as "
+                    + "a phone number.",
+            ],
+            WhenNotToUse =
+            [
+                "For an amount with steps and limits, use a [number field](components/number-field). Digits that aren't "
+                    + "an amount, such as a phone number, belong in a masked text field.",
+                "For a choice from a list, use a [select](components/select), or an [autocomplete]"
+                    + "(components/autocomplete) when the list is long enough to search.",
+                "For a range of dates, use a [date range picker](components/date-range-picker).",
+            ],
+            Related = ["number-field", "autocomplete", "select", "form", "label"],
+            Sections =
+            [
+                new("label-and-help", "Label and help text", "`Label` names the field, and `HelperText` says what people "
+                    + "need before they type. A long label wraps. The value stays `null` until something is typed.",
+                    typeof(TextFieldExample)),
+                new("required", "Required", "`Required` marks the field and, once it is edited or its form validates, "
+                    + "shows a message if it is empty or blank. `RequiredMessage` replaces the default, which uses the "
+                    + "label: \"Group leader is required.\"",
+                    typeof(TextFieldRequiredExample)),
+                new("validation-and-server-errors", "Validation and server errors", "`Validation` checks each new value. "
+                    + "`Error` shows a message from the parent, such as a server's answer, until the parent clears it, "
+                    + "as the handle does here when it changes. When a handle is taken, `SelectTextAsync` selects it, "
+                    + "so typing replaces it. To compare two fields, as with the gate codes, compute one field's "
+                    + "`Error` from both values and set `Invalid` on the other.", typeof(TextFieldValidationExample)),
+                new("types", "Types", "`Type` sets the keyboard people get, and `InputAttributes` puts attributes "
+                    + "such as `autocomplete` on the input. Bind the field to a number or date instead of a string, and "
+                    + "text that doesn't convert shows an error.",
+                    typeof(TextFieldTypesExample)),
+                new("search-and-clearing", "Search and clearing", "`UpdateOnInput` updates the value while typing, and "
+                    + "`UpdateDelay` waits for a pause, so a search doesn't run on every keystroke. `Clearable` adds a "
+                    + "button that empties the field, and `ClearLabel` names that button. The button sets the value to "
+                    + "`null`, while deleting the text by hand leaves an empty string.", typeof(TextFieldSearchExample)),
+                new("start-and-end", "Start and end content", "`Start` and `End` hold an icon, a prefix or a unit beside "
+                    + "the input.", typeof(TextFieldAdornmentExample)),
+                new("mask", "Mask", "`Mask` fits typing to a pattern such as `(000) 000-0000`, where `0` is a digit, "
+                    + "`a` a letter and `*` either, and adds the parentheses and dashes as you type, keeping the caret "
+                    + "in place. The value holds only what was typed into the slots, or the whole text, parentheses "
+                    + "and dashes included, with `IncludeMaskLiterals`.",
+                    typeof(TextFieldMaskExample)),
+                new("several-lines", "Several lines", "`Lines` makes a text area, and `MaxLines` lets it grow with its "
+                    + "text up to that many lines and then scroll.", typeof(TextFieldLinesExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the field focusable and posted "
+                    + "with its form. `Disabled` takes it out of the tab order and the post.",
+                    typeof(TextFieldStatesExample)),
+                new("size-and-variant", "Size and variant", "`Size` and `Variant` work the same on every boxed field: "
+                    + "text, number, select, autocomplete, color and date range.", typeof(TextFieldSizeExample)),
+                new("without-a-visible-label", "Without a visible label", "Where a field's purpose is plain from what "
+                    + "surrounds it, such as a filter above a list, `AriaLabel` names it for screen readers. A visible "
+                    + "label is better wherever there's room.", typeof(TextFieldAriaLabelExample)),
+                new("when-focus-leaves", "When focus leaves", "`OnBlur` runs when focus leaves the field, which "
+                    + "suits checking or saving what was entered as someone moves on.", typeof(TextFieldBlurExample)),
+            ],
             Api = [typeof(TbTextField<>), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Enter"], "In a single-line field, updates the value at once and submits its form."),
+                new(["Backspace"], "Just after a mask's parenthesis or dash, removes the character before it."),
+            ],
+            Labeling =
+            [
+                "The `Label` is a real `<label>` and names the field; give every field one. A placeholder is not a label.",
+            ],
+            Announcements =
+            [
+                "A validation message that appears as someone edits the field is read out once. Checking the whole "
+                    + "form on submit reads none out, so a form with several errors doesn't speak them all at once.",
+                "An `Error` from the parent is read out once when it appears, even after a submit.",
+                "When an error is fixed or the field goes away, its message leaves the live region.",
+            ],
             Accessibility =
             [
-                "The `Label` is a real `<label>` and names the field; give every field one. A placeholder is not "
-                    + "a label.",
-                "Helper text and validation messages are linked to the field with `aria-describedby`, an error "
-                    + "sets `aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from "
-                    + "screen readers.",
-                "A validation message that appears as someone edits the field is read out once. Checking the whole "
-                    + "form on submit reads none out, so a form with several errors doesn't speak them all at once. "
-                    + "When the error is fixed or the field goes away, its message leaves the live region.",
-                "An `Error` from the parent, such as a server's answer, is linked the same way and read out once when "
-                    + "it appears, even after a submit; it keeps its form from submitting until the parent clears it, "
-                    + "which also takes it out of the live region.",
-                "`Required` checks the field too: once it is edited, or its form validates, an empty or blank value "
-                    + "shows `RequiredMessage`, \"Name is required.\" by default. While that message shows, the "
-                    + "field's own `Validation` doesn't run, so it is the only message. `Invalid` marks the field "
-                    + "invalid without a message, for a form that lists its errors elsewhere.",
-                "After a static-SSR form post, text that doesn't convert, such as letters in a number, stays in the "
-                    + "field with the form's error, so nothing typed is lost. Blazor reports these errors for an "
-                    + "`EditForm` whose model is supplied by `[SupplyParameterFromForm]` without its own `FormName`.",
-                "On a static page a number or date shows in the invariant culture, as 1.5 and 07/02/2026, because "
-                    + "Blazor reads a static form's post that way; for numbers typed in the user's own format, use a "
-                    + "number field.",
-                "`@ref` the field and call `FocusAsync()` to move focus to it, or `SelectTextAsync()` to also select "
-                    + "its text so typing replaces it.",
-                "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as "
-                    + "browsers expose them.",
-                "`ReadOnly` keeps the field focusable and posted with its form, and screen readers hear it as read "
-                    + "only; `Disabled` takes it out of the tab order and the post.",
-                "`Clearable` adds a button named \"Clear\" (or `ClearLabel`) and described by the field's label while "
-                    + "the field holds text it can change; pressing it empties the field and puts focus back in it. A "
-                    + "number needs a nullable type, such as `int?`.",
-                "`UpdateDelay` waits for typing to pause before updating the value, so a search doesn't run on "
-                    + "every keystroke; Enter in a single-line field, or leaving the field, updates it at once.",
-                "`MaxLines` lets a text area grow with its text from `Lines` up to that many lines, and then scroll, "
-                    + "in browsers with CSS `field-sizing`.",
-                "`Mask` fits typing to a pattern such as `(000) 000-0000` (`0` a digit, `a` a letter, `*` either), "
-                    + "adding its brackets and dashes as you type and keeping the caret in place; Backspace just after "
-                    + "a bracket or dash removes the character before it. Empty slots make the field invalid, the "
-                    + "placeholder shows the pattern, and a pattern of digits brings up a number keyboard. The value "
-                    + "holds what was typed, or the whole text with `IncludeMaskLiterals`. A static form post binds "
-                    + "the text as it was sent, so check it on the model too, with a `[RegularExpression]` for "
-                    + "example.",
-                "`Variant` and `Size` work the same on every boxed field: text, number, select, autocomplete, color "
-                    + "and date range. `Filled` keeps a 3:1 line along the box's bottom, red when the field is "
-                    + "invalid and dashed when it's read only. Each size is set from the theme's density, as a "
-                    + "button's is.",
+                "Helper text and validation messages are linked to the field with `aria-describedby`, an error sets "
+                    + "`aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from screen "
+                    + "readers.",
+                "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as browsers "
+                    + "expose them.",
+                "Screen readers hear a `ReadOnly` field as read only.",
+                "The clear button is named \"Clear\", or `ClearLabel`, and described by the field's label. It shows "
+                    + "while the field holds text it can change, and pressing it puts focus back in the field.",
+                "The `Filled` variant keeps a line with 3:1 contrast along the box's bottom, red when the field is invalid "
+                    + "and dashed when it's read only.",
+            ],
+            BeforeInteractive =
+            [
+                "After a static form post, text that doesn't convert, such as letters in a number, stays in the field "
+                    + "with the form's error, so nothing typed is lost. Blazor reports these errors for an `EditForm` "
+                    + "whose model is supplied by `[SupplyParameterFromForm]` without its own `FormName`.",
+                "On a static page a number or date shows in the invariant culture, as 1.5 and 07/02/2026, because Blazor "
+                    + "reads a static form's post that way; for numbers typed in the user's own format, use a number "
+                    + "field.",
+                "A static form post binds a `Mask`ed field's text as it was sent, so check it on the model too, with a "
+                    + "`[RegularExpression]` for example.",
+            ],
+            Notes =
+            [
+                new("While a `Required` message shows, the field's own `Validation` doesn't run, so it is the only "
+                    + "message. `Invalid` marks the field invalid without a message, for a form that lists its errors "
+                    + "elsewhere."),
+                new("An `Error` keeps its form from submitting until the parent clears it."),
+                new("`@ref` the field and call `FocusAsync()` to move focus to it, or `SelectTextAsync()` to also select "
+                    + "its text so typing replaces it."),
+                new("`Clearable` on a number needs a nullable type, such as `int?`."),
+                new("With `UpdateDelay`, Enter in a single-line field, or leaving the field, updates the value at once."),
+                new("`MaxLines` needs a browser with CSS `field-sizing`."),
+                new("With a `Mask`, empty slots make the field invalid, the placeholder shows the pattern, and a pattern "
+                    + "of digits brings up a number keyboard."),
+                new("Each `Size` is set from the theme's density, as a button's is."),
             ],
             Target = new("textbox", "Name"),
             Blocks = ["tb-field"],

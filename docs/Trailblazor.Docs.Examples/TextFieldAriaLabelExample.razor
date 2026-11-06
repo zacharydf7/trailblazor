@@ -1,0 +1,14 @@
+<TbStack Gap="2" Style="max-inline-size: 24rem">
+    <TbTextField AriaLabel="Filter trails" Placeholder="Filter trails" @bind-Value="_filter" UpdateOnInput />
+    <TbList aria-label="Trails">
+        @foreach (var trail in Trails.Where(trail => trail.Contains(_filter ?? "", StringComparison.OrdinalIgnoreCase)))
+        {
+            <TbListItem @key="trail">@trail</TbListItem>
+        }
+    </TbList>
+</TbStack>
+
+@code {
+    private static readonly string[] Trails = ["Cedar Flats", "Eagle Ridge traverse", "Fern Gully"];
+    private string? _filter;
+}

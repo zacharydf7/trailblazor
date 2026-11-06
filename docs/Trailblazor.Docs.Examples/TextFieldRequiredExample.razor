@@ -1,0 +1,19 @@
+<TbForm @ref="_form" aria-label="Trip leaders" Style="max-inline-size: 24rem">
+    <TbTextField Label="Group leader" @bind-Value="_leader" Required />
+    <TbTextField Label="Meeting point" @bind-Value="_point" Required RequiredMessage="Enter where the group meets." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _leader;
+    private string? _point;
+
+    // Only so this demo shows its messages as it appears; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

@@ -1,0 +1,12 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbTextField Label="Trail code" @bind-Value="_code" Size="Size.Small" />
+    <TbTextField Label="Destination" @bind-Value="_destination" Size="Size.Large" />
+    <TbTextField Label="Call sign" @bind-Value="_callSign" Variant="FieldVariant.Filled"
+                 HelperText="A filled field, for forms on a plain page." />
+</TbStack>
+
+@code {
+    private string? _code = "PCT-12";
+    private string? _destination;
+    private string? _callSign;
+}

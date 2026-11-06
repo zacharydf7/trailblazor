@@ -1,0 +1,44 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbTextField Label="Permit number" @bind-Value="_permit" Validation="CheckPermit" HelperText="Six digits." />
+    <TbTextField @ref="_handleField" Label="Handle" Value="@_handle"
+                 ValueChanged="(string? handle) => ChangeHandle(handle)" Error="@_handleError" UpdateOnInput
+                 HelperText="Try robin, who already has an account." />
+    <TbStack Row Gap="2">
+        <TbButton Variant="Variant.Outlined" OnClick="CheckHandleAsync">Check the handle</TbButton>
+    </TbStack>
+    <TbTextField Label="Gate code" @bind-Value="_code" Invalid="CodesDiffer" />
+    <TbTextField Label="Gate code again" @bind-Value="_repeat"
+                 Error="@(CodesDiffer ? "Enter the same gate code in both fields." : null)" />
+</TbStack>
+
+@code {
+    private TbTextField<string> _handleField = default!;
+    private string? _permit;
+    private string? _handle;
+    private string? _handleError;
+    private string? _code;
+    private string? _repeat;
+
+    private bool CodesDiffer =>
+        !string.IsNullOrEmpty(_code) && !string.IsNullOrEmpty(_repeat) && _code != _repeat;
+
+    private static IEnumerable<string> CheckPermit(string? permit) =>
+        permit is { Length: 6 } && permit.All(char.IsAsciiDigit) ? [] : ["Enter six digits."];
+
+    // Stands in for asking a server, which answers with an error the field shows until the handle changes. A
+    // taken handle is selected, so typing replaces it.
+    private async Task CheckHandleAsync()
+    {
+        _handleError = _handle == "robin" ? "That handle is taken." : null;
+        if (_handleError is not null)
+        {
+            await _handleField.SelectTextAsync();
+        }
+    }
+
+    private void ChangeHandle(string? handle)
+    {
+        _handle = handle;
+        _handleError = null;
+    }
+}

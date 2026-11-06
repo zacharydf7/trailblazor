@@ -134,7 +134,7 @@ public class FieldFocusTests(BrowserFixture fixture) : BrowserTest(fixture)
         var filter = page.GetByRole(AriaRole.Textbox, new() { Name = "Filter trails", Exact = true });
 
         await Expect(filter).ToBeVisibleAsync();
-        var label = await page.GetByTestId("filter").Locator("label").BoundingBoxAsync();
+        var label = await page.Locator(".tb-field", new() { Has = filter }).Locator("label").BoundingBoxAsync();
         Assert.True(label is null || label.Width <= 1);
     }
 
@@ -159,12 +159,11 @@ public class FieldFocusTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task OnBlur_ShouldBeRaised_WhenFocusLeavesTheField(string browser)
     {
         var page = await OpenAsync(browser, "/examples/text-field");
-        var filter = page.GetByRole(AriaRole.Textbox, new() { Name = "Filter trails", Exact = true });
-        await filter.FocusAsync();
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Campsite", Exact = true }).FocusAsync();
 
         await page.Keyboard.PressAsync("Tab");
 
-        await Expect(page.GetByTestId("filter-checked")).ToHaveTextAsync("Checked on leaving");
+        await Expect(page.GetByText("Checked on leaving")).ToBeVisibleAsync();
     }
 
     public static TheoryData<string, string> DisabledFieldsInEachBrowser => new(

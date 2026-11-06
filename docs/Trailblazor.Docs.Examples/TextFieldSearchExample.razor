@@ -1,0 +1,14 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbTextField Label="Search" @bind-Value="_search" Type="TextFieldType.Search" UpdateOnInput
+                 UpdateDelay="TimeSpan.FromMilliseconds(300)" Clearable>
+        <Start><TbIcon Icon="ExampleIcons.Search" /></Start>
+    </TbTextField>
+    <output>@(string.IsNullOrEmpty(_search) ? "Not searching yet." : $"Searching for: {_search}")</output>
+    <TbTextField Label="Region" @bind-Value="_region" Clearable ClearLabel="Clear the region" />
+    <output>Region: @(_region ?? "null")</output>
+</TbStack>
+
+@code {
+    private string? _search;
+    private string? _region = "North ridge";
+}

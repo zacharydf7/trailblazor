@@ -1,62 +1,12 @@
-@using Trailblazor.Docs.Examples
-
-<TbStack Gap="5" Style="max-width: 24rem">
+<TbStack Gap="4" Style="max-inline-size: 24rem">
     <TbTextField Label="Name" @bind-Value="_name" HelperText="As it appears on your badge." Required
-                 RequiredMessage="Enter a name." data-testid="name" />
-    <TbTextField Label="Search" @bind-Value="_search" Type="TextFieldType.Search" UpdateOnInput
-                 UpdateDelay="TimeSpan.FromMilliseconds(300)" Clearable data-testid="search">
-        <Start><TbIcon Icon="ExampleIcons.Plus" /></Start>
-    </TbTextField>
-    <output data-testid="search-echo">@_search</output>
-    <TbTextField AriaLabel="Filter trails" Placeholder="Filter trails" @bind-Value="_filter"
-                 OnBlur="() => _filterChecked = true" data-testid="filter" />
-    <output data-testid="filter-checked">@(_filterChecked ? "Checked on leaving" : "")</output>
-    <TbTextField Label="Age" @bind-Value="_age" data-testid="age">
-        <End>years</End>
-    </TbTextField>
-    <TbTextField @ref="_handleField" Label="Handle" Value="@_handle"
-                 ValueChanged="(string? name) => ChangeHandle(name)" Error="@_handleError" UpdateOnInput
-                 HelperText="Try robin, who already has an account." />
-    <TbButton Variant="Variant.Outlined" OnClick="CheckHandleAsync">Check the handle</TbButton>
-    <TbTextField Label="Notes" @bind-Value="_notes" Lines="3" MaxLines="8" Placeholder="Anything we should know?" />
-    <TbTextField Label="Account" Value="@("trail-0042")" ReadOnly HelperText="Can't be changed." />
-    <TbTextField Label="Phone" @bind-Value="_phone" Mask="(000) 000-0000" data-testid="phone" />
-    <output data-testid="phone-echo">@_phone</output>
-    <TbTextField Label="Trail code" @bind-Value="_code" Size="Size.Small" Clearable />
-    <TbTextField Label="Destination" @bind-Value="_destination" Size="Size.Large" />
-    <TbTextField Label="Call sign" @bind-Value="_callSign" Variant="FieldVariant.Filled"
-                 HelperText="A filled field, for forms on a plain page." />
+                 RequiredMessage="Enter a name." />
+    <TbTextField Label="Who should we call if your group is overdue returning from the trail?" @bind-Value="_contact"
+                 HelperText="Someone who isn't on the trip." />
+    <output>Name: @(_name ?? "(null until something is typed)")</output>
 </TbStack>
 
 @code {
     private string? _name;
-    private string? _search;
-    private string? _filter;
-    private bool _filterChecked;
-    private int _age = 30;
-    private string? _notes;
-    private string? _handle;
-    private string? _phone;
-    private string? _code = "PCT-12";
-    private string? _destination;
-    private string? _callSign;
-    private TbTextField<string> _handleField = default!;
-    private string? _handleError;
-
-    // Stands in for asking a server, which answers with an error the field shows until the name changes. A taken
-    // name is selected, so typing replaces it.
-    private async Task CheckHandleAsync()
-    {
-        _handleError = _handle == "robin" ? "That handle is taken." : null;
-        if (_handleError is not null)
-        {
-            await _handleField.SelectTextAsync();
-        }
-    }
-
-    private void ChangeHandle(string? name)
-    {
-        _handle = name;
-        _handleError = null;
-    }
+    private string? _contact;
 }

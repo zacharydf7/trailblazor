@@ -1,0 +1,11 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbTextField Label="Campsite" @bind-Value="_campsite" OnBlur="Check" />
+    <output>@_checked</output>
+</TbStack>
+
+@code {
+    private string? _campsite;
+    private string? _checked;
+
+    private void Check() => _checked = $"Checked on leaving: {_campsite ?? "nothing entered"}.";
+}

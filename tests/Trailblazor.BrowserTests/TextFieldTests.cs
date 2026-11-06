@@ -76,7 +76,7 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.GetByLabel("Search").PressSequentiallyAsync("tea");
 
-        await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("tea");
+        await Expect(page.GetByText("Searching for: tea")).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -85,15 +85,15 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/text-field");
         var search = page.GetByLabel("Search");
         await search.PressSequentiallyAsync("tea");
-        await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("tea");
+        await Expect(page.GetByText("Searching for: tea")).ToBeVisibleAsync();
 
-        await page.GetByTestId("search").GetByRole(AriaRole.Button, new() { Name = "Clear" }).ClickAsync();
+        var clear = page.GetByRole(AriaRole.Button, new() { Name = "Clear", Exact = true });
+        await clear.ClickAsync();
 
-        await Expect(page.GetByTestId("search-echo")).ToHaveTextAsync("");
+        await Expect(page.GetByText("Not searching yet.")).ToBeVisibleAsync();
         await Expect(search).ToHaveValueAsync("");
         await Expect(search).ToBeFocusedAsync();
-        await Expect(page.GetByTestId("search").GetByRole(AriaRole.Button, new() { Name = "Clear" }))
-            .ToHaveCountAsync(0);
+        await Expect(clear).ToHaveCountAsync(0);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -237,7 +237,7 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(phone).ToHaveValueAsync("(555) 123-4567");
         await phone.BlurAsync();
 
-        await Expect(page.GetByTestId("phone-echo")).ToHaveTextAsync("5551234567");
+        await Expect(page.GetByText("Digits: 5551234567")).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
