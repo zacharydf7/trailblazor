@@ -1,0 +1,13 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Pack load" @bind-Value="_pack">
+        <End>kg</End>
+    </TbNumberField>
+    <TbNumberField Label="Trail fee" @bind-Value="_fee">
+        <Start>$</Start>
+    </TbNumberField>
+</TbStack>
+
+@code {
+    private double _pack = 12.5;
+    private int _fee = 25;
+}

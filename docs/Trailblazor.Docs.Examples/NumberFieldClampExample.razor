@@ -1,0 +1,8 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Group size" @bind-Value="_group" Min="1" Max="12" ClampToRange
+                   HelperText="A size outside 1 to 12 moves to the nearer limit." />
+</TbStack>
+
+@code {
+    private int _group = 4;
+}

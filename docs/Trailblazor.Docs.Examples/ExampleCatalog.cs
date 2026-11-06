@@ -1111,30 +1111,94 @@ public static class ExampleCatalog
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.", typeof(NumberFieldExample))
         {
+            WhenToUse =
+            [
+                "Use it for an amount: a quantity, a price or a percentage, where stepping and limits make sense.",
+            ],
+            WhenNotToUse =
+            [
+                "For digits that aren't an amount, such as a phone number or a code, use a [text field]"
+                    + "(components/text-field#mask) with a `Mask`.",
+                "For a value picked along a range, where the exact number matters less, use a [slider]"
+                    + "(components/slider).",
+            ],
+            Related = ["text-field", "slider", "form"],
+            Sections =
+            [
+                new("limits-and-steps", "Limits and steps", "`Min` and `Max` set the limits. A typed value outside them, or "
+                    + "text that isn't a number, shows an error and stays in the field to be fixed, and the bound value "
+                    + "doesn't change. `Step` sets how far the arrow keys and buttons move the value.",
+                    typeof(NumberFieldExample)),
+                new("values-set-by-code", "Values set by code", "`Min`, `Max` and `ClampToRange` don't apply to a value "
+                    + "your code sets, such as one loaded from a saved trip, so it can sit outside the limits and still "
+                    + "submit. `Validation` checks it, as here.", typeof(NumberFieldCheckedExample)),
+                new("required", "Required", "`Required` marks the field and, once it is edited or its form validates, "
+                    + "shows a message if it is empty. `RequiredMessage` replaces the default, which uses the label. A "
+                    + "long label wraps, as this one does.", typeof(NumberFieldRequiredExample)),
+                new("format-and-culture", "Format and culture", "`Format`, such as `C2` or `P0`, shows the value with "
+                    + "grouping and symbols, and the field reads and writes numbers in its `Culture`. `Decimals` rounds "
+                    + "what is typed to that many places in the value, so `Decimals=\"2\"` on a `P0` field rounds to "
+                    + "the nearest percent.",
+                    typeof(NumberFieldFormatExample)),
+                new("clamping", "Clamping", "`ClampToRange` moves a typed value outside the limits to the nearer "
+                    + "limit, instead of showing an error.", typeof(NumberFieldClampExample)),
+                new("empty-values", "Empty values", "A nullable type such as `int?` lets the field stay empty, which "
+                    + "binds as `null`.", typeof(NumberFieldEmptyExample)),
+                new("hidden-step-buttons", "Hidden step buttons", "`HideStepButtons` removes the buttons for a value "
+                    + "people just type, though the arrow keys still step it.", typeof(NumberFieldNoButtonsExample)),
+                new("updating-while-typing", "Updating while typing", "The value updates when the user leaves the field or "
+                    + "presses Enter. `UpdateOnInput` updates it as they type, for output that follows along, like the "
+                    + "fee here. A `Format` still waits until they leave or press Enter, so it doesn't rewrite the text "
+                    + "under the caret.",
+                    typeof(NumberFieldLiveExample)),
+                new("start-and-end", "Start and end content", "`Start` and `End` hold a unit or a symbol beside the "
+                    + "input.", typeof(NumberFieldAdornmentExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` stops typing, the arrow keys and the step "
+                    + "buttons from changing the value, and turns the buttons off. The field still posts with its form. "
+                    + "`Disabled` takes it out of the tab order and the post.",
+                    typeof(NumberFieldStatesExample)),
+                new("size-and-variant", "Size and variant", "`Size` and `Variant` work as on the [text field]"
+                    + "(components/text-field#size-and-variant).", typeof(NumberFieldSizeExample)),
+            ],
             Api = [typeof(TbNumberField<>), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Up", "Down"], "Steps the value by `Step`."),
+                new(["Enter"], "Updates the value at once and submits the field's form."),
+            ],
+            Labeling =
+            [
+                "The `Label` names the field.",
+            ],
+            Announcements =
+            [
+                "A validation message that appears as someone edits the field is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+            ],
             Accessibility =
             [
-                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
-                "A native number input, a `spinbutton`: Up and Down step the value by `Step`.",
-                "With a `Format`, such as `C2` or `P0`, it is a text box acting as a `spinbutton` instead, since a "
-                    + "number box can't show grouping or symbols. It reads and shows numbers in its `Culture`, gives "
-                    + "screen readers the number as `aria-valuenow` and the formatted text as `aria-valuetext`, and "
-                    + "Up and Down still step it.",
-                "The Decrease and Increase buttons are left out of the tab order, since the arrow keys do the "
-                    + "same, and they turn off at `Min` and `Max`.",
-                "A value out of range, or one that isn't a number, shows as an error with `aria-invalid`, unless "
-                    + "`ClampToRange` moves it to the nearer limit, and does the same for a number too large or small "
-                    + "for the value's type. `Decimals` rounds what is typed.",
-                "The value updates when the user leaves the field or presses Enter, or with `UpdateOnInput` as they "
-                    + "type. What they type stays as typed until then, so the format doesn't rewrite it under the "
-                    + "caret, and an error waits for that commit too.",
-                "The `Label` names the field. Helper text and validation messages are linked to the field with "
-                    + "`aria-describedby`, an error sets `aria-invalid`, and `Required` sets `aria-required`; the "
-                    + "asterisk it adds is hidden from screen readers.",
-                "`ReadOnly` keeps the value from changing by typing, the arrow keys or the step buttons, which turn "
-                    + "off.",
+                "A native number input, a `spinbutton`.",
+                "With a `Format`, it is a text box acting as a `spinbutton` instead, since a number box can't show "
+                    + "grouping or symbols. It gives screen readers the number as `aria-valuenow` and the formatted "
+                    + "text as `aria-valuetext`.",
+                "The Decrease and Increase buttons are left out of the tab order, since the arrow keys do the same, and "
+                    + "they turn off at `Min` and `Max`.",
+                "Helper text and validation messages are linked to the field with `aria-describedby`, an error sets "
+                    + "`aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from screen "
+                    + "readers.",
+            ],
+            BeforeInteractive =
+            [
                 "Before the page is interactive, a field with a `Format` is a plain number box, since a static form "
                     + "posts numbers in the invariant culture.",
+                "A static form's post isn't checked against `Min` and `Max`, so use `Validation` for a limit the server "
+                    + "must enforce.",
+            ],
+            Notes =
+            [
+                new("What the user types stays as typed until they leave the field or press Enter, and an error waits "
+                    + "until then too."),
+                new("`ClampToRange` also moves a number too large or small for the value's type to the nearer limit."),
             ],
             Target = new("spinbutton", "Quantity"),
             Blocks = ["tb-field"],

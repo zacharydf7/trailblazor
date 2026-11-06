@@ -1,0 +1,14 @@
+@using System.Globalization
+
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Budget" @bind-Value="_budget" Format="C2" Culture="UsEnglish" Step="50" Min="0" />
+    <output>Budget value: @_budget</output>
+    <TbNumberField Label="Discount" @bind-Value="_discount" Format="P0" Culture="UsEnglish" Decimals="2" Step="0.05m"
+                   HelperText="Typed values round to the nearest percent." />
+</TbStack>
+
+@code {
+    private static readonly CultureInfo UsEnglish = CultureInfo.GetCultureInfo("en-US");
+    private decimal _budget = 1250;
+    private decimal _discount = 0.1m;
+}

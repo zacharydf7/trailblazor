@@ -1,0 +1,11 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Bags" @bind-Value="_bags" Size="Size.Small" />
+    <TbNumberField Label="Tents" @bind-Value="_tents" Size="Size.Large" />
+    <TbNumberField Label="Stoves" @bind-Value="_stoves" Variant="FieldVariant.Filled" />
+</TbStack>
+
+@code {
+    private int _bags = 2;
+    private int _tents = 1;
+    private int _stoves = 1;
+}

@@ -25,8 +25,8 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().NumberField("Quantity").EnterAsync("7");
         await page.Tb().NumberField("Budget").EnterAsync("2,500");
 
-        await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync("7");
-        await Expect(page.GetByTestId("budget-echo")).ToHaveTextAsync("2500");
+        await Expect(page.GetByText("Quantity value: 7", new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(page.GetByText("Budget value: 2500", new() { Exact = true })).ToBeVisibleAsync();
         await Expect(page.GetByLabel("Budget")).ToHaveValueAsync("$2,500.00");
     }
 
@@ -51,7 +51,7 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await quantity.PressAsync("ArrowUp");
         await quantity.PressAsync("Tab");
 
-        await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync("3");
+        await Expect(page.GetByText("Quantity value: 3", new() { Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -72,8 +72,7 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         var copies = page.GetByLabel("Copies");
 
         await copies.PressSequentiallyAsync("1e");
-        // Copies is the last field, and tabbing out of the page fires no blur in Firefox.
-        await copies.PressAsync("Shift+Tab");
+        await copies.PressAsync("Tab");
 
         await Expect(copies).ToHaveAttributeAsync("aria-invalid", "true");
         await Expect(copies).ToHaveAccessibleDescriptionAsync("Copies must be a number.");
@@ -86,7 +85,6 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/number-field");
         var quantity = page.GetByLabel("Quantity");
-        var before = await page.GetByTestId("quantity-echo").TextContentAsync();
 
         await quantity.PressAsync("End");
         await quantity.PressSequentiallyAsync("e");
@@ -95,7 +93,7 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(quantity).ToHaveAttributeAsync("aria-invalid", "true");
         Assert.True(await quantity.EvaluateAsync<bool>("input => input.validity.badInput"),
             "The typed text was replaced.");
-        await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync(before!);
+        await Expect(page.GetByText("Quantity value: 1", new() { Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -124,7 +122,7 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(quantity).ToHaveAttributeAsync("aria-invalid", "true");
         await Expect(quantity).ToHaveAccessibleDescriptionAsync("From 0 to 10. Quantity must be from 0 to 10.");
-        await Expect(page.GetByTestId("quantity-echo")).ToHaveTextAsync("1");
+        await Expect(page.GetByText("Quantity value: 1", new() { Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -164,7 +162,7 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(await page.EvaluateAsync<bool>("() => window.held"));
 
         await Expect(budget).ToHaveValueAsync("$2,450.50");
-        await Expect(page.GetByTestId("budget-echo")).ToHaveTextAsync("2450.5");
+        await Expect(page.GetByText("Budget value: 2450.5", new() { Exact = true })).ToBeVisibleAsync();
         await Expect(budget).ToHaveAttributeAsync("aria-valuetext", "$2,450.50");
     }
 
@@ -178,7 +176,7 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await budget.PressAsync("ArrowUp");
 
         await Expect(budget).ToHaveValueAsync("$2,450.00");
-        await Expect(page.GetByTestId("budget-echo")).ToHaveTextAsync("2450");
+        await Expect(page.GetByText("Budget value: 2450", new() { Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -191,8 +189,7 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await discount.FillAsync("12.6%");
         await discount.PressAsync("Tab");
         await group.FillAsync("30");
-        // The field is the page's last, and Firefox fires no change when Tab leaves the page.
-        await group.BlurAsync();
+        await group.PressAsync("Tab");
 
         await Expect(discount).ToHaveValueAsync("13%");
         await Expect(group).ToHaveValueAsync("12");

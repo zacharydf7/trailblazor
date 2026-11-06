@@ -1,0 +1,8 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Nights" @bind-Value="_nights" UpdateOnInput />
+    <output>Permit fee: @(_nights * 12) dollars</output>
+</TbStack>
+
+@code {
+    private int _nights = 2;
+}

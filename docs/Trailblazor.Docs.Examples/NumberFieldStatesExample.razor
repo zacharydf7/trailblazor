@@ -1,0 +1,10 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Permit limit" @bind-Value="_limit" ReadOnly
+                   HelperText="Can't be changed, but posts with a form." />
+    <TbNumberField Label="Spare tents" @bind-Value="_tents" Disabled HelperText="Can't be focused, and doesn't post." />
+</TbStack>
+
+@code {
+    private int _limit = 12;
+    private int _tents = 3;
+}

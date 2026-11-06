@@ -1,0 +1,8 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Copies" @bind-Value="_copies" />
+    <output>Copies value: @(_copies?.ToString() ?? "null")</output>
+</TbStack>
+
+@code {
+    private int? _copies;
+}

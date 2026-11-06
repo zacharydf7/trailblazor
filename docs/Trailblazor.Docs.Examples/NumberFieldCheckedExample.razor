@@ -1,0 +1,21 @@
+<TbForm @ref="_form" aria-label="Saved group" Style="max-inline-size: 24rem">
+    <TbNumberField Label="Hikers" @bind-Value="_hikers" Min="1" Max="12" Validation="CheckHikers"
+                   HelperText="Loaded from a saved trip." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private int _hikers = 14;
+
+    private static IEnumerable<string> CheckHikers(int hikers) =>
+        hikers is >= 1 and <= 12 ? [] : ["Enter a group of 1 to 12 hikers."];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

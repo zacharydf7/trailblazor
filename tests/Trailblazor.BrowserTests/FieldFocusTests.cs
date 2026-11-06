@@ -161,7 +161,8 @@ public class FieldFocusTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/text-field");
         await page.GetByRole(AriaRole.Textbox, new() { Name = "Campsite", Exact = true }).FocusAsync();
 
-        await page.Keyboard.PressAsync("Tab");
+        // Campsite is the page's last field, and tabbing out of the page fires no blur in Firefox.
+        await page.Keyboard.PressAsync("Shift+Tab");
 
         await Expect(page.GetByText("Checked on leaving")).ToBeVisibleAsync();
     }
