@@ -108,6 +108,43 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         AssertNoViolations(await page.RunAxe(WcagAA));
     }
 
+    public static TheoryData<string, string, string, bool, string> AutocompleteStatesInBothThemes => new(
+        from state in new[]
+        {
+            ("Region", "north", "North ridge", false),
+            ("Region", "zzz", "No matches", false),
+            ("Town", "a", "Type to search", false),
+            ("Campsite", "alder", "Couldn't load suggestions.", true),
+        }
+        from theme in new[] { "light", "dark" }
+        select (state.Item1, state.Item2, state.Item3, state.Item4, theme));
+
+    // What the list shows differs by state, so each is checked open, in chromium alone, as engines agree on color.
+    [Theory, MemberData(nameof(AutocompleteStatesInBothThemes))]
+    public async Task Autocomplete_ShouldHaveNoAccessibilityViolations_WhenItsListShowsEachState(string name,
+        string typed, string shown, bool fail, string theme)
+    {
+        var page = await OpenAsync("chromium", "/examples/autocomplete");
+        await SetThemeAsync(page, theme);
+
+        await CheckOpenAsync(page, new(new("listbox", name), async opened =>
+        {
+            var field = opened.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
+            await Expect(field).ToHaveAttributeAsync("data-ready", "");
+            if (fail)
+            {
+                await opened.GetByRole(AriaRole.Checkbox, new() { Name = "Make the next search fail" }).CheckAsync();
+            }
+
+            await field.PressSequentiallyAsync(typed);
+            await Expect(opened.GetByRole(AriaRole.Listbox, new() { Name = name }).GetByText(shown)).ToBeVisibleAsync();
+
+            // Axe skips contrast on anything aria-disabled, and these messages are information, so they're measured.
+            await opened.EvaluateAsync(
+                "() => document.querySelectorAll('[data-part=status]').forEach(status => status.removeAttribute('aria-disabled'))");
+        }));
+    }
+
     private static readonly Dictionary<string, Opening> Opened = new()
     {
         ["menu"] = new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync()),

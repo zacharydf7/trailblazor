@@ -339,6 +339,18 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldKeepTheListValidWithAnOptionThatCannotBeChosen_WhenOnlyAMessageShows()
+    {
+        var cut = RenderTrails(minCharacters: 2);
+
+        cut.Find("input").Input("p");
+
+        var message = Assert.Single(cut.FindAll("[role=listbox] > [role=option]"));
+        Assert.Equal("status", message.GetAttribute("data-part"));
+        Assert.Equal("true", message.GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
     public void Click_ShouldClearTheFieldAndFocusIt_WhenTheClearButtonIsClicked()
     {
         string? chosen = "Cedar Flats";

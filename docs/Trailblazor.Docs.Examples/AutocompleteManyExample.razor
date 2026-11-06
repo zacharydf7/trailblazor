@@ -1,0 +1,7 @@
+<TbAutocomplete @bind-Value="_trail" Label="Trail number" Items="Trails" />
+
+@code {
+    private static readonly string[] Trails = [.. Enumerable.Range(1, 300).Select(number => $"Trail {number}")];
+
+    private string? _trail;
+}

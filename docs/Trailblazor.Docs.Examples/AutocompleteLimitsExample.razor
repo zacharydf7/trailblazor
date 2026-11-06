@@ -1,0 +1,8 @@
+<TbAutocomplete @bind-Value="_town" Label="Town" Items="Towns" MinCharacters="2" MaxItems="3"
+                HelperText="Type two letters to see up to three towns." />
+
+@code {
+    private static readonly string[] Towns = ["Ashford", "Ashland", "Ashton", "Asheville", "Bridgeport", "Brighton"];
+
+    private string? _town;
+}

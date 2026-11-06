@@ -610,7 +610,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         var search = page.GetByRole(AriaRole.Combobox, new() { Name = "Search" });
         await Expect(search).ToHaveAttributeAsync("data-ready", "");
         await search.PressSequentiallyAsync("dialog");
-        await Expect(page.GetByRole(AriaRole.Option).First).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Option, new() { Disabled = false }).First).ToBeVisibleAsync();
 
         var result = await page.RunAxe(AxeTests.WcagAA);
 

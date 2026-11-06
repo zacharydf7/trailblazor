@@ -1,0 +1,16 @@
+<TbAutocomplete @bind-Value="_shelter" Label="Shelter" Items="Shelters" Clearable MinCharacters="1"
+                Labels="ShelterLabels" />
+
+@code {
+    private static readonly string[] Shelters = ["Alder", "Birch", "Cedar"];
+
+    private static readonly AutocompleteLabels ShelterLabels = new()
+    {
+        Clear = "Clear the shelter",
+        TypeToSearch = "Type a shelter's name",
+        NoResults = "No shelter has that name",
+        Results = "Shelters found: {0}",
+    };
+
+    private string? _shelter = "Alder";
+}

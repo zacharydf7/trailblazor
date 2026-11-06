@@ -1,0 +1,9 @@
+<TbAutocomplete @bind-Value="_peak" Label="Peak" Items="Peaks">
+    <Start><TbIcon Icon="ExampleIcons.Search" /></Start>
+</TbAutocomplete>
+
+@code {
+    private static readonly string[] Peaks = ["Eagle", "Granite", "Summit"];
+
+    private string? _peak;
+}

@@ -1980,24 +1980,102 @@ public static class ExampleCatalog
             "A text field that suggests values as the user types, from a list or an async search.",
             typeof(AutocompleteExample))
         {
-            Api = [typeof(TbAutocomplete<>), typeof(AutocompleteLabels), typeof(FieldClasses)],
-            Accessibility =
+            FullWidth = true,
+            WhenToUse =
             [
-                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
-                "The input is a `combobox` with `aria-autocomplete=\"list\"`, named by its `Label`, that controls a "
-                    + "`listbox` of `option`s. Focus stays in the input; the active option is pointed to with "
-                    + "`aria-activedescendant`.",
-                "Down opens the list and moves through it, Up moves back, Enter chooses, and Escape closes. Alt+Down "
-                    + "opens without moving. The arrow keys never take the caret out of the text.",
-                "While a search runs the list is `aria-busy` and says \"Searching…\"; when it finishes, the number "
-                    + "of suggestions is announced. Every word it shows or reads out can be changed through `Labels`.",
-                "A search that fails says \"Couldn't load suggestions.\" in the list and reads it out, raises "
-                    + "`OnSearchFailed`, and leaves the field usable: typing again searches again.",
-                "Before the page is interactive it is a plain text input, so a static form still posts what was "
-                    + "typed.",
-                "`ReadOnly` keeps the list closed and hides the clear button.",
+                "Use it when the options come from a search as someone types, when the list is too long to browse, or "
+                    + "when they may type a value that isn't in the list.",
+            ],
+            WhenNotToUse =
+            [
+                "For a known list where someone must choose one of the options, use a [select](components/select).",
+                "For a list that stays open on the page, use a [list box](components/listbox).",
+                "For free text with no suggestions, use a [text field](components/text-field).",
+            ],
+            Related = ["select", "listbox", "text-field", "form"],
+            Pattern = new("combobox", "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"),
+            Sections =
+            [
+                new("search", "Search", "`Search` finds the suggestions as someone types, and is canceled when they "
+                    + "type again. `ItemText` turns a suggestion into text, and `ItemTemplate` draws it in the list.",
+                    typeof(AutocompleteExample)),
+                new("items", "A fixed list", "`Items` is a list you already have, filtered by what someone types. A "
+                    + "long suggestion widens the list.", typeof(AutocompleteItemsExample)),
+                new("many-items", "Many items", "A long list scrolls. Press Down to browse it, or type to narrow it "
+                    + "down.", typeof(AutocompleteManyExample)),
+                new("free-text", "Free text", "With `FreeText`, typed text that isn't a suggestion becomes the value, "
+                    + "converted to the value's type. Without it, leaving the field puts back the chosen value's text.",
+                    typeof(AutocompleteFreeTextExample)),
+                new("search-states", "Searching, no results and failure", "The list says when a search is running, when "
+                    + "nothing matches, and when a search fails, which also raises `OnSearchFailed`. The field stays "
+                    + "usable, and typing again searches again. Type a campsite's name, then something that matches "
+                    + "nothing. To see a failure, check the box and type again.",
+                    typeof(AutocompleteStatesOfSearchExample)),
+                new("limits", "Minimum characters and maximum items", "`MinCharacters` sets how much someone must type "
+                    + "before suggestions show, and `MaxItems` caps how many the list shows.",
+                    typeof(AutocompleteLimitsExample)),
+                new("debounce", "Search delay", "`DebounceDelay` sets how long someone must stop typing before `Search` "
+                    + "runs. It defaults to 200 milliseconds. Set it to zero to search immediately.",
+                    typeof(AutocompleteDelayExample)),
+                new("clearing", "Clearing", "`Clearable` shows a button that clears the field, and a nullable value "
+                    + "clears to `null`.", typeof(AutocompleteClearExample)),
+                new("start", "Start content", "`Start` puts content before the input, usually an icon.",
+                    typeof(AutocompleteStartExample)),
+                new("required", "Required", "`Required` shows a marker. Once the field is changed or its form "
+                    + "validates, a message shows while it's empty. `RequiredMessage` replaces the default, which uses "
+                    + "the label.", typeof(AutocompleteRequiredExample)),
+                new("validation", "Validation", "`Validation` checks the value once it is changed or its form "
+                    + "validates.",
+                    typeof(AutocompleteValidationExample)),
+                new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
+                    + "Until your app clears it, the form won't submit, so clear it when the value changes.",
+                    typeof(AutocompleteErrorExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the list closed and hides the "
+                    + "clear button. `Disabled` takes the field out of the tab order and the post.",
+                    typeof(AutocompleteStatesExample)),
+                new("size-and-variant", "Size and variant", "`Variant` is `Outlined` or `Filled`, and `Size` is "
+                    + "`Small`, `Medium` or `Large`.", typeof(AutocompleteSizeExample)),
+                new("labels", "Built-in text", "`Labels` replaces the words the field shows and reads out: the clear "
+                    + "button's name, the searching, no-results and failure messages, the prompt to type, and the "
+                    + "number of suggestions.", typeof(AutocompleteLabelsExample)),
+            ],
+            Api = [typeof(TbAutocomplete<>), typeof(AutocompleteLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Down"], "Opens the list. If it already holds suggestions, also moves to the first.")
+                    { When = "While closed" },
+                new(["Alt+Down"], "Opens the list without moving to a suggestion.") { When = "While closed" },
+                new(["Up"], "Opens the list. If it already holds suggestions, also moves to the last.")
+                    { When = "While closed" },
+                new(["Enter"], "Handles what was typed the way leaving the field does. In a form, also submits the "
+                    + "form.") { When = "While closed" },
+                new(["Down", "Up"], "Moves to the next or previous suggestion.") { When = "While open" },
+                new(["Enter"], "Chooses the active suggestion. With none active, closes the list and does what Enter "
+                    + "does while closed.") { When = "While open" },
+                new(["Escape"], "Closes the list.") { When = "While open" },
+            ],
+            Labeling =
+            [
+                "The input is a `combobox` named by its `Label`.",
                 "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
                     + "which field it clears.",
+            ],
+            Announcements =
+            [
+                "Focus stays in the input, which points to the active option with `aria-activedescendant`, so a screen "
+                    + "reader reads each suggestion as it becomes active.",
+                "While a search runs the list is `aria-busy`. When it finishes, the number of suggestions is announced "
+                    + "if it changed, so typing doesn't bring an announcement with every key.",
+                "A search that fails reads out its message.",
+            ],
+            Accessibility =
+            [
+                "The input has `aria-autocomplete=\"list\"` and controls a `listbox` of `option`s. Up and Down move "
+                    + "through the list, not the caret.",
+            ],
+            BeforeInteractive =
+            [
+                "It is a plain text input, so a static form still posts what was typed.",
             ],
             Target = new("combobox", "Trailhead"),
             Blocks = ["tb-field", "tb-select", "tb-autocomplete"],
@@ -2008,7 +2086,8 @@ public static class ExampleCatalog
                 new("clear", "The button that clears the text."),
                 new("listbox", "The list of suggestions."),
                 new("option", "One suggestion."),
-                new("status", "The message shown while suggestions load or when none match."),
+                new("status", "The message shown while suggestions load, when none match, when a search fails, or "
+                    + "before someone has typed enough. It's an option that can't be chosen."),
             ],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "

@@ -1,0 +1,14 @@
+<TbStack Gap="2" Style="max-inline-size: 24rem">
+    <TbAutocomplete @bind-Value="_region" Label="Region" Items="Regions" />
+    <output>Region value: @(_region ?? "null")</output>
+</TbStack>
+
+@code {
+    private static readonly string[] Regions =
+    [
+        "North ridge", "River valley", "High peaks", "Lake country",
+        "The far north, past the last ranger station and the old fire road",
+    ];
+
+    private string? _region;
+}

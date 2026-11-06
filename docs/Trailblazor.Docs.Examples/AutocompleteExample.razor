@@ -1,4 +1,4 @@
-<TbStack Gap="4" Style="max-inline-size: 22rem">
+<TbStack Gap="2">
     <TbAutocomplete TValue="Trailhead" @bind-Value="_trailhead" Label="Trailhead" Search="FindTrailheadsAsync"
                     ItemText="trailhead => trailhead.Name" Placeholder="Search by name or region" Clearable>
         <ItemTemplate>
@@ -9,9 +9,6 @@
         </ItemTemplate>
     </TbAutocomplete>
     <TbText>Starting at: @(_trailhead?.Name ?? "nowhere yet")</TbText>
-    <TbAutocomplete @bind-Value="_weight" Label="Pack weight (kg)" Items="Weights" FreeText
-                    HelperText="Pick a common weight or type your own." />
-    <TbText>Packing: @(_weight is null ? "no weight set" : $"{_weight} kg")</TbText>
 </TbStack>
 
 @code {
@@ -21,10 +18,7 @@
         new("Fern Gully", "River valley"), new("Summit Gate", "High peaks"), new("Lakeshore", "Lake country"),
     ];
 
-    private static readonly double?[] Weights = [5, 7.5, 10, 12.5];
-
     private Trailhead? _trailhead;
-    private double? _weight;
 
     // A stand-in for a server search: it takes a moment and gives up when the user types again.
     private static async Task<IEnumerable<Trailhead>> FindTrailheadsAsync(string text, CancellationToken token)

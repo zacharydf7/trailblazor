@@ -104,7 +104,6 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByText("Packing:")).ToHaveTextAsync("Packing: 8.25 kg");
         await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Pack weight (kg)" })).ToBeHiddenAsync();
         await weight.FillAsync("9");
-        // The weight is the page's last field, so focus goes back to leave it.
         await page.Keyboard.PressAsync("Shift+Tab");
 
         await Expect(page.GetByText("Packing:")).ToHaveTextAsync("Packing: 9 kg");
@@ -122,6 +121,38 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(weight).ToBeFocusedAsync();
         await Expect(page.GetByText("Packing:")).ToHaveTextAsync("Packing: 7.5 kg");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldStayOpenWithNothingActive_WhenItsMessageIsClickedOrArrowedTo(string browser)
+    {
+        var page = await OpenFieldsAsync(browser);
+        var region = Field(page, "Region");
+        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Region" });
+        await region.PressSequentiallyAsync("zzz");
+        await Expect(listbox.GetByText("No matches")).ToBeVisibleAsync();
+
+        // Playwright won't click something aria-disabled unless told to, and a person still can.
+        await listbox.GetByText("No matches").ClickAsync(new() { Force = true });
+        await Expect(listbox).ToBeVisibleAsync();
+        await region.PressAsync("ArrowDown");
+
+        await Expect(listbox).ToBeVisibleAsync();
+        Assert.Null(await region.GetAttributeAsync("aria-activedescendant"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldWidenPastTheField_WhenASuggestionIsLong(string browser)
+    {
+        var page = await OpenFieldsAsync(browser);
+        var region = Field(page, "Region");
+
+        await region.PressSequentiallyAsync("the far");
+        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Region" });
+        await Expect(listbox.GetByRole(AriaRole.Option, new() { Name = "The far north" })).ToBeVisibleAsync();
+
+        var control = page.Locator("[data-part=control]").Filter(new() { Has = region });
+        Assert.True((await listbox.BoundingBoxAsync())!.Width > (await control.BoundingBoxAsync())!.Width);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

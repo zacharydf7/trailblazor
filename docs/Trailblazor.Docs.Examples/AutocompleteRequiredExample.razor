@@ -1,0 +1,19 @@
+<TbForm @ref="_form" aria-label="Guide">
+    <TbAutocomplete @bind-Value="_guide" Label="Guide" Items="Guides" Required RequiredMessage="Choose a guide." />
+</TbForm>
+
+@code {
+    private static readonly string[] Guides = ["Ada", "Grace", "Katherine"];
+
+    private TbForm _form = default!;
+    private string? _guide;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

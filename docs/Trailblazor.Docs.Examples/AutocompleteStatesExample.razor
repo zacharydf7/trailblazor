@@ -1,0 +1,11 @@
+<TbStack Gap="4">
+    <TbAutocomplete @bind-Value="_ridge" Label="Ridge" Items="Ridges" ReadOnly Clearable HelperText="Set by your route." />
+    <TbAutocomplete @bind-Value="_pass" Label="Pass" Items="Ridges" Disabled HelperText="Can't be focused, and doesn't post." />
+</TbStack>
+
+@code {
+    private static readonly string[] Ridges = ["North", "South"];
+
+    private string? _ridge = "North";
+    private string? _pass = "South";
+}

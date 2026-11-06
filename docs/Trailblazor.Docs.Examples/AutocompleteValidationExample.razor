@@ -1,0 +1,22 @@
+<TbForm @ref="_form" aria-label="River">
+    <TbAutocomplete @bind-Value="_river" Label="River" Items="Rivers" Validation="CheckRiver" />
+</TbForm>
+
+@code {
+    private static readonly string[] Rivers = ["Cedar", "Stone", "Willow"];
+
+    private TbForm _form = default!;
+    private string? _river = "Stone";
+
+    private static IEnumerable<string> CheckRiver(string? river) =>
+        river == "Stone" ? ["The Stone is closed to paddling."] : [];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

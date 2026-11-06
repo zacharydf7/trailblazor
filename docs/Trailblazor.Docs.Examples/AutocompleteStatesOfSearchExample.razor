@@ -1,0 +1,27 @@
+<TbStack Gap="2">
+    <TbCheckbox Label="Make the next search fail" @bind-Value="_failNext" />
+    <TbAutocomplete TValue="string" @bind-Value="_campsite" Label="Campsite" Search="FindCampsitesAsync"
+                    OnSearchFailed="() => _failures++" />
+    <output>Failed searches: @_failures</output>
+</TbStack>
+
+@code {
+    private static readonly string[] Campsites = ["Alder Flat", "Birch Point", "Cedar Bend"];
+
+    private string? _campsite;
+    private bool _failNext;
+    private int _failures;
+
+    // A slow stand-in for a server search, which throws when the box is checked.
+    private async Task<IEnumerable<string>> FindCampsitesAsync(string text, CancellationToken token)
+    {
+        await Task.Delay(800, token);
+        if (_failNext)
+        {
+            _failNext = false;
+            throw new InvalidOperationException("The search failed.");
+        }
+
+        return Campsites.Where(campsite => campsite.Contains(text, StringComparison.OrdinalIgnoreCase));
+    }
+}

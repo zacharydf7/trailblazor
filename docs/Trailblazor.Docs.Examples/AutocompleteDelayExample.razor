@@ -1,0 +1,11 @@
+<TbAutocomplete TValue="string" @bind-Value="_ranger" Label="Ranger" Search="FindRangersAsync"
+                DebounceDelay="TimeSpan.FromSeconds(1)" HelperText="Searches a second after you stop typing." />
+
+@code {
+    private static readonly string[] Rangers = ["Ada", "Grace", "Katherine"];
+
+    private string? _ranger;
+
+    private static Task<IEnumerable<string>> FindRangersAsync(string text, CancellationToken token) =>
+        Task.FromResult(Rangers.Where(ranger => ranger.Contains(text, StringComparison.OrdinalIgnoreCase)));
+}

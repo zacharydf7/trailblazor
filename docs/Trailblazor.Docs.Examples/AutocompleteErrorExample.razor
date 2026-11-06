@@ -1,0 +1,22 @@
+<TbStack Gap="2">
+    <TbAutocomplete TValue="string" Label="Hut" Items="Huts" Value="@_hut" ValueChanged="ChangeHut" Error="@_error" />
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="CheckHut">Check the hut</TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private static readonly string[] Huts = ["Alder", "Birch", "Cedar"];
+
+    private string? _hut = "Birch";
+    private string? _error;
+
+    private void ChangeHut(string? hut)
+    {
+        _hut = hut;
+        _error = null;
+    }
+
+    // Stands in for asking a server, which answers with an error the field shows until the hut changes.
+    private void CheckHut() => _error = _hut == "Birch" ? "Birch hut is fully booked." : null;
+}

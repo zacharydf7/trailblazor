@@ -1,0 +1,11 @@
+<TbStack Gap="2">
+    <TbAutocomplete @bind-Value="_weight" Label="Pack weight (kg)" Items="Weights" FreeText
+                    HelperText="Pick a common weight or type your own." />
+    <TbText>Packing: @(_weight is null ? "no weight set" : $"{_weight} kg")</TbText>
+</TbStack>
+
+@code {
+    private static readonly double?[] Weights = [5, 7.5, 10, 12.5];
+
+    private double? _weight;
+}

@@ -1,0 +1,10 @@
+<TbStack Gap="2">
+    <TbAutocomplete @bind-Value="_lake" Label="Lake" Items="Lakes" Clearable />
+    <output>Lake value: @(_lake ?? "null")</output>
+</TbStack>
+
+@code {
+    private static readonly string[] Lakes = ["Crater", "Mirror", "Sapphire"];
+
+    private string? _lake = "Mirror";
+}

@@ -19,9 +19,11 @@
         <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
              aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-busy="@(_searching ? "true" : null)"
              class="tb-select__listbox tb-autocomplete__listbox">
+            @* A listbox must hold options, so a message that stands in for them is one that can't be chosen. *@
             @if (_results.Count == 0)
             {
-                <div data-part="status" class="tb-autocomplete__status">
+                <div role="option" aria-disabled="true" aria-selected="false" data-part="status"
+                     class="tb-autocomplete__status">
                     @(_searching ? Labels.Searching ?? Localizer[TbStrings.AutocompleteSearching]
                         : _failed ? SearchFailedLabel
                         : _searched ? Labels.NoResults ?? Localizer[TbStrings.AutocompleteNoResults]

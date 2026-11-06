@@ -13,7 +13,8 @@ export function createAutocomplete(input, listbox, events) {
     let active = null;
 
     const isOpen = () => listbox.matches(':popover-open');
-    const options = () => [...listbox.querySelectorAll('[role="option"]')];
+    const choosable = '[role="option"]:not([aria-disabled="true"])';
+    const options = () => [...listbox.querySelectorAll(choosable)];
 
     const setActive = option => {
         active?.removeAttribute('data-active');
@@ -115,12 +116,12 @@ export function createAutocomplete(input, listbox, events) {
     // Pressing an option would take focus from the input, which closes the list before the click arrives.
     const onListboxPointerDown = event => event.preventDefault();
     const onListboxClick = event => {
-        if (event.target.closest('[role="option"]')) {
+        if (event.target.closest(choosable)) {
             close();
         }
     };
     const onListboxPointerMove = event => {
-        const option = event.target.closest('[role="option"]');
+        const option = event.target.closest(choosable);
         if (option && option !== active) {
             setActive(option);
         }
