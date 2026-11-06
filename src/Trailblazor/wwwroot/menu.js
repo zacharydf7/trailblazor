@@ -254,6 +254,14 @@ export function createMenu(root, menu, options, events) {
     menu.addEventListener('pointerleave', forgetPointer);
     trigger.addEventListener('keydown', onTriggerKeyDown);
 
+    // Replay toggles missed by any list clicked open before this script attached, outermost first so focus ends deepest.
+    for (const list of [menu, ...menu.querySelectorAll('[role="menu"]')]) {
+        if (list.matches(':popover-open')) {
+            onBeforeToggle({ target: list, newState: 'open' });
+            onToggle({ target: list, newState: 'open' });
+        }
+    }
+
     return {
         setOpen(open) {
             if (open !== menu.matches(':popover-open')) {

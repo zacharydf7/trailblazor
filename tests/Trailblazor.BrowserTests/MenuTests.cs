@@ -168,16 +168,63 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Menu_ShouldOpenBelowTheTrigger_WhenThereIsRoom(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");
+
+        var (triggerBox, menuBox) = await OpenPlacedAsync(page, "Actions");
+
+        Assert.True(menuBox.Y >= triggerBox.Y + triggerBox.Height - 1, "The menu should open below its trigger.");
+        Assert.Equal(triggerBox.X, menuBox.X, tolerance: 1);
+    }
+
+    // Opens the example with the menu's script held back until the returned source is set.
+    private async Task<(IPage Page, TaskCompletionSource Script)> OpenWithTheScriptHeldAsync(string browser)
+    {
+        var script = new TaskCompletionSource();
+        var page = await OpenStaticAsync(browser, "about:blank");
+        await page.RouteAsync("**/menu.*js", async route =>
+        {
+            await script.Task;
+            await route.ContinueAsync();
+        });
+        await page.GotoAsync(new Uri(Fixture.BaseAddress, "/examples/menu").ToString());
+        // A click before this is lost anyway, when the interactive render replaces the prerendered menu.
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        return (page, script);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldPlaceItselfAndFocusTheFirstItem_WhenClickedBeforeItsScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithTheScriptHeldAsync(browser);
         var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Actions" });
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Actions" });
 
         await trigger.ClickAsync();
-
-        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Actions" });
         await Expect(menu).ToBeVisibleAsync();
-        var triggerBox = await trigger.BoundingBoxAsync();
-        var menuBox = await menu.BoundingBoxAsync();
-        Assert.True(menuBox!.Y >= triggerBox!.Y + triggerBox.Height - 1, "The menu should open below its trigger.");
-        Assert.Equal(triggerBox.X, menuBox.X, tolerance: 1);
+        await Expect(trigger).Not.ToHaveAttributeAsync("data-ready", "");
+        script.SetResult();
+
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Duplicate" })).ToBeFocusedAsync();
+        await Expect(menu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+        await Expect(menu).ToHaveAttributeAsync("data-open", "");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(menu).ToBeHiddenAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldPlaceItselfAndTakeFocus_WhenClickedBeforeTheScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithTheScriptHeldAsync(browser);
+        var submenu = page.GetByRole(AriaRole.Menu, new() { Name = "Share" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "More options" }).ClickAsync();
+        await Item(page, "Share").ClickAsync();
+        await Expect(submenu).ToBeVisibleAsync();
+        script.SetResult();
+
+        await Expect(Item(page, "Email")).ToBeFocusedAsync();
+        await Expect(Item(page, "Share")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(submenu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
