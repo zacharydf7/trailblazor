@@ -1,0 +1,12 @@
+<TbListBox @bind-Value="_route" Label="Route" Rows="3">
+    <TbOption Value="@("loop")">
+        <TbStack Row Gap="2">Lake loop <TbChip Text="Easy" Size="Size.Small" /></TbStack>
+    </TbOption>
+    <TbOption Value="@("summit")">
+        <TbStack Row Gap="2">Summit trail <TbChip Text="Hard" Size="Size.Small" Tone="Tone.Warning" /></TbStack>
+    </TbOption>
+</TbListBox>
+
+@code {
+    private string? _route = "loop";
+}

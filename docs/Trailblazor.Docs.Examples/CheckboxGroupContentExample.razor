@@ -1,7 +1,7 @@
 <TbCheckboxGroup Label="Gear to carry" @bind-Value="_gear">
     <TbCheckboxItem Value="@("map")">Map</TbCheckboxItem>
     <TbCheckboxItem Value="@("lamp")">Head lamp</TbCheckboxItem>
-    <TbCheckboxItem Value="@("kit")">First-aid kit <TbBadge>Recommended</TbBadge></TbCheckboxItem>
+    <TbCheckboxItem Value="@("kit")">First-aid kit <TbChip Text="Recommended" Size="Size.Small" /></TbCheckboxItem>
 </TbCheckboxGroup>
 
 @code {

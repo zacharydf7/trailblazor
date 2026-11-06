@@ -7,6 +7,18 @@ public class ListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator ListBox(IPage page, string name) =>
         page.GetByRole(AriaRole.Listbox, new() { Name = name, Exact = true });
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ListBox_ShouldWrapALongOption_WhenItIsWiderThanTheList(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/listbox");
+        var list = ListBox(page, "Permit number");
+
+        var longOption = await list.GetByRole(AriaRole.Option, new() { Name = "A permit for groups" }).BoundingBoxAsync();
+        var shortOption = await list.GetByRole(AriaRole.Option, new() { Name = "Permit 1", Exact = true }).BoundingBoxAsync();
+
+        Assert.True(longOption!.Height > shortOption!.Height, $"The option is {longOption.Height}px tall.");
+    }
+
     private async Task<IPage> OpenListBoxAsync(string browser, string name)
     {
         var page = await OpenAsync(browser, "/examples/listbox");

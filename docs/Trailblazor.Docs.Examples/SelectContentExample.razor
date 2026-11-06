@@ -1,6 +1,10 @@
 <TbSelect Label="Route" @bind-Value="_route">
-    <TbOption Value="@("loop")">Lake loop <TbBadge>Easy</TbBadge></TbOption>
-    <TbOption Value="@("summit")">Summit trail <TbBadge Tone="Tone.Warning">Hard</TbBadge></TbOption>
+    <TbOption Value="@("loop")">
+        <TbStack Row Gap="2">Lake loop <TbChip Text="Easy" Size="Size.Small" /></TbStack>
+    </TbOption>
+    <TbOption Value="@("summit")">
+        <TbStack Row Gap="2">Summit trail <TbChip Text="Hard" Size="Size.Small" Tone="Tone.Warning" /></TbStack>
+    </TbOption>
 </TbSelect>
 
 @code {

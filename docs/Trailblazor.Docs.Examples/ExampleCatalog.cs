@@ -1377,7 +1377,7 @@ public static class ExampleCatalog
                     + "which uses the label. Say what's needed in `HelperText` too.",
                     typeof(CheckboxGroupRequiredExample)),
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
-                    + "as a badge. All of it names the checkbox, so keep it short.",
+                    + "as a chip. All of it names the checkbox, so keep it short.",
                     typeof(CheckboxGroupContentExample)),
                 new("row", "Row", "`Row` lays the options out in a row, wrapping when they don't fit. A long "
                     + "option wraps beside its box.",
@@ -1681,7 +1681,7 @@ public static class ExampleCatalog
                     + "Until your app clears it, the form won't submit, so clear it when the choice changes.",
                     typeof(RadioGroupErrorExample)),
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
-                    + "as a badge. All of it names the radio, so keep it short.", typeof(RadioGroupContentExample)),
+                    + "as a chip. All of it names the radio, so keep it short.", typeof(RadioGroupContentExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off every option but the "
                     + "chosen one, which stays a tab stop and still posts; with nothing chosen, every option is off. "
                     + "`Disabled` on the group turns off every option.", typeof(RadioGroupStatesExample)),
@@ -1770,7 +1770,7 @@ public static class ExampleCatalog
                 new("groups", "Groups", "`TbOptionGroup` groups options under a heading. The arrows and typing move "
                     + "through every group.", typeof(SelectGroupsExample)),
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
-                    + "as a badge, and the field shows that content once it's chosen. Its words name the option. `Text` "
+                    + "as a chip, and the field shows that content once it's chosen. Its words name the option. `Text` "
                     + "is for content without words, such as an image, and replaces that name, so include any words "
                     + "the option shows.", typeof(SelectContentExample)),
                 new("filtering", "Filtering", "`Filterable` adds a box above the list. Matching ignores case and "
@@ -1915,6 +1915,7 @@ public static class ExampleCatalog
                 "In a single select, a value no option has stays chosen in the native select.",
                 "A `ReadOnly` native select puts its choice back whenever the user changes it, and posts. A `Disabled` "
                     + "one doesn't post.",
+                "An option whose content has no words has no name until the page is interactive, even with `Text`.",
             ],
             Notes =
             [
@@ -2245,22 +2246,104 @@ public static class ExampleCatalog
         new("listbox", "List box", ExampleCategory.Inputs,
             "Picks one or several options from a list that is always shown.", typeof(ListBoxExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when the options should stay visible on the page, and the list is too long for a radio or "
+                    + "checkbox group.",
+            ],
+            WhenNotToUse =
+            [
+                "To save space with a list that opens only when needed, use a [select](components/select).",
+                "When the options come from a search as someone types, use an [autocomplete](components/autocomplete).",
+                "For a few options, use a [radio group](components/radio-group) or a "
+                    + "[checkbox group](components/checkbox-group).",
+            ],
+            Related = ["select", "autocomplete", "radio-group", "checkbox-group", "form"],
+            Pattern = new("listbox", "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/"),
+            Sections =
+            [
+                new("options-and-value", "Options and value", "Each `TbOption` is an option, `Rows` sets how many show "
+                    + "before the list scrolls, and `Disabled` on an option turns off that option alone.",
+                    typeof(ListBoxExample)),
+                new("multiple", "Multiple", "`TbMultiListBox` binds a list of the chosen values.",
+                    typeof(ListBoxMultipleExample)),
+                new("groups", "Groups", "`TbOptionGroup` groups options under a heading. The arrows and typing move "
+                    + "through every group.", typeof(ListBoxGroupsExample)),
+                new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
+                    + "as a chip, and its words name the option. `Text` is for content without words, such as an "
+                    + "image, and replaces that name, so include any words the option shows.",
+                    typeof(ListBoxContentExample)),
+                new("empty-list", "Empty list", "A list box with no options shows an empty box, so add a disabled "
+                    + "option that says why.", typeof(ListBoxEmptyExample)),
+                new("many-options", "Many options", "A long list scrolls, and a long option wraps. When people would "
+                    + "rather search than scroll, use a filterable [select](components/select) or an "
+                    + "[autocomplete](components/autocomplete).",
+                    typeof(ListBoxManyExample)),
+                new("comparer", "Values loaded again", "`Comparer` decides whether two values are the same, so a value "
+                    + "from another query, equal only by id, still matches its option.", typeof(ListBoxComparerExample)),
+                new("required", "Required", "`Required` shows a marker. Once the list box is changed or its form "
+                    + "validates, a message shows while nothing is chosen. `RequiredMessage` replaces the default, "
+                    + "which uses the label.", typeof(ListBoxRequiredExample)),
+                new("validation", "Validation", "`Validation` checks the choice once it is changed or its form "
+                    + "validates.", typeof(ListBoxValidationExample)),
+                new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
+                    + "Until your app clears it, the form won't submit, so clear it when the choice changes.",
+                    typeof(ListBoxErrorExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the list focusable, and the "
+                    + "arrow keys still move through its options so they can be read, but nothing gets chosen. "
+                    + "`Disabled` takes it out of the tab order.", typeof(ListBoxStatesExample)),
+            ],
             Api = [typeof(TbListBox<>), typeof(TbMultiListBox<>), typeof(TbOption<>), typeof(TbOptionGroup),
                 typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Down", "Up"], "Moves to the next or previous option that isn't disabled, and chooses it.")
+                    { When = "In a `TbListBox`" },
+                new(["Home", "End"], "Moves to the first or last option that isn't disabled, and chooses it.")
+                    { When = "In a `TbListBox`" },
+                new(["A letter"], "Moves to an option that starts with what was typed, and chooses it.")
+                    { When = "In a `TbListBox`" },
+                new(["Space"], "Chooses the active option. A Space typed mid-search adds to the search instead.")
+                    { When = "In a `TbListBox`" },
+                new(["Down", "Up"], "Moves to the next or previous option that isn't disabled.")
+                    { When = "In a `TbMultiListBox`" },
+                new(["Home", "End"], "Moves to the first or last option that isn't disabled.")
+                    { When = "In a `TbMultiListBox`" },
+                new(["A letter"], "Moves to an option that starts with what was typed.")
+                    { When = "In a `TbMultiListBox`" },
+                new(["Space"], "Chooses or clears the active option. A Space typed mid-search adds to the search "
+                    + "instead.") { When = "In a `TbMultiListBox`" },
+                new(["Shift+Down", "Shift+Up"], "Moves to the next or previous option that isn't disabled, and chooses "
+                    + "it.")
+                    { When = "In a `TbMultiListBox`" },
+            ],
+            Labeling =
+            [
+                "A `listbox` named by its `Label`. A `TbOptionGroup` is a `group` named by its `Label`.",
+                "An option's words name it. Content without words, such as an image, is named by its `Text`; with "
+                    + "neither, it gets a warning in the browser console.",
+            ],
+            Announcements =
+            [
+                "On focus, its label, then its helper text or error.",
+                "Focus stays on the list box, which points to the active option with `aria-activedescendant`, so a "
+                    + "screen reader reads each option as it becomes active.",
+                "A `ReadOnly` list box is heard as read only.",
+                "A validation message that appears as someone changes the choice is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field). An `Error` your app sets is read "
+                    + "out once when it appears.",
+            ],
             Accessibility =
             [
-                "A `listbox` of `option`s named by its `Label`. It is one tab stop; focus stays on the listbox, which "
-                    + "points to the active option with `aria-activedescendant`.",
-                "Down and Up move, Home and End go to the first and last option, and typing jumps to an option that "
-                    + "starts with what was typed. Disabled options are skipped.",
-                "In a single listbox, moving chooses the option, as in the browser's own list. In a multiple one, "
-                    + "Space chooses or clears the active option, and Shift with Down or Up also chooses the next.",
-                "Before the page is interactive it renders as the browser's own `<select>` list, so it still works.",
-                "A `TbOptionGroup` is a `group` named by its `Label`; the arrows and typing move through every group.",
-                "An option with content of its own, such as an image and a caption, is named by its `Text`; one with "
-                    + "neither text nor a name gets a warning in the browser console.",
-                "`ReadOnly` keeps the list focusable, and the arrow keys still move through its options so they can "
-                    + "be read, but nothing gets chosen; screen readers hear it as read only.",
+                "It is one tab stop.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as the browser's own `<select>` list, so it still works and posts with its form.",
+                "A `ReadOnly` native list puts its choice back whenever the user changes it, and posts. A `Disabled` "
+                    + "one doesn't post.",
+                "An option whose content has no words has no name until the page is interactive, even with `Text`.",
             ],
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],

@@ -1,34 +1,15 @@
-<TbStack Row Gap="5" Wrap>
-    <TbStack Gap="2" Style="inline-size: 16rem">
-        <TbListBox @bind-Value="_trail" Label="Trail" Rows="4">
-            <TbOption Value="@("Ridge loop")" />
-            <TbOption Value="@("Creek path")" />
-            <TbOption Value="@("Summit spur")" />
-            <TbOption Value="@("Lakeshore")" Disabled />
-            <TbOption Value="@("Old mill")" />
-            <TbOption Value="@("Fern gully")" />
-        </TbListBox>
-        <TbText>Trail: @(_trail ?? "none")</TbText>
-    </TbStack>
-    <TbStack Gap="2" Style="inline-size: 16rem">
-        <TbMultiListBox @bind-Value="_gear" Label="Gear to pack" HelperText="Choose as many as you need.">
-            <TbOption Value="@("Tent")" />
-            <TbOption Value="@("Stove")" />
-            <TbOption Value="@("Water filter")" />
-            <TbOption Value="@("Headlamp")" />
-        </TbMultiListBox>
-        <TbText>Packing: @(_gear.Count == 0 ? "nothing" : string.Join(", ", _gear))</TbText>
-    </TbStack>
-    <TbStack Gap="2" Style="inline-size: 16rem">
-        <TbListBox TValue="string" Label="Assigned crew" Value="@("North team")" Rows="3" ReadOnly
-                   HelperText="Assigned by the ranger station.">
-            <TbOption Value="@("North team")" />
-            <TbOption Value="@("South team")" />
-        </TbListBox>
-    </TbStack>
+<TbStack Gap="2">
+    <TbListBox @bind-Value="_trail" Label="Trail" Rows="4">
+        <TbOption Value="@("Ridge loop")" />
+        <TbOption Value="@("Creek path")" />
+        <TbOption Value="@("Summit spur")" />
+        <TbOption Value="@("Lakeshore")" Disabled />
+        <TbOption Value="@("Old mill")" />
+        <TbOption Value="@("Fern gully")" />
+    </TbListBox>
+    <TbText>Trail: @(_trail ?? "none")</TbText>
 </TbStack>
 
 @code {
     private string? _trail = "Creek path";
-    private IReadOnlyList<string> _gear = ["Tent"];
 }

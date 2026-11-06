@@ -1,0 +1,13 @@
+<TbStack Gap="2">
+    <TbMultiListBox @bind-Value="_gear" Label="Gear to pack" HelperText="Choose as many as you need.">
+        <TbOption Value="@("Tent")" />
+        <TbOption Value="@("Stove")" />
+        <TbOption Value="@("Water filter")" />
+        <TbOption Value="@("Headlamp")" />
+    </TbMultiListBox>
+    <TbText>Packing: @(_gear.Count == 0 ? "nothing" : string.Join(", ", _gear))</TbText>
+</TbStack>
+
+@code {
+    private IReadOnlyList<string> _gear = ["Tent"];
+}

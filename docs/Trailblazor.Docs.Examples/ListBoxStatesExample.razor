@@ -1,0 +1,15 @@
+<TbStack Gap="4">
+    <TbListBox @bind-Value="_crew" Label="Assigned crew" Rows="3" ReadOnly HelperText="Assigned by the ranger station.">
+        <TbOption Value="@("North team")" />
+        <TbOption Value="@("South team")" />
+    </TbListBox>
+    <TbListBox @bind-Value="_truck" Label="Truck" Rows="3" Disabled HelperText="Tab skips this one.">
+        <TbOption Value="@("Blue")" />
+        <TbOption Value="@("Red")" />
+    </TbListBox>
+</TbStack>
+
+@code {
+    private string? _crew = "North team";
+    private string? _truck = "Blue";
+}

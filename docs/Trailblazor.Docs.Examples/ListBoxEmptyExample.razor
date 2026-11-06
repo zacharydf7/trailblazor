@@ -1,0 +1,7 @@
+<TbListBox @bind-Value="_trip" Label="Saved trips" Rows="2">
+    <TbOption Value="@("none")" Disabled>You haven't saved a trip yet</TbOption>
+</TbListBox>
+
+@code {
+    private string? _trip;
+}

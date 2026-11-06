@@ -1,0 +1,21 @@
+<TbForm @ref="_form" aria-label="Trip leader">
+    <TbListBox @bind-Value="_leader" Label="Trip leader" Rows="3" Required RequiredMessage="Choose a trip leader.">
+        <TbOption Value="@("Ada")" />
+        <TbOption Value="@("Grace")" />
+        <TbOption Value="@("Katherine")" />
+    </TbListBox>
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _leader;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

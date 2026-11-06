@@ -1,0 +1,14 @@
+<TbListBox @bind-Value="_campsite" Label="Campsite" Rows="6">
+    <TbOptionGroup Label="North ridge">
+        <TbOption Value="@("Pine Hollow")" />
+        <TbOption Value="@("Eagle Ridge")" />
+    </TbOptionGroup>
+    <TbOptionGroup Label="River valley">
+        <TbOption Value="@("Cedar Flats")" />
+        <TbOption Value="@("Birch Grove")" />
+    </TbOptionGroup>
+</TbListBox>
+
+@code {
+    private string? _campsite = "Cedar Flats";
+}

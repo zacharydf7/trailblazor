@@ -1,0 +1,11 @@
+<TbListBox @bind-Value="_permit" Label="Permit number" Rows="6" Style="max-inline-size: 24rem">
+    <TbOption Value="0">A permit for groups of more than twelve people, which also covers their vehicles</TbOption>
+    @foreach (var number in Enumerable.Range(1, 300))
+    {
+        <TbOption Value="number">Permit @number</TbOption>
+    }
+</TbListBox>
+
+@code {
+    private int _permit = 1;
+}
