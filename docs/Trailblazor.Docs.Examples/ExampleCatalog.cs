@@ -2220,29 +2220,91 @@ public static class ExampleCatalog
             "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.",
             typeof(FileUploadExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when someone needs to send files from their device.",
+            ],
+            WhenNotToUse =
+            [
+                "For a link to a file that's already online, use a [text field](components/text-field) of type `Url`.",
+            ],
+            Related = ["text-field", "form"],
+            Sections =
+            [
+                new("drop-zone", "Drop zone and value", "Click the zone or drop files on it. `Accept` lists the types "
+                    + "to take, `Multiple` takes more than one file, and the value is the list of files.",
+                    typeof(FileUploadExample)),
+                new("button", "Button", "`DropZone=\"false\"` makes the field a button, for picking a single settings "
+                    + "or project file.", typeof(FileUploadButtonExample)),
+                new("limits", "Limits and files left out", "Files of another type, over `MaxFileSize`, or beyond "
+                    + "`MaxFiles` are left out with a message. `MaxFileSize` is 512 KB unless set.",
+                    typeof(FileUploadLimitsExample)),
+                new("other-types", "Checking types yourself", "The accepted types come from `Accept`, or an `accept` in "
+                    + "`InputAttributes`. With `RejectOtherTypes=\"false\"`, they only filter the picker, and your app "
+                    + "checks the types that arrive, such as with `Validation`.", typeof(FileUploadOtherTypesExample)),
+                new("zone-content", "Drop zone content", "`ZoneContent` replaces the zone's text, such as with a hint "
+                    + "about the files to drop. It sits under the input and is hidden from screen readers, so nothing "
+                    + "in it can be clicked, and anything people need to know belongs in `HelperText`.",
+                    typeof(FileUploadZoneExample)),
+                new("own-button", "Your own button", "`Hidden` keeps the field out of sight, the tab order and the "
+                    + "reading order, apart from the reasons any files were left out and its messages. Your button then "
+                    + "calls `OpenAsync()` from its click, because browsers open a file dialog only shortly after a "
+                    + "user's click. `ClearAsync()` empties the field.", typeof(FileUploadOwnButtonExample)),
+                new("reading-files", "Reading the files", "Each new choice replaces the last, as the browser's file "
+                    + "input does, so read the files with `OpenReadStream` before someone chooses again.",
+                    typeof(FileUploadReadExample)),
+                new("required", "Required", "`Required` shows a marker. Once the field is changed or its form "
+                    + "validates, a message shows while no file is chosen. `RequiredMessage` replaces the default, "
+                    + "which uses the label.", typeof(FileUploadRequiredExample)),
+                new("validation", "Validation", "`Validation` checks the files once they change or the form validates.",
+                    typeof(FileUploadValidationExample)),
+                new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
+                    + "Until your app clears it, the form won't submit, so clear it when the files change.",
+                    typeof(FileUploadErrorExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off the picker and the remove "
+                    + "and clear buttons, and leaves the chosen files listed. A file input has no read-only state, so "
+                    + "the field disables it: the picker can't be focused and its files don't post. `Disabled` behaves "
+                    + "and looks the same on this field.",
+                    typeof(FileUploadStatesExample)),
+                new("labels", "Built-in text", "`Labels` replaces the words the field shows and reads out, such as the "
+                    + "zone's text and the number of files chosen.", typeof(FileUploadLabelsExample)),
+            ],
             Api = [typeof(TbFileUpload), typeof(FileUploadLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the file dialog."),
+            ],
+            Labeling =
+            [
+                "It is the browser's own file input, named by the `Label`, laid over the drop zone.",
+                "The chosen files are a `list`, and each has a \"Remove\" button named with its file.",
+            ],
+            Announcements =
+            [
+                "Screen readers announce it as a file button.",
+                "The reasons any files were left out are linked to the input and announced with the number of files "
+                    + "chosen.",
+                "A validation message that appears as someone changes the files is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+                "An `Error` your app sets is read out once when it appears, even after a submit.",
+            ],
             Accessibility =
             [
-                "It is the browser's own file input, named by the `Label`, laid over the drop zone: Enter or Space "
-                    + "opens the file dialog, and screen readers announce it as a file button.",
-                "Files of another type, over `MaxFileSize`, or beyond `MaxFiles` are left out, and the reasons are "
-                    + "linked to the input and announced with the number of files chosen. `MaxFileSize` is 512 KB "
-                    + "unless set, the size `OpenReadStream` reads by default, so raise both for larger files. The "
-                    + "types come from `Accept`, or an `accept` in `InputAttributes`, which also filters the picker; "
-                    + "with `RejectOtherTypes` off it only filters, and the app checks the types that arrive.",
-                "The chosen files are a `list`; each has a \"Remove\" button named with its file, and focus moves back "
-                    + "to the input when a file is removed.",
-                "Each new choice replaces the last, as the browser's file input does, so read the files before the "
-                    + "user chooses again.",
-                "`ReadOnly` turns off the picker and the remove and clear buttons, and leaves the chosen files "
-                    + "listed. A file input can't be read only, so the picker can't be focused.",
-                "Before the page is interactive it is the same file input, with a `name` for its form, so a static "
-                    + "form posts the chosen files; the list of files and the reasons for any left out show once it is "
-                    + "interactive.",
-                "`Hidden` keeps the field out of sight, the tab order and the reading order, apart from the reasons "
-                    + "any files were left out and its messages. Your own button can then call `OpenAsync()` from its "
-                    + "click; browsers open a file dialog only shortly after a user's click. `ClearAsync()` empties "
-                    + "the field from code.",
+                "Focus moves back to the input when a file is removed.",
+            ],
+            BeforeInteractive =
+            [
+                "It is the same file input, with a `name` for its form, so a static form posts the chosen files. The "
+                    + "list of files and the reasons for any left out show once it is interactive.",
+            ],
+            Notes =
+            [
+                new("`OpenReadStream` throws for a file over its own limit, which is 512 KB unless you pass a larger "
+                    + "`maxAllowedSize`. When you raise `MaxFileSize`, pass the same size to `OpenReadStream`.")
+                    { Pitfall = true },
+                new("Check each file's type and size again on your server. They come from the browser, so the limits "
+                    + "here only help the person choosing.") { Pitfall = true },
             ],
             Target = new("button", "Trail maps"),
             Blocks = ["tb-field", "tb-file-upload"],

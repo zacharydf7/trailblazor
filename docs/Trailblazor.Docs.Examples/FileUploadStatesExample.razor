@@ -1,0 +1,16 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbStack Gap="4">
+    <TbStack Gap="2">
+        <TbFileUpload Label="Signed form" @bind-Value="_signed" ReadOnly="_locked"
+                      HelperText="Choose a file, then lock the field. The file stays listed, but can't be removed." />
+        <TbSwitch Label="Lock the signed form" @bind-Value="_locked" />
+    </TbStack>
+    <TbFileUpload Label="Old form" @bind-Value="_old" Disabled HelperText="Choosing files is turned off." />
+</TbStack>
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _signed;
+    private IReadOnlyList<IBrowserFile>? _old;
+    private bool _locked;
+}

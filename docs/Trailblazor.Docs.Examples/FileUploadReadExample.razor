@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbStack Gap="2">
+    <TbFileUpload Label="Trip notes" Value="_notes" ValueChanged="ReadAsync" />
+    <output>Bytes read: @_bytes</output>
+</TbStack>
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _notes;
+    private long _bytes;
+
+    // Read as soon as they're chosen, because the next choice replaces them.
+    private async Task ReadAsync(IReadOnlyList<IBrowserFile>? notes)
+    {
+        _notes = notes;
+        _bytes = 0;
+        foreach (var note in notes ?? [])
+        {
+            await using var stream = note.OpenReadStream();
+            using var content = new MemoryStream();
+            await stream.CopyToAsync(content);
+            _bytes += content.Length;
+        }
+    }
+}

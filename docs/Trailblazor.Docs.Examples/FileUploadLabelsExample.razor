@@ -1,0 +1,14 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbFileUpload Label="Shelter photos" @bind-Value="_photos" Multiple Labels="ShelterLabels" />
+
+@code {
+    private static readonly FileUploadLabels ShelterLabels = new()
+    {
+        Zone = "Drop shelter photos here, or click to choose them.",
+        Chosen = "{0} shelter photos chosen.",
+        ChosenOne = "1 shelter photo chosen.",
+    };
+
+    private IReadOnlyList<IBrowserFile>? _photos;
+}

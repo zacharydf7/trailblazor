@@ -1,25 +1,11 @@
 @using Microsoft.AspNetCore.Components.Forms
 
-<TbStack Gap="4" Style="max-inline-size: 28rem">
-    <TbFileUpload Label="Trail maps" @bind-Value="_maps" Accept=".pdf,image/*" Multiple MaxFiles="5"
-                  HelperText="PDFs or images, up to five, each up to 512 KB." />
-    <TbFileUpload Label="Gear list" @bind-Value="_gear" Accept=".json" DropZone="false" />
-    <TbFileUpload @ref="_import" Label="Import a route" @bind-Value="_route" Accept=".gpx" Hidden />
-    <TbStack Row Gap="2" Wrap>
-        <TbButton OnClick="() => _import!.OpenAsync()">Import a route</TbButton>
-        <TbButton Variant="Variant.Text" Disabled="@(_route is null)" OnClick="() => _import!.ClearAsync()">
-            Forget the route
-        </TbButton>
-    </TbStack>
-    <TbText>@Summary</TbText>
+<TbStack Gap="2">
+    <TbFileUpload Label="Trail maps" @bind-Value="_maps" Accept=".pdf,image/*" Multiple
+                  HelperText="PDFs or images, each up to 512 KB." />
+    <output>Trail maps value: @(_maps is null ? "null" : string.Join(", ", _maps.Select(map => map.Name)))</output>
 </TbStack>
 
 @code {
     private IReadOnlyList<IBrowserFile>? _maps;
-    private IReadOnlyList<IBrowserFile>? _gear;
-    private IReadOnlyList<IBrowserFile>? _route;
-    private TbFileUpload? _import;
-
-    private string Summary => $"{_maps?.Count ?? 0} maps, {(_gear is null ? "no gear list" : _gear[0].Name)} and "
-        + $"{(_route is null ? "no route" : _route[0].Name)}.";
 }

@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbStack Gap="2">
+    <TbFileUpload @ref="_import" Label="Import a route" @bind-Value="_route" Accept=".gpx" Hidden />
+    <TbStack Row Gap="2" Wrap>
+        <TbButton OnClick="() => _import!.OpenAsync()">Import a route</TbButton>
+        <TbButton Variant="Variant.Text" OnClick="() => _import!.ClearAsync()">Forget the route</TbButton>
+    </TbStack>
+    <output>Route value: @(_route is null ? "null" : _route[0].Name)</output>
+</TbStack>
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _route;
+    private TbFileUpload? _import;
+}

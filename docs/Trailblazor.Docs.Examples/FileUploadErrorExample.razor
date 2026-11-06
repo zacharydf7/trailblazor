@@ -1,0 +1,23 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbStack Gap="2">
+    <TbFileUpload Label="Waiver" Value="_waiver" ValueChanged="ChangeWaiver" Error="@_error" />
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="CheckWaiver">Check the waiver</TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _waiver;
+    private string? _error;
+
+    private void ChangeWaiver(IReadOnlyList<IBrowserFile>? waiver)
+    {
+        _waiver = waiver;
+        _error = null;
+    }
+
+    // Stands in for asking a server, which answers with an error the field shows until the file changes.
+    private void CheckWaiver() =>
+        _error = _waiver is null ? "The server has no waiver for this trip." : "The server couldn't read that waiver.";
+}

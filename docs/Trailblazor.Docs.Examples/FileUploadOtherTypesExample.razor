@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbFileUpload Label="Attachments" @bind-Value="_attachments" Accept=".pdf" RejectOtherTypes="false" Multiple
+              Validation="CheckTypes" HelperText="The picker suggests PDFs, and Word files work too." />
+
+@code {
+    private static readonly string[] Allowed = [".pdf", ".doc", ".docx"];
+
+    private IReadOnlyList<IBrowserFile>? _attachments;
+
+    private static IEnumerable<string> CheckTypes(IReadOnlyList<IBrowserFile>? files) =>
+        (files ?? []).Any(file => !Allowed.Contains(Path.GetExtension(file.Name), StringComparer.OrdinalIgnoreCase))
+            ? ["Attach only PDF or Word files."]
+            : [];
+}

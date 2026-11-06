@@ -1,0 +1,19 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbForm @ref="_form" aria-label="Permit application">
+    <TbFileUpload Label="Permit form" @bind-Value="_permit" Required RequiredMessage="Attach your permit form." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private IReadOnlyList<IBrowserFile>? _permit;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

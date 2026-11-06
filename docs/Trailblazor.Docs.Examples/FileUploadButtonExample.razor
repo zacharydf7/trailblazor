@@ -1,0 +1,7 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbFileUpload Label="Gear list" @bind-Value="_gear" Accept=".json" DropZone="false" />
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _gear;
+}

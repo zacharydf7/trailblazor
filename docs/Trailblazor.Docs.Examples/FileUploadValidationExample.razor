@@ -1,0 +1,11 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbFileUpload Label="Ranger report" @bind-Value="_report" Validation="CheckReport"
+              HelperText="The archive can't store a file name with spaces." />
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _report;
+
+    private static IEnumerable<string> CheckReport(IReadOnlyList<IBrowserFile>? report) =>
+        (report ?? []).Any(file => file.Name.Contains(' ')) ? ["Rename the file so its name has no spaces."] : [];
+}

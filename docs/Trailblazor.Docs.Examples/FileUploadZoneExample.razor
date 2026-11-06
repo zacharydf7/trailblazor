@@ -1,0 +1,14 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbFileUpload Label="Route file" @bind-Value="_route" Accept=".gpx" HelperText="GPX files only.">
+    <ZoneContent>
+        <TbStack Gap="1">
+            <strong>Drop a GPX file here</strong>
+            <span>or click to find one on your device</span>
+        </TbStack>
+    </ZoneContent>
+</TbFileUpload>
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _route;
+}

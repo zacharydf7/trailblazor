@@ -1,0 +1,8 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbFileUpload Label="Photos" @bind-Value="_photos" Accept="image/*" Multiple MaxFiles="3" MaxFileSize="1_000_000"
+              HelperText="Up to three images, each up to 1 MB. Drop a PDF to see its message." />
+
+@code {
+    private IReadOnlyList<IBrowserFile>? _photos;
+}
