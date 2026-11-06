@@ -1,0 +1,20 @@
+<TbForm @ref="_form" aria-label="Group booking">
+    <TbSlider @bind-Value="_size" Label="Group size" Min="1" Max="12" ShowValue Validation="CheckSize"
+              HelperText="Up to 8 without a permit." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private int _size = 10;
+
+    private static IEnumerable<string> CheckSize(int size) => size > 8 ? ["Groups over 8 need a permit."] : [];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

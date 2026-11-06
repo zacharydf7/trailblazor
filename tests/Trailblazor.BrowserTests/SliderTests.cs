@@ -108,16 +108,26 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Slider_ShouldFillFromTheRightAndCenterItsValue_WhenTheTextIsRightToLeft(string browser)
     {
         var page = await OpenAsync(browser, "/examples/slider");
-        var slider = page.Locator(".tb-slider").Filter(new() { Has = Slider(page, "Map brightness") });
-        await slider.EvaluateAsync("slider => slider.dir = 'rtl'");
+        var slider = page.Locator(".tb-slider").Filter(new() { Has = Slider(page, "Trail length") });
 
         var track = (await slider.Locator("[data-part=track]").BoundingBoxAsync())!;
         var fill = (await slider.Locator("[data-part=fill]").BoundingBoxAsync())!;
         var bubble = (await slider.Locator("[data-part=value]").BoundingBoxAsync())!;
-        var thumb = track.X + track.Width - 9 - (track.Width - 18) * 0.6;
+        var thumb = track.X + track.Width - 9 - (track.Width - 18) * 0.3;
 
         Assert.Equal(track.X + track.Width, fill.X + fill.Width, tolerance: 1);
         Assert.Equal(thumb, bubble.X + bubble.Width / 2, tolerance: 2);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slider_ShouldWrapItsLabel_WhenTheLabelIsLongerThanTheSliderIsWide(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+
+        var longLabel = await page.GetByText("How far from the trailhead").BoundingBoxAsync();
+        var shortLabel = await page.GetByText("Steepest grade").BoundingBoxAsync();
+
+        Assert.True(longLabel!.Height > shortLabel!.Height * 1.5, $"The label is {longLabel.Height}px tall.");
     }
 }
 

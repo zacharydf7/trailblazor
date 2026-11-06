@@ -1,0 +1,7 @@
+<div dir="rtl">
+    <TbSlider @bind-Value="_length" Label="Trail length" Max="50" ShowValue ValueFormatter="@(value => $"{value} km")" />
+</div>
+
+@code {
+    private int _length = 15;
+}

@@ -1,0 +1,11 @@
+<TbStack Gap="4">
+    <TbSlider @bind-Value="_difficulty" Label="Trail difficulty" Min="1" Max="5" ShowValue ReadOnly
+              HelperText="Set by the park service." />
+    <TbSlider @bind-Value="_campfire" Label="Campfire level" Min="1" Max="5" ShowValue Disabled
+              HelperText="Can't be focused, and doesn't post." />
+</TbStack>
+
+@code {
+    private int _difficulty = 3;
+    private int _campfire = 2;
+}

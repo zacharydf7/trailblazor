@@ -1,0 +1,9 @@
+<TbStack Gap="2">
+    <TbRangeSlider @bind-Value="_elevation" Label="Elevation" Min="0" Max="4000" Step="100" ShowValue
+                   ValueFormatter="@(value => $"{value} m")" />
+    <output>Between @_elevation.Start and @_elevation.End m</output>
+</TbStack>
+
+@code {
+    private SliderRange<int> _elevation = new(800, 2400);
+}

@@ -1493,23 +1493,90 @@ public static class ExampleCatalog
             "Chooses a number, or a range, by dragging a thumb along a track or with the arrow keys.",
             typeof(SliderExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when the rough position matters more than the exact number, such as brightness or a price "
+                    + "range.",
+            ],
+            WhenNotToUse =
+            [
+                "For an exact number, use a [number field](components/number-field).",
+                "For a few named choices, use a [radio group](components/radio-group).",
+            ],
+            Related = ["number-field", "radio-group", "form"],
+            Pattern = new("slider", "https://www.w3.org/WAI/ARIA/apg/patterns/slider/"),
             RightToLeftKeys = "Left raises the value and Right lowers it, so the thumb moves the way the key points. "
                 + "Safari doesn't swap them yet (issue #287 on GitHub).",
+            Sections =
+            [
+                new("value", "Value", "`ShowValue` shows the value above the thumb, and `ValueFormatter` sets its "
+                    + "text. `@bind-Value` follows the thumb as it moves, and `ValueCommitted` reports where it "
+                    + "settled, once someone lets go or finishes with the keys.", typeof(SliderExample)),
+                new("label-and-help", "Label and help text", "`Label` names the slider and `HelperText` adds a hint. A "
+                    + "long label wraps above the track.", typeof(SliderHelpExample)),
+                new("steps-and-marks", "Steps and marks", "`Min`, `Max` and `Step` set where the thumb can stop, and "
+                    + "`Marks` labels points along the track.", typeof(SliderMarksExample)),
+                new("range", "Range", "`TbRangeSlider` binds a `SliderRange` with two thumbs, and neither can pass the "
+                    + "other. `StartLabel` and `EndLabel` name the thumbs.", typeof(SliderRangeExample)),
+                new("validation", "Validation", "The thumb always sits on a value, so `Required` only catches a "
+                    + "nullable slider still bound to `null`. `Validation` checks the value once it is changed or its "
+                    + "form validates.",
+                    typeof(SliderValidationExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the thumbs focusable and "
+                    + "posted, but neither the pointer nor the keys move them. `Disabled` takes them out of the tab "
+                    + "order and the post.", typeof(SliderStatesExample)),
+                new("right-to-left", "Right to left", "Inside `dir=\"rtl\"`, the track fills from the right, and the "
+                    + "shown value stays above the thumb. The [right-to-left guide](guides/right-to-left) has the rest.",
+                    typeof(SliderRightToLeftExample)),
+            ],
             Api = [typeof(TbSlider<>), typeof(TbRangeSlider<>), typeof(SliderMark), typeof(SliderRange<>),
                 typeof(ChoiceClasses)],
+            Keyboard =
+            [
+                new(["Right", "Up"], "Raises the value by `Step`."),
+                new(["Left", "Down"], "Lowers the value by `Step`."),
+                new(["Page Up", "Page Down"], "Raises or lowers the value by a larger amount, which the browser "
+                    + "chooses."),
+                new(["Home", "End"], "Goes to `Min` or `Max`."),
+                new(["Tab"], "Moves from one thumb to the other.") { When = "On a range slider" },
+            ],
+            Labeling =
+            [
+                "Each thumb is the browser's own range input, a `slider` named by the `Label`.",
+                "A range slider names each thumb with the label followed by \"Minimum\" or \"Maximum\", which "
+                    + "`StartLabel` and `EndLabel` replace.",
+            ],
+            Announcements =
+            [
+                "`ValueFormatter` sets the text screen readers hear for the value (`aria-valuetext`).",
+                "Screen readers read a `ReadOnly` thumb as read only.",
+                "Mark labels aren't read out, so use `ValueFormatter` when the words matter.",
+                "A validation message that appears as someone moves a thumb is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+            ],
             Accessibility =
             [
-                "Each thumb is the browser's own range input, a `slider` named by the `Label`. The arrows step, Page "
-                    + "Up and Page Down jump, and Home and End go to the ends.",
-                "`ValueFormatter` sets the text screen readers hear for the value (`aria-valuetext`), and the text "
-                    + "`ShowValue` shows above the thumb.",
-                "A range slider's two thumbs are named by the label and \"Minimum\" or \"Maximum\" (`StartLabel` "
-                    + "and `EndLabel`), each a tab stop of its own, and neither can pass the other. Its "
-                    + "`FocusAsync()` focuses the start thumb.",
-                "It posts in a static form, as a number or as `Start` and `End`. In forced-colors mode the track and "
-                    + "its fill take system colors.",
-                "`ReadOnly` keeps the thumbs focusable and posted, but neither the pointer nor the keys move them; "
-                    + "screen readers hear them as read only.",
+                "Helper text and validation messages are linked to each thumb with `aria-describedby`, and an error "
+                    + "sets `aria-invalid`.",
+                "In forced-colors mode the track and its fill take system colors.",
+            ],
+            Notes =
+            [
+                new("A value outside `Min` and `Max` shows at the nearest end."),
+                new("`Min` must be below `Max`, both must fit the number type, and `Step` must be above 0. A whole number "
+                    + "type also needs a whole `Min`, `Max` and `Step`. Anything else throws when it renders."),
+                new("`@ref` the slider and call `FocusAsync()` to move focus to it. A range slider focuses its start "
+                    + "thumb."),
+            ],
+            BeforeInteractive =
+            [
+                "It posts in a static form, as a number or as `Start` and `End`.",
+                "Before the page is interactive, a thumb moves, but the fill, the shown value and the text screen "
+                    + "readers hear stay where they were until the next render.",
+                "Nothing stops a range slider's thumbs from passing each other until the page is interactive, so on a "
+                    + "static post, check that `Start` isn't above `End`.",
+                "`ReadOnly` already works on a static page.",
             ],
             Target = new("slider", "Map brightness"),
             Blocks = ["tb-slider"],
@@ -1518,10 +1585,10 @@ public static class ExampleCatalog
                 new("label", "The slider's label."),
                 new("helper", "The help text under the slider."),
                 new("error", "The validation message, shown while the value is invalid."),
-                new("value", "The value shown as text beside the label."),
+                new("value", "The value shown above each thumb."),
                 new("track", "The track the thumbs move along."),
                 new("fill", "The part of the track up to the value, or between a range's two values."),
-                new("mark", "A step mark on the track."),
+                new("mark", "A tick mark under the track, with an optional label."),
                 new("input", "A single slider's range input."),
                 new("start-thumb", "A range slider's input for its low end."),
                 new("end-thumb", "A range slider's input for its high end."),

@@ -1,0 +1,12 @@
+<TbSlider @bind-Value="_grade" Label="Steepest grade" Min="0" Max="30" Step="5" Marks="GradeMarks"
+          HelperText="In percent; trails steeper than this are hidden." />
+
+@code {
+    private static readonly SliderMark[] GradeMarks =
+    [
+        new() { Value = 0, Label = "Flat" }, new() { Value = 10, Label = "Gentle" },
+        new() { Value = 20, Label = "Steep" }, new() { Value = 30, Label = "Scramble" },
+    ];
+
+    private int _grade = 10;
+}
