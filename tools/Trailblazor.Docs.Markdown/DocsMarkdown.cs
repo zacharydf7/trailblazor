@@ -68,7 +68,7 @@ public static class DocsMarkdown
             ## Guides
 
 
-            """);
+            """.ReplaceLineEndings("\n"));
         foreach (var page in pages.Where(page => page.Path.StartsWith("guides/", StringComparison.Ordinal)))
         {
             index.Append($"- [{page.Title}]({Site}{page.Path}.md): {page.Summary}\n");

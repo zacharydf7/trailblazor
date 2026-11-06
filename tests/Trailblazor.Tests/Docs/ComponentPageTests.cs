@@ -342,7 +342,7 @@ public class ComponentPageTests : DocsTest
         Assert.Equal("""
             await page.GetByRole(AriaRole.Button, new() { Name = "Rename report" }).ClickAsync();
             page.GetByRole(AriaRole.Dialog, new() { Name = "Rename report" })
-            """, steps.TextContent);
+            """.ReplaceLineEndings("\n"), steps.TextContent);
     }
 
     [Fact]
