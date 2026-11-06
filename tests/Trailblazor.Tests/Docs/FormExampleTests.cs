@@ -7,6 +7,26 @@ namespace Trailblazor.Tests.Docs;
 
 public class FormExampleTests : DocsTest
 {
+    [Theory]
+    [InlineData("select"), InlineData("autocomplete"), InlineData("listbox"), InlineData("radio-group")]
+    [InlineData("checkbox-group")]
+    public void ComponentPage_ShouldLinkToChoosingAListField_WhenShowingAFieldThatPicksFromAList(string example)
+    {
+        var cut = ComponentPage(example);
+
+        Assert.NotEmpty(cut.FindAll("a[href='guides/forms#choosing-a-list-field']"));
+    }
+
+    [Fact]
+    public void FormsGuide_ShouldCompareEveryFieldThatPicksFromAList_WhenChoosingAListField()
+    {
+        var cut = PageAt("guides/forms");
+
+        Assert.NotNull(cut.Find("#choosing-a-list-field"));
+        Assert.Equal(["Radio group", "Checkbox group", "Select", "List box", "Autocomplete"],
+            cut.FindAll("[aria-label='Fields that pick from a list'] tbody th").Select(row => row.TextContent));
+    }
+
     // A required field's label also holds its asterisk, so this matches on the label's text rather than all of it.
     private static IElement Field<T>(IRenderedComponent<T> cut, string label) where T : IComponent =>
         cut.Find($"#{cut.FindAll("label").Single(found => found.TextContent.Contains(label)).GetAttribute("for")}");

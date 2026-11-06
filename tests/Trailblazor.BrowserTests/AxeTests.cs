@@ -85,11 +85,15 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     private sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
 
     public static TheoryData<string, string> SelectsInBothThemes => new(
-        from name in new[] { "Notify me about", "Trails to hike", "Route", "Time zone", "Guide", "Permit number", "Huts" }
+        from name in new[]
+        {
+            "Notify me about", "Trails to hike", "Route", "Time zone", "Guide", "Permit number", "Huts", "Campsite",
+            "Saved trail", "Saved routes", "Start day", "Permit type", "Map style", "Season",
+        }
         from theme in new[] { "light", "dark" }
         select (name, theme));
 
-    // The select page's popups differ by feature, so each is checked open, in chromium alone since colors don't differ.
+    // Each section whose field opens is checked open, in chromium alone since colors don't differ.
     [Theory, MemberData(nameof(SelectsInBothThemes))]
     public async Task Select_ShouldHaveNoAccessibilityViolations_WhenItsPopupIsOpen(string name, string theme)
     {
@@ -115,11 +119,21 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
             ("Region", "zzz", "No matches", false),
             ("Town", "a", "Type to search", false),
             ("Campsite", "alder", "Couldn't load suggestions.", true),
+            ("Lake", "mir", "Mirror", false),
+            ("Ranger", "ada", "Ada", false),
+            ("Hut", "ald", "Alder", false),
+            ("Pack weight (kg)", "7", "7.5", false),
+            ("Shelter", "zzz", "No shelter has that name", false),
+            ("Trail number", "300", "Trail 300", false),
+            ("Guide", "ada", "Ada", false),
+            ("Map style", "sat", "Satellite", false),
+            ("Peak", "eag", "Eagle", false),
+            ("River", "wil", "Willow", false),
         }
         from theme in new[] { "light", "dark" }
         select (state.Item1, state.Item2, state.Item3, state.Item4, theme));
 
-    // What the list shows differs by state, so each is checked open, in chromium alone, as engines agree on color.
+    // Each section whose field opens is checked open, and each message its list settles on, in chromium alone.
     [Theory, MemberData(nameof(AutocompleteStatesInBothThemes))]
     public async Task Autocomplete_ShouldHaveNoAccessibilityViolations_WhenItsListShowsEachState(string name,
         string typed, string shown, bool fail, string theme)
@@ -136,6 +150,8 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
                 await opened.GetByRole(AriaRole.Checkbox, new() { Name = "Make the next search fail" }).CheckAsync();
             }
 
+            // Some of these fields start with a value, which would otherwise stay in front of what's typed.
+            await field.ClearAsync();
             await field.PressSequentiallyAsync(typed);
             await Expect(opened.GetByRole(AriaRole.Listbox, new() { Name = name }).GetByText(shown)).ToBeVisibleAsync();
 
@@ -146,35 +162,46 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     public static TheoryData<string, string> ColorPickersInBothThemes => new(
-        from name in new[] { "Map overlay", "Tent color" }
+        from name in new[]
+        {
+            "Map overlay", "Tent color", "Highlight", "Club color", "Sign color", "Boundary color", "Group color",
+            "Line color", "Warning color", "Shelter color",
+        }
         from theme in new[] { "light", "dark" }
         select (name, theme));
 
-    // These pickers' popups hold different controls, so each is checked open, in chromium alone.
+    // Each section whose picker opens is checked open, in chromium alone.
     [Theory, MemberData(nameof(ColorPickersInBothThemes))]
     public async Task ColorPicker_ShouldHaveNoAccessibilityViolations_WhenItsPopupIsOpen(string name, string theme)
     {
         var page = await OpenAsync("chromium", "/examples/color-picker");
         await SetThemeAsync(page, theme);
+        var open = name == "Shelter color" ? "Open the shelter colors" : "Choose a color";
 
-        await CheckOpenAsync(page, new(new("dialog", "Choose a color"), opened => ClickWhenReadyAsync(
-            ColorPickerTests.Field(opened, name).GetByRole(AriaRole.Button, new() { Name = "Choose a color" }))));
+        await CheckOpenAsync(page, new(new("dialog", open), opened => ClickWhenReadyAsync(
+            ColorPickerTests.Field(opened, name).GetByRole(AriaRole.Button, new() { Name = open }))));
     }
 
     public static TheoryData<string, string> DateRangePickersInBothThemes => new(
-        from name in new[] { "Report period", "Site visit", "Vacation in Germany" }
+        from name in new[]
+        {
+            "Report period", "Site visit", "Vacation in Germany", "Closure dates", "Created between", "Booking dates",
+            "Survey dates", "Permit dates", "Travel window", "Filled dates", "Hut stay", "Shuttle",
+        }
         from theme in new[] { "light", "dark" }
         select (name, theme));
 
-    // Presets, disabled days and another culture each change the calendar, so each is checked open, in chromium alone.
+    // Each section whose picker opens is checked open, in chromium alone.
     [Theory, MemberData(nameof(DateRangePickersInBothThemes))]
     public async Task DateRangePicker_ShouldHaveNoAccessibilityViolations_WhenItsCalendarIsOpen(string name, string theme)
     {
         var page = await OpenAsync("chromium", "/examples/date-range-picker");
         await SetThemeAsync(page, theme);
+        var open = name == "Shuttle" ? "Open the ride calendar" : "Choose dates";
 
-        await CheckOpenAsync(page, new(new("dialog", "Choose dates"), opened => ClickWhenReadyAsync(
-            opened.GetByRole(AriaRole.Group, new() { Name = name }).GetByRole(AriaRole.Button, new() { Name = "Choose dates" }))));
+        await CheckOpenAsync(page, new(new("dialog", open), opened => ClickWhenReadyAsync(
+            opened.GetByRole(AriaRole.Group, new() { Name = name, Exact = true })
+                .GetByRole(AriaRole.Button, new() { Name = open }))));
     }
 
     private static readonly Dictionary<string, Opening> Opened = new()

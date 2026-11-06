@@ -16,6 +16,7 @@
         <TbTableOfContentsItem TargetId="static-form-posts" Text="Static form posts" />
         <TbTableOfContentsItem TargetId="leave-the-submit-button-on" Text="Leave the submit button on" />
         <TbTableOfContentsItem TargetId="wording" Text="Wording labels, hints and messages" />
+        <TbTableOfContentsItem TargetId="choosing-a-list-field" Text="Choosing a list field" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
     </Contents>
     <Header>
@@ -293,6 +294,51 @@
             The <a href="https://design-system.service.gov.uk/components/error-message/">GOV.UK error message guidance</a>
             has more examples.
         </TbText>
+
+        <DocsHeading Id="choosing-a-list-field" Text="Choosing a list field" Class="docs-section" />
+        <TbText>
+            Five fields pick from a list of options. When the options all fit on the page, use a radio or checkbox
+            group, since options in view are the easiest to compare and take one click to pick. When they don't, use a
+            select or a list box. Use an autocomplete when the options come from a search or someone may type a value
+            that isn't in the list.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Fields that pick from a list">
+            <table>
+                <thead>
+                    <tr><th scope="col">Field</th><th scope="col">Picks</th><th scope="col">Use it when</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><a href="components/radio-group">Radio group</a></th>
+                        <td>One</td>
+                        <td>There are a few options, and seeing them all helps someone choose.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="components/checkbox-group">Checkbox group</a></th>
+                        <td>Any number</td>
+                        <td>There are a few options, and seeing them all helps someone choose.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="components/select">Select</a></th>
+                        <td>One or several</td>
+                        <td>
+                            The list is too long to show at once, or the page has little room. <code>Filterable</code>
+                            lets people search a long list.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="components/listbox">List box</a></th>
+                        <td>One or several</td>
+                        <td>The list is too long for a group, and should stay in view on the page.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><a href="components/autocomplete">Autocomplete</a></th>
+                        <td>One</td>
+                        <td>The options come from a search, or someone may type a value that isn't in the list.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>

@@ -1358,6 +1358,8 @@ public static class ExampleCatalog
             [
                 "Use it when someone can pick any number of options from a short list, and seeing them all helps "
                     + "them choose.",
+                "[Choosing a list field](guides/forms#choosing-a-list-field) compares it with the other fields that "
+                    + "pick from a list.",
             ],
             WhenNotToUse =
             [
@@ -1650,6 +1652,8 @@ public static class ExampleCatalog
             WhenToUse =
             [
                 "Use it for one choice from a short list, when seeing every option helps someone choose.",
+                "[Choosing a list field](guides/forms#choosing-a-list-field) compares it with the other fields that "
+                    + "pick from a list.",
             ],
             WhenNotToUse =
             [
@@ -1813,6 +1817,8 @@ public static class ExampleCatalog
             [
                 "To choose one option, or several, from a known list too long to show at once.",
                 "With `Filterable`, for a list long enough that the user would rather search it than scroll.",
+                "[Choosing a list field](guides/forms#choosing-a-list-field) compares it with the other fields that "
+                    + "pick from a list.",
             ],
             WhenNotToUse =
             [
@@ -1984,8 +1990,10 @@ public static class ExampleCatalog
             FullWidth = true,
             WhenToUse =
             [
-                "Use it when the options come from a search as someone types, when the list is too long to browse, or "
-                    + "when they may type a value that isn't in the list.",
+                "Use it when the options come from a search as someone types, or when they may type a value that isn't "
+                    + "in the list.",
+                "[Choosing a list field](guides/forms#choosing-a-list-field) compares it with the other fields that "
+                    + "pick from a list.",
             ],
             WhenNotToUse =
             [
@@ -2463,6 +2471,8 @@ public static class ExampleCatalog
             [
                 "Use it when the options should stay visible on the page, and the list is too long for a radio or "
                     + "checkbox group.",
+                "[Choosing a list field](guides/forms#choosing-a-list-field) compares it with the other fields that "
+                    + "pick from a list.",
             ],
             WhenNotToUse =
             [
