@@ -32,15 +32,30 @@ public class LabelTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Label_ShouldWrapItsTextBesideItsInfoButton_WhenTheTextIsLongerThanTheLabelIsWide(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/label");
+
+        var longText = (await page.GetByText("The person we should call").BoundingBoxAsync())!;
+        var shortText = (await page.GetByText("Permit number").BoundingBoxAsync())!;
+        var button = (await page.GetByRole(AriaRole.Button, new() { Name = "Information about The person" })
+            .BoundingBoxAsync())!;
+
+        Assert.True(longText.Height > shortText.Height * 1.5, $"The text is {longText.Height}px tall.");
+        Assert.True(button.X >= longText.X + longText.Width - 1, "The button should sit beside the text.");
+        Assert.True(button.Y < longText.Y + longText.Height, "The button should sit beside the text, not under it.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Label_ShouldShowRichInfoFlowingAsMarkup_WhenThePointerRestsOnTheButton(string browser)
     {
         var page = await OpenAsync(browser, "/examples/label");
-        var button = page.GetByRole(AriaRole.Button, new() { Name = "Information about Delivery speed" });
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Information about Pickup time" });
         await Expect(button).ToHaveAttributeAsync("data-ready", "");
 
         await button.HoverAsync();
 
-        var info = page.GetByRole(AriaRole.Dialog, new() { Name = "Information about Delivery speed" });
+        var info = page.GetByRole(AriaRole.Dialog, new() { Name = "Information about Pickup time" });
         await Expect(info.Locator("strong")).ToHaveTextAsync("5 p.m.");
         // Line breaks in the Razor source are only spacing, so the sentence flows on.
         Assert.False(await info.Locator(".tb-label__info-text").EvaluateAsync<bool>(

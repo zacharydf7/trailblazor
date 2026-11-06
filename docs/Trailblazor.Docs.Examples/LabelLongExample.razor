@@ -1,0 +1,9 @@
+<TbStack Gap="1" Style="max-inline-size: 24rem">
+    <TbLabel For="contact" Text="The person we should call if your group hasn't checked in by nightfall"
+             Info="We only call after the park has closed." />
+    <TbTextField id="contact" @bind-Value="_contact" />
+</TbStack>
+
+@code {
+    private string? _contact;
+}

@@ -1,0 +1,8 @@
+<TbStack Gap="1">
+    <TbLabel For="permit-number" Text="Permit number" Required Info="It's on the permit we emailed you." />
+    <TbTextField id="permit-number" @bind-Value="_permit" Required RequiredMessage="Enter the permit number." />
+</TbStack>
+
+@code {
+    private string? _permit;
+}

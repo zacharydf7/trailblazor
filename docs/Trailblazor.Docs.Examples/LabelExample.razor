@@ -1,25 +1,11 @@
-<TbStack Gap="4">
-    <div>
-        <TbLabel For="project-code" Text="Project code" Required Info="@ProjectCodeInfo" />
-        <input id="project-code" required style="block-size: var(--tb-control-height)" />
-    </div>
-    <div>
-        <TbLabel Text="Delivery speed" TextId="delivery-label">
-            <InfoContent>
-                Express and Overnight cost more, and Overnight orders placed after
-                <strong>5 p.m.</strong> leave the next day.
-            </InfoContent>
-        </TbLabel>
-        <TbRadioGroup TValue="string" @bind-Value="_speed" Row aria-labelledby="delivery-label">
-            <TbRadio Value="@("standard")">Standard</TbRadio>
-            <TbRadio Value="@("express")">Express</TbRadio>
-            <TbRadio Value="@("overnight")">Overnight</TbRadio>
-        </TbRadioGroup>
-    </div>
+<TbStack Gap="1">
+    <TbLabel For="project-code" Text="Project code" Info="@ProjectCodeInfo" />
+    <TbTextField id="project-code" @bind-Value="_code" />
 </TbStack>
 
 @code {
     private const string ProjectCodeInfo =
         "The code on the order form, such as PRJ-2041.\nCodes aren't case sensitive.";
-    private string? _speed = "standard";
+
+    private string? _code;
 }

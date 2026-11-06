@@ -1,0 +1,12 @@
+<TbStack Gap="1">
+    <TbLabel Text="Delivery speed" TextId="delivery-label" Info="Express and Overnight cost more." />
+    <TbRadioGroup TValue="string" @bind-Value="_speed" Row aria-labelledby="delivery-label">
+        <TbRadio Value="@("standard")">Standard</TbRadio>
+        <TbRadio Value="@("express")">Express</TbRadio>
+        <TbRadio Value="@("overnight")">Overnight</TbRadio>
+    </TbRadioGroup>
+</TbStack>
+
+@code {
+    private string? _speed = "standard";
+}

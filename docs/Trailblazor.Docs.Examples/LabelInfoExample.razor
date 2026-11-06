@@ -1,0 +1,22 @@
+<TbStack Gap="4">
+    <TbStack Gap="1">
+        <TbLabel For="bag-size" Text="Bag size" Info="@BagSizeInfo" />
+        <TbTextField id="bag-size" @bind-Value="_bag" />
+    </TbStack>
+    <TbStack Gap="1">
+        <TbLabel For="pickup-time" Text="Pickup time">
+            <InfoContent>
+                Shuttles run until <strong>5 p.m.</strong> Later pickups need a
+                <TbLink Href="guides/forms">separate form</TbLink>.
+            </InfoContent>
+        </TbLabel>
+        <TbTextField id="pickup-time" @bind-Value="_pickup" />
+    </TbStack>
+</TbStack>
+
+@code {
+    private const string BagSizeInfo = "In liters, as printed on the bag.\nA day pack is about 20.";
+
+    private string? _bag;
+    private string? _pickup;
+}

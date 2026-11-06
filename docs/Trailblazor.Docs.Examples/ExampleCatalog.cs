@@ -853,14 +853,78 @@ public static class ExampleCatalog
             "A label for a control or a group of controls, with an optional info button that explains the setting.",
             typeof(LabelExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to name a control or a group that has no label of its own, or to add an info button for help "
+                    + "most people don't need every time.",
+            ],
+            WhenNotToUse =
+            [
+                "For a Trailblazor field with no info button, set the field's own `Label`.",
+                "For a hint everyone should read, use the field's `HelperText`, which stays visible.",
+                "For a short description of a button, use a [tooltip](components/tooltip).",
+            ],
+            Related = ["text-field", "radio-group", "popover", "tooltip"],
+            Sections =
+            [
+                new("for-a-control", "For a control", "`For` takes the control's id and makes this a `<label>` tied to "
+                    + "it.", typeof(LabelExample)),
+                new("info-button", "Info button", "`Info` adds a button that explains the setting, and keeps the line "
+                    + "breaks in its text. `InfoContent` takes markup instead, such as a link. The panel opens on a "
+                    + "click, or when the pointer rests on the button.", typeof(LabelInfoExample)),
+                new("for-a-group", "For a group", "Without `For` the label is plain text. `TextId` puts an id on that "
+                    + "text alone, without the info button, so a group can point `aria-labelledby` at it.",
+                    typeof(LabelGroupExample)),
+                new("required", "Required", "`Required` shows a marker and nothing else, so set `Required` on the "
+                    + "control too. With no `Label` of its own, the field's default message is just \"The field is "
+                    + "required.\", so set `RequiredMessage`.", typeof(LabelRequiredExample)),
+                new("rich-content", "Rich content", "`ChildContent` shows in place of `Text`. With an info button, set "
+                    + "`Text` as well, because it names the button.", typeof(LabelContentExample)),
+                new("info-button-name", "Info button name", "`InfoButtonLabel` replaces the button's name, with `{0}` "
+                    + "for `Text`.", typeof(LabelButtonNameExample)),
+                new("long-text", "Long text", "A long label wraps, and its info button stays beside it.",
+                    typeof(LabelLongExample)),
+            ],
             Api = [typeof(TbLabel)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the info panel and moves focus into it.") { When = "On the info button" },
+                new(["Escape"], "Closes the info panel, and returns focus to the button if focus was in the panel.")
+                    { When = "While the panel is open" },
+                new(["Tab"], "Closes the info panel as focus leaves it.") { When = "While the panel is open" },
+            ],
+            Labeling =
+            [
+                "With `For` it is a `<label>` tied to that control. Without `For` it is plain text, and a group of "
+                    + "controls names itself by pointing `aria-labelledby` at the label's `TextId`.",
+                "The info button is named \"Information about\" and the label's `Text`, unless `InfoButtonLabel` "
+                    + "replaces that.",
+            ],
             Accessibility =
             [
-                "With `For` it is a `<label>` tied to that control. Without it, it is plain text: give a group of "
-                    + "controls `aria-labelledby` pointing at its `TextId`, which leaves out the info button.",
-                "The info button is a toggletip: a button named \"Information about\" and the label's `Text`, which "
-                    + "opens a small panel on click, Enter, Space or hover, and closes on Escape.",
-                "The `Required` marker is only visual; mark the control itself as required too.",
+                "The info button is a toggletip, which opens a small panel on click or hover.",
+            ],
+            Announcements =
+            [
+                "The asterisk the `Required` marker adds is hidden from screen readers.",
+                "Opening the panel with a click or a key moves focus into a dialog named after the button, so screen "
+                    + "readers announce it. Opening it by hover takes no focus, so they don't.",
+            ],
+            AppDuties =
+            [
+                "Mark the control itself as required: the label's `Required` marker is only visual.",
+            ],
+            Notes =
+            [
+                new("An info button with no `Text` throws when it renders, because nothing would name it."),
+            ],
+            BeforeInteractive =
+            [
+                "With `For`, the `<label>` names its control before the page is interactive.",
+                "The info button already opens its panel on click, Enter or Space, and Escape closes it. Until the page "
+                    + "is interactive, hover doesn't open it, focus doesn't move into it, and it shows at the corner of "
+                    + "the window rather than beside the button.",
             ],
             Target = new("button", "Information about Project code"),
             Blocks = ["tb-label"],

@@ -1,0 +1,10 @@
+<TbStack Gap="1">
+    <TbLabel For="route-name" Text="Route name" Info="The name shown on the printed map.">
+        <em>Route</em> name
+    </TbLabel>
+    <TbTextField id="route-name" @bind-Value="_route" />
+</TbStack>
+
+@code {
+    private string? _route;
+}

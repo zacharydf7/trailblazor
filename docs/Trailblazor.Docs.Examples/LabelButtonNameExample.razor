@@ -1,0 +1,9 @@
+<TbStack Gap="1">
+    <TbLabel For="trail-grade" Text="Trail grade" Info="From 1, the easiest, to 5, the hardest."
+             InfoButtonLabel="What does {0} mean?" />
+    <TbTextField id="trail-grade" @bind-Value="_grade" />
+</TbStack>
+
+@code {
+    private string? _grade;
+}
