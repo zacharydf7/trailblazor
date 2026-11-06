@@ -1,0 +1,22 @@
+<TbForm @ref="_form" aria-label="Contact">
+    <TbCheckboxGroup Label="Ways to reach you" @bind-Value="_ways" Required HelperText="Pick at least one."
+                     RequiredMessage="Pick at least one way to reach you.">
+        <TbCheckboxItem Value="@("email")">Email</TbCheckboxItem>
+        <TbCheckboxItem Value="@("text")">Text message</TbCheckboxItem>
+        <TbCheckboxItem Value="@("phone")">Phone call</TbCheckboxItem>
+    </TbCheckboxGroup>
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private IReadOnlyList<string> _ways = [];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

@@ -1,0 +1,23 @@
+<TbCheckboxGroup Label="Saved trails" @bind-Value="_saved" Comparer="ById">
+    @foreach (var trail in Trails)
+    {
+        <TbCheckboxItem Value="trail">@trail.Name</TbCheckboxItem>
+    }
+</TbCheckboxGroup>
+
+@code {
+    private static readonly IEqualityComparer<Trail> ById =
+        EqualityComparer<Trail>.Create((a, b) => a?.Id == b?.Id, trail => trail.Id);
+
+    private static readonly Trail[] Trails = [new(1, "Ridge"), new(2, "Lake"), new(3, "Pass")];
+
+    // Not an instance from Trails, as when the saved value comes from a query of its own.
+    private IReadOnlyList<Trail> _saved = [new(2, "Lake")];
+
+    private sealed class Trail(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; } = name;
+    }
+}

@@ -1,0 +1,20 @@
+<TbStack Gap="4">
+    <TbCheckboxGroup Label="Booked days" @bind-Value="_booked" ReadOnly HelperText="Booked when you signed up.">
+        <TbCheckboxItem Value="@("friday")">Friday</TbCheckboxItem>
+        <TbCheckboxItem Value="@("saturday")">Saturday</TbCheckboxItem>
+    </TbCheckboxGroup>
+    <TbCheckboxGroup Label="Closed days" @bind-Value="_closed" Disabled>
+        <TbCheckboxItem Value="@("monday")">Monday</TbCheckboxItem>
+        <TbCheckboxItem Value="@("tuesday")">Tuesday</TbCheckboxItem>
+    </TbCheckboxGroup>
+    <TbCheckboxGroup Label="Shuttle days" @bind-Value="_shuttle">
+        <TbCheckboxItem Value="@("saturday")">Saturday</TbCheckboxItem>
+        <TbCheckboxItem Value="@("sunday")" Disabled>Sunday</TbCheckboxItem>
+    </TbCheckboxGroup>
+</TbStack>
+
+@code {
+    private IReadOnlyList<string> _booked = ["saturday"];
+    private IReadOnlyList<string> _closed = ["monday"];
+    private IReadOnlyList<string> _shuttle = ["saturday"];
+}

@@ -1,26 +1,16 @@
 <TbStack Gap="4">
-    <TbCheckboxGroup Label="Trail days" @bind-Value="_days" Required HelperText="Pick at least one."
-                     RequiredMessage="Pick at least one day." Row>
+    <TbCheckboxGroup Label="Trail days" @bind-Value="_days" HelperText="Pick the days you can walk.">
         @foreach (var day in Days)
         {
-            <TbCheckboxItem Value="day" Disabled="@(day == DayOfWeek.Sunday)">@day</TbCheckboxItem>
+            <TbCheckboxItem Value="day">@day</TbCheckboxItem>
         }
     </TbCheckboxGroup>
-    <output data-testid="days-echo">@string.Join(", ", _days)</output>
-    <TbCheckboxGroup Label="Gear" @bind-Value="_gear" Tone="Tone.Success" Size="Size.Small">
-        <TbCheckboxItem Value="@("map")">Map</TbCheckboxItem>
-        <TbCheckboxItem Value="@("lamp")">Head lamp</TbCheckboxItem>
-        <TbCheckboxItem Value="@("kit")">First-aid kit <TbBadge>Required</TbBadge></TbCheckboxItem>
-    </TbCheckboxGroup>
+    <output>Trail days value: @string.Join(", ", _days)</output>
 </TbStack>
 
 @code {
     private static readonly DayOfWeek[] Days =
-    [
-        DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday,
-        DayOfWeek.Saturday, DayOfWeek.Sunday,
-    ];
+        [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday, DayOfWeek.Saturday];
 
     private IReadOnlyList<DayOfWeek> _days = [DayOfWeek.Saturday];
-    private IReadOnlyList<string> _gear = ["kit"];
 }

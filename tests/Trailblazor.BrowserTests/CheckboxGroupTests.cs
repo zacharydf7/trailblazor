@@ -10,17 +10,16 @@ public class CheckboxGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/checkbox-group");
         var days = page.GetByRole(AriaRole.Group, new() { Name = "Trail days" });
-        var echo = page.GetByTestId("days-echo");
 
         await days.GetByText("Monday").ClickAsync();
-        await Expect(echo).ToHaveTextAsync("Saturday, Monday");
+        await Expect(page.GetByText("Trail days value: Saturday, Monday", new() { Exact = true })).ToBeVisibleAsync();
         await days.GetByRole(AriaRole.Checkbox, new() { Name = "Wednesday" }).FocusAsync();
         await page.Keyboard.PressAsync("Space");
-        await Expect(echo).ToHaveTextAsync("Saturday, Monday, Wednesday");
+        await Expect(page.GetByText("Trail days value: Saturday, Monday, Wednesday", new() { Exact = true }))
+            .ToBeVisibleAsync();
         await days.GetByRole(AriaRole.Checkbox, new() { Name = "Saturday" }).UncheckAsync();
 
-        await Expect(echo).ToHaveTextAsync("Monday, Wednesday");
-        await Expect(days.GetByRole(AriaRole.Checkbox, new() { Name = "Sunday" })).ToBeDisabledAsync();
+        await Expect(page.GetByText("Trail days value: Monday, Wednesday", new() { Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -28,13 +27,15 @@ public class CheckboxGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
         string browser)
     {
         var page = await OpenAsync(browser, "/examples/checkbox-group");
-        var days = page.GetByRole(AriaRole.Group, new() { Name = "Trail days" });
+        var ways = page.GetByRole(AriaRole.Group, new() { Name = "Ways to reach you" });
+        await ways.GetByRole(AriaRole.Checkbox, new() { Name = "Email" }).CheckAsync();
+        await Expect(ways).Not.ToHaveAttributeAsync("aria-invalid", "true");
 
-        await days.GetByRole(AriaRole.Checkbox, new() { Name = "Saturday" }).UncheckAsync();
+        await ways.GetByRole(AriaRole.Checkbox, new() { Name = "Email" }).UncheckAsync();
 
-        await Expect(days).ToHaveAttributeAsync("aria-invalid", "true");
-        await Expect(days).ToHaveAccessibleDescriptionAsync("Pick at least one. Pick at least one day.");
-        await Expect(days.GetByRole(AriaRole.Checkbox, new() { Name = "Monday" }))
+        await Expect(ways).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(ways).ToHaveAccessibleDescriptionAsync("Pick at least one. Pick at least one way to reach you.");
+        await Expect(ways.GetByRole(AriaRole.Checkbox, new() { Name = "Phone call" }))
             .ToHaveAttributeAsync("aria-invalid", "true");
     }
 

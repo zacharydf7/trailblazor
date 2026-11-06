@@ -1308,20 +1308,81 @@ public static class ExampleCatalog
             "Picks any number of options from a short list shown all at once.", typeof(CheckboxGroupExample))
         {
             Folder = "Checkbox",
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when someone can pick any number of options from a short list, and seeing them all helps "
+                    + "them choose.",
+            ],
+            WhenNotToUse =
+            [
+                "For a long list, use a [list box](components/listbox) or a [select](components/select).",
+                "For one choice among several, use a [radio group](components/radio-group).",
+                "For one option on its own, use a [checkbox](components/checkbox).",
+            ],
+            Related = ["checkbox", "radio-group", "listbox", "form"],
+            Pattern = new("checkbox", "https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/"),
+            Sections =
+            [
+                new("options-and-value", "Options and value", "Each `TbCheckboxItem` is an option. The group's `Value` "
+                    + "holds the checked options' values, in the order they were checked.",
+                    typeof(CheckboxGroupExample)),
+                new("required", "Required", "`Required` shows a marker. Once the group is changed or its form "
+                    + "validates, a message shows while nothing is checked. `RequiredMessage` replaces the default, "
+                    + "which uses the label. Say what's needed in `HelperText` too.",
+                    typeof(CheckboxGroupRequiredExample)),
+                new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
+                    + "as a badge. All of it names the checkbox, so keep it short.",
+                    typeof(CheckboxGroupContentExample)),
+                new("row", "Row", "`Row` lays the options out in a row, wrapping when they don't fit. A long "
+                    + "option wraps beside its box.",
+                    typeof(CheckboxGroupRowExample)),
+                new("comparer", "Values loaded again", "`Comparer` decides whether two values are the same, so a value "
+                    + "from another query, equal only by id, still checks its option.",
+                    typeof(CheckboxGroupComparerExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps each box focusable and "
+                    + "posted, but neither a click nor Space changes it. `Disabled` on the group turns off every "
+                    + "option, and `Disabled` on an item turns off that option alone.",
+                    typeof(CheckboxGroupStatesExample)),
+                new("tone-and-size", "Tone and size", "`Tone` colors the checked boxes, and `Size` scales the boxes and "
+                    + "their labels.", typeof(CheckboxGroupToneExample)),
+            ],
             Api = [typeof(TbCheckboxGroup<>), typeof(TbCheckboxItem<>), typeof(ChoiceClasses)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves to the next option that isn't disabled, since each is its own tab stop."),
+                new(["Space"], "Toggles the focused option."),
+            ],
+            Labeling =
+            [
+                "The `Label` is the `fieldset`'s legend and names the group. Each option is a native checkbox, named "
+                    + "by its content.",
+            ],
+            Announcements =
+            [
+                "An error marks the group and every checkbox invalid, so screen readers say so on each option.",
+                "A validation message that appears as someone changes the group is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+            ],
             Accessibility =
             [
-                "A `fieldset` named by its `Label` as the legend, with a native checkbox per option, each a tab stop "
-                    + "that Space toggles.",
-                "Helper text and messages describe the whole group. An error marks the group and every checkbox "
-                    + "invalid. ARIA has no required state for a group, so `Required` shows the marker, and a message "
-                    + "when nothing is checked; say what's "
-                    + "needed, such as \"Pick at least one\", in the helper text.",
-                "`Disabled` on the group turns off every option, and an option can be disabled on its own. "
-                    + "`ReadOnly` keeps each box focusable and posted, but a click or Space doesn't change it.",
-                "`FocusAsync()` moves focus to the first option that isn't disabled.",
+                "Helper text and messages describe the whole group.",
                 "In forced-colors mode it falls back to the system's own controls, so it stays visible in every "
                     + "high-contrast theme.",
+            ],
+            AppDuties =
+            [
+                "Say what's needed, such as \"Pick at least one\", in the helper text. ARIA has no required state for a "
+                    + "group and the `Required` marker is hidden from screen readers, so until a validation message "
+                    + "appears, that text is the only way screen reader users hear what's needed.",
+            ],
+            Notes =
+            [
+                new("`@ref` the group and call `FocusAsync()` to move focus to the first option that isn't disabled."),
+            ],
+            BeforeInteractive =
+            [
+                "A static form posts the checked options in the order they're listed, not the order they were checked.",
             ],
             Target = new("group", "Trail days"),
             Blocks = ["tb-checkbox-group", "tb-checkbox"],

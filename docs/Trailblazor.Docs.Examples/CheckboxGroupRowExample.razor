@@ -1,0 +1,10 @@
+<TbCheckboxGroup Label="Difficulty" @bind-Value="_difficulty" Row Style="max-inline-size: 24rem">
+    <TbCheckboxItem Value="@("easy")">Easy</TbCheckboxItem>
+    <TbCheckboxItem Value="@("moderate")">Moderate</TbCheckboxItem>
+    <TbCheckboxItem Value="@("hard")">Hard</TbCheckboxItem>
+    <TbCheckboxItem Value="@("scramble")">Scramble with some exposed sections and a short fixed rope</TbCheckboxItem>
+</TbCheckboxGroup>
+
+@code {
+    private IReadOnlyList<string> _difficulty = ["easy", "moderate"];
+}
