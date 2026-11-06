@@ -1,0 +1,17 @@
+<TbForm @ref="_form" aria-label="Group color">
+    <TbColorPicker Label="Group color" @bind-Value="_group" Required RequiredMessage="Choose your group's color." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _group;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

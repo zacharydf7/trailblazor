@@ -1,0 +1,10 @@
+<TbStack Gap="2">
+    <TbColorPicker Label="Tent color" @bind-Value="_tent" Palette="Tents" PaletteOnly />
+    <output>Tent color value: @(_tent ?? "null")</output>
+</TbStack>
+
+@code {
+    private static readonly string[] Tents = ["#2da44e", "#f2c037", "#d1242f"];
+
+    private string? _tent = "#2da44e";
+}

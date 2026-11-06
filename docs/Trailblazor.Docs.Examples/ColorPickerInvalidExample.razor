@@ -1,0 +1,9 @@
+<TbStack Gap="2">
+    <TbColorPicker Label="Boundary color" @bind-Value="_boundary"
+                   HelperText="Try typing a color's name, such as blue, and leaving the field." />
+    <output>Boundary color value: @(_boundary ?? "null")</output>
+</TbStack>
+
+@code {
+    private string? _boundary = "#1f6feb";
+}

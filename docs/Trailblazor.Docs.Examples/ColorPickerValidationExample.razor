@@ -1,0 +1,20 @@
+<TbForm @ref="_form" aria-label="Warning color">
+    <TbColorPicker Label="Warning color" @bind-Value="_warning" Validation="CheckWarning" />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _warning = "#ffffff";
+
+    private static IEnumerable<string> CheckWarning(string? color) =>
+        color == "#ffffff" ? ["White won't show on the trail map."] : [];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

@@ -1,0 +1,8 @@
+<TbStack Gap="2">
+    <TbColorPicker Label="Highlight" @bind-Value="_highlight" Clearable Placeholder="No highlight" />
+    <output>Highlight value: @(_highlight ?? "null")</output>
+</TbStack>
+
+@code {
+    private string? _highlight = "#f2c037";
+}

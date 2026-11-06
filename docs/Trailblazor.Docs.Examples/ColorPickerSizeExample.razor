@@ -1,0 +1,11 @@
+<TbStack Gap="4">
+    <TbColorPicker Label="Line color" @bind-Value="_line" Variant="FieldVariant.Filled" />
+    <TbColorPicker Label="Dot color" @bind-Value="_dot" Size="Size.Small" />
+    <TbColorPicker Label="Area color" @bind-Value="_area" Size="Size.Large" />
+</TbStack>
+
+@code {
+    private string? _line = "#1f6feb";
+    private string? _dot = "#d1242f";
+    private string? _area = "#2da44e";
+}

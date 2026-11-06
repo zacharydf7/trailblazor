@@ -1,15 +1,13 @@
-<TbStack Gap="4" Style="max-inline-size: 22rem">
-    <TbColorPicker Label="Trail marker" @bind-Value="_marker" Palette="Markers" SwatchName="NameOf" Clearable
+<TbStack Gap="2">
+    <TbColorPicker Label="Trail marker" @bind-Value="_marker" Palette="Markers" SwatchName="NameOf"
                    HelperText="Pick a marker color, type a hex color, or open the picker." />
-    <TbColorPicker Label="Map overlay" @bind-Value="_overlay" Alpha />
-    <TbText>Marker @(_marker ?? "not chosen") over a @_overlay overlay.</TbText>
+    <output>Trail marker value: @(_marker ?? "null")</output>
 </TbStack>
 
 @code {
     private static readonly string[] Markers = ["#1f6feb", "#d1242f", "#f2c037", "#2da44e", "#8250df"];
 
     private string? _marker = "#1f6feb";
-    private string? _overlay = "#2da44e66";
 
     private static string NameOf(string color) => color switch
     {

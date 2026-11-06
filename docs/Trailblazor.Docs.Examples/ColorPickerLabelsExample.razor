@@ -1,0 +1,12 @@
+<TbColorPicker Label="Shelter color" @bind-Value="_shelter" Clearable Labels="ShelterLabels" />
+
+@code {
+    private static readonly ColorPickerLabels ShelterLabels = new()
+    {
+        Open = "Open the shelter colors",
+        Clear = "Clear the shelter color",
+        BadColor = "Enter the shelter's color as #RRGGBB.",
+    };
+
+    private string? _shelter = "#f2c037";
+}

@@ -1,0 +1,20 @@
+<TbStack Gap="2">
+    <TbColorPicker Label="Club color" Value="@_club" ValueChanged="ChangeClub" Error="@_error" />
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="CheckClub">Check the color</TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private string? _club = "#d1242f";
+    private string? _error;
+
+    private void ChangeClub(string? club)
+    {
+        _club = club;
+        _error = null;
+    }
+
+    // Stands in for asking a server, which answers with an error the field shows until the color changes.
+    private void CheckClub() => _error = _club == "#d1242f" ? "Another club already uses that color." : null;
+}

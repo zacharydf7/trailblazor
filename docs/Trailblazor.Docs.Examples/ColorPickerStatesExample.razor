@@ -1,0 +1,9 @@
+<TbStack Gap="4">
+    <TbColorPicker Label="Park color" @bind-Value="_park" ReadOnly Clearable HelperText="Set by the park service." />
+    <TbColorPicker Label="Old color" @bind-Value="_old" Disabled HelperText="Can't be focused, and doesn't post." />
+</TbStack>
+
+@code {
+    private string? _park = "#2da44e";
+    private string? _old = "#8250df";
+}

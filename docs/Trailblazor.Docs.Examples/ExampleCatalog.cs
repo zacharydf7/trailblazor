@@ -2099,24 +2099,97 @@ public static class ExampleCatalog
             "Chooses a color by typing it, picking a swatch, using the custom picker, or taking it from the screen.",
             typeof(ColorPickerExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when someone can choose any color, or one from a palette, and the value is a hex color.",
+            ],
+            WhenNotToUse =
+            [
+                "For a few named colors, a [radio group](components/radio-group) or a [select](components/select) may "
+                    + "be clearer, since people choose by name.",
+            ],
+            Related = ["text-field", "radio-group", "select", "form"],
+            RightToLeftKeys = "On the swatches, Left moves to the next one and Right to the previous one. On a slider, "
+                + "Left raises the value and Right lowers it. Safari doesn't swap them.",
+            Sections =
+            [
+                new("palette", "Palette and value", "The value is a hex string. `Palette` lists the swatches to "
+                    + "offer, each as `#rrggbb`, `#rgb` or `rgb()`. `SwatchName` names each one for screen readers, and "
+                    + "defaults to the color as written in `Palette`.", typeof(ColorPickerExample)),
+                new("opacity", "Opacity", "`Alpha` adds an opacity slider and also allows `#rgba` and `#rrggbbaa`. A "
+                    + "color that isn't fully opaque gets two more digits for its opacity, as in this "
+                    + "`#2da44e66`.", typeof(ColorPickerAlphaExample)),
+                new("palette-only", "Palette only", "`PaletteOnly` hides the custom picker, leaving the swatches. It "
+                    + "doesn't limit the value: the text box and eyedropper still take any color, so add `Validation` "
+                    + "if only the palette's colors are allowed.",
+                    typeof(ColorPickerPaletteOnlyExample)),
+                new("eyedropper", "Eyedropper", "A button takes a color from the screen, in browsers that have an "
+                    + "eyedropper. `Eyedropper=\"false\"` leaves it out.", typeof(ColorPickerEyedropperExample)),
+                new("clearing", "Clearing", "`Clearable` shows a button that sets the value to `null` and puts focus "
+                    + "back in the text box. `Placeholder` shows while there's no color.",
+                    typeof(ColorPickerClearExample)),
+                new("invalid-text", "Invalid text", "The text box takes `#rgb`, `#rrggbb` or `rgb()`, and the `#` is "
+                    + "optional. For other text, a message gives the format to use, the box is marked invalid and the "
+                    + "value stays as it was. Emptying the box makes the value `null`.",
+                    typeof(ColorPickerInvalidExample)),
+                new("required", "Required", "`Required` shows a marker. Once the field is changed or its form "
+                    + "validates, a message shows while there's no color. `RequiredMessage` replaces the default, which "
+                    + "uses the label.", typeof(ColorPickerRequiredExample)),
+                new("validation", "Validation", "`Validation` checks the color once it is changed or its form "
+                    + "validates.", typeof(ColorPickerValidationExample)),
+                new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
+                    + "Until your app clears it, the form won't submit, so clear it when the color changes.",
+                    typeof(ColorPickerErrorExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the color from changing: the "
+                    + "text can't be edited, the picker buttons turn off and the clear button hides. `Disabled` takes "
+                    + "the field out of the tab order and the post.", typeof(ColorPickerStatesExample)),
+                new("size-and-variant", "Size and variant", "`Variant` is `Outlined` or `Filled`, and `Size` is "
+                    + "`Small`, `Medium` or `Large`.", typeof(ColorPickerSizeExample)),
+                new("labels", "Built-in text", "`Labels` replaces the words the field shows and reads out, such as the "
+                    + "picker button's name, the clear button's name and the message for text it can't read.",
+                    typeof(ColorPickerLabelsExample)),
+            ],
             Api = [typeof(TbColorPicker), typeof(ColorPickerLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the picker.") { When = "On the picker button" },
+                new(["Left", "Right", "Up", "Down"], "On the swatches, moves between them and chooses one, as native "
+                    + "radios do. On a slider, changes its value.") { When = "In the picker" },
+                new(["Space"], "On a swatch, chooses it.") { When = "In the picker" },
+                new(["Home", "End"], "On a slider, goes to its lowest or highest value.") { When = "In the picker" },
+                new(["Page Up", "Page Down"], "On a slider, changes its value by a larger amount.")
+                    { When = "In the picker" },
+                new(["Up", "Down"], "On a Red, Green or Blue box, steps the number.") { When = "In the picker" },
+                new(["Escape"], "Closes the picker.") { When = "In the picker" },
+            ],
+            Labeling =
+            [
+                "The text box is named by the `Label`.",
+                "The picker is a `dialog`, and its swatches are native radios in a `radiogroup`, each named by "
+                    + "`SwatchName`.",
+                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says which "
+                    + "field it clears.",
+                "The dialog and the picker button are named by `Labels.Open`, the radio group by `Labels.Swatches`, and "
+                    + "the eyedropper button, sliders and Red, Green and Blue boxes by the rest of `Labels`.",
+            ],
+            Announcements =
+            [
+                "A color the text box can't read marks it `aria-invalid`, and the message says the format to use.",
+                "A validation message that appears as someone changes the color is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+                "An `Error` your app sets is read out once when it appears, even after a submit.",
+            ],
             Accessibility =
             [
-                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
-                "The text box is named by the `Label` and takes `#rgb`, `#rrggbb` or `rgb()`; a color it can't read "
-                    + "says the format to use and marks the box `aria-invalid`.",
-                "The picker is a `dialog`. Swatches are native radios in a `radiogroup`, named by `SwatchName`, so the "
-                    + "arrow keys move between them and choose.",
                 "The saturation and brightness pad is for the pointer; the Hue, Saturation, Brightness and Opacity "
                     + "sliders and the Red, Green and Blue boxes give keyboard and screen reader users the same "
                     + "control.",
-                "The eyedropper button appears only in browsers that have one.",
-                "Before the page is interactive it is a plain text box that only takes `#rrggbb` (or `#rrggbbaa` "
-                    + "with `Alpha`), so a static form posts a hex color, as typed.",
-                "`ReadOnly` keeps the color from changing: the text can't be edited, the picker buttons turn off and "
-                    + "the clear button hides.",
-                "The clear button, named \"Clear\" and described by the field's label, empties the color and puts "
-                    + "focus back in the text box.",
+            ],
+            BeforeInteractive =
+            [
+                "It is a plain text box that only takes `#rrggbb` (or `#rrggbbaa` with `Alpha`), so a static form posts "
+                    + "a hex color, as typed.",
             ],
             Target = new("textbox", "Trail marker"),
             Blocks = ["tb-field", "tb-color-picker"],

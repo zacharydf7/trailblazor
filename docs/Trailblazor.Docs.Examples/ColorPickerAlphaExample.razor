@@ -1,0 +1,8 @@
+<TbStack Gap="2">
+    <TbColorPicker Label="Map overlay" @bind-Value="_overlay" Alpha />
+    <output>Map overlay value: @(_overlay ?? "null")</output>
+</TbStack>
+
+@code {
+    private string? _overlay = "#2da44e66";
+}

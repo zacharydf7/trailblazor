@@ -145,6 +145,22 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         }));
     }
 
+    public static TheoryData<string, string> ColorPickersInBothThemes => new(
+        from name in new[] { "Map overlay", "Tent color" }
+        from theme in new[] { "light", "dark" }
+        select (name, theme));
+
+    // These pickers' popups hold different controls, so each is checked open, in chromium alone.
+    [Theory, MemberData(nameof(ColorPickersInBothThemes))]
+    public async Task ColorPicker_ShouldHaveNoAccessibilityViolations_WhenItsPopupIsOpen(string name, string theme)
+    {
+        var page = await OpenAsync("chromium", "/examples/color-picker");
+        await SetThemeAsync(page, theme);
+
+        await CheckOpenAsync(page, new(new("dialog", "Choose a color"), opened => ClickWhenReadyAsync(
+            ColorPickerTests.Field(opened, name).GetByRole(AriaRole.Button, new() { Name = "Choose a color" }))));
+    }
+
     private static readonly Dictionary<string, Opening> Opened = new()
     {
         ["menu"] = new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync()),
