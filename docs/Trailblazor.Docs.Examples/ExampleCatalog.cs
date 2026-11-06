@@ -2268,32 +2268,109 @@ public static class ExampleCatalog
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.",
             typeof(DateRangePickerExample))
         {
-            RightToLeftKeys = "Left moves to the next day and Right to the previous one.",
-            Api = [typeof(TbDateRangePicker<>), typeof(DateRangePickerLabels), typeof(FieldClasses)],
-            Accessibility =
+            FullWidth = true,
+            WhenToUse =
             [
-                "`Variant` (`Outlined` or `Filled`) and `Size` work as on the text field.",
-                "The two date boxes and the calendar button sit in a `group` named by the `Label`; each box is "
-                    + "named by the label and \"Start date\" or \"End date\", and shows the format as its placeholder. "
-                    + "`FocusAsync()` focuses the start box.",
-                "The calendar is a `dialog` with a `grid` for each month. Arrows move by a day or a week, Home and End "
-                    + "go to the start or end of the week, Page Up and Page Down change the month, and with Shift the "
-                    + "year. Enter or Space picks a day; Escape closes and returns focus to the button.",
+                "Use it for a start and an end date, when seeing them in a calendar helps someone choose.",
+            ],
+            WhenNotToUse =
+            [
+                "For two dates that don't form a range, or a date people know by heart, such as a birthday, use a "
+                    + "[text field](components/text-field) bound to a `DateOnly`.",
+            ],
+            Related = ["text-field", "form"],
+            Pattern = new("date picker dialog",
+                "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/"),
+            RightToLeftKeys = "Left moves to the next day and Right to the previous one.",
+            Sections =
+            [
+                new("range-and-value", "Range and value", "`@bind-Value` holds a `DateRange`, with a `Start` and an "
+                    + "`End`. Dates can be typed in the boxes or picked in the calendar.",
+                    typeof(DateRangePickerExample)),
+                new("presets", "Presets", "`Presets` adds ready-made ranges beside the calendar.",
+                    typeof(DateRangePickerPresetsExample)),
+                new("min-and-max", "Earliest and latest dates", "`Min` and `Max` set the earliest and latest dates that "
+                    + "can be chosen.", typeof(DateRangePickerLimitsExample)),
+                new("disabled-dates", "Dates that can't be chosen", "`IsDateDisabled` returns true for a date that "
+                    + "can't be chosen, such as a weekend. Focus can still reach it, so a screen reader can say it's "
+                    + "unavailable.",
+                    typeof(DateRangePickerDisabledDaysExample)),
+                new("format-and-culture", "Format and culture", "`Format` sets how the boxes show and read dates. "
+                    + "`Culture` sets the month and day names, the first day of the week, and the format when `Format` "
+                    + "isn't set. It defaults to the current culture.", typeof(DateRangePickerFormatExample)),
+                new("date-time", "DateTime values", "`TDate` can be `DateOnly` or `DateTime`, and time zones are never "
+                    + "converted. A date left alone keeps its time, and a newly typed or picked date is midnight at the "
+                    + "start of that day, so a range can end at the very start of its last day.",
+                    typeof(DateRangePickerDateTimeExample)),
+                new("clearing", "Clearing", "`Clearable` shows a button that clears both dates.",
+                    typeof(DateRangePickerClearExample)),
+                new("invalid-text", "Invalid dates", "If a box can't read a date, a message says which box and what "
+                    + "format to use, and that box is marked invalid. A date that can't be chosen, or an end before the "
+                    + "start, also shows a message.",
+                    typeof(DateRangePickerInvalidExample)),
+                new("required", "Required", "`Required` shows a marker. Once the field is changed or its form "
+                    + "validates, a message shows until both dates are set. `RequiredMessage` replaces the default, "
+                    + "which uses the label.", typeof(DateRangePickerRequiredExample)),
+                new("validation", "Validation", "`Validation` checks the range once it is changed or its form "
+                    + "validates.", typeof(DateRangePickerValidationExample)),
+                new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
+                    + "Until your app clears it, the form won't submit, so clear it when the dates change.",
+                    typeof(DateRangePickerErrorExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the dates from changing: the "
+                    + "boxes can't be edited, the calendar button turns off and the clear button hides. `Disabled` "
+                    + "takes the field out of the tab order and the post.", typeof(DateRangePickerStatesExample)),
+                new("size-and-variant", "Size and variant", "`Variant` is `Outlined` or `Filled`, and `Size` is "
+                    + "`Small`, `Medium` or `Large`.", typeof(DateRangePickerSizeExample)),
+                new("labels", "Built-in text", "`Labels` replaces the words the field shows and reads out, such as the "
+                    + "names of the boxes and the calendar button, and the field's messages.",
+                    typeof(DateRangePickerLabelsExample)),
+            ],
+            Api = [typeof(TbDateRangePicker<>), typeof(DateRangePickerLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the calendar.") { When = "On the calendar button" },
+                new(["Left", "Right"], "Moves by a day.") { When = "In the calendar" },
+                new(["Up", "Down"], "Moves by a week.") { When = "In the calendar" },
+                new(["Home", "End"], "Goes to the start or end of the week.") { When = "In the calendar" },
+                new(["Page Up", "Page Down"], "Changes the month.") { When = "In the calendar" },
+                new(["Shift+Page Up", "Shift+Page Down"], "Changes the year.") { When = "In the calendar" },
+                new(["Enter", "Space"], "Picks the day.") { When = "In the calendar" },
+                new(["Escape"], "Closes the calendar and returns focus to the button.") { When = "In the calendar" },
+                new(["Tab"], "Moves through the calendar's controls, and closes it as focus leaves.")
+                    { When = "In the calendar" },
+            ],
+            Labeling =
+            [
+                "The two date boxes and the calendar button sit in a `group` named by the `Label`. Each box is named by "
+                    + "the label and \"Start date\" or \"End date\", and shows the format as its placeholder.",
+                "The calendar is a `dialog` with a `grid` for each month.",
+                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says which "
+                    + "field it clears.",
+            ],
+            Announcements =
+            [
                 "Days in the range are `aria-selected`, and its first and last days add \"Start date\" and \"End "
                     + "date\" to their names. Today is `aria-current=\"date\"`, and days that can't be chosen are "
-                    + "`aria-disabled` but can still be reached, so the user hears why.",
-                "A date that can't be read says which box and the format to use, and marks that box `aria-invalid`. "
-                    + "Picking the start announces that the end comes next, and picking the end announces the range, "
-                    + "such as \"Friday, June 12, 2026 to Monday, June 15, 2026\".",
+                    + "`aria-disabled`.",
+                "Picking the start announces that the end comes next, and picking the end announces the range, such as "
+                    + "\"Friday, June 12, 2026 to Monday, June 15, 2026\".",
+                "A validation message that appears as someone changes the dates is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+                "An `Error` your app sets is read out once when it appears, even after a submit.",
+            ],
+            Accessibility =
+            [
                 "In forced-colors mode, such as Windows high contrast, the range's days take the system's highlight, "
                     + "its first and last days add an outline, and the range previewed under the pointer has only a "
                     + "dashed outline, so it can't be taken for a chosen range.",
-                "Before the page is interactive it shows the browser's own date boxes, so a static form still posts "
-                    + "both dates.",
-                "`ReadOnly` keeps the dates from changing: the boxes can't be edited, the calendar button turns off "
-                    + "and the clear button hides.",
-                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
-                    + "which field it clears.",
+            ],
+            Notes =
+            [
+                new("`@ref` the picker and call `FocusAsync()` to move focus to the start box."),
+            ],
+            BeforeInteractive =
+            [
+                "It shows the browser's own date boxes, so a static form still posts both dates.",
             ],
             Target = new("group", "Trip dates"),
             Blocks = ["tb-field", "tb-date-range"],

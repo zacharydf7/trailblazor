@@ -1,0 +1,8 @@
+<TbDateRangePicker TDate="DateOnly" Label="Site visit" @bind-Value="_visit" IsDateDisabled="IsWeekend"
+                   HelperText="The office is closed on weekends." />
+
+@code {
+    private DateRange<DateOnly> _visit;
+
+    private static bool IsWeekend(DateOnly date) => date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+}

@@ -1,0 +1,11 @@
+<TbStack Gap="4">
+    <TbDateRangePicker TDate="DateOnly" Label="Filled dates" @bind-Value="_filled" Variant="FieldVariant.Filled" />
+    <TbDateRangePicker TDate="DateOnly" Label="Small dates" @bind-Value="_small" Size="Size.Small" />
+    <TbDateRangePicker TDate="DateOnly" Label="Large dates" @bind-Value="_large" Size="Size.Large" />
+</TbStack>
+
+@code {
+    private DateRange<DateOnly> _filled = new(new(2026, 6, 1), new(2026, 6, 2));
+    private DateRange<DateOnly> _small = new(new(2026, 6, 3), new(2026, 6, 4));
+    private DateRange<DateOnly> _large = new(new(2026, 6, 5), new(2026, 6, 6));
+}

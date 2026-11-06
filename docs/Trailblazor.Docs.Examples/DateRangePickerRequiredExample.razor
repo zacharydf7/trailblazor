@@ -1,0 +1,18 @@
+<TbForm @ref="_form" aria-label="Travel">
+    <TbDateRangePicker TDate="DateOnly" Label="Travel window" @bind-Value="_window" Required
+                       RequiredMessage="Choose both travel dates." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private DateRange<DateOnly> _window;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

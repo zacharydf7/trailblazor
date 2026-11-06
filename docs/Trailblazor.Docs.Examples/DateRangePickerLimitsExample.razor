@@ -1,0 +1,8 @@
+<TbDateRangePicker TDate="DateOnly" Label="Permit dates" @bind-Value="_permit" Min="_today" Max="_today.AddDays(30)"
+                   HelperText="Permits open 30 days ahead." />
+
+@code {
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+
+    private DateRange<DateOnly> _permit = new(_today, _today.AddDays(2));
+}

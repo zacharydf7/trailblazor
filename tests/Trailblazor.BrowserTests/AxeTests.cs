@@ -161,6 +161,22 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
             ColorPickerTests.Field(opened, name).GetByRole(AriaRole.Button, new() { Name = "Choose a color" }))));
     }
 
+    public static TheoryData<string, string> DateRangePickersInBothThemes => new(
+        from name in new[] { "Report period", "Site visit", "Vacation in Germany" }
+        from theme in new[] { "light", "dark" }
+        select (name, theme));
+
+    // Presets, disabled days and another culture each change the calendar, so each is checked open, in chromium alone.
+    [Theory, MemberData(nameof(DateRangePickersInBothThemes))]
+    public async Task DateRangePicker_ShouldHaveNoAccessibilityViolations_WhenItsCalendarIsOpen(string name, string theme)
+    {
+        var page = await OpenAsync("chromium", "/examples/date-range-picker");
+        await SetThemeAsync(page, theme);
+
+        await CheckOpenAsync(page, new(new("dialog", "Choose dates"), opened => ClickWhenReadyAsync(
+            opened.GetByRole(AriaRole.Group, new() { Name = name }).GetByRole(AriaRole.Button, new() { Name = "Choose dates" }))));
+    }
+
     private static readonly Dictionary<string, Opening> Opened = new()
     {
         ["menu"] = new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync()),

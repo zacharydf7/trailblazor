@@ -1,0 +1,22 @@
+<TbStack Gap="2">
+    <TbDateRangePicker TDate="DateOnly" Label="Booking dates" Value="_booking" ValueChanged="ChangeBooking"
+                       Error="@_error" />
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="CheckBooking">Check the dates</TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private DateRange<DateOnly> _booking = new(new(2026, 6, 12), new(2026, 6, 15));
+    private string? _error;
+
+    private void ChangeBooking(DateRange<DateOnly> booking)
+    {
+        _booking = booking;
+        _error = null;
+    }
+
+    // Stands in for asking a server, which answers with an error the field shows until the dates change.
+    private void CheckBooking() =>
+        _error = _booking.Start == new DateOnly(2026, 6, 12) ? "Those dates are fully booked." : null;
+}

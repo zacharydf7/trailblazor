@@ -1,0 +1,13 @@
+<TbDateRangePicker TDate="DateOnly" Label="Shuttle" @bind-Value="_shuttle" Clearable Labels="ShuttleLabels" />
+
+@code {
+    private static readonly DateRangePickerLabels ShuttleLabels = new()
+    {
+        Start = "First ride",
+        End = "Last ride",
+        Open = "Open the ride calendar",
+        Clear = "Clear the rides",
+    };
+
+    private DateRange<DateOnly> _shuttle = new(new(2026, 6, 12), new(2026, 6, 15));
+}

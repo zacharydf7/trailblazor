@@ -1,0 +1,16 @@
+<TbDateRangePicker TDate="DateOnly" Label="Report period" @bind-Value="_period" Presets="_presets" />
+
+@code {
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+
+    private readonly IReadOnlyList<DateRangePreset<DateOnly>> _presets =
+    [
+        new("Next 7 days", new(_today, _today.AddDays(6))),
+        new("Next 30 days", new(_today, _today.AddDays(29))),
+        new("Next month", new(FirstOfNextMonth, FirstOfNextMonth.AddMonths(1).AddDays(-1))),
+    ];
+
+    private DateRange<DateOnly> _period = new(_today, _today.AddDays(6));
+
+    private static DateOnly FirstOfNextMonth => new DateOnly(_today.Year, _today.Month, 1).AddMonths(1);
+}

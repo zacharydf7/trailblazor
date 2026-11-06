@@ -1,0 +1,22 @@
+<TbForm @ref="_form" aria-label="Hut stay">
+    <TbDateRangePicker TDate="DateOnly" Label="Hut stay" @bind-Value="_stay" Validation="CheckStay" />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private DateRange<DateOnly> _stay = new(new(2026, 6, 1), new(2026, 6, 20));
+
+    private static IEnumerable<string> CheckStay(DateRange<DateOnly> stay) =>
+        stay is { Start: { } start, End: { } end } && end.DayNumber - start.DayNumber > 7
+            ? ["A hut stay can be a week at most."]
+            : [];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

@@ -1,0 +1,8 @@
+<TbStack Gap="2">
+    <TbDateRangePicker TDate="DateTime" Label="Created between" @bind-Value="_created" />
+    <output>Created between value: @_created.Start?.ToString("O") to @_created.End?.ToString("O")</output>
+</TbStack>
+
+@code {
+    private DateRange<DateTime> _created = new(new DateTime(2026, 6, 1, 8, 30, 0), new DateTime(2026, 6, 30));
+}

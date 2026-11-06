@@ -1,0 +1,11 @@
+<TbStack Gap="4">
+    <TbDateRangePicker TDate="DateOnly" Label="Season" @bind-Value="_season" ReadOnly Clearable
+                       HelperText="Set by the park service." />
+    <TbDateRangePicker TDate="DateOnly" Label="Last season" @bind-Value="_last" Disabled
+                       HelperText="Can't be focused, and doesn't post." />
+</TbStack>
+
+@code {
+    private DateRange<DateOnly> _season = new(new(2026, 5, 1), new(2026, 9, 30));
+    private DateRange<DateOnly> _last = new(new(2025, 5, 1), new(2025, 9, 30));
+}

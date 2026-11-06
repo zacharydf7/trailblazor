@@ -1,0 +1,10 @@
+<TbStack Gap="2">
+    <TbDateRangePicker TDate="DateOnly" Label="Closure dates" @bind-Value="_closure" Clearable />
+    <output>
+        Closure dates value: @(_closure.Start?.ToString("O") ?? "null") to @(_closure.End?.ToString("O") ?? "null")
+    </output>
+</TbStack>
+
+@code {
+    private DateRange<DateOnly> _closure = new(new(2026, 6, 12), new(2026, 6, 15));
+}

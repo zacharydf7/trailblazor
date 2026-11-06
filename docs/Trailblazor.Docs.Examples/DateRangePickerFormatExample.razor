@@ -1,0 +1,13 @@
+@using System.Globalization
+
+<TbStack Gap="4">
+    <TbDateRangePicker TDate="DateOnly" Label="Archive dates" @bind-Value="_archive" Format="yyyy-MM-dd" />
+    <TbDateRangePicker TDate="DateOnly" Label="Vacation in Germany" @bind-Value="_vacation" Culture="German" />
+</TbStack>
+
+@code {
+    private static readonly CultureInfo German = new("de-DE");
+
+    private DateRange<DateOnly> _archive = new(new(2026, 6, 12), new(2026, 6, 15));
+    private DateRange<DateOnly> _vacation = new(new(2026, 7, 1), new(2026, 7, 14));
+}
