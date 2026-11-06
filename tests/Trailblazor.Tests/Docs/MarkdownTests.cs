@@ -60,7 +60,7 @@ public class MarkdownTests
             markdown);
         Assert.Contains("\n| Key | Action |\n| --- | --- |\n| **While closed** |  |\n"
             + "| Down Up Enter Space | Opens the list. |", markdown);
-        Assert.Contains("[radio group](https://zacharydf7.github.io/trailblazor/components/radio-group.md)", markdown);
+        Assert.Contains("[radio group](https://trailblazor.dev/components/radio-group.md)", markdown);
         Assert.Contains("\n**SelectExample.razor**\n\n```razor\n<TbStack Gap=\"4\"", markdown);
     }
 
@@ -121,7 +121,7 @@ public class MarkdownTests
 
             ## Parts
 
-            Read the [theming guide](https://zacharydf7.github.io/trailblazor/guides/theming.md#tokens), or `TbTrail`.
+            Read the [theming guide](https://trailblazor.dev/guides/theming.md#tokens), or `TbTrail`.
 
             > Watch out
             >

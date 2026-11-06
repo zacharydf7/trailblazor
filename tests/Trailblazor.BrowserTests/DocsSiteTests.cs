@@ -629,7 +629,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         using var select = await client.GetAsync("components/select.md", cancel);
 
         Assert.StartsWith("# Trailblazor\n", index);
-        Assert.Contains("(https://zacharydf7.github.io/trailblazor/components/select.md)", index);
+        Assert.Contains("(https://trailblazor.dev/components/select.md)", index);
         Assert.StartsWith("# Select\n", await select.Content.ReadAsStringAsync(cancel));
         Assert.Contains("# Getting started\n", await client.GetStringAsync("llms-full.txt", cancel));
     }

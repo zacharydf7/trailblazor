@@ -18,8 +18,8 @@ cascade layers, and built on the browser's native `<dialog>`, Popover API and an
   used stand out. Nothing is recorded until the app listens, and nothing about the user is recorded at all.
 
 Trailblazor is in development (phase 2: parity with the components a large app needs). There are no packages yet. Try
-the components on the documentation site: https://zacharydf7.github.io/trailblazor/. For a coding assistant, every page
-is also published as Markdown, listed in https://zacharydf7.github.io/trailblazor/llms.txt (or all in one file,
+the components on the documentation site: https://trailblazor.dev/. For a coding assistant, every page
+is also published as Markdown, listed in https://trailblazor.dev/llms.txt (or all in one file,
 llms-full.txt).
 
 ## Repository layout

@@ -13,7 +13,7 @@ public sealed record MarkdownPage(string Path, string Title, string Summary, str
 // the site's WebAssembly, such as search engines and coding assistants.
 public static class DocsMarkdown
 {
-    public const string Site = "https://zacharydf7.github.io/trailblazor/";
+    public const string Site = "https://trailblazor.dev/";
 
     public static async Task<IReadOnlyList<MarkdownPage>> RenderAsync()
     {
