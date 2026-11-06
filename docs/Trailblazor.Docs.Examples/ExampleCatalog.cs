@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Trailblazor.Docs.Examples;
 
 // In the order the docs site lists them.
@@ -16,9 +14,7 @@ public enum ExampleCategory
 
 public sealed record DataPart(string Name, string Description);
 
-// The compiler fills in CatalogLine, the line in this file where the entry starts, for the header's edit link.
-public sealed record Example(string Name, string Title, ExampleCategory Category, string Summary, Type Component,
-    [CallerLineNumber] int CatalogLine = 0)
+public sealed record Example(string Name, string Title, ExampleCategory Category, string Summary, Type Component)
 {
     // More files the example's code is split into, such as the dialogs it opens.
     public IReadOnlyList<Type> Parts { get; init; } = [];
@@ -119,13 +115,6 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
 
     // A short skeleton of a component made of parts, showing which goes inside which.
     public string? Anatomy { get; init; }
-
-    // The library folder that holds the component, when it isn't named after the first Tb type in Api (the stack is
-    // in Layout).
-    public string? Folder { get; init; }
-
-    public string SourceFolder => Folder
-        ?? Api.First(type => type.Name.StartsWith("Tb", StringComparison.Ordinal)).Name.Split('`')[0][2..];
 
     // A demo that needs the frame's whole width, such as a grid; others sit centered in it.
     public bool FullWidth { get; init; }
@@ -349,7 +338,6 @@ public static class ExampleCatalog
         new("icon-button", "Icon button", ExampleCategory.Actions,
             "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
         {
-            Folder = "Button",
             Api = [typeof(TbIconButton), typeof(IconButtonClasses)],
             Accessibility =
             [
@@ -377,7 +365,6 @@ public static class ExampleCatalog
             "Joins related buttons into one control, in a row or a column, with settings shared by all of them.",
             typeof(ButtonGroupExample))
         {
-            Folder = "Button",
             Api = [typeof(TbButtonGroup)],
             Anatomy = """
                 <TbButtonGroup aria-label="…">
@@ -444,7 +431,6 @@ public static class ExampleCatalog
             "Lets people choose a light or dark page, or follow their device, and remembers the choice.",
             typeof(ThemePickerExample))
         {
-            Folder = "Theme",
             Api = [typeof(TbThemePicker), typeof(IThemeService), typeof(ThemeSettings)],
             Accessibility =
             [
@@ -520,7 +506,6 @@ public static class ExampleCatalog
             "Lays its children out in a row or a column, evenly spaced.", typeof(StackExample))
         {
             FullWidth = true,
-            Folder = "Layout",
             Api = [typeof(TbStack)],
             Accessibility =
             [
@@ -540,7 +525,6 @@ public static class ExampleCatalog
             "Takes up the free space in a stack, pushing what follows to the end.", typeof(SpacerExample))
         {
             FullWidth = true,
-            Folder = "Layout",
             Api = [typeof(TbSpacer)],
             Accessibility =
             [
@@ -553,7 +537,6 @@ public static class ExampleCatalog
             "A responsive 12-column grid for page layouts.", typeof(GridExample))
         {
             FullWidth = true,
-            Folder = "Layout",
             Api = [typeof(TbGrid), typeof(TbGridItem)],
             Anatomy = """
                 <TbGrid>
@@ -622,7 +605,6 @@ public static class ExampleCatalog
             "Centers content and caps its width at a readable size.", typeof(ContainerExample))
         {
             FullWidth = true,
-            Folder = "Layout",
             Api = [typeof(TbContainer)],
             Accessibility =
             [
@@ -1371,7 +1353,6 @@ public static class ExampleCatalog
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
             "Picks any number of options from a short list shown all at once.", typeof(CheckboxGroupExample))
         {
-            Folder = "Checkbox",
             FullWidth = true,
             WhenToUse =
             [
@@ -1471,7 +1452,6 @@ public static class ExampleCatalog
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.", typeof(SwitchExample))
         {
-            Folder = "Checkbox",
             FullWidth = true,
             WhenToUse =
             [
@@ -1571,7 +1551,7 @@ public static class ExampleCatalog
             Related = ["number-field", "radio-group", "form"],
             Pattern = new("slider", "https://www.w3.org/WAI/ARIA/apg/patterns/slider/"),
             RightToLeftKeys = "Left raises the value and Right lowers it, so the thumb moves the way the key points. "
-                + "Safari doesn't swap them yet (issue #287 on GitHub).",
+                + "Safari doesn't swap them yet.",
             Sections =
             [
                 new("value", "Value", "`ShowValue` shows the value above the thumb, and `ValueFormatter` sets its "
@@ -1666,7 +1646,6 @@ public static class ExampleCatalog
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
         {
-            Folder = "Radio",
             FullWidth = true,
             WhenToUse =
             [
@@ -3118,7 +3097,6 @@ public static class ExampleCatalog
             "A brief message in a corner that doesn't interrupt, with an optional title, icon, content and action.",
             typeof(ToastExample))
         {
-            Folder = "Toast",
             Api = [typeof(IToastService), typeof(ToastOptions), typeof(ToastSettings)],
             Accessibility =
             [

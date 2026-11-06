@@ -47,8 +47,18 @@ public class MarkdownTests
             .MaxBy(run => run.Length)!.Trim(), markdown));
         Assert.All(new[] { "## Accessibility", "## Telemetry", "## Design tokens", "## Testing" },
             heading => Assert.Contains($"\n{heading}\n", markdown));
-        Assert.All(new[] { "Show code", "Copy code", "Open on its own", "View as Markdown", "Edit this page" },
+        Assert.All(new[] { "Show code", "Copy code", "Open on its own", "View as Markdown" },
             control => Assert.DoesNotContain(control, markdown));
+    }
+
+    [Fact]
+    public async Task Markdown_ShouldNotMentionGitHub_WhenEveryPageAndTheIndexAreGenerated()
+    {
+        var pages = await Pages.Value;
+
+        Assert.All(pages, page =>
+            Assert.DoesNotContain("github", page.Markdown, StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain("github", DocsMarkdown.Index(pages), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

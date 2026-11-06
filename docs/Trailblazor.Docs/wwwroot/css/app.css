@@ -487,6 +487,7 @@ a:focus-visible {
 .docs-page-links {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--tb-space-1) var(--tb-space-4);
     margin: var(--tb-space-3) 0 0;
     padding: 0;
@@ -494,21 +495,7 @@ a:focus-visible {
     font-size: var(--tb-font-size-sm);
 }
 
-/* The page's GitHub links and Markdown links share a row when there's room. */
-.docs-page-tools {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--tb-space-1) var(--tb-space-6);
-    margin-block-start: var(--tb-space-3);
-}
-
-.docs-page-tools .docs-page-links {
-    align-items: center;
-    margin: 0;
-}
-
-.docs-edit {
+.docs-page-links--end {
     margin-block-start: var(--tb-space-10);
 }
 
@@ -649,8 +636,7 @@ a:focus-visible {
 
 /* Code stays left to right on a right-to-left page; otherwise a leading -- or a trailing ) jumps to the other end. */
 code,
-.docs-source,
-.docs-install {
+.docs-source {
     direction: ltr;
     unicode-bidi: isolate;
 }
@@ -700,8 +686,7 @@ code,
 }
 
 .docs-source:focus-visible,
-.docs-api:focus-visible,
-.docs-install:focus-visible {
+.docs-api:focus-visible {
     outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
     outline-offset: var(--tb-focus-ring-offset);
 }
@@ -1025,25 +1010,8 @@ kbd {
     --tb-button-on-fill: var(--docs-on-brand);
 }
 
-.docs-install {
-    display: inline-flex;
-    gap: var(--tb-space-2);
-    max-width: 100%;
-    margin: var(--tb-space-6) 0 0;
-    padding: var(--tb-space-2) var(--tb-space-4);
-    overflow-x: auto;
-    border: 1px dashed var(--tb-border-subtle);
-    border-radius: var(--tb-radius-lg);
-    background: var(--tb-color-surface);
-    color: var(--tb-color-text-muted);
-    font-family: var(--tb-font-family-mono);
-    font-size: var(--tb-font-size-sm);
-    white-space: nowrap;
-}
-
-.docs-install b {
-    color: var(--docs-brand-text);
-    font-weight: normal;
+.docs-status {
+    margin-block-start: var(--tb-space-6);
 }
 
 .docs-window {

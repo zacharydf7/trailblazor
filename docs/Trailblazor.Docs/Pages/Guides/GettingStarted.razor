@@ -21,16 +21,15 @@
     <ChildContent>
         <DocsHeading Id="set-up" Text="Set up an app" Class="docs-section" />
         <TbText>
-            Start from a Blazor app with interactive server rendering, as <code>dotnet new blazor --interactivity
-            Server</code> creates. Six steps add Trailblazor to it and check that it works.
+            Trailblazor is in development and isn't available to install yet, so these steps show the setup you'll
+            follow once it is. Start from a Blazor app with interactive server rendering, as <code>dotnet new blazor
+            --interactivity Server</code> creates. Six steps add Trailblazor to it and check that it works.
         </TbText>
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">1. Add the library</TbText>
         <TbText>
-            Trailblazor isn't on NuGet yet. Until it is, clone the repository and reference the library from your
-            app's project file.
+            This step will show how to add the library once it's available to install.
         </TbText>
-        <CodeBlock Label="Project reference" Code="@ProjectReference" />
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">2. Register the services</TbText>
         <TbText>
@@ -175,12 +174,6 @@
             Toasts.Show("Trailblazor is set up.", Tone.Success);
         }
     }
-
-    private const string ProjectReference = """
-        <ItemGroup>
-          <ProjectReference Include="..\trailblazor\src\Trailblazor\Trailblazor.csproj" />
-        </ItemGroup>
-        """;
 
     private const string Services = """
         builder.Services.AddTrailblazor();

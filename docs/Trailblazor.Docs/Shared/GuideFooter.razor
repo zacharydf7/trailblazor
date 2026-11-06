@@ -1,15 +1,9 @@
 @using System.Reflection
 @using Trailblazor.Docs.Examples
 
-<div class="docs-page-tools docs-edit">
-    <TbText class="docs-note">
-        <a href="@DocsRepository.Edit($"docs/Trailblazor.Docs/Pages/Guides/{Page.Name}.razor")">Edit this page</a>
-        on GitHub.
-    </TbText>
-    <ul class="docs-page-links" aria-label="As Markdown">
-        <PageMarkdown Path="@Path" />
-    </ul>
-</div>
+<ul class="docs-page-links docs-page-links--end" aria-label="As Markdown">
+    <PageMarkdown Path="@Path" />
+</ul>
 <nav class="docs-pager" aria-label="Previous and next guides">
     @if (Neighbor(-1) is { } previous)
     {

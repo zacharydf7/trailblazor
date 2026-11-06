@@ -10,7 +10,7 @@
         <TbTableOfContentsItem TargetId="labels-and-headings" Text="Labels and headings" />
         <TbTableOfContentsItem TargetId="how-its-tested" Text="How it's tested" />
         <TbTableOfContentsItem TargetId="status" Text="Status of each component" />
-        <TbTableOfContentsItem TargetId="known-issues" Text="Known issues and reporting" />
+        <TbTableOfContentsItem TargetId="known-issues" Text="Known issues" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
     </Contents>
     <Header>
@@ -164,8 +164,7 @@
             </li>
             <li>
                 <strong>Every popup.</strong> Some examples with a popup, such as the toolbar and data grid, never have it
-                open while axe runs, and others have only their first popup checked
-                (<a href="https://github.com/zacharydf7/trailblazor/issues/262">#262</a>).
+                open while axe runs, and others have only their first popup checked.
             </li>
             <li>
                 <strong>Every engine on every change.</strong> A problem only Firefox or WebKit shows can go unnoticed
@@ -210,23 +209,15 @@
             </table>
         </div>
 
-        <DocsHeading Id="known-issues" Text="Known issues and reporting" Class="docs-section" />
+        <DocsHeading Id="known-issues" Text="Known issues" Class="docs-section" />
         <ul>
             <li>
-                A message announced just as a modal dialog opens may not be spoken
-                (<a href="https://github.com/zacharydf7/trailblazor/issues/87">#87</a>).
+                A message announced just as a modal dialog opens may not be spoken.
             </li>
             <li>
-                On a right-to-left page, the Left and Right arrow keys move a slider the wrong way in WebKit
-                (<a href="https://github.com/zacharydf7/trailblazor/issues/287">#287</a>).
+                On a right-to-left page, the Left and Right arrow keys move a slider the wrong way in WebKit.
             </li>
         </ul>
-        <TbText>
-            <a href="@AccessibilityIssues">Open issues labeled accessibility</a> track these and any others. To report a
-            problem,
-            <a href="@ReportIssue">open an issue</a> and say which component, browser and assistive technology you used,
-            with their versions, what you expected, and what happened.
-        </TbText>
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
@@ -240,11 +231,6 @@
 </DocsArticle>
 
 @code {
-    private const string AccessibilityIssues =
-        $"{DocsRepository.Url}/issues?q=is%3Aissue+is%3Aopen+label%3Aaccessibility";
-
-    private static readonly string ReportIssue = DocsRepository.NewIssue("Accessibility: ");
-
     private static string Title(AccessibilityStatus status) => ExampleCatalog.Find(status.Component)!.Title;
 
     private static string ScreenReader(AccessibilityStatus status) =>

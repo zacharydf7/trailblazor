@@ -63,7 +63,7 @@ public class GuideTests : DocsTest
     }
 
     [Theory, MemberData(nameof(Guides))]
-    public void Guide_ShouldLinkItsNeighborsAndItsSource_WhenOpened(string path)
+    public void Guide_ShouldLinkItsNeighbors_WhenOpened(string path)
     {
         var guides = GuideCatalog.All.ToList();
         var index = guides.FindIndex(guide => guide.Path == path);
@@ -75,10 +75,6 @@ public class GuideTests : DocsTest
             pager.QuerySelector("a[rel=prev]")?.GetAttribute("href"));
         Assert.Equal(index < guides.Count - 1 ? guides[index + 1].Path : null,
             pager.QuerySelector("a[rel=next]")?.GetAttribute("href"));
-        Assert.Equal($"{DocsRepository.Url}/edit/main/docs/Trailblazor.Docs/Pages/Guides/{PageType(path).Name}.razor",
-            cut.FindAll("a").Single(link => link.TextContent == "Edit this page").GetAttribute("href"));
-        Assert.True(File.Exists(Path.Combine(Repository.Root, "docs", "Trailblazor.Docs", "Pages", "Guides",
-            $"{PageType(path).Name}.razor")));
     }
 
     [Fact]

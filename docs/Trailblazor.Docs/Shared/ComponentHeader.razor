@@ -7,20 +7,9 @@
        aria-current="@(Api ? null : "page")">Overview</a>
     <a href="@($"components/{Example.Name}/api")" class="docs-views__link" aria-current="@(Api ? "page" : null)">API</a>
 </nav>
-<div class="docs-page-tools">
-    <ul class="docs-page-links" aria-label="On GitHub">
-        <li><a href="@DocsRepository.Folder($"src/Trailblazor/{Example.SourceFolder}")">Source</a></li>
-        <li><a href="@DocsRepository.NewIssue($"{Example.Title}: ")">Report an issue</a></li>
-        <li>
-            <a href="@DocsRepository.File("docs/Trailblazor.Docs.Examples/ExampleCatalog.cs", Example.CatalogLine)">
-                Edit this page
-            </a>
-        </li>
-    </ul>
-    <ul class="docs-page-links" aria-label="As Markdown">
-        <PageMarkdown Path="@(Api ? $"components/{Example.Name}/api" : $"components/{Example.Name}")" />
-    </ul>
-</div>
+<ul class="docs-page-links" aria-label="As Markdown">
+    <PageMarkdown Path="@(Api ? $"components/{Example.Name}/api" : $"components/{Example.Name}")" />
+</ul>
 
 @code {
     [Parameter, EditorRequired]

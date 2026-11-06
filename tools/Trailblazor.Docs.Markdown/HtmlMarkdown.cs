@@ -13,7 +13,7 @@ public static partial class HtmlMarkdown
 {
     private const string Skipped = ".docs-article__folded, .docs-article__rail, .docs-heading__link, "
         + ".docs-api__anchor, .docs-example__stage, .docs-example__bar, .docs-views, .docs-page-links, .docs-pager, "
-        + ".docs-edit, .docs-demo, [aria-hidden=true], button, nav";
+        + ".docs-demo, [aria-hidden=true], button, nav";
 
     private static readonly HashSet<string> Inline =
         ["A", "ABBR", "B", "BR", "CODE", "EM", "I", "IMG", "KBD", "LABEL", "SMALL", "SPAN", "STRONG", "SUB", "SUP"];

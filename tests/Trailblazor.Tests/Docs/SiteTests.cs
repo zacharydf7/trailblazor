@@ -10,6 +10,33 @@ namespace Trailblazor.Tests.Docs;
 
 public class SiteTests : DocsTest
 {
+    public static TheoryData<string> Guides => new(GuideCatalog.All.Select(guide => guide.Path));
+
+    public static TheoryData<string> Components => new(ExampleCatalog.All.Select(example => example.Name));
+
+    [Fact]
+    public void Site_ShouldNotMentionGitHub_WhenTheLayoutAndHomePageRender()
+    {
+        var head = File.ReadAllText(Path.Combine(Repository.Root, "docs", "Trailblazor.Docs", "wwwroot", "index.html"));
+
+        Assert.DoesNotContain("github", head, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("github", Render<MainLayout>().Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("github", PageAt("").Markup, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory, MemberData(nameof(Guides))]
+    public void Guide_ShouldNotMentionGitHub_WhenOpened(string path)
+    {
+        Assert.DoesNotContain("github", PageAt(path).Markup, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory, MemberData(nameof(Components))]
+    public void Component_ShouldNotMentionGitHub_WhenItsPagesAreOpened(string name)
+    {
+        Assert.DoesNotContain("github", ComponentPage(name).Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("github", ApiPage(name).Markup, StringComparison.OrdinalIgnoreCase);
+    }
+
     // The guides, then the components by category, as the sidebar and the home page list them.
     private static string[] Links => [.. GuideCatalog.All.Select(guide => guide.Title),
         .. ExampleCatalog.All.OrderBy(example => example.Category).Select(example => example.Title)];
