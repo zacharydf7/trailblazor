@@ -70,9 +70,14 @@
             return;
         }
 
-        var (shown, used) = _counts.GetValueOrDefault(name);
-        _counts[name] = instrument.Name == "trailblazor.control.shown" ? (shown + value, used) : (shown, used + value);
-        InvokeAsync(StateHasChanged);
+        // A listener hears the whole process on any thread, so the table changes only where it renders.
+        InvokeAsync(() =>
+        {
+            var (shown, used) = _counts.GetValueOrDefault(name);
+            _counts[name] = instrument.Name == "trailblazor.control.shown"
+                ? (shown + value, used) : (shown, used + value);
+            StateHasChanged();
+        });
     }
 
     public void Dispose() => _listener.Dispose();
