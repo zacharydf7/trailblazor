@@ -1,0 +1,44 @@
+@inject IDialogService Dialogs
+@inject IToastService Toasts
+
+<TbTable aria-label="Trails to edit" Size="Size.Small">
+    <thead>
+        <tr>
+            <th scope="col">Trail</th>
+            <th scope="col">Kilometers</th>
+            <th scope="col"><span class="tb-visually-hidden">Actions</span></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var trail in _trails)
+        {
+            <tr @key="trail.Id">
+                <th scope="row">@trail.Name</th>
+                <td>@trail.Kilometers</td>
+                <td>
+                    <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@($"Edit {trail.Name}")"
+                              OnClick="() => EditAsync(trail)">Edit</TbButton>
+                </td>
+            </tr>
+        }
+    </tbody>
+</TbTable>
+
+@code {
+    private readonly List<Trail> _trails = [new(1, "Pine Hollow loop", 6), new(2, "Cedar Flats", 4)];
+
+    private async Task EditAsync(Trail trail)
+    {
+        var result = await Dialogs.ShowAsync<RecipeEditDialog, (string Name, int Kilometers)>($"Edit {trail.Name}",
+            parameters => parameters.Set(dialog => dialog.Name, trail.Name)
+                .Set(dialog => dialog.Kilometers, trail.Kilometers));
+        if (result.Confirmed)
+        {
+            var (name, kilometers) = result.Value;
+            _trails[_trails.IndexOf(trail)] = trail with { Name = name, Kilometers = kilometers };
+            Toasts.Show($"Saved {name}.", Tone.Success);
+        }
+    }
+
+    private sealed record Trail(int Id, string Name, int Kilometers);
+}

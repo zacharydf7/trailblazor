@@ -111,11 +111,28 @@ public class ExampleCatalogTests
     [Fact]
     public void ExampleCatalog_ShouldShowEveryEmbeddedSource_WhenCalled()
     {
-        var shown = ExampleCatalog.All.SelectMany(example => example.Sources).Select(source => $"Source/{source.File}");
+        var shown = ExampleCatalog.All.SelectMany(example => example.Sources).Select(source => $"Source/{source.File}")
+            .Concat(GuideSources());
 
         var embedded = typeof(Example).Assembly.GetManifestResourceNames().Where(name => name.StartsWith("Source/"));
 
         Assert.Equal(embedded.Order(), shown.Order());
+    }
+
+    // The example components a guide or recipe page shows the source of, which it names as typeof(RecipeEditExample).
+    private static IEnumerable<string> GuideSources()
+    {
+        var assembly = typeof(Example).Assembly;
+        var pages = assembly.GetManifestResourceNames().Where(name => name.StartsWith("Guides/")).Select(name =>
+        {
+            using var reader = new StreamReader(assembly.GetManifestResourceStream(name)!);
+            return reader.ReadToEnd();
+        });
+        var shown = ExampleCatalog.All.SelectMany(example => example.Sources).Select(source => source.File).ToHashSet();
+
+        return pages.SelectMany(page => Regex.Matches(page, @"ExampleSource\.Of\(typeof\((\w+)\)\)"))
+            .Select(match => $"{match.Groups[1].Value}.razor").Distinct().Where(file => !shown.Contains(file))
+            .Select(file => $"Source/{file}");
     }
 
     // TbRoot's live regions, which the testing guide names rather than a component's page.

@@ -1,0 +1,36 @@
+<TbGrid>
+    <TbGridItem SpanMd="6">
+        <TbTreeView TItem="Place" TKey="int" AriaLabel="Trails by region" Items="Regions" KeySelector="place => place.Id"
+                    ChildrenSelector="place => place.Children" ItemText="place => place.Name"
+                    IsSelectable="place => place.Children is null" InitialExpandDepth="1"
+                    SelectionMode="SelectionMode.Single" SelectionFollowsFocus @bind-SelectedKeys="_selected" />
+    </TbGridItem>
+    <TbGridItem SpanMd="6">
+        <TbSurface As="LayoutElement.Section" aria-label="Trail details" aria-live="polite">
+            @if (Selected is { } trail)
+            {
+                <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">@trail.Name</TbText>
+                <TbText>@trail.Kilometers kilometers.</TbText>
+            }
+            else
+            {
+                <TbText>Choose a trail to see its details.</TbText>
+            }
+        </TbSurface>
+    </TbGridItem>
+</TbGrid>
+
+@code {
+    private static readonly Place[] Regions =
+    [
+        new(1, "North ridge", 0, [new(2, "Pine Hollow loop", 6), new(3, "Eagle Ridge traverse", 18)]),
+        new(4, "River valley", 0, [new(5, "Cedar Flats", 4), new(6, "Fern Gully", 7)]),
+    ];
+
+    private IReadOnlyCollection<int>? _selected;
+
+    private Place? Selected => Regions.SelectMany(region => region.Children!)
+        .FirstOrDefault(trail => _selected?.Contains(trail.Id) == true);
+
+    private sealed record Place(int Id, string Name, int Kilometers, Place[]? Children = null);
+}

@@ -1,0 +1,62 @@
+@page "/recipes/filter-and-grid"
+
+<PageTitle>A filter bar with a data grid · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="how-it-works" Text="How it works" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">A filter bar with a data grid</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Let people narrow a long list from a server, with fields above a grid that loads one page at a time.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <RecipeFilterGridExample />
+        </div>
+        <CodeBlock Label="RecipeFilterGridExample.razor" Code="@RecipeFilterGridExampleSource" />
+
+        <DocsHeading Id="how-it-works" Text="How it works" Class="docs-section" />
+        <ul>
+            <li>
+                The grid shows the paging and sorting controls and passes the user's choices to <code>DataProvider</code>, which
+                asks your server for one page at a time.
+            </li>
+            <li>
+                <code>@@bind-Value:after</code> runs when a filter changes. It sets the page back to 1, because the new matches may not reach
+                the page being shown, and changing the page makes the grid load them. If the grid is already on page 1, the page
+                doesn't change, so the example calls <code>RefreshAsync</code> instead.
+            </li>
+            <li>
+                <code>UpdateDelay</code> waits for typing to pause, so a search doesn't reach the server on every
+                keystroke.
+            </li>
+            <li>
+                Put your own filters in the provider, as here, and use <code>request.Filters</code> for the filters in
+                the grid's own columns.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="components/data-grid">Data grid</a>: paging, sorting and filtering in columns.
+            </li>
+            <li>
+                <a href="components/text-field">Text field</a> and <a href="components/select">select</a>: the filters
+                themselves.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string RecipeFilterGridExampleSource =
+        ExampleSource.Of(typeof(RecipeFilterGridExample)).Text;
+}

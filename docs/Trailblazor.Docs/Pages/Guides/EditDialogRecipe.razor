@@ -1,0 +1,63 @@
+@page "/recipes/edit-in-dialog"
+
+<PageTitle>Edit in a dialog · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="how-it-works" Text="How it works" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Edit in a dialog</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Open a form in a dialog from a row, save what comes back, and say that it worked.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <RecipeEditExample />
+        </div>
+        <CodeBlock Label="RecipeEditExample.razor" Code="@RecipeEditExampleSource" />
+        <CodeBlock Label="RecipeEditDialog.razor" Code="@RecipeEditDialogSource" />
+
+        <DocsHeading Id="how-it-works" Text="How it works" Class="docs-section" />
+        <ul>
+            <li>
+                <code>ShowAsync</code> waits for the dialog to close and returns what the form saved, so the page only
+                changes when someone presses Save.
+            </li>
+            <li>
+                The dialog holds its own copy of the values, so Cancel leaves the row as it was.
+            </li>
+            <li>
+                <code>AutoFocus</code> puts focus in the first field as the dialog opens, and the dialog returns focus
+                to the button that opened it.
+            </li>
+            <li>
+                Each Edit button's <code>aria-label</code> names its trail, so a screen reader can tell the buttons
+                apart.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="components/dialog">Dialog</a>: titles, sizes and dismissing.
+            </li>
+            <li>
+                <a href="guides/forms">Forms and validation</a>: the form inside the dialog.
+            </li>
+            <li>
+                <a href="components/toast">Toast</a>: the message after a save.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string RecipeEditExampleSource = ExampleSource.Of(typeof(RecipeEditExample)).Text;
+    private static readonly string RecipeEditDialogSource = ExampleSource.Of(typeof(RecipeEditDialog)).Text;
+}

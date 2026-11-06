@@ -1,0 +1,18 @@
+<TbForm OnValidSubmit="Save" OnInvalidSubmit="() => _saved = null" aria-label="Trail name"
+        Style="max-inline-size: 24rem">
+    <AppTextField @ref="_name" Label="Trail name" @bind-Value="_trail" Required RequiredMessage="Enter a trail name."
+                  HelperText="As it appears on the map." TelemetryName="trail-name" Size="@Size.Large" />
+    <TbStack Row Gap="2">
+        <AppButton Type="ButtonType.Submit" Variant="Variant.Filled" Tone="Tone.Primary">Save</AppButton>
+        <AppButton OnClick="() => _name.FocusAsync().AsTask()" TelemetryName="edit-name">Edit the name</AppButton>
+    </TbStack>
+    <output>@_saved</output>
+</TbForm>
+
+@code {
+    private AppTextField _name = default!;
+    private string? _trail;
+    private string? _saved;
+
+    private void Save() => _saved = $"Saved {_trail}.";
+}

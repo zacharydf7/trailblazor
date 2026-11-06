@@ -5,6 +5,9 @@ public sealed record Guide(string Path, string Title, string Summary)
     /// <summary>The types the guide shows an API table for, so a cross-reference elsewhere can link to
     /// them.</summary>
     public IReadOnlyList<Type> Api { get; init; } = [];
+
+    /// <summary>Whether it's a recipe, which the site lists apart from the guides.</summary>
+    public bool IsRecipe => Path.StartsWith("recipes/", StringComparison.Ordinal);
 }
 
 // The docs site's guides, in the order it lists them.
@@ -13,7 +16,7 @@ public static class GuideCatalog
     public static IReadOnlyList<Guide> All { get; } =
     [
         new("guides/getting-started", "Getting started",
-            "Add Trailblazor to an app, render your first component, and choose a render mode."),
+            "Add Trailblazor to an app, check that it works, and choose a render mode."),
         new("guides/forms", "Forms and validation",
             "Check what people enter, show server errors, list errors in a summary, and word every message well."),
         new("guides/accessibility", "Accessibility",
@@ -42,6 +45,8 @@ public static class GuideCatalog
             "Mirror layouts and arrow keys for right-to-left languages, and show numbers and dates in each culture."),
         new("guides/testing", "Testing",
             "Test pages built with Trailblazor in bUnit and Playwright, and find components the way users do."),
+        new("guides/wrapping", "Wrapping components",
+            "Give a component your app's defaults in a wrapper of your own, and pass everything else through."),
         new("guides/analyzers", "Analyzers",
             "As your app builds, catch an unnamed control or field, an untitled dialog, or a value that snaps back "
                 + "after the user changes it."),
@@ -50,5 +55,15 @@ public static class GuideCatalog
         {
             Api = [typeof(TelemetrySettings), typeof(ITelemetryTags)],
         },
+        new("recipes/filter-and-grid", "A filter bar with a data grid",
+            "Narrow a long list from a server, with fields above a grid that loads a page at a time."),
+        new("recipes/edit-in-dialog", "Edit in a dialog",
+            "Open a form in a dialog from a row, and save what comes back."),
+        new("recipes/confirm-and-delete", "Confirm and delete",
+            "Ask before deleting, offer an undo, and keep focus somewhere useful afterward."),
+        new("recipes/settings-page", "A settings page", "Split a long form into tabs that save together."),
+        new("recipes/master-detail", "Master and detail", "Pick an item from a tree and read about it beside the tree."),
+        new("recipes/sign-up", "A sign-up form",
+            "Collect a few required answers, check them, and confirm what happened."),
     ];
 }

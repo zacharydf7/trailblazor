@@ -1,0 +1,53 @@
+@page "/recipes/sign-up"
+
+<PageTitle>A sign-up form · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="how-it-works" Text="How it works" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">A sign-up form</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Collect a few required answers, check them on submit, and confirm what happened.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <FormExample />
+        </div>
+        <CodeBlock Label="FormExample.razor" Code="@FormExampleSource" />
+
+        <DocsHeading Id="how-it-works" Text="How it works" Class="docs-section" />
+        <ul>
+            <li>
+                Each field says what it needs with <code>Required</code> and a <code>RequiredMessage</code> that tells
+                people how to fix it.
+            </li>
+            <li>
+                The Sign up button stays on, so pressing it shows every message and moves focus to the first.
+            </li>
+            <li>
+                The <code>output</code> element reads out the result, since a screen reader can't see it appear.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="guides/forms">Forms and validation</a>: server errors, summaries and wording.
+            </li>
+            <li>
+                <a href="components/form">Form</a>: each part with its own demo.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string FormExampleSource = ExampleSource.Of(typeof(FormExample)).Text;
+}

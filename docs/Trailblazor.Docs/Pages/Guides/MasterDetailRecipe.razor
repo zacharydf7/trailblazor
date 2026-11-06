@@ -1,0 +1,57 @@
+@page "/recipes/master-detail"
+
+<PageTitle>Master and detail · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="how-it-works" Text="How it works" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Master and detail</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Pick an item from a tree on one side and read about it on the other, as a file manager does.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <RecipeMasterDetailExample />
+        </div>
+        <CodeBlock Label="RecipeMasterDetailExample.razor" Code="@RecipeMasterDetailExampleSource" />
+
+        <DocsHeading Id="how-it-works" Text="How it works" Class="docs-section" />
+        <ul>
+            <li>
+                <code>SelectionFollowsFocus</code> selects each trail the arrow keys reach, so the panel keeps up with
+                the keyboard.
+            </li>
+            <li>
+                <code>IsSelectable</code> leaves regions as headings that open and close.
+            </li>
+            <li>
+                <code>aria-live</code> on the panel reads out the new details, since focus stays in the tree.
+            </li>
+            <li>
+                The two sides wrap onto separate lines on a narrow screen.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="components/tree-view">Tree view</a>: selection, filtering and loading children.
+            </li>
+            <li>
+                <a href="components/surface">Surface</a>: the panel around the details.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string RecipeMasterDetailExampleSource =
+        ExampleSource.Of(typeof(RecipeMasterDetailExample)).Text;
+}

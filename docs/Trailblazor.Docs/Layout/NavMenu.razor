@@ -2,9 +2,16 @@
 
 <h2 class="docs-nav__heading">Guides</h2>
 <ul class="docs-nav__list">
-    @foreach (var guide in GuideCatalog.All)
+    @foreach (var guide in GuideCatalog.All.Where(guide => !guide.IsRecipe))
     {
         <li><NavLink href="@guide.Path" class="docs-nav__link">@guide.Title</NavLink></li>
+    }
+</ul>
+<h2 class="docs-nav__heading">Recipes</h2>
+<ul class="docs-nav__list">
+    @foreach (var recipe in GuideCatalog.All.Where(guide => guide.IsRecipe))
+    {
+        <li><NavLink href="@recipe.Path" class="docs-nav__link">@recipe.Title</NavLink></li>
     }
 </ul>
 @foreach (var category in Enum.GetValues<ExampleCategory>())

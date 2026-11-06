@@ -1,0 +1,55 @@
+@page "/recipes/settings-page"
+
+<PageTitle>A settings page · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="how-it-works" Text="How it works" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">A settings page</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Split a long form into tabs that save together, and show which tab has a problem.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <RecipeSettingsExample />
+        </div>
+        <CodeBlock Label="RecipeSettingsExample.razor" Code="@RecipeSettingsExampleSource" />
+
+        <DocsHeading Id="how-it-works" Text="How it works" Class="docs-section" />
+        <ul>
+            <li>
+                <code>RenderAllPanels</code> keeps every panel in the page, so saving checks the fields on tabs nobody
+                opened.
+            </li>
+            <li>
+                A failed save moves focus to the first field with an error, but a field on a hidden tab can't take focus and the
+                form doesn't switch tabs, so the tab's name says which one needs attention.
+            </li>
+            <li>
+                One form around the tabs means one Save button, which stays on, as <a
+                href="guides/forms#leave-the-submit-button-on">the forms guide</a> recommends.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="components/tabs">Tabs</a>: panels, and forms across tabs.
+            </li>
+            <li>
+                <a href="guides/forms">Forms and validation</a>: messages and when they show.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string RecipeSettingsExampleSource = ExampleSource.Of(typeof(RecipeSettingsExample)).Text;
+}

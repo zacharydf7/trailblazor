@@ -1,0 +1,35 @@
+@inject IToastService Toasts
+
+<TbForm OnValidSubmit="Save" OnInvalidSubmit="() => _checked = true" aria-label="Settings"
+        Style="max-inline-size: 28rem">
+    <TbTabs AriaLabel="Settings sections" RenderAllPanels>
+        <TbTab Text="@(_checked && string.IsNullOrWhiteSpace(_name) ? "Profile, needs attention" : "Profile")">
+            <TbTextField Label="Display name" @bind-Value="_name" Required RequiredMessage="Enter a display name." />
+        </TbTab>
+        <TbTab Text="Notifications">
+            <TbStack Gap="3">
+                <TbSwitch Label="Email me about closures" @bind-Value="_closures" />
+                <TbSelect Label="Summary" @bind-Value="_summary">
+                    <TbOption Value="@("Daily")">Daily</TbOption>
+                    <TbOption Value="@("Weekly")">Weekly</TbOption>
+                </TbSelect>
+            </TbStack>
+        </TbTab>
+    </TbTabs>
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit">Save settings</TbButton>
+    </TbStack>
+</TbForm>
+
+@code {
+    private string? _name;
+    private bool _closures = true;
+    private string? _summary = "Weekly";
+    private bool _checked;
+
+    private void Save()
+    {
+        _checked = false;
+        Toasts.Show("Settings saved.", Tone.Success);
+    }
+}

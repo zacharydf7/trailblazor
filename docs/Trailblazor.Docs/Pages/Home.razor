@@ -150,11 +150,23 @@
         <div class="docs-group">
             <TbText TextStyle="TextStyle.Title" As="TextElement.H3" class="docs-group__title">Guides</TbText>
             <ul class="docs-cards">
-                @foreach (var guide in GuideCatalog.All)
+                @foreach (var guide in GuideCatalog.All.Where(guide => !guide.IsRecipe))
                 {
                     <li class="docs-card">
                         <a href="@guide.Path" class="docs-card__title">@guide.Title</a>
                         <TbText TextStyle="TextStyle.BodySmall" Muted>@guide.Summary</TbText>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="docs-group">
+            <TbText TextStyle="TextStyle.Title" As="TextElement.H3" class="docs-group__title">Recipes</TbText>
+            <ul class="docs-cards">
+                @foreach (var recipe in GuideCatalog.All.Where(guide => guide.IsRecipe))
+                {
+                    <li class="docs-card">
+                        <a href="@recipe.Path" class="docs-card__title">@recipe.Title</a>
+                        <TbText TextStyle="TextStyle.BodySmall" Muted>@recipe.Summary</TbText>
                     </li>
                 }
             </ul>

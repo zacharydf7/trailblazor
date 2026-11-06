@@ -74,6 +74,12 @@ public static class DocsMarkdown
             index.Append($"- [{page.Title}]({Site}{page.Path}.md): {page.Summary}\n");
         }
 
+        index.Append("\n## Recipes\n\n");
+        foreach (var page in pages.Where(page => page.Path.StartsWith("recipes/", StringComparison.Ordinal)))
+        {
+            index.Append($"- [{page.Title}]({Site}{page.Path}.md): {page.Summary}\n");
+        }
+
         index.Append("\n## Components\n\n");
         foreach (var page in pages.Where(page => page.Path.StartsWith("components/", StringComparison.Ordinal)))
         {

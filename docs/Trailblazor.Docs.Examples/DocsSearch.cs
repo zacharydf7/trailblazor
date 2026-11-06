@@ -22,7 +22,7 @@ public static class DocsSearch
     private static readonly Lazy<IReadOnlyList<Passage>> Passages = new(BuildPassages);
 
     // Every word must appear in the same passage, or in the title of its page, as in "slider step", and at least one
-    // in the passage. Results come best match first, then in the order the site lists pages.
+    // in the passage. Results come best match first, then guides, components and recipes, in that order.
     public static IReadOnlyList<SearchResult> Find(string? query)
     {
         var words = (query ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -72,16 +72,17 @@ public static class DocsSearch
     // component's page shares, so it's left out.
     private static IReadOnlyList<Passage> BuildPassages() =>
     [
-        .. GuideCatalog.All.SelectMany(GuidePassages),
+        .. GuideCatalog.All.Where(guide => !guide.IsRecipe).SelectMany(GuidePassages),
         .. ExampleCatalog.All.SelectMany(ComponentPassages)
             .Where(passage => passage.Kind == SearchMatch.Title || passage.Text.Length > 0),
+        .. GuideCatalog.All.Where(guide => guide.IsRecipe).SelectMany(GuidePassages),
     ];
 
     private static IEnumerable<Passage> GuidePassages(Guide guide)
     {
         var text = GuideText.Of(guide);
         var page = new Page(guide.Title, guide.Path);
-        yield return page.Passage(null, guide.Path, $"{guide.Title} Guides", $"{guide.Summary} {text.Intro}",
+        yield return page.Passage(null, guide.Path, $"{guide.Title} {(guide.IsRecipe ? "Recipes" : "Guides")}", $"{guide.Summary} {text.Intro}",
             SearchMatch.Title);
         foreach (var section in text.Sections)
         {

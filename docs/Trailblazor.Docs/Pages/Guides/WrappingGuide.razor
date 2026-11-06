@@ -1,0 +1,159 @@
+@page "/guides/wrapping"
+
+<PageTitle>Wrapping components · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="a-text-field" Text="A text field" />
+        <TbTableOfContentsItem TargetId="a-button" Text="A button" />
+        <TbTableOfContentsItem TargetId="what-to-pass-through" Text="What to pass through" />
+        <TbTableOfContentsItem TargetId="testing" Text="Testing" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Wrapping components</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Wrap a component in your own to give it your app's defaults, in one place. A good wrapper stays small, and
+            whoever uses it can still do everything the component does.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <AppComponentsExample />
+        </div>
+        <CodeBlock Label="AppComponentsExample.razor" Code="@Example" />
+        <TbText>
+            The page sets <code>Required</code>, <code>HelperText</code>, <code>TelemetryName</code> and
+            <code>Size</code> on <code>AppTextField</code>, which doesn't declare any of them. They pass straight
+            through
+            to the text field.
+        </TbText>
+
+        <DocsHeading Id="a-text-field" Text="A text field" Class="docs-section" />
+        <CodeBlock Label="AppTextField.razor" Code="@TextField" />
+        <ul>
+            <li>
+                <strong>Keep the label required.</strong> <code>EditorRequired</code> on <code>Label</code> makes Razor
+                warn
+                wherever it's left out, since the library's analyzer can't see inside your wrapper.
+            </li>
+            <li>
+                <strong>Pass the binding through.</strong> <code>Value</code>, <code>ValueChanged</code> and
+                <code>ValueExpression</code> are what <code>@@bind-Value</code> sets. The expression ties the field to
+                its
+                validation messages and names its input for a static form post, so don't leave it out.
+            </li>
+            <li>
+                <strong>Pass everything else through.</strong> <code>CaptureUnmatchedValues</code> collects whatever you didn't declare, and <code>@@attributes</code> hands it
+                to the field. Blazor sets each matching parameter by name, and the rest go on the field's outer element.
+            </li>
+            <li>
+                <strong>Put your defaults first.</strong> Attributes apply in order, so anything set before
+                <code>@@attributes</code> is a default the page can override, and anything after it can't be changed.
+            </li>
+            <li>
+                <strong>Forward <code>FocusAsync</code>.</strong> A <code>@@ref</code> reaches your wrapper rather than
+                the
+                field, so a form that moves focus to a field needs a method that passes the call on.
+            </li>
+        </ul>
+        <DocsCallout Tone="Tone.Warning" Title="Undeclared values are text">
+            Razor can't tell the type of a parameter your wrapper doesn't declare, so it passes what you write as text.
+            <code>Size="Size.Large"</code> sends the words "Size.Large" and throws as the page renders. Write
+            <code>Size="@@Size.Large"</code> or <code>Disabled="@@_busy"</code> instead. Only text values and a bare
+            <code>Required</code> can skip the <code>@@</code>.
+        </DocsCallout>
+
+        <DocsHeading Id="a-button" Text="A button" Class="docs-section" />
+        <CodeBlock Label="AppButton.razor" Code="@Button" />
+        <TbText>
+            A button has no label to require. <code>AppButton</code> declares the parameters pages set most, so they can
+            write <code>Variant="Variant.Filled"</code> as usual and its defaults are easy to see. It also declares
+            <code>OnClick</code>, because an event can't pass through <code>@@attributes</code>. An icon-only wrapper
+            around <code>TbIconButton</code> should make <code>AriaLabel</code> <code>EditorRequired</code>, as the
+            field
+            does with <code>Label</code>.
+        </TbText>
+
+        <DocsHeading Id="what-to-pass-through" Text="What to pass through" Class="docs-section" />
+        <div class="docs-api" tabindex="0" role="region" aria-label="What a wrapper passes through">
+            <table>
+                <thead>
+                    <tr><th scope="col">What</th><th scope="col">How</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Text parameters, such as <code>HelperText</code></th>
+                        <td><code>@@attributes</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Other parameters, such as <code>Disabled</code> or <code>Size</code></th>
+                        <td><code>@@attributes</code>, with an <code>@@</code> on the value, or declare them</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Events, such as <code>OnClick</code></th>
+                        <td>Declare them as <code>EventCallback</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">HTML attributes for the outer element, such as <code>class</code></th>
+                        <td><code>@@attributes</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">HTML attributes for a field's input, such as <code>autocomplete</code></th>
+                        <td><code>InputAttributes</code>, which is a parameter like any other</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>TelemetryName</code></th>
+                        <td><code>@@attributes</code>, so each use is counted under its own name</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Binding</th>
+                        <td>Declare <code>Value</code>, <code>ValueChanged</code> and <code>ValueExpression</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Content, such as <code>ChildContent</code></th>
+                        <td>Declare it, because a fragment needs its own parameter</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Methods, such as <code>FocusAsync</code></th>
+                        <td>Take a <code>@@ref</code> and declare a method that calls it</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
+        <TbText>
+            A wrapper renders the same markup as the component inside it, so tests find it by its label and role, and the
+            <a href="guides/testing">testing helpers</a> for that component work without any change. A wrapped
+            select is still <code>cut.Tb().Select("Size")</code>.
+        </TbText>
+        <CodeBlock Label="Finding a wrapped field" Code="@Finding" />
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="guides/forms">Forms and validation</a>: how the fields you wrap check what people enter.</li>
+            <li><a href="guides/testing">Testing</a>: setting up bUnit and Playwright.</li>
+            <li><a href="guides/analyzers">Analyzers</a>: what the build checks, and what it can't see.</li>
+            <li><a href="guides/telemetry">Telemetry</a>: what <code>TelemetryName</code> counts.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string Example = ExampleSource.Of(typeof(AppComponentsExample)).Text;
+    private static readonly string TextField = ExampleSource.Of(typeof(AppTextField)).Text;
+    private static readonly string Button = ExampleSource.Of(typeof(AppButton)).Text;
+
+    private const string Finding = """
+        // bUnit, with the library's helper for the wrapped select
+        await cut.Tb().Select("Size").ChooseAsync("Large");
+
+        // Playwright
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Trail name" }).FillAsync("Ridge loop");
+        await page.Tb().Select("Size").ChooseAsync("Large");
+        """;
+}

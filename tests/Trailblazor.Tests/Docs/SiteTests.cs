@@ -24,7 +24,7 @@ public class SiteTests : DocsTest
     {
         var cut = Render<NavMenu>();
 
-        Assert.Equal(["Guides", .. Enum.GetNames<ExampleCategory>()], Texts(cut.FindAll("h2")));
+        Assert.Equal(["Guides", "Recipes", .. Enum.GetNames<ExampleCategory>()], Texts(cut.FindAll("h2")));
         Assert.Equal(Links, Texts(cut.FindAll("a")));
         Assert.Equal(Paths, cut.FindAll("a").Select(link => link.GetAttribute("href")));
     }

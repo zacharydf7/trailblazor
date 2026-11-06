@@ -57,16 +57,16 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     public static TheoryData<string, string, string> PagesInBothThemes => new(
         from browser in AllBrowsers.Names
-        from path in new[]
+        from path in GuideCatalog.All.Where(guide => guide.IsRecipe).Select(guide => guide.Path).Concat(new[]
         {
             "", "components/dialog", "components/form", "components/select", "components/tree-view",
             "components/data-grid/api", "preview/tree-view/many-rows", "guides/getting-started", "guides/forms",
-            "guides/accessibility", "guides/theming", "guides/palettes",
+            "guides/accessibility", "guides/wrapping", "guides/theming", "guides/palettes",
             "guides/spacing", "guides/browser", "guides/testing",
             "guides/announcements", "guides/icons", "guides/localization", "guides/right-to-left", "guides/telemetry",
             "guides/analyzers",
             "search?q=dialog",
-        }
+        })
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));
 
@@ -286,12 +286,37 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(body.Width, code.Width, 1);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DeleteRecipe_ShouldMoveFocusToTheList_WhenADeleteIsConfirmed(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "recipes/confirm-and-delete");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Delete Cedar Flats" }).ClickAsync();
+        await page.GetByRole(AriaRole.Alertdialog).GetByRole(AriaRole.Button, new() { Name = "Delete" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Saved trails" })).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Delete Cedar Flats" })).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GettingStarted_ShouldOpenADialogAndThenAToast_WhenTheSetupIsChecked(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "guides/getting-started");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Check the setup" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Alertdialog, new() { Name = "Is this dialog showing?" });
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Yes" }).ClickAsync();
+
+        await Expect(dialog).ToBeHiddenAsync();
+        await page.Tb().Toasts.WaitForAsync("Trailblazor is set up.");
+    }
+
     // CodeBlockTests covers the spans; this checks only that the stylesheet colors them.
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CodeBlock_ShouldColorTokensApartFromPlainText_WhenItShowsRazor(string browser)
     {
         var page = await OpenDocsAsync(browser, "guides/getting-started");
-        var code = page.GetByRole(AriaRole.Region, new() { Name = "A first component" });
+        var code = page.GetByRole(AriaRole.Region, new() { Name = "Check your setup" });
 
         var colors = await code.EvaluateAsync<string[]>("""
             pre => ['tag', 'attribute', 'string', 'keyword'].map(kind => getComputedStyle(

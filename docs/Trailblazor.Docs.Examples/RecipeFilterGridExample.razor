@@ -1,0 +1,63 @@
+<TbStack Gap="3">
+    <TbStack Row Gap="3" Wrap>
+        <TbTextField Label="Find a trail" Type="TextFieldType.Search" @bind-Value="_search"
+                     @bind-Value:after="ShowFirstPageAsync" UpdateOnInput UpdateDelay="TimeSpan.FromMilliseconds(300)"
+                     Clearable />
+        <TbSelect Label="Difficulty" @bind-Value="_difficulty" @bind-Value:after="ShowFirstPageAsync" Placeholder="Any"
+                  Clearable>
+            <TbOption Value="@("Easy")">Easy</TbOption>
+            <TbOption Value="@("Hard")">Hard</TbOption>
+        </TbSelect>
+    </TbStack>
+    <TbDataGrid @ref="_grid" TItem="Hike" DataProvider="LoadHikesAsync" AriaLabel="Hikes"
+                KeySelector="hike => hike.Id" @bind-Page="_page" PageSize="4" Size="Size.Small">
+        <TbColumn Field="hike => hike.Trail" Sortable />
+        <TbColumn Field="hike => hike.Difficulty" />
+        <TbColumn Field="hike => hike.Kilometers" Sortable />
+    </TbDataGrid>
+</TbStack>
+
+@code {
+    private static readonly Hike[] Hikes =
+    [
+        new(1, "Pine Hollow loop", "Easy", 6), new(2, "Eagle Ridge traverse", "Hard", 18),
+        new(3, "Cedar Flats", "Easy", 4), new(4, "Fern Gully", "Easy", 7), new(5, "Waterfall spur", "Hard", 11),
+        new(6, "Summit Gate", "Hard", 21), new(7, "Lake camp", "Easy", 9),
+    ];
+
+    private TbDataGrid<Hike> _grid = default!;
+    private string? _search;
+    private string? _difficulty;
+    private int _page = 1;
+
+    // The grid loads a new page when this component renders again, so only staying on page 1 needs a refresh.
+    private async Task ShowFirstPageAsync()
+    {
+        if (_page != 1)
+        {
+            _page = 1;
+            return;
+        }
+
+        await _grid.RefreshAsync();
+    }
+
+    // Stands in for a server, which filters, sorts, counts and pages the hikes.
+    private async Task<GridResult<Hike>> LoadHikesAsync(GridRequest request, CancellationToken cancel)
+    {
+        await Task.Delay(100, cancel);
+        var hikes = Hikes.Where(hike => string.IsNullOrWhiteSpace(_search)
+                || hike.Trail.Contains(_search, StringComparison.OrdinalIgnoreCase))
+            .Where(hike => _difficulty is null || hike.Difficulty == _difficulty);
+        foreach (var sort in request.Sorts.Reverse())
+        {
+            Func<Hike, object> key = sort.Column == "Kilometers" ? hike => hike.Kilometers : hike => hike.Trail;
+            hikes = sort.Direction == SortDirection.Ascending ? hikes.OrderBy(key) : hikes.OrderByDescending(key);
+        }
+
+        var matches = hikes.ToList();
+        return new([.. matches.Skip(request.StartIndex).Take(request.Count ?? matches.Count)], matches.Count);
+    }
+
+    private sealed record Hike(int Id, string Trail, string Difficulty, int Kilometers);
+}

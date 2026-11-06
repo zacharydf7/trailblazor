@@ -1,0 +1,26 @@
+@inherits TbDialogContent<(string Name, int Kilometers)>
+
+<TbForm OnValidSubmit="SaveAsync" aria-label="Trail details">
+    <TbTextField Label="Name" @bind-Value="_name" Required RequiredMessage="Enter the trail's name." AutoFocus />
+    <TbNumberField Label="Kilometers" @bind-Value="_kilometers" Min="1" Required
+                   RequiredMessage="Enter how long the trail is." />
+    <TbDialogActions>
+        <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelDialogAsync">Cancel</TbButton>
+        <TbButton Type="ButtonType.Submit">Save</TbButton>
+    </TbDialogActions>
+</TbForm>
+
+@code {
+    private string? _name;
+    private int? _kilometers;
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public int Kilometers { get; set; }
+
+    protected override void OnInitialized() => (_name, _kilometers) = (Name, Kilometers);
+
+    private Task SaveAsync() => CloseDialogAsync((_name!, _kilometers!.Value));
+}

@@ -1,4 +1,6 @@
 @page "/guides/getting-started"
+@inject IDialogService Dialogs
+@inject IToastService Toasts
 
 <PageTitle>Getting started · Trailblazor</PageTitle>
 
@@ -8,17 +10,20 @@
         <TbTableOfContentsItem TargetId="host" Text="Host dialogs and toasts" />
         <TbTableOfContentsItem TargetId="render-modes" Text="Render modes" />
         <TbTableOfContentsItem TargetId="options" Text="App-wide options" />
-        <TbTableOfContentsItem TargetId="related" Text="Related" />
+        <TbTableOfContentsItem TargetId="next-steps" Text="Next steps" />
     </Contents>
     <Header>
         <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Getting started</TbText>
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-            Add Trailblazor to a Blazor app for .NET 10, render your first component, and choose a render mode.
+            Add Trailblazor to a Blazor app for .NET 10, check that it works, and choose a render mode.
         </TbText>
     </Header>
     <ChildContent>
         <DocsHeading Id="set-up" Text="Set up an app" Class="docs-section" />
-        <TbText>Six steps add Trailblazor to an app and render its first component.</TbText>
+        <TbText>
+            Start from a Blazor app with interactive server rendering, as <code>dotnet new blazor --interactivity
+            Server</code> creates. Six steps add Trailblazor to it and check that it works.
+        </TbText>
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">1. Add the library</TbText>
         <TbText>
@@ -37,14 +42,19 @@
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">3. Import the namespace</TbText>
         <CodeBlock Label="_Imports.razor" Code="@Imports" />
 
-        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">4. Link the stylesheet</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">4. Set up App.razor</TbText>
         <TbText>
-            Put <code>&lt;TbStyles /&gt;</code> in the <code>&lt;head&gt;</code> of App.razor, outside the
-            <code>HeadOutlet</code>. It renders once with the page, so the styles never drop out when the page becomes
-            interactive.
+            Put <code>&lt;TbStyles /&gt;</code> and <code>&lt;TbThemeHead /&gt;</code> in the <code>&lt;head&gt;</code>,
+            outside the <code>HeadOutlet</code>. <code>TbStyles</code> renders once with the page, so the styles never
+            drop out when the page becomes interactive. <code>TbThemeHead</code> starts the page in the user's theme
+            before it paints, so a dark page never flashes light. Here is the whole file for an app that is interactive
+            throughout:
         </TbText>
-        <CodeBlock Label="App.razor" Code="@Head" />
-        <TbText>A standalone WebAssembly app links the file in its index.html instead.</TbText>
+        <CodeBlock Label="App.razor" Code="@App" />
+        <TbText>
+            A standalone WebAssembly app links the stylesheet in its index.html instead, and copies the theme script as
+            <a href="guides/theming#light-and-dark">the theming guide</a> shows.
+        </TbText>
         <CodeBlock Label="index.html, standalone WebAssembly" Code="@IndexHead" />
         <DocsCallout Tone="Tone.Warning" Title="Another library's CSS">
             A reset in another library's stylesheet can strip the components' spacing. See
@@ -59,8 +69,34 @@
         </TbText>
         <CodeBlock Label="MainLayout.razor" Code="@Layout" />
 
-        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">6. Use a component</TbText>
-        <CodeBlock Label="A first component" Code="@FirstComponent" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">6. Check your setup</TbText>
+        <TbText>
+            A plain button works without most of the setup, so check with something that needs more of it: a button that
+            opens a dialog and then a toast. Try it here, then put the code below on a page of your own.
+        </TbText>
+        <div class="docs-example">
+            <TbButton OnClick="CheckAsync">Check the setup</TbButton>
+        </div>
+        <CodeBlock Label="Check your setup" Code="@Check" />
+        <TbText>If it doesn't work, the symptom says what is missing:</TbText>
+        <ul>
+            <li>
+                <strong>Nothing happens when you click.</strong> The page isn't interactive, so give it a render mode,
+                as
+                in step 4.
+            </li>
+            <li>
+                <strong>A warning is logged, and no dialog shows.</strong> No <code>TbRoot</code> hosts it in this
+                page's
+                session, as <a href="guides/getting-started#host">Host dialogs and toasts</a> explains.
+            </li>
+            <li><strong>The button or dialog has no styling.</strong> <code>TbStyles</code> is missing from the
+            head.</li>
+            <li>
+                <strong>The page ignores the device's dark setting and forgets a chosen theme on reload.</strong>
+                <code>TbThemeHead</code> is missing from the head.
+            </li>
+        </ul>
 
         <DocsHeading Id="host" Text="Host dialogs and toasts" Class="docs-section" />
         <TbText>
@@ -69,10 +105,9 @@
         </TbText>
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">When the whole app is interactive</TbText>
         <TbText>
-            With the same render mode on <code>Routes</code> and <code>HeadOutlet</code>, the layout is interactive
-            too, so <code>TbRoot</code> already shares each page's session.
+            With the same render mode on <code>Routes</code> and <code>HeadOutlet</code>, as in step 4, the layout is
+            interactive too, so <code>TbRoot</code> already shares each page's session.
         </TbText>
-        <CodeBlock Label="App.razor" Code="@App" />
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">When interactivity is set page by page</TbText>
         <TbText>
             Here, as in the default Blazor template, the layout renders statically. Give <code>TbRoot</code> the render
@@ -113,23 +148,34 @@
         </TbText>
         <CodeBlock Label="App-wide options" Code="@Options" />
 
-        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <DocsHeading Id="next-steps" Text="Next steps" Class="docs-section" />
         <ul>
             <li>
                 <a href="guides/forms">Forms and validation</a>: check what people enter and show them what to fix.
             </li>
             <li><a href="guides/theming">Theming</a>: light and dark, palettes, density and design tokens.</li>
             <li><a href="guides/testing">Testing</a>: bUnit and Playwright helpers for your pages.</li>
-            <li><a href="guides/analyzers">Analyzers</a>: warnings that catch unnamed controls as you build.</li>
             <li>
-                <a href="components/button">Button</a>, the first component above, and every other component's page.
+                <a href="guides/accessibility">Accessibility</a>: what components do, and what your app must still do.
             </li>
+            <li><a href="guides/analyzers">Analyzers</a>: warnings that catch unnamed controls as you build.</li>
+            <li><a href="guides/wrapping">Wrapping components</a>: give a component your app's defaults in one place.</li>
+            <li><a href="recipes/sign-up">Recipes</a>: components combined for common tasks, starting with a sign-up form.</li>
+            <li><a href="components/button">Button</a>, and every other component's page.</li>
         </ul>
         <GuideFooter Page="GetType()" />
     </ChildContent>
 </DocsArticle>
 
 @code {
+    private async Task CheckAsync()
+    {
+        if (await Dialogs.ConfirmAsync("Is this dialog showing?", "Then TbRoot is hosting it.", "Yes", "No"))
+        {
+            Toasts.Show("Trailblazor is set up.", Tone.Success);
+        }
+    }
+
     private const string ProjectReference = """
         <ItemGroup>
           <ProjectReference Include="..\trailblazor\src\Trailblazor\Trailblazor.csproj" />
@@ -141,23 +187,24 @@
         """;
 
     private const string App = """
+        <!DOCTYPE html>
+        <html lang="en">
+
         <head>
-            ...
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <base href="/" />
             <TbStyles />
+            <TbThemeHead />
             <HeadOutlet @rendermode="InteractiveServer" />
         </head>
+
         <body>
             <Routes @rendermode="InteractiveServer" />
             <script src="_framework/blazor.web.js"></script>
         </body>
-        """;
 
-    private const string Head = """
-        <head>
-            ...
-            <TbStyles />
-            <HeadOutlet />
-        </head>
+        </html>
         """;
 
     private const string IndexHead = """
@@ -188,11 +235,20 @@
         </main>
         """;
 
-    private const string FirstComponent = """
-        <TbButton OnClick="SaveAsync">Save</TbButton>
+    private const string Check = """
+        @inject IDialogService Dialogs
+        @inject IToastService Toasts
+
+        <TbButton OnClick="CheckAsync">Check the setup</TbButton>
 
         @code {
-            private Task SaveAsync() => Task.CompletedTask;
+            private async Task CheckAsync()
+            {
+                if (await Dialogs.ConfirmAsync("Is this dialog showing?", "Then TbRoot is hosting it.", "Yes", "No"))
+                {
+                    Toasts.Show("Trailblazor is set up.", Tone.Success);
+                }
+            }
         }
         """;
 

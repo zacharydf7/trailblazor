@@ -1,0 +1,43 @@
+@inject IDialogService Dialogs
+@inject IToastService Toasts
+
+<div @ref="_list" tabindex="-1" role="group" aria-label="Saved trails">
+    <TbList aria-label="Trails to delete" Dividers>
+        @foreach (var trail in _trails.Where(trail => !_deleted.Contains(trail)))
+        {
+            <TbListItem @key="trail">
+                <ChildContent>@trail</ChildContent>
+                <End>
+                    <TbButton Variant="Variant.Text" Tone="Tone.Danger" Size="Size.Small"
+                              aria-label="@($"Delete {trail}")" OnClick="() => DeleteAsync(trail)">Delete</TbButton>
+                </End>
+            </TbListItem>
+        }
+    </TbList>
+</div>
+
+@code {
+    private readonly string[] _trails = ["Pine Hollow loop", "Cedar Flats", "Fern Gully"];
+    private readonly HashSet<string> _deleted = [];
+    private ElementReference _list;
+
+    private async Task DeleteAsync(string trail)
+    {
+        var deleted = await Dialogs.ConfirmAsync($"Delete {trail}?", "Its trip reports go with it.", "Delete",
+            "Keep it", Tone.Danger);
+        if (!deleted)
+        {
+            return;
+        }
+
+        _deleted.Add(trail);
+        Toasts.Show($"Deleted {trail}.", options: new()
+        {
+            Action = new("Undo", EventCallback.Factory.Create(this, () => _deleted.Remove(trail))),
+        });
+
+        // The row's button is about to go away with focus on it, so focus needs somewhere to land.
+        StateHasChanged();
+        await _list.FocusAsync();
+    }
+}

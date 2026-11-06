@@ -82,6 +82,21 @@ public class GuideTests : DocsTest
     }
 
     [Fact]
+    public void GettingStarted_ShouldShowACompleteAppWithTheThemeHeadAndNextSteps_WhenOpened()
+    {
+        var cut = PageAt("guides/getting-started");
+
+        var app = cut.Find("[role=region][aria-label='App.razor']").TextContent;
+
+        Assert.Contains("<!DOCTYPE html>", app);
+        Assert.Contains("<TbThemeHead />", app);
+        Assert.Contains("<Routes @rendermode=", app);
+        var next = cut.Find("#next-steps").ParentElement!.ParentElement!.QuerySelectorAll("a");
+        Assert.Superset(new HashSet<string?> { "guides/theming", "guides/forms", "guides/testing", "guides/accessibility" },
+            next.Select(link => link.GetAttribute("href")).ToHashSet());
+    }
+
+    [Fact]
     public void AnalyzersGuide_ShouldListEveryRuleTheAnalyzerReleases_WhenOpened()
     {
         var releases = Path.Combine(Repository.Root, "src", "Trailblazor.Analyzers");

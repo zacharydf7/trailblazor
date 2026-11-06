@@ -1,0 +1,58 @@
+@page "/recipes/confirm-and-delete"
+
+<PageTitle>Confirm and delete · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="how-it-works" Text="How it works" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Confirm and delete</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Ask before deleting something that matters, offer an undo, and keep focus somewhere useful afterward.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <div class="docs-example">
+            <RecipeDeleteExample />
+        </div>
+        <CodeBlock Label="RecipeDeleteExample.razor" Code="@RecipeDeleteExampleSource" />
+
+        <DocsHeading Id="how-it-works" Text="How it works" Class="docs-section" />
+        <ul>
+            <li>
+                <code>ConfirmAsync</code> asks first, and its danger tone marks the button that deletes.
+            </li>
+            <li>
+                The toast's <code>Action</code> offers Undo. A deleted trail keeps its place in the list and is only hidden, so Undo puts it back where it was, even when several are undone
+                out of order. F8 reaches an open toast from the keyboard.
+            </li>
+            <li>
+                The dialog returns focus to the button that opened it, and that button then goes away with its row, so focus would
+                fall back to the top of the page. The example moves it to the list instead, which is why the list's wrapper has
+                <code>tabindex="-1"</code>.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="components/dialog">Dialog</a>: confirmations and alerts.
+            </li>
+            <li>
+                <a href="components/toast">Toast</a>: actions and how long a toast stays.
+            </li>
+            <li>
+                <a href="guides/accessibility">Accessibility</a>: what your app must do with focus.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string RecipeDeleteExampleSource = ExampleSource.Of(typeof(RecipeDeleteExample)).Text;
+}
