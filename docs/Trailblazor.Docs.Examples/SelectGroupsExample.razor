@@ -1,0 +1,14 @@
+<TbMultiSelect Label="Trails to hike" @bind-Value="_trails" Placeholder="Pick some trails">
+    <TbOptionGroup Label="North ridge">
+        <TbOption Value="@("Pine Hollow")">Pine Hollow</TbOption>
+        <TbOption Value="@("Eagle Ridge")">Eagle Ridge</TbOption>
+    </TbOptionGroup>
+    <TbOptionGroup Label="River valley">
+        <TbOption Value="@("Cedar Flats")">Cedar Flats</TbOption>
+        <TbOption Value="@("Fern Gully")">Fern Gully</TbOption>
+    </TbOptionGroup>
+</TbMultiSelect>
+
+@code {
+    private IReadOnlyList<string> _trails = ["Pine Hollow", "Fern Gully"];
+}

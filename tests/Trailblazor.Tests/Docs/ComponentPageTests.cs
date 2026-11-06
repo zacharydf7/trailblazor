@@ -243,8 +243,6 @@ public class ComponentPageTests : DocsTest
                 "#keyboard, #labeling, #announcements, #what-it-does, #app-duties, #before-interactive")));
         Assert.Equal(ExampleCatalog.Find("select")!.Pattern!.Url,
             cut.FindAll("a").Single(link => link.TextContent == "combobox pattern").GetAttribute("href"));
-        Assert.Equal("components/text-field", cut.FindAll("ul[aria-label='Notes and limitations'] a")
-            .Single(link => link.TextContent == "text field").GetAttribute("href"));
         Assert.Single(cut.FindAll("[role=note]"));
     }
 

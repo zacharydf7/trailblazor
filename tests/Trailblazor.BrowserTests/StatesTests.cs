@@ -101,7 +101,8 @@ public class StatesTests(BrowserFixture fixture) : BrowserTest(fixture)
         var notify = page.GetByRole(AriaRole.Combobox, new() { Name = "Notify me about" });
         await Expect(notify).ToHaveAttributeAsync("data-ready", "");
         await notify.ClickAsync();
-        var selectAll = page.Locator("[data-part=select-all]");
+        var selectAll = page.GetByRole(AriaRole.Listbox, new() { Name = "Notify me about" })
+            .Locator("[data-part=select-all]");
         await selectAll.ClickAsync();
         await Expect(selectAll).ToHaveAttributeAsync("aria-selected", "true");
         looks.Add(await LookAsync(selectAll.Locator(".tb-select__box")));

@@ -1,0 +1,50 @@
+<TbStack Gap="2">
+    <TbCheckbox Label="Make the next load fail" @bind-Value="_failNext" />
+    <TbSelect Label="Guide" @bind-Value="_guide" OpenChanged="LoadWhenOpenedAsync" UnmatchedText="GuideName"
+              Error="@_loadError">
+        @if (_loading)
+        {
+            <TbOption Value="0" Disabled>Loading guides...</TbOption>
+        }
+        @foreach (var guide in _guides)
+        {
+            <TbOption Value="guide.Key">@guide.Value</TbOption>
+        }
+    </TbSelect>
+</TbStack>
+
+@code {
+    private static readonly Dictionary<int, string> AllGuides = new() { [7] = "Ada", [12] = "Grace", [31] = "Katherine" };
+
+    private Dictionary<int, string> _guides = [];
+    private int _guide = 12;
+    private bool _loading;
+    private bool _failNext;
+    private string? _loadError;
+
+    // The chosen value's name, from a lookup of its own, until the options have arrived.
+    private static string GuideName(int key) => AllGuides[key];
+
+    // Stands in for asking a server the first time the list opens.
+    private async Task LoadWhenOpenedAsync(bool open)
+    {
+        if (!open || (_guides.Count > 0 && !_failNext))
+        {
+            return;
+        }
+
+        _loading = true;
+        _loadError = null;
+        await Task.Delay(300);
+        _loading = false;
+        if (_failNext)
+        {
+            _failNext = false;
+            _guides = [];
+            _loadError = "The guides didn't load. Open the list to try again.";
+            return;
+        }
+
+        _guides = AllGuides;
+    }
+}

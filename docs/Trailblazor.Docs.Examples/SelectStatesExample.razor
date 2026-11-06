@@ -1,0 +1,14 @@
+<TbStack Gap="4">
+    <TbSelect Label="Region" @bind-Value="_region" ReadOnly HelperText="Set by your account.">
+        <TbOption Value="@("North")">North</TbOption>
+        <TbOption Value="@("South")">South</TbOption>
+    </TbSelect>
+    <TbSelect Label="Country" @bind-Value="_country" Disabled HelperText="Tab skips this one.">
+        <TbOption Value="@("Canada")">Canada</TbOption>
+    </TbSelect>
+</TbStack>
+
+@code {
+    private string? _region = "North";
+    private string? _country = "Canada";
+}

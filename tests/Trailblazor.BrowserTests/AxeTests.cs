@@ -84,6 +84,30 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     // target has an opener, and those listed here, whose target is the control or field the popup opens from.
     private sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
 
+    public static TheoryData<string, string> SelectsInBothThemes => new(
+        from name in new[] { "Notify me about", "Trails to hike", "Route", "Time zone", "Guide", "Permit number", "Huts" }
+        from theme in new[] { "light", "dark" }
+        select (name, theme));
+
+    // The select page's popups differ by feature, so each is checked open, in chromium alone since colors don't differ.
+    [Theory, MemberData(nameof(SelectsInBothThemes))]
+    public async Task Select_ShouldHaveNoAccessibilityViolations_WhenItsPopupIsOpen(string name, string theme)
+    {
+        var page = await OpenAsync("chromium", "/examples/select");
+        await SetThemeAsync(page, theme);
+        var field = page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
+
+        await ClickWhenReadyAsync(field);
+        await Expect(field).ToHaveAttributeAsync("aria-expanded", "true");
+        if (name == "Guide")
+        {
+            // Its options load as it opens, so axe waits for them rather than checking a list that's about to change.
+            await Expect(page.GetByRole(AriaRole.Option, new() { Name = "Katherine" })).ToBeVisibleAsync();
+        }
+
+        AssertNoViolations(await page.RunAxe(WcagAA));
+    }
+
     private static readonly Dictionary<string, Opening> Opened = new()
     {
         ["menu"] = new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync()),

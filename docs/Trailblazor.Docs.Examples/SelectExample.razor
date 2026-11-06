@@ -1,50 +1,15 @@
-<TbStack Gap="4" Style="max-width: 20rem">
-    <TbSelect Label="Shipping" @bind-Value="_shipping" Placeholder="Choose a speed" Clearable
+<TbStack Gap="2">
+    <TbSelect Label="Shipping" @bind-Value="_shipping" Placeholder="Choose a speed"
               HelperText="Express ships the same day.">
         <TbOption Value="Speed.Standard">Standard (3-5 days)</TbOption>
         <TbOption Value="Speed.Express">Express (1 day)</TbOption>
         <TbOption Value="Speed.Overnight" Disabled>Overnight</TbOption>
     </TbSelect>
-    <TbMultiSelect Label="Notify me about" @bind-Value="_topics" Placeholder="Nothing yet" Clearable SelectAll>
-        <TbOption Value="@("Orders")">Orders</TbOption>
-        <TbOption Value="@("Returns")">Returns</TbOption>
-        <TbOption Value="@("Offers")">Offers</TbOption>
-    </TbMultiSelect>
-    <TbMultiSelect Label="Trails to hike" @bind-Value="_trails" Chips Placeholder="Pick some trails">
-        <TbOptionGroup Label="North ridge">
-            <TbOption Value="@("Pine Hollow")">Pine Hollow</TbOption>
-            <TbOption Value="@("Eagle Ridge")">Eagle Ridge</TbOption>
-        </TbOptionGroup>
-        <TbOptionGroup Label="River valley">
-            <TbOption Value="@("Cedar Flats")">Cedar Flats</TbOption>
-            <TbOption Value="@("Fern Gully")">Fern Gully</TbOption>
-        </TbOptionGroup>
-    </TbMultiSelect>
-    <TbSelect Label="Time zone" @bind-Value="_zone" Filterable Placeholder="Choose a time zone">
-        @foreach (var zone in Zones)
-        {
-            <TbOption Value="zone">@zone</TbOption>
-        }
-    </TbSelect>
-    <TbSelect Label="Country" @bind-Value="_country" Disabled>
-        <TbOption Value="@("Canada")">Canada</TbOption>
-    </TbSelect>
-    <TbSelect TValue="string" Label="Region" Value="@("North")" ReadOnly HelperText="Set by your account.">
-        <TbOption Value="@("North")">North</TbOption>
-        <TbOption Value="@("South")">South</TbOption>
-    </TbSelect>
+    <output>Shipping value: @(_shipping?.ToString() ?? "null")</output>
 </TbStack>
 
 @code {
-    private Speed? _shipping = Speed.Standard;
-    private static readonly string[] Zones = ["Anchorage", "Auckland", "Berlin", "Chicago", "Denver", "Halifax",
-        "Honolulu", "Johannesburg", "London", "Los Angeles", "Mexico City", "Mumbai", "New York", "Paris",
-        "São Paulo", "Singapore", "Sydney", "Tokyo", "Toronto", "Zürich"];
-
-    private string? _country = "Canada";
-    private string? _zone;
-    private IReadOnlyList<string> _topics = ["Orders"];
-    private IReadOnlyList<string> _trails = ["Pine Hollow", "Fern Gully"];
+    private Speed? _shipping;
 
     private enum Speed
     {

@@ -1,0 +1,11 @@
+<TbStack Gap="2">
+    <TbSelect Label="Campsite" @bind-Value="_site" Clearable Placeholder="Any campsite">
+        <TbOption Value="@("Lake")">Lake</TbOption>
+        <TbOption Value="@("Ridge")">Ridge</TbOption>
+    </TbSelect>
+    <output>Campsite value: @(_site ?? "null")</output>
+</TbStack>
+
+@code {
+    private string? _site = "Lake";
+}

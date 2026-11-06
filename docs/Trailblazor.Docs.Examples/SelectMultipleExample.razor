@@ -1,0 +1,20 @@
+<TbStack Gap="4">
+    <TbStack Gap="2">
+        <TbMultiSelect Label="Notify me about" @bind-Value="_topics" Placeholder="Nothing yet" Clearable SelectAll>
+            <TbOption Value="@("Orders")">Orders</TbOption>
+            <TbOption Value="@("Returns")">Returns</TbOption>
+            <TbOption Value="@("Offers")">Offers</TbOption>
+        </TbMultiSelect>
+        <output>Notifications value: @string.Join(", ", _topics)</output>
+    </TbStack>
+    <TbMultiSelect Label="Packing list" @bind-Value="_packing" Chips Placeholder="Pick your gear">
+        <TbOption Value="@("Tent")">Tent</TbOption>
+        <TbOption Value="@("Stove")">Stove</TbOption>
+        <TbOption Value="@("Map")">Map</TbOption>
+    </TbMultiSelect>
+</TbStack>
+
+@code {
+    private IReadOnlyList<string> _topics = ["Orders"];
+    private IReadOnlyList<string> _packing = ["Tent", "Map"];
+}

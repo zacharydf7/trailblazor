@@ -1,0 +1,14 @@
+<TbSelect Label="Time zone" @bind-Value="_zone" Filterable Placeholder="Choose a time zone">
+    @foreach (var zone in Zones)
+    {
+        <TbOption Value="zone">@zone</TbOption>
+    }
+</TbSelect>
+
+@code {
+    private static readonly string[] Zones = ["Anchorage", "Auckland", "Berlin", "Chicago", "Denver", "Halifax",
+        "Honolulu", "Johannesburg", "London", "Los Angeles", "Mexico City", "Mumbai", "New York", "Paris",
+        "São Paulo", "Singapore", "Sydney", "Tokyo", "Toronto", "Zürich"];
+
+    private string? _zone;
+}

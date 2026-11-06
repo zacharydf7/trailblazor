@@ -1755,6 +1755,58 @@ public static class ExampleCatalog
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
         {
+            FullWidth = true,
+            Sections =
+            [
+                new("options-and-value", "Options and value", "Each `TbOption` is an option, `Placeholder` shows while "
+                    + "nothing is chosen, and `Disabled` on an option turns off that option alone. A value can be any "
+                    + "type, such as an enum.", typeof(SelectExample)),
+                new("clearing", "Clearing", "`Clearable` adds a button that clears the choice. A nullable value clears "
+                    + "to `null`.", typeof(SelectClearExample)),
+                new("multiple", "Multiple, Select all and chips", "`TbMultiSelect` binds a list. `SelectAll` starts the "
+                    + "list with an option that chooses every enabled option, and is selected once they all are; "
+                    + "choosing it then deselects them all. It hides while the filter has text. `Chips` shows each "
+                    + "choice as a chip with a remove button.", typeof(SelectMultipleExample)),
+                new("groups", "Groups", "`TbOptionGroup` groups options under a heading. The arrows and typing move "
+                    + "through every group.", typeof(SelectGroupsExample)),
+                new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
+                    + "as a badge, and the field shows that content once it's chosen. Its words name the option. `Text` "
+                    + "is for content without words, such as an image, and replaces that name, so include any words "
+                    + "the option shows.", typeof(SelectContentExample)),
+                new("filtering", "Filtering", "`Filterable` adds a box above the list. Matching ignores case and "
+                    + "accents, and groups with no matches hide.", typeof(SelectFilterExample)),
+                new("options-that-load-late", "Options that load late", "In a single select, a value no option has "
+                    + "still shows: as its own text, or as whatever `UnmatchedText` returns. That lets a chosen key "
+                    + "show its name before the options arrive. A multi-select shows only the chosen values whose "
+                    + "options are there. `OpenChanged` tells you when the list opens, so you can load the options "
+                    + "then. The demo shows a disabled option while they load and sets `Error` if they don't. To see "
+                    + "the failure, check the box before opening the list.",
+                    typeof(SelectLateExample)),
+                new("empty-list", "Empty list", "A select with no options opens an empty list, so add a disabled "
+                    + "option that says why.", typeof(SelectEmptyExample)),
+                new("many-options", "Many options", "A long list scrolls, and `Filterable` lets people search it. A "
+                    + "long option widens the list, and once chosen it's cut off with an ellipsis. When the options "
+                    + "come from a search as someone types, use an "
+                    + "[autocomplete](components/autocomplete).", typeof(SelectManyExample)),
+                new("comparer", "Values loaded again", "`Comparer` decides whether two values are the same, so a value "
+                    + "from another query, equal only by id, still matches its option.", typeof(SelectComparerExample)),
+                new("required", "Required", "`Required` shows a marker. Once the select is changed or its form "
+                    + "validates, a message shows while nothing is chosen. `RequiredMessage` replaces the default, "
+                    + "which uses the label.", typeof(SelectRequiredExample)),
+                new("validation", "Validation", "`Validation` checks the choice once it is changed or its form "
+                    + "validates.", typeof(SelectValidationExample)),
+                new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
+                    + "Until your app clears it, the form won't submit, so clear it when the choice changes.",
+                    typeof(SelectErrorExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the select focusable, but it "
+                    + "doesn't open and its chips can't be removed. `Disabled` takes it out of the tab order.",
+                    typeof(SelectStatesExample)),
+                new("size-and-variant", "Size and variant", "`Variant` is `Outlined` or `Filled`, and `Size` is "
+                    + "`Small`, `Medium` or `Large`.", typeof(SelectSizeExample)),
+                new("labels", "Built-in text", "`Labels` replaces the select's built-in text: the filter box's "
+                    + "name, the no-results message, the clear button, the chip removal announcement and the \"Select "
+                    + "all\" option.", typeof(SelectLabelsExample)),
+            ],
             Api = [typeof(TbSelect<>), typeof(TbMultiSelect<>), typeof(TbOption<>), typeof(TbOptionGroup),
                 typeof(SelectLabels), typeof(FieldClasses)],
             WhenToUse =
@@ -1819,8 +1871,8 @@ public static class ExampleCatalog
                 "The combobox is named by the `Label`.",
                 "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
                     + "which field it clears.",
-                "An option with content of its own, such as an image and a caption, is named by its `Text`, chosen or "
-                    + "not; one with neither text nor a name gets a warning in the browser console.",
+                "An option's words name it, chosen or not. Content without words, such as an image, is named by its "
+                    + "`Text`; with neither, it gets a warning in the browser console.",
                 "A `TbOptionGroup` is a `group` named by its `Label`.",
                 "The \"Select all\" option is named by `Labels.SelectAll`.",
                 "With `Filterable`, the popup is a `dialog` named by the `Label`, and the filter box by "
@@ -1847,37 +1899,28 @@ public static class ExampleCatalog
                 "A `combobox` that opens a `listbox` of `option`s. In a single select the chosen option shows a check, "
                     + "not only bolder text.",
                 "The clear button sends focus back to the field.",
-                "The arrows and typing move through every `TbOptionGroup`, and \"Select all\" is an option the arrows "
-                    + "reach like any other.",
-                "With `Chips`, each chosen option shows as a chip with a remove button for the pointer, and options "
-                    + "can still be deselected in the list.",
+                "\"Select all\" is an option the arrows reach like any other.",
+                "With `Chips`, the remove buttons are for the pointer, and options can still be deselected in the list.",
                 "With `Filterable`, the select says it opens a dialog with `aria-haspopup=\"dialog\"`. Opening it "
                     + "moves focus to a filter box above the list, a `combobox` with `aria-autocomplete=\"list\"`.",
-                "`ReadOnly` keeps the select focusable and posted, but it doesn't open and its chips can't be removed.",
             ],
             AppDuties =
             [
-                "If a select's options load as the list opens, give it an `UnmatchedText`, such as a lookup of the "
-                    + "value's name, so the chosen value doesn't show as a key such as a `Guid` before they arrive.",
+                "If a single select's options load as the list opens, give it an `UnmatchedText`, such as a lookup of "
+                    + "the value's name, so the chosen value doesn't show as a key such as a `Guid` before they arrive.",
             ],
             BeforeInteractive =
             [
                 "It renders as the browser's own `<select>`, so it still works and posts with its form.",
-                "A value no option has stays chosen in the native select.",
-                "A `ReadOnly` native select puts its choice back whenever the user changes it.",
+                "In a single select, a value no option has stays chosen in the native select.",
+                "A `ReadOnly` native select puts its choice back whenever the user changes it, and posts. A `Disabled` "
+                    + "one doesn't post.",
             ],
             Notes =
             [
-                new("`Variant` (`Outlined` or `Filled`) and `Size` work as on the "
-                    + "[text field](components/text-field)."),
-                new("A value no option has, such as one that has left the list, still shows: as its text, or as "
-                    + "`UnmatchedText` makes it."),
-                new("With `SelectAll`, a multi-select's list starts with a \"Select all\" option. It chooses every "
-                    + "enabled option, and is selected once they all are; choosing it then deselects them all. It "
-                    + "hides while the filter has text."),
-                new("With `Filterable`, matching ignores case and accents, and groups with no matches hide."),
-                new("A select bound to a value type, such as `Guid`, clears to its default, which shows the "
-                    + "placeholder.") { Pitfall = true },
+                new("A select bound to a value type, such as `Guid`, clears to its default, which shows the option "
+                    + "with that value or else the placeholder, and `Required` never fires on it. Bind the nullable "
+                    + "form, such as `Guid?`.") { Pitfall = true },
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select", "tb-chip"],

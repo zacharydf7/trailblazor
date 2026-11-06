@@ -1,0 +1,8 @@
+<TbSelect Label="Route" @bind-Value="_route">
+    <TbOption Value="@("loop")">Lake loop <TbBadge>Easy</TbBadge></TbOption>
+    <TbOption Value="@("summit")">Summit trail <TbBadge Tone="Tone.Warning">Hard</TbBadge></TbOption>
+</TbSelect>
+
+@code {
+    private string? _route = "loop";
+}

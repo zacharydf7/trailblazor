@@ -1,0 +1,21 @@
+<TbForm @ref="_form" aria-label="Trip permit">
+    <TbSelect Label="Permit type" @bind-Value="_permit" Required RequiredMessage="Choose a permit type."
+              Placeholder="Choose one">
+        <TbOption Value="@("day")">Day</TbOption>
+        <TbOption Value="@("overnight")">Overnight</TbOption>
+    </TbSelect>
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _permit;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

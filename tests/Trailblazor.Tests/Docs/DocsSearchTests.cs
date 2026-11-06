@@ -103,10 +103,10 @@ public class DocsSearchTests
     [Fact]
     public void Find_ShouldFindAComponent_WhenTheWordIsOnlyInItsNotes()
     {
-        var results = DocsSearch.Find("accents");
+        var results = DocsSearch.Find("field-sizing");
 
-        Assert.Contains(results, result => result is { Page: "Select", Section: "Notes and limitations",
-            Path: "components/select#notes", Match: SearchMatch.Text });
+        Assert.Contains(results, result => result is { Page: "Text field", Section: "Notes and limitations",
+            Path: "components/text-field#notes", Match: SearchMatch.Text });
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public class DocsSearchTests
         Assert.InRange(snippet.Length, 60, 142);
         // The catalog writes code in backticks; the snippet keeps the code and drops the backticks.
         Assert.Contains(" UnmatchedText ", Assert.Single(DocsSearch.Find("UnmatchedText"),
-            result => result.Section == "Notes and limitations").Snippet);
+            result => result.Section == "Options that load late").Snippet);
     }
 
     [Fact]

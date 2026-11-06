@@ -1,0 +1,7 @@
+<TbSelect Label="Saved routes" @bind-Value="_route" Placeholder="None saved">
+    <TbOption Value="@("none")" Disabled>You haven't saved a route yet</TbOption>
+</TbSelect>
+
+@code {
+    private string? _route;
+}

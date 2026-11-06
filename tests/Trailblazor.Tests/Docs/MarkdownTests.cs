@@ -66,12 +66,11 @@ public class MarkdownTests
     {
         var markdown = await MarkdownOf("components/select");
 
-        Assert.Contains("\n- With `Filterable`, matching ignores case and accents, and groups with no matches hide.\n",
-            markdown);
+        Assert.Contains("\n- `OnFocus` and `OnBlur` report focus moving into the field", markdown);
         Assert.Contains("\n| Key | Action |\n| --- | --- |\n| **While closed** |  |\n"
             + "| Down Up Enter Space | Opens the list. |", markdown);
         Assert.Contains("[radio group](https://trailblazor.dev/components/radio-group.md)", markdown);
-        Assert.Contains("\n**SelectExample.razor**\n\n```razor\n<TbStack Gap=\"4\"", markdown);
+        Assert.Contains("\n**SelectExample.razor**\n\n```razor\n<TbStack Gap=\"2\"", markdown);
     }
 
     [Theory, MemberData(nameof(Guides))]

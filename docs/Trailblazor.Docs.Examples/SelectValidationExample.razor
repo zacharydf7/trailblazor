@@ -1,0 +1,23 @@
+<TbForm @ref="_form" aria-label="Trip season">
+    <TbSelect Label="Season" @bind-Value="_season" Validation="CheckSeason">
+        <TbOption Value="@("Summer")">Summer</TbOption>
+        <TbOption Value="@("Winter")">Winter</TbOption>
+    </TbSelect>
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _season = "Winter";
+
+    private static IEnumerable<string> CheckSeason(string? season) =>
+        season == "Winter" ? ["The huts close for the winter."] : [];
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

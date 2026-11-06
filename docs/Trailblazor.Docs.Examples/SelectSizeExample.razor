@@ -1,0 +1,20 @@
+<TbStack Gap="4">
+    <TbSelect Label="Map style" @bind-Value="_style" Variant="FieldVariant.Filled">
+        <TbOption Value="@("Topographic")">Topographic</TbOption>
+        <TbOption Value="@("Satellite")">Satellite</TbOption>
+    </TbSelect>
+    <TbSelect Label="Units" @bind-Value="_units" Size="Size.Small">
+        <TbOption Value="@("Metric")">Metric</TbOption>
+        <TbOption Value="@("Imperial")">Imperial</TbOption>
+    </TbSelect>
+    <TbSelect Label="Trail type" @bind-Value="_type" Size="Size.Large">
+        <TbOption Value="@("Loop")">Loop</TbOption>
+        <TbOption Value="@("Point to point")">Point to point</TbOption>
+    </TbSelect>
+</TbStack>
+
+@code {
+    private string? _style = "Topographic";
+    private string? _units = "Metric";
+    private string? _type = "Loop";
+}

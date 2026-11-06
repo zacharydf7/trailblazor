@@ -1,0 +1,18 @@
+<TbMultiSelect Label="Huts" @bind-Value="_huts" Filterable Clearable SelectAll Chips Labels="HutLabels">
+    <TbOption Value="@("Alder")">Alder</TbOption>
+    <TbOption Value="@("Birch")">Birch</TbOption>
+    <TbOption Value="@("Cedar")">Cedar</TbOption>
+</TbMultiSelect>
+
+@code {
+    private static readonly SelectLabels HutLabels = new()
+    {
+        Filter = "Search the huts",
+        NoResults = "No hut has that name",
+        Clear = "Clear the huts",
+        Removed = "{0} removed",
+        SelectAll = "Every hut",
+    };
+
+    private IReadOnlyList<string> _huts = ["Alder"];
+}
