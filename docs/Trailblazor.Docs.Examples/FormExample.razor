@@ -1,24 +1,29 @@
-<TbForm @bind-IsValid="_valid" @bind-Errors="_errors" OnValidSubmit="Save" aria-label="Trip sign-up"
-        Style="max-inline-size: 24rem">
-    <TbTextField Label="Leader's name" @bind-Value="_leader" Required RequiredMessage="Enter the leader's name." />
+<TbForm @bind-IsValid="_valid" @bind-Errors="_errors" OnValidSubmit="Save" OnInvalidSubmit="() => _saved = null"
+        aria-label="Trip sign-up" Style="max-inline-size: 24rem">
+    <TbTextField Label="Leader's name" @bind-Value="_leader" Required RequiredMessage="Enter the leader's name."
+                 InputAttributes="NameAttributes" />
     <TbNumberField Label="Party size" @bind-Value="_partySize" Min="1" Max="12" Required
-                   RequiredMessage="Enter how many are going." />
+                   RequiredMessage="Enter how many are going." HelperText="Up to 12 people." />
     <TbCheckbox Label="I've read the safety notes" @bind-Value="_readNotes" Required
                 RequiredMessage="Read the safety notes first." />
     <TbStack Row Gap="2">
-        <TbButton Type="ButtonType.Submit" Disabled="!_valid">Sign up</TbButton>
-        <TbButton Type="ButtonType.Submit" Variant="Variant.Outlined">Check the form</TbButton>
+        <TbButton Type="ButtonType.Submit">Sign up</TbButton>
     </TbStack>
-    <TbText>@(_saved ?? (_errors.Count == 0 ? "Fill in the form to sign up." : $"{_errors.Count} to fix."))</TbText>
+    <output>@Status</output>
 </TbForm>
 
 @code {
+    private static readonly Dictionary<string, object> NameAttributes = new() { ["autocomplete"] = "name" };
+
     private string? _leader;
     private int? _partySize;
     private bool _readNotes;
     private bool _valid;
     private IReadOnlyList<string> _errors = [];
     private string? _saved;
+
+    private string Status => _errors.Count > 0 ? $"{_errors.Count} to fix."
+        : _saved ?? (_valid ? "Ready to sign up." : "Fill in the form to sign up.");
 
     private void Save() => _saved = $"Signed up {_leader}'s party of {_partySize}.";
 }

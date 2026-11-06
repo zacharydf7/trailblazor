@@ -1,0 +1,86 @@
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbForm @ref="_form" EditContext="_context" @bind-Errors="_errors" OnSubmit="SubmitAsync" aria-label="Permit request"
+        Style="max-inline-size: 24rem">
+    @if (_errors.Count > 0)
+    {
+        <PageTitle>Error: Request a permit</PageTitle>
+        <div @ref="_summary" tabindex="-1" role="group" aria-label="@SummaryTitle">
+            <TbAlert Tone="Tone.Danger" Title="@SummaryTitle" role="note">
+                <ul>
+                    @foreach (var problem in Problems)
+                    {
+                        <li class="tb-mb-2">
+                            <TbLink OnClick="() => problem.Focus().AsTask()">@problem.Message</TbLink>
+                        </li>
+                    }
+                </ul>
+            </TbAlert>
+        </div>
+    }
+    <TbTextField @ref="_holderField" Label="Permit holder" @bind-Value="_permit.Holder" Required
+                 RequiredMessage="Enter the permit holder's name." />
+    <TbNumberField @ref="_nightsField" Label="Nights" @bind-Value="_permit.Nights" Required
+                   RequiredMessage="Enter how many nights you'll stay." />
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit">Request permit</TbButton>
+    </TbStack>
+    <output>@_requested</output>
+</TbForm>
+
+@code {
+    private readonly Permit _permit = new();
+    private TbForm _form = default!;
+    private EditContext _context = default!;
+    private TbTextField<string> _holderField = default!;
+    private TbNumberField<int?> _nightsField = default!;
+    private ElementReference _summary;
+    private IReadOnlyList<string> _errors = [];
+    private bool _focusSummary;
+    private string? _requested;
+
+    private string SummaryTitle =>
+        _errors.Count == 1 ? "There is 1 problem to fix." : $"There are {_errors.Count} problems to fix.";
+
+    // Each field's messages come from the edit context, in the order the fields appear.
+    private IEnumerable<(string Message, Func<ValueTask> Focus)> Problems =>
+    [
+        .. MessagesOf(() => _permit.Holder, () => _holderField.FocusAsync()),
+        .. MessagesOf(() => _permit.Nights, () => _nightsField.FocusAsync()),
+    ];
+
+    protected override void OnInitialized() => _context = new(_permit);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusSummary)
+        {
+            _focusSummary = false;
+            await _summary.FocusAsync();
+        }
+    }
+
+    // With OnSubmit the form leaves focus alone, so the summary can take it once it has rendered.
+    private async Task SubmitAsync()
+    {
+        _requested = null;
+        if (await _form.ValidateAsync())
+        {
+            _requested = $"Requested {_permit.Nights} nights for {_permit.Holder}.";
+            return;
+        }
+
+        _focusSummary = true;
+    }
+
+    private IEnumerable<(string, Func<ValueTask>)> MessagesOf(Expression<Func<object?>> field, Func<ValueTask> focus) =>
+        _context.GetValidationMessages(FieldIdentifier.Create(field)).Select(message => (message, focus));
+
+    private sealed class Permit
+    {
+        public string? Holder { get; set; }
+
+        public int? Nights { get; set; }
+    }
+}

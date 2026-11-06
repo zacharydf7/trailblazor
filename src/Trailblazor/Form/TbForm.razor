@@ -57,8 +57,9 @@
     /// <summary>Whether the form would pass now: no <c>Required</c> field is empty, every field's <c>Validation</c>
     /// passes, the model's data annotations
     /// pass when <see cref="DataAnnotations"/> is on, and no validator's message or field's <c>Error</c> is showing.
-    /// It is worked out without showing any message and updates as the form changes, so it can turn a save button on
-    /// and off. Bind it with <c>@bind-IsValid</c>.</summary>
+    /// It is worked out without showing any message and updates as the form changes, so it can drive a hint such as
+    /// "Ready to send". Leave the submit button on, so a submit can show what to fix. Bind it with
+    /// <c>@bind-IsValid</c>.</summary>
     [Parameter]
     public bool IsValid { get; set; }
 
@@ -75,7 +76,8 @@
     public EventCallback<IReadOnlyList<string>> ErrorsChanged { get; set; }
 
     /// <summary>Raised on submit instead of the form validating; check it yourself with
-    /// <see cref="ValidateAsync"/>.</summary>
+    /// <see cref="ValidateAsync"/>. Focus stays where it is, so the handler can move it, for example to an error
+    /// summary. The submit isn't counted under <see cref="TelemetryName"/>.</summary>
     [Parameter]
     public EventCallback<EditContext> OnSubmit { get; set; }
 

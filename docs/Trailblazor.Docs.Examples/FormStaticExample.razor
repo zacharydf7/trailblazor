@@ -1,0 +1,24 @@
+<TbForm Model="Report" FormName="trail-report" OnValidSubmit="Send" OnInvalidSubmit="() => _sent = null"
+        aria-label="Trail report" Style="max-inline-size: 24rem">
+    <TbTextField Label="Trail" @bind-Value="Report!.Trail" Required RequiredMessage="Enter the trail's name." />
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit">Send report</TbButton>
+    </TbStack>
+    <output>@_sent</output>
+</TbForm>
+
+@code {
+    private string? _sent;
+
+    [SupplyParameterFromForm(FormName = "trail-report")]
+    private TrailReport? Report { get; set; }
+
+    protected override void OnInitialized() => Report ??= new();
+
+    private void Send() => _sent = $"Sent a report on {Report!.Trail}.";
+
+    private sealed class TrailReport
+    {
+        public string? Trail { get; set; }
+    }
+}

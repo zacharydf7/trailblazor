@@ -1,0 +1,399 @@
+@page "/guides/forms"
+
+<PageTitle>Forms and validation · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="a-complete-form" Text="A complete form" />
+        <TbTableOfContentsItem TargetId="required-fields" Text="Required fields and messages" />
+        <TbTableOfContentsItem TargetId="custom-validation" Text="Custom validation" />
+        <TbTableOfContentsItem TargetId="model-and-data-annotations" Text="Model and data annotations" />
+        <TbTableOfContentsItem TargetId="your-own-edit-context" Text="Your own edit context" />
+        <TbTableOfContentsItem TargetId="server-errors" Text="Server errors" />
+        <TbTableOfContentsItem TargetId="when-validation-runs" Text="When validation runs" />
+        <TbTableOfContentsItem TargetId="error-summary" Text="Error summary" />
+        <TbTableOfContentsItem TargetId="submit-in-progress" Text="A submit in progress" />
+        <TbTableOfContentsItem TargetId="static-form-posts" Text="Static form posts" />
+        <TbTableOfContentsItem TargetId="leave-the-submit-button-on" Text="Leave the submit button on" />
+        <TbTableOfContentsItem TargetId="wording" Text="Wording labels, hints and messages" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Forms and validation</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Put fields in a <code>TbForm</code>, say what each one needs, and let a submit check them all. The form shows
+            each field's message beside it and moves focus to the first error. This guide covers what to add from
+            there.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="a-complete-form" Text="A complete form" Class="docs-section" />
+        <div class="docs-example">
+            <FormExample />
+        </div>
+        <CodeBlock Label="FormExample.razor" Code="@Complete" />
+        <TbText>
+            Try Sign up with the form empty. Every field shows its message and focus moves to the first one.
+            <code>OnValidSubmit</code> runs only when nothing is left to fix.
+        </TbText>
+        <ul>
+            <li>
+                <code>@@bind-Errors</code> gives you the messages showing now, and <code>@@bind-IsValid</code> says
+                whether the form would pass, without showing any message.
+            </li>
+            <li>
+                <code>OnInvalidSubmit</code> runs when a submit fails, and focus still moves to the first error. Here it
+                clears an earlier success message, so that message doesn't come back once the errors are fixed.
+            </li>
+            <li>
+                <code>InputAttributes</code> puts attributes on the input itself, such as <code>autocomplete</code>, so
+                the browser can fill in what it knows.
+            </li>
+            <li>
+                <code>AutoFocus</code> moves focus to a field as it appears. Use it on one field at most, where the form
+                is the reason someone opened the page or dialog, since it takes them past anything above it.
+            </li>
+        </ul>
+        <TbText>
+            The <a href="components/form">Form page</a> has a live demo of each part below.
+        </TbText>
+
+        <DocsHeading Id="required-fields" Text="Required fields and messages" Class="docs-section" />
+        <TbText>
+            <code>Required</code> marks a field: its label shows an asterisk, screen readers hear that it's required, and
+            an empty or blank value shows a message once the user changes the field or the form validates.
+            <code>RequiredMessage</code> sets that message.
+        </TbText>
+        <CodeBlock Label="A required field" Code="@RequiredField" />
+        <TbText>
+            Without a <code>RequiredMessage</code>, the field says "Name is required.", using its label. That is a safe
+            default, and the <a href="guides/localization">localization guide</a> shows how to change it for the whole
+            app. A message of your own can say what to do, as <a href="guides/forms#wording">wording</a> explains. A
+            disabled or read-only field isn't checked, since the user can't fill it in.
+        </TbText>
+
+        <DocsHeading Id="custom-validation" Text="Custom validation" Class="docs-section" />
+        <TbText>
+            <code>Validation</code> takes the value and returns its messages, or none. It doesn't run while the field
+            shows its required message, so that is the only message then.
+        </TbText>
+        <CodeBlock Label="Checking one value" Code="@CheckOne" />
+        <TbText>
+            A field's <code>Validation</code> runs when that field changes, so it won't notice a change in another field.
+            To compare two fields, work out an <code>Error</code> from both values, which updates as either one changes.
+            <code>Invalid</code> marks the other field without repeating the message.
+        </TbText>
+        <CodeBlock Label="Comparing two fields" Code="@CheckTwo" />
+        <TbText>
+            <a href="components/form#your-own-checks">Your own checks</a> on the Form page shows this running.
+        </TbText>
+
+        <DocsHeading Id="model-and-data-annotations" Text="Model and data annotations" Class="docs-section" />
+        <TbText>
+            Give the form a <code>Model</code> and turn on <code>DataAnnotations</code> to check the class's annotations
+            along with the fields' own checks. Use it instead of adding a <code>DataAnnotationsValidator</code> inside
+            the form, since it also counts the annotations in <code>IsValid</code> before any message shows.
+        </TbText>
+        <CodeBlock Label="FormModelExample.razor" Code="@ModelCode" />
+        <DocsCallout Tone="Tone.Warning">
+            A field's <code>Required</code> and a model's <code>[Required]</code> each add a message, so a field with
+            both shows two. Keep the field's <code>Required</code>, as above, and leave <code>[Required]</code> off the
+            model, because only the field's <code>Required</code> marks it for screen readers and shows the asterisk. If
+            a class shared with an API has to carry <code>[Required]</code>, give the form a model of its own.
+            <code>[EmailAddress]</code> causes the same problem, because it rejects the empty text a cleared field holds:
+            a required field with it shows two messages once cleared. To check a format on a required field, use
+            <code>[RegularExpression]</code>, which passes empty text.
+        </DocsCallout>
+        <TbText>
+            Annotations stop at the model's own properties. To check nested objects too, add the
+            <code>Microsoft.Extensions.Validation</code> package, call <code>AddValidation</code>, and mark the model
+            <code>[ValidatableType]</code>. Its source generator reads only public, top-level classes in a
+            <code>.cs</code> file. The attribute is experimental, so it needs warning <code>ASP0029</code> suppressed.
+        </TbText>
+        <CodeBlock Label="Checking nested objects" Code="@Nested" />
+
+        <DocsHeading Id="your-own-edit-context" Text="Your own edit context" Class="docs-section" />
+        <TbText>
+            A form makes an <code>EditContext</code> for its model. Pass your own when you need more from it, such as
+            whether anything changed, or a field's messages one at a time, as an
+            <a href="guides/forms#error-summary">error summary</a> does.
+        </TbText>
+        <CodeBlock Label="FormEditContextExample.razor" Code="@OwnContext" />
+        <TbText>
+            <a href="components/form#your-own-edit-context">Your own edit context</a> on the Form page shows this
+            running.
+        </TbText>
+
+        <DocsHeading Id="server-errors" Text="Server errors" Class="docs-section" />
+        <TbText>
+            Some checks only the server can make. Set the field's <code>Error</code> to what it said. The field shows the
+            message and reads it out once, and the form won't submit again until you clear it, so clear it when the
+            value changes. Then move focus to the field with <code>FocusAsync()</code>.
+        </TbText>
+        <CodeBlock Label="An error from the server" Code="@ServerError" />
+        <TbText>
+            An error that isn't about one field, such as a lost connection, goes in a
+            <a href="components/alert">danger alert</a> above the form, which is read out as it appears. Keep what the
+            user typed, so they can try again.
+        </TbText>
+
+        <DocsHeading Id="when-validation-runs" Text="When validation runs" Class="docs-section" />
+        <TbText>
+            Nothing shows until the user has done something, so nobody sees errors on a form they haven't started.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="When each check runs">
+            <table>
+                <thead>
+                    <tr><th scope="col">Check</th><th scope="col">It shows a message</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><code>Required</code> and <code>Validation</code></th>
+                        <td>When the value changes, and when the form validates</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Text that can't convert, such as letters in a number</th>
+                        <td>When the field takes the text: as the user leaves it or presses Enter</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>DataAnnotations</code></th>
+                        <td>When a value changes, for that field; when the form validates, for the whole model</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Error</code></th>
+                        <td>As soon as the parent sets it</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <TbText>
+            The form validates on a submit, and when you call <code>ValidateAsync()</code>. A text field's value changes
+            as the user leaves it or presses Enter, or as they type with <code>UpdateOnInput</code>.
+            <code>ResetValidationAsync()</code> hides the fields' messages again, as on a form nobody has touched.
+        </TbText>
+        <TbText>
+            <code>@@bind-IsValid</code> is different. It updates as the form changes and never shows a message.
+        </TbText>
+
+        <DocsHeading Id="error-summary" Text="Error summary" Class="docs-section" />
+        <TbText>
+            On a long form, the first error can be the only one in view. A summary above the form lists every message
+            and lets each one move focus to its field, while the fields keep their own messages. Bind
+            <code>Errors</code> to know when to show it, and read each field's messages from your edit context to link
+            them.
+        </TbText>
+        <CodeBlock Label="FormErrorSummaryExample.razor" Code="@Summary" />
+        <ul>
+            <li>
+                <strong>It takes focus.</strong> Focus moves to the summary once it has rendered, so a screen reader says
+                how many problems there are, and the links are next in the tab order.
+            </li>
+            <li>
+                <strong>It uses <code>OnSubmit</code>.</strong> With <code>OnValidSubmit</code>, a failed submit sends
+                focus to the first field, which would race the summary. With <code>OnSubmit</code> you call
+                <code>ValidateAsync()</code> yourself and the form leaves focus alone. That submit isn't counted in
+                <code>trailblazor.form.submitted</code>.
+            </li>
+            <li>
+                <strong>The page title changes.</strong> "Error:" at the start of the title tells someone returning from
+                another tab that there's something to fix, before they read the page.
+            </li>
+            <li>
+                <strong>The alert doesn't announce itself.</strong> <code>role="note"</code> replaces the danger alert's live
+                <code>alert</code> role, so the summary is read once as it takes focus, and fixing a field doesn't read
+                the list out again.
+            </li>
+        </ul>
+        <TbText>
+            <a href="components/form#error-summary">Error summary</a> on the Form page shows this running. A short form
+            doesn't need one: leave it to the form to focus the first error.
+        </TbText>
+
+        <DocsHeading Id="submit-in-progress" Text="A submit in progress" Class="docs-section" />
+        <TbText>
+            Set <code>Loading</code> on the submit button while the save runs. It shows a spinner and is marked busy for
+            screen readers, ignores more clicks, and stays focusable, so focus isn't lost. When the save finishes, say
+            so: an <code>output</code> element reads out changes to its text, or use the
+            <a href="guides/announcements">announcer</a>.
+        </TbText>
+        <CodeBlock Label="Saving" Code="@Saving" />
+
+        <DocsHeading Id="static-form-posts" Text="Static form posts" Class="docs-section" />
+        <TbText>
+            A form on a page without an interactive render mode posts to the server. Give it a <code>FormName</code>,
+            supply its model with <code>[SupplyParameterFromForm]</code>, and bind each field to a property of that model,
+            which is how the field's input gets the name the post binds back to.
+        </TbText>
+        <CodeBlock Label="FormStaticExample.razor" Code="@Static" />
+        <ul>
+            <li>
+                The server checks the fields on each post, and the page comes back with their messages. Text that
+                couldn't convert stays in its field.
+            </li>
+            <li>
+                With no script running, focus doesn't move to the first error, nothing is read out, and
+                <code>@@bind-IsValid</code> doesn't update.
+            </li>
+            <li>
+                Numbers and dates post in the invariant culture, as
+                <a href="guides/right-to-left#static-forms">right-to-left and culture</a> explains.
+            </li>
+            <li>
+                The app needs Blazor's antiforgery middleware, <code>UseAntiforgery()</code>, as usual for a static form.
+            </li>
+        </ul>
+
+        <DocsHeading Id="leave-the-submit-button-on" Text="Leave the submit button on" Class="docs-section" />
+        <TbText>
+            Don't keep a submit button disabled until the form is valid. A disabled button can't say what is missing, can't
+            take focus, and is easy to miss on a form that looks finished. Leaving it on means pressing it always does
+            something useful: it shows each message and takes the user to the first one. The
+            <a href="https://design-system.service.gov.uk/components/button/#disabled-buttons">GOV.UK button guidance</a>
+            advises the same.
+        </TbText>
+        <TbText>
+            Use <code>@@bind-IsValid</code> for a hint instead, such as "Ready to sign up", or for a preview that only
+            makes sense once the values are good. A button may be off when it truly has nothing to do, such as Save
+            on a settings page with no changes. Give that button <code>FocusableWhenDisabled</code>, so a keyboard user
+            can still find it, and say why it's off.
+        </TbText>
+
+        <DocsHeading Id="wording" Text="Wording labels, hints and messages" Class="docs-section" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Labels</TbText>
+        <ul>
+            <li>Keep them short and name the thing: "Party size", not "Please enter the size of your party:".</li>
+            <li>Show a label on every field. A placeholder disappears once the user starts typing, so it isn't one.</li>
+            <li>
+                The asterisk only helps readers who know what it means, so say "Fields marked * are required" above the
+                form. If most fields are required, "(optional)" in the few other labels is clearer.
+            </li>
+        </ul>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Hints</TbText>
+        <ul>
+            <li>
+                Use <code>HelperText</code> for what people need before they type, such as a format or a limit: "Up to 12
+                people."
+            </li>
+            <li>Leave it out if the label is enough. A hint on every field gets skipped.</li>
+        </ul>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Error messages</TbText>
+        <ul>
+            <li>
+                Say how to fix it. "Enter the leader's name." beats "Name is required.", which says what is wrong but
+                not what to do, and "Invalid input", which says neither.
+            </li>
+            <li>
+                Be specific about what's expected: "Enter two letters and a number, such as PC12." A hint can give the
+                format too, but the message has to make sense on its own.
+            </li>
+            <li>Don't apologize or blame. Leave out "please", "sorry", "oops", "you failed to" and "illegal".</li>
+            <li>End with a period, and use the same words in a summary and beside the field.</li>
+        </ul>
+        <TbText>
+            The <a href="https://design-system.service.gov.uk/components/error-message/">GOV.UK error message guidance</a>
+            has more examples.
+        </TbText>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="components/form">Form</a>: a live demo of each part, and the API.</li>
+            <li>
+                <a href="components/text-field">Text field</a> and the other field pages, which list each field's own
+                checks.
+            </li>
+            <li><a href="guides/announcements">Announcements</a>: telling screen reader users what happened.</li>
+            <li><a href="guides/localization">Localization</a>: changing the default messages.</li>
+            <li><a href="guides/testing">Testing</a>: setting up bUnit and Playwright.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private static readonly string Complete = ExampleSource.Of(typeof(FormExample)).Text;
+    private static readonly string ModelCode = ExampleSource.Of(typeof(FormModelExample)).Text;
+    private static readonly string OwnContext = ExampleSource.Of(typeof(FormEditContextExample)).Text;
+    private static readonly string Summary = ExampleSource.Of(typeof(FormErrorSummaryExample)).Text;
+    private static readonly string Static = ExampleSource.Of(typeof(FormStaticExample)).Text;
+
+    private const string RequiredField = """
+        <TbTextField Label="Leader's name" @bind-Value="_leader" Required
+                     RequiredMessage="Enter the leader's name." />
+        """;
+
+    private const string CheckOne = """
+        <TbTextField Label="Trail code" @bind-Value="_code" Validation="CheckCode" />
+
+        @code {
+            private static IEnumerable<string> CheckCode(string? code) =>
+                Regex.IsMatch(code ?? "", "^[A-Za-z]{2}[0-9]+$")
+                    ? [] : ["Enter two letters and a number, such as PC12."];
+        }
+        """;
+
+    private const string CheckTwo = """
+        <TbNumberField Label="Smallest group" @bind-Value="_smallest" Invalid="LimitsCrossed" />
+        <TbNumberField Label="Largest group" @bind-Value="_largest"
+                       Error="@(LimitsCrossed ? "Enter a largest group at least as big as the smallest." : null)" />
+
+        @code {
+            private bool LimitsCrossed => _largest < _smallest;
+        }
+        """;
+
+    private const string Nested = """
+        // Program.cs
+        builder.Services.AddValidation();
+
+        // Expedition.cs
+        #pragma warning disable ASP0029 // The validation types are experimental.
+        [ValidatableType]
+        #pragma warning restore ASP0029
+        public sealed class Expedition
+        {
+            [StringLength(80)]
+            public string? Name { get; set; }
+
+            public Camp Camp { get; set; } = new();
+        }
+
+        public sealed class Camp
+        {
+            [StringLength(80)]
+            public string? Site { get; set; }
+        }
+        """;
+
+    private const string ServerError = """
+        <TbTextField @ref="_siteField" Label="Campsite" @bind-Value="_site"
+                     @bind-Value:after="() => _siteError = null" Error="@_siteError" />
+
+        @code {
+            private async Task ReserveAsync()
+            {
+                _siteError = await SendToServerAsync(_site);
+                if (_siteError is not null)
+                {
+                    // Show the error first, so a screen reader hears it with the field.
+                    StateHasChanged();
+                    await _siteField.FocusAsync();
+                }
+            }
+        }
+        """;
+
+    private const string Saving = """
+        <TbButton Type="ButtonType.Submit" Loading="_saving">Reserve</TbButton>
+        <output>@_reserved</output>
+
+        @code {
+            private async Task ReserveAsync()
+            {
+                _saving = true;
+                await SendToServerAsync(_site);
+                _saving = false;
+                _reserved = $"Reserved {_site}.";
+            }
+        }
+        """;
+}

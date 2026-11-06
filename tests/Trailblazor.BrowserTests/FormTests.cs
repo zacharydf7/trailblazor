@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Trailblazor.BrowserTests;
 
 public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -5,12 +7,15 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Field(IPage page, string name) =>
         page.GetByRole(AriaRole.Textbox, new() { Name = name, Exact = true });
 
+    private static ILocator Button(IPage page, string name) =>
+        page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Form_ShouldShowEveryErrorAndFocusTheFirst_WhenASubmitFails(string browser)
     {
         var page = await OpenAsync(browser, "/examples/form");
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Check the form" }).ClickAsync();
+        await Button(page, "Sign up").ClickAsync();
 
         await Expect(Field(page, "Leader's name")).ToBeFocusedAsync();
         await Expect(Field(page, "Leader's name")).ToHaveAccessibleDescriptionAsync("Enter the leader's name.");
@@ -30,21 +35,65 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Form_ShouldTurnOnTheButtonAndSubmit_WhenEveryFieldPasses(string browser)
+    public async Task Form_ShouldSubmit_WhenEnterIsPressedInASingleLineField(string browser)
     {
         var page = await OpenAsync(browser, "/examples/form");
-        var signUp = page.GetByRole(AriaRole.Button, new() { Name = "Sign up" });
-        await Expect(signUp).ToBeDisabledAsync();
-        await Expect(page.Locator("[data-part=error]")).ToHaveCountAsync(0);
 
-        await Field(page, "Leader's name").FillAsync("Robin");
-        await Field(page, "Leader's name").PressAsync("Tab");
-        await page.GetByRole(AriaRole.Spinbutton, new() { Name = "Party size" }).FillAsync("4");
-        await page.GetByRole(AriaRole.Spinbutton, new() { Name = "Party size" }).PressAsync("Tab");
-        await page.GetByRole(AriaRole.Checkbox, new() { Name = "I've read the safety notes" }).CheckAsync();
-        await signUp.ClickAsync();
+        await Field(page, "Meeting point").FillAsync("South trailhead");
+        await Field(page, "Meeting point").PressAsync("Enter");
 
-        await Expect(page.GetByText("Signed up Robin's party of 4.")).ToBeVisibleAsync();
+        await Expect(page.GetByText("Saved: South trailhead.")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FormExample_ShouldMoveFocusToTheErrorSummary_WhenSubmittedWithErrors(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+
+        await Button(page, "Request permit").ClickAsync();
+
+        var summary = page.GetByRole(AriaRole.Group, new() { Name = "There are 2 problems to fix." });
+        await Expect(summary).ToBeFocusedAsync();
+        await Expect(page).ToHaveTitleAsync("Error: Request a permit");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FormExample_ShouldMoveFocusToTheField_WhenAnErrorInTheSummaryIsFollowed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+        await Button(page, "Request permit").ClickAsync();
+
+        await Button(page, "Enter how many nights you'll stay.").ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Spinbutton, new() { Name = "Nights" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FormExample_ShouldDropTheErrorFromThePageTitle_WhenEveryErrorIsFixed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+        await Button(page, "Request permit").ClickAsync();
+        await Expect(page).ToHaveTitleAsync("Error: Request a permit");
+
+        await Field(page, "Permit holder").FillAsync("Robin");
+        await Field(page, "Permit holder").PressAsync("Tab");
+        await page.GetByRole(AriaRole.Spinbutton, new() { Name = "Nights" }).FillAsync("2");
+        await page.GetByRole(AriaRole.Spinbutton, new() { Name = "Nights" }).PressAsync("Tab");
+
+        await Expect(page).ToHaveTitleAsync("Form example");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FormExample_ShouldFocusTheFieldItIsAbout_WhenTheServerAnswersWithAnError(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+        await Field(page, "Campsite").FillAsync("Ridge 12");
+
+        await Button(page, "Reserve").ClickAsync();
+
+        await Expect(Field(page, "Campsite")).ToBeFocusedAsync();
+        await Expect(Field(page, "Campsite"))
+            .ToHaveAccessibleDescriptionAsync(new Regex("Ridge 12 is already taken. Choose another campsite."));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -59,18 +108,18 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Form_ShouldValidateAndPost_WhenUsedAsAStaticForm(string browser)
+    public async Task FormExample_ShouldValidateAndPost_WhenItsStaticExampleIsOnAStaticPage(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-tbform");
-        var send = page.GetByRole(AriaRole.Button, new() { Name = "Send" });
+        var send = Button(page, "Send report");
 
         await send.ClickAsync();
-        await Expect(page.GetByText("Enter a leader.")).ToBeVisibleAsync();
-        await Expect(page.GetByTestId("posted")).ToBeEmptyAsync();
-        await Field(page, "Leader").FillAsync("Robin");
+        await Expect(page.GetByText("Enter the trail's name.")).ToBeVisibleAsync();
+        await Expect(page.Locator("output")).ToBeEmptyAsync();
+        await Field(page, "Trail").FillAsync("Ridge loop");
         await send.ClickAsync();
 
-        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Robin");
+        await Expect(page.Locator("output")).ToHaveTextAsync("Sent a report on Ridge loop.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

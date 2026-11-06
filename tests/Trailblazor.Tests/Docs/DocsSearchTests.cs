@@ -81,8 +81,9 @@ public class DocsSearchTests
     [Theory]
     [InlineData("overlays", new[] { "Tooltip", "Menu", "Dialog", "Focus scope", "Popover", "Overlay" })]
     [InlineData("guides",
-        new[] { "Getting started", "Theming", "Palettes", "Spacing", "Browser", "Announcements", "Icons",
-            "Localization", "Right-to-left and culture", "Testing", "Analyzers", "Telemetry" })]
+        new[] { "Getting started", "Forms and validation", "Theming", "Palettes", "Spacing", "Browser",
+            "Announcements", "Icons", "Localization", "Right-to-left and culture", "Testing", "Analyzers",
+            "Telemetry" })]
     public void Find_ShouldRankEverythingInACategoryAsATitleMatch_WhenGivenItsName(string category, string[] titles)
     {
         var results = DocsSearch.Find(category);

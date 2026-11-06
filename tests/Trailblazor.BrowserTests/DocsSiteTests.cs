@@ -59,8 +59,9 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from browser in AllBrowsers.Names
         from path in new[]
         {
-            "", "components/dialog", "components/select", "components/tree-view", "components/data-grid/api",
-            "preview/tree-view/many-rows", "guides/getting-started", "guides/theming", "guides/palettes",
+            "", "components/dialog", "components/form", "components/select", "components/tree-view",
+            "components/data-grid/api", "preview/tree-view/many-rows", "guides/getting-started", "guides/forms",
+            "guides/theming", "guides/palettes",
             "guides/spacing", "guides/browser", "guides/testing",
             "guides/announcements", "guides/icons", "guides/localization", "guides/right-to-left", "guides/telemetry",
             "guides/analyzers",

@@ -94,7 +94,8 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     private const string FieldNote = "`OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
         + "between its own parts, so they suit checking or saving when the user moves on. `AutoFocus` moves focus to "
         + "it as it appears on an interactive page, unless the user is typing in another field by then, or, in a "
-        + "dialog or focus scope, as that opens. A `Value` set without `ValueChanged` gets build warning TB003.";
+        + "dialog or focus scope, as that opens. A `Value` set without `ValueChanged` gets build warning TB003. The "
+        + "[forms and validation guide](guides/forms) covers messages, server errors and when validation runs.";
 
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
@@ -877,25 +878,94 @@ public static class ExampleCatalog
             "A form for Trailblazor fields that reports whether it is valid as the fields change and moves focus to "
                 + "the first error when a submit fails.", typeof(FormExample))
         {
+            WhenToUse =
+            [
+                "Use it around fields the user fills in and then submits together, so they are checked as one and "
+                    + "focus goes to the first error. The [forms and validation guide](guides/forms) covers the "
+                    + "whole job, from messages to server errors.",
+            ],
+            WhenNotToUse =
+            [
+                "Skip it for a control that acts as soon as it changes, such as a search box or a [switch]"
+                    + "(components/switch) that applies a setting.",
+            ],
+            Related = ["text-field", "number-field", "select", "checkbox", "alert"],
+            Pattern = new("Form landmark", "https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/examples/form.html"),
+            Sections =
+            [
+                new("complete-form", "A complete form", "Fields go inside the form, and a submit button checks them "
+                    + "all. Sign up stays on, so a submit can show what to fix; `@bind-IsValid` and `@bind-Errors` "
+                    + "drive the line under it, and `InputAttributes` lets the browser fill in the name.",
+                    typeof(FormExample)),
+                new("your-own-checks", "Your own checks", "`Validation` checks one value and returns its messages. To "
+                    + "compare two fields, as here when the largest group goes below the smallest, an `Error` works "
+                    + "from both values and an `Invalid` marks the other field.", typeof(FormValidationExample)),
+                new("model-and-annotations", "Model and data annotations", "`Model` and `DataAnnotations` check a "
+                    + "class's annotations alongside the fields' own checks. Here each field's `Required` covers "
+                    + "empty values, and the annotations cover the rest.", typeof(FormModelExample)),
+                new("your-own-edit-context", "Your own edit context", "An `EditContext` of your own tells you what "
+                    + "has changed, and can clear that after a save. `ResetValidationAsync` hides the messages again "
+                    + "after an undo.", typeof(FormEditContextExample)),
+                new("server-errors", "Server errors", "A field's `Error` shows what the server said, and blocks the "
+                    + "next submit until it is cleared, so clear it when the value changes. `Loading` shows the save "
+                    + "is running and ignores more clicks.", typeof(FormServerExample)),
+                new("error-summary", "Error summary", "For a long form, list the errors above it, and let each one "
+                    + "move focus to its field. `OnSubmit` leaves focus to you, so the summary can take it, and the "
+                    + "page title starts with \"Error:\" while there are errors.", typeof(FormErrorSummaryExample)),
+                new("static-form-post", "Static form post", "A `FormName` lets the form post from a static page, "
+                    + "with its model supplied by `[SupplyParameterFromForm]`. These docs run in the browser with no "
+                    + "server, so here the same code submits without a post.", typeof(FormStaticExample)),
+            ],
             Api = [typeof(TbForm)],
+            Keyboard =
+            [
+                new(["Enter"], "In a single-line field, submits the form through its submit button."),
+            ],
+            Labeling =
+            [
+                "An `aria-label`, as in these examples, makes the form a landmark screen readers can jump to. Without "
+                    + "a name it is still a form, but not a landmark. Each field is named by its own label.",
+            ],
+            Announcements =
+            [
+                "A failed submit reads out no messages, so a form with several errors doesn't speak them all at once. "
+                    + "The user hears the field focus moves to, with its message.",
+                "A message that appears as someone edits a field, or an `Error` the parent sets, is read out once.",
+            ],
             Accessibility =
             [
-                "A `form` element (built on `EditForm`); give it an `aria-label` to make it a landmark, as here.",
-                "When a submit fails, every field shows its messages, which are linked to it with `aria-describedby` "
-                    + "and announced, and focus moves to the first field with `aria-invalid`, or into a radio or "
-                    + "checkbox group where its `FocusAsync()` would.",
-                "`@bind-IsValid` checks the fields' `Validation`, and with `DataAnnotations` the model's annotations, "
-                    + "without showing messages, so the user isn't told off before they start; it is for turning a "
-                    + "button on and off. When the app calls `AddValidation` and marks the model "
-                    + "`[ValidatableType]`, it checks nested objects too, as the submit does.",
-                "A field's `Error`, such as a server's answer, keeps the form from submitting and `IsValid` false "
-                    + "until the parent clears it.",
-                "A `Required` field left empty keeps the form from submitting too, and says \"Name is required.\", "
-                    + "or its `RequiredMessage`. A field's `Invalid` marks it invalid without a message of its own, "
-                    + "as when a summary lists the form's errors; it doesn't stop a submit.",
-                "Every field has `FocusAsync()`, to move focus from code, such as to the field a server's answer is "
-                    + "about. A disabled field doesn't take focus.",
-                "It posts as a static SSR form when given a `FormName`.",
+                "It renders a `form` element, built on `EditForm`.",
+                "When a submit fails, every field shows its messages, linked to it with `aria-describedby`, and focus "
+                    + "moves to the first field with an error, or into a radio or checkbox group where its "
+                    + "`FocusAsync()` would.",
+                "With `OnSubmit`, focus stays where it is, so your handler can move it.",
+            ],
+            AppDuties =
+            [
+                "Leave the submit button on, so a submit can show what to fix. [The guide]"
+                    + "(guides/forms#leave-the-submit-button-on) explains why.",
+                "Word each message so it says how to fix the problem, as [the guide](guides/forms#wording) describes.",
+                "Say when a submit succeeds, with an `output` element as in these examples, or the [announcer]"
+                    + "(guides/announcements).",
+            ],
+            BeforeInteractive =
+            [
+                "With a `FormName`, it posts as a static form. The fields check themselves on the server, and the "
+                    + "page comes back with their messages. With no script running, focus doesn't move and nothing "
+                    + "is read out.",
+            ],
+            Notes =
+            [
+                new("`@bind-IsValid` checks the fields' `Validation`, and with `DataAnnotations` the model's "
+                    + "annotations, without showing any message. When the app calls `AddValidation` and marks the "
+                    + "model `[ValidatableType]`, it checks nested objects too, as a submit does."),
+                new("A field's `Error`, like a `Required` field left empty, keeps the form from submitting and "
+                    + "`IsValid` false. `Invalid` marks a field without a message and doesn't stop a submit."),
+                new("A field's `Required` and a model's `[Required]` each add a message, so use one of them for a "
+                    + "field. The [guide](guides/forms#model-and-data-annotations) says which.") { Pitfall = true },
+                new("A form with `OnSubmit` isn't counted in `trailblazor.form.submitted`, since it doesn't validate "
+                    + "the submit itself."),
+                new("Every field has `FocusAsync()`, to move focus from code. A disabled field doesn't take focus."),
             ],
             Target = new("form", "Trip sign-up"),
             Blocks = ["tb-form"],

@@ -1,0 +1,43 @@
+<TbForm OnValidSubmit="ReserveAsync" OnInvalidSubmit="() => _reserved = null" aria-label="Campsite reservation"
+        Style="max-inline-size: 24rem">
+    <TbTextField @ref="_siteField" Label="Campsite" @bind-Value="_site" @bind-Value:after="() => _siteError = null"
+                 Error="@_siteError" Required RequiredMessage="Enter a campsite."
+                 HelperText="Try Ridge 12, which is already taken." />
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit" Loading="_saving">Reserve</TbButton>
+    </TbStack>
+    <output>@_reserved</output>
+</TbForm>
+
+@code {
+    private TbTextField<string> _siteField = default!;
+    private string? _site;
+    private string? _siteError;
+    private bool _saving;
+    private string? _reserved;
+
+    private async Task ReserveAsync()
+    {
+        _saving = true;
+        _reserved = null;
+        var error = await SendToServerAsync(_site);
+        _saving = false;
+        if (error is null)
+        {
+            _reserved = $"Reserved {_site}.";
+            return;
+        }
+
+        // The field shows its error first, so a screen reader hears it with the field as focus arrives.
+        _siteError = error;
+        StateHasChanged();
+        await _siteField.FocusAsync();
+    }
+
+    // Stands in for calling a server, which answers with an error about the campsite or with none.
+    private static async Task<string?> SendToServerAsync(string? site)
+    {
+        await Task.Delay(300);
+        return site == "Ridge 12" ? "Ridge 12 is already taken. Choose another campsite." : null;
+    }
+}

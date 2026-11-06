@@ -14,6 +14,8 @@ public static class GuideCatalog
     [
         new("guides/getting-started", "Getting started",
             "Add Trailblazor to an app, render your first component, and choose a render mode."),
+        new("guides/forms", "Forms and validation",
+            "Check what people enter, show server errors, list errors in a summary, and word every message well."),
         new("guides/theming", "Theming", "Light and dark, palettes, density, and changing any design token."),
         new("guides/palettes", "Palettes", "Every built-in palette on real components, in light and dark."),
         new("guides/spacing", "Spacing",

@@ -1,0 +1,29 @@
+@using System.ComponentModel.DataAnnotations
+
+<TbForm Model="_contact" DataAnnotations OnValidSubmit="Save" OnInvalidSubmit="() => _saved = null"
+        aria-label="Emergency contact" Style="max-inline-size: 24rem">
+    <TbTextField Label="Contact's call sign" @bind-Value="_contact.CallSign" Required
+                 RequiredMessage="Enter the contact's call sign." HelperText="Up to 6 characters." />
+    <TbNumberField Label="Contact's age" @bind-Value="_contact.Age" Required
+                   RequiredMessage="Enter the contact's age." />
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit">Save contact</TbButton>
+    </TbStack>
+    <output>@_saved</output>
+</TbForm>
+
+@code {
+    private readonly Contact _contact = new();
+    private string? _saved;
+
+    private void Save() => _saved = $"Saved {_contact.CallSign} as the emergency contact.";
+
+    private sealed class Contact
+    {
+        [StringLength(6, ErrorMessage = "Enter a call sign of 6 characters or fewer.")]
+        public string? CallSign { get; set; }
+
+        [Range(18, 120, ErrorMessage = "Enter the age of a contact who is 18 or over.")]
+        public int? Age { get; set; }
+    }
+}

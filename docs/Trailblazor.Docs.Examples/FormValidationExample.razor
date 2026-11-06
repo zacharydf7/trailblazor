@@ -1,0 +1,28 @@
+@using System.Text.RegularExpressions
+
+<TbForm OnValidSubmit="Save" OnInvalidSubmit="() => _saved = null" aria-label="Group limits"
+        Style="max-inline-size: 24rem">
+    <TbTextField Label="Trail code" @bind-Value="_code" Required RequiredMessage="Enter a trail code."
+                 Validation="CheckCode" HelperText="Two letters and a number, such as PC12." />
+    <TbNumberField Label="Smallest group" @bind-Value="_smallest" Invalid="LimitsCrossed" />
+    <TbNumberField Label="Largest group" @bind-Value="_largest"
+                   Error="@(LimitsCrossed ? "Enter a largest group at least as big as the smallest." : null)" />
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit">Save limits</TbButton>
+    </TbStack>
+    <output>@_saved</output>
+</TbForm>
+
+@code {
+    private string? _code;
+    private int _smallest = 2;
+    private int _largest = 8;
+    private string? _saved;
+
+    private bool LimitsCrossed => _largest < _smallest;
+
+    private static IEnumerable<string> CheckCode(string? code) => Regex.IsMatch(code ?? "", "^[A-Za-z]{2}[0-9]+$")
+        ? [] : ["Enter two letters and a number, such as PC12."];
+
+    private void Save() => _saved = $"Saved groups of {_smallest} to {_largest} on {_code}.";
+}

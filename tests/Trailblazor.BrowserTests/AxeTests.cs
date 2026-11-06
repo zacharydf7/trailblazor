@@ -157,6 +157,21 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(shown).ToBeVisibleAsync();
     }
 
+    // Errors only show once a form is submitted, so this submits each of the form page's forms that starts out empty.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldHaveNoAccessibilityViolations_WhenShowingItsErrorsInEitherTheme(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+        foreach (var submit in new[] { "Sign up", "Save limits", "Save contact", "Reserve", "Request permit",
+            "Send report" })
+        {
+            await Button(page, submit).ClickAsync();
+        }
+
+        await Expect(page.Locator("[data-part=error]")).ToHaveCountAsync(10);
+        await CheckBothThemesAsync(page);
+    }
+
     // The overlay example has no role to target, so this clicks its buttons to show both overlays: report, then page.
     // The page overlay blocks everything behind it, which axe then skips, so the report's overlay is checked first.
     [Theory, ClassData(typeof(AllBrowsers))]
