@@ -13,9 +13,9 @@
             </FilterTemplate>
         </TbColumn>
     </TbDataGrid>
-    <TbText data-testid="camp-filters">
+    <output aria-label="Camp filters">
         @(_filters.Count == 0 ? "No filters." : $"Filters: {string.Join("; ", _filters.Select(Describe))}.")
-    </TbText>
+    </output>
 </TbStack>
 
 @code {

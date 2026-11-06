@@ -24,6 +24,18 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldAddToTheSorts_WhenShiftEnterIsPressedOnAHeader(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        await page.Tb().Grid("Trails").SortAsync("Region");
+
+        await Table(page, "Trails").Locator("th[data-title=Name] [data-part=sort]").FocusAsync();
+        await page.Keyboard.PressAsync("Shift+Enter");
+
+        await Expect(Table(page, "Trails").Locator(".tb-data-grid__sort-order")).ToHaveCountAsync(2);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Grid_ShouldSortFromTheKeyboard_WhenEnterIsPressedOnAHeader(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");
@@ -42,7 +54,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");
         var trails = page.Tb().Grid("Trails");
-        var chosen = page.GetByTestId("chosen");
+        var chosen = Readout(page, "Chosen and planned");
 
         await trails.SelectAsync("Cedar Flats");
         await (await trails.CellAsync("Fern Gully", "Region")).ClickAsync();
@@ -75,7 +87,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await (await log.CellAsync("Lake camp", "Hours")).ClickAsync();
 
         await Expect(log.Row("Lake camp")).ToHaveAttributeAsync("data-selected", "");
-        await Expect(page.GetByTestId("hike")).ToContainTextAsync("chosen");
+        await Expect(Readout(page, "Chosen hike")).ToContainTextAsync("chosen");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -102,7 +114,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Names(page, "Campsites")).ToHaveTextAsync(["Dune Point"]);
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Filter Region, on" })).ToBeVisibleAsync();
-        await Expect(page.GetByTestId("camp-filters"))
+        await Expect(Readout(page, "Camp filters"))
             .ToHaveTextAsync("Filters: Sites GreaterThanOrEqualTo 16; Region IsAnyOf River valley.");
     }
 
@@ -110,7 +122,8 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task FilterMenu_ShouldLeaveTheRowsAlone_WhenClosedWithEscapeBeforeApplying(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");
-        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = Table(page, "Campsites") }))
+            .ToHaveAttributeAsync("data-ready", "");
         var button = page.GetByRole(AriaRole.Button, new() { Name = "Filter Sites", Exact = true });
         var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Sites" });
 
@@ -129,7 +142,8 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task FilterMenu_ShouldApplyTheValue_WhenEnterIsPressedInIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");
-        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = Table(page, "Campsites") }))
+            .ToHaveAttributeAsync("data-ready", "");
         var menu = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter Name" });
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Filter Name", Exact = true }).ClickAsync();
@@ -467,7 +481,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(grid.Locator("tbody tr[data-part=row]")).ToHaveAttributeAsync("aria-selected", "true");
-        await Expect(page.GetByTestId("keys")).ToHaveTextAsync("Chosen: 1. Map of Cedar Flats.");
+        await Expect(Readout(page, "Chosen and opened")).ToHaveTextAsync("Chosen: 1. Map of Cedar Flats.");
         await Expect(grid.Locator("[tabindex='0']")).ToHaveCountAsync(1);
         await Expect(page.Tb().Grid("Trail keys").Row("Cedar Flats")).ToBeVisibleAsync();
     }
@@ -490,7 +504,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync(" ");
 
         // Only the body row's Space selects; had the header's selected every row, this one would now be left out.
-        await Expect(page.GetByTestId("keys")).ToHaveTextAsync("Chosen: 1.");
+        await Expect(Readout(page, "Chosen and opened")).ToHaveTextAsync("Chosen: 1.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -654,7 +668,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await cell.Locator("input").FillAsync("Cedar Flats loop");
         await page.Keyboard.PressAsync("Enter");
 
-        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Name of Cedar Flats loop.");
+        await Expect(Readout(page, "Last cell saved")).ToHaveTextAsync("Saved Name of Cedar Flats loop.");
         await Expect(cell).ToHaveTextAsync("Cedar Flats loop");
         await Expect(cell).ToBeFocusedAsync();
     }
@@ -674,7 +688,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(cell.Locator("[data-part=editor]")).ToHaveCountAsync(0);
         await Expect(cell).ToHaveTextAsync("6.4");
-        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Nothing saved yet.");
+        await Expect(Readout(page, "Last cell saved")).ToHaveTextAsync("Nothing saved yet.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -686,9 +700,9 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await cell.DblClickAsync();
         await cell.Locator("input").FillAsync("Eagle Ridge");
-        await page.GetByTestId("saved").ClickAsync();
+        await Readout(page, "Last cell saved").ClickAsync();
 
-        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Name of Eagle Ridge.");
+        await Expect(Readout(page, "Last cell saved")).ToHaveTextAsync("Saved Name of Eagle Ridge.");
         await Expect(cell).ToHaveTextAsync("Eagle Ridge");
     }
 
@@ -724,7 +738,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(cell).ToHaveTextAsync("Eagle Ridge traverse");
         await Expect(cell).ToBeFocusedAsync();
-        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Nothing saved yet.");
+        await Expect(Readout(page, "Last cell saved")).ToHaveTextAsync("Nothing saved yet.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -750,7 +764,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ArrowDown");
         await page.Keyboard.PressAsync("Enter");
 
-        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Difficulty of Pine Hollow loop.");
+        await Expect(Readout(page, "Last cell saved")).ToHaveTextAsync("Saved Difficulty of Pine Hollow loop.");
         await Expect(cell).ToHaveTextAsync("Moderate");
         await Expect(cell).ToBeFocusedAsync();
         await Expect(grid.Locator("tr[data-key='1']")).ToHaveAttributeAsync("aria-selected", "true");
@@ -767,7 +781,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await cell.GetByRole(AriaRole.Combobox).ClickAsync();
         await cell.GetByRole(AriaRole.Option, new() { Name = "Moderate" }).ClickAsync();
 
-        await Expect(page.GetByTestId("saved")).ToHaveTextAsync("Saved Difficulty of Eagle Ridge traverse.");
+        await Expect(Readout(page, "Last cell saved")).ToHaveTextAsync("Saved Difficulty of Eagle Ridge traverse.");
         await Expect(cell).ToHaveTextAsync("Moderate");
         await Expect(grid.Locator("tr[data-key='2']")).ToHaveAttributeAsync("aria-selected", "true");
     }
@@ -841,10 +855,10 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Tab");
         await page.Keyboard.PressAsync("Tab");
         await Expect(row.Locator("td[data-column=Name] input")).ToBeFocusedAsync();
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("No row saved yet.");
         await page.Keyboard.PressAsync("Enter");
 
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("Saved Cedar Flats loop.");
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("Saved Cedar Flats loop.");
         await Expect(row.Locator("td")).ToHaveTextAsync(["Cedar Flats loop", "4.5", "Easy", "South"]);
         await Expect(row.Locator("td[data-column=Name]")).ToBeFocusedAsync();
     }
@@ -859,10 +873,10 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await row.Locator("td[data-column=LengthKm]").DblClickAsync();
         await row.GetByRole(AriaRole.Spinbutton).FillAsync("15");
         await row.Locator("td[data-column=Name] input").ClickAsync();
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
-        await page.GetByTestId("row-saved").ClickAsync();
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("No row saved yet.");
+        await Readout(page, "Last row saved").ClickAsync();
 
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("Saved Eagle Ridge traverse.");
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("Saved Eagle Ridge traverse.");
         await Expect(row.Locator("td[data-column=LengthKm]")).ToHaveTextAsync("15.0");
     }
 
@@ -876,10 +890,10 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         await row.Locator("td[data-column=Name]").DblClickAsync();
         await row.Locator("td[data-column=Name] input").FillAsync("Cedar Flats loop");
         await row.Locator("td[data-column=Region]").ClickAsync();
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
-        await page.GetByTestId("row-saved").ClickAsync();
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("No row saved yet.");
+        await Readout(page, "Last row saved").ClickAsync();
 
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("Saved Cedar Flats loop.");
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("Saved Cedar Flats loop.");
         await Expect(row.Locator("[data-part=editor]")).ToHaveCountAsync(0);
     }
 
@@ -900,7 +914,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(row.Locator("[data-part=editor]")).ToHaveCountAsync(0);
         await Expect(row.Locator("td[data-column=Name]")).ToHaveTextAsync("Eagle Ridge traverse");
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("No row saved yet.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -919,7 +933,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(row.Locator("[data-part=editor], [data-part=row-actions]")).ToHaveCountAsync(0);
         await Expect(row.Locator("td[data-column=Name]")).ToHaveTextAsync("Pine Hollow loop");
-        await Expect(page.GetByTestId("row-saved")).ToHaveTextAsync("No row saved yet.");
+        await Expect(Readout(page, "Last row saved")).ToHaveTextAsync("No row saved yet.");
         Assert.True(await page.EvaluateAsync<bool>("() => window.escapeUsed"));
     }
 
@@ -928,4 +942,7 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static ILocator Names(IPage page, string grid = "Trails") =>
         Table(page, grid).Locator("tbody td[data-column=Name]");
+
+    private static ILocator Readout(IPage page, string name) =>
+        page.GetByRole(AriaRole.Status, new() { Name = name, Exact = true });
 }

@@ -67,6 +67,9 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // Extra testing advice for the page; text in backticks shows as code.
     public string? TestingTip { get; init; }
 
+    // The same, as a list, for a component with many things to say.
+    public IReadOnlyList<string> TestingTips { get; init; } = [];
+
     // What the component reports through the Trailblazor meter; text in backticks shows as code.
     public IReadOnlyList<string> Telemetry { get; init; } = [];
 
@@ -3180,17 +3183,46 @@ public static class ExampleCatalog
         {
             RightToLeftKeys = "Left moves to the next cell and Right to the previous one.",
             FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for rows of data people sort, filter, page through, select or edit.",
+            ],
+            WhenNotToUse =
+            [
+                "For a few facts people only read, use a [table](components/table).",
+                "For a short set of items that each have their own actions, use a [list](components/list).",
+                "For items nested inside each other, use a [tree view](components/tree-view).",
+            ],
+            Related = ["table", "list", "tree-view", "pagination"],
             Sections =
             [
-                new("sort-page-and-select", "Sort, page and select", "Click a header to sort by it, page through the "
-                    + "rows, and check rows to select them. A column's `Cell` template can hold buttons.",
+                new("sort-page-and-select", "Sort, page and select", "Click a header to sort by it: the next click "
+                    + "reverses it, and the next stops sorting by it. Shift adds a column to the sorts. Pages come "
+                    + "with a line such as \"1–5 of 7\" and a `TbPagination`, and `PageSizes` adds a list of page "
+                    + "sizes. `Multiple` selection gives each row a checkbox and adds one to the header that selects "
+                    + "every row on the page. `Single` uses radio buttons. A column's `Cell` template can hold buttons.",
                     typeof(DataGridExample)),
+                new("row-click", "Clicking a row", "With a `SelectionMode` set, a click on a row selects it, unless the "
+                    + "click lands on a button, link or field inside the row. `RowClickSelects=\"false\"` leaves "
+                    + "selecting to the checkboxes, and `OnRowClick` reports the click.",
+                    typeof(DataGridRowClickExample)),
+                new("columns", "Column options", "`Width` sets a column's width and `Align` lines up its cells. Without "
+                    + "`Align`, numbers line up at the end and everything else at the start. `SortBy` sorts by "
+                    + "something other than what the column shows, such as a rank, and `Sorts` sets the sort the grid "
+                    + "starts with.", typeof(DataGridColumnsExample)),
+                new("row-classes", "Row classes", "`RowClass` gives a row a class of your own, from its item. Say the "
+                    + "same thing in words too, as Status does here, since color and strikethrough don't reach "
+                    + "everyone.", typeof(DataGridRowClassExample)),
                 new("filter", "Filter", "A `Filterable` column gets a filter under its header that suits its "
                     + "field: text it contains, a number it equals, a range of dates, a choice of an enum's values, "
-                    + "or yes or no for a bool. Bind `Filters` to read or set them.", typeof(DataGridFilterExample)),
+                    + "or yes or no for a bool. A text filter applies when typing pauses, and the others as soon as "
+                    + "they change. The grid then goes back to its first page. Bind `Filters` to read or set them.",
+                    typeof(DataGridFilterExample)),
                 new("filter-menu", "Filter menu", "With `FilterMode` set to `Menu`, each filterable header gets a "
                     + "filter button whose menu takes a condition and a value, or has checkboxes for the values of an "
-                    + "enum, a bool or a column's `FilterChoices`. A `FilterTemplate` draws a filter of your own.",
+                    + "enum, a bool or a column's `FilterChoices`. Nothing applies until you press Apply, or Enter in "
+                    + "the value field. Clear removes the column's filter. A `FilterTemplate` draws a filter of your "
+                    + "own.",
                     typeof(DataGridFilterMenuExample)),
                 new("group-rows", "Group rows", "The rows can be grouped by any `Groupable` column, picked from the "
                     + "\"Group by\" list or set from code through `Groups`. Groups nest in the order they are picked, "
@@ -3199,30 +3231,50 @@ public static class ExampleCatalog
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
+                new("height", "Fixed height and scrolling to a row", "`Height` gives the rows a box of their own to "
+                    + "scroll in, under headers that stay in view. `ScrollToAsync` goes to the page that holds a row "
+                    + "and scrolls to it.", typeof(DataGridHeightExample)),
                 new("virtual-rows", "Virtual rows", "With `Virtualize` and a `Height`, only the rows in view are "
                     + "drawn, so the grid can hold thousands of rows without pages. `ScrollToAsync` scrolls to any "
                     + "row held in memory. With a `DataProvider`, rows load as they scroll into view, and "
                     + "`ScrollToAsync` finds only a loaded row.",
                     typeof(DataGridVirtualExample)),
                 new("cell-navigation", "Cell navigation", "With `CellNavigation`, the grid is one stop for Tab, and "
-                    + "the arrow keys move between its cells. Enter goes into a cell's fields, Escape comes back out, "
-                    + "and Space selects or unselects the row.", typeof(DataGridKeyboardExample)),
+                    + "the arrow keys move between its cells. A cell holding just a button, link, checkbox or radio "
+                    + "button hands focus to it, and Enter goes into any other cell's fields.",
+                    typeof(DataGridKeyboardExample)),
                 new("edit-cells", "Edit cells", "An `Editable` column's cells are edited in place: double-click one, "
-                    + "or press Enter or F2 on it, then Enter saves and Escape cancels. Each value is checked by its "
-                    + "field's data annotations and the column's `Validate`, and `OnCellEdit` gets each saved edit.",
+                    + "or press Enter or F2 on it, then Enter saves, Escape cancels, and leaving the field saves too. "
+                    + "Each value is checked by its field's data annotations and the column's `Validate`, and "
+                    + "`OnCellEdit` gets each saved edit. An `Editable` column turns on cell navigation.",
                     typeof(DataGridEditExample)),
                 new("edit-rows", "Edit rows", "With `EditMode` set to `Row`, an edit opens every editable cell of "
                     + "the row: Tab moves between its fields and its Save and Cancel buttons, Enter saves the row, "
-                    + "Escape cancels it, and `OnRowEdit` gets all of its values at once.",
-                    typeof(DataGridRowEditExample)),
+                    + "Escape cancels it, focus leaving the row saves it, and `OnRowEdit` gets all of its values at "
+                    + "once.", typeof(DataGridRowEditExample)),
                 new("save-state", "Save the view", "`State` holds the rows' sorts, filters, groups, page and page size "
                     + "in one `GridState`. Bind it to save how the user arranged the rows, such as to local storage "
                     + "as JSON, and set it to restore them; filter values read back from JSON take their columns' "
                     + "types.", typeof(DataGridStateExample)),
+                new("empty", "Empty", "With no rows, the grid says so. `EmptyContent` shows your own content, such as "
+                    + "a way to add the first row.",
+                    typeof(DataGridEmptyExample)),
+                new("loading", "Loading", "Set `Loading` while the rows for `Items` are on their way. The table is "
+                    + "`aria-busy`, and with no rows yet a message shows. A `DataProvider` does this by itself.",
+                    typeof(DataGridLoadingExample)),
+                new("failed-load", "A failed load", "When a `DataProvider` fails, the grid says so and offers to try "
+                    + "again, and `OnLoadFailed` gets the exception. `RefreshAsync` loads again from code.",
+                    typeof(DataGridFailedLoadExample)),
                 new("server-data", "Rows from a server", "A `DataProvider` loads one page at a time, sorted by the "
-                    + "server, which says how many rows there are in all.", typeof(DataGridServerExample)),
-                new("reorder-rows", "Reorder rows", "With `OnRowMove`, each row gets a handle that drags it or "
-                    + "moves it with the arrow keys, and the app applies the move.", typeof(DataGridReorderExample)),
+                    + "server, which says how many rows there are in all. It receives the page, the sorts and the "
+                    + "filters the grid asks for, and a new request cancels the last one.",
+                    typeof(DataGridServerExample)),
+                new("reorder-rows", "Reorder rows", "With `OnRowMove`, rows held in `Items` can be put in order while "
+                    + "the grid isn't sorted or filtered. Each row gets a handle in an \"Order\" column: drag it, press "
+                    + "the arrow keys on it, or choose from its menu. Moves can cross pages, and the app applies each "
+                    + "one. `CanMoveRow` can refuse a move and say why.", typeof(DataGridReorderExample)),
+                new("labels", "Built-in text", "`Labels` replaces the words the grid shows and reads out, such as the "
+                    + "header checkbox's name and the page size list's label.", typeof(DataGridLabelsExample)),
             ],
             Api =
             [
@@ -3233,66 +3285,104 @@ public static class ExampleCatalog
                 typeof(GridState),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
-            Accessibility =
+            Keyboard =
+            [
+                new(["Tab"], "Reaches every control in the grid, each a native button, link or input.")
+                    { When = "Without cell navigation" },
+                new(["Enter", "Space"], "On a sortable header, sorts by it alone, then reverses it, then stops sorting "
+                    + "by it.") { When = "Sorting" },
+                new(["Shift+Enter"], "On a sortable header, adds it to the sorts.") { When = "Sorting" },
+                new(["Space"], "On a row's checkbox, selects or unselects the row. On its radio button, selects "
+                    + "the row.") { When = "Selecting" },
+                new(["Tab"], "Reaches the grid once.") { When = "With cell navigation" },
+                new(["Up", "Down", "Left", "Right"], "Moves between cells.") { When = "With cell navigation" },
+                new(["Home", "End"], "Goes to the ends of the row.") { When = "With cell navigation" },
+                new(["Ctrl+Home", "Ctrl+End"], "Goes to the first or last cell.") { When = "With cell navigation" },
+                new(["Page Up", "Page Down"], "Moves by a screenful, scrolling a virtualized grid to rows not yet "
+                    + "drawn.") { When = "With cell navigation" },
+                new(["Space"], "Selects or unselects the row of the cell in focus.") { When = "With cell navigation" },
+                new(["Enter", "F2"], "Moves into the cell's fields, or starts editing an `Editable` cell.")
+                    { When = "With cell navigation" },
+                new(["Tab"], "Cycles through the cell's fields.") { When = "Inside a cell" },
+                new(["Escape"], "Comes back out to the cell.") { When = "Inside a cell" },
+                new(["Enter"], "Saves the edit, and focus goes back to the cell.") { When = "Editing a cell" },
+                new(["Escape"], "Cancels the edit, and focus goes back to the cell.") { When = "Editing a cell" },
+                new(["Tab"], "Moves between the row's fields and its Save and Cancel buttons.")
+                    { When = "Editing a row" },
+                new(["Enter"], "Saves the row.") { When = "Editing a row" },
+                new(["Escape"], "Cancels the row's edit.") { When = "Editing a row" },
+                new(["Enter"], "In the value field, applies the filter.") { When = "In a filter menu" },
+                new(["Escape"], "Closes the menu.") { When = "In a filter menu" },
+                new(["Up", "Down"], "Moves the row up or down, and focus stays on the handle.")
+                    { When = "On a row's move handle" },
+                new(["Home", "End"], "Moves the row to the start or end.") { When = "On a row's move handle" },
+                new(["Enter", "Space"], "Opens its menu of moves.") { When = "On a row's move handle" },
+                new(["Escape"], "Cancels a drag.") { When = "On a row's move handle" },
+            ],
+            Labeling =
             [
                 "It is a native `table` named by `AriaLabel`, with a header cell for each column, so screen readers "
                     + "read each cell with its column.",
-                "A sortable column's header is a button. A click sorts by it alone, the next reverses it, and the next "
-                    + "stops sorting by it; Shift adds it to the sorts. The first sort sets `aria-sort` on its header, "
-                    + "later ones say their place, and every change is read out, such as \"Sorted by Name, "
-                    + "ascending.\"",
-                "`Multiple` selection gives each row a checkbox named \"Select\" followed by the row's label, and the "
-                    + "header a checkbox that selects every row on the page and shows \"mixed\" when only some are "
-                    + "selected. `Single` uses radio buttons. Clicking a row selects it too, unless the click lands on "
-                    + "a button, link or field in it.",
-                "Pages come with a line such as \"1–5 of 7\" and a `TbPagination`; `PageSizes` adds a list of page "
-                    + "sizes.",
-                "Filterable columns add a row of filters under the headers, each a labeled field named \"Filter\" "
-                    + "followed by the column's title. A text filter applies when typing pauses; the others apply "
-                    + "as soon as they change. A filtered column's header gets `data-filtered`, the grid goes back "
-                    + "to its first page, and the count of rows shown is read out, such as \"Rows shown: 2.\"",
-                "In `Menu` mode each filter is a `TbPopover` behind an icon button named \"Filter\" and the "
-                    + "column's title, with \", on\" added while the column is filtered. The menu holds a labeled "
-                    + "\"Condition\" select and \"Value\" field, a \"Value\" date range, or a checkbox group of "
-                    + "values, and applies nothing until Apply, or Enter in the value, is pressed; Clear removes the "
-                    + "column's filter. A `FilterTemplate` replaces the menu's contents.",
-                "Each group's rows follow a heading row with a button that opens or closes the group and reports "
-                    + "its state with `aria-expanded`. The button is named by the column, the group's value and its "
-                    + "row count, such as \"Region: North ridge Rows: 2\". The \"Group by\" list is a "
-                    + "`TbMultiSelect`.",
+                "A row's checkbox is named \"Select\" followed by the row's label, which is its `RowLabel` or else the "
+                    + "text of the first column that has any.",
+                "Each filter is a labeled field named \"Filter\" followed by the column's title. In `Menu` mode, its "
+                    + "icon button has that name, with \", on\" added while the column is filtered, and the menu "
+                    + "holds a labeled \"Condition\" select and \"Value\" field, a \"Value\" date range, or a checkbox "
+                    + "group of values.",
+                "A group's button is named by the column, the group's value and its row count, such as \"Region: "
+                    + "North ridge Rows: 2\". The \"Group by\" list is a `TbMultiSelect`.",
+                "An edit's field is named by its column, and a row's Save and Cancel buttons by the row, such as "
+                    + "\"Save Cedar Flats\".",
+                "A row's move handle is a menu `button` named \"Move\" followed by the row's label.",
+            ],
+            Announcements =
+            [
+                "Every change of sort is read out, such as \"Sorted by Name, ascending.\"",
+                "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\"",
+                "A failed load and a `DataProvider` load with no rows are read out. With `EmptyContent`, set "
+                    + "`Labels.Empty` to what should be read out.",
+                "An edit's error shows under its field and is read out.",
+                "Each move of a row is read out with its new position, and so is the reason `CanMoveRow` refuses one.",
+            ],
+            Accessibility =
+            [
+                "The first sort sets `aria-sort` on its header. With several sorts, each sorted header's button also "
+                    + "says its place, such as \"sort 2 of 3, ascending\".",
+                "The header checkbox shows \"mixed\" when only some rows are selected.",
+                "A group's button reports its state with `aria-expanded`.",
                 "A pinned column moves to its side of the table in the page's order too, so screen readers and Tab "
                     + "reach its cells in the order they show.",
                 "With `Virtualize`, the table's `aria-rowcount` holds the number of rows, headers included, and "
                     + "each drawn row's `aria-rowindex` its place, so screen readers can say where a row is among "
                     + "rows that aren't drawn.",
-                "While rows load the table is `aria-busy`. A `DataProvider` receives the page, the sorts and the "
-                    + "filters the grid asks for, and a new request cancels the last one. A failed load is read out "
-                    + "and offers to try again, a load with no rows is read out too, and after the page changes a "
-                    + "filter of its own, `RefreshAsync` loads again. With `EmptyContent`, set `Labels.Empty` to "
-                    + "what screen readers should hear instead.",
-                "With `CellNavigation` the table takes the ARIA grid role, so Tab reaches it once and the arrow keys "
-                    + "move between cells: Home and End go to a row's ends, Ctrl+Home and Ctrl+End to the first and "
-                    + "last cells, and Page Up and Page Down by a screenful, scrolling a virtualized grid to rows not "
-                    + "yet drawn. A cell holding just a button, link, checkbox or radio button hands focus to it, "
-                    + "unless it is a menu's button or a row's move handle, which use the arrow keys themselves. Enter "
-                    + "or F2 moves into any other cell's fields, where Tab cycles through them and Escape comes back "
-                    + "out. Space selects or unselects the row of the cell in focus, and rows say whether they are "
-                    + "selected with `aria-selected`.",
-                "An `Editable` column turns on cell navigation, so the table is an ARIA grid even without "
-                    + "`CellNavigation`. An edit's field is named "
-                    + "by its column, its error shows under it and is read out, and focus goes back to the cell when "
-                    + "Enter or Escape ends the edit. Leaving the field saves it. In `Row` mode, focus leaving the "
-                    + "row saves it, and its Save and Cancel buttons are named for the row, such as \"Save Cedar "
-                    + "Flats\".",
-                "Without `CellNavigation`, Tab reaches every control in the grid, each a native button, link or input. "
-                    + "Only a pointer clicks a row, so whatever `OnRowClick` does needs a button in a cell too.",
-                "With `OnRowMove`, rows held in `Items` can be put in order while the grid isn't sorted or "
-                    + "filtered. Each row gains a handle in an \"Order\" column: a menu `button` named \"Move\" "
-                    + "followed by the row's label. Drag it, press the up and down arrows, Home or End on it, or "
-                    + "choose from its menu. Moves cross pages, focus stays on the handle, and each is read out with "
-                    + "the row's new position. `CanMoveRow` can refuse a move, with a reason shown beside the drop "
-                    + "and read out. Each handle is a menu with a script of its own, so give a grid whose rows move "
-                    + "a `PageSize` when it holds many rows.",
+                "While rows load the table is `aria-busy`.",
+                "With `CellNavigation`, or an `Editable` column, the table takes the ARIA grid role, and rows say "
+                    + "whether they are selected with `aria-selected`.",
+                "A cell holding just a menu's button or a row's move handle keeps focus until Enter, since those "
+                    + "controls use the arrow keys.",
+            ],
+            AppDuties =
+            [
+                "Only a pointer clicks a row, so whatever `OnRowClick` does needs a button in a cell too, as "
+                    + "[Clicking a row](components/data-grid#row-click) shows.",
+                "Set `RowLabel` when a row's first column doesn't say which row it is, so its checkbox and move handle "
+                    + "can.",
+            ],
+            BeforeInteractive =
+            [
+                "With `Items` and no `Virtualize`, it renders its first page of rows as a plain table, so they can be "
+                    + "read at once. Sorting, filtering, paging and selecting start working once the page is interactive.",
+            ],
+            Notes =
+            [
+                new("A row draws again only when its item, its selection, its `RowClass`, its `RowLabel` or the "
+                    + "columns change. When a `Cell` template shows something else, call `RenderRows` after it "
+                    + "changes. After changing `Items` in place, or after the page changes a filter of its own, call "
+                    + "`RefreshAsync`.") { Pitfall = true },
+                new("Each move handle is a menu with a script of its own, so set a `PageSize` on a grid with many rows "
+                    + "that can move."),
+                new("A row's `data-key` is its key's text for a string, number or date key, and a made-up id such as "
+                    + "`key-3` for any other key, when the text is empty, or when another key has it."),
             ],
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
@@ -3334,36 +3424,35 @@ public static class ExampleCatalog
                     </TbColumn>
                 </TbDataGrid>
                 """,
-            TestingTip = "`page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row by a "
-                + "cell's text with `Row(\"Cedar Flats\")`, and a cell with "
-                + "`await CellAsync(\"Cedar Flats\", \"Region\")`; "
-                + "`SortAsync(\"Name\", descending: true)`, `FilterAsync(\"Name\", \"ridge\")`, "
-                + "`SelectAsync(...)` and `GoToPageAsync(2)` drive it; sorting, filtering and paging wait for a "
-                + "`DataProvider`'s rows. In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` "
-                + "picks a condition too, and `FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly "
-                + "those values picked, in a menu's checkboxes or the filter row's multiple select. A row's choice filter is a select named "
-                + "for its column, such as \"Filter Difficulty\", driven with "
-                + "`page.Tb().Select(\"Filter Difficulty\").ChooseAsync(\"Easy\")`. "
-                + "A filter cell's `data-value` holds the column's applied filter values as invariant text, with "
-                + "a range's two dates separated by a space. Without the helpers, wait for the "
-                + "table's `aria-busy` to clear, and for `data-ready` on the grid's root, `[data-part=grid]`, "
-                + "before clicking a row. Rows carry `data-key` and `data-selected`, and cells `data-column`, the "
-                + "field's path such as `Shipping.City` unless the column has an `Id`. A pinned column's header "
-                + "and cells also carry `data-pinned`, `start` or `end`. A row's `data-key` is its "
-                + "key's text for a string, number or date key, and a made-up id such as `key-3` for any other key, or "
-                + "when the text is empty or when another key has it. In bUnit, `cut.Tb().Grid(\"Trails\")` from "
-                + "`Trailblazor.Testing` has the same `Row`, `SelectAsync` and `FilterAsync`, and "
-                + "`ClickRowAsync(\"Cedar Flats\")` clicks a row as the browser reports it, raising `OnRowClick` "
-                + "and, with `RowClickSelects`, selecting it; a plain bUnit `Click()` on the row doesn't. A row "
-                + "draws again only when its item, its selection, its `RowClass`, its `RowLabel` or the columns "
-                + "change, so a test "
-                + "that changes what a `Cell` template shows calls `RenderRows`, as the app does, and one that "
-                + "changes `Items` in place calls `RefreshAsync`. A virtualized grid draws only the rows in view, so "
-                + "a test scrolls its `[data-part=scroll]` box, or calls `ScrollToAsync`, before it looks for a "
-                + "row further down. `page.Tb().Select(\"Group by\").ChooseAsync(\"Region\")` groups the rows; each "
-                + "group's heading is a `[data-part=group]` row whose `[data-part=group-toggle]` button opens or "
-                + "closes it. Double-click a cell, or press Enter on it, to edit it; its field is named for its "
-                + "column, so `cut.Tb().NumberField(\"Length (km)\")` finds it in bUnit, and Enter saves.",
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row with "
+                    + "`Row(\"Cedar Flats\")` and a cell with `await CellAsync(\"Cedar Flats\", \"Region\")`.",
+                "`SortAsync(\"Name\", descending: true)`, `FilterAsync(\"Name\", \"ridge\")`, `SelectAsync(...)` and "
+                    + "`GoToPageAsync(2)` drive it, and sorting, filtering and paging wait for a `DataProvider`'s rows.",
+                "In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` picks a condition too, and "
+                    + "`FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly those values picked, in a "
+                    + "menu's checkboxes or the filter row's multiple select.",
+                "In the filter row, a choice filter is a select named for its column: "
+                    + "`page.Tb().Select(\"Filter Difficulty\").ChooseAsync(\"Easy\")`.",
+                "`page.Tb().Select(\"Group by\").ChooseAsync(\"Region\")` groups the rows. Each group's heading is a "
+                    + "`[data-part=group]` row whose `[data-part=group-toggle]` button opens or closes it.",
+                "Without the helpers, wait for the table's `aria-busy` to clear, and for `data-ready` on "
+                    + "`[data-part=grid]` before clicking a row.",
+                "Rows carry `data-key` and `data-selected`, a filtered column's header `data-filtered`, and cells "
+                    + "`data-column`, the field's path such as "
+                    + "`Shipping.City` unless the column has an `Id`. A pinned column's header and cells also carry "
+                    + "`data-pinned`, `start` or `end`, and a filter cell's `data-value` holds its applied values as "
+                    + "invariant text, with a range's two dates separated by a space.",
+                "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync` and "
+                    + "`FilterAsync`.",
+                "In bUnit, `ClickRowAsync(\"Cedar Flats\")` clicks a row as the browser reports it, raising "
+                    + "`OnRowClick` and, with `RowClickSelects`, selecting it. A plain `Click()` on the row doesn't.",
+                "Double-click a cell or press Enter on it to edit it. Its field is named for its column, so in bUnit "
+                    + "`cut.Tb().NumberField(\"Length (km)\")` finds it, and Enter saves.",
+                "A virtualized grid draws only the rows in view, so scroll its `[data-part=scroll]` box, or call "
+                    + "`ScrollToAsync`, before looking for a row further down.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "

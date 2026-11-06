@@ -14,11 +14,11 @@
             </Cell>
         </TbColumn>
     </TbDataGrid>
-    <TbText data-testid="chosen">
+    <output aria-label="Chosen and planned">
         @(_chosen.Count == 0 ? "No trails chosen."
             : $"Chosen: {string.Join(", ", _chosen.Select(trail => trail.Name))}.")
         @(_planned is null ? null : $" Planning {_planned}.")
-    </TbText>
+    </output>
 </TbStack>
 
 @code {

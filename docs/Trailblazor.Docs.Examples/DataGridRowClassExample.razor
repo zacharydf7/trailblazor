@@ -1,0 +1,25 @@
+<style>
+    .closed-trail td {
+        color: var(--tb-color-text-muted);
+        text-decoration: line-through;
+    }
+</style>
+
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail status" KeySelector="trail => trail.Id"
+            RowClass="@(trail => trail.Open ? null : "closed-trail")">
+    <TbColumn Field="trail => trail.Name" />
+    <TbColumn Title="Status" Id="status">
+        <Cell>@(context.Open ? "Open" : "Closed")</Cell>
+    </TbColumn>
+</TbDataGrid>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", true),
+        new(2, "Cedar Flats", false),
+        new(3, "Summit Gate", true),
+    ];
+
+    private sealed record Trail(int Id, string Name, bool Open);
+}

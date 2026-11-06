@@ -6,9 +6,9 @@
         <TbColumn Field="hike => hike.Date" Format="d" Filterable Sortable />
         <TbColumn Field="hike => hike.Loop" Filterable />
     </TbDataGrid>
-    <TbText data-testid="filters">
+    <output aria-label="Hike filters">
         @(_filters.Count == 0 ? "No filters." : $"Filters: {string.Join("; ", _filters.Select(Describe))}.")
-    </TbText>
+    </output>
 </TbStack>
 
 @code {

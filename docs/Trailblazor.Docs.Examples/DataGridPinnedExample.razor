@@ -18,7 +18,7 @@
             </Cell>
         </TbColumn>
     </TbDataGrid>
-    <TbText data-testid="details">@(_shown is null ? "No trail open." : $"Showing {_shown}.")</TbText>
+    <output aria-label="Trail open">@(_shown is null ? "No trail open." : $"Showing {_shown}.")</output>
 </TbStack>
 
 @code {

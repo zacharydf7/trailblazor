@@ -1,0 +1,21 @@
+<TbStack Gap="3">
+    <TbDataGrid @ref="_grid" TItem="Marker" Items="Markers" AriaLabel="Trail markers" KeySelector="marker => marker.Id"
+                Height="14rem" PageSize="20" Size="Size.Small">
+        <TbColumn Field="marker => marker.Id" Title="Marker" />
+        <TbColumn Field="marker => marker.Trail" />
+    </TbDataGrid>
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="() => _grid.ScrollToAsync(Markers[^1])">
+            Go to the last marker
+        </TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private static readonly Marker[] Markers =
+        [.. Enumerable.Range(1, 60).Select(id => new Marker(id, id % 2 == 0 ? "Pine Hollow loop" : "Cedar Flats"))];
+
+    private TbDataGrid<Marker> _grid = default!;
+
+    private sealed record Marker(int Id, string Trail);
+}

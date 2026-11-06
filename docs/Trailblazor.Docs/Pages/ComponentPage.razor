@@ -200,6 +200,10 @@
             {
                 <TbText>@DocsText.Render(tip)</TbText>
             }
+            @if (example.TestingTips.Count > 0)
+            {
+                @Notes("Testing tips", example.TestingTips)
+            }
             @if (example.DataParts.Count > 0)
             {
                 <TbText>

@@ -1,0 +1,28 @@
+<TbStack Gap="4">
+    <TbDataGrid TItem="Trail" Items="None" AriaLabel="Closures" KeySelector="trail => trail.Id">
+        <TbColumn Field="trail => trail.Name" />
+        <TbColumn Field="trail => trail.Region" />
+    </TbDataGrid>
+    <TbDataGrid TItem="Trail" Items="_trips" AriaLabel="Saved trips" KeySelector="trail => trail.Id">
+        <EmptyContent>
+            <TbStack Gap="2" Align="Align.Center">
+                <TbText>Trips you save show here.</TbText>
+                <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="PlanATrip">Plan a trip</TbButton>
+            </TbStack>
+        </EmptyContent>
+        <ChildContent>
+            <TbColumn Field="trail => trail.Name" />
+            <TbColumn Field="trail => trail.Region" />
+        </ChildContent>
+    </TbDataGrid>
+</TbStack>
+
+@code {
+    private static readonly Trail[] None = [];
+
+    private Trail[] _trips = [];
+
+    private void PlanATrip() => _trips = [new(1, "Pine Hollow loop", "North ridge")];
+
+    private sealed record Trail(int Id, string Name, string Region);
+}

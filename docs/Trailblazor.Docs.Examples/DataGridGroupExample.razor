@@ -6,9 +6,9 @@
         <TbColumn Field="trail => trail.Difficulty" Groupable Sortable />
         <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
     </TbDataGrid>
-    <TbText data-testid="groups">
+    <output aria-label="Groups">
         @(_groups.Count == 0 ? "Not grouped." : $"Grouped by {string.Join(", then ", _groups)}.")
-    </TbText>
+    </output>
 </TbStack>
 
 @code {

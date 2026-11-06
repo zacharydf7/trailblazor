@@ -5,6 +5,14 @@ namespace Trailblazor.Tests.Docs;
 public class DocsSearchTests
 {
     [Fact]
+    public void Find_ShouldFindTheDataGridsTestingAdvice_WhenGivenAHelperItNames()
+    {
+        var results = DocsSearch.Find("ClickRowAsync");
+
+        Assert.Contains(results, result => result.Page == "Data grid");
+    }
+
+    [Fact]
     public void Find_ShouldNotMatchAMethodsParameters_WhenGivenAParameterName()
     {
         var results = DocsSearch.Find("preventScroll");

@@ -9,7 +9,7 @@
         <TbColumn Field="trail => trail.Difficulty" Editable />
         <TbColumn Field="trail => trail.Open" Editable />
     </TbDataGrid>
-    <TbText data-testid="saved">@(_saved ?? "Nothing saved yet.")</TbText>
+    <output aria-label="Last cell saved">@(_saved ?? "Nothing saved yet.")</output>
 </TbStack>
 
 @code {

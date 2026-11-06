@@ -1,0 +1,29 @@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail maps" KeySelector="trail => trail.Id"
+                SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_chosen" RowClickSelects="false"
+                OnRowClick="trail => _open = trail.Name">
+        <TbColumn Field="trail => trail.Name" />
+        <TbColumn Field="trail => trail.Region" />
+        <TbColumn Title="Map" Id="map">
+            <Cell>
+                <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _open = context.Name"
+                          aria-label="@($"Open the map of {context.Name}")">Open</TbButton>
+            </Cell>
+        </TbColumn>
+    </TbDataGrid>
+    <output aria-label="Map open">Map open: @(_open ?? "none"). Chosen: @_chosen.Count.</output>
+</TbStack>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", "North ridge"),
+        new(2, "Cedar Flats", "River valley"),
+        new(3, "Summit Gate", "High peaks"),
+    ];
+
+    private IReadOnlyCollection<Trail> _chosen = [];
+    private string? _open;
+
+    private sealed record Trail(int Id, string Name, string Region);
+}

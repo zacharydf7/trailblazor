@@ -6,7 +6,7 @@
         <TbColumn Field="hike => hike.Trail" Sortable />
         <TbColumn Field="hike => hike.Hours" Format="N1" Sortable />
     </TbDataGrid>
-    <TbText data-testid="hike">@(_hike is null ? "No hike chosen." : $"Hike on {_hike.Date:d} chosen.")</TbText>
+    <output aria-label="Chosen hike">@(_hike is null ? "No hike chosen." : $"Hike on {_hike.Date:d} chosen.")</output>
 </TbStack>
 
 @code {
@@ -22,7 +22,7 @@
     // Stands in for a server that sorts, counts and pages the hikes.
     private static async Task<GridResult<Hike>> LoadHikesAsync(GridRequest request, CancellationToken cancel)
     {
-        await Task.Delay(150, cancel);
+        await Task.Delay(800, cancel);
         IEnumerable<Hike> hikes = Hikes;
         foreach (var sort in request.Sorts.Reverse())
         {

@@ -1,0 +1,17 @@
+<TbDataGrid TItem="Hut" Items="Huts" AriaLabel="Huts" KeySelector="hut => hut.Id" Labels="HutLabels"
+            SelectionMode="SelectionMode.Multiple" PageSize="2" PageSizes="[2, 4]">
+    <TbColumn Field="hut => hut.Name" />
+    <TbColumn Field="hut => hut.Beds" />
+</TbDataGrid>
+
+@code {
+    private static readonly DataGridLabels HutLabels = new()
+    {
+        SelectAll = "Choose every hut on this page",
+        PageSize = "Huts per page",
+    };
+
+    private static readonly Hut[] Huts = [new(1, "Alder", 8), new(2, "Birch", 12), new(3, "Cedar", 4), new(4, "Dune", 6)];
+
+    private sealed record Hut(int Id, string Name, int Beds);
+}

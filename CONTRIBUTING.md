@@ -49,7 +49,7 @@ Related only when filled, and the rest always. The H3s under Usage and Accessibi
 | `AppDuties` | Accessibility: What your app must do | What the app must still give or do |
 | `BeforeInteractive` | Accessibility: Before the page is interactive | What renders, works and posts then |
 | `Notes` | Notes and limitations | Behavior, limitations and known issues; a `Pitfall` shows as a warning |
-| `Telemetry`, `Blocks`, `Target`, `TestingTip`, `DataParts` | Their own sections | Counts, styles and how to test it |
+| `Telemetry`, `Blocks`, `Target`, `TestingTip` or `TestingTips`, `DataParts` | Their own sections | Counts, styles and how to test it |
 | `Related` | Related | Catalog names of related components, linked with their summaries |
 
 A field's page adds the shared `AriaLabel` advice to Labeling and the focus events to Notes. Catalog text shows text

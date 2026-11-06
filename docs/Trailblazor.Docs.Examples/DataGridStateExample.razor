@@ -12,7 +12,7 @@
         <TbButton OnClick="Save">Save view</TbButton>
         <TbButton Variant="Variant.Outlined" Disabled="_saved is null" OnClick="Restore">Restore view</TbButton>
     </TbStack>
-    <TbText data-testid="saved-view">@(_saved ?? "No view saved yet.")</TbText>
+    <output aria-label="Saved view">@(_saved ?? "No view saved yet.")</output>
 </TbStack>
 
 @code {

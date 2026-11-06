@@ -12,9 +12,9 @@
             </Cell>
         </TbColumn>
     </TbDataGrid>
-    <TbText data-testid="keys">
+    <output aria-label="Chosen and opened">
         @($"Chosen: {_chosen.Count}.") @(_opened is null ? null : $" Map of {_opened}.")
-    </TbText>
+    </output>
 </TbStack>
 
 @code {

@@ -47,7 +47,8 @@ public class ExampleCatalogTests
             .. example.LabelingNotes, .. example.Announcements, .. example.AppDuties, .. example.BeforeInteractive,
             .. example.NotesShown.Select(note => note.Text), .. example.Keyboard.Select(row => row.Action),
             .. example.Keyboard.Select(row => row.When), .. example.TelemetryNotes,
-            .. example.Shown.Select(section => section.Description), example.TestingTip, example.RightToLeftKeys];
+            .. example.Shown.Select(section => section.Description), example.TestingTip, .. example.TestingTips,
+            example.RightToLeftKeys];
 
         // Matches the path of every link DocsText renders, and anything else written like one.
         var paths = texts.OfType<string>().SelectMany(text => Regex.Matches(text, @"\]\(([^)\s]+)\)"))

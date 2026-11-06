@@ -1,0 +1,26 @@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Camp" Items="_camps" AriaLabel="Camps" KeySelector="camp => camp.Id" Loading="_loading">
+        <TbColumn Field="camp => camp.Name" />
+        <TbColumn Field="camp => camp.Sites" />
+    </TbDataGrid>
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="LoadAsync">Load the camps</TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private Camp[] _camps = [];
+    private bool _loading;
+
+    // Stands in for reading the camps from somewhere slow.
+    private async Task LoadAsync()
+    {
+        _camps = [];
+        _loading = true;
+        await Task.Delay(1500);
+        _camps = [new(1, "Pine Hollow", 4), new(2, "Eagle Ridge", 2), new(3, "Lake camp", 9)];
+        _loading = false;
+    }
+
+    private sealed record Camp(int Id, string Name, int Sites);
+}

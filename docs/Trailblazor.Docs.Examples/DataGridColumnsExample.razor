@@ -1,0 +1,22 @@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail grades" KeySelector="trail => trail.Id"
+            @bind-Sorts="_sorts">
+    <TbColumn Field="trail => trail.Name" Width="50%" />
+    <TbColumn Field="trail => trail.Grade" SortBy="trail => Array.IndexOf(Grades, trail.Grade)" Sortable />
+    <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Width="8rem" Sortable />
+    <TbColumn Field="trail => trail.Dogs" Align="ColumnAlign.Center" />
+</TbDataGrid>
+
+@code {
+    private static readonly string[] Grades = ["Easy", "Moderate", "Hard"];
+
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Eagle Ridge traverse", "Hard", 14.2, "No"),
+        new(2, "Pine Hollow loop", "Moderate", 6.4, "On leash"),
+        new(3, "Cedar Flats", "Easy", 3.1, "Yes"),
+    ];
+
+    private IReadOnlyList<GridSort> _sorts = [new("Grade", SortDirection.Ascending)];
+
+    private sealed record Trail(int Id, string Name, string Grade, double LengthKm, string Dogs);
+}

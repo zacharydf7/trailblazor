@@ -129,8 +129,8 @@ public static class DocsSearch
             Plain([.. example.NotesShown.Select(note => note.Text)]), SearchMatch.Heading);
         yield return page.Passage("Telemetry", $"{path}#telemetry", "Telemetry", Plain(example.TelemetryNotes),
             SearchMatch.Heading);
-        yield return page.Passage("Testing", $"{path}#testing", "Testing", Plain(example.TestingTip ?? ""),
-            SearchMatch.Heading);
+        yield return page.Passage("Testing", $"{path}#testing", "Testing",
+            Plain([example.TestingTip ?? "", .. example.TestingTips]), SearchMatch.Heading);
         foreach (var passage in MemberPassages(page, $"{path}/api", example.Api))
         {
             yield return passage;
