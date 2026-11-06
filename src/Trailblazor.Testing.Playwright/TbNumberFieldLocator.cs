@@ -9,7 +9,7 @@ public sealed class TbNumberFieldLocator(IPage page, string label)
     /// the text.</summary>
     public async Task EnterAsync(string text)
     {
-        var input = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("input"));
+        var input = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(text);

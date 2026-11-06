@@ -5,6 +5,18 @@ namespace Trailblazor.BrowserTests;
 public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFindTheField_WhenItIsRequiredAndItsLabelShowsAnAsterisk(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/examples/form");
+
+        await page.Tb().NumberField("Party size").EnterAsync("4");
+
+        await Expect(page.GetByRole(AriaRole.Spinbutton, new() { Name = "Party size" })).ToHaveValueAsync("4");
+        await page.Tb().NumberField("Party size *").EnterAsync("5");
+        await Expect(page.GetByRole(AriaRole.Spinbutton, new() { Name = "Party size" })).ToHaveValueAsync("5");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldCommitTheText_WhenAPlainOrFormattedFieldIsEntered(string browser)
     {
         // Not waiting for the page to be interactive, which the helper waits for itself.

@@ -16,7 +16,7 @@ public static class TrailblazorPageExtensions
 public sealed class TrailblazorPage(IPage page)
 {
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label.</summary>
-    public TbSelectLocator Select(string label) => new(page, page.GetByLabel(label, new() { Exact = true }));
+    public TbSelectLocator Select(string label) => new(page, page.GetByLabel(FieldLabel.Matching(label)));
 
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> this finds, such as one in a row of fields that share
     /// their labels, as <c>row.GetByLabel("Size")</c>, or one with an id, as <c>page.Locator("#size")</c>.</summary>
@@ -29,7 +29,7 @@ public sealed class TrailblazorPage(IPage page)
     public TbListBoxLocator ListBox(string label) => new(page, label);
 
     /// <summary>The <c>TbColorPicker</c> with this label.</summary>
-    public TbColorPickerLocator ColorPicker(string label) => new(page, page.GetByLabel(label, new() { Exact = true }));
+    public TbColorPickerLocator ColorPicker(string label) => new(page, page.GetByLabel(FieldLabel.Matching(label)));
 
     /// <summary>The <c>TbColorPicker</c> this finds, such as one in a row of fields that share their labels, as
     /// <c>row.GetByLabel("Color")</c>, or one with an id, as <c>page.Locator("#color")</c>.</summary>
@@ -182,7 +182,7 @@ public sealed class TbAutocompleteLocator(IPage page, string label)
     /// field has taken it. A statically rendered field is a plain input, which just gets the text.</summary>
     public async Task ChooseAsync(string text, string option)
     {
-        var input = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("input"));
+        var input = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(text);
@@ -246,7 +246,7 @@ public sealed class TbFileUploadLocator(IPage page, string label)
 
     private async Task ChooseAsync(Func<ILocator, Task> choose)
     {
-        var input = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("input[type=file]"));
+        var input = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input[type=file]"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await choose(input);
@@ -588,7 +588,7 @@ public sealed class TbListBoxLocator(IPage page, string label)
     public async Task ChooseAsync(params string[] options)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
-        var field = page.GetByLabel(label, new() { Exact = true }).And(page.Locator("[role=listbox], select"));
+        var field = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("[role=listbox], select"));
         if (await NativeSelect.TryChooseAsync(field, options, "listbox"))
         {
             return;

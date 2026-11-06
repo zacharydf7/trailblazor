@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
@@ -77,8 +78,7 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Field(page, "Permit holder").FillAsync("Robin");
         await Field(page, "Permit holder").PressAsync("Tab");
-        await page.GetByRole(AriaRole.Spinbutton, new() { Name = "Nights" }).FillAsync("2");
-        await page.GetByRole(AriaRole.Spinbutton, new() { Name = "Nights" }).PressAsync("Tab");
+        await page.Tb().NumberField("Nights").EnterAsync("2");
 
         await Expect(page).ToHaveTitleAsync("Form example");
     }
