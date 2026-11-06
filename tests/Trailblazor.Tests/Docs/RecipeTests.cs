@@ -23,12 +23,12 @@ public class RecipeTests : DocsTest
     }
 
     [Fact]
-    public void FilterGrid_ShouldShowOnlyMatchingRows_WhenAFilterChanges()
+    public async Task FilterGrid_ShouldShowOnlyMatchingRows_WhenAFilterChanges()
     {
         var cut = Render<RecipeFilterGridExample>();
         cut.WaitForAssertion(() => Assert.Contains("Pine Hollow loop", cut.Markup), TimeSpan.FromSeconds(5));
 
-        cut.Find("input[type=search]").Input("ridge");
+        await cut.Find("input[type=search]").InputAsync(new() { Value = "ridge" });
         Time.Advance(TimeSpan.FromMilliseconds(300));
 
         cut.WaitForAssertion(() =>
@@ -47,7 +47,7 @@ public class RecipeTests : DocsTest
         cut.WaitForAssertion(() => Assert.DoesNotContain("Pine Hollow loop", cut.Markup), TimeSpan.FromSeconds(5));
 
         // Five trails match, so a grid left on page 2 would show only the last of them.
-        cut.Find("input[type=search]").Input("a");
+        await cut.Find("input[type=search]").InputAsync(new() { Value = "a" });
         Time.Advance(TimeSpan.FromMilliseconds(300));
 
         cut.WaitForAssertion(() => Assert.Contains("Eagle Ridge traverse", cut.Markup), TimeSpan.FromSeconds(5));
