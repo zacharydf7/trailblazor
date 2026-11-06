@@ -1218,26 +1218,75 @@ public static class ExampleCatalog
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for one option that takes effect when the form is submitted, or to accept something, such as "
+                    + "terms.",
+            ],
+            WhenNotToUse =
+            [
+                "For a setting that applies at once, use a [switch](components/switch).",
+                "For several related options, use a [checkbox group](components/checkbox-group), which names them "
+                    + "together.",
+                "For one choice among several, use a [radio group](components/radio-group).",
+            ],
+            Related = ["checkbox-group", "switch", "radio-group", "form"],
+            Pattern = new("checkbox", "https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/"),
+            Sections =
+            [
+                new("label-and-help", "Label and help text", "`Label` names the box, and clicking the label toggles "
+                    + "it. `HelperText` adds a hint. A long label wraps beside the box.", typeof(CheckboxExample)),
+                new("mixed", "Mixed", "With a `bool?` value, `null` shows the mixed state, for a box that stands for "
+                    + "several others when only some of them are on. A click sets `true` or `false`. The box never "
+                    + "goes back to `null` by itself, so your code has to set it when only some of those boxes are on.",
+                    typeof(CheckboxMixedExample)),
+                new("required", "Required", "A `Required` checkbox must be checked, as when accepting terms. "
+                    + "Once it is changed or its form validates, an unchecked box shows a message. `RequiredMessage` "
+                    + "replaces the default, which uses the label, with one that says what to do.",
+                    typeof(CheckboxRequiredExample)),
+                new("rich-content", "Rich content", "`ChildContent` takes the place of `Label` for a label with a link "
+                    + "in it. Clicking the link doesn't check the box, and opening it in a new tab keeps what's been "
+                    + "entered in the form. With no `Label`, the default required message is just \"The field is "
+                    + "required.\", so set `RequiredMessage`.", typeof(CheckboxContentExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the box focusable, and posted "
+                    + "if it's checked, but neither a click nor Space changes it. `Disabled` takes it out of the tab order "
+                    + "and the post.", typeof(CheckboxStatesExample)),
+                new("tone-and-size", "Tone and size", "`Tone` colors the checked box, and `Size` scales the box and its "
+                    + "label.", typeof(CheckboxToneExample)),
+            ],
             Api = [typeof(TbCheckbox<>), typeof(ChoiceClasses)],
+            Keyboard =
+            [
+                new(["Space"], "Toggles the box."),
+            ],
+            Labeling =
+            [
+                "A native checkbox inside its label, so the `Label` names it.",
+                "Rich content as `ChildContent` names the box instead, link text and a `NewTab` link's hint included, "
+                    + "so keep it short.",
+            ],
+            Announcements =
+            [
+                "Screen readers read a `null` value as partly checked, and a `ReadOnly` box as read only.",
+                "A validation message that appears as someone changes the box is read out once, and a failed submit "
+                    + "reads none out, as on a [text field](components/text-field).",
+            ],
             Accessibility =
             [
-                "A native checkbox inside its label, so the `Label` names it, clicking the text toggles it, and "
-                    + "Space toggles it from the keyboard.",
-                "A `bool?` value of null shows the mixed state, which screen readers read as partly checked.",
-                "Helper text and validation messages are linked to the field with `aria-describedby`, an error "
-                    + "sets `aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from "
-                    + "screen readers.",
-                "A `Required` checkbox, such as one accepting terms, must be checked. One labeled by its content "
-                    + "rather than a `Label` should set `RequiredMessage`, since the default message names the field "
-                    + "by its `Label`.",
+                "Helper text and validation messages are linked to the field with `aria-describedby`, an error sets "
+                    + "`aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from screen "
+                    + "readers.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
                     + "high-contrast theme.",
-                "`ReadOnly` keeps the box focusable and posted, but neither a click nor Space changes it; screen "
-                    + "readers hear it as read only.",
-                "`Tone` colors the checked box, standing out from the page by at least 3:1 in every tone; warning "
-                    + "uses its text color to reach that contrast. `Size` scales the box and its label.",
-                "Rich content as `ChildContent` takes the place of `Label` and names the box, link text included, so "
-                    + "keep it short. A link inside opens without ticking the box.",
+                "Every `Tone` stands out from the page by at least 3:1 when checked; warning uses its text color to "
+                    + "reach that contrast.",
+            ],
+            BeforeInteractive =
+            [
+                "A `null` value looks unchecked until the page is interactive, because a script sets the mixed state.",
+                "`ReadOnly` already works on a static page, so a click or Space doesn't change the box.",
+                "An unchecked box posts nothing, so a static form binds it as `false`, or as `null` for a `bool?`.",
             ],
             Target = new("checkbox", "Email me updates"),
             Blocks = ["tb-checkbox"],
@@ -1248,6 +1297,11 @@ public static class ExampleCatalog
                 new("helper", "The help text under the checkbox."),
                 new("error", "The validation message, shown while the value is invalid."),
             ],
+            TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
+                + "`GetByRole(AriaRole.Checkbox, ...)`, and `ToBeCheckedAsync(new() { Indeterminate = true })` waits "
+                + "for the mixed state, which a script sets after rendering. In bUnit, `Change(true)` on the `input` "
+                + "checks it, but a browser script is what stops a `ReadOnly` box from changing, so a `Change` on one "
+                + "still changes the value. Test read-only behavior in Playwright.",
             Telemetry = CheckboxTelemetry,
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,

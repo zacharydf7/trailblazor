@@ -1,21 +1,11 @@
-<TbStack Gap="4">
-    <TbCheckbox Label="Email me updates" @bind-Value="_updates" HelperText="About once a month."
-                data-testid="updates" />
-    <output data-testid="updates-echo">@_updates</output>
-    <TbCheckbox Label="All formats" @bind-Value="_allFormats" data-testid="all-formats" />
-    <output data-testid="all-formats-echo">@(_allFormats?.ToString() ?? "mixed")</output>
-    <TbCheckbox Label="Locked" Value="true" Disabled />
-    <TbCheckbox Label="Terms accepted" Value="true" ReadOnly HelperText="Accepted when you signed up." />
-    <TbCheckbox Label="Share my route" @bind-Value="_share" Tone="Tone.Success" Size="Size.Large" />
-    @* Rich content as the label; the link opens the terms without ticking the box. *@
-    <TbCheckbox @bind-Value="_agreed" Required RequiredMessage="Agree to the trail rules to go on.">
-        I agree to the <a href="#terms">trail rules</a>
-    </TbCheckbox>
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbCheckbox Label="Email me updates" @bind-Value="_updates" HelperText="About once a month." />
+    <output>Updates value: @_updates</output>
+    <TbCheckbox Label="Send a reminder the evening before each trip, with the forecast and the meeting point"
+                @bind-Value="_reminder" />
 </TbStack>
 
 @code {
     private bool _updates;
-    private bool? _allFormats;
-    private bool _share = true;
-    private bool _agreed;
+    private bool _reminder = true;
 }

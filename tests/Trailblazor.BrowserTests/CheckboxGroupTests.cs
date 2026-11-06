@@ -51,13 +51,15 @@ public class CheckboxGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Checkbox_ShouldOpenTheLinkWithoutTicking_WhenALinkInItsRichLabelIsClicked(string browser)
+    public async Task Checkbox_ShouldOpenTheLinkWithoutChecking_WhenALinkInItsRichLabelIsClicked(string browser)
     {
         var page = await OpenAsync(browser, "/examples/checkbox");
         var agree = page.GetByRole(AriaRole.Checkbox, new() { Name = "I agree to the trail rules" });
+        await Expect(agree).ToHaveAccessibleNameAsync("I agree to the trail rules (opens in a new tab)");
 
-        await page.GetByRole(AriaRole.Link, new() { Name = "trail rules" }).ClickAsync();
-        await Expect(page).ToHaveURLAsync(new Regex("#terms$"));
+        var opened = await page.RunAndWaitForPopupAsync(
+            () => page.GetByRole(AriaRole.Link, new() { Name = "trail rules" }).ClickAsync());
+        await Expect(opened).ToHaveURLAsync(new Regex("guides/forms$"));
         await Expect(agree).Not.ToBeCheckedAsync();
         await page.GetByText("I agree to the").ClickAsync();
 

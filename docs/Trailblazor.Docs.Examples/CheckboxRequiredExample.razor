@@ -1,0 +1,18 @@
+<TbForm @ref="_form" aria-label="Waiver">
+    <TbCheckbox Label="I've read the safety notes" @bind-Value="_read" Required
+                RequiredMessage="Read the safety notes first." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private bool _read;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

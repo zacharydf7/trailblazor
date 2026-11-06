@@ -1,0 +1,8 @@
+<TbStack Gap="4">
+    <TbCheckbox Label="All formats" @bind-Value="_allFormats" />
+    <output>All formats value: @(_allFormats?.ToString() ?? "null, shown as mixed")</output>
+</TbStack>
+
+@code {
+    private bool? _allFormats;
+}

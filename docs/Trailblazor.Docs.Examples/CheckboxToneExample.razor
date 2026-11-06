@@ -1,0 +1,9 @@
+<TbStack Gap="4">
+    <TbCheckbox Label="Share my route" @bind-Value="_share" Tone="Tone.Success" Size="Size.Large" />
+    <TbCheckbox Label="Notify the ranger" @bind-Value="_ranger" Tone="Tone.Warning" Size="Size.Small" />
+</TbStack>
+
+@code {
+    private bool _share = true;
+    private bool _ranger = true;
+}

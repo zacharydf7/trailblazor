@@ -1,0 +1,9 @@
+<TbStack Gap="4">
+    <TbCheckbox Label="Terms accepted" @bind-Value="_terms" ReadOnly HelperText="Accepted when you signed up." />
+    <TbCheckbox Label="Locked" @bind-Value="_locked" Disabled HelperText="Can't be focused, and doesn't post." />
+</TbStack>
+
+@code {
+    private bool _terms = true;
+    private bool _locked = true;
+}

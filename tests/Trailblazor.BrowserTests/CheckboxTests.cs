@@ -10,10 +10,10 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await updates.FocusAsync();
         await page.Keyboard.PressAsync("Space");
-        await Expect(page.GetByTestId("updates-echo")).ToHaveTextAsync("True");
+        await Expect(page.GetByText("Updates value: True", new() { Exact = true })).ToBeVisibleAsync();
         await page.GetByText("Email me updates").ClickAsync();
 
-        await Expect(page.GetByTestId("updates-echo")).ToHaveTextAsync("False");
+        await Expect(page.GetByText("Updates value: False", new() { Exact = true })).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -25,7 +25,7 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await allFormats.ClickAsync();
 
-        await Expect(page.GetByTestId("all-formats-echo")).ToHaveTextAsync("True");
+        await Expect(page.GetByText("All formats value: True", new() { Exact = true })).ToBeVisibleAsync();
         await Expect(allFormats).ToBeCheckedAsync();
     }
 

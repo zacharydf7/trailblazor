@@ -1,0 +1,7 @@
+<TbCheckbox @bind-Value="_agreed" Required RequiredMessage="Agree to the trail rules to go on.">
+    I agree to the <TbLink Href="guides/forms" NewTab>trail rules</TbLink>
+</TbCheckbox>
+
+@code {
+    private bool _agreed;
+}
