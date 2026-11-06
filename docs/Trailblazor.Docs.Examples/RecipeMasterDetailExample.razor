@@ -6,7 +6,7 @@
                     SelectionMode="SelectionMode.Single" SelectionFollowsFocus @bind-SelectedKeys="_selected" />
     </TbGridItem>
     <TbGridItem SpanMd="6">
-        <TbSurface As="LayoutElement.Section" aria-label="Trail details" aria-live="polite">
+        <TbSurface As="LayoutElement.Section" Outlined class="tb-p-4" aria-label="Trail details" aria-live="polite">
             @if (Selected is { } trail)
             {
                 <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">@trail.Name</TbText>
