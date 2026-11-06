@@ -335,7 +335,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(contents).ToHaveAttributeAsync("data-ready", "");
 
         await Expect(contents.GetByRole(AriaRole.Link)).ToHaveTextAsync(["Filter, select and open", "Checkboxes",
-            "Move and insert", "Many rows", "Accessibility", "Telemetry", "Design tokens", "Testing"]);
+            "Move and insert", "Many rows", "Content instead of rows", "Accessibility", "Telemetry", "Design tokens",
+            "Testing"]);
         await contents.GetByRole(AriaRole.Link, new() { Name = "Many rows" }).ClickAsync();
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Many rows", Level = 2 })).ToBeInViewportAsync();

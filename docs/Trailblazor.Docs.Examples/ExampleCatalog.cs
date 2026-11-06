@@ -2147,11 +2147,22 @@ public static class ExampleCatalog
                     typeof(TreeViewMoveExample)),
                 new("many-rows", "Many rows", "With `Virtualize`, only the rows in view render, so ten thousand "
                     + "rows scroll smoothly. Here the arrows select as they move.", typeof(TreeViewVirtualExample)),
+                new("content-instead-of-rows", "Content instead of rows", "A row shows its toggle once a `TbTreeItem` "
+                    + "inside it exists. Other content doesn't count, so a row holding only other content needs "
+                    + "`HasChildren`. With `HasChildren`, the content renders only while the row is open: none of it "
+                    + "exists or runs until the row opens, and closing the row removes all of it.",
+                    typeof(TreeViewContentExample)),
             ],
             Api =
             [
                 typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
                 typeof(MoveCheck), typeof(TreeInsertContext<>),
+            ],
+            AppDuties =
+            [
+                "The arrow keys move between rows and pass over other content in the tree, so someone using them can "
+                    + "miss it. Keep what people need in the rows, or show it beside the tree for the selected row, as "
+                    + "the [Master and detail recipe](recipes/master-detail) does.",
             ],
             Accessibility =
             [
