@@ -3568,6 +3568,12 @@
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
     }
 
+    /* Shift+click chooses a range of options, which shouldn't select their text as well. */
+    .tb-listbox[aria-multiselectable="true"] {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
     /* A multiple listbox shows its choices in the boxes, so only a single one fills the chosen option. */
     .tb-listbox:not([aria-multiselectable="true"]) .tb-select__option[aria-selected="true"] {
         background: var(--tb-color-primary-subtle);

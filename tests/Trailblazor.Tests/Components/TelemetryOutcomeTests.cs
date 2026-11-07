@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.JSInterop;
 using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Components;
@@ -198,6 +199,41 @@ public class TelemetryOutcomeTests : BunitContext
         Assert.Equal("TbListBox", use.Tags["trailblazor.component"]);
         Assert.Equal("pointer", use.Tags["trailblazor.input"]);
     }
+
+    [Fact]
+    public async Task MultiListBox_ShouldCountOneUseWithItsAction_WhenSeveralOptionsAreChosenAtOnce()
+    {
+        using var used = Collect("trailblazor.control.used");
+        var cut = Render<TbMultiListBox<string>>(parameters => parameters.Add(listbox => listbox.Label, "Size")
+            .Add(listbox => listbox.TelemetryName, "trail-size")
+            .AddChildContent<TbOption<string>>(option => option.Add(choice => choice.Value, "L").AddChildContent("L")));
+        var events = ListBoxEvents();
+
+        await cut.InvokeAsync(() => events.OnChooseAll());
+
+        var use = Assert.Single(used.GetMeasurementSnapshot());
+        Assert.Equal("select_all", use.Tags["trailblazor.action"]);
+        Assert.Equal("keyboard", use.Tags["trailblazor.input"]);
+    }
+
+    [Fact]
+    public async Task MultiListBox_ShouldCountOneUseWithItsAction_WhenARangeIsChosen()
+    {
+        using var used = Collect("trailblazor.control.used");
+        var cut = Render<TbMultiListBox<string>>(parameters => parameters.Add(listbox => listbox.Label, "Size")
+            .Add(listbox => listbox.TelemetryName, "trail-size")
+            .AddChildContent<TbOption<string>>(option => option.Add(choice => choice.Value, "L").AddChildContent("L")));
+        var events = ListBoxEvents();
+
+        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true));
+
+        var use = Assert.Single(used.GetMeasurementSnapshot());
+        Assert.Equal("select_range", use.Tags["trailblazor.action"]);
+        Assert.Equal("pointer", use.Tags["trailblazor.input"]);
+    }
+
+    private ListBoxEvents ListBoxEvents() =>
+        ((DotNetObjectReference<ListBoxEvents>)JSInterop.Invocations["attachListBox"].Single().Arguments[1]!).Value;
 
     private MetricCollector<long> Collect(string instrument) => new(_meters, "Trailblazor", instrument);
 

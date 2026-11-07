@@ -24,6 +24,9 @@ public class TbMultiListBox<TItem> : TbListBoxBase<IReadOnlyList<TItem>>
         ? Value!.Where(chosen => !OptionValues.Same(Comparer, chosen, item)).ToList()
         : [.. Value ?? [], (TItem)item!];
 
+    private protected override IReadOnlyList<TItem> ChooseMany(IReadOnlyList<object?> items) =>
+        [.. Value ?? [], .. items.Cast<TItem>()];
+
     private protected override string? FormatItem(object? item) =>
         BindConverter.FormatValue((TItem?)item, CultureFor(typeof(TItem)))?.ToString();
 }

@@ -111,8 +111,9 @@ public class ListBoxExampleTests : DocsTest
     {
         var cut = ComponentPage("listbox");
 
-        Assert.Equal(["Down", "Up", "Home", "End", "A letter", "Space", "Down", "Up", "Home", "End", "A letter", "Space",
-            "Shift", "Down", "Shift", "Up"], cut.FindAll("kbd").Select(key => key.TextContent));
+        Assert.Equal(["Down", "Up", "Home", "End", "Page Up", "Page Down", "A letter", "Space", "Down", "Up", "Home",
+            "End", "Page Up", "Page Down", "Ctrl", "A", "Cmd", "A", "A letter", "Space", "Shift", "Down", "Shift", "Up"],
+            cut.FindAll("kbd").Select(key => key.TextContent));
         Assert.DoesNotContain("ReadOnly", cut.Find("ul[aria-label=Accessibility]").TextContent);
     }
 }

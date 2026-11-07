@@ -3397,7 +3397,9 @@ public static class ExampleCatalog
                 new("options-and-value", "Options and value", "Each `TbOption` is an option, `Rows` sets how many show "
                     + "before the list scrolls, and `Disabled` on an option turns off that option alone.",
                     typeof(ListBoxExample)),
-                new("multiple", "Multiple", "`TbMultiListBox` binds a list of the chosen values.",
+                new("multiple", "Multiple", "`TbMultiListBox` binds a list of the chosen values. A click chooses or "
+                    + "clears one option. Shift+click adds the options from the active one through the clicked one, "
+                    + "and Ctrl+A adds every option. Both skip disabled options.",
                     typeof(ListBoxMultipleExample)),
                 new("groups", "Groups", "`TbOptionGroup` groups options under a heading. The arrows and typing move "
                     + "through every group.", typeof(ListBoxGroupsExample)),
@@ -3433,6 +3435,9 @@ public static class ExampleCatalog
                     { When = "In a `TbListBox`" },
                 new(["Home", "End"], "Moves to the first or last option that isn't disabled, and chooses it.")
                     { When = "In a `TbListBox`" },
+                new(["Page Up", "Page Down"], "Moves up or down by as many options as the list shows, and chooses "
+                    + "the one it reaches.")
+                    { When = "In a `TbListBox`" },
                 new(["A letter"], "Moves to an option that starts with what was typed, and chooses it. Pressed again "
                     + "quickly, it moves to and chooses the next one that starts with that letter.")
                     { When = "In a `TbListBox`" },
@@ -3441,6 +3446,10 @@ public static class ExampleCatalog
                 new(["Down", "Up"], "Moves to the next or previous option that isn't disabled.")
                     { When = "In a `TbMultiListBox`" },
                 new(["Home", "End"], "Moves to the first or last option that isn't disabled.")
+                    { When = "In a `TbMultiListBox`" },
+                new(["Page Up", "Page Down"], "Moves up or down by as many options as the list shows.")
+                    { When = "In a `TbMultiListBox`" },
+                new(["Ctrl+A", "Cmd+A"], "Chooses every option that isn't disabled.")
                     { When = "In a `TbMultiListBox`" },
                 new(["A letter"], "Moves to an option that starts with what was typed. Pressed again quickly, it "
                     + "moves to the next one that starts with that letter.")
@@ -3510,8 +3519,11 @@ public static class ExampleCatalog
             Telemetry =
             [
                 "An option with a `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` each "
-                    + "time it is chosen. A disabled or read-only list box chooses nothing, so it counts nothing; the "
-                    + "value is never recorded.",
+                    + "time it is chosen on its own. A disabled or read-only list box chooses nothing, so it counts "
+                    + "nothing; the value is never recorded.",
+                "Choosing several at once doesn't count each option. A list box with its own `TelemetryName` counts "
+                    + "one use instead, with `trailblazor.action` `select_all` for Ctrl+A or `select_range` for "
+                    + "Shift+click.",
             ],
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,

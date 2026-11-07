@@ -1,0 +1,47 @@
+@page "/listbox-keys"
+
+@* A list longer than it shows, on a page tall enough to scroll if the list lets a page key through. *@
+<TbListBox TValue="string" Label="Single" @bind-Value="_single">
+    @foreach (var number in Enumerable.Range(1, 30))
+    {
+        <TbOption Value="@($"Single {number}")">Single @number</TbOption>
+    }
+    <TbOption Value="@("Single off")" Disabled>Single off</TbOption>
+</TbListBox>
+<output data-testid="single">@_single</output>
+<TbButton OnClick='() => _single = "Single 20"'>Choose from code</TbButton>
+<TbMultiListBox TItem="string" Label="Several" @bind-Value="_several" @bind-Value:after="() => _changes++">
+    <TbOption Value="@("Alder")">Alder</TbOption>
+    <TbOption Value="@("Birch")" Disabled>Birch</TbOption>
+    <TbOption Value="@("Cedar")">Cedar</TbOption>
+    <TbOption Value="@("Dogwood")">Dogwood</TbOption>
+    <TbOption Value="@("Elm")">Elm</TbOption>
+    <TbOption Value="@("Fir")">Fir</TbOption>
+    <TbOption Value="@("Gum")">Gum</TbOption>
+    <TbOption Value="@("Hazel")">Hazel</TbOption>
+</TbMultiListBox>
+<output data-testid="several">@string.Join(", ", _several)</output>
+<output data-testid="changes">@_changes</output>
+<TbMultiListBox TItem="string" Label="Locked" @bind-Value="_locked" ReadOnly>
+    <TbOption Value="@("Oak")">Oak</TbOption>
+</TbMultiListBox>
+<output data-testid="locked">@_locked.Count</output>
+<TbMultiListBox TItem="string" Label="Huge" @bind-Value="_huge">
+    @foreach (var number in Enumerable.Range(1, 1000))
+    {
+        <TbOption Value="@($"Huge {number}")">Huge @number</TbOption>
+    }
+</TbMultiListBox>
+<output data-testid="huge">@_huge.Count</output>
+<TbButton OnClick="() => _flushes++">Flush</TbButton>
+<output data-testid="flushes">@_flushes</output>
+<div style="block-size: 300vh"></div>
+
+@code {
+    private string? _single;
+    private IReadOnlyList<string> _several = [];
+    private IReadOnlyList<string> _locked = [];
+    private IReadOnlyList<string> _huge = [];
+    private int _changes;
+    private int _flushes;
+}

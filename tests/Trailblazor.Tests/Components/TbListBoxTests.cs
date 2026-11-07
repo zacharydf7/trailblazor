@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests.Components;
 
@@ -140,6 +141,120 @@ public class TbListBoxTests : BunitContext
                 AddOption<string>(builder, 0, "Tent");
                 AddOption<string>(builder, 10, "Stove");
             })));
+    }
+
+    private int _gearChanges;
+
+    private IRenderedComponent<TbMultiListBox<string>> RenderPackingList(IReadOnlyList<string> value,
+        bool disabled = false, bool readOnly = false)
+    {
+        Gear = value;
+        return Render<TbMultiListBox<string>>(parameters => parameters
+            .Add(listbox => listbox.Label, "Gear")
+            .Add(listbox => listbox.Value, value)
+            .Add(listbox => listbox.Disabled, disabled)
+            .Add(listbox => listbox.ReadOnly, readOnly)
+            .Add(listbox => listbox.ValueChanged, (IReadOnlyList<string> next) =>
+            {
+                Gear = next;
+                _gearChanges++;
+            })
+            .Add(listbox => listbox.ChildContent, (RenderFragment)(builder =>
+            {
+                AddOption<string>(builder, 0, "Tent");
+                AddOption<string>(builder, 10, "Lantern", disabled: true);
+                AddOption<string>(builder, 20, "Stove");
+                AddOption<string>(builder, 30, "Water filter");
+            })));
+    }
+
+    private ListBoxEvents Events() =>
+        ((DotNetObjectReference<ListBoxEvents>)JSInterop.Invocations["attachListBox"].Single().Arguments[1]!).Value;
+
+    [Fact]
+    public async Task ChooseAll_ShouldKeepWhatIsChosenAndSkipDisabledOptions_WhenCalled()
+    {
+        var cut = RenderPackingList(["Stove"]);
+
+        await cut.InvokeAsync(() => Events().OnChooseAll());
+
+        Assert.Equal(["Stove", "Tent", "Water filter"], Gear);
+        Assert.Equal(1, _gearChanges);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task ChooseAll_ShouldChooseNothing_WhenTheListIsDisabledOrReadOnly(bool disabled, bool readOnly)
+    {
+        var cut = RenderPackingList([], disabled, readOnly);
+
+        await cut.InvokeAsync(() => Events().OnChooseAll());
+
+        Assert.Equal(0, _gearChanges);
+    }
+
+    [Fact]
+    public async Task ChooseRange_ShouldMakeOneChangeOnceTheLastBatchIsIn_WhenTheRangeArrivesInBatches()
+    {
+        var cut = RenderPackingList([]);
+        var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
+
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[..2], false));
+        Assert.Equal(0, _gearChanges);
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[2..], true));
+
+        Assert.Equal(["Tent", "Stove", "Water filter"], Gear);
+        Assert.Equal(1, _gearChanges);
+    }
+
+    [Fact]
+    public async Task ChooseRange_ShouldSkipTheId_WhenItsOptionIsGone()
+    {
+        var cut = RenderPackingList([]);
+        var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
+
+        await cut.InvokeAsync(() => Events().OnChooseRange(["gone", ids[0]], true));
+
+        Assert.Equal(["Tent"], Gear);
+    }
+
+    [Fact]
+    public async Task ChooseRange_ShouldChooseAnOptionOnce_WhenTwoRangesOverlap()
+    {
+        var cut = RenderPackingList([]);
+        var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
+
+        await cut.InvokeAsync(() => Events().OnChooseRange([ids[0], ids[2]], false));
+        await cut.InvokeAsync(() => Events().OnChooseRange([ids[2], ids[3]], true));
+
+        Assert.Equal(["Tent", "Stove", "Water filter"], Gear);
+    }
+
+    [Fact]
+    public async Task ChooseRange_ShouldDropWhatItHolds_WhenMoreIdsArriveThanTheListHasOptions()
+    {
+        var cut = RenderPackingList([]);
+        var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
+
+        await cut.InvokeAsync(() => Events().OnChooseRange(["a", "b", "c", "d", ids[2]], false));
+        await cut.InvokeAsync(() => Events().OnChooseRange([ids[0]], true));
+
+        Assert.Equal(["Tent"], Gear);
+    }
+
+    [Fact]
+    public async Task ChooseRange_ShouldStartAfresh_WhenAnEarlierRangeHasFinished()
+    {
+        var cut = RenderPackingList([]);
+        var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[..1], true));
+        Gear = [];
+        cut.Render(parameters => parameters.Add(listbox => listbox.Value, []));
+
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[2..3], true));
+
+        Assert.Equal(["Stove"], Gear);
     }
 
     private static void AddOption<TValue>(RenderTreeBuilder builder, int sequence, TValue value, bool disabled = false)

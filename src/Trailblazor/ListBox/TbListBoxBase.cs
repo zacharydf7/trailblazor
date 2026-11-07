@@ -9,7 +9,10 @@ namespace Trailblazor;
 public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISelect, IAsyncDisposable
 {
     private ElementReference _listbox;
+    private readonly List<ISelectOption> _options = [];
     private IJSObjectReference? _handle;
+    private readonly HashSet<string> _range = [];
+    private DotNetObjectReference<ListBoxEvents>? _events;
     private bool _disposed;
 
     /// <summary>The <see cref="TbOption{TValue}"/>s to choose from.</summary>
@@ -41,6 +44,9 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
     // The field's value after the user chooses this option.
     private protected abstract TValue? Choose(object? item);
 
+    // The field's value after the user chooses several options at once, which only multiple selection can do.
+    private protected virtual TValue? ChooseMany(IReadOnlyList<object?> items) => throw new NotSupportedException();
+
     private protected abstract string? FormatItem(object? item);
 
     // A disabled listbox stays focusable so screen readers can find it; FocusAsync leaves it alone.
@@ -65,7 +71,8 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
                 return;
             }
 
-            var handle = await module.InvokeAsync<IJSObjectReference?>("attachListBox", _listbox);
+            _events = Multiple ? DotNetObjectReference.Create(new ListBoxEvents(ChooseAllAsync, ChooseRangeAsync)) : null;
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachListBox", _listbox, _events);
             if (handle is not null && _disposed)
             {
                 await handle.DisposeHandleAsync();
@@ -102,6 +109,46 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
         return true;
     }
 
+    private Task ChooseAllAsync() => ChooseManyAsync(_options, "select_all", "keyboard");
+
+    // A long range arrives in batches, and they make one change to the value once the last is in. A second range can
+    // arrive alongside the first, so an id may come twice; more ids than options can only come from a bad client.
+    private Task ChooseRangeAsync(string[] ids, bool last)
+    {
+        _range.UnionWith(ids);
+        if (_range.Count > _options.Count)
+        {
+            _range.Clear();
+            return Task.CompletedTask;
+        }
+
+        if (!last)
+        {
+            return Task.CompletedTask;
+        }
+
+        var options = _options.Where(option => _range.Contains(option.Id)).ToList();
+        _range.Clear();
+        return ChooseManyAsync(options, "select_range", "pointer");
+    }
+
+    private async Task ChooseManyAsync(IEnumerable<ISelectOption> options, string action, string input)
+    {
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
+        var items = options.Where(option => !option.Disabled && !IsChosen(option.Value))
+            .Select(option => option.Value).ToList();
+        if (items.Count > 0)
+        {
+            Telemetry.Used(TelemetryName, action, input);
+            await SetValueAsync(ChooseMany(items));
+            StateHasChanged();
+        }
+    }
+
     void ISelect.Add(ISelectOption option)
     {
         if (option.Value is not null && !ItemType.IsInstanceOfType(option.Value))
@@ -109,11 +156,11 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
             throw new InvalidOperationException($"A TbOption's value must be a {ItemType.Name}, the type of its " +
                 $"listbox, but {option.Value} is a {option.Value.GetType().Name}.");
         }
+
+        _options.Add(option);
     }
 
-    void ISelect.Remove(ISelectOption option)
-    {
-    }
+    void ISelect.Remove(ISelectOption option) => _options.Remove(option);
 
     // The options show themselves, so there is no chosen option to show elsewhere.
     void ISelect.Refresh()
@@ -130,5 +177,7 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
         {
             await _handle.DisposeHandleAsync();
         }
+
+        _events?.Dispose();
     }
 }

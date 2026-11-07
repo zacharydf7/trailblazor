@@ -30,7 +30,8 @@ public static class TelemetryCatalog
         new("trailblazor.control.used", "Counter", "{use}",
             "Uses of controls with a TelemetryName, such as clicks and choices.", [.. CommonTags, ActionTag, InputTag],
             "A control with a TelemetryName is used: clicked, chosen, changed or selected while it is enabled. A data "
-            + "grid, tree view, chip or select also says what it did, as trailblazor.action, and a choice in a select "
+            + "grid, tree view, chip, select or list box also says what it did, as trailblazor.action, and a choice "
+            + "in a select "
             + "or list box, or of an option, whether a pointer or the keyboard made it, as trailblazor.input."),
         new("trailblazor.dialog.closed", "Counter", "{dialog}",
             "Dialogs with a TelemetryName that closed, by how they closed.", [.. CommonTags, OutcomeTag],
