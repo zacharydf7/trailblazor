@@ -1,0 +1,6 @@
+<TbStack Gap="4">
+    @foreach (var tone in Enum.GetValues<Tone>())
+    {
+        <TbProgress AriaLabel="@($"{tone} progress")" Value="70" Tone="tone" Size="Size.Large" />
+    }
+</TbStack>

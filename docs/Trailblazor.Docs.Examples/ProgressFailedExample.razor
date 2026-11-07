@@ -1,0 +1,13 @@
+<TbStack Gap="2">
+    <TbProgress Label="Importing the map" ShowValue Value="@_percent" Tone="@(_failed ? Tone.Danger : Tone.Primary)" />
+    @if (_failed)
+    {
+        <TbAlert Tone="Tone.Danger">The import stopped at @_percent%. Check your connection and try again.</TbAlert>
+    }
+    <TbSwitch Label="Show the failed state" @bind-Value="_failed" />
+</TbStack>
+
+@code {
+    private readonly double _percent = 62;
+    private bool _failed = true;
+}

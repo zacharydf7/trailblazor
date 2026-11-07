@@ -1,0 +1,12 @@
+<TbStack Row Gap="6" Align="Align.Center" Wrap>
+    <TbBadge Count="5" Tone="Tone.Danger" Visible="_unread">
+        <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="@(_unread ? "Inbox, 5 unread" : "Inbox")" />
+    </TbBadge>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _unread = !_unread">
+        @(_unread ? "Mark all read" : "Mark as unread")
+    </TbButton>
+</TbStack>
+
+@code {
+    private bool _unread = true;
+}

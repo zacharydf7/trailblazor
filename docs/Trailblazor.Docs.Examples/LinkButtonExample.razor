@@ -1,0 +1,8 @@
+<TbText>
+    Batch @(_shown ? "2041-B" : "…")
+    <TbLink OnClick="() => _shown = true">Show the batch ID</TbLink>
+</TbText>
+
+@code {
+    private bool _shown;
+}

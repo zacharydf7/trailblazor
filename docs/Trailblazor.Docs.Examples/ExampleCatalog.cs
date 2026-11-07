@@ -1237,21 +1237,67 @@ public static class ExampleCatalog
         new("alert", "Alert", ExampleCategory.Feedback,
             "A message in the page, such as a warning or an error, that can be closed.", typeof(AlertExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a message that belongs to part of the page and should stay in view, such as an error that "
+                    + "needs fixing.",
+            ],
+            WhenNotToUse =
+            [
+                "For a brief update that needs no action, use a [toast](components/toast).",
+                "For a decision people must make before going on, use a [dialog](components/dialog).",
+                "For a problem with one field, use that field's `Error`.",
+            ],
+            Related = ["toast", "dialog", "badge"],
+            Sections =
+            [
+                new("tones", "Tones", "`Tone` says what kind of message an alert carries. Success, Warning, Danger and "
+                    + "Info each have their own icon shape, so those tones don't rest on color "
+                    + "alone.", typeof(AlertExample)),
+                new("variants", "Variants", "`Variant` sets how much the alert stands out: soft by default, `Filled` "
+                    + "or `Outlined`. In a `Filled` alert, buttons and the focus ring take the alert's text color, so "
+                    + "they stay readable on the fill.", typeof(AlertVariantExample)),
+                new("title", "Title", "`Title` adds a bold first line to an alert.", typeof(AlertTitleExample)),
+                new("icon", "Icon", "`Icon` replaces an alert's tone icon, and `ShowIcon=\"false\"` removes it.",
+                    typeof(AlertIconExample)),
+                new("actions", "Actions", "`Actions` holds an alert's buttons, which sit after the message so screen "
+                    + "readers reach them after hearing it.", typeof(AlertActionsExample)),
+                new("closing", "Closing", "`OnClose` adds a close button and runs when it's pressed. The alert doesn't "
+                    + "remove itself, so your handler has to. `CloseLabel` names the button, \"Close\" unless "
+                    + "set.", typeof(AlertCloseExample)),
+                new("density", "Density", "`data-tb-density=\"compact\"` tightens an alert for small spaces.",
+                    typeof(AlertDensityExample)),
+            ],
             Api = [typeof(TbAlert), typeof(AlertClasses)],
+            Keyboard =
+            [
+                new(["Tab"], "Reaches the buttons in `Actions`, then the close button."),
+                new(["Enter", "Space"], "Presses the focused button; the close button runs `OnClose`."),
+            ],
+            Labeling =
+            [
+                "The icon is decorative, so the `Title` and message must carry the meaning.",
+            ],
+            Announcements =
+            [
+                "Danger and Warning alerts have `role=\"alert\"`, which screen readers read out at once. The other "
+                    + "tones have `role=\"status\"`, read out when the reader is idle.",
+            ],
             Accessibility =
             [
-                "Danger and Warning alerts have `role=\"alert\"`, which screen readers read out at once. The "
-                    + "other tones have `role=\"status\"`, read out when the reader is idle.",
-                "Screen readers may not read a status alert that is added to the page with its message already in "
-                    + "it. Add it empty and then set the message, or use `IAnnouncer`.",
-                "The icon is decorative, so the `Title` and message must carry the meaning. Success, Warning, Danger "
-                    + "and Info each have their own icon shape, so those tones don't rest on color alone. The close "
-                    + "button is named by `CloseLabel`, \"Close\" by default.",
-                "In a `Filled` alert, buttons and the focus ring take the alert's text color, so they stay readable "
-                    + "on the fill.",
-                "`Actions` sit after the message, so screen readers reach them after hearing it.",
+                "Each alert keeps its role however it looks, so `Variant` doesn't change what's announced.",
             ],
-            Target = new("alert") { Text = "A danger alert." },
+            AppDuties =
+            [
+                "Screen readers may not read a status alert that is added to the page with its message already in it. "
+                    + "Add it empty and then set the message, or use `IAnnouncer`.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as it will look. `OnClose` starts working once the page is interactive.",
+            ],
+            Target = new("alert") { Text = "Danger alert." },
             Blocks = ["tb-alert"],
             DataParts =
             [
@@ -1530,20 +1576,55 @@ public static class ExampleCatalog
             "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.",
             typeof(BadgeExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a small count or status on an icon or button, or in a line of text.",
+            ],
+            WhenNotToUse =
+            [
+                "For a tag people add, remove or toggle, use a [chip](components/chip).",
+                "For a message that needs reading, use an [alert](components/alert).",
+            ],
+            Related = ["chip", "alert", "icon-button"],
+            Sections =
+            [
+                new("count", "Count", "Wrap a badge around what it marks, and `Count` shows the number. It takes no "
+                    + "focus and never catches clicks, which reach what's under it.", typeof(BadgeExample)),
+                new("dot", "Dot", "With no `Count`, a badge is a dot.", typeof(BadgeDotExample)),
+                new("max", "Maximum", "`Max` caps the number a badge shows, as in \"99+\". It is 99 unless set.",
+                    typeof(BadgeMaxExample)),
+                new("visible", "Showing and hiding", "`Visible` hides the badge and leaves what it marks.",
+                    typeof(BadgeVisibleExample)),
+                new("in-text", "In a line of text", "With nothing inside it, a badge sits in the line of text. A count "
+                    + "of 0 hides a badge, and `ShowZero` keeps it, for a count like errors, where zero is good "
+                    + "news.", typeof(BadgeTextExample)),
+                new("tone", "Tone", "`Tone` colors a badge by meaning, such as `Danger` for something that needs "
+                    + "attention.", typeof(BadgeToneExample)),
+                new("placement", "Placement and offset", "`Placement` picks the corner a badge sits on. `Overlap` "
+                    + "keeps it on the edge of a round shape, and `Offset` moves it in from the corner by a CSS "
+                    + "length, such as `4px`.", typeof(BadgePlacementExample)),
+            ],
             Api = [typeof(TbBadge)],
+            Labeling =
+            [
+                "A badge on an icon or button is hidden from screen readers unless it has a `Label`.",
+                "A badge in a line of text is read in its place. A `Label`, such as \"3 unsaved changes\", is heard "
+                    + "instead of the bare number, and a dot with no `Label` isn't read out.",
+            ],
+            AppDuties =
+            [
+                "Put what the badge says in the button's own name, such as `AriaLabel=\"Messages, 120 unread\"`, and "
+                    + "give a badge on an icon that isn't a button a `Label`.",
+            ],
             Accessibility =
             [
-                "A badge on an icon or button is hidden from screen readers unless it has a `Label`, and Tab goes to "
-                    + "the button and skips it. So put what the badge says in the button's own name, such as "
-                    + "`AriaLabel=\"Messages, 120 unread\"` or `AriaLabel=\"Filters, some applied\"`, and give a badge "
-                    + "on an icon that isn't a button a `Label`.",
-                "A badge in a line of text is read in its place. Give it a `Label`, such as \"3 unsaved changes\", "
-                    + "which screen readers hear instead of the bare number; a dot with no `Label` isn't read out.",
-                "It takes no focus and never catches clicks, which reach the icon or button under it.",
-                "A count of 0 hides the badge, since there is nothing new; `ShowZero` shows it, such as for a "
-                    + "count of errors, where zero is good news.",
                 "In forced-colors mode, such as Windows high contrast, the badge keeps an outline and a dot keeps its "
                     + "fill.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-badge"],
@@ -1557,19 +1638,56 @@ public static class ExampleCatalog
         new("progress", "Progress", ExampleCategory.Feedback,
             "Shows how far along work is, as a bar or a circle, or that it is still going.", typeof(ProgressExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for work that takes more than a moment, so people know it's still going.",
+            ],
+            WhenNotToUse =
+            [
+                "For content that's loading into a known shape, use a [skeleton](components/skeleton).",
+                "For a button waiting on its own action, use the [button](components/button)'s `Loading`.",
+            ],
+            Related = ["skeleton", "button", "alert"],
+            Sections =
+            [
+                new("value", "Value or indeterminate", "A progress bar's `Value` shows how far along the work is. "
+                    + "Leaving it null makes the bar indeterminate, for work with no known "
+                    + "end.", typeof(ProgressExample)),
+                new("label", "Label and value text", "`Label` and `ShowValue` add visible text to a progress bar or "
+                    + "ring. `Min` and `Max` set the range, and `ValueFormatter` words the value, such as \"3 of 10 "
+                    + "files\".",
+                    typeof(ProgressLabelExample)),
+                new("circular", "Circular", "`Circular` draws the progress as a ring instead of a bar. Show a ring's "
+                    + "value at `Size.Large`, where it is big enough to read.", typeof(ProgressCircularExample)),
+                new("size", "Size", "`Size` sets a progress bar's thickness or a ring's diameter: `Small`, `Medium` or "
+                    + "`Large`.", typeof(ProgressSizeExample)),
+                new("tone", "Tone", "`Tone` colors the filled part of a progress bar or ring by "
+                    + "meaning.", typeof(ProgressToneExample)),
+                new("failed", "A failed state", "Progress has no failed state of its own. Set a `Danger` `Tone` and "
+                    + "say what went wrong beside it, as an alert does here.", typeof(ProgressFailedExample)),
+            ],
             Api = [typeof(TbProgress)],
+            Labeling =
+            [
+                "A `Label` names it through `aria-labelledby`. Without one, give an `AriaLabel`. Also give one when "
+                    + "the label alone doesn't say what is in progress, such as a file name; the `AriaLabel` then "
+                    + "names it instead. With neither, it throws when it renders.",
+            ],
+            Announcements =
+            [
+                "A `progressbar` with its range and current value, and no current value when indeterminate.",
+                "With `ValueFormatter`, screen readers announce that text, such as \"3 of 10 files\", in place of the "
+                    + "number.",
+            ],
             Accessibility =
             [
-                "A `progressbar` with its range and current value. Leaving `Value` null makes it indeterminate, "
-                    + "with no current value.",
-                "A `Label` names it through `aria-labelledby`, as \"Importing trails\" does. Without one, give an "
-                    + "`AriaLabel`. Also give one when the label alone doesn't say what is in progress, such as a file "
-                    + "name; the `AriaLabel` then names it instead. With neither, it throws when it renders.",
-                "`Label` and `ShowValue` add visible text. With `ValueFormatter`, screen readers announce that "
-                    + "text, such as \"3 of 10 files\", in place of the number. Show a ring's value at `Size.Large`, "
-                    + "where it is big enough to read.",
                 "With reduced motion, the moving bar and the spinning ring pulse instead.",
                 "In forced-colors mode, such as Windows high contrast, the fill takes the system's highlight color.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = new("progressbar", "Upload"),
             Blocks = ["tb-progress"],
@@ -4427,19 +4545,54 @@ public static class ExampleCatalog
         new("link", "Link", ExampleCategory.Navigation,
             "An underlined text link to an address, or a link-styled button that runs an action.", typeof(LinkExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to go to another page, in a sentence or a list.",
+            ],
+            WhenNotToUse =
+            [
+                "For an action that stands on its own, use a [button](components/button).",
+            ],
+            Related = ["button", "pagination", "table-of-contents"],
+            Sections =
+            [
+                new("basic", "Links", "`Href` is where the link goes. A link is always underlined, so it doesn't rely "
+                    + "on color alone to stand out from the text around it.", typeof(LinkExample)),
+                new("new-tab", "New tab", "`NewTab` opens the link in a new tab, with `target=\"_blank\"` and "
+                    + "`rel=\"noopener noreferrer\"`, and screen readers hear \"opens in a new tab\" after its text. "
+                    + "`NewTabHint` changes those words.", typeof(LinkNewTabExample)),
+                new("button", "Without an address", "With `OnClick` and no `Href`, `TbLink` is a button that looks "
+                    + "like a link, for an action in the middle of a sentence.", typeof(LinkButtonExample)),
+                new("moving-focus", "Moving focus", "`FocusAsync` moves focus to the link from code, such as after an "
+                    + "action finishes.", typeof(LinkFocusExample)),
+                new("disabled", "Disabled", "`Disabled` keeps the text but drops the address, so the link can't be "
+                    + "followed or focused. It loses its underline and turns gray.", typeof(LinkDisabledExample)),
+            ],
             Api = [typeof(TbLink)],
+            Keyboard =
+            [
+                new(["Enter"], "Follows the link.") { When = "With an `Href`" },
+                new(["Enter", "Space"], "Presses it.") { When = "Without an `Href`" },
+            ],
+            Labeling =
+            [
+                "Named by its text. With `Href` it is a native `link`. Without `Href` it is a `button`, because an "
+                    + "anchor with no address can't be focused.",
+            ],
+            Announcements =
+            [
+                "A disabled link is marked `aria-disabled` with the `link` role, so screen readers still read it as a "
+                    + "disabled link. Without `Href` the button is `disabled`.",
+            ],
             Accessibility =
             [
-                "With `Href` it is a native `link`, followed with Enter. Without `Href` it is a `button` that looks "
-                    + "like a link, run with Enter or Space, because an anchor with no address can't be focused.",
-                "It is always underlined, so it doesn't rely on color alone to stand out from the text around it.",
-                "`NewTab` adds `target=\"_blank\"` and `rel=\"noopener noreferrer\"`, and screen readers hear \"opens "
-                    + "in a new tab\" after its text. `NewTabHint` changes those words.",
-                "`Disabled` keeps the text but drops the address, so the link can't be followed or focused, and "
-                    + "marks it `aria-disabled` with the `link` role, so screen readers still read it as a disabled "
-                    + "link. Without `Href` the button is `disabled`. Both lose their underline and turn gray.",
-                "In forced-colors mode, such as Windows high contrast, both kinds take the system's link color, and a "
-                    + "disabled one the system's gray.",
+                "In forced-colors mode, such as Windows high contrast, a link takes the system's link color with or "
+                    + "without an `Href`, and a disabled one the system's gray.",
+            ],
+            BeforeInteractive =
+            [
+                "A link with an `Href` already works. `OnClick` starts working once the page is interactive.",
             ],
             Target = new("link", "theming guide"),
             Blocks = ["tb-link"],
@@ -4455,15 +4608,42 @@ public static class ExampleCatalog
             "A gray shape that holds the place of content while it loads, with a pulse or a wave.",
             typeof(SkeletonExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it while content loads into a shape you already know, so the page doesn't jump.",
+            ],
+            WhenNotToUse =
+            [
+                "For work with no shape to show, or when you know how much is done, use "
+                    + "[progress](components/progress).",
+            ],
+            Related = ["progress", "surface"],
+            Sections =
+            [
+                new("shapes", "Shapes", "`Shape` draws a skeleton as a line, circle or rectangle, sized by `Width` and "
+                    + "`Height`. Mark the region that's loading with `aria-busy`.", typeof(SkeletonExample)),
+                new("wrapping-content", "Wrapping content", "Wrapped around content, a skeleton takes that content's "
+                    + "size. The content is hidden from sight, screen readers and the keyboard, and the wrapper has "
+                    + "`aria-busy=\"true\"`, until `Loading` turns off.", typeof(SkeletonWrapExample)),
+                new("animation", "Animation", "`Animation` sets how a skeleton moves: `Pulse` by default, `Wave` or "
+                    + "`None`.", typeof(SkeletonAnimationExample)),
+            ],
             Api = [typeof(TbSkeleton)],
             Accessibility =
             [
-                "A skeleton is hidden from screen readers, because it has nothing to say. Mark the region that is "
-                    + "loading with `aria-busy=\"true\"`, and set it back to `false` when the content arrives.",
-                "Wrapped around content, it does that itself: the content is hidden from sight, screen readers and "
-                    + "the keyboard, and the wrapper has `aria-busy=\"true\"`, until `Loading` turns off.",
+                "A skeleton is hidden from screen readers, because it has nothing to say.",
                 "With reduced motion, the pulse and the wave stop and the shapes stay still.",
                 "In forced-colors mode, such as Windows high contrast, each shape keeps an outline.",
+            ],
+            AppDuties =
+            [
+                "When a skeleton doesn't wrap the content, mark the region that is loading with `aria-busy=\"true\"`, "
+                    + "and set it back to `false` when the content arrives.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-skeleton"],

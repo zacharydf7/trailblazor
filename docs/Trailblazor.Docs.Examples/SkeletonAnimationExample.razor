@@ -1,0 +1,7 @@
+<TbStack>
+    @foreach (var animation in Enum.GetValues<SkeletonAnimation>())
+    {
+        <TbText TextStyle="TextStyle.Caption">@animation</TbText>
+        <TbSkeleton Animation="animation" />
+    }
+</TbStack>

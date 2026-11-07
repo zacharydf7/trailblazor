@@ -1,0 +1,14 @@
+<TbStack>
+    <TbSwitch Label="Loading the trip" @bind-Value="_loading" />
+    <TbSkeleton Loading="_loading" Animation="SkeletonAnimation.Wave" role="region" aria-label="Trip">
+        <TbText TextStyle="TextStyle.Subtitle">Ridge loop</TbText>
+        <TbText>12 km, about 4 hours</TbText>
+    </TbSkeleton>
+    <TbSkeleton Loading="_loading">
+        <TbButton>Book the trip</TbButton>
+    </TbSkeleton>
+</TbStack>
+
+@code {
+    private bool _loading = true;
+}

@@ -1,0 +1,12 @@
+<TbStack Gap="4">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbProgress AriaLabel="@($"{size} bar")" Value="60" Size="size" />
+    }
+    <TbStack Row Wrap Align="Align.Center" Gap="4">
+        @foreach (var size in Enum.GetValues<Size>())
+        {
+            <TbProgress AriaLabel="@($"{size} ring")" Value="60" Circular Size="size" />
+        }
+    </TbStack>
+</TbStack>

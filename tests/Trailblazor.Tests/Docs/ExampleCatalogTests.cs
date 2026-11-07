@@ -92,7 +92,7 @@ public class ExampleCatalogTests
     {
         var steps = ExampleCatalog.Find("alert")!.Target!.Steps;
 
-        Assert.Equal("page.GetByRole(AriaRole.Alert).Filter(new() { HasText = \"A danger alert.\" })", steps);
+        Assert.Equal("page.GetByRole(AriaRole.Alert).Filter(new() { HasText = \"Danger alert.\" })", steps);
     }
 
     // With no blocks, the page would list every token the theme has.

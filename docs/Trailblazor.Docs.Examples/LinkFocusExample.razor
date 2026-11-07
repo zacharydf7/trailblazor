@@ -1,0 +1,8 @@
+<TbStack Row Gap="4" Align="Align.Center" Wrap>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _link.FocusAsync().AsTask()">Move focus to the link</TbButton>
+    <TbLink @ref="_link" Href="components/button">Button docs</TbLink>
+</TbStack>
+
+@code {
+    private TbLink _link = null!;
+}

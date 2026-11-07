@@ -1,0 +1,14 @@
+@if (_shown)
+{
+    <TbAlert Tone="Tone.Warning" OnClose="() => _shown = false" CloseLabel="Close the warning">
+        Close this alert with its button.
+    </TbAlert>
+}
+else
+{
+    <TbButton Variant="Variant.Outlined" OnClick="() => _shown = true">Show the alert again</TbButton>
+}
+
+@code {
+    private bool _shown = true;
+}

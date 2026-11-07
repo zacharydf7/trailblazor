@@ -6,7 +6,7 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Alert_ShouldClose_WhenItsCloseButtonIsActivatedByKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/alert");
-        var alert = page.GetByTestId("closable");
+        var alert = page.GetByRole(AriaRole.Alert).Filter(new() { HasText = "Close this alert" });
         await alert.GetByRole(AriaRole.Button, new() { Name = "Close" }).FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
@@ -49,11 +49,13 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
                     probe.style.color = value;
                     return getComputedStyle(probe).color;
                 };
-                const alert = document.querySelector('[data-testid=filled]');
+                const byText = text =>
+                    [...document.querySelectorAll('.tb-alert')].find(alert => alert.textContent.includes(text));
+                const alert = byText('A filled alert.');
                 const panel = alert.querySelector('[data-part=actions]').appendChild(document.createElement('div'));
                 panel.popover = 'auto';
                 const filled = getComputedStyle(alert);
-                const outlined = getComputedStyle(document.querySelector('[data-testid=outlined]'));
+                const outlined = getComputedStyle(byText('An outlined alert.'));
                 return [filled.backgroundColor, filled.color, outlined.borderTopColor, outlined.backgroundColor,
                     color('var(--tb-color-danger)'), color('var(--tb-color-on-danger)'),
                     color('var(--tb-color-success-text)'),
@@ -78,7 +80,7 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Alert_ShouldPutItsTitleAboveAndItsActionsBelowTheMessage_WhenGivenBoth(string browser)
     {
         var page = await OpenAsync(browser, "/examples/alert");
-        var alert = page.GetByTestId("actions");
+        var alert = page.GetByRole(AriaRole.Alert).Filter(new() { HasText = "Couldn't sync" });
 
         var title = (await alert.Locator("[data-part=title]").BoundingBoxAsync())!;
         var message = (await alert.Locator("[data-part=message]").BoundingBoxAsync())!;
@@ -93,7 +95,7 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Progress_ShouldFillItsShareOfTheTrack_WhenGivenAValue(string browser)
     {
         var page = await OpenAsync(browser, "/examples/progress");
-        var track = page.GetByTestId("quarter");
+        var track = Progress(page, "Upload");
 
         var trackBox = await track.BoundingBoxAsync();
         var indicatorBox = await track.Locator("[data-part=indicator]").BoundingBoxAsync();
@@ -105,8 +107,8 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Progress_ShouldPutTheValueAtTheBarsEndAndInTheRingsCenter_WhenShown(string browser)
     {
         var page = await OpenAsync(browser, "/examples/progress");
-        var labeled = page.GetByTestId("labeled");
-        var ring = page.GetByTestId("ring-value").Locator("[data-part=ring]");
+        var labeled = Progress(page, "Attachment");
+        var ring = Progress(page, "Syncing").Locator("[data-part=ring]");
 
         var bar = (await labeled.Locator("[data-part=bar]").BoundingBoxAsync())!;
         var value = (await labeled.Locator("[data-part=value]").BoundingBoxAsync())!;
@@ -134,7 +136,7 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/progress");
         await page.EvaluateAsync("direction => document.documentElement.dir = direction", direction);
-        var indicator = page.GetByTestId("indeterminate").Locator("[data-part=indicator]");
+        var indicator = Progress(page, "Loading the trails").Locator("[data-part=indicator]");
 
         var early = await LeftEdgeAtAsync(indicator, 0.2);
         var late = await LeftEdgeAtAsync(indicator, 0.6);
@@ -146,9 +148,9 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Progress_ShouldFillTheTrackAndOnlyPulse_WhenIndeterminateAndMotionIsReduced(string browser)
     {
         var page = await OpenAsync(browser, "/examples/progress", new() { ReducedMotion = ReducedMotion.Reduce });
-        var track = page.GetByTestId("indeterminate");
+        var track = Progress(page, "Loading the trails");
         var bar = track.Locator("[data-part=indicator]");
-        var spinner = page.GetByTestId("spinner");
+        var spinner = Progress(page, "Loading the map");
 
         var trackBox = await track.BoundingBoxAsync();
         var barBox = await bar.BoundingBoxAsync();
@@ -163,7 +165,7 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Progress_ShouldSpinWithoutAJump_WhenCircularAndIndeterminate(string browser)
     {
         var page = await OpenAsync(browser, "/examples/progress");
-        var ring = page.GetByTestId("spinner").Locator("svg");
+        var ring = Progress(page, "Loading the map").Locator("svg");
 
         // A seamless loop ends a cycle at the same angle it starts the next one at.
         var start = await AngleAtAsync(ring, 0);
@@ -184,6 +186,9 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         return data;
     }
+
+    private static ILocator Progress(IPage page, string name) =>
+        page.GetByRole(AriaRole.Progressbar, new() { Name = name, Exact = true });
 
     private static Task<string[]> AnimationNamesAsync(ILocator element) =>
         element.EvaluateAsync<string[]>("element => element.getAnimations().map(animation => animation.animationName)");

@@ -1,29 +1,8 @@
-@using Trailblazor.Docs.Examples
-
 <TbStack Row Gap="6" Align="Align.Center" Wrap>
     <TbBadge Count="3">
         <TbButton aria-label="Review changes, 3 unsaved">Review changes</TbButton>
     </TbBadge>
-    <TbBadge Count="120" Tone="Tone.Danger" Visible="_unread">
-        <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="@(_unread ? "Messages, 120 unread" : "Messages")" />
+    <TbBadge Count="1" Tone="Tone.Danger">
+        <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="Messages, 1 unread" />
     </TbBadge>
-    <TbButton Variant="Variant.Outlined" OnClick="() => _unread = false">Mark all read</TbButton>
-    <TbBadge>
-        <TbIconButton Icon="ExampleIcons.Filter" AriaLabel="Filters, some applied" />
-    </TbBadge>
-    <TbText>Type filters <TbBadge Count="2" Tone="Tone.Neutral" Label="2 filters" /></TbText>
-    <TbBadge Placement="BadgePlacement.BottomEnd" Overlap="BadgeOverlap.Circular" Tone="Tone.Success" Label="Online"
-             data-testid="avatar">
-        <span role="img" aria-label="Ana Ruiz" style="display: inline-grid; place-items: center; inline-size: 2.5rem;
-              block-size: 2.5rem; border-radius: 50%; background: var(--tb-color-neutral-subtle)">AR</span>
-    </TbBadge>
-    <TbBadge Count="1" Placement="BadgePlacement.TopStart" Offset="4px" data-testid="start">
-        <TbButton Variant="Variant.Outlined" aria-label="Drafts, 1 new">Drafts</TbButton>
-    </TbBadge>
-    <TbText>Errors <TbBadge Count="0" ShowZero Tone="Tone.Success" Label="No errors" /></TbText>
-    <TbText>Offline copy <TbBadge Tone="Tone.Warning" Label="Out of date" /></TbText>
 </TbStack>
-
-@code {
-    private bool _unread = true;
-}

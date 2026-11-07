@@ -49,8 +49,8 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
                 return [badge.left + badge.width / 2, badge.top + badge.height / 2, start, content.top + 4];
             }
             """;
-        var start = await page.GetByTestId("start").EvaluateAsync<double[]>(StartScript);
-        var avatar = await page.GetByTestId("avatar").EvaluateAsync<double[]>("""
+        var start = await Host(page, "Drafts, 1 new").EvaluateAsync<double[]>(StartScript);
+        var avatar = await Host(page, "Messages, sync is on").EvaluateAsync<double[]>("""
             host => {
                 const badge = host.querySelector('[data-part=badge]').getBoundingClientRect();
                 const circle = host.firstElementChild.getBoundingClientRect();
@@ -61,7 +61,7 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
             """);
 
         await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
-        var startRtl = await page.GetByTestId("start").EvaluateAsync<double[]>(StartScript);
+        var startRtl = await Host(page, "Drafts, 1 new").EvaluateAsync<double[]>(StartScript);
 
         foreach (var corner in new[] { start, avatar, startRtl })
         {
@@ -90,12 +90,13 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Badge_ShouldHideAndLeaveTheButton_WhenItIsNoLongerVisible(string browser)
     {
         var page = await OpenAsync(browser, "/examples/badge");
-        await Expect(Host(page, "Messages").Locator("[data-part=badge]")).ToHaveTextAsync("99+");
+        await Expect(Host(page, "Messages, 120 unread").Locator("[data-part=badge]")).ToHaveTextAsync("99+");
+        await Expect(Host(page, "Inbox").Locator("[data-part=badge]")).ToHaveTextAsync("5");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Mark all read" }).ClickAsync();
 
-        await Expect(Host(page, "Messages").Locator("[data-part=badge]")).ToHaveCountAsync(0);
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Messages", Exact = true }))
+        await Expect(Host(page, "Inbox").Locator("[data-part=badge]")).ToHaveCountAsync(0);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Inbox", Exact = true }))
             .ToBeVisibleAsync();
     }
 

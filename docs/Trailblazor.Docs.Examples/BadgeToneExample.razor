@@ -1,0 +1,6 @@
+<TbStack Gap="2">
+    @foreach (var tone in Enum.GetValues<Tone>())
+    {
+        <TbText>@tone <TbBadge Count="3" Tone="tone" Label="3 items" /></TbText>
+    }
+</TbStack>

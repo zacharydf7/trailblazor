@@ -1,0 +1,18 @@
+<TbStack>
+    @if (_shown)
+    {
+        <TbAlert Tone="Tone.Danger" Variant="AlertVariant.Filled" Title="Payment failed" OnClose="() => _shown = false">
+            <ChildContent>A filled alert.</ChildContent>
+            <Actions><TbButton Size="Size.Small" Variant="Variant.Outlined">Update the card</TbButton></Actions>
+        </TbAlert>
+    }
+    else
+    {
+        <div><TbButton Variant="Variant.Outlined" OnClick="() => _shown = true">Show the filled alert</TbButton></div>
+    }
+    <TbAlert Tone="Tone.Success" Variant="AlertVariant.Outlined">An outlined alert.</TbAlert>
+</TbStack>
+
+@code {
+    private bool _shown = true;
+}
