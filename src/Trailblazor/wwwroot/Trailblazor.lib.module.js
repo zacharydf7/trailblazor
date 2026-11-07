@@ -7,6 +7,7 @@ import './file-upload.js';
 import './accordion.js';
 import './pagination.js';
 import './field-box.js';
+import { measurePageScrollbar } from './page-scroll.js';
 
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.
 export function afterWebStarted(blazor) {
@@ -16,6 +17,9 @@ export function afterWebStarted(blazor) {
         if (globalThis.trailblazorTheme) {
             Object.assign(document.documentElement.dataset, globalThis.trailblazorTheme);
         }
+
+        // The navigation removed the root's inline style too, and the root may not have resized.
+        measurePageScrollbar();
     });
 }
 

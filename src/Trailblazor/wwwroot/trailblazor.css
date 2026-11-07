@@ -1116,10 +1116,6 @@
         position: relative;
     }
 
-    :root:has(.tb-overlay--lock-scroll) {
-        overflow: hidden;
-    }
-
     @keyframes tb-overlay-in {
         from {
             opacity: 0;
@@ -3106,9 +3102,16 @@
         }
     }
 
-    /* Native modals don't stop the page behind them from scrolling. */
-    :root:has(dialog.tb-dialog:is(:modal, [data-layer="page"][data-backdrop]:not([data-leaving]))) {
-        overflow: hidden;
+    /* Native modals don't stop the page behind them from scrolling. Padding makes up for the scrollbar this removes, so
+       the page holds still and a scrim still reaches the window's edge, which a reserved gutter wouldn't let it do.
+       !important because a page's own unlayered styles for its root, such as a reset's padding, would otherwise win. */
+    :root:has(.tb-overlay--lock-scroll,
+        dialog.tb-dialog:is(:modal, [data-layer="page"][data-backdrop]:not([data-leaving]))) {
+        --tb-scroll-lock-offset: var(--tb-page-scrollbar, 0px);
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        padding-right: var(--tb-scroll-lock-offset) !important;
+        scrollbar-gutter: auto !important;
     }
 
     .tb-popover {

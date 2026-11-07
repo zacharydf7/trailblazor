@@ -1,0 +1,25 @@
+@page "/scroll-lock"
+
+@* A short page, until Grow makes it taller than the window. *@
+<TbButton OnClick="() => _modal = true">Open modal</TbButton>
+<TbButton OnClick="() => _modeless = true">Open modeless</TbButton>
+<TbButton OnClick="() => _overlay = true">Open overlay</TbButton>
+<TbButton OnClick="() => _tall = true">Grow</TbButton>
+<TbButton OnClick="() => _tall = false">Shrink</TbButton>
+<TbDialog @bind-Open="_modal" Title="Modal">Modal words</TbDialog>
+<TbDialog @bind-Open="_modeless" Title="Modeless" Options="Modeless">Modeless words</TbDialog>
+<TbOverlay Visible="_overlay" LockScroll Blocking>
+    <TbButton OnClick="() => _overlay = false">Close the overlay</TbButton>
+</TbOverlay>
+<div data-testid="pinned" style="position: fixed; top: 80px; right: calc(16px + var(--tb-scroll-lock-offset, 0px))">
+    Pinned
+</div>
+<div style="block-size: @(_tall ? "300vh" : "1px")"></div>
+
+@code {
+    private static readonly DialogOptions Modeless = new() { Modal = false };
+    private bool _modal;
+    private bool _modeless;
+    private bool _overlay;
+    private bool _tall;
+}

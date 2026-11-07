@@ -20,6 +20,9 @@ public sealed class BrowserFixture : IAsyncLifetime
     private IPlaywright? _playwright;
     private WebApplication? _docs;
 
+    // Playwright starts Chromium with --hide-scrollbars, and a test of the page's width needs them drawn.
+    public const string ChromiumWithScrollbars = "chromium with scrollbars";
+
     public Uri BaseAddress { get; private set; } = null!;
 
     public Uri DocsAddress { get; private set; } = null!;
@@ -36,6 +39,9 @@ public sealed class BrowserFixture : IAsyncLifetime
         {
             _browsers[name] = new Lazy<Task<IBrowser>>(() => _playwright[name].LaunchAsync());
         }
+
+        _browsers[ChromiumWithScrollbars] = new Lazy<Task<IBrowser>>(() =>
+            _playwright.Chromium.LaunchAsync(new() { IgnoreDefaultArgs = ["--hide-scrollbars"] }));
     }
 
     // Serves the docs site the build published, answering any other path with the app, as GitHub Pages does.
@@ -60,8 +66,9 @@ public sealed class BrowserFixture : IAsyncLifetime
     public async Task<IBrowserContext> NewContextAsync(string browser, BrowserNewContextOptions? options = null)
     {
         // A case for a browser TRAILBLAZOR_BROWSERS leaves out is skipped; an unknown browser name still fails.
-        Assert.SkipWhen(AllBrowsers.Supported.Contains(browser) && !_browsers.ContainsKey(browser),
-            $"TRAILBLAZOR_BROWSERS leaves out {browser}.");
+        var engine = browser == ChromiumWithScrollbars ? "chromium" : browser;
+        Assert.SkipWhen(AllBrowsers.Supported.Contains(engine) && !_browsers.ContainsKey(engine),
+            $"TRAILBLAZOR_BROWSERS leaves out {engine}.");
         var launched = await _browsers[browser].Value;
         return await launched.NewContextAsync(options);
     }

@@ -23,7 +23,7 @@ Familiar apps: loading scrims over a card or a page, the shade behind a lightbox
 - [x] Without `CloseOnClick`, a click is only reported. `TbOverlayTests.Click_ShouldOnlyReportTheClick_WhenCloseOnClickIsOff`
 - [x] A contained overlay catches clicks over its region only. `OverlayTests.Overlay_ShouldCoverOnlyItsRegionAndCatchClicksThere_WhenContained`
 - [x] With `LockScroll`, the page behind can't scroll. `OverlayTests.Overlay_ShouldStopThePageScrolling_WhileAPageOverlayLocksScroll`
-- [ ] The page doesn't shift sideways as `LockScroll` removes its scrollbar. #301
+- [x] `LockScroll` makes up for the width of the scrollbar it takes away, so the page holds still and the overlay reaches the window's edge. `ScrollLockTests.Overlay_ShouldHoldThePageStillAndCoverTheWindow_WhenItTakesAwayAScrollbar`
 
 ## Touch
 

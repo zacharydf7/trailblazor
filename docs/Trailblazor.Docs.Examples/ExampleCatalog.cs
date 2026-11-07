@@ -3887,6 +3887,10 @@ public static class ExampleCatalog
             [
                 "A modal dialog makes the rest of the page inert, so focus and screen readers stay inside; a non-modal "
                     + "one leaves the page usable.",
+                "A modal stops the page from scrolling behind it and makes up for the width of the scrollbar it takes "
+                    + "away, so the page doesn't shift sideways. An element of your own with `position: fixed` against "
+                    + "the window's right edge holds still too if it adds `var(--tb-scroll-lock-offset, 0px)` to its "
+                    + "`right`.",
                 "A click that starts and ends on the backdrop cancels a modal. `ConfirmAsync` and `AlertAsync` dialogs "
                     + "ignore it, so a stray click can't answer them.",
                 "A non-modal dialog comes to the front when it's pressed or takes focus, along with any dialog nested "
@@ -4143,7 +4147,8 @@ public static class ExampleCatalog
             [
                 new("page", "Over the page", "An overlay covers the whole page, with `ChildContent` in its center. "
                     + "`CloseOnClick` closes it on a click outside that content, and `LockScroll` stops the page from "
-                    + "scrolling behind it.", typeof(OverlayExample)),
+                    + "scrolling behind it, without the page shifting sideways when its scrollbar disappears.",
+                    typeof(OverlayExample)),
                 new("contained", "Over one region", "`Contained` covers only the overlay's nearest positioned parent, "
                     + "here a card with `position: relative`, and `Blur` blurs what's behind it.",
                     typeof(OverlayContainedExample)),
