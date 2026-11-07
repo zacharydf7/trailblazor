@@ -3163,8 +3163,8 @@ public static class ExampleCatalog
                     typeof(FileUploadErrorExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off the picker and the remove "
                     + "and clear buttons, and leaves the chosen files listed. A file input has no read-only state, so "
-                    + "the field disables it: the picker can't be focused and its files don't post. `Disabled` behaves "
-                    + "and looks the same on this field.",
+                    + "the field disables it: the picker can't be focused, its files don't post, and a dropped file is "
+                    + "refused. `Disabled` behaves and looks the same on this field.",
                     typeof(FileUploadStatesExample)),
                 new("labels", "Built-in text", "`Labels` replaces the words the field shows and reads out, such as the "
                     + "zone's text and the number of files chosen.", typeof(FileUploadLabelsExample)),

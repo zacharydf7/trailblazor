@@ -16,11 +16,12 @@ Familiar apps: a native file input, the drop zones in GitHub and Google Drive
 - [x] Clicking the label opens the picker, since it points at the input. `TbFileUpload.razor`
 - [x] The zone highlights while a file is dragged over it, and stops when it leaves. `FileUploadTests.Zone_ShouldShowItIsReady_WhenAFileIsDraggedOverIt`
 - [x] Dropping a file chooses it, and one of another type is left out with a reason. `FileUploadTests.Choose_ShouldLeaveOutAndExplainOtherTypes_WhenDroppedFilesDontMatchAccept`
-- [ ] Dropping a file on a disabled or read-only zone does nothing, rather than the browser opening the file. #309
+- [x] Dropping a file on a disabled or read-only zone does nothing, rather than the browser opening the file. `FileUploadTests.Zone_ShouldRefuseADrop_WhenTheFieldIsDisabled`, `FileUploadTests.Zone_ShouldRefuseADrop_WhenTheFieldIsReadOnly`, `FileUploadTests.Zone_ShouldRefuseADrop_WhenADisabledFieldIsOnAStaticPage`, `FileUploadTests.Zone_ShouldRefuseADrop_WhenTheDragTargetsTheTextOfItsPrompt`, `FileUploadTests.Zone_ShouldShowNoDropAndGetNoDrop_WhenAFileIsDraggedOverADisabledField`
+- [ ] In Firefox and Safari, a real file dropped on a disabled or read-only zone leaves the page where it is. UNCONFIRMED
 - [x] Canceling the picker keeps the listed files, since only a change event updates them. `TbFileUpload.cs`
 - [x] Choosing again replaces the files. `TbFileUploadTests.Choose_ShouldReplaceTheEarlierFiles_WhenFilesAreChosenAgain`
 - [x] Clearing lets the same file be chosen again. `FileUploadTests.Clear_ShouldLetTheSameFileBeChosenAgain_WhenAFileWasCleared`
-- [ ] Dropping a file again after removing it takes it back. #309
+- [x] Dropping a file again after removing it takes it back. `FileUploadTests.Drop_ShouldTakeTheFileAgain_WhenItWasRemoved`, `FileUploadTests.Remove_ShouldEmptyTheInputAndKeepTheOtherFilesReadable_WhenOneOfSeveralIsRemoved`
 - [x] Without `DropZone` it's a button that takes one file. `FileUploadTests.Button_ShouldTakeOneFile_WhenThereIsNoDropZone`
 - [x] A click handler can open the picker from code. `FileUploadTests.Open_ShouldOpenThePickerFromCodeAndLetItBeCleared_WhenButtonsAsk`
 - [ ] A disabled or read-only zone shows no ready highlight while a file is dragged over it. UNCONFIRMED

@@ -4472,10 +4472,12 @@
         border-color: var(--tb-border-subtle);
         background: var(--tb-color-surface-sunken);
         color: var(--tb-color-text-muted);
+        cursor: not-allowed;
     }
 
+    /* Browsers differ on sending events to a disabled control, so a drag lands on the zone, which can refuse it. */
     .tb-file-upload__input:disabled {
-        cursor: not-allowed;
+        pointer-events: none;
     }
 
     /* A static page has no file list, so the browser's own input shows what was chosen, on its own: the zone

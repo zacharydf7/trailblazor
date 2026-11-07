@@ -106,6 +106,158 @@ public class FileUploadTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Remove_ShouldEmptyTheInputAndKeepTheOtherFilesReadable_WhenOneOfSeveralIsRemoved(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+        var input = page.GetByLabel("Documents", new() { Exact = true });
+        await page.Tb().FileUpload("Documents").ChooseAsync(File("trail.pdf", "12345"), File("map.pdf", "123"));
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Remove trail.pdf" }).ClickAsync();
+
+        await Expect(page.GetByTestId("documents")).ToHaveTextAsync("map.pdf");
+        await Expect(input).ToHaveValueAsync("");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Read" }).ClickAsync();
+        await Expect(page.GetByTestId("read")).ToHaveTextAsync("3 bytes");
+    }
+
+    // Only Chromium's debugging protocol can send a trusted drop, which is what fills the input by itself.
+    [Fact]
+    public async Task Drop_ShouldTakeTheFileAgain_WhenItWasRemoved()
+    {
+        var page = await OpenAsync("chromium", "/file-upload");
+        var input = page.GetByLabel("Documents", new() { Exact = true });
+        await Expect(input).ToHaveAttributeAsync("data-ready", "");
+        var folder = Directory.CreateTempSubdirectory("trailblazor-drop");
+        try
+        {
+            var path = Path.Combine(folder.FullName, "trail.pdf");
+            await System.IO.File.WriteAllTextAsync(path, "trail", TestContext.Current.CancellationToken);
+
+            await DropAsync(page, input, path);
+            await Expect(page.GetByTestId("documents")).ToHaveTextAsync("trail.pdf");
+            await page.GetByRole(AriaRole.Button, new() { Name = "Remove trail.pdf" }).ClickAsync();
+            await Expect(page.GetByTestId("documents")).ToHaveTextAsync("none");
+            await DropAsync(page, input, path);
+
+            await Expect(page.GetByTestId("documents")).ToHaveTextAsync("trail.pdf");
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Zone_ShouldRefuseADrop_WhenTheFieldIsDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+
+        Assert.Equal(["zone", "refused", "refused"], await DragOverAndDropAsync(page, "Archive"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Zone_ShouldRefuseADrop_WhenTheFieldIsReadOnly(string browser)
+    {
+        var page = await OpenAsync(browser, "/read-only");
+
+        Assert.Equal(["zone", "refused", "refused"], await DragOverAndDropAsync(page, "Photos"));
+    }
+
+    // A constructed DataTransfer ignores a new drop effect, so checking for the no-drop cursor needs a trusted drag.
+    [Fact]
+    public async Task Zone_ShouldShowNoDropAndGetNoDrop_WhenAFileIsDraggedOverADisabledField()
+    {
+        var page = await OpenAsync("chromium", "/file-upload");
+        await page.EvaluateAsync("""
+            () => {
+                window.seen = { effect: '', drops: 0 };
+                window.addEventListener('dragover', event => window.seen.effect = event.dataTransfer.dropEffect);
+                window.addEventListener('drop', () => window.seen.drops++);
+            }
+            """);
+        var path = Path.GetTempFileName();
+
+        try
+        {
+            await DropAsync(page, Field(page, "Archive").Locator("[data-part=zone]"), path);
+
+            Assert.Equal("none", await page.EvaluateAsync<string>("() => window.seen.effect"));
+            Assert.Equal(0, await page.EvaluateAsync<int>("() => window.seen.drops"));
+        }
+        finally
+        {
+            System.IO.File.Delete(path);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Zone_ShouldRefuseADrop_WhenTheDragTargetsTheTextOfItsPrompt(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+
+        var allowed = await Field(page, "Archive").Locator("[data-part=zone]").EvaluateAsync<bool>("""
+            zone => document.createTreeWalker(zone, NodeFilter.SHOW_TEXT).nextNode().dispatchEvent(
+                new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() }))
+            """);
+
+        Assert.False(allowed);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Zone_ShouldRefuseADrop_WhenADisabledFieldIsOnAStaticPage(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-file-upload");
+        var zone = await Field(page, "Archive").Locator("[data-part=zone]").ElementHandleAsync();
+
+        // No component loads the script on a static page, and it arrives with Blazor's own, so this waits for it.
+        await page.WaitForFunctionAsync("""
+            zone => !zone.dispatchEvent(
+                new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() }))
+            """, zone);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Zone_ShouldLeaveADropToTheInput_WhenTheFieldIsEnabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+
+        var result = await DragOverAndDropAsync(page, "Documents");
+
+        Assert.Equal(["input", "left alone", "left alone"], result);
+    }
+
+    // Dispatches on what lies at the middle of the zone, as a drag would, and reads what the page did with each event.
+    private static Task<string[]> DragOverAndDropAsync(IPage page, string label) =>
+        Field(page, label).Locator("[data-part=zone]").EvaluateAsync<string[]>("""
+            zone => {
+                zone.scrollIntoView({ block: 'center' });
+                const box = zone.getBoundingClientRect();
+                const target = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+                const send = (type, dataTransfer) => target.dispatchEvent(
+                    new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer })) ? 'left alone' : 'refused';
+                const data = new DataTransfer();
+                return [target.localName === 'input' ? 'input' : 'zone', send('dragover', data), send('drop', data)];
+            }
+            """);
+
+    private static async Task DropAsync(IPage page, ILocator target, string path)
+    {
+        var box = (await target.BoundingBoxAsync())!;
+        var session = await page.Context.NewCDPSessionAsync(page);
+        foreach (var type in new[] { "dragEnter", "dragOver", "drop" })
+        {
+            await session.SendAsync("Input.dispatchDragEvent", new Dictionary<string, object>
+            {
+                ["type"] = type, ["x"] = box.X + box.Width / 2, ["y"] = box.Y + box.Height / 2,
+                ["data"] = new Dictionary<string, object>
+                {
+                    ["items"] = Array.Empty<object>(), ["files"] = new[] { path }, ["dragOperationsMask"] = 1,
+                },
+            });
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Zone_ShouldShowItIsReady_WhenAFileIsDraggedOverIt(string browser)
     {
         var page = await OpenAsync(browser, "/file-upload");
@@ -159,7 +311,7 @@ public class FileUploadTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Tb().FileUpload("Documents").ChooseAsync(File("trail.pdf"));
         await Expect(page.GetByLabel("Documents", new() { Exact = true })).ToHaveCSSAsync("opacity", "1");
-        await Expect(page.Locator(".tb-file-upload__prompt")).ToBeHiddenAsync();
+        await Expect(Field(page, "Documents").Locator(".tb-file-upload__prompt")).ToBeHiddenAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
 
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("trail.pdf");

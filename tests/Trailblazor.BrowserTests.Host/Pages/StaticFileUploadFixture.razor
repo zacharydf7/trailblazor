@@ -4,6 +4,7 @@
 <form method="post" enctype="multipart/form-data" @formname="static-file-upload" @onsubmit="Post">
     <AntiforgeryToken />
     <TbFileUpload Label="Documents" InputAttributes="@(new Dictionary<string, object> { ["name"] = "documents" })" />
+    <TbFileUpload Label="Archive" Disabled />
     <TbButton Type="ButtonType.Submit">Send</TbButton>
 </form>
 <output data-testid="posted">@_posted</output>

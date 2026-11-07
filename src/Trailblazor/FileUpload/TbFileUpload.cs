@@ -105,6 +105,11 @@ public partial class TbFileUpload
         _rejected.Clear();
         await SetValueAsync(null);
         StateHasChanged();
+        await ClearPickerAsync();
+    }
+
+    private async Task ClearPickerAsync()
+    {
         if (_input?.Element is { } input)
         {
             var module = await Modules.ImportAsync(Script);
@@ -204,6 +209,8 @@ public partial class TbFileUpload
     {
         var left = Files.Where(other => other != file).ToList();
         await SetValueAsync(left.Count == 0 ? null : left);
+        // Emptying the input lets the file be dropped again, and Blazor keeps the others by id, so none are lost.
+        await ClearPickerAsync();
         await FocusAsync();
     }
 
