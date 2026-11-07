@@ -3,6 +3,48 @@ namespace Trailblazor.BrowserTests;
 public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldMoveFocusToItsHeader_WhenCodeClosesItWithFocusInItsPanel(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion");
+        var header = page.GetByRole(AriaRole.Button, new() { Name = "Editing", Exact = true });
+        await Expect(header).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(header).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(header).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldMoveFocusToItsHeader_WhenCodeClosesAnItemOnItsOwn(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion-item");
+        var header = page.GetByRole(AriaRole.Button, new() { Name = "On its own" });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Done" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(header).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(header).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldLeaveFocusAlone_WhenCodeClosesItWithFocusOutsideItsPanel(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion");
+        var header = page.GetByRole(AriaRole.Button, new() { Name = "Editing", Exact = true });
+        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Toggle editing" });
+        await Expect(header).ToHaveAttributeAsync("aria-expanded", "true");
+        await toggle.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(header).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(toggle).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Accordion_ShouldOpenOneItemAtATimeFromTheKeyboard_WhenEnterOrSpaceIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/accordion");

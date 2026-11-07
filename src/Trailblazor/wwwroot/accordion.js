@@ -1,3 +1,13 @@
+// Focus inside a panel that turns inert would fall to the page, so it moves to the panel's header instead. The JS
+// initializer imports this at startup, since an item on its own has no accordion to load it.
+new MutationObserver(records => {
+    for (const { target: panel } of records) {
+        if (panel.inert && panel.matches('.tb-accordion__panel') && panel.contains(document.activeElement)) {
+            document.getElementById(panel.getAttribute('aria-labelledby')).focus();
+        }
+    }
+}).observe(document.documentElement, { attributeFilter: ['inert'], subtree: true });
+
 // Up and Down move between the accordion's own headers, wrapping at the ends, and Home and End go to the first and
 // last; each header stays in the tab order, as the WAI-ARIA accordion pattern keeps it.
 export function attachAccordion(accordion) {

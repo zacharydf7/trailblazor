@@ -1,0 +1,10 @@
+@page "/accordion-item"
+
+@* An item on its own, on a page with no accordion to load the script. *@
+<TbAccordionItem Title="On its own" @bind-Expanded="_open">
+    <TbButton OnClick="() => _open = false">Done</TbButton>
+</TbAccordionItem>
+
+@code {
+    private bool _open = true;
+}

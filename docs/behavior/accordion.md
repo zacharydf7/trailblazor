@@ -34,7 +34,7 @@ Familiar apps: FAQ pages, settings pages with collapsible sections, the sections
 - [x] Tab reaches every enabled header, and an item's actions after its header. `AccordionTests.AccordionItem_ShouldReachItsActionsAfterItsHeaderButLeaveThemToTab_WhenItHasHeaderActions`
 - [x] A closed panel's content can't be reached. `TbAccordionTests.Render_ShouldLinkEachHeaderButtonToItsHiddenRegion_WhenCollapsed`
 - [x] A focused header shows a focus ring. `trailblazor.css`
-- [ ] When code closes an item while focus is in its panel, focus moves to the item's header. #322
+- [x] When code closes an item while focus is in its panel, focus moves to the item's header, unless the header is disabled and can't take it. `AccordionTests.AccordionItem_ShouldMoveFocusToItsHeader_WhenCodeClosesItWithFocusInItsPanel`, `AccordionTests.AccordionItem_ShouldMoveFocusToItsHeader_WhenCodeClosesAnItemOnItsOwn`, `AccordionTests.AccordionItem_ShouldLeaveFocusAlone_WhenCodeClosesItWithFocusOutsideItsPanel`
 
 ## Not applicable
 

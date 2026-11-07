@@ -4335,6 +4335,8 @@ public static class ExampleCatalog
             [
                 "A closed panel is `inert`, so its content can't be reached until it opens. Opening and closing slide, "
                     + "except with reduced motion.",
+                "When code closes a section while focus is in its panel, focus moves to that section's title, unless "
+                    + "that title is disabled.",
             ],
             BeforeInteractive =
             [

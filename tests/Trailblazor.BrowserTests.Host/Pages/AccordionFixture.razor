@@ -15,6 +15,13 @@
         </TbAccordion>
     </TbAccordionItem>
 </TbAccordion>
+@* An item that code closes, from a button in its panel or one outside it. *@
+<TbAccordion>
+    <TbAccordionItem Title="Editing" @bind-Expanded="_editing">
+        <TbButton OnClick="() => _editing = false">Save</TbButton>
+    </TbAccordionItem>
+</TbAccordion>
+<TbButton OnClick="() => _editing = !_editing">Toggle editing</TbButton>
 @* Items with actions in their headers, one with an item nested in its panel, and an item on its own. *@
 <TbAccordion data-testid="trips">
     <TbAccordionItem Title="Day one">
@@ -33,5 +40,6 @@
 <div style="block-size: 150vh"></div>
 
 @code {
+    private bool _editing = true;
     private int _deleted;
 }
