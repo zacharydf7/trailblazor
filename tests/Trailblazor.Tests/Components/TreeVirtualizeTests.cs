@@ -17,6 +17,9 @@ public class TreeVirtualizeTests : BunitContext
     private static IReadOnlyList<Place> Flat =>
         [.. Enumerable.Range(1, 1000).Select(id => new Place(id, $"Place {id}"))];
 
+    private static IReadOnlyList<Place> Names =>
+        [new(1, "Anna"), new(2, "Abby"), new(3, "Aaron"), new(4, "Banana"), new(5, "Bread")];
+
     [Fact]
     public void Render_ShouldRenderTheFirstRowsAndASpacerForTheRest_WhenVirtualized()
     {
@@ -139,6 +142,41 @@ public class TreeVirtualizeTests : BunitContext
         await cut.InvokeAsync(() => Events().OnFind("1", "place 70"));
 
         Assert.Equal("0", Row(cut, "70").GetAttribute("tabindex"));
+    }
+
+    [Theory]
+    [InlineData("4", "bb", "5")]
+    [InlineData("1", "aa", "3")]
+    [InlineData("3", "aa", "1")]
+    public async Task OnFind_ShouldStepOrFindTheDoubledLetter_WhenALetterIsRepeated(string from, string typed, string to)
+    {
+        var cut = RenderPlaces(Names);
+
+        await cut.InvokeAsync(() => Events().OnFind(from, typed));
+
+        Assert.Equal("0", Row(cut, to).GetAttribute("tabindex"));
+    }
+
+    [Theory]
+    [InlineData("1", "aar")]
+    [InlineData("3", "aar")]
+    public async Task OnFind_ShouldFindTheRowWithADoubledLetter_WhenTypingGoesOn(string from, string typed)
+    {
+        var cut = RenderPlaces(Names);
+
+        await cut.InvokeAsync(() => Events().OnFind(from, typed));
+
+        Assert.Equal("0", Row(cut, "3").GetAttribute("tabindex"));
+    }
+
+    [Fact]
+    public async Task OnFind_ShouldStayOnTheRow_WhenDifferentLettersMatchNothing()
+    {
+        var cut = RenderPlaces(Names);
+
+        await cut.InvokeAsync(() => Events().OnFind("4", "bx"));
+
+        Assert.Empty(Services.GetRequiredService<FakeBrowserService>().ScrolledTo);
     }
 
     [Fact]

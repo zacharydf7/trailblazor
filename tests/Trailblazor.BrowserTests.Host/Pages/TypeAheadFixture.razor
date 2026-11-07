@@ -1,0 +1,34 @@
+@page "/type-ahead"
+
+@* Banana and Bread share a first letter with nothing doubled. Aaron really has a doubled letter, with other "a" options
+   before it, so stepping and finding it land on different options. *@
+<TbSelect Label="Food" @bind-Value="_food">
+    <TbOption Value="@("Anna")">Anna</TbOption>
+    <TbOption Value="@("Abby")">Abby</TbOption>
+    <TbOption Value="@("Alan")">Alan</TbOption>
+    <TbOption Value="@("Aaron")">Aaron</TbOption>
+    <TbOption Value="@("Banana")">Banana</TbOption>
+    <TbOption Value="@("Bread")">Bread</TbOption>
+</TbSelect>
+<TbListBox TValue="string" Label="Snack" @bind-Value="_snack">
+    <TbOption Value="@("Anna")">Anna</TbOption>
+    <TbOption Value="@("Abby")">Abby</TbOption>
+    <TbOption Value="@("Alan")">Alan</TbOption>
+    <TbOption Value="@("Aaron")">Aaron</TbOption>
+    <TbOption Value="@("Banana")">Banana</TbOption>
+    <TbOption Value="@("Bread")">Bread</TbOption>
+</TbListBox>
+<output data-testid="snack">@_snack</output>
+<TbTreeView TItem="string" TKey="string" AriaLabel="Pantry">
+    <TbTreeItem Value="@("anna")" Text="Anna" />
+    <TbTreeItem Value="@("abby")" Text="Abby" />
+    <TbTreeItem Value="@("alan")" Text="Alan" />
+    <TbTreeItem Value="@("aaron")" Text="Aaron" />
+    <TbTreeItem Value="@("banana")" Text="Banana" />
+    <TbTreeItem Value="@("bread")" Text="Bread" />
+</TbTreeView>
+
+@code {
+    private string? _food;
+    private string? _snack;
+}

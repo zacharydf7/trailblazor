@@ -10,7 +10,8 @@ Familiar apps: a native `<select size>`, the list panes in Windows dialogs and m
 - [x] Home and End go to the first and last option, and choose in a single-selection list. `ListBoxTests.ListBox_ShouldChooseTheOptionItMovesTo_WhenTheArrowKeysAreUsed`
 - [ ] Page Up and Page Down move the active option by a page, as a native list does, instead of only scrolling the list away from it. #306
 - [x] Typing letters jumps to the option that starts with them. `ListBoxTests.ListBox_ShouldJumpToTheOptionTyped_WhenLettersAreTyped`
-- [ ] Pressing the same letter quickly cycles through the options that start with it. #304
+- [x] Pressing the same letter quickly cycles through the options that start with it, and "aa" still finds an option that starts with that letter doubled, unless the first press landed on it. Typing on, as in "aar", always finds it. `TypeAheadTests.ListBox_ShouldStepThroughTheOptionsStartingWithALetter_WhenItIsPressedQuickly`, `TypeAheadTests.ListBox_ShouldFindTheOptionWithADoubledLetter_WhenOneStartsWithIt`, `TypeAheadTests.ListBox_ShouldStepPastTheOptionWithADoubledLetter_WhenItIsAlreadyOnIt`, `TypeAheadTests.ListBox_ShouldFindTheOptionWithADoubledLetter_WhenTypingGoesOnFromIt`
+- [x] Different letters that match nothing leave the active option where it is. `TypeAheadTests.ListBox_ShouldStayOnTheOption_WhenDifferentLettersMatchNothing`
 - [x] A Space typed mid-word is part of the search. `listbox.js`
 - [x] In a multiple-selection list, the arrows move without choosing, and Space toggles the active option. `ListBoxTests.MultiListBox_ShouldToggleWithSpaceAndExtendWithShift_WhenTheKeysAreUsed`
 - [x] In a multiple-selection list, Shift+Down and Shift+Up also choose the option they move to. `ListBoxTests.MultiListBox_ShouldToggleWithSpaceAndExtendWithShift_WhenTheKeysAreUsed`

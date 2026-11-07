@@ -21,7 +21,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] Alt+Shift with an arrow moves the focused row and keeps focus on it. `TreeReorderTests.Tree_ShouldMoveTheFocusedRowAndKeepFocusOnIt_WhenAltShiftAndAnArrowArePressed`
 - [x] In right-to-left text, the arrows mirror. `TreeReorderTests.Tree_ShouldMirrorTheArrowKeys_WhenItIsLaidOutRightToLeft`
 - [x] The arrows reach the failed row a lazy load leaves, and Enter there tries again. `TreeViewTests.Keyboard_ShouldReachAFailedRowRetryItAndFollowTheBranch_WhenALazyLoadFails`
-- [ ] Pressing the same letter quickly cycles through the rows that start with it. #304
+- [x] Pressing the same letter quickly cycles through the rows that start with it, and "aa" still finds a row that starts with that letter doubled, unless the first press landed on it. Typing on, as in "aar", always finds it. All of this holds with or without `Virtualize`. `TypeAheadTests.Tree_ShouldStepThroughTheRowsStartingWithALetter_WhenItIsPressedQuickly`, `TypeAheadTests.Tree_ShouldFindTheRowWithADoubledLetter_WhenOneStartsWithIt`, `TreeVirtualizeTests.OnFind_ShouldStepOrFindTheDoubledLetter_WhenALetterIsRepeated`, `TreeVirtualizeTests.OnFind_ShouldFindTheRowWithADoubledLetter_WhenTypingGoesOn`, `TreeVirtualizeTests.OnFind_ShouldStayOnTheRow_WhenDifferentLettersMatchNothing`
 
 ## Pointer
 

@@ -1,4 +1,4 @@
-// Typing letters quickly finds the next option that starts with them; a pause starts the search over.
+// Quick typing finds the next option by prefix, a repeated letter steps through matches, and a pause starts over.
 export function createTypeahead() {
     let typed = '';
     let typedAt = 0;
@@ -16,9 +16,12 @@ export function createTypeahead() {
         find(options, current, key) {
             type(key);
             const index = options.indexOf(current);
-            const start = index < 0 ? 0 : index + (typed.length === 1 ? 1 : 0);
-            return options.map((_, step) => options[(start + step) % options.length])
-                .find(option => (option.dataset.text ?? option.textContent).trim().toLowerCase().startsWith(typed));
+            const firstFrom = (start, text) => options.map((_, step) => options[(start + step) % options.length])
+                .find(option => (option.dataset.text ?? option.textContent).trim().toLowerCase().startsWith(text));
+            const match = firstFrom(typed.length === 1 ? index + 1 : Math.max(index, 0), typed);
+            // A real double letter, as in "Aaron", takes priority over stepping, unless the search is already on it.
+            return [...typed].every(letter => letter === typed[0]) && (!match || match === current)
+                ? firstFrom(index + 1, typed[0]) : match;
         },
     };
 }

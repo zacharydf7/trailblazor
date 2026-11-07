@@ -2738,8 +2738,9 @@ public static class ExampleCatalog
                 },
                 new(["Down", "Up"], "Moves to the next or previous option.") { When = "While open" },
                 new(["Home", "End"], "Moves to the first or last option.") { When = "While open" },
-                new(["A letter"], "Moves to an option that starts with what was typed. A Space typed mid-search adds "
-                    + "to the search rather than choosing.")
+                new(["A letter"], "Moves to an option that starts with what was typed. Pressed again quickly, it moves "
+                    + "to the next one that starts with that letter. A Space typed mid-search adds to the search "
+                    + "rather than choosing.")
                 {
                     When = "While open",
                 },
@@ -3432,7 +3433,8 @@ public static class ExampleCatalog
                     { When = "In a `TbListBox`" },
                 new(["Home", "End"], "Moves to the first or last option that isn't disabled, and chooses it.")
                     { When = "In a `TbListBox`" },
-                new(["A letter"], "Moves to an option that starts with what was typed, and chooses it.")
+                new(["A letter"], "Moves to an option that starts with what was typed, and chooses it. Pressed again "
+                    + "quickly, it moves to and chooses the next one that starts with that letter.")
                     { When = "In a `TbListBox`" },
                 new(["Space"], "Chooses the active option. A Space typed mid-search adds to the search instead.")
                     { When = "In a `TbListBox`" },
@@ -3440,7 +3442,8 @@ public static class ExampleCatalog
                     { When = "In a `TbMultiListBox`" },
                 new(["Home", "End"], "Moves to the first or last option that isn't disabled.")
                     { When = "In a `TbMultiListBox`" },
-                new(["A letter"], "Moves to an option that starts with what was typed.")
+                new(["A letter"], "Moves to an option that starts with what was typed. Pressed again quickly, it "
+                    + "moves to the next one that starts with that letter.")
                     { When = "In a `TbMultiListBox`" },
                 new(["Space"], "Chooses or clears the active option. A Space typed mid-search adds to the search "
                     + "instead.") { When = "In a `TbMultiListBox`" },
@@ -4457,7 +4460,8 @@ public static class ExampleCatalog
                 new(["Right"], "Opens a row, or moves into it.") { When = "Moving around" },
                 new(["Left"], "Closes a row, or moves to its parent.") { When = "Moving around" },
                 new(["*"], "Opens the row's siblings.") { When = "Moving around" },
-                new(["A letter"], "Finds a row by its text.") { When = "Moving around" },
+                new(["A letter"], "Finds a row by its text. Pressed again quickly, it moves to the next row that "
+                    + "starts with that letter.") { When = "Moving around" },
                 new(["Enter"], "Selects and activates the row and, like a double-click, opens or closes it if it has "
                     + "children. On a failed row, tries again.") { When = "Selecting" },
                 new(["Space"], "Selects the row, or checks it in a `Checkable` tree. In a `Multiple` tree, selects or "

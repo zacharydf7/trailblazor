@@ -720,9 +720,16 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         var shown = _rows.Where(row => row.IsItem).Select(row => row.Node).ToList();
         var from = Moving(id);
         var index = shown.FindIndex(node => node.Id == from);
-        var start = index < 0 ? 0 : index + (typed.Length == 1 ? 1 : 0);
-        var match = Enumerable.Range(0, shown.Count).Select(step => shown[(start + step) % shown.Count])
-            .FirstOrDefault(node => TextOf(node).Trim().StartsWith(typed, StringComparison.CurrentCultureIgnoreCase));
+        var firstFrom = (int start, string text) => Enumerable.Range(0, shown.Count)
+            .Select(step => shown[(start + step) % shown.Count])
+            .FirstOrDefault(node => TextOf(node).Trim().StartsWith(text, StringComparison.CurrentCultureIgnoreCase));
+        var match = firstFrom(typed.Length == 1 ? index + 1 : Math.Max(index, 0), typed);
+        // A real double letter, as in "Aaron", takes priority over stepping, unless the search is already on it.
+        if (typed.All(letter => letter == typed[0]) && (match is null || match.Id == from))
+        {
+            match = firstFrom(index + 1, typed[..1]);
+        }
+
         if (match is not null)
         {
             if (FollowsFocus)
