@@ -91,10 +91,10 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public Func<TItem, object?>? GroupBy { get; set; }
 
-    /// <summary>Lets the user edit the column's cells: double-click a cell, or press Enter or F2 on it, then Enter
-    /// saves and Escape cancels; leaving the cell, or choosing an enum's value, saves too. A text, number, enum or bool
-    /// <see cref="Field"/> gets a
-    /// field to edit it with; any other type needs an <see cref="EditTemplate"/>. Each value is checked by the field's
+    /// <summary>Lets the user edit the column's cells: double-click a cell, press Enter or F2 on it, or start typing.
+    /// Enter then saves and Escape cancels; Tab saves and opens the next editable cell, and leaving the cell, or
+    /// choosing an enum's value, saves too. A text, number, enum or bool <see cref="Field"/> gets a field to edit it
+    /// with; any other type needs an <see cref="EditTemplate"/>. Each value is checked by the field's
     /// data annotations, such as <c>[Range]</c>, and by <see cref="Validate"/>, and a failed check keeps the edit open
     /// with its error. A saved value goes to the grid's <see cref="TbDataGrid{TItem}.OnCellEdit"/>, or, without one,
     /// is set on the item when the field is a property or field the grid can set. An editable column makes the grid an

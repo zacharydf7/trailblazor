@@ -79,6 +79,7 @@ function registerEvents(blazor) {
         createEventArgs: event => ({ from: event.detail }),
     });
     blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
+    blazor.registerCustomEventType('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
 
     // A key in a grid cell's edit says whether its field used it; the grid's own Enter and Escape guards don't count.
     blazor.registerCustomEventType('tbeditkey', {

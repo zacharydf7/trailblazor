@@ -1,6 +1,6 @@
 @using System.ComponentModel.DataAnnotations
 
-@* Double-click a cell, or press Enter on it, to edit it. *@
+@* Double-click a cell, press Enter on it, or start typing, to edit it. *@
 <TbStack Gap="3">
     <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trail edits" KeySelector="trail => trail.Id"
                 OnCellEdit="Save" SelectionMode="SelectionMode.Multiple">

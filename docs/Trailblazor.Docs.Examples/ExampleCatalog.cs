@@ -4708,7 +4708,8 @@ public static class ExampleCatalog
                     + "button hands focus to it, and Enter goes into any other cell's fields.",
                     typeof(DataGridKeyboardExample)),
                 new("edit-cells", "Edit cells", "An `Editable` column's cells are edited in place: double-click one, "
-                    + "or press Enter or F2 on it, then Enter saves, Escape cancels, and leaving the field saves too. "
+                    + "press Enter or F2 on it, or start typing. Enter saves, Escape cancels, Tab saves and opens the next "
+                    + "editable cell, and leaving the field saves too. "
                     + "Each value is checked by its field's data annotations and the column's `Validate`, and "
                     + "`OnCellEdit` gets each saved edit. An `Editable` column turns on cell navigation.",
                     typeof(DataGridEditExample)),
@@ -4775,12 +4776,16 @@ public static class ExampleCatalog
                 new(["Space"], "Selects or unselects the row of the cell in focus.") { When = "With cell navigation" },
                 new(["Enter", "F2"], "Moves into the cell's fields, or starts editing an `Editable` cell.")
                     { When = "With cell navigation" },
+                new(["A character"], "Starts editing an `Editable` cell, with what's typed replacing a text or "
+                    + "number field's value; a select or checkbox just opens.") { When = "With cell navigation" },
                 new(["Enter"], "On a cell with nothing to go into, clicks the row, raising `OnRowClick` and, with "
                     + "`RowClickSelects`, selecting or unselecting it.") { When = "With cell navigation" },
                 new(["Tab"], "Cycles through the cell's fields.") { When = "Inside a cell" },
                 new(["Escape"], "Comes back out to the cell.") { When = "Inside a cell" },
                 new(["Enter"], "Saves the edit, and focus goes back to the cell.") { When = "Editing a cell" },
                 new(["Escape"], "Cancels the edit, and focus goes back to the cell.") { When = "Editing a cell" },
+                new(["Tab", "Shift+Tab"], "Saves the edit and opens the next or previous editable cell. Tab in the "
+                    + "last one leaves the grid, and Shift+Tab in the first goes back to its cell.") { When = "Editing a cell" },
                 new(["Tab"], "Moves between the row's fields and its Save and Cancel buttons.")
                     { When = "Editing a row" },
                 new(["Enter"], "Saves the row.") { When = "Editing a row" },

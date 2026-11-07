@@ -71,6 +71,52 @@ public class TbDataGridEditTests : BunitContext
     }
 
     [Fact]
+    public async Task EditStart_ShouldSaveTheOpenEditAndOpenTheCell_WhenRaisedOnAnotherCell()
+    {
+        var cut = RenderHikes();
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+        await cut.Find("[data-part=editor] input").InputAsync(new ChangeEventArgs { Value = "Pine Hollow loop" });
+
+        await Cell(cut, 1, "LengthKm").TriggerEventAsync("ontbeditstart", EventArgs.Empty);
+
+        Assert.Equal("Pine Hollow loop", _hikes[0].Name);
+        Assert.Empty(Cell(cut, 1, "Name").QuerySelectorAll("[data-part=editor]"));
+        Assert.NotEmpty(Cell(cut, 1, "LengthKm").QuerySelectorAll("[data-part=editor]"));
+    }
+
+    [Fact]
+    public async Task EditStart_ShouldOpenNoEdit_WhenTheSaveTookItsRowAway()
+    {
+        var saves = 0;
+        var cut = RenderHikes(parameters => parameters.Add(grid => grid.OnCellEdit, (GridCellEdit<Hike> edit) =>
+        {
+            saves++;
+            _hikes.RemoveAll(hike => hike.Id == edit.Item.Id);
+        }));
+        var length = Cell(cut, 1, "LengthKm");
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+
+        await length.TriggerEventAsync("ontbeditstart", EventArgs.Empty);
+
+        Assert.Empty(cut.FindAll("[data-part=editor]"));
+        await Cell(cut, 2, "Name").DoubleClickAsync(new());
+        Assert.Single(cut.FindAll("[data-part=editor]"));
+        Assert.Equal(1, saves);
+    }
+
+    [Fact]
+    public async Task EditStart_ShouldLeaveTheEditOpen_WhenItsValueFailsItsCheck()
+    {
+        var cut = RenderHikes(validate: (_, _) => "Not today.");
+        await Cell(cut, 1, "LengthKm").DoubleClickAsync(new());
+
+        await Cell(cut, 2, "LengthKm").TriggerEventAsync("ontbeditstart", EventArgs.Empty);
+
+        Assert.Contains("Not today.", Cell(cut, 1, "LengthKm").TextContent);
+        Assert.Empty(Cell(cut, 2, "LengthKm").QuerySelectorAll("[data-part=editor]"));
+    }
+
+    [Fact]
     public async Task Enter_ShouldRaiseTheEditWithAValueOfTheFieldsType_WhenTheGridHandlesEdits()
     {
         GridCellEdit<Hike>? saved = null;

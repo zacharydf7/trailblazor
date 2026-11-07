@@ -228,8 +228,8 @@
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
              data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "" : null)"
-             @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is not null ? OnEditLeftAsync
-                                 : (Func<FieldFocusEventArgs, Task>?)null)!)"
+             @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is { } leaving ? LeftHandler(leaving)
+                                 : null)!)"
              @ontbrowclick="args => OnRowClickedAsync(item, args)"
              @ontbrowextend="args => OnRowExtendedAsync(item, args)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
@@ -260,6 +260,7 @@
                 <td data-column="@column.Key" data-pinned="@PinSide(column)" style="@PinStyle(column)"
                     data-editable="@(editable ? "" : null)" class="@column.CellClass"
                     @ondblclick="@((editable ? () => StartEditAsync(item, column) : null)!)"
+                    @ontbeditstart="@((editable ? () => StartEditAsync(item, column) : null)!)"
                     @onkeydown="@((editable ? (KeyboardEventArgs args) => OnCellKeyAsync(item, column, args) : null)!)">
                     @if (RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
                     {
@@ -307,8 +308,7 @@
     private RenderFragment Editor(GridEdit edit, CellEdit cell) =>
         @<div data-part="editor" data-tb-focus-root="@(EditMode == GridEditMode.Cell ? "" : null)"
               class="tb-data-grid__editor" @ontbeditkey="OnEditKeyAsync" @onkeydown:stopPropagation
-              @ontbfocusleave="@((EditMode == GridEditMode.Cell ? OnEditLeftAsync
-                                  : (Func<FieldFocusEventArgs, Task>?)null)!)">
+              @ontbfocusleave="@((EditMode == GridEditMode.Cell ? LeftHandler(edit) : null)!)">
             <CascadingValue TValue="EditContext" Value="null">
                 <CascadingValue TValue="TbForm" Value="null">
                     @switch (cell.Column.Editor)

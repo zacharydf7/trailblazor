@@ -690,6 +690,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
+        // The save just made may have replaced the row's item, or filtered or sorted the row out of view.
+        var at = _rows.FindIndex(row => Equals(KeyOf(row), key));
+        if (at < 0)
+        {
+            return;
+        }
+
+        item = _rows[at];
         var columns = EditMode == GridEditMode.Row ? _shownColumns.Where(CanEdit) : [column];
         _edit = new(item, key, column, [.. columns.Select(editable => new CellEdit(editable, editable.ValueOf(item)))]);
         _editVersion++;
@@ -727,9 +735,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private Task OnRowActionKeyAsync(GridEditKeyEventArgs args) =>
         args is { Key: "Escape", Handled: false } ? CancelEditAsync() : Task.CompletedTask;
 
-    private async Task OnEditLeftAsync(FieldFocusEventArgs args)
+    // A field removed as the next edit opens reports focus leaving too, and that mustn't save the new edit.
+    private Func<FieldFocusEventArgs, Task> LeftHandler(GridEdit edit) => args => OnEditLeftAsync(edit, args);
+
+    private async Task OnEditLeftAsync(GridEdit edit, FieldFocusEventArgs args)
     {
-        if (args.CrossesField)
+        if (args.CrossesField && _edit == edit)
         {
             await SaveEditAsync(refocus: false);
         }

@@ -4,6 +4,15 @@ const actOnEnter = new Set(['button', 'color', 'file', 'image', 'reset', 'submit
 // Inputs whose value Enter doesn't commit, since it isn't typed.
 const untyped = new Set(['checkbox', 'radio', 'range']);
 
+// Canceling a key also cancels the change event that commits a field's typed text, so this sends one itself.
+const cancelAndCommit = (event, input) => {
+    event.preventDefault();
+    event.tbGridGuarded = true;
+    if (input instanceof HTMLTextAreaElement || input instanceof HTMLInputElement && !untyped.has(input.type)) {
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+};
+
 const focusable = 'a[href], button, input, select, textarea, [tabindex], [contenteditable="true"]';
 
 // Controls that Enter or Space operates without the arrow keys; a cell holding just one hands focus to it. A menu's
@@ -131,9 +140,8 @@ export function createDataGrid(table) {
 
     const navigation = createCellNavigation(table, scroll, rowHeight, waitFor);
 
-    // Enter in a filter's input mustn't also submit a page's form around the grid. Canceling the key also cancels the
-    // change event that commits typed text, so the handler sends one itself. An Enter a widget already canceled, such
-    // as an autocomplete choosing an option, is left to the widget.
+    // Enter in a filter's input mustn't also submit a page's form around the grid. An Enter a widget already canceled,
+    // such as an autocomplete choosing an option, is left to the widget.
     const keepPageFormUnsubmitted = event => {
         const input = event.target;
         if (event.key !== 'Enter' || event.isComposing || event.defaultPrevented
@@ -142,11 +150,7 @@ export function createDataGrid(table) {
             return;
         }
 
-        event.preventDefault();
-        event.tbGridGuarded = true;
-        if (!untyped.has(input.type)) {
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+        cancelAndCommit(event, input);
     };
     table.addEventListener('keydown', keepPageFormUnsubmitted);
 
@@ -378,6 +382,21 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         return row;
     };
 
+    const startEdit = cell => cell.dispatchEvent(new CustomEvent('tb-edit-start', { bubbles: true }));
+
+    // What's typed on a cell replaces its field's value once the server has drawn it. It goes in as typing does, since a
+    // number box drops a lone minus sign set through its value. A select or a checkbox just opens.
+    let typed = null;
+    const takeTyped = field => {
+        const { cell, text } = typed;
+        typed = null;
+        if (field.closest('td, th') === cell && field.closest('[data-part=editor]')
+            && field.matches('input, textarea') && !field.readOnly) {
+            field.select();
+            document.execCommand('insertText', false, text);
+        }
+    };
+
     const onKeyDown = event => {
         const cell = event.target.closest?.('td, th');
         if (!isGrid() || event.defaultPrevented || event.altKey || event.isComposing || !cell
@@ -395,9 +414,22 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             return;
         }
 
+        // Tab in a cell's edit opens the next editable cell, which saves this one first; past the last it leaves the grid.
+        if (event.key === 'Tab' && cell.querySelector('[data-part=editor]')) {
+            const editable = linesOf(table).filter(line => line.dataset.part === 'row')
+                .flatMap(line => [...line.cells]).filter(one => one.hasAttribute('data-editable'));
+            const next = editable[editable.indexOf(cell) + (event.shiftKey ? -1 : 1)];
+            if (next) {
+                cancelAndCommit(event, event.target);
+                startEdit(next);
+            }
+
+            return;
+        }
+
         // A cell being edited, or one Enter or F2 starts editing, leaves those keys to the grid.
         const editing = cell.querySelector('[data-part=editor], [data-part=row-actions]');
-        if (editing && ['Enter', 'Escape', 'Tab'].includes(event.key)
+        if (editing && ['Enter', 'Escape'].includes(event.key)
             || cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)) {
             return;
         }
@@ -413,6 +445,15 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
                 controls[(at + (event.shiftKey ? controls.length - 1 : 1)) % controls.length].focus();
             }
 
+            return;
+        }
+
+        // A typed character starts the edit, but Space selects the row unless it's part of an edit already starting.
+        if (event.target === cell && cell.hasAttribute('data-editable') && event.key.length === 1
+            && !event.ctrlKey && !event.metaKey && (event.key !== ' ' || typed?.cell === cell)) {
+            event.preventDefault();
+            typed = { cell, text: (typed?.cell === cell ? typed.text : '') + event.key };
+            startEdit(cell);
             return;
         }
 
@@ -525,6 +566,10 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
 
     // Focus that lands in a cell, by a click or from code, makes it the grid's stop.
     const followFocus = event => {
+        if (typed) {
+            takeTyped(event.target);
+        }
+
         const cell = event.target.closest?.('td, th');
         if (isGrid() && cell?.closest('table') === table && !event.target.closest('[popover]')) {
             holdsFocus = true;
