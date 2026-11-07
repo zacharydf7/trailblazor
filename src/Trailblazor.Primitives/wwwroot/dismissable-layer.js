@@ -10,6 +10,8 @@ const takesEscape = open => open.localName !== 'dialog' || open.matches(':modal,
 
 export function createDismissableLayer(element, trigger, dotNetReference) {
     const layer = { element, trigger, dotNetReference, dismissPending: false, dispose };
+    // Tells a dialog around the layer to leave Escape to it.
+    element.dataset.dismissableLayer = '';
     if (layers.length === 0) {
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('pointerdown', onPointerDown, { capture: true });
@@ -20,6 +22,7 @@ export function createDismissableLayer(element, trigger, dotNetReference) {
     return layer;
 
     function dispose() {
+        delete element.dataset.dismissableLayer;
         layers.splice(layers.indexOf(layer), 1);
         if (layers.length === 0) {
             document.removeEventListener('keydown', onKeyDown);

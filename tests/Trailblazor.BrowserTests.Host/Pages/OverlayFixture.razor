@@ -22,7 +22,16 @@
     <TbDialog @bind-Open="_modal" Title="Modal above">Words</TbDialog>
 </TbOverlay>
 
+@* A closable overlay inside a dialog that opened first. *@
+<TbButton OnClick="() => _holder = true">Holder</TbButton>
+<TbDialog @bind-Open="_holder" Title="Holder dialog">
+    <TbButton OnClick="() => _inner = true">Cover the dialog</TbButton>
+    <TbOverlay @bind-Visible="_inner" CloseOnClick>Inner cover</TbOverlay>
+</TbDialog>
+
 @code {
+    private bool _holder;
+    private bool _inner;
     private static readonly DialogOptions Modeless = new() { Modal = false };
     private bool _closable;
     private bool _dialog;

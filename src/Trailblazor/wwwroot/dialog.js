@@ -195,14 +195,14 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
 
     // Escape is stopped on keydown: canceling the dialog's cancel event fails on a second press in every engine.
     // It is heard as it bubbles, so whatever inside used it first, such as an autocomplete list or a drag, keeps it.
-    // An open menu, a shown tooltip and a focused toast take Escape first too. The frontmost dialog takes it, and so
-    // does a modeless one with focus, since that is the window the user is working in; focus in a dialog nested inside
-    // it belongs to the nested one.
+    // An open menu, a shown tooltip, a focused toast and a layer such as a closable overlay take Escape first too.
+    // The frontmost dialog takes it, and so does a modeless one with focus, since that is the window the user is
+    // working in; focus in a dialog nested inside it belongs to the nested one.
     const onKeyDown = event => {
         const frontmost = stack.at(-1) === entry;
         if (event.key !== 'Escape' || event.defaultPrevented
             || !(frontmost || !entry.modal && document.activeElement?.closest('dialog') === dialog)
-            || dialog.querySelector(`${lightDismissPopup}, [role="tooltip"]:popover-open`)
+            || dialog.querySelector(`${lightDismissPopup}, [role="tooltip"]:popover-open, [data-dismissable-layer]`)
             || event.target.closest?.('[data-part="toaster"]')) {
             return;
         }

@@ -3881,8 +3881,8 @@ public static class ExampleCatalog
             Keyboard =
             [
                 new(["Escape"], "Cancels the topmost dialog, or a non-modal one that has focus, unless "
-                    + "`DismissOnEscape` is false. A menu, select, autocomplete list or tooltip open inside it, or a "
-                    + "drag, takes the key first."),
+                    + "`DismissOnEscape` is false. A menu, select, autocomplete list, tooltip or closable overlay open "
+                    + "inside it, or a drag, takes the key first."),
                 new(["Left", "Right", "Up", "Down"], "Moves the dialog instead of opening the menu, as the button's "
                     + "description says.")
                 {
@@ -4181,7 +4181,8 @@ public static class ExampleCatalog
             Api = [typeof(TbOverlay)],
             Keyboard =
             [
-                new(["Escape"], "Closes the overlay, unless a menu, popover or dialog above it takes the key first.")
+                new(["Escape"], "Closes the overlay, unless a menu, popover or dialog above it takes the key first. "
+                    + "An overlay inside a dialog takes the key before the dialog.")
                 {
                     When = "With `CloseOnClick`",
                 },

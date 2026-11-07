@@ -30,6 +30,24 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCloseTheOverlayBeforeTheDialog_WhenAClosableOverlayIsOpenInsideIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Holder" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Holder dialog" });
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Cover the dialog" }).ClickAsync();
+        var overlay = dialog.Locator("[data-part=overlay]");
+        await Expect(overlay).ToHaveAttributeAsync("data-ready", "");
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(overlay).ToHaveCountAsync(0);
+        await Expect(dialog).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(dialog).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Escape_ShouldCloseThePopoverAndLeaveTheOverlay_WhenAPopoverIsOpenAboveIt(string browser)
     {
         var page = await OpenAsync(browser, "/overlays");
