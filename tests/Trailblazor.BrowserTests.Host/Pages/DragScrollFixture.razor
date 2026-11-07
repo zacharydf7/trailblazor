@@ -1,0 +1,24 @@
+@page "/drag-scroll"
+
+@* Lists taller than the boxes they scroll in, with the page itself too short to scroll. *@
+<div data-testid="sortable-box" style="block-size: 150px; overflow: auto">
+    <TbSortable TItem="string" Items="_rules" Label="Rules" OnMove="move => move.ApplyTo(_rules)">
+        <ItemTemplate>@context</ItemTemplate>
+    </TbSortable>
+</div>
+<output data-testid="moved-to">@_rules.IndexOf("Rule 1")</output>
+<TbDataGrid TItem="string" Items="_stops" AriaLabel="Stops" Height="150px" OnRowMove="move => move.ApplyTo(_stops)">
+    <TbColumn TItem="string" Title="Stop" Id="stop">
+        <Cell>@context</Cell>
+    </TbColumn>
+</TbDataGrid>
+<div data-testid="tree-box" style="block-size: 150px; overflow: auto">
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Days" Items="_days" KeySelector="day => day"
+                ItemText="day => day" OnDrop="_ => { }" />
+</div>
+
+@code {
+    private readonly List<string> _rules = [.. Enumerable.Range(1, 30).Select(number => $"Rule {number}")];
+    private readonly List<string> _stops = [.. Enumerable.Range(1, 30).Select(number => $"Stop {number}")];
+    private readonly List<string> _days = [.. Enumerable.Range(1, 30).Select(number => $"Day {number}")];
+}

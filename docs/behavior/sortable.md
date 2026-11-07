@@ -25,8 +25,10 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] A click on a handle opens its menu, but a drag's release doesn't. `sortable.js`
 - [x] The menu moves the item in one click, and offers no move that goes nowhere. `SortableTests.Menu_ShouldMoveTheItemWithOneClick_WhenAMoveIsChosenFromItsHandle`
 - [x] Only the primary button starts a drag. `pointer-drag.js`
-- [x] A drag near the top or bottom of the scrolling area scrolls it with each pointer move. `pointer-drag.js`
-- [ ] A drag held still near the top or bottom keeps scrolling. #302
+- [x] A drag near the top or bottom of the scrolling area scrolls it. `pointer-drag.js`
+- [x] A drag held still near the top or bottom keeps scrolling until the pointer leaves the edge or the drag ends, and a drop lands at the row the scrolling brought under the pointer. `DragScrollTests.Sortable_ShouldKeepScrolling_WhenADragIsHeldStillNearTheBottom`, `DragScrollTests.Sortable_ShouldKeepScrollingUp_WhenADragIsHeldStillNearTheTop`, `DragScrollTests.Sortable_ShouldStopScrolling_WhenThePointerLeavesTheEdge`, `DragScrollTests.Sortable_ShouldStopScrolling_WhenTheDragEnds`, `DragScrollTests.Sortable_ShouldDropWhereTheScrollingBroughtIt_WhenReleasedAfterHoldingStill`, `DragScrollTests.Sortable_ShouldDropWhereTheScrollingBroughtIt_WhenTheBoxScrollsSmoothly`
+- [x] Losing the window cancels the drag, since its release would never arrive. `DragScrollTests.Sortable_ShouldCancelTheDrag_WhenTheWindowLosesFocus`
+- [x] A box that only starts to overflow during the drag scrolls too. `DragScrollTests.Sortable_ShouldScrollABox_WhenItStartsToOverflowDuringTheDrag`
 
 ## Touch
 

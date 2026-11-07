@@ -1548,6 +1548,7 @@ public static class ExampleCatalog
                     + "The menu also works where a screen reader keeps the arrow keys for itself.",
                 "A drop lands before or after the item under the pointer, shown by a line. Where it can't go, the line "
                     + "is dashed, so it doesn't rely on color.",
+                "A drag held near the top or bottom of what scrolls keeps it scrolling, so a drop can reach any item.",
             ],
             BeforeInteractive =
             [
@@ -4517,6 +4518,7 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
+                "A drag held near the top or bottom of what scrolls keeps it scrolling, so a drop can reach any row.",
                 "Each visible row is a `treeitem` carrying `aria-level`, `aria-setsize`, `aria-posinset`, "
                     + "`aria-expanded`, and `aria-selected` or `aria-checked`.",
                 "The arrows reach the loading row and the failed row, and focus moves on to the children once they "
@@ -4784,6 +4786,7 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
+                "A row drag held near the top or bottom of the scroll box keeps it scrolling, so a drop can reach any row.",
                 "The first sort sets `aria-sort` on its header. With several sorts, each sorted header's button also "
                     + "says its place, such as \"sort 2 of 3, ascending\".",
                 "The header checkbox shows \"mixed\" when only some rows are selected.",

@@ -35,7 +35,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] A refused drop shows why and moves nothing. `TreeReorderTests.Tree_ShouldShowWhyAndMoveNothing_WhenARowIsDraggedIntoOneThatCantHoldIt`
 - [x] Escape cancels a drag. `TreeReorderTests.Tree_ShouldDropNothing_WhenEscapeIsPressedDuringADrag`
 - [ ] Holding a drag over a closed row opens it, so a drop can reach the rows inside. #324
-- [ ] A drag held still near the top or bottom keeps scrolling. #302
+- [x] A drag held still near the top or bottom keeps scrolling. `DragScrollTests.Tree_ShouldKeepScrolling_WhenADragIsHeldStillNearTheBottom`, `DragScrollTests.Tree_ShouldKeepScrolling_WhenAFingerIsHeldStillNearTheBottom`
 
 ## Touch
 

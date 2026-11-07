@@ -43,7 +43,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A refused move leaves the order alone and says why. `TbDataGridTests.RowMove_ShouldAskFirstAndLeaveTheOrder_WhenTheMoveIsRefused`
 - [x] Escape during a drag cancels it, and its release doesn't open the handle's menu. `sortable.js`
 - [x] Handles go away while the rows are sorted, filtered or grouped, since a move would mean nothing. `TbDataGridTests.RowMove_ShouldOfferNoHandles_WhenTheGridIsSorted`
-- [ ] A drag held still near the top or bottom of the scroll box keeps scrolling. #302
+- [x] A drag held still near the top or bottom of the scroll box keeps scrolling. `DragScrollTests.DataGrid_ShouldKeepScrolling_WhenARowDragIsHeldStillNearTheBottom`
 - [x] Double-clicking a row that isn't being edited raises one row click, and doesn't select and unselect it. `DataGridTests.Row_ShouldBeClickedOnce_WhenDoubleClicked`
 - [ ] Shift+clicking a row or its checkbox selects the range from the last one clicked. #318
 - [x] Dragging across a row's text to copy it leaves the row unselected and raises no row click. `DataGridTests.Row_ShouldNotBeClicked_WhenADragSelectsItsText`

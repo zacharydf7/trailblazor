@@ -4,7 +4,10 @@
 const threshold = 4;
 const holdForTouch = 300;
 const edge = 32;
-const scrollStep = 12;
+// Pixels per millisecond, so a higher refresh rate doesn't scroll faster.
+const scrollSpeed = 0.4;
+// The most time one step makes up for, so a stalled page doesn't leap past what the user was aiming for.
+const longestStep = 50;
 
 export function createPointerDrag(container,
     { itemSelector, ignoreSelector, ownsPress = () => true, onStart, onMove, onDrop, onCancel }) {
@@ -27,28 +30,42 @@ export function createPointerDrag(container,
         return document.scrollingElement;
     };
 
-    // A drag near the top or bottom of what scrolls brings more rows into reach.
-    const scrollNearEdge = event => {
-        const scroller = scrollParent();
+    // A drag near the top or bottom of what scrolls keeps it scrolling, and rows passing the pointer count as moves.
+    const scrollNearEdge = now => {
+        const { scroller, pointer } = drag;
         const box = scroller === document.scrollingElement
             ? { top: 0, bottom: innerHeight } : scroller.getBoundingClientRect();
-        if (event.clientY < box.top + edge) {
-            scroller.scrollBy(0, -scrollStep);
-        } else if (event.clientY > box.bottom - edge) {
-            scroller.scrollBy(0, scrollStep);
+        const direction = pointer.clientY < box.top + edge ? -1 : pointer.clientY > box.bottom - edge ? 1 : 0;
+        const before = scroller.scrollTop;
+        const elapsed = Math.min(Math.max(now - drag.scrolledAt, 0), longestStep);
+        // Instant, since a page's smooth scrolling wouldn't have moved by the check below.
+        scroller.scrollBy({ top: direction * scrollSpeed * elapsed, behavior: 'instant' });
+        drag.scrolledAt = now;
+        if (scroller.scrollTop !== before) {
+            onMove(pointer);
         }
+
+        drag.frame = requestAnimationFrame(scrollNearEdge);
     };
 
     const begin = () => {
         drag = pending;
         pending = null;
         clearTimeout(drag.timer);
+        drag.pointer = { clientX: drag.x, clientY: drag.y };
+        drag.scroller = scrollParent();
+        drag.scrolledAt = performance.now();
+        drag.frame = requestAnimationFrame(scrollNearEdge);
         onStart(drag.item);
     };
 
     const end = () => {
         if (pending) {
             clearTimeout(pending.timer);
+        }
+
+        if (drag) {
+            cancelAnimationFrame(drag.frame);
         }
 
         pending = null;
@@ -82,7 +99,9 @@ export function createPointerDrag(container,
         }
 
         if (drag && event.pointerId === drag.pointerId) {
-            scrollNearEdge(event);
+            drag.pointer = event;
+            // What scrolls can change as rows arrive during the drag.
+            drag.scroller = scrollParent();
             onMove(event);
         }
     };
@@ -149,6 +168,8 @@ export function createPointerDrag(container,
     document.addEventListener('pointerup', onPointerUp);
     document.addEventListener('pointercancel', cancel);
     document.addEventListener('keydown', onKeyDown, { capture: true });
+    // A release in another window never arrives, and the list would otherwise scroll on by itself.
+    window.addEventListener('blur', cancel);
     return {
         dispose() {
             end();
@@ -160,6 +181,7 @@ export function createPointerDrag(container,
             document.removeEventListener('pointerup', onPointerUp);
             document.removeEventListener('pointercancel', cancel);
             document.removeEventListener('keydown', onKeyDown, { capture: true });
+            window.removeEventListener('blur', cancel);
         },
     };
 }
