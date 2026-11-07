@@ -9,20 +9,20 @@
         <TbSplitter>
             <TbSplitterPane Label="Trails" @bind-Size="_trails" MinSize="15" MaxSize="40" Collapsible
                             @bind-Collapsed="_trailsCollapsed">
-                <TbText Style="padding: var(--tb-space-3)">Ridge loop, creek path and summit spur.</TbText>
+                <TbText class="tb-p-3">Ridge loop, creek path and summit spur.</TbText>
             </TbSplitterPane>
             <TbSplitterPane Label="Map" MinSize="20">
                 <TbSplitter Vertical>
                     <TbSplitterPane Label="Map view" Size="65">
-                        <TbText Style="padding: var(--tb-space-3)">The map of the chosen trail.</TbText>
+                        <TbText class="tb-p-3">The map of the chosen trail.</TbText>
                     </TbSplitterPane>
                     <TbSplitterPane Label="Elevation" MinSize="20">
-                        <TbText Style="padding: var(--tb-space-3)">The elevation profile.</TbText>
+                        <TbText class="tb-p-3">The elevation profile.</TbText>
                     </TbSplitterPane>
                 </TbSplitter>
             </TbSplitterPane>
             <TbSplitterPane Label="Details" @bind-Size="_details" MinSize="15" Collapsible>
-                <TbText Style="padding: var(--tb-space-3)">Distance, climb and water stops.</TbText>
+                <TbText class="tb-p-3">Distance, climb and water stops.</TbText>
             </TbSplitterPane>
         </TbSplitter>
     </div>

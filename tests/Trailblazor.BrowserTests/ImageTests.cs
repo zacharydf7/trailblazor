@@ -42,7 +42,7 @@ public class ImageTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/image");
 
-        await Expect(page.Locator("img")).ToHaveCountAsync(5);
-        await Expect(page.GetByRole(AriaRole.Img)).ToHaveCountAsync(4);
+        await Expect(page.Locator("img")).ToHaveCountAsync(7);
+        await Expect(page.GetByRole(AriaRole.Img)).ToHaveCountAsync(6);
     }
 }

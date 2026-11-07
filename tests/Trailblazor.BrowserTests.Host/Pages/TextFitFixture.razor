@@ -1,0 +1,16 @@
+@page "/text-fit"
+
+<TbText Muted data-testid="muted">Muted text, for hints and timestamps.</TbText>
+
+<div style="max-inline-size: 16rem">
+    <TbText MaxLines="1" data-testid="truncated">
+        Pine Hollow loop climbs through old cedar groves to a lookout over the river valley.
+    </TbText>
+    <TbText As="TextElement.Span" MaxLines="1" data-testid="truncated-span">
+        Cedar Flats, an easy walk along the creek past beaver ponds and wildflower meadows.
+    </TbText>
+    <TbText MaxLines="2" data-testid="clamped">
+        Eagle Ridge traverse follows the crest for six miles, with steep drops on both sides, two creek crossings and
+        a long descent through switchbacks to the trailhead.
+    </TbText>
+</div>

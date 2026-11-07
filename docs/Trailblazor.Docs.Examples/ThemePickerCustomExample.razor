@@ -1,0 +1,23 @@
+@implements IDisposable
+@inject IThemeService Theme
+
+<TbSwitch Label="Dark page" Value="Theme.Mode == ThemeMode.Dark" ValueChanged="SetDarkAsync" />
+
+@code {
+    protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
+
+    // Reads the remembered choice, which only an interactive page can do.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            await Theme.LoadAsync();
+        }
+    }
+
+    private Task SetDarkAsync(bool dark) => Theme.SetModeAsync(dark ? ThemeMode.Dark : ThemeMode.Light);
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
+}

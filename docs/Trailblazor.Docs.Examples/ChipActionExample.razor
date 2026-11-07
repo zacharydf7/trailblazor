@@ -1,0 +1,17 @@
+<TbStack Gap="2" Align="Align.Start">
+    <TbStack Row Gap="2" Wrap>
+        <TbChip Text="Theming guide" Href="guides/theming" Tone="Tone.Primary" />
+        <TbChip Text="Open the filters" OnClick="() => _opened++" />
+        @if (_recentShown)
+        {
+            <TbChip Text="Recently viewed" Href="guides/palettes" Size="Size.Small"
+                    OnClose="() => _recentShown = false" />
+        }
+    </TbStack>
+    <output aria-label="Times opened">Times opened: @_opened</output>
+</TbStack>
+
+@code {
+    private bool _recentShown = true;
+    private int _opened;
+}

@@ -379,7 +379,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Preview_ShouldLoadTheIconPack_WhenTheIconExampleIsOpenedOnItsOwn(string browser)
     {
-        var page = await OpenDocsAsync(browser, "preview/icon/example");
+        var page = await OpenDocsAsync(browser, "preview/icon/icon-sets");
 
         await Expect(page.GetByRole(AriaRole.Main).Locator("svg").First).ToBeVisibleAsync();
         await Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();

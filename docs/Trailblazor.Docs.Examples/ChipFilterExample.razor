@@ -1,0 +1,24 @@
+<TbChipGroup AriaLabel="Filter by status">
+    @foreach (var status in Statuses)
+    {
+        <TbChip @key="status" Text="@status" Variant="Variant.Outlined" Selected="_filters.Contains(status)"
+                SelectedChanged="on => Toggle(status, on)" />
+    }
+</TbChipGroup>
+
+@code {
+    private static readonly string[] Statuses = ["Queued", "Running", "Done"];
+    private readonly HashSet<string> _filters = ["Running"];
+
+    private void Toggle(string status, bool on)
+    {
+        if (on)
+        {
+            _filters.Add(status);
+        }
+        else
+        {
+            _filters.Remove(status);
+        }
+    }
+}

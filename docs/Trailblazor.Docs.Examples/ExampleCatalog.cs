@@ -230,14 +230,41 @@ public static class ExampleCatalog
             "Headings, body copy and labels from the type scale, rendered as the HTML element you choose.",
             typeof(TextExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for headings, body copy and labels, so text follows the type scale and theme.",
+            ],
+            WhenNotToUse =
+            [
+                "For a label tied to a field, use the field's own `Label` or a [label](components/label).",
+                "For text people follow to another page, use a [link](components/link).",
+            ],
+            Related = ["label", "link"],
+            Sections =
+            [
+                new("styles", "Styles", "`TextStyle` picks a step of the type scale. It changes only the look, and "
+                    + "adds no meaning for screen readers.", typeof(TextExample)),
+                new("elements", "Elements", "`As` renders the text as another element, so a heading is a real heading. "
+                    + "Choose the level that fits the page's outline, whatever `TextStyle` it looks like.",
+                    typeof(TextElementExample)),
+                new("muted-and-tones", "Muted and tones", "`Muted` makes the text quieter, for hints and timestamps, "
+                    + "and `Tone` colors it by meaning.", typeof(TextToneExample)),
+                new("max-lines", "Cutting text off", "`MaxLines` cuts the text off after that many lines, with an "
+                    + "ellipsis.", typeof(TextMaxLinesExample)),
+            ],
             Api = [typeof(TbText)],
             Accessibility =
             [
-                "It renders the element `As` names, so a heading is a real heading. Choose the level that fits "
-                    + "the page's outline, whatever `TextStyle` it looks like.",
-                "`TextStyle` changes only the look; it adds no meaning for screen readers.",
-                "Text cut off by `MaxLines` is all still there for screen readers, but sighted users can't read the "
-                    + "rest, so don't cut off text they need without showing it somewhere else.",
+                "Text cut off by `MaxLines` is all still there for screen readers.",
+            ],
+            AppDuties =
+            [
+                "Don't cut off text sighted people need without showing it somewhere else.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
@@ -247,14 +274,51 @@ public static class ExampleCatalog
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.", typeof(ImageExample))
         {
-            Api = [typeof(TbImage)],
-            Accessibility =
+            FullWidth = true,
+            WhenToUse =
             [
-                "`Alt` is required and describes what the image shows; leaving it out throws when it renders. Set "
-                    + "it to an empty string for an image that is only decoration, which screen readers then skip.",
+                "Use it for photos and pictures that are part of the content.",
+            ],
+            WhenNotToUse =
+            [
+                "For a small symbol, use an [icon](components/icon).",
+                "For a person's picture or initials, use an avatar where your app has one.",
+            ],
+            Related = ["icon", "surface"],
+            Sections =
+            [
+                new("fluid", "Fluid", "`Fluid` scales the image down to fit its container, keeping its shape. `Width` "
+                    + "and `Height` reserve its space before it loads, so the page doesn't "
+                    + "jump.", typeof(ImageExample)),
+                new("fit", "Fit", "`Fit` sets how the image fills a box of another shape: `Cover` crops it, and "
+                    + "`Contain` shrinks it to fit.", typeof(ImageFitExample)),
+                new("lazy", "Lazy loading", "`Lazy` waits to load the image until it nears the screen. This picture "
+                    + "is only decoration, so its `Alt` is empty and screen readers skip "
+                    + "it.", typeof(ImageLazyExample)),
+                new("fallback", "Fallback", "`FallbackSrc` shows another picture when `Src` fails to load.",
+                    typeof(ImageFallbackExample)),
+                new("events", "Load and error", "`OnLoad` runs when the image has loaded, and `OnError` when it can't. "
+                    + "The second picture here fails, so the browser shows its `Alt`.", typeof(ImageEventsExample)),
+            ],
+            Api = [typeof(TbImage)],
+            Labeling =
+            [
+                "`Alt` is required and describes what the image shows; leaving it out throws when it renders. Set it "
+                    + "to an empty string for an image that is only decoration, which screen readers then skip.",
+            ],
+            AppDuties =
+            [
                 "Say what the image shows in its context, without \"image of\": screen readers already say it's an "
                     + "image.",
-                "`Width` and `Height` reserve the image's space before it loads, so the page doesn't jump.",
+            ],
+            Accessibility =
+            [
+                "It is a native `img`.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders and loads as a plain `img`. A load or failure before the page is interactive raises "
+                    + "neither event and doesn't switch to `FallbackSrc`.",
             ],
             Target = new("img", "A trail winding between two hills"),
             Blocks = ["tb-image"],
@@ -344,17 +408,48 @@ public static class ExampleCatalog
             Blocks = ["tb-surface"],
         },
         new("icon", "Icon", ExampleCategory.Content,
-            "An SVG icon from any icon set, sized to the text around it and hidden from screen readers unless named.",
+            "An SVG icon from any icon set, in one of three sizes and hidden from screen readers unless named.",
             typeof(IconExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it beside text, or alone with a `Label` where a symbol is clear enough.",
+            ],
+            WhenNotToUse =
+            [
+                "For an icon people press, use an [icon button](components/icon-button).",
+                "For a photo or picture, use an [image](components/image).",
+            ],
+            Related = ["icon-button", "image"],
+            Sections =
+            [
+                new("sizes", "Sizes", "`Size` picks a fixed step: `Small`, `Medium` by default, or `Large`.",
+                    typeof(IconExample)),
+                new("meaning", "Meaning", "`Label` names an icon that means something no text next to it says. `Tone` "
+                    + "colors it by meaning, with the same text colors as `TbText`.",
+                    typeof(IconMeaningExample)),
+                new("icon-sets", "Icon sets", "`Icon` takes an icon from any set, such as "
+                    + "`Trailblazor.Icons.Material`. The [icons guide](guides/icons) covers them.",
+                    typeof(IconSetExample)),
+            ],
             Api = [typeof(TbIcon)],
-            Accessibility =
+            Labeling =
             [
                 "Without a `Label` the icon is decorative and hidden from screen readers with `aria-hidden`.",
-                "With a `Label` it's an `img` named by the label. Give one whenever the icon means something that "
-                    + "no text next to it says.",
-                "`Tone` colors it by meaning, with the same text colors as `TbText`, which meet contrast in both "
-                    + "themes. Color alone can't carry the meaning, so pair it with a label or text.",
+                "With a `Label` it's an `img` named by the label.",
+            ],
+            Accessibility =
+            [
+                "`Tone` colors meet contrast in both themes.",
+            ],
+            AppDuties =
+            [
+                "Color alone can't carry the meaning, so pair a `Tone` with a label or text.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = new("img", "Failed"),
             Blocks = ["tb-icon"],
@@ -690,17 +785,54 @@ public static class ExampleCatalog
         },
         new("theme-picker", "Theme picker", ExampleCategory.Actions,
             "Lets people choose a light or dark page, or follow their device, and remembers the choice.",
-            typeof(ThemePickerExample))
+                       typeof(ThemePickerExample))
         {
+            FullWidth = true,
+            RightToLeftKeys = "Left moves to the next choice and Right to the previous one.",
+            WhenToUse =
+[
+                "Use it in a settings page or header, so people can choose a light or dark page.",
+            ],
+            WhenNotToUse =
+            [
+                "For a control of a different shape, use `IThemeService` directly, as [your own control]"
+                    + "(components/theme-picker#custom) shows.",
+            ],
+            Related = ["toggle-group", "switch"],
+            Sections =
+            [
+                new("modes", "Choosing a mode", "`TbThemePicker` offers Light, Dark and Match the device, and "
+                    + "remembers the choice. `TbThemeHead` in `<head>` puts a remembered choice back before the page "
+                    + "paints, so a dark page never flashes light first.", typeof(ThemePickerExample)),
+                new("custom", "Your own control", "`IThemeService` gives the current `Mode` and `Palette`, sets them, "
+                    + "and raises `Changed`, so any control can drive the theme. Call `LoadAsync` once the page is "
+                    + "interactive to read the remembered choice.", typeof(ThemePickerCustomExample)),
+            ],
             Api = [typeof(TbThemePicker), typeof(IThemeService), typeof(ThemeSettings)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the picker and out of it, as one tab stop."),
+                new(["Left", "Right"], "Moves between the choices."),
+                new(["Home", "End"], "Goes to the first or last choice."),
+                new(["Enter", "Space"], "Picks the focused choice."),
+            ],
+            Labeling =
+            [
+                "A `group` named \"Theme\", holding toggle buttons for Light, Dark and Match the device, each named by "
+                    + "the localizer.",
+            ],
+            Announcements =
+            [
+                "The current choice is announced through `aria-pressed`.",
+            ],
             Accessibility =
             [
-                "A `group` named \"Theme\", holding toggle buttons for Light, Dark and Match the device, each named "
-                    + "by the localizer and marked with `aria-pressed`.",
-                "The group is one tab stop. Left and Right move between the choices, and Space or Enter picks one, as "
-                    + "in a toggle group.",
-                "`TbThemeHead` in `<head>` puts a remembered choice back before the page paints, so a dark page "
-                    + "never flashes light first.",
+                "It behaves as a [toggle group](components/toggle-group) does.",
+            ],
+            BeforeInteractive =
+            [
+                "`TbThemeHead` applies a remembered theme before the page paints. Picking a choice starts working once "
+                    + "the page is interactive.",
             ],
             Target = new("group", "Theme"),
             Blocks = ["tb-toggle-group", "tb-button"],
@@ -712,17 +844,63 @@ public static class ExampleCatalog
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
                 + "its end.", typeof(ToolbarExample))
         {
+            FullWidth = true,
             RightToLeftKeys = "Left moves to the next control and Right to the previous one.",
+            WhenToUse =
+            [
+                "Use it for a bar of tools or view controls that apply to one area, such as an editor or a map.",
+            ],
+            WhenNotToUse =
+            [
+                "For two or three related buttons, use a [button group](components/button-group).",
+                "To pick one view from a few, use a [toggle group](components/toggle-group) on its own.",
+                "For site navigation, use a list of [links](components/link) in a `nav`.",
+            ],
+            Related = ["button-group", "toggle-group", "icon-button", "spacer"],
+            Pattern = new("toolbar", "https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/"),
+            Sections =
+            [
+                new("overflow", "Buttons that move into a menu", "A `TbToolbarButton` with no room moves into a menu "
+                    + "at the toolbar's end, keeping its text and action. Other content, such as a toggle group, never "
+                    + "moves. Drag the frame's corner here to see it happen.", typeof(ToolbarExample)),
+                new("overflow-label", "Naming the menu", "`OverflowLabel` names the button that opens the overflow "
+                    + "menu. The name is \"More\" unless set.", typeof(ToolbarOverflowExample)),
+                new("vertical", "Vertical", "`Vertical` stacks the controls in a column, and the up and down arrows "
+                    + "move between them. A vertical toolbar never moves buttons into a menu.",
+                    typeof(ToolbarVerticalExample)),
+            ],
             Api = [typeof(TbToolbar), typeof(TbToolbarButton)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the toolbar and out of it, as one tab stop."),
+                new(["Left", "Right"], "Moves between every control in the toolbar, toggle group items included.")
+                    { When = "In a row" },
+                new(["Up", "Down"], "Moves between every control in the toolbar.") { When = "When `Vertical`" },
+                new(["Home", "End"], "Goes to the first or last control."),
+            ],
+            Labeling =
+            [
+                "A `toolbar` named by its required `AriaLabel`.",
+                "A `TbToolbarButton` with an `Icon` is an icon button named by its `Text`, which its tooltip shows "
+                    + "too.",
+                "The overflow menu's button is named by `OverflowLabel`, \"More\" unless set.",
+            ],
+            Announcements =
+            [
+                "A tooltip that repeats a button's name isn't read a second time as its description.",
+            ],
             Accessibility =
             [
-                "A `toolbar` named by its required `AriaLabel`, and one tab stop. Left and Right (Up and Down when "
-                    + "`Vertical`) move between every control in it, toggle group items included; Home and End go to "
-                    + "the first and last. A text field keeps its arrow keys.",
-                "A `TbToolbarButton` with an `Icon` is an icon button named by its `Text`, which its tooltip shows "
-                    + "too. A tooltip that repeats a button's name isn't read a second time as its description.",
-                "Toolbar buttons with no room move into the overflow menu named by `OverflowLabel` (\"More\" by "
-                    + "default), where each is a `menuitem` with the same text and action. Other content never moves.",
+                "In the overflow menu, each button is a `menuitem` with the same text and action.",
+            ],
+            BeforeInteractive =
+            [
+                "Every control renders in the row. The arrow keys, the single tab stop and the overflow menu start "
+                    + "working once the page is interactive.",
+            ],
+            Notes =
+            [
+                new("A text field, select or editable area in the toolbar keeps its own arrow, Home and End keys."),
             ],
             Target = new("toolbar", "Trail notes"),
             Blocks = ["tb-toolbar"],
@@ -744,15 +922,46 @@ public static class ExampleCatalog
             "A line between two items that reveals an insert button on hover or focus, for adding an item in that "
                 + "place.", typeof(InsertDividerExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to add an item at an exact place in a short list.",
+            ],
+            WhenNotToUse =
+            [
+                "For a long list, use one [button](components/button) that adds after the focused item, since every "
+                    + "divider is a tab stop.",
+                "For a line with no action, use a [divider](components/divider).",
+            ],
+            Related = ["divider", "button", "sortable"],
+            Sections =
+            [
+                new("between-items", "Between items", "`OnInsert` runs when the divider's button is pressed, and the "
+                    + "app adds the item. The button shows when the pointer rests on the line or the button has "
+                    + "focus, and stays in view on a touch screen, which can't hover. It takes up its space whether "
+                    + "it shows or not, so the list doesn't jump.", typeof(InsertDividerExample)),
+            ],
             Api = [typeof(TbInsertDivider)],
+            Keyboard =
+            [
+                new(["Tab"], "Reaches each divider's button."),
+                new(["Enter", "Space"], "Presses the focused button."),
+            ],
+            Labeling =
+            [
+                "The insert button is a real button in the tab order, named by the required `Label`.",
+            ],
+            AppDuties =
+            [
+                "Say in `Label` where the new item goes, such as \"Add a step after Pack the tent\".",
+            ],
             Accessibility =
             [
-                "The insert button is a real button in the tab order, named by the required `Label`. Say where the "
-                    + "new item goes, such as \"Add a step after Pack the tent\".",
-                "It shows when the pointer rests on the line or when the button has focus. On a device with a touch "
-                    + "screen, which can't hover, it stays in view.",
-                "Every divider is a tab stop, so a long list gets many. For a long list, consider one Add button "
-                    + "that inserts after the focused item instead.",
+                "The button stays in the tab order while it's hidden, and shows when it has focus.",
+            ],
+            BeforeInteractive =
+            [
+                "The lines render. `OnInsert` starts working once the page is interactive.",
             ],
             Target = new("button", "Add a step after Pack the tent"),
             Blocks = ["tb-insert-divider"],
@@ -908,20 +1117,64 @@ public static class ExampleCatalog
             RightToLeftKeys = "Left and Right move the separator the way they point, so Left grows the start pane, "
                 + "now on the right.",
             FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when people need to choose how much room each part of a work area gets.",
+            ],
+            WhenNotToUse =
+            [
+                "For a fixed page layout, use a [grid](components/grid).",
+                "To show one part at a time, use [tabs](components/tabs).",
+            ],
+            Related = ["grid", "tabs", "accordion"],
+            Pattern = new("window splitter", "https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/"),
+            Sections =
+            [
+                new("panes", "Sizes, limits and collapsing", "A pane's `Size` is a percentage, kept between `MinSize` "
+                    + "and `MaxSize`. A pane with no `Size` shares what's left. `Collapsible` lets a pane close, and "
+                    + "`@bind-Collapsed` closes it from code. A splitter can sit inside a pane. Drag a separator or "
+                    + "its grip to resize, in right-to-left layouts too.", typeof(SplitterExample)),
+                new("vertical", "Vertical", "`Vertical` stacks the panes. Its parent needs a set height.",
+                    typeof(SplitterVerticalExample)),
+                new("persistence", "Remembering the layout", "`PersistenceKey` saves the panes' sizes and collapsed "
+                    + "state in the browser under that key, so the layout comes back. Use a key unique to "
+                    + "each splitter.",
+                    typeof(SplitterPersistExample)),
+            ],
             Api = [typeof(TbSplitter), typeof(TbSplitterPane)],
-            Accessibility =
+            Keyboard =
+            [
+                new(["Left", "Right"], "Resizes by 1%.") { When = "On a separator, side by side" },
+                new(["Shift+Left", "Shift+Right"], "Resizes by 10%.") { When = "On a separator, side by side" },
+                new(["Up", "Down"], "Resizes by 1%.") { When = "On a separator, when `Vertical`" },
+                new(["Shift+Up", "Shift+Down"], "Resizes by 10%.") { When = "On a separator, when `Vertical`" },
+                new(["Home", "End"], "Takes the pane before it to its smallest or largest.") { When = "On a "
+                    + "separator" },
+                new(["Enter"], "Collapses or restores a `Collapsible` pane.") { When = "On a separator" },
+            ],
+            Labeling =
             [
                 "Each separator is a focusable `separator` named \"Resize\" followed by the `Label` of the pane before "
-                    + "it, with `aria-valuenow` giving that pane's size in percent and `aria-controls` pointing to it.",
-                "On a separator, the arrows resize by 1% (10% with Shift), Home and End take the pane before it to "
-                    + "its smallest and largest, and Enter collapses or restores a `Collapsible` pane.",
+                    + "it.",
+                "The grip in the middle of each separator is a menu `button` named \"Size of\" followed by the "
+                    + "`Label` of the pane before it.",
+            ],
+            Announcements =
+            [
+                "On each separator, `aria-valuenow` gives the size of the pane before it in percent, and "
+                    + "`aria-controls` points to that pane.",
+            ],
+            Accessibility =
+            [
                 "A collapsed pane keeps its content but hides it from sight and from the tab order.",
-                "Each separator has a grip in its middle, a menu `button` named \"Size of\" followed by the `Label` "
-                    + "of the pane before it. Dragging the grip resizes like dragging the separator, and a click or "
-                    + "tap opens its menu: Make larger and Make smaller (by 10%), plus Collapse or Restore for a "
-                    + "`Collapsible` pane. The menu is the single-pointer alternative to dragging (WCAG 2.5.7). The "
-                    + "grip stays out of the tab order, since the separator's keys do the same.",
-                "Dragging works in right-to-left layouts.",
+                "A click or tap on the grip opens its menu: Make larger and Make smaller (by 10%), plus Collapse or "
+                    + "Restore for a `Collapsible` pane. The menu is the single-pointer alternative to dragging (WCAG "
+                    + "2.5.7).",
+                "The grip stays out of the tab order, since the separator's keys do the same as its menu.",
+            ],
+            BeforeInteractive =
+            [
+                "The panes render at their sizes. Resizing starts working once the page is interactive.",
             ],
             Target = new("separator", "Resize Trails"),
             Blocks = ["tb-splitter"],
@@ -1013,6 +1266,35 @@ public static class ExampleCatalog
             "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.",
             typeof(ChipExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for tags and filters that people add, remove or toggle.",
+            ],
+            WhenNotToUse =
+            [
+                "For an action unrelated to a tag or filter, use a [button](components/button).",
+                "For a count or status on something else, use a [badge](components/badge).",
+                "To pick from a fixed set in a form, use a [checkbox group](components/checkbox-group).",
+            ],
+            Related = ["badge", "button", "checkbox-group", "toggle-group"],
+            Sections =
+            [
+                new("removable", "Removable", "`OnClose` adds a remove button. When a chip in a `TbChipGroup` is "
+                    + "removed, focus moves to the chip that takes its place, or to the group when none is "
+                    + "left.", typeof(ChipExample)),
+                new("filter", "Filter", "`@bind-Selected` makes the chip a toggle, and a selected one shows a check.",
+                    typeof(ChipFilterExample)),
+                new("style", "Tone, variant, size and icon", "`Tone`, `Variant` and `Size` set how the chip looks, and "
+                    + "`Icon` adds an icon before its text.", typeof(ChipStyleExample)),
+                new("actions", "Links and buttons", "`Href` makes the chip a link and `OnClick` a button, and either "
+                    + "can also have `OnClose`.", typeof(ChipActionExample)),
+                new("disabled", "Disabled", "`Disabled` turns off the chip and its remove button.",
+                    typeof(ChipDisabledExample)),
+                new("remove-label", "Naming the remove button", "`RemoveLabel` replaces the remove button's name, "
+                    + "which is \"Remove\" followed by the chip's `Text` unless set. `{0}` stands for the chip's "
+                    + "`Text`.", typeof(ChipRemoveLabelExample)),
+            ],
             Api = [typeof(TbChip), typeof(TbChipGroup)],
             Anatomy = """
                 <TbChipGroup AriaLabel="…">
@@ -1025,16 +1307,34 @@ public static class ExampleCatalog
                     <TbChip Text="…" @bind-Selected="_off" />
                 </TbChipGroup>
                 """,
-            Accessibility =
+            Keyboard =
+            [
+                new(["Tab"], "Reaches each chip that is a button, link or toggle, and each remove button."),
+                new(["Enter", "Space"], "Presses the focused chip or remove button. A link takes Enter only."),
+                new(["Delete", "Backspace"], "Removes the focused chip, if it has `OnClose`."),
+            ],
+            Labeling =
             [
                 "A `TbChipGroup` is a `list` named by its required `AriaLabel`, and each chip in it is a `listitem`.",
-                "A chip with `OnClick` is a `button`, with `Href` a `link`, and with `@bind-Selected` a toggle button "
-                    + "with `aria-pressed`. Other chips are plain text.",
-                "A removable chip has a remove button named \"Remove\" followed by the chip's `Text`; Delete or "
-                    + "Backspace on the chip removes it too. In a group, focus then moves to the chip that takes its "
-                    + "place, or to the group when none is left.",
+                "A chip with `OnClick` is a `button`, with `Href` a `link`, and with `@bind-Selected` a toggle "
+                    + "button. Other chips are plain text.",
+                "A remove button is named by `RemoveLabel`. Unless set, its name is \"Remove\" followed by the chip's "
+                    + "`Text`.",
+            ],
+            Announcements =
+            [
+                "A toggle's state is announced through `aria-pressed`.",
+            ],
+            Accessibility =
+            [
                 "In forced-colors mode, such as Windows high contrast, every chip keeps an outline and a selected "
                     + "one is outlined in the system's highlight color.",
+            ],
+            BeforeInteractive =
+            [
+                "Chips render as they will look once interactive, and a link already works. Selecting and removing "
+                    + "start working once the "
+                    + "page is interactive.",
             ],
             Target = new("list", "Selected tags"),
             Blocks = ["tb-chip", "tb-chip-group"],

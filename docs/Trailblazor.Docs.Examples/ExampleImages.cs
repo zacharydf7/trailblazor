@@ -1,0 +1,10 @@
+namespace Trailblazor.Docs.Examples;
+
+// Pictures the examples show, drawn inline so they need no image file.
+public static class ExampleImages
+{
+    public const string Trail = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90'%3E"
+        + "%3Crect width='160' height='90' fill='%23cfe3f5'/%3E%3Cpath d='M0 70 50 30 90 60 120 40 160 65V90H0z' "
+        + "fill='%235f8f6b'/%3E%3Cpath d='M70 90q10-20 30-25t25-25' stroke='%23e9d7a8' stroke-width='4' "
+        + "fill='none'/%3E%3C/svg%3E";
+}

@@ -1,0 +1,14 @@
+<TbStack Gap="2" Align="Align.Start">
+    <TbStack Row Gap="4" Wrap>
+        <TbImage Src="@ExampleImages.Trail" Alt="The ridge at sunrise" Width="120" Height="120"
+                 OnLoad="() => _loaded = true" />
+        <TbImage Src="missing-photo.png" Alt="The lookout over the river valley" Width="120" Height="120"
+                 OnError="() => _failed = true" />
+    </TbStack>
+    <output aria-label="Image state">Loaded: @_loaded. Failed: @_failed.</output>
+</TbStack>
+
+@code {
+    private bool _loaded;
+    private bool _failed;
+}

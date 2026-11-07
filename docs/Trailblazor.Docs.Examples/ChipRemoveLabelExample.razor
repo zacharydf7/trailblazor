@@ -1,0 +1,11 @@
+<TbChipGroup AriaLabel="Trip guests">
+    @foreach (var guest in _guests)
+    {
+        <TbChip @key="guest" Text="@guest" RemoveLabel="Take {0} off the trip"
+                OnClose="() => _guests.Remove(guest)" />
+    }
+</TbChipGroup>
+
+@code {
+    private readonly List<string> _guests = ["Ada", "Grace"];
+}

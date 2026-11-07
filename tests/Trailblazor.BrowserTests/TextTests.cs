@@ -16,7 +16,7 @@ public class TextTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Text_ShouldShowOnlyItsLinesWithAnEllipsis_WhenGivenMaxLines(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/text");
+        var page = await OpenAsync(browser, "/text-fit");
 
         Assert.Equal(["1", "true", "hidden", "ellipsis"], await FitAsync(page, "truncated"));
         Assert.Equal(["1", "true", "hidden", "ellipsis"], await FitAsync(page, "truncated-span"));
@@ -26,7 +26,7 @@ public class TextTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Text_ShouldUseTheMutedColor_WhenMuted(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/text");
+        var page = await OpenAsync(browser, "/text-fit");
 
         var colors = await page.GetByTestId("muted").EvaluateAsync<string[]>("""
             text => {

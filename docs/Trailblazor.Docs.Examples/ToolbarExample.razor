@@ -1,10 +1,8 @@
-@using Trailblazor.Docs.Examples
-
 @* Drag the corner to narrow the toolbar and watch its buttons move into the More menu. *@
-<div data-testid="toolbar-frame" style="inline-size: 100%; max-inline-size: 40rem; resize: inline; overflow: hidden;
+<div style="inline-size: 100%; max-inline-size: 40rem; resize: inline; overflow: hidden;
                                         border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
     <TbToolbar AriaLabel="Trail notes">
-        <TbText As="TextElement.H3" TextStyle="TextStyle.Subtitle" Style="margin: 0 var(--tb-space-2)">Notes</TbText>
+        <TbText As="TextElement.H3" TextStyle="TextStyle.Subtitle" class="tb-mx-2">Notes</TbText>
         <TbSpacer />
         <TbToggleGroup @bind-Value="_sort" AriaLabel="Sort notes" Size="Size.Small">
             <TbToggleItem Value="@("Newest")">Newest</TbToggleItem>

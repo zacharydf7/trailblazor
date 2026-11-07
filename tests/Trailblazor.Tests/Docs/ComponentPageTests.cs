@@ -274,7 +274,7 @@ public class ComponentPageTests : DocsTest
     [Fact]
     public void ComponentPage_ShouldLeaveOutUsageNotesAndRelated_WhenTheEntryHasNone()
     {
-        var cut = ComponentPage("text");
+        var cut = ComponentPage("skeleton");
 
         foreach (var heading in new[] { "Usage", "Notes and limitations", "Related" })
         {

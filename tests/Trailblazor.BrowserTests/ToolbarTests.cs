@@ -23,7 +23,15 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     // Narrows the frame around the toolbar, which the toolbar then fits itself into.
     private static Task NarrowAsync(IPage page, string width) =>
-        page.GetByTestId("toolbar-frame").EvaluateAsync($"frame => frame.style.inlineSize = '{width}'");
+        Toolbar(page, "Trail notes").Locator("xpath=..").EvaluateAsync($"frame => frame.style.inlineSize = '{width}'");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldShowItsNamedMenu_WhenItsButtonsDontFit(string browser)
+    {
+        var page = await OpenToolbarAsync(browser);
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "More map actions" })).ToBeVisibleAsync();
+    }
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toolbar_ShouldMoveAcrossEveryControlWithTheArrows_WhenControlsAreNested(string browser)

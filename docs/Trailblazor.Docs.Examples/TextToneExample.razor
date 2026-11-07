@@ -1,0 +1,7 @@
+<TbStack Gap="2">
+    <TbText Muted>Muted text, for hints and timestamps.</TbText>
+    @foreach (var tone in Enum.GetValues<Tone>())
+    {
+        <TbText Tone="tone">@tone text</TbText>
+    }
+</TbStack>

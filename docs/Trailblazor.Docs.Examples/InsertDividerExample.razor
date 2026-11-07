@@ -1,14 +1,16 @@
-<TbInsertDivider Label="Add a step at the start" OnInsert="() => Insert(0)" />
-<ol aria-label="Trip checklist" style="margin: 0; padding: 0; list-style: none">
-    @for (var index = 0; index < _steps.Count; index++)
-    {
-        var place = index;
-        <li @key="_steps[place]">
-            <TbText>@_steps[place]</TbText>
-            <TbInsertDivider Label="@($"Add a step after {_steps[place]}")" OnInsert="() => Insert(place + 1)" />
-        </li>
-    }
-</ol>
+<TbStack Gap="0">
+    <TbInsertDivider Label="Add a step at the start" OnInsert="() => Insert(0)" />
+    <TbStack As="LayoutElement.Ol" Gap="0" aria-label="Trip checklist">
+        @for (var index = 0; index < _steps.Count; index++)
+        {
+            var place = index;
+            <li @key="_steps[place]">
+                <TbText>@_steps[place]</TbText>
+                <TbInsertDivider Label="@($"Add a step after {_steps[place]}")" OnInsert="() => Insert(place + 1)" />
+            </li>
+        }
+    </TbStack>
+</TbStack>
 
 @code {
     private readonly List<string> _steps = ["Pack the tent", "Fill the water bottles", "Check the trail map"];
