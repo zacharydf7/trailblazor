@@ -544,8 +544,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
-        _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnItemOrderAsync,
-            OnDragOverAsync, OnDropAsync, OnViewAsync, OnFindAsync));
+        _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnExtendAsync,
+            OnItemOrderAsync, OnDragOverAsync, OnDropAsync, OnViewAsync, OnFindAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createTreeView", _tree, _events);
         if (handle is null)
         {
@@ -748,9 +748,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
-        if (extend && key is "Next" or "Previous")
+        if (extend && SelectionMode == SelectionMode.Multiple && key is "Next" or "Previous" or "First" or "Last")
         {
-            await SelectAsync(target, shift: true, toggle: false);
+            await ExtendAsync(target, node);
         }
         else if (follow)
         {
@@ -1075,9 +1075,6 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             case " ":
                 await SelectAsync(node, shift, toggle: SelectionMode == SelectionMode.Multiple);
                 break;
-            case "Extend":
-                await SelectAsync(node, shift: true, toggle: false);
-                break;
             case "Follow" when FollowsFocus:
                 await SelectAsync(node, shift: false, toggle: false);
                 break;
@@ -1309,7 +1306,31 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     bool ITreeItemHost<TItem>.IsOpen(TbTreeItem<TItem> item) =>
         _rowIndex.TryGetValue(item.Key, out var index) && IsOpen(_rows[index].Node);
 
-    // Shift selects from the last row chosen without it; Ctrl or Cmd adds or removes one row.
+    private async Task OnExtendAsync(string id, string from)
+    {
+        if (Disabled || !_byId.TryGetValue(id, out var node))
+        {
+            return;
+        }
+
+        _focusId = id;
+        await ExtendAsync(node, _byId.GetValueOrDefault(from) ?? node);
+        StateHasChanged();
+    }
+
+    // When the row last chosen is missing or hidden, the range starts at the row the keys moved from, as in a file
+    // list.
+    private Task ExtendAsync(TreeNode<TItem> target, TreeNode<TItem> from)
+    {
+        if ((_anchor is null || !_rowIndex.ContainsKey(_anchor)) && CanSelect(from))
+        {
+            _anchor = from.Key;
+        }
+
+        return SelectAsync(target, shift: true, toggle: false);
+    }
+
+    // Shift selects from the last row chosen without it, while that row is shown; Ctrl or Cmd adds or removes one row.
     private Task SelectAsync(TreeNode<TItem> node, bool shift, bool toggle)
     {
         if (!CanSelect(node))
@@ -1323,7 +1344,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return SetSelectedAsync([node.Key]);
         }
 
-        if (shift && _anchor is not null && _nodes.ContainsKey(_anchor))
+        if (shift && _anchor is not null && _rowIndex.ContainsKey(_anchor))
         {
             var keys = _rows.Where(row => row.IsItem).Select(row => row.Node).ToList();
             var from = keys.FindIndex(other => Equals(other.Key, _anchor));

@@ -238,9 +238,11 @@ export function createTreeView(tree, events) {
         event.preventDefault();
         if (next) {
             focusRow(next);
-            // Shift with an arrow extends a multiple selection to the row focus lands on.
-            if (event.shiftKey && (event.key === 'ArrowDown' || event.key === 'ArrowUp') && next.dataset.key) {
-                events.invokeMethodAsync('OnKey', next.dataset.key, 'Extend', true, false);
+            // Shift with an arrow, Home or End extends a multiple selection to the row focus lands on, and sends
+            // the row it left in case the range has to start there.
+            if (event.shiftKey && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) && next.dataset.key
+                && tree.getAttribute('aria-multiselectable') === 'true') {
+                events.invokeMethodAsync('OnExtend', next.dataset.key, id);
             } else if ('followsFocus' in tree.dataset && next.dataset.key && !event.ctrlKey && !event.metaKey) {
                 events.invokeMethodAsync('OnKey', next.dataset.key, 'Follow', false, false);
             }

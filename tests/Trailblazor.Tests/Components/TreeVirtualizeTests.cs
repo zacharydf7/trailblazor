@@ -88,6 +88,33 @@ public class TreeVirtualizeTests : BunitContext
         Assert.Equal([40, 41], selected.Cast<int>().Order());
     }
 
+    [Fact]
+    public async Task OnKey_ShouldExtendToTheLastAndFirstRows_WhenShiftWithEndOrHomeStartsWithNothingChosen()
+    {
+        IReadOnlyCollection<int> selected = [];
+        var cut = RenderPlaces(Flat, parameters => parameters
+            .Add(tree => tree.SelectionMode, SelectionMode.Multiple)
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> keys) => selected = keys));
+
+        await cut.InvokeAsync(() => Events().OnKey("2", "Last", true, false));
+        Assert.Equal(999, selected.Count);
+        await cut.InvokeAsync(() => Events().OnKey("1000", "First", true, false));
+
+        Assert.Equal([1, 2], selected.Cast<int>().Order());
+    }
+
+    [Fact]
+    public async Task OnKey_ShouldOnlyMoveFocus_WhenShiftWithEndIsPressedInASingleSelectionTree()
+    {
+        IReadOnlyCollection<int> selected = [];
+        var cut = RenderPlaces(Flat, parameters => parameters
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> keys) => selected = keys));
+
+        await cut.InvokeAsync(() => Events().OnKey("2", "Last", true, false));
+
+        Assert.Empty(selected);
+    }
+
     [Theory]
     [InlineData("Next", false, false, "41", new[] { 41 })]
     [InlineData("Next", false, true, "41", new int[0])]

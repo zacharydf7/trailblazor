@@ -5037,6 +5037,10 @@
         border-radius: var(--tb-tree-item-radius, var(--tb-radius-sm));
         cursor: default;
         outline: none;
+        /* A double-click opens a row and a Shift+click selects a range, as in a file tree, without highlighting
+           text. */
+        -webkit-user-select: none;
+        user-select: none;
     }
 
     /* Every row of a virtualized tree is one size, so a spacer can stand in for the rows it leaves out. */
@@ -5136,7 +5140,6 @@
     /* A drag lands before, after or inside the row under the pointer; a place it can't land shows the danger color. */
     .tb-tree__item[data-draggable] {
         -webkit-touch-callout: none;
-        user-select: none;
     }
 
     .tb-tree__item[data-dragging] {

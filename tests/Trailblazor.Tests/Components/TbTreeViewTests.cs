@@ -160,6 +160,32 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public async Task Extend_ShouldStartFromTheRowItLeft_WhenTheRowLastChosenIsInsideAClosedRow()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode,
+            SelectionMode.Multiple).Add(tree => tree.InitialExpandDepth, 1));
+        Row(cut, "2").Click();
+        await cut.InvokeAsync(() => Events().OnKey("1", "ArrowLeft", false, false));
+
+        await cut.InvokeAsync(() => Events().OnExtend("4", "1"));
+
+        Assert.Equal([1, 4], _selectedChanges.Last().Order());
+    }
+
+    [Fact]
+    public async Task ShiftClick_ShouldSelectJustThatRow_WhenTheRowLastChosenIsInsideAClosedRow()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode,
+            SelectionMode.Multiple).Add(tree => tree.InitialExpandDepth, 1));
+        Row(cut, "2").Click();
+        await cut.InvokeAsync(() => Events().OnKey("1", "ArrowLeft", false, false));
+
+        Row(cut, "4").Click(new() { ShiftKey = true });
+
+        Assert.Equal([4], _selectedChanges.Last().Order());
+    }
+
+    [Fact]
     public void Click_ShouldLeaveARowUnselected_WhenItIsntSelectable()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.IsSelectable,

@@ -4519,8 +4519,9 @@ public static class ExampleCatalog
                     + "children. On a failed row, tries again.") { When = "Selecting" },
                 new(["Space"], "Selects the row, or checks it in a `Checkable` tree. In a `Multiple` tree, selects or "
                     + "unselects it.") { When = "Selecting" },
-                new(["Shift+Up", "Shift+Down", "Shift+Space"], "Extends a `Multiple` selection.")
-                    { When = "Selecting" },
+                new(["Shift+Up", "Shift+Down", "Shift+Home", "Shift+End", "Shift+Space"], "Extends a `Multiple` "
+                    + "selection from the row last chosen, or from the row focus leaves when there's none or it's "
+                    + "hidden.") { When = "Selecting" },
                 new(["Ctrl+A"], "In a `Multiple` tree, selects every row that can be selected and isn't inside a closed "
                     + "row.")
                     { When = "Selecting" },

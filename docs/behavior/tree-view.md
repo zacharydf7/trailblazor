@@ -15,8 +15,9 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] Space selects the row, toggles it in multiple selection, or checks it in a checkable tree. `TbTreeView.cs`, `TreeViewTests.Space_ShouldCheckTheRowAndMarkItsParentMixed_WhenTheTreeIsCheckable`
 - [x] With `SelectionFollowsFocus`, the keys select each row they reach, and Ctrl with a key moves focus alone. `TreeViewTests.Tree_ShouldSelectEachRowTheArrowsReachButNotWithCtrl_WhenSelectionFollowsFocus`
 - [x] Shift+Up and Shift+Down extend a selection from the row last chosen. `TreeViewTests.ShiftArrows_ShouldExtendTheSelection_WhenTheTreeTakesSeveral`
-- [ ] Shift+Down from a row with nothing chosen yet selects that row too, not only the next one. #323
-- [ ] Shift+Home and Shift+End extend the selection to the first and last rows. #323
+- [x] Shift+Down from a row with nothing chosen yet selects that row too, not only the next one. Once the row last chosen is inside a closed row, Shift keys start from the row focus leaves and Shift+click selects just the clicked row. `TreeViewTests.ShiftDown_ShouldSelectTheRowItLeftToo_WhenNothingIsChosenYet`, `TbTreeViewTests.Extend_ShouldStartFromTheRowItLeft_WhenTheRowLastChosenIsInsideAClosedRow`, `TbTreeViewTests.ShiftClick_ShouldSelectJustThatRow_WhenTheRowLastChosenIsInsideAClosedRow`
+- [x] Shift+Home and Shift+End extend the selection to the first and last rows, in a virtualized tree too. `TreeViewTests.ShiftHomeAndEnd_ShouldExtendTheSelectionToTheFirstAndLastRows_WhenPressed`, `TreeVirtualizeTests.OnKey_ShouldExtendToTheLastAndFirstRows_WhenShiftWithEndOrHomeStartsWithNothingChosen`
+- [x] In a tree that selects one row, Shift with a key only moves focus. `TreeViewTests.ShiftEnd_ShouldOnlyMoveFocus_WhenTheTreeSelectsOneRow`, `TreeVirtualizeTests.OnKey_ShouldOnlyMoveFocus_WhenShiftWithEndIsPressedInASingleSelectionTree`
 - [x] Shift+Space selects the range from the row last chosen, and Ctrl+A selects every visible row that can be. `TbTreeView.cs`
 - [x] Alt+Shift with an arrow moves the focused row and keeps focus on it. `TreeReorderTests.Tree_ShouldMoveTheFocusedRowAndKeepFocusOnIt_WhenAltShiftAndAnArrowArePressed`
 - [x] In right-to-left text, the arrows mirror. `TreeReorderTests.Tree_ShouldMirrorTheArrowKeys_WhenItIsLaidOutRightToLeft`
@@ -28,7 +29,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] Clicking a row selects it, and clicking its chevron opens or closes it without selecting. `TreeViewTests.Mouse_ShouldSelectOnClickAndActivateOnDoubleClick_WhenUsed`
 - [x] Ctrl+click adds or removes a row, and Shift+click selects a range. `TbTreeViewTests.Click_ShouldAddWithCtrlAndRangeWithShift_WhenTheModeIsMultiple`
 - [x] Double-clicking a row with children opens or closes it and activates it, and double-clicking a leaf activates it. `TreeViewTests.Row_ShouldOpenAndCloseAndBeActivated_WhenARowWithChildrenIsDoubleClicked`, `TbTreeViewTests.DoubleClick_ShouldOpenAndActivateARowWithChildrenButOnlyActivateALeaf_WhenEachIsDoubleClicked`
-- [ ] Double-clicking or Shift+clicking a row doesn't highlight its text. #323
+- [x] Double-clicking or Shift+clicking a row doesn't highlight its text. `TreeViewTests.Rows_ShouldHighlightNoText_WhenDoubleClickedOrShiftClicked`
 - [ ] Clicking a parent row that can't be selected opens or closes it, rather than doing nothing. #324
 - [x] Clicks and keys in a row's end slot stay with its controls. `TreeViewTests.EndSlot_ShouldKeepItsClicksFromTheRow_WhenAButtonInItIsPressed`, `tree-view.js`
 - [x] A drag drops before, after or inside the row under the pointer, scrolling near the edges. `TreeReorderTests.Tree_ShouldMoveARowBeforeAnotherAndSaySo_WhenItIsDraggedOntoTheOthersTopEdge`, `TreeReorderTests.Tree_ShouldMoveARowIntoAnother_WhenItIsDraggedOntoTheOthersMiddle`, `pointer-drag.js`

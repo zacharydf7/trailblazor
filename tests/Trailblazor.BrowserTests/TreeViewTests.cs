@@ -178,6 +178,62 @@ public class TreeViewTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ShiftDown_ShouldSelectTheRowItLeftToo_WhenNothingIsChosenYet(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await Row(page, "North", "Gear").FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+ArrowDown");
+
+        await Expect(page.GetByTestId("gear")).ToHaveTextAsync("1, 4");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ShiftHomeAndEnd_ShouldExtendTheSelectionToTheFirstAndLastRows_WhenPressed(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await page.Tb().Tree("Gear").ExpandAsync("North");
+        await Row(page, "Ridge", "Gear").ClickAsync();
+
+        await page.Keyboard.PressAsync("Shift+End");
+        await Expect(page.GetByTestId("gear")).ToHaveTextAsync("2, 4, 6");
+        await Expect(Row(page, "South", "Gear")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Shift+Home");
+
+        await Expect(page.GetByTestId("gear")).ToHaveTextAsync("1, 2");
+        await Expect(Row(page, "North", "Gear")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ShiftEnd_ShouldOnlyMoveFocus_WhenTheTreeSelectsOneRow(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        await Row(page, "North").FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+End");
+        await Expect(Row(page, "South")).ToBeFocusedAsync();
+
+        // Opening a row goes to the server after the Shift+End, so any selection it made has arrived by then.
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Row(page, "Lake")).ToBeVisibleAsync();
+        await Expect(page.GetByTestId("selected")).ToHaveTextAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rows_ShouldHighlightNoText_WhenDoubleClickedOrShiftClicked(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+
+        await Row(page, "South", "Places").DblClickAsync();
+        Assert.True(await page.EvaluateAsync<bool>("() => document.getSelection().isCollapsed"));
+        await Row(page, "North", "Gear").ClickAsync();
+        await Row(page, "South", "Gear").ClickAsync(new() { Modifiers = [KeyboardModifier.Shift] });
+        await Expect(page.GetByTestId("gear")).ToHaveTextAsync("1, 4");
+
+        Assert.True(await page.EvaluateAsync<bool>("() => document.getSelection().isCollapsed"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Check_ShouldFillWithThePrimaryColor_WhenItsRowIsCheckedOrMixed(string browser)
     {
         var page = await OpenTreeAsync(browser);
