@@ -1,5 +1,3 @@
-@using Trailblazor.Docs.Examples
-
 <TbStack Row Gap="4" Align="Align.Center">
     <TbMenu Label="Actions">
         <TbMenuItem Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Duplicate")">Duplicate</TbMenuItem>
@@ -7,62 +5,9 @@
         <TbMenuItem Disabled OnClick="@(() => _last = "Archive")">Archive</TbMenuItem>
         <TbMenuItem Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete")">Delete</TbMenuItem>
     </TbMenu>
-    <TbMenu Label="More options" Icon="ExampleIcons.Plus">
-        <TbMenuItem OnClick="@(() => _last = "Export")">Export</TbMenuItem>
-        <TbMenuItem OnClick="@(() => _last = "Print")">Print</TbMenuItem>
-        <TbSubMenu Label="Share">
-            <TbMenuItem OnClick="@(() => _last = "Email")">Email</TbMenuItem>
-            <TbMenuItem OnClick="@(() => _last = "Copy link")">Copy link</TbMenuItem>
-        </TbSubMenu>
-    </TbMenu>
-    <TbButton Variant="Variant.Text">After the menus</TbButton>
-</TbStack>
-<output data-testid="last-action">@_last</output>
-
-<TbStack Row Wrap Gap="4" Align="Align.Center" Style="margin-block-start: var(--tb-space-6)">
-    <TbMenu Label="View">
-        <TbMenuGroup Label="Show">
-            <TbMenuCheckboxItem @bind-Checked="_showMap">Map</TbMenuCheckboxItem>
-            <TbMenuCheckboxItem @bind-Checked="_showElevation">Elevation</TbMenuCheckboxItem>
-        </TbMenuGroup>
-        <TbMenuSeparator />
-        <TbMenuRadioGroup Label="Units" @bind-Value="_units">
-            <TbMenuRadioItem Value="@("Miles")">Miles</TbMenuRadioItem>
-            <TbMenuRadioItem Value="@("Kilometers")">Kilometers</TbMenuRadioItem>
-        </TbMenuRadioGroup>
-        <TbMenuSeparator />
-        <TbMenuItem Href="components/link" NewTab>Link docs</TbMenuItem>
-    </TbMenu>
-    <TbMenu>
-        <Trigger>
-            <TbButton Variant="Variant.Filled" Style="border-radius: var(--tb-radius-full)" aria-label="RB account"
-                      @attributes="context.Attributes">RB</TbButton>
-        </Trigger>
-        <ChildContent>
-            <TbMenuItem OnClick="@(() => _last = "Profile")">Profile</TbMenuItem>
-            <TbMenuItem OnClick="@(() => _last = "Sign out")">Sign out</TbMenuItem>
-        </ChildContent>
-    </TbMenu>
-    @* Filters stay open as they are checked, so several can be set in a row. *@
-    <TbMenu Label="Filters">
-        <TbMenuCheckboxItem @bind-Checked="_openNow" KeepOpen>Open now</TbMenuCheckboxItem>
-        <TbMenuCheckboxItem @bind-Checked="_dogs" KeepOpen>Dogs allowed</TbMenuCheckboxItem>
-        <TbMenuSeparator />
-        <TbMenuRadioGroup Label="Sort by" @bind-Value="_sort">
-            <TbMenuRadioItem Value="@("distance")" KeepOpen>Distance</TbMenuRadioItem>
-            <TbMenuRadioItem Value="@("rating")" KeepOpen>Rating</TbMenuRadioItem>
-        </TbMenuRadioGroup>
-    </TbMenu>
-    <output data-testid="view">@_units@(_showMap ? ", map" : "")@(_showElevation ? ", elevation" : "")</output>
-    <output data-testid="filters">@(_openNow ? "open now " : "")@(_dogs ? "dogs " : "")by @_sort</output>
+    <output aria-label="Last action">@_last</output>
 </TbStack>
 
 @code {
     private string _last = "";
-    private bool _showMap = true;
-    private bool _showElevation;
-    private string? _units = "Miles";
-    private bool _openNow;
-    private bool _dogs;
-    private string? _sort = "distance";
 }

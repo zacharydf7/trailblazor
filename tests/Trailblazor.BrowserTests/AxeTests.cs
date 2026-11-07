@@ -277,6 +277,86 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(shown).ToBeVisibleAsync();
     }
 
+    // A failed save shows an alert in the dialog, which the opened dialog's own row can't reach.
+    [Theory]
+    [InlineData("light"), InlineData("dark")]
+    public async Task Dialog_ShouldHaveNoAccessibilityViolations_WhenSavingHasFailed(string theme)
+    {
+        var page = await OpenAsync("chromium", "/examples/dialog");
+        await SetThemeAsync(page, theme);
+        await Button(page, "Book the hut").ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Book the hut" });
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Book", Exact = true }).ClickAsync();
+        await Expect(dialog.GetByRole(AriaRole.Alert).Filter(new() { HasText = "Try again" })).ToBeVisibleAsync();
+        await WaitForFadesAsync(page);
+
+        AssertNoViolations(await page.RunAxe(WcagAA));
+    }
+
+    private static readonly (string Example, string Opener, string Role, string Shown)[] OverlaySections =
+    [
+        ("tooltip", "Below", "tooltip", "Shown below the button"),
+        ("tooltip", "Beside", "tooltip", "Shown at the end"),
+        ("tooltip", "Save", "tooltip", "Saves a copy of the trail"),
+        ("tooltip", "Long description", "tooltip", "This description is long"),
+        ("tooltip", "Slow to appear", "tooltip", "Appears after a second"),
+        ("tooltip", "Slow to hide", "tooltip", "Stays for two seconds"),
+        ("tooltip", "Delete", "tooltip", "Delete the selection"),
+        ("popover", "Trip details", "dialog", "Trip details"),
+        ("popover", "Notifications", "dialog", "Notifications"),
+        ("popover", "Packing list", "dialog", "Packing list"),
+        ("popover", "Share", "dialog", "Share this trail"),
+        ("popover", "Keyboard shortcuts", "dialog", "Keyboard shortcuts"),
+        ("popover", "Opens beside", "dialog", "Opens beside"),
+        ("popover", "Ada Lovelace", "dialog", "Ada Lovelace"),
+        ("menu", "More options", "menu", "More options"),
+        ("menu", "View", "menu", "View"),
+        ("menu", "Filters", "menu", "Filters"),
+        ("menu", "Guides", "menu", "Guides"),
+        ("menu", "RB account", "menu", "RB account"),
+        ("menu", "Trail tools", "menu", "Trail tools"),
+        ("menu", "Opens above", "menu", "Opens above"),
+        ("menu", "Full width", "menu", "Full width"),
+        ("menu", "Saved searches", "menu", "Saved searches"),
+        ("dialog", "Delete report", "alertdialog", "Delete report?"),
+        ("dialog", "Check the backup", "alertdialog", "Backup finished"),
+        ("dialog", "Share", "dialog", "Share report"),
+        ("dialog", "Full", "dialog", "A dialog at Full"),
+        ("dialog", "Top", "dialog", "A dialog at Top"),
+        ("dialog", "Without a header", "dialog", "Trail closed"),
+        ("dialog", "With an icon in the title", "dialog", "Trail folder"),
+        ("dialog", "Start at the safe choice", "dialog", "Discard the draft?"),
+        ("dialog", "Require an answer", "dialog", "Accept the trail rules"),
+        ("dialog", "Read the trail rules", "dialog", "Trail rules"),
+        ("dialog", "Book the hut", "dialog", "Book the hut"),
+        ("dialog", "Edit beside the page", "dialog", "Edit name"),
+        ("dialog", "Take notes", "dialog", "Notes on the report"),
+        ("dialog", "Open on the page", "dialog", "A dialog on the page"),
+        ("dialog", "Open a form", "menu", "Open a form"),
+        ("focus-scope", "Edit the note", "group", "Note"),
+        ("focus-scope", "Focus the marked field", "group", "Your name"),
+        ("focus-scope", "Leave focus where it is", "group", "Your town"),
+        ("focus-scope", "Start the checklist", "group", "Checklist"),
+    ];
+
+    public static TheoryData<string, string, string, string, string> OverlaySectionsInBothThemes => new(
+        from section in OverlaySections
+        from theme in new[] { "light", "dark" }
+        select (section.Example, section.Opener, section.Role, section.Shown, theme));
+
+    // Each listed popup is checked open, in chromium alone. The export dialog closes itself too soon to be listed.
+    [Theory, MemberData(nameof(OverlaySectionsInBothThemes))]
+    public async Task OverlaySection_ShouldHaveNoAccessibilityViolations_WhenOpen(string example, string opener,
+        string role, string shown, string theme)
+    {
+        var page = await OpenAsync("chromium", $"/examples/{example}");
+        await SetThemeAsync(page, theme);
+        var byHover = role == "tooltip";
+
+        await CheckOpenAsync(page, new(new(role, shown),
+            opened => byHover ? Button(opened, opener).HoverAsync() : Button(opened, opener).ClickAsync(), byHover));
+    }
+
     // Errors only show once a form is submitted, so this submits each of the form page's forms that starts out empty.
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Form_ShouldHaveNoAccessibilityViolations_WhenShowingItsErrorsInEitherTheme(string browser)

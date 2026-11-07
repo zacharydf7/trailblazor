@@ -1,0 +1,19 @@
+<TbStack>
+    <TbSurface Outlined class="tb-p-6" style="position: relative" role="region" aria-label="Quarterly report">
+        <TbText TextStyle="TextStyle.Subtitle">Quarterly report</TbText>
+        <TbText>Revenue grew in every region this quarter.</TbText>
+        <TbButton Variant="Variant.Text">Open the details</TbButton>
+        <TbOverlay Visible="_loading" Contained Blur Blocking>
+            <TbProgress Circular AriaLabel="Loading the report" />
+        </TbOverlay>
+    </TbSurface>
+    <div>
+        <TbButton Variant="Variant.Outlined" OnClick="() => _loading = !_loading">
+            @(_loading ? "Finish loading" : "Load the report")
+        </TbButton>
+    </div>
+</TbStack>
+
+@code {
+    private bool _loading;
+}

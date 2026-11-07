@@ -24,12 +24,12 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenStaticAsync(browser, "/examples/menu");
 
         await page.Tb().Menu("More options").ChooseAsync("Share", "Copy link");
-        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Copy link");
+        await Expect(Output(page, "Last option")).ToHaveTextAsync("Copy link");
         await page.Tb().Menu("View").ChooseAsync("Elevation");
         await page.Tb().Menu("View").ChooseAsync("Kilometers");
-        await Expect(page.GetByTestId("view")).ToHaveTextAsync("Kilometers, map, elevation");
+        await Expect(Output(page, "View state")).ToHaveTextAsync("Kilometers, map, elevation");
         await page.Tb().Menu("RB account").ChooseAsync("Sign out");
-        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Sign out");
+        await Expect(Output(page, "Account action")).ToHaveTextAsync("Sign out");
 
         var disabled = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             page.Tb().Menu("Actions").ChooseAsync("Archive"));
@@ -82,7 +82,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ArrowDown");
         await page.Keyboard.PressAsync("Enter");
 
-        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Rename");
+        await Expect(Output(page, "Last action")).ToHaveTextAsync("Rename");
         await Expect(page.GetByRole(AriaRole.Menu)).ToBeHiddenAsync();
         await Expect(trigger).ToBeFocusedAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
@@ -99,7 +99,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Item(page, "Archive").ClickAsync(new() { Force = true });
 
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Actions" })).ToBeVisibleAsync();
-        await Expect(page.GetByTestId("last-action")).ToBeEmptyAsync();
+        await Expect(Output(page, "Last action")).ToBeEmptyAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -121,7 +121,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Space");
 
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Actions" })).ToBeVisibleAsync();
-        await Expect(page.GetByTestId("last-action")).ToBeEmptyAsync();
+        await Expect(Output(page, "Last action")).ToBeEmptyAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -133,7 +133,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Keyboard.PressAsync("Space");
 
-        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Duplicate");
+        await Expect(Output(page, "Last action")).ToHaveTextAsync("Duplicate");
         await Expect(page.GetByRole(AriaRole.Menu)).ToBeHiddenAsync();
     }
 
@@ -315,7 +315,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Item(page, "Email").ClickAsync();
 
-        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Email");
+        await Expect(Output(page, "Last option")).ToHaveTextAsync("Email");
         await Expect(page.GetByRole(AriaRole.Menu)).ToHaveCountAsync(0);
         await Expect(trigger).ToBeFocusedAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
@@ -447,7 +447,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "RB account" })).ToBeVisibleAsync();
         await Expect(Item(page, "Profile")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByTestId("last-action")).ToHaveTextAsync("Profile");
+        await Expect(Output(page, "Account action")).ToHaveTextAsync("Profile");
         await Expect(account).ToBeFocusedAsync();
     }
 
@@ -470,7 +470,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(elevation).ToBeFocusedAsync();
         await page.Keyboard.PressAsync(" ");
 
-        await Expect(page.GetByTestId("view")).ToHaveTextAsync("Miles, elevation");
+        await Expect(Output(page, "View state")).ToHaveTextAsync("Miles, elevation");
         await view.ClickAsync();
         await Expect(map).Not.ToBeCheckedAsync();
         await Expect(elevation).ToBeCheckedAsync();
@@ -697,6 +697,9 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static readonly TimeSpan PauseMargin = TimeSpan.FromSeconds(5);
 
+    private static ILocator Output(IPage page, string name) =>
+        page.GetByRole(AriaRole.Status, new() { Name = name, Exact = true });
+
     private static ILocator Item(IPage page, string name) =>
         page.GetByRole(AriaRole.Menuitem, new() { Name = name });
 
@@ -718,7 +721,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Enter");
         await Expect(dogs).Not.ToBeCheckedAsync();
         await Expect(menu).ToBeVisibleAsync();
-        await Expect(page.GetByTestId("filters")).ToHaveTextAsync("open now by distance");
+        await Expect(Output(page, "Filter state")).ToHaveTextAsync("open now by distance");
 
         await page.Keyboard.PressAsync("Escape");
         await Expect(menu).ToBeHiddenAsync();
@@ -735,7 +738,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().Menu("Filters").ChooseAsync("Rating");
         await page.Tb().Menu("Filters").ChooseAsync("Rating");
 
-        await Expect(page.GetByTestId("filters")).ToHaveTextAsync("open now by rating");
+        await Expect(Output(page, "Filter state")).ToHaveTextAsync("open now by rating");
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Filters" })).ToBeVisibleAsync();
     }
 

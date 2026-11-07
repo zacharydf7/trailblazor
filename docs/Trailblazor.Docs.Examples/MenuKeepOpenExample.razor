@@ -1,0 +1,19 @@
+<TbStack Row Gap="4" Align="Align.Center">
+    @* Filters stay open as they are checked, so several can be set in a row. *@
+    <TbMenu Label="Filters">
+        <TbMenuCheckboxItem @bind-Checked="_openNow" KeepOpen>Open now</TbMenuCheckboxItem>
+        <TbMenuCheckboxItem @bind-Checked="_dogs" KeepOpen>Dogs allowed</TbMenuCheckboxItem>
+        <TbMenuSeparator />
+        <TbMenuRadioGroup Label="Sort by" @bind-Value="_sort">
+            <TbMenuRadioItem Value="@("distance")" KeepOpen>Distance</TbMenuRadioItem>
+            <TbMenuRadioItem Value="@("rating")" KeepOpen>Rating</TbMenuRadioItem>
+        </TbMenuRadioGroup>
+    </TbMenu>
+    <output aria-label="Filter state">@(_openNow ? "open now " : "")@(_dogs ? "dogs " : "")by @_sort</output>
+</TbStack>
+
+@code {
+    private bool _openNow;
+    private bool _dogs;
+    private string? _sort = "distance";
+}

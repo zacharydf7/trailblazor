@@ -1,0 +1,21 @@
+<TbStack Gap="3">
+    <TbSwitch Label="Give focus back" @bind-Value="_restore" Disabled="_open" />
+    <div><TbButton OnClick="() => _open = true">Start the checklist</TbButton></div>
+    @if (_open)
+    {
+        <TbFocusScope RestoreFocus="_restore" role="group" aria-label="Checklist">
+            <TbSurface Outlined class="tb-p-4">
+                <TbStack Gap="3">
+                    <TbCheckbox TValue="bool" Label="Packed the tent" @bind-Value="_packed" />
+                    <TbButton OnClick="() => _open = false">Done</TbButton>
+                </TbStack>
+            </TbSurface>
+        </TbFocusScope>
+    }
+</TbStack>
+
+@code {
+    private bool _restore = true;
+    private bool _open;
+    private bool _packed;
+}

@@ -1,34 +1,11 @@
 @inject IDialogService Dialogs
 
-<TbStack Row Gap="2" Wrap>
-    <TbButton OnClick="RenameAsync">Rename report</TbButton>
-    <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="DeleteAsync">Delete report</TbButton>
-    <TbButton Variant="Variant.Outlined" OnClick="ExportAsync">Export report</TbButton>
-    <TbButton Variant="Variant.Text" OnClick="EditBesideAsync">Edit beside the page</TbButton>
-    <TbButton Variant="Variant.Text" OnClick="NotesAsync">Take notes</TbButton>
-    <TbButton Variant="Variant.Text" OnClick="() => _sharing = true">Share</TbButton>
-    <TbMenu Label="Open a form">
-        @foreach (var (title, form) in Forms)
-        {
-            <TbMenuItem OnClick="() => OpenFormAsync(title, form)">@title</TbMenuItem>
-        }
-    </TbMenu>
-</TbStack>
-<TbText Style="margin-block-start: var(--tb-space-3)">@_status</TbText>
-
-@* A dialog in markup, for one that needs no class of its own; its content sees this page's fields. *@
-<TbDialog @bind-Open="_sharing" Title="Share report">
-    <TbDialogDescription>Anyone with the link can view @_name.</TbDialogDescription>
-    <TbTextField Label="Link" Value="@("https://example.com/reports/42")" ReadOnly />
-    <TbDialogActions>
-        <TbButton OnClick="() => _sharing = false">Done</TbButton>
-    </TbDialogActions>
-</TbDialog>
+<TbButton OnClick="RenameAsync">Rename report</TbButton>
+<TbText class="tb-mt-3">@_status</TbText>
 
 @code {
     private string _name = "Quarterly report";
     private string _status = "Quarterly report";
-    private bool _sharing;
 
     private async Task RenameAsync()
     {
@@ -37,75 +14,6 @@
         {
             _name = result.Value!;
             _status = $"Renamed to {_name}";
-        }
-    }
-
-    // Not modal, so the page stays usable; the dialog can be moved, resized, minimized and maximized.
-    private async Task EditBesideAsync()
-    {
-        var options = new DialogOptions
-        {
-            Modal = false, Draggable = true, Resizable = true, Minimizable = true, Maximizable = true,
-        };
-        var result = await Dialogs.ShowAsync<RenameDialog, string>("Edit name", p => p.Set(d => d.Name, _name),
-            options);
-        if (result.Confirmed)
-        {
-            _name = result.Value!;
-            _status = $"Renamed to {_name}";
-        }
-    }
-
-    // Modal, but it can be minimized to use the page, and its content can make it non-modal or change its width.
-    private async Task NotesAsync()
-    {
-        var result = await Dialogs.ShowAsync<NotesDialog, string>("Notes on the report",
-            options: new() { Minimizable = true, Maximizable = true, Width = "40rem" });
-        if (result.Confirmed)
-        {
-            _status = $"Notes saved: {result.Value}";
-        }
-    }
-
-    // The form is chosen at run time, so it opens by its type, with its parameters by name.
-    private static readonly (string Title, Type Form)[] Forms =
-        [("Rename report", typeof(RenameDialog)), ("Notes on the report", typeof(NotesDialog))];
-
-    private async Task OpenFormAsync(string title, Type form)
-    {
-        var renaming = form == typeof(RenameDialog);
-        var parameters = renaming ? new Dictionary<string, object?> { [nameof(RenameDialog.Name)] = _name } : null;
-        var result = await Dialogs.ShowDynamicAsync<string>(form, title, parameters);
-        if (result.Confirmed)
-        {
-            _name = renaming ? result.Value! : _name;
-            _status = $"{title}: {result.Value}";
-        }
-    }
-
-    private async Task DeleteAsync()
-    {
-        var deleted = await Dialogs.ConfirmAsync("Delete report?", "This can't be undone.", "Delete",
-            tone: Tone.Danger);
-        _status = deleted ? "Deleted" : "Kept";
-    }
-
-    // The page keeps a reference to the dialog, updates its progress and closes it when the work is done.
-    private async Task ExportAsync()
-    {
-        var dialog = Dialogs.Show<ExportDialog, bool>("Exporting report");
-        for (var percent = 25; percent <= 100 && !dialog.Result.IsCompleted; percent += 25)
-        {
-            await Task.Delay(400);
-            dialog.Update<ExportDialog>(p => p.Set(d => d.Percent, percent));
-        }
-
-        await dialog.CloseAsync(true);
-        var exported = (await dialog.Result).Confirmed;
-        _status = exported ? "Exported" : "Export stopped";
-        if (exported)
-        {
-            await Dialogs.AlertAsync("Report exported", "The PDF is in your downloads.", tone: Tone.Success);
         }
     }
 }

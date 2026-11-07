@@ -1,0 +1,53 @@
+<TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Book the hut</TbButton>
+<TbText class="tb-mt-3">@_status</TbText>
+
+<TbDialog Open="_open" OpenChanged="SetOpen" Title="Book the hut" CanDismiss="@(_ => Task.FromResult(!_saving))">
+    <TbStack Gap="3">
+        @if (_error is not null)
+        {
+            <TbAlert Tone="Tone.Danger">@_error</TbAlert>
+        }
+        <TbTextField Label="Guest name" @bind-Value="_guest" Disabled="_saving" />
+    </TbStack>
+    <TbDialogActions>
+        <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" Disabled="_saving" OnClick="() => SetOpen(false)">
+            Cancel
+        </TbButton>
+        <TbButton Loading="_saving" OnClick="SaveAsync">Book</TbButton>
+    </TbDialogActions>
+</TbDialog>
+
+@code {
+    private string? _guest = "Ada Lovelace";
+    private string? _error;
+    private string _status = "";
+    private bool _open;
+    private bool _saving;
+    private bool _triedOnce;
+
+    private void SetOpen(bool open)
+    {
+        _open = open;
+        _error = null;
+    }
+
+    // The first try fails, so the example shows the error; the second books the hut.
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+        await Task.Delay(600);
+        _saving = false;
+        if (_triedOnce)
+        {
+            _status = $"Booked for {_guest}";
+            _open = false;
+        }
+        else
+        {
+            _error = "The hut's calendar didn't answer. Try again.";
+        }
+
+        _triedOnce = true;
+    }
+}

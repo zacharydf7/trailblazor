@@ -1,36 +1,11 @@
-@using Trailblazor.Docs.Examples
-
 <TbStack Row Gap="4" Align="Align.Center" Wrap>
-    <TbPopover Label="Filters" Title="Filter the report" @bind-Open="_filtersOpen">
-        <TbStack Gap="3">
-            <TbCheckbox TValue="bool" Label="Only open items" @bind-Value="_onlyOpen" />
-            <TbCheckbox TValue="bool" Label="Include archived" @bind-Value="_archived" />
-            <TbButton OnClick="() => _filtersOpen = false">Apply</TbButton>
-        </TbStack>
+    <TbPopover Label="Trip details">
+        <TbText>Three nights on the ridge, starting Friday.</TbText>
     </TbPopover>
-    <TbButton Variant="Variant.Text" OnClick="() => _filtersOpen = true">Show filter options</TbButton>
     <TbPopover Label="Notifications" Icon="ExampleIcons.Bell" Variant="Variant.Text">
         <TbText>You're all caught up.</TbText>
     </TbPopover>
-    <TbPopover Label="Keyboard shortcuts" Variant="Variant.Text" OpenOnHover Placement="Placement.Top">
-        <TbText>Press <kbd>F8</kbd> to reach the newest notification.</TbText>
+    <TbPopover Label="Packing list" Variant="Variant.Soft" Size="Size.Small">
+        <TbText>A tent, a stove and two liters of water.</TbText>
     </TbPopover>
-    <TbPopover Align="PlacementAlign.End">
-        <Trigger>
-            <TbButton Variant="Variant.Soft" Tone="Tone.Neutral" @attributes="context.Attributes">
-                Ada Lovelace
-            </TbButton>
-        </Trigger>
-        <ChildContent>
-            <TbText>Signed in as ada@example.com</TbText>
-            <TbLink Href="guides/theming">Account settings</TbLink>
-        </ChildContent>
-    </TbPopover>
-    <output data-testid="filters">@(_onlyOpen ? "Open items" : "All items")</output>
 </TbStack>
-
-@code {
-    private bool _filtersOpen;
-    private bool _onlyOpen;
-    private bool _archived;
-}

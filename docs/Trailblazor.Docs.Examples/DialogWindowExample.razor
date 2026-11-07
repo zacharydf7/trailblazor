@@ -1,0 +1,25 @@
+@inject IDialogService Dialogs
+
+<TbButton Variant="Variant.Text" OnClick="EditBesideAsync">Edit beside the page</TbButton>
+<TbText class="tb-mt-3">@_status</TbText>
+
+@code {
+    private string _name = "Quarterly report";
+    private string _status = "";
+
+    // Not modal, so the page stays usable; the dialog can be moved, resized, minimized and maximized.
+    private async Task EditBesideAsync()
+    {
+        var options = new DialogOptions
+        {
+            Modal = false, Draggable = true, Resizable = true, Minimizable = true, Maximizable = true,
+        };
+        var result = await Dialogs.ShowAsync<RenameDialog, string>("Edit name", p => p.Set(d => d.Name, _name),
+            options);
+        if (result.Confirmed)
+        {
+            _name = result.Value!;
+            _status = $"Renamed to {_name}";
+        }
+    }
+}

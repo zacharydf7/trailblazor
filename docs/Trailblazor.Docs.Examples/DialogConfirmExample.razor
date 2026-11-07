@@ -1,0 +1,21 @@
+@inject IDialogService Dialogs
+
+<TbStack Row Gap="2" Wrap>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="DeleteAsync">Delete report</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="AlertAsync">Check the backup</TbButton>
+</TbStack>
+<TbText class="tb-mt-3">@_status</TbText>
+
+@code {
+    private string _status = "";
+
+    private async Task DeleteAsync()
+    {
+        var deleted = await Dialogs.ConfirmAsync("Delete report?", "This can't be undone.", "Delete",
+            tone: Tone.Danger);
+        _status = deleted ? "Deleted" : "Kept";
+    }
+
+    private Task AlertAsync() =>
+        Dialogs.AlertAsync("Backup finished", "Your reports were copied at midnight.", tone: Tone.Success);
+}

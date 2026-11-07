@@ -1,0 +1,27 @@
+<TbStack Row Gap="2" Wrap>
+    @foreach (var size in Enum.GetValues<DialogSize>())
+    {
+        <TbButton Variant="Variant.Outlined" OnClick="() => Show(new() { Size = size }, size.ToString())">
+            @size
+        </TbButton>
+    }
+    <TbButton Variant="Variant.Outlined" OnClick="@(() => Show(new() { Width = "40rem" }, "40rem"))">40rem</TbButton>
+</TbStack>
+
+<TbDialog @bind-Open="_open" Title="@($"A dialog at {_named}")" Options="_options">
+    <TbText>The dialog grows up to this width, and never past the window.</TbText>
+    <TbDialogActions>
+        <TbButton OnClick="() => _open = false">Done</TbButton>
+    </TbDialogActions>
+</TbDialog>
+
+@code {
+    private DialogOptions _options = new();
+    private string _named = "";
+    private bool _open;
+
+    private void Show(DialogOptions options, string named)
+    {
+        (_options, _named, _open) = (options, named, true);
+    }
+}

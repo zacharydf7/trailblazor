@@ -2,7 +2,7 @@
 
 <TbTextField Label="Notes" @bind-Value="_notes" />
 <TbDialogActions>
-    @* The dialog changes itself while it's open: modal or not, and how wide. *@
+    @* The dialog changes itself while it's open: modal or not, how wide, and whether it fills the window. *@
     <TbButton Variant="Variant.Text" OnClick="() => Modal = !Modal">
         @(Modal ? "Work beside the page" : "Keep the page out")
     </TbButton>
@@ -10,9 +10,15 @@
               OnClick="() => Size = Size == DialogSize.Small ? DialogSize.Medium : DialogSize.Small">
         @(Size == DialogSize.Small ? "Widen" : "Narrow")
     </TbButton>
+    <TbButton Variant="Variant.Text" OnClick="ToggleWindow">
+        @(WindowState == DialogWindowState.Maximized ? "Back to normal size" : "Fill the window")
+    </TbButton>
     <TbButton OnClick="() => CloseDialogAsync(_notes ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {
     private string? _notes;
+
+    private void ToggleWindow() => WindowState =
+        WindowState == DialogWindowState.Maximized ? DialogWindowState.Normal : DialogWindowState.Maximized;
 }

@@ -1,0 +1,17 @@
+<TbStack Row Gap="4" Align="Align.Center">
+    <TbMenu>
+        <Trigger>
+            <TbButton Variant="Variant.Filled" Style="border-radius: var(--tb-radius-full)" aria-label="RB account"
+                      @attributes="context.Attributes">RB</TbButton>
+        </Trigger>
+        <ChildContent>
+            <TbMenuItem OnClick="@(() => _last = "Profile")">Profile</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Sign out")">Sign out</TbMenuItem>
+        </ChildContent>
+    </TbMenu>
+    <output aria-label="Account action">@_last</output>
+</TbStack>
+
+@code {
+    private string _last = "";
+}

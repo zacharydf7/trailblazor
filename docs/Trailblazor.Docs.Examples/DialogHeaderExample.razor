@@ -1,0 +1,25 @@
+<TbStack Row Gap="2" Wrap>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _noHeader = true">Without a header</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _noClose = true">Without a close button</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _rich = true">With an icon in the title</TbButton>
+</TbStack>
+
+<TbDialog @bind-Open="_noHeader" Title="Trail closed" Options="new() { ShowHeader = false }">
+    <TbText>The title still names this dialog for screen readers.</TbText>
+    <TbDialogActions><TbButton OnClick="() => _noHeader = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+<TbDialog @bind-Open="_noClose" Title="Trail reopened" Options="new() { CloseButton = false }">
+    <TbText>Press the button below, or Escape, to close this dialog.</TbText>
+    <TbDialogActions><TbButton OnClick="() => _noClose = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+<TbDialog @bind-Open="_rich" Title="Trail folder">
+    <TbDialogTitle><TbIcon Icon="ExampleIcons.Folder" /> Trail folder</TbDialogTitle>
+    <TbText>The icon sits beside the title and is hidden from screen readers.</TbText>
+    <TbDialogActions><TbButton OnClick="() => _rich = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+
+@code {
+    private bool _noHeader;
+    private bool _noClose;
+    private bool _rich;
+}

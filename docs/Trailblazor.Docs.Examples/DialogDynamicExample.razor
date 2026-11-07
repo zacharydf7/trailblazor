@@ -1,0 +1,30 @@
+@inject IDialogService Dialogs
+
+<TbMenu Label="Open a form">
+    @foreach (var (title, form) in Forms)
+    {
+        <TbMenuItem OnClick="() => OpenFormAsync(title, form)">@title</TbMenuItem>
+    }
+</TbMenu>
+<TbText class="tb-mt-3">@_status</TbText>
+
+@code {
+    private string _name = "Quarterly report";
+    private string _status = "";
+
+    // The form is chosen at run time, so it opens by its type, with its parameters by name.
+    private static readonly (string Title, Type Form)[] Forms =
+        [("Rename report", typeof(RenameDialog)), ("Notes on the report", typeof(NotesDialog))];
+
+    private async Task OpenFormAsync(string title, Type form)
+    {
+        var renaming = form == typeof(RenameDialog);
+        var parameters = renaming ? new Dictionary<string, object?> { [nameof(RenameDialog.Name)] = _name } : null;
+        var result = await Dialogs.ShowDynamicAsync<string>(form, title, parameters);
+        if (result.Confirmed)
+        {
+            _name = renaming ? result.Value! : _name;
+            _status = $"{title}: {result.Value}";
+        }
+    }
+}

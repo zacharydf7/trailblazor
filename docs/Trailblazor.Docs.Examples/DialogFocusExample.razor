@@ -1,0 +1,31 @@
+<TbStack Row Gap="2" Wrap>
+    <TbButton Variant="Variant.Outlined" OnClick="() => Show(DialogFocus.FirstField)">
+        Start at the first field
+    </TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => Show(DialogFocus.Dialog)">Start at the title</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _discarding = true">Start at the safe choice</TbButton>
+</TbStack>
+
+<TbDialog @bind-Open="_open" Title="Trail notes" Options="new() { InitialFocus = _focus }">
+    <TbTextField Label="Note" @bind-Value="_note" />
+    <TbDialogActions><TbButton OnClick="() => _open = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+<TbDialog @bind-Open="_discarding" Title="Discard the draft?">
+    <TbText>Your draft of this trail will be lost.</TbText>
+    <TbDialogActions>
+        <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="() => _discarding = false">Discard</TbButton>
+        <TbButton autofocus OnClick="() => _discarding = false">Keep the draft</TbButton>
+    </TbDialogActions>
+</TbDialog>
+
+@code {
+    private DialogFocus _focus;
+    private string? _note;
+    private bool _open;
+    private bool _discarding;
+
+    private void Show(DialogFocus focus)
+    {
+        (_focus, _open) = (focus, true);
+    }
+}

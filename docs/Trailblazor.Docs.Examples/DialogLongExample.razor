@@ -1,0 +1,15 @@
+<TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Read the trail rules</TbButton>
+
+<TbDialog @bind-Open="_open" Title="Trail rules" Options="new() { Size = DialogSize.Small }">
+    <TbStack Gap="4" tabindex="0" role="group" aria-label="The rules">
+        @foreach (var rule in Enumerable.Range(1, 30))
+        {
+            <TbText>Rule @rule: stay on the marked path and pack out your trash.</TbText>
+        }
+    </TbStack>
+    <TbDialogActions><TbButton OnClick="() => _open = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+
+@code {
+    private bool _open;
+}

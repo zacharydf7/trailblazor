@@ -1,0 +1,27 @@
+@inject IDialogService Dialogs
+
+<TbButton Variant="Variant.Outlined" OnClick="ExportAsync">Export report</TbButton>
+<TbText class="tb-mt-3">@_status</TbText>
+
+@code {
+    private string _status = "";
+
+    // The page keeps a reference to the dialog, updates its progress and closes it when the work is done.
+    private async Task ExportAsync()
+    {
+        var dialog = Dialogs.Show<ExportDialog, bool>("Exporting report");
+        for (var percent = 25; percent <= 100 && !dialog.Result.IsCompleted; percent += 25)
+        {
+            await Task.Delay(400);
+            dialog.Update<ExportDialog>(p => p.Set(d => d.Percent, percent));
+        }
+
+        await dialog.CloseAsync(true);
+        var exported = (await dialog.Result).Confirmed;
+        _status = exported ? "Exported" : "Export stopped";
+        if (exported)
+        {
+            await Dialogs.AlertAsync("Report exported", "The PDF is in your downloads.", tone: Tone.Success);
+        }
+    }
+}

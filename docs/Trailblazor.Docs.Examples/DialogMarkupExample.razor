@@ -1,0 +1,15 @@
+<TbButton Variant="Variant.Outlined" OnClick="() => _sharing = true">Share</TbButton>
+
+@* A dialog in markup, for one that needs no class of its own; its content sees this page's fields. *@
+<TbDialog @bind-Open="_sharing" Title="Share report">
+    <TbDialogDescription>Anyone with the link can view @_name.</TbDialogDescription>
+    <TbTextField Label="Link" Value="@("https://example.com/reports/42")" ReadOnly />
+    <TbDialogActions>
+        <TbButton OnClick="() => _sharing = false">Done</TbButton>
+    </TbDialogActions>
+</TbDialog>
+
+@code {
+    private readonly string _name = "Quarterly report";
+    private bool _sharing;
+}

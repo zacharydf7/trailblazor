@@ -3,16 +3,18 @@
 @if (_open)
 {
     @* A custom panel: focus moves into it, Tab stays inside, and focus goes back to the button when it closes. *@
-    <TbFocusScope Trapped role="group" aria-label="Find a trail"
-                  Style="margin-block-start: var(--tb-space-3); padding: var(--tb-space-4); max-width: 24rem;
-                         border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
-        <TbStack Gap="3">
-            <TbTextField Label="Trail name" @bind-Value="_trail" />
-            <TbStack Row Gap="2">
-                <TbButton OnClick="() => _open = false">Search</TbButton>
-                <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="() => _open = false">Close</TbButton>
+    <TbFocusScope Trapped role="group" aria-label="Find a trail" class="tb-mt-3">
+        <TbSurface Outlined class="tb-p-4">
+            <TbStack Gap="3">
+                <TbTextField Label="Trail name" @bind-Value="_trail" />
+                <TbStack Row Gap="2">
+                    <TbButton OnClick="() => _open = false">Search</TbButton>
+                    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="() => _open = false">
+                        Close
+                    </TbButton>
+                </TbStack>
             </TbStack>
-        </TbStack>
+        </TbSurface>
     </TbFocusScope>
 }
 

@@ -329,11 +329,22 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Tooltip)).ToHaveCountAsync(0);
         await Expect(delete).ToHaveAccessibleDescriptionAsync("");
         await hints.ClickAsync();
-        await page.GetByRole(AriaRole.Button, new() { Name = "Add" }).FocusAsync();
-        await page.Keyboard.PressAsync("Tab");
+        await hints.FocusAsync();
+        await page.Keyboard.PressAsync("Shift+Tab");
 
         await Expect(tooltip).ToBeVisibleAsync();
         await Expect(delete).ToHaveAccessibleDescriptionAsync("Delete the selection");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldLimitItsWidth_WhenGivenAMaxWidth(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Long description" }).HoverAsync();
+
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "This description is long" });
+        await Expect(tooltip).ToBeVisibleAsync();
         Assert.Equal("192px", await tooltip.EvaluateAsync<string>("tooltip => getComputedStyle(tooltip).maxWidth"));
     }
 }

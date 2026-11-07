@@ -1,0 +1,20 @@
+@inject IDialogService Dialogs
+
+<TbButton Variant="Variant.Text" OnClick="NotesAsync">Take notes</TbButton>
+<TbText class="tb-mt-3">@_status</TbText>
+
+@code {
+    private string _status = "";
+
+    // Modal, but it can be minimized to use the page, and its content can make it non-modal, change its width or fill
+    // the window.
+    private async Task NotesAsync()
+    {
+        var result = await Dialogs.ShowAsync<NotesDialog, string>("Notes on the report",
+            options: new() { Minimizable = true, Maximizable = true, Width = "40rem" });
+        if (result.Confirmed)
+        {
+            _status = $"Notes saved: {result.Value}";
+        }
+    }
+}

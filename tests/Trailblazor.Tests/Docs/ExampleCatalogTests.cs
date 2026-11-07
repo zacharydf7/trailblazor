@@ -112,8 +112,9 @@ public class ExampleCatalogTests
     [Fact]
     public void ExampleCatalog_ShouldShowEveryEmbeddedSource_WhenCalled()
     {
+        // Sections can share a file, such as a dialog that two of them open.
         var shown = ExampleCatalog.All.SelectMany(example => example.Sources).Select(source => $"Source/{source.File}")
-            .Concat(GuideSources());
+            .Distinct().Concat(GuideSources());
 
         var embedded = typeof(Example).Assembly.GetManifestResourceNames().Where(name => name.StartsWith("Source/"));
 

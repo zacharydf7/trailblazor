@@ -63,7 +63,7 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Overlay_ShouldMakeOnlyItsRegionInert_WhenAContainedOverlayIsBlocking(string browser)
     {
         var page = await OpenAsync(browser, "/examples/overlay");
-        var report = page.GetByTestId("report");
+        var report = page.GetByRole(AriaRole.Region, new() { Name = "Quarterly report" });
         var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Load the report" });
 
         await toggle.ClickAsync();
@@ -94,7 +94,7 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Overlay_ShouldCoverOnlyItsRegionAndCatchClicksThere_WhenContained(string browser)
     {
         var page = await OpenAsync(browser, "/examples/overlay");
-        var report = page.GetByTestId("report");
+        var report = page.GetByRole(AriaRole.Region, new() { Name = "Quarterly report" });
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Load the report" }).ClickAsync();
 

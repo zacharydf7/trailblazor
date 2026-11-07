@@ -40,7 +40,8 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
         await panel.GetByLabel("Only open items").CheckAsync();
         await panel.GetByRole(AriaRole.Button, new() { Name = "Apply" }).ClickAsync();
         await Expect(panel).ToBeHiddenAsync();
-        await Expect(page.GetByTestId("filters")).ToHaveTextAsync("Open items");
+        await Expect(page.GetByRole(AriaRole.Status, new() { Name = "Filter state", Exact = true }))
+            .ToHaveTextAsync("Open items");
 
         await page.Tb().Popover("Filters").OpenAsync();
         await page.Mouse.ClickAsync(5, 5);

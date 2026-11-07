@@ -1,0 +1,12 @@
+<TbStack Row Gap="4" Align="Align.Center" Wrap>
+    <TbMenu Label="Saved searches" Description="Also opens with the Up and Down arrow keys." @bind-Open="_open">
+        <TbMenuItem>Dog-friendly trails</TbMenuItem>
+        <TbMenuItem>Under ten kilometers</TbMenuItem>
+    </TbMenu>
+    <TbButton Variant="Variant.Text" OnClick="() => _open = true">Show the saved searches</TbButton>
+    <output aria-label="Menu state">@(_open ? "Open" : "Closed")</output>
+</TbStack>
+
+@code {
+    private bool _open;
+}

@@ -3302,6 +3302,8 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
+                "A panel too long for the window opens on the side with more room and scrolls, so every date stays "
+                    + "reachable.",
                 "In forced-colors mode, such as Windows high contrast, the range's days take the system's highlight, "
                     + "its first and last days add an outline, and the range previewed under the pointer has only a "
                     + "dashed outline, so it can't be taken for a chosen range.",
@@ -3478,28 +3480,68 @@ public static class ExampleCatalog
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or keyboard focus.", typeof(TooltipExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a short hint about a control, such as what it does or its keyboard shortcut.",
+            ],
+            WhenNotToUse =
+            [
+                "For links, buttons or anything longer to read, use a [popover](components/popover), which the "
+                    + "keyboard can reach.",
+                "For something people need in order to use the page, put it on the page, such as a field's "
+                    + "`HelperText`, because a tap on a button doesn't show a tooltip.",
+                "For an icon button's name, use the [icon button](components/icon-button)'s `ShowTooltip`.",
+            ],
+            Related = ["popover", "icon-button", "button"],
+            Sections =
+            [
+                new("description", "Describing a control", "Wrap a tooltip around a control, and `Text` appears when "
+                    + "the pointer rests on the control or it takes keyboard focus.", typeof(TooltipExample)),
+                new("placement", "Placement", "`Placement` picks the side a tooltip opens on, and it flips when "
+                    + "there's no room. `Align` lines it up with the control, and `ShowArrow` adds an arrow that "
+                    + "points at the control's middle.", typeof(TooltipPlacementExample)),
+                new("formatted", "Formatted text", "`TextContent` replaces `Text` with formatted content, such as a "
+                    + "shortcut in `<kbd>`, which is read as part of the description. A tooltip can't be reached with "
+                    + "the keyboard, so it holds no links or buttons.", typeof(TooltipFormattedExample)),
+                new("delays", "Delays", "A tooltip shows at once on keyboard focus and after a delay on hover. "
+                    + "`ShowDelay` sets how long the pointer must rest before it appears, and `HideDelay` how long it "
+                    + "stays after the pointer leaves. Both are 300 milliseconds unless set, and `options.Tooltips` in "
+                    + "`AddTrailblazor` changes them for the whole app.", typeof(TooltipDelayExample)),
+                new("turning-off", "Turning a tooltip off", "`Disabled`, or `Text` left blank, shows no tooltip and "
+                    + "adds no description, so a tooltip that only sometimes applies needs no `@if`. The switch here "
+                    + "turns the delete button's tooltip off.", typeof(TooltipDisabledExample)),
+                new("width", "Width and styling", "`MaxWidth` sets how wide a tooltip grows before wrapping, 18rem "
+                    + "unless set. `BubbleClass` styles the bubble, and `Class` styles the anchor around the control.",
+                    typeof(TooltipWidthExample)),
+            ],
             Api = [typeof(TbTooltip), typeof(TooltipSettings)],
+            Keyboard =
+            [
+                new(["Tab"], "Moving focus to the control shows its tooltip, and moving away hides it."),
+                new(["Escape"], "Hides the tooltip, without also closing a dialog it is in."),
+            ],
+            Labeling =
+            [
+                "A tooltip is a description, not a name: its text goes into the `aria-describedby` of the first "
+                    + "focusable element it wraps. That element still needs a name of its own.",
+            ],
+            Announcements =
+            [
+                "A tooltip that only repeats its control's `aria-label` isn't added, so it isn't read twice.",
+                "The arrow from `ShowArrow` is decoration and isn't read out.",
+            ],
             Accessibility =
             [
-                "The tooltip describes its anchor: its text goes into the `aria-describedby` of the first "
-                    + "focusable element inside. It's a description, not a name, so that element still needs a name of "
-                    + "its own. A tooltip that only repeats that element's `aria-label` isn't added, so it isn't read "
-                    + "twice.",
-                "It shows at once on keyboard focus and after a short delay on hover. A click or tap on a button "
-                    + "hides it, and neither the focus that click leaves nor the focus handed back by a dialog closed "
-                    + "with the mouse shows it, so it doesn't cover what someone is working on. A text field shows it "
-                    + "on any focus, since its user is about to type. Moving the pointer onto the tooltip keeps it "
-                    + "open, and Escape hides it, without also closing a dialog it is in. `ShowDelay` and `HideDelay` "
-                    + "change the delays for one tooltip, and `options.Tooltips` in `AddTrailblazor` for the whole "
-                    + "app.",
-                "`TextContent` can hold formatted text, such as a shortcut in `<kbd>`, which is read as part of the "
-                    + "description. The tooltip can't be reached with the keyboard, so it holds no links or buttons; "
-                    + "use a popover for those.",
-                "The arrow from `ShowArrow` is decoration and isn't read out.",
-                "`Disabled`, or `Text` left blank, shows no tooltip and adds no description, so a tooltip that only "
-                    + "sometimes applies needs no `@if`; the switch here turns the delete button's off. `BubbleClass` "
-                    + "styles the bubble, `MaxWidth` sets how wide it grows before wrapping (18rem by default), and "
-                    + "`Class` styles the anchor.",
+                "A click or tap on a button hides its tooltip, and neither the focus that click leaves nor the focus "
+                    + "handed back by a dialog closed with the mouse shows it, so it doesn't cover what someone is "
+                    + "working on. A text field shows its tooltip on any focus, since its user is about to type.",
+                "Moving the pointer onto the tooltip keeps it open.",
+            ],
+            BeforeInteractive =
+            [
+                "The control works, but no tooltip shows and no description is added until the page is interactive, "
+                    + "because a script does both.",
             ],
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
             Blocks = ["tb-tooltip", "tb-tooltip-anchor"],
@@ -3517,42 +3559,98 @@ public static class ExampleCatalog
             "A list of actions, options and links that opens from a button, with groups and submenus.",
             typeof(MenuExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a list of actions or options that opens from one button, such as a row's actions.",
+            ],
+            WhenNotToUse =
+            [
+                "For choosing one value in a form, use a [select](components/select), which keeps its value and posts "
+                    + "with the form.",
+                "For a panel with fields or text in it, use a [popover](components/popover).",
+                "For an action that deserves its own button, use a [button](components/button).",
+            ],
+            Related = ["select", "popover", "button"],
             RightToLeftKeys = "Left opens a submenu and Right closes it.",
+            Sections =
+            [
+                new("items", "Items", "A menu's items run `OnClick` when chosen, which closes the menu. `Icon` adds an "
+                    + "icon, and `Disabled` turns an item off but keeps it focusable, marked `aria-disabled`, so "
+                    + "people can still find it.", typeof(MenuExample)),
+                new("submenus", "Submenus", "`TbSubMenu` opens a second list beside an item. Resting the pointer on "
+                    + "the item opens it without moving focus, and on the way there the pointer can cross other items "
+                    + "without the submenu closing. This menu also sets `Icon`, which makes its trigger an icon button "
+                    + "named by `Label`.", typeof(MenuSubmenuExample)),
+                new("checks-and-radios", "Checkbox and radio items", "`TbMenuCheckboxItem` and `TbMenuRadioItem` keep "
+                    + "a value in a menu. `TbMenuGroup` and `TbMenuRadioGroup` group items under a `Label`, and "
+                    + "`TbMenuSeparator` draws a line between them.", typeof(MenuCheckExample)),
+                new("keep-open", "Keeping the menu open", "`KeepOpen` on a checkbox or radio item keeps the menu open "
+                    + "when the item is set, with focus still on it, so several can be set in a row.",
+                    typeof(MenuKeepOpenExample)),
+                new("links", "Links", "A menu item with `Href` is a link. `NewTab` opens it in a new tab and tells "
+                    + "screen readers so. `NewTabHint` changes what they hear.", typeof(MenuLinkExample)),
+                new("custom-trigger", "A custom trigger", "`Trigger` replaces a menu's button with your own. Put "
+                    + "`context.Attributes` on your button, which gives it the built-in trigger's behavior and "
+                    + "attributes, and give it a name, such as an `aria-label` on an "
+                    + "avatar.", typeof(MenuTriggerExample)),
+                new("trigger-style", "The trigger's look", "`Variant` sets how a menu's text trigger looks, and `Size` "
+                    + "how big its built-in trigger is.",
+                    typeof(MenuStyleExample)),
+                new("placement", "Placement and width", "`Placement` picks the side a menu opens on, and `Align` lines "
+                    + "it up with the trigger. `FullWidth` stretches the trigger, and the menu opens at least as wide. "
+                    + "A menu too long for the window opens on the side with more room and scrolls, so every item "
+                    + "stays reachable.", typeof(MenuPlacementExample)),
+                new("opening-from-code", "Opening from code", "`@bind-Open` opens or closes a menu from code and tells "
+                    + "you when the user does. The items are drawn again each time the menu opens, so one whose text "
+                    + "or `Disabled` depends on state that changed since the page last rendered is up to date. This "
+                    + "menu also sets `Description`, which adds text that screen readers read after the trigger's "
+                    + "name, such as a hint about other keys it takes.", typeof(MenuOpenExample)),
+                new("disabled", "Disabled", "`Disabled` on a menu turns off its trigger, built in or custom.",
+                    typeof(MenuDisabledExample)),
+            ],
             Api =
             [
                 typeof(TbMenu), typeof(MenuTrigger), typeof(TbMenuItem), typeof(TbMenuCheckboxItem),
                 typeof(TbMenuRadioGroup<>), typeof(TbMenuRadioItem<>), typeof(TbMenuGroup), typeof(TbMenuSeparator),
                 typeof(TbSubMenu),
             ],
-            Accessibility =
+            Keyboard =
             [
-                "The trigger is a button with `aria-haspopup=\"menu\"` and `aria-expanded`, named by `Label`; "
-                    + "with an `Icon` it becomes an icon button named by the label. The list is a `menu` of "
+                new(["Enter", "Space", "Down"], "Opens the menu on its first item.") { When = "On the trigger" },
+                new(["Up"], "Opens the menu on its last item.") { When = "On the trigger" },
+                new(["Up", "Down"], "Moves through the items, wrapping at the ends.") { When = "In the menu" },
+                new(["Home", "End"], "Jumps to the first or last item.") { When = "In the menu" },
+                new(["A letter"], "Jumps to the next item that starts with it.") { When = "In the menu" },
+                new(["Enter", "Space"], "Chooses the item, or follows a link.") { When = "In the menu" },
+                new(["Right"], "Opens a submenu.") { When = "In the menu" },
+                new(["Left"], "Closes a submenu.") { When = "In the menu" },
+                new(["Escape"], "Closes one level at a time: a submenu first, then the menu, which returns focus to "
+                    + "the trigger.") { When = "In the menu" },
+                new(["Tab"], "Closes the menu and moves on.") { When = "In the menu" },
+            ],
+            Labeling =
+            [
+                "The trigger is named by `Label`.",
+            ],
+            Announcements =
+            [
+                "The trigger is a button with `aria-haspopup=\"menu\"` and `aria-expanded`, and the list is a `menu` "
+                    + "of "
                     + "`menuitem`s.",
-                "Enter, Space or Down opens the menu on its first item; Up opens it on the last.",
-                "In the menu, Up and Down move and wrap, Home and End jump to the ends, and a letter jumps to the "
-                    + "next item that starts with it. Right opens a submenu and Left closes it.",
-                "Escape closes the menu and returns focus to the trigger; Tab closes it and moves on. Disabled "
-                    + "items stay focusable, marked `aria-disabled`, so people can still find them.",
-                "`Description` adds text that screen readers read after the trigger's name, such as a hint about "
-                    + "other keys it takes.",
-                "A custom `Trigger` gets the same attributes through `context.Attributes`; put them on a button, and "
-                    + "give it a name, such as an `aria-label` on an avatar. `Disabled` turns either trigger off.",
                 "Checkbox items are `menuitemcheckbox`es and radio items `menuitemradio`s, with `aria-checked`. A "
                     + "`TbMenuGroup` or radio group is a `group` named by its `Label`, and `TbMenuSeparator` is a "
                     + "`separator`.",
-                "Choosing an item closes the menu, unless it is a checkbox or radio item with `KeepOpen`, such as "
-                    + "the filters here: a click, Enter or Space sets it and focus stays on it, so several can be set "
-                    + "in a row. Escape, Tab or a click outside closes the menu.",
-                "`@bind-Open` opens or closes the menu from code and tells you when the user does. The items are drawn "
-                    + "again each time the menu opens, so one whose text or `Disabled` depends on state that changed "
-                    + "since the page last rendered, such as a file that finished loading, is up to date.",
-                "An item with `Href` is a link; Enter or Space follows it. With `NewTab` it opens in a new tab, and "
-                    + "screen readers hear that it does.",
-                "Resting the pointer on a submenu's item opens it without moving focus. On the way there the pointer "
-                    + "can cross other items without the submenu closing.",
-                "A menu too long for the window opens on the side with more room and scrolls, so every item stays "
-                    + "reachable; a popover's panel and a date range picker's panel do the same.",
+            ],
+            Accessibility =
+            [
+                "A click outside the menu closes it, as Escape and Tab do.",
+            ],
+            BeforeInteractive =
+            [
+                "The trigger already opens the list on click, Enter or Space, and a link in it already works. Until "
+                    + "the page is interactive, the arrow keys don't move through the items, the list shows at the "
+                    + "corner of the window rather than beside the trigger, and an item with `OnClick` does nothing.",
             ],
             Target = new("button", "Actions"),
             Blocks = ["tb-menu"],
@@ -3601,66 +3699,145 @@ public static class ExampleCatalog
             "A window over the page, opened from code or written in markup, that asks for input or a decision.",
             typeof(DialogExample))
         {
-            Parts = [typeof(RenameDialog), typeof(ExportDialog), typeof(NotesDialog)],
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for input or a decision people should deal with before going on.",
+            ],
+            WhenNotToUse =
+            [
+                "For a panel beside a button that people can leave by clicking elsewhere, use a "
+                    + "[popover](components/popover).",
+                "For a brief update that needs no answer, use a [toast](components/toast).",
+                "For a message that belongs to part of the page, use an [alert](components/alert).",
+            ],
+            Related = ["popover", "toast", "alert"],
+            Sections =
+            [
+                new("opening", "Opening a dialog", "`IDialogService.ShowAsync` opens a component that inherits "
+                    + "`TbDialogContent` and waits for its result. Escape, the backdrop and the close button call "
+                    + "`OnDismissAsync`, which cancels by default. Override it to run a cancel of your own, as this "
+                    + "rename dialog does to ask before discarding a changed "
+                    + "name.", typeof(DialogExample), typeof(RenameDialog)),
+                new("confirming", "Confirming and alerting", "`ConfirmAsync` asks a question with two buttons, and "
+                    + "`AlertAsync` tells the user something with one. Focus starts on the first button, so a "
+                    + "confirmation dialog starts on Cancel, and Enter doesn't confirm by accident. The alert's tone "
+                    + "icon is decorative, so say what happened in the message.", typeof(DialogConfirmExample)),
+                new("in-markup", "Written in markup", "`TbDialog` opens with `@bind-Open`, for a dialog that needs no "
+                    + "class of its own, and its content sees the page's fields. `TbDialogDescription` describes any "
+                    + "dialog, in markup or opened from code, so screen readers read that text with the title as the "
+                    + "dialog opens.",
+                    typeof(DialogMarkupExample)),
+                new("updating", "Updating an open dialog", "`Show` returns a reference without waiting. The page can "
+                    + "`Update` a dialog's parameters through it, and close the dialog when the work is done.",
+                    typeof(DialogUpdateExample), typeof(ExportDialog)),
+                new("run-time", "Choosing at run time", "`ShowDynamicAsync` opens a dialog by its type, with its "
+                    + "parameters by name, for a form chosen while the app "
+                    + "runs.", typeof(DialogDynamicExample), typeof(RenameDialog), typeof(NotesDialog)),
+                new("size", "Size", "`Size` sets the widest a dialog grows, in rem so it follows the user's text size: "
+                    + "`Small` 24rem (384px), `Medium` 32rem (512px), `Large` 48rem (768px), `ExtraLarge` 64rem "
+                    + "(1024px) and `Full`. Pick the step nearest the content's need, or set `Width` to a CSS length "
+                    + "for one between the steps. No dialog grows past the window.", typeof(DialogSizeExample)),
+                new("position", "Position", "`Position` sets where a dialog sits in the window, in the center unless "
+                    + "set.", typeof(DialogPositionExample)),
+                new("header", "The header", "`ShowHeader = false` hides a dialog's header, and the title still names "
+                    + "the dialog. `CloseButton = false` removes the close button. `TbDialogTitle` shows richer "
+                    + "content in place of the title; keep the title's text in it, since it names the dialog.",
+                    typeof(DialogHeaderExample)),
+                new("first-focus", "Where focus starts", "A dialog starts on its first field or button, or on an "
+                    + "element marked `autofocus`. `InitialFocus = DialogFocus.Dialog` starts on the dialog itself, so "
+                    + "a screen reader begins at its title. For a question with a destructive answer, start on the "
+                    + "safe choice, as here. On closing, focus goes back to whatever opened the "
+                    + "dialog.", typeof(DialogFocusExample)),
+                new("dismissing", "Dismissing", "`DismissOnEscape = false` and `DismissOnBackdrop = false` keep Escape "
+                    + "and a click on the backdrop from closing a dialog that needs an answer. On a `TbDialog`, "
+                    + "`CanDismiss` is asked first, and can keep it open. Closing from code doesn't ask.",
+                    typeof(DialogDismissExample)),
+                new("long-content", "Long content", "A dialog never grows past the window. Its header stays in view "
+                    + "and its body scrolls, and the buttons in `TbDialogActions` scroll with the body. Give long "
+                    + "content that has no controls `tabindex=\"0\"` and a name, so keyboard users can scroll it.",
+                    typeof(DialogLongExample)),
+                new("saving", "Saving and errors", "While a dialog saves, set `Loading` on its button, and "
+                    + "`CanDismiss` can keep it open until the work ends. Show a failure in the dialog with an alert, "
+                    + "so the user keeps what they typed and can try again.", typeof(DialogSavingExample)),
+                new("non-modal", "Non-modal dialogs", "`Modal = false` leaves the page usable. Such a dialog can be "
+                    + "`Draggable` by its header and `Resizable` by its bottom-end grip. Neither needs dragging: the "
+                    + "header gains a Move button whose menu picks a place, and the grip is a Resize button whose menu "
+                    + "picks a size. `Minimizable` and `Maximizable` add header "
+                    + "buttons.", typeof(DialogWindowExample), typeof(RenameDialog)),
+                new("changing", "Changing an open dialog's window", "An open dialog can change. Set `Modal`, `Size`, "
+                    + "`Position` or `WindowState` on its reference, or from inside a `TbDialogContent`, as this notes "
+                    + "dialog does.",
+                    typeof(DialogChangingExample), typeof(NotesDialog)),
+                new("top-layer", "On the page instead of the top layer", "A dialog opens in the browser's top layer, "
+                    + "above everything on the page. A popup another library adds to the page's body then opens "
+                    + "beneath a modal and can't be used. `TopLayer = false`, or `DialogSettings.TopLayer` for the "
+                    + "app, keeps the dialog on the page at `--tb-dialog-z-index` (1100), so popups added later open "
+                    + "above it and work.",
+                    typeof(DialogTopLayerExample)),
+            ],
             Api =
             [
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
                 typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogDescription),
             ],
+            Keyboard =
+            [
+                new(["Escape"], "Cancels the topmost dialog, or a non-modal one that has focus, unless "
+                    + "`DismissOnEscape` is false. A menu, select, autocomplete list or tooltip open inside it, or a "
+                    + "drag, takes the key first."),
+                new(["Left", "Right", "Up", "Down"], "Moves the dialog instead of opening the menu, as the button's "
+                    + "description says.")
+                {
+                    When = "On the Move button",
+                },
+                new(["Left", "Right", "Up", "Down"], "Resizes the dialog instead of opening the menu, as the button's "
+                    + "description says.")
+                {
+                    When = "On the Resize button",
+                },
+            ],
+            Labeling =
+            [
+                "A native `<dialog>` named by its title. A blank title, in markup or passed to `IDialogService`, gets "
+                    + "build warning TB002. An icon in a `TbDialogTitle` is hidden from screen readers.",
+            ],
+            Announcements =
+            [
+                "`ConfirmAsync` and `AlertAsync` open an `alertdialog` described by its message.",
+                "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't hide "
+                    + "them.",
+            ],
             Accessibility =
             [
-                "A native `<dialog>` named by its title. A modal one makes the rest of the page inert, so focus "
-                    + "and screen readers stay inside; a non-modal one leaves the page usable. A blank title, in "
-                    + "markup or passed to `IDialogService`, gets build warning TB002.",
-                "On opening, focus goes to an element marked `autofocus`, or else the first field, or the dialog "
-                    + "itself with `InitialFocus = DialogFocus.Dialog`. On closing, it goes back to whatever opened "
-                    + "the dialog.",
-                "Escape cancels the topmost dialog, or a modeless one that has focus, unless `DismissOnEscape` is "
-                    + "false; a menu, select, autocomplete list or tooltip open inside it, or a drag, takes the key "
-                    + "first. A click that starts and ends on the backdrop cancels a modal unless `DismissOnBackdrop` "
-                    + "is false.",
-                "`ConfirmAsync` and `AlertAsync` open an `alertdialog` described by its message. The alert's tone icon "
-                    + "is decorative, so say what happened in the message.",
-                "A `TbDialogDescription` describes any dialog with `aria-describedby`, so screen readers read it with "
-                    + "the title as the dialog opens.",
-                "Escape, the backdrop and the close button call a `TbDialogContent`'s `OnDismissAsync`, which "
-                    + "cancels by default: override it to run its own cancel, as the rename dialog does to ask before "
-                    + "discarding a changed name, whichever way the user leaves. On a `TbDialog` they ask "
-                    + "`CanDismiss`, which can keep it open. Closing from code doesn't ask.",
-                "A `TbDialogTitle` shows richer content, such as the export dialog's icon, in place of the title "
-                    + "in the header. It names the dialog, so keep the title's text in it; an icon in it is hidden "
-                    + "from screen readers.",
-                "`Size` sets the widest a dialog grows, in rem so it follows the user's text size: `Small` 24rem "
-                    + "(384px), `Medium` 32rem (512px), `Large` 48rem (768px), `ExtraLarge` 64rem (1024px) and "
-                    + "`Full`. Pick the step nearest the content's need, or set `Width` to a CSS length for one "
-                    + "between the steps; no dialog grows past the window.",
-                "A dialog opens in the browser's top layer, above everything on the page, and a modal makes the page "
-                    + "inert. A popup another library adds to the page's body, such as an editor's menus or a date "
-                    + "picker, then opens beneath a modal and can't be used. Set `TopLayer = false` on the dialog, or "
-                    + "`DialogSettings.TopLayer` for the app, to keep it on the page: it sits at "
-                    + "`--tb-dialog-z-index` (1100), draws its own backdrop, stops the page scrolling, is marked "
-                    + "`aria-modal` and makes the rest of the page inert itself, so popups added later open above it "
-                    + "and work, and keys pressed in them stay there. A library that makes its popup's element "
-                    + "before the dialog opens, such as a date picker's calendar made as the page loads, needs its "
-                    + "selector in `DialogSettings.OutsidePopups`; Blazor's reconnect dialog and error bar always "
-                    + "stay usable. The trade-offs: a popup with a lower z-index still opens beneath it, and a parent "
-                    + "with a transform or a stacking context of its own can hold it beneath the page. A dialog "
-                    + "opened from a modal in the top layer opens there too.",
+                "A modal dialog makes the rest of the page inert, so focus and screen readers stay inside; a non-modal "
+                    + "one leaves the page usable.",
+                "A click that starts and ends on the backdrop cancels a modal.",
                 "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
                     + "starts to fade out, the page takes input again and focus goes back to its opener, unless focus "
                     + "had already left the dialog.",
-                "A dialog that isn't modal can be `Draggable` by its header and `Resizable` by its bottom-end grip. "
-                    + "Neither needs dragging: the header gains a Move button whose menu picks a place, and the grip "
-                    + "is a Resize button whose menu picks a size. While either button has focus, the arrow keys "
-                    + "move or resize the dialog instead of opening the menu, and its description says so.",
-                "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't "
-                    + "hide them.",
-                "An open dialog can change: set `Modal`, `Size`, `Position` or `WindowState` on its reference, or on "
-                    + "itself from a `TbDialogContent`. Becoming non-modal keeps focus where it was; becoming modal "
-                    + "moves focus into the dialog unless it is already there, and makes the page inert again.",
-                "A `Minimizable` modal leaves the page usable while it is minimized, with its toasts and "
-                    + "announcements back on the page, and blocks it again once restored; focus stays on the button "
-                    + "that restored it.",
+                "A dialog that turns non-modal while open keeps focus where it was. One that turns modal moves focus "
+                    + "into itself, unless focus is already there, and makes the page inert again.",
+                "A `Minimizable` modal leaves the page usable while it is minimized, with its toasts and announcements "
+                    + "back on the page, and blocks it again once restored; focus stays on the button that restored "
+                    + "it.",
+            ],
+            Notes =
+            [
+                new("With `TopLayer = false`, a dialog draws its own backdrop, stops the page from scrolling, is "
+                    + "marked `aria-modal` and makes the rest of the page inert itself, and keys pressed in popups "
+                    + "added later stay there. A library that makes its popup's element before the dialog opens, such "
+                    + "as a date picker's calendar made as the page loads, needs its selector in "
+                    + "`DialogSettings.OutsidePopups`; Blazor's reconnect dialog and error bar always stay usable. A "
+                    + "dialog opened from a modal in the top layer opens there too."),
+                new("With `TopLayer = false`, a popup with a lower z-index still opens beneath the dialog, and a "
+                    + "parent with a transform or a stacking context of its own can hold the dialog beneath the "
+                    + "page.") { Pitfall = true },
+            ],
+            BeforeInteractive =
+            [
+                "No dialog opens until the page is interactive, because opening one takes a script. The buttons that "
+                    + "open them do nothing until then.",
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
@@ -3726,17 +3903,52 @@ public static class ExampleCatalog
             "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, and gives focus "
                 + "back when it goes.", typeof(FocusScopeExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when you build your own panel or overlay and need it to handle focus correctly.",
+            ],
+            WhenNotToUse =
+            [
+                "For a modal window, use a [dialog](components/dialog), since a focus scope doesn't make the page "
+                    + "behind inert or close on Escape.",
+                "For a panel beside a button, use a [popover](components/popover).",
+            ],
+            Related = ["dialog", "popover", "overlay"],
+            Sections =
+            [
+                new("trapping", "Trapping focus", "`Trapped` keeps Tab and Shift+Tab inside a focus scope and brings "
+                    + "focus back if it leaves. When scopes nest, only the newest trapped one traps.",
+                    typeof(FocusScopeExample)),
+                new("not-trapped", "Without a trap", "Without `Trapped`, a focus scope still moves focus in and gives "
+                    + "it back, and Tab moves on to the rest of the page.", typeof(FocusScopeOpenExample)),
+                new("first-focus", "Where focus goes first", "When a focus scope appears, focus moves to the element "
+                    + "marked `autofocus`, such as a field with `AutoFocus`, or else its first control, unless focus "
+                    + "is already inside. `AutoFocus=\"false\"` on the scope leaves focus where it is.",
+                    typeof(FocusScopeAutoFocusExample)),
+                new("giving-focus-back", "Giving focus back", "When a focus scope is removed, focus returns to where "
+                    + "it was, unless the user has moved it elsewhere. `RestoreFocus=\"false\"` leaves that to you, "
+                    + "for a panel whose closing moves focus on by itself.", typeof(FocusScopeRestoreExample)),
+            ],
             Api = [typeof(TbFocusScope)],
+            Keyboard =
+            [
+                new(["Tab", "Shift+Tab"], "Keeps focus inside the scope.") { When = "With `Trapped`" },
+            ],
             Accessibility =
             [
-                "When it appears, focus moves to the element marked `autofocus`, or else its first control, unless "
-                    + "focus is already inside. Turn this off with `AutoFocus=\"false\"`.",
-                "`Trapped` keeps Tab and Shift+Tab inside and brings focus back if it leaves. When scopes nest, only "
-                    + "the newest trapped one traps.",
-                "When it goes, focus returns to where it was, unless the user has moved it elsewhere.",
-                "It doesn't make the page behind inert or close on Escape; for a modal window, use a dialog.",
-                "Its options apply when it first renders; render it conditionally, as the example does, to start "
-                    + "it again.",
+                "A focus scope adds no role or name of its own, so give a panel a `role` and an `aria-label`, as these "
+                    + "examples do.",
+            ],
+            Notes =
+            [
+                new("A focus scope's options apply when it first renders, so render it conditionally, as these "
+                    + "examples do, to start it again."),
+            ],
+            BeforeInteractive =
+            [
+                "Its content renders in full. Focus doesn't move or stay inside until the page is interactive, because "
+                    + "a script does both.",
             ],
             Target = new("group", "Find a trail") { OpenedBy = new("button", "Find a trail") },
             Blocks = ["tb-focus-scope"],
@@ -3749,20 +3961,74 @@ public static class ExampleCatalog
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "
                 + "a click elsewhere.", typeof(PopoverExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a little content that opens beside its button and that people can work in, such as filters "
+                    + "or a share form.",
+            ],
+            WhenNotToUse =
+            [
+                "For a list of actions, use a [menu](components/menu).",
+                "For a short hint with nothing to press, use a [tooltip](components/tooltip).",
+                "For a decision people must make before going on, use a [dialog](components/dialog).",
+            ],
+            Related = ["menu", "tooltip", "dialog"],
+            Sections =
+            [
+                new("trigger", "The trigger", "`Label` is the text on a popover's trigger. `Icon` makes the trigger an "
+                    + "icon button, named by the label, and `Variant` and `Size` set how it looks.",
+                    typeof(PopoverExample)),
+                new("title", "Title", "`Title` adds a heading to the top of a popover's panel and names the panel for "
+                    + "screen readers. Without one, the trigger names it.", typeof(PopoverTitleExample)),
+                new("hover", "Opening on hover", "`OpenOnHover` also opens a popover when the pointer rests on its "
+                    + "trigger, without taking focus, and keeps it open while the pointer is over it. A click on the "
+                    + "trigger, or working in the panel, keeps it open after the pointer leaves, and resting on the "
+                    + "trigger doesn't open it over another popover that is already open.",
+                    typeof(PopoverHoverExample)),
+                new("opening-from-code", "Opening from code", "`@bind-Open` opens or closes a popover from code and "
+                    + "tells you when the user does. Here, the Apply button closes it, and a second button opens it.",
+                    typeof(PopoverOpenExample)),
+                new("placement", "Placement", "`Placement` picks the side a popover's panel opens on, and it flips to "
+                    + "the other side when there's no room. `Align` lines it up with the trigger. A panel too long for "
+                    + "the window opens on the side with more room and scrolls, so everything in it stays reachable.",
+                    typeof(PopoverPlacementExample)),
+                new("custom-trigger", "A custom trigger", "`Trigger` replaces a popover's button with your own. Put "
+                    + "`context.Attributes` on your button, which gives it the built-in trigger's behavior and "
+                    + "attributes.",
+                    typeof(PopoverTriggerExample)),
+                new("disabled", "Disabled", "`Disabled` turns off a popover's trigger, built in or custom, so neither "
+                    + "a click, the keyboard nor the pointer resting on it opens the panel.",
+                    typeof(PopoverDisabledExample)),
+            ],
             Api = [typeof(TbPopover), typeof(PopoverTrigger)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the panel and moves focus into it.") { When = "On the trigger" },
+                new(["Escape"], "Closes the panel, and focus goes back to the trigger if it was in the panel.")
+                {
+                    When = "While open",
+                },
+                new(["Tab"], "Closes the panel when focus moves past its last control.") { When = "While open" },
+            ],
+            Labeling =
+            [
+                "The panel is a non-modal `dialog`, named by its `Title`, or by the trigger without one.",
+            ],
+            Announcements =
+            [
+                "The trigger is a button with `aria-haspopup=\"dialog\"`, `aria-controls` and `aria-expanded`.",
+            ],
             Accessibility =
             [
-                "The trigger is a button with `aria-haspopup=\"dialog\"`, `aria-controls` and `aria-expanded`. The "
-                    + "panel is a non-modal `dialog`, named by its `Title`, or by the trigger without one.",
-                "Enter or Space on the trigger opens the panel and moves focus into it. Escape, a click elsewhere, or "
-                    + "Tab past its last control closes it, and focus goes back to the trigger if it was in the panel.",
-                "With `OpenOnHover`, the panel also opens when the pointer rests on the trigger, without taking focus, "
-                    + "and stays open while the pointer is over it (WCAG 1.4.13). Escape still closes it. A click on "
-                    + "the trigger, or working in the panel, keeps it open after the pointer leaves, and resting on "
-                    + "the trigger doesn't open it over another popover that is already open.",
-                "A custom `Trigger` gets the same attributes through `context.Attributes`; put them on a button. "
-                    + "`Disabled` turns either trigger off, so neither a click, the keyboard nor the pointer resting "
-                    + "on it opens the panel.",
+                "A click elsewhere closes the panel. Escape works on a panel opened by `OpenOnHover` too, as WCAG "
+                    + "1.4.13 asks.",
+            ],
+            BeforeInteractive =
+            [
+                "The trigger already opens the panel on click, Enter or Space, and Escape closes it. Until the page is "
+                    + "interactive, hover doesn't open it, focus doesn't move into it, and it shows at the corner of "
+                    + "the window rather than beside the button.",
             ],
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },
             Blocks = ["tb-popover"],
@@ -3780,17 +4046,53 @@ public static class ExampleCatalog
             "A scrim over the page or over one region, which blocks clicks behind it and can hold a message or a "
                 + "spinner in its center.", typeof(OverlayExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to cover the page or one region while something finishes, such as a card that's loading.",
+            ],
+            WhenNotToUse =
+            [
+                "For a message that needs an answer, use a [dialog](components/dialog), which moves focus and traps "
+                    + "it.",
+                "For content that's loading into a known shape, use a [skeleton](components/skeleton).",
+            ],
+            Related = ["dialog", "progress", "focus-scope"],
+            Sections =
+            [
+                new("page", "Over the page", "An overlay covers the whole page, with `ChildContent` in its center. "
+                    + "`CloseOnClick` closes it on a click outside that content, and `LockScroll` stops the page from "
+                    + "scrolling behind it.", typeof(OverlayExample)),
+                new("contained", "Over one region", "`Contained` covers only the overlay's nearest positioned parent, "
+                    + "here a card with `position: relative`, and `Blur` blurs what's behind it.",
+                    typeof(OverlayContainedExample)),
+                new("catching-clicks", "Catching clicks", "`Transparent` hides an overlay's scrim, so the overlay only "
+                    + "catches clicks, and `OnClick` reports them. It has no `Blocking` here, so while the map is "
+                    + "locked Tab still reaches the Zoom in button.", typeof(OverlayClickExample)),
+            ],
             Api = [typeof(TbOverlay)],
-            Accessibility =
+            Keyboard =
+            [
+                new(["Escape"], "Closes the overlay, unless a menu or popover above it takes the key first.")
+                {
+                    When = "With `CloseOnClick`",
+                },
+            ],
+            Announcements =
             [
                 "The scrim is hidden from screen readers; the content in its center is read as usual.",
-                "It blocks the pointer. With `Blocking`, which both examples here set, it blocks the keyboard and "
-                    + "screen readers too: what it covers turns inert while it shows, so Tab can't reach controls "
-                    + "behind it, and if focus was behind it, it goes back there when the overlay closes. Dialogs "
-                    + "opened through `IDialogService`, toasts and announcements stay usable; content added beside it "
-                    + "after it opens isn't blocked.",
-                "With `CloseOnClick`, Escape closes it too, unless a menu or popover above it takes the key first.",
-                "For a message that needs an answer, use a dialog, which moves focus and traps it.",
+            ],
+            Accessibility =
+            [
+                "An overlay blocks the pointer. With `Blocking`, it blocks the keyboard and screen readers too: what "
+                    + "it covers turns inert while it shows, so Tab can't reach controls behind it, and if focus was "
+                    + "behind it, it goes back there when the overlay closes. Dialogs opened through `IDialogService`, "
+                    + "toasts and announcements stay usable; content added beside it after it opens isn't blocked.",
+            ],
+            BeforeInteractive =
+            [
+                "An overlay with `Visible` already shows and catches the pointer. `Blocking`, `CloseOnClick` and "
+                    + "Escape start working once the page is interactive.",
             ],
             Target = null,
             Blocks = ["tb-overlay"],

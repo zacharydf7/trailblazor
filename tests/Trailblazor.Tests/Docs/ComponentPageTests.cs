@@ -34,16 +34,17 @@ public class ComponentPageTests : DocsTest
     }
 
     [Fact]
-    public async Task ComponentPage_ShouldShowEveryFileOfTheExample_WhenItHasMoreThanOne()
+    public void ComponentPage_ShouldShowEveryFileOfTheExample_WhenItHasMoreThanOne()
     {
         var cut = ComponentPage("dialog");
+        cut.Find("button[aria-controls='code-opening']").Click();
 
         Assert.Contains("ShowAsync<RenameDialog, string>",
-            cut.Find("#code-example [role=region][aria-label='DialogExample.razor']").TextContent);
-        await cut.Tb().Tabs("Files").SelectAsync("RenameDialog.razor");
+            cut.Find("#code-opening [role=region][aria-label='DialogExample.razor']").TextContent);
+        cut.FindAll("#code-opening [role=tab]").Single(tab => tab.TextContent.Trim() == "RenameDialog.razor").Click();
 
         cut.WaitForAssertion(() => Assert.Contains("TbDialogContent<string>",
-            cut.Find("#code-example [role=region][aria-label='RenameDialog.razor']").TextContent));
+            cut.Find("#code-opening [role=region][aria-label='RenameDialog.razor']").TextContent));
     }
 
     [Fact]

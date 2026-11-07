@@ -1,0 +1,33 @@
+<TbStack Row Gap="2" Wrap>
+    <TbButton OnClick="() => _panel = Panel.Marked">Focus the marked field</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _panel = Panel.Unmoved">Leave focus where it is</TbButton>
+</TbStack>
+
+@if (_panel == Panel.Marked)
+{
+    <TbFocusScope role="group" aria-label="Your name" class="tb-mt-3">
+        <TbSurface Outlined class="tb-p-4">
+            <TbTextField Label="First name" @bind-Value="_first" />
+            <TbTextField Label="Last name" @bind-Value="_last" AutoFocus />
+            <TbButton Class="tb-mt-3" OnClick="() => _panel = Panel.None">Done</TbButton>
+        </TbSurface>
+    </TbFocusScope>
+}
+else if (_panel == Panel.Unmoved)
+{
+    <TbFocusScope AutoFocus="false" role="group" aria-label="Your town" class="tb-mt-3">
+        <TbSurface Outlined class="tb-p-4">
+            <TbTextField Label="Town" @bind-Value="_town" />
+            <TbButton Class="tb-mt-3" OnClick="() => _panel = Panel.None">Done</TbButton>
+        </TbSurface>
+    </TbFocusScope>
+}
+
+@code {
+    private enum Panel { None, Marked, Unmoved }
+
+    private Panel _panel;
+    private string? _first;
+    private string? _last;
+    private string? _town;
+}

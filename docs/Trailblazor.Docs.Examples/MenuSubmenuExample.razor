@@ -1,0 +1,15 @@
+<TbStack Row Gap="4" Align="Align.Center">
+    <TbMenu Label="More options" Icon="ExampleIcons.Plus">
+        <TbMenuItem OnClick="@(() => _last = "Export")">Export</TbMenuItem>
+        <TbMenuItem OnClick="@(() => _last = "Print")">Print</TbMenuItem>
+        <TbSubMenu Label="Share">
+            <TbMenuItem OnClick="@(() => _last = "Email")">Email</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Copy link")">Copy link</TbMenuItem>
+        </TbSubMenu>
+    </TbMenu>
+    <output aria-label="Last option">@_last</output>
+</TbStack>
+
+@code {
+    private string _last = "";
+}

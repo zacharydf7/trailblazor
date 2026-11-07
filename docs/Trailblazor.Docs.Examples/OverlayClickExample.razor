@@ -1,0 +1,14 @@
+<TbStack>
+    <TbSurface Outlined class="tb-p-6" style="position: relative">
+        <TbText>Lock the map, then click anywhere on this card.</TbText>
+        <TbButton Variant="Variant.Text">Zoom in</TbButton>
+        <TbOverlay Visible="_locked" Contained Transparent OnClick="() => _clicks++" />
+    </TbSurface>
+    <TbSwitch Label="Lock the map" @bind-Value="_locked" />
+    <output aria-label="Clicks on the overlay">Clicks caught: @_clicks</output>
+</TbStack>
+
+@code {
+    private bool _locked;
+    private int _clicks;
+}

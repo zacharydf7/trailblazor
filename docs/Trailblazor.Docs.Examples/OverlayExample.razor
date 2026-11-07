@@ -1,26 +1,10 @@
-<TbStack>
-    <TbStack Row Gap="2" Wrap>
-        <TbButton OnClick="() => _page = true">Show page overlay</TbButton>
-        <TbButton Variant="Variant.Outlined" OnClick="() => _loading = !_loading">
-            @(_loading ? "Finish loading" : "Load the report")
-        </TbButton>
-    </TbStack>
-    <TbSurface Outlined style="position: relative; padding: var(--tb-space-6)" data-testid="report">
-        <TbText TextStyle="TextStyle.Subtitle">Quarterly report</TbText>
-        <TbText>Revenue grew in every region this quarter.</TbText>
-        <TbButton Variant="Variant.Text">Open the details</TbButton>
-        <TbOverlay Visible="_loading" Contained Blur Blocking>
-            <TbProgress Circular AriaLabel="Loading the report" />
-        </TbOverlay>
+<TbButton OnClick="() => _shown = true">Show page overlay</TbButton>
+<TbOverlay @bind-Visible="_shown" CloseOnClick LockScroll Blocking>
+    <TbSurface class="tb-p-6">
+        <TbText>Click outside this box, or press Escape, to close the overlay.</TbText>
     </TbSurface>
-    <TbOverlay @bind-Visible="_page" CloseOnClick LockScroll Blocking>
-        <TbSurface style="padding: var(--tb-space-6)">
-            <TbText>Click outside this box, or press Escape, to close the overlay.</TbText>
-        </TbSurface>
-    </TbOverlay>
-</TbStack>
+</TbOverlay>
 
 @code {
-    private bool _page;
-    private bool _loading;
+    private bool _shown;
 }

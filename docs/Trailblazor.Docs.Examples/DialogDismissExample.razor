@@ -1,0 +1,35 @@
+@inject IDialogService Dialogs
+
+<TbStack Row Gap="2" Wrap>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _required = true">Require an answer</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _asking = true">Ask before closing</TbButton>
+</TbStack>
+
+<TbDialog @bind-Open="_required" Title="Accept the trail rules"
+          Options="new() { DismissOnEscape = false, DismissOnBackdrop = false, CloseButton = false }">
+    <TbText>Escape and the backdrop do nothing here, so only the button closes this dialog.</TbText>
+    <TbDialogActions><TbButton OnClick="() => _required = false">Accept</TbButton></TbDialogActions>
+</TbDialog>
+<TbDialog @bind-Open="_asking" Title="Write a trail note" CanDismiss="CanDismissAsync">
+    <TbTextField Label="Trail note" @bind-Value="_note" UpdateOnInput />
+    <TbDialogActions><TbButton OnClick="() => _asking = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+
+@code {
+    private bool _required;
+    private bool _asking;
+    private string? _note;
+
+    private async Task<bool> CanDismissAsync(DialogDismissReason reason)
+    {
+        if (string.IsNullOrEmpty(_note))
+        {
+            return true;
+        }
+
+        var discard = await Dialogs.ConfirmAsync("Discard the note?", "It hasn't been saved.", "Discard",
+            "Keep writing", Tone.Danger);
+        _note = discard ? null : _note;
+        return discard;
+    }
+}

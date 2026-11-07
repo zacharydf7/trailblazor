@@ -1,0 +1,10 @@
+<TbStack Row Gap="4" Align="Align.Center" Wrap>
+    <TbTooltip Text="Delete the selection" Disabled="!_hints">
+        <TbIconButton Icon="ExampleIcons.Trash" AriaLabel="Delete" />
+    </TbTooltip>
+    <TbSwitch Label="Show hints" @bind-Value="_hints" />
+</TbStack>
+
+@code {
+    private bool _hints = true;
+}

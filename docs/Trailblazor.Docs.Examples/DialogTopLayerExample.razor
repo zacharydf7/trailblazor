@@ -1,0 +1,10 @@
+<TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Open on the page</TbButton>
+
+<TbDialog @bind-Open="_open" Title="A dialog on the page" Options="new() { TopLayer = false }">
+    <TbText>This dialog stays on the page, so popups another library adds to the body open above it.</TbText>
+    <TbDialogActions><TbButton OnClick="() => _open = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+
+@code {
+    private bool _open;
+}

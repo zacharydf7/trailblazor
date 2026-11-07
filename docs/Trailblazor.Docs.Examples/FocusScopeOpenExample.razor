@@ -1,0 +1,19 @@
+<TbButton OnClick="() => _open = true" aria-expanded="@(_open ? "true" : "false")">Edit the note</TbButton>
+
+@if (_open)
+{
+    @* Not trapped, so Tab moves on from the panel to the rest of the page. *@
+    <TbFocusScope role="group" aria-label="Note" class="tb-mt-3">
+        <TbSurface Outlined class="tb-p-4">
+            <TbStack Gap="3">
+                <TbTextField Label="Note" @bind-Value="_note" />
+                <TbButton OnClick="() => _open = false">Done</TbButton>
+            </TbStack>
+        </TbSurface>
+    </TbFocusScope>
+}
+
+@code {
+    private bool _open;
+    private string? _note;
+}

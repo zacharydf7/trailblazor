@@ -1,0 +1,23 @@
+<TbStack Row Gap="2" Wrap>
+    @foreach (var position in Enum.GetValues<DialogPosition>())
+    {
+        <TbButton Variant="Variant.Outlined" OnClick="() => Show(position)">@position</TbButton>
+    }
+</TbStack>
+
+<TbDialog @bind-Open="_open" Title="@($"A dialog at {_position}")" Options="new() { Position = _position }">
+    <TbText>The dialog keeps a small gap from the window's edge.</TbText>
+    <TbDialogActions>
+        <TbButton OnClick="() => _open = false">Done</TbButton>
+    </TbDialogActions>
+</TbDialog>
+
+@code {
+    private DialogPosition _position;
+    private bool _open;
+
+    private void Show(DialogPosition position)
+    {
+        (_position, _open) = (position, true);
+    }
+}

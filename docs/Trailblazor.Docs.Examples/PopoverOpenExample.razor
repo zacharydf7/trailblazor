@@ -1,0 +1,17 @@
+<TbStack Row Gap="4" Align="Align.Center" Wrap>
+    <TbPopover Label="Filters" Title="Filter the report" @bind-Open="_filtersOpen">
+        <TbStack Gap="3">
+            <TbCheckbox TValue="bool" Label="Only open items" @bind-Value="_onlyOpen" />
+            <TbCheckbox TValue="bool" Label="Include archived" @bind-Value="_archived" />
+            <TbButton OnClick="() => _filtersOpen = false">Apply</TbButton>
+        </TbStack>
+    </TbPopover>
+    <TbButton Variant="Variant.Text" OnClick="() => _filtersOpen = true">Show filter options</TbButton>
+    <output aria-label="Filter state">@(_onlyOpen ? "Open items" : "All items")</output>
+</TbStack>
+
+@code {
+    private bool _filtersOpen;
+    private bool _onlyOpen;
+    private bool _archived;
+}

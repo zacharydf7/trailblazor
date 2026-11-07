@@ -110,6 +110,81 @@ public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStartOnTheSafeChoice_WhenAButtonIsMarkedAutofocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Start at the safe choice" }).ClickAsync();
+
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Discard the draft?" });
+        await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Keep the draft" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStartOnItsFirstButton_WhenConfirming(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Delete report" }).ClickAsync();
+
+        var dialog = page.GetByRole(AriaRole.Alertdialog, new() { Name = "Delete report?" });
+        await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldScrollItsBodyAndKeepItsHeaderInView_WhenItsContentIsLong(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Read the trail rules" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail rules" });
+        var close = dialog.GetByRole(AriaRole.Button, new() { Name = "Close" });
+        var done = dialog.GetByRole(AriaRole.Button, new() { Name = "Done" });
+        await Expect(close).ToBeInViewportAsync();
+        await Expect(done).Not.ToBeInViewportAsync();
+
+        await done.ScrollIntoViewIfNeededAsync();
+
+        await Expect(done).ToBeInViewportAsync();
+        await Expect(close).ToBeInViewportAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStayOpenWithItsErrorThenClose_WhenSavingFailsThenSucceeds(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Book the hut" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Book the hut" });
+        var book = dialog.GetByRole(AriaRole.Button, new() { Name = "Book", Exact = true });
+
+        await book.ClickAsync();
+        await Expect(dialog.GetByRole(AriaRole.Alert).Filter(new() { HasText = "Try again" })).ToBeVisibleAsync();
+        await Expect(dialog.GetByLabel("Guest name")).ToHaveValueAsync("Ada Lovelace");
+        await book.ClickAsync();
+
+        await Expect(dialog).ToBeHiddenAsync();
+        await Expect(page.GetByText("Booked for Ada Lovelace")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldAskFirstOnlyAfterSomethingIsWritten_WhenEscapeIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        var open = page.GetByRole(AriaRole.Button, new() { Name = "Ask before closing" });
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Write a trail note" });
+
+        await open.ClickAsync();
+        await dialog.GetByLabel("Trail note").FocusAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(dialog).ToBeHiddenAsync();
+
+        await open.ClickAsync();
+        await dialog.GetByLabel("Trail note").PressSequentiallyAsync("Muddy");
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Alertdialog, new() { Name = "Discard the note?" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFadeOutWhileStillOpen_WhenItCloses(string browser)
     {
         var page = await OpenAsync(browser, "/examples/dialog");
