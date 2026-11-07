@@ -19,7 +19,8 @@ Nothing of its own. It is a native table with no keys, and links or buttons writ
 ## Focus
 
 - [x] The table itself takes no focus. `TbTable.razor`
-- [ ] A link or button in a row scrolls clear of a sticky header when it takes focus. #320
+- [x] A link or button in a row scrolls clear of a sticky header when it takes focus, at any `Size` and wherever `--tb-table-sticky-top` puts it. `TableTests.Table_ShouldScrollAFocusedLinkClearOfTheHeader_WhenItLandsBehindIt`
+- [x] Items in a row's menu get no room for the header, since the menu scrolls on its own. `TableTests.Table_ShouldLeaveAMenusItemsOutOfTheHeadersRoom_WhenARowHoldsAMenu`
 
 ## Not applicable
 

@@ -18,6 +18,13 @@
     initial-value: 0px;
 }
 
+/* Registered so a bare 0 still adds in the table's calc. */
+@property --tb-table-sticky-top {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+}
+
 /* Unlayered consumer CSS beats every rule in these layers, whatever its specificity. */
 @layer tb.reset, tb.tokens, tb.themes, tb.components, tb.utilities;
 
@@ -4758,6 +4765,14 @@
         position: sticky;
         inset-block-start: var(--tb-table-sticky-top, 0);
         z-index: 1;
+    }
+
+    /* Leaves room for a one-row header at its tallest, in a large table, so a focused control stops below it at any
+       size. Controls in a popover or dialog scroll inside it, where the header isn't in the way. */
+    .tb-table--sticky-header tbody :is(a[href], button, input, select, textarea, summary, [contenteditable],
+        [tabindex]):not([popover] *, dialog *) {
+        scroll-margin-block-start: calc(var(--tb-table-sticky-top)
+            + var(--tb-table-row-height, var(--tb-row-height)) + 0.5rem);
     }
 
     .tb-data-grid__header--center,

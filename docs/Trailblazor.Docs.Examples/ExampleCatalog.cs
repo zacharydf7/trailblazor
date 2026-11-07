@@ -4979,6 +4979,8 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "Screen readers read each cell with its headers, from the `<th>`s and their `scope`.",
+                "With `StickyHeader`, a control in a row scrolls clear of the header when it takes focus. A header "
+                    + "taller than one row needs a larger `scroll-margin-block-start` on those controls.",
             ],
             AppDuties =
             [

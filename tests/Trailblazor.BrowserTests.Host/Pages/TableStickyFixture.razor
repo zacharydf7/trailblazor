@@ -1,0 +1,49 @@
+@page "/table-sticky"
+
+@* Rows of links in scrolling boxes: under a sticky header, under one with a bare 0 offset, and under a large one offset
+   as if below an app bar. *@
+<div data-testid="plain" style="block-size: 10rem; overflow: auto">
+    <TbTable aria-label="Plain" StickyHeader>
+        <thead><tr><th scope="col">Trail</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>
+                    <TbMenu>
+                        <Trigger><TbButton @attributes="context.Attributes">Actions</TbButton></Trigger>
+                        <ChildContent><TbMenuItem>Rename</TbMenuItem></ChildContent>
+                    </TbMenu>
+                </td>
+            </tr>
+            @foreach (var row in Rows)
+            {
+                <tr><td><a href="table-sticky#plain-@row">Plain @row</a></td></tr>
+            }
+        </tbody>
+    </TbTable>
+</div>
+<div data-testid="zero" style="block-size: 10rem; overflow: auto; --tb-table-sticky-top: 0">
+    <TbTable aria-label="Zero" StickyHeader>
+        <thead><tr><th scope="col">Trail</th></tr></thead>
+        <tbody>
+            @foreach (var row in Rows)
+            {
+                <tr><td><a href="table-sticky#zero-@row">Zero @row</a></td></tr>
+            }
+        </tbody>
+    </TbTable>
+</div>
+<div data-testid="large" style="block-size: 12rem; overflow: auto; --tb-table-sticky-top: 16px">
+    <TbTable aria-label="Large" StickyHeader Size="Size.Large">
+        <thead><tr><th scope="col">Trail</th></tr></thead>
+        <tbody>
+            @foreach (var row in Rows)
+            {
+                <tr><td><a href="table-sticky#large-@row">Large @row</a></td></tr>
+            }
+        </tbody>
+    </TbTable>
+</div>
+
+@code {
+    private static readonly int[] Rows = [.. Enumerable.Range(1, 30)];
+}
