@@ -3841,7 +3841,8 @@ public static class ExampleCatalog
             [
                 "A modal dialog makes the rest of the page inert, so focus and screen readers stay inside; a non-modal "
                     + "one leaves the page usable.",
-                "A click that starts and ends on the backdrop cancels a modal.",
+                "A click that starts and ends on the backdrop cancels a modal. `ConfirmAsync` and `AlertAsync` dialogs "
+                    + "ignore it, so a stray click can't answer them.",
                 "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
                     + "starts to fade out, the page takes input again and focus goes back to its opener, unless focus "
                     + "had already left the dialog.",

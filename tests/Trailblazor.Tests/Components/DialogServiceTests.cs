@@ -61,8 +61,18 @@ public class DialogServiceTests : BunitContext
         Services.Configure<TrailblazorOptions>(options => options.Dialogs.DismissOnBackdrop = false);
 
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting", options: new() { Size = DialogSize.Large });
-        _ = Dialogs.ConfirmAsync("Delete?", "This can't be undone.");
 
+        var dialog = Assert.Single(Dialogs.OpenDialogs);
+        Assert.Equal((false, true), (dialog.Options.DismissOnBackdrop, dialog.Options.DismissOnEscape));
+    }
+
+    [Fact]
+    public void ConfirmAndAlert_ShouldStayOpenOnABackdropClickButTakeEscape_WhenTheAppKeepsTheDefaults()
+    {
+        _ = Dialogs.ConfirmAsync("Delete?", "This can't be undone.");
+        _ = Dialogs.AlertAsync("Saved", "Your report was saved.");
+
+        Assert.Equal(2, Dialogs.OpenDialogs.Count);
         Assert.All(Dialogs.OpenDialogs, dialog => Assert.Equal((false, true),
             (dialog.Options.DismissOnBackdrop, dialog.Options.DismissOnEscape)));
     }

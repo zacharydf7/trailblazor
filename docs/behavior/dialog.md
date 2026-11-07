@@ -23,7 +23,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] A drag from a field that ends over the backdrop leaves the dialog open. `DialogTests.Dialog_ShouldStayOpen_WhenADragFromAFieldEndsOverTheBackdrop`
 - [x] The close button cancels. `DialogServiceTests.CloseButton_ShouldCancelTheDialog_WhenClicked`
 - [x] Escape, the backdrop and the close button can ask before discarding work. `DialogExtrasTests.Dialog_ShouldAskBeforeDiscardingTheNewName_WhenEscapeTheBackdropCancelOrTheCloseButtonLeaveIt`
-- [ ] A click outside a `ConfirmAsync` or `AlertAsync` dialog doesn't answer it. #329
+- [x] A click outside a `ConfirmAsync` or `AlertAsync` dialog doesn't answer it. `DialogServiceTests.ConfirmAndAlert_ShouldStayOpenOnABackdropClickButTakeEscape_WhenTheAppKeepsTheDefaults`
 - [x] The page behind a modal can't scroll. `DialogTests.Dialog_ShouldLockPageScroll_WhenModal`
 - [ ] The page doesn't shift sideways as a modal removes its scrollbar. #301
 - [x] The page stays usable behind a non-modal dialog. `DialogTests.Dialog_ShouldLeaveThePageUsable_WhenNotModal`

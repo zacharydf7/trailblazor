@@ -92,8 +92,9 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.CancelText)] = cancelText ?? localizer[TbStrings.DialogCancel],
             [nameof(ConfirmDialog.Tone)] = tone,
         };
+        // A click that misses the dialog shouldn't answer it.
         return Open<bool>(title, typeof(ConfirmDialog), parameters,
-            new() { Size = DialogSize.Small, TelemetryName = telemetryName }, isAlert: true);
+            new() { Size = DialogSize.Small, DismissOnBackdrop = false, TelemetryName = telemetryName }, isAlert: true);
     }
 
     internal DialogReference<bool> OpenAlert(string title, string message, string? okText, Tone tone,
@@ -106,8 +107,9 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.Tone)] = tone,
             [nameof(ConfirmDialog.ShowIcon)] = true,
         };
+        // A click that misses the dialog shouldn't answer it.
         return Open<bool>(title, typeof(ConfirmDialog), parameters,
-            new() { Size = DialogSize.Small, TelemetryName = telemetryName }, isAlert: true);
+            new() { Size = DialogSize.Small, DismissOnBackdrop = false, TelemetryName = telemetryName }, isAlert: true);
     }
 
     public async Task CloseAllAsync()
