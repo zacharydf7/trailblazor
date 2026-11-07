@@ -115,6 +115,28 @@ public class TbToggleGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowATooltipOnlyOnTheIconOnlyItem_WhenGivenBothKinds()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters
+            .Add(group => group.AriaLabel, "Map view")
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbToggleItem<string>>(0);
+                builder.AddAttribute(1, nameof(TbToggleItem<string>.Value), "Alerts");
+                builder.AddAttribute(2, nameof(TbToggleItem<string>.Icon), (Icon?)Square);
+                builder.AddAttribute(3, nameof(TbToggleItem<string>.AriaLabel), "Alerts");
+                builder.CloseComponent();
+                builder.OpenComponent<TbToggleItem<string>>(4);
+                builder.AddAttribute(5, nameof(TbToggleItem<string>.Value), "Map");
+                builder.AddAttribute(6, nameof(TbToggleItem<string>.Icon), (Icon?)Square);
+                builder.AddAttribute(7, nameof(TbToggleItem<string>.ChildContent), (RenderFragment)(text => text.AddContent(0, "Map")));
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal("Alerts", Assert.Single(cut.FindAll("[role=tooltip]")).TextContent.Trim());
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenAClearableGroupsValueTypeIsNotNullable()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbToggleGroup<DayOfWeek>>(parameters => parameters

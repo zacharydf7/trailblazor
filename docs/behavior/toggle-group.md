@@ -24,8 +24,9 @@ Familiar apps: Word's text alignment and its bold, italic and underline buttons
 - [x] Clicking the pressed item clears a clearable group. `ToggleGroupTests.ToggleGroup_ShouldClearThePressedItem_WhenItIsPressedAgainInAClearableGroup`
 - [x] Clicks add and remove items in a multiple-selection group. `TbToggleGroupTests.Click_ShouldAddAndRemoveItems_WhenAMultipleGroupsItemsAreClicked`
 - [x] A disabled group's items ignore clicks. `TbToggleGroupTests.Render_ShouldTurnEveryItemOff_WhenTheGroupIsDisabled`
-- [ ] A hovered item that isn't pressed looks different from a pressed one, so turning an item off shows at once under the pointer. #310
-- [ ] Hover shows the name of an item that has only an icon. #310
+- [x] A hovered item that isn't pressed looks different from a pressed one, so turning an item off shows at once under the pointer. `ToggleItemsTests.Item_ShouldLookDifferentFromAPressedOne_WhenItIsHovered`, `ToggleItemsTests.Item_ShouldShowItTurnedOff_WhenClickedWithThePointerStillOnIt`
+- [x] Hover shows the name of an item that has only an icon. `ToggleItemsTests.Item_ShouldShowItsName_WhenAnIconOnlyItemIsHovered`
+- [x] Icon-only items stay joined, and a pressed one stays lifted, even though each is wrapped in a tooltip. `ToggleItemsTests.Item_ShouldStayJoinedToItsNeighbors_WhenInARow`, `ToggleItemsTests.Item_ShouldStayJoinedToItsNeighbors_WhenInAColumn`, `ToggleItemsTests.Item_ShouldLiftAPressedOneOverItsNeighbors_WhenJoined`
 
 ## Touch
 
@@ -37,8 +38,8 @@ Familiar apps: Word's text alignment and its bold, italic and underline buttons
 - [x] The tab stop stays on the last focused item when focus leaves and comes back. `ToggleGroupTests.ToggleGroup_ShouldKeepTheTabStopOnTheLastFocusedItem_WhenFocusLeavesAndComesBack`
 - [x] A click moves the tab stop to the clicked item. `roving-focus.js`
 - [x] Until focus has been inside the group, the tab stop follows a value set from code. `roving-focus.js`
-- [x] A focused item is lifted over its neighbors, so all of its ring shows. `trailblazor.css`
-- [ ] Keyboard focus shows the name of an item that has only an icon. #310
+- [x] A focused item is lifted over its neighbors, so all of its ring shows. `ToggleItemsTests.Item_ShouldLiftAFocusedOneOverItsNeighbors_WhenJoined`
+- [x] Keyboard focus shows the name of an item that has only an icon. `ToggleItemsTests.Item_ShouldShowItsName_WhenTheKeysMoveFocusToAnIconOnlyItem`
 
 ## Not applicable
 

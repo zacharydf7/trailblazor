@@ -17,8 +17,7 @@ Familiar apps: the Light, Dark and System choice in GitHub's appearance settings
 - [x] Clicking the pressed choice keeps it, so one always stays picked. `TbThemePicker.razor`
 - [x] The device's setting, once picked, follows the device as it changes. `trailblazor.css`
 - [x] The picker follows a mode set elsewhere through `IThemeService`. `TbThemePicker.razor`
-- [ ] A hovered choice looks different from the pressed one. #310
-- [ ] Hover shows each choice's name. #310
+- [x] A hovered choice looks different from the pressed one, and hover shows its name. `ToggleItemsTests.ThemePicker_ShouldShowAChoicesNameAndTellItFromThePressedOne_WhenHovered`
 
 ## Touch
 
@@ -29,7 +28,7 @@ Familiar apps: the Light, Dark and System choice in GitHub's appearance settings
 - [x] Nothing is pressed until the picker has read the page. `TbThemePickerTests.Render_ShouldPressNothing_WhenItHasNotReadThePageYet`
 - [x] Once read, the remembered mode is pressed. `TbThemePickerTests.Click_ShouldPressTheLoadedModeThenSetTheOnePressed_WhenInteractive`
 - [x] Focus stays on the chosen item after a pick. `TbThemePicker.razor`
-- [ ] Keyboard focus shows each choice's name. #310
+- [x] Keyboard focus shows a choice's name. `ToggleItemsTests.ThemePicker_ShouldShowTheNextChoicesName_WhenTheKeysMoveFocus`
 
 ## Not applicable
 

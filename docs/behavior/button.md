@@ -26,7 +26,7 @@ Familiar apps: the buttons in any native dialog, Gmail's and GitHub's action but
 - [x] Ctrl+click and middle-click open a button with an `Href` in a new tab. `TbButtonBase.razor`
 - [x] A disabled link has no address to follow. `TbButtonTests.Render_ShouldDropTheAddressButKeepTheLinkRole_WhenALinkIsDisabled`
 - [x] A loading link ignores clicks. `TbButtonTests.Click_ShouldIgnoreTheClick_WhenALinkIsLoading`
-- [ ] Turning an outlined toggle off shows at once, while the pointer is still on it. #310
+- [x] Turning an outlined toggle off shows at once, while the pointer is still on it. `ToggleItemsTests.Item_ShouldShowItTurnedOff_WhenClickedWithThePointerStillOnIt`
 
 ## Touch
 

@@ -751,7 +751,8 @@ public static class ExampleCatalog
             Labeling =
             [
                 "A `group` named by its required `AriaLabel`. An item with only an icon needs an `AriaLabel` of its "
-                    + "own. A blank label on either throws when it renders.",
+                    + "own, which also shows in a tooltip on hover and keyboard focus. A blank label on either throws "
+                    + "when it renders.",
             ],
             Announcements =
             [
@@ -778,7 +779,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
-                + "`data-ready` attribute before testing the arrow keys.",
+                + "`data-ready` attribute before testing the arrow keys. Focusing an icon-only item shows a `tooltip` "
+                + "role with its name.",
             Telemetry =
             [
                 "With a `TelemetryName` on an item, such as `\"view-as-list\"`, the item counts "
@@ -840,7 +842,8 @@ public static class ExampleCatalog
             Blocks = ["tb-toggle-group", "tb-button"],
             TestingTip = "Pick a mode with `GetByRole(AriaRole.Button, new() { Name = \"Dark\" })`, and check the "
                 + "page with `ToHaveAttributeAsync(\"data-tb-theme\", \"dark\")` on `html`. A test that needs one "
-                + "theme can set `data-tb-theme` on `html` itself.",
+                + "theme can set `data-tb-theme` on `html` itself. Focusing a choice shows a `tooltip` role with its "
+                + "name.",
         },
         new("toolbar", "Toolbar", ExampleCategory.Actions,
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
