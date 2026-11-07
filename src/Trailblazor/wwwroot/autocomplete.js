@@ -11,6 +11,7 @@ export function createAutocomplete(input, listbox, events) {
     const control = input.closest('[data-part="control"]') ?? input.parentElement;
     let position = null;
     let active = null;
+    let pressedOutside = false;
 
     const isOpen = () => listbox.matches(':popover-open');
     const choosable = '[role="option"]:not([aria-disabled="true"])';
@@ -34,6 +35,9 @@ export function createAutocomplete(input, listbox, events) {
         }
 
         listbox.showPopover();
+        document.addEventListener('pointerdown', onDocumentPointerDown, true);
+        document.addEventListener('click', onDocumentClick, true);
+        document.addEventListener('keydown', onDocumentKeyDown, true);
         position = createAnchoredPosition(listbox, control, { side: 'Bottom', align: 'Start', offset: 4 });
         input.setAttribute('aria-expanded', 'true');
         events.invokeMethodAsync('OnToggle', true);
@@ -47,6 +51,7 @@ export function createAutocomplete(input, listbox, events) {
         }
 
         listbox.hidePopover();
+        stopListening();
         position?.dispose();
         position = null;
         setActive(null);
@@ -68,6 +73,11 @@ export function createAutocomplete(input, listbox, events) {
         open(false);
     };
     const onKeyDown = event => {
+        // The list can still hold results from before the field turned read-only, and the keys must not reach them.
+        if (input.readOnly) {
+            return;
+        }
+
         switch (event.key) {
             case 'ArrowDown':
                 if (!isOpen()) {
@@ -95,18 +105,35 @@ export function createAutocomplete(input, listbox, events) {
 
                 active.click();
                 break;
-            case 'Escape':
-                if (!isOpen()) {
-                    return;
-                }
-
-                close();
-                break;
             default:
                 return;
         }
 
         event.preventDefault();
+    };
+    // Focus may never have reached the field when code opens the list, so closing can't rely on the field's events.
+    // Judge a click by where its press began: a drag out of the field fires the click on an ancestor of the field.
+    const onDocumentPointerDown = event => {
+        pressedOutside = event.target !== input && !listbox.contains(event.target);
+    };
+    // Waits for the click's own handlers, so a button that toggles the list doesn't see it closed and reopen it.
+    const onDocumentClick = () => {
+        if (pressedOutside) {
+            setTimeout(close);
+        }
+    };
+    // Added only while the list is open, so Escape on a closed list reaches what surrounds it, such as a dialog.
+    const onDocumentKeyDown = event => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            close();
+        }
+    };
+    const stopListening = () => {
+        document.removeEventListener('pointerdown', onDocumentPointerDown, true);
+        document.removeEventListener('click', onDocumentClick, true);
+        pressedOutside = false;
+        document.removeEventListener('keydown', onDocumentKeyDown, true);
     };
     const onFocusOut = event => {
         if (!listbox.contains(event.relatedTarget)) {
@@ -156,6 +183,7 @@ export function createAutocomplete(input, listbox, events) {
         },
         dispose() {
             close();
+            stopListening();
             observer.disconnect();
             input.removeEventListener('input', onInput);
             input.removeEventListener('keydown', onKeyDown);

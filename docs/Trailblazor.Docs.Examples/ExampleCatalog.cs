@@ -2931,8 +2931,9 @@ public static class ExampleCatalog
                 new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
                     + "Until your app clears it, the form won't submit, so clear it when the value changes.",
                     typeof(AutocompleteErrorExample)),
-                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the list closed and hides the "
-                    + "clear button. `Disabled` takes the field out of the tab order and the post.",
+                new("read-only-and-disabled", "Read-only and disabled", "A `ReadOnly` field won't open its list or let the "
+                    + "user change the value, and hides the clear button. "
+                    + "`Disabled` takes the field out of the tab order and the post.",
                     typeof(AutocompleteStatesExample)),
                 new("size-and-variant", "Size and variant", "`Variant` is `Outlined` or `Filled`, and `Size` is "
                     + "`Small`, `Medium` or `Large`.", typeof(AutocompleteSizeExample)),
@@ -2953,7 +2954,7 @@ public static class ExampleCatalog
                 new(["Down", "Up"], "Moves to the next or previous suggestion.") { When = "While open" },
                 new(["Enter"], "Chooses the active suggestion. With none active, closes the list and does what Enter "
                     + "does while closed.") { When = "While open" },
-                new(["Escape"], "Closes the list.") { When = "While open" },
+                new(["Escape"], "Closes the list, wherever focus is.") { When = "While open" },
             ],
             Labeling =
             [

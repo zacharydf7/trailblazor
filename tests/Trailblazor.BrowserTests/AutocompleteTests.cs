@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -13,6 +14,130 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Field(page, "Trailhead")).ToHaveAttributeAsync("data-ready", "");
         return page;
     }
+
+    private async Task<IPage> OpenStatesAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/autocomplete-states");
+        await Expect(Field(page, "Town")).ToHaveAttributeAsync("data-ready", "");
+        return page;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldClose_WhenOpenedFromCodeAndClickedElsewhere(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the list" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeVisibleAsync();
+
+        await page.GetByText("Elsewhere").ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeHiddenAsync();
+        await Expect(Readout(page, "Open")).ToHaveTextAsync("False");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldClose_WhenOpenedFromCodeAndEscapeIsPressed(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the list" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeHiddenAsync();
+        await Expect(Readout(page, "Open")).ToHaveTextAsync("False");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldChooseTheOption_WhenOpenedFromCodeAndAnOptionIsClicked(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the list" }).ClickAsync();
+
+        await page.GetByRole(AriaRole.Option, new() { Name = "Pine Bluff" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeHiddenAsync();
+        await Expect(Readout(page, "Town chosen")).ToHaveTextAsync("Pine Bluff");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldStayClosed_WhenAButtonElsewhereTogglesItShut(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Toggle the list" });
+        await toggle.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeVisibleAsync();
+
+        await toggle.ClickAsync();
+
+        // Both readouts come from one render, so this reads the state the second click left, not one before it.
+        await Expect(Readout(page, "Toggles")).ToHaveTextAsync("2");
+        await Expect(Readout(page, "Open")).ToHaveTextAsync("False");
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldStayOpen_WhenAPressThatOpensItIsReleasedAfterAnEarlierClickElsewhere(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Town" });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the list" }).ClickAsync();
+        await Expect(listbox).ToBeVisibleAsync();
+        await page.GetByText("Elsewhere").ClickAsync();
+        await Expect(listbox).ToBeHiddenAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open on press" }).HoverAsync();
+        await page.Mouse.DownAsync();
+        await Expect(listbox).ToBeVisibleAsync();
+        await page.Mouse.UpAsync();
+        // A close would be waiting on a timer, which fires before this one.
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve))");
+
+        await Expect(listbox).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldStayOpen_WhenADragFromTheFieldEndsOutsideIt(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var town = Field(page, "Town");
+        await town.PressSequentiallyAsync("pine");
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeVisibleAsync();
+        var box = (await town.BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y - 10);
+        await page.Mouse.UpAsync();
+        // A close would be waiting on a timer, which fires before this one.
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve))");
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeVisibleAsync();
+        await Expect(town).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldNotActivateAnOption_WhenAnArrowIsPressedAfterTheFieldTurnedReadOnly(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var town = Field(page, "Town");
+        await town.PressSequentiallyAsync("pine");
+        await Expect(page.GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Readout(page, "Town chosen")).ToHaveTextAsync("Pine Bluff");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Make read-only" }).ClickAsync();
+        await Expect(town).ToHaveAttributeAsync("readonly", "");
+
+        await town.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(town).Not.ToHaveAttributeAsync("aria-activedescendant", new Regex("."));
+    }
+
+    private static ILocator Readout(IPage page, string name) =>
+        page.GetByRole(AriaRole.Status, new() { Name = name, Exact = true });
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Listbox_ShouldOpenJustBelowTheField_WhenTheUserTypes(string browser)

@@ -1,0 +1,26 @@
+@page "/autocomplete-states"
+
+@* Above the field, where the open list doesn't cover them. *@
+<p>Elsewhere</p>
+<button type="button" @onclick="() => _open = true">Open the list</button>
+<button type="button" @onmousedown="() => _open = true">Open on press</button>
+<button type="button" @onclick="Toggle">Toggle the list</button>
+<button type="button" @onclick="() => _readOnly = true">Make read-only</button>
+<TbAutocomplete TValue="string" Label="Town" Items="_towns" @bind-Value="_town" @bind-Open="_open" ReadOnly="_readOnly" />
+<output aria-label="Town chosen">@_town</output>
+<output aria-label="Open">@_open</output>
+<output aria-label="Toggles">@_toggles</output>
+
+@code {
+    private readonly string[] _towns = ["Pine Hollow", "Pine Bluff", "Cedar Falls"];
+    private string? _town;
+    private bool _open;
+    private bool _readOnly;
+    private int _toggles;
+
+    private void Toggle()
+    {
+        _open = !_open;
+        _toggles++;
+    }
+}

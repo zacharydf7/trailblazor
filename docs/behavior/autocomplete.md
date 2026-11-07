@@ -22,7 +22,12 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Hovering a suggestion makes it the active one. `autocomplete.js`
 - [x] Clicking the status message does nothing and leaves the list open. `AutocompleteTests.Listbox_ShouldStayOpenWithNothingActive_WhenItsMessageIsClickedOrArrowedTo`
 - [x] Clicking elsewhere closes the list, since focus leaves the field. `autocomplete.js`
-- [ ] A list opened from code closes on a click elsewhere or Escape, even if focus never reached the field. #307
+- [x] A list opened from code closes on a click elsewhere or Escape, even if focus never reached the field. `AutocompleteTests.Listbox_ShouldClose_WhenOpenedFromCodeAndClickedElsewhere`, `AutocompleteTests.Listbox_ShouldClose_WhenOpenedFromCodeAndEscapeIsPressed`
+- [x] A drag that starts in the field and ends outside it leaves the list open. `AutocompleteTests.Listbox_ShouldStayOpen_WhenADragFromTheFieldEndsOutsideIt`
+- [x] While focus is elsewhere, a button that toggles a list opened from code closes it, and doesn't reopen it. `AutocompleteTests.Listbox_ShouldStayClosed_WhenAButtonElsewhereTogglesItShut`
+- [ ] With focus in the field, a button that toggles the list closes it, and doesn't reopen it. #336
+- [x] A press that opens the list isn't taken for a click elsewhere when it's released. `AutocompleteTests.Listbox_ShouldStayOpen_WhenAPressThatOpensItIsReleasedAfterAnEarlierClickElsewhere`
+- [x] A button elsewhere activated from the keyboard leaves the list open, and Escape closes it. `autocomplete.js`
 
 ## Touch
 
@@ -35,7 +40,8 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Leaving the field puts back the chosen value's text, unless it's `FreeText`. `AutocompleteTests.Autocomplete_ShouldCloseAndPutBackTheChosenText_WhenEscapeIsPressedAndTheFieldIsLeft`
 - [x] Clearing moves focus to the field. `TbAutocompleteTests.Click_ShouldClearTheFieldAndFocusIt_WhenTheClearButtonIsClicked`
 - [x] A disabled or read-only field doesn't open the list. `autocomplete.js`
-- [ ] A read-only field can't take a suggestion left over from before it became read-only. #307
+- [x] A read-only field can't take a suggestion left over from before it became read-only. `AutocompleteTests.Autocomplete_ShouldNotActivateAnOption_WhenAnArrowIsPressedAfterTheFieldTurnedReadOnly`, `TbAutocompleteTests.Click_ShouldLeaveTheValue_WhenTheFieldTurnedReadOnlyOrDisabledWithTheListShowing`
+- [x] Text typed before the field turned read-only isn't committed, and the value's text comes back. `TbAutocompleteTests.Change_ShouldPutBackTheValuesText_WhenTheFieldTurnedReadOnlyWithTextTyped`
 
 ## Not applicable
 

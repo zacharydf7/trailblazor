@@ -261,6 +261,12 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
 
     private async Task ChooseAsync(TValue item)
     {
+        // A list that was open before the field turned read-only or disabled still shows its options.
+        if (ReadOnly || Disabled)
+        {
+            return;
+        }
+
         StopSearch();
         _text = TextOf(item);
         _shownValue = item;
@@ -271,6 +277,15 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private async Task CommitAsync()
     {
         StopSearch();
+        // Text typed before the field turned read-only or disabled isn't committed.
+        if (ReadOnly || Disabled)
+        {
+            _text = Value is null ? "" : TextOf(Value);
+            _results = [];
+            _searched = false;
+            return;
+        }
+
         if (string.IsNullOrEmpty(_text))
         {
             _shownValue = default;

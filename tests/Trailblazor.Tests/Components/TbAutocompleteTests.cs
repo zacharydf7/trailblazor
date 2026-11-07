@@ -53,6 +53,41 @@ public class TbAutocompleteTests : BunitContext
         Assert.Equal("Eagle Ridge", cut.Find("input").GetAttribute("value"));
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Click_ShouldLeaveTheValue_WhenTheFieldTurnedReadOnlyOrDisabledWithTheListShowing(bool readOnly, bool disabled)
+    {
+        string? chosen = null;
+        var cut = RenderTrails(onChange: value => chosen = value);
+        cut.Find("input").Input("ridge");
+
+        cut.Render(parameters => parameters.Add(field => field.ReadOnly, readOnly).Add(field => field.Disabled, disabled));
+        cut.Find("[role=option]").Click();
+
+        Assert.Null(chosen);
+    }
+
+    [Theory]
+    [InlineData("Eagle Ridge", false)]
+    [InlineData("Somewhere new", true)]
+    [InlineData("", false)]
+    public void Change_ShouldPutBackTheValuesText_WhenTheFieldTurnedReadOnlyWithTextTyped(string typed, bool freeText)
+    {
+        var changes = 0;
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, Trails).Add(field => field.Value, "Pine Hollow")
+            .Add(field => field.FreeText, freeText).Add(field => field.ValueChanged, (string? _) => changes++));
+        cut.Find("input").Input(typed);
+
+        cut.Render(parameters => parameters.Add(field => field.ReadOnly, true));
+        cut.Find("input").Change(typed);
+
+        Assert.Equal(0, changes);
+        Assert.Equal("Pine Hollow", cut.Find("input").GetAttribute("value"));
+        Assert.Empty(cut.FindAll("[data-part=option]"));
+    }
+
     [Fact]
     public void Input_ShouldSearchOnceTypingHasSettledForTheDelay_WhenTheUserTypes()
     {
