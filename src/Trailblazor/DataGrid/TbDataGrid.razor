@@ -28,7 +28,8 @@
         </div>
     }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")"
-         role="@(ScrollIsTabStop ? "region" : null)" aria-label="@(ScrollIsTabStop ? AriaLabel : null)"
+         role="@(ScrollIsTabStop && !string.IsNullOrEmpty(AriaLabel) ? "region" : null)"
+         aria-label="@(ScrollIsTabStop ? AriaLabel : null)"
          tabindex="@(ScrollIsTabStop ? 0 : null)">
         <table @ref="_table" role="@(IsGrid ? "grid" : null)" aria-label="@AriaLabel"
                aria-multiselectable="@(IsGrid && SelectionMode == SelectionMode.Multiple ? "true" : null)"

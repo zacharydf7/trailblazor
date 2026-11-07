@@ -697,7 +697,7 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
-    public void ScrollBox_ShouldBeANamedTabStop_WhenTheGridHasAHeight()
+    public void ScrollBox_ShouldStartAsANamedTabStop_WhenTheGridHasAHeight()
     {
         var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
             .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.Height, "10rem")
@@ -711,7 +711,19 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
-    public void ScrollBox_ShouldNotBeATabStop_WhenCellNavigationScrollsIt()
+    public void ScrollBox_ShouldStartAsATabStopWithNoRegion_WhenTheGridHasNoName()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.Height, "10rem").Add(grid => grid.KeySelector, trail => trail.Id).AddChildContent(Columns));
+
+        var scroll = cut.Find("[data-part=scroll]");
+
+        Assert.Equal("0", scroll.GetAttribute("tabindex"));
+        Assert.False(scroll.HasAttribute("role"));
+    }
+
+    [Fact]
+    public void ScrollBox_ShouldNotStartAsATabStop_WhenCellNavigationScrollsIt()
     {
         var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
             .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.Height, "10rem")
@@ -736,7 +748,7 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
-    public void ScrollBox_ShouldNotBeATabStop_WhenTheGridHasNoHeight()
+    public void ScrollBox_ShouldNotStartAsATabStop_WhenTheGridHasNoHeight()
     {
         var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
             .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)

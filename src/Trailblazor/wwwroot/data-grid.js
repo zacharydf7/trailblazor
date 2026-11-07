@@ -62,13 +62,40 @@ export function createDataGrid(table) {
             scroll.style.scrollPaddingBlockStart = top;
         }
     };
-    const resizes = new ResizeObserver(measurePins);
+    // The box is a stop for Tab only when keys have something to scroll and cell navigation doesn't scroll it for them.
+    const syncScrollStop = () => {
+        const stop = table.getAttribute('role') !== 'grid'
+            && (scroll.scrollWidth > scroll.clientWidth || scroll.scrollHeight > scroll.clientHeight);
+        if (stop) {
+            scroll.setAttribute('tabindex', '0');
+        } else {
+            scroll.removeAttribute('tabindex');
+        }
+
+        // A region needs a name, and a grid's AriaLabel is optional.
+        const name = stop ? table.getAttribute('aria-label') : null;
+        if (name) {
+            scroll.setAttribute('role', 'region');
+            scroll.setAttribute('aria-label', name);
+        } else {
+            scroll.removeAttribute('role');
+            scroll.removeAttribute('aria-label');
+        }
+    };
+    const resizes = new ResizeObserver(() => {
+        measurePins();
+        syncScrollStop();
+    });
     const watchPins = () => {
         resizes.disconnect();
         [...headers.cells].filter(cell => cell.dataset.pinned).forEach(cell => resizes.observe(cell));
+        resizes.observe(scroll);
+        resizes.observe(table);
         // The header always reports its size, so the padding is measured again even when nothing is left pinned.
         resizes.observe(table.tHead);
     };
+    const names = new MutationObserver(syncScrollStop);
+    names.observe(table, { attributes: true, attributeFilter: ['role', 'aria-label'] });
     // Changes inside a header, such as its filter menu opening, leave the pins alone. Blazor rewrites the scroll
     // box's style when the grid's height changes, which drops its padding.
     const columns = new MutationObserver(changes => {
@@ -76,6 +103,7 @@ export function createDataGrid(table) {
             watchPins();
         } else if (changes.some(change => change.target === scroll)) {
             measurePins();
+            syncScrollStop();
         }
     });
     columns.observe(headers, { childList: true, subtree: true, attributeFilter: ['data-pinned'] });
@@ -164,6 +192,7 @@ export function createDataGrid(table) {
         dispose() {
             observer.disconnect();
             resizes.disconnect();
+            names.disconnect();
             columns.disconnect();
             navigation.dispose();
             table.removeEventListener('keydown', keepPageFormUnsubmitted);

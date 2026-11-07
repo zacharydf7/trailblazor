@@ -927,7 +927,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // row.
     private sealed record GroupKey(GroupKey? Outer, string Column, object? Value);
 
-    // Rows in a set height scroll in their own box. It's a tab stop so keys can scroll it, unless cell navigation does.
+    // What the first render guesses, since only data-grid.js can measure whether the box overflows.
     private bool ScrollIsTabStop => Height is not null && !IsGrid;
 
     private bool _sortKeyHasShift;

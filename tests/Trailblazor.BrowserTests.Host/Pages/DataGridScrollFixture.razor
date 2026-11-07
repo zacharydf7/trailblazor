@@ -1,0 +1,46 @@
+@page "/data-grid-scroll"
+
+<div style="inline-size: 20rem">
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Wide trails" KeySelector="trail => trail">
+        @WideColumns
+    </TbDataGrid>
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Fitting trails" KeySelector="trail => trail" Height="30rem">
+        <TbColumn TItem="string" Field="trail => trail" Title="Name" />
+    </TbDataGrid>
+    <TbDataGrid TItem="string" Items="_many" AriaLabel="Tall trails" KeySelector="trail => trail" Height="6rem">
+        <TbColumn TItem="string" Field="trail => trail" Title="Name" />
+    </TbDataGrid>
+    <TbButton OnClick="@(() => _many = ["Ridge loop"])">Keep one row</TbButton>
+
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Fitting, then with a height" KeySelector="trail => trail"
+                Height="@_fittingHeight">
+        <TbColumn TItem="string" Field="trail => trail" Title="Name" />
+    </TbDataGrid>
+    <TbButton OnClick="@(() => _fittingHeight = "30rem")">Give it a height</TbButton>
+
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Wide, then with no height" KeySelector="trail => trail"
+                Height="@_wideHeight">
+        @WideColumns
+    </TbDataGrid>
+    <TbButton OnClick="() => _wideHeight = null">Take its height away</TbButton>
+
+    <div id="unnamed">
+        <TbDataGrid TItem="string" Items="Trails" KeySelector="trail => trail">
+            @WideColumns
+        </TbDataGrid>
+    </div>
+</div>
+
+@code {
+    private static readonly string[] Trails = ["Ridge loop", "River walk"];
+    private IReadOnlyList<string> _many = [.. Enumerable.Range(1, 20).Select(number => $"Trail {number}")];
+    private string? _fittingHeight;
+    private string? _wideHeight = "30rem";
+
+    private static RenderFragment WideColumns => @<text>
+        @foreach (var column in Enumerable.Range(1, 8))
+        {
+            <TbColumn TItem="string" Field="trail => trail" Title="@($"Column {column}")" />
+        }
+    </text>;
+}

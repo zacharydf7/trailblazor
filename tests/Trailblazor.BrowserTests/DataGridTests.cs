@@ -1,3 +1,4 @@
+using Deque.AxeCore.Playwright;
 using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
@@ -318,6 +319,130 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         var odd = await rows.Nth(0).EvaluateAsync<string>("row => getComputedStyle(row).backgroundColor");
         await Expect(rows.Nth(1)).ToHaveCSSAsync("background-color", odd);
         Assert.NotEqual(odd, await rows.Nth(3).EvaluateAsync<string>("row => getComputedStyle(row).backgroundColor"));
+    }
+
+    private static ILocator ScrollBox(IPage page, string grid) => page.Locator("[data-part=scroll]")
+        .Filter(new() { Has = page.Locator($"table[aria-label='{grid}']") });
+
+    // The script measures the box on the frame after it attaches, which data-ready alone doesn't promise.
+    private static async Task WaitForTheScrollStopAsync(IPage page, string grid)
+    {
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = page.Locator($"table[aria-label='{grid}']") }))
+            .ToHaveAttributeAsync("data-ready", "");
+        await page.EvaluateAsync("() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldBeANamedTabStop_WhenAGridWithNoHeightIsTooWide(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-scroll");
+
+        var box = ScrollBox(page, "Wide trails");
+
+        await Expect(box).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(box).ToHaveAttributeAsync("role", "region");
+        await Expect(box).ToHaveAttributeAsync("aria-label", "Wide trails");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldNotBeATabStop_WhenItsHeightLeavesTheRowsRoom(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-scroll");
+
+        var box = ScrollBox(page, "Fitting trails");
+
+        await Expect(box).Not.ToHaveAttributeAsync("tabindex", "0");
+        await Expect(box).Not.ToHaveAttributeAsync("role", "region");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldStopBeingATabStop_WhenItsRowsNoLongerOverflow(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-scroll");
+        var box = ScrollBox(page, "Tall trails");
+        await Expect(box).ToHaveAttributeAsync("tabindex", "0");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Keep one row" }).ClickAsync();
+
+        await Expect(box).Not.ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldStayOutOfTheTabOrder_WhenAddingAHeightLeavesTheRowsRoom(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-scroll");
+        var box = ScrollBox(page, "Fitting, then with a height");
+        await WaitForTheScrollStopAsync(page, "Fitting, then with a height");
+        await Expect(box).Not.ToHaveAttributeAsync("tabindex", "0");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Give it a height" }).ClickAsync();
+
+        await Expect(box).ToHaveAttributeAsync("style", new Regex("30rem"));
+        await Expect(box).Not.ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldKeepItsTabStop_WhenAWideGridLosesItsHeight(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-scroll");
+        var box = ScrollBox(page, "Wide, then with no height");
+        await WaitForTheScrollStopAsync(page, "Wide, then with no height");
+        await Expect(box).ToHaveAttributeAsync("tabindex", "0");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Take its height away" }).ClickAsync();
+
+        await Expect(box).Not.ToHaveAttributeAsync("style", new Regex("30rem"));
+        await Expect(box).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(box).ToHaveAttributeAsync("role", "region");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldBeATabStopWithNoRegion_WhenAWideGridHasNoName(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-scroll");
+
+        var box = page.Locator("#unnamed [data-part=scroll]");
+
+        await Expect(box).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(box).Not.ToHaveAttributeAsync("role", "region");
+        await Expect(box).Not.ToHaveAttributeAsync("aria-label", new Regex(".*"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldNotBeATabStop_WhenCellNavigationScrollsIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        await WaitForTheScrollStopAsync(page, "Many numbers");
+
+        var box = ScrollBox(page, "Many numbers");
+
+        await Expect(box).Not.ToHaveAttributeAsync("tabindex", "0");
+        Assert.True(await box.EvaluateAsync<bool>("box => box.scrollHeight > box.clientHeight"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldBecomeATabStop_WhenCellNavigationIsTurnedOffOnAWideGrid(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        await page.SetViewportSizeAsync(200, 600);
+        await WaitForTheScrollStopAsync(page, "Grouped numbers");
+        var box = ScrollBox(page, "Grouped numbers");
+        await Expect(box).Not.ToHaveAttributeAsync("tabindex", "0");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Turn off keys" }).ClickAsync();
+
+        await Expect(box).ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldHaveNoAccessibilityViolations_WhenItsBoxIsTooWide(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-scroll");
+        await Expect(ScrollBox(page, "Wide trails")).ToHaveAttributeAsync("tabindex", "0");
+
+        var results = await page.Locator("[data-part=scroll]").First.RunAxe();
+
+        Assert.Empty(results.Violations);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

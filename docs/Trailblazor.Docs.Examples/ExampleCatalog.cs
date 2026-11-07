@@ -4606,8 +4606,9 @@ public static class ExampleCatalog
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
                 new("height", "Fixed height and scrolling to a row", "`Height` gives the rows a box of their own to "
-                    + "scroll in, under headers that stay in view. Without cell navigation, Tab reaches the box so the "
-                    + "arrow keys can scroll it. `ScrollToAsync` goes to the page that holds a row and scrolls to it.",
+                    + "scroll in, under headers that stay in view. Without cell navigation, Tab reaches the box when the rows "
+                    + "overflow it, so the arrow keys can scroll it. `ScrollToAsync` goes to the page that holds a row "
+                    + "and scrolls to it.",
                     typeof(DataGridHeightExample)),
                 new("virtual-rows", "Virtual rows", "With `Virtualize` and a `Height`, only the rows in view are "
                     + "drawn, so the grid can hold thousands of rows without pages. `ScrollToAsync` scrolls to any "
@@ -4663,9 +4664,9 @@ public static class ExampleCatalog
             ],
             Keyboard =
             [
-                new(["Tab"], "Reaches every control in the grid, each a native button, link or input. With a "
-                    + "`Height`, it also reaches the box the rows scroll in.") { When = "Without cell navigation" },
-                new(["Up", "Down"], "With a `Height` and focus on that box, scrolls the rows.")
+                new(["Tab"], "Reaches every control in the grid, each a native button, link or input. When the rows "
+                    + "overflow their box, it also reaches that box.") { When = "Without cell navigation" },
+                new(["Up", "Down", "Left", "Right"], "With focus on that box, scrolls the rows.")
                     { When = "Without cell navigation" },
                 new(["Enter", "Space"], "On a sortable header, sorts by it alone, then reverses it, then stops sorting "
                     + "by it.") { When = "Sorting" },
@@ -4701,7 +4702,8 @@ public static class ExampleCatalog
             [
                 "It is a native `table` named by `AriaLabel`, with a header cell for each column, so screen readers "
                     + "read each cell with its column.",
-                "With a `Height` and no cell navigation, the box the rows scroll in is a `region` with the same name.",
+                "When the rows overflow their box and there is no cell navigation, the box is a tab stop, so keys can "
+                    + "scroll it. With an `AriaLabel`, it's also a `region` with that name.",
                 "A row's checkbox is named \"Select\" followed by the row's label, which is its `RowLabel` or else the "
                     + "text of the first column that has any.",
                 "Each filter is a labeled field named \"Filter\" followed by the column's title. In `Menu` mode, its "
@@ -4749,6 +4751,10 @@ public static class ExampleCatalog
             ],
             BeforeInteractive =
             [
+                "Overflow can't be measured yet, so the box the rows scroll in is a tab stop, and with an `AriaLabel` a "
+                    + "`region`, whenever the grid has a `Height` and no cell navigation. Without a `Height`, the box "
+                    + "isn't a tab stop, so on a static page a grid too wide for its box needs a `Height` or a control "
+                    + "in its rows for keys to scroll it.",
                 "With `Items` and no `Virtualize`, it renders its first page of rows as a plain table, so they can be "
                     + "read at once. Sorting, filtering, paging and selecting start working once the page is "
                     + "interactive.",
