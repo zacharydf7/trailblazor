@@ -3682,6 +3682,8 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "A click outside the menu closes it, as Escape and Tab do.",
+                "The highlight marks the focused item, which is what Enter chooses. A mouse moves it, and opening the "
+                    + "menu puts it on the first item.",
             ],
             BeforeInteractive =
             [

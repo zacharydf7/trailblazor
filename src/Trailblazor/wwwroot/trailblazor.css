@@ -3009,9 +3009,10 @@
         cursor: pointer;
     }
 
-    /* A key that moves focus takes the highlight from the item under a resting pointer. */
-    :where(.tb-menu__list:not(:has(.tb-menu__item:focus-visible))) .tb-menu__item:hover,
-    .tb-menu__item:focus-visible {
+    /* The pointer moves focus too, so focus alone marks the item Enter would choose. Until the script attaches, hover
+       is all there is. */
+    :where(.tb-menu:not(:has([data-ready]))) .tb-menu__item:hover,
+    .tb-menu__item:focus {
         background: var(--tb-color-hover);
     }
 
@@ -3084,6 +3085,11 @@
     @media (forced-colors: active) {
         .tb-menu__item[role="menuitemradio"][aria-checked="true"] > .tb-menu__indicator::before {
             background: CanvasText;
+        }
+
+        .tb-menu__item:focus {
+            outline: 2px solid Highlight;
+            outline-offset: -2px;
         }
 
         .tb-menu__separator {

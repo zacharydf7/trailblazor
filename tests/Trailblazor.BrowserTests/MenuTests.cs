@@ -581,17 +581,55 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldHighlightOnlyTheFocusedItem_WhenAKeyMovesFocusOffTheItemUnderThePointer(string browser)
     {
-        const string None = "rgba(0, 0, 0, 0)";
         var page = await OpenAsync(browser, "/examples/menu");
         await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
         await Item(page, "Rename").HoverAsync();
-        await Expect(Item(page, "Rename")).Not.ToHaveCSSAsync("background-color", None);
-        await Expect(Item(page, "Archive")).ToHaveCSSAsync("background-color", None);
+        await Expect(Item(page, "Rename")).Not.ToHaveCSSAsync("background-color", Transparent);
+        await Expect(Item(page, "Archive")).ToHaveCSSAsync("background-color", Transparent);
 
         await page.Keyboard.PressAsync("ArrowDown");
 
-        await Expect(Item(page, "Archive")).Not.ToHaveCSSAsync("background-color", None);
-        await Expect(Item(page, "Rename")).ToHaveCSSAsync("background-color", None);
+        await Expect(Item(page, "Archive")).Not.ToHaveCSSAsync("background-color", Transparent);
+        await Expect(Item(page, "Rename")).ToHaveCSSAsync("background-color", Transparent);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldKeepTheItemEnterWouldChooseHighlighted_WhenThePointerLeaves(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        await Item(page, "Delete").HoverAsync();
+        await Expect(Item(page, "Delete")).ToBeFocusedAsync();
+
+        await page.Mouse.MoveAsync(1, 1);
+
+        await Expect(Item(page, "Delete")).ToBeFocusedAsync();
+        await Expect(Item(page, "Delete")).Not.ToHaveCSSAsync("background-color", Transparent);
+        await Expect(Item(page, "Duplicate")).ToHaveCSSAsync("background-color", Transparent);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldOutlineTheItemEnterWouldChoose_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu", new() { ForcedColors = ForcedColors.Active });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        await Item(page, "Delete").HoverAsync();
+        await Expect(Item(page, "Delete")).ToBeFocusedAsync();
+
+        await page.Mouse.MoveAsync(1, 1);
+
+        await Expect(Item(page, "Delete")).ToHaveCSSAsync("outline-style", "solid");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldHighlightTheItemUnderThePointer_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Go to" }).ClickAsync();
+
+        await Item(page, "Help page").HoverAsync();
+
+        await Expect(Item(page, "Help page")).Not.ToHaveCSSAsync("background-color", Transparent);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -755,7 +793,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Item(page, "Table")).ToBeFocusedAsync();
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
-        await Expect(Item(page, "Shape")).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+        await Expect(Item(page, "Shape")).ToHaveCSSAsync("background-color", Transparent);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -1022,6 +1060,8 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     private static readonly TimeSpan PauseMargin = TimeSpan.FromSeconds(5);
+
+    private const string Transparent = "rgba(0, 0, 0, 0)";
 
     private static ILocator Output(IPage page, string name) =>
         page.GetByRole(AriaRole.Status, new() { Name = name, Exact = true });
