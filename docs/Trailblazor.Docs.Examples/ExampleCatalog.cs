@@ -2472,7 +2472,8 @@ public static class ExampleCatalog
                 new("steps-and-marks", "Steps and marks", "`Min`, `Max` and `Step` set where the thumb can stop, and "
                     + "`Marks` labels points along the track.", typeof(SliderMarksExample)),
                 new("range", "Range", "`TbRangeSlider` binds a `SliderRange` with two thumbs, and neither can pass the "
-                    + "other. `StartLabel` and `EndLabel` name the thumbs.", typeof(SliderRangeExample)),
+                    + "other. A click on the track moves the nearer thumb. Thumbs on one value separate in the direction "
+                    + "they're dragged. `StartLabel` and `EndLabel` name the thumbs.", typeof(SliderRangeExample)),
                 new("validation", "Validation", "The thumb always sits on a value, so `Required` only catches a "
                     + "nullable slider still bound to `null`. `Validation` checks the value once it is changed or its "
                     + "form validates.",

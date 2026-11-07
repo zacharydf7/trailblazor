@@ -2,7 +2,7 @@
 @typeparam TValue
 @inherits TbSliderBase<SliderRange<TValue>>
 
-@* Two native range inputs share one track; each takes pointer input only on its thumb, so both stay reachable. *@
+@* Two native range inputs share one track, each taking the pointer only on its thumb. range-slider.js takes the rest. *@
 @Layout(StartId, Fraction(Start), Fraction(End), @<text>
     <span id="@($"{StartId}-name")" hidden>@(StartLabel ?? Localizer[TbStrings.RangeSliderStart])</span>
     <span id="@($"{EndId}-name")" hidden>@(EndLabel ?? Localizer[TbStrings.RangeSliderEnd])</span>
@@ -13,14 +13,14 @@
            aria-valuetext="@Format(Start)" aria-labelledby="@Names(StartId)"
            aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy"
-           class="@ClassNames.Join("tb-slider__input", StartOnTop ? "tb-slider__input--top" : null, Classes?.Input)" />
+           class="@ClassNames.Join("tb-slider__input", SharedClass, Classes?.Input)" />
     <input @attributes="InputAttributes" data-part="end-thumb" id="@EndId" name="@NameOf("End")" type="range"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(End)"
            @bind:set="SetEndAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(End)" aria-labelledby="@Names(EndId)"
            aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy"
-           class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />
+           class="@ClassNames.Join("tb-slider__input", SharedClass, Classes?.Input)" />
     @Bubble(Fraction(Start), Format(Start))
     @Bubble(Fraction(End), Format(End))
 </text>)
@@ -60,8 +60,8 @@
 
     private decimal End => Math.Clamp(Math.Max(ToNumber(Value.Start) ?? Min, ToNumber(Value.End) ?? Max), Min, Max);
 
-    // With both thumbs at the top, the end thumb can't move up, so the start thumb sits above it to be grabbed.
-    private bool StartOnTop => Start == End && End == Max;
+    // Only a drag's direction can tell which of two thumbs on one value it means, so range-slider.js handles the press.
+    private string? SharedClass => Start == End ? "tb-slider__input--shared" : null;
 
     private string Names(string thumb) => ShownLabel is null ? $"{thumb}-name" : $"{LabelId} {thumb}-name";
 

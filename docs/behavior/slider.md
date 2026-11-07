@@ -22,20 +22,28 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 - [x] Clicking the label focuses the thumb without changing the value. `TbSliderTests.Render_ShouldBeARangeInputNamedByItsLabel_WhenCalled`, `TbSliderBase.razor`
 - [x] Each thumb of a range slider can be dragged. `SliderDragTests.RangeSlider_ShouldLetEachThumbBeDragged_WhenTheyShareATrack`
 - [x] A thumb dragged past the other stops at it. `TbSliderTests.Input_ShouldStopAThumbAtTheOther_WhenItIsDraggedPastIt`
-- [x] With both thumbs at the top, the start thumb can be pulled down. `TbSliderTests.Render_ShouldLiftTheStartThumb_WhenBothThumbsAreAtTheTop`
-- [ ] Clicking a range slider's track moves the nearer thumb there. #316
-- [ ] With both thumbs on one value below the top, dragging down moves a thumb. #316
+- [x] With both thumbs on one value, dragging down moves the start thumb and dragging up the end thumb, at the ends of the track too. A press that doesn't move changes nothing. `SliderDragTests.RangeSlider_ShouldPartItsThumbsTheWayThePointerGoes_WhenTheyShareAValue`, `SliderDragTests.RangeSlider_ShouldChangeNothing_WhenAPressOnSharedThumbsDoesntMove`
+- [x] Clicking a range slider's track moves the nearer thumb there and focuses it, in right-to-left text too. Holding the press and moving the pointer drags that thumb. `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumbToThePointer_WhenTheTrackIsClicked`, `SliderDragTests.RangeSlider_ShouldFollowThePointer_WhenATrackPressIsHeldAndDragged`, `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsClickedInRightToLeftText`
+- [x] Clicking the track away from thumbs on one value moves the one on that side. `SliderDragTests.RangeSlider_ShouldMoveTheThumbOnThatSide_WhenTheTrackIsClickedAwayFromSharedThumbs`
+- [x] A drag from thumbs on one value can change direction while they still share it, so a wobble doesn't lock in the wrong thumb. `SliderDragTests.RangeSlider_ShouldLetADragChangeDirection_WhileItsThumbsShareAValue`
+- [x] A thumb dragged into the other and back keeps moving. `SliderDragTests.RangeSlider_ShouldKeepDraggingAThumb_WhenItMeetsTheOtherAndComesBack`
+- [x] A press on a read-only or disabled range slider's track changes nothing. `SliderDragTests.RangeSlider_ShouldChangeNothing_WhenItsTrackIsPressedWhileReadOnlyOrDisabled`
 - [x] Dragging a read-only slider changes nothing, on either kind. `ReadOnlyTests.ReadOnlySlider_ShouldKeepItsValue_WhenDraggedOrMovedWithTheKeys`, `ReadOnlyTests.ReadOnlyRangeSlider_ShouldKeepItsThumb_WhenDragged`
 
 ## Touch
 
-- [x] Each thumb is a native range input, so touch is the browser's own and the slider adds no touch handling. `TbSlider.razor`
+- [x] Touch on a thumb is the browser's own, since each thumb is a native range input, unless a range slider's thumbs share a value. `TbSlider.razor`
+- [x] On a range slider, a tap on the track moves the nearer thumb, and a finger sliding across drags it. A finger sliding from thumbs on one value separates them. `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsTapped`, `SliderDragTests.RangeSlider_ShouldFollowAFinger_WhenItSlidesAcrossTheTrack`, `SliderDragTests.RangeSlider_ShouldSeparateItsThumbs_WhenAFingerSlidesFromThem`
+- [x] A finger scrolling the page from a range slider's track changes nothing and takes no focus, in Chromium. `SliderDragTests.RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnTheTrack`
+- [ ] A finger scrolling the page from a range slider's track changes nothing on phones, which relies on the browser canceling the press. UNCONFIRMED
+- [ ] Two fingers on one range slider can each drag a thumb. UNCONFIRMED
 - [ ] Tapping a single slider's track moves the thumb there on phones. UNCONFIRMED
-- [ ] A range slider's thumbs can be dragged on phones, though they're the only parts that take the pointer and just 18px across. UNCONFIRMED
+- [ ] A range slider's thumbs can be dragged on phones, though they're just 18px across. UNCONFIRMED
 
 ## Focus
 
 - [x] The thumb shows a focus ring for keyboard focus. `trailblazor.css`
+- [x] A click on a range slider's track focuses the thumb without the ring, and the ring appears once a key is pressed, or when focus comes back. `SliderDragTests.RangeSlider_ShouldHoldBackTheRingUntilAKey_WhenTheTrackIsClicked`, `SliderDragTests.RangeSlider_ShouldStopHoldingBackTheRing_WhenFocusLeavesTheThumb`
 - [x] A read-only slider stays focusable. `ReadOnlyTests.ReadOnlySlider_ShouldKeepItsValue_WhenDraggedOrMovedWithTheKeys`
 - [x] A disabled slider can't take focus. `SliderExampleTests.StatesExample_ShouldMarkOneReadOnlySoItPostsAndDisableTheOther_WhenRendered`
 - [x] `FocusAsync` moves focus to the thumb, or to a range slider's start thumb. `FieldFocusTests.FocusAsync_ShouldMoveFocusToTheFieldsInput_WhenCalled`

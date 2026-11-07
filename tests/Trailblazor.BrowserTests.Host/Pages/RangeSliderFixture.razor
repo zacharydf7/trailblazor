@@ -1,0 +1,32 @@
+@page "/range-slider"
+
+@* Thumbs sharing a value, in the middle and at each end, and the states that keep a press from changing anything. *@
+<TbRangeSlider TValue="int" Label="Middle" Min="0" Max="100" Step="10" @bind-Value="_middle"
+               ValueCommitted="_ => _commits++" />
+<TbRangeSlider TValue="int" Label="Rising" Min="0" Max="100" Step="10" @bind-Value="_rising" />
+<TbRangeSlider TValue="int" Label="Top" Min="0" Max="100" Step="10" @bind-Value="_top" />
+<TbRangeSlider TValue="int" Label="Bottom" Min="0" Max="100" Step="10" @bind-Value="_bottom" />
+<TbRangeSlider TValue="int" Label="Parted" Min="0" Max="100" Step="10" @bind-Value="_parted"
+               ValueCommitted="_ => _commits++" />
+<TbRangeSlider TValue="int" Label="Locked" Min="0" Max="100" Step="10" ReadOnly @bind-Value="_locked" />
+<TbRangeSlider TValue="int" Label="Off" Min="0" Max="100" Step="10" Disabled @bind-Value="_off" />
+<fieldset disabled>
+    <TbRangeSlider TValue="int" Label="Fenced" Min="0" Max="100" Step="10" @bind-Value="_fenced" />
+</fieldset>
+<div dir="rtl">
+    <TbRangeSlider TValue="int" Label="Flipped" Min="0" Max="100" Step="10" @bind-Value="_flipped" />
+</div>
+<output>@_commits</output>
+
+@code {
+    private SliderRange<int> _middle = new(50, 50);
+    private SliderRange<int> _rising = new(50, 50);
+    private SliderRange<int> _top = new(100, 100);
+    private SliderRange<int> _bottom = new(0, 0);
+    private SliderRange<int> _parted = new(20, 80);
+    private SliderRange<int> _locked = new(20, 80);
+    private SliderRange<int> _off = new(20, 80);
+    private SliderRange<int> _fenced = new(20, 80);
+    private SliderRange<int> _flipped = new(20, 80);
+    private int _commits;
+}

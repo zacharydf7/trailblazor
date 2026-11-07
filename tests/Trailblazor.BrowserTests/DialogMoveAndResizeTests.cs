@@ -403,7 +403,7 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
 
     private static ILocator Movable(IPage page) => page.GetByRole(AriaRole.Dialog, new() { Name = "Movable" });
 
-    private static Task TouchAsync(ICDPSession session, string type, double? x, double? y) =>
+    internal static Task TouchAsync(ICDPSession session, string type, double? x, double? y) =>
         session.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
         {
             ["type"] = type,

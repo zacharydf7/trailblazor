@@ -3821,6 +3821,12 @@
         outline-offset: var(--tb-focus-ring-offset);
     }
 
+    /* range-slider.js takes a press on the track or on shared thumbs, and pan-y lets it follow a finger sideways. */
+    .tb-slider--range .tb-slider__control {
+        cursor: pointer;
+        touch-action: pan-y;
+    }
+
     /* Two inputs share a range slider's track, so only their thumbs take the pointer. */
     .tb-slider--range .tb-slider__input {
         pointer-events: none;
@@ -3834,8 +3840,21 @@
         pointer-events: auto;
     }
 
-    .tb-slider__input--top {
-        z-index: 1;
+    .tb-slider--range .tb-slider__input--shared::-webkit-slider-thumb {
+        pointer-events: none;
+    }
+
+    .tb-slider--range .tb-slider__input--shared::-moz-range-thumb {
+        pointer-events: none;
+    }
+
+    /* Set by range-slider.js on a thumb focused by a press, until a key is pressed or focus leaves. */
+    .tb-slider__input[data-pointer-focus]:focus-visible::-webkit-slider-thumb {
+        outline: none;
+    }
+
+    .tb-slider__input[data-pointer-focus]:focus-visible::-moz-range-thumb {
+        outline: none;
     }
 
     .tb-slider__value,
@@ -3885,7 +3904,8 @@
         opacity: var(--tb-disabled-opacity);
     }
 
-    .tb-slider--disabled .tb-slider__input {
+    .tb-slider--disabled .tb-slider__input,
+    .tb-slider--range .tb-slider__control:has(.tb-slider__input:is(:disabled, [aria-readonly="true"])) {
         cursor: default;
     }
 

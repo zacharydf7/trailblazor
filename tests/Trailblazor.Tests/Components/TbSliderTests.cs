@@ -199,11 +199,12 @@ public class TbSliderTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldLiftTheStartThumb_WhenBothThumbsAreAtTheTop()
+    public void Render_ShouldLeaveThePointerToTheScript_WhenBothThumbsShareAValue()
     {
-        var cut = RenderRange(new(4000, 4000));
+        var cut = RenderRange(new(2000, 2000));
 
-        Assert.Contains("tb-slider__input--top", cut.Find("[data-part=start-thumb]").ClassList);
+        Assert.Contains("tb-slider__input--shared", cut.Find("[data-part=start-thumb]").ClassList);
+        Assert.Contains("tb-slider__input--shared", cut.Find("[data-part=end-thumb]").ClassList);
     }
 
     private IRenderedComponent<TbSlider<int>> RenderSlider(int value, Action<int>? onCommit = null,

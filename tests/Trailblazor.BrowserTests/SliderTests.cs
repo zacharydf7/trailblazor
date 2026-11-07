@@ -153,4 +153,309 @@ public class SliderDragTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Slider, new() { Name = "Elevation Maximum", Exact = true }))
             .ToHaveValueAsync("2400");
     }
+
+    private static ILocator Thumb(IPage page, string slider, string thumb) =>
+        page.GetByRole(AriaRole.Slider, new() { Name = $"{slider} {thumb}", Exact = true });
+
+    // Where a value of 0 to 100 sits on the track, allowing for the fixture's 18px thumbs, at the track's mid-height.
+    private static async Task<(float X, float Y)> PointAsync(IPage page, string slider, int value)
+    {
+        var box = (await Thumb(page, slider, "Minimum").BoundingBoxAsync())!;
+        return (box.X + 9 + (box.Width - 18) * value / 100, box.Y + box.Height / 2);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldMoveTheNearerThumbToThePointer_WhenTheTrackIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (low, y) = await PointAsync(page, "Parted", 30);
+        var (high, _) = await PointAsync(page, "Parted", 70);
+
+        await page.Mouse.ClickAsync(low, y);
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("30");
+        await Expect(Thumb(page, "Parted", "Minimum")).ToBeFocusedAsync();
+        await page.Mouse.ClickAsync(high, y);
+
+        await Expect(Thumb(page, "Parted", "Maximum")).ToHaveValueAsync("70");
+        await Expect(Thumb(page, "Parted", "Maximum")).ToBeFocusedAsync();
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("30");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldHoldBackTheRingUntilAKey_WhenTheTrackIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (x, y) = await PointAsync(page, "Parted", 30);
+        var thumb = Thumb(page, "Parted", "Minimum");
+
+        await page.Mouse.ClickAsync(x, y);
+        await Expect(thumb).ToBeFocusedAsync();
+        var withoutRing = await thumb.ScreenshotAsync();
+
+        // Shift moves nothing, so the two pictures differ only by the ring.
+        await page.Keyboard.PressAsync("Shift");
+        await Expect(thumb).Not.ToHaveAttributeAsync("data-pointer-focus", "");
+
+        Assert.True(await thumb.EvaluateAsync<bool>("thumb => thumb.matches(':focus-visible')"));
+        Assert.NotEqual(withoutRing, await thumb.ScreenshotAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldStopHoldingBackTheRing_WhenFocusLeavesTheThumb(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (x, y) = await PointAsync(page, "Parted", 30);
+        var thumb = Thumb(page, "Parted", "Minimum");
+        await page.Mouse.ClickAsync(x, y);
+        await Expect(thumb).ToHaveAttributeAsync("data-pointer-focus", "");
+
+        await page.Mouse.ClickAsync(1, 1);
+
+        await Expect(thumb).Not.ToBeFocusedAsync();
+        await Expect(thumb).Not.ToHaveAttributeAsync("data-pointer-focus", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsClickedInRightToLeftText(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var box = (await Thumb(page, "Flipped", "Minimum").BoundingBoxAsync())!;
+
+        await page.Mouse.ClickAsync(box.X + box.Width - 9 - (box.Width - 18) * 0.3f, box.Y + box.Height / 2);
+
+        await Expect(Thumb(page, "Flipped", "Minimum")).ToHaveValueAsync("30");
+        await Expect(Thumb(page, "Flipped", "Maximum")).ToHaveValueAsync("80");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldFollowThePointer_WhenATrackPressIsHeldAndDragged(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (from, y) = await PointAsync(page, "Parted", 30);
+        var (past, _) = await PointAsync(page, "Parted", 95);
+
+        await page.Mouse.MoveAsync(from, y);
+        await page.Mouse.DownAsync();
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("30");
+        await page.Mouse.MoveAsync(past, y, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        // It stops at the other thumb.
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("80");
+        await Expect(Thumb(page, "Parted", "Maximum")).ToHaveValueAsync("80");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldPartItsThumbsTheWayThePointerGoes_WhenTheyShareAValue(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+
+        foreach (var (slider, shared, to, minimum, maximum) in new[]
+        {
+            ("Middle", 50, 20, "20", "50"), ("Rising", 50, 80, "50", "80"), ("Top", 100, 70, "70", "100"),
+            ("Bottom", 0, 30, "0", "30"),
+        })
+        {
+            var (from, y) = await PointAsync(page, slider, shared);
+            var (target, _) = await PointAsync(page, slider, to);
+
+            await page.Mouse.MoveAsync(from, y);
+            await page.Mouse.DownAsync();
+            await page.Mouse.MoveAsync(target, y, new() { Steps = 5 });
+            await page.Mouse.UpAsync();
+
+            await Expect(Thumb(page, slider, "Minimum")).ToHaveValueAsync(minimum);
+            await Expect(Thumb(page, slider, "Maximum")).ToHaveValueAsync(maximum);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldChangeNothing_WhenAPressOnSharedThumbsDoesntMove(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (x, y) = await PointAsync(page, "Middle", 50);
+
+        await page.Mouse.ClickAsync(x + 3, y);
+
+        await Expect(Thumb(page, "Middle", "Maximum")).ToBeFocusedAsync();
+        await Expect(Thumb(page, "Middle", "Minimum")).ToHaveValueAsync("50");
+        await Expect(Thumb(page, "Middle", "Maximum")).ToHaveValueAsync("50");
+        await Expect(page.Locator("output")).ToHaveTextAsync("0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldCommitOnce_WhenSharedThumbsAreDraggedApart(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (from, y) = await PointAsync(page, "Middle", 50);
+        var (target, _) = await PointAsync(page, "Middle", 20);
+
+        await page.Mouse.MoveAsync(from, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(target, y, new() { Steps = 5 });
+        await Expect(Thumb(page, "Middle", "Minimum")).ToHaveValueAsync("20");
+        await Expect(page.Locator("output")).ToHaveTextAsync("0");
+        await page.Mouse.UpAsync();
+
+        await Expect(page.Locator("output")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldChangeNothing_WhenItsTrackIsPressedWhileReadOnlyOrDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (lockedX, lockedY) = await PointAsync(page, "Locked", 40);
+        var (offX, offY) = await PointAsync(page, "Off", 40);
+        var (fencedX, fencedY) = await PointAsync(page, "Fenced", 40);
+
+        await page.Mouse.ClickAsync(lockedX, lockedY);
+        await page.Mouse.ClickAsync(offX, offY);
+        await page.Mouse.ClickAsync(fencedX, fencedY);
+
+        await Expect(Thumb(page, "Locked", "Minimum")).ToHaveValueAsync("20");
+        await Expect(Thumb(page, "Off", "Minimum")).ToHaveValueAsync("20");
+        await Expect(Thumb(page, "Fenced", "Minimum")).ToHaveValueAsync("20");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldMoveTheThumbOnThatSide_WhenTheTrackIsClickedAwayFromSharedThumbs(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+
+        foreach (var (slider, to, thumb, other, value, stays) in new[]
+        {
+            ("Middle", 80, "Maximum", "Minimum", "80", "50"), ("Rising", 20, "Minimum", "Maximum", "20", "50"),
+            ("Top", 60, "Minimum", "Maximum", "60", "100"), ("Bottom", 30, "Maximum", "Minimum", "30", "0"),
+        })
+        {
+            var (x, y) = await PointAsync(page, slider, to);
+
+            await page.Mouse.ClickAsync(x, y);
+
+            await Expect(Thumb(page, slider, thumb)).ToHaveValueAsync(value);
+            await Expect(Thumb(page, slider, thumb)).ToBeFocusedAsync();
+            await Expect(Thumb(page, slider, other)).ToHaveValueAsync(stays);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldLetADragChangeDirection_WhileItsThumbsShareAValue(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (middle, y) = await PointAsync(page, "Middle", 50);
+        var (below, _) = await PointAsync(page, "Middle", 30);
+        var (above, _) = await PointAsync(page, "Middle", 80);
+
+        await page.Mouse.MoveAsync(middle, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(below, y, new() { Steps = 3 });
+        await Expect(Thumb(page, "Middle", "Minimum")).ToHaveValueAsync("30");
+        await Expect(Thumb(page, "Middle", "Minimum")).ToBeFocusedAsync();
+        await page.Mouse.MoveAsync(above, y, new() { Steps = 6 });
+        await page.Mouse.UpAsync();
+
+        await Expect(Thumb(page, "Middle", "Maximum")).ToBeFocusedAsync();
+        await Expect(Thumb(page, "Middle", "Minimum")).ToHaveValueAsync("50");
+        await Expect(Thumb(page, "Middle", "Maximum")).ToHaveValueAsync("80");
+
+        // At the bottom, a wobble off the low end can't lock in the start thumb, which has nowhere to go.
+        var (bottom, bottomY) = await PointAsync(page, "Bottom", 0);
+        var (up, _) = await PointAsync(page, "Bottom", 40);
+        await page.Mouse.MoveAsync(bottom, bottomY);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(bottom - 8, bottomY);
+        await page.Mouse.MoveAsync(up, bottomY, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        await Expect(Thumb(page, "Bottom", "Maximum")).ToHaveValueAsync("40");
+        await Expect(Thumb(page, "Bottom", "Minimum")).ToHaveValueAsync("0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldKeepDraggingAThumb_WhenItMeetsTheOtherAndComesBack(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (thumb, y) = await PointAsync(page, "Parted", 20);
+        var (other, _) = await PointAsync(page, "Parted", 80);
+        var (back, _) = await PointAsync(page, "Parted", 40);
+
+        await page.Mouse.MoveAsync(thumb, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(other, y, new() { Steps = 5 });
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("80");
+        await page.Mouse.MoveAsync(back, y, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("40");
+        await Expect(Thumb(page, "Parted", "Maximum")).ToHaveValueAsync("80");
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsTapped()
+    {
+        var page = await OpenAsync("chromium", "/range-slider", new() { HasTouch = true });
+        var (x, y) = await PointAsync(page, "Parted", 30);
+
+        await page.Touchscreen.TapAsync(x, y);
+
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("30");
+        await Expect(Thumb(page, "Parted", "Minimum")).ToBeFocusedAsync();
+        await Expect(page.Locator("output")).ToHaveTextAsync("1");
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldFollowAFinger_WhenItSlidesAcrossTheTrack()
+    {
+        var page = await OpenAsync("chromium", "/range-slider", new() { HasTouch = true });
+        var (x, y) = await PointAsync(page, "Parted", 30);
+        var (to, _) = await PointAsync(page, "Parted", 60);
+        var touch = await page.Context.NewCDPSessionAsync(page);
+
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchStart", x, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", (x + to) / 2, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", to, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
+
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("60");
+        await Expect(Thumb(page, "Parted", "Minimum")).ToBeFocusedAsync();
+        await Expect(page.Locator("output")).ToHaveTextAsync("1");
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldSeparateItsThumbs_WhenAFingerSlidesFromThem()
+    {
+        var page = await OpenAsync("chromium", "/range-slider", new() { HasTouch = true });
+        var (x, y) = await PointAsync(page, "Middle", 50);
+        var (to, _) = await PointAsync(page, "Middle", 20);
+        var touch = await page.Context.NewCDPSessionAsync(page);
+
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchStart", x, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", (x + to) / 2, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", to, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
+
+        await Expect(Thumb(page, "Middle", "Minimum")).ToHaveValueAsync("20");
+        await Expect(Thumb(page, "Middle", "Maximum")).ToHaveValueAsync("50");
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnTheTrack()
+    {
+        var page = await OpenAsync("chromium", "/range-slider", new() { HasTouch = true });
+        var (x, y) = await PointAsync(page, "Parted", 30);
+        var touch = await page.Context.NewCDPSessionAsync(page);
+
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchStart", x, y);
+        foreach (var distance in new[] { 5, 20, 40, 80 })
+        {
+            await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", x + 2, y - distance);
+        }
+
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
+        await page.EvaluateAsync("() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))");
+
+        await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("20");
+        await Expect(page.Locator("output")).ToHaveTextAsync("0");
+        Assert.Equal("BODY", await page.EvaluateAsync<string>("() => document.activeElement.tagName"));
+    }
 }
