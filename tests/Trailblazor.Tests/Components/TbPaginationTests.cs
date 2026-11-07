@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -159,6 +160,45 @@ public class TbPaginationTests : BunitContext
         var cut = RenderPagination(page: 1, count: 2, labels: new() { Navigation = "Seiten" });
 
         Assert.Equal("Seiten", cut.Find("nav").GetAttribute("aria-label"));
+    }
+
+    [Theory]
+    [InlineData(true, false, false, false)]
+    [InlineData(false, true, false, false)]
+    [InlineData(false, false, true, false)]
+    [InlineData(false, false, false, true)]
+    public void Click_ShouldLeaveThisTabOnItsPage_WhenALinkIsClickedWithAModifier(bool control, bool meta, bool shift, bool alt)
+    {
+        var moved = false;
+        var cut = RenderPagination(page: 1, count: 5, onChange: _ => moved = true, pageHref: page => $"photos?page={page}");
+        var args = new MouseEventArgs { CtrlKey = control, MetaKey = meta, ShiftKey = shift, AltKey = alt };
+
+        cut.Find("[aria-label='Page 2']").Click(args);
+        cut.Find("[data-part=next]").Click(args);
+
+        Assert.False(moved);
+    }
+
+    [Fact]
+    public void Click_ShouldGoToThePage_WhenAButtonIsClickedWithAModifier()
+    {
+        var page = 1;
+        var cut = RenderPagination(page, count: 5, onChange: next => page = next);
+
+        cut.Find("[aria-label='Page 2']").Click(new MouseEventArgs { CtrlKey = true });
+
+        Assert.Equal(2, page);
+    }
+
+    [Fact]
+    public void Click_ShouldGoToThePage_WhenALinkIsClickedWithoutAModifier()
+    {
+        var page = 1;
+        var cut = RenderPagination(page, count: 5, onChange: next => page = next, pageHref: number => $"photos?page={number}");
+
+        cut.Find("[aria-label='Page 2']").Click();
+
+        Assert.Equal(2, page);
     }
 
     [Fact]

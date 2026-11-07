@@ -46,7 +46,7 @@
                                   Tone="@(number == CurrentPage ? Tone.Primary : Tone.Neutral)"
                                   Disabled="Disabled" aria-current="@(number == CurrentPage ? "page" : null)"
                                   aria-label="@string.Format(CultureInfo.CurrentCulture, PageLabel, number)"
-                                  OnClick="() => GoToAsync(number)" data-part="page" Class="tb-pagination__page">
+                                  OnClick="args => OnClickedAsync(args, number)" data-part="page" Class="tb-pagination__page">
                             @number
                         </TbButton>
                     </li>
@@ -142,7 +142,7 @@
         @<TbIconButton Icon="icon" AriaLabel="@label" Href="@PageHref?.Invoke(Math.Clamp(page, 1, Count))" Size="Size"
                        Disabled="@(Disabled || page < 1 || page > Count || page == Page)"
                        FocusableWhenDisabled="!Disabled"
-                       OnClick="() => GoToAsync(page)"
+                       OnClick="args => OnClickedAsync(args, page)"
                        data-part="@part" Class="tb-pagination__step" />;
 
     /// <inheritdoc />
@@ -154,6 +154,11 @@
                 "A pagination needs a PageCount and SiblingCount of 0 or more, and a BoundaryCount of 1 or more.");
         }
     }
+
+    // A modified click opens the link in a new tab or window. This tab's address stays put, so its page must too.
+    private Task OnClickedAsync(MouseEventArgs args, int page) =>
+        PageHref is not null && (args.CtrlKey || args.MetaKey || args.ShiftKey || args.AltKey)
+            ? Task.CompletedTask : GoToAsync(page);
 
     // Compared with Page, not the clamped page shown, so a parent left on a page past a shrunken count can come back.
     private async Task GoToAsync(int page)

@@ -11,7 +11,7 @@ Familiar apps: search results, GitHub's lists, the pager under a data table
 - [x] In compact mode, Enter or leaving the box goes to the typed page, and a page past either end goes to that end. `PaginationTests.Pagination_ShouldGoToTheTypedPage_WhenAPageIsTypedInCompactMode`
 - [x] In compact mode, Up goes to the next page and Down to the previous. `PaginationTests.Pagination_ShouldGoToTheNextPage_WhenUpIsPressedInCompactMode`
 - [ ] Clearing the box, or typing past the end while already there, puts the current page back in the box. UNCONFIRMED
-- [ ] Enter in the box goes to the page without submitting a form around the pagination. #325
+- [x] Enter in the box goes to the page without submitting a form around the pagination. `PaginationTests.PageBox_ShouldGoToTheTypedPageWithoutSubmittingTheForm_WhenEnterIsPressed`
 
 ## Pointer
 
@@ -22,7 +22,7 @@ Familiar apps: search results, GitHub's lists, the pager under a data table
 - [x] The ellipsis isn't a control. `TbPagination.razor`
 - [x] With `PageHref`, each control is a real link that goes to its page. `PaginationTests.Pagination_ShouldLinkEachPage_WhenGivenPageHref`
 - [x] With `PageHref`, a typed page goes to its link. `TbPaginationTests.Change_ShouldNavigateToTheTypedPagesLink_WhenCompactWithPageHref`
-- [ ] With `PageHref`, Ctrl+click or Cmd+click opens the page in a new tab and leaves this one on its page. #325
+- [x] With `PageHref`, Ctrl+click, Cmd+click, Shift+click or Alt+click leaves the link to the browser, which opens it in a new tab or window or saves it, and leaves this tab on its page. `TbPaginationTests.Click_ShouldLeaveThisTabOnItsPage_WhenALinkIsClickedWithAModifier`
 - [x] `Disabled` turns every control off. `TbPaginationTests.Render_ShouldTurnEveryControlOff_WhenDisabled`
 - [x] In right-to-left text, the step arrows turn around. `PaginationTests.Pagination_ShouldTurnItsArrowsAround_WhenTheTextIsRightToLeft`
 

@@ -11,6 +11,22 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
         Navigation(page, pagination).GetByRole(AriaRole.Button, new() { Name = $"Page {number}", Exact = true });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PageBox_ShouldGoToTheTypedPageWithoutSubmittingTheForm_WhenEnterIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/pagination");
+        var box = Navigation(page, "In a form").Locator("input");
+        await box.FillAsync("12");
+
+        await box.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("box-page")).ToHaveTextAsync("12");
+        // Events reach the server in order, so once this shows, a submit from Enter would have shown too.
+        await Page(page, "Lean", 2).ClickAsync();
+        await Expect(page.GetByTestId("page")).ToHaveTextAsync("2");
+        await Expect(page.GetByTestId("submits")).ToHaveTextAsync("0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Pagination_ShouldGoToThePageAndKeepFocusOnIt_WhenAPageIsChosenWithTheKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/pagination");

@@ -4947,7 +4947,8 @@ public static class ExampleCatalog
                     + "number. Typing a page and pressing Enter, or leaving the box, goes there.",
                     typeof(PaginationCompactExample)),
                 new("links", "Links", "With `PageHref`, every item of a pagination is a link, so they work before the "
-                    + "page is interactive and can open in a new tab.", typeof(PaginationLinksExample)),
+                    + "page is interactive and can open in a new tab while this one stays on its page.",
+                    typeof(PaginationLinksExample)),
                 new("disabled", "Disabled", "`Disabled` turns off every button of a pagination.",
                     typeof(PaginationDisabledExample)),
                 new("labels", "Other languages", "All of a pagination's words come from `Labels`, such as `Previous`, "
@@ -4959,7 +4960,8 @@ public static class ExampleCatalog
                 new(["Tab"], "Moves between the controls, each its own tab stop, as in a list of links."),
                 new(["Enter", "Space"], "Presses the focused button.") { When = "As buttons" },
                 new(["Enter"], "Follows the link.") { When = "With `PageHref`" },
-                new(["Enter"], "Goes to the page typed in the box.") { When = "In `Compact`" },
+                new(["Enter"], "Goes to the page typed in the box, without submitting a form around it.")
+                    { When = "In `Compact`" },
                 new(["Up", "Down"], "Goes to the next or previous page.") { When = "In `Compact`" },
             ],
             Labeling =
