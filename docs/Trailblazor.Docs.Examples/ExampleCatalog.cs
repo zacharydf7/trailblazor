@@ -2011,6 +2011,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("A press anywhere in the box outside its controls, such as its padding or a start "
+                    + "icon, focuses the input."),
                 new("While a `Required` message shows, the field's own `Validation` doesn't run, so it is the only "
                     + "message. `Invalid` marks the field invalid without a message, for a form that lists its errors "
                     + "elsewhere."),
@@ -2124,6 +2126,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("A press anywhere in the box outside its controls, such as its padding or a start "
+                    + "icon, focuses the input."),
                 new("What the user types stays as typed until they leave the field or press Enter, and an error waits "
                     + "until then too."),
                 new("`ClampToRange` also moves a number too large or small for the value's type to the nearer limit."),
@@ -2970,6 +2974,11 @@ public static class ExampleCatalog
                     + "if it changed, so typing doesn't bring an announcement with every key.",
                 "A search that fails reads out its message.",
             ],
+            Notes =
+            [
+                new("A press anywhere in the box outside its controls, such as its padding, focuses the "
+                    + "input."),
+            ],
             Accessibility =
             [
                 "The input has `aria-autocomplete=\"list\"` and controls a `listbox` of `option`s. Up and Down move "
@@ -3079,6 +3088,10 @@ public static class ExampleCatalog
                 "A validation message that appears as someone changes the color is read out once, and a failed submit "
                     + "reads none out, as on a [text field](components/text-field).",
                 "An `Error` your app sets is read out once when it appears, even after a submit.",
+            ],
+            Notes =
+            [
+                new("A press around the text box, such as on the field's padding, focuses it, unless it lands on a button."),
             ],
             Accessibility =
             [
@@ -3328,6 +3341,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("A press around the date boxes, such as on the field's padding, focuses the start box, unless it lands "
+                    + "on a button."),
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the start box."),
             ],
             BeforeInteractive =

@@ -114,7 +114,7 @@ export function createAutocomplete(input, listbox, events) {
     // Focus may never have reached the field when code opens the list, so closing can't rely on the field's events.
     // Judge a click by where its press began: a drag out of the field fires the click on an ancestor of the field.
     const onDocumentPointerDown = event => {
-        pressedOutside = event.target !== input && !listbox.contains(event.target);
+        pressedOutside = !control.contains(event.target);
     };
     // Waits for the click's own handlers, so a button that toggles the list doesn't see it closed and reopen it.
     const onDocumentClick = () => {

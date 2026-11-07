@@ -26,11 +26,12 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 - [x] A step button doesn't submit the form. `TbButtonBase.cs`
 - [x] Clicking the label focuses the input. `TbFieldBase.razor`
 - [ ] Holding a step button keeps stepping, as the browser's own spinner does. #148
-- [ ] Clicking anywhere in the box, such as its padding or a start icon, focuses the input. #303
+- [x] Clicking anywhere in the box outside its controls, such as its padding, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`
 - [ ] Scrolling the wheel over a focused field leaves its value alone. UNCONFIRMED
 
 ## Touch
 
+- [ ] A tap on the box's padding focuses the input. UNCONFIRMED
 - [x] The step buttons are plain buttons, so a tap is a click. `TbNumberField.razor`
 - [x] A field with a `Format` asks for the decimal keyboard. `TbNumberFieldTests.Render_ShouldBeASpinButtonShowingTheFormattedValue_WhenGivenAFormat`
 - [ ] The on-screen keyboard offers a minus sign when the field allows negative numbers. UNCONFIRMED

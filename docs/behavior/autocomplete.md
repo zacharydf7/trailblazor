@@ -18,6 +18,9 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 
 ## Pointer
 
+- [x] Clicking anywhere in the box outside its controls, such as its padding, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`
+- [x] A press on the box's padding leaves an open list open. `FieldBoxTests.Box_ShouldLeaveAnOpenListOpen_WhenItsPaddingIsPressed`
+- [x] A press on a control inside the box closes an open list when focus was in the input. A list opened from code, with focus elsewhere, stays open until a click outside the box or Escape. `FieldBoxTests.Box_ShouldCloseAnOpenList_WhenItsClearButtonIsPressedWithFocusInTheInput`
 - [x] Clicking a suggestion chooses it and keeps focus in the field. `AutocompleteTests.Autocomplete_ShouldKeepFocusInTheInput_WhenAnOptionIsClicked`
 - [x] Hovering a suggestion makes it the active one. `autocomplete.js`
 - [x] Clicking the status message does nothing and leaves the list open. `AutocompleteTests.Listbox_ShouldStayOpenWithNothingActive_WhenItsMessageIsClickedOrArrowedTo`
@@ -31,6 +34,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 
 ## Touch
 
+- [ ] A tap on the box's padding focuses the input. UNCONFIRMED
 - [x] A tap on a suggestion chooses it through the same pointer and click handlers. `autocomplete.js`
 
 ## Focus

@@ -19,7 +19,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 ## Pointer
 
 - [x] Clicking the label focuses the input. `TbTextFieldTests.Render_ShouldLinkTheLabelAndHelperToTheInput_WhenBothAreSet`
-- [ ] Clicking anywhere in the box, such as its padding or a start icon, focuses the input. #303
+- [x] Clicking anywhere in the box outside its controls, such as its padding or a start icon, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsStartIconIsPressed`
 - [x] The clear button empties the field and puts focus back in the input. `TextFieldTests.TextField_ShouldEmptyAndKeepFocus_WhenTheClearButtonIsPressed`
 - [x] The clear button shows only for text that can change. `TbTextFieldTests.Render_ShouldShowTheClearButtonOnlyForTextThatCanChange_WhenClearable`
 - [x] Pasted text fits the mask, and a short paste says so. `TextFieldTests.TextField_ShouldFitPastedTextAndFlagAShortOne_WhenItHasAMask`
@@ -27,6 +27,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 
 ## Touch
 
+- [ ] A tap on the box's padding focuses the input. UNCONFIRMED
 - [x] A tap focuses the native input and opens the on-screen keyboard, which `Type` chooses. `TbTextField.razor`
 - [x] A mask of digits asks for the number keyboard. `TextFieldMaskTests.Render_ShouldShowTheValueInTheMaskAndHintItsShape_WhenGivenAMask`
 

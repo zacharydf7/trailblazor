@@ -5,6 +5,7 @@ import './number-field.js';
 import './autofocus.js';
 import './file-upload.js';
 import './pagination.js';
+import './field-box.js';
 
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.
 export function afterWebStarted(blazor) {

@@ -1,0 +1,22 @@
+@page "/field-box"
+
+<TbTextField TValue="string" Label="Name">
+    <Start><span data-testid="name-start">Hi</span></Start>
+</TbTextField>
+<TbTextField TValue="string" Label="Notes" Lines="3" />
+<TbNumberField TValue="int" Label="Copies" />
+<TbAutocomplete TValue="string" Label="Town" Items="Towns" Clearable />
+<TbColorPicker Label="Color" />
+<TbDateRangePicker TDate="DateOnly" Label="Dates" />
+<TbTextField TValue="string" Label="Price">
+    <End><input aria-label="Unit" /></End>
+</TbTextField>
+<TbTextField TValue="string" Label="Locked" ReadOnly />
+<TbTextField TValue="string" Label="Off" Disabled />
+<fieldset disabled>
+    <TbTextField TValue="string" Label="Fenced" />
+</fieldset>
+
+@code {
+    private static readonly string[] Towns = ["Pine Hollow"];
+}

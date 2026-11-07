@@ -17,6 +17,7 @@ Familiar apps: a browser's color input, the color pickers in design tools and br
 
 ## Pointer
 
+- [x] Clicking around the text box, such as on the field's padding, focuses it, unless it lands on a button. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`
 - [x] Clicking the pad sets saturation and brightness, and the sliders follow. `ColorPickerPadTests.Pad_ShouldSetSaturationAndBrightness_WhenClicked`
 - [x] Dragging keeps following the pointer outside the pad, since it captures the pointer. `color-picker.js`
 - [x] Right-clicking the pad leaves the color alone. `ColorPickerPadTests.Pad_ShouldLeaveTheColorAlone_WhenRightClickedAfterTheColorWasTyped`
@@ -28,6 +29,7 @@ Familiar apps: a browser's color input, the color pickers in design tools and br
 
 ## Touch
 
+- [ ] A tap on the field's padding focuses the text box. UNCONFIRMED
 - [x] Dragging on the pad works by pointer events, and `touch-action: none` keeps the page from scrolling instead. `trailblazor.css`
 - [x] A pointer canceled mid-drag ends the drag and keeps the last color. `color-picker.js`
 

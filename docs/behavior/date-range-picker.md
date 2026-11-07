@@ -19,6 +19,8 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 
 ## Pointer
 
+- [x] Clicking around the date boxes, such as on the field's padding, focuses the start box, unless it lands on a button. `FieldBoxTests.Box_ShouldFocusItsFirstInput_WhenItHoldsTwo`
+- [x] A press in the open calendar leaves it open and doesn't move focus to the start box. `FieldBoxTests.Box_ShouldLeaveItsPanelOpenAndItsInputUnfocused_WhenThePanelIsPressed`
 - [x] The first click starts the range, and the second ends it, commits once and closes. `TbDateRangePickerTests.Pick_ShouldRaiseTheRangeOnce_WhenTheEndIsPicked`
 - [x] A second click on an earlier day starts over from that day. `TbDateRangePickerTests.Pick_ShouldStartAgain_WhenTheSecondDayIsEarlier`
 - [x] A second click on the same day makes a one-day range. `TbDateRangePicker.cs`
@@ -31,6 +33,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 
 ## Touch
 
+- [ ] A tap on the field's padding focuses the start box. UNCONFIRMED
 - [x] A tap picks a day through the same click handler. `date-range-picker.js`
 - [ ] A press that turns into a scroll leaves no range preview drawn. #308
 - [x] On a narrow screen the months wrap, and the panel stays within the screen and scrolls. `trailblazor.css`
