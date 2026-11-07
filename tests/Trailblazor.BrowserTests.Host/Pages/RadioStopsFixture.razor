@@ -1,0 +1,105 @@
+@page "/radio-stops"
+
+@* A radio group is one tab stop wherever it falls: ending or starting a trapped scope, or first in a dialog or popover. *@
+<button type="button" @onclick="() => _scope = Scope.GroupLast">Open group last</button>
+<button type="button" @onclick="() => _scope = Scope.GroupFirst">Open group first</button>
+<button type="button" @onclick="() => _scope = Scope.NothingChecked">Open nothing checked</button>
+<button type="button" @onclick="() => _scope = Scope.NothingCheckedFirst">Open nothing checked first</button>
+<button type="button" @onclick="() => _scope = Scope.Nameless">Open nameless</button>
+<button type="button" @onclick="() => _scope = Scope.TwoForms">Open two forms</button>
+<button type="button" @onclick="() => _scope = Scope.UnseenLast">Open unseen last</button>
+@if (_scope == Scope.GroupLast)
+{
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <label><input type="radio" name="last" />Last one</label>
+        <label><input type="radio" name="last" checked />Last two</label>
+        <label><input type="radio" name="last" />Last three</label>
+    </TbFocusScope>
+}
+else if (_scope == Scope.GroupFirst)
+{
+    <TbFocusScope Trapped>
+        <label><input type="radio" name="first" />First one</label>
+        <label><input type="radio" name="first" checked />First two</label>
+        <label><input type="radio" name="first" />First three</label>
+        <button type="button">After</button>
+    </TbFocusScope>
+}
+else if (_scope == Scope.NothingChecked)
+{
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <label><input type="radio" name="none" />None one</label>
+        <label><input type="radio" name="none" />None two</label>
+    </TbFocusScope>
+}
+else if (_scope == Scope.NothingCheckedFirst)
+{
+    <TbFocusScope Trapped>
+        <label><input type="radio" name="open" />Open one</label>
+        <label><input type="radio" name="open" />Open two</label>
+        <button type="button">After</button>
+    </TbFocusScope>
+}
+else if (_scope == Scope.Nameless)
+{
+    @* Radios with no name are no group, so each is a stop of its own. *@
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <label><input type="radio" />Nameless one</label>
+        <label><input type="radio" />Nameless two</label>
+    </TbFocusScope>
+}
+else if (_scope == Scope.TwoForms)
+{
+    @* The same name in two forms makes two groups. *@
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <form><label><input type="radio" name="shared" />Form one</label></form>
+        <form><label><input type="radio" name="shared" />Form two</label></form>
+    </TbFocusScope>
+}
+else if (_scope == Scope.UnseenLast)
+{
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <button type="button">Seen</button>
+        <div style="visibility: hidden"><button type="button">Unseen</button></div>
+    </TbFocusScope>
+}
+
+<TbButton OnClick="() => _radios = true">Open radios</TbButton>
+<TbDialog @bind-Open="_radios" Title="Radios">
+    <TbRadioGroup TValue="string" Label="Pace" @bind-Value="_pace">
+        <TbRadio Value="@("Slow")">Slow</TbRadio>
+        <TbRadio Value="@("Steady")">Steady</TbRadio>
+        <TbRadio Value="@("Fast")">Fast</TbRadio>
+    </TbRadioGroup>
+</TbDialog>
+<TbButton OnClick="() => _hidden = true">Open hidden</TbButton>
+<TbDialog @bind-Open="_hidden" Title="Hidden">
+    <button type="button" hidden>Not shown</button>
+    <div style="visibility: hidden"><button type="button">Not seen</button></div>
+    <div inert><button type="button">Not usable</button></div>
+    <TbButton>Usable</TbButton>
+</TbDialog>
+<TbPopover Label="Pick a pace">
+    <TbRadioGroup TValue="string" Label="Popover pace" @bind-Value="_popoverPace">
+        <TbRadio Value="@("Slow")">Slow</TbRadio>
+        <TbRadio Value="@("Fast")">Fast</TbRadio>
+    </TbRadioGroup>
+</TbPopover>
+<TbColorPicker Label="Accent" @bind-Value="_accent" Palette="_palette" />
+
+@code {
+    private enum Scope { None, GroupLast, GroupFirst, NothingChecked, NothingCheckedFirst, Nameless, TwoForms, UnseenLast }
+
+    private readonly string[] _palette = ["#336699", "#cc3333", "#ffcc00"];
+    private Scope _scope;
+    private bool _radios;
+    private bool _hidden;
+    private string? _pace = "Fast";
+    private string? _popoverPace = "Fast";
+    private string? _accent = "#ffcc00";
+}

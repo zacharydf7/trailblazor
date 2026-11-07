@@ -1,12 +1,6 @@
-import { autofocusTarget } from '../Trailblazor.Primitives/focus-scope.js';
+import { autofocusTarget, firstTabbable } from '../Trailblazor.Primitives/focus-scope.js';
 import { focusOrigin } from '../Trailblazor.Primitives/pointer-origin.js';
 import { alwaysUsable, hold, release } from './inert.js';
-
-// What Tab reaches; controls kept out of the tab order, such as a number field's step buttons, don't count.
-const focusableSelector = ['a[href]', 'button:not([disabled])', 'input:not([disabled]):not([type="hidden"])',
-    'select:not([disabled])', 'textarea:not([disabled])', '[tabindex]']
-    .map(selector => `${selector}:not([tabindex="-1"])`)
-    .join(', ');
 
 // Open dialogs, back to front; keys go to the frontmost, or to a modeless one that has focus, so a nested dialog closes
 // before the one beneath it.
@@ -71,7 +65,7 @@ const clamp = (value, low, high) => Math.min(Math.max(value, low), Math.max(low,
 function dialogFocusTarget(dialog, options) {
     const body = dialog.querySelector('[data-part="body"]');
     return autofocusTarget(body)
-        ?? (options.initialFocus === 'Dialog' ? dialog : body?.querySelector(focusableSelector) ?? dialog);
+        ?? (options.initialFocus === 'Dialog' ? dialog : firstTabbable(body) ?? dialog);
 }
 
 // The elements the topmost modal on the page layer made inert, with that dialog.

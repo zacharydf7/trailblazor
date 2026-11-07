@@ -42,7 +42,7 @@ Familiar apps: filter panels in Google Sheets and GitHub, Slack's profile cards
 - [x] Closing returns focus to the trigger only if it was in the panel. `popover.js`
 - [x] Focus in a panel the pointer opened keeps it open after the pointer leaves. `PopoverTests.Popover_ShouldStayOpen_WhenTheUserWorksInAHoverOpenedPanelAndThePointerLeaves`
 - [x] A button click closing the panel from code returns focus to the trigger. `popover.js`
-- [ ] Opening puts focus on a radio group's checked radio, not its first. #299
+- [x] Opening puts focus on a radio group's checked radio, not its first. `RadioStopsTests.Popover_ShouldTakeFocusOnTheCheckedRadio_WhenItOpens`
 
 ## Not applicable
 

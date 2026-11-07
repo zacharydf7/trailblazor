@@ -3812,9 +3812,10 @@ public static class ExampleCatalog
                     + "the dialog. `CloseButton = false` removes the close button. `TbDialogTitle` shows richer "
                     + "content in place of the title; keep the title's text in it, since it names the dialog.",
                     typeof(DialogHeaderExample)),
-                new("first-focus", "Where focus starts", "A dialog starts on its first field or button, or on an "
-                    + "element marked `autofocus`. `InitialFocus = DialogFocus.Dialog` starts on the dialog itself, so "
-                    + "a screen reader begins at its title. For a question with a destructive answer, start on the "
+                new("first-focus", "Where focus starts", "A dialog starts where Tab would, on its first field or "
+                    + "button or a group's chosen radio, or on an element marked `autofocus`. "
+                    + "`InitialFocus = DialogFocus.Dialog` starts on the dialog itself, so a screen reader begins at "
+                    + "its title. For a question with a destructive answer, start on the "
                     + "safe choice, as here. On closing, focus goes back to whatever opened the "
                     + "dialog.", typeof(DialogFocusExample)),
                 new("dismissing", "Dismissing", "`DismissOnEscape = false` and `DismissOnBackdrop = false` keep Escape "
@@ -3996,8 +3997,9 @@ public static class ExampleCatalog
                 new("not-trapped", "Without a trap", "Without `Trapped`, a focus scope still moves focus in and gives "
                     + "it back, and Tab moves on to the rest of the page.", typeof(FocusScopeOpenExample)),
                 new("first-focus", "Where focus goes first", "When a focus scope appears, focus moves to the element "
-                    + "marked `autofocus`, such as a field with `AutoFocus`, or else its first control, unless focus "
-                    + "is already inside. `AutoFocus=\"false\"` on the scope leaves focus where it is.",
+                    + "marked `autofocus`, such as a field with `AutoFocus`, or else where Tab would, on its first "
+                    + "control or a group's chosen radio, unless focus is already inside. `AutoFocus=\"false\"` on "
+                    + "the scope leaves focus where it is.",
                     typeof(FocusScopeAutoFocusExample)),
                 new("giving-focus-back", "Giving focus back", "When a focus scope is removed, focus returns to where "
                     + "it was, unless the user has moved it elsewhere. `RestoreFocus=\"false\"` leaves that to you, "

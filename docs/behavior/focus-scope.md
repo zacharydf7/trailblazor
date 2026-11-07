@@ -13,7 +13,10 @@ Familiar apps: how focus moves in OS dialogs and app side panels
 - [x] The outer scope traps again once the inner one goes. `FocusScopeTests.Tab_ShouldWrapInsideOuterScope_WhenNestedInnerScopeIsDisposed`
 - [x] Tab stays inside after the focused control is removed. `FocusScopeTests.Tab_ShouldStayInsideScope_WhenTrappedAndFocusedElementIsRemoved`
 - [x] Tab goes nowhere in a trapped scope with no controls. `focus-scope.js`
-- [ ] Tab wraps when the scope's first or last stop is a radio group, whichever radio is checked. #299
+- [x] Tab wraps when the scope's first or last stop is a radio group, whichever radio is checked or focused. `RadioStopsTests.FocusScope_ShouldWrapBothWays_WhenTheCheckedRadioIsNotTheLastInTheGroupThatEndsIt`, `RadioStopsTests.FocusScope_ShouldWrapBothWays_WhenTheCheckedRadioIsNotTheFirstInTheGroupThatStartsIt`, `RadioStopsTests.FocusScope_ShouldWrap_WhenFocusIsAnywhereInAnUncheckedGroupThatEndsIt`, `RadioStopsTests.FocusScope_ShouldWrapBackward_WhenFocusIsAnywhereInAnUncheckedGroupThatStartsIt`
+- [x] Radios in different forms stay separate stops. `RadioStopsTests.FocusScope_ShouldTabToTheNextGroup_WhenTwoFormsShareARadioName`
+- [x] Radios with no name stay separate stops in Chromium and Firefox. WebKit's own Tab skips the second, so forward Tab doesn't reach it there. Library radios always have a name. `RadioStopsTests.FocusScope_ShouldTabToTheNextRadio_WhenRadiosHaveNoName`
+- [x] Tab wraps past a control hidden by `visibility: hidden`, which it can't reach. `RadioStopsTests.FocusScope_ShouldWrap_WhenAControlHiddenByVisibilityEndsIt`
 
 ## Pointer
 

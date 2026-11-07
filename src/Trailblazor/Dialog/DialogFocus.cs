@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Trailblazor;
 
 /// <summary>What gets focus when a dialog opens. An element in the dialog marked <c>autofocus</c> gets focus instead
-/// whenever it can take it; when that element is a group, its checked radio or else its first field does.</summary>
+/// whenever it can take it; when that element is a group, focus goes where Tab would.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<DialogFocus>))]
 public enum DialogFocus
 {

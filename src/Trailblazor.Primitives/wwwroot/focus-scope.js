@@ -50,11 +50,12 @@ export function createFocusScope(container, options) {
 
         const first = tabbables[0];
         const last = tabbables.at(-1);
-        const focusIsOutside = !container.contains(document.activeElement);
-        if (event.shiftKey && (focusIsOutside || document.activeElement === first)) {
+        const focused = document.activeElement;
+        const focusIsOutside = !container.contains(focused);
+        if (event.shiftKey && (focusIsOutside || sameStop(focused, first))) {
             event.preventDefault();
             last.focus();
-        } else if (!event.shiftKey && (focusIsOutside || document.activeElement === last)) {
+        } else if (!event.shiftKey && (focusIsOutside || sameStop(focused, last))) {
             event.preventDefault();
             first.focus();
         }
@@ -94,10 +95,9 @@ export function autofocusTarget(container) {
     return named && markedTarget(named);
 }
 
-// A marked group sends focus where Tab would: to its checked radio, or else to its first control.
+// A marked group sends focus where Tab would.
 export function markedTarget(named) {
-    return isTabbable(named) ? named
-        : [...named.querySelectorAll('input[type=radio]:checked')].find(isTabbable) ?? getTabbables(named)[0] ?? null;
+    return isTabbable(named) ? named : firstTabbable(named);
 }
 
 // The first control Tab would reach in the container, or null.
@@ -105,11 +105,26 @@ export function firstTabbable(container) {
     return getTabbables(container)[0] ?? null;
 }
 
+// A radio group is one stop: its checked radio, or its first when none is checked.
 function getTabbables(container) {
-    return [...container.querySelectorAll(focusableSelector)].filter(isTabbable);
+    const tabbables = [...container.querySelectorAll(focusableSelector)].filter(isTabbable);
+    return tabbables.filter(element => {
+        if (element.type !== 'radio') {
+            return true;
+        }
+
+        const group = tabbables.filter(other => sameStop(other, element));
+        return element === (group.find(other => other.checked) ?? group[0]);
+    });
+}
+
+// Radios with the same name in the same form take one stop between them.
+function sameStop(one, other) {
+    return one === other || one.type === 'radio' && other.type === 'radio' && one.name !== ''
+        && one.name === other.name && one.form === other.form;
 }
 
 function isTabbable(element) {
     return element.matches(focusableSelector) && element.tabIndex >= 0 && !element.matches(':disabled')
-        && !element.closest('[inert]') && element.checkVisibility();
+        && !element.closest('[inert]') && element.checkVisibility({ visibilityProperty: true, checkVisibilityCSS: true });
 }

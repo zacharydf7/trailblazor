@@ -56,7 +56,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] An element marked `autofocus` starts with focus. `DialogTests.Dialog_ShouldFocusTheFieldMarkedAutofocus_WhenOneIsInside`
 - [x] `InitialFocus` set to the dialog starts on the dialog itself. `DialogTests.Dialog_ShouldFocusItself_WhenItsInitialFocusIsTheDialog`
 - [x] A confirmation starts on its first button, Cancel. `DialogExtrasTests.Dialog_ShouldStartOnItsFirstButton_WhenConfirming`
-- [ ] With nothing marked, focus starts where Tab would: on a group's checked radio, and never on a hidden control. #299
+- [x] With nothing marked, focus starts where Tab would: on a group's checked radio, and never on a hidden or inert control. `RadioStopsTests.Dialog_ShouldStartOnTheCheckedRadio_WhenARadioGroupComesFirst`, `RadioStopsTests.Dialog_ShouldStartOnTheFirstControlTabReaches_WhenHiddenAndInertOnesComeFirst`
 - [x] Closing returns focus to the opener. `DialogTests.Dialog_ShouldReturnItsValueAndRefocusTheOpener_WhenSaved`
 - [x] Focus moved to the page while a modal fades out stays there. `DialogTests.Dialog_ShouldLetThePageTakeInputAndKeepItsFocus_WhenAModalFadesOut`
 - [x] Minimizing and restoring keep focus on the button pressed. `DialogStateTests.Dialog_ShouldLetThePageBeUsedUntilRestored_WhenAModalIsMinimized`
