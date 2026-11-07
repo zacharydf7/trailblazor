@@ -521,6 +521,25 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldStayClosed_WhenAnArrowIsPressedWithAModifierOnTheTrigger(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Actions" });
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await trigger.FocusAsync();
+
+        foreach (var key in new[] { "Alt+ArrowDown", "Control+ArrowUp", "Meta+ArrowDown", "Shift+ArrowDown" })
+        {
+            await page.Keyboard.PressAsync(key);
+            // A wrongly opened menu shows here at once, while focus would move into it only later.
+            await Expect(page.Locator("[role=menu]:popover-open")).ToHaveCountAsync(0);
+        }
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Item(page, "Duplicate")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldChooseTheItemUnderThePointer_WhenEnterIsPressedAfterHovering(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");

@@ -15,7 +15,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Enter does nothing when neither pane can collapse. `TbSplitter.razor`
 - [x] The arrows, Home and End do nothing while either neighbor is collapsed. `splitter.js`
 - [x] Left and Right move the separator the way they point in right-to-left text. `SplitterTests.Splitter_ShouldGrowThePaneWithTheLeftArrow_WhenTheTextIsRightToLeft`
-- [ ] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. #298
+- [x] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. `SplitterTests.Splitter_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld`
 
 ## Pointer
 

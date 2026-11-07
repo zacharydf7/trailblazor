@@ -18,6 +18,22 @@ public class SplitterTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
+    {
+        var page = await OpenSplitterAsync(browser);
+        var trails = Separator(page, "Resize Trails");
+        await trails.FocusAsync();
+
+        foreach (var key in new[] { "Alt+ArrowRight", "Control+ArrowRight", "Meta+ArrowRight", "Control+End" })
+        {
+            await page.Keyboard.PressAsync(key);
+        }
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(trails).ToHaveAttributeAsync("aria-valuenow", "26");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Splitter_ShouldResizeWithinTheLimits_WhenTheKeysAreUsed(string browser)
     {
         var page = await OpenSplitterAsync(browser);

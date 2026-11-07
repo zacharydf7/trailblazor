@@ -14,7 +14,7 @@ Familiar apps: Windows property dialogs, browser developer tools, VS Code's sett
 - [x] A vertical list moves with Up and Down, and leaves Left and Right alone. `TabsTests.Tabs_ShouldMoveWithUpAndDownButNotLeftAndRight_WhenVertical`
 - [x] In right-to-left text, Left moves forward and Right moves back. `TabsTests.Tabs_ShouldMoveForwardWithTheLeftArrow_WhenThePageIsRightToLeft`
 - [x] The arrows select without raising the tab's `OnClick`, while Enter raises it. `TabsTests.Tab_ShouldRaiseItsOnClickForClicksButNotArrowKeys_WhenItsHeaderIsClickedEvenWhileSelected`
-- [ ] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. #298
+- [x] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. `TabsTests.Tabs_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld`
 
 ## Pointer
 

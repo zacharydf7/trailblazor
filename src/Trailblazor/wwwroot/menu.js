@@ -101,6 +101,10 @@ export function createMenu(root, menu, options, events) {
         }
     };
     const onTriggerKeyDown = event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+            return;
+        }
+
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();
             focusLastOnOpen = event.key === 'ArrowUp';

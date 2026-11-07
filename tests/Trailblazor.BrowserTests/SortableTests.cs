@@ -41,6 +41,24 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldLeaveTheHandlesMenuClosed_WhenUpOrDownIsPressedWithAModifier(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await Expect(Handle(page, "Block spam")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Handle(page, "Block spam").FocusAsync();
+
+        foreach (var key in new[] { "Alt+ArrowDown", "Control+ArrowUp", "Meta+ArrowDown", "Shift+ArrowUp" })
+        {
+            await page.Keyboard.PressAsync(key);
+            // A wrongly opened menu shows here at once, while focus would move into it only later.
+            await Expect(page.Locator("[role=menu]:popover-open")).ToHaveCountAsync(0);
+        }
+
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(page.GetByTestId("order")).ToHaveTextAsync("Flag invoices, Block spam, Star the team, Catch-all");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Keys_ShouldMoveTheItemAndKeepFocusOnItsHandle_WhenPressedOnTheHandle(string browser)
     {
         var page = await OpenReadyAsync(browser);

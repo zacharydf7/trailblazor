@@ -21,7 +21,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] Tab closes the menu and moves on. `MenuTests.Menu_ShouldCloseAndMoveOn_WhenTabIsPressed`
 - [x] A `KeepOpen` item leaves the menu open on a click, Enter or Space. `MenuTests.Menu_ShouldStayOpen_WhenAKeepOpenItemIsChosenByClickSpaceOrEnter`
 - [x] Enter or Space on an item whose submenu the pointer opened goes into the submenu. `MenuTests.SubMenu_ShouldGoIntoTheSubmenu_WhenEnterIsPressedOnItsItemAfterThePointerOpenedIt`, `MenuTests.SubMenu_ShouldGoIntoTheSubmenu_WhenSpaceIsPressedOnItsItemAfterThePointerOpenedIt`
-- [ ] Alt, Ctrl or Cmd with an arrow on the trigger stays with the browser. #298
+- [x] Alt, Ctrl, Shift or Cmd with an arrow on the trigger leaves the menu closed, and the key stays with the browser. `MenuTests.Menu_ShouldStayClosed_WhenAnArrowIsPressedWithAModifierOnTheTrigger`
 - [ ] A trigger that's off opens by no key, including a custom one that stays focusable. #335
 
 ## Pointer

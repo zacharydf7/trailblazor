@@ -13,7 +13,7 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 - [x] The arrows skip buttons moved into the menu and reach the More button. `ToolbarTests.Toolbar_ShouldSkipMovedButtonsAndReachTheMoreButton_WhenUsingTheArrows`
 - [x] The arrows skip disabled controls. `roving-focus.js`
 - [x] A text field keeps its own arrows, Home and End. `ToolbarTests.Toolbar_ShouldLeaveTheArrowsToATextField_WhenItHasFocus`
-- [ ] Alt, Ctrl or Cmd with an arrow stays with the browser, on a menu button too. #298
+- [x] Alt, Ctrl or Cmd with an arrow stays with the browser, on a menu button too. `ToolbarTests.Toolbar_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeldOnItsMenuButton`
 - [x] Escape closes the More menu and returns focus to its button. `MenuTests.Menu_ShouldCloseAndRefocusTheTrigger_WhenEscapeIsPressed`
 - [ ] The arrows reach a `TbSelect`, and it isn't a second tab stop. #311
 - [ ] The arrows reach a `FocusableWhenDisabled` button, so a keyboard user can find it and learn why it's off. #311

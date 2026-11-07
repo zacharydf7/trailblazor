@@ -109,7 +109,7 @@ export function attachSplitter(root, reporter, key) {
         draggedGrip = null;
     };
     const onKeyDown = event => {
-        if (separatorFor(event.target) !== event.target) {
+        if (separatorFor(event.target) !== event.target || event.altKey || event.ctrlKey || event.metaKey) {
             return;
         }
 

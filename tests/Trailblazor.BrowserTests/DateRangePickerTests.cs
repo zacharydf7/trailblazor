@@ -29,6 +29,22 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
+
+        foreach (var key in new[] { "Alt+ArrowRight", "Control+ArrowRight", "Meta+ArrowRight", "Control+Home" })
+        {
+            await page.Keyboard.PressAsync(key);
+            await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
+        }
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Day(page, "Thursday, June 4, 2026")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldOpenOnTheStartAndCommitTheRange_WhenTwoDaysArePicked(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);

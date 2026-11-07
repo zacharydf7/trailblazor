@@ -103,6 +103,25 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeldOnItsMenuButton(string browser)
+    {
+        var page = await OpenToolbarAsync(browser);
+        await NarrowAsync(page, "20rem");
+        var more = Button(page, "More");
+        await Expect(more).ToBeVisibleAsync();
+        await Expect(more).ToHaveAttributeAsync("aria-expanded", "false");
+        await more.FocusAsync();
+
+        foreach (var key in new[] { "Alt+ArrowDown", "Control+ArrowUp", "Meta+ArrowDown", "Alt+ArrowLeft", "Control+Home" })
+        {
+            await page.Keyboard.PressAsync(key);
+            // A wrongly opened menu shows here at once, while focus would move into it only later.
+            await Expect(page.Locator("[role=menu]:popover-open")).ToHaveCountAsync(0);
+            await Expect(more).ToBeFocusedAsync();
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toolbar_ShouldSkipMovedButtonsAndReachTheMoreButton_WhenUsingTheArrows(string browser)
     {
         var page = await OpenToolbarAsync(browser);

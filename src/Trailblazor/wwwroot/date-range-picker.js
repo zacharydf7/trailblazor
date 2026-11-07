@@ -75,7 +75,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     };
     const onKeyDown = event => {
         const button = event.target.closest('[data-part="day"]');
-        if (!button) {
+        if (!button || event.altKey || event.ctrlKey || event.metaKey) {
             return;
         }
 

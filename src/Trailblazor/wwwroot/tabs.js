@@ -10,7 +10,7 @@ export function attachTabs(list, order) {
     const onKeyDown = event => {
         const tabs = [...list.querySelectorAll(':scope > [role="tab"]:not(:disabled)')];
         const index = tabs.indexOf(event.target);
-        if (index < 0) {
+        if (index < 0 || event.altKey || event.ctrlKey || event.metaKey) {
             return;
         }
 

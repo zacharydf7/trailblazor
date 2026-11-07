@@ -66,6 +66,23 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs");
+        await WaitForKeysAsync(page, "Product");
+        await Tab(page, "Overview").FocusAsync();
+
+        foreach (var key in new[] { "Alt+ArrowRight", "Control+ArrowRight", "Meta+ArrowRight", "Control+End" })
+        {
+            await page.Keyboard.PressAsync(key);
+            await Expect(Tab(page, "Overview")).ToBeFocusedAsync();
+        }
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Tab(page, "Reviews")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldMoveFocusAndSelectSkippingDisabledTabs_WhenArrowKeysArePressed(string browser)
     {
         var page = await OpenAsync(browser, "/tabs");
