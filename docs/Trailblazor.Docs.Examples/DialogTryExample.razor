@@ -1,0 +1,22 @@
+@inherits ControlledExample
+
+<TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Try this dialog</TbButton>
+
+<TbDialog @bind-Open="_open" Title="Try this dialog" Options="Options">
+    <TbText>Close this dialog to change the controls.</TbText>
+    <TbDialogActions><TbButton OnClick="() => _open = false">Done</TbButton></TbDialogActions>
+</TbDialog>
+
+@code {
+    private bool _open;
+
+    private DialogOptions? Options => Values is null ? null : new()
+    {
+        Size = (DialogSize)Values[nameof(DialogOptions.Size)]!,
+        Position = (DialogPosition)Values[nameof(DialogOptions.Position)]!,
+        ShowHeader = (bool)Values[nameof(DialogOptions.ShowHeader)]!,
+        CloseButton = (bool)Values[nameof(DialogOptions.CloseButton)]!,
+        DismissOnEscape = (bool)Values[nameof(DialogOptions.DismissOnEscape)]!,
+        DismissOnBackdrop = (bool)Values[nameof(DialogOptions.DismissOnBackdrop)]!,
+    };
+}

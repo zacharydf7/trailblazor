@@ -4,8 +4,14 @@
 
 @* The demo comes first and its code only on request, so a page with several sections stays short. *@
 <div class="docs-example docs-example--frame" data-full-width="@(FullWidth ? "" : null)">
-    <div class="docs-example__stage">
-        <div class="docs-example__demo"><DynamicComponent Type="Section.Component" /></div>
+    <div class="docs-example__stage" data-controls="@(ShowsControls ? "" : null)">
+        <div class="docs-example__demo"><DynamicComponent Type="Section.Component" Parameters="DemoParameters" /></div>
+        @if (ShowsControls)
+        {
+            @* Controls can't change anything before the app runs, so a statically rendered page leaves them out. *@
+            <ExampleControlsPanel Controls="Section.Controls!" Values="_values!"
+                                  ValuesChanged="values => _values = values" />
+        }
     </div>
     <div class="docs-example__bar">
         <TbButton Variant="Variant.Text" Size="Size.Small" aria-controls="@CodeId"
@@ -21,7 +27,7 @@
         {
             @foreach (var source in Section.Sources)
             {
-                <CodeBlock Label="@source.File" Code="@source.Text" />
+                <CodeBlock Label="@FileOf(source)" Code="@CodeOf(source)" />
             }
         }
         else
@@ -39,6 +45,7 @@
 @code {
     private bool _showCode;
     private int _file;
+    private IReadOnlyDictionary<string, object?>? _values;
 
     /// <summary>The component's name in the catalog, used in the URL of the section's preview page.</summary>
     [Parameter, EditorRequired]
@@ -53,6 +60,19 @@
 
     private string CodeId => $"code-{Section.Id}";
 
-    private Task CopyAsync() =>
-        CodeCopier.CopyAsync(Browser, Announcer, Section.Sources[_file].File, Section.Sources[_file].Text);
+    private bool ShowsControls => Section.Controls is not null && RendererInfo.IsInteractive;
+
+    private Dictionary<string, object?>? DemoParameters =>
+        ShowsControls ? new() { [nameof(ControlledExample.Values)] = _values } : null;
+
+    protected override void OnInitialized() => _values = Section.Controls?.Initial;
+
+    // With controls, what a reader wants is the markup for the values they chose, not the demo that takes them.
+    private string FileOf(ExampleSource source) => Section.Controls is null ? source.File : "Markup";
+
+    private string CodeOf(ExampleSource source) =>
+        Section.Controls is { } controls ? controls.MarkupFor(_values!) : source.Text;
+
+    private Task CopyAsync() => CodeCopier.CopyAsync(Browser, Announcer, FileOf(Section.Sources[_file]),
+        CodeOf(Section.Sources[_file]));
 }

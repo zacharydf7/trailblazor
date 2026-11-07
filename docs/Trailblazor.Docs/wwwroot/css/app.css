@@ -356,6 +356,18 @@ a:focus-visible {
     padding: var(--tb-space-8) var(--tb-space-6);
 }
 
+.docs-example__stage[data-controls] {
+    grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem);
+    align-items: start;
+    gap: var(--tb-space-6);
+}
+
+@media (max-width: 40rem) {
+    .docs-example__stage[data-controls] {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 .docs-example__demo {
     max-width: 100%;
 }

@@ -1,0 +1,41 @@
+@using Trailblazor.Docs.Examples
+
+<TbStack Gap="3" role="group" aria-label="Controls">
+    @foreach (var control in Controls.Controls)
+    {
+        @switch (Values[control.Parameter])
+        {
+            case bool on:
+                <TbSwitch Label="@control.Parameter" Value="on" ValueChanged="value => SetAsync(control, value)" />
+                break;
+            case Enum chosen:
+                <TbSelect TValue="string" Label="@control.Parameter" Value="@chosen.ToString()"
+                          ValueChanged="name => SetAsync(control, Enum.Parse(chosen.GetType(), name!))">
+                    @foreach (var name in Enum.GetNames(chosen.GetType()))
+                    {
+                        <TbOption Value="name">@name</TbOption>
+                    }
+                </TbSelect>
+                break;
+            default:
+                <TbTextField TValue="string" Label="@control.Parameter" Value="@((string?)Values[control.Parameter])"
+                             ValueChanged="value => SetAsync(control, string.IsNullOrEmpty(value) ? null : value)"
+                             UpdateOnInput />
+                break;
+        }
+    }
+</TbStack>
+
+@code {
+    [Parameter, EditorRequired]
+    public ExampleControls Controls { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyDictionary<string, object?> Values { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<IReadOnlyDictionary<string, object?>> ValuesChanged { get; set; }
+
+    private Task SetAsync(ExampleControl control, object? value) =>
+        ValuesChanged.InvokeAsync(new Dictionary<string, object?>(Values) { [control.Parameter] = value });
+}

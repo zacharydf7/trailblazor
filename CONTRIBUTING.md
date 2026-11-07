@@ -72,6 +72,8 @@ mark it "n/a" with a reason (a layout component has no keys, for example). Some 
 
 - [ ] Each feature has its own section: a heading, a sentence or two on what it does and when to use it, and a demo
       of that feature alone. No section stacks unrelated demos.
+- [ ] If a component offers controls (`ExampleSection.Controls`), they're in its first section and cover its main
+      parameters.
 - [ ] Every main parameter (the ones a typical app sets) is used in at least one section, and every parameter whose
       effect isn't obvious from its name has a demo.
 - [ ] The edge cases that apply are shown, not only described: empty, loading, error or failed load, invalid, disabled,

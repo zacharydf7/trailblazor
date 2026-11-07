@@ -24,6 +24,40 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ExampleFrame_ShouldUpdateTheDemo_WhenAControlChanges(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button");
+        var controls = page.GetByRole(AriaRole.Group, new() { Name = "Controls" });
+        var demo = page.GetByRole(AriaRole.Button, new() { Name = "Try this button" });
+        await Expect(demo).ToHaveClassAsync(new Regex("tb-button--filled"));
+
+        await page.Tb().Select("Variant").ChooseAsync("Outlined");
+        await controls.GetByRole(AriaRole.Switch, new() { Name = "Disabled" }).FocusAsync();
+        await page.Keyboard.PressAsync(" ");
+
+        await Expect(demo).ToHaveClassAsync(new Regex("tb-button--outlined"));
+        await Expect(demo).ToBeDisabledAsync();
+    }
+
+    public static TheoryData<string, string> ControlledPagesInBothThemes => new(
+        from name in new[] { "button", "text-field", "select", "tabs", "dialog" }
+        from theme in new[] { "light", "dark" }
+        select (name, theme));
+
+    [Theory, MemberData(nameof(ControlledPagesInBothThemes))]
+    public async Task ExampleFrame_ShouldHaveNoAccessibilityViolations_WhenShowingItsControls(string name, string theme)
+    {
+        var page = await OpenDocsAsync("chromium", $"components/{name}");
+        await SetThemeAsync(page, theme);
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Controls" })).ToBeVisibleAsync();
+
+        var result = await page.Locator("[data-controls]").RunAxe(AxeTests.WcagAA);
+
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task IconsGuide_ShouldLoadTheIconPack_WhenOpenedThroughAnyAddressThatRoutesToIt(string browser)
     {
         var page = await OpenDocsAsync(browser, "Guides/Icons?style=rounded#find");

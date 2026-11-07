@@ -150,6 +150,9 @@ public sealed record ExampleNote(string Text)
 // One feature of a component: a heading, a sentence or two, the live demo and its code. The id names its anchor.
 public sealed record ExampleSection(string Id, string Title, string? Description, Type Component, params Type[] Parts)
 {
+    // Lets a reader change the demo's parameters on the page. Component must then inherit ControlledExample.
+    public ExampleControls? Controls { get; init; }
+
     public IReadOnlyList<ExampleSource> Sources => [.. new[] { Component }.Concat(Parts).Select(ExampleSource.Of)];
 }
 
@@ -476,6 +479,16 @@ public static class ExampleCatalog
             Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
             Sections =
             [
+                new("try-it", "Try it", "Use the controls to see what each parameter does.",
+                    typeof(ButtonTryExample))
+                {
+                    Controls = new("<TbButton{controls}>Try this button</TbButton>",
+                        ExampleControl.Choice(nameof(TbButton.Variant), Variant.Filled),
+                        ExampleControl.Choice(nameof(TbButton.Tone), Tone.Primary),
+                        ExampleControl.Choice(nameof(TbButton.Size), Size.Medium),
+                        ExampleControl.Switch(nameof(TbButton.Disabled)),
+                        ExampleControl.Switch(nameof(TbButton.Loading))),
+                },
                 new("variants-and-tones", "Variants and tones", "`Variant` sets how much weight a button has, and "
                     + "`Tone` what kind of action it is. Use `Danger` for what can't be undone.", typeof(ButtonExample)),
                 new("clicks", "Clicks", "`OnClick` runs when the button is pressed by a pointer, Enter or Space.",
@@ -1918,6 +1931,17 @@ public static class ExampleCatalog
             Related = ["number-field", "autocomplete", "select", "form", "label"],
             Sections =
             [
+                new("try-it", "Try it", "Use the controls to see what each parameter does.",
+                    typeof(TextFieldTryExample))
+                {
+                    Controls = new("<TbTextField Label=\"Try this field\"{controls} @bind-Value=\"_value\" />",
+                        ExampleControl.Text(nameof(TbTextField<string>.Placeholder)),
+                        ExampleControl.Text(nameof(TbTextField<string>.HelperText)),
+                        ExampleControl.Switch(nameof(TbTextField<string>.Disabled)),
+                        ExampleControl.Switch(nameof(TbTextField<string>.ReadOnly)),
+                        ExampleControl.Switch(nameof(TbTextField<string>.Required)),
+                        ExampleControl.Switch(nameof(TbTextField<string>.Clearable))),
+                },
                 new("label-and-help", "Label and help text", "`Label` names the field, and `HelperText` says what people "
                     + "need before they type. A long label wraps. The value stays `null` until something is typed.",
                     typeof(TextFieldExample)),
@@ -2634,6 +2658,18 @@ public static class ExampleCatalog
             FullWidth = true,
             Sections =
             [
+                new("try-it", "Try it", "Use the controls to see what each parameter does.",
+                    typeof(SelectTryExample))
+                {
+                    Controls = new("<TbSelect Label=\"Try this select\"{controls} @bind-Value=\"_value\">\n    "
+                    + "<TbOption Value=\"@(\"trail\")\">Trail</TbOption>\n    <TbOption "
+                    + "Value=\"@(\"road\")\">Road</TbOption>\n</TbSelect>",
+                        ExampleControl.Text(nameof(TbSelect<string>.Placeholder), "Choose one"),
+                        ExampleControl.Text(nameof(TbSelect<string>.HelperText)),
+                        ExampleControl.Switch(nameof(TbSelect<string>.Disabled)),
+                        ExampleControl.Switch(nameof(TbSelect<string>.Required)),
+                        ExampleControl.Switch(nameof(TbSelect<string>.Clearable))),
+                },
                 new("options-and-value", "Options and value", "Each `TbOption` is an option, `Placeholder` shows while "
                     + "nothing is chosen, and `Disabled` on an option turns off that option alone. A value can be any "
                     + "type, such as an enum.", typeof(SelectExample)),
@@ -3714,6 +3750,20 @@ public static class ExampleCatalog
             Related = ["popover", "toast", "alert"],
             Sections =
             [
+                new("try-it", "Try it", "Use the controls, then open the dialog to see what each parameter does.",
+                    typeof(DialogTryExample))
+                {
+                    Controls = new("<TbDialog @bind-Open=\"_open\" Title=\"Try this dialog\"{controls}>…</TbDialog>",
+                        ExampleControl.Choice(nameof(DialogOptions.Size), DialogSize.Medium),
+                        ExampleControl.Choice(nameof(DialogOptions.Position), DialogPosition.Center),
+                        ExampleControl.Switch(nameof(DialogOptions.ShowHeader), true),
+                        ExampleControl.Switch(nameof(DialogOptions.CloseButton), true),
+                        ExampleControl.Switch(nameof(DialogOptions.DismissOnEscape), true),
+                        ExampleControl.Switch(nameof(DialogOptions.DismissOnBackdrop), true))
+                    {
+                        AsOptions = true,
+                    },
+                },
                 new("opening", "Opening a dialog", "`IDialogService.ShowAsync` opens a component that inherits "
                     + "`TbDialogContent` and waits for its result. Escape, the backdrop and the close button call "
                     + "`OnDismissAsync`, which cancels by default. Override it to run a cancel of your own, as this "
@@ -4124,6 +4174,16 @@ public static class ExampleCatalog
             Related = ["accordion", "toggle-group", "pagination"],
             Sections =
             [
+                new("try-it", "Try it", "Use the controls to see what each parameter does.",
+                    typeof(TabsTryExample))
+                {
+                    Controls = new("<TbTabs AriaLabel=\"Try these tabs\"{controls}>\n    <TbTab "
+                    + "Text=\"First\">…</TbTab>\n    <TbTab Text=\"Second\">…</TbTab>\n    <TbTab "
+                    + "Text=\"Third\">…</TbTab>\n</TbTabs>",
+                        ExampleControl.Choice(nameof(TbTabs.Variant), Variant.Text),
+                        ExampleControl.Choice(nameof(TbTabs.Activation), TabActivation.Automatic),
+                        ExampleControl.Switch(nameof(TbTabs.Vertical)), ExampleControl.Switch(nameof(TbTabs.Centered))),
+                },
                 new("tabs", "Tabs and panels", "Each `TbTab` adds a tab and its panel. `Text` or `TextContent` is the "
                     + "tab's name, so a count inside it is read as part of the name, and `Disabled` turns a tab off. "
                     + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Only the selected panel "

@@ -39,8 +39,10 @@ public class MarkdownTests
         Assert.All(example.Shown, section =>
         {
             Assert.Contains($"\n## {section.Title}\n", markdown);
-            Assert.All(section.Sources,
-                source => Assert.Contains(source.Text.ReplaceLineEndings("\n").Trim(), markdown));
+            // A section with controls shows the markup for their starting values, not the demo that takes them.
+            var code = section.Controls is { } controls ? [controls.MarkupFor(controls.Initial)]
+                : section.Sources.Select(source => source.Text.ReplaceLineEndings("\n").Trim());
+            Assert.All(code, text => Assert.Contains(text, markdown));
         });
         // Each note's longest run of plain words, which the catalog's markup leaves as they are.
         Assert.All(example.NotesShown, note => Assert.Contains(note.Text.Split('`', '[', ']', '(', ')')
