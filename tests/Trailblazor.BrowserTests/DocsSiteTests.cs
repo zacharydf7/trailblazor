@@ -225,6 +225,23 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             "Wide code and tables should scroll inside their own box, not the page.");
     }
 
+    public static TheoryData<string> ComponentPages => new(ExampleCatalog.All.Select(example => example.Name));
+
+    // Layout doesn't differ enough between engines to run every page in each.
+    [Theory, MemberData(nameof(ComponentPages))]
+    public async Task ComponentPage_ShouldFitThePageWidth_WhenTheScreenIsAPhone(string example)
+    {
+        var page = await OpenDocsAsync("chromium", $"components/{example}",
+            new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        await Expect(page.Locator(".docs-example__stage").First).ToBeVisibleAsync();
+
+        await Expect(page.Locator(".tb-data-grid--loading")).ToHaveCountAsync(0);
+        await page.EvaluateAsync("() => document.fonts.ready");
+
+        Assert.True(await page.Locator("html").EvaluateAsync<bool>("html => html.scrollWidth <= html.clientWidth"),
+            "Wide demos should scroll inside their own box, not the page.");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ComponentPage_ShouldScrollLongCodeLinesWithoutWrapping_WhenTheyDontFit(string browser)
     {

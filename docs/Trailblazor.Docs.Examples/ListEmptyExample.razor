@@ -1,0 +1,22 @@
+@if (_saved.Count == 0)
+{
+    <TbStack Gap="2" Align="Align.Start">
+        <TbText>Trails you save show here.</TbText>
+        <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="SaveATrail">Save a trail</TbButton>
+    </TbStack>
+}
+else
+{
+    <TbList aria-label="Saved trails" Style="max-inline-size: 28rem">
+        @foreach (var trail in _saved)
+        {
+            <TbListItem @key="trail">@trail</TbListItem>
+        }
+    </TbList>
+}
+
+@code {
+    private readonly List<string> _saved = [];
+
+    private void SaveATrail() => _saved.Add("Pine Hollow loop");
+}

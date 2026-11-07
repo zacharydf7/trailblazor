@@ -1,0 +1,20 @@
+@if (_stops.Count == 0)
+{
+    <TbStack Gap="2" Align="Align.Start">
+        <TbText>Stops you add show here, ready to put in order.</TbText>
+        <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="AddStops">Add two stops</TbButton>
+    </TbStack>
+}
+else
+{
+    <TbSortable TItem="string" Items="_stops" Label="Stops" OnMove="move => move.ApplyTo(_stops)"
+                Style="max-inline-size: 28rem">
+        <ItemTemplate><TbText>@context</TbText></ItemTemplate>
+    </TbSortable>
+}
+
+@code {
+    private readonly List<string> _stops = [];
+
+    private void AddStops() => _stops.AddRange(["Pine Hollow", "Lake camp"]);
+}

@@ -1,0 +1,8 @@
+<TbSortable TItem="string" Items="Rules" Label="Locked alerts" Disabled
+            Style="max-inline-size: 28rem">
+    <ItemTemplate><TbText>@context</TbText></ItemTemplate>
+</TbSortable>
+
+@code {
+    private static readonly string[] Rules = ["Trail closed", "Storm warning"];
+}

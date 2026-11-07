@@ -21,7 +21,7 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     protected async Task<IPage> OpenDocsAsync(string browser, string path, BrowserNewContextOptions? options = null)
     {
         var page = await OpenAtAsync(browser, new Uri(Fixture.DocsAddress, path), options);
-        await page.Locator(".docs-main h1").WaitForAsync();
+        await page.Locator(".docs-main h1").First.WaitForAsync();
         return page;
     }
 

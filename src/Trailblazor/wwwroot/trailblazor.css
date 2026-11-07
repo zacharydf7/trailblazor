@@ -4609,7 +4609,10 @@
         background: var(--tb-color-primary-subtle);
     }
 
+    /* Positioned, so the hidden labels of filters scrolled out of view stay inside the box instead of widening the
+       page. */
     .tb-data-grid__scroll {
+        position: relative;
         overflow: auto;
     }
 

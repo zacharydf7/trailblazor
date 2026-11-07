@@ -1,0 +1,19 @@
+<TbSortable TItem="Stop" Items="_stops" Label="Trip stops" ItemText="stop => stop.Name" ItemKey="stop => stop.Id"
+            OnMove="move => move.ApplyTo(_stops)" Style="max-inline-size: 24rem">
+    <ItemTemplate>
+        <TbStack Gap="1">
+            <strong>@context.Name</strong>
+            <TbText Muted>@context.Note</TbText>
+        </TbStack>
+    </ItemTemplate>
+</TbSortable>
+
+@code {
+    private readonly List<Stop> _stops =
+    [
+        new(1, "The old fire lookout tower above Eagle Ridge", "Snow stays here into early summer, so bring traction."),
+        new(2, "Lake camp", "Water on site."),
+    ];
+
+    private sealed record Stop(int Id, string Name, string Note);
+}

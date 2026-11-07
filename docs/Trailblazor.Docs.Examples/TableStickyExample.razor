@@ -1,0 +1,24 @@
+@* A long log scrolls in a set height and keeps its header in view. The scroll area takes focus, so keyboard users
+   can scroll it too. *@
+<div role="region" aria-label="Trail log" tabindex="0"
+     style="max-block-size: 14rem; overflow: auto">
+    <TbTable StickyHeader Size="Size.Small" aria-label="Trail log entries">
+        <thead>
+            <tr>
+                <th scope="col">Day</th>
+                <th scope="col">Trail</th>
+                <th scope="col">Hikers</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var day in Enumerable.Range(1, 20))
+            {
+                <tr>
+                    <th scope="row">June @day</th>
+                    <td>@(day % 3 == 0 ? "Cedar Flats" : day % 2 == 0 ? "Pine Hollow" : "Eagle Ridge")</td>
+                    <td>@(4 + day * 7 % 23)</td>
+                </tr>
+            }
+        </tbody>
+    </TbTable>
+</div>

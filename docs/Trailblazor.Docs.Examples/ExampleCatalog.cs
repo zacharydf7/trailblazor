@@ -701,6 +701,39 @@ public static class ExampleCatalog
             "A list of items, each with optional leading content, a description and trailing content. Items can be "
                 + "links or buttons, and one can be marked as the current item.", typeof(ListExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a short set of items that each show a little and may do something, such as open a page.",
+            ],
+            WhenNotToUse =
+            [
+                "For rows that share columns, use a [table](components/table) or a "
+                    + "[data grid](components/data-grid).",
+                "To pick options in a form, use a [list box](components/listbox).",
+                "For items nested inside each other, use a [tree view](components/tree-view).",
+            ],
+            Related = ["table", "data-grid", "listbox", "tree-view"],
+            Sections =
+            [
+                new("buttons", "Buttons", "An item with `OnClick` is a button. `Selected` marks the current "
+                    + "one, `Disabled` turns one off, and `Description` adds a second line. `End` holds what sits after "
+                    + "the text, and a button there works on its own.", typeof(ListExample)),
+                new("links", "Links", "An item with `Href` is a link. On a link, `Selected` marks the page you're on.",
+                    typeof(ListLinksExample)),
+                new("start", "Leading content", "`Start` holds what comes before the text, such as an icon or an "
+                    + "avatar.", typeof(ListStartExample)),
+                new("ordered", "Ordered", "`Ordered` renders an `<ol>`, for steps whose order matters, so screen "
+                    + "readers say each item's place. It draws no numbers, so put them in `Start` if people need to see "
+                    + "them.", typeof(ListOrderedExample)),
+                new("dividers", "Dividers and density", "`Dividers` adds a line between items. `data-tb-density` on "
+                    + "the list makes this one compact without changing the rest of the page.",
+                    typeof(ListDividersExample)),
+                new("empty", "Empty", "A list has no message of its own, so show your own in its place until it has "
+                    + "items.", typeof(ListEmptyExample)),
+                new("long-content", "Long content", "Long text wraps inside the item, and `End` stays at the side.",
+                    typeof(ListLongExample)),
+            ],
             Api = [typeof(TbList), typeof(TbListItem)],
             Anatomy = """
                 <TbList aria-label="…">
@@ -712,14 +745,28 @@ public static class ExampleCatalog
                     </TbListItem>
                 </TbList>
                 """,
+            Keyboard =
+            [
+                new(["Tab"], "Reaches each link or button item, then any buttons in its `End`."),
+                new(["Enter"], "Follows a link or presses a button."),
+                new(["Space"], "Presses a button."),
+            ],
+            Labeling =
+            [
+                "A `list` of `listitem`s, named by `aria-label` when the page has several lists.",
+                "An item with `Href` is a `link` and one with `OnClick` a `button`. It is named by its text and then "
+                    + "its `Description`, so start the text with what the item is.",
+            ],
             Accessibility =
             [
-                "A `list` of `listitem`s; name it with `aria-label` when the page has several lists.",
-                "An item with `Href` is a `link` and one with `OnClick` a `button`, each a stop in the tab order. "
-                    + "It is named by its text and then its `Description`, so start the text with what the item is.",
                 "The `End` content sits outside the link or button, so buttons in it are separate tab stops, "
                     + "reached right after their item.",
                 "`Selected` sets `aria-current`: `page` on a link and `true` on a button or plain item.",
+            ],
+            BeforeInteractive =
+            [
+                "Items and links render in full. A link already works, and an item with `OnClick` starts working once "
+                    + "the page is interactive.",
             ],
             Target = new("list", "Campsites"),
             Blocks = ["tb-list"],
@@ -741,23 +788,63 @@ public static class ExampleCatalog
             "A list the user puts in order, by dragging an item's handle or with the arrow keys, such as rules whose "
                 + "order sets which runs first.", typeof(SortableExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when the order of a short list is what people are deciding.",
+            ],
+            WhenNotToUse =
+            [
+                "To reorder rows with columns, use a [data grid](components/data-grid) with `OnRowMove`.",
+                "To reorder nested items, use a [tree view](components/tree-view) with `OnDrop`.",
+            ],
+            Related = ["data-grid", "tree-view", "list"],
+            Sections =
+            [
+                new("order", "Put items in order", "`OnMove` gets each move and the app applies it. `CanMove` can "
+                    + "refuse one and say why, as for the last rule here. `MoveAsync(from, to)` moves an item from the "
+                    + "app's own buttons, such as Raise, with the same check and announcement.",
+                    typeof(SortableExample)),
+                new("content", "Your own content", "`ItemTemplate` draws each item, and long text wraps inside it. "
+                    + "`ItemText` names the handle when items aren't strings, and `ItemKey` tells items apart as they "
+                    + "move.", typeof(SortableContentExample)),
+                new("disabled", "Disabled", "`Disabled` turns off the handles and dragging, so people can't change the "
+                    + "order. An app's own `MoveAsync` still works.", typeof(SortableDisabledExample)),
+                new("empty", "Empty", "A sortable list has no message of its own, so show your own in its place until "
+                    + "it has items.", typeof(SortableEmptyExample)),
+            ],
             Api = [typeof(TbSortable<>), typeof(SortableMove<>), typeof(MoveCheck)],
+            Keyboard =
+            [
+                new(["Up", "Down"], "Moves the item one place, and focus stays on the handle.") { When = "On a handle" },
+                new(["Home", "End"], "Moves the item to the start or end.") { When = "On a handle" },
+                new(["Enter", "Space"], "Opens its menu: Move up, Move down, Move to the start and Move to the end.")
+                    { When = "On a handle" },
+                new(["Escape"], "Cancels a drag.") { When = "While dragging" },
+            ],
+            Labeling =
+            [
+                "A `list` named by its `Label`.",
+                "Each item's handle is a menu `button` named \"Move\" followed by the item's text, and described by how "
+                    + "its keys work.",
+            ],
+            Announcements =
+            [
+                "Each move is announced with the item's new position, such as \"Storm warning moved to position 1 of "
+                    + "4.\"",
+                "A move `CanMove` refuses is announced with its reason, which also shows beside the drop.",
+            ],
             Accessibility =
             [
-                "A `list` named by its `Label`. Each item has a handle: a menu `button` named \"Move\" followed by the "
-                    + "item's text, described by how its keys work.",
-                "On a handle, the up and down arrows move the item one place, and Home and End move it to the start "
-                    + "or end; focus stays on the handle as the item moves. Enter, Space or a click opens its menu: "
-                    + "Move up, Move down, Move to the start and Move to the end. The menu is the single-pointer way "
-                    + "that replaces dragging (WCAG 2.5.7), and it works where a screen reader keeps the arrow keys "
-                    + "for itself.",
-                "Each move is announced with the item's new position, such as \"Storm warning moved to position 1 of "
-                    + "4.\", and a move `CanMove` refuses is announced with its reason, which also shows beside the "
-                    + "drop.",
-                "A drop lands before or after the item under the pointer, shown by a line; where it can't go, the line "
+                "A click on a handle opens the same menu as Enter or Space, the single-pointer way that replaces "
+                    + "dragging (WCAG 2.5.7). "
+                    + "The menu also works where a screen reader keeps the arrow keys for itself.",
+                "A drop lands before or after the item under the pointer, shown by a line. Where it can't go, the line "
                     + "is dashed, so it doesn't rely on color.",
-                "`MoveAsync(from, to)` moves an item from the app's own buttons, such as \"Raise\" here, with the same "
-                    + "check and announcement.",
+            ],
+            BeforeInteractive =
+            [
+                "The items render in their order. Dragging and the handles start working once the page is interactive.",
             ],
             Target = new("list", "Trail alerts, first match wins"),
             Blocks = ["tb-sortable"],
@@ -3549,15 +3636,52 @@ public static class ExampleCatalog
         new("table", "Table", ExampleCategory.Content,
             "A plain table written as markup, with the data grid's look.", typeof(TableExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for rows of facts that people only read, written as markup.",
+            ],
+            WhenNotToUse =
+            [
+                "For rows people sort, filter, page, select or edit, use a [data grid](components/data-grid).",
+                "For items that each do something, or that don't share columns, use a [list](components/list).",
+            ],
+            Related = ["data-grid", "list"],
+            Pattern = new("table", "https://www.w3.org/WAI/ARIA/apg/patterns/table/"),
+            Sections =
+            [
+                new("basic", "Rows and headers", "Write the table's own markup inside it. `Striped` shades every other "
+                    + "row.", typeof(TableExample)),
+                new("sticky-header", "Sticky header and size", "`StickyHeader` keeps the header row in view as the rows "
+                    + "scroll, inside a parent with a set height and `overflow: auto`, or as the page scrolls. "
+                    + "`--tb-table-sticky-top` moves it below an app bar fixed to the top. `Size` sets how tall the "
+                    + "rows are.", typeof(TableStickyExample)),
+                new("empty", "Empty", "A table has no message of its own, so write one in a row with a `colspan` across "
+                    + "the columns.", typeof(TableEmptyExample)),
+                new("long-content", "Long content", "Long text in a data cell wraps, and the row grows to fit. Header "
+                    + "cells stay on one line, so keep them short.", typeof(TableLongExample)),
+                new("wide-tables", "Wide tables and phones", "A table with many columns doesn't fit a phone. Give it a "
+                    + "`min-inline-size` and put it in an area with `overflow: auto`, so it scrolls sideways and the "
+                    + "page doesn't.", typeof(TableWideExample)),
+            ],
             Api = [typeof(TbTable)],
+            Labeling =
+            [
+                "It is a native `table`, named by a `<caption>` or `aria-label`.",
+            ],
             Accessibility =
             [
-                "It is a native `table`: name it with a `<caption>` or `aria-label`, and give headers `scope`.",
-                "`StickyHeader` keeps the header row in view as the rows scroll, either inside a parent with a set "
-                    + "height and `overflow: auto`, like the trail log here, or as the page scrolls; "
-                    + "`--tb-table-sticky-top` moves it below an app bar fixed to the top. A scroll area of its own "
-                    + "needs `tabindex=\"0\"` and a name, so keyboard users can reach and scroll it.",
-                "For rows that sort, page or select, use the data grid.",
+                "Screen readers read each cell with its headers, from the `<th>`s and their `scope`.",
+            ],
+            AppDuties =
+            [
+                "Name the table, and give each header a `scope`.",
+                "If the table scrolls in an area of its own, give that area `tabindex=\"0\"`, `role=\"region\"` and a "
+                    + "name, so keyboard users can reach and scroll it.",
+            ],
+            BeforeInteractive =
+            [
+                "It is plain HTML, so it all renders and reads the same before the page is interactive.",
             ],
             Target = new("table", "Opening hours"),
             Blocks = ["tb-table"],

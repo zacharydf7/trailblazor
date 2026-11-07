@@ -351,6 +351,7 @@ a:focus-visible {
 /* A small demo sits centered in its frame, so a wide screen doesn't leave it stranded at one edge. */
 .docs-example__stage {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     padding: var(--tb-space-8) var(--tb-space-6);
 }
@@ -639,6 +640,11 @@ code,
 .docs-source {
     direction: ltr;
     unicode-bidi: isolate;
+}
+
+/* A long name in a sentence breaks rather than pushing the page wider than a phone. */
+code {
+    overflow-wrap: break-word;
 }
 
 .docs-code {

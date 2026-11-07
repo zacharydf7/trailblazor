@@ -16,4 +16,19 @@ public class TableTests(BrowserFixture fixture) : BrowserTest(fixture)
         var box = (await header.BoundingBoxAsync())!;
         Assert.Equal(area.Y, box.Y, tolerance: 1);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Table_ShouldScrollInItsAreaAndLeaveThePageAlone_WhenItIsWiderThanAPhone(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/table",
+            new() { ViewportSize = new() { Width = 360, Height = 640 } });
+        var area = page.GetByRole(AriaRole.Region, new() { Name = "Trail details" });
+
+        var scrolls = await area.EvaluateAsync<bool>("area => area.scrollWidth > area.clientWidth");
+        var pageScrolls = await page.EvaluateAsync<bool>(
+            "() => document.documentElement.scrollWidth > document.documentElement.clientWidth");
+
+        Assert.True(scrolls);
+        Assert.False(pageScrolls);
+    }
 }
