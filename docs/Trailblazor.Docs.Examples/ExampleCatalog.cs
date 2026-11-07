@@ -2112,7 +2112,8 @@ public static class ExampleCatalog
                     + "grouping or symbols. It gives screen readers the number as `aria-valuenow` and the formatted "
                     + "text as `aria-valuetext`.",
                 "The Decrease and Increase buttons are left out of the tab order, since the arrow keys do the same, and "
-                    + "they turn off at `Min` and `Max`.",
+                    + "they turn off at `Min` and `Max`. A click on one moves focus to the input, as a native spinner "
+                    + "does, and a tap doesn't, so the on-screen keyboard doesn't open.",
                 "Helper text and validation messages are linked to the field with `aria-describedby`, an error sets "
                     + "`aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from screen "
                     + "readers.",
@@ -2128,8 +2129,8 @@ public static class ExampleCatalog
             [
                 new("A press anywhere in the box outside its controls, such as its padding or a start "
                     + "icon, focuses the input."),
-                new("What the user types stays as typed until they leave the field or press Enter, and an error waits "
-                    + "until then too."),
+                new("What the user types stays as typed until they leave the field, press Enter or step the value, "
+                    + "and an error waits until then too."),
                 new("`ClampToRange` also moves a number too large or small for the value's type to the nearer limit."),
             ],
             Target = new("spinbutton", "Quantity"),

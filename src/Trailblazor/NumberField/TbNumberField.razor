@@ -139,7 +139,7 @@
                 EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
             builder.SetUpdatesAttributeName("value");
             builder.AddAttribute(26, "ontbnumberleave",
-                EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnChangeAsync));
+                EventCallback.Factory.Create<NumberChangeEventArgs>(this, OnLeaveAsync));
             builder.SetUpdatesAttributeName("value");
             if (UpdateOnInput)
             {
@@ -222,8 +222,12 @@
         return SetValueAsync(ToValue(stepped));
     }
 
+    // Going to or from text the browser can't read in an empty field fires no change event, so leaving commits that. Any
+    // other text is unedited or has had its change, and committing it could undo a step that hasn't rendered yet.
+    private Task OnLeaveAsync(NumberChangeEventArgs e) =>
+        e.BadInput || HasParseError ? OnChangeAsync(e) : Task.CompletedTask;
+
     // The browser reports text it can't read, such as "4-", as an empty value, which would clear a nullable field.
-    // Leaving the field commits too, since going to or from such text in an empty field fires no change event.
     private Task OnChangeAsync(NumberChangeEventArgs e)
     {
         if (e.BadInput)

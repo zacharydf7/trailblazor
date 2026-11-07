@@ -209,6 +209,192 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("1234.50");
     }
 
+    private async Task<IPage> OpenStepAsync(string browser, BrowserNewContextOptions? options = null)
+    {
+        var page = await OpenAsync(browser, "/number-step", options);
+        await Expect(page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" })).ToHaveValueAsync("5");
+        return page;
+    }
+
+    private static ILocator StepButton(IPage page, string name) =>
+        page.Locator("[data-part=control]").Filter(new()
+        {
+            Has = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" }),
+        }).GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
+    private static ILocator Chosen(IPage page) =>
+        page.GetByRole(AriaRole.Status, new() { Name = "Copies chosen", Exact = true });
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldMoveFocusToTheInput_WhenClicked(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+
+        await StepButton(page, "Increase").ClickAsync();
+
+        await Expect(copies).ToBeFocusedAsync();
+        await Expect(Chosen(page)).ToHaveTextAsync("6");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Chosen(page)).ToHaveTextAsync("7");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldLeaveFocusInTheInput_WhenItReachesALimitAndTurnsOff(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FocusAsync();
+
+        for (var clicks = 0; clicks < 5; clicks++)
+        {
+            await StepButton(page, "Increase").ClickAsync();
+        }
+
+        await Expect(StepButton(page, "Increase")).ToBeDisabledAsync();
+        await Expect(copies).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Chosen(page)).ToHaveTextAsync("9");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldLeaveFocusInTheInput_WhenPressedAfterTurningOff(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FillAsync("10");
+        await copies.PressAsync("Enter");
+        await Expect(StepButton(page, "Increase")).ToBeDisabledAsync();
+        var box = (await StepButton(page, "Increase").BoundingBoxAsync())!;
+
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+
+        await Expect(copies).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Chosen(page)).ToHaveTextAsync("9");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldKeepItsStep_WhenFocusLeavesBeforeTheStepRenders(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FocusAsync();
+
+        // The click and the leaving in one script, so no render can come between them.
+        await StepButton(page, "Increase").EvaluateAsync("""
+            button => {
+                button.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+                button.click();
+                document.activeElement.blur();
+            }
+            """);
+
+        await ClickElsewhereAsync(page);
+
+        await Expect(Chosen(page)).ToHaveTextAsync("6");
+        await Expect(copies).ToHaveValueAsync("6");
+    }
+
+    private static async Task ClickElsewhereAsync(IPage page)
+    {
+        await page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Status, new() { Name = "Elsewhere clicks", Exact = true })).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldKeepTheValueAsItIs_WhenFocusLeavesAPlainFieldThatRoundsItsText(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var rate = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Rate" });
+        var chosen = page.GetByRole(AriaRole.Status, new() { Name = "Rate chosen", Exact = true });
+        await page.Locator("[data-part=control]").Filter(new() { Has = rate }).Locator("[data-part=increment]").ClickAsync();
+        await Expect(chosen).ToHaveTextAsync("1.125");
+
+        await ClickElsewhereAsync(page);
+
+        await Expect(chosen).ToHaveTextAsync("1.125");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldKeepBothSteps_WhenASecondPressComesBeforeTheFirstRenders(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        await page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" }).FocusAsync();
+
+        // Both clicks in one script, so no render can come between them, however fast the server is.
+        await StepButton(page, "Increase").EvaluateAsync("""
+            button => {
+                for (let press = 0; press < 2; press++) {
+                    button.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+                    button.click();
+                }
+            }
+            """);
+
+        await Expect(Chosen(page)).ToHaveTextAsync("7");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldStepFromTheTypedText_WhenClickedBeforeItIsCommitted(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FillAsync("2");
+
+        await StepButton(page, "Increase").ClickAsync();
+
+        await Expect(Chosen(page)).ToHaveTextAsync("3");
+        await Expect(copies).ToHaveValueAsync("3");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldStepFromTheValueNotTheShownText_WhenClickedWithNothingTyped(string browser)
+    {
+        var page = await OpenAsync(browser, "/number-format");
+        var tip = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Tip" });
+        var field = page.Locator("[data-part=control]").Filter(new() { Has = tip });
+        await tip.FocusAsync();
+
+        await field.Locator("[data-part=increment]").ClickAsync();
+        await Expect(page.GetByTestId("tip")).ToHaveTextAsync("10.25");
+        await field.Locator("[data-part=increment]").ClickAsync();
+
+        await Expect(page.GetByTestId("tip")).ToHaveTextAsync("10.50");
+    }
+
+    [Fact]
+    public async Task StepButton_ShouldLeaveTheInputUnfocused_WhenTappedAfterTurningOff()
+    {
+        var page = await OpenStepAsync("chromium", new() { HasTouch = true, IsMobile = true });
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FillAsync("10");
+        await copies.PressAsync("Enter");
+        await Expect(StepButton(page, "Increase")).ToBeDisabledAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" }).FocusAsync();
+        var box = (await StepButton(page, "Increase").BoundingBoxAsync())!;
+
+        await page.Touchscreen.TapAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        // A tap's mouse events come a moment later, and anything they did would show by then.
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 100))");
+
+        await Expect(copies).Not.ToBeFocusedAsync();
+    }
+
+    [Fact]
+    public async Task StepButton_ShouldLeaveFocusAlone_WhenTapped()
+    {
+        var page = await OpenStepAsync("chromium", new() { HasTouch = true });
+        var elsewhere = page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" });
+        await elsewhere.FocusAsync();
+        var box = (await StepButton(page, "Increase").BoundingBoxAsync())!;
+
+        await page.Touchscreen.TapAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+
+        await Expect(Chosen(page)).ToHaveTextAsync("6");
+        await Expect(elsewhere).ToBeFocusedAsync();
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldStepFromTheValueNotTheShownText_WhenNothingWasTyped(string browser)
     {

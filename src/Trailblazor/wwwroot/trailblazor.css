@@ -2418,6 +2418,14 @@
         color: var(--tb-color-danger-text);
     }
 
+    /* A mouse press on a step button that turned off at a limit reaches the box, which puts focus in the input. Where
+       touch is the main pointer, a tap stays on the button, since focus in the input would open the on-screen keyboard. */
+    @media not all and (pointer: coarse) {
+        .tb-field__control :is([data-part="increment"], [data-part="decrement"]):disabled {
+            pointer-events: none;
+        }
+    }
+
     .tb-field__control {
         display: flex;
         align-items: center;

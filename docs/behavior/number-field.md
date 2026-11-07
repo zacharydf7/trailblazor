@@ -39,7 +39,11 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 
 ## Focus
 
-- [ ] Clicking a step button leaves focus in the input, as the browser's own spinner does. #315
+- [x] Clicking a step button leaves focus in the input, or moves it there, as the browser's own spinner does. `NumberFieldTests.StepButton_ShouldMoveFocusToTheInput_WhenClicked`, `NumberFieldTests.StepButton_ShouldLeaveFocusInTheInput_WhenItReachesALimitAndTurnsOff`, `NumberFieldTests.StepButton_ShouldLeaveFocusInTheInput_WhenPressedAfterTurningOff`
+- [x] Clicking a step button that is on first commits text typed in the input, and leaves unedited text alone. `NumberFieldTests.StepButton_ShouldStepFromTheTypedText_WhenClickedBeforeItIsCommitted`, `NumberFieldTests.StepButton_ShouldKeepTheValueAsItIs_WhenFocusLeavesAPlainFieldThatRoundsItsText`
+- [ ] Clicking a step button that turned off at a limit commits text typed in the input. #338
+- [x] A second click, or leaving the field, before the first one renders doesn't lose the step. `NumberFieldTests.StepButton_ShouldKeepBothSteps_WhenASecondPressComesBeforeTheFirstRenders`, `NumberFieldTests.StepButton_ShouldKeepItsStep_WhenFocusLeavesBeforeTheStepRenders`
+- [x] Tapping a step button doesn't move focus to the input, so the on-screen keyboard doesn't open. That includes a turned-off button where touch is the main pointer, but not on a touch laptop. `NumberFieldTests.StepButton_ShouldLeaveFocusAlone_WhenTapped`, `NumberFieldTests.StepButton_ShouldLeaveTheInputUnfocused_WhenTappedAfterTurningOff`
 - [x] A disabled field can't take focus. `TbNumberField.razor`
 - [x] A read-only field takes focus. `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
 - [x] `FocusAsync` moves focus to the input. `FieldFocusTests.FocusAsync_ShouldMoveFocusToTheFieldsInput_WhenCalled`

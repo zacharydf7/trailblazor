@@ -12,3 +12,30 @@ document.addEventListener('keydown', event => {
         event.preventDefault();
     }
 }, { capture: true });
+
+let lastPointer = 'mouse';
+document.addEventListener('pointerdown', event => lastPointer = event.pointerType, { capture: true });
+const typed = new WeakSet();
+document.addEventListener('input', event => typed.add(event.target), { capture: true });
+document.addEventListener('change', event => typed.delete(event.target), { capture: true });
+
+// A click on a step button puts focus in the input, as a number box's own spinner does, so the arrow keys keep working and
+// focus isn't lost when the button turns off at a limit. Focus stays in the input, so it fires no change event and typed
+// text commits here instead. Unedited text isn't committed: a second click before the first renders would send the old
+// text and undo the first step. A touch doesn't move focus there, since that would open the on-screen keyboard.
+document.addEventListener('mousedown', event => {
+    const button = event.target.closest?.('[data-part="increment"], [data-part="decrement"]');
+    const input = button?.closest('[data-part="control"]').querySelector('input[data-part="input"]');
+    if (!input || event.button !== 0) {
+        return;
+    }
+
+    event.preventDefault();
+    if (typed.has(input)) {
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (lastPointer === 'mouse') {
+        input.focus();
+    }
+});

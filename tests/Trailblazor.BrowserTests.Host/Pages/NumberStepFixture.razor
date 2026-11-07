@@ -1,0 +1,15 @@
+@page "/number-step"
+
+<TbNumberField TValue="int" Label="Copies" @bind-Value="_copies" Min="0" Max="10" />
+<output aria-label="Copies chosen">@_copies</output>
+<TbNumberField TValue="decimal" Label="Rate" @bind-Value="_rate" Decimals="2" Step="1" />
+<output aria-label="Rate chosen">@_rate</output>
+@* Events reach the server in order, so once the count shows, every earlier event has been handled. *@
+<button type="button" @onclick="() => _elsewhere++">Elsewhere</button>
+<output aria-label="Elsewhere clicks">@_elsewhere</output>
+
+@code {
+    private int _copies = 5;
+    private decimal _rate = 0.125m;
+    private int _elsewhere;
+}
