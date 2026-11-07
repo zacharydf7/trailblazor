@@ -25,7 +25,11 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] It flips to the other side when there's no room. `AnchoredPositionTests.CreateAsync_ShouldFlipToTop_WhenThereIsNoRoomBelow`
 - [ ] Only one tooltip shows at a time, so hovering a trigger hides the one showing for keyboard focus. #327
 - [ ] Hovering a natively disabled trigger shows its tooltip. UNCONFIRMED
-- [ ] A tooltip placed to the side in a narrow window stays on screen. #300
+- [x] A tooltip placed to the side in a narrow window stays on screen, overlapping its trigger if it must. `NarrowPlacementTests.Tooltip_ShouldStayInsideTheWindow_WhenNeitherSideHasRoom`
+- [x] Long text wraps to fit beside the trigger when it can, and holds still there. `NarrowPlacementTests.Tooltip_ShouldWrapBesideItsTriggerAndHoldStill_WhenItsTextCanWrap`
+- [x] A tooltip forced over its trigger lets a press through to the trigger, so it's the one case where moving onto the bubble doesn't keep it open. `NarrowPlacementTests.Trigger_ShouldTakeTheClick_WhenItsTooltipCoversIt`
+- [x] A tooltip goes back to its natural width once the window has room for it. `NarrowPlacementTests.Tooltip_ShouldGoBackToItsNaturalWidth_WhenTheWindowWidens`
+- [x] Placed at the start, a long tooltip wraps to fit there too. `NarrowPlacementTests.Tooltip_ShouldWrapBeforeItsTrigger_WhenPlacedAtTheStart`
 
 ## Touch
 

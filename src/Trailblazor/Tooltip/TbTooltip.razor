@@ -52,7 +52,8 @@
     public RenderFragment? TextContent { get; set; }
 
     /// <summary>Which side of the trigger the tooltip appears on, read when the tooltip is set up. It flips when
-    /// there's no room. Defaults to <see cref="Placement.Top"/>.</summary>
+    /// there's no room. Placed to the side in a narrow window, it wraps to fit or else overlaps the trigger.
+    /// Defaults to <see cref="Placement.Top"/>.</summary>
     [Parameter]
     public Placement Placement { get; set; } = Placement.Top;
 

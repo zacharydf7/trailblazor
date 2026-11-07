@@ -64,7 +64,8 @@ export function createTooltip(anchor, tooltip, options, delays) {
         hide();
     };
 
-    // The tooltip is inside the anchor, so moving onto it keeps it open; Escape always dismisses it (WCAG 1.4.13).
+    // The tooltip is inside the anchor, so moving onto it keeps it open, unless it's forced over the anchor and lets
+    // presses through; Escape always dismisses it (WCAG 1.4.13).
     anchor.addEventListener('pointerenter', showSoon);
     anchor.addEventListener('pointerleave', hideSoon);
     anchor.addEventListener('focusin', onFocusIn);

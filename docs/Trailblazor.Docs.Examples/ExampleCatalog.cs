@@ -3549,8 +3549,9 @@ public static class ExampleCatalog
                 new("description", "Describing a control", "Wrap a tooltip around a control, and `Text` appears when "
                     + "the pointer rests on the control or it takes keyboard focus.", typeof(TooltipExample)),
                 new("placement", "Placement", "`Placement` picks the side a tooltip opens on, and it flips when "
-                    + "there's no room. `Align` lines it up with the control, and `ShowArrow` adds an arrow that "
-                    + "points at the control's middle.", typeof(TooltipPlacementExample)),
+                    + "there's no room. Placed to the side in a narrow window, it wraps to fit, or overlaps the control "
+                    + "if its text can't wrap that far. `Align` lines it up with the control, and `ShowArrow` adds an "
+                    + "arrow that points at the control's middle.", typeof(TooltipPlacementExample)),
                 new("formatted", "Formatted text", "`TextContent` replaces `Text` with formatted content, such as a "
                     + "shortcut in `<kbd>`, which is read as part of the description. A tooltip can't be reached with "
                     + "the keyboard, so it holds no links or buttons.", typeof(TooltipFormattedExample)),
@@ -3647,7 +3648,9 @@ public static class ExampleCatalog
                     + "how big its built-in trigger is.",
                     typeof(MenuStyleExample)),
                 new("placement", "Placement and width", "`Placement` picks the side a menu opens on, and `Align` lines "
-                    + "it up with the trigger. `FullWidth` stretches the trigger, and the menu opens at least as wide. "
+                    + "it up with the trigger. Placed to the side in a narrow window, a menu or submenu wraps to fit, "
+                    + "or overlaps what opened it if its items can't wrap that far. `FullWidth` stretches the trigger, "
+                    + "and the menu opens at least as wide. "
                     + "A menu too long for the window opens on the side with more room and scrolls, so every item "
                     + "stays reachable.", typeof(MenuPlacementExample)),
                 new("opening-from-code", "Opening from code", "`@bind-Open` opens or closes a menu from code and tells "
@@ -4065,8 +4068,10 @@ public static class ExampleCatalog
                     + "tells you when the user does. Here, the Apply button closes it, and a second button opens it.",
                     typeof(PopoverOpenExample)),
                 new("placement", "Placement", "`Placement` picks the side a popover's panel opens on, and it flips to "
-                    + "the other side when there's no room. `Align` lines it up with the trigger. A panel too long for "
-                    + "the window opens on the side with more room and scrolls, so everything in it stays reachable.",
+                    + "the other side when there's no room. Placed to the side in a narrow window, it wraps to fit, or "
+                    + "overlaps the trigger if its content can't wrap that far. `Align` lines it up with the trigger. A "
+                    + "panel too long for the window opens on the side with more room and scrolls, so everything in it "
+                    + "stays reachable.",
                     typeof(PopoverPlacementExample)),
                 new("custom-trigger", "A custom trigger", "`Trigger` replaces a popover's button with your own. Put "
                     + "`context.Attributes` on your button, which gives it the built-in trigger's behavior and "

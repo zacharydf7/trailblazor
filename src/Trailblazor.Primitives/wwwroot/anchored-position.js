@@ -1,6 +1,9 @@
 const oppositeSides = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
 const viewportPadding = 8;
 
+// Popups wrapped to fit, which go back to their natural size before each placement measures it.
+const wrapped = new WeakSet();
+
 export function createAnchoredPosition(floating, anchor, options) {
     // The names match the C# enums; any other spelling would silently fall back to the end side.
     if (!['Top', 'Bottom', 'Start', 'End'].includes(options.side)
@@ -47,6 +50,11 @@ function position(floating, anchor, options) {
     // a scrolled popup would lose its place, so the place is put back once the new cap is on.
     const scrolled = floating.scrollTop;
     floating.style.removeProperty('--tb-available-block-size');
+    if (wrapped.delete(floating)) {
+        floating.style.removeProperty('width');
+        floating.style.removeProperty('box-sizing');
+    }
+
     const natural = { width: floating.offsetWidth, height: floating.offsetHeight };
     const viewport = { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight };
     const rtl = getComputedStyle(anchor).direction === 'rtl';
@@ -63,15 +71,22 @@ function position(floating, anchor, options) {
     const blockRoom = side === 'top' || side === 'bottom'
         ? room(side, anchorRect, options.offset, viewport) : viewport.height - 2 * viewportPadding;
     floating.style.setProperty('--tb-available-block-size', `${Math.max(blockRoom, 0)}px`);
+    if (side === 'left' || side === 'right') {
+        wrapToRoom(floating, natural.width, room(side, anchorRect, options.offset, viewport));
+    }
+
     floating.scrollTop = scrolled;
     const size = { width: floating.offsetWidth, height: floating.offsetHeight };
     const point = place(side, options.align, anchorRect, size, options.offset, rtl);
 
-    if (side === 'top' || side === 'bottom') {
-        point.x = Math.max(viewportPadding, Math.min(point.x, viewport.width - size.width - viewportPadding));
-    } else {
+    // Content too wide for the room on either side of its anchor stays on screen and overlaps the anchor.
+    point.x = Math.max(viewportPadding, Math.min(point.x, viewport.width - size.width - viewportPadding));
+    if (side === 'left' || side === 'right') {
         point.y = Math.max(viewportPadding, Math.min(point.y, viewport.height - size.height - viewportPadding));
     }
+
+    floating.toggleAttribute('data-overlaps-anchor', (side === 'left' || side === 'right')
+        && point.x < anchorRect.right && point.x + size.width > anchorRect.left);
 
     floating.style.left = `${point.x}px`;
     floating.style.top = `${point.y}px`;
@@ -81,6 +96,16 @@ function position(floating, anchor, options) {
         ? anchorRect.left + anchorRect.width / 2 - point.x
         : anchorRect.top + anchorRect.height / 2 - point.y;
     floating.style.setProperty('--tb-anchor-center', `${center}px`);
+}
+
+// A popup beside its anchor that's too wide for the room there wraps to fit, as far as its content lets it.
+function wrapToRoom(floating, natural, available) {
+    if (natural > available) {
+        wrapped.add(floating);
+        floating.style.boxSizing = 'border-box';
+        floating.style.width = 'min-content';
+        floating.style.width = `${Math.max(floating.offsetWidth, available)}px`;
+    }
 }
 
 function place(side, align, anchorRect, size, offset, rtl) {

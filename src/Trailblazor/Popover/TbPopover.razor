@@ -70,7 +70,8 @@
     public string? Title { get; set; }
 
     /// <summary>Which side of the trigger the panel opens on, read on the first render. It flips to the other side
-    /// when there's no room. Defaults to <see cref="Placement.Bottom"/>.</summary>
+    /// when there's no room. Placed to the side in a narrow window, it wraps to fit or else overlaps the trigger.
+    /// Defaults to <see cref="Placement.Bottom"/>.</summary>
     [Parameter]
     public Placement Placement { get; set; } = Placement.Bottom;
 

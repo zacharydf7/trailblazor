@@ -1,0 +1,35 @@
+@page "/narrow-placement"
+
+@* In a narrow window, neither side of these triggers has room for what opens beside them. *@
+<div style="padding: 4rem 6rem">
+    <TbPopover Label="Share" Placement="Placement.End">
+        <div style="inline-size: 12rem">Copy the link to this page.</div>
+    </TbPopover>
+    @* One long word can't wrap, so it has to overlap its trigger. *@
+    <TbTooltip Text="Supercalifragilisticexpialidocious" Placement="Placement.End">
+        <TbButton OnClick="() => _saves++">Save</TbButton>
+    </TbTooltip>
+    <output data-testid="saves">@_saves</output>
+    <TbTooltip Text="Save the current document to the shared drive now" Placement="Placement.End">
+        <TbButton>Note</TbButton>
+    </TbTooltip>
+    <TbTooltip Text="Save the current document to the shared drive now" Placement="Placement.Start">
+        <TbButton>Note before</TbButton>
+    </TbTooltip>
+    @* Short enough to fit unwrapped, and long enough to scroll once wrapped to the room beside the trigger. *@
+    <TbPopover Label="Terms" Placement="Placement.End">
+        @string.Join(" ", Enumerable.Repeat("These terms go on for long enough to scroll.", 8))
+    </TbPopover>
+    <TbMenu Label="Actions">
+        <TbSubMenu Label="Move">
+            <TbMenuItem>To the archive folder</TbMenuItem>
+            <TbMenuItem OnClick="() => _moved = true">To the shared folder</TbMenuItem>
+        </TbSubMenu>
+    </TbMenu>
+    <output data-testid="moved">@_moved</output>
+</div>
+
+@code {
+    private bool _moved;
+    private int _saves;
+}

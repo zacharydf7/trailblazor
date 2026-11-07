@@ -2881,6 +2881,15 @@
         overflow: visible;
     }
 
+    /* Forced over its trigger by a narrow window, a tooltip lets a press through, and has nowhere to point an arrow. */
+    .tb-tooltip[data-overlaps-anchor] {
+        pointer-events: none;
+    }
+
+    .tb-tooltip[data-overlaps-anchor] > .tb-tooltip__arrow {
+        display: none;
+    }
+
     /* Bridges the gap to the trigger, so the pointer never leaves the trigger on its way onto the tooltip. */
     .tb-tooltip::before {
         content: "";

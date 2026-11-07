@@ -52,7 +52,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 
 - [x] A tap on the trigger or an item works as a click, and a tap outside closes the menu through the browser's popover handling. `TbMenu.razor`
 - [x] A tap on a submenu's item opens it, and a second tap goes in; hover handling ignores anything but a mouse. `menu.js`
-- [ ] A submenu in a narrow window, such as a phone's, stays on screen. #300
+- [x] A submenu in a narrow window, such as a phone's, stays on screen and usable, overlapping its menu if it must. `NarrowPlacementTests.SubMenu_ShouldStayInsideTheWindowAndUsable_WhenNeitherSideHasRoom`
 
 ## Focus
 
