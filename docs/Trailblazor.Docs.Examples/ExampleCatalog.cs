@@ -310,22 +310,86 @@ public static class ExampleCatalog
         new("button", "Button", ExampleCategory.Actions,
             "Starts an action, in filled, outlined or text styles and every tone.", typeof(ButtonExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to start an action, such as saving or opening a dialog. Start its text with a verb, as in "
+                    + "\"Save the trip\".",
+                "Keep one filled, primary button in each part of a page, so the main action stands out.",
+            ],
+            WhenNotToUse =
+            [
+                "To go to another page, use a [link](components/link). Give the button an `Href` only where a link has "
+                    + "to look like a button.",
+                "With an icon and no text, use an [icon button](components/icon-button).",
+                "For a setting that's on or off, use a [switch](components/switch).",
+                "To pick one of a few views, use a [toggle group](components/toggle-group).",
+            ],
+            Related = ["link", "icon-button", "button-group", "toggle-group", "toolbar", "switch"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("variants-and-tones", "Variants and tones", "`Variant` sets how much weight a button has, and "
+                    + "`Tone` what kind of action it is. Use `Danger` for what can't be undone.", typeof(ButtonExample)),
+                new("clicks", "Clicks", "`OnClick` runs when the button is pressed by a pointer, Enter or Space.",
+                    typeof(ButtonClickExample)),
+                new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`.", typeof(ButtonSizeExample)),
+                new("icons-and-slots", "Icons and slots", "`StartIcon` and `EndIcon` add an icon beside the text. The "
+                    + "`Start` and `End` slots hold other content, such as a badge. An icon adds nothing to the "
+                    + "button's name, and slot content adds to it only if it has text of its own.",
+                    typeof(ButtonIconExample)),
+                new("loading", "Loading", "`Loading` shows a spinner and ignores clicks, so a slow action can't run "
+                    + "twice. The button stays focusable, so focus isn't lost while it waits.",
+                    typeof(ButtonLoadingExample)),
+                new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. With "
+                    + "`FocusableWhenDisabled` it stays a tab stop, so its tooltip can say why it is off.",
+                    typeof(ButtonDisabledExample)),
+                new("links", "Links", "`Href` renders a link drawn as a button, so it can open in a new tab. A "
+                    + "disabled one has no `href`, so it can't be followed.", typeof(ButtonLinkExample)),
+                new("toggle", "Toggle", "`@bind-Pressed` makes the button a toggle that stays pressed. Keep its text "
+                    + "the same when it is pressed, so the state isn't announced twice. If the text has to change, use "
+                    + "a plain button instead of a toggle.", typeof(ButtonToggleExample)),
+                new("submit", "Submit", "A button defaults to `type=\"button\"`, so it never submits a form by "
+                    + "accident. `Type=\"ButtonType.Submit\"` makes it submit its form.", typeof(ButtonSubmitExample)),
+                new("focus", "Moving focus", "Take a `@ref` to the button and call `FocusAsync()`, for example to "
+                    + "move focus to a Retry button when a save fails.", typeof(ButtonFocusExample)),
+                new("long-labels", "Long labels", "Long text wraps inside the button, and the button grows to fit.",
+                    typeof(ButtonLongExample)),
+            ],
             Api = [typeof(TbButton), typeof(ButtonClasses)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Presses it.") { When = "As a button" },
+                new(["Enter"], "Follows the link.") { When = "With an `Href`" },
+            ],
+            Labeling =
+            [
+                "A native `<button>`, named by its text. A decorative icon, from `StartIcon`, `EndIcon` or the `Start` "
+                    + "and `End` slots, adds nothing to the name, so a button with only an icon has no name. Use an "
+                    + "[icon button](components/icon-button) for that.",
+                "With `Href` it is a `link`, and is announced as one.",
+            ],
+            Announcements =
+            [
+                "`Loading` marks it `aria-busy`.",
+                "With `@bind-Pressed`, its state is announced through `aria-pressed`.",
+            ],
             Accessibility =
             [
-                "A native `<button>`, so Enter and Space press it. It defaults to `type=\"button\"`, so it never "
-                    + "submits a form by accident.",
-                "Its text is its name; a decorative icon, from `StartIcon`, `EndIcon` or the `Start` and `End` "
-                    + "slots, adds nothing to it.",
-                "`Disabled` takes it out of the tab order. With `FocusableWhenDisabled` it stays a tab stop, marked "
-                    + "`aria-disabled`, so its tooltip can say why it is off. `Loading` keeps it focusable too, marks "
-                    + "it `aria-disabled` and `aria-busy`, and ignores clicks.",
-                "With `Href` it is a `link` drawn as a button, so it can open in a new tab and is announced as a link. "
-                    + "A disabled one drops its address.",
-                "With `@bind-Pressed` it is a toggle button with `aria-pressed`. Keep its text the same when it is "
-                    + "pressed, or change the text instead of using a toggle, so the state isn't announced twice.",
+                "A `Loading` button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` and "
+                    + "stays a tab stop.",
                 "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
                     + "the system highlight.",
+            ],
+            AppDuties =
+            [
+                "Give it text that says what it does. If it opens a panel of your own, return focus to it when the panel "
+                    + "closes. A [dialog](components/dialog) or [menu](components/menu) does this for you.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as the same native element. A link already works, and a submit button posts its form. "
+                    + "`OnClick` starts working once the page is interactive.",
             ],
             Target = new("button", "Add item"),
             Blocks = ["tb-button"],

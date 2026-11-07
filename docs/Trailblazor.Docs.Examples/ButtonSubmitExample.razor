@@ -1,0 +1,14 @@
+<TbForm OnValidSubmit="() => _sent++" aria-label="Trail report">
+    <TbStack Gap="2">
+        <TbTextField Label="Trail name" @bind-Value="_name" Required />
+        <TbStack Row Gap="2" Align="Align.Center">
+            <TbButton Type="ButtonType.Submit" Variant="Variant.Filled" Tone="Tone.Primary">Send report</TbButton>
+            <output aria-label="Reports sent">Reports sent: @_sent</output>
+        </TbStack>
+    </TbStack>
+</TbForm>
+
+@code {
+    private string? _name;
+    private int _sent;
+}

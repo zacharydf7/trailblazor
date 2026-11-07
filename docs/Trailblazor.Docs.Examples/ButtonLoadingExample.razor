@@ -1,0 +1,13 @@
+<TbButton Loading="_saving" OnClick="SaveAsync">@(_saving ? "Saving" : "Save the trip")</TbButton>
+
+@code {
+    private bool _saving;
+
+    // Stands in for saving somewhere slow.
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        await Task.Delay(1500);
+        _saving = false;
+    }
+}

@@ -5,17 +5,31 @@ namespace Trailblazor.BrowserTests;
 public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldKeepItsTextClearOfItsBorders_WhenALongLabelWraps(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/button");
+        var button = page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Add the Eagle Ridge") });
+
+        var box = (await button.BoundingBoxAsync())!;
+        var text = (await button.Locator("[data-part=label]").BoundingBoxAsync())!;
+
+        Assert.True(text.Height > 30, "The label should wrap onto more than one line.");
+        Assert.True(text.Y >= box.Y + 2 && text.Y + text.Height <= box.Y + box.Height - 2,
+            "The text should stay clear of the button's top and bottom borders.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Button_ShouldActivate_WhenEnterOrSpaceIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/button");
-        var counter = page.GetByTestId("counter");
+        var counter = page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Clicks") });
         await counter.FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
-        await Expect(counter).ToHaveTextAsync("Clicked 1 times");
+        await Expect(counter).ToHaveTextAsync("Clicks: 1");
         await page.Keyboard.PressAsync("Space");
 
-        await Expect(counter).ToHaveTextAsync("Clicked 2 times");
+        await Expect(counter).ToHaveTextAsync("Clicks: 2");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -60,7 +74,7 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Button_ShouldShowAFocusRing_WhenFocusedByKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/button");
-        var counter = page.GetByTestId("counter");
+        var counter = page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Clicks") });
         await counter.FocusAsync();
         await page.Keyboard.PressAsync("Shift+Tab");
 
@@ -76,7 +90,7 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/button");
         var publish = page.GetByRole(AriaRole.Button, new() { Name = "Publish" });
-        await page.GetByRole(AriaRole.Button, new() { Name = "Pin to top" }).FocusAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save the trip" }).FocusAsync();
 
         await page.Keyboard.PressAsync("Tab");
 

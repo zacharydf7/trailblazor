@@ -274,7 +274,7 @@ public class ComponentPageTests : DocsTest
     [Fact]
     public void ComponentPage_ShouldLeaveOutUsageNotesAndRelated_WhenTheEntryHasNone()
     {
-        var cut = ComponentPage("button");
+        var cut = ComponentPage("icon-button");
 
         foreach (var heading in new[] { "Usage", "Notes and limitations", "Related" })
         {
@@ -293,8 +293,8 @@ public class ComponentPageTests : DocsTest
 
         Assert.Equal(button.Accessibility.Count, notes.Count);
         Assert.Equal(button.Telemetry.Count, cut.FindAll("ul[aria-label=Telemetry] li").Count);
-        Assert.StartsWith("A native <button>, so Enter and Space press it.", notes[0].TextContent);
-        Assert.Equal("<button>", notes[0].QuerySelector("code")!.TextContent);
+        Assert.StartsWith("A Loading button,", notes[0].TextContent);
+        Assert.Equal("Loading", notes[0].QuerySelector("code")!.TextContent);
         Assert.Equal("""page.GetByRole(AriaRole.Button, new() { Name = "Add item" })""",
             cut.Find("[role=region][aria-label='Finding it in Playwright']").TextContent);
     }

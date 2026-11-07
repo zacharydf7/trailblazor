@@ -1,0 +1,8 @@
+<TbStack Row Wrap Gap="2">
+    <TbButton OnClick="() => _retry.FocusAsync().AsTask()">Move focus to Retry</TbButton>
+    <TbButton @ref="_retry" Variant="Variant.Outlined">Retry</TbButton>
+</TbStack>
+
+@code {
+    private TbButton _retry = default!;
+}

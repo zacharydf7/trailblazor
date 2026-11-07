@@ -1641,13 +1641,14 @@
         gap: var(--tb-space-2);
         box-sizing: border-box;
         min-height: var(--tb-button-height, var(--tb-control-height));
-        padding: 0 var(--tb-control-padding-inline);
+        /* Only a label that wraps comes near this, so it clears the borders without changing a one-line button. */
+        padding: calc(var(--tb-space-1) / 2) var(--tb-control-padding-inline);
         border: 1px solid transparent;
         border-radius: var(--tb-button-radius, var(--tb-radius-md));
         font-family: var(--tb-font-family);
         font-size: var(--tb-font-size-sm);
         font-weight: var(--tb-font-weight-medium);
-        line-height: 1;
+        line-height: 1.25;
         text-decoration: none;
         cursor: pointer;
         transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
