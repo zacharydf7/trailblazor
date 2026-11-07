@@ -521,6 +521,127 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldChooseTheItemUnderThePointer_WhenEnterIsPressedAfterHovering(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        await Expect(Item(page, "Duplicate")).ToBeFocusedAsync();
+
+        await Item(page, "Delete").HoverAsync();
+        await Expect(Item(page, "Delete")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Output(page, "Last action")).ToHaveTextAsync("Delete");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldMoveOnFromTheItemUnderThePointer_WhenAnArrowIsPressedAfterHovering(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        await Expect(Item(page, "Duplicate")).ToBeFocusedAsync();
+
+        await Item(page, "Rename").HoverAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(Item(page, "Archive")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldFocusTheItemUnderThePointer_WhenTheItemIsDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        await Expect(Item(page, "Duplicate")).ToBeFocusedAsync();
+
+        await Item(page, "Archive").HoverAsync();
+
+        await Expect(Item(page, "Archive")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldHighlightOnlyTheFocusedItem_WhenAKeyMovesFocusOffTheItemUnderThePointer(string browser)
+    {
+        const string None = "rgba(0, 0, 0, 0)";
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        await Item(page, "Rename").HoverAsync();
+        await Expect(Item(page, "Rename")).Not.ToHaveCSSAsync("background-color", None);
+        await Expect(Item(page, "Archive")).ToHaveCSSAsync("background-color", None);
+
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(Item(page, "Archive")).Not.ToHaveCSSAsync("background-color", None);
+        await Expect(Item(page, "Rename")).ToHaveCSSAsync("background-color", None);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldFocusTheItemUnderThePointerAgain_WhenThePointerMovesAfterAKey(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).ClickAsync();
+        await Item(page, "Rename").HoverAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Item(page, "Archive")).ToBeFocusedAsync();
+
+        await NudgePointerOnAsync(page, "Rename");
+
+        await Expect(Item(page, "Rename")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldGoIntoTheSubmenu_WhenEnterIsPressedOnItsItemAfterThePointerOpenedIt(string browser) =>
+        await PressOnPointerOpenedItemAsync(browser, "Enter");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldGoIntoTheSubmenu_WhenSpaceIsPressedOnItsItemAfterThePointerOpenedIt(string browser) =>
+        await PressOnPointerOpenedItemAsync(browser, " ");
+
+    private async Task PressOnPointerOpenedItemAsync(string browser, string key)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Chart").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync(key);
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeVisibleAsync();
+        await Expect(Item(page, "Bar")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldKeepFocusInside_WhenThePointerMovesOnItsItem(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Chart").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Item(page, "Bar")).ToBeFocusedAsync();
+
+        await NudgePointerOnAsync(page, "Chart");
+
+        await Expect(Item(page, "Bar")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldLeaveFocusOnTheItemUnderThePointer_WhenThePointerMovesOffToAnotherItem(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Chart").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Item(page, "Bar")).ToBeFocusedAsync();
+
+        await Item(page, "Image").HoverAsync();
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeHiddenAsync();
+        await Expect(Item(page, "Image")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SubMenu_ShouldOpenWithoutTakingFocus_WhenThePointerRestsOnItsItem(string browser)
     {
         var page = await OpenAsync(browser, "/menu");
@@ -577,19 +698,184 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Item(page, "Shape").HoverAsync();
         await Expect(shape).ToBeVisibleAsync();
 
-        // From the item's middle towards the submenu's fourth item, pausing on Table, longer than the hover delay.
-        var from = (await Item(page, "Shape").BoundingBoxAsync())!;
-        var table = (await Item(page, "Table").BoundingBoxAsync())!;
-        var star = (await Item(page, "Star").BoundingBoxAsync())!;
-        var start = (X: from.X + from.Width / 2, Y: from.Y + from.Height / 2);
-        var end = (X: star.X + 12, Y: star.Y + star.Height / 2);
-        var pauseY = table.Y + table.Height / 2;
-        var pauseX = start.X + (end.X - start.X) * (pauseY - start.Y) / (end.Y - start.Y);
-        Assert.True(pauseX < table.X + table.Width, "The pause should be over Table.");
+        var (start, pause, end) = await WayToStarAsync(page);
 
-        var open = await MovePointerAsync(page, (start.X, start.Y, 0), (pauseX, pauseY, 250), (end.X, end.Y, 250));
+        // Pausing on Table for longer than the hover delay.
+        var open = await MovePointerAsync(page, (start.X, start.Y, 0), (pause.X, pause.Y, 250), (end.X, end.Y, 250));
 
         Assert.Contains("Shape", open);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldKeepFocusOnItsItemUntilThePointerArrives_WhenThePointerCrossesAnotherItem(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Shape").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
+        var (_, pause, end) = await WayToStarAsync(page);
+        await HoldTimersAsync(page);
+
+        await page.Mouse.MoveAsync(pause.X, pause.Y);
+        await page.Clock.RunForAsync(200);
+        await Expect(Item(page, "Shape")).ToBeFocusedAsync();
+
+        await page.Mouse.MoveAsync(end.X, end.Y);
+        await Expect(Item(page, "Star")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldCloseAndLoseItsItemsHighlight_WhenAKeyMovesFocusOffItsItem(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Shape").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(Item(page, "Table")).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
+        await Expect(Item(page, "Shape")).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldClose_WhenThePointerMovesOnAnotherItemAfterAKeyWentIntoIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Table").HoverAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(Item(page, "Shape")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
+
+        await NudgePointerOnAsync(page, "Table");
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
+        await Expect(Item(page, "Table")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldKeepFocusInside_WhenEnterGoesInBeforeTheGraceTimeRunsOut(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Shape").HoverAsync();
+        var shape = page.GetByRole(AriaRole.Menu, new() { Name = "Shape" });
+        await Expect(shape).ToBeVisibleAsync();
+        var (_, pause, _) = await WayToStarAsync(page);
+        await HoldTimersAsync(page);
+        await page.Mouse.MoveAsync(pause.X, pause.Y);
+
+        await page.Keyboard.PressAsync("Enter");
+        await page.Clock.RunForAsync(500);
+
+        await Expect(shape).ToBeVisibleAsync();
+        await Expect(shape.GetByRole(AriaRole.Menuitem).First).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldClose_WhenALetterMovesFocusOffItsItem(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Shape").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync("t");
+
+        await Expect(Item(page, "Table")).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldClose_WhenAKeyThatMovesNothingIsPressedBeforeTheHoverDelayEnds(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Shape").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
+        await HoldTimersAsync(page);
+        await Item(page, "Image").HoverAsync();
+        await Expect(Item(page, "Image")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Clock.RunForAsync(400);
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
+        await Expect(Item(page, "Image")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldCloseOneLevel_WhenEscapeIsPressedBeforeTheHoverDelayEnds(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Shape").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
+        await HoldTimersAsync(page);
+        await Item(page, "Image").HoverAsync();
+        await Expect(Item(page, "Image")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Insert" })).ToBeVisibleAsync();
+        await Expect(Item(page, "Image")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldReopenAfterTheHoverDelay_WhenThePointerMovesOnItsItemAfterAKeyClosedIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        var chart = page.GetByRole(AriaRole.Menu, new() { Name = "Chart" });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Chart").HoverAsync();
+        await Expect(chart).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(chart).ToBeHiddenAsync();
+        await HoldTimersAsync(page);
+
+        await NudgePointerOnAsync(page, "Chart");
+
+        await Expect(Item(page, "Chart")).ToBeFocusedAsync();
+        await Expect(chart).ToBeHiddenAsync();
+        await page.Clock.RunForAsync(200);
+        await Expect(chart).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldNotOpen_WhenAKeyMovesFocusBeforeTheHoverDelayEnds(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Insert" })).ToBeVisibleAsync();
+        await HoldTimersAsync(page);
+
+        await Item(page, "Chart").HoverAsync();
+        await Expect(Item(page, "Chart")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Clock.RunForAsync(400);
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Chart" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SubMenu_ShouldCloseAndFocusTheItemUnderThePointer_WhenThePointerStaysOnAnotherItemPastTheGraceTime(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).ClickAsync();
+        await Item(page, "Shape").HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeVisibleAsync();
+        var (_, pause, _) = await WayToStarAsync(page);
+        await HoldTimersAsync(page);
+
+        await page.Mouse.MoveAsync(pause.X, pause.Y);
+        await page.Clock.RunForAsync(500);
+
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Shape" })).ToBeHiddenAsync();
+        await Expect(Item(page, "Table")).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -669,6 +955,27 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await trigger.ClickAsync();
         await Expect(menu).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
         return ((await trigger.BoundingBoxAsync())!, (await menu.BoundingBoxAsync())!);
+    }
+
+    // From the middle of the Shape item toward the submenu's fourth item, along a line that crosses Table.
+    private static async Task<((float X, float Y) Start, (float X, float Y) Pause, (float X, float Y) End)>
+        WayToStarAsync(IPage page)
+    {
+        var from = (await Item(page, "Shape").BoundingBoxAsync())!;
+        var table = (await Item(page, "Table").BoundingBoxAsync())!;
+        var star = (await Item(page, "Star").BoundingBoxAsync())!;
+        var start = (X: from.X + from.Width / 2, Y: from.Y + from.Height / 2);
+        var end = (X: star.X + 12, Y: star.Y + star.Height / 2);
+        var pauseY = table.Y + table.Height / 2;
+        var pauseX = start.X + (end.X - start.X) * (pauseY - start.Y) / (end.Y - start.Y);
+        Assert.True(pauseX < table.X + table.Width, "The pause should be over Table.");
+        return (start, (pauseX, pauseY), end);
+    }
+
+    private static async Task NudgePointerOnAsync(IPage page, string item)
+    {
+        var box = (await Item(page, item).BoundingBoxAsync())!;
+        await page.Mouse.MoveAsync(box.X + 10, box.Y + box.Height / 2);
     }
 
     // Waits on the page's own timers, which fire in order with the menu's however slow the machine is.

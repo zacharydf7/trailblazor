@@ -20,7 +20,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] Escape closes one level at a time, and each level returns focus to what opened it. `MenuTests.SubMenu_ShouldCloseOneLevelAtATime_WhenEscapeIsPressed`
 - [x] Tab closes the menu and moves on. `MenuTests.Menu_ShouldCloseAndMoveOn_WhenTabIsPressed`
 - [x] A `KeepOpen` item leaves the menu open on a click, Enter or Space. `MenuTests.Menu_ShouldStayOpen_WhenAKeepOpenItemIsChosenByClickSpaceOrEnter`
-- [ ] Enter or Space on an item whose submenu the pointer opened goes into the submenu. #328
+- [x] Enter or Space on an item whose submenu the pointer opened goes into the submenu. `MenuTests.SubMenu_ShouldGoIntoTheSubmenu_WhenEnterIsPressedOnItsItemAfterThePointerOpenedIt`, `MenuTests.SubMenu_ShouldGoIntoTheSubmenu_WhenSpaceIsPressedOnItsItemAfterThePointerOpenedIt`
 - [ ] Alt, Ctrl or Cmd with an arrow on the trigger stays with the browser. #298
 - [ ] A trigger that's off opens by no key, including a custom one that stays focusable. #335
 
@@ -36,7 +36,15 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] A submenu stays open while the pointer heads for it across other items. `MenuTests.SubMenu_ShouldStayOpen_WhenThePointerPausesOnAnotherItemOnItsWayToTheSubmenu`
 - [x] A click on an item whose submenu is open goes into the submenu. `MenuTests.SubMenu_ShouldGoIntoTheSubmenu_WhenItsItemIsClickedAfterThePointerOpenedIt`
 - [x] A menu too long for the window scrolls and stays on screen. `MenuTests.Menu_ShouldStayOnScreenAndScroll_WhenNoSideHasRoomForAllItsItems`
-- [ ] The item under the pointer is the active one, so a key pressed next acts on it and only one item is highlighted. #328
+- [x] The item under the pointer is the active one, so a key pressed next acts on it. `MenuTests.Menu_ShouldChooseTheItemUnderThePointer_WhenEnterIsPressedAfterHovering`, `MenuTests.Menu_ShouldMoveOnFromTheItemUnderThePointer_WhenAnArrowIsPressedAfterHovering`, `MenuTests.Menu_ShouldFocusTheItemUnderThePointer_WhenTheItemIsDisabled`, `MenuTests.SubMenu_ShouldCloseAndFocusTheItemUnderThePointer_WhenThePointerStaysOnAnotherItemPastTheGraceTime`
+- [x] Only one item is highlighted, whether the pointer or a key moved last, besides any item whose submenu is open. `MenuTests.Menu_ShouldHighlightOnlyTheFocusedItem_WhenAKeyMovesFocusOffTheItemUnderThePointer`
+- [ ] The item Enter would choose stays highlighted after the pointer leaves the menu. #337
+- [x] A key that moves focus off an item closes the submenu open from it. `MenuTests.SubMenu_ShouldCloseAndLoseItsItemsHighlight_WhenAKeyMovesFocusOffItsItem`, `MenuTests.SubMenu_ShouldClose_WhenALetterMovesFocusOffItsItem`
+- [x] A key press stops the pointer's timers, so no submenu opens or closes late. `MenuTests.SubMenu_ShouldKeepFocusInside_WhenEnterGoesInBeforeTheGraceTimeRunsOut`, `MenuTests.SubMenu_ShouldNotOpen_WhenAKeyMovesFocusBeforeTheHoverDelayEnds`
+- [x] A key that doesn't move focus still closes a submenu open from another item, and Escape closes only that submenu. `MenuTests.SubMenu_ShouldClose_WhenAKeyThatMovesNothingIsPressedBeforeTheHoverDelayEnds`, `MenuTests.SubMenu_ShouldCloseOneLevel_WhenEscapeIsPressedBeforeTheHoverDelayEnds`
+- [x] Once a key has moved focus off an item, moving the pointer over it reopens its submenu after the hover delay. `MenuTests.SubMenu_ShouldReopenAfterTheHoverDelay_WhenThePointerMovesOnItsItemAfterAKeyClosedIt`
+- [x] Moving the pointer after a key press brings focus back to the item under the pointer, unless the key went into that item's submenu. `MenuTests.Menu_ShouldFocusTheItemUnderThePointerAgain_WhenThePointerMovesAfterAKey`, `MenuTests.SubMenu_ShouldKeepFocusInside_WhenThePointerMovesOnItsItem`, `MenuTests.SubMenu_ShouldLeaveFocusOnTheItemUnderThePointer_WhenThePointerMovesOffToAnotherItem`, `MenuTests.SubMenu_ShouldClose_WhenThePointerMovesOnAnotherItemAfterAKeyWentIntoIt`
+- [x] While the pointer crosses other items on the way to a submenu, focus stays on the item that opened it, then moves to the item where the pointer arrives. `MenuTests.SubMenu_ShouldKeepFocusOnItsItemUntilThePointerArrives_WhenThePointerCrossesAnotherItem`
 
 ## Touch
 

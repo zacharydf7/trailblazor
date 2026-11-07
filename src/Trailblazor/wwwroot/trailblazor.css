@@ -3001,7 +3001,8 @@
         cursor: pointer;
     }
 
-    .tb-menu__item:hover,
+    /* A key that moves focus takes the highlight from the item under a resting pointer. */
+    :where(.tb-menu__list:not(:has(.tb-menu__item:focus-visible))) .tb-menu__item:hover,
     .tb-menu__item:focus-visible {
         background: var(--tb-color-hover);
     }

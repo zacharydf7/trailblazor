@@ -3596,9 +3596,9 @@ public static class ExampleCatalog
                     + "icon, and `Disabled` turns an item off but keeps it focusable, marked `aria-disabled`, so "
                     + "people can still find it.", typeof(MenuExample)),
                 new("submenus", "Submenus", "`TbSubMenu` opens a second list beside an item. Resting the pointer on "
-                    + "the item opens it without moving focus, and on the way there the pointer can cross other items "
-                    + "without the submenu closing. This menu also sets `Icon`, which makes its trigger an icon button "
-                    + "named by `Label`.", typeof(MenuSubmenuExample)),
+                    + "the item opens the list without moving focus into it, and on the way there the pointer can "
+                    + "cross other items without the submenu closing. This menu also sets `Icon`, which makes its "
+                    + "trigger an icon button named by `Label`.", typeof(MenuSubmenuExample)),
                 new("checks-and-radios", "Checkbox and radio items", "`TbMenuCheckboxItem` and `TbMenuRadioItem` keep "
                     + "a value in a menu. `TbMenuGroup` and `TbMenuRadioGroup` group items under a `Label`, and "
                     + "`TbMenuSeparator` draws a line between them.", typeof(MenuCheckExample)),
@@ -3636,10 +3636,14 @@ public static class ExampleCatalog
             [
                 new(["Enter", "Space", "Down"], "Opens the menu on its first item.") { When = "On the trigger" },
                 new(["Up"], "Opens the menu on its last item.") { When = "On the trigger" },
-                new(["Up", "Down"], "Moves through the items, wrapping at the ends.") { When = "In the menu" },
+                new(["Up", "Down"], "Moves through the items from the focused one, wrapping at the ends. Moving the "
+                    + "pointer onto an item focuses it.") { When = "In the menu" },
                 new(["Home", "End"], "Jumps to the first or last item.") { When = "In the menu" },
                 new(["A letter"], "Jumps to the next item that starts with it.") { When = "In the menu" },
-                new(["Enter", "Space"], "Chooses the item, or follows a link.") { When = "In the menu" },
+                new(["Enter", "Space"], "Chooses the focused item, follows a link, or goes into a submenu.")
+                {
+                    When = "In the menu",
+                },
                 new(["Right"], "Opens a submenu.") { When = "In the menu" },
                 new(["Left"], "Closes a submenu.") { When = "In the menu" },
                 new(["Escape"], "Closes one level at a time: a submenu first, then the menu, which returns focus to "

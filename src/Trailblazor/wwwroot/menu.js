@@ -108,24 +108,38 @@ export function createMenu(root, menu, options, events) {
         }
     };
     const onMenuKeyDown = event => {
+        // A key acts on what has focus now, so a pointer timer still running mustn't undo it.
+        clearTimeout(hoverTimer);
+        clearTimeout(grace?.timer);
+        grace = null;
         const list = event.target.closest('[role="menu"]');
+        // Either timer may have been about to close a submenu open from another item, so close it now. Escape closes
+        // the topmost list by itself, and closing one here would make it close two.
+        if (event.key !== 'Escape') {
+            closeOtherSubmenus(list, document.activeElement);
+        }
+
         const all = items(list);
         const current = all.indexOf(document.activeElement);
         // Submenus open towards the end of the line, which is the left in right-to-left text.
         const inward = getComputedStyle(list).direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
         const outward = inward === 'ArrowRight' ? 'ArrowLeft' : 'ArrowRight';
+        const moveTo = index => {
+            focusItem(list, index);
+            closeOtherSubmenus(list, document.activeElement);
+        };
         switch (event.key) {
             case 'ArrowDown':
-                focusItem(list, current + 1);
+                moveTo(current + 1);
                 break;
             case 'ArrowUp':
-                focusItem(list, current - 1);
+                moveTo(current - 1);
                 break;
             case 'Home':
-                focusItem(list, 0);
+                moveTo(0);
                 break;
             case 'End':
-                focusItem(list, -1);
+                moveTo(-1);
                 break;
             case inward: {
                 const submenu = submenuOf(all[current]);
@@ -163,6 +177,7 @@ export function createMenu(root, menu, options, events) {
             default:
                 if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
                     focusByFirstLetter(all, current, event.key);
+                    closeOtherSubmenus(list, document.activeElement);
                 }
 
                 return;
@@ -173,8 +188,8 @@ export function createMenu(root, menu, options, events) {
     const onMenuClick = event => {
         const item = event.target.closest(itemSelector);
         const submenu = submenuOf(item);
-        // A click on an item whose submenu the pointer already opened goes into it, rather than toggling it shut.
-        if (submenu?.matches(':popover-open') && event.detail > 0) {
+        // A click, Enter or Space on an item whose submenu is already open goes into it, rather than toggling it shut.
+        if (submenu?.matches(':popover-open')) {
             event.preventDefault();
             focusItem(submenu, 0);
             return;
@@ -192,6 +207,10 @@ export function createMenu(root, menu, options, events) {
         clearTimeout(grace?.timer);
         hovered = lastPoint = grace = null;
     };
+    // A submenu left open beside the active item would keep its own item highlighted and take the next Escape.
+    const closeOtherSubmenus = (list, item) => items(list).map(submenuOf)
+        .filter(other => other && other !== submenuOf(item) && other.matches(':popover-open'))
+        .forEach(other => other.hidePopover());
     // Opens the hovered item's submenu, and closes the other submenus open from the same list.
     const hoverOver = target => {
         const list = target?.closest('[role="menu"]');
@@ -199,13 +218,22 @@ export function createMenu(root, menu, options, events) {
             return;
         }
 
-        const submenu = submenuOf(target.closest(itemSelector));
-        items(list).map(submenuOf).filter(other => other && other !== submenu && other.matches(':popover-open'))
-            .forEach(other => other.hidePopover());
+        const hoveredItem = target.closest(itemSelector);
+        closeOtherSubmenus(list, hoveredItem);
+        const submenu = submenuOf(hoveredItem);
         if (submenu && !submenu.matches(':popover-open')) {
             openedByHover.add(submenu);
             submenu.showPopover();
         }
+    };
+    const hoverOverSoon = target => {
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(() => hoverOver(target), hoverDelay);
+    };
+    // The pointer and the keys share one active item, so a key pressed next acts on the item under the pointer.
+    const hoverItem = item => {
+        hovered = item;
+        item?.focus({ preventScroll: true });
     };
     const onPointerMove = event => {
         if (event.pointerType !== 'mouse') {
@@ -217,6 +245,12 @@ export function createMenu(root, menu, options, events) {
         lastPoint = point;
         const item = event.target.closest(itemSelector);
         if (item === hovered) {
+            // Moving the pointer takes focus back from a key, unless the key went into this item's submenu.
+            if (item && document.activeElement !== item && !submenuOf(item)?.contains(document.activeElement)) {
+                item.focus({ preventScroll: true });
+                hoverOverSoon(item);
+            }
+
             return;
         }
 
@@ -226,7 +260,9 @@ export function createMenu(root, menu, options, events) {
             grace = { submenu, points: [from, ...nearCorners(submenu, from)], timer: 0 };
             grace.timer = setTimeout(() => {
                 grace = null;
-                hoverOver(document.elementFromPoint(lastPoint.x, lastPoint.y));
+                const target = document.elementFromPoint(lastPoint.x, lastPoint.y);
+                hoverItem(target?.closest(itemSelector));
+                hoverOver(target);
             }, graceTime);
         }
 
@@ -240,9 +276,8 @@ export function createMenu(root, menu, options, events) {
             grace = null;
         }
 
-        hovered = item;
-        clearTimeout(hoverTimer);
-        hoverTimer = setTimeout(() => hoverOver(event.target), hoverDelay);
+        hoverItem(item);
+        hoverOverSoon(event.target);
     };
 
     // Toggle events don't bubble, so the submenus' toggles are caught in the capture phase.
