@@ -1,0 +1,17 @@
+<TbForm aria-label="Trail report" OnValidSubmit="Save" OnReset="() => _saved = null" Style="max-inline-size: 24rem">
+    <TbTextField Label="Trail" @bind-Value="_trail" Required RequiredMessage="Enter the trail's name." />
+    <TbNumberField TValue="int?" Label="Hikers" @bind-Value="_hikers" />
+    <TbStack Row Gap="2">
+        <TbButton Type="ButtonType.Submit">Save report</TbButton>
+        <TbButton Type="ButtonType.Reset" Variant="Variant.Outlined" Tone="Tone.Neutral">Start over</TbButton>
+    </TbStack>
+    <output>@_saved</output>
+</TbForm>
+
+@code {
+    private string? _trail = "Ridge loop";
+    private int? _hikers = 4;
+    private string? _saved;
+
+    private void Save() => _saved = $"Saved {_trail} with {_hikers} hikers.";
+}

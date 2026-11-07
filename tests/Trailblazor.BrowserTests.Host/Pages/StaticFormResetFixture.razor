@@ -1,0 +1,12 @@
+@page "/static-form-reset"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* With no circuit, the browser's own reset is all there is. *@
+<TbForm aria-label="Trip" FormName="static-reset" OnValidSubmit="() => { }">
+    <TbTextField Label="Name" @bind-Value="_name" />
+    <TbButton Type="ButtonType.Reset">Start over</TbButton>
+</TbForm>
+
+@code {
+    private string? _name = "Robin";
+}

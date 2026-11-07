@@ -1557,6 +1557,9 @@ Trailblazor.TbFocusScope.TbFocusScope() -> void
 Trailblazor.TbFocusScope.Trapped.get -> bool
 Trailblazor.TbFocusScope.Trapped.set -> void
 Trailblazor.TbForm
+Trailblazor.TbForm.OnReset.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbForm.OnReset.set -> void
+Trailblazor.TbForm.ResetAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbForm.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbForm.ChildContent.set -> void
 Trailblazor.TbForm.DataAnnotations.get -> bool

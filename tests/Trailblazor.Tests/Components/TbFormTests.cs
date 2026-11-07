@@ -82,6 +82,323 @@ public class TbFormTests : BunitContext
     }
 
     [Fact]
+    public void Reset_ShouldPutTheValueBackAndHideTheMessages_WhenTheFormResets()
+    {
+        _name = "Robin";
+        var resets = 0;
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.IsValid, _valid)
+            .Add(form => form.IsValidChanged, (bool valid) => _valid = valid)
+            .Add(form => form.OnReset, () => resets++)
+            .Add(form => form.ChildContent, (RenderFragment)AddNameField));
+        cut.Find("input").Change("");
+        cut.Find("form").Submit();
+        Assert.NotEmpty(cut.FindAll("[data-part=error]"));
+
+        cut.Find("form").Reset();
+
+        Assert.Equal("Robin", _name);
+        Assert.Equal("Robin", cut.Find("input").GetAttribute("value"));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+        Assert.True(_valid);
+        Assert.Equal(1, resets);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldShowNoMessage_WhenTheFirstValueWouldFail()
+    {
+        var cut = RenderForm();
+        cut.Find("input").Change("Robin");
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Null(_name);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+        Assert.False(_valid);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldGoBackToTheParentsLatestValue_WhenTheParentSetOneAfterTheFirstRender()
+    {
+        var cut = RenderForm();
+        _name = "Loaded";
+        cut.Render();
+        cut.Find("input").Change("Typed");
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Equal("Loaded", _name);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldKeepTheParentsError_WhenTheParentSetOne()
+    {
+        _name = "Robin";
+        _nameError = "That name is taken.";
+        var cut = RenderForm();
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Equal("That name is taken.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Reset_ShouldHideTheAnnotationsMessages_WhenGivenDataAnnotations()
+    {
+        var cut = RenderModelForm(new Trip());
+        await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
+        Assert.NotEmpty(_errors);
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+        Assert.Empty(_errors);
+
+        Assert.False(await cut.InvokeAsync(() => cut.Instance.ValidateAsync()));
+        Assert.NotEmpty(_errors);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldLeaveAValidatorsMessages_WhenTheValidatorAddedThem()
+    {
+        var model = new Trip();
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.Model, model)
+            .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<DataAnnotationsValidator>(0);
+                builder.CloseComponent();
+            })));
+        await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.NotEmpty(_errors);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldMarkTheFormUnmodified_WhenAFieldHadChanged()
+    {
+        var context = new EditContext(new Trip());
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.EditContext, context)
+            .Add(form => form.ChildContent, (RenderFragment)AddNameField));
+        cut.Find("input").Change("Robin");
+        Assert.True(context.IsModified());
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.False(context.IsModified());
+    }
+
+    [Fact]
+    public async Task Reset_ShouldClearUnreadableDates_WhenCalledFromCode()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbDateRangePicker<DateOnly>>(0);
+            builder.AddAttribute(1, nameof(TbDateRangePicker<DateOnly>.Label), "Dates");
+            builder.AddAttribute(2, nameof(TbDateRangePicker<DateOnly>.Value),
+                new DateRange<DateOnly>(new(2026, 6, 1), new(2026, 6, 5)));
+            builder.CloseComponent();
+        })));
+        var first = cut.Find("[data-part=start-input]").GetAttribute("value");
+        cut.Find("[data-part=start-input]").Change("not a date");
+        Assert.Equal("not a date", cut.Find("[data-part=start-input]").GetAttribute("value"));
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Equal(first, cut.Find("[data-part=start-input]").GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task Reset_ShouldClearAnAutocompletesUnreadableText_WhenItsValueStaysTheSame()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbAutocomplete<double?>>(0);
+            builder.AddAttribute(1, nameof(TbAutocomplete<double?>.FreeText), true);
+            builder.AddAttribute(2, nameof(TbAutocomplete<double?>.Value), (double?)5);
+            builder.AddAttribute(3, nameof(TbAutocomplete<double?>.Items), (IEnumerable<double?>)[5, 10]);
+            builder.CloseComponent();
+        })));
+        cut.Find("input").Input("abc");
+        cut.Find("input").Change("abc");
+        Assert.NotEmpty(cut.FindAll("[data-part=error]"));
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Equal("5", cut.Find("input").GetAttribute("value"));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
+    public async Task Reset_ShouldLetAValidatorCheckAgain_WhenTheValueChanged()
+    {
+        var trip = new Trip { Leader = "Sam" };
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.Model, trip)
+            .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<DataAnnotationsValidator>(0);
+                builder.CloseComponent();
+                builder.OpenComponent<TbTextField<string>>(1);
+                builder.AddAttribute(2, nameof(TbTextField<string>.Value), trip.Leader);
+                builder.AddAttribute(3, nameof(TbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create<string>(this, value => trip.Leader = value));
+                builder.AddAttribute(4, nameof(TbTextField<string>.ValueExpression),
+                    (System.Linq.Expressions.Expression<Func<string>>)(() => trip.Leader!));
+                builder.CloseComponent();
+            })));
+        cut.Find("input").Change("");
+        Assert.NotEmpty(_errors);
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Equal("Sam", trip.Leader);
+        Assert.Empty(_errors);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldNotAddAValidatorsMessage_WhenItWasntShowingOne()
+    {
+        var trip = new Trip();
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.Model, trip)
+            .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<DataAnnotationsValidator>(0);
+                builder.CloseComponent();
+                builder.OpenComponent<TbTextField<string>>(1);
+                builder.AddAttribute(2, nameof(TbTextField<string>.Value), trip.Leader);
+                builder.AddAttribute(3, nameof(TbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create<string>(this, value => trip.Leader = value));
+                builder.AddAttribute(4, nameof(TbTextField<string>.ValueExpression),
+                    (System.Linq.Expressions.Expression<Func<string>>)(() => trip.Leader!));
+                builder.CloseComponent();
+            })));
+        cut.Find("input").Change("Sam");
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Null(trip.Leader);
+        Assert.Empty(_errors);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldNotAddAValidatorsMessage_WhenOnlyTheParentsErrorIsShowing()
+    {
+        var trip = new Trip();
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.Model, trip)
+            .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<DataAnnotationsValidator>(0);
+                builder.CloseComponent();
+                builder.OpenComponent<TbTextField<string>>(1);
+                builder.AddAttribute(2, nameof(TbTextField<string>.Value), trip.Leader);
+                builder.AddAttribute(3, nameof(TbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create<string>(this, value => trip.Leader = value));
+                builder.AddAttribute(4, nameof(TbTextField<string>.ValueExpression),
+                    (System.Linq.Expressions.Expression<Func<string>>)(() => trip.Leader!));
+                builder.AddAttribute(5, nameof(TbTextField<string>.Error), "That name is taken.");
+                builder.CloseComponent();
+            })));
+        cut.Find("input").Change("Sam");
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Equal(["That name is taken."], _errors);
+    }
+
+    [Fact]
+    public async Task Reset_ShouldNotFail_WhenAnEarlierFieldsResetRemovesAnAutocomplete()
+    {
+        var cut = Render<KindForm>();
+        cut.Find("input").Change("Other");
+        cut.FindAll("input")[1].Input("Rid");
+
+        await cut.InvokeAsync(() => cut.FindComponent<TbForm>().Instance.ResetAsync());
+
+        Assert.Single(cut.FindAll("input"));
+        Assert.Equal("Trail", cut.Find("input").GetAttribute("value"));
+    }
+
+    // A field that shows another for one of its values, so resetting it can remove the other mid-reset.
+    private sealed class KindForm : ComponentBase
+    {
+        private string? _kind = "Trail";
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbForm>(0);
+            builder.AddComponentParameter(1, nameof(TbForm.ChildContent), (RenderFragment)(content =>
+            {
+                content.OpenComponent<TbTextField<string>>(0);
+                content.AddComponentParameter(1, nameof(TbTextField<string>.Value), _kind);
+                content.AddComponentParameter(2, nameof(TbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create<string>(this, value => _kind = value));
+                content.CloseComponent();
+                if (_kind == "Other")
+                {
+                    content.OpenComponent<TbAutocomplete<string>>(3);
+                    content.AddComponentParameter(4, nameof(TbAutocomplete<string>.Items),
+                        (IEnumerable<string>)["Ridge"]);
+                    content.CloseComponent();
+                }
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    [Fact]
+    public async Task Reset_ShouldGoBackToAValueTheParentRewrote_WhenItAnsweredAnEdit()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbTextField<string>>(0);
+            builder.AddAttribute(1, nameof(TbTextField<string>.Value), _name);
+            builder.AddAttribute(2, nameof(TbTextField<string>.ValueChanged),
+                EventCallback.Factory.Create<string>(this, value => _name = value?.Trim()));
+            builder.CloseComponent();
+        })));
+        cut.Find("input").Change(" Sam ");
+        cut.Render();
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Equal("Sam", _name);
+        Assert.Equal("Sam", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task Reset_ShouldReadOutNothing_WhenTheValueItGoesBackToWouldFail()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderForm();
+        cut.Find("input").Change("Robin");
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Empty(announcer.FindAll("[role=status] p"));
+    }
+
+    [Fact]
+    public async Task Reset_ShouldEmptyAFileUploadsPickerAndItsRejections_WhenCalled()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbFileUpload>(0);
+            builder.AddAttribute(1, nameof(TbFileUpload.Label), "Map");
+            builder.AddAttribute(2, nameof(TbFileUpload.Accept), ".pdf");
+            builder.CloseComponent();
+        })));
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("notes", "notes.txt"));
+        Assert.NotEmpty(cut.FindAll("[data-part=rejected]"));
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+
+        Assert.Empty(cut.FindAll("[data-part=rejected]"));
+        Assert.Single(JSInterop.Invocations["clearPicker"]);
+    }
+
+    [Fact]
     public void Submit_ShouldRaiseOnInvalidSubmitWithTheParentsError_WhenTheParentSetsOne()
     {
         _name = "Robin";

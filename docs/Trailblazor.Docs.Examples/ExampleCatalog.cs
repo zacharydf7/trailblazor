@@ -1832,6 +1832,10 @@ public static class ExampleCatalog
                 new("your-own-edit-context", "Your own edit context", "An `EditContext` of your own tells you what "
                     + "has changed, and can clear that after a save. `ResetValidationAsync` hides the messages again "
                     + "after an undo.", typeof(FormEditContextExample)),
+                new("starting-over", "Starting over", "A button with `Type=\"ButtonType.Reset\"` takes the fields, and "
+                    + "what they're bound to, back to the values the parent last gave them, and hides their messages. "
+                    + "`ResetAsync` does the same from code, and `OnReset` lets you reset anything else.",
+                    typeof(FormResetExample)),
                 new("server-errors", "Server errors", "A field's `Error` shows what the server said, and blocks the "
                     + "next submit until it is cleared, so clear it when the value changes. `Loading` shows the save "
                     + "is running and ignores more clicks.", typeof(FormServerExample)),
@@ -1857,6 +1861,7 @@ public static class ExampleCatalog
                 "A failed submit reads out no messages, so a form with several errors doesn't speak them all at once. "
                     + "The user hears the field focus moves to, with its message.",
                 "A message that appears as someone edits a field, or an `Error` the parent sets, is read out once.",
+                "A reset reads out nothing.",
             ],
             Accessibility =
             [
@@ -1865,6 +1870,7 @@ public static class ExampleCatalog
                     + "moves to the first field with an error, or into a radio or checkbox group where its "
                     + "`FocusAsync()` would.",
                 "With `OnSubmit`, focus stays where it is, so your handler can move it.",
+                "A reset leaves focus where it was.",
             ],
             AppDuties =
             [
@@ -1878,7 +1884,8 @@ public static class ExampleCatalog
             [
                 "With a `FormName`, it posts as a static form. The fields check themselves on the server, and the "
                     + "page comes back with their messages. With no script running, focus doesn't move and nothing "
-                    + "is read out.",
+                    + "is read out. A reset button is left to the browser, which puts the inputs back to what the page "
+                    + "came with, and `OnReset` doesn't run.",
             ],
             Notes =
             [
@@ -1892,6 +1899,12 @@ public static class ExampleCatalog
                 new("A form with `OnSubmit` isn't counted in `trailblazor.form.submitted`, since it doesn't validate "
                     + "the submit itself."),
                 new("Every field has `FocusAsync()`, to move focus from code. A disabled field doesn't take focus."),
+                new("A reset leaves a field's `Error` in place, so clear it in `OnReset` if the form is starting over. A "
+                    + "message from a `DataAnnotationsValidator` inside the form stays too, unless the reset changes "
+                    + "the field's value and the validator passes the value it goes back to. The form's own "
+                    + "`DataAnnotations` clears its messages either way. "
+                    + "A value the parent set in answer to an edit, such as a trimmed one, is what the field goes back "
+                    + "to. Controls that aren't Trailblazor fields are yours to reset in `OnReset`."),
             ],
             Target = new("form", "Trip sign-up"),
             Blocks = ["tb-form"],

@@ -115,6 +115,12 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _startInput.FocusAsync(preventScroll);
 
+    private protected override Task OnResetAsync()
+    {
+        ClearTexts();
+        return Task.CompletedTask;
+    }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {

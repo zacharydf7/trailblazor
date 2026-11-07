@@ -218,6 +218,14 @@
         return base.TryParse(IncludeMaskLiterals ? shown : slotted, out value, out error);
     }
 
+    private protected override Task OnResetAsync()
+    {
+        _delay?.Dispose();
+        _delay = null;
+        _typed = null;
+        return Task.CompletedTask;
+    }
+
     private Task OnTextAsync(string? text)
     {
         if (!UpdateOnInput || UpdateDelay is not { } delay)

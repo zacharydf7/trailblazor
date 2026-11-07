@@ -156,6 +156,29 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public async Task Reset_ShouldDropTextWaitingOutTheDelay_WhenTheFormResets()
+    {
+        var values = new List<string?>();
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbTextField<string>>(0);
+            builder.AddAttribute(1, nameof(TbTextField<string>.UpdateOnInput), true);
+            builder.AddAttribute(2, nameof(TbTextField<string>.UpdateDelay), (TimeSpan?)TimeSpan.FromMilliseconds(300));
+            builder.AddAttribute(3, nameof(TbTextField<string>.Value), "Robin");
+            builder.AddAttribute(4, nameof(TbTextField<string>.ValueChanged),
+                EventCallback.Factory.Create<string>(this, values.Add));
+            builder.CloseComponent();
+        })));
+        cut.Find("input").Input("Sam");
+
+        await cut.InvokeAsync(() => cut.Instance.ResetAsync());
+        _time.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.Empty(values);
+        Assert.Equal("Robin", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
     public void Input_ShouldWaitForTypingToPause_WhenGivenAnUpdateDelay()
     {
         var values = new List<string?>();

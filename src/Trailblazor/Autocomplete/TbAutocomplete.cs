@@ -109,6 +109,16 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
 
+    private protected override Task OnResetAsync()
+    {
+        StopSearch();
+        _shownValue = Value;
+        _text = Value is null ? "" : TextOf(Value);
+        _results = [];
+        _searched = false;
+        return Task.CompletedTask;
+    }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {

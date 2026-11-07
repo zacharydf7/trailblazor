@@ -12,7 +12,7 @@
 @inject IServiceProvider Services
 
 @* The fields check themselves, so the browser's own validation bubbles are turned off. *@
-<EditForm @attributes="AdditionalAttributes" id="@Id" EditContext="_editContext" FormName="@FormName"
+<EditForm @attributes="FormAttributes" id="@Id" EditContext="_editContext" FormName="@FormName"
           OnSubmit="SubmitAsync" novalidate class="@ClassNames.Join("tb-form", Class)" style="@Style">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </EditForm>
@@ -90,6 +90,11 @@
     [Parameter]
     public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
+    /// <summary>Raised when the form resets, once its fields are back, so the app can reset anything else, such as a
+    /// plain input. Use it instead of <c>onreset</c>, which the form takes for itself.</summary>
+    [Parameter]
+    public EventCallback OnReset { get; set; }
+
     /// <summary>A label this form's use is counted under, such as <c>"new-trail"</c>, so the app can see how often
     /// people submit it, and how often it fails, through the <c>Trailblazor</c> meter: counted in
     /// <c>trailblazor.control.shown</c> when it first renders, and in <c>trailblazor.form.submitted</c> with
@@ -102,6 +107,19 @@
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private object Id => AdditionalAttributes?.GetValueOrDefault("id") ?? _id;
+
+    // The browser's reset would clear the inputs and leave what they're bound to, so the fields do it instead. A
+    // component can't take @onreset:preventDefault, so the attribute it compiles to goes in by name.
+    private Dictionary<string, object> FormAttributes
+    {
+        get
+        {
+            var attributes = AdditionalAttributes?.ToDictionary() ?? [];
+            attributes["onreset"] = EventCallback.Factory.Create(this, ResetAsync);
+            attributes["__internal_preventDefault_onreset"] = true;
+            return attributes;
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -165,6 +183,34 @@
 
         _editContext.NotifyValidationStateChanged();
         await ReportAsync();
+    }
+
+    /// <summary>Takes every field back to the value its parent last gave it, updating what it's bound to, and hides
+    /// the messages from the fields' own checks and from <see cref="DataAnnotations"/>, as a button with
+    /// <see cref="ButtonType.Reset"/> does. Focus stays where it is. A field's <c>Error</c> from the parent stays. A
+    /// message from a validator inside the form stays too, unless the reset changes the field's value, in which case the
+    /// validator checks the field again. A value the parent set in answer to an edit, such as a trimmed one, is the value
+    /// the field goes back to. Text still being typed in a focused input isn't part of the reset: if the field's value
+    /// doesn't change, the text stays and becomes the value once it's committed. Input waiting out a text field's
+    /// <c>UpdateDelay</c> is dropped.</summary>
+    public async Task ResetAsync()
+    {
+        foreach (var field in _fields.ToList())
+        {
+            await field.ResetAsync();
+        }
+
+        // The data annotations validation clears its messages only when disposed, so a new one takes its place.
+        if (_annotations is not null)
+        {
+            _annotations.Dispose();
+            _annotations = _editContext.EnableDataAnnotationsValidation(Services);
+        }
+
+        _editContext.MarkAsUnmodified();
+        _editContext.NotifyValidationStateChanged();
+        await ReportAsync();
+        await OnReset.InvokeAsync();
     }
 
     internal void Add(IFormField field) => _fields.Add(field);

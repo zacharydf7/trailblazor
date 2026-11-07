@@ -1,0 +1,31 @@
+@page "/form-reset"
+
+@* A field of each kind, starting filled, with what they're bound to under them. *@
+<TbForm aria-label="Trip">
+    <TbTextField Label="Name" Required @bind-Value="_name" />
+    <TbNumberField TValue="int?" Label="Count" @bind-Value="_count" />
+    <TbTextField TValue="int?" Label="Age" @bind-Value="_age" />
+    <TbSelect TValue="string" Label="Size" @bind-Value="_size">
+        <TbOption Value="@("Small")">Small</TbOption>
+        <TbOption Value="@("Large")">Large</TbOption>
+    </TbSelect>
+    <TbCheckbox TValue="bool" Label="Guide" @bind-Value="_guide" />
+    <TbAutocomplete TValue="string" Label="Trail" Items="_trails" @bind-Value="_trail" />
+    <TbColorPicker Label="Color" @bind-Value="_color" />
+    <TbDateRangePicker TDate="DateOnly" Label="Dates" @bind-Value="_dates" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+    <TbButton Type="ButtonType.Reset">Start over</TbButton>
+</TbForm>
+<output>@_name @_count @_age @_size @_guide @_trail @_color</output>
+
+@code {
+    private readonly string[] _trails = ["Ridge", "River"];
+    private string? _name = "Robin";
+    private int? _count = 3;
+    private int? _age = 30;
+    private string? _size = "Small";
+    private bool _guide = true;
+    private string? _trail = "Ridge";
+    private string? _color = "#336699";
+    private DateRange<DateOnly> _dates = new(new(2026, 6, 1), new(2026, 6, 5));
+}

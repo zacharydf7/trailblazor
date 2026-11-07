@@ -108,6 +108,76 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldPutFieldsAndTheirValuesBack_WhenItsResetButtonIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/form-reset");
+        var size = page.GetByRole(AriaRole.Combobox, new() { Name = "Size" });
+        await Expect(size).ToHaveAttributeAsync("data-ready", "");
+        var bound = page.Locator("output");
+        var first = await bound.TextContentAsync();
+        await Field(page, "Name").FillAsync("");
+        await page.GetByLabel("Count").FillAsync("9");
+        await Field(page, "Age").FillAsync("40");
+        await size.ClickAsync();
+        await page.GetByRole(AriaRole.Option, new() { Name = "Large" }).ClickAsync();
+        await page.GetByRole(AriaRole.Checkbox, new() { Name = "Guide" }).UncheckAsync();
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await trail.FillAsync("Riv");
+        await page.GetByRole(AriaRole.Option, new() { Name = "River" }).ClickAsync();
+        await page.GetByLabel("Color").First.FillAsync("#112233");
+        await Button(page, "Send").ClickAsync();
+        await Expect(Field(page, "Name")).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(Field(page, "Name")).ToBeFocusedAsync();
+        var reset = Button(page, "Start over");
+        await reset.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(bound).ToHaveTextAsync(first!);
+        await Expect(reset).ToBeFocusedAsync();
+        await Expect(Field(page, "Name")).ToHaveValueAsync("Robin");
+        await Expect(Field(page, "Name")).Not.ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(page.GetByLabel("Count")).ToHaveValueAsync("3");
+        await Expect(size).ToContainTextAsync("Small");
+        await Expect(page.GetByRole(AriaRole.Checkbox, new() { Name = "Guide" })).ToBeCheckedAsync();
+        await Expect(trail).ToHaveValueAsync("Ridge");
+        await Expect(page.GetByLabel("Color").First).ToHaveValueAsync("#336699");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldClearUnreadableText_WhenItsResetButtonIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/form-reset");
+        var start = page.Locator("[data-part=start-input]");
+        var age = Field(page, "Age");
+        var firstDate = await start.InputValueAsync();
+        await age.FillAsync("old");
+        await age.BlurAsync();
+        await Expect(age).ToHaveAttributeAsync("aria-invalid", "true");
+        await start.FillAsync("not a date");
+        await start.BlurAsync();
+        await Expect(start).ToHaveAttributeAsync("aria-invalid", "true");
+
+        await Button(page, "Start over").ClickAsync();
+
+        await Expect(age).ToHaveValueAsync("30");
+        await Expect(age).Not.ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(start).ToHaveValueAsync(firstDate);
+        await Expect(start).Not.ToHaveAttributeAsync("aria-invalid", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldLeaveTheResetToTheBrowser_WhenTheFormIsOnAStaticPage(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-reset");
+        await Field(page, "Name").FillAsync("Sam");
+
+        await Button(page, "Start over").ClickAsync();
+
+        await Expect(Field(page, "Name")).ToHaveValueAsync("Robin");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task FormExample_ShouldValidateAndPost_WhenItsStaticExampleIsOnAStaticPage(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-tbform");

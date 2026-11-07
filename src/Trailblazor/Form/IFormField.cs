@@ -8,6 +8,9 @@ internal interface IFormField
 
     void HideMessages();
 
+    // Goes back to the value the parent last gave it, showing no message, for a form reset.
+    Task ResetAsync();
+
     // Counts the field in trailblazor.field.invalid when it has an error, after its form failed to submit.
     void CountIfInvalid();
 }

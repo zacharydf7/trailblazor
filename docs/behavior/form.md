@@ -19,7 +19,17 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 - [x] A field fixed after a failed submit lets the next submit through. `TbTextFieldTests.Submit_ShouldGoThrough_WhenTheFieldIsFixedAfterAFailedSubmit`
 - [x] An empty required field that is disabled or read-only doesn't block a submit. `TbFormTests.Submit_ShouldSubmit_WhenAnEmptyRequiredFieldIsDisabledOrReadOnly`
 - [x] Clicking a `Loading` submit button doesn't submit again. `ButtonTests.Button_ShouldNotSubmitTheForm_WhenLoadingOrDisabledButFocusable`
-- [ ] A button with `Type="ButtonType.Reset"` resets the fields and their bound values together and hides their messages. #314
+- [x] A button with `Type="ButtonType.Reset"` resets the fields and their bound values together and hides their messages. `FormTests.Form_ShouldPutFieldsAndTheirValuesBack_WhenItsResetButtonIsPressed`, `TbFormTests.Reset_ShouldPutTheValueBackAndHideTheMessages_WhenTheFormResets`
+- [x] A reset goes back to the last value the parent set, even one set in answer to an edit. `TbFormTests.Reset_ShouldGoBackToTheParentsLatestValue_WhenTheParentSetOneAfterTheFirstRender`, `TbFormTests.Reset_ShouldGoBackToAValueTheParentRewrote_WhenItAnsweredAnEdit`
+- [x] A field reset to a value that would fail shows no message, from its own checks or from a validator that wasn't showing one, even beside a parent's `Error`. `TbFormTests.Reset_ShouldShowNoMessage_WhenTheFirstValueWouldFail`, `TbFormTests.Reset_ShouldNotAddAValidatorsMessage_WhenItWasntShowingOne`, `TbFormTests.Reset_ShouldNotAddAValidatorsMessage_WhenOnlyTheParentsErrorIsShowing`
+- [x] A reset that changes a field's value lets a validator inside the form check again, so its message clears when the value is good. `TbFormTests.Reset_ShouldLetAValidatorCheckAgain_WhenTheValueChanged`
+- [x] A reset that removes a later field doesn't fail. `TbFormTests.Reset_ShouldNotFail_WhenAnEarlierFieldsResetRemovesAnAutocomplete`
+- [x] A reset reads out nothing. `TbFormTests.Reset_ShouldReadOutNothing_WhenTheValueItGoesBackToWouldFail`
+- [x] A reset drops text a field is still holding: an autocomplete's unreadable text and a text field's input waiting out `UpdateDelay`. `TbFormTests.Reset_ShouldClearAnAutocompletesUnreadableText_WhenItsValueStaysTheSame`, `TbTextFieldTests.Reset_ShouldDropTextWaitingOutTheDelay_WhenTheFormResets`
+- [x] A reset clears a field's unreadable text and the message about it, from code too. `FormTests.Form_ShouldClearUnreadableText_WhenItsResetButtonIsPressed`, `TbFormTests.Reset_ShouldClearUnreadableDates_WhenCalledFromCode`
+- [x] A reset empties a file upload's picker and its rejections. `TbFormTests.Reset_ShouldEmptyAFileUploadsPickerAndItsRejections_WhenCalled`
+- [x] A reset marks the edit context unmodified. `TbFormTests.Reset_ShouldMarkTheFormUnmodified_WhenAFieldHadChanged`
+- [x] On a static page, the browser's own reset puts the inputs back. `FormTests.Form_ShouldLeaveTheResetToTheBrowser_WhenTheFormIsOnAStaticPage`
 
 ## Touch
 
@@ -33,6 +43,7 @@ Nothing of its own: taps reach the form as clicks on its fields and buttons.
 - [x] A field only marked `Invalid`, with no message to fix, is passed over. `FormTests.Form_ShouldFocusTheFieldWithAnError_WhenAFieldAboveItIsOnlyMarkedInvalid`
 - [x] With `OnSubmit`, focus is left for the handler, for example to move to an error summary. `FormTests.FormExample_ShouldMoveFocusToTheErrorSummary_WhenSubmittedWithErrors`
 - [x] A successful submit leaves focus where it was. `TbForm.razor`
+- [x] A reset leaves focus on its button when pressed from the keyboard. `FormTests.Form_ShouldPutFieldsAndTheirValuesBack_WhenItsResetButtonIsPressed`
 
 ## Not applicable
 

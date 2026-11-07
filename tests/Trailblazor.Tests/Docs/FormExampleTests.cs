@@ -184,6 +184,20 @@ public class FormExampleTests : DocsTest
     }
 
     [Fact]
+    public async Task FormResetExample_ShouldPutTheFieldsBackAndClearTheSavedLine_WhenStartOverIsPressed()
+    {
+        var cut = Render<FormResetExample>();
+        await Field(cut, "Trail").ChangeAsync(new() { Value = "Lake path" });
+        await cut.Find("form").SubmitAsync();
+        Assert.Equal("Saved Lake path with 4 hikers.", cut.Find("output").TextContent);
+
+        await cut.Find("form").ResetAsync();
+
+        Assert.Equal("Ridge loop", Field(cut, "Trail").GetAttribute("value"));
+        Assert.Empty(cut.Find("output").TextContent);
+    }
+
+    [Fact]
     public async Task FormServerExample_ShouldShowTheServersErrorAndClearItOnEdit_WhenTheCampsiteIsTaken()
     {
         var cut = Render<FormServerExample>();

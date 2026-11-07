@@ -108,6 +108,12 @@ public partial class TbFileUpload
         await ClearPickerAsync();
     }
 
+    private protected override async Task OnResetAsync()
+    {
+        _rejected.Clear();
+        await ClearPickerAsync();
+    }
+
     private async Task ClearPickerAsync()
     {
         if (_input?.Element is { } input)
