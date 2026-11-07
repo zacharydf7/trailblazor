@@ -14,6 +14,8 @@ An issue is done when all of these hold:
   browser tests in chromium on each push to save minutes, and in all three every Monday or when run by hand;
   `TRAILBLAZOR_BROWSERS=chromium` narrows a local run the same way. If five minutes pass with no test finishing, the run
   stops and writes a hang dump and a `TestResults/*_hang.log` that lists the tests still running.
+- A new component has a behavior checklist in `docs/behavior`, written before it's built, and a change to a component's
+  behavior updates its checklist. See [the format](docs/behavior/README.md).
 - The docs site is updated: a new or changed component, parameter or behavior has its page, interactive example, API
   table, accessibility notes and testing notes brought up to date, and the docs examples pass the axe checks.
 - A docs review reads the component's page and API page against the [docs checklist](#docs-checklist), alongside the

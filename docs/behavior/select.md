@@ -1,0 +1,55 @@
+# Select
+
+Pattern: [Select-only combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-select-only/)
+
+Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
+
+## Keyboard
+
+- [x] Down, Up, Enter and Space open a closed list on the chosen option, or the first. `select.js`
+- [x] Down and Up move through the open list and skip disabled options. `SelectTests.Select_ShouldMoveSkippingDisabledOptionsAndChooseWithEnter_WhenUsingTheKeyboard`
+- [x] Home and End open the list if needed and go to the first or last option. `SelectTests.Select_ShouldJumpToTheEndsAndChooseWithAltUp_WhenHomeOrEndIsPressed`
+- [ ] Page Up and Page Down move through the open list by a page, instead of scrolling the page behind it. #305
+- [x] Typing letters opens the list on the option that starts with them. `SelectTests.Select_ShouldOpenOnTheMatchingOption_WhenALetterIsTypedWhileClosed`
+- [ ] Pressing the same letter quickly cycles through the options that start with it. #304
+- [x] A Space typed mid-word is part of the search and doesn't choose. `SelectTests.Select_ShouldTreatSpaceAsPartOfTheText_WhenTypedMidWord`
+- [x] Enter or Space chooses the active option, closes a single select and keeps focus. `SelectTests.Select_ShouldMoveSkippingDisabledOptionsAndChooseWithEnter_WhenUsingTheKeyboard`
+- [x] Alt+Up chooses the active option and closes a single select. `SelectTests.Select_ShouldJumpToTheEndsAndChooseWithAltUp_WhenHomeOrEndIsPressed`
+- [x] Escape closes without choosing. `SelectTests.Select_ShouldCloseWithoutChoosing_WhenEscapeIsPressedOrTheComboboxIsClickedAgain`
+- [x] Escape in a dialog closes only the list. `SelectTests.Select_ShouldCloseOnlyItsList_WhenEscapeIsPressedInsideADialog`
+- [x] Tab keeps the active option in a single select, closes the list and moves on. `SelectTests.Select_ShouldKeepTheActiveOptionAndMoveOn_WhenTabIsPressedWhileOpen`
+- [x] In a multi-select, Space and Enter toggle and stay open, and Tab and Alt+Up close without toggling. `SelectTests.MultiSelect_ShouldToggleWithSpaceAndEnterAndCloseWithoutToggling_WhenTabOrAltUpIsPressed`
+- [x] Backspace removes the last chip. `SelectExtrasTests.Backspace_ShouldRemoveTheLastChip_WhenTheComboboxHasFocus`
+- [x] Typing on a filterable select opens it and starts the filter, and Enter chooses the first match. `SelectExtrasTests.Filter_ShouldStartWithTheTypedTextAndChooseTheFirstMatch_WhenTypingOnTheSelect`
+- [x] In the filter, Down and Up move through the matches, and Home and End stay with the text. `SelectExtrasTests.Filter_ShouldMoveThroughTheMatchesWithTheArrows_WhenFocusIsInTheFilter`
+
+## Pointer
+
+- [x] Clicking the field or its chevron opens the list, and clicking it again closes it. `SelectTests.Select_ShouldCloseWithoutChoosing_WhenEscapeIsPressedOrTheComboboxIsClickedAgain`
+- [x] Clicking an option chooses it and closes a single select. `SelectTests.Select_ShouldChooseAClickedOptionAndRefocusTheCombobox_WhenOpenedByClicking`
+- [x] Clicking options in a multi-select toggles them and leaves the list open. `SelectTests.MultiSelect_ShouldToggleOptionsAndStayOpen_WhenOptionsAreClicked`
+- [x] Clicking a disabled option leaves the value alone and the list open. `SelectTests.Select_ShouldStayOpenAndUnchanged_WhenADisabledOptionIsClicked`
+- [x] Hovering an option makes it the active one. `SelectTests.Select_ShouldFocusTheComboboxAndFollowThePointer_WhenTheLabelIsClickedAndAnOptionHovered`
+- [x] Clicking elsewhere closes the list without choosing, since it's a native `popover="auto"`. `TbSelectBase.razor`
+- [x] Clicking a chip's remove button removes that choice without opening the list. `SelectExtrasTests.Chips_ShouldRemoveAChoiceWithoutOpeningTheList_WhenItsButtonIsClicked`
+
+## Touch
+
+- [x] Tapping uses the same click handlers as the pointer, so a tap opens the list and chooses an option. `select.js`
+
+## Focus
+
+- [x] Focus stays on the combobox while the list is open, and `aria-activedescendant` names the active option. `SelectTests.Select_ShouldMoveSkippingDisabledOptionsAndChooseWithEnter_WhenUsingTheKeyboard`
+- [x] Clicking the label focuses the combobox and doesn't open the list. `SelectTests.Select_ShouldFocusTheComboboxAndFollowThePointer_WhenTheLabelIsClickedAndAnOptionHovered`
+- [x] The chosen option is scrolled into view as the list opens, unless it is disabled. `select.js`
+- [x] Clearing or removing a chip moves focus to the combobox. `SelectTests.Select_ShouldClearTheChoice_WhenTheClearButtonIsClicked`
+- [x] A filterable select moves focus to the filter and keeps it there in a multi-select. `SelectExtrasTests.Filter_ShouldStayOpenWithFocusAndText_WhenChoosingInAMultiSelect`
+- [x] Escape in the filter closes the list and returns focus to the combobox. `SelectExtrasTests.Filter_ShouldHideEmptyGroupsSayNoMatchesAndClearOnClose_WhenNothingMatches`
+- [x] A disabled select is out of the tab order and offers no clear button. `TbSelectTests.Render_ShouldHideTheClearButtonAndLeaveTheComboboxOutOfTheTabOrder_WhenDisabled`
+- [x] A read-only select keeps its value and doesn't open. `TbSelectTests.Click_ShouldKeepTheValueAndHideClear_WhenReadOnly`
+- [ ] Pressing a disabled option or a group heading keeps focus on the combobox or filter, so the keys keep working. #305
+
+## Not applicable
+
+- Choosing without opening, as a native select's arrows do on Windows: the pattern opens the list first.
+- A custom list when rendered statically: it's a native select, which brings the browser's own behavior.
