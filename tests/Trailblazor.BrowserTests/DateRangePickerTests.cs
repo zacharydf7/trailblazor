@@ -162,6 +162,127 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldPreviewTheRange_WhenTheKeysMoveFocusToALaterDay(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await Day(page, "Monday, June 22, 2026").ClickAsync();
+        await Expect(Calendar(page)).ToHaveAttributeAsync("data-anchor", "2026-06-22");
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(2);
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldDropThePreview_WhenAPressBecomesAScroll(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await Day(page, "Monday, June 22, 2026").ClickAsync();
+        await Day(page, "Friday, June 26, 2026").HoverAsync();
+        await Expect(Calendar(page).Locator("[data-preview]")).Not.ToHaveCountAsync(0);
+
+        await Day(page, "Friday, June 26, 2026").EvaluateAsync(
+            "day => day.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true }))");
+
+        await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldKeepItsKeys_WhenABlankPartIsPressed(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        var focused = Calendar(page).Locator("[data-part=day][tabindex='0']");
+        var trigger = Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" });
+
+        await Calendar(page).ClickAsync(new() { Position = new() { X = 3, Y = 3 } });
+
+        await Expect(focused).ToBeFocusedAsync();
+        var from = await focused.GetAttributeAsync("data-date");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Calendar(page).Locator("[data-part=day]:focus")).Not.ToHaveAttributeAsync("data-date", from!);
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Calendar(page)).Not.ToBeVisibleAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldCloseAndKeepTheRange_WhenItsButtonIsClickedAgain(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await Day(page, "Monday, June 22, 2026").ClickAsync();
+
+        await Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" }).ClickAsync();
+
+        await Expect(Calendar(page)).Not.ToBeVisibleAsync();
+        await Expect(Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" }))
+            .ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(page.GetByTestId("trip")).ToHaveTextAsync("2026-06-03 to 2026-06-10");
+        await Expect(page.GetByTestId("changes")).ToHaveTextAsync("0");
+    }
+
+    [Fact]
+    public async Task Calendar_ShouldCloseAndKeepTheRange_WhenItsButtonIsTappedAgain()
+    {
+        var page = await OpenWithCalendarAsync("chromium", options: new() { HasTouch = true });
+
+        await Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" }).TapAsync();
+
+        await Expect(Calendar(page)).Not.ToBeVisibleAsync();
+        await Expect(page.GetByTestId("trip")).ToHaveTextAsync("2026-06-03 to 2026-06-10");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldPreviewTheWholeRange_WhenPagingKeepsFocusOnTheSameButton(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        // Back to January, then forward into February as the second month shown, whose days line up with March's.
+        var focused = Calendar(page).Locator("[data-part=day]:focus");
+        foreach (var (key, month) in new[] { ("PageUp", "05"), ("PageUp", "04"), ("PageUp", "03"), ("PageUp", "02"),
+            ("PageUp", "01"), ("PageDown", "02") })
+        {
+            await page.Keyboard.PressAsync(key);
+            await Expect(focused).ToHaveAttributeAsync("data-date", new Regex($"^2026-{month}-"));
+        }
+
+        await Day(page, "Tuesday, February 3, 2026").ClickAsync();
+        await Expect(Calendar(page)).ToHaveAttributeAsync("data-anchor", "2026-02-03");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(1);
+
+        await page.Keyboard.PressAsync("PageDown");
+
+        await Expect(focused).ToHaveAttributeAsync("data-date", new Regex("^2026-03-"));
+        await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(29);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldClose_WhenShiftTabMovesFocusBackToItsButton(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await Calendar(page).Locator("button").First.FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+Tab");
+
+        await Expect(Calendar(page)).Not.ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldCloseAndKeepTheRange_WhenClickedOutside(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await Day(page, "Monday, June 22, 2026").ClickAsync();
+
+        await page.Mouse.ClickAsync(page.ViewportSize!.Width - 4, page.ViewportSize.Height - 4);
+
+        await Expect(Calendar(page)).Not.ToBeVisibleAsync();
+        await Expect(page.GetByTestId("trip")).ToHaveTextAsync("2026-06-03 to 2026-06-10");
+        await Expect(page.GetByTestId("changes")).ToHaveTextAsync("0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldDropThePreview_WhenClosedAndOpenedAgain(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);

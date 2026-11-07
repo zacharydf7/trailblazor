@@ -136,6 +136,15 @@ public class TbDateRangePickerTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldPutOneDayInTheTabOrder_WhenTwoMonthsShow()
+    {
+        var cut = RenderPicker(June3To10);
+
+        Assert.True(cut.FindAll("table").Count >= 2);
+        Assert.Single(cut.FindAll("[data-part=day][tabindex='0']"));
+    }
+
+    [Fact]
     public void PreviousMonth_ShouldKeepADayInTheTabOrder_WhenPagingPastTheEarliestDate()
     {
         var cut = RenderPicker(June3To10, parameters => parameters.Add(picker => picker.Min, new DateOnly(2026, 6, 1)));

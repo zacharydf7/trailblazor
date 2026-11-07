@@ -3340,8 +3340,8 @@ public static class ExampleCatalog
                 "A panel too long for the window opens on the side with more room and scrolls, so every date stays "
                     + "reachable.",
                 "In forced-colors mode, such as Windows high contrast, the range's days take the system's highlight, "
-                    + "its first and last days add an outline, and the range previewed under the pointer has only a "
-                    + "dashed outline, so it can't be taken for a chosen range.",
+                    + "its first and last days add an outline, and the range previewed up to the pointer or focus has "
+                    + "only a dashed outline, so it can't be taken for a chosen range.",
             ],
             Notes =
             [

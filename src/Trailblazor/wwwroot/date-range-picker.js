@@ -39,6 +39,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     const trigger = control.querySelector(`[aria-controls="${panel.id}"]`);
     let position = null;
     let returnFocus = false;
+    // Set from a press on the calendar button until the calendar next opens or closes.
+    let pressedTrigger = false;
 
     const day = iso => panel.querySelector(`[data-part="day"][data-date="${iso}"]`);
     const focusDay = button => {
@@ -57,6 +59,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     };
     const onToggle = event => {
         const open = event.newState === 'open';
+        pressedTrigger = false;
         trigger.setAttribute('aria-expanded', String(open));
         if (open) {
             position = createAnchoredPosition(panel, control, { side: 'Bottom', align: 'Start', offset: 4 });
@@ -97,16 +100,17 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
 
         events.invokeMethodAsync('OnShowDate', iso);
     };
-    // Tabbing out of the calendar closes it, so it doesn't cover what focus moves to (WCAG 2.4.11).
+    // Tabbing out of the calendar closes it, so it doesn't cover what focus moves to (WCAG 2.4.11). A press on the
+    // calendar button doesn't close it here, since the button's click would then open it again.
     const onFocusOut = event => {
-        if (event.relatedTarget && !panel.contains(event.relatedTarget) && panel.matches(':popover-open')) {
+        if (event.relatedTarget && !panel.contains(event.relatedTarget) && !pressedTrigger
+            && panel.matches(':popover-open')) {
             panel.hidePopover();
         }
     };
-    // While the start is picked and the end isn't, the days up to the one under the pointer show as the range.
-    const onPointerOver = event => {
+    // While only the start is picked, the days up to the one under the pointer or focus show as the range.
+    const previewTo = over => {
         const anchor = panel.dataset.anchor;
-        const over = event.target.closest('[data-part="day"]');
         clearPreview();
         if (!anchor || !over || over.dataset.date < anchor) {
             return;
@@ -119,11 +123,26 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         });
     };
 
+    const onPreviewMove = event => previewTo(event.target.closest('[data-part="day"]'));
+    // A press on a blank part of the calendar leaves focus where it is, so the keys go on working.
+    const onPointerDown = event => {
+        if (!event.target.closest('button')) {
+            event.preventDefault();
+        }
+    };
+    const onTriggerPointerDown = () => {
+        pressedTrigger = true;
+    };
+
     panel.addEventListener('beforetoggle', onBeforeToggle);
     panel.addEventListener('toggle', onToggle);
     panel.addEventListener('keydown', onKeyDown);
     panel.addEventListener('focusout', onFocusOut);
-    panel.addEventListener('pointerover', onPointerOver);
+    panel.addEventListener('pointerover', onPreviewMove);
+    panel.addEventListener('focusin', onPreviewMove);
+    panel.addEventListener('pointercancel', clearPreview);
+    panel.addEventListener('pointerdown', onPointerDown);
+    trigger.addEventListener('pointerdown', onTriggerPointerDown);
     return {
         today() {
             const now = new Date();
@@ -133,6 +152,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
             const shown = day(iso);
             if (shown) {
                 focusDay(shown);
+                // A month change can reuse the focused button, which then fires no focusin.
+                previewTo(shown);
             }
         },
         close() {
@@ -146,7 +167,11 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
             panel.removeEventListener('toggle', onToggle);
             panel.removeEventListener('keydown', onKeyDown);
             panel.removeEventListener('focusout', onFocusOut);
-            panel.removeEventListener('pointerover', onPointerOver);
+            panel.removeEventListener('pointerover', onPreviewMove);
+            panel.removeEventListener('focusin', onPreviewMove);
+            panel.removeEventListener('pointercancel', clearPreview);
+            panel.removeEventListener('pointerdown', onPointerDown);
+            trigger.removeEventListener('pointerdown', onTriggerPointerDown);
         },
     };
 }
