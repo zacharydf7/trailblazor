@@ -506,7 +506,7 @@ public class TbDataGridTests : BunitContext
             .Add(grid => grid.SelectionMode, SelectionMode.Single)
             .Add(grid => grid.OnRowClick, (Trail trail) => clicked = trail));
 
-        await ClickAsync(Row(cut, "3"), onControl: true);
+        await ClickAsync(Row(cut, "3"), ignored: true);
 
         Assert.Null(clicked);
         Assert.Null(Row(cut, "3").GetAttribute("data-selected"));
@@ -757,9 +757,9 @@ public class TbDataGridTests : BunitContext
         Assert.False(cut.Find("[data-part=scroll]").HasAttribute("tabindex"));
     }
 
-    // The browser reports a row's clicks through its tbrowclick event, saying whether they landed on a control.
-    private static Task ClickAsync(IElement row, bool onControl = false) =>
-        row.TriggerEventAsync("ontbrowclick", new RowClickEventArgs { OnControl = onControl });
+    // The browser reports a row's clicks through its tbrowclick event, saying whether the row should ignore them.
+    private static Task ClickAsync(IElement row, bool ignored = false) =>
+        row.TriggerEventAsync("ontbrowclick", new RowClickEventArgs { Ignored = ignored });
 
     [Fact]
     public void Sort_ShouldSortTheItemsOnce_WhenTheParentRendersAgainAndARowIsSelected()

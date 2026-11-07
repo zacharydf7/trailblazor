@@ -227,6 +227,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     // While the grid moves focus itself, a move up or down keeps its column, even through a group's heading.
     let steering = false;
     let moves = 0;
+    let holdsFocus = false;
 
     const makeStop = (element, cell) => {
         if (stop && stop !== element) {
@@ -262,6 +263,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         }
 
         const rows = linesOf(table);
+        let refocus = false;
         for (const row of rows) {
             for (const cell of row.cells) {
                 const controls = controlsOf(cell);
@@ -287,12 +289,21 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             }
 
             const row = rows.find(line => place.key !== null && line.dataset.key === place.key)
-                ?? rowAt(place.index, rows) ?? rows[0];
+                ?? rowAt(place.index, rows) ?? rows.at(-1);
             stop = row ? stopOf(cellAt(row, place.column)) : null;
+            // Focus that fell to the page with its row goes to what takes the row's place. A virtualized grid also drops
+            // rows as it scrolls, which leaves nothing in that place and mustn't pull focus back.
+            if (document.activeElement === document.body) {
+                refocus = holdsFocus && (!isVirtual() || !!rowAt(place.index, rows));
+                holdsFocus = refocus;
+            }
         }
 
         if (stop) {
             stop.tabIndex = 0;
+            if (refocus) {
+                stop.focus();
+            }
         }
     };
 
@@ -372,6 +383,12 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             return;
         }
 
+        // Held Enter acts once: it would click a row over and over, or delete each row as focus reaches its button.
+        if (event.key === 'Enter' && event.repeat) {
+            event.preventDefault();
+            return;
+        }
+
         const rows = linesOf(table);
         const row = cell.parentElement;
         const index = indexOf(row, rows);
@@ -421,11 +438,21 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
                 break;
             case 'Enter':
             case 'F2':
-                if (stopOf(cell) !== cell || controlsOf(cell).length === 0) {
+                if (stopOf(cell) !== cell) {
                     return;
                 }
 
-                controlsOf(cell)[0].focus();
+                if (controlsOf(cell).length > 0) {
+                    controlsOf(cell)[0].focus();
+                    break;
+                }
+
+                if (event.key === 'F2' || row.dataset.part !== 'row') {
+                    return;
+                }
+
+                // A cell with nothing to go into clicks its row.
+                row.click();
                 break;
             case ' ': {
                 // Space clicks a body row's box to select or unselect it, but not the header's, which would select every
@@ -449,6 +476,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     const followFocus = event => {
         const cell = event.target.closest?.('td, th');
         if (isGrid() && cell?.closest('table') === table && !event.target.closest('[popover]')) {
+            holdsFocus = true;
             makeStop(stopOf(cell), cell);
             if (!steering) {
                 place.column = startOf(cell);
@@ -456,8 +484,16 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         }
     };
 
+    // A focused element that is removed may report losing focus too, so what counts is focus that left a live element.
+    const onFocusOut = event => queueMicrotask(() => {
+        if (event.target.isConnected && !table.contains(document.activeElement)) {
+            holdsFocus = false;
+        }
+    });
+
     table.addEventListener('keydown', onKeyDown);
     table.addEventListener('focusin', followFocus);
+    table.addEventListener('focusout', onFocusOut);
     return {
         focusCell,
         focusPlace() {
@@ -471,6 +507,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             observer.disconnect();
             table.removeEventListener('keydown', onKeyDown);
             table.removeEventListener('focusin', followFocus);
+            table.removeEventListener('focusout', onFocusOut);
         },
     };
 }

@@ -978,8 +978,8 @@ Trailblazor.PopoverTrigger.Attributes.init -> void
 Trailblazor.PopoverTrigger.Equals(Trailblazor.PopoverTrigger? other) -> bool
 Trailblazor.PopoverTrigger.PopoverTrigger() -> void
 Trailblazor.RowClickEventArgs
-Trailblazor.RowClickEventArgs.OnControl.get -> bool
-Trailblazor.RowClickEventArgs.OnControl.set -> void
+Trailblazor.RowClickEventArgs.Ignored.get -> bool
+Trailblazor.RowClickEventArgs.Ignored.set -> void
 Trailblazor.RowClickEventArgs.RowClickEventArgs() -> void
 Trailblazor.ScrollAlignment
 Trailblazor.ScrollAlignment.Center = 2 -> Trailblazor.ScrollAlignment

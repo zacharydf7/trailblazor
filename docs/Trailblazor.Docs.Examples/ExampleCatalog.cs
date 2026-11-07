@@ -4584,7 +4584,8 @@ public static class ExampleCatalog
                     typeof(DataGridExample)),
                 new("row-click", "Clicking a row", "With a `SelectionMode` set, a click on a row selects it, unless the "
                     + "click lands on a button, link or field inside the row. `RowClickSelects=\"false\"` leaves "
-                    + "selecting to the checkboxes, and `OnRowClick` reports the click.",
+                    + "selecting to the checkboxes, and `OnRowClick` reports the click. The second click of a "
+                    + "double-click doesn't count, and neither does a drag that selects a row's text to copy it.",
                     typeof(DataGridRowClickExample)),
                 new("columns", "Column options", "`Width` sets a column's width and `Align` lines up its cells. Without "
                     + "`Align`, numbers line up at the end and everything else at the start. `SortBy` sorts by "
@@ -4688,6 +4689,8 @@ public static class ExampleCatalog
                 new(["Space"], "Selects or unselects the row of the cell in focus.") { When = "With cell navigation" },
                 new(["Enter", "F2"], "Moves into the cell's fields, or starts editing an `Editable` cell.")
                     { When = "With cell navigation" },
+                new(["Enter"], "On a cell with nothing to go into, clicks the row, raising `OnRowClick` and, with "
+                    + "`RowClickSelects`, selecting or unselecting it.") { When = "With cell navigation" },
                 new(["Tab"], "Cycles through the cell's fields.") { When = "Inside a cell" },
                 new(["Escape"], "Comes back out to the cell.") { When = "Inside a cell" },
                 new(["Enter"], "Saves the edit, and focus goes back to the cell.") { When = "Editing a cell" },
@@ -4745,13 +4748,16 @@ public static class ExampleCatalog
                 "While rows load the table is `aria-busy`.",
                 "With `CellNavigation`, or an `Editable` column, the table takes the ARIA grid role, and rows say "
                     + "whether they are selected with `aria-selected`.",
+                "With cell navigation, when the row holding focus is removed, focus moves to the row that takes its "
+                    + "place, or to the new last row if it was the last. With `Virtualize`, removing the last row leaves "
+                    + "focus on the page, and so does scrolling the focused row out of view.",
                 "A cell holding just a menu's button or a row's move handle keeps focus until Enter, since those "
                     + "controls use the arrow keys.",
             ],
             AppDuties =
             [
-                "Only a pointer clicks a row, so whatever `OnRowClick` does needs a button in a cell too, as "
-                    + "[Clicking a row](components/data-grid#row-click) shows.",
+                "Without cell navigation, only a pointer clicks a row, so whatever `OnRowClick` does needs a button in "
+                    + "a cell too, as [Clicking a row](components/data-grid#row-click) shows.",
                 "Set `RowLabel` when a row's first column doesn't say which row it is, so its checkbox and move handle "
                     + "can.",
             ],

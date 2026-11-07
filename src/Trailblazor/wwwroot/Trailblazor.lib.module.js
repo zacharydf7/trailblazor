@@ -44,16 +44,23 @@ function registerEvents(blazor) {
     blazor.registerCustomEventType('tbfocusenter', { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
     blazor.registerCustomEventType('tbfocusleave', { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
 
-    // A click on a data grid row says whether it landed on a control in the row, whose click is the control's own.
+    // A click on a data grid row says whether the row should ignore it, as when it landed on a control in the row, whose
+    // click is the control's own.
     const rowControls = 'a[href], button, input, select, textarea, label, summary, [contenteditable], '
         + '[role="button"], [role="checkbox"], [role="combobox"], [role="switch"], [role="link"]';
-    // The second click of a double-click that edits a cell leaves the row alone, so it doesn't toggle the row's
-    // selection back or raise its click again. Any click in an edit, such as choosing an option, leaves it alone too.
+    // A drag ends in a click where it was released. Enter clicks a row with a detail of 0, so it never counts as a drag.
+    const dragThreshold = 4;
+    let pressedAt = null;
+    document.addEventListener('pointerdown', event => pressedAt = { x: event.clientX, y: event.clientY }, true);
+    const endsTextDrag = event => event.detail === 1 && !document.getSelection().isCollapsed
+        && pressedAt !== null && Math.hypot(event.clientX - pressedAt.x, event.clientY - pressedAt.y) >= dragThreshold;
+    // The second click of a double-click leaves the row alone, so it doesn't toggle the row's selection back or raise
+    // its click again. So does a drag that selects the row's text, and any click in an edit, such as choosing an option.
     blazor.registerCustomEventType('tbrowclick', {
         browserEventName: 'click',
         createEventArgs: event => ({
-            onControl: !!event.target.closest?.(rowControls) || !!event.target.closest?.('[data-part=editor]')
-                || event.detail > 1 && !!event.target.closest?.('[data-editable]'),
+            ignored: !!event.target.closest?.(rowControls) || !!event.target.closest?.('[data-part=editor]')
+                || event.detail > 1 || endsTextDrag(event),
         }),
     });
 

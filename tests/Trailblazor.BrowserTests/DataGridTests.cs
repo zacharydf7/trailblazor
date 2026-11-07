@@ -6,6 +6,255 @@ namespace Trailblazor.BrowserTests;
 
 public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    private async Task<IPage> OpenRowsAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-rows");
+        await Expect(page.Locator("[data-part=grid]").First).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.Locator("[data-part=grid]").Nth(1)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.Locator("[data-part=grid]").Nth(2)).ToHaveAttributeAsync("data-ready", "");
+        return page;
+    }
+
+    // The cell is wider than its text, so this point sits near the start, on the text.
+    private static readonly Position OnTheText = new() { X = 20, Y = 12 };
+
+    private static ILocator RowCell(IPage page, string name) =>
+        page.GetByRole(AriaRole.Gridcell, new() { Name = name, Exact = true });
+
+    private static ILocator DeleteButton(IPage page, string trail) =>
+        page.GetByRole(AriaRole.Button, new() { Name = $"Delete {trail}", Exact = true });
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldBeClicked_WhenEnterIsPressedOnACellWithNothingToGoInto(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await RowCell(page, "Ridge loop").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Ridge loop");
+        await Expect(Readout(page, "Selected")).ToHaveTextAsync("Ridge loop");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldNotBeClicked_WhenEnterStartsAnEdit(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await page.Locator("td[data-editable]").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Textbox)).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(page.Locator("td[data-editable]")).ToBeFocusedAsync();
+        await RowCell(page, "Creek path").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        // Events reach the server in order, so this last click shows that the earlier keys raised none.
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Creek path");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldNotBeClicked_WhenF2IsPressedOnACellWithNothingToGoInto(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await RowCell(page, "Ridge loop").FocusAsync();
+        await page.Keyboard.PressAsync("F2");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Ridge loop");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task HeaderRow_ShouldGetNoClick_WhenEnterIsPressedOnAHeaderCell(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+        await page.EvaluateAsync("""
+            () => {
+                window.clicks = 0;
+                document.addEventListener('click', () => window.clicks++, true);
+            }
+            """);
+
+        await page.GetByRole(AriaRole.Columnheader, new() { Name = "Actions" }).FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        Assert.Equal(0, await page.EvaluateAsync<int>("() => window.clicks"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldBeClickedOnce_WhenEnterIsHeld(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await RowCell(page, "Ridge loop").FocusAsync();
+        await page.Keyboard.DownAsync("Enter");
+        await page.Keyboard.DownAsync("Enter");
+        await page.Keyboard.DownAsync("Enter");
+        await page.Keyboard.UpAsync("Enter");
+        await RowCell(page, "Creek path").ClickAsync();
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Ridge loop, Creek path");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldLoseOnlyOneRow_WhenEnterIsHeldOnADeleteButton(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await DeleteButton(page, "Ridge loop").FocusAsync();
+        await page.Keyboard.DownAsync("Enter");
+        await Expect(DeleteButton(page, "Creek path")).ToBeFocusedAsync();
+        await page.Keyboard.DownAsync("Enter");
+        await page.Keyboard.DownAsync("Enter");
+        await page.Keyboard.UpAsync("Enter");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Remove the first row" }).ClickAsync();
+
+        // Events reach the server in order, so what this removes shows that the held key removed nothing more.
+        await Expect(DeleteButton(page, "Creek path")).ToHaveCountAsync(0);
+        await Expect(DeleteButton(page, "Pine Bluff")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldBeClicked_WhenEnterIsPressedWithTextSelected(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+        await RowCell(page, "Ridge loop").DblClickAsync(new() { Position = OnTheText });
+        Assert.NotEqual("", await page.EvaluateAsync<string>("() => document.getSelection().toString()"));
+
+        await RowCell(page, "Creek path").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Ridge loop, Creek path");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldBeClicked_WhenThePointerSlipsWhileClickingItsSelectedText(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+        var cell = RowCell(page, "Ridge loop");
+        await cell.DblClickAsync(new() { Position = OnTheText });
+        Assert.NotEqual("", await page.EvaluateAsync<string>("() => document.getSelection().toString()"));
+        var box = (await cell.BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(box.X + OnTheText.X, box.Y + OnTheText.Y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(box.X + OnTheText.X + 1, box.Y + OnTheText.Y);
+        await page.Mouse.UpAsync();
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Ridge loop, Ridge loop");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldBeClicked_WhenItsSelectedTextIsClicked(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+        var cell = RowCell(page, "Ridge loop");
+        await cell.DblClickAsync(new() { Position = OnTheText });
+        Assert.NotEqual("", await page.EvaluateAsync<string>("() => document.getSelection().toString()"));
+
+        await cell.ClickAsync(new() { Position = OnTheText });
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Ridge loop, Ridge loop");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldBeClickedOnce_WhenDoubleClicked(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await RowCell(page, "Ridge loop").DblClickAsync();
+        await RowCell(page, "Creek path").ClickAsync();
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Ridge loop, Creek path");
+        await Expect(Readout(page, "Selected")).ToHaveTextAsync("Ridge loop, Creek path");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldNotBeClicked_WhenADragSelectsItsText(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+        var box = (await RowCell(page, "Ridge loop").BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(box.X + 12, box.Y + box.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(box.X + 50, box.Y + box.Height / 2, new() { Steps = 4 });
+        await page.Mouse.UpAsync();
+        Assert.NotEqual("", await page.EvaluateAsync<string>("() => document.getSelection().toString()"));
+        await RowCell(page, "Creek path").ClickAsync();
+
+        await Expect(Readout(page, "Row clicks")).ToHaveTextAsync("Creek path");
+        await Expect(Readout(page, "Selected")).ToHaveTextAsync("Creek path");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Focus_ShouldMoveToTheRowThatTakesItsPlace_WhenTheFocusedRowIsRemoved(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await DeleteButton(page, "Ridge loop").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(DeleteButton(page, "Ridge loop")).ToHaveCountAsync(0);
+        await Expect(DeleteButton(page, "Creek path")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Focus_ShouldMoveToTheRowThatTakesItsPlace_WhenTheFocusedRowIsRemovedFromAVirtualizedGrid(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await DeleteButton(page, "Stop 1").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(DeleteButton(page, "Stop 1")).ToHaveCountAsync(0);
+        await Expect(DeleteButton(page, "Stop 2")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Focus_ShouldMoveToTheLastRow_WhenTheFocusedLastRowIsRemoved(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+
+        await DeleteButton(page, "Pine Bluff").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(DeleteButton(page, "Pine Bluff")).ToHaveCountAsync(0);
+        await Expect(DeleteButton(page, "Creek path")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Focus_ShouldStayOnThePage_WhenAVirtualizedGridDropsTheFocusedRowAsItScrolls(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        await Expect(page.Locator("[data-part=grid]").First).ToHaveAttributeAsync("data-ready", "");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Many numbers" });
+        var cell = grid.GetByRole(AriaRole.Gridcell, new() { Name = "1", Exact = true });
+        await cell.FocusAsync();
+
+        await ScrollBox(page, "Many numbers").EvaluateAsync("box => box.scrollTop = box.scrollHeight");
+
+        await Expect(cell).ToHaveCountAsync(0);
+        Assert.True(await page.EvaluateAsync<bool>("() => document.activeElement === document.body"));
+
+        await ScrollBox(page, "Many numbers").EvaluateAsync("box => box.scrollTop = 0");
+        await Expect(cell).ToHaveCountAsync(1);
+        Assert.True(await page.EvaluateAsync<bool>("() => document.activeElement === document.body"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Focus_ShouldStayOnThePage_WhenARowIsRemovedAfterFocusLeftTheGrid(string browser)
+    {
+        var page = await OpenRowsAsync(browser);
+        await RowCell(page, "Ridge loop").FocusAsync();
+        await page.GetByText("Elsewhere").ClickAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Remove the first row" }).ClickAsync();
+
+        await Expect(RowCell(page, "Ridge loop")).ToHaveCountAsync(0);
+        Assert.True(await page.EvaluateAsync<bool>("() => document.activeElement === document.body"));
+    }
+
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Grid_ShouldSortByOneColumnAlone_WhenAskedWhileSortedByTwo(string browser)

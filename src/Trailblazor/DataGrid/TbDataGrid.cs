@@ -121,8 +121,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public bool RowClickSelects { get; set; } = true;
 
-    /// <summary>Raised when a row is clicked anywhere but on a button, link or field in it. Only a pointer can click a
-    /// row, so give anything this does a button in a cell too.</summary>
+    /// <summary>Raised when a row is clicked anywhere but on a button, link or field in it. With cell navigation, which
+    /// <see cref="CellNavigation"/> or an editable column turns on, Enter on a cell with nothing to go into raises it too.
+    /// Without it, only a pointer can click a row, so give anything this does a button in a cell too.</summary>
     [Parameter]
     public EventCallback<TItem> OnRowClick { get; set; }
 
@@ -231,7 +232,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// to a row's ends, Ctrl+Home and Ctrl+End to its first and last cells, and Page Up and Page Down by a screenful. A
     /// cell holding just a button, link, checkbox or radio button hands focus to it, unless it is a menu's button or a
     /// row's move handle, which use the arrow keys themselves. Enter or F2 moves into any other cell's fields, Tab
-    /// cycles through them and Escape comes back out. Space selects or unselects the row of the cell in focus.
+    /// cycles through them and Escape comes back out. Enter on a cell with nothing to go into clicks its row. Space
+    /// selects or unselects the row of the cell in focus.
     /// </summary>
     [Parameter]
     public bool CellNavigation { get; set; }
@@ -1635,7 +1637,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private async Task OnRowClickedAsync(TItem item, RowClickEventArgs args)
     {
-        if (args.OnControl)
+        if (args.Ignored)
         {
             return;
         }

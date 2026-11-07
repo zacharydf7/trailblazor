@@ -1,0 +1,41 @@
+@page "/grid-rows"
+
+<p>Elsewhere</p>
+<TbDataGrid TItem="string" Items="_trails" AriaLabel="Trails" KeySelector="trail => trail" CellNavigation
+            SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_selected"
+            OnRowClick="(string trail) => _clicks.Add(trail)">
+    <TbColumn Field="trail => trail" Title="Name" Id="name" />
+    <TbColumn Title="Actions" Id="actions">
+        <Cell>
+            <button type="button" @onclick="() => Remove(context)">Delete @context</button>
+        </Cell>
+    </TbColumn>
+</TbDataGrid>
+<TbDataGrid TItem="string" Items="Editable" AriaLabel="Editable trails" OnCellEdit="(GridCellEdit<string> _) => { }"
+            OnRowClick="(string trail) => _clicks.Add(trail)">
+    <TbColumn Field="trail => trail" Title="Trail" Id="trail" Editable />
+</TbDataGrid>
+<TbDataGrid TItem="string" Items="_stops" AriaLabel="Many stops" KeySelector="stop => stop" CellNavigation Virtualize
+            Height="12rem">
+    <TbColumn Title="Stop" Id="stop">
+        <Cell>
+            <button type="button" @onclick="() => _stops = [.. _stops.Where(other => other != context)]">
+                Delete @context
+            </button>
+        </Cell>
+    </TbColumn>
+</TbDataGrid>
+@* A press here leaves focus where it is, so a row can go away while focus is on the page. *@
+<button type="button" @onmousedown:preventDefault @onclick="() => Remove(_trails[0])">Remove the first row</button>
+<output aria-label="Row clicks">@string.Join(", ", _clicks)</output>
+<output aria-label="Selected">@string.Join(", ", _selected ?? [])</output>
+
+@code {
+    private static readonly string[] Editable = ["Eagle Ridge"];
+    private readonly List<string> _clicks = [];
+    private List<string> _trails = ["Ridge loop", "Creek path", "Pine Bluff"];
+    private IReadOnlyCollection<string>? _selected;
+    private List<string> _stops = [.. Enumerable.Range(1, 100).Select(stop => $"Stop {stop}")];
+
+    private void Remove(string trail) => _trails = [.. _trails.Where(other => other != trail)];
+}

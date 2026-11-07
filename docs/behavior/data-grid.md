@@ -23,7 +23,8 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Enter in a filter menu's value applies it, and Escape closes the menu without applying. `DataGridTests.FilterMenu_ShouldApplyTheValue_WhenEnterIsPressedInIt`
 - [x] Arrows, Home and End on a row's handle move the row. `SortableTests.GridRows_ShouldReorderByKeysAndByDragging_WhenTheGridLetsRowsMove`
 - [x] Enter on a group's heading opens or closes the group. `DataGridTests.GroupToggle_ShouldCloseItsGroupAndKeepFocus_WhenEnterIsPressedOnIt`
-- [ ] Enter on a row opens it, as it does in a mail list or a file list. #317
+- [x] With cell navigation, Enter on a cell with nothing to go into clicks the row, which is how an app opens it, as in a mail list or a file list. `DataGridTests.Row_ShouldBeClicked_WhenEnterIsPressedOnACellWithNothingToGoInto`, `DataGridTests.Row_ShouldBeClicked_WhenEnterIsPressedWithTextSelected`, `DataGridTests.Row_ShouldNotBeClicked_WhenEnterStartsAnEdit`, `DataGridTests.Row_ShouldNotBeClicked_WhenF2IsPressedOnACellWithNothingToGoInto`, `DataGridTests.HeaderRow_ShouldGetNoClick_WhenEnterIsPressedOnAHeaderCell`
+- [x] With cell navigation, holding Enter on a cell with nothing to go into, or on a control the cell hands focus to, acts once. `DataGridTests.Row_ShouldBeClickedOnce_WhenEnterIsHeld`, `DataGridTests.Row_ShouldLoseOnlyOneRow_WhenEnterIsHeldOnADeleteButton`
 - [ ] Shift+Up and Shift+Down extend the selected rows in a multiple-selection grid. #318
 - [ ] Ctrl+A selects every row in a multiple-selection grid. #318
 - [ ] Typing a letter on an editable cell starts its edit with that letter. #319
@@ -43,9 +44,10 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Escape during a drag cancels it, and its release doesn't open the handle's menu. `sortable.js`
 - [x] Handles go away while the rows are sorted, filtered or grouped, since a move would mean nothing. `TbDataGridTests.RowMove_ShouldOfferNoHandles_WhenTheGridIsSorted`
 - [ ] A drag held still near the top or bottom of the scroll box keeps scrolling. #302
-- [ ] Double-clicking a row that isn't being edited opens it, and doesn't select and unselect it. #317
+- [x] Double-clicking a row that isn't being edited raises one row click, and doesn't select and unselect it. `DataGridTests.Row_ShouldBeClickedOnce_WhenDoubleClicked`
 - [ ] Shift+clicking a row or its checkbox selects the range from the last one clicked. #318
-- [ ] Dragging across a row's text to copy it leaves the row unselected and raises no row click. #317
+- [x] Dragging across a row's text to copy it leaves the row unselected and raises no row click. `DataGridTests.Row_ShouldNotBeClicked_WhenADragSelectsItsText`
+- [x] A plain click on text already selected in a row still clicks the row. `DataGridTests.Row_ShouldBeClicked_WhenItsSelectedTextIsClicked`, `DataGridTests.Row_ShouldBeClicked_WhenThePointerSlipsWhileClickingItsSelectedText`
 - [ ] Columns can be resized, moved and hidden. #164
 
 ## Touch
@@ -68,7 +70,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Screen readers hear how the rows are sorted, how many a filter leaves and when a load fails. `TbDataGridTests.Sort_ShouldSayHowTheRowsAreSorted_WhenAHeaderIsClicked`, `TbDataGrid.cs`
 - [x] When rows overflow a grid's height, with no cell navigation, the keys can scroll its named box. `TbDataGridTests.ScrollBox_ShouldStartAsANamedTabStop_WhenTheGridHasAHeight`, `DataGridTests.ScrollBox_ShouldStopBeingATabStop_WhenItsRowsNoLongerOverflow`
 - [x] A wide grid with no height has a scroll box the keys can reach. `DataGridTests.ScrollBox_ShouldBeANamedTabStop_WhenAGridWithNoHeightIsTooWide`
-- [ ] When the focused row goes away, focus moves to the row that takes its place. #317
+- [x] With cell navigation, when the focused row goes away, focus moves to the row that takes its place, or to the new last row when it was the last. A virtualized grid leaves focus on the page when its last row goes or the focused row scrolls away. `DataGridTests.Focus_ShouldMoveToTheRowThatTakesItsPlace_WhenTheFocusedRowIsRemoved`, `DataGridTests.Focus_ShouldMoveToTheRowThatTakesItsPlace_WhenTheFocusedRowIsRemovedFromAVirtualizedGrid`, `DataGridTests.Focus_ShouldMoveToTheLastRow_WhenTheFocusedLastRowIsRemoved`, `DataGridTests.Focus_ShouldStayOnThePage_WhenARowIsRemovedAfterFocusLeftTheGrid`, `DataGridTests.Focus_ShouldStayOnThePage_WhenAVirtualizedGridDropsTheFocusedRowAsItScrolls`
 
 ## Not applicable
 
