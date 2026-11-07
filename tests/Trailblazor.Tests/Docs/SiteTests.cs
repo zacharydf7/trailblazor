@@ -214,11 +214,11 @@ public class SiteTests : DocsTest
     public void SearchBox_ShouldOpenTheSuggestionsSpot_WhenItIsChosen()
     {
         var cut = Render<SearchBox>();
-        cut.Find("input").Input("stack gap");
+        cut.Find("input").Input("grid gap");
 
-        cut.FindAll("[role=option]").Single(option => option.TextContent.Contains("Stack › Gap")).Click();
+        cut.FindAll("[role=option]").Single(option => option.TextContent.Contains("Grid › Gap")).Click();
 
-        Assert.EndsWith("components/stack/api#tbstack-gap", Navigation.Uri);
+        Assert.EndsWith("components/grid/api#tbgrid-gap", Navigation.Uri);
         Assert.Equal("", cut.Find("input").GetAttribute("value"));
     }
 

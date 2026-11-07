@@ -1,10 +1,8 @@
-@foreach (var elevation in Enum.GetValues<Elevation>())
-{
-    <TbSurface Elevation="elevation" Style="padding: var(--tb-space-4); margin-block-end: var(--tb-space-4)">
-        <TbText>@elevation elevation</TbText>
-    </TbSurface>
-}
-
-<TbSurface Elevation="Elevation.None" Outlined Style="padding: var(--tb-space-4)">
-    <TbText>Outlined, no elevation</TbText>
-</TbSurface>
+<TbStack Gap="4">
+    @foreach (var elevation in Enum.GetValues<Elevation>())
+    {
+        <TbSurface Elevation="elevation" class="tb-p-4">
+            <TbText>@elevation elevation</TbText>
+        </TbSurface>
+    }
+</TbStack>

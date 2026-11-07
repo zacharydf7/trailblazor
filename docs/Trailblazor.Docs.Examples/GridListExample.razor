@@ -1,0 +1,14 @@
+<TbGrid As="LayoutElement.Ul" aria-label="Trails nearby">
+    @foreach (var trail in Trails)
+    {
+        <TbGridItem As="LayoutElement.Li" SpanSm="6" SpanLg="4">
+            <TbSurface As="LayoutElement.Article" Outlined class="tb-p-3">
+                <TbText>@trail</TbText>
+            </TbSurface>
+        </TbGridItem>
+    }
+</TbGrid>
+
+@code {
+    private static readonly string[] Trails = ["Ridge loop", "Creek path", "Old mill"];
+}

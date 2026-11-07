@@ -1,21 +1,4 @@
 <TbStack>
-    <TbSurface Outlined Style="padding: var(--tb-space-3)"><TbText>First</TbText></TbSurface>
-    <TbSurface Outlined Style="padding: var(--tb-space-3)"><TbText>Second</TbText></TbSurface>
-</TbStack>
-
-<TbStack Row Align="Align.Center" Justify="Justify.SpaceBetween" Wrap Style="margin-block-start: var(--tb-space-6)">
-    <TbText>Row, centered, spread out</TbText>
-    <TbStack Row Gap="2">
-        <TbButton Variant="Variant.Outlined">Cancel</TbButton>
-        <TbButton>Save</TbButton>
-    </TbStack>
-</TbStack>
-
-@* A column on narrow screens and a row from medium up, rendered as a list of links in a nav. *@
-<TbStack As="LayoutElement.Nav" aria-label="Trail sections" Style="margin-block-start: var(--tb-space-6)">
-    <TbStack As="LayoutElement.Ul" RowFrom="Breakpoint.Md" Gap="4" data-testid="sections">
-        <li><TbLink Href="#overview">Overview</TbLink></li>
-        <li><TbLink Href="#map">Map</TbLink></li>
-        <li><TbLink Href="#reviews">Reviews</TbLink></li>
-    </TbStack>
+    <TbSurface Outlined class="tb-p-3"><TbText>First</TbText></TbSurface>
+    <TbSurface Outlined class="tb-p-3"><TbText>Second</TbText></TbSurface>
 </TbStack>

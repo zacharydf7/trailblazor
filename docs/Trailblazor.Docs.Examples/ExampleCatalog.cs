@@ -194,6 +194,9 @@ public sealed record ExampleSource(string File, string Text)
 // Every docs example. The docs site shows them, and the browser tests run axe against each one.
 public static class ExampleCatalog
 {
+    // What a component with no script does before the page is interactive.
+    private const string PlainHtml = "It is plain HTML, so it all renders the same before the page is interactive.";
+
     // What a button reports, which a link button and an icon button share.
     private static string[] ButtonTelemetry(string component) =>
     [
@@ -259,14 +262,37 @@ public static class ExampleCatalog
         new("divider", "Divider", ExampleCategory.Layout,
             "A horizontal or vertical line that separates content.", typeof(DividerExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to separate groups of content where space alone doesn't make the break clear.",
+            ],
+            WhenNotToUse =
+            [
+                "To space things out, use the `Gap` of a [stack](components/stack) or [grid](components/grid).",
+            ],
+            Related = ["stack", "surface"],
+            Sections =
+            [
+                new("horizontal", "Horizontal", "With no parameters, a divider is a line across the space it's in.",
+                    typeof(DividerExample)),
+                new("content", "Content on the line", "Content inside a divider, such as \"or\", sits on the line. "
+                    + "`ContentAlign` moves it to the start or end.", typeof(DividerContentExample)),
+                new("vertical", "Vertical", "`Vertical` makes the divider a line between items in a row.",
+                    typeof(DividerVerticalExample)),
+            ],
             Api = [typeof(TbDivider)],
             Accessibility =
             [
                 "A horizontal divider is an `<hr>`, which screen readers treat as a separator. A vertical one is "
                     + "a `div` with `role=\"separator\"` and `aria-orientation=\"vertical\"`.",
                 "It takes no focus and has no name.",
-                "A divider with content, such as \"or\", is a plain `div` rather than a separator, whose children "
-                    + "screen readers skip, so the content is read as text and the lines are only drawn.",
+                "A divider with content is a plain `div` rather than a separator, whose children screen readers skip, "
+                    + "so the content is read as text and the lines are only drawn.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-divider"],
@@ -279,14 +305,40 @@ public static class ExampleCatalog
             "A raised panel with the app's surface color, an optional border and a shadow, for grouping content.",
             typeof(SurfaceExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to group related content into a panel that stands out from the page.",
+            ],
+            WhenNotToUse =
+            [
+                "To lay items out, use a [stack](components/stack) or [grid](components/grid) and put surfaces in them.",
+                "To interrupt people with something on top of the page, use a [dialog](components/dialog).",
+            ],
+            Related = ["stack", "grid", "divider", "dialog"],
+            Sections =
+            [
+                new("elevation", "Elevation", "`Elevation` sets how far the surface seems to rise above the page. "
+                    + "Add your own padding with the [spacing classes](guides/spacing).", typeof(SurfaceExample)),
+                new("outlined", "Outlined", "`Outlined` adds a border, on its own or with a shadow.",
+                    typeof(SurfaceOutlinedExample)),
+                new("element", "Element", "`As` renders the surface as another element, such as "
+                    + "`LayoutElement.Article` for a card that stands on its own, or `LayoutElement.Section` with an "
+                    + "`aria-label` for a region screen readers can jump to.", typeof(SurfaceElementExample)),
+            ],
             Api = [typeof(TbSurface)],
             Accessibility =
             [
-                "A plain `div` by default. `As` renders it as another element, such as `LayoutElement.Article` for a "
-                    + "card that stands on its own, or `LayoutElement.Section` with an `aria-label` for a region "
-                    + "screen readers can jump to.",
-                "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order "
-                    + "on screen.",
+                "A plain `div` by default, with no role of its own.",
+            ],
+            AppDuties =
+            [
+                "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order on "
+                    + "screen.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-surface"],
@@ -715,17 +767,46 @@ public static class ExampleCatalog
             "Lays its children out in a row or a column, evenly spaced.", typeof(StackExample))
         {
             FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to put items in one row or one column with even gaps.",
+            ],
+            WhenNotToUse =
+            [
+                "For columns that line up across rows, or a page layout, use a [grid](components/grid).",
+            ],
+            Related = ["grid", "spacer", "surface", "container"],
+            Sections =
+            [
+                new("column", "Column", "With no parameters, a stack lays its children out in a column.",
+                    typeof(StackExample)),
+                new("gap", "Gap", "`Gap` sets the space between items, from the [spacing scale](guides/spacing).",
+                    typeof(StackGapExample)),
+                new("row", "Row", "`Row` lays the items in a row. `Align` lines them up across the row, `Justify` "
+                    + "spreads them along it, and `Wrap` lets them move onto a new line when they don't fit.",
+                    typeof(StackRowExample)),
+                new("responsive", "Column to row", "`RowFrom` keeps the items in a column on narrow screens and lays "
+                    + "them in a row from a breakpoint. The reading order stays the same either way.",
+                    typeof(StackResponsiveExample)),
+                new("element", "Element", "`As` renders the stack as another element, such as `LayoutElement.Nav` for "
+                    + "a group of links or `LayoutElement.Ul` for a list, whose items are `li` elements.",
+                    typeof(StackElementExample)),
+            ],
             Api = [typeof(TbStack)],
             Accessibility =
             [
-                "A plain `div` by default; it only lays out what it holds. `As` renders it as another element, such as "
-                    + "`LayoutElement.Nav` for a group of links or `LayoutElement.Ul` for a list, whose items are "
-                    + "`li` elements. A list keeps `role=\"list\"`, since Safari stops reading a list without "
-                    + "bullets as one.",
-                "`RowFrom` keeps the items in a column on narrow screens and lays them in a row from a breakpoint; "
-                    + "the reading order stays the same either way.",
-                "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order "
-                    + "on screen.",
+                "A plain `div` by default; it only lays out what it holds.",
+                "A stack rendered as a list keeps `role=\"list\"`, since Safari stops reading a list without bullets as "
+                    + "one.",
+            ],
+            AppDuties =
+            [
+                "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order on "
+                    + "screen.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-stack"],
@@ -734,10 +815,33 @@ public static class ExampleCatalog
             "Takes up the free space in a stack, pushing what follows to the end.", typeof(SpacerExample))
         {
             FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to push some items in a [stack](components/stack) to the far end and leave others where they "
+                    + "are.",
+            ],
+            WhenNotToUse =
+            [
+                "To spread every item evenly, use the stack's `Justify` instead.",
+            ],
+            Related = ["stack", "toolbar"],
+            Sections =
+            [
+                new("push-to-end", "Pushing to the end", "In a row, what follows a spacer moves to the far end.",
+                    typeof(SpacerExample)),
+                new("between", "Between items", "Several spacers share the free space evenly, so one item can sit in "
+                    + "the middle.", typeof(SpacerBetweenExample)),
+                new("column", "In a column", "In a column with a set height, what follows a spacer moves to the bottom.",
+                    typeof(SpacerColumnExample)),
+            ],
             Api = [typeof(TbSpacer)],
             Accessibility =
             [
                 "A plain `div` with no role and no content; screen readers skip it.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-spacer"],
@@ -746,6 +850,34 @@ public static class ExampleCatalog
             "A responsive 12-column grid for page layouts.", typeof(GridExample))
         {
             FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for page layouts and cards whose columns line up across rows and change with the screen's "
+                    + "width.",
+            ],
+            WhenNotToUse =
+            [
+                "For items in one row or column with even gaps, use a [stack](components/stack).",
+            ],
+            Related = ["stack", "container", "surface"],
+            Sections =
+            [
+                new("responsive-spans", "Responsive spans", "An item spans all 12 columns unless told otherwise. `Span` "
+                    + "applies from the smallest screens up. These take over on wider ones: `SpanSm` from "
+                    + "640px, `SpanMd` from 768px, `SpanLg` from 1024px and `SpanXl` from 1280px.",
+                    typeof(GridExample)),
+                new("offsets", "Offsets", "`Offset` leaves columns empty before an item, and `OffsetSm`, `OffsetMd`, "
+                    + "`OffsetLg` and `OffsetXl` take over from 640px, 768px, 1024px and 1280px. An offset doesn't "
+                    + "change the reading order.",
+                    typeof(GridOffsetExample)),
+                new("auto-and-grow", "Sizing to content", "`GridSpan.Auto` sizes an item to its content, and "
+                    + "`GridSpan.Grow` takes what's left of its row. An item that doesn't fit starts the next row.",
+                    typeof(GridAutoExample)),
+                new("nested", "Nested grids", "A grid inside an item has its own 12 columns and its own `Gap`, the "
+                    + "space between its items.", typeof(GridNestedExample)),
+                new("list", "List of cards", "Render the grid `As` `LayoutElement.Ul` and its items as "
+                    + "`LayoutElement.Li` for a list of cards, which screen readers count.", typeof(GridListExample)),
+            ],
             Api = [typeof(TbGrid), typeof(TbGridItem)],
             Anatomy = """
                 <TbGrid>
@@ -755,12 +887,16 @@ public static class ExampleCatalog
                 """,
             Accessibility =
             [
-                "Plain `div`s by default; they only lay out what they hold. Render the grid `As` `LayoutElement.Ul` "
-                    + "and its items as `LayoutElement.Li` for a list of cards, which screen readers count.",
-                "`Offset` leaves columns empty before an item but doesn't change the reading order. Screen readers "
-                    + "and the keyboard follow the order in the markup, so keep it the same as the order on screen.",
-                "An item's `Span` can be `GridSpan.Grow`, which takes what's left of its row, or `GridSpan.Auto`, "
-                    + "which sizes to its content; an item that doesn't fit starts the next row.",
+                "Plain `div`s by default; they only lay out what they hold.",
+            ],
+            AppDuties =
+            [
+                "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order on "
+                    + "screen.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-grid", "tb-grid-item"],
@@ -814,11 +950,33 @@ public static class ExampleCatalog
             "Centers content and caps its width at a readable size.", typeof(ContainerExample))
         {
             FullWidth = true,
+            WhenToUse =
+            [
+                "Use it around a page's content, so long lines don't stretch across a wide screen.",
+            ],
+            WhenNotToUse =
+            [
+                "To divide the width into columns, use a [grid](components/grid) inside it.",
+            ],
+            Related = ["grid", "stack", "surface"],
+            Sections =
+            [
+                new("max-width", "Maximum width", "`MaxWidth` sets where the container stops growing, from `Small` to "
+                    + "`ExtraLarge`, and `Full` never stops. The container stays centered in its parent. The frame here "
+                    + "is narrower than `Large`, so open the demo on its own in a wide window to see the larger ones.",
+                    typeof(ContainerExample)),
+                new("element", "Element", "`As` renders the container as another element, such as "
+                    + "`LayoutElement.Section` with an `aria-label`. `LayoutElement.Main` makes it the page's main "
+                    + "landmark, and a page should have only one.", typeof(ContainerElementExample)),
+            ],
             Api = [typeof(TbContainer)],
             Accessibility =
             [
-                "A plain `div` by default; it only limits the width of what it holds. Render it `As` "
-                    + "`LayoutElement.Main` to make it the page's main landmark.",
+                "A plain `div` by default; it only limits the width of what it holds.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
             ],
             Target = null,
             Blocks = ["tb-container"],
@@ -3883,7 +4041,7 @@ public static class ExampleCatalog
             ],
             BeforeInteractive =
             [
-                "It is plain HTML, so it all renders and reads the same before the page is interactive.",
+                PlainHtml,
             ],
             Target = new("table", "Opening hours"),
             Blocks = ["tb-table"],

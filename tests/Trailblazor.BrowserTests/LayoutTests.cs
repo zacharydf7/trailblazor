@@ -5,7 +5,7 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridItem_ShouldTakeTheFullWidth_WhenViewportIsBelowTheMediumBreakpoint(string browser)
     {
-        var page = await OpenAtWidthAsync(browser, "/examples/grid", width: 600);
+        var page = await OpenAtWidthAsync(browser, "/layout-grid", width: 600);
 
         var first = await BoxAsync(page, "half-first");
         var second = await BoxAsync(page, "half-second");
@@ -17,7 +17,7 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridItem_ShouldTakeItsMediumSpan_WhenViewportIsInTheMediumRange(string browser)
     {
-        var page = await OpenAtWidthAsync(browser, "/examples/grid", width: 900);
+        var page = await OpenAtWidthAsync(browser, "/layout-grid", width: 900);
 
         var grid = await BoxAsync(page, "grid");
         var first = await BoxAsync(page, "half-first");
@@ -32,7 +32,7 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task GridItem_ShouldSpanItsOwnGrid_WhenNestedInAnItemWithAnotherSpan(string browser)
     {
         // 900px is in the medium range, where the parent item spans 6 columns.
-        var page = await OpenAtWidthAsync(browser, "/examples/grid", width: 900);
+        var page = await OpenAtWidthAsync(browser, "/layout-grid", width: 900);
 
         var nestedGrid = await BoxAsync(page, "nested-grid");
         var nestedItem = await BoxAsync(page, "nested-item");
@@ -43,7 +43,7 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridItem_ShouldEndAtTheLastColumn_WhenItStartsInColumnNineAndSpansFour(string browser)
     {
-        var page = await OpenAtWidthAsync(browser, "/examples/grid", width: 1100);
+        var page = await OpenAtWidthAsync(browser, "/layout-grid", width: 1100);
 
         var grid = await BoxAsync(page, "grid");
         var end = await BoxAsync(page, "end");
@@ -55,7 +55,7 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridItem_ShouldFillTheRestOfItsRow_WhenItGrowsBetweenItemsSizedToTheirContent(string browser)
     {
-        var page = await OpenAtWidthAsync(browser, "/examples/grid", width: 1100);
+        var page = await OpenAtWidthAsync(browser, "/layout-grid", width: 1100);
 
         var grid = await BoxAsync(page, "toolbar");
         var label = await BoxAsync(page, "auto");
@@ -72,8 +72,8 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridItem_ShouldTakeItsOffsetFromTheMediumBreakpoint_WhenOnlyOffsetMdIsSet(string browser)
     {
-        var narrow = await OpenAtWidthAsync(browser, "/examples/grid", width: 600);
-        var wide = await OpenAtWidthAsync(browser, "/examples/grid", width: 900);
+        var narrow = await OpenAtWidthAsync(browser, "/layout-grid", width: 600);
+        var wide = await OpenAtWidthAsync(browser, "/layout-grid", width: 900);
 
         var narrowGrid = await BoxAsync(narrow, "grid");
         var narrowItem = await BoxAsync(narrow, "centered");
@@ -102,8 +102,8 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Stack_ShouldBeAColumnBelowTheBreakpointAndARowFromIt_WhenRowFromIsSet(string browser)
     {
-        var narrow = await OpenAtWidthAsync(browser, "/examples/stack", width: 600);
-        var wide = await OpenAtWidthAsync(browser, "/examples/stack", width: 900);
+        var narrow = await OpenAtWidthAsync(browser, "/layout-stack", width: 600);
+        var wide = await OpenAtWidthAsync(browser, "/layout-stack", width: 900);
 
         var (narrowFirst, narrowLast) = await FirstAndLastLinkAsync(narrow);
         var (first, last) = await FirstAndLastLinkAsync(wide);
@@ -116,8 +116,8 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Layouts_ShouldBeListsOfItems_WhenRenderedAsListElements(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/grid");
-        var stack = await OpenAsync(browser, "/examples/stack");
+        var page = await OpenAsync(browser, "/layout-grid");
+        var stack = await OpenAsync(browser, "/layout-stack");
 
         await Expect(page.GetByRole(AriaRole.List, new() { Name = "Trails nearby" }).GetByRole(AriaRole.Listitem))
             .ToHaveCountAsync(3);
@@ -130,7 +130,7 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Spacer_ShouldPushTheNextItemToTheEnd_WhenInARowStack(string browser)
     {
-        var page = await OpenAtWidthAsync(browser, "/examples/spacer", width: 1100);
+        var page = await OpenAtWidthAsync(browser, "/layout-spacer", width: 1100);
 
         var toolbar = await BoxAsync(page, "toolbar");
         var end = await BoxAsync(page, "toolbar-end");
