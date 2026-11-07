@@ -4,6 +4,113 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     private static ILocator Overlay(IPage page) => page.Locator("[data-part=overlay]");
 
+    private async Task<ILocator> OpenClosableAsync(IPage page)
+    {
+        await page.GetByRole(AriaRole.Button, new() { Name = "Closable" }).ClickAsync();
+        var overlay = page.Locator("[data-part=overlay]:has([data-part=trigger])");
+        await Expect(overlay).ToHaveAttributeAsync("data-ready", "");
+        return overlay;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCloseTheMenuAndLeaveTheOverlay_WhenAMenuIsOpenAboveIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var overlay = await OpenClosableAsync(page);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Above menu" })).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Above menu" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Stay" })).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Menu)).ToBeHiddenAsync();
+        await Expect(overlay).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(overlay).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCloseThePopoverAndLeaveTheOverlay_WhenAPopoverIsOpenAboveIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var overlay = await OpenClosableAsync(page);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Above popover" }).ClickAsync();
+        await Expect(page.GetByText("Details")).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByText("Details")).ToBeHiddenAsync();
+        await Expect(overlay).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCloseTheDialogAndLeaveTheOverlay_WhenADialogIsOpenAboveIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var overlay = await OpenClosableAsync(page);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Above dialog" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Dialog above" })).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Dialog above" })).ToBeHiddenAsync();
+        await Expect(overlay).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(overlay).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCloseTheDialogAndLeaveTheOverlay_WhenAModalDialogIsOpenAboveIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var overlay = await OpenClosableAsync(page);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Above modal" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Modal above" })).ToBeVisibleAsync();
+        // A modal takes the key wherever focus is, even with none in it.
+        await page.EvaluateAsync("() => document.activeElement.blur()");
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Modal above" })).ToBeHiddenAsync();
+        await Expect(overlay).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(overlay).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCloseTheOverlay_WhenAModelessDialogAboveItHasNoFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var overlay = await OpenClosableAsync(page);
+        var above = page.GetByRole(AriaRole.Button, new() { Name = "Above dialog" });
+        await above.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Dialog above" })).ToBeVisibleAsync();
+        await above.FocusAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(overlay).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldCloseTheOverlay_WhenAManualPopoverIsOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var overlay = await OpenClosableAsync(page);
+        await page.EvaluateAsync("""
+            () => {
+                const notice = document.createElement('div');
+                notice.popover = 'manual';
+                document.body.append(notice);
+                notice.showPopover();
+            }
+            """);
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(overlay).ToHaveCountAsync(0);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Overlay_ShouldCloseOnAClickOnTheScrimOrEscape_WhenCloseOnClickIsSet(string browser)
     {

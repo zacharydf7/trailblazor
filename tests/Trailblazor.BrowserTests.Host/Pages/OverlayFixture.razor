@@ -9,7 +9,24 @@
     <TbButton OnClick="() => _first = false">Close the first</TbButton>
 </TbOverlay>
 
+@* A closable overlay with a menu, a popover and a dialog that open above it. *@
+<TbButton OnClick="() => _closable = true">Closable</TbButton>
+<TbOverlay @bind-Visible="_closable" CloseOnClick>
+    <TbMenu Label="Above menu">
+        <TbMenuItem>Stay</TbMenuItem>
+    </TbMenu>
+    <TbPopover Label="Above popover">Details</TbPopover>
+    <TbButton OnClick="() => _dialog = true">Above dialog</TbButton>
+    <TbDialog @bind-Open="_dialog" Title="Dialog above" Options="Modeless">Words</TbDialog>
+    <TbButton OnClick="() => _modal = true">Above modal</TbButton>
+    <TbDialog @bind-Open="_modal" Title="Modal above">Words</TbDialog>
+</TbOverlay>
+
 @code {
+    private static readonly DialogOptions Modeless = new() { Modal = false };
+    private bool _closable;
+    private bool _dialog;
+    private bool _modal;
     private bool _first;
     private bool _second;
 }

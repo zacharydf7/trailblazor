@@ -1,6 +1,13 @@
 // Layers stack in creation order; only the topmost one reacts to a dismiss gesture.
 const layers = [];
 
+// Manual popovers don't close on Escape natively; a tooltip or toast that uses the key marks it defaultPrevented.
+const openAbove = 'dialog[open]:not([data-leaving]), [popover]:not([popover="manual"]):popover-open';
+
+// A modeless dialog takes Escape only while focus is in it, and a minimized modal counts as modeless.
+const takesEscape = open => open.localName !== 'dialog' || open.matches(':modal, [aria-modal="true"]')
+    || open.contains(document.activeElement);
+
 export function createDismissableLayer(element, trigger, dotNetReference) {
     const layer = { element, trigger, dotNetReference, dismissPending: false, dispose };
     if (layers.length === 0) {
@@ -27,9 +34,15 @@ function onKeyDown(event) {
         return;
     }
 
+    // A menu, popover or dialog that doesn't hold the layer is above it, and takes the key first.
+    const layer = layers.at(-1);
+    if ([...document.querySelectorAll(openAbove)].some(open => !open.contains(layer.element) && takesEscape(open))) {
+        return;
+    }
+
     // Stops a native <dialog> underneath from treating the same key press as its own close request.
     event.preventDefault();
-    requestDismiss(layers.at(-1), 'EscapeKey');
+    requestDismiss(layer, 'EscapeKey');
 }
 
 function onPointerDown(event) {

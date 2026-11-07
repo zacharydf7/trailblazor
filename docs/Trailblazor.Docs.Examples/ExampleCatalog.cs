@@ -4124,7 +4124,7 @@ public static class ExampleCatalog
             Api = [typeof(TbOverlay)],
             Keyboard =
             [
-                new(["Escape"], "Closes the overlay, unless a menu or popover above it takes the key first.")
+                new(["Escape"], "Closes the overlay, unless a menu, popover or dialog above it takes the key first.")
                 {
                     When = "With `CloseOnClick`",
                 },
