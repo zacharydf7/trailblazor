@@ -17,6 +17,8 @@ const fallbackRowHeight = 40;
 
 // A table's rows that hold cells, leaving out a virtualized grid's spacers and the rows it hides.
 const linesOf = table => [...table.rows].filter(row => row.cells.length > 0 && !row.hasAttribute('aria-hidden'));
+const selectsMany = table => table.dataset.selection === 'multiple';
+const extendTo = (row, from) => row.dispatchEvent(new CustomEvent('tb-row-extend', { bubbles: true, detail: from }));
 
 // The column a cell starts at, counting the cells before it that span several.
 const startOf = cell => [...cell.parentElement.cells].slice(0, cell.cellIndex)
@@ -167,6 +169,31 @@ export function createDataGrid(table) {
         }
     };
     table.addEventListener('pointerdown', keepEditFocused);
+
+    // Shift on a row selects a range, not the text it crosses. Canceling the selection, not the press, leaves focus to
+    // move as usual, and editable text keeps its own.
+    let pressedWithShift = false;
+    const notePress = event => pressedWithShift = event.shiftKey;
+    const endPress = () => pressedWithShift = false;
+    const keepTextUnselected = event => {
+        const target = event.target.nodeType === Node.ELEMENT_NODE ? event.target : event.target.parentElement;
+        if (pressedWithShift && table.hasAttribute('data-row-click-selects')
+            && target.closest('tr')?.dataset.part === 'row' && !target.closest('[contenteditable]')) {
+            event.preventDefault();
+        }
+    };
+    // A Shift+click on a box goes through the range, since its own toggle would turn off a box already in the range.
+    // The range waits for the click to finish, since canceling it would undo a render that came during it.
+    const extendFromBox = event => {
+        if (event.shiftKey && selectsMany(table) && event.target.matches?.('tr[data-part=row] [data-part=select] input')) {
+            event.preventDefault();
+            setTimeout(() => extendTo(event.target.closest('tr'), null));
+        }
+    };
+    table.addEventListener('mousedown', notePress);
+    document.addEventListener('mouseup', endPress);
+    table.addEventListener('selectstart', keepTextUnselected);
+    table.addEventListener('click', extendFromBox);
     return {
         // A cell whose edit ended takes focus back once its field is gone, or its place does when the edit moved
         // its row away, such as by its sort.
@@ -198,6 +225,10 @@ export function createDataGrid(table) {
             table.removeEventListener('keydown', keepPageFormUnsubmitted);
             table.removeEventListener('keydown', keepEscapeInEdit);
             table.removeEventListener('pointerdown', keepEditFocused);
+            table.removeEventListener('mousedown', notePress);
+            document.removeEventListener('mouseup', endPress);
+            table.removeEventListener('selectstart', keepTextUnselected);
+            table.removeEventListener('click', extendFromBox);
         },
     };
 }
@@ -343,6 +374,8 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         if (row) {
             focusCell(cellAt(row, place.column));
         }
+
+        return row;
     };
 
     const onKeyDown = event => {
@@ -401,6 +434,24 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         const page = () => Math.max(1, Math.floor(Math.min(scroll.clientHeight, window.innerHeight)
             / (rowHeight() || fallbackRowHeight)) - 1);
         const control = event.ctrlKey || event.metaKey;
+        if (control && event.key.toLowerCase() === 'a') {
+            if (table.hasAttribute('data-select-all')) {
+                event.preventDefault();
+                table.dispatchEvent(new CustomEvent('tb-select-all', { bubbles: true }));
+            }
+
+            return;
+        }
+
+        // Shift with an arrow extends the range to the row that takes focus, once a virtualized grid has drawn it.
+        // A group's heading isn't a row to select, so the range holds at the row just left and picks up at the next row.
+        const moveVertically = async to => {
+            const reached = await moveToRow(to, rows);
+            const target = reached?.dataset.part === 'row' ? reached : row;
+            if (reached && event.shiftKey && selectsMany(table) && target.dataset.part === 'row') {
+                extendTo(target, row.dataset.key);
+            }
+        };
         switch (event.key) {
             case 'ArrowRight':
                 across(cell.cellIndex + (rtl ? -1 : 1));
@@ -409,10 +460,10 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
                 across(cell.cellIndex + (rtl ? 1 : -1));
                 break;
             case 'ArrowDown':
-                moveToRow(index + 1, rows);
+                moveVertically(index + 1);
                 break;
             case 'ArrowUp':
-                moveToRow(index - 1, rows);
+                moveVertically(index - 1);
                 break;
             case 'PageDown':
                 moveToRow(index + page(), rows);

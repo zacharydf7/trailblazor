@@ -69,8 +69,16 @@ function registerEvents(blazor) {
         createEventArgs: event => ({
             ignored: !!event.target.closest?.(rowControls) || !!event.target.closest?.('[data-part=editor]')
                 || event.detail > 1 || endsTextDrag(event),
+            shiftKey: event.shiftKey,
         }),
     });
+    // The grid's script raises these only for the keys and clicks they're for, so other keys cost no trip to the server.
+    // Each browser event's name differs from the registered one, since Blazor would otherwise handle it twice.
+    blazor.registerCustomEventType('tbrowextend', {
+        browserEventName: 'tb-row-extend',
+        createEventArgs: event => ({ from: event.detail }),
+    });
+    blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
 
     // A key in a grid cell's edit says whether its field used it; the grid's own Enter and Escape guards don't count.
     blazor.registerCustomEventType('tbeditkey', {

@@ -48,6 +48,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A provider's first load waits for the columns when a filter read back from JSON needs their types.
     private bool _showForColumns;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
+    // A Shift range runs from its anchor to where it has reached, on top of the selection it started with, so it can
+    // shrink again.
+    private object? _rangeAnchor;
+    private List<TItem> _rangeBase = [];
     private TItem? _selectedItemFromParent;
     private (object Key, TaskCompletionSource Done)? _scrollAfterRender;
     private TaskCompletionSource? _nextRender;
@@ -1589,6 +1593,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         if (!ReferenceEquals(SelectedItems, _selectedFromParent))
         {
             _selectedFromParent = SelectedItems;
+            // A selection the parent set itself ends the range; its echo of this grid's own report doesn't.
+            if (!_selection.Keys.ToHashSet().SetEquals((SelectedItems ?? []).Select(KeyOf)))
+            {
+                _rangeAnchor = null;
+            }
+
             _selection.Clear();
             foreach (var item in SelectedItems ?? [])
             {
@@ -1627,9 +1637,63 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             : [.. _selection.Values, item]);
 
     // The header box selects every row on the page, or unselects them when all already are.
-    private Task ToggleAllAsync() => AllSelected
-        ? SetSelectionAsync(_selection.Values.Where(item => !_rows.Any(row => Equals(KeyOf(row), KeyOf(item)))))
-        : SetSelectionAsync([.. _selection.Values, .. _rows.Where(row => !IsSelected(row))]);
+    private Task ToggleAllAsync()
+    {
+        _rangeAnchor = null;
+        return AllSelected ? SetSelectionAsync(_selection.Values.Where(item => !_rows.Any(row => Equals(KeyOf(row), KeyOf(item)))))
+            : SelectAllAsync();
+    }
+
+    private Task SelectAllAsync()
+    {
+        _rangeAnchor = null;
+        return SetSelectionAsync([.. _selection.Values, .. _rows.Where(row => !IsSelected(row))]);
+    }
+
+    private void StartRange(object key)
+    {
+        _rangeAnchor = key;
+        _rangeBase = [.. _selection.Values];
+    }
+
+    private async Task ChooseAsync(TItem item)
+    {
+        await ToggleAsync(item);
+        StartRange(KeyOf(item));
+    }
+
+    // Selects from the anchor to this row, on top of what the range started with. With no anchor among the rows, as
+    // when none was chosen or it has been filtered away, the range starts at this row, which it adds and never toggles.
+    private Task ExtendRangeAsync(TItem item)
+    {
+        var to = _rows.FindIndex(row => Equals(KeyOf(row), KeyOf(item)));
+        // The rows can change while a row's event is on its way here, so the row may be gone.
+        if (to < 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        var from = _rows.FindIndex(row => Equals(KeyOf(row), _rangeAnchor));
+        if (from < 0)
+        {
+            StartRange(KeyOf(item));
+            from = to;
+        }
+
+        return SetSelectionAsync([.. _rangeBase, .. _rows.GetRange(Math.Min(from, to), Math.Abs(to - from) + 1)]);
+    }
+
+    // With no chosen row among the rows, the row that Shift and an arrow moved from anchors the range.
+    private Task OnRowExtendedAsync(TItem item, RowExtendEventArgs args)
+    {
+        if (!_rows.Exists(row => Equals(KeyOf(row), _rangeAnchor))
+            && _rows.FindIndex(row => IdOf(row) == args.From) is >= 0 and var start)
+        {
+            StartRange(KeyOf(_rows[start]));
+        }
+
+        return ExtendRangeAsync(item);
+    }
 
     private bool AllSelected => _rows.Count > 0 && _rows.All(IsSelected);
 
@@ -1645,7 +1709,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         await OnRowClick.InvokeAsync(item);
         if (RowClickSelects && SelectionMode != SelectionMode.None)
         {
-            await ToggleAsync(item);
+            await (args.ShiftKey && SelectionMode == SelectionMode.Multiple ? ExtendRangeAsync(item) : ChooseAsync(item));
         }
     }
 

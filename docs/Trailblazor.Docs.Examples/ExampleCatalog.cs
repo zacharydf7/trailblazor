@@ -4663,7 +4663,9 @@ public static class ExampleCatalog
                 new("row-click", "Clicking a row", "With a `SelectionMode` set, a click on a row selects it, unless the "
                     + "click lands on a button, link or field inside the row. `RowClickSelects=\"false\"` leaves "
                     + "selecting to the checkboxes, and `OnRowClick` reports the click. The second click of a "
-                    + "double-click doesn't count, and neither does a drag that selects a row's text to copy it.",
+                    + "double-click doesn't count, and neither does a drag that selects a row's text to copy it. In a "
+                    + "`Multiple` grid, Shift with a click on a row or its checkbox selects the range from the row last "
+                    + "chosen. In a virtualized grid with a `DataProvider`, the range covers only the rows it has loaded.",
                     typeof(DataGridRowClickExample)),
                 new("columns", "Column options", "`Width` sets a column's width and `Align` lines up its cells. Without "
                     + "`Align`, numbers line up at the end and everything else at the start. `SortBy` sorts by "
@@ -4758,6 +4760,11 @@ public static class ExampleCatalog
                 new(["Shift+Enter"], "On a sortable header, adds it to the sorts.") { When = "Sorting" },
                 new(["Space"], "On a row's checkbox, selects or unselects the row. On its radio button, selects "
                     + "the row.") { When = "Selecting" },
+                new(["Shift+Up", "Shift+Down"], "Extends the selected rows, and moving back shrinks the range.")
+                    { When = "With cell navigation and `SelectionMode.Multiple`" },
+                new(["Ctrl+A", "Cmd+A"], "Selects every row on the page, the same rows as the header's checkbox. A "
+                    + "virtualized grid with a `DataProvider` leaves these keys to the browser.")
+                    { When = "With cell navigation and `SelectionMode.Multiple`" },
                 new(["Tab"], "Reaches the grid once.") { When = "With cell navigation" },
                 new(["Up", "Down", "Left", "Right"], "Moves between cells.") { When = "With cell navigation" },
                 new(["Home", "End"], "Goes to the ends of the row.") { When = "With cell navigation" },

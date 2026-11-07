@@ -33,6 +33,10 @@
          tabindex="@(ScrollIsTabStop ? 0 : null)">
         <table @ref="_table" role="@(IsGrid ? "grid" : null)" aria-label="@AriaLabel"
                aria-multiselectable="@(IsGrid && SelectionMode == SelectionMode.Multiple ? "true" : null)"
+               data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
+               data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
+               data-row-click-selects="@(SelectionMode == SelectionMode.Multiple && RowClickSelects ? "" : null)"
+               @ontbselectall="SelectAllAsync"
                aria-busy="@(IsLoading ? "true" : null)"
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) : null)"
                class="tb-data-grid__table">
@@ -227,6 +231,7 @@
              @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is not null ? OnEditLeftAsync
                                  : (Func<FieldFocusEventArgs, Task>?)null)!)"
              @ontbrowclick="args => OnRowClickedAsync(item, args)"
+             @ontbrowextend="args => OnRowExtendedAsync(item, args)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
                         Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, rowClass)">
             @if (CanReorder)
@@ -246,7 +251,7 @@
                                       : "tb-checkbox__input tb-data-grid__check")" checked="@selected"
                            name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
                            aria-label="@Format(TbStrings.DataGridSelectRow, label ?? LabelOf(item))"
-                           @onchange="() => ToggleAsync(item)" />
+                           @onchange="() => ChooseAsync(item)" />
                 </td>
             }
             @foreach (var column in _shownColumns)

@@ -981,6 +981,12 @@ Trailblazor.RowClickEventArgs
 Trailblazor.RowClickEventArgs.Ignored.get -> bool
 Trailblazor.RowClickEventArgs.Ignored.set -> void
 Trailblazor.RowClickEventArgs.RowClickEventArgs() -> void
+Trailblazor.RowClickEventArgs.ShiftKey.get -> bool
+Trailblazor.RowClickEventArgs.ShiftKey.set -> void
+Trailblazor.RowExtendEventArgs
+Trailblazor.RowExtendEventArgs.From.get -> string?
+Trailblazor.RowExtendEventArgs.From.set -> void
+Trailblazor.RowExtendEventArgs.RowExtendEventArgs() -> void
 Trailblazor.ScrollAlignment
 Trailblazor.ScrollAlignment.Center = 2 -> Trailblazor.ScrollAlignment
 Trailblazor.ScrollAlignment.End = 3 -> Trailblazor.ScrollAlignment

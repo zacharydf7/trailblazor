@@ -466,6 +466,116 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task SelectAll_ShouldKeepEveryRowSelected_WhenRaisedTwice()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+
+        await cut.Find("table").TriggerEventAsync("ontbselectall", EventArgs.Empty);
+        await cut.Find("table").TriggerEventAsync("ontbselectall", EventArgs.Empty);
+
+        Assert.Equal(Trails.Count, selected.Count);
+    }
+
+    [Fact]
+    public async Task ShiftClick_ShouldAddTheRowAndKeepItSelected_WhenTheParentSetTheSelectionSinceTheLastChoice()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        await Row(cut, "1").TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+
+        cut.Render(parameters => parameters.Add(grid => grid.SelectedItems, new List<Trail> { Trails[1] }));
+        await Row(cut, "2").TriggerEventAsync("ontbrowclick", new RowClickEventArgs { ShiftKey = true });
+        Assert.Equal([2], selected.Select(trail => trail.Id));
+
+        await Row(cut, "3").TriggerEventAsync("ontbrowclick", new RowClickEventArgs { ShiftKey = true });
+        Assert.Equal([2, 3], selected.Select(trail => trail.Id).Order());
+    }
+
+    [Fact]
+    public async Task ShiftClick_ShouldSelectTheRange_WhenTheParentStoresACopyOfTheSelection()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        await Row(cut, "1").TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+
+        cut.Render(parameters => parameters.Add(grid => grid.SelectedItems, selected.ToList()));
+        await Row(cut, "3").TriggerEventAsync("ontbrowclick", new RowClickEventArgs { ShiftKey = true });
+
+        Assert.Equal([1, 2, 3], selected.Select(trail => trail.Id).Order());
+    }
+
+    [Fact]
+    public async Task ShiftClick_ShouldNotBringBackRows_WhenTheHeadersBoxClearedThem()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        foreach (var trail in Trails)
+        {
+            await Row(cut, $"{trail.Id}").TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+        }
+
+        cut.Find("[data-part=select-all]").Change(false);
+        Assert.Empty(selected);
+
+        await Row(cut, "3").TriggerEventAsync("ontbrowclick", new RowClickEventArgs { ShiftKey = true });
+
+        Assert.Equal([3], selected.Select(trail => trail.Id));
+    }
+
+    [Fact]
+    public async Task Extend_ShouldStartFromTheRowItLeft_WhenTheChosenRowHasBeenFilteredAway()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        await Row(cut, "1").TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+        cut.Render(parameters => parameters.Add(grid => grid.Items, Trails.Skip(1).ToList()));
+
+        await Row(cut, "3").TriggerEventAsync("ontbrowextend", new RowExtendEventArgs { From = "2" });
+
+        Assert.Equal([1, 2, 3], selected.Select(trail => trail.Id).Order());
+    }
+
+    [Fact]
+    public async Task ShiftClick_ShouldKeepEveryRowSelected_WhenTheyWereAllSelectedTogether()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        await Row(cut, "1").TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+        await cut.Find("table").TriggerEventAsync("ontbselectall", EventArgs.Empty);
+
+        await Row(cut, "3").TriggerEventAsync("ontbrowclick", new RowClickEventArgs { ShiftKey = true });
+
+        Assert.Equal(Trails.Count, selected.Count);
+    }
+
+    [Fact]
+    public async Task ShiftClick_ShouldSelectTheRange_WhenARowWasChosenBefore()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        await Row(cut, "1").TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+
+        await Row(cut, "3").TriggerEventAsync("ontbrowclick", new RowClickEventArgs { ShiftKey = true });
+
+        Assert.Equal([1, 2, 3], selected.Select(trail => trail.Id).Order());
+    }
+
+    [Fact]
     public void Select_ShouldKeepTheOtherRows_WhenOneOfSeveralSelectedRowsIsUnchecked()
     {
         IReadOnlyCollection<Trail> selected = [];

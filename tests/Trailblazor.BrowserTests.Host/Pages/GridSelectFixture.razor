@@ -1,0 +1,44 @@
+@page "/grid-select"
+
+@* A grid whose rows can all be selected at once, with the selection under it, then a loading grid whose rows can't, a
+   grouped one, and one that leaves selecting to its boxes. *@
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail" CellNavigation
+            SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_selected">
+    <TbColumn Field="trail => trail" Title="Name" Id="name" />
+    <TbColumn Title="Note" Id="note">
+        <Cell>
+            <input aria-label="Note for @context" value="hello" />
+            <div contenteditable aria-label="Free note for @context" role="textbox">hello</div>
+        </Cell>
+    </TbColumn>
+</TbDataGrid>
+<output aria-label="Selected">@string.Join(", ", (_selected ?? []).Order())</output>
+<TbDataGrid TItem="int" DataProvider="LoadAsync" AriaLabel="Numbers" Virtualize Height="15rem" CellNavigation
+            SelectionMode="SelectionMode.Multiple">
+    <TbColumn Field="row => row" Title="Number" />
+</TbDataGrid>
+<TbDataGrid TItem="Place" Items="Places" AriaLabel="Places" KeySelector="place => place.Name" CellNavigation
+            SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_places" @bind-Groups="_groups">
+    <TbColumn Field="place => place.Name" Title="Place" Id="place" />
+    <TbColumn Field="place => place.Region" Title="Region" Id="region" Groupable />
+</TbDataGrid>
+<output aria-label="Places selected">@string.Join(", ", (_places ?? []).Select(place => place.Name).Order())</output>
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Boxes only" KeySelector="trail => trail" RowClickSelects="false"
+            SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_boxed">
+    <TbColumn Field="trail => trail" Title="Name" Id="name" />
+</TbDataGrid>
+
+@code {
+    private static readonly string[] Trails = ["Ash", "Birch", "Cedar", "Dogwood", "Elm", "Fir"];
+    private static readonly Place[] Places =
+        [new("Alder", "North"), new("Bluff", "North"), new("Cove", "South"), new("Dune", "South")];
+    private IReadOnlyCollection<string>? _selected;
+    private IReadOnlyCollection<string>? _boxed;
+    private IReadOnlyCollection<Place>? _places;
+    private IReadOnlyList<string> _groups = ["region"];
+
+    private static Task<GridResult<int>> LoadAsync(GridRequest request, CancellationToken cancel) =>
+        Task.FromResult(new GridResult<int>([.. Enumerable.Range(request.StartIndex, request.Count ?? 20)], 1000));
+
+    private sealed record Place(string Name, string Region);
+}
