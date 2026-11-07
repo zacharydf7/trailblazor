@@ -274,7 +274,7 @@ public class ComponentPageTests : DocsTest
     [Fact]
     public void ComponentPage_ShouldLeaveOutUsageNotesAndRelated_WhenTheEntryHasNone()
     {
-        var cut = ComponentPage("icon-button");
+        var cut = ComponentPage("text");
 
         foreach (var heading in new[] { "Usage", "Notes and limitations", "Related" })
         {

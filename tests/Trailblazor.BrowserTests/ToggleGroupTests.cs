@@ -10,7 +10,7 @@ public class ToggleGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
     private async Task<IPage> OpenGroupsAsync(string browser)
     {
         var page = await OpenAsync(browser, "/examples/toggle-group");
-        foreach (var name in new[] { "Map view", "Show on map", "Distance units" })
+        foreach (var name in new[] { "Map view", "Seasons open", "Show on map", "Distance units", "Trail direction" })
         {
             await Expect(Group(page, name)).ToHaveAttributeAsync("data-ready", "");
         }
@@ -25,7 +25,7 @@ public class ToggleGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Item(page, "Map view", "Trails").FocusAsync();
 
         await page.Keyboard.PressAsync("Tab");
-        await Expect(Item(page, "Show on map", "Water")).ToBeFocusedAsync();
+        await Expect(Item(page, "Seasons open", "Summer")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Shift+Tab");
 
         await Expect(Item(page, "Map view", "Trails")).ToBeFocusedAsync();
@@ -70,13 +70,13 @@ public class ToggleGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task ToggleGroup_ShouldMoveWithUpAndDown_WhenVertical(string browser)
     {
         var page = await OpenGroupsAsync(browser);
-        await Item(page, "Distance units", "Miles").FocusAsync();
+        await Item(page, "Trail direction", "Clockwise").FocusAsync();
 
         await page.Keyboard.PressAsync("ArrowRight");
-        await Expect(Item(page, "Distance units", "Miles")).ToBeFocusedAsync();
+        await Expect(Item(page, "Trail direction", "Clockwise")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
 
-        await Expect(Item(page, "Distance units", "Kilometers")).ToBeFocusedAsync();
+        await Expect(Item(page, "Trail direction", "Counterclockwise")).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

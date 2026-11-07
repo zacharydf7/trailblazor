@@ -1,0 +1,11 @@
+<TbStack Gap="2">
+    <TbToggleGroup @bind-Value="_units" AriaLabel="Distance units" Clearable>
+        <TbToggleItem Value="@("Miles")">Miles</TbToggleItem>
+        <TbToggleItem Value="@("Kilometers")">Kilometers</TbToggleItem>
+    </TbToggleGroup>
+    <TbText>Units: @(_units ?? "none")</TbText>
+</TbStack>
+
+@code {
+    private string? _units;
+}

@@ -1,0 +1,8 @@
+<TbToggleGroup @bind-Value="_season" AriaLabel="Season" Variant="Variant.Soft" Tone="Tone.Primary" Size="Size.Large">
+    <TbToggleItem Value="@("Summer")">Summer</TbToggleItem>
+    <TbToggleItem Value="@("Winter")">Winter</TbToggleItem>
+</TbToggleGroup>
+
+@code {
+    private string? _season = "Summer";
+}

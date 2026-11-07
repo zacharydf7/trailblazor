@@ -409,17 +409,71 @@ public static class ExampleCatalog
         new("icon-button", "Icon button", ExampleCategory.Actions,
             "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it in a row of tools, or where there's no room for text and the icon is widely understood, such as "
+                    + "an X to close or a trash can to delete.",
+            ],
+            WhenNotToUse =
+            [
+                "When people could misread the icon, use a [button](components/button) with text.",
+                "To link to another page with text instead of an icon, use a [link](components/link).",
+            ],
+            Related = ["button", "button-group", "toolbar", "tooltip"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("variants-and-tones", "Variants and tones", "`Icon` is what the button shows and `AriaLabel` is "
+                    + "its name. `Variant` and `Tone` work as they do for a [button](components/button).",
+                    typeof(IconButtonExample)),
+                new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`.", typeof(IconButtonSizeExample)),
+                new("tooltip", "Tooltip", "`ShowTooltip` shows the button's name on hover and on keyboard focus, so "
+                    + "sighted people can read it too.", typeof(IconButtonTooltipExample)),
+                new("toggle", "Toggle", "`@bind-Pressed` makes the button a toggle. Keep the same `AriaLabel` whether "
+                    + "it's on or off, since `aria-pressed` tells which.", typeof(IconButtonToggleExample)),
+                new("links", "Links", "`Href` renders a link drawn as an icon button.", typeof(IconButtonLinkExample)),
+                new("loading", "Loading", "`Loading` shows a spinner in place of the icon and ignores clicks.",
+                    typeof(IconButtonLoadingExample)),
+                new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. With "
+                    + "`FocusableWhenDisabled` it stays a tab stop, so its tooltip can still be read.",
+                    typeof(IconButtonDisabledExample)),
+            ],
             Api = [typeof(TbIconButton), typeof(IconButtonClasses)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Presses it.") { When = "As a button" },
+                new(["Enter"], "Follows the link.") { When = "With an `Href`" },
+            ],
+            Labeling =
+            [
+                "`AriaLabel` is required and names the button, since it shows no text. A blank label written as text "
+                    + "in markup gets build warning TB001, and any blank label throws when it renders.",
+                "The icon itself is hidden from screen readers.",
+            ],
+            Announcements =
+            [
+                "The tooltip repeats the name, so it isn't added as a description, and screen readers hear the name "
+                    + "once.",
+                "`Loading` marks it `aria-busy`.",
+                "With `@bind-Pressed`, its state is announced through `aria-pressed`.",
+            ],
             Accessibility =
             [
-                "`AriaLabel` is required and names the button, since it shows no text. A blank label written as "
-                    + "text in markup gets build warning TB001, and any blank label throws when it renders.",
-                "The icon itself is hidden from screen readers. Set `ShowTooltip` so sighted users can see the "
-                    + "name too, on hover and on keyboard focus. The tooltip repeats the name, so it isn't added as a "
-                    + "description, and screen readers hear the name once.",
-                "Keys, `Disabled`, `FocusableWhenDisabled`, `Loading`, `Href` and `@bind-Pressed` work as they do "
-                    + "for a button. A toggle keeps the same `AriaLabel` either way; `aria-pressed` tells whether it "
-                    + "is on.",
+                "A `Loading` icon button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` "
+                    + "and stays a tab stop, as a button does.",
+                "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
+                    + "the system highlight.",
+            ],
+            AppDuties =
+            [
+                "Word `AriaLabel` as what the button does, and say which item it acts on where several look the same, "
+                    + "as in \"Remove Pine Hollow\".",
+            ],
+            BeforeInteractive =
+            [
+                "It renders a native button, or a link with an `Href`. The link already works, and `OnClick` starts "
+                    + "working once the page is interactive.",
             ],
             Target = new("button", "Add"),
             Blocks = ["tb-button", "tb-icon-button"],
@@ -436,6 +490,30 @@ public static class ExampleCatalog
             "Joins related buttons into one control, in a row or a column, with settings shared by all of them.",
             typeof(ButtonGroupExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to join a few buttons that belong together, such as a split button.",
+            ],
+            WhenNotToUse =
+            [
+                "To pick one option and keep it picked, use a [toggle group](components/toggle-group).",
+                "For a bar of many tools that arrow keys move through, use a [toolbar](components/toolbar).",
+            ],
+            Related = ["button", "toggle-group", "toolbar", "menu"],
+            Sections =
+            [
+                new("basic", "Joined buttons", "Buttons inside a `TbButtonGroup` join into one control.",
+                    typeof(ButtonGroupExample)),
+                new("split-button", "Split button", "A button wrapped in a menu, popover or tooltip still joins the "
+                    + "group, so a split button is a button and a menu side by side. Give the menu's icon trigger a "
+                    + "`Label` that says what it opens.", typeof(ButtonGroupSplitExample)),
+                new("vertical", "Vertical", "`Vertical` stacks the buttons in a column.",
+                    typeof(ButtonGroupVerticalExample)),
+                new("shared-settings", "Shared settings", "`Variant`, `Tone` and `Size` apply to every button that "
+                    + "doesn't set its own. `Disabled` turns every button off, as each button's own `Disabled` would.",
+                    typeof(ButtonGroupSharedExample)),
+            ],
             Api = [typeof(TbButtonGroup)],
             Anatomy = """
                 <TbButtonGroup aria-label="…">
@@ -444,14 +522,25 @@ public static class ExampleCatalog
                     <TbMenu Label="…">…</TbMenu>
                 </TbButtonGroup>
                 """,
+            Keyboard =
+            [
+                new(["Tab"], "Reaches each button. The group adds no arrow-key navigation."),
+            ],
+            Labeling =
+            [
+                "A `div` with `role=\"group\"`, named by `aria-label`.",
+            ],
             Accessibility =
             [
-                "A `div` with `role=\"group\"`. Give it an `aria-label` that says what the buttons do together.",
-                "Each button keeps its own tab stop; the group adds no arrow-key navigation.",
-                "`Disabled` on the group turns every button off, as each button's own `Disabled` would. `Variant`, "
-                    + "`Tone` and `Size` apply to every button that doesn't set its own.",
-                "A menu, popover or tooltip around a button joins the group with it, so a split button is a button "
-                    + "and a menu side by side. Give the menu's icon trigger a `Label` that says what it opens.",
+                "Each button keeps its own role, name and tab stop.",
+            ],
+            AppDuties =
+            [
+                "Give the group an `aria-label` that says what the buttons do together.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders its buttons, joined. Their `OnClick` starts working once the page is interactive.",
             ],
             Target = new("group", "Text alignment"),
             Blocks = ["tb-button-group"],
@@ -459,7 +548,36 @@ public static class ExampleCatalog
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
             "A row of toggle buttons where one, or any number, can be pressed.", typeof(ToggleGroupExample))
         {
+            FullWidth = true,
             RightToLeftKeys = "Left moves to the next item and Right to the previous one.",
+            WhenToUse =
+            [
+                "Use it for a compact row of choices that take effect right away, such as a map's view.",
+            ],
+            WhenNotToUse =
+            [
+                "For a choice in a form that's sent later, use a [radio group](components/radio-group).",
+                "For buttons that each start an action, use a [button group](components/button-group).",
+                "For one setting that's on or off, use a [switch](components/switch).",
+            ],
+            Related = ["radio-group", "button-group", "toolbar", "switch"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("one", "Pick one", "`TbToggleGroup` keeps one item pressed, and `Value` holds it.",
+                    typeof(ToggleGroupExample)),
+                new("any-number", "Pick any number", "`TbMultiToggleGroup` lets any number of items stay pressed, and "
+                    + "`Value` holds them.", typeof(ToggleGroupMultipleExample)),
+                new("items", "Items", "In either group, an item can have an `Icon` or be `Disabled`, and one with only "
+                    + "an icon needs an `AriaLabel`.", typeof(ToggleGroupItemsExample)),
+                new("clearable", "Clearable", "`Clearable` lets people clear a `TbToggleGroup` by pressing its pressed "
+                    + "item again. Without it, that item stays pressed.", typeof(ToggleGroupClearableExample)),
+                new("vertical", "Vertical", "`Vertical` stacks the items in a column, and the up and down arrows move "
+                    + "between them.", typeof(ToggleGroupVerticalExample)),
+                new("style", "Variant, tone and size", "`Variant`, `Tone` and `Size` apply to every item.",
+                    typeof(ToggleGroupStyleExample)),
+                new("disabled", "Disabled", "`Disabled` turns the whole group off.", typeof(ToggleGroupDisabledExample)),
+            ],
             Api = [typeof(TbToggleGroup<>), typeof(TbMultiToggleGroup<>), typeof(TbToggleItem<>)],
             Anatomy = """
                 <TbToggleGroup AriaLabel="…" @bind-Value="_value">
@@ -471,16 +589,36 @@ public static class ExampleCatalog
                     <TbToggleItem Value="…">…</TbToggleItem>
                 </TbMultiToggleGroup>
                 """,
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the group and out of it, as one tab stop. Focus lands on the last focused "
+                    + "item, or else the first pressed item, or else the first item that isn't disabled."),
+                new(["Left", "Right"], "Moves between the items, skipping disabled ones.") { When = "In a row" },
+                new(["Up", "Down"], "Moves between the items, skipping disabled ones.") { When = "When `Vertical`" },
+                new(["Home", "End"], "Goes to the first or last item that isn't disabled."),
+                new(["Enter", "Space"], "Presses the focused item."),
+            ],
+            Labeling =
+            [
+                "A `group` named by its required `AriaLabel`. An item with only an icon needs an `AriaLabel` of its "
+                    + "own. A blank label on either throws when it renders.",
+            ],
+            Announcements =
+            [
+                "Each item is a toggle button, whose state is announced through `aria-pressed`.",
+            ],
             Accessibility =
             [
-                "A `group` named by its required `AriaLabel`, holding toggle buttons with `aria-pressed`. An item "
-                    + "with only an icon needs an `AriaLabel` of its own.",
-                "The group is one tab stop, landing on the pressed item, or the first one. Left and Right move "
-                    + "between the items (Up and Down when `Vertical`), Home and End go to the first and last, and "
-                    + "disabled items are skipped. Space or Enter presses the focused item.",
-                "In a `TbToggleGroup`, pressing the pressed item again keeps it pressed unless the group is "
-                    + "`Clearable`.",
                 "In forced-colors mode a pressed item takes the system highlight.",
+            ],
+            AppDuties =
+            [
+                "Give the group an `AriaLabel` that says what people are choosing, such as \"Map view\".",
+            ],
+            BeforeInteractive =
+            [
+                "The items render with any pressed ones marked. Pressing them, the arrow keys and the single tab stop "
+                    + "start working once the page is interactive. Until then, each item is its own tab stop.",
             ],
             Target = new("group", "Map view"),
             Blocks = ["tb-toggle-group", "tb-button"],

@@ -1,15 +1,6 @@
-@using Trailblazor.Docs.Examples
-
-<div style="display: flex; align-items: center; gap: var(--tb-space-2)">
-    <TbIconButton Icon="ExampleIcons.Trash" AriaLabel="Delete" Size="Size.Small" />
-    <TbIconButton Icon="ExampleIcons.Trash" AriaLabel="Delete" ShowTooltip />
-    <TbIconButton Icon="ExampleIcons.Trash" AriaLabel="Delete" Size="Size.Large" />
+<TbStack Row Wrap Gap="2" Align="Align.Center">
     <TbIconButton Icon="ExampleIcons.Plus" AriaLabel="Add" Variant="Variant.Filled" Tone="Tone.Primary" />
     <TbIconButton Icon="ExampleIcons.Close" AriaLabel="Remove" Variant="Variant.Soft" Tone="Tone.Danger" />
-    <TbIconButton Icon="ExampleIcons.Check" AriaLabel="Confirm" Disabled />
-    <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="Notifications" ShowTooltip @bind-Pressed="_notify" />
-</div>
-
-@code {
-    private bool _notify = true;
-}
+    <TbIconButton Icon="ExampleIcons.Search" AriaLabel="Search" Variant="Variant.Outlined" />
+    <TbIconButton Icon="ExampleIcons.Filter" AriaLabel="Filter" />
+</TbStack>

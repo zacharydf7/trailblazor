@@ -1,0 +1,13 @@
+<TbStack Gap="2">
+    <TbMultiToggleGroup @bind-Value="_layers" AriaLabel="Show on map">
+        <TbToggleItem Value="@("Campsites")" Icon="ExampleIcons.Check">Campsites</TbToggleItem>
+        <TbToggleItem Value="@("Water")">Water</TbToggleItem>
+        <TbToggleItem Value="@("Ranger stations")" Disabled>Ranger stations</TbToggleItem>
+        <TbToggleItem Value="@("Alerts")" Icon="ExampleIcons.Bell" AriaLabel="Alerts" />
+    </TbMultiToggleGroup>
+    <TbText>Showing: @(_layers.Count == 0 ? "nothing" : string.Join(", ", _layers))</TbText>
+</TbStack>
+
+@code {
+    private IReadOnlyList<string> _layers = ["Water"];
+}

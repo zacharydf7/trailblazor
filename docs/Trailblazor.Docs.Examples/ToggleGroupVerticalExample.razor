@@ -1,0 +1,8 @@
+<TbToggleGroup @bind-Value="_direction" AriaLabel="Trail direction" Vertical>
+    <TbToggleItem Value="@("Clockwise")">Clockwise</TbToggleItem>
+    <TbToggleItem Value="@("Counterclockwise")">Counterclockwise</TbToggleItem>
+</TbToggleGroup>
+
+@code {
+    private string? _direction = "Clockwise";
+}

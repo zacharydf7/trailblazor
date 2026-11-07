@@ -1,0 +1,13 @@
+<TbIconButton Icon="ExampleIcons.Check" AriaLabel="Save the route" Loading="_saving" OnClick="SaveAsync" />
+
+@code {
+    private bool _saving;
+
+    // Stands in for saving somewhere slow.
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        await Task.Delay(1500);
+        _saving = false;
+    }
+}
