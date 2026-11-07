@@ -875,7 +875,8 @@ public static class ExampleCatalog
             Keyboard =
             [
                 new(["Tab"], "Moves into the toolbar and out of it, as one tab stop."),
-                new(["Left", "Right"], "Moves between every control in the toolbar, toggle group items included.")
+                new(["Left", "Right"], "Moves between every control in the toolbar, including toggle group items and "
+                    + "a `Disabled` button with `FocusableWhenDisabled`, even one with an `Href`.")
                     { When = "In a row" },
                 new(["Up", "Down"], "Moves between every control in the toolbar.") { When = "When `Vertical`" },
                 new(["Home", "End"], "Goes to the first or last control."),
@@ -894,6 +895,8 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "In the overflow menu, each button is a `menuitem` with the same text and action.",
+                "When the focused button moves into the overflow menu, focus moves to the menu's button. When that "
+                    + "button goes away, focus moves to the last control.",
             ],
             BeforeInteractive =
             [

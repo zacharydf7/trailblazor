@@ -1,6 +1,8 @@
 import { createRovingFocus } from '../Trailblazor.Primitives/roving-focus.js';
 
-const controls = 'button, a[href], input:not([type="hidden"]), select, textarea';
+// A disabled link stays out unless it was kept focusable, and a select's combobox is its control unless it's turned off.
+const controls = 'button, a[href], a[data-kept-focusable], input:not([type="hidden"]), select, textarea, '
+    + '[role="combobox"]:not([aria-disabled="true"])';
 
 // The toolbar is one tab stop whose arrow keys move between its controls. When it is too narrow, its toolbar buttons
 // move into the overflow menu, last ones first; the browser hides them at once and tells `overflow` which ones moved.
@@ -29,6 +31,7 @@ export function attachToolbar(toolbar, more, overflow) {
             return;
         }
 
+        const focused = document.activeElement;
         const items = [...toolbar.querySelectorAll('[data-toolbar-item]')].filter(item => !inPopup(item));
         for (const item of items) {
             item.removeAttribute('data-overflowed');
@@ -46,6 +49,11 @@ export function attachToolbar(toolbar, more, overflow) {
         }
 
         focus.sync();
+        // Focus can't stay on a hidden control, so it goes to the menu button, or to the last control still shown.
+        if (toolbar.contains(focused) && !focused.checkVisibility()) {
+            focus.focusable().at(-1)?.focus();
+        }
+
         const moved = items.filter(item => item.hasAttribute('data-overflowed')).map(item => item.dataset.toolbarItem);
         if (moved.join(' ') !== reported) {
             reported = moved.join(' ');

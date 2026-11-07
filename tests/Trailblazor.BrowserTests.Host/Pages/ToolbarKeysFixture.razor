@@ -1,0 +1,42 @@
+@page "/toolbar-keys"
+
+@* Controls beyond plain buttons, and a button that turns Loading while it has focus. *@
+<TbToolbar AriaLabel="Tools">
+    <TbToolbarButton Text="Back" />
+    <TbSelect TValue="string" Label="Size" @bind-Value="_size">
+        <TbOption Value="@("Small")">Small</TbOption>
+        <TbOption Value="@("Large")">Large</TbOption>
+    </TbSelect>
+    <TbButton Disabled FocusableWhenDisabled>Off button</TbButton>
+    <TbButton Href="toolbar" Disabled FocusableWhenDisabled>Off link</TbButton>
+    <TbButton Disabled>Gone button</TbButton>
+    <TbButton Loading="_saving" OnClick="() => _saving = true">Save</TbButton>
+    <TbToolbarButton Text="Next" />
+</TbToolbar>
+<TbToolbar AriaLabel="With off select">
+    <TbToolbarButton Text="First" />
+    <TbSelect TValue="string" Label="Off size" Disabled />
+    <TbToolbarButton Text="Last" />
+</TbToolbar>
+<TbToolbar AriaLabel="With links">
+    <TbToolbarButton Text="Start" />
+    <TbButton Href="toolbar" Disabled="_linkOff">Turning link</TbButton>
+    <TbButton Href="toolbar" Disabled>Gone link</TbButton>
+    <TbButton Href="toolbar" Disabled FocusableWhenDisabled="_keepLink">Kept link</TbButton>
+    <TbSelect TValue="string" Label="Turning size" Disabled="_sizeOff" />
+</TbToolbar>
+<TbToolbar AriaLabel="Stacked" Vertical>
+    <TbSelect TValue="string" Label="Stacked pick" />
+    <TbToolbarButton Text="Stacked button" />
+</TbToolbar>
+<TbButton OnClick="() => _linkOff = true">Turn link off</TbButton>
+<TbButton OnClick="() => _keepLink = true">Keep link focusable</TbButton>
+<TbButton OnClick="() => _sizeOff = true">Turn size off</TbButton>
+
+@code {
+    private string? _size;
+    private bool _saving;
+    private bool _linkOff;
+    private bool _keepLink;
+    private bool _sizeOff;
+}

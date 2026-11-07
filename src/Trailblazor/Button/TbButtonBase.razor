@@ -12,6 +12,7 @@
                 <a @ref="_element" @attributes="AdditionalAttributes" href="@(Off ? null : Href)"
                    role="@(Off ? "link" : Theirs("role"))"
                    tabindex="@(Off ? (FocusableWhenDisabled ? "0" : null) : Theirs("tabindex"))"
+                   data-kept-focusable="@(Off && FocusableWhenDisabled ? "" : null)"
                    aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                    aria-disabled="@(Off || Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
                    class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"

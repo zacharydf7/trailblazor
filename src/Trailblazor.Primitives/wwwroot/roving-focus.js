@@ -1,27 +1,39 @@
 // The arrow keys, Home and End move the caret in these, so they stay with the field.
 const textEntry = 'input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"]), '
-    + 'textarea, select, [contenteditable]:not([contenteditable="false"])';
+    + 'textarea, select, [role="combobox"], [contenteditable]:not([contenteditable="false"])';
 
 // One tab stop for a set of items: the current item has tabindex 0 and the rest -1, and the arrow keys, Home and End
-// move between the enabled items. `items` selects them and `filter` drops some, `vertical()` says which arrows move,
-// and `preferred()` names the item that takes the tab stop when focus hasn't been inside yet, such as the pressed one.
+// move between those that can take focus, including one marked only aria-disabled. `items` selects them and
+// `filter` drops some, `vertical()` says which arrows move, and `preferred()` names the item that takes the tab stop
+// when focus hasn't been inside yet, such as the pressed one.
 export function createRovingFocus(container, { items, filter = () => true, vertical = () => false,
     preferred = () => null }) {
     let current = null;
+    let managed = [];
 
     const all = () => [...container.querySelectorAll(items)].filter(filter);
-    const enabled = () => all().filter(item => !item.disabled && item.getAttribute('aria-disabled') !== 'true');
+    const focusable = () => all().filter(item => !item.disabled);
 
     const sync = () => {
-        const list = enabled();
+        const list = focusable();
         if (!list.includes(current)) {
             current = null;
         }
 
         const stop = current ?? (list.includes(preferred()) ? preferred() : list[0]);
-        for (const item of all()) {
+        const inSet = all();
+        // An item that left the set, such as a link turned off, would otherwise stay a tab stop. Leave a -1 alone,
+        // since it may be the item's own and keeps focus on it, and a hidden item too, which may come back as it was.
+        const left = managed.filter(item => !inSet.includes(item) && item.tabIndex === 0 && item.checkVisibility());
+        for (const item of left) {
+            item.removeAttribute('tabindex');
+        }
+
+        for (const item of inSet) {
             item.tabIndex = item === stop ? 0 : -1;
         }
+
+        managed = inSet;
     };
     const moveTo = item => {
         if (item) {
@@ -32,7 +44,7 @@ export function createRovingFocus(container, { items, filter = () => true, verti
     };
 
     const onKeyDown = event => {
-        const list = enabled();
+        const list = focusable();
         const index = list.indexOf(event.target);
         if (index < 0 || event.altKey || event.ctrlKey || event.metaKey || event.target.matches(textEntry)) {
             return;
@@ -53,7 +65,7 @@ export function createRovingFocus(container, { items, filter = () => true, verti
         }
     };
     const onFocusIn = event => {
-        const item = enabled().find(candidate => candidate === event.target);
+        const item = focusable().find(candidate => candidate === event.target);
         if (item && item !== current) {
             current = item;
             sync();
@@ -63,7 +75,8 @@ export function createRovingFocus(container, { items, filter = () => true, verti
     // Items come and go, turn off, or become the preferred one as the server re-renders.
     const observer = new MutationObserver(sync);
     observer.observe(container, {
-        childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'aria-pressed'],
+        childList: true, subtree: true, attributes: true,
+        attributeFilter: ['disabled', 'aria-disabled', 'aria-pressed', 'data-kept-focusable'],
     });
     container.addEventListener('keydown', onKeyDown);
     container.addEventListener('focusin', onFocusIn);
@@ -72,6 +85,7 @@ export function createRovingFocus(container, { items, filter = () => true, verti
     return {
         // Call after changing what `filter` lets through.
         sync,
+        focusable,
         dispose() {
             observer.disconnect();
             container.removeEventListener('keydown', onKeyDown);

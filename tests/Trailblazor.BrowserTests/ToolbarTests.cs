@@ -50,6 +50,186 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Button(page, "Newest")).ToBeFocusedAsync();
     }
 
+    private static ILocator Tool(IPage page, string toolbar, string name) =>
+        Toolbar(page, toolbar).GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldReachASelectWithTheArrowsAsOneTabStop_WhenItHoldsOne(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var select = Toolbar(page, "Tools").GetByRole(AriaRole.Combobox, new() { Name = "Size" });
+        await Tool(page, "Tools", "Back").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(select).ToBeFocusedAsync();
+        await Tool(page, "Tools", "Back").FocusAsync();
+        await Expect(select).ToHaveAttributeAsync("tabindex", "-1");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.Locator("[role=toolbar][aria-label='Tools'] :focus")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldKeepItsOwnKeys_WhenInAToolbar(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var select = Toolbar(page, "Tools").GetByRole(AriaRole.Combobox, new() { Name = "Size" });
+        await Expect(select).ToHaveAttributeAsync("data-ready", "");
+        await select.FocusAsync();
+
+        await page.Keyboard.PressAsync("End");
+
+        await Expect(select).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(select).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldSkipATurnedOffSelect_WhenTheArrowsMove(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        await Tool(page, "With off select", "First").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Tool(page, "With off select", "Last")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldReachButtonsAndLinksKeptFocusable_WhenTheyreOff(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        await Tool(page, "Tools", "Save").FocusAsync();
+        var link = Toolbar(page, "Tools").GetByRole(AriaRole.Link, new() { Name = "Off link" });
+
+        // Left passes over the plain disabled button.
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(link).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Tool(page, "Tools", "Off button")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.Locator("[role=toolbar][aria-label='Tools'] :focus")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldSkipLinksThatAreOff_WhenOneStartsOffAndOneTurnsOff(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Turn link off" }).ClickAsync();
+        await Expect(Toolbar(page, "With links").GetByRole(AriaRole.Link, new() { Name = "Turning link" }))
+            .ToHaveAttributeAsync("aria-disabled", "true");
+        await Tool(page, "With links", "Start").FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Toolbar(page, "With links").GetByRole(AriaRole.Combobox, new() { Name = "Turning size" }))
+            .ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepOneTabStop_WhenALinkBecomesFocusableWhileOff(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var link = Toolbar(page, "With links").GetByRole(AriaRole.Link, new() { Name = "Kept link" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Keep link focusable" }).ClickAsync();
+        await Expect(link).ToHaveAttributeAsync("data-kept-focusable", "");
+
+        await Expect(Toolbar(page, "With links").Locator("[tabindex='0']")).ToHaveCountAsync(1);
+        await Expect(link).ToHaveAttributeAsync("tabindex", "-1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepItsTabStop_WhenSomethingChangesWhileItsHidden(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var toolbar = Toolbar(page, "Stacked");
+        var select = toolbar.GetByRole(AriaRole.Combobox, new() { Name = "Stacked pick" });
+        await Expect(select).ToHaveAttributeAsync("tabindex", "0");
+
+        await toolbar.EvaluateAsync("""
+            toolbar => {
+                toolbar.style.display = 'none';
+                toolbar.querySelector('button').setAttribute('aria-pressed', 'true');
+                return new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
+            }
+            """);
+        // A hidden toolbar has no role to find it by.
+        await page.Locator("[aria-label='Stacked']").EvaluateAsync("toolbar => toolbar.style.display = ''");
+
+        await Expect(select).ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepFocusOnASelect_WhenItTurnsOffWhileFocused(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var select = Toolbar(page, "With links").GetByRole(AriaRole.Combobox, new() { Name = "Turning size" });
+        await select.FocusAsync();
+
+        // A click from a script leaves focus where it is, as a save finishing in the background would.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Turn size off" }).EvaluateAsync("button => button.click()");
+        await Expect(select).ToHaveAttributeAsync("aria-disabled", "true");
+        await page.EvaluateAsync("() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))");
+
+        await Expect(select).ToHaveAttributeAsync("tabindex", "-1");
+        await Expect(select).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepOneTabStop_WhenTheLinkHoldingItTurnsOff(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var link = Toolbar(page, "With links").GetByRole(AriaRole.Link, new() { Name = "Turning link" });
+        await link.FocusAsync();
+        await Expect(link).ToHaveAttributeAsync("tabindex", "0");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Turn link off" }).ClickAsync();
+        await Expect(link).ToHaveAttributeAsync("aria-disabled", "true");
+
+        await Expect(Toolbar(page, "With links").Locator("[tabindex='0']")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepItsKeysAndTabStop_WhenTheFocusedButtonTurnsLoading(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var save = Tool(page, "Tools", "Save");
+        await save.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(save).ToHaveAttributeAsync("aria-busy", "true");
+
+        await Expect(save).ToHaveAttributeAsync("tabindex", "0");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Tool(page, "Tools", "Next")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(save).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldMoveFocusToItsMenu_WhenTheFocusedButtonMovesIntoIt(string browser)
+    {
+        var page = await OpenToolbarAsync(browser);
+        await Button(page, "Delete note").FocusAsync();
+
+        await NarrowAsync(page, "20rem");
+
+        await Expect(Button(page, "More")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldMoveFocusToItsLastControl_WhenItsFocusedMenuGoesAway(string browser)
+    {
+        var page = await OpenToolbarAsync(browser);
+        await NarrowAsync(page, "20rem");
+        await Button(page, "More").FocusAsync();
+
+        await NarrowAsync(page, "100%");
+
+        await Expect(Button(page, "Delete note")).ToBeFocusedAsync();
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toolbar_ShouldBeOneTabStop_WhenTabbedThrough(string browser)
     {
