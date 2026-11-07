@@ -1,0 +1,11 @@
+@* Clicking Map, even while it is selected, refreshes it. *@
+<TbTabs AriaLabel="Trail map">
+    <TbTab Text="Overview"><TbText>Eleven miles around the lake.</TbText></TbTab>
+    <TbTab Text="Map" OnClick="() => _mapRefreshes++">
+        <TbText>Map refreshed @_mapRefreshes @(_mapRefreshes == 1 ? "time" : "times").</TbText>
+    </TbTab>
+</TbTabs>
+
+@code {
+    private int _mapRefreshes;
+}

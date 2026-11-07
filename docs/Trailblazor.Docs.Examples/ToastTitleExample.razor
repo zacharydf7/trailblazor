@@ -1,0 +1,8 @@
+@inject IToastService Toasts
+
+<TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="FailToSync">Fail to sync</TbButton>
+
+@code {
+    private void FailToSync() =>
+        Toasts.Show("Check your connection and try again.", Tone.Danger, new() { Title = "Couldn't reach the server" });
+}

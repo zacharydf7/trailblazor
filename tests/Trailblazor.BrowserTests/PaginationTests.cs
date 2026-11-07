@@ -67,6 +67,16 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldGoToTheNextPage_WhenUpIsPressedInCompactMode(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/pagination");
+
+        await Navigation(page, "Photos").GetByRole(AriaRole.Spinbutton).PressAsync("ArrowUp");
+
+        await Expect(page.GetByText("Showing photo")).ToHaveTextAsync("Showing photo 2 of 140");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Pagination_ShouldTurnItsArrowsAround_WhenTheTextIsRightToLeft(string browser)
     {
         var page = await OpenAsync(browser, "/examples/pagination");
@@ -121,6 +131,19 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().Pagination("Photos").GoToPageAsync(42);
 
         await Expect(page.GetByText("Showing photo")).ToHaveTextAsync("Showing photo 42 of 140");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldLinkEachPage_WhenGivenPageHref(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/pagination");
+        var chapters = Navigation(page, "Guide chapters");
+
+        await chapters.GetByRole(AriaRole.Link, new() { Name = "Page 3", Exact = true }).ClickAsync();
+
+        await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("chapter=3$"));
+        await Expect(chapters.GetByRole(AriaRole.Link, new() { Name = "Page 3", Exact = true }))
+            .ToHaveAttributeAsync("aria-current", "page");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

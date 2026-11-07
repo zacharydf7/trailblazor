@@ -1,0 +1,6 @@
+<TbStack Gap="3">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbPagination Page="2" PageCount="5" Size="size" AriaLabel="@($"{size} pages")" />
+    }
+</TbStack>

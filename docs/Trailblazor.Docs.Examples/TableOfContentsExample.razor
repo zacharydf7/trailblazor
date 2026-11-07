@@ -1,5 +1,5 @@
 <TbStack Row Gap="5" Wrap>
-    <TbTableOfContents AriaLabel="Trail guide" ActiveChanged="active => _active = active" Style="inline-size: 12rem">
+    <TbTableOfContents AriaLabel="Trail guide" Style="inline-size: 12rem">
         <TbTableOfContentsItem TargetId="guide-getting-there" Text="Getting there" />
         <TbTableOfContentsItem TargetId="guide-route" Text="The route">
             <TbTableOfContentsItem TargetId="guide-climb" Text="The climb" />
@@ -9,7 +9,6 @@
         <TbTableOfContentsItem TargetId="guide-camping" Text="Camping" />
     </TbTableOfContents>
     <TbStack Gap="2" Style="flex: 1 1 18rem; max-inline-size: 34rem">
-        <TbText>In view: @(_active ?? "none")</TbText>
         <div role="region" aria-label="Ridge loop guide" tabindex="0"
              style="block-size: 14rem; overflow: auto; padding-inline: var(--tb-space-3);
                     border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
@@ -39,7 +38,3 @@
         </div>
     </TbStack>
 </TbStack>
-
-@code {
-    private string? _active;
-}

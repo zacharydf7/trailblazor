@@ -1,0 +1,10 @@
+@inject NavigationManager Navigation
+
+<TbPagination Page="Chapter ?? 1" PageCount="8" AriaLabel="Guide chapters" PageHref="ChapterHref" />
+
+@code {
+    [SupplyParameterFromQuery]
+    private int? Chapter { get; set; }
+
+    private string ChapterHref(int number) => $"{Navigation.Uri.Split('?', '#')[0]}?chapter={number}";
+}

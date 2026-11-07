@@ -344,6 +344,25 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         from theme in new[] { "light", "dark" }
         select (section.Example, section.Opener, section.Role, section.Shown, theme));
 
+    public static TheoryData<string, string, string> ToastsInBothThemes => new(
+        from toast in new[]
+        {
+            ("Fail to sync", "Check your connection"), ("Archive report", "Report archived"),
+            ("Export map", "Trail map exported"), ("Show until dismissed", "Uploading the map"),
+            ("Sync again", "Synced"), ("With its own icon", "New message"), ("With no icon", "Trail saved"),
+        }
+        from theme in new[] { "light", "dark" }
+        select (toast.Item1, toast.Item2, theme));
+
+    [Theory, MemberData(nameof(ToastsInBothThemes))]
+    public async Task Toast_ShouldHaveNoAccessibilityViolations_WhenOpen(string opener, string text, string theme)
+    {
+        var page = await OpenAsync("chromium", "/examples/toast");
+        await SetThemeAsync(page, theme);
+
+        await CheckOpenAsync(page, new(new("listitem") { Text = text }, opened => Button(opened, opener).ClickAsync()));
+    }
+
     // Each listed popup is checked open, in chromium alone. The export dialog closes itself too soon to be listed.
     [Theory, MemberData(nameof(OverlaySectionsInBothThemes))]
     public async Task OverlaySection_ShouldHaveNoAccessibilityViolations_WhenOpen(string example, string opener,

@@ -148,7 +148,7 @@ public class DocsSearchTests
     public void Find_ShouldShowTheWordsAroundTheMatch_WhenTheTextIsLong()
     {
         var snippet = DocsSearch.Find("F8")
-            .Single(result => result is { Page: "Toast", Section: "Accessibility" }).Snippet;
+            .Single(result => result.Page == "Toast" && result.Path.EndsWith("#action")).Snippet;
 
         Assert.Contains("F8", snippet);
         Assert.StartsWith("…", snippet);

@@ -1,0 +1,6 @@
+<TbPagination @bind-Page="_page" PageCount="5" AriaLabel="Pages de sentiers"
+              Labels="@(new() { Page = "Page {0}", Previous = "Page précédente", Next = "Page suivante" })" />
+
+@code {
+    private int _page = 2;
+}

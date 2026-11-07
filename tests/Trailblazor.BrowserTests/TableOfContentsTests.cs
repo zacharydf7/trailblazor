@@ -28,7 +28,20 @@ public class TableOfContentsTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Link(page, "The climb")).ToHaveAttributeAsync("aria-current", "location");
         await Expect(Link(page, "Getting there")).Not.ToHaveAttributeAsync("aria-current", "location");
-        await Expect(page.GetByText("In view: guide-climb")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TableOfContents_ShouldReportTheSection_WhenAnotherComesIntoView(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/table-of-contents");
+        var guide = page.GetByRole(AriaRole.Navigation, new() { Name = "Packing guide" });
+        await Expect(guide).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Region, new() { Name = "Packing notes" })
+            .EvaluateAsync("panel => panel.scrollTop = panel.scrollHeight");
+
+        await Expect(page.GetByRole(AriaRole.Status, new() { Name = "Section in view", Exact = true }))
+            .ToHaveTextAsync("packing-food");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

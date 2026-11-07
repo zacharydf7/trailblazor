@@ -2,35 +2,11 @@
 
 <TbStack Row Gap="2" Wrap>
     <TbButton OnClick='() => Toasts.Show("Report saved", Tone.Success)'>Save report</TbButton>
-    <TbButton Variant="Variant.Outlined" OnClick="Archive">Archive report</TbButton>
-    <TbButton Variant="Variant.Outlined" Tone="Tone.Danger" OnClick="FailToSync">Fail to sync</TbButton>
-    <TbButton Variant="Variant.Outlined" OnClick="ExportAsync">Export map</TbButton>
-    <TbButton Variant="Variant.Text" OnClick="Toasts.DismissAll">Dismiss all</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick='() => Toasts.Show("A new trail was added", Tone.Info)'>
+        Add a trail
+    </TbButton>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Warning"
+              OnClick='() => Toasts.Show("Snow is forecast", Tone.Warning)'>
+        Check the forecast
+    </TbButton>
 </TbStack>
-<TbText Style="margin-block-start: var(--tb-space-3)">@_status</TbText>
-
-@code {
-    private string _status = "Press F8 to reach an open toast.";
-
-    private void FailToSync() =>
-        Toasts.Show("Check your connection and try again.", Tone.Danger, new() { Title = "Couldn't reach the server" });
-
-    // A toast with a link; once it closes, the reason shows below the buttons.
-    private async Task ExportAsync()
-    {
-        var toast = Toasts.Show("Trail map exported", Tone.Info, new()
-        {
-            Content = @<text>Trail map exported. <a href="#map">Open it</a></text>,
-        });
-        var reason = await toast.Closed;
-        _status = $"The export toast closed ({reason}).";
-        StateHasChanged();
-    }
-
-    private void Archive()
-    {
-        _status = "Archived";
-        Toasts.Show("Report archived",
-            options: new() { Action = new("Undo", EventCallback.Factory.Create(this, () => _status = "Restored")) });
-    }
-}

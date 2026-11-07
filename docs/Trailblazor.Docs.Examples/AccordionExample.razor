@@ -2,29 +2,10 @@
     <TbAccordionItem Title="Shipping" Expanded>
         <TbText>Orders ship within two business days.</TbText>
     </TbAccordionItem>
-    <TbAccordionItem Title="Returns">
-        <HeaderActions>
-            <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _printed++">Print the policy</TbButton>
-        </HeaderActions>
-        <ChildContent>
-            <TbText>Return anything unused within 30 days.</TbText>
-            @* Nested in the panel, it opens and closes on its own, without closing Returns. *@
-            <TbAccordionItem Title="Exchanges" HeadingLevel="4">
-                <TbText>Swap a size or color for free, once per order.</TbText>
-            </TbAccordionItem>
-        </ChildContent>
+    <TbAccordionItem Title="Sizing">
+        <TbText>Sizes run true, so order your usual one.</TbText>
     </TbAccordionItem>
     <TbAccordionItem Title="Warranty" Disabled>
         <TbText>Two years on every product.</TbText>
     </TbAccordionItem>
 </TbAccordion>
-<TbText>Printed the policy @_printed @(_printed == 1 ? "time" : "times").</TbText>
-
-@* On its own, outside an accordion, an item is a single section that opens and closes by itself. *@
-<TbAccordionItem Title="Care instructions" Style="margin-block-start: var(--tb-space-6)">
-    <TbText>Wash cold, dry flat.</TbText>
-</TbAccordionItem>
-
-@code {
-    private int _printed;
-}

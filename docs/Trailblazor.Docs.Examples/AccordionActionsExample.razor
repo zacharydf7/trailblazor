@@ -1,0 +1,19 @@
+<TbStack>
+    <TbAccordion>
+        <TbAccordionItem Title="Returns">
+            <HeaderActions>
+                <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _printed++">
+                    Print the policy
+                </TbButton>
+            </HeaderActions>
+            <ChildContent>
+                <TbText>Return anything unused within 30 days.</TbText>
+            </ChildContent>
+        </TbAccordionItem>
+    </TbAccordion>
+    <TbText>Printed the policy @_printed @(_printed == 1 ? "time" : "times").</TbText>
+</TbStack>
+
+@code {
+    private int _printed;
+}

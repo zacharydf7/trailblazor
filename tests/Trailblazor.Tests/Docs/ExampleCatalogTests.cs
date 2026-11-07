@@ -110,6 +110,15 @@ public class ExampleCatalogTests
     }
 
     [Fact]
+    public void ExampleCatalog_ShouldGiveEveryPageItsUsageSectionsAndRelated_WhenCalled()
+    {
+        var incomplete = ExampleCatalog.All
+            .Where(example => example.WhenToUse.Count == 0 || example.Sections.Count == 0 || example.Related.Count == 0);
+
+        Assert.Empty(incomplete.Select(example => example.Name));
+    }
+
+    [Fact]
     public void ExampleCatalog_ShouldShowEveryEmbeddedSource_WhenCalled()
     {
         // Sections can share a file, such as a dialog that two of them open.

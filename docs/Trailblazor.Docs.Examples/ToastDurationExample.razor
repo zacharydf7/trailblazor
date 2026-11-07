@@ -1,0 +1,12 @@
+@inject IToastService Toasts
+
+<TbStack Row Gap="2" Wrap>
+    <TbButton Variant="Variant.Outlined" OnClick="ShowBriefly">Show for a second</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="ShowUntilDismissed">Show until dismissed</TbButton>
+</TbStack>
+
+@code {
+    private void ShowBriefly() => Toasts.Show("Copied", options: new() { Duration = TimeSpan.FromSeconds(1) });
+
+    private void ShowUntilDismissed() => Toasts.Show("Uploading the map", options: new() { StayOpen = true });
+}

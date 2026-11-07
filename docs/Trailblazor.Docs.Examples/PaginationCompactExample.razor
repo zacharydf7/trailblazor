@@ -1,0 +1,8 @@
+<TbStack Gap="2">
+    <TbPagination @bind-Page="_photo" PageCount="140" Compact ShowFirstLast AriaLabel="Photos" />
+    <TbText>Showing photo @_photo of 140</TbText>
+</TbStack>
+
+@code {
+    private int _photo = 1;
+}

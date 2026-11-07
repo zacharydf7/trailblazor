@@ -1,0 +1,6 @@
+<TbTabs AriaLabel="Months">
+    @foreach (var month in System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.MonthNames[..12])
+    {
+        <TbTab Text="@month"><TbText>Trail conditions in @month.</TbText></TbTab>
+    }
+</TbTabs>

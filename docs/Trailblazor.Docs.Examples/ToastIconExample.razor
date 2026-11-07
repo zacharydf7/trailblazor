@@ -1,0 +1,12 @@
+@inject IToastService Toasts
+
+<TbStack Row Gap="2" Wrap>
+    <TbButton Variant="Variant.Outlined" OnClick="ShowOwnIcon">With its own icon</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="ShowNoIcon">With no icon</TbButton>
+</TbStack>
+
+@code {
+    private void ShowOwnIcon() => Toasts.Show("New message", options: new() { Icon = ExampleIcons.Bell });
+
+    private void ShowNoIcon() => Toasts.Show("Trail saved", Tone.Success, new() { ShowIcon = false });
+}

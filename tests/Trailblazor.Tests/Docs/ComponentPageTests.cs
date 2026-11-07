@@ -273,15 +273,12 @@ public class ComponentPageTests : DocsTest
     }
 
     [Fact]
-    public void ComponentPage_ShouldLeaveOutUsageNotesAndRelated_WhenTheEntryHasNone()
+    public void ComponentPage_ShouldLeaveOutNotes_WhenTheEntryHasNone()
     {
-        var cut = ComponentPage("toast");
+        var cut = ComponentPage("skeleton");
 
-        foreach (var heading in new[] { "Usage", "Notes and limitations", "Related" })
-        {
-            Assert.DoesNotContain(heading, Texts(cut.FindAll("h2")));
-            Assert.DoesNotContain(heading, Texts(cut.FindAll(".docs-article__rail a")));
-        }
+        Assert.DoesNotContain("Notes and limitations", Texts(cut.FindAll("h2")));
+        Assert.DoesNotContain("Notes and limitations", Texts(cut.FindAll(".docs-article__rail a")));
     }
 
     [Fact]

@@ -1,0 +1,8 @@
+<TbStack Gap="2">
+    <TbPagination @bind-Page="_camp" PageCount="12" ShowFirstLast SiblingCount="2" AriaLabel="Campsites" />
+    <TbText>Showing campsite page @_camp of 12</TbText>
+</TbStack>
+
+@code {
+    private int _camp = 6;
+}

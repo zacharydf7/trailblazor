@@ -1,0 +1,15 @@
+<TbTabs AriaLabel="Trail settings" Vertical @bind-ActiveKey="_setting">
+    <TbTab Key="route" Text="Route" Icon="ExampleIcons.Trail">
+        <TbText>Loop, 6.2 miles, starting at the north lot.</TbText>
+    </TbTab>
+    <TbTab Key="alerts" Text="Alerts" Icon="ExampleIcons.Bell">
+        <TbText>Tell me about closures and fire danger.</TbText>
+    </TbTab>
+    <TbTab Key="filters" Text="Filters" Icon="ExampleIcons.Filter">
+        <TbText>Dogs allowed, no bikes.</TbText>
+    </TbTab>
+</TbTabs>
+
+@code {
+    private string? _setting = "route";
+}

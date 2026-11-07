@@ -1,0 +1,13 @@
+@inject IToastService Toasts
+
+<TbButton Variant="Variant.Outlined" OnClick="Update">Sync again</TbButton>
+
+@code {
+    private int _syncs;
+
+    private void Update()
+    {
+        _syncs++;
+        Toasts.Show($"Synced {_syncs} {(_syncs == 1 ? "time" : "times")}", options: new() { Key = "sync" });
+    }
+}

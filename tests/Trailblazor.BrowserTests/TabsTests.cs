@@ -360,15 +360,15 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         string browser)
     {
         var page = await OpenAsync(browser, "/examples/tabs");
-        var plan = page.GetByRole(AriaRole.Tablist, new() { Name = "Trip plan" });
-        var map = plan.GetByRole(AriaRole.Tab, new() { Name = "Map" });
-        await Expect(plan).ToHaveAttributeAsync("data-ready", "");
+        var tabs = page.GetByRole(AriaRole.Tablist, new() { Name = "Trail map" });
+        var map = tabs.GetByRole(AriaRole.Tab, new() { Name = "Map" });
+        await Expect(tabs).ToHaveAttributeAsync("data-ready", "");
 
         await map.ClickAsync();
         await map.ClickAsync();
         await map.PressAsync("Enter");
         await map.PressAsync("ArrowLeft");
-        await Expect(plan.GetByRole(AriaRole.Tab, new() { Name = "Itinerary" })).ToHaveAttributeAsync("aria-selected",
+        await Expect(tabs.GetByRole(AriaRole.Tab, new() { Name = "Overview" })).ToHaveAttributeAsync("aria-selected",
             "true");
         await page.Keyboard.PressAsync("ArrowRight");
 

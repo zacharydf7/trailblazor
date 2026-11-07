@@ -4111,31 +4111,85 @@ public static class ExampleCatalog
         {
             RightToLeftKeys = "Left moves to the next tab and Right to the previous one.",
             FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to switch between related views of one thing, where people look at one at a time.",
+            ],
+            WhenNotToUse =
+            [
+                "For sections people may want open side by side, or read in order down the page, use an "
+                    + "[accordion](components/accordion).",
+                "For moving between pages, use links.",
+            ],
+            Related = ["accordion", "toggle-group", "pagination"],
+            Sections =
+            [
+                new("tabs", "Tabs and panels", "Each `TbTab` adds a tab and its panel. `Text` or `TextContent` is the "
+                    + "tab's name, so a count inside it is read as part of the name, and `Disabled` turns a tab off. "
+                    + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Only the selected panel "
+                    + "renders.",
+                    typeof(TabsExample)),
+                new("variants", "Variants", "`Variant` marks the selected tab: `Text` and `Outlined` underline it, and "
+                    + "`Soft` and `Filled` make it a pill, in vertical lists too. `--tb-tabs-indicator-color` and "
+                    + "`--tb-tabs-indicator-size` restyle the underline.", typeof(TabsVariantExample)),
+                new("vertical", "Vertical", "`Vertical` stands a tab list beside its panel, and `Icon` adds an icon to "
+                    + "a tab. The icon isn't read out.", typeof(TabsVerticalExample)),
+                new("by-index", "Selecting by position", "`@bind-ActiveIndex` tracks the selected tab by its position, "
+                    + "from 0, for tabs that have no `Key`.", typeof(TabsIndexExample)),
+                new("activation", "Manual activation", "With `Activation=\"TabActivation.Manual\"`, the arrow keys "
+                    + "only move focus between tabs, and Enter or Space selects. Use it when showing a panel is slow.",
+                    typeof(TabsManualExample)),
+                new("keep-alive", "Keeping panels alive", "`KeepAlive` keeps a tab's panel rendered once it has been "
+                    + "shown, and only hides it when another tab is selected, so what's typed in a field that isn't "
+                    + "bound survives switching tabs.",
+                    typeof(TabsKeepAliveExample)),
+                new("centered", "Centered", "`Centered` centers a tab list in its row.", typeof(TabsCenteredExample)),
+                new("overflow", "Many tabs", "A tab list too long for its row scrolls sideways, and moving focus to a "
+                    + "tab brings it into view.", typeof(TabsOverflowExample)),
+                new("forms", "A form across tabs", "`RenderAllPanels` renders every panel from the start, hidden, so a "
+                    + "form across the tabs validates and saves every field. A hidden panel's fields can't take focus, "
+                    + "so name the tab that needs attention with `Text` and a `HeaderClass`; a class alone changes "
+                    + "only the look, which screen readers don't announce.",
+                    typeof(TabsFormExample)),
+                new("on-click", "Clicks on a tab", "A tab's `OnClick` is raised each time its header is clicked, or "
+                    + "Enter or Space is pressed on it, even if it was already selected. It is raised after the tab is "
+                    + "selected, and the arrow keys select without raising it.", typeof(TabsClickExample)),
+            ],
             Api = [typeof(TbTabs), typeof(TbTab)],
+            Keyboard =
+            [
+                new(["Left", "Right"], "Moves between tabs and selects the one reached, unless activation is manual. "
+                    + "Skips disabled tabs and wraps at the ends.")
+                {
+                    When = "In a horizontal list",
+                },
+                new(["Up", "Down"], "Moves between tabs and selects the one reached, unless activation is manual. "
+                    + "Skips disabled tabs and wraps at the ends.")
+                {
+                    When = "In a `Vertical` list",
+                },
+                new(["Home", "End"], "Jumps to the first or last tab and selects it, unless activation is manual."),
+                new(["Enter", "Space"], "Selects the focused tab.") { When = "With manual activation" },
+                new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel."),
+            ],
+            Labeling =
+            [
+                "Give the list an `AriaLabel`.",
+            ],
+            Announcements =
+            [
+                "A `tablist` of `tab`s, each controlling a `tabpanel`. A `Vertical` list has "
+                    + "`aria-orientation=\"vertical\"`.",
+            ],
             Accessibility =
             [
-                "A `tablist` of `tab`s, each controlling a `tabpanel`. Give the list an `AriaLabel`. A tab's "
-                    + "`TextContent` or `Text` is its name, so a count inside it is read as part of the name; its "
-                    + "`Icon` isn't read.",
-                "`Variant` marks the selected tab: `Text` (and, for now, `Outlined`) underlines it, and `Soft` and "
-                    + "`Filled` make it a pill, in vertical lists too. `--tb-tabs-indicator-color` and "
-                    + "`--tb-tabs-indicator-size` restyle the underline. In forced-colors mode, the selected pill "
-                    + "keeps an outline in the system's highlight color.",
-                "The tab list is one tab stop. Left and Right move between tabs and wrap, and Home and End jump "
-                    + "to the ends. A `Vertical` list has `aria-orientation=\"vertical\"` and moves with Up and Down "
-                    + "instead. With automatic activation, moving also selects; with manual activation, Enter or Space "
-                    + "selects.",
                 "Each panel is focusable, so keyboard users can reach content that has no controls.",
-                "Only the selected panel renders, unless `KeepAlive` keeps each one once shown or "
-                    + "`RenderAllPanels` renders them all from the start, hidden, so a form across the tabs, like "
-                    + "the trip plan, validates and saves every field. A hidden panel's fields can't take focus, so "
-                    + "name the tab that needs attention, as the trip plan does with `Text` and a `HeaderClass`; a "
-                    + "class alone changes only the look, which screen readers don't announce.",
-                "A tab's `OnClick` is raised each time its header is clicked, or Enter or Space is pressed on it, "
-                    + "even if it was already selected. It is raised after the tab is selected, and the arrow keys "
-                    + "select without raising it.",
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
-                    + "system's highlight color.",
+                    + "system's highlight color, and a selected pill keeps an outline in it.",
+            ],
+            BeforeInteractive =
+            [
+                "The selected tab's panel shows. The tabs don't switch until the page is interactive.",
             ],
             Target = new("tablist", "Report sections"),
             Blocks = ["tb-tabs"],
@@ -4168,24 +4222,63 @@ public static class ExampleCatalog
         new("accordion", "Accordion", ExampleCategory.Navigation,
             "Sections that open and close under their headings.", typeof(AccordionExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for sections people read one or a few at a time, such as a list of questions.",
+            ],
+            WhenNotToUse =
+            [
+                "For switching between views of one thing, use [tabs](components/tabs).",
+                "For a section nearly everyone needs, leave it on the page.",
+            ],
+            Related = ["tabs", "surface", "divider"],
+            Sections =
+            [
+                new("items", "Items", "Each `TbAccordionItem` is a section with a `Title`. Opening one closes the "
+                    + "others. `Expanded` opens one, and `Disabled` turns one off.", typeof(AccordionExample)),
+                new("multiple", "Several open at once", "`Multiple` lets several items of an accordion stay open.",
+                    typeof(AccordionMultipleExample)),
+                new("from-code", "Opening from code", "`@bind-Expanded` opens or closes an accordion item from code "
+                    + "and tells you when the user does.", typeof(AccordionBindExample)),
+                new("actions", "Header actions", "`HeaderActions` sit at the end of an accordion item's header, beside "
+                    + "its button and not in it, so they stay usable and out of the title's name.",
+                    typeof(AccordionActionsExample)),
+                new("title-content", "A richer title", "`TitleContent` shows content, such as a count, in place of an "
+                    + "accordion item's `Title`, and it's read as part of the name.", typeof(AccordionTitleExample)),
+                new("nested", "Nested items", "An item nested in another item's panel belongs only to an accordion "
+                    + "inside that panel, or to none, so opening it never closes the item it sits in. An item's own "
+                    + "`HeadingLevel` overrides the accordion's, so a nested one can sit below the item around it in "
+                    + "the page's outline.", typeof(AccordionNestedExample)),
+                new("on-its-own", "An item on its own", "A `TbAccordionItem` works outside an accordion, as a single "
+                    + "section that opens and closes by itself.", typeof(AccordionItemExample)),
+            ],
             Api = [typeof(TbAccordion), typeof(TbAccordionItem)],
-            Accessibility =
+            Keyboard =
+            [
+                new(["Tab"], "Moves between the titles, and reaches `HeaderActions` after their title."),
+                new(["Enter", "Space"], "Opens or closes the focused section."),
+                new(["Up", "Down"], "Moves between the titles, wrapping at the ends and skipping `HeaderActions`."),
+                new(["Home", "End"], "Goes to the first or last title."),
+            ],
+            Labeling =
+            [
+                "Each panel is a `region` named by its title.",
+            ],
+            Announcements =
             [
                 "Each title is a button with `aria-expanded` inside a heading, level 3 unless `HeadingLevel` says "
                     + "otherwise. Choose the level that fits the page's outline.",
-                "Each panel is a `region` named by its title.",
-                "Tab moves between the titles, and Enter or Space opens and closes them. Up and Down also move "
-                    + "between the titles, wrapping at the ends, and Home and End go to the first and last.",
-                "A closed panel is `inert`, so its content can't be reached until it opens. Opening and closing "
-                    + "slide, except with reduced motion.",
-                "`HeaderActions`, such as Returns' print button, sit at the end of the header beside its button, "
-                    + "not in it, so they stay usable and out of the title's name. Tab reaches them after the title; "
-                    + "Up and Down skip them.",
-                "An item works on its own, outside an accordion, as Care instructions does. One nested in another "
-                    + "item's panel, as Exchanges is, belongs only to an accordion inside that panel, or to none, "
-                    + "so opening it never closes the item it sits in. An item's own `HeadingLevel` overrides the "
-                    + "accordion's, so a nested one, like Exchanges at level 4, sits below the item around it in the "
-                    + "page's outline.",
+            ],
+            Accessibility =
+            [
+                "A closed panel is `inert`, so its content can't be reached until it opens. Opening and closing slide, "
+                    + "except with reduced motion.",
+            ],
+            BeforeInteractive =
+            [
+                "Accordion sections show open or closed as `Expanded` sets them, and don't open or close until the "
+                    + "page is interactive.",
             ],
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
@@ -4772,19 +4865,68 @@ public static class ExampleCatalog
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
                 + "page number.", typeof(PaginationExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to move through a long list one page at a time.",
+            ],
+            WhenNotToUse =
+            [
+                "For rows in a table, use the [data grid](components/data-grid)'s own paging.",
+                "For sections of one page, use a [table of contents](components/table-of-contents).",
+            ],
+            Related = ["data-grid", "tabs", "table-of-contents"],
+            Sections =
+            [
+                new("pages", "Pages", "`@bind-Page` is a pagination's current page, and `PageCount` is how many pages "
+                    + "there are. The Previous and Next buttons show unless `ShowPreviousNext` is false.",
+                    typeof(PaginationExample)),
+                new("long-lists", "First, last and neighbors", "`ShowFirstLast` adds First and Last buttons to a "
+                    + "pagination. `SiblingCount` sets how many pages show either side of the current "
+                    + "one.", typeof(PaginationLongExample)),
+                new("size", "Size", "`Size` sets the size of a pagination's buttons.", typeof(PaginationSizeExample)),
+                new("boundary", "Pages at the ends", "`BoundaryCount` sets how many pages a pagination always shows at "
+                    + "each end, 1 unless set.", typeof(PaginationBoundaryExample)),
+                new("compact", "Compact", "`Compact` replaces a pagination's page buttons with a box for the page "
+                    + "number. Typing a page and pressing Enter, or leaving the box, goes there.",
+                    typeof(PaginationCompactExample)),
+                new("links", "Links", "With `PageHref`, every item of a pagination is a link, so they work before the "
+                    + "page is interactive and can open in a new tab.", typeof(PaginationLinksExample)),
+                new("disabled", "Disabled", "`Disabled` turns off every button of a pagination.",
+                    typeof(PaginationDisabledExample)),
+                new("labels", "Other languages", "All of a pagination's words come from `Labels`, such as `Previous`, "
+                    + "`Next` and `Page`, whose `{0}` stands for the number.", typeof(PaginationLabelsExample)),
+            ],
             Api = [typeof(TbPagination), typeof(PaginationLabels)],
-            Accessibility =
+            Keyboard =
+            [
+                new(["Tab"], "Moves between the controls, each its own tab stop, as in a list of links."),
+                new(["Enter", "Space"], "Presses the focused button.") { When = "As buttons" },
+                new(["Enter"], "Follows the link.") { When = "With `PageHref`" },
+                new(["Enter"], "Goes to the page typed in the box.") { When = "In `Compact`" },
+                new(["Up", "Down"], "Goes to the next or previous page.") { When = "In `Compact`" },
+            ],
+            Labeling =
             [
                 "A `navigation` landmark named by `AriaLabel` (\"Pagination\" by default); name each one when a page "
                     + "has several.",
-                "Each page is a button named \"Page 3\", and the current one has `aria-current=\"page\"`. The "
-                    + "Previous, Next, First and Last buttons are named, and turn off at either end but stay "
-                    + "focusable, so focus stays on Next after it reaches the last page. Focus stays on a chosen page "
-                    + "as the pages around it shift. The ellipses are hidden from screen readers.",
-                "Every control is its own tab stop, as in a list of links. In compact mode the page box is named "
-                    + "\"Page\"; typing a page and pressing Enter, or leaving the box, goes there.",
-                "With `PageHref` every item is a link, so the pages work before the page is interactive. All the "
-                    + "words come from `Labels`.",
+                "Each page is a button named \"Page 3\". The Previous, Next, First and Last buttons are named, and in "
+                    + "compact mode the page box is named \"Page\".",
+            ],
+            Announcements =
+            [
+                "The current page has `aria-current=\"page\"`. The ellipses are hidden from screen readers.",
+            ],
+            Accessibility =
+            [
+                "The Previous, Next, First and Last buttons turn off at either end but stay focusable, so focus stays "
+                    + "on Next after it reaches the last page. Focus stays on a chosen page as the pages around it "
+                    + "shift.",
+            ],
+            BeforeInteractive =
+            [
+                "With `PageHref`, every item is already a link. Without it, the buttons do nothing until the page is "
+                    + "interactive.",
             ],
             Target = new("navigation", "Trail reports"),
             Blocks = ["tb-pagination"],
@@ -4807,6 +4949,26 @@ public static class ExampleCatalog
             "Links to the sections of a page that mark the section in view as the page scrolls.",
             typeof(TableOfContentsExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it beside a long page, so people can see where they are and jump to a section.",
+            ],
+            WhenNotToUse =
+            [
+                "For moving between pages of a list, use [pagination](components/pagination).",
+                "For switching what shows, use [tabs](components/tabs).",
+            ],
+            Related = ["link", "tabs", "accordion"],
+            Sections =
+            [
+                new("sections", "Sections and nesting", "Each `TbTableOfContentsItem` links to the element with its "
+                    + "`TargetId`, and an item inside another makes a nested list. The link to the section in view is "
+                    + "marked as the page, or a scrolling panel, scrolls.", typeof(TableOfContentsExample)),
+                new("active", "Knowing the section in view", "`ActiveChanged` gives you a section's id when a table "
+                    + "of contents marks it as the section in view, and null when none "
+                    + "is.", typeof(TableOfContentsActiveExample)),
+            ],
             Api = [typeof(TbTableOfContents), typeof(TbTableOfContentsItem)],
             Anatomy = """
                 <TbTableOfContents AriaLabel="…">
@@ -4815,18 +4977,33 @@ public static class ExampleCatalog
                     </TbTableOfContentsItem>
                 </TbTableOfContents>
                 """,
-            Accessibility =
+            Keyboard =
+            [
+                new(["Tab"], "Moves between the links, each its own tab stop."),
+                new(["Enter"], "Follows the link, and moves focus to the section, so Tab goes on from there."),
+            ],
+            Labeling =
             [
                 "A `navigation` landmark named by `AriaLabel` (\"On this page\" by default) holding a list of links, "
                     + "with a nested list under an item for the sections inside it.",
+            ],
+            Announcements =
+            [
                 "The link to the section in view has `aria-current=\"location\"`, and shows it with a wider line "
-                    + "beside it, not color alone. A section is in view once its start passes the top quarter of what "
-                    + "scrolls it, the page or a scrolling panel. At the top of the scroll the first section is in "
-                    + "view, and at the bottom the last section that shows is in view.",
+                    + "beside it, not color alone.",
+            ],
+            Accessibility =
+            [
+                "A section is in view once its start passes the top quarter of what scrolls it, the page or a "
+                    + "scrolling panel. At the top of the scroll the first section is in view, and at the bottom the "
+                    + "last section that shows is in view.",
                 "Following a link scrolls smoothly to the section, or jumps there when the user has asked for reduced "
-                    + "motion, and moves focus to the section, so Tab goes on from there.",
-                "Each link is its own tab stop. The links are plain addresses with the section's id, so they work "
-                    + "before the page is interactive, and open in a new tab with Ctrl or a middle click.",
+                    + "motion.",
+            ],
+            BeforeInteractive =
+            [
+                "The links are plain addresses with the section's id, so they already work, and open in a new tab with "
+                    + "Ctrl or a middle click. Marking the section in view starts once the page is interactive.",
             ],
             Target = new("navigation", "Trail guide"),
             Blocks = ["tb-table-of-contents"],
@@ -4961,21 +5138,63 @@ public static class ExampleCatalog
             "A brief message in a corner that doesn't interrupt, with an optional title, icon, content and action.",
             typeof(ToastExample))
         {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a brief update that needs no answer, such as a saved report.",
+            ],
+            WhenNotToUse =
+            [
+                "For a message that should stay in view beside what it's about, use an [alert](components/alert).",
+                "For a decision people must make before going on, use a [dialog](components/dialog).",
+            ],
+            Related = ["alert", "dialog", "progress"],
+            Sections =
+            [
+                new("tones", "Tones", "`IToastService.Show` shows a toast, and `Tone` says what kind of message it is. "
+                    + "Toasts are read out as they appear: Danger and Warning interrupt, the others wait.",
+                    typeof(ToastExample)),
+                new("title", "Title", "`Title` adds a heading above a toast's message, read out before the message.",
+                    typeof(ToastTitleExample)),
+                new("action", "Action", "`Action` adds a button, such as Undo, to a toast. It's read out after the "
+                    + "message, as in \"Undo available, press F8.\" Offer the same action somewhere else in the app "
+                    + "too, since a toast can be dismissed before it is used.", typeof(ToastActionExample)),
+                new("content", "Content and closing", "`Content`, such as a link, shows in place of a toast's "
+                    + "message. The message is still what screen readers hear. `Closed`, on the toast that `Show` "
+                    + "returns, says why it closed, and `DismissAll` closes every toast.", typeof(ToastContentExample)),
+                new("duration", "How long it stays", "`Duration` sets how long a toast stays, and `StayOpen` keeps it "
+                    + "until it's dismissed. Danger toasts and toasts with an `Action` stay until they are dismissed "
+                    + "unless given a `Duration`, so the action can't time out unseen. A toast's timer pauses while "
+                    + "the pointer is over it or it has focus.", typeof(ToastDurationExample)),
+                new("key", "Updating a toast", "`Key` identifies a toast's message. Showing a toast with the key of "
+                    + "one that's still open updates that toast instead of adding another.", typeof(ToastKeyExample)),
+                new("icon", "Icon", "`Icon` replaces a toast's tone icon, and `ShowIcon = false` removes it. The "
+                    + "tone's icon is decorative, since the text says the same.", typeof(ToastIconExample)),
+            ],
             Api = [typeof(IToastService), typeof(ToastOptions), typeof(ToastSettings)],
+            Keyboard =
+            [
+                new(["F8"], "Moves focus to the newest toast's first button."),
+                new(["Escape"], "Sends focus from the toast back to where it was."),
+            ],
+            Labeling =
+            [
+                "The toasts sit in a region named \"Notifications\".",
+            ],
             Accessibility =
             [
-                "Toasts are read out as they appear: Danger and Warning interrupt, the others wait. They never "
-                    + "take focus themselves.",
-                "F8 moves focus to the newest toast's first button, and Escape sends it back to where it was.",
-                "A toast's timer pauses while the pointer is over it or it has focus. Danger toasts and toasts "
-                    + "with an `Action` stay until they are dismissed unless given a `Duration`, so the action can't "
-                    + "time out unseen.",
-                "A toast's `Action` is read out after its message, as in \"Undo available, press F8.\" Offer the "
-                    + "same action somewhere else in the app too, since a toast can be dismissed before it is used.",
-                "The toasts sit in a region named \"Notifications\".",
-                "A `Title` is read out before the message. The tone's icon is decorative, since the text says the "
-                    + "same; `Content` shows in place of the message, which is still what screen readers hear.",
+                "Toasts never take focus themselves.",
                 "Toasts fade in and out; with reduced motion they appear and go at once.",
+            ],
+            Notes =
+            [
+                new("`options.Toasts` in `AddTrailblazor` sets, for the whole app, where toasts appear (`Position`, "
+                    + "top end unless set), how many show at once (`MaxVisible`, 3 unless set) and how long they stay "
+                    + "(`Duration`, 5 seconds unless set)."),
+            ],
+            BeforeInteractive =
+            [
+                "No toast shows until the page is interactive, because they're shown from code.",
             ],
             Target = new("listitem") { Text = "Report saved", OpenedBy = new("button", "Save report") },
             Blocks = ["tb-toast", "tb-toaster"],

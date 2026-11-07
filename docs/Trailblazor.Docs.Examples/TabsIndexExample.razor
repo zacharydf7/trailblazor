@@ -1,0 +1,12 @@
+<TbStack>
+    <TbTabs AriaLabel="Days of the trip" @bind-ActiveIndex="_day">
+        <TbTab Text="Friday"><TbText>Hike in to the lake.</TbText></TbTab>
+        <TbTab Text="Saturday"><TbText>Climb the ridge.</TbText></TbTab>
+        <TbTab Text="Sunday"><TbText>Hike out by noon.</TbText></TbTab>
+    </TbTabs>
+    <output aria-label="Selected day">Day @(_day + 1) of 3</output>
+</TbStack>
+
+@code {
+    private int _day;
+}

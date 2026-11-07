@@ -1,0 +1,21 @@
+<TbStack Gap="2">
+    <TbTableOfContents AriaLabel="Packing guide" ActiveChanged="active => _active = active">
+        <TbTableOfContentsItem TargetId="packing-shelter" Text="Shelter" />
+        <TbTableOfContentsItem TargetId="packing-food" Text="Food" />
+    </TbTableOfContents>
+    <output aria-label="Section in view">@(_active ?? "none")</output>
+    <div role="region" aria-label="Packing notes" tabindex="0"
+         style="block-size: 8rem; max-inline-size: 34rem; overflow: auto">
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H3" id="packing-shelter">Shelter</TbText>
+        <TbText>Bring a tent that stands up to wind, since the ridge has no trees to break it. Pack a ground sheet too,
+            and a spare guy line in case one snaps.</TbText>
+        <TbText TextStyle="TextStyle.Title" As="TextElement.H3" id="packing-food">Food</TbText>
+        <TbText>Plan on three thousand calories a day, and carry one extra meal in case the weather holds you
+            up.</TbText>
+        <TbText>Keep it all in the bear boxes overnight.</TbText>
+    </div>
+</TbStack>
+
+@code {
+    private string? _active;
+}

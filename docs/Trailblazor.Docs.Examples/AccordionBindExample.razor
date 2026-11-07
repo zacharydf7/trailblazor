@@ -1,0 +1,14 @@
+<TbStack>
+    <TbAccordionItem Title="Route details" @bind-Expanded="_open">
+        <TbText>Eleven miles, with two thousand feet of climbing.</TbText>
+    </TbAccordionItem>
+    <div>
+        <TbButton Variant="Variant.Outlined" OnClick="() => _open = !_open">
+            @(_open ? "Hide the route" : "Show the route")
+        </TbButton>
+    </div>
+</TbStack>
+
+@code {
+    private bool _open;
+}

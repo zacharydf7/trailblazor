@@ -1,21 +1,8 @@
-<TbStack Gap="5">
-    <TbStack Gap="2">
-        <TbPagination @bind-Page="_report" PageCount="20" AriaLabel="Trail reports" />
-        <TbText>Showing report page @_report of 20</TbText>
-    </TbStack>
-    <TbStack Gap="2">
-        <TbPagination @bind-Page="_camp" PageCount="12" ShowFirstLast SiblingCount="2" Size="Size.Small"
-                      AriaLabel="Campsites" />
-        <TbText>Showing campsite page @_camp of 12</TbText>
-    </TbStack>
-    <TbStack Gap="2">
-        <TbPagination @bind-Page="_photo" PageCount="140" Compact ShowFirstLast AriaLabel="Photos" />
-        <TbText>Showing photo @_photo of 140</TbText>
-    </TbStack>
+<TbStack Gap="2">
+    <TbPagination @bind-Page="_report" PageCount="20" AriaLabel="Trail reports" />
+    <TbText>Showing report page @_report of 20</TbText>
 </TbStack>
 
 @code {
     private int _report = 1;
-    private int _camp = 6;
-    private int _photo = 1;
 }
