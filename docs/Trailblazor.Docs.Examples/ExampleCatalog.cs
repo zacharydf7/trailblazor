@@ -14,11 +14,8 @@ public enum ExampleCategory
 
 public sealed record DataPart(string Name, string Description);
 
-public sealed record Example(string Name, string Title, ExampleCategory Category, string Summary, Type Component)
+public sealed record Example(string Name, string Title, ExampleCategory Category, string Summary)
 {
-    // More files the example's code is split into, such as the dialogs it opens.
-    public IReadOnlyList<Type> Parts { get; init; } = [];
-
     // The types whose parameters or options the example's page tables.
     public required IReadOnlyList<Type> Api { get; init; }
 
@@ -27,12 +24,12 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     public required IReadOnlyList<string> Accessibility { get; init; }
 
     // When the component fits, and when another does instead; both can link to the other component.
-    public IReadOnlyList<string> WhenToUse { get; init; } = [];
+    public required IReadOnlyList<string> WhenToUse { get; init; }
 
     public IReadOnlyList<string> WhenNotToUse { get; init; } = [];
 
     // The catalog names of related components, linked at the end of the page.
-    public IReadOnlyList<string> Related { get; init; } = [];
+    public required IReadOnlyList<string> Related { get; init; }
 
     // The WAI-ARIA Authoring Practices pattern the component follows.
     public AriaPattern? Pattern { get; init; }
@@ -122,13 +119,10 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // A demo that needs the frame's whole width, such as a grid; others sit centered in it.
     public bool FullWidth { get; init; }
 
-    // One section per feature for a component with many; without them, the page shows the example as one section.
-    public IReadOnlyList<ExampleSection> Sections { get; init; } = [];
+    // One section per feature.
+    public required IReadOnlyList<ExampleSection> Sections { get; init; }
 
-    public IReadOnlyList<ExampleSection> Shown =>
-        Sections.Count > 0 ? Sections : [new("example", "Example", null, Component, [.. Parts])];
-
-    public IReadOnlyList<ExampleSource> Sources => [.. Shown.SelectMany(section => section.Sources)];
+    public IReadOnlyList<ExampleSource> Sources => [.. Sections.SelectMany(section => section.Sources)];
 }
 
 // A pattern from the WAI-ARIA Authoring Practices Guide, by its name there and its page.
@@ -148,7 +142,7 @@ public sealed record ExampleNote(string Text)
 }
 
 // One feature of a component: a heading, a sentence or two, the live demo and its code. The id names its anchor.
-public sealed record ExampleSection(string Id, string Title, string? Description, Type Component, params Type[] Parts)
+public sealed record ExampleSection(string Id, string Title, string Description, Type Component, params Type[] Parts)
 {
     // Lets a reader change the demo's parameters on the page. Component must then inherit ControlledExample.
     public ExampleControls? Controls { get; init; }
@@ -230,8 +224,7 @@ public static class ExampleCatalog
     public static IReadOnlyList<Example> All { get; } =
     [
         new("text", "Text", ExampleCategory.Content,
-            "Headings, body copy and labels from the type scale, rendered as the HTML element you choose.",
-            typeof(TextExample))
+            "Headings, body copy and labels from the type scale, rendered as the HTML element you choose.")
         {
             FullWidth = true,
             WhenToUse =
@@ -275,7 +268,7 @@ public static class ExampleCatalog
                 + "match the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
         },
         new("image", "Image", ExampleCategory.Content,
-            "An image that requires alternative text and can scale to fit its container.", typeof(ImageExample))
+            "An image that requires alternative text and can scale to fit its container.")
         {
             FullWidth = true,
             WhenToUse =
@@ -327,7 +320,7 @@ public static class ExampleCatalog
             Blocks = ["tb-image"],
         },
         new("divider", "Divider", ExampleCategory.Layout,
-            "A horizontal or vertical line that separates content.", typeof(DividerExample))
+            "A horizontal or vertical line that separates content.")
         {
             FullWidth = true,
             WhenToUse =
@@ -369,8 +362,7 @@ public static class ExampleCatalog
             ],
         },
         new("surface", "Surface", ExampleCategory.Layout,
-            "A raised panel with the app's surface color, an optional border and a shadow, for grouping content.",
-            typeof(SurfaceExample))
+            "A raised panel with the app's surface color, an optional border and a shadow, for grouping content.")
         {
             FullWidth = true,
             WhenToUse =
@@ -411,8 +403,7 @@ public static class ExampleCatalog
             Blocks = ["tb-surface"],
         },
         new("icon", "Icon", ExampleCategory.Content,
-            "An SVG icon from any icon set, in one of three sizes and hidden from screen readers unless named.",
-            typeof(IconExample))
+            "An SVG icon from any icon set, in one of three sizes and hidden from screen readers unless named.")
         {
             FullWidth = true,
             WhenToUse =
@@ -458,7 +449,7 @@ public static class ExampleCatalog
             Blocks = ["tb-icon"],
         },
         new("button", "Button", ExampleCategory.Actions,
-            "Starts an action, in filled, outlined or text styles and every tone.", typeof(ButtonExample))
+            "Starts an action, in filled, outlined or text styles and every tone.")
         {
             FullWidth = true,
             WhenToUse =
@@ -567,7 +558,7 @@ public static class ExampleCatalog
             Telemetry = ButtonTelemetry("TbButton"),
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
-            "A button that shows only an icon, with the accessible name it needs.", typeof(IconButtonExample))
+            "A button that shows only an icon, with the accessible name it needs.")
         {
             FullWidth = true,
             WhenToUse =
@@ -647,8 +638,7 @@ public static class ExampleCatalog
             Telemetry = ButtonTelemetry("TbIconButton"),
         },
         new("button-group", "Button group", ExampleCategory.Actions,
-            "Joins related buttons into one control, in a row or a column, with settings shared by all of them.",
-            typeof(ButtonGroupExample))
+            "Joins related buttons into one control, in a row or a column, with settings shared by all of them.")
         {
             FullWidth = true,
             WhenToUse =
@@ -706,7 +696,7 @@ public static class ExampleCatalog
             Blocks = ["tb-button-group"],
         },
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
-            "A row of toggle buttons where one, or any number, can be pressed.", typeof(ToggleGroupExample))
+            "A row of toggle buttons where one, or any number, can be pressed.")
         {
             FullWidth = true,
             RightToLeftKeys = "Left moves to the next item and Right to the previous one.",
@@ -797,8 +787,7 @@ public static class ExampleCatalog
             ],
         },
         new("theme-picker", "Theme picker", ExampleCategory.Actions,
-            "Lets people choose a light or dark page, or follow their device, and remembers the choice.",
-                       typeof(ThemePickerExample))
+            "Lets people choose a light or dark page, or follow their device, and remembers the choice.")
         {
             FullWidth = true,
             RightToLeftKeys = "Left moves to the next choice and Right to the previous one.",
@@ -855,7 +844,7 @@ public static class ExampleCatalog
         },
         new("toolbar", "Toolbar", ExampleCategory.Actions,
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
-                + "its end.", typeof(ToolbarExample))
+                + "its end.")
         {
             FullWidth = true,
             RightToLeftKeys = "Left moves to the next control and Right to the previous one.",
@@ -933,7 +922,7 @@ public static class ExampleCatalog
         },
         new("insert-divider", "Insert divider", ExampleCategory.Actions,
             "A line between two items that reveals an insert button on hover or focus, for adding an item in that "
-                + "place.", typeof(InsertDividerExample))
+                + "place.")
         {
             FullWidth = true,
             WhenToUse =
@@ -986,7 +975,7 @@ public static class ExampleCatalog
                 + "\"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
         },
         new("stack", "Stack", ExampleCategory.Layout,
-            "Lays its children out in a row or a column, evenly spaced.", typeof(StackExample))
+            "Lays its children out in a row or a column, evenly spaced.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1034,7 +1023,7 @@ public static class ExampleCatalog
             Blocks = ["tb-stack"],
         },
         new("spacer", "Spacer", ExampleCategory.Layout,
-            "Takes up the free space in a stack, pushing what follows to the end.", typeof(SpacerExample))
+            "Takes up the free space in a stack, pushing what follows to the end.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1069,7 +1058,7 @@ public static class ExampleCatalog
             Blocks = ["tb-spacer"],
         },
         new("grid", "Grid", ExampleCategory.Layout,
-            "A responsive 12-column grid for page layouts.", typeof(GridExample))
+            "A responsive 12-column grid for page layouts.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1125,7 +1114,7 @@ public static class ExampleCatalog
         },
         new("splitter", "Splitter", ExampleCategory.Layout,
             "Lays out panes side by side or stacked, with separators that resize them by dragging, with the "
-                + "keyboard or from a menu.", typeof(SplitterExample))
+                + "keyboard or from a menu.")
         {
             RightToLeftKeys = "Left and Right move the separator the way they point, so Left grows the start pane, "
                 + "now on the right.",
@@ -1213,7 +1202,7 @@ public static class ExampleCatalog
                 + "on the splitter's root, `[data-part=splitter]`.",
         },
         new("container", "Container", ExampleCategory.Layout,
-            "Centers content and caps its width at a readable size.", typeof(ContainerExample))
+            "Centers content and caps its width at a readable size.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1248,7 +1237,7 @@ public static class ExampleCatalog
             Blocks = ["tb-container"],
         },
         new("alert", "Alert", ExampleCategory.Feedback,
-            "A message in the page, such as a warning or an error, that can be closed.", typeof(AlertExample))
+            "A message in the page, such as a warning or an error, that can be closed.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1322,8 +1311,7 @@ public static class ExampleCatalog
             ],
         },
         new("chip", "Chip", ExampleCategory.Content,
-            "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.",
-            typeof(ChipExample))
+            "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1418,7 +1406,7 @@ public static class ExampleCatalog
         },
         new("list", "List", ExampleCategory.Content,
             "A list of items, each with optional leading content, a description and trailing content. Items can be "
-                + "links or buttons, and one can be marked as the current item.", typeof(ListExample))
+                + "links or buttons, and one can be marked as the current item.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1505,7 +1493,7 @@ public static class ExampleCatalog
         },
         new("sortable", "Sortable", ExampleCategory.Content,
             "A list the user puts in order, by dragging an item's handle or with the arrow keys, such as rules whose "
-                + "order sets which runs first.", typeof(SortableExample))
+                + "order sets which runs first.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1586,8 +1574,7 @@ public static class ExampleCatalog
             ],
         },
         new("badge", "Badge", ExampleCategory.Feedback,
-            "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.",
-            typeof(BadgeExample))
+            "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1649,7 +1636,7 @@ public static class ExampleCatalog
                 + "when there is one, so check it with `ToContainTextAsync`.",
         },
         new("progress", "Progress", ExampleCategory.Feedback,
-            "Shows how far along work is, as a bar or a circle, or that it is still going.", typeof(ProgressExample))
+            "Shows how far along work is, as a bar or a circle, or that it is still going.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1717,8 +1704,7 @@ public static class ExampleCatalog
                 + "`[data-part=label]` and `[data-part=value]`.",
         },
         new("label", "Label", ExampleCategory.Inputs,
-            "A label for a control or a group of controls, with an optional info button that explains the setting.",
-            typeof(LabelExample))
+            "A label for a control or a group of controls, with an optional info button that explains the setting.")
         {
             FullWidth = true,
             WhenToUse =
@@ -1807,7 +1793,7 @@ public static class ExampleCatalog
         },
         new("form", "Form", ExampleCategory.Inputs,
             "A form for Trailblazor fields that reports whether it is valid as the fields change and moves focus to "
-                + "the first error when a submit fails.", typeof(FormExample))
+                + "the first error when a submit fails.")
         {
             WhenToUse =
             [
@@ -1913,7 +1899,7 @@ public static class ExampleCatalog
             ],
         },
         new("text-field", "Text field", ExampleCategory.Inputs,
-            "A labeled text input with help text and validation messages.", typeof(TextFieldExample))
+            "A labeled text input with help text and validation messages.")
         {
             WhenToUse =
             [
@@ -2051,7 +2037,7 @@ public static class ExampleCatalog
                 + "as the `TimeProvider` and advance it past the delay.",
         },
         new("number-field", "Number field", ExampleCategory.Inputs,
-            "A labeled number input with step buttons and limits.", typeof(NumberFieldExample))
+            "A labeled number input with step buttons and limits.")
         {
             WhenToUse =
             [
@@ -2158,7 +2144,7 @@ public static class ExampleCatalog
                 + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types and leaves it.",
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
-            "Turns an option on or off, or shows that only some of a group are on.", typeof(CheckboxExample))
+            "Turns an option on or off, or shows that only some of a group are on.")
         {
             FullWidth = true,
             WhenToUse =
@@ -2247,7 +2233,7 @@ public static class ExampleCatalog
             Telemetry = CheckboxTelemetry,
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
-            "Picks any number of options from a short list shown all at once.", typeof(CheckboxGroupExample))
+            "Picks any number of options from a short list shown all at once.")
         {
             FullWidth = true,
             WhenToUse =
@@ -2348,7 +2334,7 @@ public static class ExampleCatalog
                 + "`Change(false)` on an option's `input` checks or unchecks it.",
         },
         new("switch", "Switch", ExampleCategory.Inputs,
-            "Turns a setting on or off right away.", typeof(SwitchExample))
+            "Turns a setting on or off right away.")
         {
             FullWidth = true,
             WhenToUse =
@@ -2432,8 +2418,7 @@ public static class ExampleCatalog
             Telemetry = CheckboxTelemetry,
         },
         new("slider", "Slider", ExampleCategory.Inputs,
-            "Chooses a number, or a range, by dragging a thumb along a track or with the arrow keys.",
-            typeof(SliderExample))
+            "Chooses a number, or a range, by dragging a thumb along a track or with the arrow keys.")
         {
             FullWidth = true,
             WhenToUse =
@@ -2542,7 +2527,7 @@ public static class ExampleCatalog
                 + "slider's thumbs are named \"Elevation Minimum\" and \"Elevation Maximum\".",
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
-            "Picks one option from a short list shown all at once.", typeof(RadioGroupExample))
+            "Picks one option from a short list shown all at once.")
         {
             FullWidth = true,
             WhenToUse =
@@ -2653,7 +2638,7 @@ public static class ExampleCatalog
                 + "chooses it.",
         },
         new("select", "Select", ExampleCategory.Inputs,
-            "Picks one or several options from a list that opens under the field.", typeof(SelectExample))
+            "Picks one or several options from a list that opens under the field.")
         {
             FullWidth = true,
             Sections =
@@ -2892,8 +2877,7 @@ public static class ExampleCatalog
             ],
         },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
-            "A text field that suggests values as the user types, from a list or an async search.",
-            typeof(AutocompleteExample))
+            "A text field that suggests values as the user types, from a list or an async search.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3012,8 +2996,7 @@ public static class ExampleCatalog
                 + "on the app's `TimeProvider`, so advance a `FakeTimeProvider` past it, or set it to `TimeSpan.Zero`.",
         },
         new("color-picker", "Color picker", ExampleCategory.Inputs,
-            "Chooses a color by typing it, picking a swatch, using the custom picker, or taking it from the screen.",
-            typeof(ColorPickerExample))
+            "Chooses a color by typing it, picking a swatch, using the custom picker, or taking it from the screen.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3133,8 +3116,7 @@ public static class ExampleCatalog
                 + "set `FakeBrowserService.PickedColor` to test the eyedropper.",
         },
         new("file-upload", "File upload", ExampleCategory.Inputs,
-            "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.",
-            typeof(FileUploadExample))
+            "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3243,8 +3225,7 @@ public static class ExampleCatalog
                 + "ready as soon as `Render` returns, with nothing left to run, so a test can raise events at once.",
         },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
-            "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.",
-            typeof(DateRangePickerExample))
+            "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3374,7 +3355,7 @@ public static class ExampleCatalog
                 + "field has taken them. Its boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`.",
         },
         new("listbox", "List box", ExampleCategory.Inputs,
-            "Picks one or several options from a list that is always shown.", typeof(ListBoxExample))
+            "Picks one or several options from a list that is always shown.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3514,7 +3495,7 @@ public static class ExampleCatalog
             ],
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
-            "A short description that appears on hover or keyboard focus.", typeof(TooltipExample))
+            "A short description that appears on hover or keyboard focus.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3592,8 +3573,7 @@ public static class ExampleCatalog
                 + "tooltip's text is in the markup from the start, with `role=\"tooltip\"`.",
         },
         new("menu", "Menu", ExampleCategory.Overlays,
-            "A list of actions, options and links that opens from a button, with groups and submenus.",
-            typeof(MenuExample))
+            "A list of actions, options and links that opens from a button, with groups and submenus.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3732,8 +3712,7 @@ public static class ExampleCatalog
             ],
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
-            "A window over the page, opened from code or written in markup, that asks for input or a decision.",
-            typeof(DialogExample))
+            "A window over the page, opened from code or written in markup, that asks for input or a decision.")
         {
             FullWidth = true,
             WhenToUse =
@@ -3951,7 +3930,7 @@ public static class ExampleCatalog
         },
         new("focus-scope", "Focus scope", ExampleCategory.Overlays,
             "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, and gives focus "
-                + "back when it goes.", typeof(FocusScopeExample))
+                + "back when it goes.")
         {
             FullWidth = true,
             WhenToUse =
@@ -4009,7 +3988,7 @@ public static class ExampleCatalog
         },
         new("popover", "Popover", ExampleCategory.Overlays,
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "
-                + "a click elsewhere.", typeof(PopoverExample))
+                + "a click elsewhere.")
         {
             FullWidth = true,
             WhenToUse =
@@ -4094,7 +4073,7 @@ public static class ExampleCatalog
         },
         new("overlay", "Overlay", ExampleCategory.Overlays,
             "A scrim over the page or over one region, which blocks clicks behind it and can hold a message or a "
-                + "spinner in its center.", typeof(OverlayExample))
+                + "spinner in its center.")
         {
             FullWidth = true,
             WhenToUse =
@@ -4157,7 +4136,7 @@ public static class ExampleCatalog
                 + "attribute, which appears once Escape is wired.",
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
-            "Switches between panels of related content, one at a time.", typeof(TabsExample))
+            "Switches between panels of related content, one at a time.")
         {
             RightToLeftKeys = "Left moves to the next tab and Right to the previous one.",
             FullWidth = true,
@@ -4280,7 +4259,7 @@ public static class ExampleCatalog
             ],
         },
         new("accordion", "Accordion", ExampleCategory.Navigation,
-            "Sections that open and close under their headings.", typeof(AccordionExample))
+            "Sections that open and close under their headings.")
         {
             FullWidth = true,
             WhenToUse =
@@ -4364,7 +4343,7 @@ public static class ExampleCatalog
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
-                + "when opened.", typeof(TreeViewExample))
+                + "when opened.")
         {
             FullWidth = true,
             RightToLeftKeys = "Left opens a row or moves into it, and Right closes it or moves to its parent. "
@@ -4574,8 +4553,7 @@ public static class ExampleCatalog
             ],
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
-            "Shows items as rows of a table, with sortable and filterable columns, paging and row selection.",
-            typeof(DataGridExample))
+            "Shows items as rows of a table, with sortable and filterable columns, paging and row selection.")
         {
             RightToLeftKeys = "Left moves to the next cell and Right to the previous one.",
             FullWidth = true,
@@ -4867,7 +4845,7 @@ public static class ExampleCatalog
             ],
         },
         new("table", "Table", ExampleCategory.Content,
-            "A plain table written as markup, with the data grid's look.", typeof(TableExample))
+            "A plain table written as markup, with the data grid's look.")
         {
             FullWidth = true,
             WhenToUse =
@@ -4923,7 +4901,7 @@ public static class ExampleCatalog
         },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
-                + "page number.", typeof(PaginationExample))
+                + "page number.")
         {
             FullWidth = true,
             WhenToUse =
@@ -5006,8 +4984,7 @@ public static class ExampleCatalog
                 + "with Next and Previous, then waits for it to be current.",
         },
         new("table-of-contents", "Table of contents", ExampleCategory.Navigation,
-            "Links to the sections of a page that mark the section in view as the page scrolls.",
-            typeof(TableOfContentsExample))
+            "Links to the sections of a page that mark the section in view as the page scrolls.")
         {
             FullWidth = true,
             WhenToUse =
@@ -5082,7 +5059,7 @@ public static class ExampleCatalog
             ],
         },
         new("link", "Link", ExampleCategory.Navigation,
-            "An underlined text link to an address, or a link-styled button that runs an action.", typeof(LinkExample))
+            "An underlined text link to an address, or a link-styled button that runs an action.")
         {
             FullWidth = true,
             WhenToUse =
@@ -5144,8 +5121,7 @@ public static class ExampleCatalog
             ],
         },
         new("skeleton", "Skeleton", ExampleCategory.Feedback,
-            "A gray shape that holds the place of content while it loads, with a pulse or a wave.",
-            typeof(SkeletonExample))
+            "A gray shape that holds the place of content while it loads, with a pulse or a wave.")
         {
             FullWidth = true,
             WhenToUse =
@@ -5195,8 +5171,7 @@ public static class ExampleCatalog
                 + "hidden, so `ToBeVisibleAsync` waits for it to load.",
         },
         new("toast", "Toast", ExampleCategory.Feedback,
-            "A brief message in a corner that doesn't interrupt, with an optional title, icon, content and action.",
-            typeof(ToastExample))
+            "A brief message in a corner that doesn't interrupt, with an optional title, icon, content and action.")
         {
             FullWidth = true,
             WhenToUse =

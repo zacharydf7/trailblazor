@@ -64,7 +64,7 @@ public class ExampleControlsTests : DocsTest
     [InlineData("button"), InlineData("text-field"), InlineData("select"), InlineData("tabs"), InlineData("dialog")]
     public void ExampleCatalog_ShouldOfferControlsFirst_WhenGivenAMainPage(string name)
     {
-        Assert.NotNull(ExampleCatalog.Find(name)!.Shown[0].Controls);
+        Assert.NotNull(ExampleCatalog.Find(name)!.Sections[0].Controls);
     }
 
     [Fact]

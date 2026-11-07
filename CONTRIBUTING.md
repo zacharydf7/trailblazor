@@ -25,16 +25,15 @@ An issue is done when all of these hold:
 
 ## Component pages
 
-Each component's page comes from its entry in `ExampleCatalog.All`. A component with several features gives its entry
-`Sections`, one per feature, each with an id, a title, a sentence or two and its own example component. The page shows
-each section as a heading, its demo and its code on request, and lists the sections under "On this page". An entry
-without sections shows its single example under the heading "Example". Demos sit centered in their frame; set
-`FullWidth` on an entry whose demos need the frame's width, such as a grid or a layout component.
+Each component's page comes from its entry in `ExampleCatalog.All`. Every entry gives `Sections`, one per feature, each
+with an id, a title, a sentence or two and its own example component. The page shows each section as a heading, its demo
+and its code on request, and lists the sections under "On this page". Demos sit centered in their frame; set `FullWidth`
+on an entry whose demos need the frame's width, such as a grid or a layout component.
 
-The rest of the page comes from the entry's other slots. Apart from `Accessibility`, `Blocks` and `Target`, every slot
-is optional, and an empty one renders nothing. "On this page" lists the H2 sections: Usage, Notes and limitations, and
-Related only when filled, and the rest always. The H3s under Usage and Accessibility have ids of their own, such as
-`#keyboard`, for linking. The page shows the slots in this order:
+The rest of the page comes from the entry's other slots. `Api`, `WhenToUse`, `Related`, `Accessibility`, `Blocks` and
+`Target` are required; every other slot is optional, and an empty one renders nothing. "On this page" lists every H2
+section, leaving out Notes and limitations when it's empty. The H3s under Usage and Accessibility have ids of their
+own, such as `#keyboard`, for linking. The page shows the slots in this order:
 
 | Slot | Shown under | Holds |
 | --- | --- | --- |

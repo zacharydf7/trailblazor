@@ -21,7 +21,7 @@ public class ExampleCatalogTests
     [Theory, MemberData(nameof(Names))]
     public void Example_ShouldGiveEachSectionAnIdOfItsOwn_WhenInTheCatalog(string name)
     {
-        var ids = ExampleCatalog.Find(name)!.Shown.Select(section => section.Id).ToList();
+        var ids = ExampleCatalog.Find(name)!.Sections.Select(section => section.Id).ToList();
 
         Assert.Equal(ids.Count, ids.Distinct().Count());
         Assert.Empty(ids.Intersect(["usage", "when-to-use", "when-not-to-use", "accessibility", "keyboard", "labeling",
@@ -47,7 +47,7 @@ public class ExampleCatalogTests
             .. example.LabelingNotes, .. example.Announcements, .. example.AppDuties, .. example.BeforeInteractive,
             .. example.NotesShown.Select(note => note.Text), .. example.Keyboard.Select(row => row.Action),
             .. example.Keyboard.Select(row => row.When), .. example.TelemetryNotes,
-            .. example.Shown.Select(section => section.Description), example.TestingTip, .. example.TestingTips,
+            .. example.Sections.Select(section => section.Description), example.TestingTip, .. example.TestingTips,
             example.RightToLeftKeys];
 
         // Matches the path of every link DocsText renders, and anything else written like one.

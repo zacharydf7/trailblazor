@@ -78,7 +78,7 @@ public class ComponentPageTests : DocsTest
 
         frame.QuerySelectorAll("button").Single(button => button.TextContent.Trim() == "Copy code").Click();
 
-        Assert.Equal(canCopy ? [ExampleCatalog.Find("tree-view")!.Shown.Single(section => section.Id == "many-rows")
+        Assert.Equal(canCopy ? [ExampleCatalog.Find("tree-view")!.Sections.Single(section => section.Id == "many-rows")
             .Sources[0].Text] : [], Browser.Copied);
         announcer.WaitForAssertion(() => Assert.Equal([message],
             announcer.FindAll("[role=status] p").Select(p => p.TextContent)));

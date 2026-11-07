@@ -4,7 +4,7 @@
 
 @* One example on a page of its own, to try it at the window's full size. *@
 @if (ExampleCatalog.Find(Name) is { } example
-    && example.Shown.FirstOrDefault(shown => shown.Id == Section) is { } section)
+    && example.Sections.FirstOrDefault(shown => shown.Id == Section) is { } section)
 {
     <PageTitle>@section.Title · @example.Title · Trailblazor</PageTitle>
     <h1 class="tb-visually-hidden">@example.Title: @section.Title</h1>

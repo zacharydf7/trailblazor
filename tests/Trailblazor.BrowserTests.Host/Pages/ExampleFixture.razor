@@ -2,8 +2,8 @@
 @using Trailblazor.Docs.Examples
 
 <PageTitle>@Example.Title example</PageTitle>
-@* An example with sections shows them all, as its page does. *@
-@foreach (var section in Example.Shown)
+@* Shows every section, as its page does. *@
+@foreach (var section in Example.Sections)
 {
     <DynamicComponent Type="section.Component" />
 }

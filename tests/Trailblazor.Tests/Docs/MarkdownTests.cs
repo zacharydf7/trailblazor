@@ -36,7 +36,7 @@ public class MarkdownTests
         var markdown = await MarkdownOf($"components/{name}");
 
         Assert.StartsWith($"# {example.Title}\n\n{example.Summary}\n", markdown);
-        Assert.All(example.Shown, section =>
+        Assert.All(example.Sections, section =>
         {
             Assert.Contains($"\n## {section.Title}\n", markdown);
             // A section with controls shows the markup for their starting values, not the demo that takes them.

@@ -114,10 +114,10 @@ public static class DocsSearch
             SearchMatch.Title);
         yield return page.Passage("Usage", $"{path}#usage", "Usage",
             Plain([.. example.WhenToUse, .. example.WhenNotToUse]), SearchMatch.Heading);
-        foreach (var section in example.Shown)
+        foreach (var section in example.Sections)
         {
             yield return page.Passage(section.Title, $"{path}#{section.Id}", section.Title,
-                Plain(section.Description ?? ""), SearchMatch.Heading);
+                Plain(section.Description), SearchMatch.Heading);
         }
 
         yield return page.Passage("Accessibility", $"{path}#accessibility", "Accessibility", Plain([

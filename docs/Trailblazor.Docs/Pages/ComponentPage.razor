@@ -7,11 +7,8 @@
     @* Keyed, so the next component starts with its code hidden and its contents folded. *@
     <DocsArticle @key="example.Name">
         <Contents>
-            @if (HasUsage(example))
-            {
-                <TbTableOfContentsItem TargetId="usage" Text="Usage" />
-            }
-            @foreach (var section in example.Shown)
+            <TbTableOfContentsItem TargetId="usage" Text="Usage" />
+            @foreach (var section in example.Sections)
             {
                 <TbTableOfContentsItem TargetId="@section.Id" Text="@section.Title" />
             }
@@ -23,39 +20,26 @@
             <TbTableOfContentsItem TargetId="telemetry" Text="Telemetry" />
             <TbTableOfContentsItem TargetId="design-tokens" Text="Design tokens" />
             <TbTableOfContentsItem TargetId="testing" Text="Testing" />
-            @if (example.Related.Count > 0)
-            {
-                <TbTableOfContentsItem TargetId="related" Text="Related" />
-            }
+            <TbTableOfContentsItem TargetId="related" Text="Related" />
         </Contents>
         <Header>
             <ComponentHeader Example="example" />
         </Header>
         <ChildContent>
-            @if (HasUsage(example))
+            <DocsHeading Id="usage" Text="Usage" Class="docs-section" />
+            <DocsHeading Id="when-to-use" Text="When to use" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
+            @Notes("When to use", example.WhenToUse)
+            @if (example.WhenNotToUse.Count > 0)
             {
-                <DocsHeading Id="usage" Text="Usage" Class="docs-section" />
-                @if (example.WhenToUse.Count > 0)
-                {
-                    <DocsHeading Id="when-to-use" Text="When to use" Level="TextElement.H3"
-                                 TextStyle="TextStyle.Subtitle" />
-                    @Notes("When to use", example.WhenToUse)
-                }
-                @if (example.WhenNotToUse.Count > 0)
-                {
-                    <DocsHeading Id="when-not-to-use" Text="When not to use" Level="TextElement.H3"
-                                 TextStyle="TextStyle.Subtitle" />
-                    @Notes("When not to use", example.WhenNotToUse)
-                }
+                <DocsHeading Id="when-not-to-use" Text="When not to use" Level="TextElement.H3"
+                             TextStyle="TextStyle.Subtitle" />
+                @Notes("When not to use", example.WhenNotToUse)
             }
 
-            @foreach (var section in example.Shown)
+            @foreach (var section in example.Sections)
             {
                 <DocsHeading Id="@section.Id" Text="@section.Title" Class="docs-section" />
-                @if (section.Description is { } description)
-                {
-                    <TbText>@DocsText.Render(description)</TbText>
-                }
+                <TbText>@DocsText.Render(section.Description)</TbText>
                 <ExampleFrame Name="@example.Name" Section="section" FullWidth="example.FullWidth" />
             }
 
@@ -216,16 +200,13 @@
                 The <a href="guides/testing">testing guide</a> shows how to set up bUnit and Playwright.
             </TbText>
 
-            @if (example.Related.Count > 0)
-            {
-                <DocsHeading Id="related" Text="Related" Class="docs-section" />
-                <ul class="docs-notes" aria-label="Related">
-                    @foreach (var related in example.Related.Select(name => ExampleCatalog.Find(name)!))
-                    {
-                        <li><a href="@($"components/{related.Name}")">@related.Title</a>: @related.Summary</li>
-                    }
-                </ul>
-            }
+            <DocsHeading Id="related" Text="Related" Class="docs-section" />
+            <ul class="docs-notes" aria-label="Related">
+                @foreach (var related in example.Related.Select(name => ExampleCatalog.Find(name)!))
+                {
+                    <li><a href="@($"components/{related.Name}")">@related.Title</a>: @related.Summary</li>
+                }
+            </ul>
 
             <ComponentPager Example="example" />
         </ChildContent>
@@ -241,8 +222,6 @@ else
 @code {
     [Parameter]
     public string Name { get; set; } = "";
-
-    private static bool HasUsage(Example example) => example.WhenToUse.Count > 0 || example.WhenNotToUse.Count > 0;
 
     private static IReadOnlyList<string> PlainNotes(Example example) =>
         [.. example.NotesShown.Where(note => !note.Pitfall).Select(note => note.Text)];
