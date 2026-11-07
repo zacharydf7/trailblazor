@@ -76,13 +76,15 @@
     [Parameter]
     public double MaxSize { get; set; } = 100;
 
-    /// <summary>Lets Enter on the separator before the pane, or after it for the first pane, collapse it and restore
-    /// it, as does that separator's grip menu.</summary>
+    /// <summary>Lets the pane collapse and restore with Enter on the separator after it, or with that separator's grip
+    /// menu. A last pane uses the separator before it, which collapses it only if the pane before that can't collapse,
+    /// and restores it once that pane is open.</summary>
     [Parameter]
     public bool Collapsible { get; set; }
 
     /// <summary>Whether the pane is collapsed. Bind it with <c>@bind-Collapsed</c> to collapse it from a button. A
-    /// collapsed pane keeps its content and its size, which it goes back to when restored.</summary>
+    /// collapsed pane keeps its content and its size, which it goes back to when restored. If focus is inside the pane
+    /// when it collapses, focus moves to the separator after it, or before it for the last pane.</summary>
     [Parameter]
     public bool Collapsed { get; set; }
 

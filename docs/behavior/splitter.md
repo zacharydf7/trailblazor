@@ -12,6 +12,8 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Home and End take the pane to its smallest and largest, within its limits. `SplitterTests.Splitter_ShouldResizeWithinTheLimits_WhenTheKeysAreUsed`
 - [x] Enter collapses a collapsible pane and restores it at its size. `SplitterTests.Splitter_ShouldCollapseAndRestoreThePane_WhenEnterIsPressed`
 - [x] Enter collapses the next pane when the one before can't collapse. `SplitterTests.Splitter_ShouldCollapseTheNextPane_WhenThePaneBeforeTheSeparatorCannot`
+- [x] Enter still collapses the pane before when a collapsed middle pane follows it, since the middle pane can come back from its own separator. `TbSplitterTests.Toggle_ShouldCollapseThePaneBefore_WhenAMiddlePaneAfterItIsCollapsed`
+- [x] Enter restores a collapsed last pane, even when the pane before it can collapse. With both collapsed, the pane before comes back first. `SplitterTests.Splitter_ShouldRestoreTheLastPane_WhenThePaneBeforeItCanCollapseToo`, `TbSplitterTests.Toggle_ShouldRestoreThePaneBeforeFirst_WhenTheLastPaneIsCollapsedToo`
 - [x] Enter does nothing when neither pane can collapse. `TbSplitter.razor`
 - [x] The arrows, Home and End do nothing while either neighbor is collapsed. `splitter.js`
 - [x] Left and Right move the separator the way they point in right-to-left text. `SplitterTests.Splitter_ShouldGrowThePaneWithTheLeftArrow_WhenTheTextIsRightToLeft`
@@ -22,7 +24,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Dragging the separator resizes the pair and stops at a limit, even past the splitter's edge. `SplitterDragTests.Splitter_ShouldResizeAndStopAtTheLimit_WhenTheSeparatorIsDragged`
 - [x] Dragging the grip resizes without opening its menu. `SplitterDragTests.Splitter_ShouldResizeWithoutOpeningTheMenu_WhenTheGripIsDragged`
 - [x] A click on the grip opens its menu without resizing, even if it wanders a few pixels. `SplitterDragTests.Splitter_ShouldOpenTheMenuWithoutResizing_WhenAClickOnTheGripWandersAFewPixels`
-- [x] The grip's menu makes the pane larger, smaller, collapsed or restored. `SplitterTests.Splitter_ShouldResizeAndCollapseThePane_WhenTheGripsMenuIsClicked`
+- [x] The grip's menu makes the pane larger, smaller, collapsed or restored. `SplitterTests.Splitter_ShouldResizeAndCollapseThePane_WhenTheGripsMenuIsClicked`, `TbSplitterTests.Grip_ShouldRestoreTheLastPane_WhenThePaneBeforeItCanCollapseToo`
 - [x] The menu's steps turn off at a limit or while a neighbor is collapsed. `TbSplitterTests.Render_ShouldDisableTheGripsSteps_WhenAPaneIsAtItsLimitOrCollapsed`
 - [x] Hover highlights the line and shows a resize cursor. `trailblazor.css`
 - [x] With a `PersistenceKey`, the layout comes back after a reload. `SplitterTests.Splitter_ShouldKeepTheLayout_WhenThePageIsReloadedWithAPersistenceKey`
@@ -42,7 +44,8 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Focus stays on the separator through a collapse and a restore. `SplitterTests.Splitter_ShouldCollapseAndRestoreThePane_WhenEnterIsPressed`
 - [x] A collapsed pane's content is out of the tab order. `SplitterTests.Splitter_ShouldHideACollapsedPanesContentFromTheTabOrder_WhenCollapsedFromAButton`
 - [ ] A collapsed pane's content stays out of reach even in an open accordion inside it. #333
-- [ ] Collapsing the pane that holds focus, from a button inside it, moves focus to its separator. #313
+- [x] Collapsing the pane that holds focus, from a button inside it, moves focus to the separator after it, or before it for the last pane. `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterThePane_WhenCollapsedFromInsideIt`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterIt_WhenAMiddlePaneCollapsesFromInside`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorBeforeTheLastPane_WhenCollapsedFromInsideIt`
+- [x] Collapsing a pane leaves focus alone when focus is outside that pane. `SplitterTests.Splitter_ShouldLeaveFocusAlone_WhenAnotherPaneCollapses`
 
 ## Not applicable
 

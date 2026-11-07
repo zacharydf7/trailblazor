@@ -1174,7 +1174,9 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
-                "A collapsed pane keeps its content but hides it from sight and from the tab order.",
+                "A collapsed pane keeps its content but hides it from sight and from the tab order. If focus is inside "
+                    + "the pane when it collapses, focus moves to the separator after it, or before it for the last "
+                    + "pane.",
                 "A click or tap on the grip opens its menu: Make larger and Make smaller (by 10%), plus Collapse or "
                     + "Restore for a `Collapsible` pane. The menu is the single-pointer alternative to dragging (WCAG "
                     + "2.5.7).",

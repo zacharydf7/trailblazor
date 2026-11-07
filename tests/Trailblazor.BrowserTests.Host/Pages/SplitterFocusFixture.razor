@@ -1,0 +1,34 @@
+@page "/splitter-focus"
+
+@* Panes with their own collapse buttons, and one with a button that collapses its neighbor. *@
+<div style="block-size: 10rem">
+    <TbSplitter>
+        <TbSplitterPane Label="Left" Collapsible @bind-Collapsed="_left">
+            <TbButton OnClick="() => _left = true">Collapse left</TbButton>
+        </TbSplitterPane>
+        <TbSplitterPane Label="Middle">
+            <TbButton OnClick="() => _left = true">Collapse its neighbor</TbButton>
+        </TbSplitterPane>
+        <TbSplitterPane Label="Right" Collapsible @bind-Collapsed="_right">
+            <TbButton OnClick="() => _right = true">Collapse right</TbButton>
+        </TbSplitterPane>
+    </TbSplitter>
+</div>
+<div style="block-size: 10rem">
+    <TbSplitter>
+        <TbSplitterPane Label="First">First pane</TbSplitterPane>
+        <TbSplitterPane Label="Between" Collapsible @bind-Collapsed="_between">
+            <TbButton OnClick="() => _between = true">Collapse between</TbButton>
+        </TbSplitterPane>
+        <TbSplitterPane Label="Last" Collapsible @bind-Collapsed="_last">
+            <TbButton OnClick="() => _last = true">Collapse last</TbButton>
+        </TbSplitterPane>
+    </TbSplitter>
+</div>
+
+@code {
+    private bool _left;
+    private bool _right;
+    private bool _between;
+    private bool _last;
+}

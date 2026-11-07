@@ -165,6 +165,18 @@ export function attachSplitter(root, reporter, key) {
     observer.observe(root, { childList: true });
     reportOrder();
 
+    // A collapsed pane is hidden, and focus inside it would fall to the page. An observer runs before the browser drops
+    // that focus, and moves it to the pane's separator: the one after it, or the one before it for the last pane.
+    const collapses = new MutationObserver(records => {
+        for (const { target: pane } of records) {
+            if (panes().includes(pane) && pane.hasAttribute('data-collapsed') && pane.contains(document.activeElement)) {
+                const bar = pane.nextElementSibling ?? pane.previousElementSibling;
+                bar?.querySelector(':scope > [data-part="separator"]').focus();
+            }
+        }
+    });
+    collapses.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-collapsed'] });
+
     // A saved layout is read back once so the server can apply it. Anything else under the key, such as a layout
     // from an older version or another splitter, is ignored.
     let saved = null;
@@ -200,6 +212,7 @@ export function attachSplitter(root, reporter, key) {
         },
         dispose() {
             observer.disconnect();
+            collapses.disconnect();
             root.removeEventListener('pointerdown', onPointerDown);
             root.removeEventListener('pointermove', onPointerMove);
             root.removeEventListener('pointerup', onPointerUp);

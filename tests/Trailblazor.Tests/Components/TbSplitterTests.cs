@@ -86,6 +86,36 @@ public class TbSplitterTests : BunitContext
     }
 
     [Fact]
+    public async Task Toggle_ShouldRestoreThePaneBeforeFirst_WhenTheLastPaneIsCollapsedToo()
+    {
+        var module = SetUpScript();
+        var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true, Collapsed: true),
+            new Pane("Right", Collapsible: true, Collapsed: true));
+        var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
+
+        await cut.InvokeAsync(() => report.Value.OnToggle(PaneIds(cut)[0]));
+        Assert.False(cut.FindAll("[data-part=pane]")[0].HasAttribute("data-collapsed"));
+        Assert.True(cut.FindAll("[data-part=pane]")[1].HasAttribute("data-collapsed"));
+
+        await cut.InvokeAsync(() => report.Value.OnToggle(PaneIds(cut)[0]));
+        Assert.False(cut.FindAll("[data-part=pane]")[1].HasAttribute("data-collapsed"));
+    }
+
+    [Fact]
+    public async Task Toggle_ShouldCollapseThePaneBefore_WhenAMiddlePaneAfterItIsCollapsed()
+    {
+        var module = SetUpScript();
+        var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true),
+            new Pane("Middle", 30, Collapsible: true, Collapsed: true), new Pane("Right"));
+        var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
+
+        await cut.InvokeAsync(() => report.Value.OnToggle(PaneIds(cut)[0]));
+
+        Assert.True(cut.FindAll("[data-part=pane]")[0].HasAttribute("data-collapsed"));
+        Assert.True(cut.FindAll("[data-part=pane]")[1].HasAttribute("data-collapsed"));
+    }
+
+    [Fact]
     public async Task Toggle_ShouldRestoreThePaneAtItsOwnSize_WhenTheOthersWereResizedWhileItWasCollapsed()
     {
         var module = SetUpScript();
@@ -205,6 +235,18 @@ public class TbSplitterTests : BunitContext
         MenuItem(cut, $"Restore {name}").Click();
 
         Assert.False(pane().HasAttribute("data-collapsed"));
+    }
+
+    [Fact]
+    public void Grip_ShouldRestoreTheLastPane_WhenThePaneBeforeItCanCollapseToo()
+    {
+        SetUpScript();
+        var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true),
+            new Pane("Right", Collapsible: true, Collapsed: true));
+
+        MenuItem(cut, "Restore Right").Click();
+
+        Assert.False(cut.FindAll("[data-part=pane]")[1].HasAttribute("data-collapsed"));
     }
 
     [Theory]

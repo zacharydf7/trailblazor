@@ -17,6 +17,21 @@ public class SplitterTests(BrowserFixture fixture) : BrowserTest(fixture)
         return page;
     }
 
+    // Collapses a pane from a button inside it, then checks focus lands on the separator and Enter there brings it back.
+    private async Task CollapseFromInsideAsync(string browser, string button, string separator)
+    {
+        var page = await OpenSplitterAsync(browser, "/splitter-focus");
+        var collapse = page.GetByRole(AriaRole.Button, new() { Name = button });
+        await collapse.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(collapse).ToBeHiddenAsync();
+        await Expect(Separator(page, separator)).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(collapse).ToBeVisibleAsync();
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Splitter_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
     {
@@ -167,6 +182,35 @@ public class SplitterTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Locator(".tb-splitter")).ToHaveAttributeAsync("data-ready", "");
 
         await Expect(page.GetByText("Left pane")).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldMoveFocusToTheSeparatorAfterThePane_WhenCollapsedFromInsideIt(string browser) =>
+        await CollapseFromInsideAsync(browser, "Collapse left", "Resize Left");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldMoveFocusToTheSeparatorAfterIt_WhenAMiddlePaneCollapsesFromInside(string browser) =>
+        await CollapseFromInsideAsync(browser, "Collapse between", "Resize Between");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldMoveFocusToTheSeparatorBeforeTheLastPane_WhenCollapsedFromInsideIt(string browser) =>
+        await CollapseFromInsideAsync(browser, "Collapse right", "Resize Middle");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldRestoreTheLastPane_WhenThePaneBeforeItCanCollapseToo(string browser) =>
+        await CollapseFromInsideAsync(browser, "Collapse last", "Resize Between");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldLeaveFocusAlone_WhenAnotherPaneCollapses(string browser)
+    {
+        var page = await OpenSplitterAsync(browser, "/splitter-focus");
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Collapse its neighbor" });
+        await button.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Collapse left" })).ToBeHiddenAsync();
+
+        await Expect(button).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

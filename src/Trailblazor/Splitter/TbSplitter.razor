@@ -185,8 +185,14 @@
     internal TbSplitterPane? ToggleTarget(TbSplitterPane before)
     {
         var index = _panes.IndexOf(before);
-        return before.Collapsible ? before
-            : index >= 0 && index + 1 < _panes.Count && _panes[index + 1].Collapsible ? _panes[index + 1] : null;
+        var after = index >= 0 && index + 1 < _panes.Count ? _panes[index + 1] : null;
+        // Restore a collapsed next pane rather than collapse the open one, since a last pane has no other separator.
+        if (index == _panes.Count - 2 && after is { Collapsible: true, IsCollapsed: true } && !before.IsCollapsed)
+        {
+            return after;
+        }
+
+        return before.Collapsible ? before : after is { Collapsible: true } ? after : null;
     }
 
     internal async Task ToggleAsync(TbSplitterPane before)
