@@ -3162,7 +3162,7 @@
     .tb-dialog[data-layer="page"] {
         position: fixed;
         inset: 0;
-        z-index: var(--tb-dialog-z-index, 1100);
+        z-index: calc(var(--tb-dialog-z-index, 1100) + var(--tb-dialog-level, 0));
     }
 
     .tb-dialog[data-layer="page"][data-backdrop] {

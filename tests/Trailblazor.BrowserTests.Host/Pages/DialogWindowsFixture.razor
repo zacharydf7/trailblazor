@@ -1,0 +1,60 @@
+@page "/dialog-windows"
+@inject IToastService Toasts
+@inject IDialogService Dialogs
+
+@* Overlapping non-modal windows: a large one opened first, and a small one over its middle. The popover's trigger comes
+   first in the large one, so opening that window focuses the trigger rather than the counted field, and the popover's
+   panel opens over the window. *@
+<TbButton OnClick="() => _back = true">Open back</TbButton>
+<TbButton OnClick="() => _front = true">Open front</TbButton>
+<TbButton OnClick="() => _last = true">Open last</TbButton>
+<TbButton OnClick="() => _modal = true">Open modal</TbButton>
+<TbButton OnClick='() => Toasts.Show("Saved")'>Show toast</TbButton>
+<TbButton OnClick="() => _share = true">Open share</TbButton>
+<TbButton OnClick="() => _held = true">Open held</TbButton>
+<TbButton OnClick="() => Dialogs.OpenDialogs[0].WindowState = DialogWindowState.Normal">Restore oldest</TbButton>
+<TbDialog @bind-Open="_back" Title="Back" Options="Large">
+    <TbPopover Label="Share" @bind-Open="_share">Share words</TbPopover>
+    <TbButton OnClick="() => _inner = true">Open inner</TbButton>
+    <TbTextField TValue="string" Label="Back field" OnFocus="() => _focuses++" OnBlur="() => _blurs++" />
+    <TbTooltip Text="Saves the page"><TbButton>Save</TbButton></TbTooltip>
+    <p>Words that fill the window below its controls.</p>
+    <p>More words, so a panel opened from its top lands inside it.</p>
+    <TbDialog @bind-Open="_inner" Title="Inner" Options="Small">Inner words</TbDialog>
+    <TbDialog @bind-Open="_held" Title="Held" Options="Modal">Held words</TbDialog>
+</TbDialog>
+<TbDialog @bind-Open="_front" Title="Front" Options="Small">Front words</TbDialog>
+<TbDialog @bind-Open="_last" Title="Last" Options="Small">Last words</TbDialog>
+<TbDialog @bind-Open="_modal" Title="Modal" Options="Modal">Modal words</TbDialog>
+<output aria-label="Focuses">@_focuses</output>
+<output aria-label="Blurs">@_blurs</output>
+
+@code {
+    private bool _back;
+    private bool _front;
+    private bool _held;
+    private bool _inner;
+    private bool _last;
+    private bool _modal;
+    private bool _share;
+    private int _focuses;
+    private int _blurs;
+
+    [SupplyParameterFromQuery]
+    public bool OnPage { get; set; }
+
+    private DialogOptions Large => new()
+    {
+        Modal = false, Size = DialogSize.Large, Draggable = true, TopLayer = OnPage ? false : null,
+    };
+
+    private DialogOptions Small => new()
+    {
+        Modal = false, Size = DialogSize.Small, Draggable = true, Resizable = true, TopLayer = OnPage ? false : null,
+    };
+
+    private DialogOptions Modal => new()
+    {
+        Size = DialogSize.Small, Minimizable = true, TopLayer = OnPage ? false : null,
+    };
+}

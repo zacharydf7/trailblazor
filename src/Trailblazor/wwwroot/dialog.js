@@ -8,9 +8,12 @@ const focusableSelector = ['a[href]', 'button:not([disabled])', 'input:not([disa
     .map(selector => `${selector}:not([tabindex="-1"])`)
     .join(', ');
 
-// Open dialogs, oldest first; keys go to the newest, or to a modeless one that has focus, so a nested dialog closes
+// Open dialogs, back to front; keys go to the frontmost, or to a modeless one that has focus, so a nested dialog closes
 // before the one beneath it.
 const stack = [];
+
+// A popup that closes itself on a click outside it, and that a dialog coming forward would cover.
+const lightDismissPopup = '[popover]:not([popover="manual"]):popover-open';
 
 // Minimized dialogs, in the order they were minimized, set out in rows from the bottom-end corner.
 const tray = [];
@@ -121,6 +124,37 @@ function show(dialog, modal, topLayer) {
     }
 }
 
+// On the page layer, a dialog's place in the stack sets how high it draws.
+function numberLevels() {
+    stack.forEach((entry, level) => entry.dialog.style.setProperty('--tb-dialog-level', level));
+}
+
+// Hiding and showing a manual popover in one task moves it to the top of the top layer. Inert meanwhile, it has nothing
+// to give focus to, so focus stays where it is and no focus event fires.
+function moveToTopOfLayer(element) {
+    if (element.matches(':popover-open')) {
+        hold([element]);
+        element.hidePopover();
+        element.showPopover();
+        release([element]);
+    }
+}
+
+// A dialog moves to the front with the ones nested in it. Then any tooltip or list open from it, and the toaster, go
+// back above them.
+function raise(entry) {
+    const raised = [entry, ...stack.filter(other => other !== entry && entry.dialog.contains(other.dialog))];
+    for (const each of raised) {
+        stack.splice(stack.indexOf(each), 1);
+        stack.push(each);
+        moveToTopOfLayer(each.dialog);
+    }
+
+    entry.dialog.querySelectorAll('[popover="manual"]:popover-open:not(dialog)').forEach(moveToTopOfLayer);
+    document.querySelectorAll('[data-part="toaster"]').forEach(moveToTopOfLayer);
+    numberLevels();
+}
+
 export function openDialog(dialog, dotNet, options, outsidePopups) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!dialog) {
@@ -142,6 +176,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     // Whether it is modal now, which can change while it's open.
     const entry = { dialog, options, modal: options.modal, topLayer, usable };
     stack.push(entry);
+    numberLevels();
     blockPage();
     dialogFocusTarget(dialog, options).focus();
 
@@ -166,14 +201,14 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
 
     // Escape is stopped on keydown: canceling the dialog's cancel event fails on a second press in every engine.
     // It is heard as it bubbles, so whatever inside used it first, such as an autocomplete list or a drag, keeps it.
-    // An open menu, a shown tooltip and a focused toast take Escape first too. The newest dialog takes it, and so does
-    // a modeless one with focus, since that is the window the user is working in; focus in a dialog nested inside it
-    // belongs to the nested one.
+    // An open menu, a shown tooltip and a focused toast take Escape first too. The frontmost dialog takes it, and so
+    // does a modeless one with focus, since that is the window the user is working in; focus in a dialog nested inside
+    // it belongs to the nested one.
     const onKeyDown = event => {
-        const newest = stack.at(-1) === entry;
+        const frontmost = stack.at(-1) === entry;
         if (event.key !== 'Escape' || event.defaultPrevented
-            || !(newest || !entry.modal && document.activeElement?.closest('dialog') === dialog)
-            || dialog.querySelector('[popover]:not([popover="manual"]):popover-open, [role="tooltip"]:popover-open')
+            || !(frontmost || !entry.modal && document.activeElement?.closest('dialog') === dialog)
+            || dialog.querySelector(`${lightDismissPopup}, [role="tooltip"]:popover-open`)
             || event.target.closest?.('[data-part="toaster"]')) {
             return;
         }
@@ -211,6 +246,14 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     // A drag that starts in a field and ends over the backdrop must not dismiss the dialog and lose the input.
     const onPointerDown = event => {
         pressedOnBackdrop = onBackdrop(event);
+    };
+    // A press or focus in a modeless dialog brings it to the front, if a dialog outside it is drawn above it. It waits
+    // while a popup that closes on its own, or a modal in the top layer, is open from it, since it would cover them.
+    const bringToFront = () => {
+        if (!entry.modal && stack.slice(stack.indexOf(entry)).some(other => !dialog.contains(other.dialog))
+            && !dialog.querySelector(`${lightDismissPopup}, :modal`)) {
+            raise(entry);
+        }
     };
     const onClick = event => {
         if (entry.modal && options.dismissOnBackdrop && pressedOnBackdrop && onBackdrop(event)) {
@@ -342,6 +385,8 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     }
 
     document.addEventListener('keydown', onKeyDown);
+    dialog.addEventListener('pointerdown', bringToFront, { capture: true });
+    dialog.addEventListener('focusin', bringToFront, { capture: true });
     dialog.addEventListener('cancel', onCancel);
     dialog.addEventListener('close', onClose);
     document.addEventListener('pointerdown', onPointerDown);
@@ -366,6 +411,8 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
         document.removeEventListener('keydown', onKeyDown);
         dialog.removeEventListener('cancel', onCancel);
         dialog.removeEventListener('close', onClose);
+        dialog.removeEventListener('pointerdown', bringToFront, { capture: true });
+        dialog.removeEventListener('focusin', bringToFront, { capture: true });
         document.removeEventListener('pointerdown', onPointerDown);
         document.removeEventListener('click', onClick);
         dialog.removeEventListener('pointerdown', onDragStart);
@@ -449,6 +496,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
             // Opening again puts it above the others, so Escape goes to it first.
             stack.splice(stack.indexOf(entry), 1);
             stack.push(entry);
+            numberLevels();
             blockPage();
             (focused ?? dialogFocusTarget(dialog, options)).focus();
             // A modal's own live regions join the accessibility tree with the next frame, as when it opens.

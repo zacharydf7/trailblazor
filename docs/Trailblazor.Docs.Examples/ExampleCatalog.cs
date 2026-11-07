@@ -3827,8 +3827,10 @@ public static class ExampleCatalog
                 new("top-layer", "On the page instead of the top layer", "A dialog opens in the browser's top layer, "
                     + "above everything on the page. A popup another library adds to the page's body then opens "
                     + "beneath a modal and can't be used. `TopLayer = false`, or `DialogSettings.TopLayer` for the "
-                    + "app, keeps the dialog on the page at `--tb-dialog-z-index` (1100), so popups added later open "
-                    + "above it and work.",
+                    + "app, keeps the dialog on the page, so popups added later open above it and work. It draws at "
+                    + "`--tb-dialog-z-index` (1100) plus its place among the open dialogs, so a popup that must stay "
+                    + "above it needs a z-index well above that value. A dialog on the page stays beneath any dialog "
+                    + "in the top layer, even when it comes to the front.",
                     typeof(DialogTopLayerExample)),
             ],
             Api =
@@ -3869,6 +3871,8 @@ public static class ExampleCatalog
                     + "one leaves the page usable.",
                 "A click that starts and ends on the backdrop cancels a modal. `ConfirmAsync` and `AlertAsync` dialogs "
                     + "ignore it, so a stray click can't answer them.",
+                "A non-modal dialog comes to the front when it's pressed or takes focus, along with any dialog nested "
+                    + "in it.",
                 "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
                     + "starts to fade out, the page takes input again and focus goes back to its opener, unless focus "
                     + "had already left the dialog.",

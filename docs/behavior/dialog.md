@@ -27,7 +27,16 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] The page behind a modal can't scroll. `DialogTests.Dialog_ShouldLockPageScroll_WhenModal`
 - [ ] The page doesn't shift sideways as a modal removes its scrollbar. #301
 - [x] The page stays usable behind a non-modal dialog. `DialogTests.Dialog_ShouldLeaveThePageUsable_WhenNotModal`
-- [ ] A click or focus in a non-modal dialog behind another brings it to the front. #329
+- [x] A click or focus in a non-modal dialog behind another brings it to the front. `DialogWindowsTests.Window_ShouldComeToTheFront_WhenPressed`, `DialogWindowsTests.Window_ShouldComeToTheFront_WhenFocusMovesIntoIt`, `DialogWindowsTests.Window_ShouldComeToTheFront_WhenPressedOnThePageLayer`
+- [x] Coming to the front keeps focus where it is and raises no `OnFocus` or `OnBlur`. `DialogWindowsTests.Window_ShouldKeepFocusAndRaiseNoFieldEvents_WhenWindowsSwapPlaces`, `DialogWindowsTests.Window_ShouldComeToTheFrontAndKeepFocusElsewhere_WhenItsGripIsDragged`, `DialogWindowsTests.Window_ShouldFocusTheFieldOnce_WhenClickingItBringsItForward`
+- [x] The press that brings a dialog forward still reaches what it landed on. `DialogWindowsTests.Window_ShouldStillTakeTheClick_WhenTheClickBringsItForward`
+- [x] A dialog nested in the one coming to the front stays above it, and so do a tooltip open from it and a toast. `DialogWindowsTests.Window_ShouldKeepItsNestedWindowAboveIt_WhenPressed`, `DialogWindowsTests.Tooltip_ShouldStayAboveItsWindow_WhenTheWindowComesToTheFront`, `DialogWindowsTests.Toast_ShouldStayAboveAWindow_WhenTheWindowComesToTheFront`
+- [x] A dialog behind another waits to come forward while a popover open from it is showing, so the popover isn't covered. `DialogWindowsTests.Popover_ShouldStayOnTop_WhenOpenFromAWindowBehindAnother`
+- [x] A press or focus in the dialog already in front doesn't hide and re-show it. `DialogWindowsTests.Window_ShouldNotBeShownAgain_WhenItIsAlreadyInFront`
+- [x] A dialog in the top layer with a modal open from it stays where it is, so the modal isn't covered. `DialogWindowsTests.Window_ShouldStayBehind_WhenAModalOpensInIt`
+- [x] A press on a modal leaves a dialog opened from it above it. `DialogWindowsTests.Modal_ShouldStayBelowALaterWindow_WhenPressedOnThePageLayer`
+- [x] Focus moving into a dialog nested in one behind another brings them both forward. `DialogWindowsTests.Window_ShouldComeToTheFront_WhenFocusMovesIntoAWindowNestedInIt`
+- [x] On the page layer, a modal or non-modal dialog opened later stays above one that came to the front, and a modal restored after another dialog opened draws above that dialog. `DialogWindowsTests.Modal_ShouldOpenAboveARaisedWindow_WhenOnThePageLayer`, `DialogWindowsTests.Window_ShouldOpenAboveARaisedWindow_WhenOnThePageLayer`, `DialogWindowsTests.Modal_ShouldDrawAboveALaterWindow_WhenRestoredOnThePageLayer`
 - [x] Dragging the header moves the dialog, and it stays inside the window. `DialogMoveAndResizeTests.Dialog_ShouldStayInsideTheWindow_WhenDraggedPastItsEdges`
 - [x] Dragging the grip resizes it from its bottom-end corner. `DialogMoveAndResizeTests.Dialog_ShouldGrowFromItsBottomEndCorner_WhenTheGripIsDragged`
 - [x] Minimize collapses it to its header in the corner. `DialogTests.Dialog_ShouldCollapseToItsHeaderInTheCornerAndKeepFocus_WhenMinimized`
