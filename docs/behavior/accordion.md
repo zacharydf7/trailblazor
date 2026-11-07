@@ -33,6 +33,7 @@ Familiar apps: FAQ pages, settings pages with collapsible sections, the sections
 - [x] Focus stays on the header when its item opens or closes. `TbAccordionItem.razor`
 - [x] Tab reaches every enabled header, and an item's actions after its header. `AccordionTests.AccordionItem_ShouldReachItsActionsAfterItsHeaderButLeaveThemToTab_WhenItHasHeaderActions`
 - [x] A closed panel's content can't be reached. `TbAccordionTests.Render_ShouldLinkEachHeaderButtonToItsHiddenRegion_WhenCollapsed`
+- [x] An open panel inside hidden content, such as a loading [skeleton](skeleton.md) or a collapsed [splitter](splitter.md) pane, stays hidden with it. `HiddenContentTests.HiddenContent_ShouldHideAnOpenAccordionsPanel_WhenLoadingOrInACollapsedPane`
 - [x] A focused header shows a focus ring. `trailblazor.css`
 - [x] When code closes an item while focus is in its panel, focus moves to the item's header, unless the header is disabled and can't take it. `AccordionTests.AccordionItem_ShouldMoveFocusToItsHeader_WhenCodeClosesItWithFocusInItsPanel`, `AccordionTests.AccordionItem_ShouldMoveFocusToItsHeader_WhenCodeClosesAnItemOnItsOwn`, `AccordionTests.AccordionItem_ShouldLeaveFocusAlone_WhenCodeClosesItWithFocusOutsideItsPanel`
 

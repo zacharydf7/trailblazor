@@ -9,12 +9,12 @@
 }
 else
 {
-    @* The content renders either way, so its components keep their state when loading ends. *@
+    @* The content always renders, so its components keep their state; inert keeps it out of reach while it loads. *@
     <div @attributes="AdditionalAttributes" aria-busy="@(Loading ? "true" : null)"
          style="@(Loading ? SizeStyle : Style)"
          class="@ClassNames.Join("tb-skeleton-region", Loading ? "tb-skeleton" : null,
                     Loading ? "tb-skeleton--content" : null, Loading ? AnimationClass : null, Class)">
-        <div data-part="content" class="tb-skeleton__content">@ChildContent</div>
+        <div data-part="content" class="tb-skeleton__content" inert="@Loading">@ChildContent</div>
     </div>
 }
 

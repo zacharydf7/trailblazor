@@ -4318,9 +4318,10 @@
             visibility 0s linear var(--tb-motion-duration-normal);
     }
 
+    /* An open panel takes its parent's visibility, so one inside hidden content stays hidden with it. */
     .tb-accordion__item--expanded > .tb-accordion__panel {
         grid-template-rows: 1fr;
-        visibility: visible;
+        visibility: inherit;
         transition-delay: 0s;
     }
 

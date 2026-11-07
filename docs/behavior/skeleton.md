@@ -6,12 +6,12 @@ Familiar apps: the gray shapes on a video site's or a social app's feed while it
 
 ## Keyboard
 
-- [ ] Tab can't reach controls in wrapped content while it loads, even in an open accordion inside it. #333
+- [x] Tab can't reach controls in wrapped content while it loads, even in an open accordion inside it. `HiddenContentTests.HiddenContent_ShouldBeSkippedByTab_WhenLoadingOrInACollapsedPane`, `TbSkeletonTests.Render_ShouldCoverTheContentAndMarkItBusy_WhenWrappingContentThatIsLoading`
 - [x] Tab reaches them once loading ends. `SkeletonTests.Skeleton_ShouldHideAndCoverItsContentUntilLoaded_WhenWrappingIt`
 
 ## Pointer
 
-- [ ] Wrapped content takes no clicks while it loads, even in an open accordion inside it. #333
+- [x] Wrapped content takes no clicks while it loads, and an open accordion inside it stays hidden. `HiddenContentTests.HiddenContent_ShouldTakeNoClicks_WhenItIsLoading`, `HiddenContentTests.HiddenContent_ShouldHideAnOpenAccordionsPanel_WhenLoadingOrInACollapsedPane`
 
 ## Touch
 

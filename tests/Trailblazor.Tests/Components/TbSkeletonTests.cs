@@ -50,6 +50,7 @@ public class TbSkeletonTests : BunitContext
         Assert.Equal("true", region.GetAttribute("aria-busy"));
         Assert.Contains("tb-skeleton--content", region.ClassList);
         Assert.Equal("Ada Lovelace", region.QuerySelector("[data-part=content] p")!.TextContent);
+        Assert.True(region.QuerySelector("[data-part=content]")!.HasAttribute("inert"));
     }
 
     [Fact]
@@ -64,6 +65,7 @@ public class TbSkeletonTests : BunitContext
         var region = cut.Find(".card");
         Assert.Null(region.GetAttribute("aria-busy"));
         Assert.Equal(["tb-skeleton-region", "card"], region.ClassList);
+        Assert.False(region.QuerySelector("[data-part=content]")!.HasAttribute("inert"));
         Assert.Same(text, cut.FindComponent<TbText>().Instance);
     }
 

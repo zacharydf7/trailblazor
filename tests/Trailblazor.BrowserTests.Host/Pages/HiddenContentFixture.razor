@@ -1,0 +1,27 @@
+@page "/hidden-content"
+
+@* Loading content and a collapsed pane, each holding an open accordion and a control whose own style makes it visible. *@
+<TbButton>Before</TbButton>
+<TbSkeleton>
+    <TbAccordion>
+        <TbAccordionItem Title="Loading section" Expanded>
+            <TbButton>Inside loading</TbButton>
+        </TbAccordionItem>
+    </TbAccordion>
+    <button type="button" style="visibility: visible" onclick="this.dataset.clicked = ''">Shown while loading</button>
+</TbSkeleton>
+<div style="block-size: 10rem">
+    <TbSplitter>
+        <TbSplitterPane Label="Side" Collapsible Collapsed>
+            <TbAccordion>
+                <TbAccordionItem Title="Side section" Expanded>
+                    <TbButton>Inside the side</TbButton>
+                </TbAccordionItem>
+            </TbAccordion>
+            <button type="button" style="visibility: visible">Shown while collapsed</button>
+        </TbSplitterPane>
+        <TbSplitterPane Label="Main">
+            <TbButton>After</TbButton>
+        </TbSplitterPane>
+    </TbSplitter>
+</div>

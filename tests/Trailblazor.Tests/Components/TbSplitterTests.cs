@@ -32,6 +32,7 @@ public class TbSplitterTests : BunitContext
 
         var panes = cut.FindAll("[data-part=pane]");
         Assert.True(panes[0].HasAttribute("data-collapsed"));
+        Assert.Equal([true, false, false], panes.Select(pane => pane.HasAttribute("inert")));
         Assert.Contains("flex-grow: 0;", panes[0].GetAttribute("style"));
         Assert.Equal("0", cut.FindAll("[role=separator]")[0].GetAttribute("aria-valuenow"));
         Assert.Equal("75", cut.FindAll("[role=separator]")[1].GetAttribute("aria-valuenow"));

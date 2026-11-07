@@ -41,8 +41,9 @@
         </TbMenu>
     </div>
 }
+@* A collapsed pane is inert, so nothing in it can be reached, even what its own styles make visible. *@
 <div @attributes="AdditionalAttributes" id="@Id" data-part="pane" data-min="@Round(Splitter.InOpenSpace(MinSize))"
-     data-max="@Round(Splitter.InOpenSpace(MaxSize))"
+     data-max="@Round(Splitter.InOpenSpace(MaxSize))" inert="@IsCollapsed"
      data-collapsed="@(IsCollapsed ? "" : null)" style="@($"flex-grow: {Round(Splitter.Share(this))}; {Style}")"
      class="@ClassNames.Join("tb-splitter__pane", IsCollapsed ? "tb-splitter__pane--collapsed" : null, Class)">
     @ChildContent
