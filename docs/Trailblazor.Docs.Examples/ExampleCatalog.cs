@@ -4263,7 +4263,8 @@ public static class ExampleCatalog
                     typeof(TabsKeepAliveExample)),
                 new("centered", "Centered", "`Centered` centers a tab list in its row.", typeof(TabsCenteredExample)),
                 new("overflow", "Many tabs", "A tab list too long for its row scrolls sideways, and moving focus to a "
-                    + "tab brings it into view.", typeof(TabsOverflowExample)),
+                    + "tab brings it into view. The selected tab scrolls fully into view, leaving the page where it is.",
+                    typeof(TabsOverflowExample)),
                 new("forms", "A form across tabs", "`RenderAllPanels` renders every panel from the start, hidden, so a "
                     + "form across the tabs validates and saves every field. A hidden panel's fields can't take focus, "
                     + "so name the tab that needs attention with `Text` and a `HeaderClass`; a class alone changes "

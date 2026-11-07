@@ -1,0 +1,119 @@
+@page "/tabs-overflow"
+
+@* Tab rows too wide for their boxes, below the fold: one starts on a tab out of sight, one is right-to-left, one has
+   most of its tabs arrive late, one is hidden in another's panel until it's chosen, one is centered, two have a tab
+   wider than they are, one can have nothing selected, and one gains a selected tab at its start. *@
+<TbButton OnClick="() => _top = 0">Select the first</TbButton>
+<TbButton OnClick="() => _top = 11">Select the last</TbButton>
+<TbButton OnClick="() => _flipped = 11">Select the last flipped</TbButton>
+<TbButton OnClick="() => _late = Names">Load the tabs</TbButton>
+<TbButton OnClick="() => _extra = true">Add a tab</TbButton>
+<TbButton OnClick="() => _centered = 0">Select the first centered</TbButton>
+<TbButton OnClick="() => _long = 1">Select the long tab</TbButton>
+<TbButton OnClick="() => _longFlipped = 1">Select the long flipped tab</TbButton>
+<TbButton OnClick="() => _keyed = null">Select no keyed tab</TbButton>
+<TbButton OnClick="() => _keyed = KeyedLast">Select the last keyed tab</TbButton>
+<TbButton OnClick="SelectANewFirstTab">Add and select a first tab</TbButton>
+<div style="block-size: 150vh"></div>
+<div style="inline-size: 16rem">
+    <TbTabs AriaLabel="Wide" @bind-ActiveIndex="_top">
+        @foreach (var tab in Names)
+        {
+            <TbTab Text="@($"Wide {tab}")">Panel @tab</TbTab>
+        }
+        @if (_extra)
+        {
+            <TbTab Text="Wide extra">Panel extra</TbTab>
+        }
+    </TbTabs>
+</div>
+<div dir="rtl" style="inline-size: 16rem">
+    <TbTabs AriaLabel="Flipped" @bind-ActiveIndex="_flipped">
+        @foreach (var tab in Names)
+        {
+            <TbTab Text="@($"Flipped {tab}")">Panel @tab</TbTab>
+        }
+    </TbTabs>
+</div>
+<div style="inline-size: 16rem">
+    <TbTabs AriaLabel="Late" ActiveIndex="8">
+        @foreach (var tab in _late)
+        {
+            <TbTab Text="@($"Late {tab}")">Panel @tab</TbTab>
+        }
+    </TbTabs>
+</div>
+<div style="inline-size: 16rem">
+    <TbTabs AriaLabel="Outer" RenderAllPanels>
+        <TbTab Text="Outer one">Outer panel</TbTab>
+        <TbTab Text="Outer two">
+            <TbTabs AriaLabel="Inner" ActiveIndex="8">
+                @foreach (var tab in Names)
+                {
+                    <TbTab Text="@($"Inner {tab}")">Panel @tab</TbTab>
+                }
+            </TbTabs>
+        </TbTab>
+    </TbTabs>
+</div>
+<div style="inline-size: 16rem">
+    <TbTabs AriaLabel="Centered" Centered @bind-ActiveIndex="_centered">
+        @foreach (var tab in Names)
+        {
+            <TbTab Text="@($"Centered {tab}")">Panel @tab</TbTab>
+        }
+    </TbTabs>
+</div>
+<div style="inline-size: 8rem">
+    <TbTabs AriaLabel="Long" @bind-ActiveIndex="_long">
+        <TbTab Text="Short">Panel short</TbTab>
+        <TbTab Text="A tab whose label is far wider than the row it sits in">Panel long</TbTab>
+    </TbTabs>
+</div>
+<div dir="rtl" style="inline-size: 8rem">
+    <TbTabs AriaLabel="Long flipped" @bind-ActiveIndex="_longFlipped">
+        <TbTab Text="Brief">Panel brief</TbTab>
+        <TbTab Text="A flipped tab whose label is far wider than its row">Panel flipped long</TbTab>
+    </TbTabs>
+</div>
+<div style="inline-size: 16rem">
+    <TbTabs AriaLabel="Keyed" @bind-ActiveKey="_keyed">
+        @foreach (var tab in Names)
+        {
+            <TbTab Key="@($"{tab}")" Text="@($"Keyed {tab}")">Panel @tab</TbTab>
+        }
+    </TbTabs>
+</div>
+<div style="inline-size: 16rem">
+    <TbTabs AriaLabel="Growing" @bind-ActiveKey="_growing">
+        @if (_growingFirst)
+        {
+            <TbTab Key="new" Text="Growing new">Panel new</TbTab>
+        }
+        @foreach (var tab in Names)
+        {
+            <TbTab Key="@($"{tab}")" Text="@($"Growing {tab}")">Panel @tab</TbTab>
+        }
+    </TbTabs>
+</div>
+
+@code {
+    private const string KeyedLast = "12";
+    private static readonly int[] Names = [.. Enumerable.Range(1, 12)];
+    private int[] _late = [1, 2];
+    private int _top = 8;
+    private int _flipped;
+    private int _centered = 11;
+    private int _long;
+    private int _longFlipped;
+    private bool _extra;
+    private string? _keyed = KeyedLast;
+    private string? _growing = "1";
+    private bool _growingFirst;
+
+    private void SelectANewFirstTab()
+    {
+        _growingFirst = true;
+        _growing = "new";
+    }
+}

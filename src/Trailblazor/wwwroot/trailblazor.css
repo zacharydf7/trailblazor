@@ -4087,8 +4087,9 @@
         border-block-end: 1px solid var(--tb-border-subtle);
     }
 
+    /* Safe, or a row too wide for its space would overflow past its start, where it can't be scrolled to. */
     .tb-tabs__list--centered {
-        justify-content: center;
+        justify-content: safe center;
     }
 
     .tb-tabs--vertical {

@@ -35,6 +35,39 @@ export function attachTabs(list, order) {
         }
     };
 
+    // Scrolling only the list leaves the page where it is. A tab is revealed only as it becomes selected or moves, so a
+    // row the user has since scrolled stays put. A hidden row can't be measured, so it waits until it's shown.
+    let revealed = null;
+    const revealSelected = () => {
+        const tab = list.querySelector(':scope > [aria-selected="true"]');
+        if (!tab) {
+            revealed = null;
+            return;
+        }
+
+        const place = `${tab.id} ${[...list.children].indexOf(tab)}`;
+        if (list.clientWidth === 0 || place === revealed) {
+            return;
+        }
+
+        revealed = place;
+        const own = tab.getBoundingClientRect();
+        const row = list.getBoundingClientRect();
+        const start = own.left - row.left;
+        const end = own.right - row.right;
+        // A tab wider than the row shows the start of its label.
+        const wider = own.width > row.width;
+        const left = wider ? (getComputedStyle(list).direction === 'rtl' ? end : start)
+            : start < 0 ? start : Math.max(end, 0);
+        list.scrollBy({ left, behavior: 'instant' });
+    };
+    // Tabs arriving already selected change no attribute, and may not change the row's size.
+    const selection = new MutationObserver(revealSelected);
+    selection.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
+    // This covers what no selection change does: the first render and a hidden row being shown.
+    const sizes = new ResizeObserver(revealSelected);
+    sizes.observe(list);
+
     let reported = null;
     const reportOrder = () => {
         const headers = [...list.querySelectorAll(':scope > [role="tab"]')].map(tab => tab.id);
@@ -69,6 +102,8 @@ export function attachTabs(list, order) {
         reportsOrder: () => true,
         dispose() {
             observer.disconnect();
+            selection.disconnect();
+            sizes.disconnect();
             list.removeEventListener('keydown', onKeyDown);
         },
     };
