@@ -2738,6 +2738,7 @@ public static class ExampleCatalog
                 },
                 new(["Down", "Up"], "Moves to the next or previous option.") { When = "While open" },
                 new(["Home", "End"], "Moves to the first or last option.") { When = "While open" },
+                new(["Page Up", "Page Down"], "Moves up or down by as many options as the list shows.") { When = "While open" },
                 new(["A letter"], "Moves to an option that starts with what was typed. Pressed again quickly, it moves "
                     + "to the next one that starts with that letter. A Space typed mid-search adds to the search "
                     + "rather than choosing.")

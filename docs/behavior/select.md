@@ -9,7 +9,7 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 - [x] Down, Up, Enter and Space open a closed list on the chosen option, or the first. `select.js`
 - [x] Down and Up move through the open list and skip disabled options. `SelectTests.Select_ShouldMoveSkippingDisabledOptionsAndChooseWithEnter_WhenUsingTheKeyboard`
 - [x] Home and End open the list if needed and go to the first or last option. `SelectTests.Select_ShouldJumpToTheEndsAndChooseWithAltUp_WhenHomeOrEndIsPressed`
-- [ ] Page Up and Page Down move through the open list by a page, instead of scrolling the page behind it. #305
+- [x] Page Up and Page Down move through the open list by as many options as it shows, stopping at its ends, instead of scrolling the page behind it. They also work from the filter. `SelectLongTests.Select_ShouldMoveByTheRowsShownAndLeaveThePageAlone_WhenPageKeysArePressed`, `SelectLongTests.Select_ShouldStopAtTheEndsOfTheList_WhenPageKeysReachThem`, `SelectLongTests.Select_ShouldMoveByTheRowsShownAndLeaveThePageAlone_WhenPageKeysArePressedInTheFilter`, `SelectLongTests.Select_ShouldMoveByAboutAPage_WhenOptionsArriveAfterTheListOpensWithNoneActive`
 - [x] Typing letters opens the list on the option that starts with them. `SelectTests.Select_ShouldOpenOnTheMatchingOption_WhenALetterIsTypedWhileClosed`
 - [x] Pressing the same letter quickly cycles through the options that start with it, and "aa" still finds an option that starts with that letter doubled, unless the first press landed on it. Typing on, as in "aar", always finds it. `TypeAheadTests.Select_ShouldStepThroughTheOptionsStartingWithALetter_WhenItIsPressedQuickly`, `TypeAheadTests.Select_ShouldFindTheOptionWithADoubledLetter_WhenOneStartsWithIt`
 - [x] A Space typed mid-word is part of the search and doesn't choose. `SelectTests.Select_ShouldTreatSpaceAsPartOfTheText_WhenTypedMidWord`
@@ -47,7 +47,8 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 - [x] Escape in the filter closes the list and returns focus to the combobox. `SelectExtrasTests.Filter_ShouldHideEmptyGroupsSayNoMatchesAndClearOnClose_WhenNothingMatches`
 - [x] A disabled select is out of the tab order and offers no clear button. `TbSelectTests.Render_ShouldHideTheClearButtonAndLeaveTheComboboxOutOfTheTabOrder_WhenDisabled`
 - [x] A read-only select keeps its value and doesn't open. `TbSelectTests.Click_ShouldKeepTheValueAndHideClear_WhenReadOnly`
-- [ ] Pressing a disabled option or a group heading keeps focus on the combobox or filter, so the keys keep working. #305
+- [x] Pressing a disabled option or a group heading keeps focus on the combobox or filter, so the keys keep working. `SelectLongTests.Select_ShouldKeepFocusAndItsKeys_WhenADisabledOptionIsPressed`, `SelectLongTests.Select_ShouldKeepFocusInTheFilter_WhenAGroupHeadingIsPressed`
+- [x] A press in the filter's text box still moves its caret. `SelectLongTests.Filter_ShouldMoveItsCaret_WhenItsTextBoxIsPressed`
 
 ## Not applicable
 

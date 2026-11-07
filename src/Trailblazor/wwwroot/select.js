@@ -105,6 +105,7 @@ export function createSelect(combobox, listbox, toggle) {
         const index = options.indexOf(option);
         return options[Math.min(Math.max(index + step, 0), options.length - 1)];
     };
+    const rowsShown = () => Math.max(1, Math.floor(listbox.clientHeight / (enabled()[0]?.offsetHeight || 1)));
     const typeahead = key => {
         // Typing finds an option by its name, so it passes over "Select all".
         const match = typing.find(enabled().filter(option => option.dataset.part !== 'select-all'),
@@ -206,6 +207,12 @@ export function createSelect(combobox, listbox, toggle) {
             case 'End':
                 setActive(enabled().at(-1));
                 break;
+            case 'PageDown':
+                setActive(move(active, rowsShown()));
+                break;
+            case 'PageUp':
+                setActive(move(active, -rowsShown()));
+                break;
             case ' ':
                 if (typing.typing()) {
                     typeahead(key);
@@ -244,7 +251,7 @@ export function createSelect(combobox, listbox, toggle) {
     };
     // The list keys work as on the combobox; Home, End and the other editing keys stay with the text box.
     const onFilterKeyDown = event => {
-        if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
+        if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
             onKeyDown(event);
         }
     };
@@ -276,6 +283,12 @@ export function createSelect(combobox, listbox, toggle) {
 
         wasOpen = false;
     };
+    // A press on a disabled option or a group heading would otherwise drop focus to the page, and the keys with it.
+    const onPopupPointerDown = event => {
+        if (event.target !== filter) {
+            event.preventDefault();
+        }
+    };
     const onListboxClick = event => {
         const option = event.target.closest('[role="option"]');
         if (option && option.getAttribute('aria-disabled') !== 'true') {
@@ -296,6 +309,7 @@ export function createSelect(combobox, listbox, toggle) {
 
     popup.addEventListener('beforetoggle', onBeforeToggle);
     popup.addEventListener('toggle', onToggle);
+    popup.addEventListener('pointerdown', onPopupPointerDown);
     filter?.addEventListener('input', onFilterInput);
     filter?.addEventListener('keydown', onFilterKeyDown);
     listbox.addEventListener('click', onListboxClick);
@@ -323,6 +337,7 @@ export function createSelect(combobox, listbox, toggle) {
             unnamed.disconnect();
             popup.removeEventListener('beforetoggle', onBeforeToggle);
             popup.removeEventListener('toggle', onToggle);
+            popup.removeEventListener('pointerdown', onPopupPointerDown);
             filter?.removeEventListener('input', onFilterInput);
             filter?.removeEventListener('keydown', onFilterKeyDown);
             listbox.removeEventListener('click', onListboxClick);

@@ -1,0 +1,36 @@
+@page "/select-long"
+
+@* Lists longer than they show, on a page tall enough to scroll if the select lets a page key through. *@
+<TbSelect TValue="string" Label="Plain">
+    <TbOptionGroup Label="Plain group">
+        <TbOption Value="@("Plain disabled")" Disabled>Plain disabled</TbOption>
+        @foreach (var number in Numbers)
+        {
+            <TbOption Value="@($"Plain {number}")">Plain @number</TbOption>
+        }
+    </TbOptionGroup>
+</TbSelect>
+<TbSelect TValue="string" Label="Filtered" Filterable>
+    <TbOptionGroup Label="Filtered group">
+        @foreach (var number in Numbers)
+        {
+            <TbOption Value="@($"Filtered {number}")">Filtered @number</TbOption>
+        }
+    </TbOptionGroup>
+</TbSelect>
+<TbSelect TValue="string" Label="Late">
+    @if (_loaded)
+    {
+        @foreach (var number in Numbers)
+        {
+            <TbOption Value="@($"Late {number}")">Late @number</TbOption>
+        }
+    }
+</TbSelect>
+<TbButton OnClick="() => _loaded = true">Load</TbButton>
+<div style="block-size: 300vh"></div>
+
+@code {
+    private static readonly IEnumerable<int> Numbers = Enumerable.Range(1, 40);
+    private bool _loaded;
+}
