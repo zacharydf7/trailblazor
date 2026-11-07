@@ -4,14 +4,14 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Trailblazor;
 
-// One visible toast and its timer, which pauses while the pointer or focus is on it. C#, so it can stay internal.
+// One visible toast and its timer, which pauses while focus is on it or while the toaster pauses every toast. C#, so it
+// can stay internal.
 internal sealed class ToastFrame : ComponentBase, IDisposable
 {
     private ITimer? _timer;
     private long _startedAt;
     private TimeSpan? _remaining;
     private int _version = -1;
-    private bool _hovered;
     private bool _focused;
 
     [Parameter, EditorRequired]
@@ -20,6 +20,10 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
     // A closed toast stays for a moment while it fades, out of reach of the pointer and screen readers.
     [Parameter]
     public bool Leaving { get; set; }
+
+    // The pointer is on the toaster or the page is hidden.
+    [Parameter]
+    public bool Paused { get; set; }
 
     [Inject]
     private ToastService Toasts { get; set; } = default!;
@@ -32,17 +36,16 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
 
     protected override void OnParametersSet()
     {
-        if (Toast.Version == _version)
+        // New content gets the full time again.
+        if (Toast.Version != _version)
         {
-            return;
+            _version = Toast.Version;
+            _timer?.Dispose();
+            _timer = null;
+            _remaining = Toast.Lifetime;
         }
 
-        // New content gets the full time again.
-        _version = Toast.Version;
-        _timer?.Dispose();
-        _timer = null;
-        _remaining = Toast.Lifetime;
-        Resume();
+        Hold();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -52,10 +55,6 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
         builder.AddAttribute(2, "class", ClassNames.Join("tb-toast", ClassNames.Modifier("tb-toast", Toast.Tone)));
         builder.AddAttribute(3, "data-leaving", Leaving ? "" : null);
         builder.AddAttribute(4, "inert", Leaving);
-        builder.AddAttribute(5, "onmouseenter",
-            EventCallback.Factory.Create<MouseEventArgs>(this, () => Hold(hovered: true)));
-        builder.AddAttribute(6, "onmouseleave",
-            EventCallback.Factory.Create<MouseEventArgs>(this, () => Hold(hovered: false)));
         builder.AddAttribute(7, "onfocusin",
             EventCallback.Factory.Create<FocusEventArgs>(this, () => Hold(focused: true)));
         builder.AddAttribute(8, "onfocusout",
@@ -121,11 +120,10 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
     // The tone's icon unless the toast names its own or none.
     private Icon? Icon => !Toast.Options.ShowIcon ? null : Toast.Options.Icon ?? BuiltInIcons.ForTone(Toast.Tone);
 
-    private void Hold(bool? hovered = null, bool? focused = null)
+    private void Hold(bool? focused = null)
     {
-        _hovered = hovered ?? _hovered;
         _focused = focused ?? _focused;
-        if (_hovered || _focused)
+        if (_focused || Paused)
         {
             Pause();
         }
@@ -150,8 +148,7 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
     private void Resume()
     {
         // Static rendering has no circuit to close the toast on later.
-        if (_timer is not null || _remaining is not { } remaining || _hovered || _focused
-            || !RendererInfo.IsInteractive)
+        if (_timer is not null || _remaining is not { } remaining || !RendererInfo.IsInteractive)
         {
             return;
         }

@@ -10,6 +10,7 @@
     <TbButton OnClick='() => Toasts.Show("Quick note", options: new() { Duration = TimeSpan.FromSeconds(3) })'>
         Quick
     </TbButton>
+    <TbButton OnClick="ShowTwoQuick">Show a pair</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<ToastingDialog, bool>("Toasting")'>Dialog</TbButton>
     <TbButton OnClick="Restore">Restore</TbButton>
 </TbStack>
@@ -22,6 +23,12 @@
     {
         _ = Dialogs.ShowAsync<ToastingDialog, bool>("Toasting");
         Toasts.Show("Draft restored");
+    }
+
+    private void ShowTwoQuick()
+    {
+        Toasts.Show("Quick one", options: new() { Duration = TimeSpan.FromSeconds(3) });
+        Toasts.Show("Quick two", options: new() { Duration = TimeSpan.FromSeconds(3) });
     }
 
     private void Delete() => Toasts.Show("Deleted",

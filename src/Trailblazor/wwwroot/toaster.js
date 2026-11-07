@@ -1,5 +1,5 @@
 // Toasts never take focus themselves, so F8 brings focus to the newest one and Escape sends it back.
-export function attachToaster(toaster) {
+export function attachToaster(toaster, events) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!toaster) {
         return null;
@@ -33,8 +33,9 @@ export function attachToaster(toaster) {
             }
         }
     };
+    // Only keyboard focus is handed on when its toast closes; a click on Dismiss leaves focus alone.
     const onFocusIn = event => {
-        focused = event.target;
+        focused = event.target.matches(':focus-visible') ? event.target : null;
     };
     const onFocusOut = event => {
         if (event.relatedTarget && !toaster.contains(event.relatedTarget)) {
@@ -42,9 +43,33 @@ export function attachToaster(toaster) {
         }
     };
 
+    // The pointer anywhere on the stack, or the page being hidden, pauses every toast, so none moves from under the
+    // pointer and none runs out unseen. A lifted finger fires pointerleave, while a tap's emulated mouse events send no
+    // mouseleave until the next tap elsewhere.
+    let pointerOn = false;
+    let paused = false;
+    const updatePause = () => {
+        if ((pointerOn || document.hidden) !== paused) {
+            paused = !paused;
+            events.invokeMethodAsync('OnPause', paused);
+        }
+    };
+    const onPointerEnter = () => {
+        pointerOn = true;
+        updatePause();
+    };
+    const onPointerLeave = () => {
+        pointerOn = false;
+        updatePause();
+    };
+
     document.addEventListener('keydown', onKeyDown);
     toaster.addEventListener('focusin', onFocusIn);
     toaster.addEventListener('focusout', onFocusOut);
+    toaster.addEventListener('pointerenter', onPointerEnter);
+    toaster.addEventListener('pointerleave', onPointerLeave);
+    document.addEventListener('visibilitychange', updatePause);
+    updatePause();
 
     return {
         // Runs after every render: shows or hides the toaster and keeps focus when the toast holding it closes.
@@ -80,6 +105,9 @@ export function attachToaster(toaster) {
             document.removeEventListener('keydown', onKeyDown);
             toaster.removeEventListener('focusin', onFocusIn);
             toaster.removeEventListener('focusout', onFocusOut);
+            toaster.removeEventListener('pointerenter', onPointerEnter);
+            toaster.removeEventListener('pointerleave', onPointerLeave);
+            document.removeEventListener('visibilitychange', updatePause);
             if (toaster.matches(':popover-open')) {
                 toaster.hidePopover();
             }

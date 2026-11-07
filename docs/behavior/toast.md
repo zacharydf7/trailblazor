@@ -18,26 +18,26 @@ Familiar apps: Gmail's Undo bar, Android snackbars, Windows and macOS notificati
 - [x] Dismiss closes the toast, which fades out of reach. `ToastTests.Toast_ShouldFadeOutOfReachBeforeItGoes_WhenClosed`
 - [x] An action runs and closes the toast. `ToastServiceTests.Action_ShouldRunAndCloseTheToast_WhenClicked`
 - [x] Resting on a toast pauses its timer, and leaving resumes it. `ToastTests.Toast_ShouldStayOpen_WhenThePointerRestsOnIt`
-- [ ] Resting on a toast pauses the others too, so a neighbor timing out doesn't move it from under the pointer. #331
+- [x] Resting on a toast pauses the others too, so a neighbor timing out doesn't move it from under the pointer. `ToastTests.Toasts_ShouldAllStayOpen_WhenThePointerRestsOnOne`, `ToastServiceTests.Toast_ShouldWaitToStartItsTime_WhenShownWhileTheToasterIsPaused`, `ToastServiceTests.Toast_ShouldStayPaused_WhenThePointerCrossesFromOneToastToAnother`
 - [x] A toast shown from a modal can be clicked above it. `ToastTests.Toast_ShouldBeUsableAboveAModalDialog_WhenShownFromIt`
 - [x] The gaps between toasts don't block the page. `trailblazor.css`
 - [x] A danger toast stays until dismissed. `ToastServiceTests.Toast_ShouldStayUntilDismissedAndBeAnnouncedAssertively_WhenGivenAnError`
 - [x] A toast with an action stays until dismissed, so the action can't time out unseen. `ToastServiceTests.Toast_ShouldStayOpenAndSayItsActionAndKey_WhenGivenAnAction`
 - [x] Toasts past the maximum wait their turn. `ToastServiceTests.Show_ShouldQueueToastsBeyondTheMaximum_WhenMoreAreOpen`
 - [x] A toast with the same key updates in place and gets its full time again. `ToastServiceTests.Show_ShouldUpdateTheOpenToastAndRestartItsTimer_WhenGivenTheKeyOfOne`
-- [ ] Dismissing a toast with the mouse leaves the other toasts' timers running. #331
+- [x] Dismissing a toast with the mouse leaves focus alone, so the other toasts' timers keep running. `ToastTests.Toasts_ShouldKeepTiming_WhenAnotherIsDismissedWithTheMouse`
 
 ## Touch
 
 - [x] A tap on Dismiss or an action works as a click. `ToastFrame.cs`
 - [ ] A swipe dismisses a toast. #150
-- [ ] A tap on a toast pauses its timer until the next tap elsewhere: it listens for mouse events, which a browser sends after a tap. UNCONFIRMED
+- [x] A tap on a toast doesn't hold the timers, since a finger leaves the toast as it lifts. `ToastTests.Toast_ShouldStillCloseByItself_WhenTapped`
 
 ## Focus
 
 - [x] A toast never takes focus by appearing. `ToastTests.Toast_ShouldAppearAnnouncedWithoutTakingFocusAndCloseByItself_WhenShown`
-- [x] Focus in a toast pauses its timer. `ToastServiceTests.Toast_ShouldKeepItsRemainingTime_WhenThePointerOrFocusRestsOnIt`
-- [ ] A toast's time doesn't run out while its tab is hidden. #331
+- [x] Focus in a toast pauses its timer. `ToastServiceTests.Toast_ShouldKeepItsRemainingTime_WhenTheToasterPausesOrFocusRestsOnIt`
+- [x] A toast's time doesn't run out while its tab is hidden. `ToastTests.Toast_ShouldStayOpen_WhileThePageIsHidden`
 
 ## Not applicable
 

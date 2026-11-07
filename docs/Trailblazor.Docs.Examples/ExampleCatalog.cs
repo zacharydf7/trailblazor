@@ -5315,8 +5315,9 @@ public static class ExampleCatalog
                     + "returns, says why it closed, and `DismissAll` closes every toast.", typeof(ToastContentExample)),
                 new("duration", "How long it stays", "`Duration` sets how long a toast stays, and `StayOpen` keeps it "
                     + "until it's dismissed. Danger toasts and toasts with an `Action` stay until they are dismissed "
-                    + "unless given a `Duration`, so the action can't time out unseen. A toast's timer pauses while "
-                    + "the pointer is over it or it has focus.", typeof(ToastDurationExample)),
+                    + "unless given a `Duration`, so the action can't time out unseen. Every toast's timer pauses while "
+                    + "the pointer is over any toast or the page is hidden, and a toast's timer also pauses while it "
+                    + "has focus.", typeof(ToastDurationExample)),
                 new("key", "Updating a toast", "`Key` identifies a toast's message. Showing a toast with the key of "
                     + "one that's still open updates that toast instead of adding another.", typeof(ToastKeyExample)),
                 new("icon", "Icon", "`Icon` replaces a toast's tone icon, and `ShowIcon = false` removes it. The "

@@ -13,11 +13,17 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
     // As long as the CSS fade, --tb-motion-duration-normal; reduced motion makes the fade instant, not this wait.
     private static readonly TimeSpan LeaveTime = TimeSpan.FromMilliseconds(200);
 
+    // Crossing the gap between two toasts leaves the toaster for a moment, which mustn't start the timers again.
+    private static readonly TimeSpan ResumeDelay = TimeSpan.FromMilliseconds(150);
+
     // What the toaster shows, in order: the open toasts and the closed ones still fading out.
     private readonly List<ToastReference> _shown = [];
     private readonly Dictionary<ToastReference, ITimer> _leaving = [];
     private ElementReference _element;
     private IJSObjectReference? _handle;
+    private DotNetObjectReference<ToasterEvents>? _events;
+    private bool _paused;
+    private ITimer? _resuming;
     private bool _disposed;
 
     // The modal dialog this host sits in, or null for the one in TbRoot.
@@ -69,6 +75,7 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
             builder.SetKey(toast);
             builder.AddComponentParameter(10, nameof(ToastFrame.Toast), toast);
             builder.AddComponentParameter(11, nameof(ToastFrame.Leaving), _leaving.ContainsKey(toast));
+            builder.AddComponentParameter(12, nameof(ToastFrame.Paused), _paused);
             builder.CloseComponent();
         }
 
@@ -88,7 +95,8 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
                     return;
                 }
 
-                var handle = await module.InvokeAsync<IJSObjectReference?>("attachToaster", _element);
+                _events = DotNetObjectReference.Create(new ToasterEvents(OnPauseAsync));
+                var handle = await module.InvokeAsync<IJSObjectReference?>("attachToaster", _element, _events);
                 if (handle is null)
                 {
                     return;
@@ -113,6 +121,30 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
             // The circuit is gone, and the toaster went with it.
         }
     }
+
+    private Task OnPauseAsync(bool paused) => InvokeAsync(() =>
+    {
+        _resuming?.Dispose();
+        _resuming = null;
+        if (paused)
+        {
+            _paused = true;
+            StateHasChanged();
+            return;
+        }
+
+        ITimer? resuming = null;
+        resuming = _resuming = Time.CreateTimer(_ => InvokeAsync(() =>
+        {
+            // A pause that arrived while this was queued canceled it.
+            if (_resuming == resuming)
+            {
+                _resuming = null;
+                _paused = false;
+                StateHasChanged();
+            }
+        }), null, ResumeDelay, Timeout.InfiniteTimeSpan);
+    });
 
     private void OnChanged() => InvokeAsync(() =>
     {
@@ -153,6 +185,7 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
+        _resuming?.Dispose();
         foreach (var timer in _leaving.Values)
         {
             timer.Dispose();
@@ -165,5 +198,7 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
         {
             await _handle.DisposeHandleAsync();
         }
+
+        _events?.Dispose();
     }
 }

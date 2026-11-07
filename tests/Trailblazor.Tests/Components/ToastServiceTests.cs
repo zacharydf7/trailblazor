@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests.Components;
 
@@ -87,16 +88,20 @@ public class ToastServiceTests : BunitContext
     }
 
     [Fact]
-    public void Toast_ShouldKeepItsRemainingTime_WhenThePointerOrFocusRestsOnIt()
+    public async Task Toast_ShouldKeepItsRemainingTime_WhenTheToasterPausesOrFocusRestsOnIt()
     {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/toaster.js");
+        module.SetupModule("attachToaster", _ => true).SetupVoid("sync").SetVoidResult();
         var host = Render<ToastHost>();
+        var events = ((DotNetObjectReference<ToasterEvents>)module.Invocations["attachToaster"].Single().Arguments[1]!)
+            .Value;
         var toast = Toasts.Show("Saved");
         _time.Advance(TimeSpan.FromSeconds(3));
 
-        host.Find("[data-part=toast]").MouseEnter();
+        await host.InvokeAsync(() => events.OnPause(true));
         host.Find("[data-part=toast]").FocusIn();
         _time.Advance(TimeSpan.FromMinutes(1));
-        host.Find("[data-part=toast]").MouseLeave();
+        await host.InvokeAsync(() => events.OnPause(false));
         _time.Advance(TimeSpan.FromMinutes(1));
         Assert.True(toast.IsOpen);
 
@@ -105,6 +110,52 @@ public class ToastServiceTests : BunitContext
         Assert.True(toast.IsOpen);
         _time.Advance(TimeSpan.FromSeconds(0.2));
         host.WaitForAssertion(() => Assert.False(toast.IsOpen));
+    }
+
+    [Fact]
+    public async Task Toast_ShouldStayPaused_WhenThePointerCrossesFromOneToastToAnother()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/toaster.js");
+        module.SetupModule("attachToaster", _ => true).SetupVoid("sync").SetVoidResult();
+        var host = Render<ToastHost>();
+        var events = ((DotNetObjectReference<ToasterEvents>)module.Invocations["attachToaster"].Single().Arguments[1]!)
+            .Value;
+        var toast = Toasts.Show("Saved");
+        await host.InvokeAsync(() => events.OnPause(true));
+
+        await host.InvokeAsync(() => events.OnPause(false));
+        _time.Advance(TimeSpan.FromMilliseconds(100));
+        await host.InvokeAsync(() => events.OnPause(true));
+        _time.Advance(TimeSpan.FromMinutes(1));
+        await host.InvokeAsync(() => events.OnPause(false));
+        _time.Advance(TimeSpan.FromSeconds(0.2));
+        _time.Advance(TimeSpan.FromSeconds(4.9));
+
+        // The full five seconds were left, and they start once the pointer has stayed away.
+        Assert.True(toast.IsOpen);
+        _time.Advance(TimeSpan.FromSeconds(0.2));
+        host.WaitForAssertion(() => Assert.False(toast.IsOpen));
+    }
+
+    [Fact]
+    public async Task Toast_ShouldWaitToStartItsTime_WhenShownWhileTheToasterIsPaused()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/toaster.js");
+        module.SetupModule("attachToaster", _ => true).SetupVoid("sync").SetVoidResult();
+        var host = Render<ToastHost>();
+        var events = ((DotNetObjectReference<ToasterEvents>)module.Invocations["attachToaster"].Single().Arguments[1]!)
+            .Value;
+        await host.InvokeAsync(() => events.OnPause(true));
+        var first = Toasts.Show("Saved");
+        var second = Toasts.Show("Sent");
+
+        _time.Advance(TimeSpan.FromMinutes(1));
+        Assert.True(first.IsOpen && second.IsOpen);
+        await host.InvokeAsync(() => events.OnPause(false));
+        _time.Advance(TimeSpan.FromSeconds(0.2));
+        _time.Advance(TimeSpan.FromSeconds(5.1));
+
+        host.WaitForAssertion(() => Assert.False(first.IsOpen || second.IsOpen));
     }
 
     [Fact]

@@ -105,6 +105,74 @@ public class ToastTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toasts_ShouldAllStayOpen_WhenThePointerRestsOnOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/toasts");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Show a pair" }).ClickAsync();
+        await Expect(Toast(page, "Quick two")).ToBeVisibleAsync();
+
+        await Toast(page, "Quick two").HoverAsync(new() { Force = true });
+        await page.WaitForTimeoutAsync(4000);
+        await Expect(Toast(page, "Quick one")).ToBeVisibleAsync();
+        await Expect(Toast(page, "Quick two")).ToBeVisibleAsync();
+
+        await page.Mouse.MoveAsync(5, 300);
+        await Expect(page.Locator("[data-part=toast]")).ToHaveCountAsync(0, new() { Timeout = 10_000 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toasts_ShouldKeepTiming_WhenAnotherIsDismissedWithTheMouse(string browser)
+    {
+        var page = await OpenAsync(browser, "/toasts");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Quick" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Fail" }).ClickAsync();
+        var dismiss = Toast(page, "Upload failed").GetByRole(AriaRole.Button, new() { Name = "Dismiss" });
+        var box = (await dismiss.BoundingBoxAsync())!;
+
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.Mouse.MoveAsync(5, 300);
+
+        await Expect(Toast(page, "Upload failed")).ToHaveCountAsync(0);
+        Assert.False(await page.Locator("[data-part=toaster]").EvaluateAsync<bool>("toaster => toaster.contains(document.activeElement)"));
+        await Expect(Toast(page, "Quick note")).ToHaveCountAsync(0, new() { Timeout = 10_000 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toast_ShouldStillCloseByItself_WhenTapped(string browser)
+    {
+        var page = await OpenAsync(browser, "/toasts", new() { HasTouch = true });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Quick" }).ClickAsync();
+        var box = (await Toast(page, "Quick note").Locator("[data-part=message]").BoundingBoxAsync())!;
+
+        await page.Touchscreen.TapAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+
+        await Expect(Toast(page, "Quick note")).ToHaveCountAsync(0, new() { Timeout = 10_000 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toast_ShouldStayOpen_WhileThePageIsHidden(string browser)
+    {
+        var page = await OpenAsync(browser, "/toasts");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Quick" }).ClickAsync();
+        await Expect(Toast(page, "Quick note")).ToBeVisibleAsync();
+
+        await SetHiddenAsync(page, true);
+        await page.WaitForTimeoutAsync(4000);
+        await Expect(Toast(page, "Quick note")).ToBeVisibleAsync();
+        await SetHiddenAsync(page, false);
+
+        await Expect(Toast(page, "Quick note")).ToHaveCountAsync(0, new() { Timeout = 10_000 });
+    }
+
+    // A test can't switch tabs, so the page reports itself hidden or shown, as a switch would.
+    private static Task SetHiddenAsync(IPage page, bool hidden) => page.EvaluateAsync("""
+        hidden => {
+            Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+            document.dispatchEvent(new Event('visibilitychange'));
+        }
+        """, hidden);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toaster_ShouldTakeFocusOnF8AndGiveItBackOnEscape_WhenAToastIsOpen(string browser)
     {
         var page = await OpenAsync(browser, "/toasts");
