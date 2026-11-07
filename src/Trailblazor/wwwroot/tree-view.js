@@ -3,6 +3,8 @@ import { createTypeahead } from './typeahead.js';
 
 // Alt+Shift with an arrow moves the focused row: past its neighbors, into the row above, or out of its parent.
 const moveKeys = { ArrowUp: 'MoveUp', ArrowDown: 'MoveDown', ArrowRight: 'Indent', ArrowLeft: 'Outdent' };
+// How long, in milliseconds, a drag rests on a closed row before the row opens.
+const openOnRest = 500;
 
 // Focus moves among the rows here, at once; the keys that open, close, select or check a row go to the server.
 export function createTreeView(tree, events) {
@@ -92,8 +94,44 @@ export function createTreeView(tree, events) {
             makeStop(target);
         }
     };
+    // When the focused row goes, by a delete, a filter or a row above it closing, focus moves to the nearest row above
+    // it if that row closed around it, else to the row now in its place, else to the last row.
+    let focusedRow = null;
+    const placeOf = row => {
+        const list = stops();
+        const index = list.indexOf(row);
+        const above = [];
+        for (let at = index - 1, depth = level(row); at >= 0 && depth > 1; at--) {
+            if (level(list[at]) < depth) {
+                above.push(list[at]);
+                depth = level(list[at]);
+            }
+        }
+
+        return { row, index, above };
+    };
+    const keepRowFocus = () => {
+        if (focusedRow?.row.isConnected) {
+            focusedRow = placeOf(focusedRow.row);
+            return;
+        }
+
+        if (!focusedRow) {
+            return;
+        }
+
+        const { index, above } = focusedRow;
+        focusedRow = null;
+        const list = stops();
+        const owner = above.find(row => row.isConnected);
+        const target = owner?.getAttribute('aria-expanded') === 'false' ? owner : list[index] ?? list.at(-1);
+        if (target && (document.activeElement === document.body || !document.activeElement)) {
+            focusRow(target);
+        }
+    };
     const observer = new MutationObserver(() => {
         keepStatusFocus();
+        keepRowFocus();
         syncEnds();
         reportOrder();
         scheduleView();
@@ -106,6 +144,8 @@ export function createTreeView(tree, events) {
 
         const row = event.target.closest(statusRow);
         focusedStatus = row && { row, owner: ownerOf(row) };
+        const item = event.target.closest('[role="treeitem"][data-key]');
+        focusedRow = item && placeOf(item);
         if (event.target.matches('[role="treeitem"][data-key]')) {
             focusRow(event.target);
             events.invokeMethodAsync('OnFocus', event.target.dataset.key);
@@ -113,6 +153,12 @@ export function createTreeView(tree, events) {
             focusRow(row);
         }
     };
+    // Focus that leaves the tree for good isn't brought back when its row goes later.
+    const onFocusOut = event => queueMicrotask(() => {
+        if (event.target.isConnected && !tree.contains(document.activeElement)) {
+            focusedRow = null;
+        }
+    });
     const onKeyDown = event => {
         // Keys pressed in a row's own controls, such as a field in its end slot, are theirs.
         const current = event.target;
@@ -254,7 +300,9 @@ export function createTreeView(tree, events) {
     const reason = own('[data-part="drop-reason"]')[0];
     let sources = [];
     let over = null;
+    let opening = 0;
     const clearDrop = () => {
+        clearTimeout(opening);
         own('[data-drop]').forEach(row => {
             delete row.dataset.drop;
             delete row.dataset.dropRefused;
@@ -323,6 +371,11 @@ export function createTreeView(tree, events) {
             clearDrop();
             row.dataset.drop = position.toLowerCase();
             const current = over = { row, position };
+            // Resting on a closed row opens it, so the drop can go among its children.
+            if (position === 'Inside' && row.getAttribute('aria-expanded') === 'false') {
+                opening = setTimeout(
+                    () => events.invokeMethodAsync('OnKey', row.dataset.key, 'Open', false, false), openOnRest);
+            }
             events.invokeMethodAsync('OnDragOver', sources.map(source => source.dataset.key), row.dataset.key,
                 position).then(check => {
                 if (over === current && !check.allowed) {
@@ -378,6 +431,7 @@ export function createTreeView(tree, events) {
     };
 
     tree.addEventListener('focusin', onFocusIn);
+    tree.addEventListener('focusout', onFocusOut);
     tree.addEventListener('keydown', onKeyDown);
     observer.observe(tree, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
     // A tree whose box grows, as in a pane being resized, shows more rows without anything scrolling.
@@ -396,7 +450,9 @@ export function createTreeView(tree, events) {
             removeEventListener('resize', scheduleView);
             pointerDrag.dispose();
             observer.disconnect();
+            clearTimeout(opening);
             tree.removeEventListener('focusin', onFocusIn);
+            tree.removeEventListener('focusout', onFocusOut);
             tree.removeEventListener('keydown', onKeyDown);
         },
     };

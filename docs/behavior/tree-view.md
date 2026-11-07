@@ -30,12 +30,12 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] Ctrl+click adds or removes a row, and Shift+click selects a range. `TbTreeViewTests.Click_ShouldAddWithCtrlAndRangeWithShift_WhenTheModeIsMultiple`
 - [x] Double-clicking a row with children opens or closes it and activates it, and double-clicking a leaf activates it. `TreeViewTests.Row_ShouldOpenAndCloseAndBeActivated_WhenARowWithChildrenIsDoubleClicked`, `TbTreeViewTests.DoubleClick_ShouldOpenAndActivateARowWithChildrenButOnlyActivateALeaf_WhenEachIsDoubleClicked`
 - [x] Double-clicking or Shift+clicking a row doesn't highlight its text. `TreeViewTests.Rows_ShouldHighlightNoText_WhenDoubleClickedOrShiftClicked`
-- [ ] Clicking a parent row that can't be selected opens or closes it, rather than doing nothing. #324
+- [x] Clicking a parent row that can't be selected opens or closes it, rather than doing nothing, and a double-click toggles it once. A disabled row stays as it is. `TbTreeViewTests.Click_ShouldOpenAndCloseAParentRow_WhenTheRowCantBeSelected`, `TbTreeViewTests.Click_ShouldLeaveADisabledParentRowClosed_WhenTheRowCantBeSelected`, `TbTreeViewTests.DoubleClick_ShouldOpenAParentRowThatCantBeSelectedOnce_WhenItsClicksComeFirst`
 - [x] Clicks and keys in a row's end slot stay with its controls. `TreeViewTests.EndSlot_ShouldKeepItsClicksFromTheRow_WhenAButtonInItIsPressed`, `tree-view.js`
 - [x] A drag drops before, after or inside the row under the pointer, scrolling near the edges. `TreeReorderTests.Tree_ShouldMoveARowBeforeAnotherAndSaySo_WhenItIsDraggedOntoTheOthersTopEdge`, `TreeReorderTests.Tree_ShouldMoveARowIntoAnother_WhenItIsDraggedOntoTheOthersMiddle`, `pointer-drag.js`
 - [x] A refused drop shows why and moves nothing. `TreeReorderTests.Tree_ShouldShowWhyAndMoveNothing_WhenARowIsDraggedIntoOneThatCantHoldIt`
 - [x] Escape cancels a drag. `TreeReorderTests.Tree_ShouldDropNothing_WhenEscapeIsPressedDuringADrag`
-- [ ] Holding a drag over a closed row opens it, so a drop can reach the rows inside. #324
+- [x] Holding a drag over a closed row for half a second opens it, so a drop can reach the rows inside; passing over it doesn't. `TreeReorderTests.Tree_ShouldOpenAClosedRow_WhenADragRestsOnIt`, `TbTreeViewTests.OnKey_ShouldOpenTheRowAndKeepTheTabStop_WhenADragRestsOnIt`, `TreeReorderTests.Tree_ShouldLeaveAClosedRowClosed_WhenADragOnlyPassesOverIt`
 - [x] A drag held still near the top or bottom keeps scrolling. `DragScrollTests.Tree_ShouldKeepScrolling_WhenADragIsHeldStillNearTheBottom`, `DragScrollTests.Tree_ShouldKeepScrolling_WhenAFingerIsHeldStillNearTheBottom`
 
 ## Touch
@@ -54,7 +54,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] In a virtualized tree, the focused row stays rendered when scrolled away. `TreeVirtualizeTests.Tree_ShouldKeepTheFocusedRowAndMoveOnFromIt_WhenTheTreeIsScrolledAway`
 - [x] A tab stop stays in the tree when a loading row goes away. `TreeViewTests.Keyboard_ShouldKeepATabStopInTheTree_WhenFocusLeavesALoadingRowBeforeItGoes`
 - [x] A focused row shows a focus ring. `trailblazor.css`
-- [ ] When the focused row goes away, as when a button in its end slot deletes it, focus moves to the nearest row left. #324
+- [x] When the focused row goes away, as when a button in its end slot deletes it, focus moves to the nearest row above it if that row closed around it, otherwise to the row now in its place, or to the row before it when it was last. Focus that has left the tree stays where it is. `TreeFocusTests.Tree_ShouldFocusTheNextRow_WhenTheFocusedRowIsDeleted`, `TreeFocusTests.Tree_ShouldFocusTheRowBefore_WhenTheLastRowIsDeleted`, `TreeFocusTests.Tree_ShouldFocusTheRowNowInItsPlace_WhenRowsAboveWentFirst`, `TreeFocusTests.Tree_ShouldFocusTheParent_WhenCodeClosesItAroundTheFocusedRow`, `TreeFocusTests.Tree_ShouldFocusTheClosedRow_WhenCodeClosesARowAboveTheFocusedRowsParent`, `TreeFocusTests.Tree_ShouldLeaveFocusOutside_WhenItsRowGoesAfterFocusLeft`
 
 ## Not applicable
 

@@ -78,6 +78,48 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldOpenAClosedRow_WhenADragRestsOnIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+        await PlanReadyAsync(page);
+        await Row(page, "Day 2").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Row(page, "Day 2")).ToHaveAttributeAsync("aria-expanded", "false");
+        var from = (await Row(page, "Pine Hollow").BoundingBoxAsync())!;
+        var to = (await Row(page, "Day 2").BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height / 2, new() { Steps = 10 });
+
+        await Expect(Row(page, "Day 2")).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("Escape");
+        await page.Mouse.UpAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldLeaveAClosedRowClosed_WhenADragOnlyPassesOverIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+        await PlanReadyAsync(page);
+        await Row(page, "Day 2").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Row(page, "Day 2")).ToHaveAttributeAsync("aria-expanded", "false");
+        var from = (await Row(page, "Pine Hollow").BoundingBoxAsync())!;
+        var to = (await Row(page, "Day 2").BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height / 2, new() { Steps = 10 });
+        await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y - to.Height, new() { Steps = 4 });
+        await page.WaitForTimeoutAsync(800);
+
+        Assert.Equal("false", await Row(page, "Day 2").GetAttributeAsync("aria-expanded"));
+        await page.Keyboard.PressAsync("Escape");
+        await page.Mouse.UpAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldShowWhyAndMoveNothing_WhenARowIsDraggedIntoOneThatCantHoldIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-view");

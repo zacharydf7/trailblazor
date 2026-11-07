@@ -4446,10 +4446,10 @@ public static class ExampleCatalog
             Sections =
             [
                 new("filter-and-select", "Filter, select and open", "Rows come from `Items`. Typing in the field "
-                    + "filters them and keeps each match's parents. Only trails can be selected, and double-clicking "
-                    + "a trail or pressing Enter on it opens it. `ItemEnd`, or a `TbTreeItem`'s `EndContent`, holds "
-                    + "what sits at the end of a row, such as a count or a button. Clicks and keys there never select, "
-                    + "open or activate the row.",
+                    + "filters them and keeps each match's parents. Only trails can be selected, so a click on a region "
+                    + "opens or closes it. Double-clicking a trail or pressing Enter on it opens it. `ItemEnd`, or a "
+                    + "`TbTreeItem`'s `EndContent`, holds what sits at the end of a row, such as a count or a button. "
+                    + "Clicks and keys there never select, open or activate the row.",
                     typeof(TreeViewExample)),
                 new("multiple-selection", "Multiple selection", "`SelectionMode.Multiple` lets several rows be "
                     + "selected, and `SelectedKeys` holds their keys. A click selects one row, Ctrl or Cmd with a click "
@@ -4482,9 +4482,10 @@ public static class ExampleCatalog
                 new("move-and-insert", "Move and insert", "With `OnDrop`, rows move by dragging with a mouse, pen or "
                     + "finger, or with Alt+Shift and the arrows. A finger holds still for a moment first, so a swipe "
                     + "still scrolls. `OnDrop` says what moved and where, and the app applies it, so it can be undone "
-                    + "like any other change. `CanDrop` can refuse a move and say why. `InsertTemplate` puts content on "
-                    + "each row's edge, such as the buttons here that add a row. It shows when the pointer reaches that "
-                    + "edge or the content has focus, and on a touch screen for the focused row.",
+                    + "like any other change. A drag that rests on a closed row opens it. `CanDrop` can refuse a move "
+                    + "and say why. `InsertTemplate` puts content on each row's edge, such as the buttons here that "
+                    + "add a row. It shows when the pointer reaches that edge or the content has focus, and on a "
+                    + "touch screen for the focused row.",
                     typeof(TreeViewMoveExample)),
                 new("many-rows", "Many rows", "With `Virtualize`, only the rows in view render, so ten thousand rows "
                     + "scroll smoothly. Every row is `ItemSize` pixels tall, and the rows scroll in a tree given a "

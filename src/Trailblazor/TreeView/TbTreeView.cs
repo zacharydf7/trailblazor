@@ -1043,6 +1043,15 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
+        // A drag resting on a closed row opens it, and the tab stop stays with the row being dragged.
+        if (key == "Open")
+        {
+            CountOpening(node, open: true);
+            await OpenAsync(node.Key);
+            StateHasChanged();
+            return;
+        }
+
         _focusId = id;
         switch (key)
         {
@@ -1207,10 +1216,26 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
     }
 
+    // A parent row that can't be selected opens or closes on a click, as a sidebar's heading does. A double-click's
+    // second click and its dblclick leave it alone, so the row toggles once.
+    private bool TogglesOnClick(TreeNode<TItem> node) => node.HasChildren && !CanSelect(node) && !IsItemDisabled(node);
+
     private async Task OnRowClickAsync(TreeNode<TItem> node, MouseEventArgs args)
     {
         _focusId = node.Id;
-        if (!Disabled)
+        if (Disabled)
+        {
+            return;
+        }
+
+        if (TogglesOnClick(node))
+        {
+            if (args.Detail < 2)
+            {
+                await ToggleAsync(node);
+            }
+        }
+        else
         {
             await SelectAsync(node, args.ShiftKey, toggle: args.CtrlKey || args.MetaKey);
         }
@@ -1221,7 +1246,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         if (!Disabled)
         {
             await ActivateAsync(node);
-            await ToggleIfParentAsync(node);
+            if (!TogglesOnClick(node))
+            {
+                await ToggleIfParentAsync(node);
+            }
         }
     }
 

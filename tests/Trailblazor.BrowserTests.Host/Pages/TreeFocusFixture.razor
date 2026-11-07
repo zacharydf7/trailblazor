@@ -1,0 +1,60 @@
+@page "/tree-focus"
+
+@* Rows that delete themselves from their end slot, and keys the tree leaves alone that change it from code while focus
+   stays put: F2 closes North, F3 deletes Ridge and then South, and F4 deletes East a second later. *@
+<p>Text outside the tree</p>
+<div @onkeydown="OnKeyAsync">
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Places" Items="_places" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" @bind-ExpandedKeys="_expanded">
+        <ItemEnd>
+            <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => Delete(context.Item.Id)">
+                Delete @context.Item.Name
+            </TbButton>
+        </ItemEnd>
+    </TbTreeView>
+</div>
+
+@code {
+    private Place[] _places =
+    [
+        new(1, "North", [new(2, "Ridge", [new(3, "Summit", null)]), new(6, "Pass", null)]),
+        new(4, "South", [new(5, "Lake", null)]),
+        new(7, "East", null),
+        new(8, "West", null),
+    ];
+
+    private IReadOnlyCollection<int> _expanded = [1, 2];
+
+    private void Delete(int id) => _places = Without(_places, id);
+
+    private static Place[] Without(Place[] places, int id) =>
+        [.. places.Where(place => place.Id != id).Select(place => place with
+        {
+            Children = place.Children is null ? null : Without(place.Children, id),
+        })];
+
+    private async Task OnKeyAsync(KeyboardEventArgs args)
+    {
+        switch (args.Key)
+        {
+            case "F2":
+                _expanded = [];
+                break;
+            case "F3":
+                Delete(2);
+                StateHasChanged();
+                await Task.Delay(100);
+                Delete(4);
+                break;
+            case "F4":
+                await Task.Delay(1000);
+                Delete(7);
+                break;
+        }
+    }
+
+    private sealed record Place(int Id, string Name, Place[]? Children)
+    {
+        public override string ToString() => Name;
+    }
+}

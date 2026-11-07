@@ -469,6 +469,56 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public async Task OnKey_ShouldOpenTheRowAndKeepTheTabStop_WhenADragRestsOnIt()
+    {
+        var cut = RenderPlaces(Nested);
+        await cut.InvokeAsync(() => Events().OnFocus("4"));
+
+        await cut.InvokeAsync(() => Events().OnKey("1", "Open", false, false));
+
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.Equal("0", Row(cut, "4").GetAttribute("tabindex"));
+        Assert.Equal("-1", Row(cut, "1").GetAttribute("tabindex"));
+    }
+
+    [Fact]
+    public void Click_ShouldOpenAndCloseAParentRow_WhenTheRowCantBeSelected()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.None));
+
+        Row(cut, "1").Click(new() { Detail = 1 });
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Row(cut, "1").Click(new() { Detail = 1 });
+
+        Assert.Equal("false", Row(cut, "1").GetAttribute("aria-expanded"));
+    }
+
+    [Fact]
+    public void Click_ShouldLeaveADisabledParentRowClosed_WhenTheRowCantBeSelected()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.None)
+            .Add(tree => tree.IsDisabled, place => place.Id == 1));
+
+        Row(cut, "1").Click(new() { Detail = 1 });
+
+        Assert.Equal("false", Row(cut, "1").GetAttribute("aria-expanded"));
+    }
+
+    [Fact]
+    public void DoubleClick_ShouldOpenAParentRowThatCantBeSelectedOnce_WhenItsClicksComeFirst()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.IsSelectable, place => place.Id != 1));
+
+        Row(cut, "1").Click(new() { Detail = 1 });
+        Row(cut, "1").Click(new() { Detail = 2 });
+        Row(cut, "1").DoubleClick();
+
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.Single(_expandedChanges);
+        Assert.Equal(["North"], _activated);
+    }
+
+    [Fact]
     public void DoubleClick_ShouldOpenAndActivateARowWithChildrenButOnlyActivateALeaf_WhenEachIsDoubleClicked()
     {
         var cut = RenderPlaces(Nested);
