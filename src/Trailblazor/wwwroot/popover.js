@@ -22,6 +22,8 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     let openedByHover = false;
     let returnFocus = false;
     let timer = 0;
+    // The replay at attach and a toggle still queued from before it can both report one opening.
+    let shown = false;
 
     const takeFocus = () => (firstTabbable(panel) ?? panel).focus();
     const onBeforeToggle = event => {
@@ -40,6 +42,11 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     };
     const onToggle = event => {
         const open = event.newState === 'open';
+        if (open === shown) {
+            return;
+        }
+
+        shown = open;
         trigger.setAttribute('aria-expanded', String(open));
         if (open) {
             if (!openedByHover) {
@@ -113,6 +120,12 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
         trigger.addEventListener('pointerenter', showSoon);
         root.addEventListener('pointerleave', hideSoon);
         panel.addEventListener('pointerenter', stayOpen);
+    }
+
+    // A panel clicked open before this script attached missed its toggles, so they are replayed.
+    if (panel.matches(':popover-open')) {
+        onBeforeToggle({ newState: 'open' });
+        onToggle({ newState: 'open' });
     }
 
     // Tests wait for this before using the keyboard, which needs the handlers above.

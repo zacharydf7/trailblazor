@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -29,6 +30,42 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(panel).ToBeHiddenAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(trigger).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldPlaceItselfAndTakeFocus_WhenClickedBeforeItsScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithAScriptHeldAsync(browser, "/examples/popover", "**/popover.*js");
+        var trigger = Trigger(page, "Filters");
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter the report" });
+
+        await trigger.ClickAsync();
+        await Expect(panel).ToBeVisibleAsync();
+        await Expect(trigger).Not.ToHaveAttributeAsync("data-ready", "");
+        script.SetResult();
+
+        await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(panel).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+    }
+
+    // A toggle still queued when the script replays the opening must not open the panel a second time.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldLeaveFocusWhereItIs_WhenAnOpeningIsReportedTwice(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/popover");
+        var trigger = Trigger(page, "Filters");
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+        await trigger.ClickAsync();
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter the report" });
+        await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(panel.GetByLabel("Only open items")).Not.ToBeFocusedAsync();
+
+        await panel.EvaluateAsync(
+            "panel => panel.dispatchEvent(Object.assign(new Event('toggle'), { newState: 'open' }))");
+
+        await Expect(panel.GetByLabel("Only open items")).Not.ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

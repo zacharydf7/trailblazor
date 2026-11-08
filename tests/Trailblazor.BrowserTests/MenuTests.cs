@@ -175,20 +175,27 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(triggerBox.X, menuBox.X, tolerance: 1);
     }
 
-    // Opens the example with the menu's script held back until the returned source is set.
-    private async Task<(IPage Page, TaskCompletionSource Script)> OpenWithTheScriptHeldAsync(string browser)
+    private Task<(IPage Page, TaskCompletionSource Script)> OpenWithTheScriptHeldAsync(string browser) =>
+        OpenWithAScriptHeldAsync(browser, "/examples/menu", "**/menu.*js");
+
+    // A toggle still queued when the script replays the opening must not open the menu a second time.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldLeaveFocusWhereItIs_WhenAnOpeningIsReportedTwice(string browser)
     {
-        var script = new TaskCompletionSource();
-        var page = await OpenStaticAsync(browser, "about:blank");
-        await page.RouteAsync("**/menu.*js", async route =>
-        {
-            await script.Task;
-            await route.ContinueAsync();
-        });
-        await page.GotoAsync(new Uri(Fixture.BaseAddress, "/examples/menu").ToString());
-        // A click before this is lost anyway, when the interactive render replaces the prerendered menu.
-        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
-        return (page, script);
+        var page = await OpenAsync(browser, "/examples/menu");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Actions" });
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+        await trigger.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Duplicate" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.EvaluateAsync("() => document.activeElement.dataset.second = ''");
+        var second = page.Locator("[data-second]");
+        await Expect(second).Not.ToHaveAccessibleNameAsync("Duplicate");
+
+        await page.GetByRole(AriaRole.Menu, new() { Name = "Actions" }).EvaluateAsync(
+            "menu => menu.dispatchEvent(Object.assign(new Event('toggle'), { newState: 'open' }))");
+
+        await Expect(second).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

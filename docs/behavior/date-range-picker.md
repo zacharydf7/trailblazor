@@ -43,6 +43,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 ## Focus
 
 - [x] Opening puts focus on the range's start, or today, or the nearest allowed day. `DateRangePickerTests.Calendar_ShouldOpenOnTheStartAndCommitTheRange_WhenTwoDaysArePicked`
+- [x] A calendar clicked open before its script has loaded is placed and takes focus once it has, and an opening reported twice doesn't move focus a second time. `DateRangePickerTests.Calendar_ShouldPlaceItselfAndTakeFocus_WhenOpenedBeforeItsScriptHasLoaded`, `DateRangePickerTests.Calendar_ShouldLeaveFocusWhereItIs_WhenAnOpeningIsReportedTwice`
 - [x] Only one day is in the tab order, across both months. `TbDateRangePickerTests.Render_ShouldPutOneDayInTheTabOrder_WhenTwoMonthsShow`
 - [x] A day that can't be chosen can still take focus. `TbDateRangePicker.razor`
 - [x] Committing a range returns focus to the calendar button. `DateRangePickerTests.Calendar_ShouldOpenOnTheStartAndCommitTheRange_WhenTwoDaysArePicked`

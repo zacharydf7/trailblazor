@@ -21,6 +21,7 @@ export function createMenu(root, menu, options, events) {
     const positions = new Map();
     const returnFocus = new Set();
     const openedByHover = new Set();
+    const shown = new Set();
     let focusLastOnOpen = false;
     let hovered = null;
     let hoverTimer = 0;
@@ -74,6 +75,17 @@ export function createMenu(root, menu, options, events) {
         }
 
         const open = event.newState === 'open';
+        // The replay at attach and a toggle still queued from before it can both report one opening.
+        if (open === shown.has(list)) {
+            return;
+        }
+
+        if (open) {
+            shown.add(list);
+        } else {
+            shown.delete(list);
+        }
+
         opener(list).setAttribute('aria-expanded', String(open));
         // The server hears the menu itself open and close, however it happened; its submenus aren't reported apart.
         if (list === menu) {

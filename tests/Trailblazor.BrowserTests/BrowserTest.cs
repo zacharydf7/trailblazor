@@ -13,6 +13,24 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return page;
     }
 
+    // Opens an interactive page with the script matching the glob, such as "**/menu.*js", held back until the returned
+    // source is set, so a test can act before the component's script has attached.
+    protected async Task<(IPage Page, TaskCompletionSource Script)> OpenWithAScriptHeldAsync(string browser,
+        string path, string script)
+    {
+        var held = new TaskCompletionSource();
+        var page = await OpenStaticAsync(browser, "about:blank");
+        await page.RouteAsync(script, async route =>
+        {
+            await held.Task;
+            await route.ContinueAsync();
+        });
+        await page.GotoAsync(new Uri(Fixture.BaseAddress, path).ToString());
+        // A click before this is lost anyway, when the interactive render replaces the prerendered page.
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        return (page, held);
+    }
+
     // For pages rendered as static SSR, which never become interactive.
     protected Task<IPage> OpenStaticAsync(string browser, string path, BrowserNewContextOptions? options = null) =>
         OpenAtAsync(browser, new Uri(Fixture.BaseAddress, path), options);

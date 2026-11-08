@@ -39,6 +39,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     const trigger = control.querySelector(`[aria-controls="${panel.id}"]`);
     let position = null;
     let returnFocus = false;
+    // The replay at attach and a toggle still queued from before it can both report one opening.
+    let opened = false;
     // Set from a press on the calendar button until the calendar next opens or closes.
     let pressedTrigger = false;
     // The day focus last moved to; keys start here, since a render can reuse the focused button for another day.
@@ -68,6 +70,11 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     };
     const onToggle = event => {
         const open = event.newState === 'open';
+        if (open === opened) {
+            return;
+        }
+
+        opened = open;
         pressedTrigger = false;
         trigger.setAttribute('aria-expanded', String(open));
         if (open) {
@@ -190,6 +197,11 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     panel.addEventListener('pointercancel', dropPreview);
     panel.addEventListener('pointerdown', onPointerDown);
     trigger.addEventListener('pointerdown', onTriggerPointerDown);
+    // A calendar clicked open before this script attached missed its toggle, so it is replayed.
+    if (panel.matches(':popover-open')) {
+        onToggle({ newState: 'open' });
+    }
+
     return {
         today() {
             const now = new Date();

@@ -56,6 +56,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 
 ## Focus
 
+- [x] A menu or submenu clicked open before its script has loaded is placed and takes focus once it has, and an opening reported twice doesn't move focus a second time. `MenuTests.Menu_ShouldPlaceItselfAndFocusTheFirstItem_WhenClickedBeforeItsScriptHasLoaded`, `MenuTests.SubMenu_ShouldPlaceItselfAndTakeFocus_WhenClickedBeforeTheScriptHasLoaded`, `MenuTests.Menu_ShouldLeaveFocusWhereItIs_WhenAnOpeningIsReportedTwice`
 - [x] A click outside leaves focus where the click put it. `menu.js`
 - [x] An item that opens a dialog leaves the trigger as the place focus returns to. `pointer-origin.js`
 

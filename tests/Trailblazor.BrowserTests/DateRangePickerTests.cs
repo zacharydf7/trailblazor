@@ -317,6 +317,36 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldPlaceItselfAndTakeFocus_WhenOpenedBeforeItsScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithAScriptHeldAsync(browser, "/date-range", "**/date-range-picker.*js");
+        var trigger = Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" });
+
+        await trigger.ClickAsync();
+        await Expect(Calendar(page)).ToBeVisibleAsync();
+        await Expect(trigger).Not.ToHaveAttributeAsync("data-ready", "");
+        script.SetResult();
+
+        await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(Calendar(page)).ToHaveAttributeAsync("style", new Regex("--tb-anchored-offset"));
+    }
+
+    // A toggle still queued when the script replays the opening must not open the calendar a second time.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldLeaveFocusWhereItIs_WhenAnOpeningIsReportedTwice(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        var previous = Calendar(page).GetByRole(AriaRole.Button, new() { Name = "Previous month" });
+        await previous.FocusAsync();
+
+        await Calendar(page).EvaluateAsync(
+            "panel => panel.dispatchEvent(Object.assign(new Event('toggle'), { newState: 'open' }))");
+
+        await Expect(previous).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldClose_WhenShiftTabMovesFocusBackToItsButton(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);
