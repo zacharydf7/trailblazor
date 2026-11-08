@@ -474,6 +474,8 @@ Trailblazor.Align.Center = 1 -> Trailblazor.Align
 Trailblazor.Align.End = 2 -> Trailblazor.Align
 Trailblazor.Align.Start = 0 -> Trailblazor.Align
 Trailblazor.Align.Stretch = 3 -> Trailblazor.Align
+Trailblazor.AnnouncementHandle
+Trailblazor.AnnouncementHandle.AnnouncementHandle() -> void
 Trailblazor.AutocompleteLabels
 Trailblazor.AutocompleteLabels.<Clone>$() -> Trailblazor.AutocompleteLabels!
 Trailblazor.AutocompleteLabels.AutocompleteLabels() -> void
@@ -823,10 +825,11 @@ Trailblazor.GridSpan
 Trailblazor.GridSpan.Equals(Trailblazor.GridSpan other) -> bool
 Trailblazor.GridSpan.GridSpan() -> void
 Trailblazor.IAnnouncer
-Trailblazor.IAnnouncer.Assertive(string! message) -> void
+Trailblazor.IAnnouncer.Assertive(string! message) -> Trailblazor.AnnouncementHandle!
 Trailblazor.IAnnouncer.Clear() -> void
-Trailblazor.IAnnouncer.Polite(string! message) -> void
+Trailblazor.IAnnouncer.Polite(string! message) -> Trailblazor.AnnouncementHandle!
 Trailblazor.IAnnouncer.Withdraw(string! message) -> void
+Trailblazor.IAnnouncer.Withdraw(Trailblazor.AnnouncementHandle! handle) -> void
 Trailblazor.IBrowserService
 Trailblazor.IBrowserService.CanPickColorAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.IBrowserService.CopyTextAsync(string! text) -> System.Threading.Tasks.Task<bool>!

@@ -51,7 +51,7 @@ internal sealed class AnnouncerHost : ComponentBase, IDisposable
             && announcement.Dialog == Dialog))
         {
             builder.OpenElement(sequence + 4, "p");
-            builder.SetKey(announcement.Id);
+            builder.SetKey(announcement.Handle);
             builder.AddContent(sequence + 5, announcement.Message);
             builder.CloseElement();
         }

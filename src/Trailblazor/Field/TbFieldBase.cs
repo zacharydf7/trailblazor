@@ -30,7 +30,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     private string? _shownError;
 
     // Each message this field announced and the errors it named, so the message is withdrawn once any is fixed.
-    private readonly List<(string Message, List<string> Errors)> _announced = [];
+    private readonly List<(AnnouncementHandle Handle, List<string> Errors)> _announced = [];
     private TbForm? _form;
     private bool _disposed;
 
@@ -460,8 +460,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     private void Announce(string message, List<string> errors)
     {
-        Announcer.Polite(message);
-        _announced.Add((message, errors));
+        _announced.Add((Announcer.Polite(message), errors));
     }
 
     // A message about an error that's gone would mislead whoever finds it in the live region later.
@@ -469,7 +468,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     {
         foreach (var announced in _announced.Where(announced => announced.Errors.Except(errors).Any()).ToList())
         {
-            Announcer.Withdraw(announced.Message);
+            Announcer.Withdraw(announced.Handle);
             _announced.Remove(announced);
         }
     }

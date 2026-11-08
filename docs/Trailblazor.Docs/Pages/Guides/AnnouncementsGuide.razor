@@ -59,8 +59,9 @@
         </TbText>
         <ul>
             <li>
-                Call <code>Withdraw</code> to remove a message that is no longer true, such as an error the user has
-                fixed.
+                Call <code>Withdraw</code> with the handle from <code>Polite</code> or <code>Assertive</code> to remove
+                that message alone once it is no longer true, such as an error the user has fixed. Messages with the
+                same text stay. Pass the text instead to remove every message with that text.
             </li>
             <li>
                 Call <code>Clear</code> to remove all messages at once, for example when the view they describe goes
@@ -69,7 +70,8 @@
         </ul>
         <TbText>
             A field withdraws its own errors once they are fixed or the field goes away, so a test can check that a
-            fixed error has left the page without waiting out the seven seconds.
+            fixed error has left the page without waiting out the seven seconds. It leaves another field's message
+            alone, even one with the same text.
         </TbText>
 
         <DocsHeading Id="testing" Text="Testing" Class="docs-section" />

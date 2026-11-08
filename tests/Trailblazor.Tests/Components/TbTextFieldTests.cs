@@ -516,6 +516,19 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldLeaveAnotherFieldsSameMessage_WhenOneFieldsErrorIsCleared()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var first = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Error, "That name is taken."));
+        Render<TbTextField<string>>(parameters => parameters.Add(field => field.Error, "That name is taken."));
+        Assert.Equal(["That name is taken.", "That name is taken."], Spoken(announcer));
+
+        first.Render(parameters => parameters.Add(field => field.Error, null));
+
+        Assert.Equal(["That name is taken."], Spoken(announcer));
+    }
+
+    [Fact]
     public void Dispose_ShouldWithdrawTheFieldsAnnouncedErrors_WhenTheFieldGoesAway()
     {
         var announcer = Render<AnnouncerHost>();

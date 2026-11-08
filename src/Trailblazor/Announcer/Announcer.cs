@@ -16,7 +16,6 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
     private readonly Lock _lock = new();
     private ImmutableList<Announcement> _polite = [];
     private ImmutableList<Announcement> _assertive = [];
-    private int _nextId;
 
     public IReadOnlyList<Announcement> PoliteMessages => _polite;
 
@@ -27,9 +26,11 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
     // Raised when a message is added or removed, so the hosts re-render.
     public event Action? Changed;
 
-    public void Polite(string message) => Add(ref _polite, message);
+    public AnnouncementHandle Polite(string message) => Add(ref _polite, message);
 
-    public void Assertive(string message) => Add(ref _assertive, message);
+    public AnnouncementHandle Assertive(string message) => Add(ref _assertive, message);
+
+    public void Withdraw(AnnouncementHandle handle) => Remove(spoken => spoken.Handle == handle);
 
     public void Withdraw(string message) => Remove(announcement => announcement.Message == message);
 
@@ -44,14 +45,14 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
         Changed?.Invoke();
     }
 
-    private void Add(ref ImmutableList<Announcement> messages, string message)
+    private AnnouncementHandle Add(ref ImmutableList<Announcement> messages, string message)
     {
         Announcement announcement;
         lock (_lock)
         {
             // Each message gets its own element, so the same text said twice is still announced twice. It goes to the
             // topmost modal open right now, even one whose host hasn't rendered yet.
-            announcement = new Announcement(_nextId++, message, dialogs.TopmostModal);
+            announcement = new Announcement(message, dialogs.TopmostModal, new AnnouncementHandle());
             messages = messages.Add(announcement);
             if (messages.Count > Kept)
             {
@@ -67,6 +68,7 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
         }, null, ClearAfter, Timeout.InfiniteTimeSpan);
         Hosts.Shown();
         Changed?.Invoke();
+        return announcement.Handle;
     }
 
     // A message already cleared or dropped leaves the hosts as they are.
@@ -89,4 +91,4 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
 }
 
 // Dialog is the modal the message was announced into, or null for the page.
-internal sealed record Announcement(int Id, string Message, DialogReference? Dialog);
+internal sealed record Announcement(string Message, DialogReference? Dialog, AnnouncementHandle Handle);
