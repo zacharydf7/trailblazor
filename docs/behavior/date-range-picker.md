@@ -11,7 +11,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 - [x] Left and Right follow the reading direction. `DateRangePickerTests.Calendar_ShouldMoveToTheNextDayWithTheLeftArrow_WhenThePageIsRightToLeft`
 - [x] Home and End go to the start and end of the week. `DateRangePickerTests.Calendar_ShouldMoveByDayWeekAndMonthAndShowNewMonths_WhenKeysArePressed`
 - [x] Page Up and Page Down change the month, and with Shift the year, bringing it into view. `DateRangePickerTests.Calendar_ShouldMoveByDayWeekAndMonthAndShowNewMonths_WhenKeysArePressed`
-- [x] Keys pressed faster than the server shows each month still land on the day they move to. `DateRangePickerTests.Calendar_ShouldLandOnTheDayTheKeysMovedTo_WhenTheyRunAheadOfTheServer`
+- [x] Keys pressed faster than the server shows each month still land on the day they move to, and Enter or Space then picks that day, even with more keys pressed before it shows. `DateRangePickerTests.Calendar_ShouldLandOnTheDayTheKeysMovedTo_WhenTheyRunAheadOfTheServer`, `DateRangePickerTests.Calendar_ShouldPickTheDayTheKeysMovedTo_WhenEnterOrSpaceRunsAheadOfTheServer`, `DateRangePickerTests.Calendar_ShouldPickTheDayAndKeepMoving_WhenAnArrowFollowsAnEnterThatRanAheadOfTheServer`
 - [x] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. `DateRangePickerTests.Calendar_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld`
 - [x] Enter or Space picks the day, since each day is a button. `TbDateRangePicker.razor`
 - [x] Escape closes the calendar, keeps the range and returns focus to the button. `DateRangePickerTests.Calendar_ShouldCloseAndKeepTheRange_WhenEscapeIsPressed`

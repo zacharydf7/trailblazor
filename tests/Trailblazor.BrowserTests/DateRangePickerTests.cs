@@ -273,6 +273,42 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Calendar(page).GetByRole(AriaRole.Grid).First).ToHaveAccessibleNameAsync("January 2026");
     }
 
+    public static TheoryData<string, string> BrowsersAndPickKeys => new(
+        from browser in AllBrowsers.Names
+        from key in new[] { "Enter", "Space" }
+        select (browser, key));
+
+    // The keys are pressed without waiting, so the pick can land on a button the server hasn't moved to April yet.
+    [Theory, MemberData(nameof(BrowsersAndPickKeys))]
+    public async Task Calendar_ShouldPickTheDayTheKeysMovedTo_WhenEnterOrSpaceRunsAheadOfTheServer(string browser,
+        string key)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+
+        foreach (var press in new[] { "PageUp", "PageUp", key })
+        {
+            await page.Keyboard.PressAsync(press);
+        }
+
+        await Expect(Calendar(page)).ToHaveAttributeAsync("data-anchor", "2026-04-03");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldPickTheDayAndKeepMoving_WhenAnArrowFollowsAnEnterThatRanAheadOfTheServer(
+        string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+
+        foreach (var press in new[] { "PageUp", "PageUp", "Enter", "ArrowRight" })
+        {
+            await page.Keyboard.PressAsync(press);
+        }
+
+        await Expect(Calendar(page)).ToHaveAttributeAsync("data-anchor", "2026-04-03");
+        await Expect(Day(page, "Saturday, April 4, 2026")).ToBeFocusedAsync();
+        await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(1);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldPreviewTheRange_WhenAnArrowFollowsEnterBeforeTheServerAnswers(string browser)
     {

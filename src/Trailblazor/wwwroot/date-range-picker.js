@@ -99,6 +99,13 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
             return;
         }
 
+        // The button's own click would pick the day it now shows, so the server is told the day the keys moved to.
+        if ((event.key === 'Enter' || event.key === ' ') && intended && intended !== button.dataset.date) {
+            event.preventDefault();
+            events.invokeMethodAsync('OnPick', intended);
+            return;
+        }
+
         // Left and right follow the reading direction, so in right-to-left text left is the next day.
         const key = rtl() && event.key.startsWith('Arrow')
             ? { ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft' }[event.key] ?? event.key

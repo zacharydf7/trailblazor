@@ -167,7 +167,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
             return;
         }
 
-        _events = DotNetObjectReference.Create(new DateRangePickerEvents(OnToggleAsync, OnShowDateAsync));
+        _events = DotNetObjectReference.Create(new DateRangePickerEvents(OnToggleAsync, OnShowDateAsync, OnPickAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createDateRangePicker", _panel, _events,
             (int)DateCulture.DateTimeFormat.FirstDayOfWeek);
         if (handle is null)
@@ -222,6 +222,13 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         }
 
         return Task.CompletedTask;
+    }
+
+    // A call from the browser renders only when asked to, unlike a click.
+    private async Task OnPickAsync(DateOnly day)
+    {
+        await PickAsync(day);
+        StateHasChanged();
     }
 
     private void ShowMonths(int months)
