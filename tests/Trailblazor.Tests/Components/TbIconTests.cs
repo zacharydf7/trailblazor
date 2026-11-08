@@ -40,6 +40,17 @@ public class TbIconTests : BunitContext
         Assert.Contains(modifier, cut.Find("svg").ClassList);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldMarkTheIconToTurnAroundRightToLeft_WhenTheIconSaysSo(bool mirrors)
+    {
+        var cut = Render<TbIcon>(parameters => parameters
+            .Add(icon => icon.Icon, Square with { MirrorsInRightToLeft = mirrors }));
+
+        Assert.Equal(mirrors, cut.Find("svg").ClassList.Contains("tb-icon--mirrored"));
+    }
+
     [Fact]
     public void Render_ShouldTakeNoToneClass_WhenNoToneIsSet()
     {

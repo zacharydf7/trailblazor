@@ -4,7 +4,8 @@
 <svg @attributes="AdditionalAttributes" viewBox="@Icon.ViewBox" fill="currentColor"
      role="@(Label is null ? null : "img")" aria-label="@Label" aria-hidden="@(Label is null ? "true" : null)"
      class="@ClassNames.Join("tb-icon", ClassNames.Modifier("tb-icon", Size),
-                Tone is { } tone ? ClassNames.Modifier("tb-icon", tone) : null, Class)" style="@Style">
+                Tone is { } tone ? ClassNames.Modifier("tb-icon", tone) : null,
+                Icon.MirrorsInRightToLeft ? "tb-icon--mirrored" : null, Class)" style="@Style">
     @((MarkupString)Icon.Svg)
 </svg>
 

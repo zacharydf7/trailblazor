@@ -426,6 +426,10 @@ public static class ExampleCatalog
                 new("icon-sets", "Icon sets", "`Icon` takes an icon from any set, such as "
                     + "`Trailblazor.Icons.Material`. The [icons guide](guides/icons) covers them.",
                     typeof(IconSetExample)),
+                new("direction", "Right to left", "An icon keeps its direction on a right-to-left page, as a check "
+                    + "mark or a clock should. One that points along the text, such as a forward arrow, a send icon or "
+                    + "an indent icon, turns around when its `MirrorsInRightToLeft` is set, wherever it's used.",
+                    typeof(IconDirectionExample)),
             ],
             Api = [typeof(TbIcon)],
             Labeling =

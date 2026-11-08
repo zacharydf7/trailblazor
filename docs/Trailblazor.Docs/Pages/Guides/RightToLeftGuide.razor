@@ -88,8 +88,9 @@
         <ul>
             <li>
                 Icons you pass in. <code>TbIcon</code> shows an icon as designed, which suits most: a check mark, a
-                clock or a play button doesn't turn around. An icon that shows movement, such as a forward arrow or a
-                send icon, should; until <code>TbIcon</code> has an option for it, flip it with a class, as below.
+                clock or a play button doesn't turn around. An icon that points along the text, such as a forward
+                arrow, a send icon or an indent icon, should turn around: set its <code>MirrorsInRightToLeft</code>,
+                as below, and every component the icon is passed to draws it that way.
             </li>
             <li>The color picker's square, which is a color space rather than text.</li>
             <li>
@@ -220,11 +221,11 @@
         """;
 
     private const string FlippedIcon = """
-        <TbIcon Icon="MaterialSymbols.Outlined.ArrowForward" Class="turns-around" />
+        <TbButton EndIcon="Forward">Next</TbButton>
 
-        /* app.css */
-        .turns-around:dir(rtl) {
-            transform: scaleX(-1);
+        @code {
+            private static readonly Icon Forward =
+                MaterialSymbols.Outlined.ArrowForward with { MirrorsInRightToLeft = true };
         }
         """;
 

@@ -842,6 +842,8 @@ Trailblazor.Icon.Deconstruct(out string! Svg, out string! ViewBox) -> void
 Trailblazor.Icon.Equals(Trailblazor.Icon other) -> bool
 Trailblazor.Icon.Icon() -> void
 Trailblazor.Icon.Icon(string! Svg, string! ViewBox = "0 0 24 24") -> void
+Trailblazor.Icon.MirrorsInRightToLeft.get -> bool
+Trailblazor.Icon.MirrorsInRightToLeft.init -> void
 Trailblazor.Icon.Svg.get -> string!
 Trailblazor.Icon.Svg.init -> void
 Trailblazor.Icon.ViewBox.get -> string!

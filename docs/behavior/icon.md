@@ -10,7 +10,9 @@ Nothing of its own. It isn't a control.
 
 ## Pointer
 
-Nothing of its own. An icon that acts is an [icon button](icon-button.md).
+- [x] An icon set to mirror turns around on a right-to-left page; any other keeps its direction. `IconTests.Icon_ShouldTurnAroundOnlyRightToLeft_WhenItMirrorsInRightToLeft`, `TbIconTests.Render_ShouldMarkTheIconToTurnAroundRightToLeft_WhenTheIconSaysSo`
+
+An icon that acts is an [icon button](icon-button.md).
 
 ## Touch
 

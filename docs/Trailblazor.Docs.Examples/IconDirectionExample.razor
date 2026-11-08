@@ -1,0 +1,16 @@
+@using Trailblazor.Icons.Material
+
+<TbStack Gap="3">
+    <TbStack Row Gap="2" Align="Align.Center" dir="ltr">
+        <TbText>Left to right</TbText>
+        <TbIcon Icon="Forward" />
+    </TbStack>
+    <TbStack Row Gap="2" Align="Align.Center" dir="rtl">
+        <TbText>Right to left</TbText>
+        <TbIcon Icon="Forward" />
+    </TbStack>
+</TbStack>
+
+@code {
+    private static readonly Icon Forward = MaterialSymbols.Outlined.ArrowForward with { MirrorsInRightToLeft = true };
+}

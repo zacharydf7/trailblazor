@@ -23,6 +23,17 @@ public class IconTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Icon_ShouldTurnAroundOnlyRightToLeft_WhenItMirrorsInRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/icon");
+
+        var transforms = await page.EvaluateAsync<string[]>(
+            "() => [...document.querySelectorAll('.tb-icon--mirrored')].map(icon => getComputedStyle(icon).transform)");
+
+        Assert.Equal(["none", "matrix(-1, 0, 0, 1, 0, 0)"], transforms);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MaterialSymbol_ShouldDrawItsShape_WhenGivenToTbIcon(string browser)
     {
         var page = await OpenAsync(browser, "/examples/icon");

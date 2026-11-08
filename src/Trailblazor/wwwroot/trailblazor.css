@@ -1572,6 +1572,10 @@
         height: 1.5rem;
     }
 
+    .tb-icon--mirrored:dir(rtl) {
+        transform: scaleX(-1);
+    }
+
     .tb-icon--primary {
         color: var(--tb-color-primary-text);
     }
