@@ -93,16 +93,31 @@ internal sealed partial class RichTextHtmlReader
 
     private static readonly string[] DefinitionScope = ["dl", "table", "td", "th"];
 
+    // The scopes an element of each name bounds, besides the inline scope that every block and table part bounds.
+    private static readonly Dictionary<string, Scope[]> ScopesBounded = new (Scope Scope, string[] Names)[]
+        {
+            (Scope.Button, ButtonScope), (Scope.ListItem, ListItemScope), (Scope.Definition, DefinitionScope),
+            (Scope.Table, TableScope), (Scope.Block, BlockScope),
+        }
+        .SelectMany(entry => entry.Names, (entry, name) => (Name: name, entry.Scope))
+        .GroupBy(pair => pair.Name, pair => pair.Scope).ToDictionary(group => group.Key, group => group.ToArray());
+
+    private static readonly string[] Headings = ["h1", "h2", "h3", "h4", "h5", "h6"];
+
     private readonly string _html;
     private readonly RichTextFormats _formats;
     private readonly List<Element> _open = [];
     // Formatting to reopen, in order; null marks a boundary.
     private readonly List<Element?> _formatting = [];
     private readonly List<RichTextParagraph> _paragraphs = [];
+    // Open elements that rules look for, oldest first, so finding one needs no walk down the open elements.
+    private readonly Dictionary<string, List<Element>> _openByName = [];
+    private readonly List<Element>[] _openBounds = [.. Enum.GetValues<Scope>().Select(_ => new List<Element>())];
+    private readonly List<Element> _openSkipped = [];
+    private readonly List<Element> _openForeign = [];
     private List<(string Text, RichTextFormats Formats, bool Pre)>? _runs;
     private int _position;
-    private int _openParagraphs;
-    private int _openForeign;
+    private int _opened;
     private bool _dropNewline;
     private bool _started;
     private bool _inBody;
@@ -123,7 +138,7 @@ internal sealed partial class RichTextHtmlReader
 
     private bool InOpenHead => _open.Count > 0 && _open[^1].Name == "head";
 
-    private bool InForeignContent => _openForeign > 0;
+    private bool InForeignContent => _openForeign.Count > 0;
 
     public static List<RichTextParagraph> Read(string html, RichTextFormats formats)
     {
@@ -233,12 +248,12 @@ internal sealed partial class RichTextHtmlReader
             return;
         }
 
-        if (!InSkipped && TableParts.Contains(name) && !_open.Exists(element => element.Name == "table"))
+        if (!InSkipped && TableParts.Contains(name) && LastOpen("table") is null)
         {
             return;
         }
 
-        if (!InSkipped && _openParagraphs > 0 && ClosesParagraph.Contains(name) && !(name == "table" && _quirks))
+        if (!InSkipped && LastOpen("p") is not null && ClosesParagraph.Contains(name) && !(name == "table" && _quirks))
         {
             Close("p");
         }
@@ -344,48 +359,42 @@ internal sealed partial class RichTextHtmlReader
     // The open element an end tag closes, or -1: a block only within its scope, anything else only with no block inside.
     private int ClosedBy(string name)
     {
-        string[]? scope = name switch
-        {
-            "p" => ButtonScope,
-            "li" => ListItemScope,
-            "dd" or "dt" => DefinitionScope,
-            _ when TableParts.Contains(name) || name == "table" => TableScope,
-            _ when Blocks.Contains(name) => BlockScope,
-            _ => null,
-        };
-        for (var i = _open.Count - 1; i >= 0; i--)
-        {
-            var element = _open[i];
-            if (element.Name == name || (IsHeading(name) && IsHeading(element.Name)))
-            {
-                return i;
-            }
-
-            if (scope?.Contains(element.Name) ?? (element.Block || TableParts.Contains(element.Name)))
-            {
-                return -1;
-            }
-        }
-
-        return -1;
+        // Any heading's end tag closes whichever heading is open.
+        var closed = Headings.Contains(name)
+            ? Headings.Select(LastOpen).OfType<Element>().MaxBy(element => element.Serial)
+            : LastOpen(name);
+        var bound = _openBounds[(int)ScopeOf(name)] is [.., var last] ? last : null;
+        // Everything above the closed element closes with it, so the search costs no more than closing them.
+        return closed is null || bound?.Serial > closed.Serial ? -1 : _open.LastIndexOf(closed);
     }
 
     // Inside skipped content an end tag closes only what opened there.
     private int ClosedInSkipped(string name)
     {
-        var index = _open.FindLastIndex(element => element.Name == name);
-        return index >= _open.FindIndex(element => element.Skipped) ? index : -1;
+        var closed = LastOpen(name);
+        return closed is not null && closed.Serial >= _openSkipped[0].Serial ? _open.LastIndexOf(closed) : -1;
     }
 
     // Whether an end tag inside open SVG or MathML names nothing opened there, so the HTML rules apply to it.
     private bool LeavesForeignContent(string name)
     {
-        var root = _open.FindIndex(element => element.Skipped);
-        return _open[root].Name is "svg" or "math" && _open.FindLastIndex(element => element.Name == name) < root;
+        var root = _openSkipped[0];
+        return root.Name is "svg" or "math" && (LastOpen(name)?.Serial ?? 0) < root.Serial;
     }
 
-    // Any heading's end tag closes whichever heading is open.
-    private static bool IsHeading(string name) => name is "h1" or "h2" or "h3" or "h4" or "h5" or "h6";
+    private Element? LastOpen(string name) =>
+        _openByName.TryGetValue(name, out var open) && open.Count > 0 ? open[^1] : null;
+
+    // The kind of scope an end tag closes within, which decides the open elements that stop it.
+    private static Scope ScopeOf(string name) => name switch
+    {
+        "p" => Scope.Button,
+        "li" => Scope.ListItem,
+        "dd" or "dt" => Scope.Definition,
+        _ when TableParts.Contains(name) || name == "table" => Scope.Table,
+        _ when Blocks.Contains(name) => Scope.Block,
+        _ => Scope.Inline,
+    };
 
     // Ends a formatting element, as far as a browser would; false when nothing remembers it.
     private bool EndFormatting(string name)
@@ -410,6 +419,7 @@ internal sealed partial class RichTextHtmlReader
             // Blocks inside stay open without the format; elements above the last close, and their formatting reopens.
             _open.RemoveAt(index);
             element.IsOpen = false;
+            Track(element, open: false);
             PopTo(_open.FindLastIndex(open => open.Block) + 1);
             for (var i = index; i < _open.Count; i++)
             {
@@ -463,7 +473,8 @@ internal sealed partial class RichTextHtmlReader
 
         _open.Add(element);
         element.IsOpen = true;
-        Count(element, 1);
+        element.Serial = ++_opened;
+        Track(element, open: true);
         return true;
     }
 
@@ -485,16 +496,45 @@ internal sealed partial class RichTextHtmlReader
         }
     }
 
-    // Keeps count of the open elements that other rules ask about, so they need no search.
-    private void Count(Element element, int change)
+    private void Track(Element element, bool open)
     {
+        if (!_openByName.TryGetValue(element.Name, out var named))
+        {
+            named = _openByName[element.Name] = [];
+        }
+
+        Toggle(named, element, open);
+        if (element.Block || TableParts.Contains(element.Name))
+        {
+            Toggle(_openBounds[(int)Scope.Inline], element, open);
+        }
+
+        foreach (var scope in ScopesBounded.GetValueOrDefault(element.Name, []))
+        {
+            Toggle(_openBounds[(int)scope], element, open);
+        }
+
+        if (element.Skipped)
+        {
+            Toggle(_openSkipped, element, open);
+        }
+
         if (element.Name is "svg" or "math")
         {
-            _openForeign += change;
+            Toggle(_openForeign, element, open);
         }
-        else if (element.Name == "p")
+    }
+
+    // Elements almost always close from the top, so the search from the end is short.
+    private static void Toggle(List<Element> elements, Element element, bool open)
+    {
+        if (open)
         {
-            _openParagraphs += change;
+            elements.Add(element);
+        }
+        else
+        {
+            elements.RemoveAt(elements.LastIndexOf(element));
         }
     }
 
@@ -507,7 +547,7 @@ internal sealed partial class RichTextHtmlReader
         }
     }
 
-    private void CloseForeignContent() => PopTo(_open.FindIndex(element => element.Name is "svg" or "math"));
+    private void CloseForeignContent() => PopTo(_open.LastIndexOf(_openForeign[0]));
 
     private void PopTo(int index)
     {
@@ -522,7 +562,7 @@ internal sealed partial class RichTextHtmlReader
         var element = _open[^1];
         _open.RemoveAt(_open.Count - 1);
         element.IsOpen = false;
-        Count(element, -1);
+        Track(element, open: false);
         if (!element.Skipped && FormattingBoundaries.Contains(element.Name))
         {
             var boundary = Math.Max(_formatting.FindLastIndex(entry => entry is null), 0);
@@ -874,5 +914,18 @@ internal sealed partial class RichTextHtmlReader
         public int FirstParagraph { get; } = firstParagraph;
 
         public bool IsOpen { get; set; }
+
+        // Rises with each element opened, so of two open elements the one with the higher serial is above.
+        public int Serial { get; set; }
+    }
+
+    private enum Scope
+    {
+        Inline,
+        Button,
+        ListItem,
+        Definition,
+        Table,
+        Block,
     }
 }

@@ -162,18 +162,24 @@ public class RichTextDocumentTests
     public void Parse_ShouldKeepAReferenceAsText_WhenItsNameIsUnknown(string html) =>
         Assert.Equal(html, RichTextDocument.Parse(html).ToPlainText());
 
+    // The optional opening leaves elements open below the repeated units, for their tag rules to search.
     [Theory]
-    [InlineData("<div>")]
-    [InlineData("</div>")]
-    [InlineData("<b style=\"x\">")]
-    [InlineData("<p><b>x</p>")]
-    [InlineData("<svg>")]
-    [InlineData("a<!---->")]
-    [InlineData("<span></div>")]
-    [InlineData("<span></x>")]
-    public void Parse_ShouldFinishQuickly_WhenGivenAMegabyteOfDeepOrRepetitiveHtml(string unit)
+    [InlineData("", 0, "<div>")]
+    [InlineData("", 0, "</div>")]
+    [InlineData("", 0, "<b style=\"x\">")]
+    [InlineData("", 0, "<p><b>x</p>")]
+    [InlineData("", 0, "<svg>")]
+    [InlineData("", 0, "a<!---->")]
+    [InlineData("", 0, "<span></div>")]
+    [InlineData("", 0, "<span></x>")]
+    [InlineData("<x><div>", 1, "<span></x>")]
+    [InlineData("<div>", 500, "<svg><b>")]
+    [InlineData("<div>", 500, "<td>")]
+    public void Parse_ShouldFinishQuickly_WhenGivenAMegabyteOfDeepOrRepetitiveHtml(string opening, int times,
+        string unit)
     {
-        var html = string.Concat(Enumerable.Repeat(unit, 1_000_000 / unit.Length));
+        var html = string.Concat(Enumerable.Repeat(opening, times)) + string.Concat(Enumerable.Repeat(unit,
+            1_000_000 / unit.Length));
         var watch = Stopwatch.StartNew();
 
         RichTextDocument.Parse(html);
@@ -185,6 +191,18 @@ public class RichTextDocumentTests
     public void Parse_ShouldFinishQuickly_WhenFormattingIsLeftOpenWithADifferentStyleEachTime()
     {
         var html = string.Concat(Enumerable.Range(0, 60_000).Select(i => $"<p><b style=\"a{i}\">x</p>"));
+        var watch = Stopwatch.StartNew();
+
+        RichTextDocument.Parse(html);
+
+        Assert.InRange(watch.Elapsed, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public void Parse_ShouldFinishQuickly_WhenManyNamesHaveOpenedBeforeManyStrayHeadingEndTags()
+    {
+        var html = string.Concat(Enumerable.Range(0, 30_000).Select(i => $"<a{i}></a{i}>"))
+            + string.Concat(Enumerable.Repeat("</h1>", 100_000));
         var watch = Stopwatch.StartNew();
 
         RichTextDocument.Parse(html);
