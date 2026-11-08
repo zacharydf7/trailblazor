@@ -29,7 +29,7 @@ public class NumberFieldExampleTests : DocsTest
     {
         var cut = Render<NumberFieldCheckedExample>();
 
-        cut.WaitForAssertion(() => Assert.Equal("Enter a group of 1 to 12 hikers.",
+        cut.WaitForAssertion(() => Assert.Equal("Hikers must be from 1 to 12.",
             cut.Find("[data-part=error]").TextContent.Trim()));
     }
 

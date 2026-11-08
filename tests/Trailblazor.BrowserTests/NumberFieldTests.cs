@@ -42,6 +42,19 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldShowTheLimitAndNotSubmit_WhenAStaticPostIsPastIt(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-number-limit");
+
+        await page.GetByLabel("Copies").FillAsync("50");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+
+        await Expect(page.GetByText("Copies must be at most 10.")).ToBeVisibleAsync();
+        await Expect(page.GetByTestId("posted")).ToBeEmptyAsync();
+        await Expect(page.GetByLabel("Copies")).ToHaveValueAsync("50");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldStepWithTheArrowKeys_WhenFocused(string browser)
     {
         var page = await OpenAsync(browser, "/examples/number-field");

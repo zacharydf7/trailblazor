@@ -37,11 +37,15 @@
     [Parameter]
     public FieldClasses? Classes { get; set; }
 
-    /// <summary>The smallest value allowed. Step buttons stop here, and a smaller typed value is an error.</summary>
+    /// <summary>The smallest value allowed. Step buttons stop here, and a smaller value is an error, whether typed,
+    /// posted by a static form or set by code; one the user didn't type shows its error once the form validates. A
+    /// disabled or read-only field isn't checked, since the user can't change it.</summary>
     [Parameter]
     public decimal? Min { get; set; }
 
-    /// <summary>The largest value allowed. Step buttons stop here, and a larger typed value is an error.</summary>
+    /// <summary>The largest value allowed. Step buttons stop here, and a larger value is an error, whether typed,
+    /// posted by a static form or set by code; one the user didn't type shows its error once the form validates. A
+    /// disabled or read-only field isn't checked, since the user can't change it.</summary>
     [Parameter]
     public decimal? Max { get; set; }
 
@@ -268,9 +272,15 @@
                 : value;
         }
 
+        error = ValueError(value);
+        return error is null;
+    }
+
+    private protected override string? ValueError(TValue? value)
+    {
         // Compared as doubles, which hold the range of every number type.
         var number = value is null ? (double?)null : Convert.ToDouble(value, CultureInfo.InvariantCulture);
-        error = (number < (double?)Min, number > (double?)Max) switch
+        return (number < (double?)Min, number > (double?)Max) switch
         {
             (true, _) or (_, true) when Min is not null && Max is not null =>
                 Message(TbStrings.NumberFieldRange, Limit(Min), Limit(Max)),
@@ -278,7 +288,6 @@
             (_, true) => Message(TbStrings.NumberFieldAtMost, Limit(Max)),
             _ => null,
         };
-        return error is null;
     }
 
     // A formatted field's message gives its limits as the field shows numbers, such as 0 % and 100 %.

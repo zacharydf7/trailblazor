@@ -242,6 +242,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     // A field the user can't change isn't asked of them, as the browser's own validation skips one.
     private bool MissesRequired => Required && !Disabled && !ReadOnly && _parseError is null && IsMissing(Value);
 
+    // What's wrong with a value however it arrived (typed, posted or set by code), such as a number past a limit.
+    private protected virtual string? ValueError(TValue? value) => null;
+
+    private string? ValueProblem => Disabled || ReadOnly || _parseError is not null ? null : ValueError(Value);
+
     // A blank error from the parent is no error, so it doesn't mark the field invalid.
     private string? ParentError => string.IsNullOrWhiteSpace(Error) ? null : Error;
 
@@ -481,6 +486,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             _messages.Add(_parseError);
         }
 
+        if (ValueProblem is { } problem)
+        {
+            _messages.Add(problem);
+        }
+
         if (MissesRequired)
         {
             _messages.Add(RequiredMessage ?? Message(TbStrings.FieldRequired));
@@ -511,7 +521,8 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     }
 
     bool IFormField.HasProblems() =>
-        _parseError is not null || MissesRequired || (Validation?.Invoke(Value).Any() ?? false);
+        _parseError is not null || ValueProblem is not null || MissesRequired
+        || (Validation?.Invoke(Value).Any() ?? false);
 
     void IFormField.CountIfInvalid()
     {

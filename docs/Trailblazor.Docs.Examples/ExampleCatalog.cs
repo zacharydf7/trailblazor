@@ -2082,9 +2082,10 @@ public static class ExampleCatalog
                     + "text that isn't a number, shows an error and stays in the field to be fixed, and the bound value "
                     + "doesn't change. `Step` sets how far the arrow keys and buttons move the value.",
                     typeof(NumberFieldExample)),
-                new("values-set-by-code", "Values set by code", "`Min`, `Max` and `ClampToRange` don't apply to a value "
-                    + "your code sets, such as one loaded from a saved trip, so it can sit outside the limits and still "
-                    + "submit. `Validation` checks it, as here.", typeof(NumberFieldCheckedExample)),
+                new("values-set-by-code", "Values set by code", "`Min` and `Max` hold for a value your code sets too, "
+                    + "such as one loaded from a saved trip: once the form validates, the field explains its limits and "
+                    + "the form doesn't submit. `ClampToRange` moves only typed values.",
+                    typeof(NumberFieldCheckedExample)),
                 new("required", "Required", "`Required` marks the field and, once it is edited or its form validates, "
                     + "shows a message if it is empty. `RequiredMessage` replaces the default, which uses the label. A "
                     + "long label wraps, as this one does.", typeof(NumberFieldRequiredExample)),
@@ -2145,8 +2146,8 @@ public static class ExampleCatalog
             [
                 "Before the page is interactive, a field with a `Format` is a plain number box, since a static form "
                     + "posts numbers in the invariant culture.",
-                "A static form's post isn't checked against `Min` and `Max`, so use `Validation` for a limit the server "
-                    + "must enforce.",
+                "A static form's post is checked against `Min` and `Max` on the server, as a typed value is, unless "
+                    + "the field is read-only; use `Validation` to check a read-only value.",
             ],
             Notes =
             [

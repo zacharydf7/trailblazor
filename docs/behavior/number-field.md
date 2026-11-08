@@ -16,6 +16,7 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 - [x] In a read-only field the arrows change nothing and the step buttons are off. `TbNumberFieldTests.Render_ShouldTurnOffTheStepButtonsAndMakeTheInputReadOnly_WhenReadOnly`, `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
 - [x] Text that isn't a number stays in the box with a message. `NumberFieldTests.NumberField_ShouldSayItNeedsANumber_WhenAnEmptyFieldGetsTextTheBrowserCannotRead`
 - [x] A typed value outside the limits explains them and keeps the old value. `NumberFieldTests.NumberField_ShouldExplainTheLimits_WhenATypedValueIsOutsideThem`
+- [x] A value outside the limits that a static form posts or code sets explains them once the form validates, and the form doesn't submit, unless the field is disabled or read-only. `NumberFieldTests.Form_ShouldShowTheLimitAndNotSubmit_WhenAStaticPostIsPastIt`, `TbFormTests.Submit_ShouldRefuseANumberSetByCodePastItsLimit_WhenTheFieldCanBeChanged`, `TbFormTests.Submit_ShouldAllowANumberPastItsLimit_WhenTheFieldIsDisabledOrReadOnly`
 - [ ] Arrows and step buttons land on the same number from a value that is off the step. UNCONFIRMED
 
 ## Pointer

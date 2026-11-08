@@ -657,6 +657,51 @@ public class TbFormTests : BunitContext
     }
 
     [Fact]
+    public void Submit_ShouldRefuseANumberSetByCodePastItsLimit_WhenTheFieldCanBeChanged()
+    {
+        var valid = 0;
+        var cut = RenderHikersPastTheirLimit(disabled: false, readOnly: false, () => valid++);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+        Assert.False(_valid);
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(0, valid);
+        Assert.Equal(["Hikers must be at most 12."],
+            cut.FindAll("[data-part=error]").Select(error => error.TextContent.Trim()));
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Submit_ShouldAllowANumberPastItsLimit_WhenTheFieldIsDisabledOrReadOnly(bool disabled, bool readOnly)
+    {
+        var valid = 0;
+        var cut = RenderHikersPastTheirLimit(disabled, readOnly, () => valid++);
+        Assert.True(_valid);
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(1, valid);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    private IRenderedComponent<TbForm> RenderHikersPastTheirLimit(bool disabled, bool readOnly, Action onValidSubmit) =>
+        Render<TbForm>(parameters => parameters.Add(form => form.IsValid, _valid)
+            .Add(form => form.IsValidChanged, (bool next) => _valid = next)
+            .Add(form => form.OnValidSubmit, (EditContext _) => onValidSubmit())
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbNumberField<int>>(0);
+                builder.AddAttribute(1, nameof(TbNumberField<int>.Label), "Hikers");
+                builder.AddAttribute(2, nameof(TbNumberField<int>.Value), 14);
+                builder.AddAttribute(3, nameof(TbNumberField<int>.Max), 12m);
+                builder.AddAttribute(4, nameof(TbNumberField<int>.Disabled), disabled);
+                builder.AddAttribute(5, nameof(TbNumberField<int>.ReadOnly), readOnly);
+                builder.CloseComponent();
+            })));
+
+    [Fact]
     public void Submit_ShouldSubmit_WhenAFieldIsMarkedInvalidWithoutAMessage()
     {
         var valid = 0;
