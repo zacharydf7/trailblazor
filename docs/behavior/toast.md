@@ -21,6 +21,7 @@ Familiar apps: Gmail's Undo bar, Android snackbars, Windows and macOS notificati
 - [x] Resting on a toast pauses the others too, so a neighbor timing out doesn't move it from under the pointer. `ToastTests.Toasts_ShouldAllStayOpen_WhenThePointerRestsOnOne`, `ToastServiceTests.Toast_ShouldWaitToStartItsTime_WhenShownWhileTheToasterIsPaused`, `ToastServiceTests.Toast_ShouldStayPaused_WhenThePointerCrossesFromOneToastToAnother`
 - [x] A toast shown from a modal can be clicked above it. `ToastTests.Toast_ShouldBeUsableAboveAModalDialog_WhenShownFromIt`
 - [x] The gaps between toasts don't block the page. `trailblazor.css`
+- [x] A toast at any position, in either text direction, holds still as a modal opens and takes away the page's scrollbar. `ScrollLockTests.Toast_ShouldHoldStill_WhenAModalTakesAwayTheScrollbar`, `ScrollLockTests.Toaster_ShouldHoldStill_WhenAModalTakesAwayTheScrollbarAtAnyPosition`
 - [x] A danger toast stays until dismissed. `ToastServiceTests.Toast_ShouldStayUntilDismissedAndBeAnnouncedAssertively_WhenGivenAnError`
 - [x] A toast with an action stays until dismissed, so the action can't time out unseen. `ToastServiceTests.Toast_ShouldStayOpenAndSayItsActionAndKey_WhenGivenAnAction`
 - [x] Toasts past the maximum wait their turn. `ToastServiceTests.Show_ShouldQueueToastsBeyondTheMaximum_WhenMoreAreOpen`

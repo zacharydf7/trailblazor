@@ -142,6 +142,7 @@ public class ToastTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/toasts", new() { HasTouch = true });
         await page.GetByRole(AriaRole.Button, new() { Name = "Quick" }).ClickAsync();
+        await Expect(Toast(page, "Quick note")).ToBeVisibleAsync();
         var box = (await Toast(page, "Quick note").Locator("[data-part=message]").BoundingBoxAsync())!;
 
         await page.Touchscreen.TapAsync(box.X + box.Width / 2, box.Y + box.Height / 2);

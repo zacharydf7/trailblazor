@@ -132,6 +132,52 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Fact]
+    public async Task Toast_ShouldHoldStill_WhenAModalTakesAwayTheScrollbar()
+    {
+        var page = await GrowAsync(await OpenPageAsync());
+        await Button(page, "Toast").ClickAsync();
+        var toaster = page.Locator(".tb-toaster", new() { Has = page.GetByText("Draft saved") });
+        await Expect(toaster).ToBeVisibleAsync();
+        var before = (await toaster.BoundingBoxAsync())!;
+
+        await OpenModalAsync(page);
+        await WaitForNoScrollbarAsync(page);
+
+        // The toast moves into the modal's own toaster, which has to land where the page's was.
+        var moved = page.GetByRole(AriaRole.Dialog).Locator(".tb-toaster");
+        await Expect(moved).ToContainTextAsync("Draft saved");
+        await Expect(moved).ToBeVisibleAsync();
+        Assert.Equal(before.X, (await moved.BoundingBoxAsync())!.X);
+    }
+
+    // The host app puts every toaster at one position, so an element with a toaster's classes stands in for the others.
+    [Theory]
+    [InlineData("bottomend", "ltr")]
+    [InlineData("bottomcenter", "ltr")]
+    [InlineData("bottomstart", "rtl")]
+    public async Task Toaster_ShouldHoldStill_WhenAModalTakesAwayTheScrollbarAtAnyPosition(string position,
+        string direction)
+    {
+        var page = await GrowAsync(await OpenPageAsync());
+        await page.EvaluateAsync("""
+            ([position, direction]) => {
+                document.documentElement.dir = direction;
+                const toaster = document.body.appendChild(document.createElement('section'));
+                toaster.className = `tb-toaster tb-toaster--${position}`;
+                toaster.dataset.testid = 'stand-in';
+                toaster.textContent = 'Stand-in';
+            }
+            """, new[] { position, direction });
+        var toaster = page.GetByTestId("stand-in");
+        var before = (await toaster.BoundingBoxAsync())!;
+
+        await OpenModalAsync(page);
+        await WaitForNoScrollbarAsync(page);
+
+        Assert.Equal(before.X, (await toaster.BoundingBoxAsync())!.X);
+    }
+
+    [Fact]
     public async Task Modal_ShouldAddNoRoom_WhenThePageClipsItselfAfterHavingAScrollbar()
     {
         var page = await GrowAsync(await OpenPageAsync());

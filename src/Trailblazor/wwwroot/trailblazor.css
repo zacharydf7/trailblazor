@@ -4402,6 +4402,17 @@
         margin-inline: auto;
     }
 
+    /* A locked page pads its right edge for the scrollbar it hid, in either text direction, so a toaster against that
+       edge, or centered, keeps clear of the padding and holds still. */
+    .tb-toaster--topend:dir(ltr),
+    .tb-toaster--bottomend:dir(ltr),
+    .tb-toaster--topstart:dir(rtl),
+    .tb-toaster--bottomstart:dir(rtl),
+    .tb-toaster--topcenter,
+    .tb-toaster--bottomcenter {
+        right: var(--tb-scroll-lock-offset, 0px);
+    }
+
     .tb-toaster__list {
         display: flex;
         flex-direction: column;

@@ -1,4 +1,5 @@
 @page "/scroll-lock"
+@inject IToastService Toasts
 
 @* A short page, until Grow makes it taller than the window. *@
 <TbButton OnClick="() => _modal = true">Open modal</TbButton>
@@ -6,6 +7,7 @@
 <TbButton OnClick="() => _overlay = true">Open overlay</TbButton>
 <TbButton OnClick="() => _tall = true">Grow</TbButton>
 <TbButton OnClick="() => _tall = false">Shrink</TbButton>
+<TbButton OnClick='() => Toasts.Show("Draft saved", options: new() { StayOpen = true })'>Toast</TbButton>
 <TbDialog @bind-Open="_modal" Title="Modal">Modal words</TbDialog>
 <TbDialog @bind-Open="_modeless" Title="Modeless" Options="Modeless">Modeless words</TbDialog>
 <TbOverlay Visible="_overlay" LockScroll Blocking>
