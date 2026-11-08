@@ -169,6 +169,18 @@ public class TbSelectTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameAWordlessOptionByItsText_WhenRenderedStatically()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Route")
+            .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "any").Add(o => o.Text, "Any trail")
+                .AddChildContent("<svg aria-hidden=\"true\"></svg>")));
+
+        Assert.Equal("Any trail", cut.Find("option[value=any]").InnerHtml.Trim());
+    }
+
+    [Fact]
     public void Render_ShouldStartWithAnEmptyPlaceholderOption_WhenRenderedStaticallyWithNoChoice()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));

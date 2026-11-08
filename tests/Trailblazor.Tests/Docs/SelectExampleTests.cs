@@ -49,6 +49,14 @@ public class SelectExampleTests : DocsTest
     }
 
     [Fact]
+    public void ContentExample_ShouldNameEachOptionByItsWordsOrItsText_WhenOptionsHaveContent()
+    {
+        var cut = Render<SelectContentExample>();
+
+        Assert.Equal(["Lake loop Easy", "Summit trail Hard", "Any trail"], cut.Tb().Select("Route").Options);
+    }
+
+    [Fact]
     public void LateExample_ShouldShowTheChosenName_WhenItsOptionsHaveNotLoaded()
     {
         var cut = Render<SelectLateExample>();

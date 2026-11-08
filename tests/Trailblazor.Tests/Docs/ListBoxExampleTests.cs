@@ -37,11 +37,11 @@ public class ListBoxExampleTests : DocsTest
     }
 
     [Fact]
-    public void ContentExample_ShouldNameTheOptionByItsWords_WhenAnOptionHasContent()
+    public void ContentExample_ShouldNameEachOptionByItsWordsOrItsText_WhenOptionsHaveContent()
     {
         var cut = Render<ListBoxContentExample>();
 
-        Assert.Equal(["Lake loop Easy", "Summit trail Hard"], cut.Tb().ListBox("Route").Options);
+        Assert.Equal(["Lake loop Easy", "Summit trail Hard", "Any trail"], cut.Tb().ListBox("Route").Options);
     }
 
     [Fact]

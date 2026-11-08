@@ -2845,7 +2845,8 @@ public static class ExampleCatalog
                 "In a single select, a value no option has stays chosen in the native select.",
                 "A `ReadOnly` native select puts its choice back whenever the user changes it, and posts. A `Disabled` "
                     + "one doesn't post.",
-                "An option whose content has no words has no name until the page is interactive, even with `Text`.",
+                "Until the page is interactive, an option with `Text` shows that text instead of its content, since the "
+                    + "browser's own list can only show text.",
             ],
             Notes =
             [
@@ -3510,7 +3511,8 @@ public static class ExampleCatalog
                 "It renders as the browser's own `<select>` list, so it still works and posts with its form.",
                 "A `ReadOnly` native list puts its choice back whenever the user changes it, and posts. A `Disabled` "
                     + "one doesn't post.",
-                "An option whose content has no words has no name until the page is interactive, even with `Text`.",
+                "Until the page is interactive, an option with `Text` shows that text instead of its content, since the "
+                    + "browser's own list can only show text.",
             ],
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],

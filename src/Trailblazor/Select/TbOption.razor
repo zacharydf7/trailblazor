@@ -24,9 +24,17 @@
 }
 else
 {
+    @* A native option holds only text, which is its name, so Text replaces the content whenever it's set. *@
     <option @attributes="AdditionalAttributes" value="@Select!.Format(Value)" selected="@Select.IsSelected(Value)"
             disabled="@Disabled" class="@Class" style="@Style">
-        @Content
+        @if (Text is null)
+        {
+            @Content
+        }
+        else
+        {
+            @Text
+        }
     </option>
 }
 
@@ -40,8 +48,8 @@ else
     public TValue Value { get; set; } = default!;
 
     /// <summary>The option's text, when it has no <see cref="ChildContent"/>, or the text that type-ahead matches and
-    /// screen readers read when the content isn't plain text, such as an image and a caption. Defaults to the value's
-    /// text.</summary>
+    /// screen readers read when the content isn't plain text, such as an image and a caption. Until the page is
+    /// interactive, it shows in place of the content. Defaults to the value's text.</summary>
     [Parameter]
     public string? Text { get; set; }
 
