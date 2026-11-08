@@ -1,0 +1,168 @@
+@page "/guides/rich-text"
+
+<PageTitle>Rich text · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
+        <TbTableOfContentsItem TargetId="canonical-html" Text="Canonical HTML" />
+        <TbTableOfContentsItem TargetId="reading-html" Text="Reading HTML" />
+        <TbTableOfContentsItem TargetId="safe-to-show" Text="Safe to show" />
+        <TbTableOfContentsItem TargetId="paragraphs-and-runs" Text="Paragraphs and runs" />
+        <TbTableOfContentsItem TargetId="api" Text="API" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Rich text</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            <code>RichTextDocument</code> reads any HTML into paragraphs, line breaks and text formats, and writes them
+            back as one canonical HTML form. Use it to clean up HTML from anywhere, show it safely, or turn it into
+            another format without parsing HTML yourself.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="try-it" Text="Try it" Class="docs-section" />
+        <TbText>
+            Edit the HTML, or paste markup of your own, to see the canonical value and plain text it reads as. Pasting
+            straight from Word or a web page into this box gives their plain text, not their HTML.
+        </TbText>
+        <div class="docs-example">
+            <TbTextField Label="HTML" @bind-Value="_html" UpdateOnInput Lines="5" />
+        </div>
+        <CodeBlock Label="Canonical value" Code="@Document.ToHtml()" Language="CodeLanguage.Plain" />
+        <CodeBlock Label="Plain text" Code="@Document.ToPlainText()" Language="CodeLanguage.Plain" />
+
+        <DocsHeading Id="canonical-html" Text="Canonical HTML" Class="docs-section" />
+        <TbText><code>ToHtml</code> always writes the same HTML for the same content:</TbText>
+        <ul>
+            <li>
+                a <code>&lt;p&gt;</code> for each paragraph, with <code>&lt;br&gt;</code> for each line break, and
+                <code>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</code> for an empty one
+            </li>
+            <li>
+                <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;s&gt;</code>,
+                <code>&lt;sub&gt;</code> and <code>&lt;sup&gt;</code> for bold, italic, underline, strikethrough,
+                subscript and superscript, always nested in that order, outermost first
+            </li>
+            <li><code>&amp;nbsp;</code> for each space HTML would otherwise collapse, so spaces show as typed</li>
+            <li><code>""</code> for an empty document</li>
+        </ul>
+        <TbText>
+            Parsing that HTML gives back the same document, so two values with the same content compare equal as
+            strings.
+        </TbText>
+
+        <DocsHeading Id="reading-html" Text="Reading HTML" Class="docs-section" />
+        <TbText>
+            <code>Parse</code> accepts any HTML, however messy, and repairs it as a browser does wherever that changes
+            the text or its formats. A few rare cases can still read differently, such as tags misnested beyond a
+            simple reorder and character references whose names HTML 4 lacks, which stay as written.
+        </TbText>
+        <ul>
+            <li>Paragraphs, headings, list items, table cells and other blocks become paragraphs.</li>
+            <li>
+                Formats come from tags such as <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code>, and from inline styles:
+                a font weight of 600 or more, italic, underline, line-through, and <code>vertical-align</code> for
+                subscript and superscript.
+            </li>
+            <li>
+                Word's and Google Docs' quirks are handled: Word's list bullets and numbers are dropped, and the
+                <code>&lt;b style="font-weight: normal"&gt;</code> wrapper Google Docs puts around everything isn't read
+                as bold.
+            </li>
+            <li>
+                Tabs and no-break spaces read as plain spaces. Where HTML would collapse one, <code>ToHtml</code> writes
+                <code>&amp;nbsp;</code>, so the spaces still show, including the indentation in a <code>&lt;pre&gt;</code>.
+            </li>
+        </ul>
+        <TbText>
+            Pass the formats to keep, and any other format is dropped while its text stays. For example, a short
+            description might allow only bold and italic:
+        </TbText>
+        <CodeBlock Label="Keeping some formats" Code="@KeepingFormats" />
+
+        <DocsHeading Id="safe-to-show" Text="Safe to show" Class="docs-section" />
+        <TbText>
+            Everything other than text, paragraphs, line breaks and formats is dropped while reading: scripts, styles,
+            event handlers, images, every attribute, and links, though their text stays. <code>ToHtml</code> escapes
+            all the text and writes no tags but its own, so its result is safe to render as markup, even when the HTML
+            came from a user.
+        </TbText>
+        <CodeBlock Label="Showing stored HTML" Code="@Showing" />
+        <DocsCallout Title="Read it on the server">
+            HTML that comes from a browser can say anything. Parse it on the server before you store or show it,
+            rather than trusting the browser to have cleaned it. In a WebAssembly app, .NET code in the page runs in
+            the browser too.
+        </DocsCallout>
+
+        <DocsHeading Id="paragraphs-and-runs" Text="Paragraphs and runs" Class="docs-section" />
+        <TbText>
+            A document is a list of paragraphs, and a paragraph is a list of runs: stretches of text that share one set
+            of formats. A <code>'\n'</code> in a run's text is a line break. A run's <code>Formats</code> is a
+            <code>RichTextFormats</code> flags value: <code>Bold</code>, <code>Italic</code>, <code>Underline</code>,
+            <code>Strikethrough</code>, <code>Subscript</code> or <code>Superscript</code>, combined with
+            <code>|</code>. Read the paragraphs and runs to turn the content into another format, or build them in
+            code.
+        </TbText>
+        <CodeBlock Label="Reading runs" Code="@ReadingRuns" />
+        <CodeBlock Label="Building a document" Code="@Building" />
+
+        <DocsHeading Id="api" Text="API" Class="docs-section" />
+        <ApiTable Type="typeof(RichTextDocument)" />
+        <ApiTable Type="typeof(RichTextParagraph)" />
+        <ApiTable Type="typeof(RichTextRun)" />
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="guides/forms">Forms and validation</a>: check a value before you store it, such as the length
+                of its <code>ToPlainText()</code>.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private string _html = """
+        <p class=MsoNormal><b>Bold</b> and <span style="font-style: italic">italic</span><o:p></o:p></p>
+        <h2>A heading</h2><script>alert("never runs")</script>
+        """;
+
+    private RichTextDocument Document => RichTextDocument.Parse(_html);
+
+    private const string KeepingFormats = """
+        var description = RichTextDocument.Parse(html, RichTextFormats.Bold | RichTextFormats.Italic);
+        """;
+
+    private const string Showing = """
+        <div class="trail-notes">@Notes</div>
+
+        @code {
+            private MarkupString Notes => (MarkupString)RichTextDocument.Parse(trail.Notes).ToHtml();
+        }
+        """;
+
+    private const string ReadingRuns = """
+        foreach (var paragraph in RichTextDocument.Parse(html).Paragraphs)
+        {
+            foreach (var run in paragraph.Runs)
+            {
+                var bold = run.Formats.HasFlag(RichTextFormats.Bold);
+                writer.Write(run.Text, bold);
+            }
+
+            writer.EndParagraph();
+        }
+        """;
+
+    private const string Building = """
+        var notes = new RichTextDocument(
+        [
+            new RichTextParagraph([new("Closed for "), new("repairs", RichTextFormats.Bold), new(" until May.")]),
+            new RichTextParagraph([new("Use the north trailhead.")]),
+        ]);
+
+        var html = notes.ToHtml();
+        """;
+}

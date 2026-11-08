@@ -3027,3 +3027,35 @@ override Trailblazor.GridState.GetHashCode() -> int
 override Trailblazor.GridState.ToString() -> string!
 static Trailblazor.GridState.operator !=(Trailblazor.GridState? left, Trailblazor.GridState? right) -> bool
 static Trailblazor.GridState.operator ==(Trailblazor.GridState? left, Trailblazor.GridState? right) -> bool
+Trailblazor.RichTextDocument
+Trailblazor.RichTextDocument.IsEmpty.get -> bool
+Trailblazor.RichTextDocument.Paragraphs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.RichTextParagraph!>!
+Trailblazor.RichTextDocument.RichTextDocument(System.Collections.Generic.IEnumerable<Trailblazor.RichTextParagraph!>! paragraphs) -> void
+Trailblazor.RichTextDocument.ToHtml() -> string!
+Trailblazor.RichTextDocument.ToPlainText() -> string!
+Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Bold = 1 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Italic = 2 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.None = 0 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Strikethrough = 8 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Subscript = 16 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Superscript = 32 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Underline = 4 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextParagraph
+Trailblazor.RichTextParagraph.RichTextParagraph(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs) -> void
+Trailblazor.RichTextParagraph.Runs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.RichTextRun!>!
+Trailblazor.RichTextParagraph.Text.get -> string!
+Trailblazor.RichTextRun
+Trailblazor.RichTextRun.<Clone>$() -> Trailblazor.RichTextRun!
+Trailblazor.RichTextRun.Equals(Trailblazor.RichTextRun? other) -> bool
+Trailblazor.RichTextRun.Formats.get -> Trailblazor.RichTextFormats
+Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None) -> void
+Trailblazor.RichTextRun.Text.get -> string!
+override Trailblazor.RichTextRun.Equals(object? obj) -> bool
+override Trailblazor.RichTextRun.GetHashCode() -> int
+override Trailblazor.RichTextRun.ToString() -> string!
+static Trailblazor.RichTextDocument.Empty.get -> Trailblazor.RichTextDocument!
+static Trailblazor.RichTextDocument.Parse(string? html) -> Trailblazor.RichTextDocument!
+static Trailblazor.RichTextDocument.Parse(string? html, Trailblazor.RichTextFormats formats) -> Trailblazor.RichTextDocument!
+static Trailblazor.RichTextRun.operator !=(Trailblazor.RichTextRun? left, Trailblazor.RichTextRun? right) -> bool
+static Trailblazor.RichTextRun.operator ==(Trailblazor.RichTextRun? left, Trailblazor.RichTextRun? right) -> bool

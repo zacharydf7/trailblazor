@@ -205,6 +205,20 @@ public class GuideTests : DocsTest
     }
 
     [Fact]
+    public void RichTextGuide_ShouldShowTheValueAndTextTheHtmlReadsAs_WhenHtmlIsEntered()
+    {
+        var cut = PageAt("guides/rich-text");
+        string Region(string label) => cut.Find($"[role=region][aria-label='{label}']").TextContent;
+        Assert.Contains("<p><strong>Bold</strong> and <em>italic</em></p><p>A heading</p>", Region("Canonical value"));
+
+        cut.Find(".docs-article textarea").Input("<b>New</b> <i>notes</i><script>alert(1)</script>");
+
+        Assert.Contains("<p><strong>New</strong> <em>notes</em></p>", Region("Canonical value"));
+        Assert.Contains("New notes", Region("Plain text"));
+        Assert.DoesNotContain("alert", Region("Canonical value"));
+    }
+
+    [Fact]
     public void AnnouncementsGuide_ShouldSpeakClearAndExpireMessages_WhenTheButtonsArePressed()
     {
         var announcer = Render<AnnouncerHost>();
