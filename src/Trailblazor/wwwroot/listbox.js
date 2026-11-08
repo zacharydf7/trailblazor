@@ -22,6 +22,10 @@ export function attachListBox(listbox, events) {
     let pressed = false;
     // What was chosen when focus left, to tell whether code has changed it since.
     let chosenWhenLeft = null;
+    // The option last chosen in a single listbox, by a key, the pointer or assistive technology. Until the server's
+    // render arrives, aria-selected can be left over from an earlier choice, so only a move onto this option that
+    // shows it chosen can skip choosing it.
+    let lastChosen = null;
     const typing = createTypeahead();
 
     const disabled = () => listbox.getAttribute('aria-disabled') === 'true';
@@ -48,7 +52,12 @@ export function attachListBox(listbox, events) {
         }
 
         setActive(option);
-        if ((!multiple() || extend) && !isSelected(option)) {
+        if (lastChosen && !listbox.contains(lastChosen)) {
+            lastChosen = null;
+        }
+
+        const chosen = isSelected(option) && (lastChosen === null || lastChosen === option);
+        if ((!multiple() || extend) && !chosen) {
             option.click();
         }
     };
@@ -81,6 +90,10 @@ export function attachListBox(listbox, events) {
     // Runs first, so the option's own click doesn't toggle it as well.
     const onClick = event => {
         const option = event.target.closest('[role="option"]:not([aria-disabled="true"])');
+        if (option && !multiple() && !disabled()) {
+            lastChosen = option;
+        }
+
         if (option && event.shiftKey && multiple() && !disabled()) {
             event.stopPropagation();
             const options = enabled();

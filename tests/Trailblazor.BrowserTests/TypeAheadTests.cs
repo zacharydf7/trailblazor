@@ -90,6 +90,26 @@ public class TypeAheadTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(snack).ToHaveTextAsync("Anna");
     }
 
+    // The second key's choice is still on its way when the third moves back to the option the page shows chosen.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ListBox_ShouldChooseTheOptionTypedLast_WhenTheServerHasntShownTheChoiceBefore(string browser)
+    {
+        var page = await OpenAsync(browser, "/slow-fields");
+        await page.Clock.SetFixedTimeAsync(DateTime.Now);
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Snack", Exact = true });
+        await Expect(list).ToHaveAttributeAsync("data-ready", "");
+        await list.FocusAsync();
+        await page.Keyboard.PressAsync("a");
+        await Expect(list.GetByRole(AriaRole.Option, new() { Name = "Aaron" }))
+            .ToHaveAttributeAsync("aria-selected", "true");
+
+        await page.Keyboard.TypeAsync("ar");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Settle" }).ClickAsync();
+
+        await Expect(page.GetByTestId("settled")).ToHaveTextAsync("1");
+        await Expect(page.GetByTestId("snack")).ToHaveTextAsync("Aaron");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ListBox_ShouldFindTheOptionWithADoubledLetter_WhenTypingGoesOnFromIt(string browser)
     {
