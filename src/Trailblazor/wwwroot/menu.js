@@ -100,8 +100,10 @@ export function createMenu(root, menu, options, events) {
             opener(list).focus();
         }
     };
+    // A trigger that's off, including one that stays focusable or is loading, opens nothing.
     const onTriggerKeyDown = event => {
-        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+            || trigger.matches(':disabled, [aria-disabled="true"]')) {
             return;
         }
 

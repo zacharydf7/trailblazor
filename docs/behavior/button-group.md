@@ -13,7 +13,7 @@ Familiar apps: GitHub's merge button with its menu, the Back and Forward pair in
 - [x] Each button takes its own click. `TbButtonGroup.razor`
 - [x] A button and a menu's trigger join with one seam between them. `ButtonGroupTests.ButtonGroup_ShouldJoinAButtonAndAMenusTriggerWithOneSeam_WhenTheyAreFilled`
 - [x] `Disabled` turns every button off. `TbButtonGroupTests.Render_ShouldDisableEveryButton_WhenTheGroupIsDisabled`
-- [ ] `Disabled` turns a menu's or a popover's trigger off too, including a custom trigger that stays focusable, so it can't open. #335
+- [x] `Disabled` turns a menu's or a popover's trigger off too, including a custom trigger that stays focusable, so it can't open. `OffTriggerTests.Menu_ShouldStayClosed_WhenAnArrowIsPressedOnACustomTriggerThatIsOff`, `OffTriggerTests.Popover_ShouldStayClosed_WhenTheMouseRestsOnACustomTriggerThatIsOff`
 
 ## Touch
 

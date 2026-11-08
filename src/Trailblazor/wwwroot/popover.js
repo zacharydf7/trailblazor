@@ -79,8 +79,9 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
         // opened elsewhere.
         const elsewhere = [...document.querySelectorAll('[popover="auto"]:popover-open')]
             .some(open => !open.contains(panel));
-        // A disabled trigger still hears the pointer in some browsers, but opens nothing.
-        if (!panel.matches(':popover-open') && !elsewhere && !trigger.matches(':disabled')) {
+        // A trigger that's off can still get pointer events (a disabled one in some browsers, a focusable one always), but
+        // opens nothing.
+        if (!panel.matches(':popover-open') && !elsewhere && !trigger.matches(':disabled, [aria-disabled="true"]')) {
             openedByHover = true;
             panel.showPopover();
         }

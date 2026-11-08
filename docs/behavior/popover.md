@@ -28,7 +28,7 @@ Familiar apps: filter panels in Google Sheets and GitHub, Slack's profile cards
 - [x] The panel flips when there's no room. `AnchoredPositionTests.CreateAsync_ShouldFlipToTop_WhenThereIsNoRoomBelow`
 - [x] A panel placed to the side in a narrow window stays on screen, overlapping its trigger if it must. `NarrowPlacementTests.Popover_ShouldStayInsideTheWindow_WhenNeitherSideHasRoom`
 - [x] A panel wrapped to fit that scrolls keeps its place when the page moves it. `NarrowPlacementTests.Popover_ShouldKeepItsScrollPlace_WhenPlacedAgainWhileWrapped`
-- [ ] A trigger that's off opens on no hover, including a custom one that stays focusable. #335
+- [x] A trigger that's off opens on no hover, including a custom one that stays focusable. `OffTriggerTests.Popover_ShouldStayClosed_WhenTheMouseRestsOnACustomTriggerThatIsOff`
 
 ## Touch
 

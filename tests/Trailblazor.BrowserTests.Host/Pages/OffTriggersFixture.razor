@@ -1,0 +1,37 @@
+@page "/off-triggers"
+
+@* Custom triggers that are off but stay focusable: a popover's on hover and a menu's, then a menu's and a popover's in a
+   group that's off. *@
+<div style="display: flex; gap: 2rem; align-items: flex-start; padding: 2rem">
+    <TbPopover OpenOnHover>
+        <Trigger>
+            <TbButton @attributes="context.Attributes" Disabled FocusableWhenDisabled>Profile</TbButton>
+        </Trigger>
+        <ChildContent><TbText>Signed in.</TbText></ChildContent>
+    </TbPopover>
+    <TbMenu>
+        <Trigger>
+            <TbButton @attributes="context.Attributes" Loading>Export</TbButton>
+        </Trigger>
+        <ChildContent>
+            <TbMenuItem>As a file</TbMenuItem>
+        </ChildContent>
+    </TbMenu>
+    <TbButtonGroup Disabled>
+        <TbButton>Save</TbButton>
+        <TbMenu>
+            <Trigger>
+                <TbButton @attributes="context.Attributes" FocusableWhenDisabled>More</TbButton>
+            </Trigger>
+            <ChildContent>
+                <TbMenuItem>Save as</TbMenuItem>
+            </ChildContent>
+        </TbMenu>
+        <TbPopover OpenOnHover>
+            <Trigger>
+                <TbButton @attributes="context.Attributes" FocusableWhenDisabled>Details</TbButton>
+            </Trigger>
+            <ChildContent><TbText>Saved an hour ago.</TbText></ChildContent>
+        </TbPopover>
+    </TbButtonGroup>
+</div>
