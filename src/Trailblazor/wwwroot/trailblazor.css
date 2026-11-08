@@ -3845,7 +3845,7 @@
         outline-offset: var(--tb-focus-ring-offset);
     }
 
-    /* range-slider.js takes a press on the track or on shared thumbs, and pan-y lets it follow a finger sideways. */
+    /* range-slider.js takes a press on the track or on both thumbs, and pan-y lets it follow a finger sideways. */
     .tb-slider--range .tb-slider__control {
         cursor: pointer;
         touch-action: pan-y;

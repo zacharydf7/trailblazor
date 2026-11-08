@@ -26,17 +26,19 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 - [x] Clicking a range slider's track moves the nearer thumb there and focuses it, in right-to-left text too. Holding the press and moving the pointer drags that thumb. `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumbToThePointer_WhenTheTrackIsClicked`, `SliderDragTests.RangeSlider_ShouldFollowThePointer_WhenATrackPressIsHeldAndDragged`, `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsClickedInRightToLeftText`
 - [x] Clicking the track away from thumbs on one value moves the one on that side. `SliderDragTests.RangeSlider_ShouldMoveTheThumbOnThatSide_WhenTheTrackIsClickedAwayFromSharedThumbs`
 - [x] A drag from thumbs on one value can change direction while they still share it, so a wobble doesn't lock in the wrong thumb. `SliderDragTests.RangeSlider_ShouldLetADragChangeDirection_WhileItsThumbsShareAValue`
+- [x] A drag from thumbs on different values that overlap on screen moves the one on the side it heads to, rather than stopping at the other, and a wobble to the other side puts back the thumb it picked. `SliderDragTests.RangeSlider_ShouldMoveTheThumbOnTheSideThePointerHeadsTo_WhenItsThumbsOverlap`, `SliderDragTests.RangeSlider_ShouldReturnTheThumbAWobblePicked_WhenADragFromOverlappingThumbsTurnsBack`
 - [x] A thumb dragged into the other and back keeps moving. `SliderDragTests.RangeSlider_ShouldKeepDraggingAThumb_WhenItMeetsTheOtherAndComesBack`
 - [x] A press on a read-only or disabled range slider's track changes nothing. `SliderDragTests.RangeSlider_ShouldChangeNothing_WhenItsTrackIsPressedWhileReadOnlyOrDisabled`
 - [x] Dragging a read-only slider changes nothing, on either kind. `ReadOnlyTests.ReadOnlySlider_ShouldKeepItsValue_WhenDraggedOrMovedWithTheKeys`, `ReadOnlyTests.ReadOnlyRangeSlider_ShouldKeepItsThumb_WhenDragged`
 
 ## Touch
 
-- [x] Touch on a thumb is the browser's own, since each thumb is a native range input, unless a range slider's thumbs share a value. `TbSlider.razor`
-- [x] On a range slider, a tap on the track moves the nearer thumb, and a finger sliding across drags it. A finger sliding from thumbs on one value separates them. `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsTapped`, `SliderDragTests.RangeSlider_ShouldFollowAFinger_WhenItSlidesAcrossTheTrack`, `SliderDragTests.RangeSlider_ShouldSeparateItsThumbs_WhenAFingerSlidesFromThem`
-- [x] A finger scrolling the page from a range slider's track changes nothing and takes no focus, in Chromium. `SliderDragTests.RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnTheTrack`
+- [x] Touch on a thumb is the browser's own, since each thumb is a native range input, unless a press lands on both of a range slider's thumbs. `TbSlider.razor`, `range-slider.js`
+- [x] On a range slider, a tap on the track moves the nearer thumb, and a finger sliding across drags it. A finger sliding from thumbs on one value separates them, and so does one sliding from thumbs that overlap, in Chromium. `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsTapped`, `SliderDragTests.RangeSlider_ShouldFollowAFinger_WhenItSlidesAcrossTheTrack`, `SliderDragTests.RangeSlider_ShouldSeparateItsThumbs_WhenAFingerSlidesFromThem`, `SliderDragTests.RangeSlider_ShouldMoveTheThumbOnTheSideAFingerHeadsTo_WhenItsThumbsOverlap`
+- [x] A finger scrolling the page from a range slider's track changes nothing and takes no focus, in Chromium. From thumbs that overlap, the page doesn't scroll, since their own touch handling is held back, but the swipe still changes nothing and takes no focus. `SliderDragTests.RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnTheTrack`, `SliderDragTests.RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnOverlappingThumbs`
 - [ ] A finger scrolling the page from a range slider's track changes nothing on phones, which relies on the browser canceling the press. UNCONFIRMED
 - [ ] Two fingers on one range slider can each drag a thumb. UNCONFIRMED
+- [ ] A finger sliding from thumbs that overlap separates them on phones, which relies on the browser letting the page hold back a thumb's own touch handling. UNCONFIRMED
 - [ ] Tapping a single slider's track moves the thumb there on phones. UNCONFIRMED
 - [ ] A range slider's thumbs can be dragged on phones, though they're just 18px across. UNCONFIRMED
 

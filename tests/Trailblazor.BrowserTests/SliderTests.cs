@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Trailblazor.BrowserTests;
 
 public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -157,11 +159,13 @@ public class SliderDragTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Thumb(IPage page, string slider, string thumb) =>
         page.GetByRole(AriaRole.Slider, new() { Name = $"{slider} {thumb}", Exact = true });
 
-    // Where a value of 0 to 100 sits on the track, allowing for the fixture's 18px thumbs, at the track's mid-height.
-    private static async Task<(float X, float Y)> PointAsync(IPage page, string slider, int value)
+    // Where a value of 0 to max sits on the track, allowing for the fixture's 18px thumbs, at the track's mid-height,
+    // once the slider is scrolled into view.
+    private static async Task<(float X, float Y)> PointAsync(IPage page, string slider, float value, int max = 100)
     {
+        await Thumb(page, slider, "Minimum").ScrollIntoViewIfNeededAsync();
         var box = (await Thumb(page, slider, "Minimum").BoundingBoxAsync())!;
-        return (box.X + 9 + (box.Width - 18) * value / 100, box.Y + box.Height / 2);
+        return (box.X + 9 + (box.Width - 18) * value / max, box.Y + box.Height / 2);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -388,6 +392,90 @@ public class SliderDragTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Thumb(page, "Parted", "Minimum")).ToHaveValueAsync("40");
         await Expect(Thumb(page, "Parted", "Maximum")).ToHaveValueAsync("80");
+    }
+
+    private static async Task<int> ValueAsync(IPage page, string slider, string thumb) =>
+        int.Parse(await Thumb(page, slider, thumb).InputValueAsync(), CultureInfo.InvariantCulture);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldMoveTheThumbOnTheSideThePointerHeadsTo_WhenItsThumbsOverlap(string browser)
+    {
+        foreach (var (to, moving, still, stays) in
+            new[] { (400, "Minimum", "Maximum", "503"), (600, "Maximum", "Minimum", "500") })
+        {
+            var page = await OpenAsync(browser, "/range-slider");
+            var (from, y) = await PointAsync(page, "Close", 501.5f, 1000);
+            var (target, _) = await PointAsync(page, "Close", to, 1000);
+
+            await page.Mouse.MoveAsync(from, y);
+            await page.Mouse.DownAsync();
+            await page.Mouse.MoveAsync(target, y, new() { Steps = 5 });
+            await page.Mouse.UpAsync();
+
+            await Expect(page.Locator("output")).ToHaveTextAsync("1");
+            await Expect(Thumb(page, "Close", still)).ToHaveValueAsync(stays);
+            await Expect(Thumb(page, "Close", moving)).ToBeFocusedAsync();
+            Assert.InRange(await ValueAsync(page, "Close", moving), to - 10, to + 10);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldReturnTheThumbAWobblePicked_WhenADragFromOverlappingThumbsTurnsBack(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var (from, y) = await PointAsync(page, "Close", 501.5f, 1000);
+        var (target, _) = await PointAsync(page, "Close", 600, 1000);
+
+        await page.Mouse.MoveAsync(from, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(from - 2, y);
+        await Expect(Thumb(page, "Close", "Minimum")).Not.ToHaveValueAsync("500");
+        await page.Mouse.MoveAsync(target, y, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        await Expect(Thumb(page, "Close", "Minimum")).ToHaveValueAsync("500");
+        Assert.InRange(await ValueAsync(page, "Close", "Maximum"), 590, 610);
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldMoveTheThumbOnTheSideAFingerHeadsTo_WhenItsThumbsOverlap()
+    {
+        var page = await OpenAsync("chromium", "/range-slider", new() { HasTouch = true });
+        var (x, y) = await PointAsync(page, "Close", 501.5f, 1000);
+        var (to, _) = await PointAsync(page, "Close", 400, 1000);
+        var touch = await page.Context.NewCDPSessionAsync(page);
+
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchStart", x, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", (x + to) / 2, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", to, y);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
+
+        await Expect(page.Locator("output")).ToHaveTextAsync("1");
+        await Expect(Thumb(page, "Close", "Maximum")).ToHaveValueAsync("503");
+        Assert.InRange(await ValueAsync(page, "Close", "Minimum"), 390, 410);
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnOverlappingThumbs()
+    {
+        var page = await OpenAsync("chromium", "/range-slider", new() { HasTouch = true });
+        var (x, y) = await PointAsync(page, "Close", 501.5f, 1000);
+        var touch = await page.Context.NewCDPSessionAsync(page);
+
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchStart", x, y);
+        foreach (var distance in new[] { 5, 20, 40, 80 })
+        {
+            await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", x + 2, y - distance);
+        }
+
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
+        await page.EvaluateAsync("() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))");
+
+        await Expect(Thumb(page, "Close", "Minimum")).ToHaveValueAsync("500");
+        await Expect(Thumb(page, "Close", "Maximum")).ToHaveValueAsync("503");
+        await Expect(page.Locator("output")).ToHaveTextAsync("0");
+        Assert.Equal("BODY", await page.EvaluateAsync<string>("() => document.activeElement.tagName"));
     }
 
     [Fact]

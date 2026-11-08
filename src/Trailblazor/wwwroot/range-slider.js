@@ -1,8 +1,12 @@
 // A range slider's inputs take the pointer only on their thumbs, so a press on the track would reach neither, and thumbs
-// on one value can't be told apart until the pointer moves. Those two presses are handled here: the track moves the
-// nearer thumb, and thumbs on one value separate in the direction the pointer moves. Any other press on a thumb stays
-// native.
+// that overlap can't be told apart until the pointer moves. Those two presses are handled here: the track moves the
+// nearer thumb, and a press on both thumbs moves the one on the side the pointer heads to. Any other press on a thumb
+// stays native.
 const control = '.tb-slider--range .tb-slider__control';
+
+// During a press on both thumbs, the browser mustn't drag the one on top natively, since it would stop at the other.
+const held = ['mousedown', 'touchstart', 'touchmove', 'touchend'];
+const hold = event => event.preventDefault();
 
 const thumbWidth = where => {
     const probe = document.createElement('div');
@@ -18,8 +22,7 @@ document.addEventListener('pointerdown', event => {
     const where = event.target.closest?.(control);
     const start = where?.querySelector('[data-part="start-thumb"]');
     const end = where?.querySelector('[data-part="end-thumb"]');
-    if (!where || event.button !== 0 || event.target === start || event.target === end || start.matches(':disabled')
-        || start.getAttribute('aria-readonly') === 'true') {
+    if (!where || event.button !== 0 || start.matches(':disabled') || start.getAttribute('aria-readonly') === 'true') {
         return;
     }
 
@@ -41,9 +44,20 @@ document.addEventListener('pointerdown', event => {
 
     const pressed = valueAt(event.clientX);
     const [low, high] = [Number(start.value), Number(end.value)];
-    // A press on shared thumbs keeps its offset from them, and picks one once the pointer moves half a step.
-    const onThumbs = low === high && Math.abs(pressed - low) <= thumbSize / 2 * span;
-    const offset = onThumbs ? pressed - low : 0;
+    // A press on both thumbs moves the one on the side the pointer heads to, which keeps its offset from the pointer.
+    const reach = thumbSize / 2 * span;
+    const onThumbs = Math.abs(pressed - low) <= reach && Math.abs(pressed - high) <= reach;
+    const pressedThumb = event.target === start || event.target === end ? event.target : null;
+    if (pressedThumb && !onThumbs) {
+        return;
+    }
+
+    if (pressedThumb) {
+        for (const type of held) {
+            pressedThumb.addEventListener(type, hold, { passive: false });
+        }
+    }
+
     let input = onThumbs ? null : pressed < (low + high) / 2 ? start : end;
     let moved = false;
 
@@ -64,7 +78,16 @@ document.addEventListener('pointerdown', event => {
     }
 
     const onMove = move => {
-        if (move.pointerId !== event.pointerId || (finger && !moved && Math.abs(move.clientX - event.clientX) < 10)) {
+        if (move.pointerId !== event.pointerId) {
+            return;
+        }
+
+        if (finger && !moved && Math.abs(move.clientX - event.clientX) < 10) {
+            // A finger held on both thumbs can't scroll the page, so a swipe up or down lets go rather than focusing.
+            if (pressedThumb && Math.abs(move.clientY - event.clientY) >= 10) {
+                where.releasePointerCapture(event.pointerId);
+            }
+
             return;
         }
 
@@ -73,15 +96,21 @@ document.addEventListener('pointerdown', event => {
         }
 
         moved = true;
-        const value = valueAt(move.clientX) - offset;
-        // While the thumbs still share a value, the choice stays open, so a wobble can't lock in the thumb that can't move.
-        if (onThumbs && start.value === end.value && Math.abs(value - Number(start.value)) >= step / 2) {
-            input = value < Number(start.value) ? start : end;
+        const at = valueAt(move.clientX);
+        // The choice follows the pointer back past the press, and the thumb left behind returns, so a wobble can't
+        // lock in the wrong thumb.
+        const choice = !onThumbs ? input : at - pressed <= -step / 2 ? start : at - pressed >= step / 2 ? end : input;
+        if (choice !== input) {
+            if (input) {
+                moveTo(input, input === start ? low : high);
+            }
+
+            input = choice;
             focusThumb();
         }
 
         if (input) {
-            moveTo(input, value);
+            moveTo(input, onThumbs ? (input === start ? low : high) + at - pressed : at);
         }
     };
     const onUp = up => {
@@ -100,6 +129,12 @@ document.addEventListener('pointerdown', event => {
         where.removeEventListener('pointermove', onMove);
         where.removeEventListener('pointerup', onUp);
         where.removeEventListener('lostpointercapture', onLost);
+        if (pressedThumb) {
+            for (const type of held) {
+                pressedThumb.removeEventListener(type, hold);
+            }
+        }
+
         if (input && (Number(start.value) !== low || Number(end.value) !== high)) {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         }

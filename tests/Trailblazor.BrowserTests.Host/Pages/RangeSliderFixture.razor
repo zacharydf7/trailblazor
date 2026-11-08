@@ -16,6 +16,9 @@
 <div dir="rtl">
     <TbRangeSlider TValue="int" Label="Flipped" Min="0" Max="100" Step="10" @bind-Value="_flipped" />
 </div>
+@* Thumbs on different values that overlap on screen, since each step is a fraction of a pixel. *@
+<TbRangeSlider TValue="int" Label="Close" Min="0" Max="1000" Step="1" @bind-Value="_close"
+               ValueCommitted="_ => _commits++" />
 <output>@_commits</output>
 
 @code {
@@ -24,6 +27,7 @@
     private SliderRange<int> _top = new(100, 100);
     private SliderRange<int> _bottom = new(0, 0);
     private SliderRange<int> _parted = new(20, 80);
+    private SliderRange<int> _close = new(500, 503);
     private SliderRange<int> _locked = new(20, 80);
     private SliderRange<int> _off = new(20, 80);
     private SliderRange<int> _fenced = new(20, 80);
