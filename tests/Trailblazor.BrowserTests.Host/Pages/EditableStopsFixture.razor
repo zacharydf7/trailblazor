@@ -4,6 +4,7 @@
    the outermost editable element is a stop, and a player with controls is one too. *@
 <button type="button" @onclick="() => _scope = Scope.Editable">Open editable last</button>
 <button type="button" @onclick="() => _scope = Scope.Player">Open player last</button>
+<button type="button" @onclick="() => _scope = Scope.PlayerFirst">Open player first</button>
 @if (_scope == Scope.Editable)
 {
     <TbFocusScope Trapped>
@@ -20,6 +21,14 @@ else if (_scope == Scope.Player)
                src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
     </TbFocusScope>
 }
+else if (_scope == Scope.PlayerFirst)
+{
+    <TbFocusScope Trapped>
+        <audio controls data-testid="player"
+               src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
+        <button type="button">After</button>
+    </TbFocusScope>
+}
 
 <TbButton OnClick="() => _dialog = true">Open editable first</TbButton>
 <TbDialog @bind-Open="_dialog" Title="Editable">
@@ -28,7 +37,7 @@ else if (_scope == Scope.Player)
 </TbDialog>
 
 @code {
-    private enum Scope { None, Editable, Player }
+    private enum Scope { None, Editable, Player, PlayerFirst }
 
     private Scope _scope;
     private bool _dialog;
