@@ -108,7 +108,8 @@ public class SelectExampleTests : DocsTest
     {
         var cut = Render<SelectEmptyExample>();
 
-        Assert.Equal(["You haven't saved a route yet"], cut.Tb().Select("Saved routes").Options);
+        Assert.Empty(cut.Tb().Select("Saved routes").Options);
+        Assert.Equal("You haven't saved a route yet", cut.Find("[data-part=status]").TextContent.Trim());
     }
 
     [Fact]

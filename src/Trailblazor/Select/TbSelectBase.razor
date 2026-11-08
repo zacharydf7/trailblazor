@@ -57,6 +57,10 @@
                 }
             }
             <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+            @if (_options.Count == 0)
+            {
+                <option disabled data-part="status">@(Labels.Empty ?? Localizer[TbStrings.SelectEmpty])</option>
+            }
         </select>
     }
 </text>, null, RendererInfo.IsInteractive ? End : null)
@@ -77,6 +81,15 @@
             }
             @* Not fixed, so every option re-renders with the select and its aria-selected follows the value. *@
             <CascadingValue Value="this">@ChildContent</CascadingValue>
+            @if (_options.Count == 0)
+            {
+                @* A listbox holds only options, so the message is one that can't be chosen, in muted text rather
+                   than disabled. *@
+                <div role="option" aria-disabled="true" aria-selected="false" data-part="status"
+                     class="tb-select__status">
+                    @(Labels.Empty ?? Localizer[TbStrings.SelectEmpty])
+                </div>
+            }
         </div>;
 
     private RenderFragment End =>

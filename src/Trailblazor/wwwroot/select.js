@@ -51,8 +51,8 @@ export function createSelect(combobox, listbox, toggle) {
     const applyFilter = () => {
         const query = fold(filter.value.trim());
         for (const option of listbox.querySelectorAll('[role="option"]')) {
-            // Choosing every option means nothing while only some are shown.
-            const hide = option.dataset.part === 'select-all' ? query !== ''
+            // Choosing every option means nothing while only some are shown, and an empty list's message always shows.
+            const hide = option.dataset.part === 'status' ? false : option.dataset.part === 'select-all' ? query !== ''
                 : !fold(option.dataset.text || option.textContent).includes(query);
             if (option.hidden !== hide) {
                 option.hidden = hide;

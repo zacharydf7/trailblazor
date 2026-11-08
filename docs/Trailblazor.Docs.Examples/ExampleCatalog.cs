@@ -2709,8 +2709,8 @@ public static class ExampleCatalog
                     + "then. The demo shows a disabled option while they load and sets `Error` if they don't. To see "
                     + "the failure, check the box before opening the list.",
                     typeof(SelectLateExample)),
-                new("empty-list", "Empty list", "A select with no options opens an empty list, so add a disabled "
-                    + "option that says why.", typeof(SelectEmptyExample)),
+                new("empty-list", "Empty list", "A select with no options says so in its list, in text as readable as "
+                    + "the options. Set `Labels.Empty` to say why.", typeof(SelectEmptyExample)),
                 new("many-options", "Many options", "A long list scrolls, and `Filterable` lets people search it. A "
                     + "long option widens the list, and once chosen it's cut off with an ellipsis. When the options "
                     + "come from a search as someone types, use an "
@@ -2877,6 +2877,7 @@ public static class ExampleCatalog
                 new("check", "The check beside a chosen option."),
                 new("select-all", "The option that chooses every option."),
                 new("no-results", "The message shown when the filter matches nothing."),
+                new("status", "The message the list shows when it has no options."),
             ],
             Anatomy = """
                 <TbSelect Label="…" @bind-Value="_value">

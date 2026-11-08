@@ -109,6 +109,9 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
             await Expect(page.GetByRole(AriaRole.Option, new() { Name = "Katherine" })).ToBeVisibleAsync();
         }
 
+        // Axe skips contrast on anything aria-disabled, and an empty list's message is information, so it's measured.
+        await page.EvaluateAsync(
+            "() => document.querySelectorAll('[data-part=status]').forEach(status => status.removeAttribute('aria-disabled'))");
         AssertNoViolations(await page.RunAxe(WcagAA));
     }
 

@@ -22,6 +22,21 @@ public class SelectExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Filter_ShouldKeepSayingTheListIsEmpty_WhenAnEmptyListIsFiltered(string browser)
+    {
+        var page = await OpenExtrasAsync(browser);
+        var favorites = page.GetByRole(AriaRole.Combobox, new() { Name = "Favorites", Exact = true });
+        await favorites.ClickAsync();
+        var popup = page.Locator($"#{await favorites.GetAttributeAsync("aria-controls")}");
+
+        await popup.Locator("[data-part=filter]").FillAsync("z");
+
+        await Expect(popup.Locator("[data-part=status]")).ToHaveTextAsync("Nothing to choose from");
+        await Expect(popup.Locator("[data-part=status]")).ToBeVisibleAsync();
+        await Expect(popup.Locator("[data-part=no-results]")).ToBeEmptyAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Chips_ShouldRemoveAChoiceWithoutOpeningTheList_WhenItsButtonIsClicked(string browser)
     {
         var page = await OpenExtrasAsync(browser);

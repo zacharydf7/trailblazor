@@ -109,8 +109,9 @@ public sealed class TbSelectDriver
     internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
         (_find, _findAll) = (find, findAll);
 
-    /// <summary>The options' names, in order, leaving out a static select's placeholder and the extra option it adds to
-    /// keep a value that matches no option. An option with content of its own is named by its <c>Text</c>.</summary>
+    /// <summary>The options' names, in order, leaving out a static select's placeholder, the extra option it adds to
+    /// keep a value that matches no option, and the message an empty list shows. An option with content of its own is
+    /// named by its <c>Text</c>.</summary>
     public IReadOnlyList<string> Options => OptionElements().Select(Choices.NameOf).ToList();
 
     /// <summary>The name of the select's value, as a screen reader hears it, or null while it shows its placeholder. A
@@ -143,8 +144,9 @@ public sealed class TbSelectDriver
     private IEnumerable<IElement> OptionElements()
     {
         var control = _find();
-        return control.TagName == "SELECT" ? control.QuerySelectorAll("option:not([value='']):not([data-unmatched])")
-            : _findAll($"[id='{control.GetAttribute("aria-controls")}'] [role=option]");
+        return control.TagName == "SELECT"
+            ? control.QuerySelectorAll("option:not([value='']):not([data-unmatched]):not([data-part=status])")
+            : _findAll($"[id='{control.GetAttribute("aria-controls")}'] [role=option]:not([data-part=status])");
     }
 }
 

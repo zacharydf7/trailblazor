@@ -23,6 +23,7 @@
         </TbOptionGroup>
     </TbSelect>
     <output data-testid="park">@_park</output>
+    <TbSelect TValue="string" Label="Favorites" @bind-Value="_favorite" Filterable />
     <TbMultiSelect TItem="string" Label="Parks" @bind-Value="_parks" Filterable SelectAll>
         <TbOption Value="@("Pine Hollow")" />
         <TbOption Value="@("Eagle Ridge")" />
@@ -42,6 +43,7 @@
 
     private IReadOnlyList<Trail> _trails = [Trails[0], Trails[2]];
     private string? _park;
+    private string? _favorite;
     private IReadOnlyList<string> _parks = [];
     private IReadOnlyList<string> _seasons = [];
 

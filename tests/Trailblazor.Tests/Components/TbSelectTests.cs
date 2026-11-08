@@ -168,6 +168,44 @@ public class TbSelectTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=chevron]"));
     }
 
+    [Theory]
+    [InlineData(null, "Nothing to choose from")]
+    [InlineData("You haven't saved a route yet", "You haven't saved a route yet")]
+    public void Render_ShouldSayTheListIsEmptyInAMessageThatCantBeChosen_WhenItHasNoOptions(string? empty,
+        string expected)
+    {
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Route")
+            .Add(select => select.Labels, new SelectLabels { Empty = empty }));
+
+        var status = cut.Find("[role=listbox] [data-part=status]");
+        Assert.Equal(expected, status.TextContent.Trim());
+        Assert.Equal("option", status.GetAttribute("role"));
+        Assert.Equal("true", status.GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public void Render_ShouldSayTheListIsEmptyInADisabledOption_WhenRenderedStaticallyWithNoOptions()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Route")
+            .Add(select => select.Labels, new SelectLabels { Empty = "You haven't saved a route yet" }));
+
+        var status = cut.Find("select option[data-part=status]");
+        Assert.Equal("You haven't saved a route yet", status.TextContent.Trim());
+        Assert.True(status.HasAttribute("disabled"));
+        Assert.Empty(cut.Tb().Select("Route").Options);
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveOutTheEmptyMessage_WhenTheListHasAnOption()
+    {
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Route")
+            .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "loop")));
+
+        Assert.Empty(cut.FindAll("[data-part=status]"));
+    }
+
     [Fact]
     public void Render_ShouldNameAWordlessOptionByItsText_WhenRenderedStatically()
     {

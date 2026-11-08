@@ -133,6 +133,7 @@ const Trailblazor.TbStrings.PaginationPrevious = "Pagination.Previous" -> string
 const Trailblazor.TbStrings.RangeSliderEnd = "RangeSlider.End" -> string!
 const Trailblazor.TbStrings.RangeSliderStart = "RangeSlider.Start" -> string!
 const Trailblazor.TbStrings.SelectClear = "Select.Clear" -> string!
+const Trailblazor.TbStrings.SelectEmpty = "Select.Empty" -> string!
 const Trailblazor.TbStrings.SelectFilter = "Select.Filter" -> string!
 const Trailblazor.TbStrings.SelectNoResults = "Select.NoResults" -> string!
 const Trailblazor.TbStrings.SortableHandle = "Sortable.Handle" -> string!
@@ -1000,6 +1001,8 @@ Trailblazor.SelectLabels
 Trailblazor.SelectLabels.<Clone>$() -> Trailblazor.SelectLabels!
 Trailblazor.SelectLabels.Clear.get -> string?
 Trailblazor.SelectLabels.Clear.init -> void
+Trailblazor.SelectLabels.Empty.get -> string?
+Trailblazor.SelectLabels.Empty.init -> void
 Trailblazor.SelectLabels.Equals(Trailblazor.SelectLabels? other) -> bool
 Trailblazor.SelectLabels.Filter.get -> string?
 Trailblazor.SelectLabels.Filter.init -> void

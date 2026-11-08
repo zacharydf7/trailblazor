@@ -11,6 +11,10 @@ public sealed record SelectLabels
     /// <see cref="TbStrings.SelectNoResults"/>.</summary>
     public string? NoResults { get; init; }
 
+    /// <summary>Shown and read out in the list when it has no options, such as "You haven't saved a route yet". Leave
+    /// it null for the app's text for <see cref="TbStrings.SelectEmpty"/>.</summary>
+    public string? Empty { get; init; }
+
     /// <summary>Names the clear button. Leave it null for the app's text for <see cref="TbStrings.SelectClear"/>.
     /// </summary>
     public string? Clear { get; init; }

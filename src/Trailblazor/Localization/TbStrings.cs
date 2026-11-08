@@ -300,6 +300,9 @@ public static class TbStrings
     /// <summary>"No matches": shown when a select's filter finds nothing.</summary>
     public const string SelectNoResults = "Select.NoResults";
 
+    /// <summary>"Nothing to choose from": shown in a select's list when it has no options.</summary>
+    public const string SelectEmpty = "Select.Empty";
+
     /// <summary>"Clear": names a select's clear button.</summary>
     public const string SelectClear = "Select.Clear";
 
@@ -666,6 +669,7 @@ public static class TbStrings
         [RangeSliderEnd] = "Maximum",
         [SelectFilter] = "Filter",
         [SelectNoResults] = "No matches",
+        [SelectEmpty] = "Nothing to choose from",
         [SelectClear] = "Clear",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
