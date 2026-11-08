@@ -4687,9 +4687,10 @@ public static class ExampleCatalog
             [
                 new("sort-page-and-select", "Sort, page and select", "Click a header to sort by it: the next click "
                     + "reverses it, and the next stops sorting by it. Shift adds a column to the sorts. Pages come "
-                    + "with a line such as \"1–5 of 7\" and a `TbPagination`, and `PageSizes` adds a list of page "
-                    + "sizes. `Multiple` selection gives each row a checkbox and adds one to the header that selects "
-                    + "every row on the page. `Single` uses radio buttons. A column's `Cell` template can hold buttons.",
+                    + "with a line such as \"1–5 of 7\" and a `TbPagination`. `ShowFirstLast` adds first and last "
+                    + "page buttons to it, and `PageSizes` adds a list of page sizes. `Multiple` selection gives each "
+                    + "row a checkbox and adds one to the header that selects every row on the page. `Single` uses "
+                    + "radio buttons. A column's `Cell` template can hold buttons.",
                     typeof(DataGridExample)),
                 new("row-click", "Clicking a row", "With a `SelectionMode` set, a click on a row selects it, unless the "
                     + "click lands on a button, link or field inside the row. `RowClickSelects=\"false\"` leaves "
@@ -4770,7 +4771,8 @@ public static class ExampleCatalog
                     + "the arrow keys on it, or choose from its menu. Moves can cross pages, and the app applies each "
                     + "one. `CanMoveRow` can refuse a move and say why.", typeof(DataGridReorderExample)),
                 new("labels", "Built-in text", "`Labels` replaces the words the grid shows and reads out, such as the "
-                    + "header checkbox's name and the page size list's label.", typeof(DataGridLabelsExample)),
+                    + "header checkbox's name, the page size list's label and the count of rows shown.",
+                    typeof(DataGridLabelsExample)),
             ],
             Api =
             [

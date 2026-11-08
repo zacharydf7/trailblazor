@@ -201,7 +201,7 @@
         var last = Math.Min(_page * size, _total);
         <div data-part="pager" class="tb-data-grid__pager">
             <span data-part="summary" class="tb-data-grid__summary">
-                @Format(TbStrings.DataGridRange, first, last, _total)
+                @RangeText(first, last)
             </span>
             @if (PageSizes is { Count: > 0 } sizes)
             {
@@ -217,6 +217,7 @@
             @if (PageCount > 1)
             {
                 <TbPagination Page="_page" PageChanged="PageFromPagerAsync" PageCount="PageCount" Size="Size.Small"
+                              ShowFirstLast="ShowFirstLast"
                               AriaLabel="@(AriaLabel is null ? null : Format(TbStrings.DataGridPages, AriaLabel))" />
             }
         </div>

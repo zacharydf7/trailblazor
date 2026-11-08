@@ -192,6 +192,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public IReadOnlyList<int>? PageSizes { get; set; }
 
+    /// <summary>Adds buttons for the first and last page to the pager, for grids with many pages.</summary>
+    [Parameter]
+    public bool ShowFirstLast { get; set; }
+
     /// <summary>The current page, from 1. Bind it with <c>@bind-Page</c>.</summary>
     [Parameter]
     public int Page { get; set; } = 1;
@@ -1733,6 +1737,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private string Format(string key, params object?[] args) =>
         string.Format(CultureInfo.CurrentCulture, Localizer[key], args);
+
+    private string RangeText(int first, int last) => string.Format(CultureInfo.CurrentCulture,
+        Labels.Range ?? Localizer[TbStrings.DataGridRange], first, last, _total);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

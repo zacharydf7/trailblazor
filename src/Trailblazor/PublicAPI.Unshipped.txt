@@ -584,6 +584,8 @@ Trailblazor.DataGridLabels.Loading.get -> string?
 Trailblazor.DataGridLabels.Loading.init -> void
 Trailblazor.DataGridLabels.PageSize.get -> string?
 Trailblazor.DataGridLabels.PageSize.init -> void
+Trailblazor.DataGridLabels.Range.get -> string?
+Trailblazor.DataGridLabels.Range.init -> void
 Trailblazor.DataGridLabels.Retry.get -> string?
 Trailblazor.DataGridLabels.Retry.init -> void
 Trailblazor.DataGridLabels.SelectAll.get -> string?
@@ -1430,6 +1432,8 @@ Trailblazor.TbDataGrid<TItem>.SelectedItemsChanged.get -> Microsoft.AspNetCore.C
 Trailblazor.TbDataGrid<TItem>.SelectedItemsChanged.set -> void
 Trailblazor.TbDataGrid<TItem>.SelectionMode.get -> Trailblazor.SelectionMode
 Trailblazor.TbDataGrid<TItem>.SelectionMode.set -> void
+Trailblazor.TbDataGrid<TItem>.ShowFirstLast.get -> bool
+Trailblazor.TbDataGrid<TItem>.ShowFirstLast.set -> void
 Trailblazor.TbDataGrid<TItem>.Size.get -> Trailblazor.Size
 Trailblazor.TbDataGrid<TItem>.Size.set -> void
 Trailblazor.TbDataGrid<TItem>.Sorts.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridSort!>?

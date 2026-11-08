@@ -27,4 +27,9 @@ public sealed record DataGridLabels
     /// <summary>Names the list of page sizes. Leave it null for the app's text for <see
     /// cref="TbStrings.DataGridPageSize"/>.</summary>
     public string? PageSize { get; init; }
+
+    /// <summary>The pager's count of rows shown, with <c>{0}</c> and <c>{1}</c> for the first and last row on the
+    /// page and <c>{2}</c> for the total, such as "Trails {0} to {1} of {2}". Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridRange"/>.</summary>
+    public string? Range { get; init; }
 }

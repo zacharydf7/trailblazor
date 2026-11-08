@@ -38,6 +38,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 
 ## Pointer
 
+- [x] The pager moves between pages and says which rows show; `ShowFirstLast` adds first and last page buttons, and `Labels.Range` words the count. `TbDataGridTests.Page_ShouldShowThePagesRowsAndRange_WhenPagedAndMovedToAnotherPage`, `TbDataGridTests.Pager_ShouldShowFirstAndLastAndTheAppsRangeText_WhenTheGridAsks`, `TbDataGridTests.Pager_ShouldLeaveOutFirstAndLast_WhenNotAsked`
 - [x] Clicking a header sorts ascending, then descending, then not at all. `TbDataGridTests.Sort_ShouldOrderTheRowsTurnThemAroundAndStop_WhenAHeaderIsClickedThreeTimes`
 - [x] Shift+clicking a header adds it to the sorts and shows its place. `TbDataGridTests.Sort_ShouldBreakTiesWithASecondColumnAndSayItsPlace_WhenShiftClicked`
 - [x] Clicking a row selects it, but a click on a button, link or field in the row is that control's own. `DataGridTests.Grid_ShouldSelectByBoxRowAndHeaderButNotByACellsButton_WhenEachIsClicked`

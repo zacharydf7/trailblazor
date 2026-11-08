@@ -1,7 +1,7 @@
 <TbStack Gap="3">
     <TbDataGrid @ref="_trailGrid" TItem="Trail" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail.Id"
                 SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_chosen" PageSize="5"
-                PageSizes="[5, 10]" Striped>
+                PageSizes="[5, 10]" ShowFirstLast Striped>
         <TbColumn Field="trail => trail.Name" Sortable />
         <TbColumn Field="trail => trail.Region" Sortable />
         <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />

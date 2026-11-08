@@ -412,6 +412,29 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void Pager_ShouldShowFirstAndLastAndTheAppsRangeText_WhenTheGridAsks()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.ShowFirstLast, true)
+            .Add(grid => grid.Labels, new DataGridLabels { Range = "Trails {0} to {1} of {2}" }));
+        Assert.Equal("Trails 1 to 2 of 5", cut.Find("[data-part=summary]").TextContent.Trim());
+
+        cut.Find("nav[aria-label='Pages of Trails'] [data-part=last]").Click();
+
+        Assert.Equal(["Lake Camp"], Names(cut));
+        Assert.Equal("Trails 5 to 5 of 5", cut.Find("[data-part=summary]").TextContent.Trim());
+        Assert.NotNull(cut.Find("nav[aria-label='Pages of Trails'] [data-part=first]"));
+    }
+
+    [Fact]
+    public void Pager_ShouldLeaveOutFirstAndLast_WhenNotAsked()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.PageSize, 2));
+
+        Assert.Empty(cut.FindAll("nav[aria-label='Pages of Trails'] :is([data-part=first], [data-part=last])"));
+    }
+
+    [Fact]
     public async Task PageSize_ShouldShowThatManyRowsFromTheFirstPage_WhenAnotherIsChosen()
     {
         var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.PageSize, 2)
