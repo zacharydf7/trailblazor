@@ -1444,6 +1444,8 @@ Trailblazor.TbDateRangePicker<TDate>.Clearable.set -> void
 Trailblazor.TbDateRangePicker<TDate>.Culture.get -> System.Globalization.CultureInfo?
 Trailblazor.TbDateRangePicker<TDate>.Culture.set -> void
 Trailblazor.TbDateRangePicker<TDate>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbDateRangePicker<TDate>.EndPlaceholder.get -> string?
+Trailblazor.TbDateRangePicker<TDate>.EndPlaceholder.set -> void
 Trailblazor.TbDateRangePicker<TDate>.Format.get -> string?
 Trailblazor.TbDateRangePicker<TDate>.Format.set -> void
 Trailblazor.TbDateRangePicker<TDate>.IsDateDisabled.get -> System.Func<TDate, bool>?
@@ -1456,6 +1458,8 @@ Trailblazor.TbDateRangePicker<TDate>.Min.get -> TDate?
 Trailblazor.TbDateRangePicker<TDate>.Min.set -> void
 Trailblazor.TbDateRangePicker<TDate>.Presets.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DateRangePreset<TDate>!>?
 Trailblazor.TbDateRangePicker<TDate>.Presets.set -> void
+Trailblazor.TbDateRangePicker<TDate>.StartPlaceholder.get -> string?
+Trailblazor.TbDateRangePicker<TDate>.StartPlaceholder.set -> void
 Trailblazor.TbDateRangePicker<TDate>.TbDateRangePicker() -> void
 Trailblazor.TbDialog
 Trailblazor.TbDialog.CanDismiss.get -> System.Func<Trailblazor.DialogDismissReason, System.Threading.Tasks.Task<bool>!>?

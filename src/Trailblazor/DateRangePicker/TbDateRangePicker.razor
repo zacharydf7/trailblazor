@@ -13,14 +13,15 @@
         {
             <input @attributes="InputAttributes" @ref="_startInput" data-part="start-input" id="@StartId"
                    data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="text" autocomplete="off"
-                   @bind:get="StartText"
-                   @bind:set="SetStartTextAsync" placeholder="@FormatHint" disabled="@Disabled" readonly="@ReadOnly"
+                   @bind:get="StartText" @bind:set="SetStartTextAsync"
+                   placeholder="@(StartPlaceholder ?? FormatHint)" disabled="@Disabled" readonly="@ReadOnly"
                    aria-labelledby="@Names(StartId)" aria-required="@(Required ? "true" : null)"
                    aria-invalid="@AriaInvalid(_startBad)" aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
             <span class="tb-date-range__dash" aria-hidden="true">–</span>
             <input @attributes="InputAttributes" data-part="end-input" id="@EndId" name="@NameOf("End")" type="text"
-                   autocomplete="off" @bind:get="EndText" @bind:set="SetEndTextAsync" placeholder="@FormatHint"
+                   autocomplete="off" @bind:get="EndText" @bind:set="SetEndTextAsync"
+                   placeholder="@(EndPlaceholder ?? FormatHint)"
                    disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(EndId)"
                    aria-required="@(Required ? "true" : null)"
                    aria-invalid="@AriaInvalid(_endBad)" aria-describedby="@InputDescribedBy"

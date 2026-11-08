@@ -29,6 +29,16 @@ public class TbDateRangePickerTests : BunitContext
         Assert.Equal("YYYY-MM-DD", cut.Find("[data-part=start-input]").GetAttribute("placeholder"));
     }
 
+    [Fact]
+    public void Render_ShouldShowTheAppsPlaceholders_WhenTheyreSet()
+    {
+        var cut = RenderPicker(June3To10, parameters => parameters
+            .Add(picker => picker.StartPlaceholder, "Arrive").Add(picker => picker.EndPlaceholder, "Depart"));
+
+        Assert.Equal("Arrive", cut.Find("[data-part=start-input]").GetAttribute("placeholder"));
+        Assert.Equal("Depart", cut.Find("[data-part=end-input]").GetAttribute("placeholder"));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

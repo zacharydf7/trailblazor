@@ -59,6 +59,18 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     [Parameter]
     public bool Clearable { get; set; }
 
+    /// <summary>Text shown in the start date's box while it's empty, such as "Arrive". It is not a label. Leave it null
+    /// for the format, such as MM/DD/YYYY. Without the format there, give it in the field's helper text, since the box
+    /// only reads dates typed in that format.</summary>
+    [Parameter]
+    public string? StartPlaceholder { get; set; }
+
+    /// <summary>Text shown in the end date's box while it's empty, such as "Depart". It is not a label. Leave it null
+    /// for the format. Without the format there, give it in the field's helper text, since the box only reads dates
+    /// typed in that format.</summary>
+    [Parameter]
+    public string? EndPlaceholder { get; set; }
+
     /// <summary>The words the picker shows and says to screen readers.</summary>
     [Parameter]
     public DateRangePickerLabels Labels { get; set; } = new();

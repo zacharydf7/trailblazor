@@ -1,0 +1,8 @@
+<TbDateRangePicker TDate="DateOnly" Label="Stay" @bind-Value="_stay" StartPlaceholder="Arrive"
+                   EndPlaceholder="Depart" HelperText="Enter both dates as MM/DD/YYYY." Culture="UnitedStates" />
+
+@code {
+    private static readonly System.Globalization.CultureInfo UnitedStates = new("en-US");
+
+    private DateRange<DateOnly> _stay;
+}

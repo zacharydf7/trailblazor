@@ -3305,6 +3305,9 @@ public static class ExampleCatalog
                 new("format-and-culture", "Format and culture", "`Format` sets how the boxes show and read dates. "
                     + "`Culture` sets the month and day names, the first day of the week, and the format when `Format` "
                     + "isn't set. It defaults to the current culture.", typeof(DateRangePickerFormatExample)),
+                new("placeholders", "Placeholders", "Each empty box shows the format. `StartPlaceholder` and "
+                    + "`EndPlaceholder` show other words instead, so give the format in `HelperText`.",
+                    typeof(DateRangePickerPlaceholderExample)),
                 new("date-time", "DateTime values", "`TDate` can be `DateOnly` or `DateTime`, and time zones are never "
                     + "converted. A date left alone keeps its time, and a newly typed or picked date is midnight at the "
                     + "start of that day, so a range can end at the very start of its last day.",
@@ -3349,7 +3352,8 @@ public static class ExampleCatalog
             Labeling =
             [
                 "The two date boxes and the calendar button sit in a `group` named by the `Label`. Each box is named by "
-                    + "the label and \"Start date\" or \"End date\", and shows the format as its placeholder.",
+                    + "the label and \"Start date\" or \"End date\", and shows the format as its placeholder unless "
+                    + "`StartPlaceholder` or `EndPlaceholder` sets another.",
                 "The calendar is a `dialog` with a `grid` for each month.",
                 "The clear button is named \"Clear\" and described by the field's label, so a screen reader says which "
                     + "field it clears.",
@@ -3372,6 +3376,11 @@ public static class ExampleCatalog
                 "In forced-colors mode, such as Windows high contrast, the range's days take the system's highlight, "
                     + "its first and last days add an outline, and the range previewed up to the pointer or focus has "
                     + "only a dashed outline, so it can't be taken for a chosen range.",
+            ],
+            AppDuties =
+            [
+                "A `StartPlaceholder` or `EndPlaceholder` replaces the format the box shows, and the box reads dates "
+                    + "only in that format, so give it in `HelperText`.",
             ],
             Notes =
             [
