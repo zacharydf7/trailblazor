@@ -36,6 +36,8 @@ export function createAutocomplete(input, listbox, events) {
 
         listbox.showPopover();
         document.addEventListener('pointerdown', onDocumentPointerDown, true);
+        document.addEventListener('pointercancel', onDocumentPointerCancel, true);
+        document.addEventListener('contextmenu', onDocumentPointerCancel, true);
         document.addEventListener('click', onDocumentClick, true);
         document.addEventListener('keydown', onDocumentKeyDown, true);
         position = createAnchoredPosition(listbox, control, { side: 'Bottom', align: 'Start', offset: 4 });
@@ -112,9 +114,20 @@ export function createAutocomplete(input, listbox, events) {
         event.preventDefault();
     };
     // Focus may never have reached the field when code opens the list, so closing can't rely on the field's events.
-    // Judge a click by where its press began: a drag out of the field fires the click on an ancestor of the field.
+    // Judge a click by where its press began: a drag out of the field fires the click on an ancestor of the field. Only a
+    // primary press on something enabled ends in a click.
     const onDocumentPointerDown = event => {
-        pressedOutside = !control.contains(event.target);
+        pressedOutside = event.button === 0 && !control.contains(event.target) && !event.target.closest(':disabled');
+    };
+    // A press that turns into a scroll, a drag and drop or a context menu (which Ctrl+click opens on a Mac) never clicks,
+    // so the list closes here if focus has left the field.
+    const onDocumentPointerCancel = () => {
+        if (pressedOutside) {
+            pressedOutside = false;
+            if (!control.contains(document.activeElement)) {
+                close();
+            }
+        }
     };
     // Waits for the click's own handlers, so a button that toggles the list doesn't see it closed and reopen it.
     const onDocumentClick = () => {
@@ -131,12 +144,15 @@ export function createAutocomplete(input, listbox, events) {
     };
     const stopListening = () => {
         document.removeEventListener('pointerdown', onDocumentPointerDown, true);
+        document.removeEventListener('pointercancel', onDocumentPointerCancel, true);
+        document.removeEventListener('contextmenu', onDocumentPointerCancel, true);
         document.removeEventListener('click', onDocumentClick, true);
         pressedOutside = false;
         document.removeEventListener('keydown', onDocumentKeyDown, true);
     };
+    // A primary press elsewhere is left to onDocumentClick, so a button that toggles the list doesn't reopen it.
     const onFocusOut = event => {
-        if (!listbox.contains(event.relatedTarget)) {
+        if (!listbox.contains(event.relatedTarget) && !pressedOutside) {
             close();
         }
     };

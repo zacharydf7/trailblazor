@@ -24,11 +24,11 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Clicking a suggestion chooses it and keeps focus in the field. `AutocompleteTests.Autocomplete_ShouldKeepFocusInTheInput_WhenAnOptionIsClicked`
 - [x] Hovering a suggestion makes it the active one. `autocomplete.js`
 - [x] Clicking the status message does nothing and leaves the list open. `AutocompleteTests.Listbox_ShouldStayOpenWithNothingActive_WhenItsMessageIsClickedOrArrowedTo`
-- [x] Clicking elsewhere closes the list, since focus leaves the field. `autocomplete.js`
+- [x] Clicking elsewhere closes the list once the click's own handlers have run. A right-click, a middle-click or a press on a disabled control elsewhere fires no click event, so the list closes when focus leaves the field instead, and a press that turns into a drag or a scroll closes it as soon as the press is canceled, if focus has left. `autocomplete.js`, `AutocompleteTests.Listbox_ShouldStillCloseOnTab_WhenAMiddleClickElsewhereCameFirst`, `AutocompleteTests.Listbox_ShouldStillCloseOnTab_WhenADisabledButtonElsewhereWasPressed`, `AutocompleteTests.Listbox_ShouldClose_WhenAPressElsewhereTurnsIntoADrag`
 - [x] A list opened from code closes on a click elsewhere or Escape, even if focus never reached the field. `AutocompleteTests.Listbox_ShouldClose_WhenOpenedFromCodeAndClickedElsewhere`, `AutocompleteTests.Listbox_ShouldClose_WhenOpenedFromCodeAndEscapeIsPressed`
 - [x] A drag that starts in the field and ends outside it leaves the list open. `AutocompleteTests.Listbox_ShouldStayOpen_WhenADragFromTheFieldEndsOutsideIt`
 - [x] While focus is elsewhere, a button that toggles a list opened from code closes it, and doesn't reopen it. `AutocompleteTests.Listbox_ShouldStayClosed_WhenAButtonElsewhereTogglesItShut`
-- [ ] With focus in the field, a button that toggles the list closes it, and doesn't reopen it. #336
+- [x] With focus in the field, a button that toggles the list closes it, and doesn't reopen it. `AutocompleteTests.Listbox_ShouldStayClosed_WhenAButtonTogglesItShutWithFocusInTheField`
 - [x] A press that opens the list isn't taken for a click elsewhere when it's released. `AutocompleteTests.Listbox_ShouldStayOpen_WhenAPressThatOpensItIsReleasedAfterAnEarlierClickElsewhere`
 - [x] A button elsewhere activated from the keyboard leaves the list open, and Escape closes it. `autocomplete.js`
 

@@ -6,6 +6,8 @@
 <button type="button" @onmousedown="() => _open = true">Open on press</button>
 <button type="button" @onclick="Toggle">Toggle the list</button>
 <button type="button" @onclick="() => _readOnly = true">Make read-only</button>
+<button type="button" disabled>Unavailable</button>
+<span draggable="true">Drag me</span>
 <TbAutocomplete TValue="string" Label="Town" Items="_towns" @bind-Value="_town" @bind-Open="_open" ReadOnly="_readOnly" />
 <output aria-label="Town chosen">@_town</output>
 <output aria-label="Open">@_open</output>

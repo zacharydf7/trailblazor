@@ -61,6 +61,82 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldStayClosed_WhenAButtonTogglesItShutWithFocusInTheField(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Toggle the list" });
+        await toggle.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeVisibleAsync();
+        await Field(page, "Town").ClickAsync();
+
+        await toggle.ClickAsync();
+
+        // Both readouts come from one render, so this reads the state the second click left, not one before it.
+        await Expect(Readout(page, "Toggles")).ToHaveTextAsync("2");
+        await Expect(Readout(page, "Open")).ToHaveTextAsync("False");
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Town" })).ToBeHiddenAsync();
+    }
+
+    // Playwright's Firefox delivers no keys after a middle or right mouse press.
+    [Theory, InlineData("chromium"), InlineData("webkit")]
+    public async Task Listbox_ShouldStillCloseOnTab_WhenAMiddleClickElsewhereCameFirst(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Town" });
+        await Field(page, "Town").ClickAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(list).ToBeVisibleAsync();
+
+        // A middle-click fires no click event, so the list mustn't be left waiting for one.
+        await page.GetByText("Elsewhere").ClickAsync(new() { Button = MouseButton.Middle });
+        await Field(page, "Town").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(list).ToBeVisibleAsync();
+        // Back to the buttons above, since nothing after the field takes focus.
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await Expect(list).ToBeHiddenAsync();
+    }
+
+    // In Playwright's WebKit this drag doesn't cancel the press, so the case can't be shown there.
+    [Theory, InlineData("chromium"), InlineData("firefox")]
+    public async Task Listbox_ShouldClose_WhenAPressElsewhereTurnsIntoADrag(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Town" });
+        await Field(page, "Town").ClickAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(list).ToBeVisibleAsync();
+        var box = (await page.GetByText("Drag me").BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(box.X + box.Width / 2 + 40, box.Y + box.Height / 2 + 40, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        await Expect(list).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Listbox_ShouldStillCloseOnTab_WhenADisabledButtonElsewhereWasPressed(string browser)
+    {
+        var page = await OpenStatesAsync(browser);
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Town" });
+        await Field(page, "Town").ClickAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(list).ToBeVisibleAsync();
+        var box = (await page.GetByRole(AriaRole.Button, new() { Name = "Unavailable" }).BoundingBoxAsync())!;
+
+        // A disabled button gets no click, so the list mustn't be left waiting for one.
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await Field(page, "Town").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(list).ToBeVisibleAsync();
+        // Back to the buttons above, since nothing after the field takes focus.
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await Expect(list).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Listbox_ShouldStayClosed_WhenAButtonElsewhereTogglesItShut(string browser)
     {
         var page = await OpenStatesAsync(browser);
