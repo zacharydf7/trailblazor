@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Trailblazor.BrowserTests;
 
@@ -119,6 +120,39 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal(track.X + track.Width, fill.X + fill.Width, tolerance: 1);
         Assert.Equal(thumb, bubble.X + bubble.Width / 2, tolerance: 2);
+    }
+
+    private static async Task ExpectLeftToRaiseAsync(IPage page, ILocator input)
+    {
+        var value = decimal.Parse(await input.InputValueAsync(), CultureInfo.InvariantCulture);
+        var step = decimal.Parse((await input.GetAttributeAsync("step"))!, CultureInfo.InvariantCulture);
+        // The value text comes from the server, so it shows the slider's value changed, not only the input's.
+        Task ExpectAsync(decimal expected) => Expect(input).ToHaveAttributeAsync("aria-valuetext",
+            new Regex($"^{expected.ToString(CultureInfo.InvariantCulture)}\\b"));
+        await input.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await ExpectAsync(value + step);
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await ExpectAsync(value - step);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slider_ShouldRaiseTheValueWithTheLeftArrow_WhenTheTextIsRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+
+        await ExpectLeftToRaiseAsync(page, Slider(page, "Trail length"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldRaiseAThumbWithTheLeftArrow_WhenTheTextIsRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+
+        await ExpectLeftToRaiseAsync(page, Slider(page, "Flipped Minimum"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

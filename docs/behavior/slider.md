@@ -13,7 +13,7 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 - [x] `ValueCommitted` is raised once a key has moved the thumb. `SliderTests.Slider_ShouldStepJumpAndReachTheEnds_WhenTheKeysAreUsed`
 - [x] On a range slider, Tab moves between the thumbs, and each stops at the other. `SliderTests.RangeSlider_ShouldMoveEachThumbAndStopItAtTheOther_WhenUsedWithTheKeys`
 - [x] A read-only slider's keys change nothing, on either kind. `ReadOnlyTests.ReadOnlySlider_ShouldKeepItsValue_WhenDraggedOrMovedWithTheKeys`, `ReadOnlyTests.ReadOnlySwitchAndRangeSlider_ShouldKeepTheirValues_WhenTheUserTriesToChangeThem`
-- [ ] In right-to-left text, Left raises the value and Right lowers it. #287
+- [x] In right-to-left text, Left raises the value and Right lowers it, in WebKit too. `SliderTests.Slider_ShouldRaiseTheValueWithTheLeftArrow_WhenTheTextIsRightToLeft`, `SliderTests.RangeSlider_ShouldRaiseAThumbWithTheLeftArrow_WhenTheTextIsRightToLeft`
 
 ## Pointer
 

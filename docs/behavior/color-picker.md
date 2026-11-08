@@ -11,6 +11,7 @@ Familiar apps: a browser's color input, the color pickers in design tools and br
 - [x] Enter or Space on the picker button opens the picker. `PopoverTests.Popover_ShouldTakeFocusAndGiveItBack_WhenOpenedAndClosedWithTheKeyboard`
 - [x] The arrows move between swatches and choose one, as native radios do. `ColorPickerTests.Swatches_ShouldBeRadiosChosenWithTheArrows_WhenThePickerIsOpen`
 - [x] The arrows, Home, End, Page Up and Page Down change a slider, since they're native. `ColorPickerTests.Sliders_ShouldChangeTheColorAndKeepTheHue_WhenTheBrightnessGoesToBlack`
+- [x] In right-to-left text, Left raises a slider and Right lowers it, in WebKit too. `ColorPickerTests.Sliders_ShouldRaiseTheValueWithTheLeftArrow_WhenThePageIsRightToLeft`
 - [x] Up and Down step the Red, Green and Blue boxes, since they're native number inputs. `TbColorPicker.razor`
 - [x] Escape closes the picker and returns focus to its button. `PopoverTests.Popover_ShouldTakeFocusAndGiveItBack_WhenOpenedAndClosedWithTheKeyboard`
 - [x] Tabbing out of the picker closes it. `PopoverTests.Popover_ShouldClose_WhenTabMovesFocusOutOfThePanel`

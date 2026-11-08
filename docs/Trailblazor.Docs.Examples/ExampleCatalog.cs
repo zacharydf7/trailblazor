@@ -2462,8 +2462,7 @@ public static class ExampleCatalog
             ],
             Related = ["number-field", "radio-group", "form"],
             Pattern = new("slider", "https://www.w3.org/WAI/ARIA/apg/patterns/slider/"),
-            RightToLeftKeys = "Left raises the value and Right lowers it, so the thumb moves the way the key points. "
-                + "Safari doesn't swap them yet.",
+            RightToLeftKeys = "Left raises the value and Right lowers it, so the thumb moves the way the key points.",
             Sections =
             [
                 new("value", "Value", "`ShowValue` shows the value above the thumb, and `ValueFormatter` sets its "
@@ -3051,7 +3050,7 @@ public static class ExampleCatalog
             ],
             Related = ["text-field", "radio-group", "select", "form"],
             RightToLeftKeys = "On the swatches, Left moves to the next one and Right to the previous one. On a slider, "
-                + "Left raises the value and Right lowers it. Safari doesn't swap them.",
+                + "Left raises the value and Right lowers it.",
             Sections =
             [
                 new("palette", "Palette and value", "The value is a hex string. `Palette` lists the swatches to "

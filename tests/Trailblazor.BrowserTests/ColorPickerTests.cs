@@ -90,6 +90,22 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Sliders_ShouldRaiseTheValueWithTheLeftArrow_WhenThePageIsRightToLeft(string browser)
+    {
+        var page = await OpenPickerAsync(browser);
+        var hue = Picker(page).GetByRole(AriaRole.Slider, new() { Name = "Hue" });
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        await hue.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(hue).ToHaveAttributeAsync("aria-valuetext", "211°");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(hue).ToHaveAttributeAsync("aria-valuetext", "209°");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Opacity_ShouldShowAndSetTheAlpha_WhenAlphaIsOn(string browser)
     {
         var page = await OpenPickerAsync(browser, "Highlight");

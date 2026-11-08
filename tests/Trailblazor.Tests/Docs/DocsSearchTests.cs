@@ -103,7 +103,7 @@ public class DocsSearchTests
     [Fact]
     public void Find_ShouldFindAComponentsAccessibility_WhenTheWordsAreInItsRightToLeftKeys()
     {
-        var results = DocsSearch.Find("safari swap");
+        var results = DocsSearch.Find("key points");
 
         Assert.Contains(results, result => result is { Page: "Slider", Section: "Accessibility" });
     }
