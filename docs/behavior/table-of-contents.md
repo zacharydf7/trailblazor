@@ -17,7 +17,8 @@ Familiar apps: the "On this page" panel of documentation sites, GitHub's outline
 - [x] Before the script attaches, the links are real addresses that still jump. `TbTableOfContentsTests.Render_ShouldListLinksToEachSectionInANamedLandmark_WhenGivenItems`
 - [x] Scrolling marks the link to the section in view, in the page or a scrolling panel. `TableOfContentsTests.TableOfContents_ShouldMarkTheSectionInView_WhenThePanelScrolls`
 - [x] Scrolled to the end, the last section showing is marked. `TableOfContentsTests.TableOfContents_ShouldMarkTheLastSectionShowing_WhenThePanelIsScrolledToTheEnd`
-- [ ] Following a link marks that link, even when a later section is also near the top or the scroll can't bring it there. #326
+- [x] Following a link marks that link until the page or panel holding the sections scrolls again, even when a later section is also near the top or the scroll can't bring it there, and a key, a click or a scroll somewhere else keeps it. `TableOfContentsTests.TableOfContents_ShouldKeepTheFollowedLinkMarked_WhenALaterSectionWouldWinByPosition`
+- [x] A scroll that starts before a followed link's own scroll settles, and takes its section out of view, marks the section in view once it settles. `TableOfContentsTests.TableOfContents_ShouldMarkTheSectionInView_WhenAScrollAwayStartsBeforeTheFollowedOneSettles`
 - [x] `ActiveChanged` reports each section that comes into view. `TableOfContentsTests.TableOfContents_ShouldReportTheSection_WhenAnotherComesIntoView`
 
 ## Touch

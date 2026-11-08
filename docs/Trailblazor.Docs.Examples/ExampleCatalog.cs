@@ -5152,7 +5152,8 @@ public static class ExampleCatalog
             [
                 "A section is in view once its start passes the top quarter of what scrolls it, the page or a "
                     + "scrolling panel. At the top of the scroll the first section is in view, and at the bottom the "
-                    + "last section that shows is in view.",
+                    + "last section that shows is in view. A followed link stays marked until the page or panel "
+                    + "holding its section scrolls again, even where position alone would put another section in view.",
                 "Following a link scrolls smoothly to the section, or jumps there when the user has asked for reduced "
                     + "motion.",
             ],
