@@ -29,9 +29,35 @@
     <TbOverlay @bind-Visible="_inner" CloseOnClick>Inner cover</TbOverlay>
 </TbDialog>
 
+@* A page-layer modal, which gets no close request from the browser, holding a closable overlay. *@
+<TbButton OnClick="() => _pageHolder = true">Page-layer modal</TbButton>
+<TbDialog @bind-Open="_pageHolder" Title="Page-layer dialog" Options="PageLayer">
+    <TbButton OnClick="() => _pageInner = true">Cover the dialog</TbButton>
+    <TbOverlay @bind-Visible="_pageInner" CloseOnClick>Page inner cover</TbOverlay>
+    <TbButton OnClick="() => _closable = true">Cover the page</TbButton>
+</TbDialog>
+
+@* Two modeless windows, each holding a closable overlay. *@
+<TbButton OnClick="() => _left = _right = true">Windows</TbButton>
+<TbDialog @bind-Open="_left" Title="Left window" Options="Modeless">
+    <TbButton OnClick="() => _leftCover = true">Cover left</TbButton>
+    <TbOverlay @bind-Visible="_leftCover" CloseOnClick>Left cover</TbOverlay>
+</TbDialog>
+<TbDialog @bind-Open="_right" Title="Right window" Options="Modeless">
+    <TbButton OnClick="() => _rightCover = true">Cover right</TbButton>
+    <TbOverlay @bind-Visible="_rightCover" CloseOnClick>Right cover</TbOverlay>
+</TbDialog>
+
 @code {
     private bool _holder;
     private bool _inner;
+    private static readonly DialogOptions PageLayer = new() { TopLayer = false };
+    private bool _pageHolder;
+    private bool _pageInner;
+    private bool _left;
+    private bool _right;
+    private bool _leftCover;
+    private bool _rightCover;
     private static readonly DialogOptions Modeless = new() { Modal = false };
     private bool _closable;
     private bool _dialog;

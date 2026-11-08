@@ -10,8 +10,6 @@ const takesEscape = open => open.localName !== 'dialog' || open.matches(':modal,
 
 export function createDismissableLayer(element, trigger, dotNetReference) {
     const layer = { element, trigger, dotNetReference, dismissPending: false, dispose };
-    // Tells a dialog around the layer to leave Escape to it.
-    element.dataset.dismissableLayer = '';
     if (layers.length === 0) {
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('pointerdown', onPointerDown, { capture: true });
@@ -19,16 +17,26 @@ export function createDismissableLayer(element, trigger, dotNetReference) {
     }
 
     layers.push(layer);
+    markTopmost();
     return layer;
 
     function dispose() {
         delete element.dataset.dismissableLayer;
         layers.splice(layers.indexOf(layer), 1);
+        markTopmost();
         if (layers.length === 0) {
             document.removeEventListener('keydown', onKeyDown);
             document.removeEventListener('pointerdown', onPointerDown, { capture: true });
             document.removeEventListener('focusin', onFocusIn, { capture: true });
         }
+    }
+}
+
+// Only the topmost layer gets Escape, so only it tells a dialog around it to leave the key alone.
+function markTopmost() {
+    const topmost = layers.at(-1);
+    for (const layer of layers) {
+        layer.element.toggleAttribute('data-dismissable-layer', layer === topmost);
     }
 }
 
