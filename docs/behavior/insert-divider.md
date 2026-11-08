@@ -15,12 +15,13 @@ Familiar apps: the add-block button in Notion, the insert handles between rows i
 - [x] Resting on the line shows the line and button, and leaving hides them. `InsertDividerTests.InsertDivider_ShouldShowItsButtonOnlyOnHoverOrFocus_WhenThePointerCanHover`
 - [x] A click asks the app to insert here. `TbInsertDividerTests.Click_ShouldAskToInsert_WhenTheButtonIsChosen`
 - [x] The divider keeps its height shown or hidden, so the list doesn't jump. `InsertDividerTests.InsertDivider_ShouldCenterItsLineOnTheButton_WhenShown`
-- [ ] After a click, the line and button hide once the pointer leaves. #312
-- [ ] A disabled divider's button stays hidden at rest and looks off when the line is hovered. #312
+- [x] After a click, the line and button hide once the pointer leaves; only keyboard focus keeps them shown. `InsertDividerTests.InsertDivider_ShouldHideOnceThePointerLeaves_WhenItsButtonWasClicked`
+- [x] A disabled divider's button stays hidden at rest, and the line and button look off when the line is hovered. `InsertDividerTests.InsertDivider_ShouldHideADisabledButtonAtRestAndDimItOnHover_WhenDisabled`
 
 ## Touch
 
 - [x] Where the pointer can't hover, the button stays in view. `InsertDividerTests.InsertDivider_ShouldKeepItsButtonInView_WhenThePointerCannotHover`
+- [x] Where the pointer can't hover, a disabled divider's button shows dimmed. `InsertDividerTests.InsertDivider_ShouldShowADisabledButtonDimmed_WhenThePointerCannotHover`
 - [x] A tap presses it through the same click a mouse sends, at a target of at least 26px. `TbInsertDivider.razor`
 
 ## Focus

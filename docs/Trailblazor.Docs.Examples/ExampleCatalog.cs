@@ -927,8 +927,8 @@ public static class ExampleCatalog
                 + "`data-ready`, open the menu button named \"More\" and choose the `menuitem`.",
         },
         new("insert-divider", "Insert divider", ExampleCategory.Actions,
-            "A line between two items that reveals an insert button on hover or focus, for adding an item in that "
-                + "place.")
+            "A line between two items that reveals an insert button on hover or keyboard focus, for adding an item "
+                + "in that place.")
         {
             FullWidth = true,
             WhenToUse =
@@ -946,8 +946,9 @@ public static class ExampleCatalog
             [
                 new("between-items", "Between items", "`OnInsert` runs when the divider's button is pressed, and the "
                     + "app adds the item. The button shows when the pointer rests on the line or the button has "
-                    + "focus, and stays in view on a touch screen, which can't hover. It takes up its space whether "
-                    + "it shows or not, so the list doesn't jump.", typeof(InsertDividerExample)),
+                    + "keyboard focus, and stays in view on a touch screen, which can't hover. It takes up its space "
+                    + "whether it shows or not, so the list doesn't jump. A disabled divider's button shows dimmed.",
+                    typeof(InsertDividerExample)),
             ],
             Api = [typeof(TbInsertDivider)],
             Keyboard =
@@ -965,7 +966,7 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
-                "The button stays in the tab order while it's hidden, and shows when it has focus.",
+                "The button stays in the tab order while it's hidden, and shows when it has keyboard focus.",
             ],
             BeforeInteractive =
             [

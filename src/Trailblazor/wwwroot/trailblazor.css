@@ -1454,21 +1454,35 @@
     /* Positioned, so it paints above the line and takes the clicks. */
     .tb-insert-divider__button {
         position: relative;
-        opacity: 0;
         transition: opacity var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
+    /* The extra classes outrank .tb-button:disabled, which would otherwise show a disabled button at rest. */
+    .tb-insert-divider .tb-button.tb-insert-divider__button {
+        opacity: 0;
+    }
+
+    /* The reveal is a hover affordance, so a click's focus doesn't hold it; keyboard focus does. */
     .tb-insert-divider:hover::before,
-    .tb-insert-divider:focus-within::before,
+    .tb-insert-divider:has(:focus-visible)::before,
     .tb-insert-divider:hover .tb-insert-divider__button,
-    .tb-insert-divider:focus-within .tb-insert-divider__button {
+    .tb-insert-divider:has(:focus-visible) .tb-insert-divider__button {
         opacity: 1;
+    }
+
+    .tb-insert-divider:hover:has(:disabled)::before,
+    .tb-insert-divider:hover .tb-insert-divider__button:disabled {
+        opacity: var(--tb-disabled-opacity);
     }
 
     /* A touch screen can't hover, even on a laptop whose touchpad can, so there the button stays in view. */
     @media (hover: none), (any-pointer: coarse) {
-        .tb-insert-divider__button {
+        .tb-insert-divider .tb-button.tb-insert-divider__button {
             opacity: 1;
+        }
+
+        .tb-insert-divider .tb-button.tb-insert-divider__button:disabled {
+            opacity: var(--tb-disabled-opacity);
         }
     }
 
