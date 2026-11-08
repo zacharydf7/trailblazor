@@ -646,7 +646,8 @@ internal sealed partial class RichTextHtmlReader
             "blockquote" => (RichTextParagraphKind.Quote, 0, false),
             "li" => (parent.Ordered ? RichTextParagraphKind.NumberedItem : RichTextParagraphKind.BulletedItem,
                 Math.Max(parent.Lists - 1, 0), false),
-            _ when WordListLevel().Match(style) is { Success: true } match => (RichTextParagraphKind.BulletedItem,
+            _ when style.Contains("mso-list", StringComparison.OrdinalIgnoreCase)
+                && WordListLevel().Match(style) is { Success: true } match => (RichTextParagraphKind.BulletedItem,
                 Math.Max(int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) - 1, 0), true),
             _ => ((RichTextParagraphKind, int, bool)?)null,
         };
@@ -1072,7 +1073,7 @@ internal sealed partial class RichTextHtmlReader
         public int Serial { get; set; }
     }
 
-    private sealed record Piece(string Text, RichTextFormats Formats, string? Link, bool Pre);
+    private readonly record struct Piece(string Text, RichTextFormats Formats, string? Link, bool Pre);
 
     // Target is any href (a styled underline under it is the link's look); Kept is Target if the schema allows it.
     private readonly record struct LinkState(string? Target, string? Kept);
