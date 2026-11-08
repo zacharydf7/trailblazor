@@ -5232,8 +5232,9 @@
         translate: 0 -50%;
     }
 
+    /* The reveal is a hover affordance, so a click's focus doesn't hold it; keyboard focus does. */
     .tb-tree__insert:hover,
-    .tb-tree__insert:focus-within {
+    .tb-tree__insert:has(:focus-visible) {
         opacity: 1;
         clip-path: none;
     }

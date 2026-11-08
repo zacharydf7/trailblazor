@@ -4493,8 +4493,8 @@ public static class ExampleCatalog
                     + "still scrolls. `OnDrop` says what moved and where, and the app applies it, so it can be undone "
                     + "like any other change. A drag that rests on a closed row opens it. `CanDrop` can refuse a move "
                     + "and say why. `InsertTemplate` puts content on each row's edge, such as the buttons here that "
-                    + "add a row. It shows when the pointer reaches that edge or the content has focus, and on a "
-                    + "touch screen for the focused row.",
+                    + "add a row. It shows when the pointer reaches that edge or the content has keyboard focus, and "
+                    + "on a touch screen for the focused row.",
                     typeof(TreeViewMoveExample)),
                 new("many-rows", "Many rows", "With `Virtualize`, only the rows in view render, so ten thousand rows "
                     + "scroll smoothly. Every row is `ItemSize` pixels tall, and the rows scroll in a tree given a "

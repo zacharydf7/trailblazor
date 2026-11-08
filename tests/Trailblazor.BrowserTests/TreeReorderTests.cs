@@ -299,6 +299,36 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(slot).ToHaveCSSAsync("opacity", "1");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldHideAnInsertSlot_WhenThePointerLeavesAfterItsButtonWasClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view", new() { ReducedMotion = ReducedMotion.Reduce });
+        Assert.SkipWhen(await page.EvaluateAsync<bool>("() => matchMedia('(any-pointer: coarse)').matches"),
+            "This machine has a touch screen, so the focused row's slots show.");
+        await PlanReadyAsync(page);
+
+        await AddAsync(page, "Add a stop to Day 1 at 2");
+        await page.Mouse.MoveAsync(1, 1);
+
+        await WaitForFadesAsync(page);
+        Assert.Empty(await page.Locator("[data-part=insert]").EvaluateAllAsync<string[]>(
+            "slots => slots.filter(slot => getComputedStyle(slot).opacity !== '0').map(slot => slot.textContent)"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldShowAnInsertSlot_WhenItsButtonHasKeyboardFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view", new() { ReducedMotion = ReducedMotion.Reduce });
+        await PlanReadyAsync(page);
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Add a stop to Day 1 at 2" });
+
+        // With no press on the page yet, a script's focus counts as keyboard focus.
+        await button.FocusAsync();
+
+        Assert.True(await button.EvaluateAsync<bool>("button => button.matches(':focus-visible')"));
+        await Expect(page.Locator("[data-part=insert]").Filter(new() { Has = button })).ToHaveCSSAsync("opacity", "1");
+    }
+
     [Fact]
     public async Task Tree_ShouldSelectTheRowAndAddNothing_WhenAHiddenSlotsEdgeIsTappedOnATouchScreen()
     {

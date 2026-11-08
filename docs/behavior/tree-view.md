@@ -37,6 +37,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] Escape cancels a drag. `TreeReorderTests.Tree_ShouldDropNothing_WhenEscapeIsPressedDuringADrag`
 - [x] Holding a drag over a closed row for half a second opens it, so a drop can reach the rows inside; passing over it doesn't. `TreeReorderTests.Tree_ShouldOpenAClosedRow_WhenADragRestsOnIt`, `TbTreeViewTests.OnKey_ShouldOpenTheRowAndKeepTheTabStop_WhenADragRestsOnIt`, `TreeReorderTests.Tree_ShouldLeaveAClosedRowClosed_WhenADragOnlyPassesOverIt`
 - [x] A drag held still near the top or bottom keeps scrolling. `DragScrollTests.Tree_ShouldKeepScrolling_WhenADragIsHeldStillNearTheBottom`, `DragScrollTests.Tree_ShouldKeepScrolling_WhenAFingerIsHeldStillNearTheBottom`
+- [x] An insert slot shown by the pointer hides once the pointer leaves, even after a click on its button; keyboard focus keeps it shown. `TreeReorderTests.Tree_ShouldHideAnInsertSlot_WhenThePointerLeavesAfterItsButtonWasClicked`, `TreeReorderTests.Tree_ShouldShowAnInsertSlot_WhenItsButtonHasKeyboardFocus`
 
 ## Touch
 
