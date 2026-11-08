@@ -51,6 +51,18 @@ function registerEvents(blazor) {
     };
     blazor.registerCustomEventType('tbfocusenter', { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
     blazor.registerCustomEventType('tbfocusleave', { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
+    // A label can't take focus, so pressing one sends focus to the page, then back when its click focuses the box.
+    // In a field that already holds focus, the press leaves focus where it is, so moving between options isn't leaving.
+    // A link or other control inside a label still takes focus when pressed.
+    const ownPress = 'a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]';
+    document.addEventListener('mousedown', event => {
+        const root = event.target.closest?.('[data-tb-focus-root]');
+        const label = event.target.closest?.('label');
+        if (event.button === 0 && root?.contains(document.activeElement) && label
+            && !label.contains(event.target.closest(ownPress))) {
+            event.preventDefault();
+        }
+    }, true);
 
     // A click on a data grid row says whether the row should ignore it, as when it landed on a control in the row, whose
     // click is the control's own.

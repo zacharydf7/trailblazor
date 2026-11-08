@@ -36,6 +36,7 @@ Familiar apps: the browser's own radio buttons, the shipping choice at a checkou
 - [x] `AutoFocus` marks the group, and focus goes to the chosen radio, or else the first one. `FieldFocusAndNameTests.Render_ShouldMarkTheGroupAndNotEachItem_WhenARadioGroupHasAutoFocus`
 - [x] A read-only group's chosen radio takes focus. `ReadOnlyTests.ReadOnlyRadioGroup_ShouldKeepItsChoice_WhenTheUserTriesAnother`
 - [x] Each radio shows a focus ring for keyboard focus. `trailblazor.css`
+- [x] A click on another option's label doesn't raise `OnFocus` or `OnBlur`, in a dialog or tab panel too. `GroupFocusEventsTests.RadioGroup_ShouldRaiseNoBlurOrFocus_WhenAnotherOptionsLabelIsClicked`
 
 ## Not applicable
 

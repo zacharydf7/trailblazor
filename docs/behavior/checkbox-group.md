@@ -31,7 +31,7 @@ Familiar apps: the filter lists on shopping sites, notification settings pages
 - [x] `AutoFocus` sends focus to the first enabled box. `focus-scope.js`
 - [x] Boxes in a read-only group stay focusable. `TbCheckboxGroupTests.Render_ShouldMarkEachCheckboxReadOnlyButNotDisabled_WhenReadOnly`
 - [x] Tabbing between boxes, or pressing a box itself, doesn't raise `OnFocus` or `OnBlur`. `TbFieldBase.cs`
-- [ ] A click on another option's label doesn't raise them either. #334
+- [x] A click on another option's label doesn't raise them either, and a link in a label still takes focus. `GroupFocusEventsTests.CheckboxGroup_ShouldRaiseNoBlurOrFocus_WhenAnotherOptionsLabelIsClicked`, `GroupFocusEventsTests.CheckboxGroup_ShouldLetALinkInALabelTakeFocus_WhenItIsPressed`
 - [x] Each box shows a focus ring for keyboard focus. `trailblazor.css`
 
 ## Not applicable

@@ -1,0 +1,31 @@
+@page "/group-focus-events"
+
+@* A checkbox group and a radio group that count their OnFocus and OnBlur, to show which moves count as entering or
+   leaving them. One option's label holds a link, and the radio group sits in a container with a tabindex, as in a
+   dialog or a tab panel. *@
+<TbCheckboxGroup Label="Gear" @bind-Value="_gear" OnFocus="() => _focuses++" OnBlur="() => _blurs++">
+    <TbCheckboxItem Value="@("Tent")">Tent</TbCheckboxItem>
+    <TbCheckboxItem Value="@("Stove")">Stove</TbCheckboxItem>
+    <TbCheckboxItem Value="@("Map")">Map, as in the <a href="group-focus-events#guide">guide</a></TbCheckboxItem>
+</TbCheckboxGroup>
+<output aria-label="Focuses">@_focuses</output>
+<output aria-label="Blurs">@_blurs</output>
+<output aria-label="Gear">@string.Join(", ", _gear)</output>
+<div tabindex="-1">
+    <TbRadioGroup Label="Pace" @bind-Value="_pace" OnFocus="() => _paceFocuses++" OnBlur="() => _paceBlurs++">
+        <TbRadio Value="@("Slow")">Slow</TbRadio>
+        <TbRadio Value="@("Fast")">Fast</TbRadio>
+    </TbRadioGroup>
+</div>
+<output aria-label="Pace focuses">@_paceFocuses</output>
+<output aria-label="Pace blurs">@_paceBlurs</output>
+<output aria-label="Pace">@_pace</output>
+
+@code {
+    private IReadOnlyList<string> _gear = [];
+    private string? _pace;
+    private int _focuses;
+    private int _blurs;
+    private int _paceFocuses;
+    private int _paceBlurs;
+}
