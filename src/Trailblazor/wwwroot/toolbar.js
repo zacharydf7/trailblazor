@@ -28,6 +28,7 @@ export function attachToolbar(toolbar, more, overflow) {
     const overflows = () => toolbar.scrollWidth > toolbar.clientWidth;
     const fit = () => {
         if (!more) {
+            focus.sync();
             return;
         }
 

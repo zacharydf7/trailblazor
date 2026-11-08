@@ -18,6 +18,8 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 - [x] The arrows reach a `TbSelect`, and it isn't a second tab stop. A turned-off select stays out. `ToolbarTests.Toolbar_ShouldReachASelectWithTheArrowsAsOneTabStop_WhenItHoldsOne`, `ToolbarTests.Toolbar_ShouldSkipATurnedOffSelect_WhenTheArrowsMove`, `ToolbarTests.Select_ShouldKeepItsOwnKeys_WhenInAToolbar`
 - [x] The arrows reach a `FocusableWhenDisabled` button, even one with an `Href`, so a keyboard user can find it and learn why it's off. They skip one that's simply disabled, and a link that turned off while shown. `ToolbarTests.Toolbar_ShouldReachButtonsAndLinksKeptFocusable_WhenTheyreOff`, `ToolbarTests.Toolbar_ShouldSkipLinksThatAreOff_WhenOneStartsOffAndOneTurnsOff`
 - [x] A link that turns off gives up the tab stop, and one that becomes focusable while off doesn't add another. `ToolbarTests.Toolbar_ShouldKeepOneTabStop_WhenTheLinkHoldingItTurnsOff`, `ToolbarTests.Toolbar_ShouldKeepOneTabStop_WhenALinkBecomesFocusableWhileOff`
+- [x] A link that turns off while the toolbar is hidden gives up the tab stop once the toolbar shows again, in a vertical toolbar too. `ToolbarTests.Toolbar_ShouldKeepOneTabStop_WhenTheLinkHoldingItTurnsOffWhileHidden`
+- [x] A `Loading` link that turns back on doesn't add a tab stop. `ToolbarTests.Toolbar_ShouldKeepOneTabStop_WhenABusyLinkTurnsBackOn`
 - [x] A hidden toolbar keeps its tab stop through a change inside it. `ToolbarTests.Toolbar_ShouldKeepItsTabStop_WhenSomethingChangesWhileItsHidden`
 - [x] A select that turns off while focused keeps focus. `ToolbarTests.Toolbar_ShouldKeepFocusOnASelect_WhenItTurnsOffWhileFocused`
 - [x] The arrows keep working from a button that turned `Loading` while focused, and the tab stop stays on it. `ToolbarTests.Toolbar_ShouldKeepItsKeysAndTabStop_WhenTheFocusedButtonTurnsLoading`
@@ -37,7 +39,7 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 
 ## Focus
 
-- [x] The tab stop stays on the last focused control, which a click also moves it to. `roving-focus.js`
+- [x] The tab stop stays on the last focused control, which a click also moves it to, and is still there after the toolbar is hidden and shown again. `ToolbarTests.Toolbar_ShouldKeepTheTabStopOnTheLastFocusedControl_WhenHiddenAndShownAgain`
 - [x] It stays one tab stop when a toggle group inside changes from outside. `ToolbarTests.Toolbar_ShouldKeepOneTabStop_WhenAToggleGroupInsideItChangesFromOutside`
 - [x] Controls in a popup inside the toolbar aren't part of its keys. `ToolbarTests.ToggleGroup_ShouldKeepItsOwnKeys_WhenInAPopupInsideAToolbar`
 - [x] Keyboard focus on an icon button shows its text, which isn't read twice. `ToolbarTests.Toolbar_ShouldNotDescribeAnIconButtonByItsOwnName_WhenItsTooltipRepeatsIt`

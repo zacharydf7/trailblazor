@@ -28,10 +28,17 @@
 <TbToolbar AriaLabel="Stacked" Vertical>
     <TbSelect TValue="string" Label="Stacked pick" />
     <TbToolbarButton Text="Stacked button" />
+    <TbButton Href="toolbar" Disabled="_stackedLinkOff">Stacked link</TbButton>
+</TbToolbar>
+<TbToolbar AriaLabel="Busy">
+    <TbToolbarButton Text="Busy start" />
+    <TbButton Href="toolbar" Loading Disabled="_busyLinkOff">Busy link</TbButton>
 </TbToolbar>
 <TbButton OnClick="() => _linkOff = true">Turn link off</TbButton>
+<TbButton OnClick="() => _stackedLinkOff = true">Turn stacked link off</TbButton>
 <TbButton OnClick="() => _keepLink = true">Keep link focusable</TbButton>
 <TbButton OnClick="() => _sizeOff = true">Turn size off</TbButton>
+<TbButton OnClick="() => _busyLinkOff = false">Turn busy link on</TbButton>
 
 @code {
     private string? _size;
@@ -39,4 +46,6 @@
     private bool _linkOff;
     private bool _keepLink;
     private bool _sizeOff;
+    private bool _stackedLinkOff;
+    private bool _busyLinkOff = true;
 }

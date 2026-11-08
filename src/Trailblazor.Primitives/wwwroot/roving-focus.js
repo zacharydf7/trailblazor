@@ -16,16 +16,18 @@ export function createRovingFocus(container, { items, filter = () => true, verti
 
     const sync = () => {
         const list = focusable();
-        if (!list.includes(current)) {
+        // A filter that drops hidden items empties the list while the container is hidden, so the last focused item
+        // is kept for when it shows.
+        if (!list.includes(current) && (container.checkVisibility() || !current?.isConnected)) {
             current = null;
         }
 
-        const stop = current ?? (list.includes(preferred()) ? preferred() : list[0]);
+        const stop = list.includes(current) ? current : list.includes(preferred()) ? preferred() : list[0];
         const inSet = all();
         // An item that left the set, such as a link turned off, would otherwise stay a tab stop. Leave a -1 alone,
-        // since it may be the item's own and keeps focus on it, and a hidden item too, which may come back as it was.
-        const left = managed.filter(item => !inSet.includes(item) && item.tabIndex === 0 && item.checkVisibility());
-        for (const item of left) {
+        // since it may be the item's own and keeps focus on it.
+        const left = managed.filter(item => !inSet.includes(item) && item.tabIndex === 0 && item.isConnected);
+        for (const item of left.filter(item => item.checkVisibility())) {
             item.removeAttribute('tabindex');
         }
 
@@ -33,7 +35,8 @@ export function createRovingFocus(container, { items, filter = () => true, verti
             item.tabIndex = item === stop ? 0 : -1;
         }
 
-        managed = inSet;
+        // Keep tracking a hidden one that left, since it may come back as it was; a later sync checks it again.
+        managed = [...inSet, ...left.filter(item => !item.checkVisibility())];
     };
     const moveTo = item => {
         if (item) {
@@ -72,11 +75,12 @@ export function createRovingFocus(container, { items, filter = () => true, verti
         }
     };
 
-    // Items come and go, turn off, or become the preferred one as the server re-renders.
+    // Items come and go, turn off, or become the preferred one as the server re-renders. A busy link stays
+    // aria-disabled, so turning it off or back on changes only its href.
     const observer = new MutationObserver(sync);
     observer.observe(container, {
         childList: true, subtree: true, attributes: true,
-        attributeFilter: ['disabled', 'aria-disabled', 'aria-pressed', 'data-kept-focusable'],
+        attributeFilter: ['disabled', 'aria-disabled', 'aria-pressed', 'data-kept-focusable', 'href'],
     });
     container.addEventListener('keydown', onKeyDown);
     container.addEventListener('focusin', onFocusIn);

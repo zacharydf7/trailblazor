@@ -1,6 +1,7 @@
 @page "/toggle-items"
 
-@* Icon-only items in a row, a column that mixes them with a text item, and the theme picker, which is all icon-only. *@
+@* Icon-only items in a row, a column that mixes them with a text item that can turn off, and the theme picker, which is
+   all icon-only. *@
 <TbMultiToggleGroup TItem="string" AriaLabel="Layers" @bind-Value="_layers">
     <TbToggleItem TValue="string" Value="@("Roads")" Icon="Square" AriaLabel="Roads" />
     <TbToggleItem TValue="string" Value="@("Rivers")" Icon="Square" AriaLabel="Rivers" />
@@ -8,13 +9,15 @@
 </TbMultiToggleGroup>
 <TbToggleGroup TValue="string" AriaLabel="Side" Vertical @bind-Value="_side">
     <TbToggleItem TValue="string" Value="@("Top")" Icon="Square" AriaLabel="Top" />
-    <TbToggleItem TValue="string" Value="@("Middle")">Middle of the side</TbToggleItem>
+    <TbToggleItem TValue="string" Value="@("Middle")" Disabled="_middleOff">Middle of the side</TbToggleItem>
     <TbToggleItem TValue="string" Value="@("Bottom")" Icon="Square" AriaLabel="Bottom" />
 </TbToggleGroup>
+<TbButton OnClick="() => _middleOff = true">Turn middle off</TbButton>
 <TbThemePicker />
 
 @code {
     private static readonly Icon Square = new("<path d=\"M5 5h14v14H5z\" />");
     private IReadOnlyList<string> _layers = ["Roads"];
     private string? _side = "Top";
+    private bool _middleOff;
 }

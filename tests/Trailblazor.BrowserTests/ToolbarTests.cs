@@ -191,6 +191,67 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepOneTabStop_WhenTheLinkHoldingItTurnsOffWhileHidden(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        foreach (var (name, linkName, turnOff) in new[]
+            { ("With links", "Turning link", "Turn link off"), ("Stacked", "Stacked link", "Turn stacked link off") })
+        {
+            var link = Toolbar(page, name).GetByRole(AriaRole.Link, new() { Name = linkName });
+            await link.FocusAsync();
+            await Expect(link).ToHaveAttributeAsync("tabindex", "0");
+            var toolbar = page.Locator($"[aria-label='{name}']");
+
+            await toolbar.EvaluateAsync("toolbar => toolbar.style.display = 'none'");
+            await page.GetByRole(AriaRole.Button, new() { Name = turnOff }).ClickAsync();
+            await Expect(toolbar.Locator("a", new() { HasText = linkName })).ToHaveAttributeAsync("aria-disabled", "true");
+            await toolbar.EvaluateAsync("toolbar => toolbar.style.display = ''");
+
+            await Expect(link).Not.ToHaveAttributeAsync("tabindex", "0");
+            await Expect(Toolbar(page, name).Locator("[tabindex='0']")).ToHaveCountAsync(1);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepTheTabStopOnTheLastFocusedControl_WhenHiddenAndShownAgain(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        foreach (var (name, control) in new[] { ("Tools", "Next"), ("Stacked", "Stacked button") })
+        {
+            var last = Tool(page, name, control);
+            await last.FocusAsync();
+            var toolbar = page.Locator($"[aria-label='{name}']");
+
+            // A few frames each way let the toolbar refit, and sync, while hidden and once shown.
+            foreach (var display in new[] { "none", "" })
+            {
+                await toolbar.EvaluateAsync($$"""
+                    toolbar => {
+                        toolbar.style.display = '{{display}}';
+                        return new Promise(done => requestAnimationFrame(() => requestAnimationFrame(
+                            () => requestAnimationFrame(done))));
+                    }
+                    """);
+            }
+
+            await Expect(last).ToHaveAttributeAsync("tabindex", "0");
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepOneTabStop_WhenABusyLinkTurnsBackOn(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-keys");
+        var link = Toolbar(page, "Busy").GetByRole(AriaRole.Link, new() { Name = "Busy link" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Turn busy link on" }).ClickAsync();
+        await Expect(link).ToHaveAttributeAsync("href", "toolbar");
+
+        await Expect(link).ToHaveAttributeAsync("tabindex", "-1");
+        await Expect(Tool(page, "Busy", "Busy start")).ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toolbar_ShouldKeepItsKeysAndTabStop_WhenTheFocusedButtonTurnsLoading(string browser)
     {
         var page = await OpenToolbarAsync(browser, "/toolbar-keys");

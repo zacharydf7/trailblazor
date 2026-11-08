@@ -36,6 +36,7 @@ Familiar apps: Word's text alignment and its bold, italic and underline buttons
 ## Focus
 
 - [x] The tab stop stays on the last focused item when focus leaves and comes back. `ToggleGroupTests.ToggleGroup_ShouldKeepTheTabStopOnTheLastFocusedItem_WhenFocusLeavesAndComesBack`
+- [x] When the item holding the tab stop turns off while the group is hidden, the pressed or first enabled item takes it. `ToggleItemsTests.ToggleGroup_ShouldKeepATabStop_WhenTheFocusedItemTurnsOffWhileHidden`
 - [x] A click moves the tab stop to the clicked item. `roving-focus.js`
 - [x] Until focus has been inside the group, the tab stop follows a value set from code. `roving-focus.js`
 - [x] A focused item is lifted over its neighbors, so all of its ring shows. `ToggleItemsTests.Item_ShouldLiftAFocusedOneOverItsNeighbors_WhenJoined`

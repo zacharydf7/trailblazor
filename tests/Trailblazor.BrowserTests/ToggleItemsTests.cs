@@ -123,6 +123,25 @@ public class ToggleItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ToggleGroup_ShouldKeepATabStop_WhenTheFocusedItemTurnsOffWhileHidden(string browser)
+    {
+        var page = await OpenReadyAsync(browser, "Side");
+        var middle = Item(page, "Side", "Middle of the side");
+        await middle.FocusAsync();
+        await Expect(middle).ToHaveAttributeAsync("tabindex", "0");
+
+        await Group(page, "Side").EvaluateAsync("group => group.style.display = 'none'");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Turn middle off" }).ClickAsync();
+        // A hidden group has no role to find it by.
+        var group = page.Locator("[aria-label='Side']");
+        await Expect(group.Locator("button", new() { HasText = "Middle of the side" })).ToBeDisabledAsync();
+        await group.EvaluateAsync("group => group.style.display = ''");
+
+        await Expect(Item(page, "Side", "Top")).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(Group(page, "Side").Locator("[tabindex='0']")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ThemePicker_ShouldShowAChoicesNameAndTellItFromThePressedOne_WhenHovered(string browser)
     {
         var page = await OpenReadyAsync(browser, "Theme");
