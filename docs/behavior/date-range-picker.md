@@ -11,17 +11,19 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 - [x] Left and Right follow the reading direction. `DateRangePickerTests.Calendar_ShouldMoveToTheNextDayWithTheLeftArrow_WhenThePageIsRightToLeft`
 - [x] Home and End go to the start and end of the week. `DateRangePickerTests.Calendar_ShouldMoveByDayWeekAndMonthAndShowNewMonths_WhenKeysArePressed`
 - [x] Page Up and Page Down change the month, and with Shift the year, bringing it into view. `DateRangePickerTests.Calendar_ShouldMoveByDayWeekAndMonthAndShowNewMonths_WhenKeysArePressed`
+- [x] Keys pressed faster than the server shows each month still land on the day they move to. `DateRangePickerTests.Calendar_ShouldLandOnTheDayTheKeysMovedTo_WhenTheyRunAheadOfTheServer`
 - [x] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. `DateRangePickerTests.Calendar_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld`
 - [x] Enter or Space picks the day, since each day is a button. `TbDateRangePicker.razor`
 - [x] Escape closes the calendar, keeps the range and returns focus to the button. `DateRangePickerTests.Calendar_ShouldCloseAndKeepTheRange_WhenEscapeIsPressed`
 - [x] Typed dates commit when both read in order, on Enter or on leaving the box. `DateRangePickerTests.Typing_ShouldCommitBothDates_WhenTheyReadInOrder`
-- [x] While the end is being chosen, moving focus with the keys previews the range, as the pointer does. `DateRangePickerTests.Calendar_ShouldPreviewTheRange_WhenTheKeysMoveFocusToALaterDay`, `DateRangePickerTests.Calendar_ShouldPreviewTheWholeRange_WhenPagingKeepsFocusOnTheSameButton`
+- [x] While the end is being chosen, moving focus with the keys previews the range, as the pointer does. `DateRangePickerTests.Calendar_ShouldPreviewTheRange_WhenTheKeysMoveFocusToALaterDay`, `DateRangePickerTests.Calendar_ShouldPreviewTheWholeRange_WhenPagingKeepsFocusOnTheSameButton`, `DateRangePickerTests.Calendar_ShouldPreviewTheRange_WhenAnArrowFollowsEnterBeforeTheServerAnswers`
 
 ## Pointer
 
 - [x] Clicking around the date boxes, such as on the field's padding, focuses the start box, unless it lands on a button. `FieldBoxTests.Box_ShouldFocusItsFirstInput_WhenItHoldsTwo`
 - [x] A press in the open calendar leaves it open and doesn't move focus to the start box. `FieldBoxTests.Box_ShouldLeaveItsPanelOpenAndItsInputUnfocused_WhenThePanelIsPressed`
 - [x] The first click starts the range, and the second ends it, commits once and closes. `TbDateRangePickerTests.Pick_ShouldRaiseTheRangeOnce_WhenTheEndIsPicked`
+- [x] After a click that doesn't focus the day, as in Safari on a Mac, the keys still move from the picked day, and a click on a month button leaves focus where it was. `DateRangePickerTests.Calendar_ShouldMoveOnFromThePickedDay_WhenAClickLeavesFocusOnThePage`, `DateRangePickerTests.Calendar_ShouldKeepOneTabStop_WhenAMonthButtonClickLeavesFocusOnThePage`
 - [x] A second click on an earlier day starts over from that day. `TbDateRangePickerTests.Pick_ShouldStartAgain_WhenTheSecondDayIsEarlier`
 - [x] A second click on the same day makes a one-day range. `TbDateRangePicker.cs`
 - [x] A day that can't be chosen ignores the click. `TbDateRangePickerTests.Pick_ShouldIgnoreTheDay_WhenItCantBeChosen`

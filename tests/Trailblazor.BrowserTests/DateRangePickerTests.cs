@@ -258,6 +258,64 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(29);
     }
 
+    // The keys are pressed without waiting, so they can land before the server has answered the ones before them.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldLandOnTheDayTheKeysMovedTo_WhenTheyRunAheadOfTheServer(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+
+        foreach (var key in new[] { "PageUp", "PageUp", "PageUp", "PageUp", "PageUp", "PageDown", "ArrowRight" })
+        {
+            await page.Keyboard.PressAsync(key);
+        }
+
+        await Expect(Day(page, "Wednesday, February 4, 2026")).ToBeFocusedAsync();
+        await Expect(Calendar(page).GetByRole(AriaRole.Grid).First).ToHaveAccessibleNameAsync("January 2026");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldPreviewTheRange_WhenAnArrowFollowsEnterBeforeTheServerAnswers(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Calendar(page)).ToHaveAttributeAsync("data-anchor", "2026-06-03");
+        await Expect(Calendar(page).Locator("[data-preview]")).ToHaveCountAsync(1);
+    }
+
+    // Safari on a Mac doesn't focus a clicked button, so the click is sent without moving focus.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldMoveOnFromThePickedDay_WhenAClickLeavesFocusOnThePage(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await page.EvaluateAsync("() => document.activeElement.blur()");
+
+        await Day(page, "Monday, June 22, 2026").DispatchEventAsync("click");
+        await Expect(Calendar(page)).ToHaveAttributeAsync("data-anchor", "2026-06-22");
+        await Expect(Day(page, "Monday, June 22, 2026, Start date")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Day(page, "Tuesday, June 23, 2026")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldKeepOneTabStop_WhenAMonthButtonClickLeavesFocusOnThePage(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        await page.EvaluateAsync("() => document.activeElement.blur()");
+        var previous = Calendar(page).GetByRole(AriaRole.Button, new() { Name = "Previous month" });
+
+        await previous.DispatchEventAsync("click");
+        await Expect(Calendar(page).GetByRole(AriaRole.Grid).First).ToHaveAccessibleNameAsync("May 2026");
+        await Expect(Calendar(page).Locator("[data-part=day]:focus")).ToHaveCountAsync(0);
+        await previous.DispatchEventAsync("click");
+        await Expect(Calendar(page).GetByRole(AriaRole.Grid).First).ToHaveAccessibleNameAsync("April 2026");
+
+        await Expect(Calendar(page).Locator("[data-part=day][tabindex='0']")).ToHaveCountAsync(1);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldClose_WhenShiftTabMovesFocusBackToItsButton(string browser)
     {

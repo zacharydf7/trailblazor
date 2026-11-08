@@ -41,6 +41,11 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     let returnFocus = false;
     // Set from a press on the calendar button until the calendar next opens or closes.
     let pressedTrigger = false;
+    // The day focus last moved to; keys start here, since a render can reuse the focused button for another day.
+    let intended = null;
+    // The day the pointer or focus last rested on, previewed again when the start arrives from the server.
+    let over = null;
+    let standingIn = false;
 
     const day = iso => panel.querySelector(`[data-part="day"][data-date="${iso}"]`);
     const focusDay = button => {
@@ -51,6 +56,10 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     const rtl = () => getComputedStyle(panel).direction === 'rtl';
     const clearPreview = () =>
         panel.querySelectorAll('[data-preview]').forEach(day => day.removeAttribute('data-preview'));
+    const dropPreview = () => {
+        over = null;
+        clearPreview();
+    };
 
     const onBeforeToggle = event => {
         if (event.newState === 'closed') {
@@ -68,7 +77,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         } else {
             position?.dispose();
             position = null;
-            clearPreview();
+            intended = null;
+            dropPreview();
             if (returnFocus) {
                 trigger.focus();
             }
@@ -86,13 +96,14 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         const key = rtl() && event.key.startsWith('Arrow')
             ? { ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft' }[event.key] ?? event.key
             : event.key;
-        const next = target(key, event.shiftKey, toDate(button.dataset.date), firstDayOfWeek);
+        const next = target(key, event.shiftKey, toDate(intended ?? button.dataset.date), firstDayOfWeek);
         if (!next) {
             return;
         }
 
         event.preventDefault();
         const iso = toIso(next);
+        intended = iso;
         const shown = day(iso);
         if (shown) {
             focusDay(shown);
@@ -109,21 +120,56 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         }
     };
     // While only the start is picked, the days up to the one under the pointer or focus show as the range.
-    const previewTo = over => {
+    const previewTo = to => {
         const anchor = panel.dataset.anchor;
+        over = to;
         clearPreview();
-        if (!anchor || !over || over.dataset.date < anchor) {
+        if (!anchor || !to || to.dataset.date < anchor) {
             return;
         }
 
         panel.querySelectorAll('[data-part="day"]').forEach(other => {
-            if (other.dataset.date > anchor && other.dataset.date <= over.dataset.date) {
+            if (other.dataset.date > anchor && other.dataset.date <= to.dataset.date) {
                 other.dataset.preview = '';
             }
         });
     };
+    // A render can remove or reuse the focused button, or set the range's start, so focus and the preview are fixed.
+    const renders = new MutationObserver(() => {
+        const focused = document.activeElement;
+        const shown = intended && day(intended);
+        const onADay = panel.contains(focused) && focused.matches('[data-part="day"]');
+        const lost = intended && focused === document.body && panel.matches(':popover-open');
+        if (shown && shown !== focused && (onADay || lost)) {
+            focusDay(shown);
+        } else if (!shown && lost) {
+            // Until the day's month shows, another day holds focus so the keys still reach the calendar.
+            standingIn = true;
+            panel.querySelector('[data-part="day"][tabindex="0"]')?.focus();
+            standingIn = false;
+        }
+
+        previewTo(over);
+    });
+    renders.observe(panel, { subtree: true, childList: true, attributes: true,
+        attributeFilter: ['data-date', 'data-anchor'] });
 
     const onPreviewMove = event => previewTo(event.target.closest('[data-part="day"]'));
+    const onFocusIn = event => {
+        if (standingIn) {
+            return;
+        }
+
+        const focused = event.target.closest('[data-part="day"]');
+        intended = focused?.dataset.date ?? intended;
+        previewTo(focused);
+    };
+    // Safari doesn't focus a clicked button, so a click notes the picked day, or that focus left the days.
+    const onClick = event => {
+        if (event.target.closest('button')) {
+            intended = event.target.closest('[data-part="day"]')?.dataset.date ?? null;
+        }
+    };
     // A press on a blank part of the calendar leaves focus where it is, so the keys go on working.
     const onPointerDown = event => {
         if (!event.target.closest('button')) {
@@ -139,22 +185,15 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     panel.addEventListener('keydown', onKeyDown);
     panel.addEventListener('focusout', onFocusOut);
     panel.addEventListener('pointerover', onPreviewMove);
-    panel.addEventListener('focusin', onPreviewMove);
-    panel.addEventListener('pointercancel', clearPreview);
+    panel.addEventListener('focusin', onFocusIn);
+    panel.addEventListener('click', onClick);
+    panel.addEventListener('pointercancel', dropPreview);
     panel.addEventListener('pointerdown', onPointerDown);
     trigger.addEventListener('pointerdown', onTriggerPointerDown);
     return {
         today() {
             const now = new Date();
             return toIso(new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())));
-        },
-        focusDate(iso) {
-            const shown = day(iso);
-            if (shown) {
-                focusDay(shown);
-                // A month change can reuse the focused button, which then fires no focusin.
-                previewTo(shown);
-            }
         },
         close() {
             if (panel.matches(':popover-open')) {
@@ -163,13 +202,15 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         },
         dispose() {
             position?.dispose();
+            renders.disconnect();
             panel.removeEventListener('beforetoggle', onBeforeToggle);
             panel.removeEventListener('toggle', onToggle);
             panel.removeEventListener('keydown', onKeyDown);
             panel.removeEventListener('focusout', onFocusOut);
             panel.removeEventListener('pointerover', onPreviewMove);
-            panel.removeEventListener('focusin', onPreviewMove);
-            panel.removeEventListener('pointercancel', clearPreview);
+            panel.removeEventListener('focusin', onFocusIn);
+            panel.removeEventListener('click', onClick);
+            panel.removeEventListener('pointercancel', dropPreview);
             panel.removeEventListener('pointerdown', onPointerDown);
             trigger.removeEventListener('pointerdown', onTriggerPointerDown);
         },

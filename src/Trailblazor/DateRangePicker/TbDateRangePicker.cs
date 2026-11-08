@@ -25,7 +25,6 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private DateOnly _firstMonth;
     private DateOnly _focus;
     private DateOnly? _anchor;
-    private DateOnly? _focusAfterRender;
     private DateOnly? _browserToday;
     private bool _disposed;
 
@@ -153,11 +152,6 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
             {
                 await AttachAsync();
             }
-            else if (_handle is not null && _focusAfterRender is { } date)
-            {
-                _focusAfterRender = null;
-                await _handle.InvokeVoidAsync("focusDate", Iso(date));
-            }
         }
         catch (JSDisconnectedException)
         {
@@ -224,7 +218,6 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         if (date < _firstMonth || date >= _firstMonth.AddMonths(2))
         {
             _firstMonth = date < _firstMonth ? FirstOfMonth(date) : FirstOfMonth(date).AddMonths(-1);
-            _focusAfterRender = date;
             StateHasChanged();
         }
 
