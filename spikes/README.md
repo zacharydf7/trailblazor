@@ -1,14 +1,16 @@
-# Phase 0 spikes
+# Spikes
 
 Each spike answers one design question before the design is frozen. Its pass/fail criteria are written here before
-any spike code exists, and its results are recorded next to them afterward. The phase 0 gate is all three spikes
-meeting their criteria, or a failed criterion being written up with the fallback design it forces.
+any spike code exists, and its results are recorded next to them afterward. The phase 0 gate was the first three
+spikes meeting their criteria, or a failed criterion being written up with the fallback design it forces. Later
+spikes come before a large component and end in a recommendation.
 
 | Spike | Question |
 | --- | --- |
 | [Overlays](overlays/README.md) | Can native `<dialog>`, the Popover API and anchored positioning carry every overlay without a portal or z-index stack? |
 | [Dock keep-alive host](dock-keep-alive/README.md) | Can docked panels move between groups without losing component state or re-rendering? |
 | [Grid virtualization](grid-virtualization/README.md) | Can a Blazor data grid scroll 100,000 rows at 60 fps? |
+| [Rich text editor](rich-text-editor/README.md) | Can Trailblazor's own engine on `contenteditable` edit rich text as reliably as a mature editor engine? |
 
 ## Where spikes run
 

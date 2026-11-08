@@ -1,0 +1,80 @@
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+<div class="spike-editor">
+    <div class="spike-editor__toolbar" role="toolbar" aria-label="Formatting" @ref="_toolbar">
+        @foreach (var (mark, label, text) in Tools)
+        {
+            <button type="button" data-mark="@mark" aria-label="@label">@text</button>
+        }
+    </div>
+    @* The engine owns everything inside this element, so Blazor renders it empty. *@
+    <div class="spike-editor__content" data-testid="editor" contenteditable="true" role="textbox"
+         aria-multiline="true" aria-labelledby="@LabelId" spellcheck="true" @ref="_content"></div>
+</div>
+
+@code {
+    private static readonly (string Mark, string Label, string Text)[] Tools =
+    [
+        ("bold", "Bold", "B"), ("italic", "Italic", "I"), ("underline", "Underline", "U"),
+        ("strikethrough", "Strikethrough", "S"), ("subscript", "Subscript", "x₂"), ("superscript", "Superscript", "x²"),
+    ];
+
+    private ElementReference _toolbar;
+    private ElementReference _content;
+    private IJSObjectReference? _editor;
+    private DotNetObjectReference<SpikeEditor>? _self;
+
+    // The value the engine has, so its own value coming back from the parent isn't sent to it again.
+    private string _known = "";
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public string LabelId { get; set; } = "";
+
+    protected override Task OnParametersSetAsync() => SendValueAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _known = Value ?? "";
+            _self = DotNetObjectReference.Create(this);
+            var module = await Modules.ImportAsync("./editor.js");
+            _editor = await module.InvokeAsync<IJSObjectReference>("attach", _content, _toolbar, _self, _known);
+            // The parent may have set a value while the engine loaded.
+            await SendValueAsync();
+        }
+    }
+
+    private async Task SendValueAsync()
+    {
+        if (_editor is not null && (Value ?? "") != _known)
+        {
+            _known = Value ?? "";
+            await _editor.InvokeVoidAsync("setValue", _known);
+        }
+    }
+
+    [JSInvokable]
+    public Task OnValueChanged(string html)
+    {
+        _known = html;
+        return ValueChanged.InvokeAsync(html);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_editor is not null)
+        {
+            await _editor.DisposeHandleAsync();
+        }
+
+        _self?.Dispose();
+    }
+}

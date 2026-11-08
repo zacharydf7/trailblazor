@@ -280,3 +280,24 @@
     inset: auto;
     margin: 4px 0;
 }
+
+/* Spaces stay as typed, so the browser never swaps them for no-break spaces. */
+.spike-editor__content {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    min-height: 6em;
+    padding: 4px 8px;
+    border: 1px solid gray;
+}
+
+.spike-editor__content p {
+    margin: 0 0 0.5em;
+}
+
+.spike-editor__toolbar [aria-pressed="true"] {
+    background: lightsteelblue;
+}
+
+.spike-editor__toolbar [aria-pressed="mixed"] {
+    background: linear-gradient(135deg, lightsteelblue 50%, transparent 50%);
+}

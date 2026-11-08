@@ -8,11 +8,17 @@ public abstract class SpikeTest(SpikeFixture fixture) : IAsyncDisposable
 
     protected List<string> ScriptErrors { get; } = [];
 
-    protected async Task<IPage> OpenAsync(string browser, string mode, string path, Uri? baseAddress = null)
+    protected async Task<IPage> OpenAsync(string browser, string mode, string path, Uri? baseAddress = null,
+        Func<IPage, Task>? beforeNavigation = null)
     {
         var context = await Fixture.NewContextAsync(browser);
         _contexts.Add(context);
         var page = await context.NewPageAsync();
+        if (beforeNavigation is not null)
+        {
+            await beforeNavigation(page);
+        }
+
         page.PageError += (_, error) => ScriptErrors.Add(error);
         page.Console += (_, message) =>
         {

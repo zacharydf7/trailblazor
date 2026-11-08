@@ -1,0 +1,13 @@
+@page "/editor"
+
+<label id="editor-label">Description</label>
+<SpikeEditor LabelId="editor-label" @bind-Value="_value" />
+
+<output data-testid="value">@_value</output>
+<textarea data-testid="source" aria-label="Source" @bind="_source" @bind:event="oninput"></textarea>
+<button data-testid="set-value" @onclick="() => _value = _source">Set value</button>
+
+@code {
+    private string _value = "";
+    private string _source = "";
+}
