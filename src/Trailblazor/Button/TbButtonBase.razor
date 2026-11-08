@@ -26,7 +26,8 @@
                         disabled="@(Off && !FocusableWhenDisabled)"
                         aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                         aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
-                        aria-pressed="@(Toggles ? (Pressed ? "true" : "false") : Theirs("aria-pressed"))"
+                        aria-pressed="@(Toggles ? (Mixed ? "mixed" : Pressed ? "true" : "false")
+                                          : Theirs("aria-pressed"))"
                         class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
                         @onclick:preventDefault="Inert">
                     @content

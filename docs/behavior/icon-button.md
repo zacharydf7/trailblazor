@@ -8,6 +8,7 @@ Familiar apps: the icon bars in Gmail and Google Docs, GitHub's issue actions
 
 - [x] Enter and Space activate it, as on a [button](button.md). `TbButtonBase.razor`
 - [x] Enter and Space turn it on or off when `Pressed` is bound. `TbButtonBase.razor`
+- [x] A `Mixed` toggle is exposed as mixed and drawn apart from on and off, and a press turns it on. `TbButtonTests.Click_ShouldTurnAMixedToggleOn_WhenPressed`, `ButtonTests.IconButton_ShouldDrawAMixedToggleApartFromOnAndOff_WhenMixed`
 - [x] Escape hides a shown tooltip without moving focus. `TooltipTests.Tooltip_ShouldDescribeTheTriggerAndCloseOnEscape_WhenTheTriggerHasFocus`
 
 ## Pointer

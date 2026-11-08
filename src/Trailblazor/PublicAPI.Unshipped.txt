@@ -1207,6 +1207,8 @@ Trailblazor.TbButtonBase.Href.get -> string?
 Trailblazor.TbButtonBase.Href.set -> void
 Trailblazor.TbButtonBase.Loading.get -> bool
 Trailblazor.TbButtonBase.Loading.set -> void
+Trailblazor.TbButtonBase.Mixed.get -> bool
+Trailblazor.TbButtonBase.Mixed.set -> void
 Trailblazor.TbButtonBase.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
 Trailblazor.TbButtonBase.OnClick.set -> void
 Trailblazor.TbButtonBase.Pressed.get -> bool

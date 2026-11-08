@@ -222,6 +222,22 @@ public class TbButtonTests : BunitContext
         Assert.Equal("true", cut.Find("button").GetAttribute("aria-pressed"));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Click_ShouldTurnAMixedToggleOn_WhenPressed(bool pressedBefore)
+    {
+        bool? pressed = null;
+        var cut = Render<TbIconButton>(parameters => parameters.Add(button => button.Icon, BuiltInIcons.Close)
+            .Add(button => button.AriaLabel, "Bold").Add(button => button.Pressed, pressedBefore)
+            .Add(button => button.Mixed, true).Add(button => button.PressedChanged, (bool value) => pressed = value));
+
+        Assert.Equal("mixed", cut.Find("button").GetAttribute("aria-pressed"));
+        cut.Find("button").Click();
+
+        Assert.True(pressed);
+    }
+
     [Fact]
     public void Render_ShouldLeaveOutAriaPressed_WhenNotAToggle()
     {

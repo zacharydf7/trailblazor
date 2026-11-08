@@ -52,6 +52,12 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public EventCallback<bool> PressedChanged { get; set; }
 
+    /// <summary>Shows a toggle button as partly on, like Bold over text that is only partly bold. Screen readers
+    /// announce it as mixed. A press turns it on and raises <see cref="PressedChanged"/> with true; the app then sets
+    /// this again from what the button now acts on.</summary>
+    [Parameter]
+    public bool Mixed { get; set; }
+
     /// <summary>What the button does inside a form. Defaults to <see cref="ButtonType.Button"/>.</summary>
     [Parameter]
     public ButtonType Type { get; set; } = ButtonType.Button;
@@ -134,7 +140,7 @@ public abstract partial class TbButtonBase : TbComponentBase
 
         if (Toggles)
         {
-            Pressed = !Pressed;
+            Pressed = Mixed || !Pressed;
             await PressedChanged.InvokeAsync(Pressed);
         }
 

@@ -1,0 +1,37 @@
+@using Trailblazor.Icons.Material
+
+<TbStack Gap="3">
+    <TbStack Row Gap="3">
+        @foreach (var word in _words)
+        {
+            <TbCheckbox TValue="bool" Label="@($"{word.Text} in bold")" @bind-Value="word.Bold" />
+        }
+    </TbStack>
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbIconButton Icon="MaterialSymbols.Outlined.FormatBold" AriaLabel="Bold" ShowTooltip Pressed="AllBold"
+                      Mixed="SomeBold" PressedChanged="SetBold" />
+        <TbText>
+            @foreach (var word in _words)
+            {
+                <span style="@(word.Bold ? "font-weight: 700" : null)">@word.Text </span>
+            }
+        </TbText>
+    </TbStack>
+</TbStack>
+
+@code {
+    private readonly List<Word> _words = [new("Pack"), new("light") { Bold = true }, new("today")];
+
+    private bool AllBold => _words.TrueForAll(word => word.Bold);
+
+    private bool SomeBold => !AllBold && _words.Exists(word => word.Bold);
+
+    private void SetBold(bool bold) => _words.ForEach(word => word.Bold = bold);
+
+    private sealed class Word(string text)
+    {
+        public string Text { get; } = text;
+
+        public bool Bold { get; set; }
+    }
+}

@@ -71,6 +71,43 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IconButton_ShouldDrawAMixedToggleApartFromOnAndOff_WhenMixed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/icon-button");
+        var bold = page.GetByRole(AriaRole.Button, new() { Name = "Bold", Exact = true });
+        var notifications = page.GetByRole(AriaRole.Button, new() { Name = "Notifications" });
+        await Expect(bold).ToHaveAttributeAsync("aria-pressed", "mixed");
+        await Expect(bold).ToHaveCSSAsync("border-top-style", "dashed");
+        await Expect(notifications).ToHaveCSSAsync("border-top-style", "solid");
+        await notifications.ClickAsync();
+        await Expect(notifications).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(notifications).ToHaveCSSAsync("border-top-style", "solid");
+
+        // A filled button's hover fill would leave a mixed button's text, colored for the light fill, unreadable.
+        var filledHover = await bold.EvaluateAsync<string[]>("""
+            async bold => {
+                bold.classList.replace('tb-button--text', 'tb-button--filled');
+                const probe = bold.appendChild(document.createElement('span'));
+                probe.style.background = 'var(--tb-button-fill-hover)';
+                const fill = getComputedStyle(probe).backgroundColor;
+                probe.remove();
+                return [fill, getComputedStyle(bold).backgroundColor];
+            }
+            """);
+        await bold.HoverAsync();
+        await WaitForFadesAsync(page);
+        var hovered = await bold.EvaluateAsync<string>("bold => getComputedStyle(bold).backgroundColor");
+        Assert.NotEqual(filledHover[0], hovered);
+        Assert.NotEqual(filledHover[1], hovered);
+
+        await bold.ClickAsync();
+
+        await Expect(bold).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(bold).ToHaveCSSAsync("border-top-style", "solid");
+        await Expect(page.GetByRole(AriaRole.Checkbox, new() { Name = "Pack in bold" })).ToBeCheckedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Button_ShouldShowAFocusRing_WhenFocusedByKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/button");

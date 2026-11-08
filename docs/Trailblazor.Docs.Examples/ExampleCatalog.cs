@@ -587,6 +587,11 @@ public static class ExampleCatalog
                     + "sighted people can read it too.", typeof(IconButtonTooltipExample)),
                 new("toggle", "Toggle", "`@bind-Pressed` makes the button a toggle. Keep the same `AriaLabel` whether "
                     + "it's on or off, since `aria-pressed` tells which.", typeof(IconButtonToggleExample)),
+                new("mixed", "Mixed", "`Mixed` marks a toggle that is on for only part of what it acts on, such as Bold "
+                    + "over text that is partly bold. It gets a light fill and a dashed edge, and screen readers "
+                    + "announce it as mixed. A press turns it on, and the app then works out `Pressed` and `Mixed` "
+                    + "again.",
+                    typeof(IconButtonMixedExample)),
                 new("links", "Links", "`Href` renders a link drawn as an icon button.", typeof(IconButtonLinkExample)),
                 new("loading", "Loading", "`Loading` shows a spinner in place of the icon and ignores clicks.",
                     typeof(IconButtonLoadingExample)),

@@ -1714,13 +1714,16 @@
         background: var(--tb-button-subtle);
     }
 
-    /* A soft button's hover and press deepen its fill toward its text, as the filled button's steps do. */
-    .tb-button--soft:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]) {
+    /* A soft button's hover and press deepen its fill toward its text, as the filled button's steps do. A mixed
+       toggle's do too, in every variant, outranking a filled button's own. */
+    .tb-button--soft:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]),
+    .tb-button[aria-pressed="mixed"]:hover:not(:disabled, [aria-disabled="true"]) {
         background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 10%);
     }
 
     :is(.tb-button--soft, .tb-button--outlined, .tb-button--text):active:not(:disabled, [aria-disabled="true"],
-        [aria-pressed="true"]) {
+        [aria-pressed="true"]),
+    .tb-button[aria-pressed="mixed"]:active:not(:disabled, [aria-disabled="true"]) {
         background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 18%);
     }
 
@@ -1747,6 +1750,14 @@
         box-shadow: inset 0 0 0 2px var(--tb-button-on-fill);
     }
 
+    /* A mixed toggle, on for only part of what it acts on, takes the light fill and a dashed edge in every variant. */
+    .tb-button[aria-pressed="mixed"] {
+        border-color: var(--tb-button-text);
+        border-style: dashed;
+        background: var(--tb-button-subtle);
+        color: var(--tb-button-text);
+    }
+
     @media (forced-colors: active) {
         .tb-button[aria-pressed="true"] {
             forced-color-adjust: none;
@@ -1754,6 +1765,10 @@
             background: Highlight;
             color: HighlightText;
             box-shadow: none;
+        }
+
+        .tb-button[aria-pressed="mixed"] {
+            border-color: Highlight;
         }
     }
 
