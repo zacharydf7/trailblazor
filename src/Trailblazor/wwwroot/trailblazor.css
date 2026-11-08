@@ -3329,6 +3329,7 @@
 
     .tb-dialog--draggable:not([data-window-state="minimized"], [data-window-state="maximized"]) .tb-dialog__header {
         cursor: move;
+        -webkit-user-select: none;
         user-select: none;
         touch-action: none;
     }
@@ -3336,6 +3337,7 @@
     /* The Move menu sits in the header but is no drag handle. */
     .tb-dialog--draggable .tb-dialog__header .tb-menu__list {
         cursor: auto;
+        -webkit-user-select: auto;
         user-select: auto;
     }
 
@@ -3402,6 +3404,7 @@
         align-items: center;
         min-height: 1lh;
         cursor: pointer;
+        -webkit-user-select: none;
         user-select: none;
     }
 
@@ -4027,6 +4030,7 @@
         color: var(--tb-color-text-muted);
         cursor: col-resize;
         touch-action: none;
+        -webkit-user-select: none;
         user-select: none;
     }
 
@@ -5702,6 +5706,7 @@
         cursor: grab;
         touch-action: none;
         -webkit-touch-callout: none;
+        -webkit-user-select: none;
         user-select: none;
     }
 
