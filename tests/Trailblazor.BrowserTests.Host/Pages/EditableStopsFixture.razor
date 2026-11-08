@@ -1,0 +1,35 @@
+@page "/editable-stops"
+
+@* An editable region is a tab stop unless it sets tabindex="-1", even though its tabIndex reads -1 without one. Only
+   the outermost editable element is a stop, and a player with controls is one too. *@
+<button type="button" @onclick="() => _scope = Scope.Editable">Open editable last</button>
+<button type="button" @onclick="() => _scope = Scope.Player">Open player last</button>
+@if (_scope == Scope.Editable)
+{
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <div contenteditable="true" data-testid="notes">Notes <b contenteditable="true">in bold</b></div>
+        <div contenteditable="true" tabindex="-1">Aside</div>
+    </TbFocusScope>
+}
+else if (_scope == Scope.Player)
+{
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <audio controls data-testid="player"
+               src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
+    </TbFocusScope>
+}
+
+<TbButton OnClick="() => _dialog = true">Open editable first</TbButton>
+<TbDialog @bind-Open="_dialog" Title="Editable">
+    <div contenteditable="true" data-testid="draft">Draft</div>
+    <TbButton>Save</TbButton>
+</TbDialog>
+
+@code {
+    private enum Scope { None, Editable, Player }
+
+    private Scope _scope;
+    private bool _dialog;
+}

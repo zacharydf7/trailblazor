@@ -1,7 +1,15 @@
 import { focusOrigin } from './pointer-origin.js';
 
+const players = 'audio[controls], video[controls]';
 const focusableSelector = 'a[href], area[href], button, input:not([type="hidden"]), select, textarea, iframe, '
-    + 'audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
+    + `${players}, [contenteditable]:not([contenteditable="false"]), [tabindex]`;
+
+// Tab reaches these, but without a tabindex attribute an editable region's tabIndex reads -1, and in WebKit so does a
+// player's. Only the outermost editable element is a stop: the browser can't focus one inside it.
+function isStopWithoutTabIndex(element) {
+    return !element.hasAttribute('tabindex')
+        && (element.matches(players) || element.isContentEditable && !element.parentElement?.isContentEditable);
+}
 
 // Only the most recently created trapped scope traps; the ones below it resume when it is disposed.
 const trappedScopes = [];
@@ -125,6 +133,7 @@ function sameStop(one, other) {
 }
 
 function isTabbable(element) {
-    return element.matches(focusableSelector) && element.tabIndex >= 0 && !element.matches(':disabled')
+    return element.matches(focusableSelector) && (element.tabIndex >= 0 || isStopWithoutTabIndex(element))
+        && !element.matches(':disabled')
         && !element.closest('[inert]') && element.checkVisibility({ visibilityProperty: true, checkVisibilityCSS: true });
 }

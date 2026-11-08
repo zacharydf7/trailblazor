@@ -4047,6 +4047,8 @@ public static class ExampleCatalog
             [
                 "A focus scope adds no role or name of its own, so give a panel a `role` and an `aria-label`, as these "
                     + "examples do.",
+                "Like the browser's own Tab, it counts an editable region and a media player with controls as tab "
+                    + "stops.",
             ],
             Notes =
             [

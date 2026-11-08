@@ -17,6 +17,8 @@ Familiar apps: how focus moves in OS dialogs and app side panels
 - [x] Radios in different forms stay separate stops. `RadioStopsTests.FocusScope_ShouldTabToTheNextGroup_WhenTwoFormsShareARadioName`
 - [x] Radios with no name stay separate stops in Chromium and Firefox. WebKit's own Tab skips the second, so forward Tab doesn't reach it there. Library radios always have a name. `RadioStopsTests.FocusScope_ShouldTabToTheNextRadio_WhenRadiosHaveNoName`
 - [x] Tab wraps past a control hidden by `visibility: hidden`, which it can't reach. `RadioStopsTests.FocusScope_ShouldWrap_WhenAControlHiddenByVisibilityEndsIt`
+- [x] An editable region is a stop unless it sets `tabindex="-1"`; an editable element inside it isn't. Tab wraps both ways when an editable region ends a trapped scope, and a dialog starts on one that comes first. `EditableStopsTests.FocusScope_ShouldWrapBothWays_WhenAnEditableRegionEndsIt`, `EditableStopsTests.Dialog_ShouldStartOnTheEditableRegion_WhenItComesFirst`
+- [x] A player with controls is a stop, so Shift+Tab wraps to one that ends a trapped scope. `EditableStopsTests.FocusScope_ShouldWrapBackwardToThePlayer_WhenAPlayerWithControlsEndsIt`
 
 ## Pointer
 
