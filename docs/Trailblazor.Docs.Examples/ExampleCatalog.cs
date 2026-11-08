@@ -3612,6 +3612,8 @@ public static class ExampleCatalog
                     + "handed back by a dialog closed with the mouse shows it, so it doesn't cover what someone is "
                     + "working on. A text field shows its tooltip on any focus, since its user is about to type.",
                 "Moving the pointer onto the tooltip keeps it open.",
+                "Only one tooltip shows at a time: showing one, by hover or focus, hides any other, including one "
+                    + "shown for keyboard focus.",
             ],
             BeforeInteractive =
             [

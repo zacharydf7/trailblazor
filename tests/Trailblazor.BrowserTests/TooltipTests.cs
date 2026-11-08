@@ -161,6 +161,37 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldHideTheFocusedTriggersTooltip_WhenAnotherTriggerIsHovered(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var saves = page.GetByRole(AriaRole.Tooltip, new() { Name = "Saves a copy" });
+        var goesOn = page.GetByRole(AriaRole.Tooltip, new() { Name = "Goes on", Exact = true });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save" }).FocusAsync();
+        await Expect(saves).ToBeVisibleAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Forward" }).HoverAsync();
+
+        await Expect(goesOn).ToBeVisibleAsync();
+        await Expect(saves).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldHideOneWaitingToHide_WhenAnotherShows(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var lingers = page.GetByRole(AriaRole.Tooltip, new() { Name = "Lingers" });
+        var goesOn = page.GetByRole(AriaRole.Tooltip, new() { Name = "Goes on", Exact = true });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Lingering" }).HoverAsync();
+        await Expect(lingers).ToBeVisibleAsync();
+
+        // Its hide delay is a second, longer than the next one takes to show.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Forward" }).HoverAsync();
+
+        await Expect(goesOn).ToBeVisibleAsync();
+        Assert.False(await lingers.IsVisibleAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldStillDescribeTheTrigger_WhenTheTriggerRewritesItsDescription(string browser)
     {
         var page = await OpenAsync(browser, "/tooltip");

@@ -2,6 +2,9 @@ import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-posit
 
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
 
+// One tooltip shows at a time, as in an operating system, so showing one hides any other, even one shown for focus.
+let hideShown = null;
+
 // Hover and focus stay in the browser, so showing a tooltip sends nothing to the server. The CSS bridges the gap onto
 // the tooltip, and the hide delay covers a path that strays off the bridge (WCAG 1.4.13 hoverable).
 export function createTooltip(anchor, tooltip, options, delays) {
@@ -23,8 +26,10 @@ export function createTooltip(anchor, tooltip, options, delays) {
     const show = () => {
         clearTimeout(timer);
         if (!tooltip.matches(':popover-open')) {
+            hideShown?.();
             tooltip.showPopover();
             position = createAnchoredPosition(tooltip, anchor, options);
+            hideShown = hide;
         }
     };
     const hide = () => {
@@ -35,6 +40,9 @@ export function createTooltip(anchor, tooltip, options, delays) {
 
         position?.dispose();
         position = null;
+        if (hideShown === hide) {
+            hideShown = null;
+        }
     };
     const showSoon = () => {
         clearTimeout(timer);

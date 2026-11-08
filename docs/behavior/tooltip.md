@@ -23,7 +23,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] A click leaves it closed while the pointer stays on the trigger. `TooltipTests.Tooltip_ShouldStayClosed_WhenTheTriggerIsClicked`
 - [x] It follows the trigger as the page scrolls. `AnchoredPositionTests.Scroll_ShouldKeepFloatingAttached_WhenScrollContainerScrolls`
 - [x] It flips to the other side when there's no room. `AnchoredPositionTests.CreateAsync_ShouldFlipToTop_WhenThereIsNoRoomBelow`
-- [ ] Only one tooltip shows at a time, so hovering a trigger hides the one showing for keyboard focus. #327
+- [x] Only one tooltip shows at a time, so hovering a trigger hides the one showing for keyboard focus or still waiting out its hide delay. `TooltipTests.Tooltip_ShouldHideTheFocusedTriggersTooltip_WhenAnotherTriggerIsHovered`, `TooltipTests.Tooltip_ShouldHideOneWaitingToHide_WhenAnotherShows`
 - [ ] Hovering a natively disabled trigger shows its tooltip. UNCONFIRMED
 - [x] A tooltip placed to the side in a narrow window stays on screen, overlapping its trigger if it must. `NarrowPlacementTests.Tooltip_ShouldStayInsideTheWindow_WhenNeitherSideHasRoom`
 - [x] Long text wraps to fit beside the trigger when it can, and holds still there. `NarrowPlacementTests.Tooltip_ShouldWrapBesideItsTriggerAndHoldStill_WhenItsTextCanWrap`
