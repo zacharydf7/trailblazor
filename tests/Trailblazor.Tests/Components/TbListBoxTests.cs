@@ -88,6 +88,48 @@ public class TbListBoxTests : BunitContext
         Assert.Equal("Any trail", cut.Find("option[value=any]").InnerHtml.Trim());
     }
 
+    [Theory]
+    [InlineData(null, "Nothing to choose from")]
+    [InlineData("You haven't saved a trip yet", "You haven't saved a trip yet")]
+    public void Render_ShouldSayTheListIsEmptyInAMessageThatCantBeChosen_WhenItHasNoOptions(string? empty,
+        string expected)
+    {
+        var cut = Render<TbListBox<string>>(parameters => parameters.Add(listbox => listbox.Label, "Trips")
+            .Add(listbox => listbox.Labels, new ListBoxLabels { Empty = empty }));
+
+        var status = cut.Find("[role=listbox] [data-part=status]");
+        Assert.Equal(expected, status.TextContent.Trim());
+        Assert.Equal("option", status.GetAttribute("role"));
+        Assert.Equal("true", status.GetAttribute("aria-disabled"));
+        Assert.Empty(cut.Tb().ListBox("Trips").Options);
+    }
+
+    [Fact]
+    public void Render_ShouldSayTheListIsEmptyInADisabledOption_WhenRenderedStaticallyWithNoOptions()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbListBox<string>>(parameters => parameters.Add(listbox => listbox.Label, "Trips")
+            .Add(listbox => listbox.Labels, new ListBoxLabels { Empty = "You haven't saved a trip yet" }));
+
+        var status = cut.Find("select option[data-part=status]");
+        Assert.Equal("You haven't saved a trip yet", status.TextContent.Trim());
+        Assert.True(status.HasAttribute("disabled"));
+        Assert.Empty(cut.Tb().ListBox("Trips").Options);
+    }
+
+    [Fact]
+    public void Render_ShouldSayTheListIsEmpty_WhenItsLastOptionIsRemoved()
+    {
+        var cut = Render<TbListBox<string>>(parameters => parameters.Add(listbox => listbox.Label, "Trips")
+            .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "Lake loop")));
+        Assert.Empty(cut.FindAll("[data-part=status]"));
+
+        cut.Render(parameters => parameters.Add(listbox => listbox.ChildContent, (RenderFragment)(_ => { })));
+
+        Assert.Equal("Nothing to choose from", cut.Find("[data-part=status]").TextContent.Trim());
+    }
+
     [Fact]
     public void Click_ShouldToggleEachOption_WhenAMultipleListboxsOptionsAreClicked()
     {

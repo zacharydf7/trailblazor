@@ -157,10 +157,9 @@ public sealed class TbListBoxDriver
 
     internal TbListBoxDriver(Func<IElement> find) => _find = find;
 
-    /// <summary>The options' names, in order. An option with content of its own is named by its <c>Text</c>.
-    /// </summary>
-    public IReadOnlyList<string> Options => _find().QuerySelectorAll("[role=option], option")
-        .Select(Choices.NameOf).ToList();
+    /// <summary>The options' names, in order, leaving out the message an empty list shows. An option with content of
+    /// its own is named by its <c>Text</c>.</summary>
+    public IReadOnlyList<string> Options => OptionElements(_find()).Select(Choices.NameOf).ToList();
 
     /// <summary>The names of the chosen options, in order.</summary>
     public IReadOnlyList<string> Chosen => _find()
@@ -174,8 +173,11 @@ public sealed class TbListBoxDriver
     {
         var list = _find();
         Choices.ThrowIfStaticOrDisabled(list);
-        return (list.QuerySelectorAll("[role=option]"), list.GetAttribute("aria-multiselectable") == "true");
+        return (OptionElements(list), list.GetAttribute("aria-multiselectable") == "true");
     }, options);
+
+    private static IEnumerable<IElement> OptionElements(IElement list) =>
+        list.QuerySelectorAll("[role=option]:not([data-part=status]), option:not([data-part=status])");
 }
 
 // What choosing in a select and a list box share, with the Playwright helpers' rules.

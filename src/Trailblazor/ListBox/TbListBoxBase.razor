@@ -14,6 +14,15 @@
              aria-describedby="@InputDescribedBy" style="--tb-listbox-rows: @Rows"
              class="@ClassNames.Join("tb-field__input", "tb-listbox", Classes?.Input)">
             <CascadingValue Value="this">@ChildContent</CascadingValue>
+            @if (_options.Count == 0)
+            {
+                @* A listbox holds only options, so the message is one that can't be chosen, in muted text rather
+                   than disabled. *@
+                <div role="option" aria-disabled="true" aria-selected="false" data-part="status"
+                     class="tb-select__status">
+                    @EmptyText
+                </div>
+            }
         </div>
     }
     else
@@ -26,6 +35,10 @@
                 aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                 class="@ClassNames.Join("tb-field__input", "tb-listbox", "tb-listbox--native", Classes?.Input)">
             <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+            @if (_options.Count == 0)
+            {
+                <option disabled data-part="status">@EmptyText</option>
+            }
         </select>
     }
 </text>, null, null)

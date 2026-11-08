@@ -113,6 +113,7 @@ const Trailblazor.TbStrings.FileUploadTooManyOne = "FileUpload.TooManyOne" -> st
 const Trailblazor.TbStrings.FileUploadWrongType = "FileUpload.WrongType" -> string!
 const Trailblazor.TbStrings.FileUploadZone = "FileUpload.Zone" -> string!
 const Trailblazor.TbStrings.LabelInfo = "Label.Info" -> string!
+const Trailblazor.TbStrings.ListBoxEmpty = "ListBox.Empty" -> string!
 const Trailblazor.TbStrings.MultiSelectRemoved = "MultiSelect.Removed" -> string!
 const Trailblazor.TbStrings.MultiSelectSelectAll = "MultiSelect.SelectAll" -> string!
 const Trailblazor.TbStrings.NewTabHint = "NewTabHint" -> string!
@@ -224,6 +225,9 @@ override Trailblazor.Icon.GetHashCode() -> int
 override Trailblazor.IconButtonClasses.Equals(object? obj) -> bool
 override Trailblazor.IconButtonClasses.GetHashCode() -> int
 override Trailblazor.IconButtonClasses.ToString() -> string!
+override Trailblazor.ListBoxLabels.Equals(object? obj) -> bool
+override Trailblazor.ListBoxLabels.GetHashCode() -> int
+override Trailblazor.ListBoxLabels.ToString() -> string!
 override Trailblazor.MenuTrigger.Equals(object? obj) -> bool
 override Trailblazor.MenuTrigger.GetHashCode() -> int
 override Trailblazor.MenuTrigger.ToString() -> string!
@@ -408,6 +412,8 @@ static Trailblazor.Icon.operator !=(Trailblazor.Icon left, Trailblazor.Icon righ
 static Trailblazor.Icon.operator ==(Trailblazor.Icon left, Trailblazor.Icon right) -> bool
 static Trailblazor.IconButtonClasses.operator !=(Trailblazor.IconButtonClasses? left, Trailblazor.IconButtonClasses? right) -> bool
 static Trailblazor.IconButtonClasses.operator ==(Trailblazor.IconButtonClasses? left, Trailblazor.IconButtonClasses? right) -> bool
+static Trailblazor.ListBoxLabels.operator !=(Trailblazor.ListBoxLabels? left, Trailblazor.ListBoxLabels? right) -> bool
+static Trailblazor.ListBoxLabels.operator ==(Trailblazor.ListBoxLabels? left, Trailblazor.ListBoxLabels? right) -> bool
 static Trailblazor.MenuTrigger.operator !=(Trailblazor.MenuTrigger? left, Trailblazor.MenuTrigger? right) -> bool
 static Trailblazor.MenuTrigger.operator ==(Trailblazor.MenuTrigger? left, Trailblazor.MenuTrigger? right) -> bool
 static Trailblazor.MoveCheck.Allow.get -> Trailblazor.MoveCheck!
@@ -899,6 +905,12 @@ Trailblazor.LayoutElement.Nav = 4 -> Trailblazor.LayoutElement
 Trailblazor.LayoutElement.Ol = 9 -> Trailblazor.LayoutElement
 Trailblazor.LayoutElement.Section = 1 -> Trailblazor.LayoutElement
 Trailblazor.LayoutElement.Ul = 8 -> Trailblazor.LayoutElement
+Trailblazor.ListBoxLabels
+Trailblazor.ListBoxLabels.<Clone>$() -> Trailblazor.ListBoxLabels!
+Trailblazor.ListBoxLabels.Empty.get -> string?
+Trailblazor.ListBoxLabels.Empty.init -> void
+Trailblazor.ListBoxLabels.Equals(Trailblazor.ListBoxLabels? other) -> bool
+Trailblazor.ListBoxLabels.ListBoxLabels() -> void
 Trailblazor.MenuTrigger
 Trailblazor.MenuTrigger.<Clone>$() -> Trailblazor.MenuTrigger!
 Trailblazor.MenuTrigger.Attributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
@@ -1736,6 +1748,8 @@ Trailblazor.TbListBoxBase<TValue>.ChildContent.set -> void
 Trailblazor.TbListBoxBase<TValue>.Classes.get -> Trailblazor.FieldClasses?
 Trailblazor.TbListBoxBase<TValue>.Classes.set -> void
 Trailblazor.TbListBoxBase<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbListBoxBase<TValue>.Labels.get -> Trailblazor.ListBoxLabels!
+Trailblazor.TbListBoxBase<TValue>.Labels.set -> void
 Trailblazor.TbListBoxBase<TValue>.Rows.get -> int
 Trailblazor.TbListBoxBase<TValue>.Rows.set -> void
 Trailblazor.TbListBoxBase<TValue>.TbListBoxBase() -> void

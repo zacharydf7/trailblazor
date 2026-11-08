@@ -316,6 +316,17 @@ public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldShowItsEmptyMessageInMutedText_WhenRenderedStaticallyWithNoOptions(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-select");
+        var status = page.GetByLabel("Saved routes").Locator("option[data-part=status]");
+
+        await Expect(status).ToHaveTextAsync("Nothing to choose from");
+        Assert.Equal(await MutedColorAsync(page),
+            await status.EvaluateAsync<string>("status => getComputedStyle(status).color"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MultiSelect_ShouldPostEveryChosenOption_WhenUsedInAStaticForm(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-select");

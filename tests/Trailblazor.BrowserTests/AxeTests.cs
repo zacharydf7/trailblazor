@@ -55,6 +55,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
         await SetThemeAsync(page, theme);
 
+        await MeasureStatusesAsync(page);
         AssertNoViolations(await page.RunAxe(WcagAA));
         if (OpeningOf(ExampleCatalog.Find(example)!) is { } opening)
         {
@@ -84,6 +85,10 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     // target has an opener, and those listed here, whose target is the control or field the popup opens from.
     private sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
 
+    // Axe skips contrast on anything aria-disabled, and a list's status messages are information, so they're measured.
+    private static Task MeasureStatusesAsync(IPage page) => page.EvaluateAsync(
+        "() => document.querySelectorAll('[data-part=status]').forEach(status => status.removeAttribute('aria-disabled'))");
+
     public static TheoryData<string, string> SelectsInBothThemes => new(
         from name in new[]
         {
@@ -109,9 +114,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
             await Expect(page.GetByRole(AriaRole.Option, new() { Name = "Katherine" })).ToBeVisibleAsync();
         }
 
-        // Axe skips contrast on anything aria-disabled, and an empty list's message is information, so it's measured.
-        await page.EvaluateAsync(
-            "() => document.querySelectorAll('[data-part=status]').forEach(status => status.removeAttribute('aria-disabled'))");
+        await MeasureStatusesAsync(page);
         AssertNoViolations(await page.RunAxe(WcagAA));
     }
 
@@ -158,9 +161,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
             await field.PressSequentiallyAsync(typed);
             await Expect(opened.GetByRole(AriaRole.Listbox, new() { Name = name }).GetByText(shown)).ToBeVisibleAsync();
 
-            // Axe skips contrast on anything aria-disabled, and these messages are information, so they're measured.
-            await opened.EvaluateAsync(
-                "() => document.querySelectorAll('[data-part=status]').forEach(status => status.removeAttribute('aria-disabled'))");
+            await MeasureStatusesAsync(opened);
         }));
     }
 

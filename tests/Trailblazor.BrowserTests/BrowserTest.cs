@@ -65,6 +65,17 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         }
         """, color);
 
+    // The muted text color in the form getComputedStyle reports, so it compares with an element's color.
+    protected static Task<string> MutedColorAsync(IPage page) => page.EvaluateAsync<string>("""
+        () => {
+            const probe = document.body.appendChild(document.createElement('span'));
+            probe.style.color = 'var(--tb-color-text-muted)';
+            const color = getComputedStyle(probe).color;
+            probe.remove();
+            return color;
+        }
+        """);
+
     public async ValueTask DisposeAsync()
     {
         foreach (var context in _contexts)

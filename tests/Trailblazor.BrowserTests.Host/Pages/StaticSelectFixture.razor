@@ -14,9 +14,11 @@
     <TbButton Type="ButtonType.Submit">Send</TbButton>
 </EditForm>
 <output data-testid="posted">@_posted</output>
+<TbSelect TValue="string" Label="Saved routes" @bind-Value="_route" />
 
 @code {
     private string? _posted;
+    private string? _route;
 
     [SupplyParameterFromForm]
     private Order? Model { get; set; }

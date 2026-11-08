@@ -237,6 +237,9 @@ public static class TbStrings
     /// <summary>"Information about {0}": names a label's info button; {0} is the label's text.</summary>
     public const string LabelInfo = "Label.Info";
 
+    /// <summary>"Nothing to choose from": shown in a list box when it has no options.</summary>
+    public const string ListBoxEmpty = "ListBox.Empty";
+
     /// <summary>"opens in a new tab": read after the text of a link or menu item that opens a new tab.</summary>
     public const string NewTabHint = "NewTabHint";
 
@@ -648,6 +651,7 @@ public static class TbStrings
         [FileUploadTooMany] = "Choose at most {0} files.",
         [FileUploadTooManyOne] = "Choose only one file.",
         [LabelInfo] = "Information about {0}",
+        [ListBoxEmpty] = "Nothing to choose from",
         [NewTabHint] = "opens in a new tab",
         [NumberFieldDecrease] = "Decrease",
         [NumberFieldIncrease] = "Increase",

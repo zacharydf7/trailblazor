@@ -49,7 +49,8 @@ public class ListBoxExampleTests : DocsTest
     {
         var cut = Render<ListBoxEmptyExample>();
 
-        Assert.Equal(["You haven't saved a trip yet"], cut.Tb().ListBox("Saved trips").Options);
+        Assert.Empty(cut.Tb().ListBox("Saved trips").Options);
+        Assert.Equal("You haven't saved a trip yet", cut.Find("[data-part=status]").TextContent.Trim());
     }
 
     [Fact]

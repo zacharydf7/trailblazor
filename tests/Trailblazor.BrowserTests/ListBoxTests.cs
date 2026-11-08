@@ -137,6 +137,17 @@ public class ListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ListBox_ShouldShowItsEmptyMessageInMutedText_WhenRenderedStaticallyWithNoOptions(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-listbox");
+        var status = page.GetByLabel("Saved trips").Locator("option[data-part=status]");
+
+        await Expect(status).ToHaveTextAsync("Nothing to choose from");
+        Assert.Equal(await MutedColorAsync(page),
+            await status.EvaluateAsync<string>("status => getComputedStyle(status).color"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ChooseAsync_ShouldChooseOptionsByName_WhenGivenAnInteractiveListboxsLabel(string browser)
     {
         var page = await OpenAsync(browser, "/examples/listbox");

@@ -3435,8 +3435,8 @@ public static class ExampleCatalog
                     + "as a chip, and its words name the option. `Text` is for content without words, such as an "
                     + "image, and replaces that name, so include any words the option shows.",
                     typeof(ListBoxContentExample)),
-                new("empty-list", "Empty list", "A list box with no options shows an empty box, so add a disabled "
-                    + "option that says why.", typeof(ListBoxEmptyExample)),
+                new("empty-list", "Empty list", "A list box with no options says so, in text as readable as the "
+                    + "options. Set `Labels.Empty` to say why.", typeof(ListBoxEmptyExample)),
                 new("many-options", "Many options", "A long list scrolls, and a long option wraps. When people would "
                     + "rather search than scroll, use a filterable [select](components/select) or an "
                     + "[autocomplete](components/autocomplete).",
@@ -3456,7 +3456,7 @@ public static class ExampleCatalog
                     + "`Disabled` takes it out of the tab order.", typeof(ListBoxStatesExample)),
             ],
             Api = [typeof(TbListBox<>), typeof(TbMultiListBox<>), typeof(TbOption<>), typeof(TbOptionGroup),
-                typeof(FieldClasses)],
+                typeof(ListBoxLabels), typeof(FieldClasses)],
             Keyboard =
             [
                 new(["Down", "Up"], "Moves to the next or previous option that isn't disabled, and chooses it.")
@@ -3527,6 +3527,7 @@ public static class ExampleCatalog
                 new("group", "A group of options."),
                 new("group-label", "A group's heading."),
                 new("option", "One option."),
+                new("status", "The message the list shows when it has no options."),
             ],
             Anatomy = """
                 <TbListBox Label="…" @bind-Value="_value">

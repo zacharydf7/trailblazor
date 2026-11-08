@@ -27,6 +27,12 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
     [Parameter]
     public int Rows { get; set; } = 5;
 
+    /// <summary>The words it shows and says, such as the message for an empty list.</summary>
+    [Parameter]
+    public ListBoxLabels Labels { get; set; } = new();
+
+    private string EmptyText => Labels.Empty ?? Localizer[TbStrings.ListBoxEmpty];
+
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 
@@ -158,9 +164,20 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
         }
 
         _options.Add(option);
+        // The empty list's message goes once the first option comes, and comes back once the last one goes.
+        if (_options.Count == 1)
+        {
+            StateHasChanged();
+        }
     }
 
-    void ISelect.Remove(ISelectOption option) => _options.Remove(option);
+    void ISelect.Remove(ISelectOption option)
+    {
+        if (_options.Remove(option) && _options.Count == 0)
+        {
+            StateHasChanged();
+        }
+    }
 
     // The options show themselves, so there is no chosen option to show elsewhere.
     void ISelect.Refresh()

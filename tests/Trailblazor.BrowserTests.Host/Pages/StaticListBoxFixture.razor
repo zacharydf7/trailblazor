@@ -14,9 +14,11 @@
     <TbButton Type="ButtonType.Submit">Send</TbButton>
 </EditForm>
 <output data-testid="posted">@_posted</output>
+<TbListBox TValue="string" Label="Saved trips" @bind-Value="_trip" />
 
 @code {
     private string? _posted;
+    private string? _trip;
 
     [SupplyParameterFromForm]
     private Trip? Model { get; set; }
