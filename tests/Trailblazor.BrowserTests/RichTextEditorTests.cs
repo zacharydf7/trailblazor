@@ -411,13 +411,19 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");
         var notes = Editor(page, "Notes");
-        var folder = Path.Combine(AppContext.BaseDirectory, "RichTextCorpus");
-        var expected = File.ReadAllText(Path.Combine(folder, $"{sample}.expected.html")).TrimEnd('\r', '\n');
+        var html = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RichTextCorpus", $"{sample}.html"));
+        // What the editor keeps so far: the six marks and plain paragraphs.
+        var expected = RichTextDocument.Parse(html, new RichTextSchema
+        {
+            Formats = RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Underline
+                | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript,
+            Blocks = RichTextBlocks.None,
+        }).ToHtml();
 
         await CaretAsync(notes, 0, 0);
         await notes.EvaluateAsync(
             "editor => editor.addEventListener('tb-rich-text-change', event => window.sent = event.detail.html)");
-        await PasteAsync(notes, File.ReadAllText(Path.Combine(folder, $"{sample}.html")), "ignored");
+        await PasteAsync(notes, html, "ignored");
 
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync(expected);
         Assert.Equal(expected, await page.EvaluateAsync<string>("() => window.sent"));

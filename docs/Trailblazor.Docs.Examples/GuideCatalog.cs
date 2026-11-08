@@ -36,9 +36,9 @@ public static class GuideCatalog
             Api = [typeof(IAnnouncer)],
         },
         new("guides/rich-text", "Rich text",
-            "Clean up HTML from anywhere, show it safely, and read its paragraphs and formats from C#.")
+            "Clean up HTML from anywhere, show it safely, and read its blocks, formats and links from C#.")
         {
-            Api = [typeof(RichTextDocument), typeof(RichTextParagraph), typeof(RichTextRun)],
+            Api = [typeof(RichTextDocument), typeof(RichTextParagraph), typeof(RichTextRun), typeof(RichTextSchema)],
         },
         new("guides/icons", "Icons", "Draw Material Symbols or your own SVG icons, and find the one you need."),
         new("guides/localization", "Localization",

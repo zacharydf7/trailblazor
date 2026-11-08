@@ -3042,21 +3042,18 @@ Trailblazor.RichTextFormats.Subscript = 16 -> Trailblazor.RichTextFormats
 Trailblazor.RichTextFormats.Superscript = 32 -> Trailblazor.RichTextFormats
 Trailblazor.RichTextFormats.Underline = 4 -> Trailblazor.RichTextFormats
 Trailblazor.RichTextParagraph
-Trailblazor.RichTextParagraph.RichTextParagraph(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs) -> void
 Trailblazor.RichTextParagraph.Runs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.RichTextRun!>!
 Trailblazor.RichTextParagraph.Text.get -> string!
 Trailblazor.RichTextRun
 Trailblazor.RichTextRun.<Clone>$() -> Trailblazor.RichTextRun!
 Trailblazor.RichTextRun.Equals(Trailblazor.RichTextRun? other) -> bool
 Trailblazor.RichTextRun.Formats.get -> Trailblazor.RichTextFormats
-Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None) -> void
 Trailblazor.RichTextRun.Text.get -> string!
 override Trailblazor.RichTextRun.Equals(object? obj) -> bool
 override Trailblazor.RichTextRun.GetHashCode() -> int
 override Trailblazor.RichTextRun.ToString() -> string!
 static Trailblazor.RichTextDocument.Empty.get -> Trailblazor.RichTextDocument!
 static Trailblazor.RichTextDocument.Parse(string? html) -> Trailblazor.RichTextDocument!
-static Trailblazor.RichTextDocument.Parse(string? html, Trailblazor.RichTextFormats formats) -> Trailblazor.RichTextDocument!
 static Trailblazor.RichTextRun.operator !=(Trailblazor.RichTextRun? left, Trailblazor.RichTextRun? right) -> bool
 static Trailblazor.RichTextRun.operator ==(Trailblazor.RichTextRun? left, Trailblazor.RichTextRun? right) -> bool
 Trailblazor.RichTextEditorLabels
@@ -3120,3 +3117,43 @@ Trailblazor.RichTextChangeEventArgs.Html.set -> void
 Trailblazor.RichTextChangeEventArgs.RichTextChangeEventArgs() -> void
 Trailblazor.RichTextChangeEventArgs.Continues.get -> bool
 Trailblazor.RichTextChangeEventArgs.Continues.set -> void
+Trailblazor.RichTextBlocks.Headings = 1 -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextBlocks.Quotes = 2 -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextBlocks.BulletedLists = 4 -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextBlocks.NumberedLists = 8 -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextBlocks.Rules = 16 -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextBlocks
+Trailblazor.RichTextBlocks.None = 0 -> Trailblazor.RichTextBlocks
+static Trailblazor.RichTextDocument.Parse(string? html, Trailblazor.RichTextSchema! schema) -> Trailblazor.RichTextDocument!
+Trailblazor.RichTextFormats.Code = 64 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Link = 128 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextParagraph.RichTextParagraph(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs, Trailblazor.RichTextParagraphKind kind = Trailblazor.RichTextParagraphKind.Paragraph, int level = 0) -> void
+Trailblazor.RichTextParagraph.Kind.get -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraph.Level.get -> int
+Trailblazor.RichTextParagraphKind.Heading1 = 1 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind.Heading2 = 2 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind.Heading3 = 3 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind.Quote = 4 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind.BulletedItem = 5 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind.NumberedItem = 6 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind.Rule = 7 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraphKind.Paragraph = 0 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None, string? link = null) -> void
+Trailblazor.RichTextRun.Link.get -> string?
+Trailblazor.RichTextSchema.Formats.get -> Trailblazor.RichTextFormats
+Trailblazor.RichTextSchema.Formats.init -> void
+Trailblazor.RichTextSchema.Blocks.get -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextSchema.Blocks.init -> void
+Trailblazor.RichTextSchema.LinkSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.RichTextSchema.LinkSchemes.init -> void
+Trailblazor.RichTextSchema
+Trailblazor.RichTextSchema.<Clone>$() -> Trailblazor.RichTextSchema!
+Trailblazor.RichTextSchema.Equals(Trailblazor.RichTextSchema? other) -> bool
+Trailblazor.RichTextSchema.RichTextSchema() -> void
+override Trailblazor.RichTextSchema.Equals(object? obj) -> bool
+override Trailblazor.RichTextSchema.GetHashCode() -> int
+override Trailblazor.RichTextSchema.ToString() -> string!
+static Trailblazor.RichTextSchema.operator !=(Trailblazor.RichTextSchema? left, Trailblazor.RichTextSchema? right) -> bool
+static Trailblazor.RichTextSchema.operator ==(Trailblazor.RichTextSchema? left, Trailblazor.RichTextSchema? right) -> bool
+static Trailblazor.RichTextSchema.Default.get -> Trailblazor.RichTextSchema!

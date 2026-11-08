@@ -809,7 +809,7 @@ function readBlocks(container, collapse, formats) {
         }
         runs = null;
     };
-    const walk = (node, marks, pre) => {
+    const walk = (node, marks, pre, inLink) => {
         for (const child of node.childNodes) {
             if (child.nodeType === Node.TEXT_NODE) {
                 const text = collapse && !pre ? child.data.replace(/[\t\n\r\f ]+/g, ' ') : child.data;
@@ -825,23 +825,30 @@ function readBlocks(container, collapse, formats) {
                     finish();
                     continue;
                 }
-                const childMarks = marksOf(child, marks);
+                const childInLink = child.localName === 'a' ? linkOf(child) !== null : inLink;
+                const childMarks = marksOf(child, marks, childInLink);
                 const childPre = pre || PREFORMATTED.has(child.localName);
                 if (!BLOCKS.has(child.localName)) {
-                    walk(child, childMarks, childPre);
+                    walk(child, childMarks, childPre, childInLink);
                     continue;
                 }
                 finish();
                 const start = paragraphs.length;
-                walk(child, childMarks, childPre);
+                walk(child, childMarks, childPre, childInLink);
                 finish();
                 if (paragraphs.length === start) paragraphs.push([]);
             }
         }
     };
-    walk(container, [], false);
+    walk(container, [], false, false);
     finish();
     return paragraphs;
+}
+
+// As a browser reads a URL: without the tabs and line breaks inside it or the spaces and controls around it.
+function linkOf(element) {
+    const href = (element.getAttribute('href') ?? '').replace(/[\t\n\r]/g, '');
+    return href.replace(/^[\x00-\x20]+|[\x00-\x20]+$/g, '') || null;
 }
 
 function finishParagraph(runs, collapse) {
@@ -875,7 +882,8 @@ function keepCharacters(runs, keep) {
 // Word writes a list item's bullet or number as text, in a span styled mso-list: Ignore.
 const isWordListMarker = element => /mso-list:\s*ignore/i.test(element.getAttribute('style') ?? '');
 
-function marksOf(element, inherited) {
+// Inside a link, an underline from a style is the link's own look, as Google Docs writes it, not a format.
+function marksOf(element, inherited, inLink) {
     let marks = inherited;
     const add = mark => marks = withMark(marks, mark);
     const remove = (...names) => marks = marks.filter(mark => !names.includes(mark));
@@ -888,7 +896,7 @@ function marksOf(element, inherited) {
         if (style.fontStyle === 'italic' || style.fontStyle === 'oblique') add('italic');
         else if (style.fontStyle === 'normal') remove('italic');
         const decoration = `${style.textDecorationLine} ${style.textDecoration}`;
-        if (decoration.includes('underline')) add('underline');
+        if (!inLink && decoration.includes('underline')) add('underline');
         if (decoration.includes('line-through')) add('strikethrough');
         if (style.verticalAlign === 'super') add('superscript');
         else if (style.verticalAlign === 'sub') add('subscript');

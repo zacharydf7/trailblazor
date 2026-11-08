@@ -25,4 +25,11 @@ public enum RichTextFormats
 
     /// <summary>Superscript, written as <c>&lt;sup&gt;</c>. Text can't be both subscript and superscript.</summary>
     Superscript = 32,
+
+    /// <summary>Inline code, written as <c>&lt;code&gt;</c>.</summary>
+    Code = 64,
+
+    /// <summary>A link, written as <c>&lt;a href&gt;</c>. A run has it exactly when it has a
+    /// <see cref="RichTextRun.Link"/>.</summary>
+    Link = 128,
 }

@@ -8,7 +8,11 @@ namespace Trailblazor;
 internal sealed partial class RichTextHtmlReader
 {
     public const RichTextFormats AllFormats = RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Underline
-        | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript;
+        | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript | RichTextFormats.Code
+        | RichTextFormats.Link;
+
+    public const RichTextBlocks AllBlocks = RichTextBlocks.Headings | RichTextBlocks.Quotes
+        | RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists | RichTextBlocks.Rules;
 
     // Chromium's parser stops nesting elements at this depth, and the limit keeps every scan of open elements short.
     private const int MaxDepth = 512;
@@ -22,7 +26,8 @@ internal sealed partial class RichTextHtmlReader
         ["em"] = RichTextFormats.Italic, ["u"] = RichTextFormats.Underline, ["ins"] = RichTextFormats.Underline,
         ["s"] = RichTextFormats.Strikethrough, ["strike"] = RichTextFormats.Strikethrough,
         ["del"] = RichTextFormats.Strikethrough, ["sub"] = RichTextFormats.Subscript,
-        ["sup"] = RichTextFormats.Superscript,
+        ["sup"] = RichTextFormats.Superscript, ["code"] = RichTextFormats.Code, ["kbd"] = RichTextFormats.Code,
+        ["samp"] = RichTextFormats.Code, ["tt"] = RichTextFormats.Code,
     };
 
     private static readonly HashSet<string> Blocks =
@@ -106,6 +111,7 @@ internal sealed partial class RichTextHtmlReader
 
     private readonly string _html;
     private readonly RichTextFormats _formats;
+    private readonly RichTextSchema _schema;
     private readonly List<Element> _open = [];
     // Formatting to reopen, in order; null marks a boundary.
     private readonly List<Element?> _formatting = [];
@@ -115,7 +121,13 @@ internal sealed partial class RichTextHtmlReader
     private readonly List<Element>[] _openBounds = [.. Enum.GetValues<Scope>().Select(_ => new List<Element>())];
     private readonly List<Element> _openSkipped = [];
     private readonly List<Element> _openForeign = [];
-    private List<(string Text, RichTextFormats Formats, bool Pre)>? _runs;
+    private List<Piece>? _runs;
+    // The kind and level of the paragraph being read, set when its first text arrives.
+    private (RichTextParagraphKind Kind, int Level) _block;
+    // The Word list marker being skipped and its text, which says, once it ends, whether its list is numbered.
+    private Element? _markerElement;
+    private StringBuilder? _marker;
+    private bool _numberedMarker;
     private int _position;
     private int _opened;
     private bool _dropNewline;
@@ -124,13 +136,20 @@ internal sealed partial class RichTextHtmlReader
     // Without a standards doctype, a browser parses in quirks mode, where a table doesn't end a paragraph.
     private bool _quirks = true;
 
-    private RichTextHtmlReader(string html, RichTextFormats formats)
+    private RichTextHtmlReader(string html, RichTextSchema schema)
     {
         _html = html.Replace("\r\n", "\n").Replace('\r', '\n');
-        _formats = formats & AllFormats;
+        _formats = schema.Formats & AllFormats;
+        _schema = schema;
     }
 
     private RichTextFormats Formats => _open.Count > 0 ? _open[^1].Formats : RichTextFormats.None;
+
+    private LinkState OpenLink => _open.Count > 0 ? _open[^1].Link : default;
+
+    private BlockContext OpenContext => _open.Count > 0 ? _open[^1].Context : default;
+
+    private string? Link => _formats.HasFlag(RichTextFormats.Link) ? OpenLink.Kept : null;
 
     private bool InPre => _open.Count > 0 && _open[^1].Pre;
 
@@ -140,9 +159,9 @@ internal sealed partial class RichTextHtmlReader
 
     private bool InForeignContent => _openForeign.Count > 0;
 
-    public static List<RichTextParagraph> Read(string html, RichTextFormats formats)
+    public static List<RichTextParagraph> Read(string html, RichTextSchema schema)
     {
-        var reader = new RichTextHtmlReader(html, formats);
+        var reader = new RichTextHtmlReader(html, schema);
         reader.ReadAll();
         return reader._paragraphs;
     }
@@ -204,8 +223,8 @@ internal sealed partial class RichTextHtmlReader
         {
             _position++;
             var name = ReadName();
-            var (style, selfClosing) = ReadAttributes();
-            StartTag(name, style, selfClosing);
+            var (style, href, selfClosing) = ReadAttributes();
+            StartTag(name, style, href, selfClosing);
             if (RawText.Contains(name))
             {
                 ReadRawText(name);
@@ -218,7 +237,7 @@ internal sealed partial class RichTextHtmlReader
         }
     }
 
-    private void StartTag(string name, string style, bool selfClosing)
+    private void StartTag(string name, string style, string? href, bool selfClosing)
     {
         _started = true;
         if (InOpenHead && !HeadContent.Contains(name))
@@ -264,6 +283,10 @@ internal sealed partial class RichTextHtmlReader
             if (name == "hr" && !InSkipped)
             {
                 FinishParagraph();
+                if (_schema.Blocks.HasFlag(RichTextBlocks.Rules))
+                {
+                    _paragraphs.Add(new RichTextParagraph([], RichTextParagraphKind.Rule));
+                }
             }
 
             return;
@@ -279,15 +302,28 @@ internal sealed partial class RichTextHtmlReader
             Close("dt");
         }
 
-        if (InSkipped || Skipped.Contains(name) || WordListMarker().IsMatch(style))
+        var marker = !InSkipped && WordListMarker().IsMatch(style);
+        if (InSkipped || Skipped.Contains(name) || marker)
         {
             // A self-closing <svg/> or <math/> ends at once, as it does in a browser.
             if (!(selfClosing && name is "svg" or "math"))
             {
-                Push(new Element(name, style, Formats, block: false, InPre, skipped: true, _paragraphs.Count));
+                var skipped = new Element(name, style, default, Formats, OpenLink, OpenContext, block: false, InPre,
+                    skipped: true, _paragraphs.Count);
+                Push(skipped);
+                if (marker)
+                {
+                    (_markerElement, _marker) = (skipped, new StringBuilder());
+                }
             }
 
             return;
+        }
+
+        // As in a browser, a link starting inside another ends that one first.
+        if (name == "a")
+        {
+            EndFormatting("a");
         }
 
         var block = Blocks.Contains(name);
@@ -302,8 +338,11 @@ internal sealed partial class RichTextHtmlReader
 
         // A browser keeps the white space in these as written.
         var pre = name is "pre" or "listing" or "xmp" or "plaintext";
-        var element = new Element(name, style, FormatsOf(name, style, Formats), block, InPre || pre, skipped: false,
-            _paragraphs.Count);
+        var target = name == "a" ? RichTextSchema.CleanLink(href) : null;
+        var own = new LinkState(target, target is not null && _schema.AllowsLink(target) ? target : null);
+        var link = LinkOf(name, own, OpenLink);
+        var element = new Element(name, style, own, FormatsOf(name, style, Formats, link.Target is not null), link,
+            ContextOf(name, style, OpenContext), block, InPre || pre, skipped: false, _paragraphs.Count);
         if (!Push(element))
         {
             return;
@@ -424,7 +463,10 @@ internal sealed partial class RichTextHtmlReader
             for (var i = index; i < _open.Count; i++)
             {
                 var parent = i > 0 ? _open[i - 1].Formats : RichTextFormats.None;
-                _open[i].Formats = _open[i].Skipped ? parent : FormatsOf(_open[i].Name, _open[i].Style, parent);
+                var parentLink = i > 0 ? _open[i - 1].Link : default;
+                _open[i].Link = _open[i].Skipped ? parentLink : LinkOf(_open[i].Name, _open[i].Own, parentLink);
+                _open[i].Formats = _open[i].Skipped ? parent
+                    : FormatsOf(_open[i].Name, _open[i].Style, parent, _open[i].Link.Target is not null);
             }
         }
         else
@@ -452,8 +494,10 @@ internal sealed partial class RichTextHtmlReader
         for (var i = start; i < _formatting.Count; i++)
         {
             var entry = _formatting[i]!;
-            var reopened = new Element(entry.Name, entry.Style, FormatsOf(entry.Name, entry.Style, Formats),
-                block: false, InPre, skipped: false, _paragraphs.Count);
+            var link = LinkOf(entry.Name, entry.Own, OpenLink);
+            var reopened = new Element(entry.Name, entry.Style, entry.Own,
+                FormatsOf(entry.Name, entry.Style, Formats, link.Target is not null), link, OpenContext, block: false,
+                InPre, skipped: false, _paragraphs.Count);
             if (!Push(reopened))
             {
                 return;
@@ -563,6 +607,12 @@ internal sealed partial class RichTextHtmlReader
         _open.RemoveAt(_open.Count - 1);
         element.IsOpen = false;
         Track(element, open: false);
+        if (element == _markerElement)
+        {
+            _numberedMarker = NumberedMarker().IsMatch(_marker!.ToString().Trim());
+            (_markerElement, _marker) = (null, null);
+        }
+
         if (!element.Skipped && FormattingBoundaries.Contains(element.Name))
         {
             var boundary = Math.Max(_formatting.FindLastIndex(entry => entry is null), 0);
@@ -575,10 +625,67 @@ internal sealed partial class RichTextHtmlReader
             // A block with no text is still a paragraph.
             if (_paragraphs.Count == element.FirstParagraph)
             {
-                _paragraphs.Add(new RichTextParagraph([]));
+                var (kind, level) = Resolve(element.Context);
+                _numberedMarker = false;
+                _paragraphs.Add(new RichTextParagraph([], kind, level));
             }
         }
     }
+
+    // An element's own heading, quote, list item or Word list paragraph, if the schema allows it, else its parent's.
+    private BlockContext ContextOf(string name, string style, BlockContext parent)
+    {
+        var context = name is "ul" or "ol" or "menu" or "dir"
+            ? parent with { Lists = parent.Lists + 1, Ordered = name == "ol" }
+            : parent;
+        var own = name switch
+        {
+            "h1" => (RichTextParagraphKind.Heading1, 0, false),
+            "h2" => (RichTextParagraphKind.Heading2, 0, false),
+            "h3" or "h4" or "h5" or "h6" => (RichTextParagraphKind.Heading3, 0, false),
+            "blockquote" => (RichTextParagraphKind.Quote, 0, false),
+            "li" => (parent.Ordered ? RichTextParagraphKind.NumberedItem : RichTextParagraphKind.BulletedItem,
+                Math.Max(parent.Lists - 1, 0), false),
+            _ when WordListLevel().Match(style) is { Success: true } match => (RichTextParagraphKind.BulletedItem,
+                Math.Max(int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) - 1, 0), true),
+            _ => ((RichTextParagraphKind, int, bool)?)null,
+        };
+        if (own is not var (kind, level, word)
+            || !(word ? Allows(RichTextParagraphKind.BulletedItem) || Allows(RichTextParagraphKind.NumberedItem)
+                : Allows(kind)))
+        {
+            return context;
+        }
+
+        return context with { Kind = kind, Level = level, WordList = word };
+    }
+
+    private (RichTextParagraphKind Kind, int Level) CurrentBlock() => Resolve(OpenContext);
+
+    // A Word list paragraph is numbered when its skipped marker is a number or letters.
+    private (RichTextParagraphKind Kind, int Level) Resolve(BlockContext context)
+    {
+        if (!context.WordList)
+        {
+            return (context.Kind, context.Level);
+        }
+
+        var kind = _numberedMarker ? RichTextParagraphKind.NumberedItem : RichTextParagraphKind.BulletedItem;
+        return Allows(kind) ? (kind, context.Level) : (RichTextParagraphKind.Paragraph, 0);
+    }
+
+    private bool Allows(RichTextParagraphKind kind) => _schema.Blocks.HasFlag(kind switch
+    {
+        RichTextParagraphKind.Heading1 or RichTextParagraphKind.Heading2 or RichTextParagraphKind.Heading3 =>
+            RichTextBlocks.Headings,
+        RichTextParagraphKind.Quote => RichTextBlocks.Quotes,
+        RichTextParagraphKind.BulletedItem => RichTextBlocks.BulletedLists,
+        RichTextParagraphKind.NumberedItem => RichTextBlocks.NumberedLists,
+        _ => RichTextBlocks.Rules,
+    });
+
+    // An <a> with an href starts a link, and elements inside a link carry it.
+    private static LinkState LinkOf(string name, LinkState own, LinkState parent) => name == "a" ? own : parent;
 
     private void AddText(string text)
     {
@@ -600,22 +707,38 @@ internal sealed partial class RichTextHtmlReader
             _inBody |= !InSkipped;
         }
 
-        if (InSkipped || text.Length == 0)
+        if (InSkipped)
         {
+            // Only the marker's own text: the list paragraph's skipped content after it says nothing about the list.
+            _marker?.Append(text);
             return;
         }
 
-        Reconstruct();
-        (_runs ??= []).Add((InPre ? text : Whitespace().Replace(text, " "), Formats & _formats, InPre));
+        if (text.Length > 0)
+        {
+            AddPiece(InPre ? text : Whitespace().Replace(text, " "), InPre);
+        }
     }
 
     private void AddBreak()
     {
         if (!InSkipped)
         {
-            Reconstruct();
-            (_runs ??= []).Add(("\n", Formats & _formats, false));
+            AddPiece("\n", pre: false);
         }
+    }
+
+    private void AddPiece(string text, bool pre)
+    {
+        Reconstruct();
+        if (_runs is null)
+        {
+            _block = CurrentBlock();
+            _numberedMarker = false;
+            _runs = [];
+        }
+
+        _runs.Add(new Piece(text, Formats & _formats, Link, pre));
     }
 
     private void FinishParagraph()
@@ -632,7 +755,9 @@ internal sealed partial class RichTextHtmlReader
         // A paragraph's last line break shows nothing.
         runs = Keep(runs, (text, i, _) => i < text.Length - 1 || text[i] != '\n');
         _runs = null;
-        var paragraph = new RichTextParagraph(runs.Select(run => new RichTextRun(run.Text, run.Formats)));
+        var paragraph = new RichTextParagraph(
+            runs.Select(run => new RichTextRun(run.Text, run.Formats, run.Link, vetted: true)), _block.Kind,
+            _block.Level);
         // A line break shows a line even with nothing on it, such as a <br> between two paragraphs.
         if (paragraph.Runs.Count > 0 || hasBreak)
         {
@@ -641,12 +766,11 @@ internal sealed partial class RichTextHtmlReader
     }
 
     // Keeps the characters the test passes, given the paragraph's text, an index into it, and whether it's in <pre>.
-    private static List<(string Text, RichTextFormats Formats, bool Pre)> Keep(
-        List<(string Text, RichTextFormats Formats, bool Pre)> runs, Func<string, int, bool, bool> keep)
+    private static List<Piece> Keep(List<Piece> runs, Func<string, int, bool, bool> keep)
     {
         var text = string.Concat(runs.Select(run => run.Text));
         var offset = 0;
-        var result = new List<(string Text, RichTextFormats Formats, bool Pre)>(runs.Count);
+        var result = new List<Piece>(runs.Count);
         foreach (var run in runs)
         {
             var kept = new StringBuilder(run.Text.Length);
@@ -659,13 +783,14 @@ internal sealed partial class RichTextHtmlReader
             }
 
             offset += run.Text.Length;
-            result.Add((kept.ToString(), run.Formats, run.Pre));
+            result.Add(run with { Text = kept.ToString() });
         }
 
         return result;
     }
 
-    private static RichTextFormats FormatsOf(string name, string style, RichTextFormats inherited)
+    // Inside a link, an underline from a style is the link's own look, as Google Docs writes it, not a format.
+    private static RichTextFormats FormatsOf(string name, string style, RichTextFormats inherited, bool inLink)
     {
         var formats = inherited;
         if (TagFormats.TryGetValue(name, out var tagFormat))
@@ -690,7 +815,8 @@ internal sealed partial class RichTextHtmlReader
                 "font-style" when value is "italic" or "oblique" => With(formats, RichTextFormats.Italic),
                 "font-style" when value == "normal" => formats & ~RichTextFormats.Italic,
                 "font" when value is not ("inherit" or "initial" or "unset" or "revert") => Font(formats, value),
-                "text-decoration" or "text-decoration-line" => Decoration(formats, value),
+                "text-decoration" or "text-decoration-line" => Decoration(formats, value, inLink),
+                "font-family" when IsMonospace(value) => With(formats, RichTextFormats.Code),
                 "vertical-align" when value == "super" => With(formats, RichTextFormats.Superscript),
                 "vertical-align" when value == "sub" => With(formats, RichTextFormats.Subscript),
                 "vertical-align" when value == "baseline" =>
@@ -727,9 +853,9 @@ internal sealed partial class RichTextHtmlReader
             : formats & ~RichTextFormats.Italic;
     }
 
-    private static RichTextFormats Decoration(RichTextFormats formats, string value)
+    private static RichTextFormats Decoration(RichTextFormats formats, string value, bool inLink)
     {
-        if (value.Contains("underline", StringComparison.Ordinal))
+        if (!inLink && value.Contains("underline", StringComparison.Ordinal))
         {
             formats = With(formats, RichTextFormats.Underline);
         }
@@ -738,6 +864,11 @@ internal sealed partial class RichTextHtmlReader
             ? With(formats, RichTextFormats.Strikethrough)
             : formats;
     }
+
+    // Google Docs and Word have no code format; people set code in a monospace font there, so that reads as code.
+    private static bool IsMonospace(string families) => families.Split(',')
+        .Select(family => family.Trim().Trim('"', '\'').ToLowerInvariant())
+        .Any(family => family is "monospace" or "courier new" or "courier" or "consolas" or "menlo" or "monaco");
 
     private static RichTextFormats With(RichTextFormats formats, RichTextFormats format) => format switch
     {
@@ -762,10 +893,11 @@ internal sealed partial class RichTextHtmlReader
             || (oldLoose && !doctype.Contains(".dtd", StringComparison.Ordinal));
     }
 
-    // Reads to the end of a start tag, keeping only the style attribute and whether the tag closed itself.
-    private (string Style, bool SelfClosing) ReadAttributes()
+    // Reads to the end of a start tag, keeping only the style and href attributes and whether the tag closed itself.
+    private (string Style, string? Href, bool SelfClosing) ReadAttributes()
     {
         string? style = null;
+        string? href = null;
         var selfClosing = false;
         while (_position < _html.Length)
         {
@@ -801,13 +933,18 @@ internal sealed partial class RichTextHtmlReader
                 value = ReadAttributeValue();
             }
 
+            // As in a browser, the first of a repeated attribute counts.
             if (style is null && name.Equals("style", StringComparison.OrdinalIgnoreCase))
             {
-                style = HtmlCharacterReferences.Decode(value);
+                style = HtmlCharacterReferences.DecodeAttribute(value);
+            }
+            else if (href is null && name.Equals("href", StringComparison.OrdinalIgnoreCase))
+            {
+                href = HtmlCharacterReferences.DecodeAttribute(value);
             }
         }
 
-        return (style ?? "", selfClosing);
+        return (style ?? "", href, selfClosing);
     }
 
     private string ReadAttributeValue()
@@ -895,15 +1032,31 @@ internal sealed partial class RichTextHtmlReader
     [GeneratedRegex(@"mso-list:\s*ignore", RegexOptions.IgnoreCase)]
     private static partial Regex WordListMarker();
 
-    private sealed class Element(string name, string style, RichTextFormats formats, bool block, bool pre, bool skipped,
-        int firstParagraph)
+    // Word writes a list paragraph's level in its style, as in mso-list:l0 level2 lfo1.
+    [GeneratedRegex(@"mso-list:\s*l\d+\s+level(\d{1,2})", RegexOptions.IgnoreCase)]
+    private static partial Regex WordListLevel();
+
+    // A numbered list's marker is a number or letters with a period or parenthesis, as in "1.", "a)" or "iv.".
+    [GeneratedRegex(@"^\(?([0-9]+|[a-z]+|[A-Z]+)[.)]$")]
+    private static partial Regex NumberedMarker();
+
+    private sealed class Element(string name, string style, LinkState own, RichTextFormats formats, LinkState link,
+        BlockContext context, bool block, bool pre, bool skipped, int firstParagraph)
     {
         public string Name { get; } = name;
 
         public string Style { get; } = style;
 
+        // An <a>'s own href, which a reopened copy of it keeps, so its scheme is checked once.
+        public LinkState Own { get; } = own;
+
         // Changes when a formatting element around it ends while it stays open.
         public RichTextFormats Formats { get; set; } = formats;
+
+        // The link the text inside belongs to; changes as Formats does.
+        public LinkState Link { get; set; } = link;
+
+        public BlockContext Context { get; } = context;
 
         public bool Block { get; } = block;
 
@@ -918,6 +1071,15 @@ internal sealed partial class RichTextHtmlReader
         // Rises with each element opened, so of two open elements the one with the higher serial is above.
         public int Serial { get; set; }
     }
+
+    private sealed record Piece(string Text, RichTextFormats Formats, string? Link, bool Pre);
+
+    // Target is any href (a styled underline under it is the link's look); Kept is Target if the schema allows it.
+    private readonly record struct LinkState(string? Target, string? Kept);
+
+    // The kind and level of paragraph an element's text goes in, and the count of lists around it.
+    private readonly record struct BlockContext(RichTextParagraphKind Kind, int Level, bool WordList, int Lists,
+        bool Ordered);
 
     private enum Scope
     {

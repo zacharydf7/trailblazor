@@ -21,9 +21,14 @@ internal static partial class HtmlCharacterReferences
         + "oslash otilde ouml para plusmn pound quot raquo reg sect shy sup1 sup2 sup3 szlig thorn times uacute ucirc "
         + "ugrave uml uuml yacute yen yuml").Split(' '), StringComparer.Ordinal);
 
-    public static string Decode(string text) => text.Contains('&') ? Reference().Replace(text, Replace) : text;
+    public static string Decode(string text) =>
+        text.Contains('&') ? Reference().Replace(text, match => Replace(match, text, attribute: false)) : text;
 
-    private static string Replace(Match match)
+    // In an attribute, as in a URL's query, a legacy name followed by "=", a letter or a digit stays as written.
+    public static string DecodeAttribute(string value) =>
+        value.Contains('&') ? Reference().Replace(value, match => Replace(match, value, attribute: true)) : value;
+
+    private static string Replace(Match match, string text, bool attribute)
     {
         if (match.Groups["number"].Success)
         {
@@ -41,7 +46,9 @@ internal static partial class HtmlCharacterReferences
         {
             if (LegacyNames.Contains(name[..length]))
             {
-                return Named(name[..length]) + name[length..];
+                var end = match.Index + match.Length;
+                var followed = length < name.Length || (end < text.Length && text[end] == '=');
+                return attribute && followed ? match.Value : Named(name[..length]) + name[length..];
             }
         }
 

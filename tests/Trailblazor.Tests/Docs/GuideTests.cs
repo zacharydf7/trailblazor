@@ -209,7 +209,8 @@ public class GuideTests : DocsTest
     {
         var cut = PageAt("guides/rich-text");
         string Region(string label) => cut.Find($"[role=region][aria-label='{label}']").TextContent;
-        Assert.Contains("<p><strong>Bold</strong> and <em>italic</em></p><p>A heading</p>", Region("Canonical value"));
+        Assert.Contains("<h2>A heading</h2><p><strong>Bold</strong> and <em>italic</em></p><ul><li>A <a "
+            + "href=\"https://example.com\">link</a></li><li>Not a link</li></ul>", Region("Canonical value"));
 
         cut.Find(".docs-article textarea").Input("<b>New</b> <i>notes</i><script>alert(1)</script>");
 

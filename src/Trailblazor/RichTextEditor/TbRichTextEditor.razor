@@ -59,9 +59,10 @@
     private bool _disposed;
 
     /// <summary>The formats the editor allows: the toolbar has a button for each, and text pasted in keeps only these.
-    /// Defaults to all six; <see cref="RichTextFormats.None"/> makes a plain multi-line field.</summary>
+    /// Defaults to all six; <see cref="RichTextFormats.None"/> makes a plain multi-line field. Code and Link are
+    /// ignored.</summary>
     [Parameter]
-    public RichTextFormats Formats { get; set; } = RichTextHtmlReader.AllFormats;
+    public RichTextFormats Formats { get; set; } = Marks;
 
     /// <summary>Shows the toolbar of formats. Turn it off for an editor whose formats come from shortcuts and paste
     /// only. Defaults to true.</summary>
@@ -125,8 +126,14 @@
         .Select(tool => new Tool(tool.Mark, tool.Icon, tool.Label ?? Localizer[tool.Key], tool.Shortcuts)),
     ];
 
+    // The formats the toolbar and engine handle so far; headings, lists, code and links come in the next stage.
+    private const RichTextFormats Marks = RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Underline
+        | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript;
+
+    private RichTextSchema Schema => new() { Formats = Formats & Marks, Blocks = RichTextBlocks.None };
+
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
-    private string Canonical => RichTextDocument.Parse(Value, Formats).ToHtml();
+    private string Canonical => RichTextDocument.Parse(Value, Schema).ToHtml();
 
     // An anonymous object compares by value, so the script hears of options only when they change.
     private object Options => new
@@ -222,7 +229,7 @@
 
         var html = _parts.ToString();
         _parts.Clear();
-        var canonical = RichTextDocument.Parse(html, Formats).ToHtml();
+        var canonical = RichTextDocument.Parse(html, Schema).ToHtml();
         _sent = canonical;
         if (canonical != html && _handle is not null)
         {

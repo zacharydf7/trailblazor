@@ -15,9 +15,9 @@
     <Header>
         <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Rich text</TbText>
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-            <code>RichTextDocument</code> reads any HTML into paragraphs, line breaks and text formats, and writes them
-            back as one canonical HTML form. Use it to clean up HTML from anywhere, show it safely, or turn it into
-            another format without parsing HTML yourself.
+            <code>RichTextDocument</code> reads any HTML into paragraphs, headings, quotes, lists, text formats and
+            safe links, and writes them back as one canonical HTML form. Use it to clean up HTML from anywhere, show it
+            safely, or turn it into another format without parsing HTML yourself.
         </TbText>
     </Header>
     <ChildContent>
@@ -40,16 +40,25 @@
                 <code>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</code> for an empty one
             </li>
             <li>
+                <code>&lt;h1&gt;</code> to <code>&lt;h3&gt;</code> for headings, one <code>&lt;blockquote&gt;</code>
+                around neighboring quote paragraphs, and <code>&lt;hr&gt;</code> for a rule
+            </li>
+            <li>
+                <code>&lt;ul&gt;</code> and <code>&lt;ol&gt;</code> around list items, with each nested list inside the
+                item before it
+            </li>
+            <li>
                 <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;s&gt;</code>,
-                <code>&lt;sub&gt;</code> and <code>&lt;sup&gt;</code> for bold, italic, underline, strikethrough,
-                subscript and superscript, always nested in that order, outermost first
+                <code>&lt;sub&gt;</code>, <code>&lt;sup&gt;</code> and <code>&lt;code&gt;</code> for bold, italic,
+                underline, strikethrough, subscript, superscript and inline code, always nested in that order, outermost
+                first, with a link's <code>&lt;a href&gt;</code> around them all
             </li>
             <li><code>&amp;nbsp;</code> for each space HTML would otherwise collapse, so spaces show as typed</li>
             <li><code>""</code> for an empty document</li>
         </ul>
         <TbText>
-            Parsing that HTML gives back the same document, so two values with the same content compare equal as
-            strings.
+            Parsing that HTML with a schema that allows its formats, blocks and link schemes gives back the same
+            document, so two values with the same content compare equal as strings.
         </TbText>
 
         <DocsHeading Id="reading-html" Text="Reading HTML" Class="docs-section" />
@@ -59,16 +68,26 @@
             simple reorder and character references whose names HTML 4 lacks, which stay as written.
         </TbText>
         <ul>
-            <li>Paragraphs, headings, list items, table cells and other blocks become paragraphs.</li>
             <li>
-                Formats come from tags such as <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code>, and from inline styles:
-                a font weight of 600 or more, italic, underline, line-through, and <code>vertical-align</code> for
-                subscript and superscript.
+                Headings, block quotes, list items and rules keep their kind; <code>&lt;h4&gt;</code> to
+                <code>&lt;h6&gt;</code> read as third-level headings. Table cells and other blocks become paragraphs.
             </li>
             <li>
-                Word's and Google Docs' quirks are handled: Word's list bullets and numbers are dropped, and the
+                A list item is numbered inside an <code>&lt;ol&gt;</code>, and nested one level for each list around its
+                own. Where blocks nest, the innermost heading, quote or list item gives the paragraph its kind, since a
+                paragraph has only one: a heading inside a list item reads as a heading, and a list inside a quote reads
+                as a list.
+            </li>
+            <li>
+                Formats come from tags such as <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code> and
+                <code>&lt;code&gt;</code>, and from inline styles: a font weight of 600 or more, italic, underline,
+                line-through, <code>vertical-align</code> for subscript and superscript, and a monospace font for code.
+            </li>
+            <li>
+                Word's and Google Docs' quirks are handled: Word's list paragraphs read as lists at their level,
+                numbered when their marker is a number or letter, and the marker itself is dropped. The
                 <code>&lt;b style="font-weight: normal"&gt;</code> wrapper Google Docs puts around everything isn't read
-                as bold.
+                as bold, and the underline it styles links with isn't read as a format.
             </li>
             <li>
                 Tabs and no-break spaces read as plain spaces. Where HTML would collapse one, <code>ToHtml</code> writes
@@ -76,17 +95,23 @@
             </li>
         </ul>
         <TbText>
-            Pass the formats to keep, and any other format is dropped while its text stays. For example, a short
-            description might allow only bold and italic:
+            Pass a <code>RichTextSchema</code> to say what to keep: its <code>Formats</code>, its <code>Blocks</code>
+            and the <code>LinkSchemes</code> links may use. A format it doesn't allow is dropped while its text stays,
+            a block it doesn't allow gives way to an allowed block around it or a plain paragraph, and a rule it
+            doesn't allow is dropped. For example, a short description might allow only bold and italic, in plain
+            paragraphs:
         </TbText>
         <CodeBlock Label="Keeping some formats" Code="@KeepingFormats" />
 
         <DocsHeading Id="safe-to-show" Text="Safe to show" Class="docs-section" />
         <TbText>
-            Everything other than text, paragraphs, line breaks and formats is dropped while reading: scripts, styles,
-            event handlers, images, every attribute, and links, though their text stays. <code>ToHtml</code> escapes
-            all the text and writes no tags but its own, so its result is safe to render as markup, even when the HTML
-            came from a user.
+            Everything other than text, blocks, line breaks, formats and links is dropped while reading: scripts,
+            styles, event handlers, images and every attribute but a link's <code>href</code>. A link keeps its target
+            only when it's relative or its scheme is one the schema allows: <code>http</code>, <code>https</code>,
+            <code>mailto</code> and <code>tel</code> by default. Any other link becomes plain text, and so does one to
+            <code>javascript:</code> or <code>vbscript:</code> even when a schema lists it; a run built in code refuses
+            such a link. <code>ToHtml</code> escapes all the text and writes no tags
+            but its own, so its result is safe to render as markup, even when the HTML came from a user.
         </TbText>
         <CodeBlock Label="Showing stored HTML" Code="@Showing" />
         <DocsCallout Title="Read it on the server">
@@ -97,12 +122,13 @@
 
         <DocsHeading Id="paragraphs-and-runs" Text="Paragraphs and runs" Class="docs-section" />
         <TbText>
-            A document is a list of paragraphs, and a paragraph is a list of runs: stretches of text that share one set
-            of formats. A <code>'\n'</code> in a run's text is a line break. A run's <code>Formats</code> is a
-            <code>RichTextFormats</code> flags value: <code>Bold</code>, <code>Italic</code>, <code>Underline</code>,
-            <code>Strikethrough</code>, <code>Subscript</code> or <code>Superscript</code>, combined with
-            <code>|</code>. Read the paragraphs and runs to turn the content into another format, or build them in
-            code.
+            A document is a flat list of paragraphs, and a paragraph is a list of runs: stretches of text that share one
+            set of formats and link. A paragraph's <code>Kind</code> says what block it is, such as
+            <code>Heading2</code> or <code>BulletedItem</code>, and a list item's <code>Level</code> how far it is
+            nested. A <code>'\n'</code> in a run's text is a line break. A run's <code>Formats</code> is a
+            <code>RichTextFormats</code> flags value, such as <code>Bold | Italic</code>, and its <code>Link</code> is
+            the URL it links to, if any. Read the paragraphs and runs to turn the content into another format, or build
+            them in code.
         </TbText>
         <CodeBlock Label="Reading runs" Code="@ReadingRuns" />
         <CodeBlock Label="Building a document" Code="@Building" />
@@ -111,6 +137,7 @@
         <ApiTable Type="typeof(RichTextDocument)" />
         <ApiTable Type="typeof(RichTextParagraph)" />
         <ApiTable Type="typeof(RichTextRun)" />
+        <ApiTable Type="typeof(RichTextSchema)" />
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
@@ -125,14 +152,19 @@
 
 @code {
     private string _html = """
-        <p class=MsoNormal><b>Bold</b> and <span style="font-style: italic">italic</span><o:p></o:p></p>
-        <h2>A heading</h2><script>alert("never runs")</script>
+        <h2>A heading</h2><p class=MsoNormal><b>Bold</b> and <span style="font-style: italic">italic</span></p>
+        <ul><li>A <a href="https://example.com">link</a></li><li><a href="javascript:alert(1)">Not a link</a></li></ul>
+        <script>alert("never runs")</script>
         """;
 
     private RichTextDocument Document => RichTextDocument.Parse(_html);
 
     private const string KeepingFormats = """
-        var description = RichTextDocument.Parse(html, RichTextFormats.Bold | RichTextFormats.Italic);
+        var description = RichTextDocument.Parse(html, new RichTextSchema
+        {
+            Formats = RichTextFormats.Bold | RichTextFormats.Italic,
+            Blocks = RichTextBlocks.None,
+        });
         """;
 
     private const string Showing = """
@@ -159,8 +191,9 @@
     private const string Building = """
         var notes = new RichTextDocument(
         [
+            new RichTextParagraph([new("Trail closed")], RichTextParagraphKind.Heading2),
             new RichTextParagraph([new("Closed for "), new("repairs", RichTextFormats.Bold), new(" until May.")]),
-            new RichTextParagraph([new("Use the north trailhead.")]),
+            new RichTextParagraph([new("Use the "), new("north trailhead", link: "/trails/north"), new(".")]),
         ]);
 
         var html = notes.ToHtml();
