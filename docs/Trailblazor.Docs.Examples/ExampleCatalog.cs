@@ -2152,8 +2152,8 @@ public static class ExampleCatalog
             [
                 new("A press anywhere in the box outside its controls, such as its padding or a start "
                     + "icon, focuses the input."),
-                new("What the user types stays as typed until they leave the field, press Enter or step the value, "
-                    + "and an error waits until then too."),
+                new("What the user types stays as typed until they leave the field, press Enter, step the value or "
+                    + "click a step button that's off at a limit, and an error waits until then too."),
                 new("`ClampToRange` also moves a number too large or small for the value's type to the nearer limit."),
             ],
             Target = new("spinbutton", "Quantity"),

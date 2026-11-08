@@ -39,3 +39,19 @@ document.addEventListener('mousedown', event => {
         input.focus();
     }
 });
+
+// A mouse press on a step button that turned off at a limit passes through to the box, so this finds the button under the
+// pointer and commits any typed text. It doesn't step, since the button looked off when it was pressed. A touch is left
+// alone: its click could land on the button once the commit turns it back on, and step after all.
+const offButton = '[data-part="increment"]:disabled, [data-part="decrement"]:disabled';
+document.addEventListener('pointerdown', event => {
+    const box = event.target.closest?.('[data-part="control"]');
+    const input = box?.querySelector('input[data-part="input"]');
+    const under = [...(box?.querySelectorAll(offButton) ?? [])].some(button => {
+        const { left, right, top, bottom } = button.getBoundingClientRect();
+        return event.clientX >= left && event.clientX < right && event.clientY >= top && event.clientY < bottom;
+    });
+    if (under && event.pointerType === 'mouse' && event.button === 0 && typed.has(input)) {
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}, { capture: true });

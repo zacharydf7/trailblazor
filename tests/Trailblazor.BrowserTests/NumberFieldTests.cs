@@ -275,6 +275,41 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldCommitTheTypedText_WhenPressedAfterTurningOff(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FillAsync("10");
+        await copies.PressAsync("Enter");
+        await Expect(StepButton(page, "Increase")).ToBeDisabledAsync();
+        await copies.FillAsync("3");
+        var box = (await StepButton(page, "Increase").BoundingBoxAsync())!;
+
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+
+        await Expect(Chosen(page)).ToHaveTextAsync("3");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Box_ShouldLeaveTypedTextUncommitted_WhenItsPaddingIsPressed(string browser)
+    {
+        var page = await OpenStepAsync(browser);
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FillAsync("10");
+        await copies.PressAsync("Enter");
+        await Expect(StepButton(page, "Increase")).ToBeDisabledAsync();
+        await copies.FillAsync("3");
+        var box = (await copies.Locator("xpath=ancestor::*[@data-part='control'][1]").BoundingBoxAsync())!;
+
+        await page.Mouse.ClickAsync(box.X + 2, box.Y + box.Height / 2);
+
+        // Leaving the field would commit, so this waits in it for a commit that shouldn't come.
+        await page.WaitForTimeoutAsync(500);
+        await Expect(copies).ToBeFocusedAsync();
+        await Expect(Chosen(page)).ToHaveTextAsync("10");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task StepButton_ShouldKeepItsStep_WhenFocusLeavesBeforeTheStepRenders(string browser)
     {
         var page = await OpenStepAsync(browser);
@@ -393,6 +428,29 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(Chosen(page)).ToHaveTextAsync("6");
         await Expect(elsewhere).ToBeFocusedAsync();
+    }
+
+    [Fact]
+    public async Task StepButton_ShouldNotStep_WhenHeldByATouchAfterTurningOff()
+    {
+        // A touch laptop: the main pointer stays fine, so the turned-off button passes the touch through to the box.
+        var page = await OpenStepAsync("chromium", new() { HasTouch = true });
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await copies.FillAsync("10");
+        await copies.PressAsync("Enter");
+        await Expect(StepButton(page, "Increase")).ToBeDisabledAsync();
+        await copies.FillAsync("3");
+        var box = (await StepButton(page, "Increase").BoundingBoxAsync())!;
+        var session = await page.Context.NewCDPSessionAsync(page);
+
+        // Held long enough that a commit on touching down would turn the button back on before the lift's click.
+        await DialogMoveAndResizeTests.TouchAsync(session, "touchStart", box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.WaitForTimeoutAsync(300);
+        await DialogMoveAndResizeTests.TouchAsync(session, "touchEnd", null, null);
+        await page.WaitForTimeoutAsync(500);
+
+        // Focus left the field, which commits the text, but nothing stepped.
+        await Expect(Chosen(page)).ToHaveTextAsync("3");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
