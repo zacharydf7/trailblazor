@@ -85,12 +85,19 @@ public class TableOfContentsTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenGuideAsync(browser);
 
-        // Water sits near the end, so the scroll can't bring it to the top, and at the bottom Camping would win by
-        // position.
+        // The panel is sized so that Water, near the end, can't scroll to the top whatever the font, and at the bottom
+        // Camping would win by position.
+        await Guide(page).EvaluateAsync("""
+            guide => {
+                const water = document.getElementById('guide-water');
+                const below = guide.scrollHeight - (water.getBoundingClientRect().top - guide.getBoundingClientRect().top);
+                guide.style.blockSize = `${below + 16}px`;
+            }
+            """);
         await Link(page, "Water").ClickAsync();
         await Expect(Link(page, "Water")).ToHaveAttributeAsync("aria-current", "location");
         await page.WaitForFunctionAsync("""
-            guide => guide.scrollTop + guide.clientHeight >= guide.scrollHeight - 2
+            guide => guide.scrollTop > 0 && guide.scrollTop + guide.clientHeight >= guide.scrollHeight - 2
             """, await Guide(page).ElementHandleAsync());
         await page.EvaluateAsync("() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))");
         await Expect(Link(page, "Water")).ToHaveAttributeAsync("aria-current", "location");
