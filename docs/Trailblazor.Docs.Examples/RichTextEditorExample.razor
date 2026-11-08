@@ -1,0 +1,16 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Trail report" @bind-Value="_report"
+                      HelperText="Conditions, closures and anything the next group should know." />
+    <output>Value: <code>@Shown</code></output>
+</TbStack>
+
+@code {
+    private string? _report;
+
+    private string Shown => _report switch
+    {
+        null => "null until something is typed",
+        "" => "\"\"",
+        _ => _report,
+    };
+}

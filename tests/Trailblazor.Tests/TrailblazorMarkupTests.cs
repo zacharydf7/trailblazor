@@ -197,6 +197,30 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task RichTextEditor_ShouldSetTheValueToWhatTheEditorAllows_WhenHtmlIsEntered()
+    {
+        string? notes = null;
+        var cut = RenderRichTextEditor(parameters => parameters.Add(editor => editor.Formats, RichTextFormats.Bold)
+            .Add(editor => editor.ValueChanged, (string html) => notes = html));
+
+        await cut.Tb().RichTextEditor("Notes").EnterAsync("<p><b>Hi</b> <i>there</i></p>");
+
+        Assert.Equal("<p><strong>Hi</strong> there</p>", notes);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task RichTextEditor_ShouldThrow_WhenTheEditorIsReadOnlyOrDisabled(bool readOnly, bool disabled)
+    {
+        var cut = RenderRichTextEditor(parameters => parameters.Add(editor => editor.ReadOnly, readOnly)
+            .Add(editor => editor.Disabled, disabled));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            cut.Tb().RichTextEditor("Notes").EnterAsync("<p>x</p>"));
+    }
+
+    [Fact]
     public async Task Tabs_ShouldSelectTheTab_WhenSelectedByItsText()
     {
         var cut = RenderForm();
@@ -341,6 +365,15 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     private IRenderedComponent<ContainerFragment> RenderForm() => Render(BuildForm);
+
+    private IRenderedComponent<TbRichTextEditor> RenderRichTextEditor(
+        Action<ComponentParameterCollectionBuilder<TbRichTextEditor>> parameters)
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/rich-text-editor.js")
+            .SetupModule("attachRichTextEditor", _ => true);
+        handle.SetupVoid("setValue", _ => true).SetVoidResult();
+        return Render<TbRichTextEditor>(builder => parameters(builder.Add(editor => editor.Label, "Notes")));
+    }
 
     private void BuildForm(RenderTreeBuilder builder)
     {

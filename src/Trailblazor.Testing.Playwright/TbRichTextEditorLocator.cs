@@ -1,0 +1,34 @@
+using Microsoft.Playwright;
+
+namespace Trailblazor.Testing.Playwright;
+
+/// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>
+public sealed class TbRichTextEditorLocator(IPage page, string label)
+{
+    /// <summary>The editing area, for typing into and reading its text.</summary>
+    public ILocator Input => page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("[contenteditable]"));
+
+    /// <summary>Replaces the editor's text with this HTML, as pasting it over everything does, and leaves the editor,
+    /// which commits it. The editor keeps only the formats it allows, as with any paste.</summary>
+    public async Task EnterAsync(string html)
+    {
+        // Until the script has attached, the editing area is plain markup that a paste would bypass.
+        await Assertions.Expect(Input).ToHaveAttributeAsync("data-ready", "");
+        await Input.FocusAsync();
+        await Input.PressAsync("ControlOrMeta+a");
+        // A paste with nothing to keep, such as "", leaves the selection, so the old text goes first.
+        await Input.PressAsync("Delete");
+        // Playwright can't write to the system clipboard in every browser, so the paste event carries its own data.
+        await Input.EvaluateAsync("""
+            (editor, html) => {
+                const data = new DataTransfer();
+                data.setData('text/html', html);
+                data.setData('text/plain', new DOMParser().parseFromString(html, 'text/html').body.textContent);
+                const event = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+                Object.defineProperty(event, 'clipboardData', { value: data });
+                editor.dispatchEvent(event);
+            }
+            """, html);
+        await Input.BlurAsync();
+    }
+}

@@ -1,0 +1,9 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Live preview" @bind-Value="_text" UpdateOnInput UpdateDelay="TimeSpan.FromMilliseconds(300)"
+                      Placeholder="Type to see the preview" />
+    <div>@((MarkupString)RichTextDocument.Parse(_text).ToHtml())</div>
+</TbStack>
+
+@code {
+    private string? _text;
+}

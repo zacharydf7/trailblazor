@@ -2070,6 +2070,130 @@ public static class ExampleCatalog
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, register a `FakeTimeProvider` "
                 + "as the `TimeProvider` and advance it past the delay.",
         },
+        new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
+            "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")
+        {
+            WhenToUse =
+            [
+                "Use it where people format what they write: bold for a warning, italic for a name, subscript and "
+                    + "superscript for formulas and footnotes.",
+            ],
+            WhenNotToUse =
+            [
+                "For plain text, even several lines of it, use a [text field](components/text-field) with `Lines`.",
+            ],
+            Related = ["text-field", "form", "toolbar"],
+            Sections =
+            [
+                new("try-it", "Try it", "Use the controls to see what each parameter does.",
+                    typeof(RichTextEditorTryExample))
+                {
+                    Controls = new("<TbRichTextEditor Label=\"Try this editor\"{controls} @bind-Value=\"_value\" />",
+                        ExampleControl.Text(nameof(TbRichTextEditor.Placeholder)),
+                        ExampleControl.Text(nameof(TbRichTextEditor.HelperText)),
+                        ExampleControl.Switch(nameof(TbRichTextEditor.ShowToolbar), true),
+                        ExampleControl.Switch(nameof(TbRichTextEditor.Disabled)),
+                        ExampleControl.Switch(nameof(TbRichTextEditor.ReadOnly)),
+                        ExampleControl.Switch(nameof(TbRichTextEditor.Required))),
+                },
+                new("value", "The value", "The value is canonical HTML: a `<p>` for each paragraph, `<br>` for line "
+                    + "breaks and a tag for each format, or `\"\"` when the editor is empty. Paste from Word or a web "
+                    + "page, and only the formats survive. [Rich text](guides/rich-text) covers reading it in C#.",
+                    typeof(RichTextEditorExample)),
+                new("formats", "Formats", "`Formats` lists the formats the editor allows. The toolbar shows a button "
+                    + "for each, and pasted text keeps only those. `RichTextFormats.None` makes a field of plain "
+                    + "paragraphs.", typeof(RichTextEditorFormatsExample)),
+                new("without-a-toolbar", "Without a toolbar", "`ShowToolbar=\"false\"` hides the toolbar for a small "
+                    + "field. The shortcuts and paste still apply the formats it allows.",
+                    typeof(RichTextEditorToolbarExample)),
+                new("required-and-validation", "Required and validation", "`Required` counts paragraphs with no text "
+                    + "as empty. `Validation` gets the HTML; read its text with `RichTextDocument` to check a length.",
+                    typeof(RichTextEditorRequiredExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the text focusable, "
+                    + "selectable and copyable. `Disabled` takes it out of the tab order. Both disable the toolbar.",
+                    typeof(RichTextEditorStatesExample)),
+                new("updating-while-typing", "Updating while typing", "The value updates when focus leaves the "
+                    + "editor. `UpdateOnInput` updates it on every change, and `UpdateDelay` waits for a pause.",
+                    typeof(RichTextEditorUpdateExample)),
+                new("height", "Height", "`Lines` sets the starting height, and the editor grows with its text. "
+                    + "`MaxLines` caps it, after which it scrolls.", typeof(RichTextEditorHeightExample)),
+            ],
+            Api = [typeof(TbRichTextEditor), typeof(RichTextEditorLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Ctrl+B", "Ctrl+I", "Ctrl+U"], "Turns bold, italic or underline on or off, for the selection or "
+                    + "the next text typed. Cmd on macOS."),
+                new(["Ctrl+Shift+X"], "Turns strikethrough on or off."),
+                new(["Ctrl+,", "Ctrl+."], "Turns subscript or superscript on or off."),
+                new(["Enter"], "Starts a new paragraph."),
+                new(["Shift+Enter"], "Breaks the line within the paragraph."),
+                new(["Ctrl+Z"], "Undoes the last change, a word at a time while typing."),
+                new(["Ctrl+Y", "Ctrl+Shift+Z"], "Redoes the last change undone."),
+                new(["Ctrl+Shift+V"], "Pastes plain text."),
+                new(["Tab"], "Leaves the editor, as from any field."),
+                new(["Left", "Right"], "Moves between the buttons.") { When = "In the toolbar" },
+                new(["Home", "End"], "Goes to the first or last button.") { When = "In the toolbar" },
+            ],
+            RightToLeftKeys = "In the toolbar, Left moves to the next button and Right to the previous one.",
+            Labeling =
+            [
+                "The `Label` names the editing area with `aria-labelledby`, since it isn't a form control a `<label>` "
+                    + "can point at. Clicking the label still focuses it.",
+                "The toolbar is named \"Formatting\" and each button by its format; `Labels` changes these words.",
+            ],
+            Announcements =
+            [
+                "A validation message that appears as someone edits the field is read out once, as on every field.",
+                "Each toolbar button's state is announced through `aria-pressed`, and it follows the selection as the "
+                    + "caret moves.",
+            ],
+            Accessibility =
+            [
+                "The editing area is a multi-line `textbox`, with `aria-required`, `aria-invalid`, `aria-readonly` "
+                    + "and `aria-disabled` as they apply, and the placeholder as `aria-placeholder`.",
+                "The toolbar is a [toolbar](components/toolbar), following its WAI-ARIA pattern: one Tab stop, with "
+                    + "the arrow keys moving between its buttons. Each button uses `aria-pressed` to report whether "
+                    + "its format is on, off or mixed, and `aria-keyshortcuts` to name its shortcuts.",
+                "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>` and `<sup>` elements, which screen "
+                    + "readers can report.",
+                "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it.",
+            ],
+            AppDuties =
+            [
+                "Give the editor a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
+                "Parse the value with `RichTextDocument` on the server before storing it; the editor does, but a "
+                    + "value posted some other way may not have gone through it.",
+            ],
+            BeforeInteractive =
+            [
+                "Before the page is interactive, the value shows as formatted text that can't yet be edited. A static "
+                    + "form posts nothing for it, since the editing area isn't a form control.",
+            ],
+            Notes =
+            [
+                new("Typing, input methods, spellcheck and autocorrect go through the browser's own editing, so they "
+                    + "work as in any text box, and the editor reads back the result."),
+                new("`@ref` the editor and call `FocusAsync()` to move focus to it."),
+            ],
+            Target = new("textbox", "Trail report"),
+            Blocks = ["tb-field", "tb-rich-text-editor"],
+            DataParts =
+            [
+                .. FieldParts.Where(part => part.Name is not ("start" or "end")),
+                new("editor", "The toolbar and editing area together."),
+                new("toolbar", "The toolbar of formats."),
+                new("input", "The editing area."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().RichTextEditor(label).EnterAsync(html)` sets the value through the editor's own "
+                    + "change event.",
+                "In Playwright, `page.Tb().RichTextEditor(label).EnterAsync(html)` pastes the HTML and leaves the "
+                    + "editor.",
+                "To type instead, wait for `Input` to have its `data-ready` attribute, then type into it. The value "
+                    + "reaches .NET when focus leaves, or as it's typed with `UpdateOnInput`.",
+            ],
+        },
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.")
         {

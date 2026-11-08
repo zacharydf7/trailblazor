@@ -1,0 +1,27 @@
+<TbForm @ref="_form" aria-label="Trail description" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Description" @bind-Value="_description" Required Validation="CheckLength"
+                      HelperText="Up to 200 characters." />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private string? _description;
+
+    // Only so this demo shows its messages as it appears; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+
+    // The length that counts is the text people read, not the HTML around it.
+    private static IEnumerable<string> CheckLength(string? html)
+    {
+        if (RichTextDocument.Parse(html).ToPlainText().Length > 200)
+        {
+            yield return "Keep the description to 200 characters.";
+        }
+    }
+}

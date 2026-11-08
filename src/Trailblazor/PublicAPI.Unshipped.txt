@@ -3059,3 +3059,64 @@ static Trailblazor.RichTextDocument.Parse(string? html) -> Trailblazor.RichTextD
 static Trailblazor.RichTextDocument.Parse(string? html, Trailblazor.RichTextFormats formats) -> Trailblazor.RichTextDocument!
 static Trailblazor.RichTextRun.operator !=(Trailblazor.RichTextRun? left, Trailblazor.RichTextRun? right) -> bool
 static Trailblazor.RichTextRun.operator ==(Trailblazor.RichTextRun? left, Trailblazor.RichTextRun? right) -> bool
+Trailblazor.RichTextEditorLabels
+Trailblazor.RichTextEditorLabels.<Clone>$() -> Trailblazor.RichTextEditorLabels!
+Trailblazor.RichTextEditorLabels.Bold.get -> string?
+Trailblazor.RichTextEditorLabels.Bold.init -> void
+Trailblazor.RichTextEditorLabels.Equals(Trailblazor.RichTextEditorLabels? other) -> bool
+Trailblazor.RichTextEditorLabels.Italic.get -> string?
+Trailblazor.RichTextEditorLabels.Italic.init -> void
+Trailblazor.RichTextEditorLabels.RichTextEditorLabels() -> void
+Trailblazor.RichTextEditorLabels.Strikethrough.get -> string?
+Trailblazor.RichTextEditorLabels.Strikethrough.init -> void
+Trailblazor.RichTextEditorLabels.Subscript.get -> string?
+Trailblazor.RichTextEditorLabels.Subscript.init -> void
+Trailblazor.RichTextEditorLabels.Superscript.get -> string?
+Trailblazor.RichTextEditorLabels.Superscript.init -> void
+Trailblazor.RichTextEditorLabels.Toolbar.get -> string?
+Trailblazor.RichTextEditorLabels.Toolbar.init -> void
+Trailblazor.RichTextEditorLabels.Underline.get -> string?
+Trailblazor.RichTextEditorLabels.Underline.init -> void
+Trailblazor.TbRichTextEditor
+Trailblazor.TbRichTextEditor.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbRichTextEditor.Classes.set -> void
+Trailblazor.TbRichTextEditor.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbRichTextEditor.Formats.get -> Trailblazor.RichTextFormats
+Trailblazor.TbRichTextEditor.Formats.set -> void
+Trailblazor.TbRichTextEditor.Labels.get -> Trailblazor.RichTextEditorLabels!
+Trailblazor.TbRichTextEditor.Labels.set -> void
+Trailblazor.TbRichTextEditor.Lines.get -> int
+Trailblazor.TbRichTextEditor.Lines.set -> void
+Trailblazor.TbRichTextEditor.MaxLines.get -> int?
+Trailblazor.TbRichTextEditor.MaxLines.set -> void
+Trailblazor.TbRichTextEditor.Placeholder.get -> string?
+Trailblazor.TbRichTextEditor.Placeholder.set -> void
+Trailblazor.TbRichTextEditor.ShowToolbar.get -> bool
+Trailblazor.TbRichTextEditor.ShowToolbar.set -> void
+Trailblazor.TbRichTextEditor.TbRichTextEditor() -> void
+Trailblazor.TbRichTextEditor.UpdateDelay.get -> System.TimeSpan?
+Trailblazor.TbRichTextEditor.UpdateDelay.set -> void
+Trailblazor.TbRichTextEditor.UpdateOnInput.get -> bool
+Trailblazor.TbRichTextEditor.UpdateOnInput.set -> void
+const Trailblazor.TbStrings.RichTextEditorBold = "RichTextEditor.Bold" -> string!
+const Trailblazor.TbStrings.RichTextEditorItalic = "RichTextEditor.Italic" -> string!
+const Trailblazor.TbStrings.RichTextEditorStrikethrough = "RichTextEditor.Strikethrough" -> string!
+const Trailblazor.TbStrings.RichTextEditorSubscript = "RichTextEditor.Subscript" -> string!
+const Trailblazor.TbStrings.RichTextEditorSuperscript = "RichTextEditor.Superscript" -> string!
+const Trailblazor.TbStrings.RichTextEditorToolbar = "RichTextEditor.Toolbar" -> string!
+const Trailblazor.TbStrings.RichTextEditorUnderline = "RichTextEditor.Underline" -> string!
+override Trailblazor.RichTextEditorLabels.Equals(object? obj) -> bool
+override Trailblazor.RichTextEditorLabels.GetHashCode() -> int
+override Trailblazor.RichTextEditorLabels.ToString() -> string!
+override Trailblazor.TbRichTextEditor.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbRichTextEditor.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbRichTextEditor.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+static Trailblazor.RichTextEditorLabels.operator !=(Trailblazor.RichTextEditorLabels? left, Trailblazor.RichTextEditorLabels? right) -> bool
+static Trailblazor.RichTextEditorLabels.operator ==(Trailblazor.RichTextEditorLabels? left, Trailblazor.RichTextEditorLabels? right) -> bool
+~override Trailblazor.TbRichTextEditor.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.RichTextChangeEventArgs
+Trailblazor.RichTextChangeEventArgs.Html.get -> string!
+Trailblazor.RichTextChangeEventArgs.Html.set -> void
+Trailblazor.RichTextChangeEventArgs.RichTextChangeEventArgs() -> void
+Trailblazor.RichTextChangeEventArgs.Continues.get -> bool
+Trailblazor.RichTextChangeEventArgs.Continues.set -> void

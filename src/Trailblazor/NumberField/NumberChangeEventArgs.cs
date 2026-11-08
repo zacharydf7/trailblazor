@@ -22,6 +22,18 @@ public sealed class FieldFocusEventArgs : EventArgs
     public bool CrossesField { get; set; }
 }
 
+/// <summary>A rich text editor's new value, sent by its script. Raised by <see cref="TbRichTextEditor"/>'s editing
+/// area; consumers don't normally handle it.</summary>
+public sealed class RichTextChangeEventArgs : EventArgs
+{
+    /// <summary>The HTML the editor's script sent, before the editor parses it: the whole value, or one part of a long
+    /// one.</summary>
+    public string Html { get; set; } = "";
+
+    /// <summary>Whether more of a long value follows in the next event.</summary>
+    public bool Continues { get; set; }
+}
+
 /// <summary>Registers Trailblazor's custom browser events with Razor, which only reads them from a public class with
 /// this name. The browser side is in Trailblazor.lib.module.js.</summary>
 [EventHandler("ontbnumberchange", typeof(NumberChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
@@ -34,6 +46,8 @@ public sealed class FieldFocusEventArgs : EventArgs
 [EventHandler("ontbselectall", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbeditstart", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbeditkey", typeof(GridEditKeyEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbrichtextchange", typeof(RichTextChangeEventArgs), enableStopPropagation: true,
+    enablePreventDefault: true)]
 public static class EventHandlers
 {
 }

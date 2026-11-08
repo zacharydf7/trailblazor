@@ -117,3 +117,6 @@ Trailblazor.Testing.TbGridDriver.SelectAsync(string! row) -> System.Threading.Ta
 Trailblazor.Testing.TbGridDriver.FilterAsync(string! column, string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.FilterAsync(string! column, string! condition, string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.FilterChoicesAsync(string! column, params string![]! choices) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRichTextEditorDriver
+Trailblazor.Testing.TbRichTextEditorDriver.EnterAsync(string! html) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.RichTextEditor(string! label) -> Trailblazor.Testing.TbRichTextEditorDriver!

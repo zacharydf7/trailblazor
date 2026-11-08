@@ -97,6 +97,10 @@
                         <td>Types a number.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>RichTextEditor(label).EnterAsync(html)</code></th>
+                        <td>Replaces the editor's text with this HTML, keeping only the formats it allows.</td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Tabs(name).SelectAsync(tab)</code></th>
                         <td>Selects a tab by its name.</td>
                     </tr>
@@ -415,6 +419,8 @@
         new("Date range picker", "Its label",
             "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates."),
         new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number."),
+        new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text "
+            + "and leaves the editor; `Input` is the editing area, for typing and reading its text."),
         new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path."),
         new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
             + "and pages."),

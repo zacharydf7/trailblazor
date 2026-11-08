@@ -92,6 +92,10 @@ function registerEvents(blazor) {
         createEventArgs: event => ({ from: event.detail }),
     });
     blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
+    blazor.registerCustomEventType('tbrichtextchange', {
+        browserEventName: 'tb-rich-text-change',
+        createEventArgs: event => ({ html: event.detail.html, continues: event.detail.continues }),
+    });
     blazor.registerCustomEventType('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
 
     // A key in a grid cell's edit says whether its field used it; the grid's own Enter and Escape guards don't count.

@@ -1,0 +1,11 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Chemical notation" @bind-Value="_formula"
+                      Formats="RichTextFormats.Subscript | RichTextFormats.Superscript" />
+    <TbRichTextEditor Label="Plain notes" @bind-Value="_notes" Formats="RichTextFormats.None"
+                      HelperText="Paragraphs and line breaks only; pasted formatting is dropped." />
+</TbStack>
+
+@code {
+    private string? _formula = "<p>H<sub>2</sub>O and 10<sup>3</sup> liters</p>";
+    private string? _notes;
+}

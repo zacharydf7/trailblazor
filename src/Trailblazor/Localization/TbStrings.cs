@@ -341,6 +341,27 @@ public static class TbStrings
     /// </summary>
     public const string TextFieldMaskIncomplete = "TextField.MaskIncomplete";
 
+    /// <summary>"Formatting": names a rich text editor's toolbar.</summary>
+    public const string RichTextEditorToolbar = "RichTextEditor.Toolbar";
+
+    /// <summary>"Bold": names a rich text editor's bold button.</summary>
+    public const string RichTextEditorBold = "RichTextEditor.Bold";
+
+    /// <summary>"Italic": names a rich text editor's italic button.</summary>
+    public const string RichTextEditorItalic = "RichTextEditor.Italic";
+
+    /// <summary>"Underline": names a rich text editor's underline button.</summary>
+    public const string RichTextEditorUnderline = "RichTextEditor.Underline";
+
+    /// <summary>"Strikethrough": names a rich text editor's strikethrough button.</summary>
+    public const string RichTextEditorStrikethrough = "RichTextEditor.Strikethrough";
+
+    /// <summary>"Subscript": names a rich text editor's subscript button.</summary>
+    public const string RichTextEditorSubscript = "RichTextEditor.Subscript";
+
+    /// <summary>"Superscript": names a rich text editor's superscript button.</summary>
+    public const string RichTextEditorSuperscript = "RichTextEditor.Superscript";
+
     /// <summary>"Theme": names a theme picker.</summary>
     public const string ThemePicker = "Theme.Picker";
 
@@ -685,6 +706,13 @@ public static class TbStrings
         [TableOfContentsNavigation] = "On this page",
         [TextFieldClear] = "Clear",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",
+        [RichTextEditorToolbar] = "Formatting",
+        [RichTextEditorBold] = "Bold",
+        [RichTextEditorItalic] = "Italic",
+        [RichTextEditorUnderline] = "Underline",
+        [RichTextEditorStrikethrough] = "Strikethrough",
+        [RichTextEditorSubscript] = "Subscript",
+        [RichTextEditorSuperscript] = "Superscript",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

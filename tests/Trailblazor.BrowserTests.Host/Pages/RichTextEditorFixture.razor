@@ -1,0 +1,38 @@
+@page "/rich-text-editor"
+
+<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput />
+<output data-testid="notes">@_notes</output>
+<TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
+<TbButton OnClick="() => _notes = _source">Set notes</TbButton>
+
+<TbRichTextEditor Label="Formula" @bind-Value="_formula" UpdateOnInput
+                  Formats="RichTextFormats.Subscript | RichTextFormats.Superscript" />
+<output data-testid="formula">@_formula</output>
+
+<TbRichTextEditor Label="Summary" @bind-Value="_summary" />
+<output data-testid="summary">@_summary</output>
+<TbButton OnClick="() => _saved = _summary">Save summary</TbButton>
+<output data-testid="saved">@_saved</output>
+
+@* Its handler stores each value only after a wait, so older values come back while typing goes on. *@
+<TbRichTextEditor Label="Live" Value="@_live" ValueChanged="OnLiveChangedAsync" ValueExpression="() => _live!"
+                  UpdateOnInput />
+<output data-testid="live">@_live</output>
+
+<TbRichTextEditor Label="Approved" ReadOnly Value="@("<p>Read <strong>only</strong></p>")" />
+<TbRichTextEditor Label="Archived" Disabled Value="@("<p>Old</p>")" />
+
+@code {
+    private string? _notes;
+    private string? _source;
+    private string? _formula;
+    private string? _summary;
+    private string? _saved;
+    private string? _live;
+
+    private async Task OnLiveChangedAsync(string html)
+    {
+        await Task.Delay(120);
+        _live = html;
+    }
+}

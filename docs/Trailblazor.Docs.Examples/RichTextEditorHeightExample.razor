@@ -1,0 +1,11 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Short answer" @bind-Value="_answer" Lines="2" />
+    <TbRichTextEditor Label="Trip journal" @bind-Value="_journal" Lines="2" MaxLines="5" />
+</TbStack>
+
+@code {
+    private string? _answer;
+
+    private string? _journal = string.Concat(Enumerable.Range(1, 8)
+        .Select(day => $"<p>Day {day}: walked the ridge, camped by the lake.</p>"));
+}

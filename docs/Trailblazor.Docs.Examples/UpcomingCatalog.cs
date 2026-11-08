@@ -71,7 +71,6 @@ public static class UpcomingCatalog
         new("Property grid", ExampleCategory.Inputs, 80),
         new("Query builder", ExampleCategory.Inputs, 174),
         new("Rating", ExampleCategory.Inputs, 66),
-        new("Rich text editor", ExampleCategory.Inputs, 161),
         new("Signature pad", ExampleCategory.Inputs, 179),
         new("Tag input", ExampleCategory.Inputs, 68),
         new("Time picker", ExampleCategory.Inputs, 63),

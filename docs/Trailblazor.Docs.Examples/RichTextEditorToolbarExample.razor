@@ -1,0 +1,8 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Caption" @bind-Value="_caption" ShowToolbar="false" Lines="2"
+                      HelperText="Ctrl+B, Ctrl+I and Ctrl+U still work." />
+</TbStack>
+
+@code {
+    private string? _caption = "<p>Sunrise from <em>Eagle Peak</em></p>";
+}

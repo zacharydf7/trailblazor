@@ -84,3 +84,8 @@ Trailblazor.Testing.Playwright.TrailblazorPageExtensions
 Trailblazor.Testing.Playwright.TbGridLocator.FilterAsync(string! column, string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.FilterAsync(string! column, string! condition, string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.FilterChoicesAsync(string! column, params string![]! choices) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRichTextEditorLocator
+Trailblazor.Testing.Playwright.TbRichTextEditorLocator.EnterAsync(string! html) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRichTextEditorLocator.Input.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbRichTextEditorLocator.TbRichTextEditorLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.RichTextEditor(string! label) -> Trailblazor.Testing.Playwright.TbRichTextEditorLocator!

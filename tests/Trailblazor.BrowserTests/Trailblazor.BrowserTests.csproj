@@ -39,6 +39,7 @@
   <ItemGroup>
     <!-- Caps parallel test classes: the one shared test host slows under more load and timing tests flake. -->
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\RichTextCorpus\*.html" LinkBase="RichTextCorpus" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

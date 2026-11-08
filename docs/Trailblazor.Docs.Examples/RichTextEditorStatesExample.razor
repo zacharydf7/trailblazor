@@ -1,0 +1,10 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Approved text" @bind-Value="_approved" ReadOnly
+                      HelperText="Can be selected and copied, but not changed." />
+    <TbRichTextEditor Label="Archived text" @bind-Value="_archived" Disabled HelperText="Can't be focused." />
+</TbStack>
+
+@code {
+    private string? _approved = "<p>Trail <strong>closed</strong> above the falls until spring.</p>";
+    private string? _archived = "<p>Last season's notes.</p>";
+}

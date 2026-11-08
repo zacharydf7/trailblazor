@@ -35,6 +35,11 @@ public sealed class TrailblazorMarkup
     public TbNumberFieldDriver NumberField(string label) =>
         new(() => Field(label, "input[type=number]", "input[role=spinbutton]"));
 
+    /// <summary>The <c>TbRichTextEditor</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbRichTextEditorDriver RichTextEditor(string label) =>
+        new(() => Field(label, "[role=textbox][contenteditable]"));
+
     /// <summary>The <c>TbTabs</c> with this accessible name, or the only tabs in the markup when no name is given.
     /// </summary>
     public TbTabsDriver Tabs(string? name = null) => new(() =>
@@ -243,6 +248,28 @@ public sealed class TbNumberFieldDriver
         var input = _find();
         return input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
             : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text });
+    }
+}
+
+/// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>
+public sealed class TbRichTextEditorDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbRichTextEditorDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Replaces the editor's text with this HTML and commits it, through the same event the editor's script
+    /// raises in a browser, so the value keeps only the formats the editor allows. A disabled or read-only editor
+    /// throws, since the user can't change it.</summary>
+    public Task EnterAsync(string html)
+    {
+        var editor = _find();
+        if (editor.GetAttribute("aria-disabled") == "true" || editor.GetAttribute("aria-readonly") == "true")
+        {
+            throw new InvalidOperationException("This editor is disabled or read-only, so its text can't be changed.");
+        }
+
+        return editor.TriggerEventAsync("ontbrichtextchange", new RichTextChangeEventArgs { Html = html });
     }
 }
 

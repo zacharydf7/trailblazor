@@ -2528,6 +2528,57 @@
         }
     }
 
+    /* A rich text editor fills its box, with the toolbar across the top and the editing area below. */
+    .tb-field__control:has(> .tb-rich-text-editor) {
+        align-items: stretch;
+        padding-inline: 0;
+    }
+
+    .tb-rich-text-editor {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    /* The buttons wrap onto another row in a narrow box, so none hides. */
+    .tb-rich-text-editor__toolbar {
+        flex-wrap: wrap;
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-rich-text-editor__content {
+        position: relative;
+        box-sizing: border-box;
+        min-block-size: calc(var(--tb-rich-text-editor-lines) * 1lh + 2 * var(--tb-field-padding-block));
+        padding-inline: var(--tb-control-padding-inline);
+        line-height: var(--tb-line-height-normal);
+        /* Spaces stay as typed, so the browser never swaps them for no-break spaces. */
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        cursor: text;
+    }
+
+    .tb-rich-text-editor__content--limited {
+        max-block-size: calc(var(--tb-rich-text-editor-max-lines) * 1lh + 2 * var(--tb-field-padding-block));
+        overflow-y: auto;
+    }
+
+    .tb-rich-text-editor__content p {
+        margin: 0;
+    }
+
+    .tb-rich-text-editor__content[data-empty]::before {
+        content: attr(data-placeholder);
+        position: absolute;
+        color: var(--tb-color-text-muted);
+        pointer-events: none;
+    }
+
+    .tb-field--disabled .tb-rich-text-editor__content {
+        cursor: default;
+    }
+
     /* The field draws its own step buttons, so the browser's spinners are hidden. */
     input.tb-field__input[type="number"] {
         appearance: textfield;

@@ -1,0 +1,276 @@
+@namespace Trailblazor
+@using System.Text
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbBoxedFieldBase<string>
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+@Layout(Classes, @<text>
+    <div data-part="editor" class="tb-rich-text-editor">
+        @if (ShowToolbar && Tools.Count > 0)
+        {
+            <TbToolbar AriaLabel="@(Labels.Toolbar ?? Localizer[TbStrings.RichTextEditorToolbar])" data-part="toolbar"
+                       aria-controls="@InputId" Class="tb-rich-text-editor__toolbar">
+                @foreach (var tool in Tools)
+                {
+                    @* The script keeps aria-pressed up to date as the selection moves, so .NET never changes it. *@
+                    <TbIconButton Icon="tool.Icon" AriaLabel="@tool.Label" ShowTooltip Size="Size.Small"
+                                  Disabled="@(Disabled || ReadOnly)" data-format="@tool.Mark" aria-pressed="false"
+                                  aria-keyshortcuts="@tool.Shortcuts" />
+                }
+            </TbToolbar>
+        }
+        @* The script owns everything inside the editing area once the page is interactive; data-ready marks that it
+           has attached, which tests wait for. *@
+        <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync" data-part="input"
+             id="@InputId" role="textbox" data-ready="@(_handle is null ? null : "")"
+             aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+             aria-describedby="@InputDescribedBy" aria-required="@(Required ? "true" : null)"
+             aria-invalid="@(ShowsInvalid ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
+             aria-disabled="@(Disabled ? "true" : null)" aria-placeholder="@Placeholder" data-placeholder="@Placeholder"
+             contenteditable="@(Disabled ? "false" : "true")" tabindex="@(Disabled ? "-1" : "0")"
+             inputmode="@(ReadOnly ? "none" : null)" spellcheck="true"
+             style="--tb-rich-text-editor-lines: @Lines; --tb-rich-text-editor-max-lines: @(MaxLines ?? 0)"
+             class="@ClassNames.Join("tb-field__input", "tb-rich-text-editor__content",
+                        MaxLines is null ? null : "tb-rich-text-editor__content--limited", Classes?.Input)">
+            @if (!RendererInfo.IsInteractive)
+            {
+                @((MarkupString)Canonical)
+            }
+        </div>
+    </div>
+</text>, null, null)
+
+@code {
+    private ElementReference _content;
+    private IJSObjectReference? _handle;
+    // The value the script holds, so the value coming back from the parent isn't sent to it again.
+    private string? _sent;
+    // A long value comes in parts, one change event each.
+    private readonly StringBuilder _parts = new();
+    // Values given to the parent while its handler runs. A parent that stores each one late passes older ones back
+    // while typing goes on, and those must not replace what the script now holds.
+    private readonly List<string> _echoes = [];
+    // The ValueChanged now running; the parent gets one at a time, so it can't store an older value after a newer one.
+    private Task? _delivering;
+    private string? _parameterValue;
+    private object? _sentOptions;
+    private bool _disposed;
+
+    /// <summary>The formats the editor allows: the toolbar has a button for each, and text pasted in keeps only these.
+    /// Defaults to all six; <see cref="RichTextFormats.None"/> makes a plain multi-line field.</summary>
+    [Parameter]
+    public RichTextFormats Formats { get; set; } = RichTextHtmlReader.AllFormats;
+
+    /// <summary>Shows the toolbar of formats. Turn it off for an editor whose formats come from shortcuts and paste
+    /// only. Defaults to true.</summary>
+    [Parameter]
+    public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>Example text shown while the editor is empty. It is not a label.</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>The editing area's starting height, in lines of text; it grows as text is added. Defaults to 3.
+    /// </summary>
+    [Parameter]
+    public int Lines { get; set; } = 3;
+
+    /// <summary>Stops the editing area from growing at this many lines, after which it scrolls. Without it, the
+    /// area grows with its text.</summary>
+    [Parameter]
+    public int? MaxLines { get; set; }
+
+    /// <summary>Updates the value on every change instead of when focus leaves the editor.</summary>
+    [Parameter]
+    public bool UpdateOnInput { get; set; }
+
+    /// <summary>With <see cref="UpdateOnInput"/>, waits until typing has paused this long before updating the value.
+    /// Leaving the editor updates it at once.</summary>
+    [Parameter]
+    public TimeSpan? UpdateDelay { get; set; }
+
+    /// <summary>The words the editor shows and says to screen readers, such as its buttons' names.</summary>
+    [Parameter]
+    public RichTextEditorLabels Labels { get; set; } = new();
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _content.FocusAsync(preventScroll);
+
+    private sealed record Tool(string Mark, Icon Icon, string Label, string Shortcuts);
+
+    private IReadOnlyList<Tool> Tools =>
+    [
+        .. new (RichTextFormats Format, string Mark, Icon Icon, string? Label, string Key, string Shortcuts)[]
+        {
+            (RichTextFormats.Bold, "bold", RichTextEditorIcons.Bold, Labels.Bold, TbStrings.RichTextEditorBold,
+                "Control+B Meta+B"),
+            (RichTextFormats.Italic, "italic", RichTextEditorIcons.Italic, Labels.Italic,
+                TbStrings.RichTextEditorItalic, "Control+I Meta+I"),
+            (RichTextFormats.Underline, "underline", RichTextEditorIcons.Underline, Labels.Underline,
+                TbStrings.RichTextEditorUnderline, "Control+U Meta+U"),
+            (RichTextFormats.Strikethrough, "strikethrough", RichTextEditorIcons.Strikethrough, Labels.Strikethrough,
+                TbStrings.RichTextEditorStrikethrough, "Control+Shift+X Meta+Shift+X"),
+            (RichTextFormats.Subscript, "subscript", RichTextEditorIcons.Subscript, Labels.Subscript,
+                TbStrings.RichTextEditorSubscript, "Control+, Meta+,"),
+            (RichTextFormats.Superscript, "superscript", RichTextEditorIcons.Superscript, Labels.Superscript,
+                TbStrings.RichTextEditorSuperscript, "Control+. Meta+."),
+        }
+        .Where(tool => Formats.HasFlag(tool.Format))
+        .Select(tool => new Tool(tool.Mark, tool.Icon, tool.Label ?? Localizer[tool.Key], tool.Shortcuts)),
+    ];
+
+    // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
+    private string Canonical => RichTextDocument.Parse(Value, Formats).ToHtml();
+
+    // An anonymous object compares by value, so the script hears of options only when they change.
+    private object Options => new
+    {
+        formats = string.Join(' ', Tools.Select(tool => tool.Mark)),
+        readOnly = ReadOnly,
+        updateOnInput = UpdateOnInput,
+        updateDelay = UpdateDelay?.TotalMilliseconds,
+    };
+
+    private protected override bool LabelTargetsInput => false;
+
+    // Paragraphs with no text are still empty.
+    private protected override bool IsMissing(string? value) =>
+        string.IsNullOrWhiteSpace(RichTextDocument.Parse(value).ToPlainText());
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (_handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!Equals(Options, _sentOptions))
+            {
+                _sentOptions = Options;
+                await _handle.InvokeVoidAsync("setOptions", _sentOptions);
+            }
+
+            if (Value != _parameterValue)
+            {
+                _parameterValue = Value;
+                if (Canonical != _sent && !_echoes.Contains(Canonical))
+                {
+                    _sent = Canonical;
+                    await _handle.InvokeVoidAsync("setValue", _sent);
+                }
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/rich-text-editor.js");
+            _sent = Canonical;
+            _parameterValue = Value;
+            _sentOptions = Options;
+            var handle = await module.InvokeAsync<IJSObjectReference>("attachRichTextEditor", _content, _sent,
+                _sentOptions);
+            if (_disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+            // The parent may have set a value while the script loaded.
+            await OnParametersSetAsync();
+            StateHasChanged();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    // What the script sends is read again here, so the value holds only what the editor allows, whatever the
+    // browser sent.
+    private async Task OnChangedAsync(RichTextChangeEventArgs change)
+    {
+        _parts.Append(change.Html);
+        if (change.Continues)
+        {
+            return;
+        }
+
+        var html = _parts.ToString();
+        _parts.Clear();
+        var canonical = RichTextDocument.Parse(html, Formats).ToHtml();
+        _sent = canonical;
+        if (canonical != html && _handle is not null)
+        {
+            await _handle.InvokeVoidAsync("setValue", canonical);
+        }
+
+        // A value typed while the parent's handler runs waits for it, and only the newest is delivered.
+        if (_delivering is null)
+        {
+            await DeliverAsync();
+        }
+    }
+
+    private async Task DeliverAsync()
+    {
+        try
+        {
+            for (string? delivered = null; delivered != _sent;)
+            {
+                delivered = _sent!;
+                _echoes.Add(delivered);
+                // While a handler runs, the parent can only hold the value it was given or the one before.
+                if (_echoes.Count > 2)
+                {
+                    _echoes.RemoveAt(0);
+                }
+
+                _delivering = SetValueAsync(delivered);
+                await _delivering;
+            }
+        }
+        finally
+        {
+            // Once the last handler finishes, renders show the parent's current value, so an older one is a real change.
+            _delivering = null;
+            _echoes.Clear();
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+    }
+}
