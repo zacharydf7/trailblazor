@@ -1146,4 +1146,34 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Draft" })).ToHaveCountAsync(0);
     }
+
+    [Theory]
+    [MemberData(nameof(ChosenBy))]
+    public async Task Menu_ShouldRingItsTriggerOnlyForTheKeyboard_WhenAnItemIsChosenWhileAFieldHadFocus(string browser,
+        bool keyboard)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        // A text field with focus first, whose ring Safari would carry along, since a click there doesn't move focus.
+        await page.EvaluateAsync("() => document.querySelector('main').prepend(document.createElement('input'))");
+        await page.Locator("main > input").FocusAsync();
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Actions" }).First;
+
+        if (keyboard)
+        {
+            await trigger.FocusAsync();
+            await page.Keyboard.PressAsync("Enter");
+            await page.Keyboard.PressAsync("Enter");
+        }
+        else
+        {
+            await trigger.ClickAsync();
+            await page.GetByRole(AriaRole.Menuitem, new() { Name = "Rename" }).First.ClickAsync();
+        }
+
+        await Expect(trigger).ToBeFocusedAsync();
+        Assert.Equal(keyboard, await trigger.EvaluateAsync<bool>("button => button.matches(':focus-visible')"));
+    }
+
+    public static TheoryData<string, bool> ChosenBy => new(
+        from browser in AllBrowsers.Names from keyboard in new[] { true, false } select (browser, keyboard));
 }

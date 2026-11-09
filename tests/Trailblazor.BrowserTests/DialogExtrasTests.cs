@@ -16,6 +16,58 @@ public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(rename.GetByLabel("Name")).ToHaveValueAsync("Quarterly report");
     }
 
+    [Theory]
+    [MemberData(nameof(OpenedBy))]
+    public async Task Dialog_ShouldRingTheOpenerOnlyForTheKeyboard_WhenAMenuOpenedDialogCloses(string browser,
+        bool keyboard)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Open a form" });
+        await trigger.ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Rename report" }).ClickAsync();
+        var rename = page.GetByRole(AriaRole.Dialog, new() { Name = "Rename report" });
+        await Expect(rename).ToBeVisibleAsync();
+
+        if (keyboard)
+        {
+            await page.Keyboard.PressAsync("Escape");
+        }
+        else
+        {
+            await rename.GetByRole(AriaRole.Button, new() { Name = "Cancel" }).ClickAsync();
+        }
+
+        await Expect(rename).ToBeHiddenAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+        Assert.Equal(keyboard, await trigger.EvaluateAsync<bool>("button => button.matches(':focus-visible')"));
+    }
+
+    [Theory]
+    [MemberData(nameof(OpenedBy))]
+    public async Task Dialog_ShouldRingItsFirstButtonOnlyForTheKeyboard_WhenItOpens(string browser, bool keyboard)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        var delete = page.GetByRole(AriaRole.Button, new() { Name = "Delete report" });
+
+        if (keyboard)
+        {
+            await delete.FocusAsync();
+            await page.Keyboard.PressAsync("Enter");
+        }
+        else
+        {
+            await delete.ClickAsync();
+        }
+
+        var cancel = page.GetByRole(AriaRole.Alertdialog, new() { Name = "Delete report?" })
+            .GetByRole(AriaRole.Button, new() { Name = "Cancel" });
+        await Expect(cancel).ToBeFocusedAsync();
+        Assert.Equal(keyboard, await cancel.EvaluateAsync<bool>("button => button.matches(':focus-visible')"));
+    }
+
+    public static TheoryData<string, bool> OpenedBy => new(
+        from browser in AllBrowsers.Names from keyboard in new[] { true, false } select (browser, keyboard));
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldAskBeforeDiscardingTheNewName_WhenEscapeTheBackdropCancelOrTheCloseButtonLeaveIt(
         string browser)

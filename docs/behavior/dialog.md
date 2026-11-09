@@ -65,6 +65,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] A confirmation starts on its first button, Cancel. `DialogExtrasTests.Dialog_ShouldStartOnItsFirstButton_WhenConfirming`
 - [x] With nothing marked, focus starts where Tab would: on a group's checked radio, and never on a hidden or inert control. `RadioStopsTests.Dialog_ShouldStartOnTheCheckedRadio_WhenARadioGroupComesFirst`, `RadioStopsTests.Dialog_ShouldStartOnTheFirstControlTabReaches_WhenHiddenAndInertOnesComeFirst`
 - [x] Closing returns focus to the opener. `DialogTests.Dialog_ShouldReturnItsValueAndRefocusTheOpener_WhenSaved`
+- [x] When a click opens or closes the dialog, the button that gets focus (the dialog's first button, or the opener on closing) shows no focus ring; when a key does, it shows one. `DialogExtrasTests.Dialog_ShouldRingItsFirstButtonOnlyForTheKeyboard_WhenItOpens`, `DialogExtrasTests.Dialog_ShouldRingTheOpenerOnlyForTheKeyboard_WhenAMenuOpenedDialogCloses`
 - [x] Focus moved to the page while a modal fades out stays there. `DialogTests.Dialog_ShouldLetThePageTakeInputAndKeepItsFocus_WhenAModalFadesOut`
 - [x] Minimizing and restoring keep focus on the button pressed. `DialogStateTests.Dialog_ShouldLetThePageBeUsedUntilRestored_WhenAModalIsMinimized`
 - [x] Switching between modal and non-modal keeps focus. `DialogStateTests.Dialog_ShouldSwitchBetweenModalAndModelessAndKeepFocus_WhenItsContentAsks`

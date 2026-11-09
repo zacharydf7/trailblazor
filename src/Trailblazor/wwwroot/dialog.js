@@ -1,5 +1,5 @@
 import { autofocusTarget, firstTabbable } from '../Trailblazor.Primitives/focus-scope.js';
-import { focusOrigin } from '../Trailblazor.Primitives/pointer-origin.js';
+import { focusForLastInput, focusOrigin } from '../Trailblazor.Primitives/pointer-origin.js';
 import { alwaysUsable, hold, release } from './inert.js';
 
 // Open dialogs, back to front; keys go to the frontmost, or to a modeless one that has focus, so a nested dialog closes
@@ -188,7 +188,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     stack.push(entry);
     numberLevels();
     blockPage();
-    dialogFocusTarget(dialog, options).focus();
+    focusForLastInput(dialogFocusTarget(dialog, options));
 
     let finished = false;
     let pressedOnBackdrop = false;
@@ -508,7 +508,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
             stack.push(entry);
             numberLevels();
             blockPage();
-            (focused ?? dialogFocusTarget(dialog, options)).focus();
+            focusForLastInput(focused ?? dialogFocusTarget(dialog, options));
             // A modal's own live regions join the accessibility tree with the next frame, as when it opens.
             if (modal) {
                 await nextFrame();
@@ -543,7 +543,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
             }
 
             if (giveBack && opener?.isConnected) {
-                opener.focus();
+                focusForLastInput(opener);
             }
 
             await leave();
