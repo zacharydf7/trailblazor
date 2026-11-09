@@ -149,11 +149,16 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         IReadOnlyDictionary<string, object?> parameters, DialogOptions options, bool isAlert)
     {
         var settings = trailblazorOptions.Value.Dialogs;
+        // The app's width would override a size or width the options chose, so it applies only when they set neither.
+        var sized = options.Size is not null || options.Width is not null;
         options = options with
         {
             DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
             DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
             TopLayer = options.TopLayer ?? settings.TopLayer,
+            Size = options.Size ?? settings.Size,
+            Width = sized ? options.Width : settings.Width,
+            CloseButton = options.CloseButton ?? settings.CloseButton,
         };
         var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync)
         {

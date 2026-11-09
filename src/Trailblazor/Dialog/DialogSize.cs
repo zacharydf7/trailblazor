@@ -18,4 +18,8 @@ public enum DialogSize
 
     /// <summary>The whole window.</summary>
     Full,
+
+    /// <summary>As wide as its content, up to the window, or up to <see cref="DialogOptions.Width"/> when that is set.
+    /// </summary>
+    Fit,
 }

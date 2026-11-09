@@ -4587,7 +4587,9 @@ public static class ExampleCatalog
                 new("size", "Size", "`Size` sets the widest a dialog grows, in rem so it follows the user's text size: "
                     + "`Small` 24rem (384px), `Medium` 32rem (512px), `Large` 48rem (768px), `ExtraLarge` 64rem "
                     + "(1024px) and `Full`. Pick the step nearest the content's need, or set `Width` to a CSS length "
-                    + "for one between the steps. No dialog grows past the window.", typeof(DialogSizeExample)),
+                    + "for one between the steps. `Fit` makes the dialog as wide as its content, up to `Width` when "
+                    + "that is set. No dialog grows past the window. `DialogSettings.Size`, `Width` and "
+                    + "`CloseButton` set the defaults for the app's dialogs.", typeof(DialogSizeExample)),
                 new("position", "Position", "`Position` sets where a dialog sits in the window, in the center unless "
                     + "set.", typeof(DialogPositionExample)),
                 new("header", "The header", "`ShowHeader = false` hides a dialog's header, and the title still names "

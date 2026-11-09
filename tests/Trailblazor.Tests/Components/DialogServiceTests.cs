@@ -67,6 +67,30 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void Show_ShouldTakeTheAppWideSizeWidthAndCloseButton_WhenItsOptionsLeaveThemUnset()
+    {
+        Services.Configure<TrailblazorOptions>(options => (options.Dialogs.Size, options.Dialogs.Width,
+            options.Dialogs.CloseButton) = (DialogSize.Fit, "40rem", false));
+
+        var dialog = Dialogs.Show<GreetingDialog, string>("Greeting");
+
+        Assert.Equal((DialogSize.Fit, "40rem", false), (dialog.Options.Size, dialog.Options.Width, dialog.CloseButton));
+    }
+
+    [Theory]
+    [InlineData(DialogSize.Small, null)]
+    [InlineData(null, "30rem")]
+    public void Show_ShouldLeaveOutTheAppWideWidth_WhenItsOptionsSetASizeOrAWidth(DialogSize? size, string? width)
+    {
+        Services.Configure<TrailblazorOptions>(options => options.Dialogs.Width = "40rem");
+
+        var dialog = Dialogs.Show<GreetingDialog, string>("Greeting", options: new() { Size = size, Width = width });
+
+        Assert.Equal(width, dialog.Options.Width);
+        Assert.Equal(size ?? DialogSize.Medium, dialog.Size);
+    }
+
+    [Fact]
     public void ConfirmAndAlert_ShouldStayOpenOnABackdropClickButTakeEscape_WhenTheAppKeepsTheDefaults()
     {
         _ = Dialogs.ConfirmAsync("Delete?", "This can't be undone.");

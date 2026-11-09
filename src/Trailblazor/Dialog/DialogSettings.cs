@@ -11,6 +11,18 @@ public sealed class DialogSettings
     /// </summary>
     public bool DismissOnBackdrop { get; set; } = true;
 
+    /// <summary>How wide a dialog grows when its options don't set a size. Defaults to <see cref="DialogSize.Medium"/>.
+    /// </summary>
+    public DialogSize Size { get; set; } = DialogSize.Medium;
+
+    /// <summary>The widest a dialog grows, as a CSS length such as <c>40rem</c>, when its options set neither a size
+    /// nor a width. See <see cref="DialogOptions.Width"/>.</summary>
+    public string? Width { get; set; }
+
+    /// <summary>Whether a dialog whose options don't say shows a close button in its header. Defaults to true.
+    /// </summary>
+    public bool CloseButton { get; set; } = true;
+
     /// <summary>Whether a dialog whose options don't say opens in the browser's top layer. Defaults to true; set it to
     /// false in an app whose dialogs host other libraries' popups. See <see cref="DialogOptions.TopLayer"/>.</summary>
     public bool TopLayer { get; set; } = true;

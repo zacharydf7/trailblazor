@@ -527,6 +527,44 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         return (size[0], size[1]);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldBeAsWideAsItsContentUpToItsWidth_WhenItsSizeIsFit(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Fit", Exact = true }).ClickAsync();
+        var fit = await BoxAsync(page, "Fit");
+        await page.Keyboard.PressAsync("Escape");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Capped", Exact = true }).ClickAsync();
+        var capped = await BoxAsync(page, "Capped");
+
+        // Medium, the default, is 32rem (512px); 6rem is 96px.
+        Assert.InRange(fit.Width, 97, 511);
+        Assert.Equal(96, capped.Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFitItsContentUpToTheWindow_WhenItIsInsideASmallerDialog(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Small outer" }).ClickAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Fitted" }).ClickAsync();
+
+        // Small is 24rem (384px); the fitted dialog's words are wider.
+        Assert.True((await BoxAsync(page, "Fitted")).Width > 385);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Drawer_ShouldStopAtItsWidth_WhenItsSizeIsFit(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Fit drawer" }).ClickAsync();
+
+        Assert.Equal(160, (await BoxAsync(page, "Fit drawer")).Width, tolerance: 1);
+    }
+
     internal static async Task<LocatorBoundingBoxResult> BoxAsync(IPage page, string title)
     {
         var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = title });

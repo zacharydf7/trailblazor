@@ -20,12 +20,13 @@ public sealed record DialogOptions
     /// can be used from inside it. Left unset, it follows <see cref="DialogSettings.TopLayer"/>.</summary>
     public bool? TopLayer { get; init; }
 
-    /// <summary>How wide the dialog grows. Defaults to <see cref="DialogSize.Medium"/>.</summary>
-    public DialogSize Size { get; init; } = DialogSize.Medium;
+    /// <summary>How wide the dialog grows. Left unset, it follows <see cref="DialogSettings.Size"/>, which defaults to
+    /// <see cref="DialogSize.Medium"/>.</summary>
+    public DialogSize? Size { get; init; }
 
-    /// <summary>The widest the dialog grows, as a CSS length such as <c>40rem</c>, in place of <see cref="Size"/>, for
-    /// a width between its steps. The dialog is still never wider than the window, and a size set later replaces it.
-    /// </summary>
+    /// <summary>The widest the dialog grows, as a CSS length such as <c>40rem</c>, for a width between the steps of
+    /// <see cref="Size"/>. It takes the place of the size, except with <see cref="DialogSize.Fit"/>, where it caps the
+    /// content's width. The dialog is still never wider than the window, and a size set later replaces it.</summary>
     public string? Width { get; init; }
 
     /// <summary>Where the dialog sits in the window. Defaults to <see cref="DialogPosition.Center"/>.</summary>
@@ -39,8 +40,9 @@ public sealed record DialogOptions
     /// </summary>
     public bool ShowHeader { get; init; } = true;
 
-    /// <summary>Shows a close button in the header, which cancels the dialog.</summary>
-    public bool CloseButton { get; init; } = true;
+    /// <summary>Shows a close button in the header, which cancels the dialog. Left unset, it follows
+    /// <see cref="DialogSettings.CloseButton"/>.</summary>
+    public bool? CloseButton { get; init; }
 
     /// <summary>Shows a button in the header that collapses the dialog to its header, in a tray along the bottom-end
     /// edge. A <see cref="Modal"/> dialog leaves the page usable while it is minimized, and blocks it again once

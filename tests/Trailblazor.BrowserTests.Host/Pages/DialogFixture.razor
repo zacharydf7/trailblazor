@@ -19,6 +19,13 @@
     <TbButton OnClick='() => Dialogs.ShowAsync<SizedDialog, string>("Sized", options: new() { Width = "600px" })'>
         Sized
     </TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Fit", options: new() { Size = DialogSize.Fit })'>
+        Fit
+    </TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Capped",
+                           options: new() { Size = DialogSize.Fit, Width = "6rem" })'>
+        Capped
+    </TbButton>
     <TbButton OnClick="() => EditorAsync()">Editor</TbButton>
     <TbButton OnClick="() => EditorAsync(locked: true)">Locked editor</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Headless", options: new() { ShowHeader = false })'>
@@ -35,6 +42,8 @@
     <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
     <input aria-label="Page note" />
     <TbButton OnClick="() => _outer = true">Outer</TbButton>
+    <TbButton OnClick="() => _small = true">Small outer</TbButton>
+    <TbButton OnClick="() => _drawer = true">Fit drawer</TbButton>
 </TbStack>
 <output data-testid="result">@_result</output>
 @* A modeless dialog with another written inside it, so the inner one is in the outer one's markup. *@
@@ -44,14 +53,29 @@
         <TbButton>Inside</TbButton>
     </TbDialog>
 </TbDialog>
+@* A fitted dialog inside a small one, with words wider than the small one. *@
+<TbDialog @bind-Open="_small" Title="Small outer" Options="SmallModeless">
+    <TbButton OnClick="() => _fitted = true">Fitted</TbButton>
+    <TbDialog @bind-Open="_fitted" Title="Fitted" Options="FitModeless">
+        <p style="white-space: nowrap">@string.Join(" ", Enumerable.Repeat("Wider than the small dialog.", 4))</p>
+    </TbDialog>
+</TbDialog>
+<TbDrawer @bind-Open="_drawer" Title="Fit drawer" Size="DialogSize.Fit" Width="10rem">
+    <p style="white-space: nowrap">@string.Join(" ", Enumerable.Repeat("Wider than the drawer.", 4))</p>
+</TbDrawer>
 <output data-testid="page-clicks">@_pageClicks</output>
 @* Tall enough to scroll, so the scroll lock can be seen. *@
 <div style="height: 200vh"></div>
 
 @code {
     private static readonly DialogOptions Modeless = new() { Modal = false };
+    private static readonly DialogOptions SmallModeless = new() { Modal = false, Size = DialogSize.Small };
+    private static readonly DialogOptions FitModeless = new() { Modal = false, Size = DialogSize.Fit };
     private string _result = "";
     private bool _outer;
+    private bool _small;
+    private bool _fitted;
+    private bool _drawer;
     private bool _inner;
     private int _pageClicks;
 

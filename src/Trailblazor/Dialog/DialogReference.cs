@@ -26,9 +26,9 @@ public abstract class DialogReference
         IsAlert = isAlert;
         _close = close;
         _showHeader = options.ShowHeader;
-        _closeButton = options.CloseButton;
+        _closeButton = options.CloseButton ?? true;
         _modal = options.Modal;
-        _size = options.Size;
+        _size = options.Size ?? DialogSize.Medium;
         _position = options.Position;
     }
 

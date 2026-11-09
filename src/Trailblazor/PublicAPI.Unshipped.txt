@@ -650,7 +650,7 @@ Trailblazor.DialogFocus.Dialog = 1 -> Trailblazor.DialogFocus
 Trailblazor.DialogFocus.FirstField = 0 -> Trailblazor.DialogFocus
 Trailblazor.DialogOptions
 Trailblazor.DialogOptions.<Clone>$() -> Trailblazor.DialogOptions!
-Trailblazor.DialogOptions.CloseButton.get -> bool
+Trailblazor.DialogOptions.CloseButton.get -> bool?
 Trailblazor.DialogOptions.CloseButton.init -> void
 Trailblazor.DialogOptions.DialogOptions() -> void
 Trailblazor.DialogOptions.DismissOnBackdrop.get -> bool?
@@ -674,7 +674,7 @@ Trailblazor.DialogOptions.Resizable.get -> bool
 Trailblazor.DialogOptions.Resizable.init -> void
 Trailblazor.DialogOptions.ShowHeader.get -> bool
 Trailblazor.DialogOptions.ShowHeader.init -> void
-Trailblazor.DialogOptions.Size.get -> Trailblazor.DialogSize
+Trailblazor.DialogOptions.Size.get -> Trailblazor.DialogSize?
 Trailblazor.DialogOptions.Size.init -> void
 Trailblazor.DialogOptions.TelemetryName.get -> string?
 Trailblazor.DialogOptions.TelemetryName.init -> void
@@ -732,6 +732,7 @@ Trailblazor.DialogSettings.DismissOnEscape.set -> void
 Trailblazor.DialogSize
 Trailblazor.DialogSize.ExtraLarge = 3 -> Trailblazor.DialogSize
 Trailblazor.DialogSize.Full = 4 -> Trailblazor.DialogSize
+Trailblazor.DialogSize.Fit = 5 -> Trailblazor.DialogSize
 Trailblazor.DialogSize.Large = 2 -> Trailblazor.DialogSize
 Trailblazor.DialogSize.Medium = 1 -> Trailblazor.DialogSize
 Trailblazor.DialogSize.Small = 0 -> Trailblazor.DialogSize
@@ -2822,6 +2823,12 @@ Trailblazor.DialogOptions.TopLayer.init -> void
 Trailblazor.DialogSettings.TopLayer.get -> bool
 Trailblazor.DialogSettings.TopLayer.set -> void
 Trailblazor.DialogSettings.OutsidePopups.get -> System.Collections.Generic.IList<string!>!
+Trailblazor.DialogSettings.CloseButton.get -> bool
+Trailblazor.DialogSettings.CloseButton.set -> void
+Trailblazor.DialogSettings.Size.get -> Trailblazor.DialogSize
+Trailblazor.DialogSettings.Size.set -> void
+Trailblazor.DialogSettings.Width.get -> string?
+Trailblazor.DialogSettings.Width.set -> void
 Trailblazor.TbTab.HeaderClass.get -> string?
 Trailblazor.TbTab.HeaderClass.set -> void
 Trailblazor.TbTab.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
