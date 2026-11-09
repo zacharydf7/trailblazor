@@ -1,0 +1,109 @@
+@namespace Trailblazor
+@using System.Globalization
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbFieldBase<int>
+@inject JsModuleLoader Modules
+
+@* Radios that share a name already give one tab stop and arrow-key selection, so no script is needed. *@
+<fieldset @attributes="GroupRootAttributes" @ref="_group" role="radiogroup" disabled="@Disabled" style="@Style"
+          aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
+          aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedBy"
+          class="@ClassNames.Join("tb-rating", ClassNames.Modifier("tb-rating", Tone),
+                     ClassNames.Modifier("tb-rating", Size), ShowsInvalid ? "tb-rating--invalid" : null,
+                     Disabled ? "tb-rating--disabled" : null, ReadOnly ? "tb-rating--readonly" : null, Class)">
+    @if (ShownLabel is not null)
+    {
+        <legend data-part="label" class="@ClassNames.Join("tb-rating__label", LabelHiddenClass, Classes?.Label)">
+            @ShownLabel @RequiredMarker
+        </legend>
+    }
+    <div data-part="stars" class="tb-rating__stars">
+        @for (var star = 1; star <= Max; star++)
+        {
+            var value = star;
+            <label data-part="star" class="tb-rating__star">
+                @* A read-only rating turns off every star but the chosen one, which stays focusable and still
+                   posts. *@
+                <input @attributes="InputAttributes" type="radio" name="@RadioGroupName" value="@value"
+                       data-part="input" checked="@(Value == value)" disabled="@(ReadOnly && Value != value)"
+                       class="@ClassNames.Join("tb-rating__input", Classes?.Input)" @onclick="() => ClearAsync(value)"
+                       @onkeyup="args => SpaceAsync(args, value)" @onkeyup:preventDefault="@ClearsOn(value)"
+                       @onchange="() => SetValueAsync(value)" />
+                <TbIcon Icon="@(Icon ?? BuiltInIcons.Star)" class="tb-rating__icon" />
+                <span class="tb-visually-hidden">@NameOf(value)</span>
+            </label>
+        }
+    </div>
+    @Messages(Classes?.Helper, Classes?.Error)
+</fieldset>
+
+@code {
+    private ElementReference _group;
+
+    /// <summary>How many stars there are, from 1. Defaults to 5.</summary>
+    [Parameter]
+    public int Max { get; set; } = 5;
+
+    /// <summary>The shape of each star. Defaults to a star.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>The color of the chosen stars, which are filled while the rest are outlines. Defaults to
+    /// <see cref="Trailblazor.Tone.Warning"/>, a gold that turns darker on a light page so the chosen stars keep 3:1
+    /// contrast with the background.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Warning;
+
+    /// <summary>How big the stars are. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>Lets people take their rating back by choosing their star again, which sets the value to 0.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; }
+
+    /// <summary>What screen readers hear for each star, given its number. Defaults to the app's text for
+    /// <see cref="TbStrings.RatingStar"/> and <see cref="TbStrings.RatingStars"/>, "1 star" and "3 stars" in English.
+    /// </summary>
+    [Parameter]
+    public Func<int, string>? StarLabel { get; set; }
+
+    /// <summary>Extra CSS classes for the rating's legend, its radios, helper text and messages.</summary>
+    [Parameter]
+    public ChoiceClasses? Classes { get; set; }
+
+    private string NameOf(int star) => StarLabel?.Invoke(star) ?? (star == 1
+        ? Localizer[TbStrings.RatingStar]
+        : string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.RatingStars], star));
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        ArgumentOutOfRangeException.ThrowIfLessThan(Max, 1);
+    }
+
+    /// <inheritdoc />
+    public override async ValueTask FocusAsync(bool preventScroll = false)
+    {
+        // Focus goes where Tab would put it: on the chosen star, or else the first.
+        var module = await Modules.ImportAsync("./_content/Trailblazor/field.js");
+        await module.InvokeVoidAsync("focusRadio", _group, preventScroll);
+    }
+
+    // A rating of 0 counts as missing when one is required.
+    private protected override bool IsMissing(int value) => value == 0;
+
+    // Clicking the chosen star raises no change event, since its radio is already checked, so only the click can take
+    // the rating back.
+    private Task ClearAsync(int star) => ClearsOn(star) ? SetValueAsync(0) : Task.CompletedTask;
+
+    private bool ClearsOn(int star) => Clearable && !ReadOnly && Value == star;
+
+    // Chromium and WebKit raise no click when Space is pressed on a checked radio, so Space takes the rating back on
+    // keyup, where the browser's own Space action is canceled so it can't choose the star again.
+    private Task SpaceAsync(KeyboardEventArgs args, int star) =>
+        args.Key == " " ? ClearAsync(star) : Task.CompletedTask;
+}

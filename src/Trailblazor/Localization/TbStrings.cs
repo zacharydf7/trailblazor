@@ -312,6 +312,12 @@ public static class TbStrings
     /// <summary>"Maximum": names a range slider's upper thumb, after the field's label.</summary>
     public const string RangeSliderEnd = "RangeSlider.End";
 
+    /// <summary>"1 star": what screen readers hear for a rating's first star.</summary>
+    public const string RatingStar = "Rating.Star";
+
+    /// <summary>"{0} stars": what screen readers hear for a rating's other stars; {0} is the star's number.</summary>
+    public const string RatingStars = "Rating.Stars";
+
     /// <summary>"Filter": names a select's filter box.</summary>
     public const string SelectFilter = "Select.Filter";
 
@@ -790,6 +796,8 @@ public static class TbStrings
         [PaginationLast] = "Last page",
         [RangeSliderStart] = "Minimum",
         [RangeSliderEnd] = "Maximum",
+        [RatingStar] = "1 star",
+        [RatingStars] = "{0} stars",
         [SelectFilter] = "Filter",
         [SelectNoResults] = "No matches",
         [SelectEmpty] = "Nothing to choose from",

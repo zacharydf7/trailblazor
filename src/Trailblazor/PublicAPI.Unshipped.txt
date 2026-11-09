@@ -3497,3 +3497,24 @@ Trailblazor.TbTimelineItem.Tone.get -> Trailblazor.Tone
 Trailblazor.TbTimelineItem.Tone.set -> void
 ~override Trailblazor.TbTimeline.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTimelineItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbRating
+Trailblazor.TbRating.Clearable.get -> bool
+Trailblazor.TbRating.Clearable.set -> void
+Trailblazor.TbRating.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbRating.Icon.set -> void
+Trailblazor.TbRating.Max.get -> int
+Trailblazor.TbRating.Max.set -> void
+Trailblazor.TbRating.Size.get -> Trailblazor.Size
+Trailblazor.TbRating.Size.set -> void
+Trailblazor.TbRating.StarLabel.get -> System.Func<int, string!>?
+Trailblazor.TbRating.StarLabel.set -> void
+Trailblazor.TbRating.TbRating() -> void
+Trailblazor.TbRating.Tone.get -> Trailblazor.Tone
+Trailblazor.TbRating.Tone.set -> void
+const Trailblazor.TbStrings.RatingStar = "Rating.Star" -> string!
+const Trailblazor.TbStrings.RatingStars = "Rating.Stars" -> string!
+override Trailblazor.TbRating.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbRating.OnParametersSet() -> void
+~override Trailblazor.TbRating.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbRating.Classes.get -> Trailblazor.ChoiceClasses?
+Trailblazor.TbRating.Classes.set -> void

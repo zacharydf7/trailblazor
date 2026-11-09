@@ -4353,6 +4353,147 @@
         }
     }
 
+    .tb-rating {
+        --tb-rating-on: var(--tb-color-primary);
+        --tb-rating-off: var(--tb-border-strong);
+        --tb-rating-size: 1.5rem;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    /* Gold falls short of 3:1 on a light page, so chosen stars use the darker warning text color there. */
+    .tb-rating--warning {
+        --tb-rating-on: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
+    }
+
+    .tb-rating--success {
+        --tb-rating-on: var(--tb-color-success);
+    }
+
+    .tb-rating--danger {
+        --tb-rating-on: var(--tb-color-danger);
+    }
+
+    .tb-rating--info {
+        --tb-rating-on: var(--tb-color-info);
+    }
+
+    .tb-rating--neutral {
+        --tb-rating-on: var(--tb-color-text);
+    }
+
+    .tb-rating--small {
+        --tb-rating-size: 1.25rem;
+    }
+
+    .tb-rating--large {
+        --tb-rating-size: 2rem;
+    }
+
+    .tb-rating__label {
+        margin-block-end: var(--tb-space-1);
+        padding: 0;
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-rating__stars {
+        display: flex;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-rating__star {
+        position: relative;
+        display: inline-flex;
+        border-radius: var(--tb-radius-sm);
+        color: var(--tb-rating-off);
+        cursor: pointer;
+    }
+
+    /* A star not chosen is an outline, so the rating doesn't rely on color alone. */
+    .tb-rating .tb-rating__icon {
+        width: var(--tb-rating-size);
+        height: var(--tb-rating-size);
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linejoin: round;
+    }
+
+    /* A star is chosen when its radio is checked or a later star's is, so the stars show the choice even before the
+       page is interactive. */
+    .tb-rating__star:has(.tb-rating__input:checked),
+    .tb-rating__star:has(~ .tb-rating__star .tb-rating__input:checked) {
+        color: var(--tb-rating-on);
+    }
+
+    .tb-rating__star:has(.tb-rating__input:checked) .tb-rating__icon,
+    .tb-rating__star:has(~ .tb-rating__star .tb-rating__input:checked) .tb-rating__icon {
+        fill: currentColor;
+    }
+
+    .tb-rating--invalid {
+        --tb-rating-off: var(--tb-color-danger-text);
+    }
+
+    /* The radio is the star's focusable part, kept over the star so a click lands on it. */
+    .tb-rating__input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: inherit;
+    }
+
+    .tb-rating__star:has(.tb-rating__input:focus-visible) {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    /* Pointing at a star previews the rating it would give. Only on devices that hover: a touch screen keeps the last
+       tapped star hovered, so a rating taken back would still look chosen. */
+    @media (hover: hover) {
+        .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars:has(.tb-rating__star:hover)
+            .tb-rating__star {
+            color: var(--tb-rating-on);
+        }
+
+        .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars:has(.tb-rating__star:hover)
+            .tb-rating__icon {
+            fill: currentColor;
+        }
+
+        .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars .tb-rating__star:hover
+            ~ .tb-rating__star {
+            color: var(--tb-rating-off);
+        }
+
+        .tb-rating:not(.tb-rating--disabled, .tb-rating--readonly) .tb-rating__stars .tb-rating__star:hover
+            ~ .tb-rating__star .tb-rating__icon {
+            fill: none;
+        }
+    }
+
+    .tb-rating--disabled .tb-rating__star,
+    .tb-rating--readonly .tb-rating__star {
+        cursor: default;
+    }
+
+    .tb-rating--disabled .tb-rating__star {
+        opacity: var(--tb-disabled-opacity);
+    }
+
+    /* Forced colors drop the stars' colors, so chosen ones take the highlight and the rest the text color. */
+    @media (forced-colors: active) {
+        .tb-rating {
+            --tb-rating-on: Highlight;
+            --tb-rating-off: CanvasText;
+        }
+    }
+
     .tb-select__trigger {
         display: flex;
         align-items: center;

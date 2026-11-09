@@ -81,6 +81,9 @@ internal static class BuiltInIcons
 
     public static Icon Menu { get; } = new("<path d=\"M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z\" />");
 
+    public static Icon Star { get; } =
+        new("<path d=\"M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.2-.6L12 2 9.2 8.7 2 9.3l5.4 4.7-1.6 7z\" />");
+
     public static Icon More { get; } = new("<path d=\"M6 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 "
         + "0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z\" />");
 

@@ -1,0 +1,10 @@
+<TbStack Gap="4">
+    <TbRating Label="Difficulty" @bind-Value="_difficulty" Max="4" Size="Size.Small" Tone="Tone.Danger"
+              Icon="ExampleIcons.Trail" StarLabel="@(level => $"Level {level}")" />
+    <TbRating Label="Your last rating" Value="4" ReadOnly />
+    <TbRating Label="Rate after your hike" Disabled />
+</TbStack>
+
+@code {
+    private int _difficulty = 3;
+}

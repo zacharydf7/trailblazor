@@ -1,0 +1,8 @@
+<TbStack Gap="2">
+    <TbRating Label="Rate the ridge loop" @bind-Value="_rating" Clearable />
+    <TbText>@(_rating == 0 ? "Not rated yet." : $"You gave it {_rating} of 5.")</TbText>
+</TbStack>
+
+@code {
+    private int _rating;
+}

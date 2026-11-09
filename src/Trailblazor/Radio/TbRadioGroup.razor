@@ -59,12 +59,7 @@
         await module.InvokeVoidAsync("focusRadio", _group, preventScroll);
     }
 
-    // Radios sharing a name form one group, so only a static form post, which needs it, gets the bound path.
-    internal string GroupName => (RendererInfo.IsInteractive
-        ? InputAttributes?.GetValueOrDefault("name")?.ToString()
-        : InputNameAttribute?.ToString()) ?? FieldId;
-
-    string IRadioGroup.GroupName => GroupName;
+    string IRadioGroup.GroupName => RadioGroupName;
 
     bool IRadioGroup.Accepts(object? value) => GroupValues.TryFit<TValue>(value, out _);
 

@@ -206,6 +206,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     // The input attributes come first, so ours win; where ours are empty the consumer's still apply.
     private protected object? InputNameAttribute => _inputName ?? InputAttributes?.GetValueOrDefault("name");
 
+    // Radios group by their shared name; only a static form post needs that name to be the bound field path.
+    private protected string RadioGroupName => (RendererInfo.IsInteractive
+        ? InputAttributes?.GetValueOrDefault("name")?.ToString()
+        : InputNameAttribute?.ToString()) ?? FieldId;
+
     private protected string? InputDescribedBy =>
         (DescribedBy, InputAttributes?.GetValueOrDefault("aria-describedby")) switch
         {

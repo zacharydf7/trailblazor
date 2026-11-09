@@ -168,7 +168,7 @@ public class ExampleCatalogTests
         ["Field"] =
         [
             "text-field", "number-field", "checkbox", "checkbox-group", "switch", "slider", "radio-group", "select",
-            "autocomplete", "color-picker", "file-upload", "date-range-picker", "listbox", "rich-text-editor",
+            "autocomplete", "color-picker", "file-upload", "date-range-picker", "listbox", "rich-text-editor", "rating",
         ],
         ["Select"] = ["select", "listbox"],
         ["Sortable"] = ["data-grid"],

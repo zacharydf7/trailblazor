@@ -3230,6 +3230,90 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Radio, ...)` inside the group. In bUnit, `Change(true)` on an option's `input` "
                 + "chooses it.",
         },
+        new("rating", "Rating", ExampleCategory.Inputs,
+            "A row of stars people choose from to rate something, such as a trail out of five.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to ask how much people liked something, on a short scale everyone knows.",
+            ],
+            WhenNotToUse =
+            [
+                "For choices that aren't more or less of one thing, use a [radio group](components/radio-group).",
+                "For a number on a long scale, use a [slider](components/slider).",
+            ],
+            Related = ["radio-group", "slider"],
+            Pattern = new("radio group", "https://www.w3.org/WAI/ARIA/apg/patterns/radio/"),
+            RightToLeftKeys = "Left chooses the next star and Right the previous one, except in Safari, which doesn't "
+                + "swap them.",
+            Sections =
+            [
+                new("basic", "Rating", "`@bind-Value` is the number of stars chosen, 0 for none. Chosen stars are "
+                    + "filled and the rest are outlines. Pointing at a star previews the rating it would give. With "
+                    + "`Clearable`, choosing the same star again takes the rating back to 0.", typeof(RatingExample)),
+                new("required", "Required", "`Required` shows a marker and treats a rating of 0 as missing. Once its "
+                    + "form validates, a message shows under the stars, and the outlines turn the error color. "
+                    + "`RequiredMessage` replaces the default message.", typeof(RatingRequiredExample)),
+                new("states", "Scale, look and states", "`Max` sets how many stars there are, `Icon` their shape, "
+                    + "`Tone` their color and `Size` how big they are. `StarLabel` names each star for screen readers. "
+                    + "`ReadOnly` shows a rating people can't change; with nothing chosen it turns off every star, so "
+                    + "it leaves the tab order. `Disabled` turns the rating off.",
+                    typeof(RatingStatesExample)),
+            ],
+            Api = [typeof(TbRating), typeof(ChoiceClasses)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the rating and out of it, as one tab stop. Focus lands on the chosen star, or "
+                    + "on the first when none is chosen."),
+                new(["Right", "Down"], "Chooses the next star. Most browsers wrap at the last star, but Safari "
+                    + "stops there."),
+                new(["Left", "Up"], "Chooses the previous star, wrapping the same way."),
+                new(["Space"], "Chooses the focused star, or takes it back with `Clearable` when it is the chosen "
+                    + "one."),
+            ],
+            Labeling =
+            [
+                "The `Label` is the `fieldset`'s legend and names the group. Each star is a native radio named \"1 "
+                    + "star\", \"2 stars\" and so on, unless `StarLabel` names them.",
+            ],
+            Announcements =
+            [
+                "Screen readers read a `ReadOnly` rating as read only.",
+            ],
+            Accessibility =
+            [
+                "A `fieldset` with `role=\"radiogroup\"`. Helper text and messages describe the whole rating, an "
+                    + "error sets `aria-invalid` on it, and `Required` sets `aria-required` and treats a rating of 0 "
+                    + "as missing.",
+                "Chosen stars are filled and the rest are outlines, so the rating doesn't rely on color. The gold of "
+                    + "the chosen stars turns darker on a light page to keep 3:1 contrast with the background. The "
+                    + "focus ring goes around the focused star.",
+                "The preview shows only on devices that can hover, such as a mouse, so on a touch screen a tapped star "
+                    + "doesn't stay lit.",
+                "In forced-colors mode, such as Windows high contrast, the chosen stars take the system's highlight.",
+            ],
+            BeforeInteractive =
+            [
+                "Native radios give the tab stop and the arrow keys, so choosing works before the page is interactive, "
+                    + "and a static form posts the chosen number. The stars follow their radios, so they show the "
+                    + "choice too.",
+            ],
+            Target = new("radiogroup", "Rate the ridge loop"),
+            Blocks = ["tb-rating"],
+            DataParts =
+            [
+                new("label", "The rating's legend."),
+                new("stars", "The row of stars."),
+                new("star", "One star, holding its radio."),
+                new("input", "A star's radio."),
+                new("helper", "The help text under the rating."),
+                new("error", "The validation message, shown while the value is invalid."),
+            ],
+            TestingTip = "Each star is a native radio, so choose one with "
+                + "`GetByRole(AriaRole.Radio, new() { Name = \"4 stars\" }).CheckAsync()` in Playwright. In bUnit, "
+                + "`Change(true)` on a star's `input` chooses it.",
+        },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.")
         {
