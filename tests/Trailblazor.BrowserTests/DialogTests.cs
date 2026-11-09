@@ -547,7 +547,7 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Dialog_ShouldFitItsContentUpToTheWindow_WhenItIsInsideASmallerDialog(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");
-        await page.GetByRole(AriaRole.Button, new() { Name = "Small outer" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Small host" }).ClickAsync();
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Fitted" }).ClickAsync();
 

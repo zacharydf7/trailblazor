@@ -42,7 +42,7 @@
     <TbButton data-testid="page-button" OnClick="() => _pageClicks++">Page button</TbButton>
     <input aria-label="Page note" />
     <TbButton OnClick="() => _outer = true">Outer</TbButton>
-    <TbButton OnClick="() => _small = true">Small outer</TbButton>
+    <TbButton OnClick="() => _small = true">Small host</TbButton>
     <TbButton OnClick="() => _drawer = true">Fit drawer</TbButton>
 </TbStack>
 <output data-testid="result">@_result</output>
@@ -54,7 +54,7 @@
     </TbDialog>
 </TbDialog>
 @* A fitted dialog inside a small one, with words wider than the small one. *@
-<TbDialog @bind-Open="_small" Title="Small outer" Options="SmallModeless">
+<TbDialog @bind-Open="_small" Title="Small host" Options="SmallModeless">
     <TbButton OnClick="() => _fitted = true">Fitted</TbButton>
     <TbDialog @bind-Open="_fitted" Title="Fitted" Options="FitModeless">
         <p style="white-space: nowrap">@string.Join(" ", Enumerable.Repeat("Wider than the small dialog.", 4))</p>
