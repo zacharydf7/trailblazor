@@ -1,0 +1,6 @@
+<TbStack Gap="3">
+    @foreach (var tone in Enum.GetValues<Tone>())
+    {
+        <TbBanner Tone="tone" AriaLabel="@($"{tone} notice")">@tone banner.</TbBanner>
+    }
+</TbStack>

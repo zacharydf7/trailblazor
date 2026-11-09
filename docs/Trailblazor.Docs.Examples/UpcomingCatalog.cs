@@ -76,7 +76,6 @@ public static class UpcomingCatalog
         new("Sheet", ExampleCategory.Overlays, 59),
         new("File manager", ExampleCategory.Navigation, 209),
         new("Menubar", ExampleCategory.Navigation, 187),
-        new("Banner", ExampleCategory.Feedback, 71),
     ];
 
     public static IReadOnlyList<RoadmapIssue> Issues { get; } = Load();

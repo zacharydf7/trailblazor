@@ -1801,6 +1801,69 @@ public static class ExampleCatalog
                 new("close", "The button that dismisses the alert."),
             ],
         },
+        new("banner", "Banner", ExampleCategory.Feedback,
+            "A strip across the top of the page or app with a notice for everyone using it, such as planned "
+                + "maintenance.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a notice about the whole app or page that stays until people dismiss it or it no longer "
+                    + "applies, such as maintenance, being offline or a new feature.",
+            ],
+            WhenNotToUse =
+            [
+                "For a message about one part of the page, such as a form, use an [alert](components/alert).",
+                "For a brief confirmation of what someone just did, use a [toast](components/toast).",
+            ],
+            Related = ["alert", "toast", "app-shell"],
+            Sections =
+            [
+                new("basic", "Banner", "`Title` leads in bold and names the banner for screen readers, and the "
+                    + "message follows. `Actions` holds links or buttons, and `OnClose` shows a close button; hide the "
+                    + "banner when it's pressed.", typeof(BannerExample)),
+                new("tones", "Tones", "`Tone` sets the color and the icon.", typeof(BannerTonesExample)),
+                new("plain", "Without a title or icon", "Without a `Title`, `AriaLabel` names the banner for screen "
+                    + "readers; with neither, it's named \"Notice\". `ShowIcon=\"false\"` hides the icon.",
+                    typeof(BannerPlainExample)),
+            ],
+            Api = [typeof(TbBanner)],
+            Labeling =
+            [
+                "The banner is a `region` landmark named by its `Title`, or by `AriaLabel`, or \"Notice\" without "
+                    + "either, so screen reader users can find it from the page's landmarks.",
+                "The close button is named \"Dismiss\", or by `CloseLabel`.",
+            ],
+            Accessibility =
+            [
+                "The tone's icon and the colored edge carry the meaning along with the color, and the text keeps "
+                    + "4.5:1 contrast with the tinted background.",
+                "It handles no keys of its own; its actions and close button are ordinary buttons and links.",
+            ],
+            AppDuties =
+            [
+                "A banner that appears after the page loads, such as \"You're offline\", isn't read out on its own: "
+                    + "announce it with the [announcer](guides/announcements).",
+                "After the close button hides the banner, move focus somewhere useful, such as the page's main "
+                    + "heading, since the button that had it is gone.",
+            ],
+            BeforeInteractive =
+            [
+                "The banner and its links render as plain HTML; the close button works once the page is interactive.",
+            ],
+            Target = new("region", "Maintenance tonight"),
+            Blocks = ["tb-banner"],
+            DataParts =
+            [
+                new("icon", "The tone's icon."),
+                new("message", "The title and the message."),
+                new("title", "The bold lead before the message."),
+                new("actions", "The links or buttons after the message."),
+                new("close", "The close button."),
+            ],
+            TestingTip = "Find it as `GetByRole(AriaRole.Region, new() { Name = \"Maintenance tonight\" })`, and its "
+                + "close button as `GetByRole(AriaRole.Button, new() { Name = \"Dismiss\" })`.",
+        },
         new("chip", "Chip", ExampleCategory.Content,
             "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.")
         {

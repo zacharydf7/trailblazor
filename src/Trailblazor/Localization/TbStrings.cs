@@ -10,6 +10,12 @@ public static class TbStrings
     /// <summary>"Close": names an alert's close button.</summary>
     public const string AlertClose = "Alert.Close";
 
+    /// <summary>"Notice": names a banner with no title for screen readers.</summary>
+    public const string BannerLabel = "Banner.Label";
+
+    /// <summary>"Dismiss": names a banner's close button.</summary>
+    public const string BannerClose = "Banner.Close";
+
     /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
     public const string AppShellMenu = "AppShell.Menu";
 
@@ -723,6 +729,8 @@ public static class TbStrings
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
     {
         [AlertClose] = "Close",
+        [BannerLabel] = "Notice",
+        [BannerClose] = "Dismiss",
         [AppShellMenu] = "Navigation",
         [AppShellNavigation] = "Main",
         [AppShellSkipToContent] = "Skip to content",

@@ -1,4 +1,6 @@
 #nullable enable
+const Trailblazor.TbStrings.BannerClose = "Banner.Close" -> string!
+const Trailblazor.TbStrings.BannerLabel = "Banner.Label" -> string!
 const Trailblazor.TbStrings.TagInputAdded = "TagInput.Added" -> string!
 const Trailblazor.TbStrings.TagInputDuplicate = "TagInput.Duplicate" -> string!
 const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
@@ -45,6 +47,26 @@ const Trailblazor.TbStrings.PopconfirmCancel = "Popconfirm.Cancel" -> string!
 const Trailblazor.TbStrings.PopconfirmConfirm = "Popconfirm.Confirm" -> string!
 override Trailblazor.TbPopconfirm.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbPopconfirm.OnParametersSet() -> void
+Trailblazor.TbBanner
+Trailblazor.TbBanner.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbBanner.Actions.set -> void
+Trailblazor.TbBanner.AriaLabel.get -> string?
+Trailblazor.TbBanner.AriaLabel.set -> void
+Trailblazor.TbBanner.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbBanner.ChildContent.set -> void
+Trailblazor.TbBanner.CloseLabel.get -> string?
+Trailblazor.TbBanner.CloseLabel.set -> void
+Trailblazor.TbBanner.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbBanner.Icon.set -> void
+Trailblazor.TbBanner.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbBanner.OnClose.set -> void
+Trailblazor.TbBanner.ShowIcon.get -> bool
+Trailblazor.TbBanner.ShowIcon.set -> void
+Trailblazor.TbBanner.TbBanner() -> void
+Trailblazor.TbBanner.Title.get -> string?
+Trailblazor.TbBanner.Title.set -> void
+Trailblazor.TbBanner.Tone.get -> Trailblazor.Tone
+Trailblazor.TbBanner.Tone.set -> void
 Trailblazor.TbEmptyState
 Trailblazor.TbEmptyState.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbEmptyState.Actions.set -> void
@@ -2868,6 +2890,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbAlert.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbAutocomplete<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbBadge.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbBanner.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

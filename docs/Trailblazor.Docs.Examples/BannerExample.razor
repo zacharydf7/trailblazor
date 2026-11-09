@@ -1,0 +1,31 @@
+@if (_shown)
+{
+    <TbBanner Title="Maintenance tonight" OnClose="Close">
+        <ChildContent>Trail maps are offline from 10 PM to midnight.</ChildContent>
+        <Actions>
+            <TbLink Href="guides/getting-started">Learn more</TbLink>
+        </Actions>
+    </TbBanner>
+}
+else
+{
+    <TbButton @ref="_showAgain" Variant="Variant.Text" OnClick="() => _shown = true">Show the banner again</TbButton>
+}
+
+@code {
+    private bool _shown = true;
+    private bool _closed;
+    private TbButton? _showAgain;
+
+    private void Close() => (_shown, _closed) = (false, true);
+
+    // The close button goes with the banner, so focus moves to what takes its place instead of falling to the page.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_closed && _showAgain is not null)
+        {
+            _closed = false;
+            await _showAgain.FocusAsync();
+        }
+    }
+}

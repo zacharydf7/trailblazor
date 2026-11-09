@@ -48,6 +48,7 @@ public static class AccessibilityStatusCatalog
         new("container", None, None, None),
         new("app-shell", Tested, Tested, NotYet),
         new("alert", None, NotYet, None),
+        new("banner", None, NotYet, None),
         new("chip", Tested, Tested, None),
         new("list", Tested, NotYet, None),
         new("sortable", Tested, NotYet, None),

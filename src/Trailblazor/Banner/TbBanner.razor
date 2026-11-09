@@ -1,0 +1,34 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@inject ITbLocalizer Localizer
+
+@* A region, so screen reader users can find the notice from the page's list of landmarks. *@
+<section @attributes="AdditionalAttributes" aria-labelledby="@(Title is null ? null : _titleId)"
+         aria-label="@(Title is null ? AriaLabel ?? Localizer[TbStrings.BannerLabel] : null)" style="@Style"
+         class="@ClassNames.Join("tb-banner", ClassNames.Modifier("tb-banner", Tone), Class)">
+    <div class="tb-banner__inner">
+        @if (ShowIcon)
+        {
+            <TbIcon Icon="@(Icon ?? BuiltInIcons.ForTone(Tone) ?? BuiltInIcons.Info)" data-part="icon"
+                    Class="tb-banner__icon" />
+        }
+        <div data-part="message" class="tb-banner__message">
+            @if (Title is not null)
+            {
+                @* A real space, so screen readers don't run the title into the message. *@
+                <strong id="@_titleId" data-part="title" class="tb-banner__title">@Title</strong>@(" ")
+            }
+            @ChildContent
+        </div>
+        @if (Actions is not null)
+        {
+            <div data-part="actions" class="tb-banner__actions">@Actions</div>
+        }
+        @if (OnClose.HasDelegate)
+        {
+            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(CloseLabel ?? Localizer[TbStrings.BannerClose])"
+                          Variant="Variant.Text" Size="Size.Small" OnClick="OnClose" data-part="close"
+                          Class="tb-banner__close" />
+        }
+    </div>
+</section>
