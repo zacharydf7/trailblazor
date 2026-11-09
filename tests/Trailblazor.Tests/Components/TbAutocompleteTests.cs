@@ -412,6 +412,247 @@ public class TbAutocompleteTests : BunitContext
         Assert.Equal("Cedar Flats", input.GetAttribute("value"));
     }
 
+    [Fact]
+    public void OnTextChanged_ShouldReportTheTextOnce_WhenTheUserPausesTyping()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported);
+
+        cut.Find("input").Input("p");
+        cut.Find("input").Input("pin");
+        Assert.Empty(reported);
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+
+        cut.WaitForAssertion(() => Assert.Equal(["pin"], reported));
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportAtOnce_WhenASuggestionIsChosenOrTheFieldIsCleared()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported);
+        cut.Find("input").Input("ridge");
+
+        cut.Find("[role=option]").Click();
+        cut.Find("[data-part=clear]").Click();
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+
+        Assert.Equal(["Eagle Ridge", ""], reported);
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldStayQuiet_WhenTheParentSetsTheValue()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported);
+
+        cut.Render(parameters => parameters.Add(field => field.Value, "Cedar Flats"));
+
+        Assert.Equal("Cedar Flats", cut.Find("input").GetAttribute("value"));
+        Assert.Empty(reported);
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportTheText_WhenItIsTooShortToSearch()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported, parameters => parameters.Add(field => field.MinCharacters, 3));
+
+        cut.Find("input").Input("pi");
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+
+        cut.WaitForAssertion(() => Assert.Equal(["pi"], reported));
+    }
+
+    [Fact]
+    public void Input_ShouldShowTheSuggestions_WhenAnOnTextChangedListenerIsStillRunning()
+    {
+        var listening = new TaskCompletionSource();
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Search, (text, _) => Task.FromResult(Trails.Where(trail => trail.StartsWith(text,
+                StringComparison.OrdinalIgnoreCase))))
+            .Add(field => field.OnTextChanged, (string _) => listening.Task));
+
+        cut.Find("input").Input("Eagle");
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+
+        cut.WaitForAssertion(() => Assert.Equal("Eagle Ridge", cut.Find("[role=option]").TextContent.Trim()));
+        listening.SetResult();
+    }
+
+    [Theory]
+    [InlineData(false, "Cedar Flats")]
+    [InlineData(true, "zzz")]
+    public void OnTextChanged_ShouldReportAtOnce_WhenLeavingTheFieldSettlesTheText(bool freeText, string expected)
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported, parameters => parameters.Add(field => field.Value, "Cedar Flats")
+            .Add(field => field.FreeText, freeText));
+        cut.Find("input").Input("zzz");
+
+        cut.Find("input").Change("zzz");
+
+        Assert.Equal([expected], reported);
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportTheTypedText_WhenAFreeTextFieldWithAnAsyncBindingIsLeftEarly()
+    {
+        var reported = new List<string>();
+        var cut = Render<BindingParent>(parameters => parameters.Add(parent => parent.Reported, reported));
+        cut.Find("input").Input("zzz");
+
+        cut.Find("input").Change("zzz");
+
+        cut.WaitForAssertion(() => Assert.Equal(["zzz"], reported));
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportOnce_WhenLeavingTheFieldChoosesTheTypedSuggestion()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported);
+        cut.Find("input").Input("eagle ridge");
+
+        cut.Find("input").Change("eagle ridge");
+
+        Assert.Equal(["Eagle Ridge"], reported);
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldNotRepeatTheText_WhenTheFieldIsLeftAfterItWasReported()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported, parameters => parameters.Add(field => field.FreeText, true));
+        cut.Find("input").Input("pin");
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+        cut.WaitForAssertion(() => Assert.Equal(["pin"], reported));
+
+        cut.Find("input").Change("pin");
+
+        Assert.Equal(["pin"], reported);
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportTheValuesText_WhenLeavingPutsItBackAfterTheTypedTextWasReported()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported, parameters => parameters.Add(field => field.Value, "Cedar Flats"));
+        cut.Find("input").Input("zzz");
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+        cut.WaitForAssertion(() => Assert.Equal(["zzz"], reported));
+
+        cut.Find("input").Change("zzz");
+
+        Assert.Equal(["zzz", "Cedar Flats"], reported);
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportTheEmptyText_WhenAFieldThatStartedWithAValueIsCleared()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported, parameters => parameters.Add(field => field.Value, "Cedar Flats"));
+
+        cut.Find("[data-part=clear]").Click();
+
+        Assert.Equal([""], reported);
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportTheChoiceAgain_WhenTheParentResetTheValueInBetween()
+    {
+        var reported = new List<string>();
+        var cut = RenderReporting(reported);
+        cut.Find("input").Input("ridge");
+        cut.Find("[role=option]").Click();
+        cut.Render(parameters => parameters.Add(field => field.Value, null));
+
+        cut.Find("input").Input("ridge");
+        cut.Find("[role=option]").Click();
+
+        Assert.Equal(["Eagle Ridge", "Eagle Ridge"], reported);
+    }
+
+    [Fact]
+    public void Choose_ShouldNotReportTheText_WhenTheParentRemovesTheFieldWhileHandlingTheValue()
+    {
+        var reported = new List<string>();
+        var cut = Render<RemovingParent>(parameters => parameters.Add(parent => parent.Reported, reported));
+        cut.Find("input").Input("ridge");
+
+        cut.Find("[role=option]").Click();
+
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("input")));
+        Assert.Empty(reported);
+    }
+
+    private IRenderedComponent<TbAutocomplete<string?>> RenderReporting(List<string> reported,
+        Action<ComponentParameterCollectionBuilder<TbAutocomplete<string?>>>? configure = null) =>
+        Render<TbAutocomplete<string?>>(parameters =>
+        {
+            parameters.Add(field => field.Label, "Trail").Add(field => field.Items, Trails)
+                .Add(field => field.Clearable, true)
+                .Add(field => field.OnTextChanged, (string text) => reported.Add(text));
+            configure?.Invoke(parameters);
+        });
+
+    // Binds a free-text field with an async handler, as @bind-Value:after does, so the field renders again mid-change.
+    private sealed class BindingParent : ComponentBase
+    {
+        private string? _trail;
+
+        [Parameter]
+        public List<string> Reported { get; set; } = [];
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbAutocomplete<string?>>(0);
+            builder.AddComponentParameter(1, nameof(TbAutocomplete<string?>.Label), "Trail");
+            builder.AddComponentParameter(2, nameof(TbAutocomplete<string?>.Items), Trails);
+            builder.AddComponentParameter(3, nameof(TbAutocomplete<string?>.FreeText), true);
+            builder.AddComponentParameter(4, nameof(TbAutocomplete<string?>.Value), _trail);
+            builder.AddComponentParameter(5, nameof(TbAutocomplete<string?>.ValueChanged),
+                EventCallback.Factory.Create<string?>(this, async value =>
+                {
+                    await Task.Yield();
+                    _trail = value;
+                }));
+            builder.AddComponentParameter(6, nameof(TbAutocomplete<string?>.OnTextChanged),
+                EventCallback.Factory.Create<string>(this, Reported.Add));
+            builder.CloseComponent();
+        }
+    }
+
+    // Closes its editor once a trail is chosen, as a dialog or an inline editor does.
+    private sealed class RemovingParent : ComponentBase
+    {
+        private bool _editing = true;
+
+        [Parameter]
+        public List<string> Reported { get; set; } = [];
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            if (!_editing)
+            {
+                return;
+            }
+
+            builder.OpenComponent<TbAutocomplete<string?>>(0);
+            builder.AddComponentParameter(1, nameof(TbAutocomplete<string?>.Label), "Trail");
+            builder.AddComponentParameter(2, nameof(TbAutocomplete<string?>.Items), Trails);
+            builder.AddComponentParameter(3, nameof(TbAutocomplete<string?>.ValueChanged),
+                EventCallback.Factory.Create<string?>(this, async _ =>
+                {
+                    await Task.Yield();
+                    _editing = false;
+                }));
+            builder.AddComponentParameter(4, nameof(TbAutocomplete<string?>.OnTextChanged),
+                EventCallback.Factory.Create<string>(this, Reported.Add));
+            builder.CloseComponent();
+        }
+    }
+
     private IRenderedComponent<TbAutocomplete<string?>> RenderTrails(string? value = null,
         Action<string?>? onChange = null, int? maxItems = null, int minCharacters = 0, bool clearable = false) =>
         Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")

@@ -1156,6 +1156,8 @@ Trailblazor.TbAutocomplete<TValue>.MinCharacters.get -> int
 Trailblazor.TbAutocomplete<TValue>.MinCharacters.set -> void
 Trailblazor.TbAutocomplete<TValue>.OnSearchFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
 Trailblazor.TbAutocomplete<TValue>.OnSearchFailed.set -> void
+Trailblazor.TbAutocomplete<TValue>.OnTextChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Trailblazor.TbAutocomplete<TValue>.OnTextChanged.set -> void
 Trailblazor.TbAutocomplete<TValue>.Open.get -> bool
 Trailblazor.TbAutocomplete<TValue>.Open.set -> void
 Trailblazor.TbAutocomplete<TValue>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>

@@ -17,6 +17,17 @@ public class AutocompleteExampleTests : DocsTest
     }
 
     [Fact]
+    public void FilterExample_ShouldNarrowTheList_WhenTheUserPausesTyping()
+    {
+        var cut = Render<AutocompleteFilterExample>();
+
+        cut.Find("[role=combobox]").Input("pine");
+        Time.Advance(TimeSpan.FromMilliseconds(200));
+
+        cut.WaitForAssertion(() => Assert.Contains("2 of 7 parks match", cut.Markup));
+    }
+
+    [Fact]
     public void SearchStatesExample_ShouldSayItFailedAndCountIt_WhenTheNextSearchIsSetToFail()
     {
         var cut = Render<AutocompleteStatesOfSearchExample>();

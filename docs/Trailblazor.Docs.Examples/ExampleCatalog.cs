@@ -3693,6 +3693,10 @@ public static class ExampleCatalog
                 new("debounce", "Search delay", "`DebounceDelay` sets how long someone must stop typing before `Search` "
                     + "runs. It defaults to 200 milliseconds. Set it to zero to search immediately.",
                     typeof(AutocompleteDelayExample)),
+                new("text-changed", "Acting on what is typed", "`OnTextChanged` gives the field's text once someone "
+                    + "stops typing for `DebounceDelay`, and at once when they choose a suggestion or clear the field. "
+                    + "Use it to filter other content while they type, as this list does.",
+                    typeof(AutocompleteFilterExample)),
                 new("clearing", "Clearing", "`Clearable` shows a button that clears the field, and a nullable value "
                     + "clears to `null`.", typeof(AutocompleteClearExample)),
                 new("start", "Start content", "`Start` puts content before the input, usually an icon.",
@@ -3773,8 +3777,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
-                + "search, and clicks the option by its name. In bUnit, `Search` runs once `DebounceDelay` has passed "
-                + "on the app's `TimeProvider`, so advance a `FakeTimeProvider` past it, or set it to `TimeSpan.Zero`.",
+                + "search, and clicks the option by its name. In bUnit, `Search` runs and `OnTextChanged` fires once "
+                + "`DebounceDelay` has passed on the app's `TimeProvider`, so advance a `FakeTimeProvider` past it, or "
+                + "set it to `TimeSpan.Zero`.",
         },
         new("color-picker", "Color picker", ExampleCategory.Inputs,
             "Chooses a color by typing it, picking a swatch, using the custom picker, or taking it from the screen.")

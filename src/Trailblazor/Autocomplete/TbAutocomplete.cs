@@ -18,6 +18,9 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private bool _searched;
     private bool _failed;
     private CancellationTokenSource? _search;
+    private CancellationTokenSource? _typing;
+    private bool _typedSinceReport;
+    private int _reports;
     private int? _announcedCount;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<AutocompleteEvents>? _events;
@@ -74,6 +77,13 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     /// </summary>
     [Parameter]
     public AutocompleteLabels Labels { get; set; } = new();
+
+    /// <summary>Raised with the field's text once the user stops typing for <see cref="DebounceDelay"/>, whether or
+    /// not a search runs. Choosing a suggestion or clearing the field raises it at once, and so does pressing Enter or
+    /// leaving the field with text it hasn't reported yet. Use it to act on what is typed beyond suggesting, such as
+    /// filtering a table. Setting <c>Value</c> doesn't raise it.</summary>
+    [Parameter]
+    public EventCallback<string> OnTextChanged { get; set; }
 
     /// <summary>Raised when <see cref="Search"/> fails. The field stays usable, and typing again searches again.
     /// </summary>
@@ -203,7 +213,49 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private async Task OnTypedAsync(string? text)
     {
         _text = text ?? "";
+        _typedSinceReport = true;
+        // The report runs beside the search, so a slow listener doesn't hold back the suggestions.
+        var report = ReportTypedAsync();
         await SearchAsync();
+        StateHasChanged();
+        await report;
+    }
+
+    // Each keystroke restarts the wait, so only text the user paused on is reported.
+    private async Task ReportTypedAsync()
+    {
+        if (!OnTextChanged.HasDelegate)
+        {
+            return;
+        }
+
+        _typing?.Cancel();
+        _typing?.Dispose();
+        _typing = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(DebounceDelay, Time, _typing.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        await ReportTextAsync();
+    }
+
+    private async Task ReportTextAsync()
+    {
+        // A parent can remove the field while its value change is handled.
+        if (_disposed)
+        {
+            return;
+        }
+
+        _typing?.Cancel();
+        _typedSinceReport = false;
+        _reports++;
+        await OnTextChanged.InvokeAsync(_text);
     }
 
     // A search the user has moved on from, by choosing, leaving or clearing, is dropped with its results.
@@ -281,10 +333,25 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
         _text = TextOf(item);
         _shownValue = item;
         await SetValueAsync(item);
+        await ReportTextAsync();
     }
 
     // Leaving the field, or Enter with no option active, settles what was typed.
+    // It then reports text not reported yet (typed since the last report, or changed by settling), unless settling
+    // chose a match, which reports it itself.
     private async Task CommitAsync()
+    {
+        _typing?.Cancel();
+        var reports = _reports;
+        var before = _text;
+        await SettleTextAsync();
+        if (_reports == reports && (_typedSinceReport || _text != before))
+        {
+            await ReportTextAsync();
+        }
+    }
+
+    private async Task SettleTextAsync()
     {
         StopSearch();
         // Text typed before the field turned read-only or disabled isn't committed.
@@ -337,6 +404,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
         _searched = false;
         _shownValue = default;
         await SetValueAsync(default);
+        await ReportTextAsync();
         if (!_disposed)
         {
             await _input.FocusAsync();
@@ -382,6 +450,8 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
         _disposed = true;
         _search?.Cancel();
         _search?.Dispose();
+        _typing?.Cancel();
+        _typing?.Dispose();
         if (_handle is not null)
         {
             await _handle.DisposeHandleAsync();

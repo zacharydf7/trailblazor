@@ -1,0 +1,22 @@
+<TbStack Gap="2">
+    <TbAutocomplete TValue="string" @bind-Value="_park" Label="Park" Items="Parks" Clearable
+                    OnTextChanged="text => _filter = text" />
+    <TbText>@Shown.Count() of @Parks.Length parks match</TbText>
+    <ul>
+        @foreach (var park in Shown)
+        {
+            <li>@park</li>
+        }
+    </ul>
+</TbStack>
+
+@code {
+    private static readonly string[] Parks =
+        ["Pine Hollow", "Eagle Ridge", "Cedar Flats", "Fern Gully", "Summit Gate", "Lakeshore", "Pine Bluff"];
+
+    private string? _park;
+    private string _filter = "";
+
+    private IEnumerable<string> Shown =>
+        Parks.Where(park => park.Contains(_filter, StringComparison.CurrentCultureIgnoreCase));
+}
