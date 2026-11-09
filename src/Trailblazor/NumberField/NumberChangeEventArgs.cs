@@ -63,6 +63,8 @@ public sealed class RichTextLinkEventArgs : EventArgs
     enablePreventDefault: true)]
 [EventHandler("ontbrichtextlink", typeof(RichTextLinkEventArgs), enableStopPropagation: true,
     enablePreventDefault: true)]
+[EventHandler("ontbtagadd", typeof(TagAddEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbtagremove", typeof(TagRemoveEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 public static class EventHandlers
 {
 }

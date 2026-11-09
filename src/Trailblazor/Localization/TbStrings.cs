@@ -367,6 +367,26 @@ public static class TbStrings
     /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
     public const string TableOfContentsNavigation = "TableOfContents.Navigation";
 
+    /// <summary>"Enter adds a tag. Left Arrow moves to the tags.": describes a tag input's text box to screen
+    /// readers. Right-to-left languages should say Right Arrow.</summary>
+    public const string TagInputHint = "TagInput.Hint";
+
+    /// <summary>"Remove {0}": names a tag's remove button; {0} is the tag.</summary>
+    public const string TagInputRemove = "TagInput.Remove";
+
+    /// <summary>"{0} added": announced when a tag is added; {0} is the tag.</summary>
+    public const string TagInputAdded = "TagInput.Added";
+
+    /// <summary>"{0} removed": announced when a tag is removed; {0} is the tag.</summary>
+    public const string TagInputRemoved = "TagInput.Removed";
+
+    /// <summary>"{0} is already added.": shown when the typed tag is already there; {0} is the tag.</summary>
+    public const string TagInputDuplicate = "TagInput.Duplicate";
+
+    /// <summary>"You can add up to {0} tags.": shown when a tag is typed once the limit is reached; {0} is the limit.
+    /// </summary>
+    public const string TagInputTooMany = "TagInput.TooMany";
+
     /// <summary>"Clear": names a text field's clear button.</summary>
     public const string TextFieldClear = "TextField.Clear";
 
@@ -814,6 +834,12 @@ public static class TbStrings
         [StepperLabel] = "Progress",
         [StepperOptional] = "Optional",
         [TableOfContentsNavigation] = "On this page",
+        [TagInputHint] = "Enter adds a tag. Left Arrow moves to the tags.",
+        [TagInputRemove] = "Remove {0}",
+        [TagInputAdded] = "{0} added",
+        [TagInputRemoved] = "{0} removed",
+        [TagInputDuplicate] = "{0} is already added.",
+        [TagInputTooMany] = "You can add up to {0} tags.",
         [TextFieldClear] = "Clear",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",
         [RichTextEditorToolbar] = "Formatting",

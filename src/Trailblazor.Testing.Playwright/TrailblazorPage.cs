@@ -69,6 +69,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbNumberField</c> with this label.</summary>
     public TbNumberFieldLocator NumberField(string label) => new(page, label);
 
+    /// <summary>The <c>TbTagInput</c> with this label.</summary>
+    public TbTagInputLocator TagInput(string label) => new(page, label);
+
     /// <summary>The <c>TbRichTextEditor</c> with this label.</summary>
     public TbRichTextEditorLocator RichTextEditor(string label) => new(page, label);
 }

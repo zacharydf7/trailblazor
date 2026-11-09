@@ -1,0 +1,9 @@
+<TbTagInput Label="Packing list" @bind-Value="_items" MaxTags="5" Separators=",;" Placeholder="Tent, stove; map"
+            TagValidation="Check" HelperText="Up to five items, each under 20 characters."
+            Style="max-inline-size: 26rem" />
+
+@code {
+    private IReadOnlyList<string> _items = ["Tent"];
+
+    private static string? Check(string item) => item.Length >= 20 ? "Keep each item under 20 characters." : null;
+}

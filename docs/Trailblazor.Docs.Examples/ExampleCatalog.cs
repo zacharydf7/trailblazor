@@ -3793,6 +3793,101 @@ public static class ExampleCatalog
                 + "`DebounceDelay` has passed on the app's `TimeProvider`, so advance a `FakeTimeProvider` past it, or "
                 + "set it to `TimeSpan.Zero`.",
         },
+        new("tag-input", "Tag input", ExampleCategory.Inputs,
+            "A field where people type any number of short labels, such as a trail's features, each shown as a chip.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when people make up their own short labels, such as keywords, features or email addresses.",
+            ],
+            WhenNotToUse =
+            [
+                "To choose several from a known list, use a [multi-select](components/select) with `Chips`.",
+                "For one value people type, use a [text field](components/text-field).",
+            ],
+            Related = ["select", "chip", "text-field", "autocomplete"],
+            RightToLeftKeys = "Right moves from the start of the input to the last tag and back along the tags, and "
+                + "Left moves forward.",
+            Sections =
+            [
+                new("basic", "Tag input", "`@bind-Value` is the list of tags, in the order they were added. Enter or "
+                    + "a comma adds what was typed, trimmed, and leaving the field adds it too. Each tag shows as a "
+                    + "chip with a remove button, and Backspace in the empty input removes the last one.",
+                    typeof(TagInputExample)),
+                new("rules", "Separators, limits and checks", "`Separators` sets the characters that add a tag, as "
+                    + "Enter does; pasted text is split at them and at line breaks. A tag that's already there, one "
+                    + "past `MaxTags`, or one `TagValidation` refuses stays in the input with a message. Tags match "
+                    + "ignoring case unless `Comparer` says otherwise.", typeof(TagInputRulesExample)),
+                new("required", "Required", "`Required` treats an empty list as missing. Enter in the empty input "
+                    + "submits the form, so a filled-in form needs no extra click.", typeof(TagInputFormExample)),
+                new("states", "Look and states", "`Variant` and `Size` set the box's look, as on a text field. "
+                    + "`ReadOnly` shows the tags without remove buttons, and `Disabled` turns the field off.",
+                    typeof(TagInputStatesExample)),
+            ],
+            Api = [typeof(TbTagInput), typeof(TagInputLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Enter"], "Adds what was typed as a tag. In an empty input, submits the form."),
+                new([","], "Adds what was typed as a tag, as does any other character in `Separators`."),
+                new(["Backspace"], "In an empty input, removes the last tag."),
+                new(["Left"], "At the start of the input, moves to the last tag's remove button."),
+                new(["Left", "Right"], "Moves between the tags' remove buttons; Right from the last returns to the "
+                    + "input.") { When = "On a tag" },
+                new(["Home", "End"], "Home moves to the first tag, and End back to the input.") { When = "On a tag" },
+                new(["Backspace"], "Removes the tag and moves to the one before it.") { When = "On a tag" },
+                new(["Delete", "Enter", "Space"], "Removes the tag and moves to the one after it, or the input.")
+                    { When = "On a tag" },
+                new(["Tab"], "Leaves the tags for the input, and the input for the rest of the page. The remove "
+                    + "buttons aren't tab stops of their own."),
+            ],
+            Labeling =
+            [
+                "The `Label` names the input and the list of tags. Each remove button is named \"Remove\" and its "
+                    + "tag, such as \"Remove Shade\", unless `Labels.Remove` replaces it.",
+            ],
+            Announcements =
+            [
+                "Adding a tag reads out \"Shade added\", and removing one \"Shade removed\". A refused tag's message "
+                    + "is read out as the field's error.",
+                "The input is described by a hint, \"Enter adds a tag. Left Arrow moves to the tags.\", which "
+                    + "`Labels.Hint` replaces.",
+            ],
+            Accessibility =
+            [
+                "The tags are a list, so screen readers say how many there are, and each tag's remove button is a "
+                    + "native button. Helper text and messages describe the input, an error sets `aria-invalid` on "
+                    + "it, and `Required` sets `aria-required`.",
+                "A long tag ends in an ellipsis, and the box grows a row at a time as tags fill it.",
+            ],
+            BeforeInteractive =
+            [
+                "The tags render, and a static form posts them, but adding and removing tags start working once the "
+                    + "page is interactive. Until then the tags have no remove buttons.",
+            ],
+            Target = new("textbox", "Trail features"),
+            Blocks = ["tb-tag-input", "tb-chip"],
+            DataParts =
+            [
+                new("label", "The field's visible label."),
+                new("control", "The box around the tags and the input."),
+                new("tags", "The list of tags."),
+                new("tag", "One tag."),
+                new("remove", "A tag's remove button."),
+                new("input", "The text box that tags are typed into."),
+                new("helper", "The help text under the field."),
+                new("error", "The validation message, or why a typed tag was refused."),
+            ],
+            TestingTip = "Add a tag with `page.Tb().TagInput(\"Trail features\").AddAsync(\"Shade\")`, which types it "
+                + "and presses Enter once the field's keys work, and check the tags with "
+                + "`Expect(tags.Tags).ToHaveTextAsync([...])`. In bUnit, `cut.Tb().TagInput(\"Trail features\")` has "
+                + "`AddAsync`, `RemoveAsync` and `Tags`.",
+            Telemetry =
+            [
+                "It also counts `trailblazor.control.used` with `trailblazor.action` `add` for each addition and "
+                    + "`remove` for each removal. The tags themselves are never recorded.",
+            ],
+        },
         new("color-picker", "Color picker", ExampleCategory.Inputs,
             "Chooses a color by typing it, picking a swatch, using the custom picker, or taking it from the screen.")
         {

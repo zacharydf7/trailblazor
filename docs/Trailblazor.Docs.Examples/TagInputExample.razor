@@ -1,0 +1,9 @@
+<TbStack Gap="2" Style="max-inline-size: 26rem">
+    <TbTagInput Label="Trail features" @bind-Value="_features"
+                HelperText="Press Enter or type a comma after each one." />
+    <TbText>@(_features.Count == 0 ? "No features yet." : $"Features: {string.Join(", ", _features)}")</TbText>
+</TbStack>
+
+@code {
+    private IReadOnlyList<string> _features = ["Shade", "Water"];
+}

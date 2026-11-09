@@ -104,6 +104,14 @@ function registerEvents(blazor) {
         browserEventName: 'tb-rich-text-link',
         createEventArgs: event => ({ link: event.detail.link, insert: event.detail.insert }),
     });
+    blazor.registerCustomEventType('tbtagadd', {
+        browserEventName: 'tb-tag-add',
+        createEventArgs: event => ({ text: event.detail.text }),
+    });
+    blazor.registerCustomEventType('tbtagremove', {
+        browserEventName: 'tb-tag-remove',
+        createEventArgs: event => ({ index: event.detail.index, focus: event.detail.focus }),
+    });
     blazor.registerCustomEventType('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
 
     // A key in a grid cell's edit says whether its field used it; the grid's own Enter and Escape guards don't count.

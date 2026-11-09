@@ -97,6 +97,13 @@
                         <td>Types a number.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>TagInput(label).AddAsync(text)</code></th>
+                        <td>
+                            Adds a tag, or shows the field's message for one it refuses. <code>RemoveAsync(tag)</code>
+                            removes one, and <code>Tags</code> reads them.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>RichTextEditor(label).EnterAsync(html)</code></th>
                         <td>Replaces the editor's text with this HTML, keeping only the formats it allows.</td>
                     </tr>
@@ -424,6 +431,8 @@
         new("Date range picker", "Its label",
             "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates."),
         new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number."),
+        new("Tag input", "Its label", "`TagInput(label).AddAsync(text)` types a tag and presses Enter, "
+            + "`RemoveAsync(tag)` clicks its remove button, and `Tags` is the tags, for assertions."),
         new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text "
             + "and leaves the editor; `Input` is the editing area, for typing and reading its text."),
         new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path."),

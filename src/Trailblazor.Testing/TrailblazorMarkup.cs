@@ -35,6 +35,10 @@ public sealed class TrailblazorMarkup
     public TbNumberFieldDriver NumberField(string label) =>
         new(() => Field(label, "input[type=number]", "input[role=spinbutton]"));
 
+    /// <summary>The <c>TbTagInput</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbTagInputDriver TagInput(string label) =>
+        new(() => Field(label, "input[data-part=input].tb-tag-input__input"));
+
     /// <summary>The <c>TbRichTextEditor</c> with this label, or with this <c>AriaLabel</c> when it has no label.
     /// </summary>
     public TbRichTextEditorDriver RichTextEditor(string label) =>
@@ -249,6 +253,46 @@ public sealed class TbNumberFieldDriver
         return input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
             : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text });
     }
+}
+
+/// <summary>A <c>TbTagInput</c>, found by its label.</summary>
+public sealed class TbTagInputDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbTagInputDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The tags the field shows, in order.</summary>
+    public IReadOnlyList<string> Tags => [.. TagElements().Select(TextOf)];
+
+    /// <summary>Adds this text as a tag, through the same event the field's script raises on Enter, so a duplicate,
+    /// a tag past the limit or one the field's check refuses shows its message, as in a browser. A disabled or
+    /// read-only field throws, since the user can't type in it.</summary>
+    public Task AddAsync(string text)
+    {
+        var input = _find();
+        if (input.HasAttribute("disabled") || input.HasAttribute("readonly"))
+        {
+            throw new InvalidOperationException("This tag input is disabled or read-only, so tags can't be added.");
+        }
+
+        return input.TriggerEventAsync("ontbtagadd", new TagAddEventArgs { Text = text });
+    }
+
+    /// <summary>Removes this tag with its remove button, as a click does. A tag the field doesn't show, or one it
+    /// shows without a remove button because the field is disabled or read-only, throws.</summary>
+    public Task RemoveAsync(string tag)
+    {
+        var button = TagElements().FirstOrDefault(element => TextOf(element) == tag)
+                ?.QuerySelector("[data-part=remove]")
+            ?? throw new InvalidOperationException($"The tag input has no tag \"{tag}\" that can be removed.");
+        return button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private static string TextOf(IElement tag) => tag.QuerySelector(".tb-chip__label")!.TextContent.Trim();
+
+    private IEnumerable<IElement> TagElements() =>
+        _find().Closest("[data-part=control]")?.QuerySelectorAll("[data-part=tag]") ?? Enumerable.Empty<IElement>();
 }
 
 /// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>

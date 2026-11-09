@@ -1,0 +1,50 @@
+@namespace Trailblazor
+@inherits TbBoxedFieldBase<IReadOnlyList<string>>
+@implements IAsyncDisposable
+@using Trailblazor.Primitives
+@inject JsModuleLoader Modules
+
+@Layout(Classes, @<text>
+    @if (Tags.Count > 0)
+    {
+        @* Safari drops a list's role once its bullets are gone, so the role is spelled out. *@
+        <ul role="list" data-part="tags" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+            class="tb-tag-input__tags">
+            @for (var index = 0; index < Tags.Count; index++)
+            {
+                var at = index;
+                <li data-part="tag" class="tb-chip tb-chip--small tb-chip--soft tb-chip--neutral tb-tag-input__tag">
+                    <span class="tb-chip__action" aria-disabled="@(Disabled ? "true" : null)">
+                        <span class="tb-chip__label">@Tags[at]</span>
+                    </span>
+                    @if (Editable)
+                    {
+                        @* The arrow keys reach the remove buttons from the input, so Tab passes over them. *@
+                        <button type="button" data-part="remove" tabindex="-1" aria-label="@Format(RemoveFormat, Tags[at])"
+                                class="tb-chip__remove" @onclick="args => OnRemoveClickAsync(at, args)">
+                            <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
+                        </button>
+                    }
+                </li>
+            }
+        </ul>
+    }
+    @if (!RendererInfo.IsInteractive && InputNameAttribute is { } name)
+    {
+        @foreach (var tag in Tags)
+        {
+            <input type="hidden" name="@name" value="@tag" />
+        }
+    }
+    <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" type="text"
+           autocomplete="off" data-separators="@Separators" data-ready="@(_handle is null ? null : "")"
+           placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
+           aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+           aria-describedby="@Described"
+           class="@ClassNames.Join("tb-field__input", "tb-tag-input__input", Classes?.Input)"
+           @ontbtagadd="OnAddAsync" @ontbtagremove="OnRemoveKeyAsync" />
+    @if (Editable)
+    {
+        <span id="@HintId" class="tb-visually-hidden">@(Labels?.Hint ?? Localizer[TbStrings.TagInputHint])</span>
+    }
+</text>, null, null)

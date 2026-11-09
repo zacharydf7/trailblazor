@@ -93,6 +93,10 @@ Trailblazor.Testing.TbTabsDriver
 Trailblazor.Testing.TbTabsDriver.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTabsDriver.Selected.get -> string?
 Trailblazor.Testing.TbTabsDriver.Tabs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbTagInputDriver
+Trailblazor.Testing.TbTagInputDriver.AddAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTagInputDriver.RemoveAsync(string! tag) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTagInputDriver.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbTreeDriver
 Trailblazor.Testing.TbTreeDriver.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeDriver.ExpandAllAsync() -> System.Threading.Tasks.Task!
@@ -111,6 +115,7 @@ Trailblazor.Testing.TrailblazorMarkup.ListBox(string! label) -> Trailblazor.Test
 Trailblazor.Testing.TrailblazorMarkup.NumberField(string! label) -> Trailblazor.Testing.TbNumberFieldDriver!
 Trailblazor.Testing.TrailblazorMarkup.Select(string! label) -> Trailblazor.Testing.TbSelectDriver!
 Trailblazor.Testing.TrailblazorMarkup.Tabs(string? name = null) -> Trailblazor.Testing.TbTabsDriver!
+Trailblazor.Testing.TrailblazorMarkup.TagInput(string! label) -> Trailblazor.Testing.TbTagInputDriver!
 Trailblazor.Testing.TrailblazorMarkup.Tree(string? name = null) -> Trailblazor.Testing.TbTreeDriver!
 Trailblazor.Testing.TrailblazorMarkupExtensions
 Trailblazor.Testing.TrailblazorMarkup.Grid(string? name = null) -> Trailblazor.Testing.TbGridDriver!

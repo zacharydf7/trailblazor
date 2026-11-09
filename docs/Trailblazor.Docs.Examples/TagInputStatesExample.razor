@@ -1,0 +1,9 @@
+<TbStack Gap="4" Style="max-inline-size: 26rem">
+    <TbTagInput Label="Trail crew" Value="@(["Ana", "Ravi"])" ReadOnly />
+    <TbTagInput Label="Closed sections" Value="@(["North spur"])" Disabled />
+    <TbTagInput Label="Nearby towns" @bind-Value="_towns" Variant="FieldVariant.Filled" Size="Size.Small" />
+</TbStack>
+
+@code {
+    private IReadOnlyList<string> _towns = ["Pine Hollow"];
+}

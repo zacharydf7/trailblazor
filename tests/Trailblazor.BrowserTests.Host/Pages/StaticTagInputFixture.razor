@@ -1,0 +1,27 @@
+@page "/static-tag-input"
+@attribute [ExcludeFromInteractiveRouting]
+
+<EditForm Model="Model" FormName="static-tag-input" OnValidSubmit="Post">
+    <TbTagInput Label="Features" @bind-Value="Model!.Features" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</EditForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm]
+    private Trip? Model { get; set; }
+
+    // Only the first visit makes the model; a post that bound nothing says so, rather than showing these tags again.
+    protected override void OnInitialized() => Model ??= new() { Features = ["Shade", "Water"], Fresh = true };
+
+    private void Post() => _posted = Model!.Fresh ? "nothing bound" : string.Join(", ", Model.Features ?? []);
+
+    private sealed class Trip
+    {
+        public IReadOnlyList<string>? Features { get; set; }
+
+        public bool Fresh { get; set; }
+    }
+}

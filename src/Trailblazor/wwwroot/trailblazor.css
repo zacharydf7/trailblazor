@@ -4643,6 +4643,47 @@
         line-height: var(--tb-line-height-tight);
     }
 
+    /* The tags and the input share the box, which grows a row at a time as the tags fill it. */
+    .tb-tag-input .tb-field__control {
+        flex-wrap: wrap;
+        row-gap: var(--tb-space-1);
+        padding-block: var(--tb-space-1);
+    }
+
+    .tb-tag-input__tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-1);
+        min-inline-size: 0;
+        max-inline-size: 100%;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-tag-input__tag {
+        min-inline-size: 0;
+        max-inline-size: 100%;
+    }
+
+    .tb-tag-input__tag > .tb-chip__action {
+        min-inline-size: 0;
+    }
+
+    /* A long tag ends in an ellipsis, on a line tall enough that its box doesn't clip descenders. */
+    .tb-tag-input__tag .tb-chip__label {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: var(--tb-line-height-tight);
+    }
+
+    /* The input keeps room for a short word beside the tags, and wraps to its own row when there isn't any. */
+    .tb-tag-input__input {
+        flex: 1 1 8ch;
+        min-inline-size: 8ch;
+    }
+
     .tb-select__group-label {
         padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-1);
         color: var(--tb-color-text-muted);

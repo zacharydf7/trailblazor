@@ -1,0 +1,14 @@
+<TbForm OnValidSubmit="Send" aria-label="Trip report" Style="max-inline-size: 26rem">
+    <TbStack Gap="3">
+        <TbTagInput Label="Wildlife seen" @bind-Value="_seen" Required RequiredMessage="Add at least one animal." />
+        <TbButton Type="ButtonType.Submit">Send report</TbButton>
+        <output>@_sent</output>
+    </TbStack>
+</TbForm>
+
+@code {
+    private IReadOnlyList<string> _seen = [];
+    private string? _sent;
+
+    private void Send() => _sent = $"Sent: {string.Join(", ", _seen)}.";
+}

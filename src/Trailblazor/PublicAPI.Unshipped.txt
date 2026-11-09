@@ -1,4 +1,43 @@
 #nullable enable
+const Trailblazor.TbStrings.TagInputAdded = "TagInput.Added" -> string!
+const Trailblazor.TbStrings.TagInputDuplicate = "TagInput.Duplicate" -> string!
+const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
+const Trailblazor.TbStrings.TagInputRemove = "TagInput.Remove" -> string!
+const Trailblazor.TbStrings.TagInputRemoved = "TagInput.Removed" -> string!
+const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
+override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
+override Trailblazor.TagInputLabels.GetHashCode() -> int
+override Trailblazor.TagInputLabels.ToString() -> string!
+override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
+static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
+Trailblazor.TagAddEventArgs
+Trailblazor.TagAddEventArgs.TagAddEventArgs() -> void
+Trailblazor.TagAddEventArgs.Text.get -> string!
+Trailblazor.TagAddEventArgs.Text.set -> void
+Trailblazor.TagInputLabels
+Trailblazor.TagInputLabels.<Clone>$() -> Trailblazor.TagInputLabels!
+Trailblazor.TagInputLabels.Added.get -> string?
+Trailblazor.TagInputLabels.Added.init -> void
+Trailblazor.TagInputLabels.Duplicate.get -> string?
+Trailblazor.TagInputLabels.Duplicate.init -> void
+Trailblazor.TagInputLabels.Equals(Trailblazor.TagInputLabels? other) -> bool
+Trailblazor.TagInputLabels.Hint.get -> string?
+Trailblazor.TagInputLabels.Hint.init -> void
+Trailblazor.TagInputLabels.Remove.get -> string?
+Trailblazor.TagInputLabels.Remove.init -> void
+Trailblazor.TagInputLabels.Removed.get -> string?
+Trailblazor.TagInputLabels.Removed.init -> void
+Trailblazor.TagInputLabels.TagInputLabels() -> void
+Trailblazor.TagInputLabels.TooMany.get -> string?
+Trailblazor.TagInputLabels.TooMany.init -> void
+Trailblazor.TagRemoveEventArgs
+Trailblazor.TagRemoveEventArgs.Focus.get -> string!
+Trailblazor.TagRemoveEventArgs.Focus.set -> void
+Trailblazor.TagRemoveEventArgs.Index.get -> int
+Trailblazor.TagRemoveEventArgs.Index.set -> void
+Trailblazor.TagRemoveEventArgs.TagRemoveEventArgs() -> void
 Trailblazor.TbTableOfContents
 Trailblazor.TbTableOfContents.Active.get -> string?
 Trailblazor.TbTableOfContents.ActiveChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
@@ -2287,6 +2326,23 @@ Trailblazor.TbTabs.Variant.get -> Trailblazor.Variant
 Trailblazor.TbTabs.Variant.set -> void
 Trailblazor.TbTabs.Vertical.get -> bool
 Trailblazor.TbTabs.Vertical.set -> void
+Trailblazor.TbTagInput
+Trailblazor.TbTagInput.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbTagInput.Classes.set -> void
+Trailblazor.TbTagInput.Comparer.get -> System.Collections.Generic.IEqualityComparer<string!>?
+Trailblazor.TbTagInput.Comparer.set -> void
+Trailblazor.TbTagInput.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTagInput.Labels.get -> Trailblazor.TagInputLabels?
+Trailblazor.TbTagInput.Labels.set -> void
+Trailblazor.TbTagInput.MaxTags.get -> int?
+Trailblazor.TbTagInput.MaxTags.set -> void
+Trailblazor.TbTagInput.Placeholder.get -> string?
+Trailblazor.TbTagInput.Placeholder.set -> void
+Trailblazor.TbTagInput.Separators.get -> string!
+Trailblazor.TbTagInput.Separators.set -> void
+Trailblazor.TbTagInput.TagValidation.get -> System.Func<string!, string?>?
+Trailblazor.TbTagInput.TagValidation.set -> void
+Trailblazor.TbTagInput.TbTagInput() -> void
 Trailblazor.TbText
 Trailblazor.TbText.As.get -> Trailblazor.TextElement
 Trailblazor.TbText.As.set -> void
@@ -2806,6 +2862,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbTableOfContents.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTableOfContentsItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTabs.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTagInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTextField<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbThemeHead.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbThemePicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

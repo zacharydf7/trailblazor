@@ -47,6 +47,12 @@ Trailblazor.Testing.Playwright.TbSelectLocator.TbSelectLocator(Microsoft.Playwri
 Trailblazor.Testing.Playwright.TbTabsLocator
 Trailblazor.Testing.Playwright.TbTabsLocator.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTabsLocator.TbTabsLocator(Microsoft.Playwright.IPage! page, string? name) -> void
+Trailblazor.Testing.Playwright.TbTagInputLocator
+Trailblazor.Testing.Playwright.TbTagInputLocator.AddAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTagInputLocator.Input.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbTagInputLocator.RemoveAsync(string! tag) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTagInputLocator.Tags.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbTagInputLocator.TbTagInputLocator(Microsoft.Playwright.IPage! page, string! label) -> void
 Trailblazor.Testing.Playwright.TbToastsLocator
 Trailblazor.Testing.Playwright.TbToastsLocator.TbToastsLocator(Microsoft.Playwright.IPage! page) -> void
 Trailblazor.Testing.Playwright.TbToastsLocator.WaitForAsync(string! text) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
@@ -75,6 +81,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Popover(string! trigger) -> Trail
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(string! label) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(string? name = null) -> Trailblazor.Testing.Playwright.TbTabsLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.TagInput(string! label) -> Trailblazor.Testing.Playwright.TbTagInputLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Toasts.get -> Trailblazor.Testing.Playwright.TbToastsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TrailblazorPage(Microsoft.Playwright.IPage! page) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Tree(string! name) -> Trailblazor.Testing.Playwright.TbTreeLocator!
