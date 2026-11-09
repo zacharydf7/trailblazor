@@ -25,7 +25,9 @@ const SHIFT_BLOCK_KEYS = { Digit7: 'number', Digit8: 'bullet', Digit9: 'quote' }
 // Typed at the start of a plain paragraph and followed by a space, these start a block, as in Markdown.
 const MARKDOWN_STARTS = new Map([['#', 'heading1'], ['##', 'heading2'], ['###', 'heading3'], ['>', 'quote'],
     ['-', 'bullet'], ['*', 'bullet'], ['1.', 'number']]);
-const KINDS = ['paragraph', 'heading1', 'heading2', 'heading3', 'quote', 'bullet', 'number'];
+// Which way each key moves the caret, in left-to-right text.
+const CARET_MOVES = { ArrowLeft: -1, ArrowUp: -1, Home: -1, PageUp: -1, ArrowRight: 1, ArrowDown: 1, End: 1, PageDown: 1 };
+const KINDS = ['paragraph', 'heading1', 'heading2', 'heading3', 'quote', 'bullet', 'number', 'rule'];
 const HEADING_TAGS = { heading1: 'h1', heading2: 'h2', heading3: 'h3' };
 const BLOCKS = new Set(['address', 'article', 'aside', 'blockquote', 'caption', 'center', 'dd', 'details', 'dialog',
     'dir', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -35,8 +37,8 @@ const SKIPPED = new Set(['head', 'iframe', 'math', 'noembed', 'noframes', 'noscr
     'style', 'svg', 'template', 'textarea', 'title']);
 const PREFORMATTED = new Set(['pre', 'listing', 'xmp', 'plaintext']);
 const LISTS = new Set(['ul', 'ol', 'menu', 'dir']);
-// The elements that hold one paragraph's own text in the editor.
-const BLOCK_ELEMENTS = 'p, h1, h2, h3, li';
+// The elements that hold one paragraph's own text in the editor, and rules, which hold none.
+const BLOCK_ELEMENTS = 'p, h1, h2, h3, li, hr';
 const TYPING_PAUSE = 1000;
 // Keeps each part under Blazor Server's default 32 KB message limit, even at 6 bytes of JSON per control character.
 const MAX_PART = 5000;
@@ -69,6 +71,7 @@ class Editor {
         this.composing = false;
         this.plainPaste = false;
         this.tabLeaves = false;
+        this.caretMove = 0;
         this.linkTarget = null;
         this.restoreSelection = false;
         this.dragged = null;
@@ -87,6 +90,7 @@ class Editor {
         on(root, 'beforeinput', event => this.onBeforeInput(event));
         on(root, 'keydown', event => this.onKeyDown(event));
         on(root, 'keyup', () => this.plainPaste = false);
+        on(root, 'pointerdown', () => this.caretMove = 0);
         on(root, 'paste', event => this.onPaste(event));
         on(root, 'dragstart', () => {
             this.selection = this.readSelection() ?? this.selection;
@@ -134,6 +138,8 @@ class Editor {
             if (button.dataset.format) this.toggleMark(button.dataset.format);
             else if (button.dataset.block) this.setBlock(button.dataset.block);
             else if (button.dataset.command === 'link') this.requestLink();
+            else if (button.dataset.command === 'rule') this.insertRule();
+            else if (button.dataset.command === 'clear') this.clearFormatting();
             else this.indent(button.dataset.command === 'indent' ? 1 : -1);
             this.writeSelection();
         });
@@ -245,8 +251,7 @@ class Editor {
     }
 
     readDocument() {
-        const doc = normalizeLevels(readBlocks(this.root, false, this.schema));
-        return doc.length ? doc : [paragraph([])];
+        return withText(normalizeLevels(readBlocks(this.root, false, this.schema)));
     }
 
     // A list item's own text, without the lists nested inside it.
@@ -300,7 +305,10 @@ class Editor {
         if (type === 'insertLineBreak') return handle(() => this.edit(() => this.insertText('\n')));
         const start = type === 'insertText' && event.data === ' ' && collapsed ? this.markdownStart(from) : null;
         if (start) return handle(() => this.startBlock(from, start));
-        if (type === 'insertText' && spans) return handle(() => this.edit(() => this.insertText(event.data ?? '')));
+        // The browser types at its own caret, which can still be beside a rule before selectionchange moves it.
+        if (type === 'insertText' && (spans || this.browserCaretBesideRule())) {
+            return handle(() => this.edit(() => this.insertText(event.data ?? '')));
+        }
         if (type === 'insertText' || type === 'insertReplacementText') return;
         // Drops are handled whole in onDrop.
         if (type === 'deleteByDrag' || type === 'insertFromDrop') return handle(() => {});
@@ -321,6 +329,12 @@ class Editor {
     onKeyDown(event) {
         // Safari ends a composition before the keydown of the Enter that commits it, marking that key only as 229.
         if (event.isComposing || event.keyCode === 229) return;
+        const move = CARET_MOVES[event.key];
+        if (move) {
+            const flips = ['ArrowLeft', 'ArrowRight'].includes(event.key)
+                && getComputedStyle(this.root).direction === 'rtl';
+            this.caretMove = flips ? -move : move;
+        }
         // In a list item, Escape lets the next Tab leave the editor, so a keyboard user is never held in it.
         // The first Escape is marked defaultPrevented so a surrounding dialog stays open; a second one closes it.
         if (event.key === 'Escape') {
@@ -377,6 +391,10 @@ class Editor {
         } else if (key === 'y' && !event.shiftKey) {
             event.preventDefault();
             this.redo();
+        } else if (key === '\\' && !event.shiftKey) {
+            event.preventDefault();
+            this.selection = this.readSelection() ?? this.selection;
+            this.clearFormatting();
         } else if (key === 'k' && !event.shiftKey && !this.readOnly && this.schema.links !== null) {
             event.preventDefault();
             this.requestLink();
@@ -412,6 +430,7 @@ class Editor {
         if (!node || !this.root.contains(node)) return;
         this.readBack();
         let target = this.positionOf(node, point?.offset ?? range.startOffset);
+        if (this.doc[target.block].kind === 'rule') target = this.outOfRule(target, false);
         const copy = isMac ? event.altKey : event.ctrlKey;
         if (!dragged || copy) {
             this.root.focus();
@@ -458,7 +477,23 @@ class Editor {
             this.selection = selection;
             this.storedMarks = null;
         }
+        // If readSelection moved the caret off a rule, move it on the page too.
+        if (this.browserCaretBesideRule()) this.writeSelection();
         this.updateToolbar();
+    }
+
+    browserCaretBesideRule() {
+        const dom = document.getSelection();
+        return dom.isCollapsed && this.root.contains(dom.focusNode) && this.besideRule(dom.focusNode, dom.focusOffset);
+    }
+
+    // Whether a point is on a rule or between paragraphs next to one, where browsers put the caret crossing a rule.
+    besideRule(node, offset) {
+        if ((node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.localName === 'hr') return true;
+        if (this.blockOf(node) >= 0) return false;
+        const position = this.positionOf(node, offset);
+        return this.doc[position.block]?.kind === 'rule'
+            || (position.offset === 0 && this.doc[position.block - 1]?.kind === 'rule');
     }
 
     // Paste and drop: HTML keeps its formats and blocks, and plain text takes those of where it goes.
@@ -490,7 +525,11 @@ class Editor {
     deleteRange(from, to) {
         const merged = normalize([
             ...slice(this.doc[from.block].runs, 0, from.offset), ...slice(this.doc[to.block].runs, to.offset)]);
-        this.doc.splice(from.block, to.block - from.block + 1, { ...this.doc[from.block], runs: merged });
+        // A range that starts on a rule takes the rule with it: what's left takes the kind of the block it ends in, or
+        // is plain.
+        const kept = this.doc[from.block].kind !== 'rule' ? this.doc[from.block]
+            : this.doc[to.block].kind !== 'rule' ? this.doc[to.block] : paragraph([]);
+        this.doc.splice(from.block, to.block - from.block + 1, { ...kept, runs: merged });
         this.selection = { anchor: from, head: from };
     }
 
@@ -518,6 +557,8 @@ class Editor {
     }
 
     // Pasted plain paragraphs take the kind of the one at the caret, and so does the first unless the caret starts it.
+    // A pasted rule leaves the text around it in paragraphs of their own. A rule pasted last gets one after it for the
+    // caret (plain at a heading's end), and one pasted first at the document's start gets one before it.
     insertParagraphs(paragraphs) {
         const { from, to } = this.range();
         this.deleteRange(from, to);
@@ -525,13 +566,20 @@ class Editor {
         const before = slice(target.runs, 0, from.offset);
         const after = slice(target.runs, from.offset);
         const last = paragraphs.length - 1;
-        const blocks = paragraphs.map((pasted, i) => {
+        const blocks = paragraphs.flatMap((pasted, i) => {
+            const head = i === 0 ? before : [];
+            const tail = i === last ? after : [];
+            if (pasted.kind === 'rule') {
+                return [...(head.length || (i === 0 && from.block === 0) ? [{ ...target, runs: head }] : []), pasted,
+                    ...(i === last ? [HEADING_TAGS[target.kind] && !tail.length ? paragraph([])
+                        : { ...target, runs: tail }] : [])];
+            }
             const kind = (i === 0 && from.offset > 0) || pasted.kind === 'paragraph' ? target : pasted;
-            const runs = normalize([...(i === 0 ? before : []), ...pasted.runs, ...(i === last ? after : [])]);
-            return { kind: kind.kind, level: kind.level, runs };
+            return [{ kind: kind.kind, level: kind.level, runs: normalize([...head, ...pasted.runs, ...tail]) }];
         });
         this.doc.splice(from.block, 1, ...blocks);
-        const caret = { block: from.block + last, offset: length(blocks[last].runs) - length(after) };
+        const end = from.block + blocks.length - 1;
+        const caret = { block: end, offset: length(blocks.at(-1).runs) - length(after) };
         this.selection = { anchor: caret, head: caret };
         this.storedMarks = null;
     }
@@ -544,6 +592,14 @@ class Editor {
         const target = this.doc[from.block];
         if (!target.runs.length && target.kind !== 'paragraph' && !HEADING_TAGS[target.kind]) {
             this.doc[from.block] = outdented(target);
+            return;
+        }
+
+        // A plain paragraph of "---" becomes a rule, as in Markdown.
+        if (target.kind === 'paragraph' && textOf(target.runs) === '---' && this.schema.blocks.has('rule')) {
+            this.doc[from.block] = paragraph([]);
+            this.selection = { anchor: { block: from.block, offset: 0 }, head: { block: from.block, offset: 0 } };
+            this.insertParagraphs([paragraph([], 'rule')]);
             return;
         }
 
@@ -561,6 +617,11 @@ class Editor {
         const target = this.doc[block];
         if (target.kind === 'quote' || isListItem(target.kind)) {
             this.edit(() => this.doc[block] = outdented(target));
+        } else if (block > 0 && this.doc[block - 1].kind === 'rule') {
+            this.edit(() => {
+                this.doc.splice(block - 1, 1);
+                this.selection = { anchor: { block: block - 1, offset: 0 }, head: { block: block - 1, offset: 0 } };
+            });
         } else if (block > 0) {
             this.edit(() => this.join(block - 1));
         }
@@ -619,10 +680,11 @@ class Editor {
         this.readBack();
         const { from, to } = this.range();
         const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
-        if (this.doc.slice(from.block, to.block + 1).every(target => target.kind === next)) return;
+        if (this.doc.slice(from.block, to.block + 1).every(target => [next, 'rule'].includes(target.kind))) return;
         this.edit(() => {
             for (let block = from.block; block <= to.block; block++) {
                 const target = this.doc[block];
+                if (target.kind === 'rule') continue;
                 const level = isListItem(next) && isListItem(target.kind) ? target.level : 0;
                 this.doc[block] = { ...target, kind: next, level };
             }
@@ -649,8 +711,47 @@ class Editor {
 
     blockState(kind) {
         const { from, to } = this.range();
-        const kinds = this.doc.slice(from.block, to.block + 1).map(target => target.kind);
+        const kinds = this.doc.slice(from.block, to.block + 1).map(target => target.kind)
+            .filter(each => each !== 'rule');
+        if (!kinds.length) return 'off';
         return kinds.every(each => each === kind) ? 'on' : kinds.some(each => each === kind) ? 'mixed' : 'off';
+    }
+
+    // A rule goes in at the caret, splitting its paragraph, with the caret in the paragraph after it.
+    insertRule() {
+        if (this.readOnly || !this.schema.blocks.has('rule')) return;
+        this.readBack();
+        this.edit(() => this.insertParagraphs([paragraph([], 'rule')]));
+    }
+
+    // Takes every format off the selection, or at a caret off the text typed next; links and blocks stay.
+    clearFormatting() {
+        if (this.readOnly) return;
+        this.readBack();
+        const { from, to } = this.range();
+        if (compare(from, to) === 0) {
+            this.storedMarks = [];
+            this.updateToolbar();
+            return;
+        }
+        if (!this.paragraphsIn(from, to).some(target => target.runs.some(run => run.marks.length))) return;
+        this.edit(() => {
+            for (let block = from.block; block <= to.block; block++) {
+                const start = block === from.block ? from.offset : 0;
+                const end = block === to.block ? to.offset : Infinity;
+                this.doc[block] = { ...this.doc[block],
+                    runs: mapRuns(this.doc[block].runs, start, end, run => ({ ...run, marks: [] })) };
+            }
+        });
+    }
+
+    // Moves a caret just before the given block off a rule:
+    // to the next text's start, or back to the previous text's end.
+    outOfRule(position, backward) {
+        const after = this.doc.findIndex((target, i) => i >= position.block && target.kind !== 'rule');
+        const before = this.doc.findLastIndex((target, i) => i < position.block && target.kind !== 'rule');
+        if (before >= 0 && (backward || after < 0)) return { block: before, offset: length(this.doc[before].runs) };
+        return after >= 0 ? { block: after, offset: 0 } : position;
     }
 
     // Moves the selected list items a level in or out; a list item moved out of its outermost list leaves the list.
@@ -848,10 +949,15 @@ class Editor {
     readSelection() {
         const selection = document.getSelection();
         if (!selection.rangeCount || !this.root.contains(selection.anchorNode)) return null;
-        return {
-            anchor: this.positionOf(selection.anchorNode, selection.anchorOffset),
-            head: this.positionOf(selection.focusNode, selection.focusOffset),
-        };
+        const anchor = this.positionOf(selection.anchorNode, selection.anchorOffset);
+        const head = this.positionOf(selection.focusNode, selection.focusOffset);
+        if (!selection.isCollapsed || !this.besideRule(selection.focusNode, selection.focusOffset)) {
+            return { anchor, head };
+        }
+        // A caret can't rest on a rule: a key moves it on past the rule, and a point goes to the side it's on.
+        const backward = this.caretMove !== 0 ? this.caretMove < 0 : this.doc[head.block]?.kind === 'rule';
+        const caret = this.outOfRule(head, backward);
+        return { anchor: caret, head: caret };
     }
 
     positionOf(node, offset) {
@@ -1073,6 +1179,10 @@ function documentHtml(doc, forValue) {
             html += `<li>${paragraphHtml(target.runs, forValue)}`;
             continue;
         }
+        if (target.kind === 'rule') {
+            html += '<hr>';
+            continue;
+        }
         if (target.kind === 'quote' && !inQuote) {
             html += '<blockquote>';
             inQuote = true;
@@ -1123,6 +1233,7 @@ function characterHtml(text, i, forValue) {
 
 // Puts a paragraph's new text into its element in place, leaving the lists nested in a list item where they are.
 function updateBlock(element, target) {
+    if (target.kind === 'rule') return;
     const html = paragraphHtml(target.runs, false);
     const nested = [...element.childNodes].filter(node => LISTS.has(node.localName));
     const own = [...element.childNodes].filter(node => !nested.includes(node));
@@ -1146,8 +1257,16 @@ const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 const parseDocument = html => new DOMParser().parseFromString(html, 'text/html').body;
 
 function parseHtml(html, schema) {
-    const doc = normalizeLevels(readBlocks(parseDocument(html ?? ''), true, schema));
-    return doc.length ? doc : [paragraph([])];
+    return withText(normalizeLevels(readBlocks(parseDocument(html ?? ''), true, schema)));
+}
+
+// The caret needs a paragraph on each side of a rule, so a document that starts or ends with one, or is empty, gets
+// an empty paragraph there.
+function withText(doc) {
+    if (!doc.length) return [paragraph([])];
+    const head = doc[0].kind === 'rule' ? [paragraph([])] : [];
+    const tail = doc.at(-1).kind === 'rule' ? [paragraph([])] : [];
+    return head.length || tail.length ? [...head, ...doc, ...tail] : doc;
 }
 
 // A block context is what an element puts its text in: its own allowed heading, quote, list item or Word list
@@ -1204,9 +1323,10 @@ function readBlocks(container, collapse, { formats, blocks, links }) {
                     runs.push({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
                     continue;
                 }
-                // A rule between two lines leaves them separate paragraphs.
+                // A rule between two lines leaves them separate paragraphs, with the rule between if it's allowed.
                 if (child.localName === 'hr') {
                     finish();
+                    if (blocks.has('rule')) paragraphs.push(paragraph([], 'rule'));
                     continue;
                 }
                 const childLink = child.localName === 'a' ? linkStateOf(child, links) : link;

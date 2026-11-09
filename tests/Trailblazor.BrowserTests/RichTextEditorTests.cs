@@ -111,7 +111,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("formula")).ToHaveTextAsync("<p>H<sub>2</sub>O</p>");
         await Expect(formula.Locator("xpath=ancestor::*[@data-part='editor']").GetByRole(AriaRole.Button))
-            .ToHaveCountAsync(2);
+            .ToHaveCountAsync(3);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -245,7 +245,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Tool(notes, "Italic")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("End");
 
-        await Expect(Tool(notes, "Indent")).ToBeFocusedAsync();
+        await Expect(Tool(notes, "Clear formatting")).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -413,11 +413,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/rich-text-editor");
         var notes = Editor(page, "Notes");
         var html = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RichTextCorpus", $"{sample}.html"));
-        // What the editor keeps so far: every format, and every block but rules.
-        var expected = RichTextDocument.Parse(html, RichTextSchema.Default with
-        {
-            Blocks = RichTextSchema.Default.Blocks & ~RichTextBlocks.Rules,
-        }).ToHtml();
+        var expected = RichTextDocument.Parse(html).ToHtml();
 
         await CaretAsync(notes, 0, 0);
         await notes.EvaluateAsync(
@@ -663,6 +659,180 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rules_ShouldGoInFromTheButtonOrDashesAndComeOut_WhenBackspaceOrDeleteMeetsThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>ab</p>", "ab");
+
+        await CaretAsync(notes, 0, 1);
+        await Tool(notes, "Horizontal line").ClickAsync();
+        await page.Keyboard.TypeAsync("x");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>a</p><hr><p>xb</p>");
+        await CaretAsync(notes, 2, 0);
+        await page.Keyboard.PressAsync("Backspace");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>a</p><p>xb</p>");
+        await CaretAsync(notes, 1, 2);
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync("---");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync("y");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>a</p><p>xb</p><hr><p>y</p>");
+        await CaretAsync(notes, 1, 2);
+        await page.Keyboard.PressAsync("Delete");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>a</p><p>xb</p><p>y</p>");
+        await CaretAsync(notes, 0, 0);
+        await Tool(notes, "Horizontal line").ClickAsync();
+        await page.Keyboard.TypeAsync("w");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p><br></p><hr><p>wa</p><p>xb</p><p>y</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rules_ShouldKeepTheCaretOffTheRule_WhenTheArrowKeysCrossIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>a</p><hr><p>b</p>", "b");
+
+        await CaretAsync(notes, 0, 1);
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.TypeAsync("x");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>a</p><hr><p>xb</p>");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await page.Keyboard.TypeAsync("y");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>ay</p><hr><p>xb</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rules_ShouldLeaveRoomAboveAndAPlainParagraphBelow_WhenStartedFirstOrAtAHeadingsEnd(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = Editor(page, "Notes");
+
+        await CaretAsync(notes, 0, 0);
+        await page.Keyboard.TypeAsync("---");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync("b");
+        await CaretAsync(notes, 0, 0);
+        await page.Keyboard.TypeAsync("y");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>y</p><hr><p>b</p>");
+        await SetAsync(page, "<h1>Title</h1>", "Title");
+        await CaretAsync(notes, 0, 5);
+        await Tool(notes, "Horizontal line").ClickAsync();
+        await page.Keyboard.TypeAsync("body");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<h1>Title</h1><hr><p>body</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rules_ShouldCrossBack_WhenLeftOrUpIsPressedAtTheStartAfterARule(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>a</p><hr><p>b</p>", "b");
+
+        await CaretAsync(notes, 2, 0);
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.TypeAsync("x");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>ax</p><hr><p>b</p>");
+        await CaretAsync(notes, 2, 0);
+        await page.Keyboard.PressAsync("ArrowUp");
+        await page.Keyboard.TypeAsync("y");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>axy</p><hr><p>b</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rules_ShouldLeaveRoomToTypeBeforeAndAfter_WhenTheValueStartsOrEndsWithARule(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<hr><p>a</p><hr>", "a");
+
+        await Expect(Tool(notes, "Heading 1")).ToHaveAttributeAsync("aria-pressed", "false");
+        await CaretAsync(notes, 4, 0);
+        await page.Keyboard.TypeAsync("z");
+        await CaretAsync(notes, 0, 0);
+        await page.Keyboard.TypeAsync("y");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>y</p><hr><p>a</p><hr><p>z</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rules_ShouldStayRules_WhenABlockIsSetOrADeletionStartsOnOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>a</p><hr><p>b</p>", "b");
+
+        await SelectAsync(notes, 0, 0, 2, 1);
+        await Tool(notes, "Bulleted list").ClickAsync();
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a</li></ul><hr><ul><li>b</li></ul>");
+        await SelectAsync(notes, 1, 0, 2, 1);
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a</li><li><br></li></ul>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Rules_ShouldTakeDroppedTextAfterThem_WhenTextIsDroppedOnOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>a</p><hr><p>b</p>", "b");
+
+        await notes.EvaluateAsync("""
+            editor => {
+                const box = editor.querySelector('hr').getBoundingClientRect();
+                const data = new DataTransfer();
+                data.setData('text/html', '<b>x</b>');
+                const event = new DragEvent('drop', { bubbles: true, cancelable: true, clientX: box.left + 10,
+                    clientY: box.top + box.height / 2 });
+                Object.defineProperty(event, 'dataTransfer', { value: data });
+                editor.dispatchEvent(event);
+            }
+            """);
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>a</p><hr><p><strong>x</strong>b</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Paste_ShouldKeepTextOutOfARule_WhenARuleIsPastedOrSelectedAndDeleted(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>ab</p>", "ab");
+
+        await CaretAsync(notes, 0, 1);
+        await PasteAsync(notes, "<p>x</p><hr><p>y</p>", "ignored");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>ax</p><hr><p>yb</p>");
+        await CaretAsync(notes, 2, 2);
+        await PasteAsync(notes, "<hr>", "ignored");
+        await page.Keyboard.TypeAsync("z");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>ax</p><hr><p>yb</p><hr><p>z</p>");
+        await SetAsync(page, "<hr><p>q</p><hr>", "q");
+        await notes.FocusAsync();
+        await page.Keyboard.PressAsync("ControlOrMeta+a");
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ClearFormatting_ShouldTakeOffTheFormatsButKeepLinksAndBlocks_WhenPressedOrTyped(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page,
+            "<h2><strong>a</strong><em><a href=\"/x\">b</a></em>c</h2><p><strong>de</strong></p>", "abc");
+
+        await SelectAsync(notes, 0, 0, 0, 3);
+        await Tool(notes, "Clear formatting").ClickAsync();
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<h2>a<a href=\"/x\">b</a>c</h2><p><strong>de</strong></p>");
+        await CaretAsync(notes, 1, 1);
+        await page.Keyboard.PressAsync("ControlOrMeta+Backslash");
+        await page.Keyboard.TypeAsync("x");
+
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<h2>a<a href=\"/x\">b</a>c</h2><p><strong>d</strong>x<strong>e</strong></p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Blocks_ShouldApplyEachKind_WhenEachBlockShortcutIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");
@@ -826,8 +996,8 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await editor.EvaluateAsync("""
             (editor, [anchorBlock, anchorOffset, headBlock, headOffset]) => {
                 const point = (block, offset) => {
-                    // A list item's own text leaves out the lists nested in it.
-                    const paragraph = editor.querySelectorAll('p, h1, h2, h3, li')[block];
+                    // A list item's own text leaves out the lists nested in it, and a rule counts as a block.
+                    const paragraph = editor.querySelectorAll('p, h1, h2, h3, li, hr')[block];
                     const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
                         { acceptNode: node => node !== paragraph && /^[uo]l$/.test(node.localName) ? 2
                             : node.nodeType === 3 || node.localName === 'br' ? 1 : 3 });

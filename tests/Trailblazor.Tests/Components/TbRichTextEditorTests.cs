@@ -51,7 +51,6 @@ public class TbRichTextEditorTests : BunitContext
     [Theory]
     [InlineData(false, RichTextFormats.Bold, RichTextBlocks.Quotes)]
     [InlineData(true, RichTextFormats.None, RichTextBlocks.None)]
-    [InlineData(true, RichTextFormats.None, RichTextBlocks.Rules)]
     public void Render_ShouldLeaveOutTheToolbar_WhenItIsHiddenOrHasNoFormats(bool showToolbar, RichTextFormats formats,
         RichTextBlocks blocks)
     {
@@ -94,7 +93,7 @@ public class TbRichTextEditorTests : BunitContext
 
     [Theory]
     [InlineData(RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules,
-        "<h2>Title</h2><ul><li><code>a</code></li></ul><p><a href=\"https://example.com\">b</a></p>")]
+        "<h2>Title</h2><ul><li><code>a</code></li></ul><hr><p><a href=\"https://example.com\">b</a></p>")]
     [InlineData(RichTextBlocks.None, "<p>Title</p><p><code>a</code></p><p><a href=\"https://example.com\">b</a></p>")]
     public void Render_ShouldHandTheScriptOnlyTheAllowedBlocks_WhenGivenBlocks(RichTextBlocks blocks, string value)
     {
@@ -160,6 +159,32 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
         Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"readOnly":false,"""
             + "\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
+    }
+
+    [Fact]
+    public void Render_ShouldShowRuleAndClearFormattingButtons_WhenRulesAndAFormatAreAllowed()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Formats, RichTextFormats.Italic).Add(editor => editor.Blocks, RichTextBlocks.Rules));
+
+        var rule = cut.Find("button[data-command=rule]");
+        var clear = cut.Find("button[data-command=clear]");
+        var options = JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]);
+
+        Assert.Equal("Horizontal line", rule.GetAttribute("aria-label"));
+        Assert.Equal(("Clear formatting", "Control+\\ Meta+\\"),
+            (clear.GetAttribute("aria-label"), clear.GetAttribute("aria-keyshortcuts")));
+        Assert.All([rule, clear], button => Assert.Null(button.GetAttribute("aria-pressed")));
+        Assert.Contains("\"blocks\":\"rule\"", options);
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveOutTheClearFormattingButton_WhenNoFormatIsAllowed()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Formats, RichTextFormats.Link));
+
+        Assert.Empty(cut.FindAll("button[data-command=clear]"));
     }
 
     [Fact]

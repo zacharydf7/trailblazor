@@ -67,6 +67,14 @@ public sealed record RichTextEditorLabels
     /// cref="TbStrings.RichTextEditorIndent"/>.</summary>
     public string? Indent { get; init; }
 
+    /// <summary>Names the button that inserts a horizontal line. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorHorizontalRule"/>.</summary>
+    public string? HorizontalRule { get; init; }
+
+    /// <summary>Names the clear formatting button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorClearFormatting"/>.</summary>
+    public string? ClearFormatting { get; init; }
+
     /// <summary>Names the link button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorLink"/>.</summary>
     public string? Link { get; init; }

@@ -70,9 +70,10 @@
     [Parameter]
     public RichTextFormats Formats { get; set; } = RichTextHtmlReader.AllFormats;
 
-    /// <summary>The kinds of block the editor allows: the toolbar has a button for each (three for headings), with
-    /// outdent and indent buttons when it allows a list, and text pasted in keeps only these. Defaults to all of them;
-    /// <see cref="RichTextBlocks.None"/> allows only plain paragraphs. Rules are ignored.</summary>
+    /// <summary>The kinds of block the editor allows: the toolbar has a button for each (three for headings, and
+    /// Horizontal line for <see cref="RichTextBlocks.Rules"/>), with outdent and indent buttons when it allows a list,
+    /// and text pasted in keeps only these. Defaults to all of them; <see cref="RichTextBlocks.None"/> allows only plain
+    /// paragraphs.</summary>
     [Parameter]
     public RichTextBlocks Blocks { get; set; } = RichTextHtmlReader.AllBlocks;
 
@@ -125,7 +126,12 @@
     private sealed record Tool(string? Format, string? Block, string? Command, Icon Icon, string Label,
         string? Shortcuts);
 
-    private IReadOnlyList<Tool> Tools => [.. MarkTools, .. LinkTools, .. BlockTools];
+    private IReadOnlyList<Tool> Tools => [.. MarkTools, .. LinkTools, .. BlockTools, .. ClearTools];
+
+    private IEnumerable<Tool> ClearTools => MarkTools.Any()
+        ? [new(null, null, "clear", RichTextEditorIcons.ClearFormatting,
+            Labels.ClearFormatting ?? Localizer[TbStrings.RichTextEditorClearFormatting], "Control+\\ Meta+\\")]
+        : [];
 
     private IEnumerable<Tool> MarkTools =>
         new (RichTextFormats Format, string Mark, Icon Icon, string? Label, string Key, string Shortcuts)[]
@@ -185,12 +191,18 @@
                 yield return new Tool(null, null, "indent", RichTextEditorIcons.Indent,
                     Labels.Indent ?? Localizer[TbStrings.RichTextEditorIndent], null);
             }
+
+            if (Blocks.HasFlag(RichTextBlocks.Rules))
+            {
+                yield return new Tool(null, null, "rule", RichTextEditorIcons.HorizontalRule,
+                    Labels.HorizontalRule ?? Localizer[TbStrings.RichTextEditorHorizontalRule], null);
+            }
         }
     }
 
     private RichTextSchema Schema => new()
     {
-        Formats = Formats, Blocks = Blocks & ~RichTextBlocks.Rules, LinkSchemes = LinkSchemes,
+        Formats = Formats, Blocks = Blocks, LinkSchemes = LinkSchemes,
     };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
@@ -200,7 +212,8 @@
     private object Options => new
     {
         formats = string.Join(' ', MarkTools.Select(tool => tool.Format)),
-        blocks = string.Join(' ', BlockTools.Where(tool => tool.Block is not null).Select(tool => tool.Block)),
+        blocks = string.Join(' ', BlockTools.Select(tool => tool.Block).OfType<string>()
+            .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])),
         links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,

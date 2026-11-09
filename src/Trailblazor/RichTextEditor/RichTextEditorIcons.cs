@@ -29,6 +29,14 @@ internal static class RichTextEditorIcons
     public static Icon Link { get; } = new($"<path {Lines} stroke-width=\"2\" d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0"
         + "-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\" />");
 
+    // A line between two short lines of text.
+    public static Icon HorizontalRule { get; } = new($"<path {Lines} stroke-width=\"2\" d=\"M4 12h16\" />"
+        + $"<path {Lines} stroke-width=\"1.5\" d=\"M7 6.5h10M7 17.5h10\" />");
+
+    // A "T" struck through on the diagonal.
+    public static Icon ClearFormatting { get; } =
+        new($"<path {Lines} stroke-width=\"2\" d=\"M5 6V4.5h11V6M10.5 4.5l-2.5 15M4 4l16 16\" />");
+
     public static Icon Heading1 { get; } = Heading("M16.5 13.5l2-1.5v7");
 
     public static Icon Heading2 { get; } = Heading("M16 13.6a1.8 1.8 0 1 1 3.3 1.1c-.7.9-3.3 3.3-3.3 3.3h3.6");

@@ -389,6 +389,13 @@ public static class TbStrings
     /// <summary>"Indent": names a rich text editor's indent button.</summary>
     public const string RichTextEditorIndent = "RichTextEditor.Indent";
 
+    /// <summary>"Horizontal line": names a rich text editor's button that inserts a rule.</summary>
+    public const string RichTextEditorHorizontalRule = "RichTextEditor.HorizontalRule";
+
+    /// <summary>"Clear formatting": names a rich text editor's button that takes the formats off the selection.
+    /// </summary>
+    public const string RichTextEditorClearFormatting = "RichTextEditor.ClearFormatting";
+
     /// <summary>"Link": names a rich text editor's link button.</summary>
     public const string RichTextEditorLink = "RichTextEditor.Link";
 
@@ -781,6 +788,8 @@ public static class TbStrings
         [RichTextEditorNumberedList] = "Numbered list",
         [RichTextEditorOutdent] = "Outdent",
         [RichTextEditorIndent] = "Indent",
+        [RichTextEditorHorizontalRule] = "Horizontal line",
+        [RichTextEditorClearFormatting] = "Clear formatting",
         [RichTextEditorLink] = "Link",
         [RichTextEditorAddLink] = "Add link",
         [RichTextEditorEditLink] = "Edit link",

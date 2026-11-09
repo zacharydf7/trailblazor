@@ -3224,3 +3224,9 @@ const Trailblazor.TbStrings.RichTextEditorRemoveLink = "RichTextEditor.RemoveLin
 const Trailblazor.TbStrings.RichTextEditorRelativeLinkOnly = "RichTextEditor.RelativeLinkOnly" -> string!
 Trailblazor.RichTextEditorLabels.RelativeLinkOnly.get -> string?
 Trailblazor.RichTextEditorLabels.RelativeLinkOnly.init -> void
+Trailblazor.RichTextEditorLabels.ClearFormatting.get -> string?
+Trailblazor.RichTextEditorLabels.ClearFormatting.init -> void
+Trailblazor.RichTextEditorLabels.HorizontalRule.get -> string?
+Trailblazor.RichTextEditorLabels.HorizontalRule.init -> void
+const Trailblazor.TbStrings.RichTextEditorClearFormatting = "RichTextEditor.ClearFormatting" -> string!
+const Trailblazor.TbStrings.RichTextEditorHorizontalRule = "RichTextEditor.HorizontalRule" -> string!

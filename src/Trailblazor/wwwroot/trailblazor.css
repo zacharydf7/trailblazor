@@ -2603,6 +2603,12 @@
         font-size: 0.9em;
     }
 
+    .tb-rich-text-editor__content hr {
+        margin-block: 0.75em;
+        border: 0;
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
     .tb-rich-text-editor__content a {
         color: var(--tb-color-primary-text);
         text-decoration: underline;

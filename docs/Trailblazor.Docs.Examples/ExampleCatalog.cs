@@ -2109,6 +2109,8 @@ public static class ExampleCatalog
                     + "bulleted and numbered lists. The toolbar shows a button for each, three for headings, with "
                     + "Outdent and Indent for lists, and pasted text keeps only those. Typing Markdown such as `# `, "
                     + "`> `, `- ` or `1. ` at the start of a plain paragraph turns it into a heading, quote or list. "
+                    + "With `RichTextBlocks.Rules`, the Horizontal line button or typing `---` then Enter puts in a "
+                    + "rule. "
                     + "`RichTextBlocks.None` allows only plain paragraphs.",
                     typeof(RichTextEditorBlocksExample)),
                 new("links", "Links", "The Link button and Ctrl+K open a dialog to add, edit, open or remove the link "
@@ -2139,6 +2141,8 @@ public static class ExampleCatalog
                 new(["Ctrl+Shift+X"], "Turns strikethrough on or off."),
                 new(["Ctrl+,", "Ctrl+."], "Turns subscript or superscript on or off."),
                 new(["Ctrl+E"], "Turns inline code on or off."),
+                new(["Ctrl+\\"], "Takes every format off the selection, or off the next text typed. Links and "
+                    + "blocks stay."),
                 new(["Ctrl+K"], "Opens the link dialog for the selected text, or for the link the caret is in or "
                     + "next to."),
                 new(["Ctrl+Alt+1", "Ctrl+Alt+2", "Ctrl+Alt+3"], "Turns the selected paragraphs into a heading of "
@@ -2158,6 +2162,11 @@ public static class ExampleCatalog
                 {
                     When = "At the start of a list item or quote paragraph",
                 },
+                new(["Backspace", "Delete"], "Takes away the rule before or after the paragraph.")
+                {
+                    When = "At the start or end of a paragraph next to a rule",
+                },
+                new(["Enter"], "Turns the paragraph into a horizontal rule.") { When = "In a plain paragraph of `---`" },
                 new(["Shift+Enter"], "Breaks the line within the paragraph."),
                 new(["Ctrl+Z"], "Undoes the last change, a word at a time while typing."),
                 new(["Ctrl+Y", "Ctrl+Shift+Z"], "Redoes the last change undone."),
@@ -2191,8 +2200,8 @@ public static class ExampleCatalog
                 "The link dialog is a modal [dialog](components/dialog) with labeled fields, and focus returns to the "
                     + "editor, with the selection it had, when it closes.",
                 "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>` and `<a>` elements, "
-                    + "and blocks are real headings, block quotes and lists, which screen readers can report and move "
-                    + "between.",
+                    + "and blocks are real headings, block quotes, lists and `<hr>` rules, which screen readers can "
+                    + "report and move between.",
                 "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it. In a list "
                     + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
             ],
