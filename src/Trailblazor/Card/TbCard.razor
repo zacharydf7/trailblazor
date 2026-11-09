@@ -1,0 +1,151 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<TbSurface @attributes="AdditionalAttributes" As="As" Elevation="Elevation" Outlined="Outlined" Style="@Style"
+           aria-labelledby="@(Named ? _titleId : GivenName)" data-part="card"
+           Class="@ClassNames.Join("tb-card", Href is null ? null : "tb-card--link", Class)">
+    @if (Title is not null || Subtitle is not null || Start is not null || End is not null)
+    {
+        <div data-part="header" class="tb-card__header">
+            @if (Start is not null)
+            {
+                <div data-part="start" class="tb-card__start">@Start</div>
+            }
+            <div class="tb-card__heading">
+                @if (Title is not null)
+                {
+                    @Heading
+                }
+                @if (Subtitle is not null)
+                {
+                    <p data-part="subtitle" class="tb-card__subtitle">@Subtitle</p>
+                }
+            </div>
+            @if (End is not null)
+            {
+                <div data-part="end" class="tb-card__end">@End</div>
+            }
+        </div>
+    }
+    @* After the header in the markup, so screen readers reach the title first; the stylesheet shows it on top. *@
+    @if (Media is not null)
+    {
+        <div data-part="media" class="tb-card__media">@Media</div>
+    }
+    @if (ChildContent is not null)
+    {
+        <div data-part="content" class="tb-card__content">@ChildContent</div>
+    }
+    @if (Actions is not null)
+    {
+        <div data-part="actions" class="tb-card__actions">@Actions</div>
+    }
+</TbSurface>
+
+@code {
+    private readonly string _titleId = $"tb-card-{Guid.NewGuid():N}-title";
+    private ControlTelemetry? _telemetry;
+
+    /// <summary>The card's title, shown as a heading at <see cref="HeadingLevel"/>. It names the card for screen
+    /// readers.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>A line under the title, such as a date or a short description.</summary>
+    [Parameter]
+    public string? Subtitle { get; set; }
+
+    /// <summary>The level of the title's heading, from 1 to 6. Defaults to 3; pick the one that fits the headings
+    /// around the card.</summary>
+    [Parameter]
+    public int HeadingLevel { get; set; } = 3;
+
+    /// <summary>Content before the title, such as an <see cref="TbAvatar"/>.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the title, such as a menu of the card's actions.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
+    /// <summary>A picture across the top of the card, such as a <see cref="TbImage"/>.</summary>
+    [Parameter]
+    public RenderFragment? Media { get; set; }
+
+    /// <summary>The card's content.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Buttons along the bottom of the card.</summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    /// <summary>Makes the whole card a link to this address. The title is the link, so the link is named by the title
+    /// alone rather than the whole card, and a click anywhere on the card follows it; buttons and links inside the
+    /// card still work on their own. Needs a <see cref="Title"/>.</summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary>The shadow under the card. Defaults to <see cref="Trailblazor.Elevation.Low"/>.</summary>
+    [Parameter]
+    public Elevation Elevation { get; set; } = Elevation.Low;
+
+    /// <summary>Draws a border around the card.</summary>
+    [Parameter]
+    public bool Outlined { get; set; }
+
+    /// <summary>The element to render. Defaults to <see cref="LayoutElement.Article"/>, content that stands on its
+    /// own. In a list, put the card inside a list item rather than rendering it as one, since a list item can't be
+    /// named by the title.</summary>
+    [Parameter]
+    public LayoutElement As { get; set; } = LayoutElement.Article;
+
+    /// <summary>A label this card's use is counted under, such as <c>"trail-card"</c>, so the app can count how often
+    /// people see it and follow its <see cref="Href"/> through the <c>Trailblazor</c> meter. Controls that share a
+    /// label count together; a control without one isn't counted. It names what the control does, never the user,
+    /// and must never hold a credential.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    // The card's aria-labelledby replaces the consumer's, so this passes theirs through when the title doesn't name it.
+    private object? GivenName => AdditionalAttributes?.GetValueOrDefault("aria-labelledby");
+
+    // Only these elements can take a name; a div or li named by aria-labelledby is an error.
+    private bool Named => Title is not null
+        && As is LayoutElement.Article or LayoutElement.Section or LayoutElement.Aside;
+
+    private RenderFragment Heading => builder =>
+    {
+        builder.OpenElement(0, $"h{HeadingLevel}");
+        builder.AddAttribute(1, "id", _titleId);
+        builder.AddAttribute(2, "data-part", "title");
+        builder.AddAttribute(3, "class", "tb-card__title");
+        builder.AddContent(4, TitleContent);
+        builder.CloseElement();
+    };
+
+    private RenderFragment TitleContent => Href is null
+        ? @<text>@Title</text>
+        : @<a href="@Href" data-part="link" class="tb-card__link" @onclick="Followed">@Title</a>;
+
+    private void Followed() => Telemetry.Used(TelemetryName);
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(HeadingLevel, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(HeadingLevel, 6);
+        if (Href is not null && Title is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbCard)} needs a {nameof(Title)} to be a link.");
+        }
+    }
+}

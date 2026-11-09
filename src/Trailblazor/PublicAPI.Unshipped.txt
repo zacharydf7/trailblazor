@@ -3293,3 +3293,34 @@ override Trailblazor.TbBreadcrumb.OnInitialized() -> void
 Trailblazor.TbBreadcrumbs.TelemetryName.get -> string?
 Trailblazor.TbBreadcrumbs.TelemetryName.set -> void
 override Trailblazor.TbBreadcrumbs.OnAfterRender(bool firstRender) -> void
+Trailblazor.TbCard
+Trailblazor.TbCard.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCard.Actions.set -> void
+Trailblazor.TbCard.As.get -> Trailblazor.LayoutElement
+Trailblazor.TbCard.As.set -> void
+Trailblazor.TbCard.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCard.ChildContent.set -> void
+Trailblazor.TbCard.Elevation.get -> Trailblazor.Elevation
+Trailblazor.TbCard.Elevation.set -> void
+Trailblazor.TbCard.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCard.End.set -> void
+Trailblazor.TbCard.HeadingLevel.get -> int
+Trailblazor.TbCard.HeadingLevel.set -> void
+Trailblazor.TbCard.Href.get -> string?
+Trailblazor.TbCard.Href.set -> void
+Trailblazor.TbCard.Media.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCard.Media.set -> void
+Trailblazor.TbCard.Outlined.get -> bool
+Trailblazor.TbCard.Outlined.set -> void
+Trailblazor.TbCard.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCard.Start.set -> void
+Trailblazor.TbCard.Subtitle.get -> string?
+Trailblazor.TbCard.Subtitle.set -> void
+Trailblazor.TbCard.TbCard() -> void
+Trailblazor.TbCard.Title.get -> string?
+Trailblazor.TbCard.Title.set -> void
+override Trailblazor.TbCard.OnParametersSet() -> void
+~override Trailblazor.TbCard.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbCard.TelemetryName.get -> string?
+Trailblazor.TbCard.TelemetryName.set -> void
+override Trailblazor.TbCard.OnAfterRender(bool firstRender) -> void

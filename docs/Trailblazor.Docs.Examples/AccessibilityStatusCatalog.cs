@@ -30,6 +30,7 @@ public static class AccessibilityStatusCatalog
         new("image", None, NotYet, None),
         new("divider", None, NotYet, None),
         new("surface", None, NotYet, None),
+        new("card", Tested, Tested, None),
         new("icon", None, NotYet, None),
         new("button", Tested, NotYet, NotYet),
         new("icon-button", NotYet, NotYet, NotYet),

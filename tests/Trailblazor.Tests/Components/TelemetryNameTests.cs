@@ -54,6 +54,18 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public void Card_ShouldCountItsLinkFollowed_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbCard>(parameters => parameters.Add(card => card.TelemetryName, "trail-card")
+            .Add(card => card.Title, "Ridge loop").Add(card => card.Href, "trails/ridge-loop"));
+
+        cut.Find("a").Click();
+
+        Assert.Equal(["trail-card"], Names(_shown));
+        Assert.Equal([("trail-card", "TbCard", null)], Uses());
+    }
+
+    [Fact]
     public void Breadcrumbs_ShouldCountTheLinksFollowed_WhenTheTrailHasATelemetryName()
     {
         var cut = Render<TbBreadcrumbs>(parameters => parameters

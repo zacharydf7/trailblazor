@@ -1,0 +1,40 @@
+@inject NavigationManager Navigation
+
+<TbGrid As="LayoutElement.Ul" aria-label="Trails to explore">
+    @foreach (var trail in Trails)
+    {
+        <TbGridItem As="LayoutElement.Li" SpanSm="6" SpanLg="4">
+            <TbCard Title="@trail" Href="@SectionHref(trail)" Outlined>
+                <ChildContent>
+                    <TbText>Click anywhere on the card to open it.</TbText>
+                </ChildContent>
+                <Actions>
+                    <TbButton Variant="Variant.Text" aria-label="@($"Save {trail}")" Pressed="_saved.Contains(trail)"
+                              PressedChanged="pressed => Save(trail, pressed)">Save</TbButton>
+                </Actions>
+            </TbCard>
+        </TbGridItem>
+    }
+</TbGrid>
+
+@code {
+    private static readonly string[] Trails = ["Old mill", "Pine hollow", "Lake shore"];
+
+    private readonly HashSet<string> _saved = [];
+
+    // The site sets <base href>, so a bare #id would point at the home page.
+    private string SectionHref(string trail) =>
+        $"{Navigation.Uri.Split('?', '#')[0]}#{trail.ToLowerInvariant().Replace(' ', '-')}";
+
+    private void Save(string trail, bool saved)
+    {
+        if (saved)
+        {
+            _saved.Add(trail);
+        }
+        else
+        {
+            _saved.Remove(trail);
+        }
+    }
+}

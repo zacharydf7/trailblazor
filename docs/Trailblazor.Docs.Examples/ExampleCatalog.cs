@@ -447,7 +447,7 @@ public static class ExampleCatalog
                 "To lay items out, use a [stack](components/stack) or [grid](components/grid) and put surfaces in them.",
                 "To interrupt people with something on top of the page, use a [dialog](components/dialog).",
             ],
-            Related = ["stack", "grid", "divider", "dialog"],
+            Related = ["stack", "grid", "divider", "dialog", "card"],
             Sections =
             [
                 new("elevation", "Elevation", "`Elevation` sets how far the surface seems to rise above the page. "
@@ -474,6 +474,100 @@ public static class ExampleCatalog
             ],
             Target = null,
             Blocks = ["tb-surface"],
+        },
+        new("card", "Card", ExampleCategory.Layout,
+            "A panel about one thing, such as a trail or a person: a title, a picture, some content and actions, and "
+                + "optionally a link to more.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to show several things of the same kind side by side, such as trails or people, each with a "
+                    + "summary and a way to open or act on it.",
+            ],
+            WhenNotToUse =
+            [
+                "For a plain panel that groups content, use a [surface](components/surface).",
+                "For rows to compare or sort, use a [data grid](components/data-grid) or a [list](components/list).",
+            ],
+            Related = ["surface", "grid", "image", "avatar"],
+            Sections =
+            [
+                new("basic", "Title, content and actions", "`Title` is the card's heading and names it for screen "
+                    + "readers, with `Subtitle` on a line under it. The content goes below them, and `Actions` holds "
+                    + "buttons along the bottom.", typeof(CardExample)),
+                new("media", "Picture and header", "`Media` puts a picture across the top. `Start` and `End` hold "
+                    + "content beside the title, such as an [avatar](components/avatar) or a menu. Screen readers "
+                    + "reach the title before the picture.", typeof(CardMediaExample)),
+                new("link", "Cards that link", "With `Href`, the title becomes a link that covers the whole card, so "
+                    + "a click anywhere on it follows the link, and the card is one tab stop. Buttons inside the card "
+                    + "still work on their own. In a list of cards, put them in a [grid](components/grid) rendered as "
+                    + "a list, with `As=\"LayoutElement.Li\"` on each grid item.", typeof(CardLinkExample)),
+                new("elevation", "Elevation and border", "`Elevation` sets the shadow, which is `Low` unless set, and "
+                    + "`Outlined` adds a border.", typeof(CardElevationExample)),
+            ],
+            Api = [typeof(TbCard)],
+            Anatomy = """
+                <TbCard Title="…" Subtitle="…" Href="…">
+                    <Start>…</Start>
+                    <End>…</End>
+                    <Media>…</Media>
+                    <ChildContent>…</ChildContent>
+                    <Actions>…</Actions>
+                </TbCard>
+                """,
+            Keyboard =
+            [
+                new(["Tab"], "Moves to the card's link, then to each control inside the card.")
+                    { When = "With an `Href`" },
+                new(["Enter"], "Follows the link.") { When = "With an `Href`" },
+            ],
+            Labeling =
+            [
+                "An `article` named by its title, which is a heading at `HeadingLevel` (3 unless set). Pick the "
+                    + "level that fits the headings around the card.",
+                "With `Href`, the link is named by the title alone, so screen readers don't read the whole card as "
+                    + "its name.",
+            ],
+            Accessibility =
+            [
+                "With `Href`, the focus ring goes around the whole card.",
+                "In forced-colors mode, such as Windows high contrast, each card keeps a border.",
+            ],
+            AppDuties =
+            [
+                "Describe each meaningful picture in its `Alt` text, and leave `Alt` empty on a picture that only "
+                    + "decorates.",
+                "Name each button inside a card for the card it belongs to, such as \"Save Old mill\", so it makes "
+                    + "sense on its own.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as plain HTML, and a card with an `Href` already works as a link.",
+            ],
+            Target = new("article", "Ridge loop"),
+            Blocks = ["tb-card"],
+            DataParts =
+            [
+                new("card", "The card itself."),
+                new("header", "The row with the title, and the start and end content."),
+                new("start", "The content before the title."),
+                new("title", "The title's heading."),
+                new("link", "The title's link, which covers the card."),
+                new("subtitle", "The line under the title."),
+                new("end", "The content after the title."),
+                new("media", "The picture across the top."),
+                new("content", "The card's content."),
+                new("actions", "The buttons along the bottom."),
+            ],
+            TestingTip = "Find a card by its role and title, with "
+                + "`GetByRole(AriaRole.Article, new() { Name = \"Ridge loop\" })` in Playwright. A card with an `Href` "
+                + "is also found by its link, with `GetByRole(AriaRole.Link, new() { Name = \"Old mill\" })`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-card\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders and `trailblazor.control.used` each time its `Href` is followed.",
+            ],
         },
         new("icon", "Icon", ExampleCategory.Content,
             "An SVG icon from any icon set, in one of three sizes and hidden from screen readers unless named.")
