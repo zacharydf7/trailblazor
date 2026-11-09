@@ -2696,9 +2696,19 @@
         box-sizing: border-box;
         min-height: var(--tb-field-height, var(--tb-control-height));
         padding-inline: var(--tb-control-padding-inline);
-        border: 1px solid var(--tb-border-strong);
+        /* The width takes one to four values, so a field can keep only some of its edges, such as just the bottom. */
+        border-width: var(--tb-field-border-width, 1px);
+        border-style: solid;
+        border-color: var(--tb-field-border-color, var(--tb-border-strong));
         border-radius: var(--tb-field-radius, var(--tb-radius-md));
-        background: var(--tb-color-surface);
+        background: var(--tb-field-background, var(--tb-color-surface));
+    }
+
+    /* Forced colors paint every fill in the page color, so a field that drops its edges would vanish; put each edge back. */
+    @media (forced-colors: active) {
+        .tb-field__control {
+            border-width: 1px;
+        }
     }
 
     .tb-field__control:focus-within {
@@ -2910,9 +2920,9 @@
     /* A filled box is tinted, with only its bottom line drawn; that line keeps the field's 3:1 edge. */
     .tb-field--filled .tb-field__control {
         border-color: transparent;
-        border-block-end-color: var(--tb-border-strong);
+        border-block-end-color: var(--tb-field-border-color, var(--tb-border-strong));
         border-radius: var(--tb-field-radius, var(--tb-radius-md)) var(--tb-field-radius, var(--tb-radius-md)) 0 0;
-        background: var(--tb-color-surface-sunken);
+        background: var(--tb-field-background, var(--tb-color-surface-sunken));
     }
 
     .tb-field--filled.tb-field--invalid .tb-field__control {

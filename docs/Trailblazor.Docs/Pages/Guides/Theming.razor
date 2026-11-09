@@ -210,6 +210,13 @@
             </li>
         </ol>
         <CodeBlock Label="app.css" Code="@Restyle" />
+        <TbText>
+            Fields have tokens for their edges and fill, so you can make them quieter, such as underlined fields for a
+            dense screen. <code>--tb-field-border-width</code> takes one to four widths, so <code>0 0 1px</code>
+            keeps only the bottom line. Keep at least one edge that contrasts 3:1 with the page, so people can find the
+            field.
+        </TbText>
+        <CodeBlock Label="app.css" Code="@QuietFields" />
 
         <DocsHeading Id="brand" Text="Try a brand color" Class="docs-section" />
         <TbText>
@@ -347,6 +354,15 @@
     private string BrandCss => $$"""
         :root {
             --tb-color-primary: {{BrandPrimary}};
+        }
+        """;
+
+    private const string QuietFields = """
+        /* Underlined fields, with no box, in a dense form. */
+        .dense-form {
+            --tb-field-border-width: 0 0 1px;
+            --tb-field-radius: 0;
+            --tb-field-background: transparent;
         }
         """;
 

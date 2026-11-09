@@ -204,6 +204,8 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("field radius", "--tb-field-radius", "<div class='tb-field__control'></div>", "border-top-left-radius",
             "37px"),
         ("field height", "--tb-field-height", "<div class='tb-field__control'></div>", "min-height", "37px"),
+        ("field border width", "--tb-field-border-width", "<div class='tb-field__control'></div>",
+            "border-bottom-width", "37px"),
         ("menu radius", "--tb-menu-radius", "<div class='tb-menu__list'></div>", "border-top-left-radius", "37px"),
         ("menu item height", "--tb-menu-item-height", "<div class='tb-menu__item'></div>", "min-height", "37px"),
         ("popover radius", "--tb-popover-radius", "<div class='tb-popover__panel'></div>", "border-top-left-radius",
@@ -218,6 +220,45 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("grid row height", "--tb-data-grid-row-height", Grid, "height", "37px"),
         ("grid ignores table row height", "--tb-table-row-height", Grid, "height", "44px"),
     ];
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FieldTokens_ShouldColorTheFieldsEdgeAndFill_WhenSetAroundIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        var outlined = await FieldStyleAsync(page, "tb-field");
+        var filled = await FieldStyleAsync(page, "tb-field tb-field--filled");
+
+        Assert.Equal(["0px", "1px", "rgb(1, 2, 3)", "rgb(4, 5, 6)"], outlined);
+        Assert.Equal(["0px", "1px", "rgb(1, 2, 3)", "rgb(4, 5, 6)"], filled);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FieldTokens_ShouldKeepEveryEdge_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens", new() { ForcedColors = ForcedColors.Active });
+
+        var style = await FieldStyleAsync(page, "tb-field", width: "0");
+
+        Assert.Equal(["1px", "1px"], style[..2]);
+    }
+
+    // The field's top and bottom edge widths, bottom edge color and fill, with the field tokens set around it.
+    private static Task<string[]> FieldStyleAsync(IPage page, string fieldClass, string width = "0 0 1px") =>
+        page.EvaluateAsync<string[]>("""
+            ([fieldClass, width]) => {
+                const host = document.querySelector('main').appendChild(document.createElement('div'));
+                host.style.setProperty('--tb-field-border-width', width);
+                host.style.setProperty('--tb-field-border-color', 'rgb(1, 2, 3)');
+                host.style.setProperty('--tb-field-background', 'rgb(4, 5, 6)');
+                host.innerHTML = `<div class='${fieldClass}'><div class='tb-field__control'></div></div>`;
+                const style = getComputedStyle(host.querySelector('.tb-field__control'));
+                const values = [style.borderTopWidth, style.borderBottomWidth, style.borderBottomColor,
+                    style.backgroundColor];
+                host.remove();
+                return values;
+            }
+            """, new[] { fieldClass, width });
 
     private const string Grid =
         "<div class='tb-data-grid'><table class='tb-data-grid__table'><tr><td>Row</td></tr></table></div>";
