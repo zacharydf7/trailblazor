@@ -33,6 +33,11 @@ public sealed class FakeDialogService : IDialogService
         _opened.OfType<DialogReference<TResult>>().LastOrDefault(dialog => dialog.ContentType == typeof(TDialog))
             ?? throw new InvalidOperationException($"No {typeof(TDialog).Name} was opened.");
 
+    /// <summary>The last <typeparamref name="TDialog"/> opened, a dialog with no result, to check its title and
+    /// parameters and close it: <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels.</summary>
+    /// <exception cref="InvalidOperationException">No <typeparamref name="TDialog"/> was opened.</exception>
+    public DialogReference<bool> Last<TDialog>() where TDialog : TbDialogContent => Last<TDialog, bool>();
+
     /// <summary>The last confirm or alert opened, to check its title and message and answer it:
     /// <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels.</summary>
     /// <exception cref="InvalidOperationException">No confirm or alert was opened.</exception>
@@ -40,6 +45,8 @@ public sealed class FakeDialogService : IDialogService
         _opened.OfType<DialogReference<bool>>().LastOrDefault(dialog => dialog.ContentType == typeof(ConfirmDialog))
             ?? throw new InvalidOperationException("No confirm or alert was opened.");
 
+    // The overloads differ in their type parameter count, so no call is ambiguous.
+#pragma warning disable RS0026
     /// <inheritdoc />
     public DialogReference<TResult> Show<TDialog, TResult>(string title,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
@@ -49,6 +56,17 @@ public sealed class FakeDialogService : IDialogService
     public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string title,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
+
+    /// <inheritdoc />
+    public DialogReference<bool> Show<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
+        DialogOptions? options = null)
+        where TDialog : TbDialogContent => Show<TDialog, bool>(title, parameters, options);
+
+    /// <inheritdoc />
+    public async Task<bool> ShowAsync<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
+        DialogOptions? options = null)
+        where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
+#pragma warning restore RS0026
 
     /// <inheritdoc />
     public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string title,

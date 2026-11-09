@@ -2,8 +2,24 @@ using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
 
-/// <summary>The base for a dialog's content, opened with <see cref="IDialogService.ShowAsync{TDialog, TResult}"/>.
-/// Its markup becomes the dialog's body; put the buttons in a <see cref="TbDialogActions"/>.</summary>
+/// <summary>The base for a dialog's content when the dialog has no result, such as one that only informs. Open it with
+/// <see cref="IDialogService.ShowAsync{TDialog}"/>, which returns whether it was confirmed. Its markup becomes the
+/// dialog's body; put the buttons in a <see cref="TbDialogActions"/>.</summary>
+public abstract class TbDialogContent : TbDialogContent<bool>
+{
+    /// <summary>Closes the dialog as confirmed.</summary>
+    protected Task CloseDialogAsync() => base.CloseDialogAsync(true);
+
+    // Hidden because CloseDialogAsync(false) would still close the dialog as confirmed.
+    /// <summary>Not for a dialog with no result; use <see cref="CloseDialogAsync()"/> or
+    /// <see cref="TbDialogContent{TResult}.CancelDialogAsync"/>.</summary>
+    [Obsolete("A dialog with no result closes with CloseDialogAsync() or CancelDialogAsync().", error: true)]
+    protected new Task CloseDialogAsync(bool value) => base.CloseDialogAsync(value);
+}
+
+/// <summary>The base for a dialog's content that closes with a <typeparamref name="TResult"/>, opened with
+/// <see cref="IDialogService.ShowAsync{TDialog, TResult}"/>. Its markup becomes the dialog's body; put the buttons in a
+/// <see cref="TbDialogActions"/>.</summary>
 public abstract class TbDialogContent<TResult> : ComponentBase
 {
     private DialogReference? _dialog;

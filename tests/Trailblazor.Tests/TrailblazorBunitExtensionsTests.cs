@@ -130,6 +130,18 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     }
 
     [Fact]
+    public async Task ShowDialogAsync_ShouldShowADialogWithNoResult_WhenGivenOnlyTheDialogType()
+    {
+        this.AddTrailblazor();
+
+        var dialog = await this.ShowDialogAsync<NoticeDialog>("Trail notice");
+
+        Assert.IsType<NoticeDialog>(dialog.Content.Instance);
+        await dialog.Reference.CancelAsync();
+        Assert.False((await dialog.Reference.Result).Confirmed);
+    }
+
+    [Fact]
     public async Task ShowDialogAsync_ShouldFinishTheResult_WhenTheDialogCloses()
     {
         this.AddTrailblazor();
@@ -170,6 +182,8 @@ public class TrailblazorBunitExtensionsTests : BunitContext
         Assert.NotSame(first.Root, second.Root);
         Assert.Contains("Rename camp", second.Root.Markup);
     }
+
+    private sealed class NoticeDialog : TbDialogContent;
 
     // Content that reads how it renders, as fields and uploads do, finds itself interactive, as on a page.
     private sealed class RenameDialog : TbDialogContent<string>

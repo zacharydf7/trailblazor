@@ -9,7 +9,7 @@
     // The page keeps a reference to the dialog, updates its progress and closes it when the work is done.
     private async Task ExportAsync()
     {
-        var dialog = Dialogs.Show<ExportDialog, bool>("Exporting report");
+        var dialog = Dialogs.Show<ExportDialog>("Exporting report");
         for (var percent = 25; percent <= 100 && !dialog.Result.IsCompleted; percent += 25)
         {
             await Task.Delay(400);

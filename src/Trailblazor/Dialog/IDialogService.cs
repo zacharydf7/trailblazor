@@ -7,6 +7,8 @@ public interface IDialogService
     /// <summary>The open dialogs, oldest first; the last one is on top.</summary>
     IReadOnlyList<DialogReference> OpenDialogs { get; }
 
+    // The overloads differ in their type parameter count, so no call is ambiguous.
+#pragma warning disable RS0026
     /// <summary>Opens <typeparamref name="TDialog"/> and returns at once, with a reference that closes, renames or
     /// updates it, and whose <see cref="DialogReference{TResult}.Result"/> finishes when it closes.</summary>
     DialogReference<TResult> Show<TDialog, TResult>(string title, Action<DialogParameters<TDialog>>? parameters = null,
@@ -17,6 +19,20 @@ public interface IDialogService
     Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string title,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>;
+
+    /// <summary>Opens <typeparamref name="TDialog"/>, a dialog with no result, and returns at once, as
+    /// <see cref="Show{TDialog, TResult}"/> does. Close it as confirmed with <c>CloseAsync(true)</c>, or cancel it with
+    /// <see cref="DialogReference.CancelAsync"/>.</summary>
+    DialogReference<bool> Show<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
+        DialogOptions? options = null)
+        where TDialog : TbDialogContent;
+
+    /// <summary>Opens <typeparamref name="TDialog"/>, a dialog with no result, waits until it closes, and returns
+    /// whether it was confirmed.</summary>
+    Task<bool> ShowAsync<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
+        DialogOptions? options = null)
+        where TDialog : TbDialogContent;
+#pragma warning restore RS0026
 
     /// <summary>Opens a dialog whose content type is chosen at run time, such as from a list, and returns at once, as
     /// <see cref="Show{TDialog, TResult}"/> does. <paramref name="dialog"/> must be a

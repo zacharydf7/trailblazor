@@ -119,9 +119,18 @@ public static partial class ApiDocs
 
     private static string Anchor(string type, string member) => $"{type}-{member.ToLowerInvariant()}";
 
-    private static IReadOnlyList<ApiMember> Methods(IEnumerable<MethodInfo> methods, string id) =>
-        [.. methods.Where(method => !method.IsSpecialName).OrderBy(method => Depth(method.DeclaringType!))
-            .ThenBy(method => method.MetadataToken).Select(method => Method(method, Anchor(id, method.Name)))];
+    private static IReadOnlyList<ApiMember> Methods(IEnumerable<MethodInfo> methods, string id)
+    {
+        var listed = methods.Where(method => !method.IsSpecialName).ToList();
+        return [.. listed.OrderBy(method => Depth(method.DeclaringType!)).ThenBy(method => method.MetadataToken)
+            .Select(method => Method(method, Anchor(id, MethodKey(method.Name, method.GetGenericArguments().Length,
+                listed))))];
+    }
+
+    // Overloads that differ in their type parameter count share a name, so their row ids add the count.
+    private static string MethodKey(string name, int arity, IEnumerable<MethodInfo> methods) =>
+        methods.Any(method => method.Name == name && !method.IsSpecialName
+            && method.GetGenericArguments().Length != arity) ? $"{name}-{arity}" : name;
 
     private static ApiMember Member(PropertyInfo property, object defaults, string type)
     {
@@ -298,8 +307,15 @@ public static partial class ApiDocs
             return null;
         }
 
-        return member is null ? $"{page}#{IdOf(owner)}"
-            : $"{page}#{IdOf(owner)}-{Arity().Replace(member, "").ToLowerInvariant()}";
+        if (member is null)
+        {
+            return $"{page}#{IdOf(owner)}";
+        }
+
+        var arity = member.Contains('`', StringComparison.Ordinal) ? int.Parse(member[(member.LastIndexOf('`') + 1)..],
+            CultureInfo.InvariantCulture) : 0;
+        var key = MethodKey(Arity().Replace(member, ""), arity, owner.GetMethods());
+        return $"{page}#{IdOf(owner)}-{key.ToLowerInvariant()}";
     }
 
     private static string ShortName(string cref)

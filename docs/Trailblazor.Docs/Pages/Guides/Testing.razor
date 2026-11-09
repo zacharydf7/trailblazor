@@ -138,7 +138,8 @@
         <DocsHeading Id="bunit-dialogs" Text="Test dialogs in bUnit" Class="docs-section" />
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A dialog on its own</TbText>
         <TbText>
-            <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens a dialog as a page would. It renders a
+            <code>this.ShowDialogAsync&lt;TDialog, TResult&gt;()</code> opens a dialog as a page would, and
+            <code>this.ShowDialogAsync&lt;TDialog&gt;()</code> opens one with no result. Each renders a
             <code>TbRoot</code> to host the dialog and opens it through <code>IDialogService</code> with the title,
             parameters and options you give. The result has three properties:
         </TbText>
@@ -160,7 +161,10 @@
             <code>Opened</code>, with its <code>Title</code>, <code>ContentType</code> and <code>Parameters</code>.
         </TbText>
         <ul>
-            <li><code>Last&lt;TDialog, TResult&gt;()</code> finds the last dialog of a type, to check and close.</li>
+            <li>
+                <code>Last&lt;TDialog, TResult&gt;()</code> finds the last dialog of a type, to check and close, and
+                <code>Last&lt;TDialog&gt;()</code> finds one with no result.
+            </li>
             <li><code>LastConfirm()</code> finds the last confirm or alert.</li>
             <li>
                 <code>Answer</code> answers each confirm and alert as it opens: true confirms, false cancels, and null

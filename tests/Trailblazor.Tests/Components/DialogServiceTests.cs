@@ -115,6 +115,21 @@ public class DialogServiceTests : BunitContext
         Assert.Empty(Dialogs.OpenDialogs);
     }
 
+    [Theory]
+    [InlineData("accept", true)]
+    [InlineData("cancel", false)]
+    public async Task ShowAsync_ShouldReturnWhetherItWasConfirmed_WhenTheDialogHasNoResult(string button,
+        bool confirmed)
+    {
+        var host = Render<DialogHost>();
+        var showing = Dialogs.ShowAsync<NoticeDialog>("Notice");
+
+        await host.WaitForElement($"[data-testid={button}]").ClickAsync(new());
+
+        Assert.Equal(confirmed, await showing);
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
     [Fact]
     public async Task CloseButton_ShouldCancelTheDialog_WhenClicked()
     {
@@ -974,6 +989,21 @@ public class DialogServiceTests : BunitContext
             builder.AddAttribute(1, "data-testid", "maximize");
             builder.AddAttribute(2, "onclick",
                 EventCallback.Factory.Create(this, () => Dialog.WindowState = DialogWindowState.Maximized));
+            builder.CloseElement();
+        }
+    }
+
+    private sealed class NoticeDialog : TbDialogContent
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "data-testid", "accept");
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, CloseDialogAsync));
+            builder.CloseElement();
+            builder.OpenElement(3, "button");
+            builder.AddAttribute(4, "data-testid", "cancel");
+            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, CancelDialogAsync));
             builder.CloseElement();
         }
     }

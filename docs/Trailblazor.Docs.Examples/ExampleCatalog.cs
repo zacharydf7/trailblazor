@@ -4562,8 +4562,10 @@ public static class ExampleCatalog
                     },
                 },
                 new("opening", "Opening a dialog", "`IDialogService.ShowAsync` opens a component that inherits "
-                    + "`TbDialogContent` and waits for its result. Escape, the backdrop and the close button call "
-                    + "`OnDismissAsync`, which cancels by default. Override it to run a cancel of your own, as this "
+                    + "`TbDialogContent<TResult>` and waits for its result. A dialog with no result, such as one that "
+                    + "only informs, inherits `TbDialogContent`, and `ShowAsync` then returns whether it was "
+                    + "confirmed. Escape, the backdrop and the close button call `OnDismissAsync`, which cancels by "
+                    + "default. Override it to run a cancel of your own, as this "
                     + "rename dialog does to ask before discarding a changed "
                     + "name.", typeof(DialogExample), typeof(RenameDialog)),
                 new("confirming", "Confirming and alerting", "`ConfirmAsync` asks a question with two buttons, and "
@@ -4615,7 +4617,7 @@ public static class ExampleCatalog
                     + "buttons.", typeof(DialogWindowExample), typeof(RenameDialog)),
                 new("changing", "Changing an open dialog's window", "An open dialog can change. Set `Modal`, `Size`, "
                     + "`Position`, `WindowState`, `ShowHeader` or `CloseButton` on its reference, or on `Dialog` from "
-                    + "inside a `TbDialogContent`, as this notes dialog does.",
+                    + "inside a `TbDialogContent<TResult>`, as this notes dialog does.",
                     typeof(DialogChangingExample), typeof(NotesDialog)),
                 new("top-layer", "On the page instead of the top layer", "A dialog opens in the browser's top layer, "
                     + "above everything on the page. A popup another library adds to the page's body then opens "
@@ -4731,12 +4733,13 @@ public static class ExampleCatalog
                 </TbDialog>
                 """,
             TestingTip = "In bUnit, `this.ShowDialogAsync<TDialog, TResult>(title)` from `Trailblazor.Testing` hosts "
-                + "and opens a dialog in one call. "
+                + "and opens a dialog in one call, or `this.ShowDialogAsync<TDialog>(title)` for a dialog with no "
+                + "result. "
                 + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, and `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
                 + "finishes when the dialog closes, and whose `ContentType` and `Parameters` say what it shows. In "
                 + "bUnit, `FakeDialogService` records the dialogs opened through it, finds one with `Last<TDialog, "
-                + "TResult>()` or `LastConfirm()`, "
+                + "TResult>()`, `Last<TDialog>()` or `LastConfirm()`, "
                 + "and answers confirms and alerts with `Answer`, as the Testing guide shows. In Playwright, "
                 + "`page.Tb().Dialog(\"Delete report?\")` from "
                 + "`Trailblazor.Testing.Playwright` finds a dialog by its title: `WaitForAsync()` returns it once "

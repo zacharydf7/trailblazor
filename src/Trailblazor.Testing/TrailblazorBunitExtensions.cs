@@ -42,6 +42,8 @@ public static class TrailblazorBunitExtensions
         return context;
     }
 
+    // The overloads differ in their type parameter count, so no call is ambiguous.
+#pragma warning disable RS0026
     /// <summary>Opens a dialog for a test as a page would: renders a <see cref="TbRoot"/> to host it, opens
     /// <typeparamref name="TDialog"/> through <see cref="IDialogService"/>, and returns both. Find what the dialog
     /// shows through its <see cref="TestDialog{TDialog, TResult}.Root"/> or
@@ -63,6 +65,13 @@ public static class TrailblazorBunitExtensions
         var reference = await root.InvokeAsync(() => dialogs.Show<TDialog, TResult>(title, parameters, options));
         return new(root, reference);
     }
+
+    /// <summary>Opens a dialog with no result for a test, as <c>ShowDialogAsync&lt;TDialog, TResult&gt;</c> does.
+    /// </summary>
+    public static Task<TestDialog<TDialog, bool>> ShowDialogAsync<TDialog>(this BunitContext context, string title,
+        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+        where TDialog : TbDialogContent => context.ShowDialogAsync<TDialog, bool>(title, parameters, options);
+#pragma warning restore RS0026
 
     // bUnit consults its factories as it creates each component, after the services are fixed; this one creates none.
     private sealed class InteractiveByDefault(BunitContext context) : IComponentFactory

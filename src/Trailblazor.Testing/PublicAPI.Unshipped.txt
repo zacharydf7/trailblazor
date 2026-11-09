@@ -11,6 +11,7 @@ static Trailblazor.Testing.ScrollRequest.operator !=(Trailblazor.Testing.ScrollR
 static Trailblazor.Testing.ScrollRequest.operator ==(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
 static Trailblazor.Testing.TrailblazorBunitExtensions.AddTrailblazor(this Bunit.BunitContext! context, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Bunit.BunitContext!
 static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.BunitContext! context, string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
+static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog>(this Bunit.BunitContext! context, string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, bool>!>!
 static Trailblazor.Testing.TrailblazorMarkupExtensions.Tb<TComponent>(this Bunit.IRenderedComponent<TComponent>! rendered) -> Trailblazor.Testing.TrailblazorMarkup!
 Trailblazor.Testing.BrowserFile
 Trailblazor.Testing.BrowserFile.<Clone>$() -> Trailblazor.Testing.BrowserFile!
@@ -56,11 +57,14 @@ Trailblazor.Testing.FakeDialogService.Answer.set -> void
 Trailblazor.Testing.FakeDialogService.CloseAllAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.FakeDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.FakeDialogService.Last<TDialog, TResult>() -> Trailblazor.DialogReference<TResult>!
+Trailblazor.Testing.FakeDialogService.Last<TDialog>() -> Trailblazor.DialogReference<bool>!
 Trailblazor.Testing.FakeDialogService.LastConfirm() -> Trailblazor.DialogReference<bool>!
 Trailblazor.Testing.FakeDialogService.OpenDialogs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
 Trailblazor.Testing.FakeDialogService.Opened.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
 Trailblazor.Testing.FakeDialogService.Show<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
 Trailblazor.Testing.FakeDialogService.ShowAsync<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.Testing.FakeDialogService.Show<TDialog>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<bool>!
+Trailblazor.Testing.FakeDialogService.ShowAsync<TDialog>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.FakeDialogService.ShowDynamic<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
 Trailblazor.Testing.FakeDialogService.ShowDynamicAsync<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
 Trailblazor.Testing.ScrollRequest

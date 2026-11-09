@@ -100,6 +100,18 @@ public class FakeDialogServiceTests : BunitContext
         Assert.Same(first, Dialogs.Last<RenameDialog, string>());
     }
 
+    [Fact]
+    public async Task ShowAsync_ShouldRecordTheDialogForTheTestToClose_WhenItHasNoResult()
+    {
+        var showing = Dialogs.ShowAsync<NoticeDialog>("Trail notice");
+
+        var notice = Dialogs.Last<NoticeDialog>();
+        await notice.CloseAsync(true);
+
+        Assert.True(await showing);
+        Assert.Equal("Trail notice", Assert.Single(Dialogs.Opened).Title);
+    }
+
     private sealed class TrailPage : ComponentBase
     {
         private string _status = "";
@@ -144,4 +156,6 @@ public class FakeDialogServiceTests : BunitContext
     }
 
     private sealed class OtherDialog : TbDialogContent<string>;
+
+    private sealed class NoticeDialog : TbDialogContent;
 }

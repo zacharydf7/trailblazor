@@ -872,6 +872,8 @@ Trailblazor.IDialogService.ConfirmAsync(string! title, string! message, string? 
 Trailblazor.IDialogService.OpenDialogs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
 Trailblazor.IDialogService.Show<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
 Trailblazor.IDialogService.ShowAsync<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.IDialogService.Show<TDialog>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<bool>!
+Trailblazor.IDialogService.ShowAsync<TDialog>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.IDialogService.ShowDynamic<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
 Trailblazor.IDialogService.ShowDynamicAsync<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
 Trailblazor.ImageFit
@@ -1493,6 +1495,10 @@ Trailblazor.TbDialogActions
 Trailblazor.TbDialogActions.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDialogActions.ChildContent.set -> void
 Trailblazor.TbDialogActions.TbDialogActions() -> void
+Trailblazor.TbDialogContent
+Trailblazor.TbDialogContent.CloseDialogAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbDialogContent.CloseDialogAsync(bool value) -> System.Threading.Tasks.Task!
+Trailblazor.TbDialogContent.TbDialogContent() -> void
 Trailblazor.TbDialogContent<TResult>
 Trailblazor.TbDialogContent<TResult>.Dialog.get -> Trailblazor.DialogReference!
 Trailblazor.TbDialogContent<TResult>.TbDialogContent() -> void

@@ -174,6 +174,16 @@ public class ApiDocsTests
     }
 
     [Fact]
+    public void Describe_ShouldLinkToTheOverloadsOwnRow_WhenOverloadsDifferOnlyInTypeParameters()
+    {
+        var members = ApiDocs.Describe(typeof(IDialogService)).Members;
+        var show = members.Single(member => member.Name.StartsWith("Show<TDialog>(", StringComparison.Ordinal));
+
+        Assert.Equal("idialogservice-show-1", show.Id);
+        Assert.Contains("(components/dialog/api#idialogservice-show-2)", show.Description);
+    }
+
+    [Fact]
     public void Describe_ShouldLinkACrossReferenceToAGuide_WhenItsTargetIsTabledThere()
     {
         var check = ApiDocs.Describe(typeof(IBrowserService)).Members

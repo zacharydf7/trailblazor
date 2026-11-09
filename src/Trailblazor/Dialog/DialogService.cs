@@ -37,6 +37,14 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
 
+    public DialogReference<bool> Show<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
+        DialogOptions? options = null)
+        where TDialog : TbDialogContent => Show<TDialog, bool>(title, parameters, options);
+
+    public async Task<bool> ShowAsync<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
+        DialogOptions? options = null)
+        where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
+
     public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string title,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null)
     {
