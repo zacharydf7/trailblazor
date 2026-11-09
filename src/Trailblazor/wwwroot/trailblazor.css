@@ -833,6 +833,100 @@
         }
     }
 
+    .tb-avatar {
+        --tb-avatar-size: 2rem;
+        --tb-avatar-subtle: var(--tb-color-neutral-subtle);
+        --tb-avatar-text: var(--tb-color-neutral-text);
+        position: relative;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-sizing: border-box;
+        inline-size: var(--tb-avatar-size);
+        block-size: var(--tb-avatar-size);
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-avatar-subtle);
+        color: var(--tb-avatar-text);
+        font-size: calc(var(--tb-avatar-size) * 0.4);
+        font-weight: var(--tb-font-weight-semibold);
+        line-height: 1;
+        vertical-align: middle;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    .tb-avatar--small {
+        --tb-avatar-size: 1.5rem;
+    }
+
+    .tb-avatar--large {
+        --tb-avatar-size: 2.5rem;
+    }
+
+    .tb-avatar--rounded {
+        border-radius: var(--tb-radius-md);
+    }
+
+    .tb-avatar--primary {
+        --tb-avatar-subtle: var(--tb-color-primary-subtle);
+        --tb-avatar-text: var(--tb-color-primary-text);
+    }
+
+    .tb-avatar--success {
+        --tb-avatar-subtle: var(--tb-color-success-subtle);
+        --tb-avatar-text: var(--tb-color-success-text);
+    }
+
+    .tb-avatar--warning {
+        --tb-avatar-subtle: var(--tb-color-warning-subtle);
+        --tb-avatar-text: var(--tb-color-warning-text);
+    }
+
+    .tb-avatar--danger {
+        --tb-avatar-subtle: var(--tb-color-danger-subtle);
+        --tb-avatar-text: var(--tb-color-danger-text);
+    }
+
+    .tb-avatar--info {
+        --tb-avatar-subtle: var(--tb-color-info-subtle);
+        --tb-avatar-text: var(--tb-color-info-text);
+    }
+
+    .tb-avatar .tb-avatar__icon {
+        inline-size: 60%;
+        block-size: 60%;
+    }
+
+    .tb-avatar__image {
+        position: absolute;
+        inset: 0;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    .tb-avatar-group {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Each avatar after the first overlaps the one before, with a ring of the page's color between them. */
+    .tb-avatar-group > :not(:first-child) {
+        margin-inline-start: -0.5rem;
+    }
+
+    .tb-avatar-group .tb-avatar {
+        box-shadow: 0 0 0 2px var(--tb-color-surface);
+    }
+
+    @media (forced-colors: active) {
+        .tb-avatar {
+            border: 1px solid CanvasText;
+        }
+    }
+
     .tb-badge-host {
         display: inline-flex;
         align-items: center;

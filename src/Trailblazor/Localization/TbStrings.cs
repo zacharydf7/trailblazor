@@ -28,6 +28,9 @@ public static class TbStrings
     /// <summary>"Suggestions: {0}": announced when suggestions arrive; {0} is how many.</summary>
     public const string AutocompleteResults = "Autocomplete.Results";
 
+    /// <summary>"{0} more": names an avatar group's count of the people not shown; {0} is how many.</summary>
+    public const string AvatarGroupMore = "AvatarGroup.More";
+
     /// <summary>"Remove": names the remove button of a chip with no text.</summary>
     public const string ChipRemove = "Chip.Remove";
 
@@ -670,6 +673,7 @@ public static class TbStrings
         [AutocompleteSearchFailed] = "Couldn't load suggestions.",
         [AutocompleteTypeToSearch] = "Type to search",
         [AutocompleteResults] = "Suggestions: {0}",
+        [AvatarGroupMore] = "{0} more",
         [ChipRemove] = "Remove",
         [ChipRemoveNamed] = "Remove {0}",
         [ColorPickerOpen] = "Choose a color",

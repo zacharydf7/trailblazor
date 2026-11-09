@@ -1,0 +1,17 @@
+<TbStack Row Gap="4" Align="Align.Center" Wrap>
+    @foreach (var (name, tone) in _people)
+    {
+        <TbAvatar Name="@name" Tone="tone" />
+    }
+</TbStack>
+
+@code {
+    private static readonly Tone[] Tones = [Tone.Primary, Tone.Success, Tone.Warning, Tone.Danger, Tone.Info];
+
+    // Each person keeps the same color wherever they appear, because it comes from their id.
+    private readonly (string Name, Tone Tone)[] _people = new (int Id, string Name)[]
+    {
+        (101, "Katherine Johnson"), (102, "Dorothy Vaughan"), (103, "Margaret Hamilton"), (104, "Evelyn Boyd"),
+        (105, "Annie Easley"),
+    }.Select(person => (person.Name, Tones[person.Id % Tones.Length])).ToArray();
+}

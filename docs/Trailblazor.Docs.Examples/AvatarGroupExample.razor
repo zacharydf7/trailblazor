@@ -1,0 +1,14 @@
+<TbAvatarGroup AriaLabel="Trip members" More="@(_members.Length - Shown)">
+    @foreach (var member in _members.Take(Shown))
+    {
+        <TbAvatar Name="@member" />
+    }
+</TbAvatarGroup>
+
+@code {
+    private const int Shown = 4;
+
+    private readonly string[] _members =
+        ["Joan Clarke", "Hedy Lamarr", "Radia Perlman", "Frances Allen", "Barbara Liskov", "Adele Goldberg",
+            "Jean Bartik"];
+}

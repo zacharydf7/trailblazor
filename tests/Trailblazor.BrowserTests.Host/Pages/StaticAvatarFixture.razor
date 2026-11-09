@@ -1,0 +1,9 @@
+@page "/static-avatar"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where a picture that fails to load raises no error the avatar could handle. *@
+<TbStack Row Gap="4">
+    <TbAvatar Name="Grace Hopper" Src="missing-photo.png" data-testid="failed" />
+    <TbAvatar Name="Grace Hopper" data-testid="plain" />
+    <TbAvatar Name="Grace Hopper" Src="avatar-photo.svg" data-testid="relative" />
+</TbStack>

@@ -1,0 +1,108 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* The picture is a background over the initials because a background that fails to load draws nothing, so even
+   before the page is interactive the initials show, not a broken-image icon. *@
+<span @attributes="AdditionalAttributes" role="@(Decorative ? null : "img")" aria-label="@(Decorative ? null : Name)"
+      aria-hidden="@(Decorative ? "true" : null)" data-part="avatar" style="@Style"
+      class="@ClassNames.Join("tb-avatar", ClassNames.Modifier("tb-avatar", ShownSize),
+                 ClassNames.Modifier("tb-avatar", Shape), ClassNames.Modifier("tb-avatar", Tone), Class)">
+    @* Once the picture has loaded, the initials go, so they don't show through a picture with transparent parts. *@
+    @if (!_loaded && ShownInitials.Length > 0)
+    {
+        <span data-part="initials" aria-hidden="true" class="tb-avatar__initials">@ShownInitials</span>
+    }
+    else if (!_loaded)
+    {
+        <TbIcon Icon="@(Icon ?? BuiltInIcons.Person)" data-part="icon" class="tb-avatar__icon" />
+    }
+    @if (Src is not null && !_failed)
+    {
+        @* The background is set inline, not through a custom property, so a relative address resolves against the
+           page rather than the stylesheet. *@
+        <span data-part="image" aria-hidden="true" style="background-image: @CssUrl(Src)"
+              class="tb-avatar__image"></span>
+        @* Hidden, it only reports whether the picture loaded. *@
+        <img hidden src="@Src" alt="" @onload="() => _loaded = true" @onerror="() => _failed = true" />
+    }
+</span>
+
+@code {
+    private string? _shownSrc;
+    private bool _loaded;
+    private bool _failed;
+    private bool _givenSize;
+
+    /// <summary>Whose avatar it is, such as "Ada Lovelace": screen readers hear it, and the initials come from it.
+    /// Required unless <see cref="Decorative"/> is set.</summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>The address of their picture. While it loads, and if it fails to, the initials or icon show
+    /// instead.</summary>
+    [Parameter]
+    public string? Src { get; set; }
+
+    /// <summary>The letters to show instead of the ones taken from <see cref="Name"/> (the first letters of its first
+    /// and last words). An empty string shows the <see cref="Icon"/> instead.</summary>
+    [Parameter]
+    public string? Initials { get; set; }
+
+    /// <summary>The icon shown when there are no initials. Defaults to a person.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>How big the avatar is. Defaults to <see cref="Trailblazor.Size.Medium"/>, or the size of the
+    /// <see cref="TbAvatarGroup"/> it's in.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>The avatar's outline. Defaults to <see cref="AvatarShape.Circle"/>.</summary>
+    [Parameter]
+    public AvatarShape Shape { get; set; }
+
+    /// <summary>The color of the initials or icon and the space behind them. Defaults to
+    /// <see cref="Trailblazor.Tone.Neutral"/>; to tell people apart, pick one from something that stays the same for
+    /// each, such as their id.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Neutral;
+
+    /// <summary>Hides the avatar from screen readers. Use it when the person's name is shown beside the avatar, so
+    /// the name isn't heard twice.</summary>
+    [Parameter]
+    public bool Decorative { get; set; }
+
+    [CascadingParameter]
+    private TbAvatarGroup? Group { get; set; }
+
+    private Size ShownSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
+
+    private string ShownInitials => Initials ?? InitialsOf(Name);
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // In a group, the avatar takes the group's size unless it was given its own.
+        _givenSize = parameters.TryGetValue<Size>(nameof(Size), out _);
+        return base.SetParametersAsync(parameters);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // A new address gets its own chance to load, with the initials showing until it does.
+        if (Src != _shownSrc)
+        {
+            _shownSrc = Src;
+            _loaded = false;
+            _failed = false;
+        }
+
+        if (!Decorative && string.IsNullOrWhiteSpace(Name))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbAvatar)} needs a {nameof(Name)}. Set {nameof(Decorative)} instead when the name is shown "
+                + "beside it.");
+        }
+    }
+}

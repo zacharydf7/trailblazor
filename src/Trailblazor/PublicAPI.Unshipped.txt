@@ -3232,3 +3232,41 @@ const Trailblazor.TbStrings.RichTextEditorClearFormatting = "RichTextEditor.Clea
 const Trailblazor.TbStrings.RichTextEditorHorizontalRule = "RichTextEditor.HorizontalRule" -> string!
 Trailblazor.TbRichTextEditor.TransformPaste.get -> System.Func<Trailblazor.RichTextDocument!, Trailblazor.RichTextDocument!>?
 Trailblazor.TbRichTextEditor.TransformPaste.set -> void
+Trailblazor.AvatarShape
+Trailblazor.AvatarShape.Circle = 0 -> Trailblazor.AvatarShape
+Trailblazor.AvatarShape.Rounded = 1 -> Trailblazor.AvatarShape
+Trailblazor.TbAvatar
+Trailblazor.TbAvatar.Decorative.get -> bool
+Trailblazor.TbAvatar.Decorative.set -> void
+Trailblazor.TbAvatar.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbAvatar.Icon.set -> void
+Trailblazor.TbAvatar.Initials.get -> string?
+Trailblazor.TbAvatar.Initials.set -> void
+Trailblazor.TbAvatar.Name.get -> string?
+Trailblazor.TbAvatar.Name.set -> void
+Trailblazor.TbAvatar.Shape.get -> Trailblazor.AvatarShape
+Trailblazor.TbAvatar.Shape.set -> void
+Trailblazor.TbAvatar.Size.get -> Trailblazor.Size
+Trailblazor.TbAvatar.Size.set -> void
+Trailblazor.TbAvatar.Src.get -> string?
+Trailblazor.TbAvatar.Src.set -> void
+Trailblazor.TbAvatar.TbAvatar() -> void
+Trailblazor.TbAvatar.Tone.get -> Trailblazor.Tone
+Trailblazor.TbAvatar.Tone.set -> void
+Trailblazor.TbAvatarGroup
+Trailblazor.TbAvatarGroup.AriaLabel.get -> string?
+Trailblazor.TbAvatarGroup.AriaLabel.set -> void
+Trailblazor.TbAvatarGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAvatarGroup.ChildContent.set -> void
+Trailblazor.TbAvatarGroup.More.get -> int
+Trailblazor.TbAvatarGroup.More.set -> void
+Trailblazor.TbAvatarGroup.MoreLabel.get -> string?
+Trailblazor.TbAvatarGroup.MoreLabel.set -> void
+Trailblazor.TbAvatarGroup.Size.get -> Trailblazor.Size
+Trailblazor.TbAvatarGroup.Size.set -> void
+Trailblazor.TbAvatarGroup.TbAvatarGroup() -> void
+const Trailblazor.TbStrings.AvatarGroupMore = "AvatarGroup.More" -> string!
+override Trailblazor.TbAvatar.OnParametersSet() -> void
+override Trailblazor.TbAvatar.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbAvatar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbAvatarGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

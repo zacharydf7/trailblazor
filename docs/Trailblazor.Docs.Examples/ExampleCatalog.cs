@@ -267,6 +267,79 @@ public static class ExampleCatalog
             TestingTip = "Text cut off by `MaxLines` is still all in the markup, so text assertions and `GetByText` "
                 + "match the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
         },
+        new("avatar", "Avatar", ExampleCategory.Content,
+            "A small picture of a person or a team: their photo, their initials, or an icon.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to show who someone is at a glance, such as beside a comment, in a list of members, or as "
+                    + "the button that opens their account menu.",
+            ],
+            WhenNotToUse =
+            [
+                "For a picture that is part of the content, use an [image](components/image).",
+                "For a small symbol, use an [icon](components/icon).",
+            ],
+            Related = ["image", "badge", "menu"],
+            Sections =
+            [
+                new("basic", "Picture, initials or icon", "`Name` says whose avatar it is. With `Src`, the avatar "
+                    + "shows their picture. Without one, and while the picture loads or if it fails to, it shows the "
+                    + "first letters of their first and last names. An empty `Initials` shows an icon instead: a "
+                    + "person, unless `Icon` gives another.", typeof(AvatarExample)),
+                new("size-and-shape", "Size and shape", "`Size` makes an avatar `Small`, `Medium` or `Large`, and "
+                    + "`Shape=\"AvatarShape.Rounded\"` gives it rounded corners, as for a team or a project.",
+                    typeof(AvatarSizeExample)),
+                new("tone", "Tone", "`Tone` colors the initials and the space behind them. To tell people apart, "
+                    + "pick it from something that stays the same for each, such as their id.",
+                    typeof(AvatarToneExample)),
+                new("group", "Group", "A `TbAvatarGroup` overlaps its avatars. Render only the ones that fit and set "
+                    + "`More` to how many others there are; the group shows it as \"+3\".", typeof(AvatarGroupExample)),
+                new("beside-a-name", "Beside a name", "Next to the person's name, `Decorative` keeps screen readers "
+                    + "from hearing the name twice. A [badge](components/badge) with `Overlap=\"BadgeOverlap.Circular\"` "
+                    + "marks their status.", typeof(AvatarNameExample)),
+            ],
+            Api = [typeof(TbAvatar), typeof(TbAvatarGroup)],
+            Labeling =
+            [
+                "The avatar is an image named by `Name`, so screen readers hear \"Ada Lovelace, image\". It needs a "
+                    + "`Name` unless it's `Decorative`, and throws when it renders without either.",
+                "A group is named by its `AriaLabel`, such as \"Trip members\", and its count by `MoreLabel`, which "
+                    + "defaults to \"3 more\" in English.",
+            ],
+            AppDuties =
+            [
+                "Give each avatar the person's full name, even when it shows only their initials or picture.",
+                "Make an avatar `Decorative` when the name is right beside it.",
+            ],
+            Accessibility =
+            [
+                "The avatar has `role=\"img\"`, and its picture and initials are hidden from screen readers, so it's "
+                    + "heard once, by its name.",
+                "It takes no focus: to make one a button, put it inside a [button](components/button) or a menu's "
+                    + "trigger, whose name says what it does.",
+                "In forced-colors mode, such as Windows high contrast, each avatar keeps an outline.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as plain HTML. A picture that fails to load lets the initials show through, with or "
+                    + "without interactivity.",
+            ],
+            Target = new("img", "Ada Lovelace"),
+            Blocks = ["tb-avatar", "tb-avatar-group"],
+            DataParts =
+            [
+                new("avatar", "The avatar itself."),
+                new("image", "Its picture, over the initials or icon."),
+                new("initials", "Its initials."),
+                new("icon", "Its icon, when there are no initials."),
+                new("group", "A group of avatars."),
+                new("more", "The group's count of the others, as in \"+3\"."),
+            ],
+            TestingTip = "Find an avatar by its role and name: `GetByRole(AriaRole.Img, new() { Name = \"Ada Lovelace\" })` "
+                + "in Playwright, or `[data-part=avatar][aria-label='Ada Lovelace']` in bUnit.",
+        },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
         {
@@ -278,9 +351,9 @@ public static class ExampleCatalog
             WhenNotToUse =
             [
                 "For a small symbol, use an [icon](components/icon).",
-                "For a person's picture or initials, use an avatar where your app has one.",
+                "For a person's picture or initials, use an [avatar](components/avatar).",
             ],
-            Related = ["icon", "surface"],
+            Related = ["icon", "surface", "avatar"],
             Sections =
             [
                 new("fluid", "Fluid", "`Fluid` scales the image down to fit its container, keeping its shape. `Width` "

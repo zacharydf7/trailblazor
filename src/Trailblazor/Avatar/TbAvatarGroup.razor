@@ -1,0 +1,44 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@using System.Globalization
+@inject ITbLocalizer Localizer
+
+<div @attributes="AdditionalAttributes" role="group" aria-label="@AriaLabel" data-part="group" style="@Style"
+     class="@ClassNames.Join("tb-avatar-group", Class)">
+    <CascadingValue Value="this">@ChildContent</CascadingValue>
+    @if (More > 0)
+    {
+        <span role="img" aria-label="@MoreName" data-part="more"
+              class="@ClassNames.Join("tb-avatar", ClassNames.Modifier("tb-avatar", Size), "tb-avatar--more")">
+            <span aria-hidden="true" class="tb-avatar__initials">+@More.ToString(CultureInfo.CurrentCulture)</span>
+        </span>
+    }
+</div>
+
+@code {
+    /// <summary>The avatars to show, in the order they overlap.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>How many others aren't shown, which the group shows as "+3" after its avatars. Render only the
+    /// avatars that fit, such as the first four, and set this to the number left.</summary>
+    [Parameter]
+    public int More { get; set; }
+
+    /// <summary>The size of the avatars in the group, unless one is given its own. Defaults to
+    /// <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>Names the group for screen readers, such as "Trip members".</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>What screen readers hear for the count of the rest, with <c>{0}</c> for the number. Leave it null for
+    /// the app's text for <see cref="TbStrings.AvatarGroupMore"/>.</summary>
+    [Parameter]
+    public string? MoreLabel { get; set; }
+
+    private string MoreName =>
+        string.Format(CultureInfo.CurrentCulture, MoreLabel ?? Localizer[TbStrings.AvatarGroupMore], More);
+}

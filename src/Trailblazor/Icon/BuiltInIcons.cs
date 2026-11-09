@@ -15,6 +15,9 @@ internal static class BuiltInIcons
 
     public static Icon Monitor { get; } = new("<path d=\"M2 4h20v13h-9v2h3v2H8v-2h3v-2H2zm2 2v9h16V6z\" />");
 
+    public static Icon Person { get; } =
+        new("<path d=\"M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5z\" />");
+
     public static Icon Calendar { get; } =
         new("<path d=\"M7 2h2v2h6V2h2v2h3v18H4V4h3zM6 10v10h12V10zm0-2h12V6H6zm2 4h3v3H8z\" />");
 
