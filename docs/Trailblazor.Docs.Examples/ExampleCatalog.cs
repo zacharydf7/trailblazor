@@ -5298,6 +5298,97 @@ public static class ExampleCatalog
             TestingTip = "Find it by role and name, `GetByRole(AriaRole.Table, new() { Name = \"Opening hours\" })`, "
                 + "and its cells with `GetByRole(AriaRole.Cell, ...)`.",
         },
+        new("breadcrumbs", "Breadcrumbs", ExampleCategory.Navigation,
+            "A trail of links from the top of a site down to the current page, so people can see where they are and "
+                + "go back up.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it on pages nested a few levels deep, such as a project's settings, so people can go back up to "
+                    + "any level above.",
+            ],
+            WhenNotToUse =
+            [
+                "For moving between pages at the same level, use [tabs](components/tabs) or "
+                    + "[pagination](components/pagination).",
+                "For the steps of a task done in order, use a stepper.",
+            ],
+            Related = ["link", "tabs", "pagination"],
+            Pattern = new("breadcrumb", "https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/"),
+            Sections =
+            [
+                new("basic", "Trail", "Each `TbBreadcrumb` with an `Href` is a link. `Current` marks the page people "
+                    + "are on, which screen readers hear as the current page; set it on the last item when the trail "
+                    + "ends there.", typeof(BreadcrumbsExample)),
+                new("plain-text", "Plain text and labels", "An item without an `Href` is plain text, for a section "
+                    + "with no page of its own. The current item can also have an `Href`, and stays a link. "
+                    + "`AriaLabel` names the trail, \"Breadcrumb\" unless set; when a page has more than one trail, give "
+                    + "each its own name.",
+                    typeof(BreadcrumbsTextExample)),
+                new("separator", "Separator and icons", "`Separator` changes what goes between the items, a chevron "
+                    + "unless set; screen readers skip it. An item can hold an icon beside its text.",
+                    typeof(BreadcrumbsSeparatorExample)),
+            ],
+            Api = [typeof(TbBreadcrumbs), typeof(TbBreadcrumb)],
+            Anatomy = """
+                <TbBreadcrumbs AriaLabel="…">
+                    <Separator>…</Separator>
+                    <ChildContent>
+                        <TbBreadcrumb Href="…">…</TbBreadcrumb>
+                        <TbBreadcrumb Current>…</TbBreadcrumb>
+                    </ChildContent>
+                </TbBreadcrumbs>
+                """,
+            Keyboard =
+            [
+                new(["Tab"], "Moves between the links, each its own tab stop."),
+                new(["Enter"], "Follows the link."),
+            ],
+            Labeling =
+            [
+                "A `navigation` landmark named by `AriaLabel` (\"Breadcrumb\" by default), holding a list with one "
+                    + "item for each step.",
+                "Each link is named by its text.",
+            ],
+            Announcements =
+            [
+                "The current item has `aria-current=\"page\"`, so screen readers hear \"current page\". The separators "
+                    + "are hidden from screen readers.",
+            ],
+            Accessibility =
+            [
+                "In right-to-left text the trail runs from right to left, and the chevrons point left.",
+                "A trail too long for its line wraps onto the next, so every step stays visible.",
+            ],
+            AppDuties =
+            [
+                "Mark the page people are on with `Current`, on the last item when the trail ends at it.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as plain HTML, and its links already work.",
+            ],
+            Target = new("navigation", "Breadcrumb"),
+            Blocks = ["tb-breadcrumbs"],
+            DataParts =
+            [
+                new("breadcrumbs", "The trail's navigation landmark."),
+                new("breadcrumb", "One item in the trail."),
+                new("link", "An item's link."),
+                new("text", "An item without an address, shown as plain text."),
+                new("separator", "What goes before each item; the stylesheet hides the first item's."),
+            ],
+            TestingTip = "Find the trail by its landmark, "
+                + "`GetByRole(AriaRole.Navigation, new() { Name = \"Breadcrumb\" })`, and the page it marks as current "
+                + "with `Locator(\"[aria-current=page]\")`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"project-breadcrumbs\"`, it counts `trailblazor.control.shown` as "
+                    + "it first renders and `trailblazor.control.used` for each link followed. Which link was followed "
+                    + "is never recorded.",
+            ],
+        },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
                 + "page number.")

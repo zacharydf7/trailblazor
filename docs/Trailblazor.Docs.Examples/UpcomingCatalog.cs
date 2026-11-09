@@ -82,7 +82,6 @@ public static class UpcomingCatalog
         new("Popconfirm", ExampleCategory.Overlays, 69),
         new("Product tour", ExampleCategory.Overlays, 191),
         new("Sheet", ExampleCategory.Overlays, 59),
-        new("Breadcrumbs", ExampleCategory.Navigation, 60),
         new("File manager", ExampleCategory.Navigation, 209),
         new("Menubar", ExampleCategory.Navigation, 187),
         new("Stepper", ExampleCategory.Navigation, 62),

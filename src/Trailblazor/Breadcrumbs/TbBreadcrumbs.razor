@@ -1,0 +1,46 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@inject ITbLocalizer Localizer
+
+<nav @attributes="AdditionalAttributes" aria-label="@(AriaLabel ?? Localizer[TbStrings.BreadcrumbsNavigation])"
+     data-part="breadcrumbs" style="@Style" class="@ClassNames.Join("tb-breadcrumbs", Class)">
+    @* Safari drops the list role from a list without bullets, so it is set again. *@
+    <ol role="list" class="tb-breadcrumbs__list">
+        <CascadingValue Value="this">@ChildContent</CascadingValue>
+    </ol>
+</nav>
+
+@code {
+    private ControlTelemetry? _telemetry;
+
+    /// <summary>The <see cref="TbBreadcrumb"/> items, from the top of the site down to the current page.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Names the navigation for screen readers. Defaults to the app's text for
+    /// <see cref="TbStrings.BreadcrumbsNavigation"/>, "Breadcrumb" in English.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>What goes between the items, such as <c>/</c>. Screen readers skip it. Defaults to a chevron.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Separator { get; set; }
+
+    /// <summary>A label this trail's use is counted under, such as <c>"project-breadcrumbs"</c>, so the app can count
+    /// how often people see it and follow its links through the <c>Trailblazor</c> meter. Controls that share a label
+    /// count together; a control without one isn't counted. It names what the control does, never the user, and must
+    /// never hold a credential.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    internal void Followed() => Telemetry.Used(TelemetryName);
+}

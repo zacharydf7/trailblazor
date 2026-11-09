@@ -187,7 +187,7 @@ public class ExampleCatalogTests
     {
         string[] composed = ["dialog", "select", "listbox", "tabs", "menu", "accordion", "toolbar", "data-grid",
             "tree-view", "radio-group", "checkbox-group", "splitter", "toggle-group", "grid", "chip", "list",
-            "table-of-contents", "button-group"];
+            "table-of-contents", "button-group", "breadcrumbs"];
 
         Assert.All(composed, name => Assert.NotNull(ExampleCatalog.Find(name)!.Anatomy));
     }

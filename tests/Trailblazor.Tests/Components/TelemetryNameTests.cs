@@ -54,6 +54,21 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public void Breadcrumbs_ShouldCountTheLinksFollowed_WhenTheTrailHasATelemetryName()
+    {
+        var cut = Render<TbBreadcrumbs>(parameters => parameters
+            .Add(trail => trail.TelemetryName, "project-breadcrumbs")
+            .AddChildContent<TbBreadcrumb>(item => item.Add(crumb => crumb.Href, "/").AddChildContent("Home"))
+            .AddChildContent<TbBreadcrumb>(item => item.Add(crumb => crumb.Current, true)
+                .AddChildContent("Ridge loop")));
+
+        cut.Find("a").Click();
+
+        Assert.Equal(["project-breadcrumbs"], Names(_shown));
+        Assert.Equal([("project-breadcrumbs", "TbBreadcrumbs", null)], Uses());
+    }
+
+    [Fact]
     public async Task Menu_ShouldCountItsOpensAndItsItemsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")

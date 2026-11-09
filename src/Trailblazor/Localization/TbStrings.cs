@@ -31,6 +31,9 @@ public static class TbStrings
     /// <summary>"{0} more": names an avatar group's count of the people not shown; {0} is how many.</summary>
     public const string AvatarGroupMore = "AvatarGroup.More";
 
+    /// <summary>"Breadcrumb": names a breadcrumb trail's navigation.</summary>
+    public const string BreadcrumbsNavigation = "Breadcrumbs.Navigation";
+
     /// <summary>"Remove": names the remove button of a chip with no text.</summary>
     public const string ChipRemove = "Chip.Remove";
 
@@ -674,6 +677,7 @@ public static class TbStrings
         [AutocompleteTypeToSearch] = "Type to search",
         [AutocompleteResults] = "Suggestions: {0}",
         [AvatarGroupMore] = "{0} more",
+        [BreadcrumbsNavigation] = "Breadcrumb",
         [ChipRemove] = "Remove",
         [ChipRemoveNamed] = "Remove {0}",
         [ColorPickerOpen] = "Choose a color",

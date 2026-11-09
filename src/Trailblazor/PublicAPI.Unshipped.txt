@@ -3270,3 +3270,26 @@ override Trailblazor.TbAvatar.OnParametersSet() -> void
 override Trailblazor.TbAvatar.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 ~override Trailblazor.TbAvatar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbAvatarGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbBreadcrumb
+Trailblazor.TbBreadcrumb.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbBreadcrumb.ChildContent.set -> void
+Trailblazor.TbBreadcrumb.Current.get -> bool
+Trailblazor.TbBreadcrumb.Current.set -> void
+Trailblazor.TbBreadcrumb.Href.get -> string?
+Trailblazor.TbBreadcrumb.Href.set -> void
+Trailblazor.TbBreadcrumb.TbBreadcrumb() -> void
+Trailblazor.TbBreadcrumbs
+Trailblazor.TbBreadcrumbs.AriaLabel.get -> string?
+Trailblazor.TbBreadcrumbs.AriaLabel.set -> void
+Trailblazor.TbBreadcrumbs.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbBreadcrumbs.ChildContent.set -> void
+Trailblazor.TbBreadcrumbs.Separator.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbBreadcrumbs.Separator.set -> void
+Trailblazor.TbBreadcrumbs.TbBreadcrumbs() -> void
+const Trailblazor.TbStrings.BreadcrumbsNavigation = "Breadcrumbs.Navigation" -> string!
+override Trailblazor.TbBreadcrumb.OnInitialized() -> void
+~override Trailblazor.TbBreadcrumb.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbBreadcrumbs.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbBreadcrumbs.TelemetryName.get -> string?
+Trailblazor.TbBreadcrumbs.TelemetryName.set -> void
+override Trailblazor.TbBreadcrumbs.OnAfterRender(bool firstRender) -> void

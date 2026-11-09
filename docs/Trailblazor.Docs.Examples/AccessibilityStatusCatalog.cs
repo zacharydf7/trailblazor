@@ -76,6 +76,7 @@ public static class AccessibilityStatusCatalog
         new("tree-view", Tested, Tested, Tested),
         new("data-grid", Tested, NotYet, NotYet),
         new("table", None, NotYet, None),
+        new("breadcrumbs", None, None, None),
         new("pagination", Tested, Tested, None),
         new("table-of-contents", NotYet, NotYet, Tested),
         new("link", Tested, Tested, None),

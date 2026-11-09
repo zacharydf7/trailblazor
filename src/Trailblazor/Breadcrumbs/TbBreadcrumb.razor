@@ -1,0 +1,58 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<li @attributes="AdditionalAttributes" data-part="breadcrumb" style="@Style"
+    class="@ClassNames.Join("tb-breadcrumbs__item", Current ? "tb-breadcrumbs__item--current" : null, Class)">
+    @* The first item's separator is hidden by the stylesheet. *@
+    <span aria-hidden="true" data-part="separator" class="tb-breadcrumbs__separator">
+        @if (Trail!.Separator is null)
+        {
+            <TbIcon Icon="DefaultSeparator" Size="Size.Small" />
+        }
+        else
+        {
+            @Trail.Separator
+        }
+    </span>
+    @if (Href is null)
+    {
+        <span aria-current="@CurrentAttribute" data-part="text" class="tb-breadcrumbs__text">@ChildContent</span>
+    }
+    else
+    {
+        <TbLink Href="@Href" OnClick="Trail.Followed" aria-current="@CurrentAttribute" data-part="link"
+                Class="tb-breadcrumbs__link">@ChildContent</TbLink>
+    }
+</li>
+
+@code {
+    private static readonly Icon DefaultSeparator = BuiltInIcons.ChevronEnd with { MirrorsInRightToLeft = true };
+
+    /// <summary>The item's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The address of the page. Without one, the item is plain text, as for a section with no page of its
+    /// own.</summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary>Marks the item as the page people are on, which screen readers hear as "current page". Set it on
+    /// the last item when the trail ends at the current page.</summary>
+    [Parameter]
+    public bool Current { get; set; }
+
+    [CascadingParameter]
+    private TbBreadcrumbs? Trail { get; set; }
+
+    private string? CurrentAttribute => Current ? "page" : null;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Trail is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbBreadcrumb)} must be inside a {nameof(TbBreadcrumbs)}.");
+        }
+    }
+}
