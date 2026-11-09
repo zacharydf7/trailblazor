@@ -138,6 +138,24 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
+    public async Task SoftNeutralButton_ShouldNotLookDisabled_WhenAPaletteAndThemeAreApplied(string browser,
+        string palette, string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+        await SetThemeAsync(page, theme);
+        const string Soft = "tb-button tb-button--neutral tb-button--soft";
+
+        var text = await GetLuminanceAsync(page, "--tb-button-text", Soft);
+        var fill = await GetLuminanceAsync(page, "--tb-button-subtle", Soft);
+        var background = await GetLuminanceAsync(page, "--tb-color-background");
+
+        // Below these, a soft neutral button reads as disabled beside other buttons.
+        Assert.True(ContrastRatio(text, fill) >= 6.5, $"Text on fill: {ContrastRatio(text, fill):F2}");
+        Assert.True(ContrastRatio(fill, background) >= 1.3, $"Fill on page: {ContrastRatio(fill, background):F3}");
+    }
+
+    [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
     public async Task SubtleFills_ShouldStandOutFromEverySurfaceAndEachOther_WhenAPaletteAndThemeAreApplied(
         string browser, string palette, string theme)
     {

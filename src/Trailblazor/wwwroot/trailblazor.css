@@ -1950,6 +1950,13 @@
         color: var(--tb-button-text);
     }
 
+    /* Neutral has no hue to set it apart, so its soft fill and gray text read as disabled; a stronger fill and the
+       body text's color make it read as a control. */
+    .tb-button--neutral.tb-button--soft {
+        --tb-button-subtle: color-mix(in oklch, var(--tb-color-neutral-subtle), var(--tb-color-neutral-text) 12%);
+        --tb-button-text: var(--tb-color-text);
+    }
+
     .tb-button--text {
         background: transparent;
         color: var(--tb-button-text);

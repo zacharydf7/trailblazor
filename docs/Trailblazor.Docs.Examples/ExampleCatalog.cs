@@ -720,7 +720,9 @@ public static class ExampleCatalog
                         ExampleControl.Switch(nameof(TbButton.Loading))),
                 },
                 new("variants-and-tones", "Variants and tones", "`Variant` sets how much weight a button has, and "
-                    + "`Tone` what kind of action it is. Use `Danger` for what can't be undone.", typeof(ButtonExample)),
+                    + "`Tone` what kind of action it is. Use `Danger` for what can't be undone. A soft neutral button "
+                    + "takes the body text's color on a slightly stronger fill than other neutral parts, so it doesn't "
+                    + "look disabled.", typeof(ButtonExample)),
                 new("clicks", "Clicks", "`OnClick` runs when the button is pressed by a pointer, Enter or Space.",
                     typeof(ButtonClickExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`.", typeof(ButtonSizeExample)),
