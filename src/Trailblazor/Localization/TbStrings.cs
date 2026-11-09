@@ -346,6 +346,18 @@ public static class TbStrings
     /// <summary>"Restore {0}": a grip menu item that restores a collapsed pane.</summary>
     public const string SplitterRestore = "Splitter.Restore";
 
+    /// <summary>"Completed": tells screen readers a step of a stepper is done.</summary>
+    public const string StepperCompleted = "Stepper.Completed";
+
+    /// <summary>"Current step: {0}": announced as a stepper moves to another step; {0} is the step's title.</summary>
+    public const string StepperCurrent = "Stepper.Current";
+
+    /// <summary>"Progress": names a stepper's list of steps.</summary>
+    public const string StepperLabel = "Stepper.Label";
+
+    /// <summary>"Optional": shown under the title of a step that can be skipped.</summary>
+    public const string StepperOptional = "Stepper.Optional";
+
     /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
     public const string TableOfContentsNavigation = "TableOfContents.Navigation";
 
@@ -789,6 +801,10 @@ public static class TbStrings
         [SplitterSmaller] = "Make {0} smaller",
         [SplitterCollapse] = "Collapse {0}",
         [SplitterRestore] = "Restore {0}",
+        [StepperCompleted] = "Completed",
+        [StepperCurrent] = "Current step: {0}",
+        [StepperLabel] = "Progress",
+        [StepperOptional] = "Optional",
         [TableOfContentsNavigation] = "On this page",
         [TextFieldClear] = "Clear",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",

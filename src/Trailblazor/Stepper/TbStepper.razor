@@ -1,0 +1,62 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@inject ITbLocalizer Localizer
+
+@* Safari drops the list role from a list without bullets, so it is set again. Screen readers hear each step's place
+   in the list, as in "2 of 4", and the stylesheet numbers them in the same order. *@
+<ol @attributes="AdditionalAttributes" role="list" aria-label="@(AriaLabel ?? Localizer[TbStrings.StepperLabel])"
+    data-part="stepper" style="@Style"
+    class="@ClassNames.Join("tb-stepper", Vertical ? "tb-stepper--vertical" : null, Class)">
+    <CascadingValue Value="this">@ChildContent</CascadingValue>
+</ol>
+
+@code {
+    private string? _lastActive;
+
+    /// <summary>The <see cref="TbStep"/> items, in order.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The <see cref="TbStep.Key"/> of the step people are on. Bind it with <c>@bind-Active</c>: it changes
+    /// when people choose a step, and the app changes it to move on, such as from its Next button.</summary>
+    [Parameter]
+    public string? Active { get; set; }
+
+    /// <summary>Raised when people choose a step.</summary>
+    [Parameter]
+    public EventCallback<string?> ActiveChanged { get; set; }
+
+    /// <summary>Lets people go only to completed steps, so they finish the steps in order. Defaults to true; set it to
+    /// false to let them go to any step.</summary>
+    [Parameter]
+    public bool Linear { get; set; } = true;
+
+    /// <summary>Lays the steps out in a column, with the current step's content under it. In a horizontal stepper,
+    /// the app shows the current step's content itself, under the stepper.</summary>
+    [Parameter]
+    public bool Vertical { get; set; }
+
+    /// <summary>Names the list of steps for screen readers. Defaults to the app's text for
+    /// <see cref="TbStrings.StepperLabel"/>, "Progress" in English.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    internal string? Current { get; private set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Active != _lastActive)
+        {
+            _lastActive = Active;
+            Current = Active;
+        }
+    }
+
+    internal Task GoToAsync(string key)
+    {
+        Current = key;
+        StateHasChanged();
+        return ActiveChanged.InvokeAsync(key);
+    }
+}

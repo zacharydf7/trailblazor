@@ -1,0 +1,10 @@
+<TbStepper @bind-Active="_step" Linear="false" AriaLabel="Trail report">
+    <TbStep Title="Trail" Description="Ridge loop" Completed />
+    <TbStep Title="Conditions" Error="Add the weather." />
+    <TbStep Title="Photos" Optional />
+    <TbStep Title="Review" Disabled />
+</TbStepper>
+
+@code {
+    private string? _step = "Photos";
+}

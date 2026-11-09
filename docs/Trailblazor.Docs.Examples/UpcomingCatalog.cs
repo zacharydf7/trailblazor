@@ -81,7 +81,6 @@ public static class UpcomingCatalog
         new("Sheet", ExampleCategory.Overlays, 59),
         new("File manager", ExampleCategory.Navigation, 209),
         new("Menubar", ExampleCategory.Navigation, 187),
-        new("Stepper", ExampleCategory.Navigation, 62),
         new("Banner", ExampleCategory.Feedback, 71),
         new("Empty state", ExampleCategory.Feedback, 70),
     ];

@@ -4076,6 +4076,172 @@
         }
     }
 
+    .tb-stepper {
+        --tb-stepper-indicator-size: 1.75rem;
+        display: flex;
+        gap: var(--tb-space-1);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: tb-step;
+    }
+
+    .tb-stepper__step {
+        flex: 1 1 0;
+        min-width: 0;
+        counter-increment: tb-step;
+    }
+
+    .tb-stepper__header {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        box-sizing: border-box;
+        width: 100%;
+        padding: var(--tb-space-2);
+        border: 0;
+        border-radius: var(--tb-radius-md);
+        background: none;
+        color: var(--tb-color-text);
+        font: inherit;
+        text-align: start;
+    }
+
+    button.tb-stepper__header {
+        cursor: pointer;
+    }
+
+    button.tb-stepper__header:hover {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-stepper__header:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    /* A line runs from each step to the next, across the page. */
+    .tb-stepper:not(.tb-stepper--vertical) .tb-stepper__step:not(:last-child) .tb-stepper__header::after {
+        content: "";
+        flex: 1;
+        min-width: var(--tb-space-4);
+        height: 1px;
+        background: var(--tb-border-strong);
+    }
+
+    .tb-stepper__indicator {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        width: var(--tb-stepper-indicator-size);
+        height: var(--tb-stepper-indicator-size);
+        border: 1px solid var(--tb-border-strong);
+        border-radius: var(--tb-radius-full);
+        font-size: var(--tb-font-size-sm);
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    /* A step shows its number until it is done or has an error, which show an icon instead. */
+    .tb-stepper__step:not(.tb-stepper__step--completed, .tb-stepper__step--error) .tb-stepper__indicator::before {
+        content: counter(tb-step);
+    }
+
+    .tb-stepper__step--current .tb-stepper__indicator {
+        border-color: var(--tb-color-primary);
+        background: var(--tb-color-primary);
+        color: var(--tb-color-on-primary);
+    }
+
+    .tb-stepper__step--completed .tb-stepper__indicator {
+        border-color: var(--tb-color-primary);
+        background: var(--tb-color-primary-subtle);
+        color: var(--tb-color-primary-text);
+    }
+
+    .tb-stepper__step--error .tb-stepper__indicator {
+        border-color: var(--tb-color-danger);
+        background: var(--tb-color-danger-subtle);
+        color: var(--tb-color-danger-text);
+    }
+
+    /* Muted rather than the disabled gray: the step is text, not a disabled control, so its contrast still counts. */
+    .tb-stepper__step--disabled .tb-stepper__header {
+        color: var(--tb-color-text-muted);
+    }
+
+    /* break-word, not anywhere, so a long word can still break but the text's min-content width stays its longest
+       word. */
+    .tb-stepper__text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow-wrap: break-word;
+    }
+
+    .tb-stepper__step--current .tb-stepper__title {
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-stepper__note {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-stepper__error {
+        color: var(--tb-color-danger-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    /* Each step of a horizontal stepper is measured on its own, since its share of the width shrinks with the number
+       of steps. */
+    .tb-stepper:not(.tb-stepper--vertical) > .tb-stepper__step {
+        container-type: inline-size;
+    }
+
+    /* In a narrow step, the title goes under its number, so it can use the step's whole width. */
+    @container (max-width: 9rem) {
+        .tb-stepper:not(.tb-stepper--vertical) .tb-stepper__header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .tb-stepper:not(.tb-stepper--vertical) .tb-stepper__step:not(:last-child) .tb-stepper__header::after {
+            display: none;
+        }
+    }
+
+    .tb-stepper--vertical {
+        flex-direction: column;
+    }
+
+    .tb-stepper--vertical .tb-stepper__step {
+        flex: none;
+    }
+
+    /* Under the current step, its content lines up with the title, beside a line down from the number. */
+    .tb-stepper__content {
+        margin-inline-start: calc(var(--tb-space-2) + var(--tb-stepper-indicator-size) / 2);
+        padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-4)
+            calc(var(--tb-space-2) + var(--tb-stepper-indicator-size) / 2);
+        border-inline-start: 1px solid var(--tb-border-strong);
+    }
+
+    @media (forced-colors: active) {
+        .tb-stepper:not(.tb-stepper--vertical) .tb-stepper__step:not(:last-child) .tb-stepper__header::after {
+            background: CanvasText;
+        }
+
+        .tb-stepper__step--current .tb-stepper__indicator {
+            border-width: 2px;
+            border-color: Highlight;
+            background: Highlight;
+            color: HighlightText;
+            forced-color-adjust: none;
+        }
+    }
+
     .tb-select__trigger {
         display: flex;
         align-items: center;

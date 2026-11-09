@@ -1,0 +1,26 @@
+<TbStepper @bind-Active="_step" Vertical AriaLabel="Account setup">
+    <TbStep Title="Profile" Completed="_profile">
+        <TbStack Gap="2">
+            <TbText>Add your name and a photo.</TbText>
+            <TbButton OnClick="() => (_profile, _step) = (true, Alerts)">Continue</TbButton>
+        </TbStack>
+    </TbStep>
+    <TbStep Title="@Alerts" Optional Completed="_alerts">
+        <TbStack Gap="2">
+            <TbText>Choose which trail alerts to get.</TbText>
+            <TbButton OnClick="() => (_alerts, _step) = (true, Done)">Continue</TbButton>
+        </TbStack>
+    </TbStep>
+    <TbStep Title="@Done">
+        <TbText>You're set up.</TbText>
+    </TbStep>
+</TbStepper>
+
+@code {
+    private const string Alerts = "Trail alerts";
+    private const string Done = "Finish";
+
+    private string? _step = "Profile";
+    private bool _profile;
+    private bool _alerts;
+}

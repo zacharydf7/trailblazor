@@ -1,0 +1,147 @@
+@namespace Trailblazor
+@using System.Globalization
+@inherits TbComponentBase
+@inject ITbLocalizer Localizer
+@inject IAnnouncer Announcer
+
+<li @attributes="AdditionalAttributes" data-part="step" style="@Style"
+    class="@ClassNames.Join("tb-stepper__step", IsCurrent ? "tb-stepper__step--current" : null,
+               IsCompleted ? "tb-stepper__step--completed" : null,
+               Error is null ? null : "tb-stepper__step--error", Disabled ? "tb-stepper__step--disabled" : null,
+               Class)">
+    @* The current step stays a button, so focus stays on a step people just chose. Its content names it, not
+       aria-labelledby, so the name holds every word it shows, as voice control needs. *@
+    @if (IsButton)
+    {
+        <button type="button" aria-current="@(IsCurrent ? "step" : null)" data-part="step-button"
+                class="tb-stepper__header" @onclick="GoAsync">@Header</button>
+    }
+    else
+    {
+        <div aria-current="@(IsCurrent ? "step" : null)" data-part="step-header" class="tb-stepper__header">
+            @Header
+        </div>
+    }
+    @if (Stepper!.Vertical && IsCurrent && ChildContent is not null)
+    {
+        <div data-part="content" class="tb-stepper__content">@ChildContent</div>
+    }
+</li>
+
+@code {
+    private bool _wasCurrent;
+    private bool _rendered;
+
+    /// <summary>The step's name, such as "Payment".</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    /// <summary>What identifies the step in <see cref="TbStepper.Active"/>. Defaults to <see cref="Title"/>. Keys, or
+    /// titles when no key is given, must be unique within the stepper.</summary>
+    [Parameter]
+    public string? Key { get; set; }
+
+    /// <summary>A line under the title, such as what the step asks for.</summary>
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>Marks the step as done, with a check in place of its number. In a <see cref="TbStepper.Linear"/>
+    /// stepper, people can go back to a completed step.</summary>
+    [Parameter]
+    public bool Completed { get; set; }
+
+    /// <summary>Marks the step as one that can be skipped, with "Optional" under its title.</summary>
+    [Parameter]
+    public bool Optional { get; set; }
+
+    /// <summary>A message that something in the step needs fixing, shown under its title, with a warning in place of
+    /// the step's number or check.</summary>
+    [Parameter]
+    public string? Error { get; set; }
+
+    /// <summary>Keeps people from going to the step.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>The step's content, shown under it while it is the current step of a
+    /// <see cref="TbStepper.Vertical"/> stepper. In a horizontal stepper, the app shows the content itself.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TbStepper? Stepper { get; set; }
+
+    internal string StepKey => Key ?? Title;
+
+    private bool IsCurrent => Stepper!.Current == StepKey;
+
+    private bool IsCompleted => Completed && Error is null;
+
+    private bool IsButton => !Disabled && (IsCurrent || Completed || !Stepper!.Linear);
+
+    private string OptionalText => Localizer[TbStrings.StepperOptional];
+
+    private RenderFragment Header => @<text>
+        <span aria-hidden="true" data-part="indicator" class="tb-stepper__indicator">
+            @if (Error is not null)
+            {
+                <TbIcon Icon="BuiltInIcons.Warning" Size="Size.Small" />
+            }
+            else if (Completed)
+            {
+                <TbIcon Icon="BuiltInIcons.Check" Size="Size.Small" />
+            }
+        </span>
+        <span class="tb-stepper__text">
+            <span data-part="title" class="tb-stepper__title">@Title</span>
+            @if (Optional)
+            {
+                <span data-part="optional" class="tb-stepper__note">@OptionalText</span>
+            }
+            @if (Description is not null)
+            {
+                <span data-part="description" class="tb-stepper__note">@Description</span>
+            }
+            @if (Error is not null)
+            {
+                <span data-part="error" class="tb-stepper__error">@Error</span>
+            }
+            @* Last, so the words the step shows come first in its name, unbroken. *@
+            @if (IsCompleted)
+            {
+                <span class="tb-visually-hidden">@Localizer[TbStrings.StepperCompleted]</span>
+            }
+        </span>
+    </text>;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Stepper is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbStep)} must be inside a {nameof(TbStepper)}.");
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Title))
+        {
+            throw new InvalidOperationException($"{nameof(TbStep)} needs a {nameof(Title)}.");
+        }
+
+        // A step that becomes current after the stepper first shows is announced, since moving on doesn't move focus.
+        if (IsCurrent && !_wasCurrent && _rendered)
+        {
+            Announcer.Polite(string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.StepperCurrent], Title));
+        }
+
+        _wasCurrent = IsCurrent;
+    }
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => _rendered = true;
+
+    private Task GoAsync() => IsCurrent ? Task.CompletedTask : Stepper!.GoToAsync(StepKey);
+}

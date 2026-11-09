@@ -3433,3 +3433,45 @@ override Trailblazor.TbNavMenu.OnAfterRender(bool firstRender) -> void
 ~override Trailblazor.TbNavGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbNavLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbNavMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbStep
+Trailblazor.TbStep.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbStep.ChildContent.set -> void
+Trailblazor.TbStep.Completed.get -> bool
+Trailblazor.TbStep.Completed.set -> void
+Trailblazor.TbStep.Description.get -> string?
+Trailblazor.TbStep.Description.set -> void
+Trailblazor.TbStep.Disabled.get -> bool
+Trailblazor.TbStep.Disabled.set -> void
+Trailblazor.TbStep.Error.get -> string?
+Trailblazor.TbStep.Error.set -> void
+Trailblazor.TbStep.Key.get -> string?
+Trailblazor.TbStep.Key.set -> void
+Trailblazor.TbStep.Optional.get -> bool
+Trailblazor.TbStep.Optional.set -> void
+Trailblazor.TbStep.TbStep() -> void
+Trailblazor.TbStep.Title.get -> string!
+Trailblazor.TbStep.Title.set -> void
+Trailblazor.TbStepper
+Trailblazor.TbStepper.Active.get -> string?
+Trailblazor.TbStepper.Active.set -> void
+Trailblazor.TbStepper.ActiveChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+Trailblazor.TbStepper.ActiveChanged.set -> void
+Trailblazor.TbStepper.AriaLabel.get -> string?
+Trailblazor.TbStepper.AriaLabel.set -> void
+Trailblazor.TbStepper.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbStepper.ChildContent.set -> void
+Trailblazor.TbStepper.Linear.get -> bool
+Trailblazor.TbStepper.Linear.set -> void
+Trailblazor.TbStepper.TbStepper() -> void
+Trailblazor.TbStepper.Vertical.get -> bool
+Trailblazor.TbStepper.Vertical.set -> void
+const Trailblazor.TbStrings.StepperCompleted = "Stepper.Completed" -> string!
+const Trailblazor.TbStrings.StepperCurrent = "Stepper.Current" -> string!
+const Trailblazor.TbStrings.StepperLabel = "Stepper.Label" -> string!
+const Trailblazor.TbStrings.StepperOptional = "Stepper.Optional" -> string!
+override Trailblazor.TbStep.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbStep.OnInitialized() -> void
+override Trailblazor.TbStep.OnParametersSet() -> void
+override Trailblazor.TbStepper.OnParametersSet() -> void
+~override Trailblazor.TbStep.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbStepper.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

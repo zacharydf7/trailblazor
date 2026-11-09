@@ -5708,6 +5708,102 @@ public static class ExampleCatalog
                     + "is never recorded.",
             ],
         },
+        new("stepper", "Stepper", ExampleCategory.Navigation,
+            "The steps of a task done in order, such as a sign-up or a checkout: which step people are on, which are "
+                + "done, and a way back to a finished one.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a task of three to six steps that people do once, in order, such as booking or setting up "
+                    + "an account.",
+            ],
+            WhenNotToUse =
+            [
+                "For views people move between freely, use [tabs](components/tabs).",
+                "For where a page sits in the site, use [breadcrumbs](components/breadcrumbs).",
+                "For a task's progress with no steps to go back to, use [progress](components/progress).",
+            ],
+            Related = ["tabs", "breadcrumbs", "progress"],
+            Sections =
+            [
+                new("basic", "Steps", "`@bind-Active` holds the `Key` of the step people are on, which defaults to "
+                    + "the step's `Title`. In a horizontal stepper, the app shows the current step's content under it, "
+                    + "and the app's Back and Next buttons change `Active`. `Completed` puts a check in place of a "
+                    + "step's number, and people can go back to a completed step.", typeof(StepperExample)),
+                new("vertical", "Vertical", "`Vertical` lays the steps out in a column, with the current step's "
+                    + "content under it.", typeof(StepperVerticalExample)),
+                new("states", "States and order", "`Error` shows a message under the title and a warning in place "
+                    + "of the number or check, `Optional` marks a step people can skip, `Description` adds a line "
+                    + "under the title, and `Disabled` keeps people from going to a step. With `Linear=\"false\"`, "
+                    + "people can go to any step, done or not.",
+                    typeof(StepperStatesExample)),
+            ],
+            Api = [typeof(TbStepper), typeof(TbStep)],
+            Anatomy = """
+                <TbStepper @bind-Active="_step">
+                    <TbStep Title="…" Completed="…" />
+                    <TbStep Title="…" Optional>…</TbStep>
+                </TbStepper>
+                """,
+            Keyboard =
+            [
+                new(["Tab"], "Moves between the steps people can go to, each its own tab stop."),
+                new(["Enter", "Space"], "Goes to the focused step."),
+            ],
+            Labeling =
+            [
+                "A list named by `AriaLabel` (\"Progress\" by default). Screen readers hear each step's place in it, "
+                    + "as in \"2 of 4\".",
+                "Each step's button is named by what it shows: its title, its \"Optional\" note, description and "
+                    + "error, then \"Completed\" for a finished step.",
+            ],
+            Announcements =
+            [
+                "The current step has `aria-current=\"step\"`. When the step changes after the stepper first shows, "
+                    + "screen readers hear \"Current step: Payment\".",
+            ],
+            Accessibility =
+            [
+                "A step people can't go to isn't a button, so Tab skips it.",
+                "The current step stays a button, so focus stays on a step people just chose.",
+                "In forced-colors mode, such as Windows high contrast, the current step's number takes the system's "
+                    + "highlight.",
+            ],
+            AppDuties =
+            [
+                "Show the current step's content and move on with your own Back and Next buttons, marking each step "
+                    + "`Completed` as people finish it.",
+                "Give a step's content a heading, so people can find it after moving on.",
+                "A horizontal stepper takes its container's width, so in a row give it `flex: 1` or a width.",
+            ],
+            BeforeInteractive =
+            [
+                "It renders as plain HTML. Its step buttons start working once the page is interactive.",
+            ],
+            Target = new("list", "Trip booking"),
+            Blocks = ["tb-stepper"],
+            DataParts =
+            [
+                new("stepper", "The list of steps."),
+                new("step", "One step."),
+                new("step-button", "The button that goes to a step."),
+                new("step-header", "A step people can't go to."),
+                new("indicator", "A step's number, or its check or warning."),
+                new("title", "A step's title."),
+                new("description", "The line under a step's title."),
+                new("optional", "The note that a step can be skipped."),
+                new("error", "A step's error message."),
+                new("content", "The current step's content, in a vertical stepper."),
+            ],
+            TestingTips =
+            [
+                "Find the current step with `Locator(\"[aria-current=step]\")`, and a step by its title with "
+                    + "`GetByRole(AriaRole.Button, new() { Name = \"Gear\" })`; a finished step's name ends in "
+                    + "\"Completed\", as in \"Trip Completed\".",
+                "In bUnit, set `Active` and check `[aria-current=step]`.",
+            ],
+        },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
                 + "page number.")

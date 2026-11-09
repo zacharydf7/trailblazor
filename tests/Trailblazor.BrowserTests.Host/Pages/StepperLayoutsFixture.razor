@@ -1,0 +1,22 @@
+@page "/stepper-layouts"
+
+@* Six steps in a box narrower than the page, and a vertical stepper sharing a row with other content. *@
+<div style="inline-size: 600px">
+    <TbStepper Active="One" AriaLabel="Six steps">
+        @foreach (var step in new[] { "One", "Two", "Three", "Four", "Five", "Payment" })
+        {
+            <TbStep Title="@step" />
+        }
+    </TbStepper>
+</div>
+<TbStack Row Gap="4">
+    <TbStepper Active="Profile" Vertical AriaLabel="In a row">
+        <TbStep Title="Profile" />
+        <TbStep Title="Trail alerts" />
+    </TbStepper>
+    <p>
+        The form for the current step, with instructions long enough to want the whole row: pick the trail alerts
+        to get, such as closures, fire danger, snow on the passes and the opening of the high camps, and how often
+        to get them, from every alert as it happens to one summary at the end of each week.
+    </p>
+</TbStack>

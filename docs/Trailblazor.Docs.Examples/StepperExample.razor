@@ -1,0 +1,35 @@
+<TbStack Gap="4">
+    <TbStepper @bind-Active="_step" AriaLabel="Trip booking">
+        @foreach (var step in Steps)
+        {
+            <TbStep Title="@step" Completed="_done.Contains(step)" />
+        }
+    </TbStepper>
+    <TbText>@Content</TbText>
+    <TbStack Row Gap="2">
+        <TbButton Variant="Variant.Outlined" Disabled="_step == Steps[0]" OnClick="Back">Back</TbButton>
+        <TbButton Disabled="_step == Steps[^1]" OnClick="Next">Next</TbButton>
+    </TbStack>
+</TbStack>
+
+@code {
+    private static readonly string[] Steps = ["Trip", "Gear", "Payment"];
+
+    private readonly HashSet<string> _done = [];
+    private string? _step = Steps[0];
+
+    private string Content => _step switch
+    {
+        "Trip" => "Pick the trail and the dates.",
+        "Gear" => "Choose what to rent for the trip.",
+        _ => "Pay for the trip and the gear.",
+    };
+
+    private void Back() => _step = Steps[Array.IndexOf(Steps, _step) - 1];
+
+    private void Next()
+    {
+        _done.Add(_step!);
+        _step = Steps[Array.IndexOf(Steps, _step) + 1];
+    }
+}
