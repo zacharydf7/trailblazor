@@ -3324,3 +3324,31 @@ override Trailblazor.TbCard.OnParametersSet() -> void
 Trailblazor.TbCard.TelemetryName.get -> string?
 Trailblazor.TbCard.TelemetryName.set -> void
 override Trailblazor.TbCard.OnAfterRender(bool firstRender) -> void
+Trailblazor.DrawerSide
+Trailblazor.DrawerSide.Bottom = 3 -> Trailblazor.DrawerSide
+Trailblazor.DrawerSide.End = 1 -> Trailblazor.DrawerSide
+Trailblazor.DrawerSide.Start = 0 -> Trailblazor.DrawerSide
+Trailblazor.DrawerSide.Top = 2 -> Trailblazor.DrawerSide
+Trailblazor.TbDrawer
+Trailblazor.TbDrawer.CanDismiss.get -> System.Func<Trailblazor.DialogDismissReason, System.Threading.Tasks.Task<bool>!>?
+Trailblazor.TbDrawer.CanDismiss.set -> void
+Trailblazor.TbDrawer.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDrawer.ChildContent.set -> void
+Trailblazor.TbDrawer.Modal.get -> bool
+Trailblazor.TbDrawer.Modal.set -> void
+Trailblazor.TbDrawer.Open.get -> bool
+Trailblazor.TbDrawer.Open.set -> void
+Trailblazor.TbDrawer.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbDrawer.OpenChanged.set -> void
+Trailblazor.TbDrawer.Side.get -> Trailblazor.DrawerSide
+Trailblazor.TbDrawer.Side.set -> void
+Trailblazor.TbDrawer.Size.get -> Trailblazor.DialogSize
+Trailblazor.TbDrawer.Size.set -> void
+Trailblazor.TbDrawer.TbDrawer() -> void
+Trailblazor.TbDrawer.TelemetryName.get -> string?
+Trailblazor.TbDrawer.TelemetryName.set -> void
+Trailblazor.TbDrawer.Title.get -> string!
+Trailblazor.TbDrawer.Title.set -> void
+Trailblazor.TbDrawer.Width.get -> string?
+Trailblazor.TbDrawer.Width.set -> void
+~override Trailblazor.TbDrawer.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

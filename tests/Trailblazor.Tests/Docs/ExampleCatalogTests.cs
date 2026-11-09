@@ -163,6 +163,7 @@ public class ExampleCatalogTests
     private static readonly Dictionary<string, string[]> SharedFolders = new()
     {
         ["Button"] = ["icon-button"],
+        ["Dialog"] = ["drawer"],
         ["Field"] =
         [
             "text-field", "number-field", "checkbox", "checkbox-group", "switch", "slider", "radio-group", "select",
@@ -187,7 +188,7 @@ public class ExampleCatalogTests
     {
         string[] composed = ["dialog", "select", "listbox", "tabs", "menu", "accordion", "toolbar", "data-grid",
             "tree-view", "radio-group", "checkbox-group", "splitter", "toggle-group", "grid", "chip", "list",
-            "table-of-contents", "button-group", "breadcrumbs", "card"];
+            "table-of-contents", "button-group", "breadcrumbs", "card", "drawer"];
 
         Assert.All(composed, name => Assert.NotNull(ExampleCatalog.Find(name)!.Anatomy));
     }

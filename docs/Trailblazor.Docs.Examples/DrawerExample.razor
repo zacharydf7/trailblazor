@@ -1,0 +1,22 @@
+<TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Filters</TbButton>
+
+<TbDrawer @bind-Open="_open" Title="Trail filters">
+    <TbStack Gap="3">
+        <TbCheckbox Label="Dogs allowed" @bind-Value="_dogs" />
+        <TbCheckbox Label="Shaded most of the way" @bind-Value="_shade" />
+        <TbCheckbox Label="Loop back to the start" @bind-Value="_loop" />
+    </TbStack>
+    <TbDialogActions>
+        <TbButton Variant="Variant.Text" OnClick="Reset">Reset</TbButton>
+        <TbButton OnClick="() => _open = false">Show trails</TbButton>
+    </TbDialogActions>
+</TbDrawer>
+
+@code {
+    private bool _open;
+    private bool _dogs;
+    private bool _shade;
+    private bool _loop;
+
+    private void Reset() => (_dogs, _shade, _loop) = (false, false, false);
+}

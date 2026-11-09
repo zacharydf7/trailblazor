@@ -40,6 +40,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
         [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
         [typeof(TbDialog)] = (nameof(TbDialog.Open), true),
+        [typeof(TbDrawer)] = (nameof(TbDrawer.Open), true),
         [typeof(TbAvatar)] = (nameof(TbAvatar.Name), "Sample"),
     };
 

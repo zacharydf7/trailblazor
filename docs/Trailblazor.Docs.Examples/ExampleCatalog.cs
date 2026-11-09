@@ -4378,6 +4378,94 @@ public static class ExampleCatalog
                     + "aren't counted.",
             ],
         },
+        new("drawer", "Drawer", ExampleCategory.Overlays,
+            "A panel that slides in from an edge of the window over the page, such as filters, details or a bottom "
+                + "sheet of choices.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a task beside the page that needs more room than a popover, such as filters, a form or an "
+                    + "item's details, or on a phone for a sheet of choices from the bottom.",
+            ],
+            WhenNotToUse =
+            [
+                "For a question or a short form people must answer before going on, use a [dialog](components/dialog).",
+                "For a few actions on one item, use a [menu](components/menu).",
+                "For navigation that stays on the page, put the links in the page's own layout.",
+            ],
+            Related = ["dialog", "popover", "menu"],
+            Pattern = new("dialog (modal)", "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"),
+            Sections =
+            [
+                new("basic", "Drawer", "`@bind-Open` opens the drawer, and turns false when people close it. `Title` "
+                    + "names it and shows in its header with a close button. Put its buttons in a `TbDialogActions`, "
+                    + "which stays at the bottom however long the content is.", typeof(DrawerExample)),
+                new("sides", "Sides and sheets", "`Side` sets the edge it slides in from: `End` unless set, or `Start`, "
+                    + "`Top` or `Bottom`. Start and end follow the reading direction. A drawer at the top or bottom "
+                    + "is a sheet across the window, as tall as its content.", typeof(DrawerSideExample)),
+                new("non-modal", "Beside the page", "With `Modal=\"false\"` the page stays usable while the drawer is "
+                    + "open, with no backdrop, so people can pick another item and see it in the same drawer.",
+                    typeof(DrawerNonModalExample)),
+            ],
+            Api = [typeof(TbDrawer), typeof(DrawerSide)],
+            Anatomy = """
+                <TbDrawer Title="…" Side="…" @bind-Open="_open">
+                    …
+                    <TbDialogActions>…</TbDialogActions>
+                </TbDrawer>
+                """,
+            Keyboard =
+            [
+                new(["Tab", "Shift+Tab"], "Moves between the drawer's controls, and never reaches the page behind "
+                    + "a modal drawer."),
+                new(["Escape"], "Closes the drawer, unless `CanDismiss` refuses."),
+            ],
+            Labeling =
+            [
+                "A native `<dialog>` named by its title, with a close button named \"Close\".",
+            ],
+            Accessibility =
+            [
+                "A drawer is a dialog docked to an edge, so it behaves as one: a modal drawer makes the rest of the "
+                    + "page inert and keeps it from scrolling, a click on the backdrop closes it, and focus goes back "
+                    + "to the button that opened it as it closes.",
+                "It slides in and out with the motion tokens; reduced motion opens and closes it at once.",
+            ],
+            AppDuties =
+            [
+                "Open it from a button whose text says what the drawer holds, such as \"Filters\".",
+            ],
+            BeforeInteractive =
+            [
+                "No drawer opens until the page is interactive, because opening one takes a script.",
+            ],
+            Target = new("dialog", "Trail filters") { OpenedBy = new("button", "Filters") },
+            Blocks = ["tb-drawer", "tb-dialog"],
+            DataParts =
+            [
+                new("dialog", "The drawer's panel."),
+                new("header", "The title bar, with the title and the close button."),
+                new("close", "The button that closes the drawer."),
+                new("body", "The drawer's content."),
+                new("actions", "The buttons at the bottom of the drawer."),
+            ],
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing.Playwright` finds a "
+                    + "drawer by its title, as it does a dialog: `WaitForAsync()` returns it once open, and "
+                    + "`CancelAsync()` closes it with Escape. It skips a drawer that is still sliding out.",
+                "In bUnit, `IDialogService.OpenDialogs` lists the open drawers along with the dialogs, and each one's "
+                    + "`Options.Position` is its side.",
+                "A drawer opens only once the page is interactive, so open it after the page is ready.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, it counts as a dialog does: `trailblazor.control.shown` each time it "
+                    + "opens, and `trailblazor.dialog.closed` and `trailblazor.dialog.duration` with how it closed. "
+                    + "Its `trailblazor.component` is `TbDialog`.",
+            ],
+        },
         new("focus-scope", "Focus scope", ExampleCategory.Overlays,
             "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, and gives focus "
                 + "back when it goes.")

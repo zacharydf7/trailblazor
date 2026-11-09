@@ -3748,6 +3748,99 @@
         border-block-start: 1px solid var(--tb-border-subtle);
     }
 
+    /* A drawer is a dialog docked to one edge, sliding in from it. It comes after the dialog's rules so it wins.
+       Percentages, unlike vw, leave out the scrollbar, which the page keeps behind a non-modal drawer. */
+    .tb-drawer {
+        max-width: 100%;
+        max-height: 100dvh;
+        margin: 0;
+        border-radius: 0;
+        transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard),
+            translate var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    .tb-drawer--start,
+    .tb-drawer--end {
+        height: 100dvh;
+    }
+
+    .tb-drawer--start {
+        --tb-drawer-from: -100% 0;
+        margin-inline-end: auto;
+        border-start-end-radius: var(--tb-radius-lg);
+        border-end-end-radius: var(--tb-radius-lg);
+    }
+
+    .tb-drawer--end {
+        --tb-drawer-from: 100% 0;
+        margin-inline-start: auto;
+        border-start-start-radius: var(--tb-radius-lg);
+        border-end-start-radius: var(--tb-radius-lg);
+    }
+
+    .tb-drawer--start:dir(rtl) {
+        --tb-drawer-from: 100% 0;
+    }
+
+    .tb-drawer--end:dir(rtl) {
+        --tb-drawer-from: -100% 0;
+    }
+
+    .tb-drawer--top,
+    .tb-drawer--bottom {
+        width: 100%;
+        max-height: 85dvh;
+    }
+
+    /* A full drawer spans the window's width at the start or end; a sheet stays as tall as its content. */
+    .tb-drawer--start.tb-dialog--full,
+    .tb-drawer--end.tb-dialog--full {
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .tb-drawer--top.tb-dialog--full,
+    .tb-drawer--bottom.tb-dialog--full {
+        height: auto;
+    }
+
+    .tb-drawer--top {
+        --tb-drawer-from: 0 -100%;
+        margin-block-end: auto;
+        border-end-start-radius: var(--tb-radius-lg);
+        border-end-end-radius: var(--tb-radius-lg);
+    }
+
+    .tb-drawer--bottom {
+        --tb-drawer-from: 0 100%;
+        margin-block-start: auto;
+        border-start-start-radius: var(--tb-radius-lg);
+        border-start-end-radius: var(--tb-radius-lg);
+    }
+
+    @starting-style {
+        .tb-drawer[open] {
+            translate: var(--tb-drawer-from);
+        }
+    }
+
+    .tb-drawer[data-leaving] {
+        translate: var(--tb-drawer-from);
+    }
+
+    /* Its body stacks its content, so the actions can sit at the bottom however little there is above them. */
+    .tb-drawer .tb-dialog__body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tb-drawer .tb-dialog__actions {
+        position: sticky;
+        inset-block-end: calc(-1 * var(--tb-space-5));
+        margin-block-start: auto;
+        background: var(--tb-color-surface-raised);
+    }
+
     .tb-select__trigger {
         display: flex;
         align-items: center;

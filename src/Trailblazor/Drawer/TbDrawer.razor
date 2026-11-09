@@ -1,0 +1,77 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A drawer is a dialog docked to an edge, so it traps focus, closes on Escape and gives focus back as a dialog does. *@
+<TbDialog @attributes="AdditionalAttributes" Open="Open" OpenChanged="OpenChanged" Title="@Title"
+          Options="DrawerOptions" CanDismiss="CanDismiss" Style="@Style"
+          Class="@ClassNames.Join("tb-drawer", ClassNames.Modifier("tb-drawer", Side), Class)">
+    @ChildContent
+</TbDialog>
+
+@code {
+    /// <summary>Whether the drawer is open. Bind it with <c>@bind-Open</c>: it turns false when the user dismisses
+    /// the drawer.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised with false when the user dismisses the drawer.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>The drawer's title, shown in its header, which is also its accessible name.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    /// <summary>The edge the drawer slides in from. Defaults to <see cref="DrawerSide.End"/>.</summary>
+    [Parameter]
+    public DrawerSide Side { get; set; } = DrawerSide.End;
+
+    /// <summary>Whether the drawer blocks the rest of the page while it is open, with a backdrop behind it. Defaults
+    /// to true. When false, people can go on using the page beside the drawer, such as the list a filter panel
+    /// applies to. Applies the next time the drawer opens.</summary>
+    [Parameter]
+    public bool Modal { get; set; } = true;
+
+    /// <summary>How wide a drawer at the start or end is. Defaults to <see cref="DialogSize.Small"/>. A drawer at the
+    /// top or bottom spans the window and is as tall as its content. Applies the next time the drawer opens.
+    /// </summary>
+    [Parameter]
+    public DialogSize Size { get; set; } = DialogSize.Small;
+
+    /// <summary>A CSS width, such as <c>"20rem"</c>, used in place of <see cref="Size"/>. Applies the next time the
+    /// drawer opens.</summary>
+    [Parameter]
+    public string? Width { get; set; }
+
+    /// <summary>Asked when the user presses Escape, clicks the backdrop or presses the close button. Return false to
+    /// keep the drawer open, for example to ask about unsaved changes first. Setting <see cref="Open"/> to false
+    /// doesn't ask.</summary>
+    [Parameter]
+    public Func<DialogDismissReason, Task<bool>>? CanDismiss { get; set; }
+
+    /// <summary>A label the drawer's use is counted under, such as <c>"trail-filters"</c>, through the
+    /// <c>Trailblazor</c> meter, as for a dialog: shown each time it opens, and counted with how it closed. Its title
+    /// is never recorded. It names the drawer, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    /// <summary>The drawer's content. Put its buttons in a <see cref="TbDialogActions"/>, which stays at the bottom.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private DialogOptions DrawerOptions => new()
+    {
+        Modal = Modal,
+        Size = Size,
+        Width = Width,
+        Position = Side switch
+        {
+            DrawerSide.Start => DialogPosition.Start,
+            DrawerSide.Top => DialogPosition.Top,
+            DrawerSide.Bottom => DialogPosition.Bottom,
+            _ => DialogPosition.End,
+        },
+        TelemetryName = TelemetryName,
+    };
+}

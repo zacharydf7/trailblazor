@@ -1,0 +1,24 @@
+<TbStack Row Wrap Gap="2">
+    @foreach (var trail in Trails)
+    {
+        <TbButton Variant="Variant.Outlined" OnClick="() => Show(trail)">@trail</TbButton>
+    }
+</TbStack>
+
+@* Not modal, so the buttons behind it still work and another trail opens in the same drawer. *@
+<TbDrawer @bind-Open="_open" Title="@($"{_trail} details")" Modal="false">
+    <TbText>@_trail is open from dawn to dusk. Pick another trail to see its details here.</TbText>
+</TbDrawer>
+
+@code {
+    private static readonly string[] Trails = ["Ridge loop", "Creek path", "Old mill"];
+
+    private bool _open;
+    private string _trail = "";
+
+    private void Show(string trail)
+    {
+        _trail = trail;
+        _open = true;
+    }
+}

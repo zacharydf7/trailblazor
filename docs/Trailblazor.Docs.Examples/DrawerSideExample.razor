@@ -1,0 +1,24 @@
+<TbStack Row Wrap Gap="2">
+    <TbButton Variant="Variant.Outlined" OnClick="() => Show(DrawerSide.Start)">Open at the start</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => Show(DrawerSide.Top)">Open at the top</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => Show(DrawerSide.Bottom)">Open a bottom sheet</TbButton>
+</TbStack>
+
+<TbDrawer @bind-Open="_open" Title="Share trail" Side="_side">
+    <TbStack Gap="2">
+        <TbButton Variant="Variant.Text" OnClick="() => _open = false">Copy the link</TbButton>
+        <TbButton Variant="Variant.Text" OnClick="() => _open = false">Send by email</TbButton>
+        <TbButton Variant="Variant.Text" OnClick="() => _open = false">Download the map</TbButton>
+    </TbStack>
+</TbDrawer>
+
+@code {
+    private bool _open;
+    private DrawerSide _side;
+
+    private void Show(DrawerSide side)
+    {
+        _side = side;
+        _open = true;
+    }
+}

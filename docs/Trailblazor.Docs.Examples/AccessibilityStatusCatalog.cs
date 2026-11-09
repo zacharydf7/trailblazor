@@ -69,6 +69,7 @@ public static class AccessibilityStatusCatalog
         new("tooltip", Tested, NotYet, None),
         new("menu", Tested, NotYet, None),
         new("dialog", Tested, NotYet, Tested),
+        new("drawer", Tested, NotYet, Tested),
         new("focus-scope", Tested, None, None),
         new("popover", Tested, NotYet, None),
         new("overlay", Tested, NotYet, Tested),

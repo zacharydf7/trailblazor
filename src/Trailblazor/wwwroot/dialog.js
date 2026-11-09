@@ -149,6 +149,22 @@ function raise(entry) {
     numberLevels();
 }
 
+// The first item of a computed list such as "ease, cubic-bezier(0, 0, 1, 1)", whose items can hold commas themselves.
+function firstListItem(list) {
+    let depth = 0;
+    for (let index = 0; index < list.length; index++) {
+        if (list[index] === '(') {
+            depth++;
+        } else if (list[index] === ')') {
+            depth--;
+        } else if (list[index] === ',' && depth === 0) {
+            return list.slice(0, index).trim();
+        }
+    }
+
+    return list.trim();
+}
+
 export function openDialog(dialog, dotNet, options, outsidePopups) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!dialog) {
@@ -513,11 +529,15 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
                 hide();
                 show(dialog, false, true);
                 // Shown again, it would start its transition afresh, which WebKit sometimes drops, so it fades out as
-                // an animation with the transition's timing; reduced motion makes that 0s.
-                const { transitionDuration, transitionTimingFunction } = getComputedStyle(dialog);
-                const timing = { duration: parseFloat(transitionDuration) * 1000, easing: transitionTimingFunction };
+                // an animation with the transition's timing; reduced motion makes that 0s. A drawer also slides back
+                // to the translate its data-leaving rule sets; a dialog has no translate, so it only fades.
+                const { transitionDuration, transitionTimingFunction, translate } = getComputedStyle(dialog);
+                const timing = {
+                    duration: parseFloat(transitionDuration) * 1000,
+                    easing: firstListItem(transitionTimingFunction),
+                };
                 if (timing.duration > 0) {
-                    dialog.animate([{ opacity: 1 }, { opacity: 0 }], timing);
+                    dialog.animate([{ opacity: 1, translate: 'none' }, { opacity: 0, translate }], timing);
                     dialog.animate([{ opacity: 1 }, { opacity: 0 }], { ...timing, pseudoElement: '::backdrop' });
                 }
             }
