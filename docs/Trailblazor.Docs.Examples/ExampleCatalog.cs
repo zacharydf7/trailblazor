@@ -2247,6 +2247,9 @@ public static class ExampleCatalog
                     + "editor.",
                 "To type instead, wait for `Input` to have its `data-ready` attribute, then type into it. The value "
                     + "reaches .NET when focus leaves, or as it's typed with `UpdateOnInput`.",
+                "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
+                    + "\"Link\" field and press Enter.",
+                "`TransformPaste` is a plain function, so test it on a `RichTextDocument` without the editor.",
             ],
         },
         new("number-field", "Number field", ExampleCategory.Inputs,
