@@ -340,6 +340,74 @@ public static class ExampleCatalog
             TestingTip = "Find an avatar by its role and name: `GetByRole(AriaRole.Img, new() { Name = \"Ada Lovelace\" })` "
                 + "in Playwright, or `[data-part=avatar][aria-label='Ada Lovelace']` in bUnit.",
         },
+        new("timeline", "Timeline", ExampleCategory.Content,
+            "A list of events in order, such as a trip's history or an order's progress, each with a dot on a line "
+                + "that joins it to the next.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to show what happened, or what will happen, in order, such as an order's history or the steps "
+                    + "of an application.",
+            ],
+            WhenNotToUse =
+            [
+                "For the steps of a task people move through themselves, use a [stepper](components/stepper).",
+                "For a list without an order in time, use a [list](components/list).",
+            ],
+            Related = ["stepper", "list"],
+            Sections =
+            [
+                new("basic", "Events", "Each `TbTimelineItem` has a `Title` and, with `Time`, the moment it happened. "
+                    + "`TimeFormat` sets how the time is shown in the current culture, and it sits in a `time` element "
+                    + "that machines can read. A time is shown in its own offset, so convert it to the reader's time "
+                    + "zone first. Its content goes under the title. `Tone` colors its dot.", typeof(TimelineExample)),
+                new("progress", "Progress", "`Icon` puts an icon in an event's dot, such as a check for a step that's "
+                    + "done. Say in the title which event is the current one, since the color alone doesn't reach "
+                    + "everyone.", typeof(TimelineProgressExample)),
+            ],
+            Api = [typeof(TbTimeline), typeof(TbTimelineItem)],
+            Anatomy = """
+                <TbTimeline AriaLabel="…">
+                    <TbTimelineItem Title="…" Time="…" Tone="…">…</TbTimelineItem>
+                </TbTimeline>
+                """,
+            Labeling =
+            [
+                "A list named by `AriaLabel`. Screen readers hear each event's place in it, as in \"2 of 4\". Leave "
+                    + "`AriaLabel` out when a heading just before the timeline already names it.",
+            ],
+            Accessibility =
+            [
+                "The dots and the line are hidden from screen readers, so each event is heard by its time, title and "
+                    + "content.",
+                "In forced-colors mode, such as Windows high contrast, the dots and the line keep the system's text "
+                    + "color.",
+            ],
+            AppDuties =
+            [
+                "Say in the title what a tone means, such as \"Payment failed\", since color alone doesn't reach "
+                    + "everyone.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Target = new("list", "Trip history"),
+            Blocks = ["tb-timeline"],
+            DataParts =
+            [
+                new("timeline", "The list of events."),
+                new("timeline-item", "One event."),
+                new("dot", "An event's dot, or its icon."),
+                new("time", "When the event happened."),
+                new("title", "What happened."),
+                new("content", "More about the event."),
+            ],
+            TestingTip = "Find the timeline with `GetByRole(AriaRole.List, new() { Name = \"Trip history\" })` and an "
+                + "event with `GetByRole(AriaRole.Listitem).Filter(new() { HasText = \"Trip booked\" })`. A `time` "
+                + "element's `datetime` attribute holds the time in ISO 8601, whatever the culture.",
+        },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
         {

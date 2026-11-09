@@ -4242,6 +4242,117 @@
         }
     }
 
+    .tb-timeline {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-timeline__item {
+        --tb-timeline-fill: var(--tb-color-neutral);
+        --tb-timeline-on-fill: var(--tb-color-on-neutral);
+        --tb-timeline-dot-size: 0.75rem;
+        display: grid;
+        grid-template-columns: 1.5rem minmax(0, 1fr);
+        column-gap: var(--tb-space-3);
+    }
+
+    .tb-timeline__item--icon {
+        --tb-timeline-dot-size: 1.5rem;
+    }
+
+    .tb-timeline__item--primary {
+        --tb-timeline-fill: var(--tb-color-primary);
+        --tb-timeline-on-fill: var(--tb-color-on-primary);
+    }
+
+    .tb-timeline__item--success {
+        --tb-timeline-fill: var(--tb-color-success);
+        --tb-timeline-on-fill: var(--tb-color-on-success);
+    }
+
+    .tb-timeline__item--warning {
+        --tb-timeline-fill: var(--tb-color-warning);
+        --tb-timeline-on-fill: var(--tb-color-on-warning);
+    }
+
+    /* A dot without an icon is under 3:1 in amber on a light surface, so it takes the warning text tone. */
+    .tb-timeline__item--warning:not(.tb-timeline__item--icon) {
+        --tb-timeline-fill: light-dark(var(--tb-color-warning-text), var(--tb-color-warning));
+    }
+
+    .tb-timeline__item--danger {
+        --tb-timeline-fill: var(--tb-color-danger);
+        --tb-timeline-on-fill: var(--tb-color-on-danger);
+    }
+
+    .tb-timeline__item--info {
+        --tb-timeline-fill: var(--tb-color-info);
+        --tb-timeline-on-fill: var(--tb-color-on-info);
+    }
+
+    /* The dot sits beside the first line of text, and the line below it runs to the next event's dot. */
+    .tb-timeline__marker {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-block-start: calc((1lh - var(--tb-timeline-dot-size)) / 2);
+    }
+
+    .tb-timeline__item:not(:last-child) .tb-timeline__marker::after {
+        content: "";
+        flex: 1;
+        width: 2px;
+        margin-block-start: var(--tb-space-1);
+        background: var(--tb-border-strong);
+    }
+
+    .tb-timeline__dot {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: var(--tb-timeline-dot-size);
+        height: var(--tb-timeline-dot-size);
+        border-radius: var(--tb-radius-full);
+        background: var(--tb-timeline-fill);
+        color: var(--tb-timeline-on-fill);
+    }
+
+    .tb-timeline__body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        min-width: 0;
+        padding-block-end: var(--tb-space-5);
+        overflow-wrap: break-word;
+    }
+
+    .tb-timeline__item:last-child .tb-timeline__body {
+        padding-block-end: 0;
+    }
+
+    .tb-timeline__time {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-timeline__title {
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    /* Forced colors drop the drawn dots and line, so they take system colors to stay visible. */
+    @media (forced-colors: active) {
+        .tb-timeline__dot,
+        .tb-timeline__item:not(:last-child) .tb-timeline__marker::after {
+            background: CanvasText;
+        }
+
+        .tb-timeline__dot {
+            color: Canvas;
+        }
+    }
+
     .tb-select__trigger {
         display: flex;
         align-items: center;

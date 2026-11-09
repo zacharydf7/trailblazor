@@ -1,0 +1,19 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* Safari drops the list role from a list without bullets, so it is set again. *@
+<ol @attributes="AdditionalAttributes" role="list" aria-label="@AriaLabel" data-part="timeline" style="@Style"
+    class="@ClassNames.Join("tb-timeline", Class)">
+    @ChildContent
+</ol>
+
+@code {
+    /// <summary>The <see cref="TbTimelineItem"/> events, in the order they happened or will happen.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Names the list for screen readers, such as "Trip history". Leave it out when a heading just before the
+    /// timeline already says what it is.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+}

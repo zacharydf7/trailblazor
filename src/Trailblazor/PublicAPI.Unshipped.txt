@@ -3475,3 +3475,25 @@ override Trailblazor.TbStep.OnParametersSet() -> void
 override Trailblazor.TbStepper.OnParametersSet() -> void
 ~override Trailblazor.TbStep.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbStepper.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbTimeline
+Trailblazor.TbTimeline.AriaLabel.get -> string?
+Trailblazor.TbTimeline.AriaLabel.set -> void
+Trailblazor.TbTimeline.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTimeline.ChildContent.set -> void
+Trailblazor.TbTimeline.TbTimeline() -> void
+Trailblazor.TbTimelineItem
+Trailblazor.TbTimelineItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTimelineItem.ChildContent.set -> void
+Trailblazor.TbTimelineItem.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbTimelineItem.Icon.set -> void
+Trailblazor.TbTimelineItem.TbTimelineItem() -> void
+Trailblazor.TbTimelineItem.Time.get -> System.DateTimeOffset?
+Trailblazor.TbTimelineItem.Time.set -> void
+Trailblazor.TbTimelineItem.TimeFormat.get -> string!
+Trailblazor.TbTimelineItem.TimeFormat.set -> void
+Trailblazor.TbTimelineItem.Title.get -> string?
+Trailblazor.TbTimelineItem.Title.set -> void
+Trailblazor.TbTimelineItem.Tone.get -> Trailblazor.Tone
+Trailblazor.TbTimelineItem.Tone.set -> void
+~override Trailblazor.TbTimeline.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTimelineItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

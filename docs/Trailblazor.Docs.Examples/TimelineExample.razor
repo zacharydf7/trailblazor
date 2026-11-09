@@ -1,0 +1,12 @@
+<TbTimeline AriaLabel="Trip history">
+    <TbTimelineItem Title="Trip booked" Time="@Start" TimeFormat="MMM d, h:mm tt">
+        <TbText>Two seats on the ridge loop.</TbText>
+    </TbTimelineItem>
+    <TbTimelineItem Title="Gear rented" Time="@Start.AddHours(2)" TimeFormat="MMM d, h:mm tt" />
+    <TbTimelineItem Title="Trail closed for snow, so the date moved" Time="@Start.AddDays(3)"
+                    TimeFormat="MMM d, h:mm tt" Tone="Tone.Warning" />
+</TbTimeline>
+
+@code {
+    private static readonly DateTimeOffset Start = new(2026, 3, 3, 9, 30, 0, TimeSpan.Zero);
+}

@@ -1,0 +1,63 @@
+@namespace Trailblazor
+@using System.Globalization
+@inherits TbComponentBase
+
+<li @attributes="AdditionalAttributes" data-part="timeline-item" style="@Style"
+    class="@ClassNames.Join("tb-timeline__item", ClassNames.Modifier("tb-timeline__item", Tone),
+               Icon is null ? null : "tb-timeline__item--icon", Class)">
+    @* The marker column holds the dot and, below it, the line down to the next event. *@
+    <span aria-hidden="true" class="tb-timeline__marker">
+        <span data-part="dot" class="tb-timeline__dot">
+            @if (Icon is { } icon)
+            {
+                <TbIcon Icon="icon" Size="Size.Small" />
+            }
+        </span>
+    </span>
+    <div class="tb-timeline__body">
+        @if (Time is { } time)
+        {
+            @* HTML allows at most three digits of a second, where .NET's round-trip "o" format writes seven. *@
+            <time datetime="@time.ToString("yyyy-MM-ddTHH:mm:ss.fffzzz", CultureInfo.InvariantCulture)" data-part="time"
+                  class="tb-timeline__time">@time.ToString(TimeFormat, CultureInfo.CurrentCulture)</time>
+        }
+        @if (Title is not null)
+        {
+            <span data-part="title" class="tb-timeline__title">@Title</span>
+        }
+        @if (ChildContent is not null)
+        {
+            <div data-part="content" class="tb-timeline__content">@ChildContent</div>
+        }
+    </div>
+</li>
+
+@code {
+    /// <summary>What happened, such as "Trip booked".</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>When it happened, shown in a <c>time</c> element that machines can read too. It is shown in its own
+    /// offset, so convert it to the reader's time zone first, or add the zone to <see cref="TimeFormat"/>.</summary>
+    [Parameter]
+    public DateTimeOffset? Time { get; set; }
+
+    /// <summary>The .NET date and time format for <see cref="Time"/>, applied in the current culture. Defaults to
+    /// <c>"g"</c>, the short date and time.</summary>
+    [Parameter]
+    public string TimeFormat { get; set; } = "g";
+
+    /// <summary>The color of the event's dot, such as <see cref="Trailblazor.Tone.Success"/> for one that went well.
+    /// Defaults to <see cref="Trailblazor.Tone.Neutral"/>. Say what the color means in the title too, since color
+    /// alone doesn't reach everyone.</summary>
+    [Parameter]
+    public Tone Tone { get; set; } = Tone.Neutral;
+
+    /// <summary>An icon in the event's dot, such as a check for a step that's done.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>More about the event, under its title.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

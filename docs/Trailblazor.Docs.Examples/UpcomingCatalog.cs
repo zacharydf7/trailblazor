@@ -45,7 +45,6 @@ public static class UpcomingCatalog
         new("Scheduler", ExampleCategory.Content, 201),
         new("Spreadsheet", ExampleCategory.Content, 206),
         new("Text highlighter", ExampleCategory.Content, 195),
-        new("Timeline", ExampleCategory.Content, 65),
         new("Tree grid", ExampleCategory.Content, 81),
         new("Virtual list", ExampleCategory.Content, 57),
         new("Watermark", ExampleCategory.Content, 192),
