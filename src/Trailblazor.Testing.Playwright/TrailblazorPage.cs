@@ -53,6 +53,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(page, trigger);
 
+    /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
+    public TbPopconfirmLocator Popconfirm(string trigger) => new(new TbPopoverLocator(page, trigger));
+
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuLocator Menu(string trigger) => new(page, trigger);
 
@@ -128,6 +131,20 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
 
         return page.Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
     }
+}
+
+/// <summary>A <c>TbPopconfirm</c>, found by its trigger's name.</summary>
+public sealed class TbPopconfirmLocator
+{
+    private readonly TbPopoverLocator _popover;
+
+    internal TbPopconfirmLocator(TbPopoverLocator popover) => _popover = popover;
+
+    /// <summary>Opens the confirmation and presses its confirm button.</summary>
+    public async Task ConfirmAsync() => await (await _popover.OpenAsync()).Locator("[data-part=confirm]").ClickAsync();
+
+    /// <summary>Opens the confirmation and presses its cancel button.</summary>
+    public async Task CancelAsync() => await (await _popover.OpenAsync()).Locator("[data-part=cancel]").ClickAsync();
 }
 
 /// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label or a locator.</summary>

@@ -1,0 +1,35 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@inject ITbLocalizer Localizer
+
+<CascadingValue Value="Described" IsFixed="false">
+    <TbPopover @attributes="AdditionalAttributes" Label="@Label" Icon="Icon" Trigger="Trigger"
+               Variant="TriggerVariant" Size="TriggerSize" Title="@Title" Placement="Placement" Align="Align"
+               Disabled="Disabled" Open="_open" OpenChanged="OnOpenChangedAsync"
+               Class="@ClassNames.Join("tb-popconfirm", Class)" Style="@Style">
+        @if (Described is { } described)
+        {
+            <div id="@described.Id" data-part="description" class="tb-popconfirm__description">
+                @if (ChildContent is null)
+                {
+                    @Description
+                }
+                else
+                {
+                    @ChildContent
+                }
+            </div>
+        }
+        <div data-part="actions" class="tb-popconfirm__actions">
+            @* The safe answer comes first, so it's where focus lands as the panel opens. *@
+            <TbButton Variant="Variant.Text" Tone="Tone.Neutral" Size="Size.Small" Disabled="_confirming"
+                      OnClick="CancelAsync" data-part="cancel">
+                @(CancelText ?? Localizer[TbStrings.PopconfirmCancel])
+            </TbButton>
+            <TbButton Variant="Variant.Filled" Tone="Tone" Size="Size.Small" Loading="_confirming"
+                      OnClick="ConfirmAsync" data-part="confirm">
+                @(ConfirmText ?? Localizer[TbStrings.PopconfirmConfirm])
+            </TbButton>
+        </div>
+    </TbPopover>
+</CascadingValue>

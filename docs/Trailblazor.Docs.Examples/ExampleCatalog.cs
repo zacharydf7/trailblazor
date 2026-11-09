@@ -5117,6 +5117,79 @@ public static class ExampleCatalog
                 + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
                 + "ready.",
         },
+        new("popconfirm", "Popconfirm", ExampleCategory.Overlays,
+            "A small question that opens beside the button that asked, such as \"Delete this trail?\", with Cancel and "
+                + "a confirm button.")
+        {
+            WhenToUse =
+            [
+                "Use it before an action that's quick to ask about but worth a second look, such as deleting one row.",
+            ],
+            WhenNotToUse =
+            [
+                "For a decision that needs more explanation or input, use a [dialog](components/dialog).",
+                "For an action that can be undone, act at once and offer Undo in a [toast](components/toast).",
+            ],
+            Related = ["popover", "dialog", "toast"],
+            Sections =
+            [
+                new("basic", "Popconfirm", "`Title` asks the question and `Description` adds a sentence under it. "
+                    + "`OnConfirm` runs when the user confirms, and `OnCancel` when they cancel, press Escape or click "
+                    + "away. `ConfirmText` and `Tone` set the confirm button, such as Delete in the danger tone.",
+                    typeof(PopconfirmExample)),
+                new("slow", "A slow action", "The confirm button shows it's busy until `OnConfirm` finishes, and then "
+                    + "the confirmation closes. `Icon` makes the trigger an icon button, named by `Label`. `Trigger` "
+                    + "takes a button of your own, as on a [popover](components/popover#custom-trigger).",
+                    typeof(PopconfirmSlowExample)),
+            ],
+            Api = [typeof(TbPopconfirm)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the confirmation and moves focus to Cancel.")
+                {
+                    When = "On the trigger",
+                },
+                new(["Tab"], "Moves between Cancel and the confirm button. Tab past the confirm button closes the "
+                    + "confirmation, which counts as canceling.") { When = "While open" },
+                new(["Escape"], "Cancels, and focus goes back to the trigger.") { When = "While open" },
+            ],
+            Labeling =
+            [
+                "The confirmation is a non-modal `dialog` named by its `Title` and described by its `Description` or "
+                    + "content.",
+            ],
+            Accessibility =
+            [
+                "Focus lands on Cancel as it opens, so a stray Enter doesn't confirm. The confirm button stays "
+                    + "focusable while it's busy, so focus isn't lost.",
+            ],
+            BeforeInteractive =
+            [
+                "The trigger opens the confirmation and Escape closes it, as on a popover, but its buttons do nothing "
+                    + "until the page is interactive.",
+            ],
+            Target = new("dialog", "Delete Pine Hollow loop?") { OpenedBy = new("button", "Delete trail") },
+            Blocks = ["tb-popconfirm", "tb-popover"],
+            DataParts =
+            [
+                new("trigger", "The button that opens the confirmation."),
+                new("panel", "The confirmation's panel."),
+                new("title", "The question."),
+                new("description", "The sentence under the question."),
+                new("actions", "The row of buttons."),
+                new("cancel", "The cancel button."),
+                new("confirm", "The confirm button."),
+            ],
+            TestingTip = "`await page.Tb().Popconfirm(\"Delete trail\").ConfirmAsync()` opens it and confirms; "
+                + "`CancelAsync()` cancels. In bUnit, click `[data-part=confirm]` or `[data-part=cancel]`, which work "
+                + "without opening it first.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"delete-trail\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, and `trailblazor.control.used` with `trailblazor.action` `confirm` or `cancel` for "
+                    + "each answer.",
+            ],
+        },
         new("overlay", "Overlay", ExampleCategory.Overlays,
             "A scrim over the page or over one region, which blocks clicks behind it and can hold a message or a "
                 + "spinner in its center.")

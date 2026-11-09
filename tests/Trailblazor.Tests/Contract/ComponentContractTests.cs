@@ -31,12 +31,13 @@ public class ComponentContractTests : BunitContext
         [typeof(TbDateRangePicker<>)] = typeof(DateOnly),
     };
 
-    // Components that render nothing until they are shown are checked shown; a popover, a menu, a tooltip, a progress
-    // and an avatar get the label, text or name they need when they are given none.
+    // Components that render nothing until they are shown are checked shown; a popover, a popconfirm, a menu, a
+    // tooltip, a progress and an avatar get the label, text or name they need when they are given none.
     private static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
     {
         [typeof(TbOverlay)] = (nameof(TbOverlay.Visible), true),
         [typeof(TbPopover)] = (nameof(TbPopover.Label), "Sample"),
+        [typeof(TbPopconfirm)] = (nameof(TbPopconfirm.Label), "Sample"),
         [typeof(TbMenu)] = (nameof(TbMenu.Label), "Sample"),
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
         [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
@@ -87,7 +88,8 @@ public class ComponentContractTests : BunitContext
         var field = typeof(IFormField).IsAssignableFrom(component);
         if (named != root)
         {
-            Assert.True(field || component == typeof(TbMenu) || component == typeof(TbPopover),
+            Assert.True(field || component == typeof(TbMenu) || component == typeof(TbPopover)
+                || component == typeof(TbPopconfirm),
                 $"{component.Name} moved its id off its root.");
             Assert.Equal(field ? "input" : "trigger", named.GetAttribute("data-part"));
         }

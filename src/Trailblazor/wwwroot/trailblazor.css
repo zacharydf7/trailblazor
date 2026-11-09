@@ -3595,6 +3595,23 @@
         line-height: var(--tb-line-height-tight);
     }
 
+    /* A confirmation stays narrow, so its question and buttons read as one short line or two. */
+    .tb-popconfirm .tb-popover__panel {
+        max-inline-size: min(22rem, calc(100vw - 2 * var(--tb-space-4)));
+    }
+
+    .tb-popconfirm__description {
+        margin-block-end: var(--tb-space-3);
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-popconfirm__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: var(--tb-space-2);
+    }
+
     .tb-dialog {
         box-sizing: border-box;
         width: min(calc(100vw - 2 * var(--tb-space-4)), var(--tb-dialog-width));

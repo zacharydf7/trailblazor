@@ -1,0 +1,10 @@
+<TbStack Gap="2" Align="Align.Start">
+    <TbPopconfirm Label="Delete trail" Variant="Variant.Soft" Title="Delete Pine Hollow loop?"
+                  Description="Its photos and notes go with it." ConfirmText="Delete" Tone="Tone.Danger"
+                  OnConfirm="@(() => _status = "Deleted.")" OnCancel="@(() => _status = "Kept it.")" />
+    <output>@_status</output>
+</TbStack>
+
+@code {
+    private string _status = "";
+}

@@ -8,6 +8,7 @@ const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
 override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
 override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
+override Trailblazor.TbPopconfirm.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
@@ -38,6 +39,50 @@ Trailblazor.TagRemoveEventArgs.Focus.set -> void
 Trailblazor.TagRemoveEventArgs.Index.get -> int
 Trailblazor.TagRemoveEventArgs.Index.set -> void
 Trailblazor.TagRemoveEventArgs.TagRemoveEventArgs() -> void
+const Trailblazor.TbStrings.PopconfirmCancel = "Popconfirm.Cancel" -> string!
+const Trailblazor.TbStrings.PopconfirmConfirm = "Popconfirm.Confirm" -> string!
+override Trailblazor.TbPopconfirm.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbPopconfirm.OnParametersSet() -> void
+Trailblazor.TbPopconfirm
+Trailblazor.TbPopconfirm.Align.get -> Trailblazor.PlacementAlign
+Trailblazor.TbPopconfirm.Align.set -> void
+Trailblazor.TbPopconfirm.CancelText.get -> string?
+Trailblazor.TbPopconfirm.CancelText.set -> void
+Trailblazor.TbPopconfirm.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbPopconfirm.ChildContent.set -> void
+Trailblazor.TbPopconfirm.ConfirmText.get -> string?
+Trailblazor.TbPopconfirm.ConfirmText.set -> void
+Trailblazor.TbPopconfirm.Description.get -> string?
+Trailblazor.TbPopconfirm.Description.set -> void
+Trailblazor.TbPopconfirm.Disabled.get -> bool
+Trailblazor.TbPopconfirm.Disabled.set -> void
+Trailblazor.TbPopconfirm.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbPopconfirm.Icon.set -> void
+Trailblazor.TbPopconfirm.Label.get -> string?
+Trailblazor.TbPopconfirm.Label.set -> void
+Trailblazor.TbPopconfirm.OnCancel.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbPopconfirm.OnCancel.set -> void
+Trailblazor.TbPopconfirm.OnConfirm.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbPopconfirm.OnConfirm.set -> void
+Trailblazor.TbPopconfirm.Open.get -> bool
+Trailblazor.TbPopconfirm.Open.set -> void
+Trailblazor.TbPopconfirm.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbPopconfirm.OpenChanged.set -> void
+Trailblazor.TbPopconfirm.Placement.get -> Trailblazor.Placement
+Trailblazor.TbPopconfirm.Placement.set -> void
+Trailblazor.TbPopconfirm.Size.get -> Trailblazor.Size
+Trailblazor.TbPopconfirm.Size.set -> void
+Trailblazor.TbPopconfirm.TbPopconfirm() -> void
+Trailblazor.TbPopconfirm.TelemetryName.get -> string?
+Trailblazor.TbPopconfirm.TelemetryName.set -> void
+Trailblazor.TbPopconfirm.Title.get -> string!
+Trailblazor.TbPopconfirm.Title.set -> void
+Trailblazor.TbPopconfirm.Tone.get -> Trailblazor.Tone
+Trailblazor.TbPopconfirm.Tone.set -> void
+Trailblazor.TbPopconfirm.Trigger.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.PopoverTrigger!>?
+Trailblazor.TbPopconfirm.Trigger.set -> void
+Trailblazor.TbPopconfirm.Variant.get -> Trailblazor.Variant
+Trailblazor.TbPopconfirm.Variant.set -> void
 Trailblazor.TbTableOfContents
 Trailblazor.TbTableOfContents.Active.get -> string?
 Trailblazor.TbTableOfContents.ActiveChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
@@ -2842,6 +2887,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbOptionGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbOverlay.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbPagination.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbPopconfirm.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbPopover.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbProgress.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbRadio<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

@@ -72,7 +72,6 @@ public static class UpcomingCatalog
         new("Command palette", ExampleCategory.Overlays, 76),
         new("Context menu", ExampleCategory.Overlays, 77),
         new("Image preview", ExampleCategory.Overlays, 188),
-        new("Popconfirm", ExampleCategory.Overlays, 69),
         new("Product tour", ExampleCategory.Overlays, 191),
         new("Sheet", ExampleCategory.Overlays, 59),
         new("File manager", ExampleCategory.Navigation, 209),

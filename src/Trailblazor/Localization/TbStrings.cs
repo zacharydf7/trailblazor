@@ -364,6 +364,12 @@ public static class TbStrings
     /// <summary>"Optional": shown under the title of a step that can be skipped.</summary>
     public const string StepperOptional = "Stepper.Optional";
 
+    /// <summary>"OK": the confirm button of a <see cref="TbPopconfirm"/>.</summary>
+    public const string PopconfirmConfirm = "Popconfirm.Confirm";
+
+    /// <summary>"Cancel": the cancel button of a <see cref="TbPopconfirm"/>.</summary>
+    public const string PopconfirmCancel = "Popconfirm.Cancel";
+
     /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
     public const string TableOfContentsNavigation = "TableOfContents.Navigation";
 
@@ -833,6 +839,8 @@ public static class TbStrings
         [StepperCurrent] = "Current step: {0}",
         [StepperLabel] = "Progress",
         [StepperOptional] = "Optional",
+        [PopconfirmConfirm] = "OK",
+        [PopconfirmCancel] = "Cancel",
         [TableOfContentsNavigation] = "On this page",
         [TagInputHint] = "Enter adds a tag. Left Arrow moves to the tags.",
         [TagInputRemove] = "Remove {0}",

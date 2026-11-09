@@ -165,6 +165,7 @@ public class ExampleCatalogTests
         ["Button"] = ["icon-button"],
         ["Dialog"] = ["drawer"],
         ["NavMenu"] = ["app-shell"],
+        ["Popover"] = ["popconfirm"],
         ["Field"] =
         [
             "text-field", "number-field", "checkbox", "checkbox-group", "switch", "slider", "radio-group", "select",

@@ -37,6 +37,9 @@ Trailblazor.Testing.Playwright.TbNumberFieldLocator.TbNumberFieldLocator(Microso
 Trailblazor.Testing.Playwright.TbPaginationLocator
 Trailblazor.Testing.Playwright.TbPaginationLocator.GoToPageAsync(int number) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbPaginationLocator.TbPaginationLocator(Microsoft.Playwright.IPage! page, string! name) -> void
+Trailblazor.Testing.Playwright.TbPopconfirmLocator
+Trailblazor.Testing.Playwright.TbPopconfirmLocator.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbPopconfirmLocator.ConfirmAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbPopoverLocator
 Trailblazor.Testing.Playwright.TbPopoverLocator.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbPopoverLocator.OpenAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
@@ -77,6 +80,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.ListBox(string! label) -> Trailbl
 Trailblazor.Testing.Playwright.TrailblazorPage.Menu(string! trigger) -> Trailblazor.Testing.Playwright.TbMenuLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.NumberField(string! label) -> Trailblazor.Testing.Playwright.TbNumberFieldLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Pagination(string! name) -> Trailblazor.Testing.Playwright.TbPaginationLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Popconfirm(string! trigger) -> Trailblazor.Testing.Playwright.TbPopconfirmLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Popover(string! trigger) -> Trailblazor.Testing.Playwright.TbPopoverLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(string! label) -> Trailblazor.Testing.Playwright.TbSelectLocator!

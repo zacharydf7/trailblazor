@@ -111,6 +111,24 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task Popconfirm_ShouldCountEachAnswer_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbPopconfirm>(parameters => parameters.Add(confirm => confirm.Label, "Delete")
+            .Add(confirm => confirm.Title, "Delete Pine Hollow loop?")
+            .Add(confirm => confirm.TelemetryName, "delete-trail").Add(confirm => confirm.OnConfirm, () => { }));
+        var popover = cut.FindComponent<TbPopover>().Instance;
+
+        await cut.Find("[data-part=confirm]").ClickAsync(new());
+        await cut.InvokeAsync(() => popover.OnToggleAsync(true));
+        await cut.InvokeAsync(() => popover.OnToggleAsync(false));
+        await cut.Find("[data-part=cancel]").ClickAsync(new());
+
+        Assert.Equal(["delete-trail"], Names(_shown));
+        Assert.Equal([("delete-trail", "TbPopconfirm", "confirm"), ("delete-trail", "TbPopconfirm", "cancel"),
+            ("delete-trail", "TbPopconfirm", "cancel")], Uses());
+    }
+
+    [Fact]
     public async Task Menu_ShouldCountNothing_WhenItOpensWithoutATelemetryName()
     {
         var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
