@@ -1704,6 +1704,38 @@
         border: 1px solid var(--tb-border-subtle);
     }
 
+    /* A key looks like a keycap: a raised box in the monospace font, sized to the text around it. */
+    .tb-kbd {
+        font-family: var(--tb-font-family-mono);
+        font-size: 0.875em;
+        white-space: nowrap;
+    }
+
+    .tb-kbd--key,
+    .tb-kbd__key {
+        display: inline-block;
+        min-width: 1.6em;
+        padding: 0.05em 0.4em;
+        border: 1px solid var(--tb-border-strong);
+        border-bottom-width: 2px;
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+        line-height: var(--tb-line-height-tight);
+        text-align: center;
+    }
+
+    /* A key in a combination takes the combination's font rather than shrinking it again. */
+    .tb-kbd__key {
+        font-family: inherit;
+        font-size: inherit;
+    }
+
+    .tb-kbd__plus {
+        margin-inline: 0.2em;
+        color: var(--tb-color-text-muted);
+    }
+
     /* An empty state sits centered in the space it stands in for, with a muted icon above its title. */
     .tb-empty-state {
         --tb-empty-state-icon-size: 3rem;
@@ -3478,7 +3510,8 @@
         width: var(--tb-anchored-offset);
     }
 
-    .tb-tooltip kbd {
+    /* A plain kbd in a tooltip; a TbKbd keeps its own keycaps. */
+    .tb-tooltip kbd:not(.tb-kbd, .tb-kbd *) {
         padding: 0 0.3em;
         border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
         border-radius: var(--tb-radius-sm);

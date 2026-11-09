@@ -26,6 +26,7 @@ public static class AccessibilityStatusCatalog
     public static IReadOnlyList<AccessibilityStatus> All { get; } =
     [
         new("text", None, None, None),
+        new("kbd", None, Tested, None),
         new("avatar", None, Tested, None),
         new("timeline", None, Tested, None),
         new("image", None, NotYet, None),

@@ -37,7 +37,6 @@ public static class UpcomingCatalog
         new("Gauges", ExampleCategory.Content, 200),
         new("Image editor", ExampleCategory.Content, 210),
         new("Kanban board", ExampleCategory.Content, 184),
-        new("Kbd", ExampleCategory.Content, 72),
         new("Maps", ExampleCategory.Content, 208),
         new("PDF viewer", ExampleCategory.Content, 205),
         new("Pivot grid", ExampleCategory.Content, 202),

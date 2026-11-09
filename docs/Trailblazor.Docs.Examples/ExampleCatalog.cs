@@ -267,6 +267,42 @@ public static class ExampleCatalog
             TestingTip = "Text cut off by `MaxLines` is still all in the markup, so text assertions and `GetByText` "
                 + "match the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
         },
+        new("kbd", "Kbd", ExampleCategory.Content,
+            "Keyboard keys and shortcuts shown as keycaps, such as Ctrl+K, in help text and hints.")
+        {
+            WhenToUse =
+            [
+                "Use it wherever text names a key or a shortcut, so people see what to press.",
+            ],
+            WhenNotToUse =
+            [
+                "For code, or for words people type rather than keys they press, use a `code` element.",
+            ],
+            Related = ["text", "tooltip"],
+            Sections =
+            [
+                new("basic", "Kbd", "`Keys` shows keys pressed together, such as `\"Ctrl+K\"`, each as its own keycap "
+                    + "with a plus between them. `ChildContent` shows a single key, such as `Esc`.",
+                    typeof(KbdExample)),
+            ],
+            Api = [typeof(TbKbd)],
+            Accessibility =
+            [
+                "It renders `kbd` elements, so screen readers read the keys as text and the plus sign as \"plus\".",
+                "Each keycap keeps its border in forced-colors mode, such as Windows high contrast.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Target = null,
+            Blocks = ["tb-kbd"],
+            DataParts =
+            [
+                new("key", "One key of a combination."),
+            ],
+            TestingTip = "Keys have no role of their own; find them by their text, as `GetByText(\"Ctrl\")`.",
+        },
         new("avatar", "Avatar", ExampleCategory.Content,
             "A small picture of a person or a team: their photo, their initials, or an icon.")
         {

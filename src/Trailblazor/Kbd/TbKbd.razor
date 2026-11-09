@@ -1,0 +1,45 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A combination is a kbd of kbds, one for each key, which is how the HTML spec marks up keys pressed together. *@
+<kbd @attributes="AdditionalAttributes" style="@Style"
+     class="@ClassNames.Join("tb-kbd", Keys is null ? "tb-kbd--key" : null, Class)">
+    @if (Keys is null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        @for (var index = 0; index < _parts.Length; index++)
+        {
+            @if (index > 0)
+            {
+                <span class="tb-kbd__plus">+</span>
+            }
+            <kbd data-part="key" class="tb-kbd__key">@_parts[index]</kbd>
+        }
+    }
+</kbd>
+
+@code {
+    private string[] _parts = [];
+
+    /// <summary>Keys pressed together, joined by plus signs, such as <c>"Ctrl+K"</c>. Each key gets its own keycap;
+    /// write the plus key itself as <c>"Plus"</c>.</summary>
+    [Parameter]
+    public string? Keys { get; set; }
+
+    /// <summary>One key, such as <c>Esc</c>, when there's no <see cref="Keys"/>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        _parts = Keys?.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? [];
+        if (Keys is null ? ChildContent is null : _parts.Length == 0)
+        {
+            throw new InvalidOperationException($"{nameof(TbKbd)} needs {nameof(Keys)} or content.");
+        }
+    }
+}

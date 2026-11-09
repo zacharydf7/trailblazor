@@ -34,7 +34,7 @@
     [Parameter, EditorRequired]
     public IReadOnlyList<KeyboardRow> Rows { get; set; } = [];
 
-    // Each key is its own <kbd>, and a combination such as Alt+Down joins its keys with a plus.
+    // Each key is its own keycap, and a combination such as Alt+Down joins its keys with a plus.
     private static RenderFragment Keys(KeyboardRow row) => builder =>
     {
         foreach (var (key, index) in row.Keys.Select((key, index) => (key, index)))
@@ -51,9 +51,10 @@
                     builder.AddContent(1, "+");
                 }
 
-                builder.OpenElement(2, "kbd");
-                builder.AddContent(3, part);
-                builder.CloseElement();
+                builder.OpenComponent<TbKbd>(2);
+                builder.AddComponentParameter(3, nameof(TbKbd.ChildContent),
+                    (RenderFragment)(text => text.AddContent(0, part)));
+                builder.CloseComponent();
             }
         }
     };

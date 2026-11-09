@@ -12,6 +12,7 @@ override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
 override Trailblazor.TbEmptyState.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbEmptyState.OnParametersSet() -> void
+override Trailblazor.TbKbd.OnParametersSet() -> void
 override Trailblazor.TbPopconfirm.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
@@ -85,6 +86,12 @@ Trailblazor.TbEmptyState.TelemetryName.get -> string?
 Trailblazor.TbEmptyState.TelemetryName.set -> void
 Trailblazor.TbEmptyState.Title.get -> string!
 Trailblazor.TbEmptyState.Title.set -> void
+Trailblazor.TbKbd
+Trailblazor.TbKbd.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbKbd.ChildContent.set -> void
+Trailblazor.TbKbd.Keys.get -> string?
+Trailblazor.TbKbd.Keys.set -> void
+Trailblazor.TbKbd.TbKbd() -> void
 Trailblazor.TbPopconfirm
 Trailblazor.TbPopconfirm.Align.get -> Trailblazor.PlacementAlign
 Trailblazor.TbPopconfirm.Align.set -> void
@@ -2914,6 +2921,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbIconButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbImage.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbInsertDivider.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbKbd.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbLabel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbList.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
