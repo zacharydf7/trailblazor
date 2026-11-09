@@ -3212,6 +3212,63 @@
         gap: var(--tb-space-1) var(--tb-space-4);
     }
 
+    /* A segmented group draws its options as joined segments in a row, the chosen one filled with the tone. */
+    .tb-radio-group--segmented .tb-radio-group__options {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-self: flex-start;
+        gap: 2px;
+        padding: 2px;
+        border: 1px solid var(--tb-border-strong);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface);
+    }
+
+    .tb-radio-group--segmented .tb-radio {
+        position: relative;
+        justify-content: center;
+        padding: var(--tb-space-1) var(--tb-space-3);
+        border-radius: calc(var(--tb-radius-md) - 2px);
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-radio-group--segmented .tb-radio:not(:has(.tb-radio__input:checked, .tb-radio__input:disabled)):hover {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    /* The radio stays over its segment, focusable and clickable, with its circle hidden, also in forced colors. */
+    .tb-radio-group--segmented .tb-radio__input {
+        appearance: none;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        opacity: 0;
+    }
+
+    .tb-radio-group--segmented .tb-radio:has(.tb-radio__input:checked) {
+        background: var(--tb-choice-fill);
+        color: var(--tb-choice-on-fill);
+    }
+
+    .tb-radio-group--segmented .tb-radio:has(.tb-radio__input:focus-visible) {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-radio-group--segmented.tb-radio-group--invalid .tb-radio-group__options {
+        border-color: var(--tb-color-danger-text);
+    }
+
+    @media (forced-colors: active) {
+        .tb-radio-group--segmented .tb-radio:has(.tb-radio__input:checked) {
+            forced-color-adjust: none;
+            background: Highlight;
+            color: HighlightText;
+        }
+    }
+
     .tb-tooltip-anchor {
         display: inline-flex;
     }

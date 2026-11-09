@@ -37,6 +37,7 @@ public static class AccessibilityStatusCatalog
         new("icon-button", NotYet, NotYet, NotYet),
         new("button-group", NotYet, NotYet, None),
         new("toggle-group", Tested, Tested, NotYet),
+        new("segmented-control", Tested, Tested, None),
         new("theme-picker", NotYet, NotYet, NotYet),
         new("toolbar", Tested, NotYet, None),
         new("insert-divider", Tested, NotYet, NotYet),

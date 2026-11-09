@@ -12,7 +12,8 @@
           aria-describedby="@DescribedBy"
           class="@ClassNames.Join("tb-radio-group", ClassNames.Modifier("tb-radio-group", Tone),
                      ClassNames.Modifier("tb-radio-group", Size), ShowsInvalid ? "tb-radio-group--invalid" : null,
-                     Disabled ? "tb-radio-group--disabled" : null, Class)">
+                     Disabled ? "tb-radio-group--disabled" : null, Segmented ? "tb-radio-group--segmented" : null,
+                     Class)">
     @if (ShownLabel is not null)
     {
         <legend data-part="label" class="@ClassNames.Join("tb-radio-group__label", LabelHiddenClass, Classes?.Label)">
@@ -46,6 +47,11 @@
     /// <summary>Lays the options out in a row instead of a column.</summary>
     [Parameter]
     public bool Row { get; set; }
+
+    /// <summary>Draws the options as a segmented control: joined segments in a row, the chosen one filled with the
+    /// <see cref="Tone"/> and the radio circles hidden. Keep it to a few short options.</summary>
+    [Parameter]
+    public bool Segmented { get; set; }
 
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]

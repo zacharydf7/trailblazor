@@ -1,0 +1,21 @@
+<TbStack Gap="4">
+    <TbRadioGroup Label="Distance unit" @bind-Value="_unit" Segmented Size="Size.Small" Tone="Tone.Neutral">
+        <TbRadio Value="@("km")">Kilometers</TbRadio>
+        <TbRadio Value="@("mi")">Miles</TbRadio>
+    </TbRadioGroup>
+    <TbRadioGroup Label="Group size" @bind-Value="_size" Segmented HelperText="Groups over eight need a permit.">
+        <TbRadio Value="@("solo")">Solo</TbRadio>
+        <TbRadio Value="@("small")">2 to 8</TbRadio>
+        <TbRadio Value="@("large")" Disabled>9 or more</TbRadio>
+    </TbRadioGroup>
+    <TbRadioGroup Label="Permit" @bind-Value="_permit" Segmented ReadOnly>
+        <TbRadio Value="@("day")">Day</TbRadio>
+        <TbRadio Value="@("overnight")">Overnight</TbRadio>
+    </TbRadioGroup>
+</TbStack>
+
+@code {
+    private string _unit = "km";
+    private string _size = "small";
+    private string _permit = "day";
+}

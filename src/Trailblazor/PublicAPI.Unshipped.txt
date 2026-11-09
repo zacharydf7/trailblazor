@@ -3518,3 +3518,5 @@ override Trailblazor.TbRating.OnParametersSet() -> void
 ~override Trailblazor.TbRating.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbRating.Classes.get -> Trailblazor.ChoiceClasses?
 Trailblazor.TbRating.Classes.set -> void
+Trailblazor.TbRadioGroup<TValue>.Segmented.get -> bool
+Trailblazor.TbRadioGroup<TValue>.Segmented.set -> void

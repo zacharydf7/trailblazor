@@ -51,7 +51,6 @@ public static class UpcomingCatalog
         new("Back to top button", ExampleCategory.Actions, 194),
         new("Floating action button", ExampleCategory.Actions, 172),
         new("Ribbon", ExampleCategory.Actions, 83),
-        new("Segmented control", ExampleCategory.Actions, 67),
         new("Smart paste", ExampleCategory.Actions, 198),
         new("Speech-to-text button", ExampleCategory.Actions, 197),
         new("AI prompt", ExampleCategory.Inputs, 182),

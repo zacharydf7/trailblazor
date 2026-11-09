@@ -1,0 +1,12 @@
+<TbStack Gap="2">
+    <TbRadioGroup Label="Trail difficulty" @bind-Value="_level" Segmented>
+        <TbRadio Value="@("easy")">Easy</TbRadio>
+        <TbRadio Value="@("moderate")">Moderate</TbRadio>
+        <TbRadio Value="@("hard")">Hard</TbRadio>
+    </TbRadioGroup>
+    <TbText>Showing @_level trails.</TbText>
+</TbStack>
+
+@code {
+    private string _level = "moderate";
+}

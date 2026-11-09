@@ -25,6 +25,14 @@ public class TbRadioGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldMarkTheGroupSegmented_WhenSegmented()
+    {
+        var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Segmented, true));
+
+        Assert.Contains("tb-radio-group--segmented", cut.Find("fieldset").ClassList);
+    }
+
+    [Fact]
     public void Render_ShouldTurnOffEveryRadioButTheCheckedOne_WhenReadOnly()
     {
         var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Value, "A4")

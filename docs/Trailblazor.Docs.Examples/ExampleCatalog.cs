@@ -954,7 +954,7 @@ public static class ExampleCatalog
                 "For buttons that each start an action, use a [button group](components/button-group).",
                 "For one setting that's on or off, use a [switch](components/switch).",
             ],
-            Related = ["radio-group", "button-group", "toolbar", "switch"],
+            Related = ["radio-group", "segmented-control", "button-group", "toolbar", "switch"],
             Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
             Sections =
             [
@@ -1031,6 +1031,95 @@ public static class ExampleCatalog
                     + "`trailblazor.control.shown` as it first renders and `trailblazor.control.used` each time it is "
                     + "pressed.",
             ],
+        },
+        new("segmented-control", "Segmented control", ExampleCategory.Actions,
+            "A row of joined segments that picks one of a few short options, as a radio group drawn more compactly.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for one choice from two to five short options, such as a unit or a size, where a column of "
+                    + "radios would take too much room.",
+            ],
+            WhenNotToUse =
+            [
+                "For longer options, or more than a few, use a plain [radio group](components/radio-group).",
+                "For a row whose choice takes effect right away, such as a map's view, or where several can be pressed "
+                    + "at once, use a [toggle group](components/toggle-group).",
+                "For switching between panels of content, use [tabs](components/tabs).",
+            ],
+            Related = ["radio-group", "toggle-group", "tabs"],
+            Pattern = new("radio group", "https://www.w3.org/WAI/ARIA/apg/patterns/radio/"),
+            RightToLeftKeys = "Left moves to the next segment and Right to the previous one, except in Safari, which "
+                + "doesn't swap them.",
+            Sections =
+            [
+                new("segments", "Segments", "`Segmented` on a `TbRadioGroup` draws its options as segments, the "
+                    + "chosen one filled. It is still a radio group, so `Value`, the form post and validation work the "
+                    + "same way.", typeof(SegmentedControlExample)),
+                new("states", "Size, tone, disabled and read-only", "`Size` and `Tone` work as on a radio group, the "
+                    + "tone filling the chosen segment. `Disabled` on an option turns off that segment alone, and "
+                    + "`ReadOnly` turns off every segment but the chosen one.",
+                    typeof(SegmentedControlStatesExample)),
+            ],
+            Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>), typeof(ChoiceClasses)],
+            Anatomy = """
+                <TbRadioGroup Label="…" @bind-Value="_value" Segmented>
+                    <TbRadio Value="…">…</TbRadio>
+                    <TbRadio Value="…">…</TbRadio>
+                </TbRadioGroup>
+                """,
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the control and out of it, as one tab stop. Focus lands on the chosen segment. "
+                    + "With nothing chosen, it lands on the first segment that isn't disabled."),
+                new(["Right", "Down"], "Moves to the next segment that isn't disabled and chooses it. Most browsers "
+                    + "wrap at the end of the control, but Safari stops there."),
+                new(["Left", "Up"], "Moves to the previous segment that isn't disabled and chooses it, wrapping the "
+                    + "same way."),
+                new(["Space"], "Chooses the focused segment, when nothing is chosen yet."),
+            ],
+            Labeling =
+            [
+                "The `Label` is the `fieldset`'s legend and names the group. Each segment is a native radio, named by "
+                    + "its content. An `AriaLabel` in place of the `Label` hides the legend but still names the group; use it "
+                    + "only when the segments make sense without a visible label.",
+            ],
+            Announcements =
+            [
+                "Screen readers announce each segment as a radio, with its position and whether it is chosen.",
+            ],
+            Accessibility =
+            [
+                "In every `Tone`, the chosen segment's fill stands out from the unchosen ones by at least 3:1, and its "
+                    + "text from the fill by at least 4.5:1.",
+                "The focused segment shows the focus ring around it, since its radio is hidden.",
+                "In forced-colors mode the chosen segment takes the system highlight.",
+            ],
+            AppDuties =
+            [
+                "Keep each option to a word or two, so the segments fit on one line on a narrow screen.",
+            ],
+            BeforeInteractive =
+            [
+                "Native radios give the tab stop and the arrow keys, and CSS fills the chosen segment from its checked "
+                    + "radio. So choosing works before the page is interactive, and a static form posts the chosen "
+                    + "value.",
+            ],
+            Target = new("radiogroup", "Trail difficulty"),
+            Blocks = ["tb-radio-group", "tb-radio"],
+            DataParts =
+            [
+                new("label", "The group's legend, and each segment's text."),
+                new("helper", "The help text under the group."),
+                new("error", "The validation message, shown while the value is invalid."),
+                new("options", "The row of segments."),
+                new("input", "One segment's radio, hidden over the segment."),
+            ],
+            TestingTip = "Each segment is a native radio, so Playwright's `CheckAsync()` works on "
+                + "`GetByRole(AriaRole.Radio, new() { Name = \"Hard\" })` inside the group, as on a radio group. The "
+                + "radio covers its segment's text, so click the radio rather than the text. In bUnit, `Change(true)` on "
+                + "a segment's `input` chooses it.",
         },
         new("theme-picker", "Theme picker", ExampleCategory.Actions,
             "Lets people choose a light or dark page, or follow their device, and remembers the choice.")
@@ -3137,7 +3226,7 @@ public static class ExampleCatalog
                 "For any number of choices, use a [checkbox group](components/checkbox-group).",
                 "For one setting that's on or off, use a [switch](components/switch).",
             ],
-            Related = ["select", "toggle-group", "checkbox-group", "switch", "form"],
+            Related = ["select", "toggle-group", "segmented-control", "checkbox-group", "switch", "form"],
             Pattern = new("radio group", "https://www.w3.org/WAI/ARIA/apg/patterns/radio/"),
             RightToLeftKeys = "Left moves to the next option and Right to the previous one, except in Safari, which "
                 + "doesn't swap them.",
