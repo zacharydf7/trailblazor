@@ -20,6 +20,16 @@ public class TbButtonTests : BunitContext
         Assert.Equal("Save", cut.Find("[data-part=label]").TextContent);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldMarkTheButtonFullWidth_WhenGivenFullWidth(bool fullWidth)
+    {
+        var cut = Render<TbButton>(parameters => parameters.Add(button => button.FullWidth, fullWidth));
+
+        Assert.Equal(fullWidth, cut.Find("button").ClassList.Contains("tb-button--full-width"));
+    }
+
     [Fact]
     public void Click_ShouldInvokeOnClick_WhenEnabled()
     {

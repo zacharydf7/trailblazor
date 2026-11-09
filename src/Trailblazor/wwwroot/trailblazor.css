@@ -1917,6 +1917,10 @@
         transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
+    .tb-button--full-width {
+        width: 100%;
+    }
+
     .tb-button:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);

@@ -184,4 +184,17 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(soft).Not.ToHaveCSSAsync("background-color", hovered);
         await page.Mouse.UpAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldFillItsContainersWidth_WhenFullWidth(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/button");
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Check permit" });
+
+        var width = (await button.BoundingBoxAsync())!.Width;
+        var container = (await button.Locator("xpath=..").BoundingBoxAsync())!.Width;
+
+        Assert.Equal(container, width, tolerance: 0.5);
+        Assert.True(width > 300);
+    }
 }

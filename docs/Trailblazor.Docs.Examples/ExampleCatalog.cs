@@ -724,6 +724,8 @@ public static class ExampleCatalog
                 new("clicks", "Clicks", "`OnClick` runs when the button is pressed by a pointer, Enter or Space.",
                     typeof(ButtonClickExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`.", typeof(ButtonSizeExample)),
+                new("full-width", "Full width", "`FullWidth` makes the button as wide as its container, which suits "
+                    + "the main action at the end of a narrow form.", typeof(ButtonFullWidthExample)),
                 new("icons-and-slots", "Icons and slots", "`StartIcon` and `EndIcon` add an icon beside the text. The "
                     + "`Start` and `End` slots hold other content, such as a badge. An icon adds nothing to the "
                     + "button's name, and slot content adds to it only if it has text of its own.",

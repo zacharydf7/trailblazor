@@ -1,7 +1,7 @@
 @namespace Trailblazor
 @inherits TbButtonBase
 
-@Root(null, null, @<text>
+@Root(FullWidth ? "tb-button--full-width" : null, null, @<text>
     @if (Loading)
     {
         <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
@@ -33,6 +33,10 @@
     /// <summary>The button's label.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Makes the button as wide as its container, which suits the main action on a narrow form.</summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
 
     /// <summary>Content before the label, usually an icon.</summary>
     [Parameter]

@@ -1206,6 +1206,8 @@ Trailblazor.TbButton.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbButton.End.set -> void
 Trailblazor.TbButton.EndIcon.get -> Trailblazor.Icon?
 Trailblazor.TbButton.EndIcon.set -> void
+Trailblazor.TbButton.FullWidth.get -> bool
+Trailblazor.TbButton.FullWidth.set -> void
 Trailblazor.TbButton.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbButton.Start.set -> void
 Trailblazor.TbButton.StartIcon.get -> Trailblazor.Icon?
