@@ -1,0 +1,8 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Packing list" @bind-Value="_list"
+                      Blocks="RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists" />
+</TbStack>
+
+@code {
+    private string? _list = "<ul><li>Tent</li><li>Water<ul><li>Two liters each</li></ul></li><li>Map</li></ul>";
+}

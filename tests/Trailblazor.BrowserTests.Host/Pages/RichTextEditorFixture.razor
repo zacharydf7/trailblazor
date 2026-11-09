@@ -6,7 +6,7 @@
 <TbButton OnClick="() => _notes = _source">Set notes</TbButton>
 
 <TbRichTextEditor Label="Formula" @bind-Value="_formula" UpdateOnInput
-                  Formats="RichTextFormats.Subscript | RichTextFormats.Superscript" />
+                  Formats="RichTextFormats.Subscript | RichTextFormats.Superscript" Blocks="RichTextBlocks.None" />
 <output data-testid="formula">@_formula</output>
 
 <TbRichTextEditor Label="Summary" @bind-Value="_summary" />

@@ -362,6 +362,33 @@ public static class TbStrings
     /// <summary>"Superscript": names a rich text editor's superscript button.</summary>
     public const string RichTextEditorSuperscript = "RichTextEditor.Superscript";
 
+    /// <summary>"Code": names a rich text editor's inline code button.</summary>
+    public const string RichTextEditorCode = "RichTextEditor.Code";
+
+    /// <summary>"Heading 1": names a rich text editor's top-level heading button.</summary>
+    public const string RichTextEditorHeading1 = "RichTextEditor.Heading1";
+
+    /// <summary>"Heading 2": names a rich text editor's second-level heading button.</summary>
+    public const string RichTextEditorHeading2 = "RichTextEditor.Heading2";
+
+    /// <summary>"Heading 3": names a rich text editor's third-level heading button.</summary>
+    public const string RichTextEditorHeading3 = "RichTextEditor.Heading3";
+
+    /// <summary>"Quote": names a rich text editor's block quote button.</summary>
+    public const string RichTextEditorQuote = "RichTextEditor.Quote";
+
+    /// <summary>"Bulleted list": names a rich text editor's bulleted list button.</summary>
+    public const string RichTextEditorBulletedList = "RichTextEditor.BulletedList";
+
+    /// <summary>"Numbered list": names a rich text editor's numbered list button.</summary>
+    public const string RichTextEditorNumberedList = "RichTextEditor.NumberedList";
+
+    /// <summary>"Outdent": names a rich text editor's outdent button.</summary>
+    public const string RichTextEditorOutdent = "RichTextEditor.Outdent";
+
+    /// <summary>"Indent": names a rich text editor's indent button.</summary>
+    public const string RichTextEditorIndent = "RichTextEditor.Indent";
+
     /// <summary>"Theme": names a theme picker.</summary>
     public const string ThemePicker = "Theme.Picker";
 
@@ -713,6 +740,15 @@ public static class TbStrings
         [RichTextEditorStrikethrough] = "Strikethrough",
         [RichTextEditorSubscript] = "Subscript",
         [RichTextEditorSuperscript] = "Superscript",
+        [RichTextEditorCode] = "Code",
+        [RichTextEditorHeading1] = "Heading 1",
+        [RichTextEditorHeading2] = "Heading 2",
+        [RichTextEditorHeading3] = "Heading 3",
+        [RichTextEditorQuote] = "Quote",
+        [RichTextEditorBulletedList] = "Bulleted list",
+        [RichTextEditorNumberedList] = "Numbered list",
+        [RichTextEditorOutdent] = "Outdent",
+        [RichTextEditorIndent] = "Indent",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

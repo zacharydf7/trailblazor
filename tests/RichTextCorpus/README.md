@@ -15,5 +15,6 @@ editor's schema, so the two readers agree.
 | `google-docs-structure.html` | Hand-built likewise: headings, a link, monospace text, nested and numbered lists, a rule. |
 | `hostile.html` | Hand-built: scripts, event handlers, `javascript:` URLs and elements whose content never shows. |
 | `loose.html` | Hand-built: markup a browser repairs, such as formatting left open across paragraphs and unclosed SVG. |
+| `font-styles.html` | Hand-built: font shorthands and styles that are easy to misread, such as a shorthand resetting `font-family`, `var()` and oblique angles. |
 
 The Word samples keep everything Word wrote, except that the user folder in its file paths is renamed.

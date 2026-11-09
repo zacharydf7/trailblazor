@@ -2075,8 +2075,8 @@ public static class ExampleCatalog
         {
             WhenToUse =
             [
-                "Use it where people format what they write: bold for a warning, italic for a name, subscript and "
-                    + "superscript for formulas and footnotes.",
+                "Use it where people format what they write: bold for a warning, italic for a name, headings and "
+                    + "lists to organize a longer note, and subscript and superscript for formulas and footnotes.",
             ],
             WhenNotToUse =
             [
@@ -2096,13 +2096,20 @@ public static class ExampleCatalog
                         ExampleControl.Switch(nameof(TbRichTextEditor.ReadOnly)),
                         ExampleControl.Switch(nameof(TbRichTextEditor.Required))),
                 },
-                new("value", "The value", "The value is canonical HTML: a `<p>` for each paragraph, `<br>` for line "
-                    + "breaks and a tag for each format, or `\"\"` when the editor is empty. Paste from Word or a web "
-                    + "page, and only the formats survive. [Rich text](guides/rich-text) covers reading it in C#.",
+                new("value", "The value", "The value is canonical HTML: a `<p>` for each paragraph, headings, quotes "
+                    + "and lists as their own elements, `<br>` for line breaks and a tag for each format, or `\"\"` "
+                    + "when the editor is empty. Paste from Word or a web page, and only the formats and blocks the "
+                    + "editor allows survive. [Rich text](guides/rich-text) covers reading it in C#.",
                     typeof(RichTextEditorExample)),
                 new("formats", "Formats", "`Formats` lists the formats the editor allows. The toolbar shows a button "
-                    + "for each, and pasted text keeps only those. `RichTextFormats.None` makes a field of plain "
-                    + "paragraphs.", typeof(RichTextEditorFormatsExample)),
+                    + "for each, and pasted text keeps only those. `RichTextFormats.None` with "
+                    + "`Blocks=\"RichTextBlocks.None\"` makes a field of plain paragraphs.",
+                    typeof(RichTextEditorFormatsExample)),
+                new("blocks", "Blocks", "`Blocks` lists the kinds of block the editor allows: headings, quotes, and "
+                    + "bulleted and numbered lists. The toolbar shows a button for each, three for headings, with "
+                    + "Outdent and Indent for lists, and pasted text keeps only those. `RichTextBlocks.None` allows "
+                    + "only plain paragraphs.",
+                    typeof(RichTextEditorBlocksExample)),
                 new("without-a-toolbar", "Without a toolbar", "`ShowToolbar=\"false\"` hides the toolbar for a small "
                     + "field. The shortcuts and paste still apply the formats it allows.",
                     typeof(RichTextEditorToolbarExample)),
@@ -2125,7 +2132,16 @@ public static class ExampleCatalog
                     + "the next text typed. Cmd on macOS."),
                 new(["Ctrl+Shift+X"], "Turns strikethrough on or off."),
                 new(["Ctrl+,", "Ctrl+."], "Turns subscript or superscript on or off."),
-                new(["Enter"], "Starts a new paragraph."),
+                new(["Ctrl+E"], "Turns inline code on or off."),
+                new(["Enter"], "Starts a new paragraph; at the end of a heading, a plain one."),
+                new(["Enter"], "Leaves the list or quote, a level at a time.")
+                {
+                    When = "In an empty list item or quote paragraph",
+                },
+                new(["Backspace"], "Takes the list or quote away, a level at a time, before joining paragraphs.")
+                {
+                    When = "At the start of a list item or quote paragraph",
+                },
                 new(["Shift+Enter"], "Breaks the line within the paragraph."),
                 new(["Ctrl+Z"], "Undoes the last change, a word at a time while typing."),
                 new(["Ctrl+Y", "Ctrl+Shift+Z"], "Redoes the last change undone."),
@@ -2139,23 +2155,26 @@ public static class ExampleCatalog
             [
                 "The `Label` names the editing area with `aria-labelledby`, since it isn't a form control a `<label>` "
                     + "can point at. Clicking the label still focuses it.",
-                "The toolbar is named \"Formatting\" and each button by its format; `Labels` changes these words.",
+                "The toolbar is named \"Formatting\" and each button by what it does, such as \"Bold\" or "
+                    + "\"Bulleted list\"; `Labels` changes these words.",
             ],
             Announcements =
             [
                 "A validation message that appears as someone edits the field is read out once, as on every field.",
-                "Each toolbar button's state is announced through `aria-pressed`, and it follows the selection as the "
-                    + "caret moves.",
+                "Each format and block button's state is announced through `aria-pressed`, and it follows the "
+                    + "selection as the caret moves.",
             ],
             Accessibility =
             [
                 "The editing area is a multi-line `textbox`, with `aria-required`, `aria-invalid`, `aria-readonly` "
                     + "and `aria-disabled` as they apply, and the placeholder as `aria-placeholder`.",
                 "The toolbar is a [toolbar](components/toolbar), following its WAI-ARIA pattern: one Tab stop, with "
-                    + "the arrow keys moving between its buttons. Each button uses `aria-pressed` to report whether "
-                    + "its format is on, off or mixed, and `aria-keyshortcuts` to name its shortcuts.",
-                "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>` and `<sup>` elements, which screen "
-                    + "readers can report.",
+                    + "the arrow keys moving between its buttons. Each format and block button uses `aria-pressed` to "
+                    + "report whether it applies to all of the selection, part of it (mixed) or none, and each format "
+                    + "button names its shortcuts with `aria-keyshortcuts`.",
+                "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>` and `<code>` elements, and "
+                    + "blocks are real headings, block quotes and lists, which screen readers can report and move "
+                    + "between.",
                 "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it.",
             ],
             AppDuties =
@@ -2181,7 +2200,7 @@ public static class ExampleCatalog
             [
                 .. FieldParts.Where(part => part.Name is not ("start" or "end")),
                 new("editor", "The toolbar and editing area together."),
-                new("toolbar", "The toolbar of formats."),
+                new("toolbar", "The formatting toolbar."),
                 new("input", "The editing area."),
             ],
             TestingTips =

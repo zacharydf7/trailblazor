@@ -799,6 +799,8 @@ internal sealed partial class RichTextHtmlReader
             formats = With(formats, tagFormat);
         }
 
+        // The element's own font family, from the last font-family or font shorthand, as a browser keeps it.
+        string? family = null;
         foreach (var declaration in style.Split(';'))
         {
             var colon = declaration.IndexOf(':');
@@ -810,14 +812,28 @@ internal sealed partial class RichTextHtmlReader
             var property = declaration[..colon].Trim().ToLowerInvariant();
             var value = declaration[(colon + 1)..].Replace("!important", "", StringComparison.OrdinalIgnoreCase)
                 .Trim().ToLowerInvariant();
+            if (property == "font-family")
+            {
+                family = value;
+            }
+            else if (property == "font")
+            {
+                // A keyword or var() clears the family; a browser drops most other unmatched values as invalid.
+                var match = FontShorthand().Match(value);
+                var clears = value.Contains("var(", StringComparison.Ordinal) || value is "inherit" or "initial"
+                    or "unset" or "revert" or "revert-layer" or "caption" or "icon" or "menu" or "message-box"
+                    or "small-caption" or "status-bar";
+                family = match.Success ? match.Groups[1].Value : clears ? "" : family;
+            }
+
             formats = property switch
             {
                 "font-weight" => Weight(formats, value),
-                "font-style" when value is "italic" or "oblique" => With(formats, RichTextFormats.Italic),
+                "font-style" when value == "italic" || value.StartsWith("oblique", StringComparison.Ordinal) =>
+                    With(formats, RichTextFormats.Italic),
                 "font-style" when value == "normal" => formats & ~RichTextFormats.Italic,
                 "font" when value is not ("inherit" or "initial" or "unset" or "revert") => Font(formats, value),
                 "text-decoration" or "text-decoration-line" => Decoration(formats, value, inLink),
-                "font-family" when IsMonospace(value) => With(formats, RichTextFormats.Code),
                 "vertical-align" when value == "super" => With(formats, RichTextFormats.Superscript),
                 "vertical-align" when value == "sub" => With(formats, RichTextFormats.Subscript),
                 "vertical-align" when value == "baseline" =>
@@ -826,7 +842,7 @@ internal sealed partial class RichTextHtmlReader
             };
         }
 
-        return formats;
+        return family is not null && IsMonospace(family) ? With(formats, RichTextFormats.Code) : formats;
     }
 
     private static RichTextFormats Weight(RichTextFormats formats, string value)
@@ -1032,6 +1048,10 @@ internal sealed partial class RichTextHtmlReader
     // Word writes a list item's bullet or number as text, in a span styled mso-list: Ignore.
     [GeneratedRegex(@"mso-list:\s*ignore", RegexOptions.IgnoreCase)]
     private static partial Regex WordListMarker();
+
+    // The font shorthand's family list comes after its size, as in "italic 10pt/12pt Consolas, monospace".
+    [GeneratedRegex(@"(?:^|\s)(?:\d*\.?\d+(?:(?!deg|g?rad|turn)[a-z]+|%)|0|(?:x{1,3}-)?(?:small|large)|medium|smaller|larger)(?:\s*/\s*\S+)?\s+(.+)$")]
+    private static partial Regex FontShorthand();
 
     // Word writes a list paragraph's level in its style, as in mso-list:l0 level2 lfo1.
     [GeneratedRegex(@"mso-list:\s*l\d+\s+level(\d{1,2})", RegexOptions.IgnoreCase)]

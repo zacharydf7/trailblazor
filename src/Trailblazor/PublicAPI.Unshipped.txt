@@ -3157,3 +3157,32 @@ override Trailblazor.RichTextSchema.ToString() -> string!
 static Trailblazor.RichTextSchema.operator !=(Trailblazor.RichTextSchema? left, Trailblazor.RichTextSchema? right) -> bool
 static Trailblazor.RichTextSchema.operator ==(Trailblazor.RichTextSchema? left, Trailblazor.RichTextSchema? right) -> bool
 static Trailblazor.RichTextSchema.Default.get -> Trailblazor.RichTextSchema!
+const Trailblazor.TbStrings.RichTextEditorCode = "RichTextEditor.Code" -> string!
+const Trailblazor.TbStrings.RichTextEditorHeading1 = "RichTextEditor.Heading1" -> string!
+const Trailblazor.TbStrings.RichTextEditorHeading2 = "RichTextEditor.Heading2" -> string!
+const Trailblazor.TbStrings.RichTextEditorHeading3 = "RichTextEditor.Heading3" -> string!
+const Trailblazor.TbStrings.RichTextEditorQuote = "RichTextEditor.Quote" -> string!
+const Trailblazor.TbStrings.RichTextEditorBulletedList = "RichTextEditor.BulletedList" -> string!
+const Trailblazor.TbStrings.RichTextEditorNumberedList = "RichTextEditor.NumberedList" -> string!
+const Trailblazor.TbStrings.RichTextEditorOutdent = "RichTextEditor.Outdent" -> string!
+const Trailblazor.TbStrings.RichTextEditorIndent = "RichTextEditor.Indent" -> string!
+Trailblazor.RichTextEditorLabels.Code.get -> string?
+Trailblazor.RichTextEditorLabels.Code.init -> void
+Trailblazor.RichTextEditorLabels.Heading1.get -> string?
+Trailblazor.RichTextEditorLabels.Heading1.init -> void
+Trailblazor.RichTextEditorLabels.Heading2.get -> string?
+Trailblazor.RichTextEditorLabels.Heading2.init -> void
+Trailblazor.RichTextEditorLabels.Heading3.get -> string?
+Trailblazor.RichTextEditorLabels.Heading3.init -> void
+Trailblazor.RichTextEditorLabels.Quote.get -> string?
+Trailblazor.RichTextEditorLabels.Quote.init -> void
+Trailblazor.RichTextEditorLabels.BulletedList.get -> string?
+Trailblazor.RichTextEditorLabels.BulletedList.init -> void
+Trailblazor.RichTextEditorLabels.NumberedList.get -> string?
+Trailblazor.RichTextEditorLabels.NumberedList.init -> void
+Trailblazor.RichTextEditorLabels.Outdent.get -> string?
+Trailblazor.RichTextEditorLabels.Outdent.init -> void
+Trailblazor.RichTextEditorLabels.Indent.get -> string?
+Trailblazor.RichTextEditorLabels.Indent.init -> void
+Trailblazor.TbRichTextEditor.Blocks.get -> Trailblazor.RichTextBlocks
+Trailblazor.TbRichTextEditor.Blocks.set -> void

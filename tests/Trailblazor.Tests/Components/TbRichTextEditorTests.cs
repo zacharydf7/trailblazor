@@ -49,14 +49,59 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Theory]
-    [InlineData(false, RichTextFormats.Bold)]
-    [InlineData(true, RichTextFormats.None)]
-    public void Render_ShouldLeaveOutTheToolbar_WhenItIsHiddenOrHasNoFormats(bool showToolbar, RichTextFormats formats)
+    [InlineData(false, RichTextFormats.Bold, RichTextBlocks.Quotes)]
+    [InlineData(true, RichTextFormats.None, RichTextBlocks.None)]
+    [InlineData(true, RichTextFormats.Link, RichTextBlocks.Rules)]
+    public void Render_ShouldLeaveOutTheToolbar_WhenItIsHiddenOrHasNoFormats(bool showToolbar, RichTextFormats formats,
+        RichTextBlocks blocks)
     {
         var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
-            .Add(editor => editor.ShowToolbar, showToolbar).Add(editor => editor.Formats, formats));
+            .Add(editor => editor.ShowToolbar, showToolbar).Add(editor => editor.Formats, formats)
+            .Add(editor => editor.Blocks, blocks));
 
         Assert.Empty(cut.FindAll("[role=toolbar]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowABlockButtonForEachAllowedBlockAndIndentButtons_WhenAListIsAllowed()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Formats, RichTextFormats.None)
+            .Add(editor => editor.Blocks, RichTextBlocks.Headings | RichTextBlocks.NumberedLists));
+
+        var blocks = cut.FindAll("button[data-block]");
+        var commands = cut.FindAll("button[data-command]");
+
+        Assert.Equal(["heading1", "heading2", "heading3", "number"],
+            blocks.Select(button => button.GetAttribute("data-block")));
+        Assert.Equal(["Heading 1", "Heading 2", "Heading 3", "Numbered list"],
+            blocks.Select(button => button.GetAttribute("aria-label")));
+        Assert.All(blocks, button => Assert.Equal("false", button.GetAttribute("aria-pressed")));
+        Assert.Equal(["outdent", "indent"], commands.Select(button => button.GetAttribute("data-command")));
+        Assert.All(commands, button => Assert.Null(button.GetAttribute("aria-pressed")));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveOutTheIndentButtons_WhenNoListIsAllowed()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Blocks, RichTextBlocks.Headings | RichTextBlocks.Quotes));
+
+        Assert.Empty(cut.FindAll("button[data-command]"));
+    }
+
+    [Theory]
+    [InlineData(RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules,
+        "<h2>Title</h2><ul><li><code>a</code></li></ul><p>b</p>")]
+    [InlineData(RichTextBlocks.None, "<p>Title</p><p><code>a</code></p><p>b</p>")]
+    public void Render_ShouldHandTheScriptOnlyTheAllowedBlocks_WhenGivenBlocks(RichTextBlocks blocks, string value)
+    {
+        Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Blocks, blocks)
+            .Add(editor => editor.Value, "<h2>Title</h2><ul><li><code>a</code></li></ul><hr>"
+                + "<a href=\"https://example.com\">b</a>"));
+
+        Assert.Equal(value, _module.Invocations["attachRichTextEditor"].Single().Arguments[1]);
     }
 
     [Fact]
@@ -103,14 +148,16 @@ public class TbRichTextEditorTests : BunitContext
     {
         Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
             .Add(editor => editor.Value, "<b>Hi</b> <i>there</i><script>alert(1)</script>")
-            .Add(editor => editor.Formats, RichTextFormats.Bold).Add(editor => editor.UpdateOnInput, true)
+            .Add(editor => editor.Formats, RichTextFormats.Bold)
+            .Add(editor => editor.Blocks, RichTextBlocks.BulletedLists | RichTextBlocks.Quotes)
+            .Add(editor => editor.UpdateOnInput, true)
             .Add(editor => editor.UpdateDelay, TimeSpan.FromMilliseconds(250)));
 
         var arguments = _module.Invocations["attachRichTextEditor"].Single().Arguments;
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
-        Assert.Equal("""{"formats":"bold","readOnly":false,"updateOnInput":true,"updateDelay":250}""",
-            JsonSerializer.Serialize(arguments[2]));
+        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","readOnly":false,"updateOnInput":true,"""
+            + "\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
     }
 
     [Fact]

@@ -30,4 +30,40 @@ public sealed record RichTextEditorLabels
     /// <summary>Names the superscript button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorSuperscript"/>.</summary>
     public string? Superscript { get; init; }
+
+    /// <summary>Names the code button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorCode"/>.</summary>
+    public string? Code { get; init; }
+
+    /// <summary>Names the heading 1 button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorHeading1"/>.</summary>
+    public string? Heading1 { get; init; }
+
+    /// <summary>Names the heading 2 button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorHeading2"/>.</summary>
+    public string? Heading2 { get; init; }
+
+    /// <summary>Names the heading 3 button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorHeading3"/>.</summary>
+    public string? Heading3 { get; init; }
+
+    /// <summary>Names the quote button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorQuote"/>.</summary>
+    public string? Quote { get; init; }
+
+    /// <summary>Names the bulleted list button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorBulletedList"/>.</summary>
+    public string? BulletedList { get; init; }
+
+    /// <summary>Names the numbered list button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorNumberedList"/>.</summary>
+    public string? NumberedList { get; init; }
+
+    /// <summary>Names the outdent button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorOutdent"/>.</summary>
+    public string? Outdent { get; init; }
+
+    /// <summary>Names the indent button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorIndent"/>.</summary>
+    public string? Indent { get; init; }
 }

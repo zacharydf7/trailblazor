@@ -1,21 +1,26 @@
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
-// A paragraph is runs { text, marks in MARKS order }, '\n' is a line break, and offsets count UTF-16 code units.
+// A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order }; '\n' is a line
+// break, and offsets count UTF-16 code units.
 
-const MARKS = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript'];
+const MARKS = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code'];
 const MARK_TAGS = {
     bold: 'strong', italic: 'em', underline: 'u', strikethrough: 's', subscript: 'sub', superscript: 'sup',
+    code: 'code',
 };
 const TAG_MARKS = {
     b: 'bold', strong: 'bold', i: 'italic', em: 'italic', u: 'underline', ins: 'underline',
     s: 'strikethrough', strike: 'strikethrough', del: 'strikethrough', sub: 'subscript', sup: 'superscript',
+    code: 'code', kbd: 'code', samp: 'code', tt: 'code',
 };
 const FORMAT_INPUTS = {
     formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strikethrough',
     formatSubscript: 'subscript', formatSuperscript: 'superscript',
 };
 // Ctrl or Cmd with these keys, as in word processors; strikethrough is Ctrl+Shift+X, as in most web editors.
-const SHORTCUTS = { b: 'bold', i: 'italic', u: 'underline', ',': 'subscript', '.': 'superscript' };
+const SHORTCUTS = { b: 'bold', i: 'italic', u: 'underline', ',': 'subscript', '.': 'superscript', e: 'code' };
+const KINDS = ['paragraph', 'heading1', 'heading2', 'heading3', 'quote', 'bullet', 'number'];
+const HEADING_TAGS = { heading1: 'h1', heading2: 'h2', heading3: 'h3' };
 const BLOCKS = new Set(['address', 'article', 'aside', 'blockquote', 'caption', 'center', 'dd', 'details', 'dialog',
     'dir', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'header', 'hgroup', 'legend', 'li', 'listing', 'main', 'menu', 'nav', 'ol', 'p', 'plaintext', 'pre', 'search',
@@ -23,13 +28,16 @@ const BLOCKS = new Set(['address', 'article', 'aside', 'blockquote', 'caption', 
 const SKIPPED = new Set(['head', 'iframe', 'math', 'noembed', 'noframes', 'noscript', 'object', 'script', 'select',
     'style', 'svg', 'template', 'textarea', 'title']);
 const PREFORMATTED = new Set(['pre', 'listing', 'xmp', 'plaintext']);
+const LISTS = new Set(['ul', 'ol', 'menu', 'dir']);
+// The elements that hold one paragraph's own text in the editor.
+const BLOCK_ELEMENTS = 'p, h1, h2, h3, li';
 const TYPING_PAUSE = 1000;
 // Keeps each part under Blazor Server's default 32 KB message limit, even at 6 bytes of JSON per control character.
 const MAX_PART = 5000;
 const isMac = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform ?? navigator.platform);
 
-// options: { formats, readOnly, updateOnInput, updateDelay }, with formats as mark names split by spaces and
-// updateDelay in milliseconds.
+// options: { formats, blocks, readOnly, updateOnInput, updateDelay }, with formats as mark names and blocks as kinds
+// split by spaces, and updateDelay in milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = document.getElementById(root.getAttribute('aria-labelledby') ?? '');
@@ -90,12 +98,14 @@ class Editor {
         });
         // Pressing a toolbar button must not take the selection out of the editor.
         on(toolbar, 'mousedown', event => {
-            if (event.target.closest('[data-format]')) event.preventDefault();
+            if (event.target.closest('[data-format], [data-block], [data-command]')) event.preventDefault();
         });
         on(toolbar, 'click', event => {
-            const button = event.target.closest('[data-format]');
+            const button = event.target.closest('[data-format], [data-block], [data-command]');
             if (!button || button.disabled) return;
-            this.toggleMark(button.dataset.format);
+            if (button.dataset.format) this.toggleMark(button.dataset.format);
+            else if (button.dataset.block) this.setBlock(button.dataset.block);
+            else this.indent(button.dataset.command === 'indent' ? 1 : -1);
             root.focus();
             this.writeSelection();
         });
@@ -106,6 +116,7 @@ class Editor {
 
     setOptions(options) {
         this.formats = new Set(options.formats.split(' ').filter(mark => MARKS.includes(mark)));
+        this.blocks = new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind)));
         this.readOnly = !!options.readOnly;
         this.updateOnInput = !!options.updateOnInput;
         this.updateDelay = options.updateDelay ?? 0;
@@ -121,7 +132,7 @@ class Editor {
     }
 
     load(html) {
-        this.doc = parseHtml(html, this.formats);
+        this.doc = parseHtml(html, this.formats, this.blocks);
         this.undoStack = [];
         this.redoStack = [];
         this.lastEdit = null;
@@ -146,7 +157,7 @@ class Editor {
 
     note(records) {
         for (const record of records) {
-            const block = record.target === this.root ? -1 : this.blockOf(record.target);
+            const block = this.blockOf(record.target);
             if (block < 0) {
                 this.pendingAll = true;
                 continue;
@@ -162,9 +173,9 @@ class Editor {
         this.note(this.observer.takeRecords());
         if (!this.pendingAll && !this.pendingBlocks.size) return;
         const pending = [...this.pendingBlocks];
-        const readAll = this.pendingAll || this.root.children.length !== this.doc.length
-            || pending.some(([block]) => !this.root.children[block]
-                || readBlocks(this.root.children[block], false, this.formats).length > 1);
+        const elements = this.blockElements();
+        const readAll = this.pendingAll || elements.length !== this.doc.length
+            || pending.some(([block]) => !elements[block] || this.readOwn(elements[block]).length > 1);
         this.pendingAll = false;
         this.pendingBlocks.clear();
         // A read-only editor puts back whatever an input method or extension changed.
@@ -176,17 +187,17 @@ class Editor {
 
         const selection = this.readSelection();
         if (readAll) {
-            // The browser changed the paragraphs themselves, so the DOM's own marks are taken as they are.
+            // The browser changed the paragraphs themselves, so the DOM's own marks and blocks are taken as they are.
             this.checkpoint('type', '');
             this.doc = this.readDocument();
         } else {
             for (const [block, nodes] of pending) {
-                const read = readBlocks(this.root.children[block], false, this.formats)[0] ?? [];
+                const read = this.readOwn(elements[block])[0]?.runs ?? [];
                 // Changes in several text nodes at once can't be told apart, so their marks come from the DOM.
                 if (nodes.size > 1) {
-                    if (textOf(read) !== textOf(this.doc[block]) || !sameRuns(read, this.doc[block])) {
+                    if (textOf(read) !== textOf(this.doc[block].runs) || !sameRuns(read, this.doc[block].runs)) {
                         this.checkpoint('type', '');
-                        this.doc[block] = read;
+                        this.doc[block] = { ...this.doc[block], runs: read };
                     }
                     continue;
                 }
@@ -203,13 +214,20 @@ class Editor {
     }
 
     readDocument() {
-        const doc = readBlocks(this.root, false, this.formats);
-        return doc.length ? doc : [[]];
+        const doc = normalizeLevels(readBlocks(this.root, false, this.formats, this.blocks));
+        return doc.length ? doc : [paragraph([])];
+    }
+
+    // A list item's own text, without the lists nested inside it.
+    readOwn(element) {
+        const own = element.cloneNode(true);
+        for (const nested of own.querySelectorAll(':scope > ul, :scope > ol')) nested.remove();
+        return readBlocks(own, false, this.formats, this.blocks);
     }
 
     // Applies the browser's change to one paragraph's text; the engine, not the DOM, decides the new text's marks.
     readText(block, after, caret) {
-        const runs = this.doc[block];
+        const runs = this.doc[block].runs;
         const before = textOf(runs);
         if (before === after) return;
         const { start, endBefore, endAfter } = diff(before, after, caret);
@@ -217,7 +235,7 @@ class Editor {
         const marks = this.storedMarks
             ?? (endBefore > start ? slice(runs, start, start + 1)[0].marks : marksAt(runs, start));
         this.checkpoint('type', inserted);
-        this.doc[block] = replace(runs, start, endBefore, [{ text: inserted, marks }]);
+        this.doc[block] = { ...this.doc[block], runs: replace(runs, start, endBefore, [{ text: inserted, marks }]) };
         if (inserted) this.storedMarks = null;
     }
 
@@ -233,6 +251,8 @@ class Editor {
 
         if (this.readOnly) return handle(() => {});
         if (FORMAT_INPUTS[type]) return handle(() => this.toggleMark(FORMAT_INPUTS[type]));
+        if (type === 'formatIndent') return handle(() => this.indent(1));
+        if (type === 'formatOutdent') return handle(() => this.indent(-1));
         if (type === 'historyUndo') return handle(() => this.undo());
         if (type === 'historyRedo') return handle(() => this.redo());
 
@@ -251,14 +271,14 @@ class Editor {
         if (type.startsWith('delete')) {
             if (spans) return handle(() => this.edit(() => this.deleteRange(from, to)));
             if (collapsed && from.offset === 0 && type.endsWith('Backward')) {
-                return handle(() => from.block > 0 && this.edit(() => this.join(from.block - 1)));
+                return handle(() => this.backspaceAtStart(from.block));
             }
-            if (collapsed && from.offset === length(this.doc[from.block]) && type.endsWith('Forward')) {
+            if (collapsed && from.offset === length(this.doc[from.block].runs) && type.endsWith('Forward')) {
                 return handle(() => from.block < this.doc.length - 1 && this.edit(() => this.join(from.block)));
             }
             return;
         }
-        // Lists, links and raw HTML have no place in this model.
+        // Links and raw HTML have no place in this model.
         event.preventDefault();
     }
 
@@ -366,17 +386,17 @@ class Editor {
         this.updateToolbar();
     }
 
-    // Paste and drop: HTML keeps its formats, and plain text takes the formats of where it goes.
+    // Paste and drop: HTML keeps its formats and blocks, and plain text takes those of where it goes.
     insertTransfer(data, plain) {
         const html = plain ? '' : data?.getData('text/html') ?? '';
         const text = data?.getData('text/plain') ?? '';
-        const pasted = html ? readBlocks(parseDocument(html), true, this.formats) : null;
+        const pasted = html ? readBlocks(parseDocument(html), true, this.formats, this.blocks) : null;
         if (pasted?.length === 0 || (!pasted && !text)) return;
         this.edit(() => {
             const { from, to } = this.range();
             const marks = this.storedMarks ?? this.marksForReplacing(from, to);
             this.insertParagraphs(pasted ?? text.split(/\r\n?|\n/)
-                .map(line => normalize([{ text: line.replace(/[\t\f\xa0]/g, ' '), marks }])));
+                .map(line => paragraph(normalize([{ text: line.replace(/[\t\f\xa0]/g, ' '), marks }]))));
         });
     }
 
@@ -385,6 +405,7 @@ class Editor {
     edit(change) {
         this.checkpoint('edit', '');
         change();
+        this.doc = normalizeLevels(this.doc);
         this.render();
         this.writeSelection();
         this.changed();
@@ -392,16 +413,16 @@ class Editor {
 
     deleteRange(from, to) {
         const merged = normalize([
-            ...slice(this.doc[from.block], 0, from.offset), ...slice(this.doc[to.block], to.offset)]);
-        this.doc.splice(from.block, to.block - from.block + 1, merged);
+            ...slice(this.doc[from.block].runs, 0, from.offset), ...slice(this.doc[to.block].runs, to.offset)]);
+        this.doc.splice(from.block, to.block - from.block + 1, { ...this.doc[from.block], runs: merged });
         this.selection = { anchor: from, head: from };
     }
 
     paragraphsIn(from, to) {
         const paragraphs = [];
         for (let block = from.block; block <= to.block; block++) {
-            paragraphs.push(slice(this.doc[block], block === from.block ? from.offset : 0,
-                block === to.block ? to.offset : Infinity));
+            paragraphs.push({ ...this.doc[block], runs: slice(this.doc[block].runs,
+                block === from.block ? from.offset : 0, block === to.block ? to.offset : Infinity) });
         }
         return paragraphs;
     }
@@ -410,42 +431,66 @@ class Editor {
         const { from, to } = this.range();
         const marks = this.storedMarks ?? this.marksForReplacing(from, to);
         this.deleteRange(from, to);
-        this.doc[from.block] = replace(this.doc[from.block], from.offset, from.offset, [{ text, marks }]);
+        const target = this.doc[from.block];
+        this.doc[from.block] = { ...target, runs: replace(target.runs, from.offset, from.offset, [{ text, marks }]) };
         const caret = { block: from.block, offset: from.offset + text.length };
         this.selection = { anchor: caret, head: caret };
         this.storedMarks = null;
     }
 
+    // Pasted plain paragraphs take the kind of the one at the caret, and so does the first unless the caret starts it.
     insertParagraphs(paragraphs) {
         const { from, to } = this.range();
         this.deleteRange(from, to);
-        const runs = this.doc[from.block];
-        const before = slice(runs, 0, from.offset);
-        const after = slice(runs, from.offset);
+        const target = this.doc[from.block];
+        const before = slice(target.runs, 0, from.offset);
+        const after = slice(target.runs, from.offset);
         const last = paragraphs.length - 1;
-        const blocks = paragraphs.map((paragraph, i) =>
-            normalize([...(i === 0 ? before : []), ...paragraph, ...(i === last ? after : [])]));
+        const blocks = paragraphs.map((pasted, i) => {
+            const kind = (i === 0 && from.offset > 0) || pasted.kind === 'paragraph' ? target : pasted;
+            const runs = normalize([...(i === 0 ? before : []), ...pasted.runs, ...(i === last ? after : [])]);
+            return { kind: kind.kind, level: kind.level, runs };
+        });
         this.doc.splice(from.block, 1, ...blocks);
-        const caret = { block: from.block + last, offset: length(blocks[last]) - length(after) };
+        const caret = { block: from.block + last, offset: length(blocks[last].runs) - length(after) };
         this.selection = { anchor: caret, head: caret };
         this.storedMarks = null;
     }
 
+    // Enter moves an empty list item or quote out a level, and a heading split at its end goes on as a paragraph.
     splitBlock() {
         const { from, to } = this.range();
         const marks = this.storedMarks ?? this.marksForReplacing(from, to);
         this.deleteRange(from, to);
-        const runs = this.doc[from.block];
-        this.doc.splice(from.block, 1, slice(runs, 0, from.offset), slice(runs, from.offset));
+        const target = this.doc[from.block];
+        if (!target.runs.length && target.kind !== 'paragraph' && !HEADING_TAGS[target.kind]) {
+            this.doc[from.block] = outdented(target);
+            return;
+        }
+
+        const after = slice(target.runs, from.offset);
+        const next = HEADING_TAGS[target.kind] && !after.length ? paragraph([]) : { ...target, runs: after };
+        this.doc.splice(from.block, 1, { ...target, runs: slice(target.runs, 0, from.offset) }, next);
         const caret = { block: from.block + 1, offset: 0 };
         this.selection = { anchor: caret, head: caret };
         // A new empty paragraph keeps the formatting the caret had, as word processors do.
-        this.storedMarks = this.doc[from.block + 1].length ? null : marks;
+        this.storedMarks = after.length ? null : marks;
+    }
+
+    // Backspace at the start of a list item or quote takes its list or quote away first, as word processors do.
+    backspaceAtStart(block) {
+        const target = this.doc[block];
+        if (target.kind === 'quote' || isListItem(target.kind)) {
+            this.edit(() => this.doc[block] = outdented(target));
+        } else if (block > 0) {
+            this.edit(() => this.join(block - 1));
+        }
     }
 
     join(block) {
-        const offset = length(this.doc[block]);
-        this.doc.splice(block, 2, normalize([...this.doc[block], ...this.doc[block + 1]]));
+        const offset = length(this.doc[block].runs);
+        const runs = normalize([...this.doc[block].runs, ...this.doc[block + 1].runs]);
+        this.doc.splice(block, 2, { ...this.doc[block], runs });
         this.selection = { anchor: { block, offset }, head: { block, offset } };
     }
 
@@ -454,7 +499,7 @@ class Editor {
         this.readBack();
         const { from, to } = this.range();
         if (compare(from, to) === 0) {
-            const current = this.storedMarks ?? marksAt(this.doc[from.block], from.offset);
+            const current = this.storedMarks ?? marksAt(this.doc[from.block].runs, from.offset);
             this.storedMarks = current.includes(mark) ? current.filter(m => m !== mark) : withMark(current, mark);
             this.updateToolbar();
             return;
@@ -464,8 +509,8 @@ class Editor {
             for (let block = from.block; block <= to.block; block++) {
                 const start = block === from.block ? from.offset : 0;
                 const end = block === to.block ? to.offset : Infinity;
-                this.doc[block] = mapMarks(this.doc[block], start, end,
-                    marks => add ? withMark(marks, mark) : marks.filter(m => m !== mark));
+                this.doc[block] = { ...this.doc[block], runs: mapMarks(this.doc[block].runs, start, end,
+                    marks => add ? withMark(marks, mark) : marks.filter(m => m !== mark)) };
             }
         });
     }
@@ -473,14 +518,14 @@ class Editor {
     markState(mark) {
         const { from, to } = this.range();
         if (compare(from, to) === 0) {
-            return (this.storedMarks ?? marksAt(this.doc[from.block], from.offset)).includes(mark) ? 'on' : 'off';
+            return (this.storedMarks ?? marksAt(this.doc[from.block].runs, from.offset)).includes(mark) ? 'on' : 'off';
         }
         let some = false;
         let all = true;
         for (let block = from.block; block <= to.block; block++) {
             const start = block === from.block ? from.offset : 0;
             const end = block === to.block ? to.offset : Infinity;
-            for (const run of slice(this.doc[block], start, end)) {
+            for (const run of slice(this.doc[block].runs, start, end)) {
                 if (/^\n*$/.test(run.text)) continue;
                 if (run.marks.includes(mark)) some = true;
                 else all = false;
@@ -489,9 +534,46 @@ class Editor {
         return some ? (all ? 'on' : 'mixed') : 'off';
     }
 
+    // Turns the selected paragraphs into this kind of block, or back into plain paragraphs when all of them are.
+    setBlock(kind) {
+        if (this.readOnly || !this.blocks.has(kind)) return;
+        this.readBack();
+        const { from, to } = this.range();
+        const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
+        this.edit(() => {
+            for (let block = from.block; block <= to.block; block++) {
+                const target = this.doc[block];
+                const level = isListItem(next) && isListItem(target.kind) ? target.level : 0;
+                this.doc[block] = { ...target, kind: next, level };
+            }
+        });
+    }
+
+    blockState(kind) {
+        const { from, to } = this.range();
+        const kinds = this.doc.slice(from.block, to.block + 1).map(target => target.kind);
+        return kinds.every(each => each === kind) ? 'on' : kinds.some(each => each === kind) ? 'mixed' : 'off';
+    }
+
+    // Moves the selected list items a level in or out; a list item moved out of its outermost list leaves the list.
+    indent(change) {
+        if (this.readOnly) return;
+        this.readBack();
+        const { from, to } = this.range();
+        const blocks = this.doc.slice(from.block, to.block + 1).map(target => !isListItem(target.kind) ? target
+            : change > 0 ? { ...target, level: target.level + 1 } : outdented(target));
+        if (normalizeLevels([...this.doc.slice(0, from.block), ...blocks]).slice(from.block)
+            .every((target, i) => target.level === this.doc[from.block + i].level
+                && target.kind === this.doc[from.block + i].kind)) {
+            return;
+        }
+
+        this.edit(() => this.doc.splice(from.block, blocks.length, ...blocks));
+    }
+
     // Typing over a selection keeps the formatting of its first character.
     marksForReplacing(from, to) {
-        const runs = this.doc[from.block];
+        const runs = this.doc[from.block].runs;
         return compare(from, to) < 0 && from.offset < length(runs)
             ? slice(runs, from.offset, from.offset + 1)[0].marks
             : marksAt(runs, from.offset);
@@ -546,7 +628,7 @@ class Editor {
         if (!entry?.removed) return;
         const [current, restored] = back ? [entry.added, entry.removed] : [entry.removed, entry.added];
         this.doc.splice(entry.start, current.length, ...restored);
-        if (!this.doc.length) this.doc = [[]];
+        if (!this.doc.length) this.doc = [paragraph([])];
         to.push(entry);
         this.selection = back ? entry.selectionBefore : entry.selectionAfter;
         this.storedMarks = null;
@@ -556,30 +638,30 @@ class Editor {
         this.changed(false);
     }
 
-    // Rendering and selection.
+    // Rendering and selection: the editor holds the same lists and quotes as the value, with spaces as typed.
 
     render() {
-        this.doc.forEach((runs, i) => {
-            const html = paragraphHtml(runs, false);
-            const element = this.root.children[i];
-            if (element?.localName === 'p' && !element.attributes.length && element.innerHTML === html) return;
-            const paragraph = document.createElement('p');
-            // Safe: paragraphHtml escapes every character of text, and its only tags are the marks' own.
-            paragraph.innerHTML = html;
-            if (element) element.replaceWith(paragraph);
-            else this.root.append(paragraph);
-        });
-        while (this.root.children.length > this.doc.length) this.root.lastElementChild.remove();
-        for (const node of [...this.root.childNodes]) {
-            if (node.nodeType !== Node.ELEMENT_NODE) node.remove();
+        const html = documentHtml(this.doc, false);
+        if (this.root.innerHTML !== html) {
+            const elements = this.blockElements();
+            if (elements.length === this.doc.length) this.doc.forEach((target, i) => updateBlock(elements[i], target));
+            // Changed lists or quotes, or anything else the browser left in the editor, mean rewriting it whole.
+            // Safe: documentHtml escapes every character of text, and its only tags are the blocks' and marks' own.
+            if (this.root.innerHTML !== html) this.root.innerHTML = html;
         }
-        this.root.toggleAttribute('data-empty', this.doc.length === 1 && !this.doc[0].length);
+        this.root.toggleAttribute('data-empty',
+            this.doc.length === 1 && this.doc[0].kind === 'paragraph' && !this.doc[0].runs.length);
         this.observer.takeRecords();
     }
 
+    blockElements() {
+        return [...this.root.querySelectorAll(BLOCK_ELEMENTS)];
+    }
+
     blockOf(node) {
-        while (node && node.parentNode !== this.root) node = node.parentNode;
-        return node ? Array.prototype.indexOf.call(this.root.children, node) : -1;
+        const element = (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest(BLOCK_ELEMENTS);
+        return element && element !== this.root && this.root.contains(element)
+            ? this.blockElements().indexOf(element) : -1;
     }
 
     readSelection() {
@@ -592,23 +674,26 @@ class Editor {
     }
 
     positionOf(node, offset) {
-        const last = this.root.children.length - 1;
-        if (node === this.root) {
-            if (offset <= last) return { block: offset, offset: 0 };
-            if (last < 0) return { block: 0, offset: 0 };
-            return { block: last, offset: length(readBlocks(this.root.children[last], false, this.formats)[0] ?? []) };
-        }
+        const elements = this.blockElements();
         const block = this.blockOf(node);
-        // Text the browser put straight into the editor, outside any paragraph, maps to the start until read back.
-        if (block < 0) return { block: 0, offset: 0 };
-        return { block, offset: offsetAt(this.root.children[block], node, offset) };
+        if (block >= 0) return { block, offset: offsetAt(elements[block], node, offset) };
+        // A point between paragraphs, in the editor or a list or quote around them, is the start of the next one.
+        const point = document.createRange();
+        point.setStart(node, Math.min(offset, node.nodeType === Node.TEXT_NODE ? node.data.length
+            : node.childNodes.length));
+        const next = elements.findIndex(element => point.comparePoint(element, 0) >= 0);
+        if (next >= 0) return { block: next, offset: 0 };
+        const last = elements.length - 1;
+        if (last < 0) return { block: 0, offset: 0 };
+        return { block: last, offset: length(this.readOwn(elements[last])[0]?.runs ?? []) };
     }
 
     writeSelection() {
         if (!this.selection || document.activeElement !== this.root) return;
+        const elements = this.blockElements();
         const { anchor, head } = this.selection;
-        const [anchorNode, anchorOffset] = pointAt(this.root.children[anchor.block], anchor.offset);
-        const [focusNode, focusOffset] = pointAt(this.root.children[head.block], head.offset);
+        const [anchorNode, anchorOffset] = pointAt(elements[anchor.block], anchor.offset);
+        const [focusNode, focusOffset] = pointAt(elements[head.block], head.offset);
         document.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset);
     }
 
@@ -624,13 +709,14 @@ class Editor {
     }
 
     endSelection() {
-        const end = { block: this.doc.length - 1, offset: length(this.doc.at(-1)) };
+        const end = { block: this.doc.length - 1, offset: length(this.doc.at(-1).runs) };
         return { anchor: end, head: end };
     }
 
     updateToolbar() {
-        for (const button of this.toolbar?.querySelectorAll('[data-format]') ?? []) {
-            const state = this.markState(button.dataset.format);
+        for (const button of this.toolbar?.querySelectorAll('[data-format], [data-block]') ?? []) {
+            const state = button.dataset.format ? this.markState(button.dataset.format)
+                : this.blockState(button.dataset.block);
             button.setAttribute('aria-pressed', state === 'mixed' ? 'mixed' : String(state === 'on'));
         }
     }
@@ -665,12 +751,27 @@ class Editor {
 
 // Paragraph helpers.
 
+const paragraph = (runs, kind = 'paragraph', level = 0) => ({ kind, level, runs });
+const isListItem = kind => kind === 'bullet' || kind === 'number';
+const outdented = target => isListItem(target.kind) && target.level > 0
+    ? { ...target, level: target.level - 1 } : { ...target, kind: 'paragraph', level: 0 };
 const sameMarks = (a, b) => a.length === b.length && a.every((mark, i) => mark === b[i]);
 const sameRuns = (a, b) => a.length === b.length
     && a.every((run, i) => run.text === b[i].text && sameMarks(run.marks, b[i].marks));
 const length = runs => runs.reduce((sum, run) => sum + run.text.length, 0);
 const textOf = runs => runs.map(run => run.text).join('');
 const compare = (a, b) => a.block - b.block || a.offset - b.offset;
+
+// As RichTextDocument does: a list item nests at most one level deeper than the list item before it, and other
+// paragraphs have level 0. Paragraphs that don't change keep their identity, which history compares.
+function normalizeLevels(doc) {
+    let previous = -1;
+    return doc.map(target => {
+        const level = isListItem(target.kind) ? Math.min(target.level, previous + 1) : 0;
+        previous = isListItem(target.kind) ? level : -1;
+        return level === target.level ? target : { ...target, level };
+    });
+}
 
 function normalize(runs) {
     const result = [];
@@ -750,11 +851,50 @@ function diff(before, after, caret) {
     return { start, endBefore, endAfter };
 }
 
-// The value and the editor's DOM differ only in spaces: the value writes the ones HTML would collapse as &nbsp;.
+// HTML out, the same as RichTextDocument.ToHtml writes it. The value and the editor's DOM differ only in spaces: the
+// value writes the ones HTML would collapse as &nbsp;.
 
 function toHtml(doc) {
-    if (doc.length === 1 && !doc[0].length) return '';
-    return doc.map(runs => `<p>${paragraphHtml(runs, true)}</p>`).join('');
+    if (doc.length === 1 && doc[0].kind === 'paragraph' && !doc[0].runs.length) return '';
+    return documentHtml(doc, true);
+}
+
+// Each list item's <li> stays open for the list nested in it, and neighboring quote paragraphs share a <blockquote>.
+function documentHtml(doc, forValue) {
+    let html = '';
+    const lists = [];
+    let inQuote = false;
+    const closeLists = depth => {
+        while (lists.length > depth) html += `</li></${lists.pop()}>`;
+    };
+    for (const target of doc) {
+        const listItem = isListItem(target.kind);
+        closeLists(listItem ? target.level + 1 : 0);
+        if (inQuote && target.kind !== 'quote') {
+            html += '</blockquote>';
+            inQuote = false;
+        }
+        if (listItem) {
+            const tag = target.kind === 'number' ? 'ol' : 'ul';
+            if (lists.length === target.level + 1 && lists.at(-1) !== tag) closeLists(target.level);
+            if (lists.length === target.level + 1) {
+                html += '</li>';
+            } else {
+                html += `<${tag}>`;
+                lists.push(tag);
+            }
+            html += `<li>${paragraphHtml(target.runs, forValue)}`;
+            continue;
+        }
+        if (target.kind === 'quote' && !inQuote) {
+            html += '<blockquote>';
+            inQuote = true;
+        }
+        const tag = HEADING_TAGS[target.kind] ?? 'p';
+        html += `<${tag}>${paragraphHtml(target.runs, forValue)}</${tag}>`;
+    }
+    closeLists(0);
+    return inQuote ? html + '</blockquote>' : html;
 }
 
 function paragraphHtml(runs, forValue) {
@@ -786,38 +926,87 @@ function characterHtml(text, i, forValue) {
     }
 }
 
-// HTML in: as RichTextDocument reads it, with the browser's own parser building the tree. Blocks become paragraphs,
-// the allowed marks survive, and everything else becomes plain text.
+// Puts a paragraph's new text into its element in place, leaving the lists nested in a list item where they are.
+function updateBlock(element, target) {
+    const html = paragraphHtml(target.runs, false);
+    const nested = [...element.childNodes].filter(node => LISTS.has(node.localName));
+    const own = [...element.childNodes].filter(node => !nested.includes(node));
+    const ownHtml = own.map(node => node.nodeType === Node.TEXT_NODE ? escapeText(node.data) : node.outerHTML ?? '')
+        .join('');
+    if (ownHtml === html && !element.attributes.length) return;
+    for (const node of own) node.remove();
+    const template = document.createElement('template');
+    // Safe: paragraphHtml escapes every character of text, and its only tags are the marks' own.
+    template.innerHTML = html;
+    element.insertBefore(template.content, nested[0] ?? null);
+    for (const attribute of [...element.attributes]) element.removeAttribute(attribute.name);
+}
+
+const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// HTML in: as RichTextDocument reads it, with the browser's own parser building the tree. The allowed blocks and marks
+// survive, other blocks become paragraphs, and everything else becomes plain text.
 
 // DOMParser's documents run no script and load nothing.
 const parseDocument = html => new DOMParser().parseFromString(html, 'text/html').body;
 
-function parseHtml(html, formats) {
-    const doc = readBlocks(parseDocument(html ?? ''), true, formats);
-    return doc.length ? doc : [[]];
+function parseHtml(html, formats, blocks) {
+    const doc = normalizeLevels(readBlocks(parseDocument(html ?? ''), true, formats, blocks));
+    return doc.length ? doc : [paragraph([])];
 }
 
-function readBlocks(container, collapse, formats) {
+// A block context is what an element puts its text in: its own allowed heading, quote, list item or Word list
+// paragraph, else its parent's, with the lists around it counted.
+function readBlocks(container, collapse, formats, blocks) {
     const paragraphs = [];
     let runs = null;
+    let block = null;
+    // Whether the last Word list marker was a number or letters, which makes its list numbered.
+    let numbered = false;
+    const resolve = context => {
+        if (!context.word) return { kind: context.kind, level: context.level };
+        const kind = numbered ? 'number' : 'bullet';
+        return blocks.has(kind) ? { kind, level: context.level } : { kind: 'paragraph', level: 0 };
+    };
+    const start = context => {
+        if (runs) return;
+        runs = [];
+        block = resolve(context);
+        numbered = false;
+    };
     const finish = () => {
         if (runs) {
             const hasBreak = runs.some(run => run.text.includes('\n'));
-            const paragraph = finishParagraph(runs, collapse);
+            const finished = finishParagraph(runs, collapse);
             // A line break shows a line even with nothing on it, such as a <br> between two paragraphs.
-            if (!collapse || paragraph.length || hasBreak) paragraphs.push(paragraph);
+            if (!collapse || finished.length || hasBreak) paragraphs.push(paragraph(finished, block.kind, block.level));
         }
         runs = null;
     };
-    const walk = (node, marks, pre, inLink) => {
+    const contextOf = (element, parent) => {
+        const name = element.localName;
+        const context = LISTS.has(name) ? { ...parent, lists: parent.lists + 1, ordered: name === 'ol' } : parent;
+        const level = /mso-list:\s*l\d+\s+level(\d{1,2})/i.exec(element.getAttribute('style') ?? '');
+        const own = name === 'h1' ? ['heading1', 0, false] : name === 'h2' ? ['heading2', 0, false]
+            : /^h[3-6]$/.test(name) ? ['heading3', 0, false]
+            : name === 'blockquote' ? ['quote', 0, false]
+            : name === 'li' ? [parent.ordered ? 'number' : 'bullet', Math.max(parent.lists - 1, 0), false]
+            : level ? ['bullet', Math.max(Number(level[1]) - 1, 0), true] : null;
+        if (!own || !(own[2] ? blocks.has('bullet') || blocks.has('number') : blocks.has(own[0]))) return context;
+        return { ...context, kind: own[0], level: own[1], word: own[2] };
+    };
+    const walk = (node, marks, pre, inLink, context) => {
         for (const child of node.childNodes) {
             if (child.nodeType === Node.TEXT_NODE) {
                 const text = collapse && !pre ? child.data.replace(/[\t\n\r\f ]+/g, ' ') : child.data;
-                (runs ??= []).push({ text, marks: marks.filter(mark => formats.has(mark)), pre });
-            } else if (child.nodeType === Node.ELEMENT_NODE && !SKIPPED.has(child.localName)
-                && !isWordListMarker(child)) {
+                start(context);
+                runs.push({ text, marks: marks.filter(mark => formats.has(mark)), pre });
+            } else if (child.nodeType === Node.ELEMENT_NODE && isWordListMarker(child)) {
+                numbered = /^\(?([0-9]+|[a-z]+|[A-Z]+)[.)]$/.test(child.textContent.trim());
+            } else if (child.nodeType === Node.ELEMENT_NODE && !SKIPPED.has(child.localName)) {
                 if (child.localName === 'br') {
-                    (runs ??= []).push({ text: '\n', marks: marks.filter(mark => formats.has(mark)), pre });
+                    start(context);
+                    runs.push({ text: '\n', marks: marks.filter(mark => formats.has(mark)), pre });
                     continue;
                 }
                 // A rule between two lines leaves them separate paragraphs.
@@ -828,19 +1017,24 @@ function readBlocks(container, collapse, formats) {
                 const childInLink = child.localName === 'a' ? linkOf(child) !== null : inLink;
                 const childMarks = marksOf(child, marks, childInLink);
                 const childPre = pre || PREFORMATTED.has(child.localName);
+                const childContext = contextOf(child, context);
                 if (!BLOCKS.has(child.localName)) {
-                    walk(child, childMarks, childPre, childInLink);
+                    walk(child, childMarks, childPre, childInLink, childContext);
                     continue;
                 }
                 finish();
-                const start = paragraphs.length;
-                walk(child, childMarks, childPre, childInLink);
+                const first = paragraphs.length;
+                walk(child, childMarks, childPre, childInLink, childContext);
                 finish();
-                if (paragraphs.length === start) paragraphs.push([]);
+                if (paragraphs.length === first) {
+                    const empty = resolve(childContext);
+                    numbered = false;
+                    paragraphs.push(paragraph([], empty.kind, empty.level));
+                }
             }
         }
     };
-    walk(container, [], false, false);
+    walk(container, [], false, false, { kind: 'paragraph', level: 0, word: false, lists: 0, ordered: false });
     finish();
     return paragraphs;
 }
@@ -882,6 +1076,11 @@ function keepCharacters(runs, keep) {
 // Word writes a list item's bullet or number as text, in a span styled mso-list: Ignore.
 const isWordListMarker = element => /mso-list:\s*ignore/i.test(element.getAttribute('style') ?? '');
 
+// Google Docs and Word have no code format; people set code in a monospace font there, so that reads as code.
+const isMonospace = families => families.split(',')
+    .map(family => family.trim().replace(/^["']|["']$/g, '').toLowerCase())
+    .some(family => ['monospace', 'courier new', 'courier', 'consolas', 'menlo', 'monaco'].includes(family));
+
 // Inside a link, an underline from a style is the link's own look, as Google Docs writes it, not a format.
 function marksOf(element, inherited, inLink) {
     let marks = inherited;
@@ -893,7 +1092,7 @@ function marksOf(element, inherited, inLink) {
         const weight = style.fontWeight;
         if (weight === 'bold' || weight === 'bolder' || Number(weight) >= 600) add('bold');
         else if (weight === 'normal' || weight === 'lighter' || (weight && Number(weight) < 600)) remove('bold');
-        if (style.fontStyle === 'italic' || style.fontStyle === 'oblique') add('italic');
+        if (style.fontStyle === 'italic' || style.fontStyle.startsWith('oblique')) add('italic');
         else if (style.fontStyle === 'normal') remove('italic');
         const decoration = `${style.textDecorationLine} ${style.textDecoration}`;
         if (!inLink && decoration.includes('underline')) add('underline');
@@ -901,16 +1100,19 @@ function marksOf(element, inherited, inLink) {
         if (style.verticalAlign === 'super') add('superscript');
         else if (style.verticalAlign === 'sub') add('subscript');
         else if (style.verticalAlign === 'baseline') remove('subscript', 'superscript');
+        if (style.fontFamily && isMonospace(style.fontFamily)) add('code');
     }
     return marks;
 }
 
-// A paragraph's last line break shows nothing, so it counts for nothing in offsets.
+// A paragraph's last line break shows nothing, so it counts for nothing in offsets. A list item's own text leaves out
+// the lists nested in it.
 
 function leaves(block) {
     const walker = document.createTreeWalker(block, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
-        acceptNode: node => node.nodeType === Node.TEXT_NODE || node.localName === 'br'
-            ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
+        acceptNode: node => node !== block && LISTS.has(node.localName) ? NodeFilter.FILTER_REJECT
+            : node.nodeType === Node.TEXT_NODE || node.localName === 'br' ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_SKIP,
     });
     const result = [];
     while (walker.nextNode()) result.push(walker.currentNode);
@@ -944,5 +1146,6 @@ function pointAt(block, offset) {
         }
         count += leafSize;
     }
-    return [block, block.childNodes.length];
+    const nested = [...block.childNodes].findIndex(node => LISTS.has(node.localName));
+    return [block, nested >= 0 ? nested : block.childNodes.length];
 }

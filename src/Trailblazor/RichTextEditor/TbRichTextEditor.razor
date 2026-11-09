@@ -16,7 +16,9 @@
                 {
                     @* The script keeps aria-pressed up to date as the selection moves, so .NET never changes it. *@
                     <TbIconButton Icon="tool.Icon" AriaLabel="@tool.Label" ShowTooltip Size="Size.Small"
-                                  Disabled="@(Disabled || ReadOnly)" data-format="@tool.Mark" aria-pressed="false"
+                                  Disabled="@(Disabled || ReadOnly)" data-format="@tool.Format"
+                                  data-block="@tool.Block" data-command="@tool.Command"
+                                  aria-pressed="@(tool.Command is null ? "false" : null)"
                                   aria-keyshortcuts="@tool.Shortcuts" />
                 }
             </TbToolbar>
@@ -59,10 +61,16 @@
     private bool _disposed;
 
     /// <summary>The formats the editor allows: the toolbar has a button for each, and text pasted in keeps only these.
-    /// Defaults to all six; <see cref="RichTextFormats.None"/> makes a plain multi-line field. Code and Link are
-    /// ignored.</summary>
+    /// Defaults to all seven; with <see cref="RichTextFormats.None"/> and <see cref="RichTextBlocks.None"/> in
+    /// <see cref="Blocks"/>, it's a plain multi-line field. Link is ignored.</summary>
     [Parameter]
     public RichTextFormats Formats { get; set; } = Marks;
+
+    /// <summary>The kinds of block the editor allows: the toolbar has a button for each (three for headings), with
+    /// outdent and indent buttons when it allows a list, and text pasted in keeps only these. Defaults to all of them;
+    /// <see cref="RichTextBlocks.None"/> allows only plain paragraphs. Rules are ignored.</summary>
+    [Parameter]
+    public RichTextBlocks Blocks { get; set; } = RichTextHtmlReader.AllBlocks;
 
     /// <summary>Shows the toolbar of formats. Turn it off for an editor whose formats come from shortcuts and paste
     /// only. Defaults to true.</summary>
@@ -103,11 +111,14 @@
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _content.FocusAsync(preventScroll);
 
-    private sealed record Tool(string Mark, Icon Icon, string Label, string Shortcuts);
+    // A button applies a format, sets a kind of block, or runs a command; the script reads which from its data.
+    private sealed record Tool(string? Format, string? Block, string? Command, Icon Icon, string Label,
+        string? Shortcuts);
 
-    private IReadOnlyList<Tool> Tools =>
-    [
-        .. new (RichTextFormats Format, string Mark, Icon Icon, string? Label, string Key, string Shortcuts)[]
+    private IReadOnlyList<Tool> Tools => [.. MarkTools, .. BlockTools];
+
+    private IEnumerable<Tool> MarkTools =>
+        new (RichTextFormats Format, string Mark, Icon Icon, string? Label, string Key, string Shortcuts)[]
         {
             (RichTextFormats.Bold, "bold", RichTextEditorIcons.Bold, Labels.Bold, TbStrings.RichTextEditorBold,
                 "Control+B Meta+B"),
@@ -121,16 +132,52 @@
                 TbStrings.RichTextEditorSubscript, "Control+, Meta+,"),
             (RichTextFormats.Superscript, "superscript", RichTextEditorIcons.Superscript, Labels.Superscript,
                 TbStrings.RichTextEditorSuperscript, "Control+. Meta+."),
+            (RichTextFormats.Code, "code", RichTextEditorIcons.Code, Labels.Code, TbStrings.RichTextEditorCode,
+                "Control+E Meta+E"),
         }
         .Where(tool => Formats.HasFlag(tool.Format))
-        .Select(tool => new Tool(tool.Mark, tool.Icon, tool.Label ?? Localizer[tool.Key], tool.Shortcuts)),
-    ];
+        .Select(tool => new Tool(tool.Mark, null, null, tool.Icon, tool.Label ?? Localizer[tool.Key], tool.Shortcuts));
 
-    // The formats the toolbar and engine handle so far; headings, lists, code and links come in the next stage.
+    private IEnumerable<Tool> BlockTools
+    {
+        get
+        {
+            var blocks = new (RichTextBlocks Block, string Kind, Icon Icon, string? Label, string Key)[]
+            {
+                (RichTextBlocks.Headings, "heading1", RichTextEditorIcons.Heading1, Labels.Heading1,
+                    TbStrings.RichTextEditorHeading1),
+                (RichTextBlocks.Headings, "heading2", RichTextEditorIcons.Heading2, Labels.Heading2,
+                    TbStrings.RichTextEditorHeading2),
+                (RichTextBlocks.Headings, "heading3", RichTextEditorIcons.Heading3, Labels.Heading3,
+                    TbStrings.RichTextEditorHeading3),
+                (RichTextBlocks.Quotes, "quote", RichTextEditorIcons.Quote, Labels.Quote,
+                    TbStrings.RichTextEditorQuote),
+                (RichTextBlocks.BulletedLists, "bullet", RichTextEditorIcons.BulletedList, Labels.BulletedList,
+                    TbStrings.RichTextEditorBulletedList),
+                (RichTextBlocks.NumberedLists, "number", RichTextEditorIcons.NumberedList, Labels.NumberedList,
+                    TbStrings.RichTextEditorNumberedList),
+            };
+            foreach (var tool in blocks.Where(tool => Blocks.HasFlag(tool.Block)))
+            {
+                yield return new Tool(null, tool.Kind, null, tool.Icon, tool.Label ?? Localizer[tool.Key], null);
+            }
+
+            if ((Blocks & (RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists)) != 0)
+            {
+                yield return new Tool(null, null, "outdent", RichTextEditorIcons.Outdent,
+                    Labels.Outdent ?? Localizer[TbStrings.RichTextEditorOutdent], null);
+                yield return new Tool(null, null, "indent", RichTextEditorIcons.Indent,
+                    Labels.Indent ?? Localizer[TbStrings.RichTextEditorIndent], null);
+            }
+        }
+    }
+
+    // The formats the toolbar and engine handle so far; links come in the next stage.
     private const RichTextFormats Marks = RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Underline
-        | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript;
+        | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript
+        | RichTextFormats.Code;
 
-    private RichTextSchema Schema => new() { Formats = Formats & Marks, Blocks = RichTextBlocks.None };
+    private RichTextSchema Schema => new() { Formats = Formats & Marks, Blocks = Blocks & ~RichTextBlocks.Rules };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
     private string Canonical => RichTextDocument.Parse(Value, Schema).ToHtml();
@@ -138,7 +185,8 @@
     // An anonymous object compares by value, so the script hears of options only when they change.
     private object Options => new
     {
-        formats = string.Join(' ', Tools.Select(tool => tool.Mark)),
+        formats = string.Join(' ', MarkTools.Select(tool => tool.Format)),
+        blocks = string.Join(' ', BlockTools.Where(tool => tool.Block is not null).Select(tool => tool.Block)),
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,
         updateDelay = UpdateDelay?.TotalMilliseconds,

@@ -11,6 +11,12 @@ Familiar apps: Google Docs, Word for the web, Gmail's compose box, Outlook's mes
 - [x] Ctrl+B, Ctrl+I and Ctrl+U (Cmd on macOS) turn bold, italic and underline on or off for the selection, or for the next text typed when nothing is selected. `RichTextEditorTests.Shortcuts_ShouldToggleEachFormat_WhenPressedOverARangeOrBeforeTyping`
 - [x] Strikethrough (Ctrl+Shift+X), subscript (Ctrl+,) and superscript (Ctrl+.) have shortcuts too, and each button's `aria-keyshortcuts` names its shortcut. `RichTextEditorTests.Shortcuts_ShouldToggleEachFormat_WhenPressedOverARangeOrBeforeTyping`, `RichTextEditorTests.Formats_ShouldOfferOnlyThoseAllowed_WhenTheEditorAllowsSome`, `TbRichTextEditorTests.Render_ShouldShowAButtonForEachAllowedFormat_WhenGivenFormats`
 - [x] Enter starts a new paragraph, and Shift+Enter breaks the line. `RichTextEditorTests.Paragraphs_ShouldSplitBreakAndJoin_WhenEnterShiftEnterBackspaceAndDeleteArePressed`
+- [x] Ctrl+E (Cmd on macOS) turns inline code on or off. `RichTextEditorTests.Code_ShouldToggle_WhenItsButtonOrShortcutIsPressed`
+- [x] Enter at the end of a heading starts a plain paragraph. `RichTextEditorTests.Enter_ShouldGoOnAsAParagraph_WhenPressedAtAHeadingsEndOrInAnEmptyQuoteParagraph`
+- [x] Enter in an empty list item or quote paragraph leaves the list or quote, a level at a time. `RichTextEditorTests.Lists_ShouldIndentOutdentAndLeave_WhenTheButtonsEnterAndBackspaceAreUsed`, `RichTextEditorTests.Enter_ShouldGoOnAsAParagraph_WhenPressedAtAHeadingsEndOrInAnEmptyQuoteParagraph`
+- [x] Backspace at the start of a list item or quote paragraph takes the list or quote away, a level at a time, before joining paragraphs. `RichTextEditorTests.Lists_ShouldIndentOutdentAndLeave_WhenTheButtonsEnterAndBackspaceAreUsed`
+- [ ] Tab and Shift+Tab indent and outdent a list item, and Escape lets Tab leave the editor from one. #355
+- [ ] Markdown-style shortcuts such as `# ` and `- ` at a paragraph's start turn it into a heading or list. #355
 - [x] Backspace at the start of a paragraph joins it to the one before, and Delete at its end joins the next. `RichTextEditorTests.Paragraphs_ShouldSplitBreakAndJoin_WhenEnterShiftEnterBackspaceAndDeleteArePressed`
 - [x] Ctrl+Z undoes and Ctrl+Y or Ctrl+Shift+Z redoes, in word-sized steps, and each puts the selection back. `RichTextEditorTests.Undo_ShouldUndoAndRedoInWordSizedStepsAndRestoreTheSelection_WhenItsShortcutsArePressed`
 - [x] Ctrl+Shift+V pastes plain text. `RichTextEditorTests.Paste_ShouldPastePlainText_WhenTheClipboardHasOnlyTextOrShiftIsHeld`
@@ -24,8 +30,13 @@ Familiar apps: Google Docs, Word for the web, Gmail's compose box, Outlook's mes
 
 - [x] Clicking the label focuses the editor. `RichTextEditorTests.Label_ShouldFocusTheEditor_WhenClicked`
 - [x] A toolbar button applies its format and keeps the selection in the editor. `RichTextEditorTests.Formats_ShouldApplyAndRemove_WhenEachButtonIsPressedOverARange`
+- [x] A block button turns the selected paragraphs into its heading, quote or list, or back into plain paragraphs when they all already are, and undo reverses it. `RichTextEditorTests.Blocks_ShouldApplyAndRemoveEachKind_WhenEachBlockButtonIsPressed`
+- [x] The toolbar shows a button for each allowed block, and Outdent and Indent only when a list is allowed. `TbRichTextEditorTests.Render_ShouldShowABlockButtonForEachAllowedBlockAndIndentButtons_WhenAListIsAllowed`, `TbRichTextEditorTests.Render_ShouldLeaveOutTheIndentButtons_WhenNoListIsAllowed`
+- [x] Plain text or paragraphs pasted into a list item or heading take that block's kind. `RichTextEditorTests.Paste_ShouldKeepTheBlock_WhenPlainParagraphsArePastedIntoAListItemOrHeading`
+- [x] Indent and Outdent move list items a level in or out. `RichTextEditorTests.Lists_ShouldIndentOutdentAndLeave_WhenTheButtonsEnterAndBackspaceAreUsed`
+- [x] Typing in a nested list item, or in the item around it, changes only that item. `RichTextEditorTests.Typing_ShouldLandInTheRightItem_WhenTypingInANestedListAndTheItemAroundIt`
 - [x] The toolbar's buttons show the selection's formats as pressed, and a partly formatted selection as mixed. `RichTextEditorTests.Formats_ShouldApplyAndRemove_WhenEachButtonIsPressedOverARange`, `RichTextEditorTests.Formats_ShouldShowMixedAndApplyToAll_WhenAPartlyFormattedSelectionIsMadeWithTheKeyboard`
-- [x] Pasted HTML from Word, Google Docs and web pages keeps its formats, and nothing else of it. `RichTextEditorTests.Paste_ShouldKeepOnlyTheFormats_WhenPastingFromWordAndHostileHtml`, `RichTextEditorTests.Paste_ShouldReadTheSampleAsDotNetDoes_WhenACorpusSampleIsPasted`
+- [x] Pasted HTML from Word, Google Docs and web pages keeps its formats and blocks, and nothing else of it. `RichTextEditorTests.Paste_ShouldKeepOnlyTheFormats_WhenPastingFromWordAndHostileHtml`, `RichTextEditorTests.Paste_ShouldReadTheSampleAsDotNetDoes_WhenACorpusSampleIsPasted`
 - [x] Dragging selected text moves it, and text dropped from elsewhere goes in cleaned like a paste. `RichTextEditorTests.Drop_ShouldMoveDraggedTextAndCleanDroppedHtml_WhenTextIsDropped`
 - [ ] The browser's own menu works: cut, copy, paste and spelling suggestions. UNCONFIRMED
 
@@ -42,12 +53,11 @@ Familiar apps: Google Docs, Word for the web, Gmail's compose box, Outlook's mes
 - [x] A read-only editor takes focus and its text can be selected, and its toolbar is disabled. `TbRichTextEditorTests.Render_ShouldKeepAReadOnlyEditorFocusableButItsToolbarDisabled_WhenReadOnly`, `RichTextEditorTests.ReadOnly_ShouldKeepItsTextButLetItBeSelected_WhenTheUserTriesToEditIt`
 - [x] `FocusAsync` moves focus to the editing area. `TbRichTextEditorTests.FocusAsync_ShouldFocusTheEditingArea_WhenCalled`
 - [x] The editing area is a `textbox` with `aria-multiline`, named by the field's label. `TbRichTextEditorTests.Render_ShouldNameTheEditingAreaAsAMultiLineTextbox_WhenLabeled`
-- [x] The toolbar is labeled, and its buttons say whether their format is on, off or mixed. `TbRichTextEditorTests.Render_ShouldShowAButtonForEachAllowedFormat_WhenGivenFormats`, `RichTextEditorTests.Formats_ShouldShowMixedAndApplyToAll_WhenAPartlyFormattedSelectionIsMadeWithTheKeyboard`
+- [x] The toolbar is labeled, and its buttons say whether their format or block is on, off or mixed. `TbRichTextEditorTests.Render_ShouldShowAButtonForEachAllowedFormat_WhenGivenFormats`, `RichTextEditorTests.Formats_ShouldShowMixedAndApplyToAll_WhenAPartlyFormattedSelectionIsMadeWithTheKeyboard`, `RichTextEditorTests.Blocks_ShouldApplyAndRemoveEachKind_WhenEachBlockButtonIsPressed`
 - [x] A validation error is announced as on every other field. `TbRichTextEditorTests.Change_ShouldShowTheRequiredMessage_WhenTheParagraphsHaveNoText`, `TbFieldBase.cs`
 - [ ] Screen readers report the formats of the text as they read it. UNCONFIRMED
 
 ## Not applicable
 
-- Tab to indent: the first version has no lists to indent, and a Tab that stays in the editor would trap keyboard users.
-- Fonts, sizes and colors: the first version keeps to the six formats; color comes in a later stage (#357).
-- Markdown-style shortcuts such as `**` or `# `: they come with headings and lists (#355).
+- Fonts, sizes and colors: the first version keeps to its seven formats; color comes in a later stage (#357).
+- Markdown-style inline shortcuts such as `**bold**`: typing them as text is common, and the toolbar and shortcuts cover the formats.

@@ -1,7 +1,8 @@
 <TbStack Gap="4" Style="max-inline-size: 32rem">
     <TbRichTextEditor Label="Chemical notation" @bind-Value="_formula"
-                      Formats="RichTextFormats.Subscript | RichTextFormats.Superscript" />
+                      Formats="RichTextFormats.Subscript | RichTextFormats.Superscript" Blocks="RichTextBlocks.None" />
     <TbRichTextEditor Label="Plain notes" @bind-Value="_notes" Formats="RichTextFormats.None"
+                      Blocks="RichTextBlocks.None"
                       HelperText="Paragraphs and line breaks only; pasted formatting is dropped." />
 </TbStack>
 
