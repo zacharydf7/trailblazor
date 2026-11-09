@@ -8,7 +8,8 @@
 
 @* ARIA gives a group no required state, so the legend's marker and the helper text say an answer is needed. The
    invalid state goes on the group and on each checkbox, where screen readers announce it. *@
-<fieldset @attributes="GroupRootAttributes" @ref="_group" disabled="@Disabled" style="@Style"
+<fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" @ref="_group"
+          disabled="@Disabled" style="@Style"
           aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedBy"
           class="@ClassNames.Join("tb-checkbox-group", ClassNames.Modifier("tb-checkbox-group", Tone),
                      ClassNames.Modifier("tb-checkbox-group", Size),
@@ -16,8 +17,9 @@
                      Disabled ? "tb-checkbox-group--disabled" : null, Class)">
     @if (ShownLabel is not null)
     {
+        @* The info button sits in the legend to share its line; the fieldset is named by the span alone. *@
         <legend data-part="label" class="@ClassNames.Join("tb-checkbox-group__label", LabelHiddenClass, Classes?.Label)">
-            @ShownLabel @RequiredMarker
+            <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span> @RequiredMarker @InfoButton
         </legend>
     }
     <div data-part="options"

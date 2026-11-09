@@ -6,6 +6,13 @@
 @code {
     // The label, the track with its fill, marks and thumbs, then the helper text and messages. The fill runs from the
     // track's start, or for a range from the first fraction, to the second; each slider renders its own thumbs.
+    private RenderFragment SliderLabel(string? labelFor) =>
+        @<label data-part="label" id="@LabelId" for="@labelFor"
+                class="@ClassNames.Join("tb-slider__label", LabelHiddenClass, Classes?.Label)">
+            @ShownLabel
+            @RequiredMarker
+        </label>;
+
     private protected RenderFragment Layout(string? labelFor, double? from, double to, RenderFragment thumbs) =>
         @<div @attributes="RootAttributes" style="@Style"
               class="@ClassNames.Join("tb-slider", from is null ? null : "tb-slider--range",
@@ -13,11 +20,7 @@
                          Class)">
             @if (ShownLabel is not null)
             {
-                <label data-part="label" id="@LabelId" for="@labelFor"
-                       class="@ClassNames.Join("tb-slider__label", LabelHiddenClass, Classes?.Label)">
-                    @ShownLabel
-                    @RequiredMarker
-                </label>
+                @WithInfo(SliderLabel(labelFor))
             }
             <div class="tb-slider__control"
                  style="@($"--tb-slider-from: {Ratio(from ?? 0)}; --tb-slider-to: {Ratio(to)}")">

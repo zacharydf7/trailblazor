@@ -1530,6 +1530,12 @@ Trailblazor.TbFieldBase<TValue>.Error.get -> string?
 Trailblazor.TbFieldBase<TValue>.Error.set -> void
 Trailblazor.TbFieldBase<TValue>.HelperText.get -> string?
 Trailblazor.TbFieldBase<TValue>.HelperText.set -> void
+Trailblazor.TbFieldBase<TValue>.Info.get -> string?
+Trailblazor.TbFieldBase<TValue>.Info.set -> void
+Trailblazor.TbFieldBase<TValue>.InfoButtonLabel.get -> string?
+Trailblazor.TbFieldBase<TValue>.InfoButtonLabel.set -> void
+Trailblazor.TbFieldBase<TValue>.InfoContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbFieldBase<TValue>.InfoContent.set -> void
 Trailblazor.TbFieldBase<TValue>.InputAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Trailblazor.TbFieldBase<TValue>.InputAttributes.set -> void
 Trailblazor.TbFieldBase<TValue>.Invalid.get -> bool

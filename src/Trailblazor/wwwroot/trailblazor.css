@@ -1440,6 +1440,17 @@
         color: var(--tb-color-text);
     }
 
+    /* A field's label and its info button: a long label wraps beside the button rather than pushing it down. */
+    .tb-field__label-row {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-field__label-row > [data-part="label"] {
+        min-width: 0;
+    }
+
     .tb-label__info-text {
         font-weight: var(--tb-font-weight-regular);
     }

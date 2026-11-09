@@ -11,31 +11,35 @@
      class="@ClassNames.Join(Block, ClassNames.Modifier(Block, Tone), ClassNames.Modifier(Block, Size),
                 ShowsInvalid ? $"{Block}--invalid" : null,
                 Disabled ? $"{Block}--disabled" : null, Class)">
-    <label data-part="label" class="@ClassNames.Join($"{Block}__label", Classes?.Label)">
-        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-               type="checkbox" role="@Role" value="true" checked="@(Value is true)" disabled="@Disabled"
-               aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
-               aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
-               class="@ClassNames.Join($"{Block}__input", Classes?.Input)"
-               @onchange="OnChangeAsync" />
-        <span class="@(ChildContent is null ? LabelHiddenClass : null)">
-            @if (ChildContent is null)
-            {
-                @ShownLabel
-            }
-            else
-            {
-                @ChildContent
-            }
-            @RequiredMarker
-        </span>
-    </label>
+    @WithInfo(ChoiceLabel)
     @Messages(Classes?.Helper, Classes?.Error)
 </div>
 
 @code {
     private ElementReference _input;
     private bool _shownIndeterminate;
+
+    private RenderFragment ChoiceLabel =>
+        @<label data-part="label" class="@ClassNames.Join($"{Block}__label", Classes?.Label)">
+            <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
+                   name="@InputNameAttribute" type="checkbox" role="@Role" value="true" checked="@(Value is true)"
+                   disabled="@Disabled"
+                   aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join($"{Block}__input", Classes?.Input)"
+                   @onchange="OnChangeAsync" />
+            <span class="@(ChildContent is null ? LabelHiddenClass : null)">
+                @if (ChildContent is null)
+                {
+                    @ShownLabel
+                }
+                else
+                {
+                    @ChildContent
+                }
+                @RequiredMarker
+            </span>
+        </label>;
 
     /// <summary>The label as rich content, such as "I agree to the <c>&lt;a&gt;</c>terms<c>&lt;/a&gt;</c>", shown
     /// in place of <see cref="TbFieldBase{TValue}.Label"/>. It names the control, so keep a link in it short.</summary>

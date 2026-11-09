@@ -1,0 +1,15 @@
+@page "/field-info"
+
+@* Fields with info buttons where the layout can go wrong: a label longer than its narrow field, and an upload whose
+   Choose button keeps its own width. *@
+<div style="max-inline-size: 14rem">
+    <TbTextField Label="The person we should call if your group hasn't checked in by nightfall"
+                 Info="We only call after the park has closed." @bind-Value="_contact" />
+</div>
+<TbFileUpload Label="Trail map" Info="A PDF or an image." DropZone="false" />
+<TbCheckbox Label="Guided hike" Info="A ranger leads the group." @bind-Value="_guided" />
+
+@code {
+    private string? _contact;
+    private bool _guided;
+}

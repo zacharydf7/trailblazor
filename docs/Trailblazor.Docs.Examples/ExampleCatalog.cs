@@ -2194,7 +2194,8 @@ public static class ExampleCatalog
             ],
             WhenNotToUse =
             [
-                "For a Trailblazor field with no info button, set the field's own `Label`.",
+                "For a Trailblazor field, set the field's own `Label`, with `Info` for an info button. The examples "
+                    + "here pair `TbLabel` with a text field only to keep them short.",
                 "For a hint everyone should read, use the field's `HelperText`, which stays visible.",
                 "For a short description of a button, use a [tooltip](components/tooltip).",
             ],
@@ -2424,6 +2425,10 @@ public static class ExampleCatalog
                 new("label-and-help", "Label and help text", "`Label` names the field, and `HelperText` says what people "
                     + "need before they type. A long label wraps. The value stays `null` until something is typed.",
                     typeof(TextFieldExample)),
+                new("info", "Info button", "`Info` adds a button beside the label that explains the field, and "
+                    + "`InfoContent` shows richer content, such as a link. Every field takes them. They need a "
+                    + "`Label`, which also names the button; the field's own name is still just the label.",
+                    typeof(TextFieldInfoExample)),
                 new("required", "Required", "`Required` marks the field and, once it is edited or its form validates, "
                     + "shows a message if it is empty or blank. `RequiredMessage` replaces the default, which uses the "
                     + "label: \"Group leader is required.\"",

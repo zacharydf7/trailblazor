@@ -11,11 +11,7 @@
                          Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
             @if (ShownLabel is not null)
             {
-                <label data-part="label" id="@LabelId" for="@(LabelTargetsInput ? InputId : null)"
-                       class="@ClassNames.Join("tb-field__label", LabelHiddenClass, classes?.Label)">
-                    @ShownLabel
-                    @RequiredMarker
-                </label>
+                @WithInfo(FieldLabel(classes))
             }
             <div data-part="control" class="@ClassNames.Join("tb-field__control", classes?.Control)">
                 @if (start is not null)
@@ -30,6 +26,13 @@
             </div>
             @Messages(classes?.Helper, classes?.Error)
         </div>;
+
+    private RenderFragment FieldLabel(FieldClasses? classes) =>
+        @<label data-part="label" id="@LabelId" for="@(LabelTargetsInput ? InputId : null)"
+                class="@ClassNames.Join("tb-field__label", LabelHiddenClass, classes?.Label)">
+            @ShownLabel
+            @RequiredMarker
+        </label>;
 
     private protected RenderFragment RequiredMarker =>
         @<text>

@@ -6,7 +6,8 @@
 @inject JsModuleLoader Modules
 
 @* Radios that share a name already give one tab stop and arrow-key selection, so no script is needed. *@
-<fieldset @attributes="GroupRootAttributes" @ref="_group" role="radiogroup" disabled="@Disabled" style="@Style"
+<fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" @ref="_group"
+          role="radiogroup" disabled="@Disabled" style="@Style"
           aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
           aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedBy"
           class="@ClassNames.Join("tb-rating", ClassNames.Modifier("tb-rating", Tone),
@@ -14,8 +15,9 @@
                      Disabled ? "tb-rating--disabled" : null, ReadOnly ? "tb-rating--readonly" : null, Class)">
     @if (ShownLabel is not null)
     {
+        @* The info button sits in the legend to share its line; the fieldset is named by the span alone. *@
         <legend data-part="label" class="@ClassNames.Join("tb-rating__label", LabelHiddenClass, Classes?.Label)">
-            @ShownLabel @RequiredMarker
+            <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span> @RequiredMarker @InfoButton
         </legend>
     }
     <div data-part="stars" class="tb-rating__stars">

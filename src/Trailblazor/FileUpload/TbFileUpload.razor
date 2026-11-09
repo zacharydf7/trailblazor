@@ -9,12 +9,7 @@
     @* A hidden field keeps its input so code can open the picker, out of sight and reach; its errors still show. *@
     @if (ShownLabel is not null)
     {
-        <label data-part="label" id="@LabelId" for="@InputId" aria-hidden="@(Hidden ? "true" : null)"
-               class="@ClassNames.Join("tb-field__label", Hidden ? "tb-visually-hidden" : LabelHiddenClass,
-                          Classes?.Label)">
-            @ShownLabel
-            @RequiredMarker
-        </label>
+        @(Hidden ? UploadLabel : WithInfo(UploadLabel))
     }
     @* The file input lies over the whole zone, so a click, Enter or Space, or a dropped file all reach it. *@
     <div data-part="zone" data-dragging="@(_dragging ? "" : null)" aria-hidden="@(Hidden ? "true" : null)"
@@ -67,3 +62,13 @@
     }
     @Messages(Classes?.Helper, Classes?.Error)
 </div>
+
+@code {
+    private RenderFragment UploadLabel =>
+        @<label data-part="label" id="@LabelId" for="@InputId" aria-hidden="@(Hidden ? "true" : null)"
+                class="@ClassNames.Join("tb-field__label", Hidden ? "tb-visually-hidden" : LabelHiddenClass,
+                           Classes?.Label)">
+            @ShownLabel
+            @RequiredMarker
+        </label>;
+}

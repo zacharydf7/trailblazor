@@ -56,6 +56,20 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     [Parameter]
     public string? HelperText { get; set; }
 
+    /// <summary>Text an info button beside the label shows, explaining the field. Line breaks are kept. It needs a
+    /// <see cref="Label"/>, which also names the button; the field's own name is still just the label.</summary>
+    [Parameter]
+    public string? Info { get; set; }
+
+    /// <summary>Content the info button shows instead of <see cref="Info"/>, such as a link to more help.</summary>
+    [Parameter]
+    public RenderFragment? InfoContent { get; set; }
+
+    /// <summary>The info button's name, with <c>{0}</c> for <see cref="Label"/>. Defaults to the app's text for
+    /// <see cref="TbStrings.LabelInfo"/>, "Information about {0}" in English.</summary>
+    [Parameter]
+    public string? InfoButtonLabel { get; set; }
+
     /// <summary>Turns the field off: it can't be focused or changed, and it isn't posted with its form.</summary>
     [Parameter]
     public bool Disabled { get; set; }
@@ -176,6 +190,29 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     // An AriaLabel is drawn as a label only screen readers see, so every part named by the label is named by it too.
     private protected string? ShownLabel => Label ?? AriaLabel;
 
+    private protected bool HasInfo => Info is not null || InfoContent is not null;
+
+    private protected RenderFragment? InfoButton => HasInfo
+        ? LabelInfo.Render(string.Format(CultureInfo.CurrentCulture, InfoButtonLabel ?? Localizer[TbStrings.LabelInfo],
+            Label), Info, InfoContent)
+        : null;
+
+    // With an info button, the label and button share a row, and a long label wraps instead of pushing the button down.
+    private protected RenderFragment WithInfo(RenderFragment label) => builder =>
+    {
+        if (!HasInfo)
+        {
+            builder.AddContent(0, label);
+            return;
+        }
+
+        builder.OpenElement(1, "div");
+        builder.AddAttribute(2, "class", "tb-field__label-row");
+        builder.AddContent(3, label);
+        builder.AddContent(4, InfoButton);
+        builder.CloseElement();
+    };
+
     private protected string? LabelHiddenClass => Label is null && AriaLabel is not null ? "tb-visually-hidden" : null;
 
     // A clear button is described by the field's label, so a screen reader says which field it clears; its name stays
@@ -266,6 +303,11 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        if (HasInfo && string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException($"A field needs a {nameof(Label)} to show an info button.");
+        }
+
         ControlAttributes = MarkAutoFocus ? WithAutofocus(InputAttributes) : InputAttributes;
         // A value the field didn't report itself came from the parent, and a form reset goes back to it.
         if (!EqualityComparer<TValue>.Default.Equals(Value, _lastValue))
