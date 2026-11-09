@@ -396,6 +396,87 @@ public class ComponentAnalyzerTests
     }
 
     [Fact]
+    public async Task ComponentAnalyzer_ShouldReportTypeParameterAsAttribute_WhenAGenericComponentIsGivenT()
+    {
+        var diagnostics = await RunAsync("""
+            __builder.OpenComponent<TbCheckbox<bool>>(0);
+            __builder.AddComponentParameter(1, nameof(TbCheckbox<bool>.Label), "Agree");
+            __builder.AddComponentParameter(2, "T", "bool");
+            __builder.CloseComponent();
+            """);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("TB005", diagnostic.Id);
+        Assert.Equal("TbCheckbox has no T parameter, so T doesn't set its type. To set the type, write "
+            + "TValue=\"bool\".", diagnostic.GetMessage());
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldNameEachTypeParameter_WhenAComponentHasSeveral()
+    {
+        var diagnostics = await RunAsync("""
+            __builder.OpenComponent<TbTreeView<string, int>>(0);
+            __builder.AddComponentParameter(1, nameof(TbTreeView<string, int>.AriaLabel), "Trails");
+            __builder.AddComponentParameter(2, "TId", "int");
+            __builder.CloseComponent();
+            """);
+
+        Assert.EndsWith("write TItem=\"int\" or TKey=\"int\".", Assert.Single(diagnostics).GetMessage());
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAGenericComponentOutsideTrailblazorIsGivenT()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<Badge<int>>(0);
+            __builder.AddComponentParameter(1, "T", "int");
+            __builder.CloseComponent();
+            """, """
+            public class Badge<TValue> : ComponentBase
+            {
+                [Parameter(CaptureUnmatchedValues = true)]
+                public Dictionary<string, object>? Attributes { get; set; }
+            }
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Theory]
+    [InlineData("TItem")]
+    [InlineData("TKey")]
+    public async Task ComponentAnalyzer_ShouldReportTypeParameterAsAttribute_WhenASelectIsGivenAnotherTypeName(
+        string name)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbSelect<string>>(0);
+            __builder.AddComponentParameter(1, nameof(TbSelect<string>.Label), "Size");
+            __builder.AddComponentParameter(2, "{{name}}", "string");
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(["TB005"], ids);
+    }
+
+    [Theory]
+    [InlineData("TbTreeView<string, int>", "TKey")]
+    [InlineData("TbCheckbox<bool>", "Title")]
+    [InlineData("TbCheckbox<bool>", "T-shirt")]
+    [InlineData("TbButton", "T")]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAnAttributeIsNotAMistypedTypeParameter(
+        string component, string name)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<{{component}}>(0);
+            __builder.AddComponentParameter(1, "AriaLabel", "Trails");
+            __builder.AddComponentParameter(2, "{{name}}", "string");
+            __builder.CloseComponent();
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
     public void ComponentAnalyzer_ShouldNameOnlyComponentsAndParametersThatExist_WhenItsTableIsRead()
     {
         var library = typeof(TbButton).Assembly;

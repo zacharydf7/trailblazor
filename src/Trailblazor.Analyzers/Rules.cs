@@ -5,6 +5,7 @@ namespace Trailblazor.Analyzers;
 internal static class Rules
 {
     private const string Accessibility = "Accessibility";
+    private const string Usage = "Usage";
 
     public static readonly DiagnosticDescriptor NoAccessibleName = new("TB001", "A control has no accessible name",
         "{0} has no accessible name. Set {1}.", Accessibility, DiagnosticSeverity.Warning, isEnabledByDefault: true,
@@ -16,7 +17,7 @@ internal static class Rules
 
     public static readonly DiagnosticDescriptor ValueWithoutValueChanged = new("TB003",
         "Value is set without ValueChanged", "{0} sets Value without ValueChanged, so the parent's next render " +
-        "undoes the user's change. {1}.", "Usage", DiagnosticSeverity.Warning, isEnabledByDefault: true,
+        "undoes the user's change. {1}.", Usage, DiagnosticSeverity.Warning, isEnabledByDefault: true,
         "An input shows the user's change at once, but the parent still holds the old value and puts it back the " +
         "next time it renders.");
 
@@ -24,4 +25,10 @@ internal static class Rules
         "{0} has no label. Set Label, or AriaLabel when the layout has no room for one.", Accessibility,
         DiagnosticSeverity.Warning, isEnabledByDefault: true,
         "A field's label is its accessible name, and it tells every user what to enter.");
+
+    public static readonly DiagnosticDescriptor TypeParameterAsAttribute = new("TB005",
+        "An attribute looks like a type parameter", "{0} has no {1} parameter, so {1} doesn't set its type. To set " +
+        "the type, write {2}.", Usage, DiagnosticSeverity.Warning, isEnabledByDefault: true,
+        "Razor sets a generic component's type only from an attribute with the type parameter's exact name. Any " +
+        "other name, such as T, doesn't set the type and is passed to the component like any other attribute.");
 }

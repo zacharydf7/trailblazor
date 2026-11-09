@@ -6,8 +6,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Trailblazor.Analyzers;
 
-/// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, and inputs given a
-/// Value without ValueChanged.</summary>
+/// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, inputs given a
+/// Value without ValueChanged, and attributes that look like a misnamed type parameter.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 {
@@ -50,7 +50,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
-        Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel);
+        Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
+        Rules.TypeParameterAsAttribute);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -113,6 +114,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             CheckName(context, usage, names, Rules.NoFieldLabel, component.Name);
         }
 
+        CheckTypeParameterNames(context, usage);
+
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
             && !usage.HasSplattedAttributes && !IsOn(usage, "ReadOnly") && !IsOn(usage, "Disabled"))
@@ -123,6 +126,36 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 usage.Parameters["Value"].Location, component.Name, fix));
         }
     }
+
+    // An attribute named like a type parameter, such as T or TItem, on a generic Trailblazor component whose own type
+    // parameter has another name.
+    private static void CheckTypeParameterNames(OperationAnalysisContext context, ComponentUsage usage)
+    {
+        var component = usage.Component;
+        var typeParameters = component.OriginalDefinition.TypeParameters;
+        if (component.ContainingNamespace.ToDisplayString() != "Trailblazor" || typeParameters.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var parameter in usage.Parameters)
+        {
+            var name = parameter.Key;
+            if (IsTypeParameterName(name) && typeParameters.All(type => type.Name != name)
+                && Property(component, name) is null)
+            {
+                var value = Unwrap(parameter.Value.Value)?.ConstantValue.Value as string ?? "...";
+                var fix = string.Join(" or ", typeParameters.Select(type => $"{type.Name}=\"{value}\""));
+                // Razor maps no unmatched attribute's name back to the page, so this points at the component.
+                context.ReportDiagnostic(Diagnostic.Create(Rules.TypeParameterAsAttribute, usage.Location,
+                    component.Name, name, fix));
+            }
+        }
+    }
+
+    private static bool IsTypeParameterName(string name) =>
+        name.Length > 0 && name[0] == 'T' && (name.Length == 1 || char.IsUpper(name[1]))
+        && name.All(char.IsLetterOrDigit);
 
     // A name that's missing, or given only as blank text. A missing [EditorRequired] parameter is left to Razor's own
     // warning, so the same mistake isn't reported twice.

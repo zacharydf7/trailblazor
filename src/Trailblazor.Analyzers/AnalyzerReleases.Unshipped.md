@@ -9,3 +9,4 @@ TB001 | Accessibility | Warning | A control has no accessible name
 TB002 | Accessibility | Warning | A dialog has no title
 TB003 | Usage | Warning | Value is set without ValueChanged
 TB004 | Accessibility | Warning | A field has no label
+TB005 | Usage | Warning | An attribute looks like a type parameter

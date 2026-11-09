@@ -4,7 +4,9 @@
 <TbTextField @bind-Value="_trail" />
 <TbCheckbox Label="Share" Value="true" />
 <TbDialog Title="" />
+<TbCheckbox T="bool" Label="Agree" @bind-Value="_agree" />
 
 @code {
     private string? _trail;
+    private bool _agree;
 }
