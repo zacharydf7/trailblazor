@@ -6474,6 +6474,65 @@ public static class ExampleCatalog
                     + "renders and `trailblazor.control.used` for each click it acts on, as a link or as a button.",
             ],
         },
+        new("empty-state", "Empty state", ExampleCategory.Feedback,
+            "A message that takes the place of content that isn't there yet, such as an empty list, with a way to add "
+                + "it.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it where a list, table or page has nothing to show, to say why and what to do next.",
+            ],
+            WhenNotToUse =
+            [
+                "While content loads, use a [skeleton](components/skeleton).",
+                "For an error, such as a failed load, use an [alert](components/alert).",
+            ],
+            Related = ["skeleton", "alert", "card"],
+            Sections =
+            [
+                new("basic", "Empty state", "`Title` says what's missing and `Description` adds a sentence under it, "
+                    + "or `ChildContent` takes its place. `Icon` shows a picture above, and `Actions` holds the "
+                    + "buttons or links that add what's missing.", typeof(EmptyStateExample)),
+                new("compact", "Compact", "`Compact` takes less space, for an empty list, table or panel rather than "
+                    + "a whole page. `HeadingLevel` sets the title's heading level to fit the headings around it; here "
+                    + "it's 4, under the panel's level 3 title. When a search empties the list, the example says so "
+                    + "with the announcer, and its action puts focus back in the search.",
+                    typeof(EmptyStateCompactExample)),
+            ],
+            Api = [typeof(TbEmptyState)],
+            Accessibility =
+            [
+                "The title is a heading, at level 3 unless `HeadingLevel` says otherwise, so screen readers can find "
+                    + "it. The icon is decoration and hidden from them.",
+                "It handles no keys of its own; its actions are ordinary buttons and links.",
+            ],
+            AppDuties =
+            [
+                "When an empty state replaces content after the user acts, such as a search that finds nothing, tell "
+                    + "screen readers too, with the [announcer](guides/announcements) or a status message.",
+            ],
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Target = new("heading", "No trails saved yet"),
+            Blocks = ["tb-empty-state"],
+            DataParts =
+            [
+                new("icon", "The picture above the title."),
+                new("title", "The heading that says what's missing."),
+                new("description", "The sentence or content under the title."),
+                new("actions", "The buttons or links that add what's missing."),
+            ],
+            TestingTip = "Find it by its title, as `GetByRole(AriaRole.Heading, new() { Name = \"No trails saved "
+                + "yet\" })`, and its actions by their own roles and names.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"no-saved-trails\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders interactively, so the app can see how often people meet it.",
+            ],
+        },
         new("skeleton", "Skeleton", ExampleCategory.Feedback,
             "A gray shape that holds the place of content while it loads, with a pulse or a wave.")
         {

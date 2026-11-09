@@ -8,6 +8,8 @@ const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
 override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
 override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
+override Trailblazor.TbEmptyState.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbEmptyState.OnParametersSet() -> void
 override Trailblazor.TbPopconfirm.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
@@ -43,6 +45,24 @@ const Trailblazor.TbStrings.PopconfirmCancel = "Popconfirm.Cancel" -> string!
 const Trailblazor.TbStrings.PopconfirmConfirm = "Popconfirm.Confirm" -> string!
 override Trailblazor.TbPopconfirm.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbPopconfirm.OnParametersSet() -> void
+Trailblazor.TbEmptyState
+Trailblazor.TbEmptyState.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbEmptyState.Actions.set -> void
+Trailblazor.TbEmptyState.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbEmptyState.ChildContent.set -> void
+Trailblazor.TbEmptyState.Compact.get -> bool
+Trailblazor.TbEmptyState.Compact.set -> void
+Trailblazor.TbEmptyState.Description.get -> string?
+Trailblazor.TbEmptyState.Description.set -> void
+Trailblazor.TbEmptyState.HeadingLevel.get -> int
+Trailblazor.TbEmptyState.HeadingLevel.set -> void
+Trailblazor.TbEmptyState.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbEmptyState.Icon.set -> void
+Trailblazor.TbEmptyState.TbEmptyState() -> void
+Trailblazor.TbEmptyState.TelemetryName.get -> string?
+Trailblazor.TbEmptyState.TelemetryName.set -> void
+Trailblazor.TbEmptyState.Title.get -> string!
+Trailblazor.TbEmptyState.Title.set -> void
 Trailblazor.TbPopconfirm
 Trailblazor.TbPopconfirm.Align.get -> Trailblazor.PlacementAlign
 Trailblazor.TbPopconfirm.Align.set -> void
@@ -2862,6 +2882,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbDialogActions.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDialogDescription.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDivider.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbEmptyState.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbFieldBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbFileUpload.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbFocusScope.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

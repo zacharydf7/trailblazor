@@ -1,0 +1,11 @@
+<TbEmptyState Icon="ExampleIcons.Folder" Title="No trails saved yet"
+              Description="Trails you save show here, ready for your next hike.">
+    <Actions>
+        <TbButton OnClick="@(() => _status = "Opened the trail finder.")">Find a trail</TbButton>
+    </Actions>
+</TbEmptyState>
+<output>@_status</output>
+
+@code {
+    private string _status = "";
+}

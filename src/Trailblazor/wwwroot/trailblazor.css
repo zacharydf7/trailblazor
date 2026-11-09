@@ -1704,6 +1704,56 @@
         border: 1px solid var(--tb-border-subtle);
     }
 
+    /* An empty state sits centered in the space it stands in for, with a muted icon above its title. */
+    .tb-empty-state {
+        --tb-empty-state-icon-size: 3rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-8) var(--tb-space-4);
+        text-align: center;
+    }
+
+    .tb-empty-state--compact {
+        --tb-empty-state-icon-size: 2rem;
+        padding: var(--tb-space-4) var(--tb-space-3);
+    }
+
+    .tb-empty-state__icon {
+        display: inline-flex;
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-empty-state__icon .tb-icon {
+        width: var(--tb-empty-state-icon-size);
+        height: var(--tb-empty-state-icon-size);
+    }
+
+    .tb-empty-state__title {
+        margin: 0;
+        font-size: var(--tb-font-size-lg);
+        font-weight: var(--tb-font-weight-semibold);
+        line-height: var(--tb-line-height-tight);
+    }
+
+    .tb-empty-state--compact .tb-empty-state__title {
+        font-size: var(--tb-font-size-md);
+    }
+
+    .tb-empty-state__description {
+        max-width: 40ch;
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-empty-state__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--tb-space-2);
+        margin-block-start: var(--tb-space-2);
+    }
+
     .tb-card {
         position: relative;
         display: flex;

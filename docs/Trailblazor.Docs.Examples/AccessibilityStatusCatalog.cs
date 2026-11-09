@@ -89,6 +89,7 @@ public static class AccessibilityStatusCatalog
         new("pagination", Tested, Tested, None),
         new("table-of-contents", NotYet, NotYet, Tested),
         new("link", Tested, Tested, None),
+        new("empty-state", None, None, None),
         new("skeleton", None, Tested, Tested),
         new("toast", Tested, NotYet, Tested),
     ];

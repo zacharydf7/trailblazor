@@ -129,6 +129,16 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public void EmptyState_ShouldCountItselfShown_WhenItHasATelemetryName()
+    {
+        Render<TbEmptyState>(parameters => parameters.Add(empty => empty.Title, "No trails saved yet")
+            .Add(empty => empty.TelemetryName, "no-saved-trails"));
+
+        Assert.Equal(["no-saved-trails"], Names(_shown));
+        Assert.Empty(Uses());
+    }
+
+    [Fact]
     public async Task Menu_ShouldCountNothing_WhenItOpensWithoutATelemetryName()
     {
         var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")

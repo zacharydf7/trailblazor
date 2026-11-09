@@ -1,0 +1,97 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" style="@Style"
+     class="@ClassNames.Join("tb-empty-state", Compact ? "tb-empty-state--compact" : null, Class)">
+    @if (Icon is { } icon)
+    {
+        <span data-part="icon" class="tb-empty-state__icon"><TbIcon Icon="icon" /></span>
+    }
+    @Heading
+    @if (ChildContent is not null || Description is not null)
+    {
+        <div data-part="description" class="tb-empty-state__description">
+            @if (ChildContent is null)
+            {
+                @Description
+            }
+            else
+            {
+                @ChildContent
+            }
+        </div>
+    }
+    @if (Actions is not null)
+    {
+        <div data-part="actions" class="tb-empty-state__actions">@Actions</div>
+    }
+</div>
+
+@code {
+    private ControlTelemetry? _telemetry;
+
+    /// <summary>What's missing, such as "No trails saved yet". Shown as a heading at <see cref="HeadingLevel"/>.
+    /// Required.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    /// <summary>A sentence under the title, such as how to add what's missing.</summary>
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>Content shown under the title instead of <see cref="Description"/>.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>A picture above the title. It is decoration, so screen readers skip it.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Buttons or links that add what's missing, such as "Add a trail".</summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    /// <summary>The level of the title's heading, from 1 to 6. Defaults to 3; pick the one that fits the headings
+    /// around it.</summary>
+    [Parameter]
+    public int HeadingLevel { get; set; } = 3;
+
+    /// <summary>Less space and a smaller icon, for an empty list, table or panel rather than a whole page.</summary>
+    [Parameter]
+    public bool Compact { get; set; }
+
+    /// <summary>A label this empty state is counted under on the <c>Trailblazor</c> meter, such as
+    /// <c>"no-saved-trails"</c>, so the app can see how often people meet it. It names the situation, never the user.
+    /// </summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    private RenderFragment Heading => builder =>
+    {
+        builder.OpenElement(0, $"h{HeadingLevel}");
+        builder.AddAttribute(1, "data-part", "title");
+        builder.AddAttribute(2, "class", "tb-empty-state__title");
+        builder.AddContent(3, Title);
+        builder.CloseElement();
+    };
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Title))
+        {
+            throw new InvalidOperationException($"{nameof(TbEmptyState)} needs a {nameof(Title)}.");
+        }
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(HeadingLevel, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(HeadingLevel, 6);
+    }
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+}

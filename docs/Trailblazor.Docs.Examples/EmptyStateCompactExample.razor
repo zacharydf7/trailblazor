@@ -1,0 +1,64 @@
+@inject IAnnouncer Announcer
+
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbText As="TextElement.H3" TextStyle="TextStyle.Title">Trail search</TbText>
+    <TbTextField TValue="string" @ref="_field" Label="Find a trail" Value="_search" ValueChanged="Search"
+                 UpdateOnInput Clearable />
+    <TbSurface Outlined>
+        @if (Matches.Count == 0)
+        {
+            <TbEmptyState Compact Icon="ExampleIcons.Search" HeadingLevel="4" Title="No trails match"
+                          Description="Try another name, or see them all.">
+                <Actions>
+                    <TbButton Variant="Variant.Text" OnClick="ShowEveryTrailAsync">Show every trail</TbButton>
+                </Actions>
+            </TbEmptyState>
+        }
+        else
+        {
+            <TbList aria-label="Matching trails">
+                @foreach (var trail in Matches)
+                {
+                    <TbListItem>@trail</TbListItem>
+                }
+            </TbList>
+        }
+    </TbSurface>
+</TbStack>
+
+@code {
+    private static readonly string[] Trails = ["Pine Hollow loop", "Cedar Flats", "Eagle Ridge traverse"];
+    private TbTextField<string> _field = default!;
+    private string _search = "Lake";
+    private int _announcedCount;
+
+    private List<string> Matches => [.. Trails.Where(trail =>
+        string.IsNullOrWhiteSpace(_search) || trail.Contains(_search, StringComparison.OrdinalIgnoreCase))];
+
+    // Screen readers hear how many trails match, since the list changing says nothing on its own. Only a new count is
+    // said, so typing doesn't bring an announcement with every key.
+    private void Search(string? search)
+    {
+        _search = search ?? "";
+        if (Matches.Count == _announcedCount)
+        {
+            return;
+        }
+
+        _announcedCount = Matches.Count;
+        Announcer.Polite(_announcedCount switch
+        {
+            0 => "No trails match",
+            1 => "1 trail matches",
+            _ => $"{_announcedCount} trails match",
+        });
+    }
+
+    // The button disappears with the empty state, so focus moves back to the search instead of falling to the page.
+    private async Task ShowEveryTrailAsync()
+    {
+        Search("");
+        StateHasChanged();
+        await _field.FocusAsync();
+    }
+}
