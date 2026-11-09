@@ -35,7 +35,7 @@ internal sealed class ConfirmDialog : TbDialogContent<bool>
         }
 
         builder.OpenComponent<TbText>(6);
-        builder.AddAttribute(7, "id", Reference.DescriptionId);
+        builder.AddAttribute(7, "id", Dialog.DescriptionId);
         builder.AddComponentParameter(8, nameof(TbText.ChildContent),
             (RenderFragment)(text => text.AddContent(0, Message)));
         builder.CloseComponent();

@@ -4614,8 +4614,8 @@ public static class ExampleCatalog
                     + "picks a size. `Minimizable` and `Maximizable` add header "
                     + "buttons.", typeof(DialogWindowExample), typeof(RenameDialog)),
                 new("changing", "Changing an open dialog's window", "An open dialog can change. Set `Modal`, `Size`, "
-                    + "`Position` or `WindowState` on its reference, or from inside a `TbDialogContent`, as this notes "
-                    + "dialog does.",
+                    + "`Position`, `WindowState`, `ShowHeader` or `CloseButton` on its reference, or on `Dialog` from "
+                    + "inside a `TbDialogContent`, as this notes dialog does.",
                     typeof(DialogChangingExample), typeof(NotesDialog)),
                 new("top-layer", "On the page instead of the top layer", "A dialog opens in the browser's top layer, "
                     + "above everything on the page. A popup another library adds to the page's body then opens "

@@ -2,8 +2,8 @@
 
 <TbTextField Label="Name" @bind-Value="_name" />
 <TbDialogActions>
-    <TbButton OnClick="() => Modal = !Modal">@(Modal ? "Pop out" : "Pop in")</TbButton>
-    <TbButton OnClick="() => Size = DialogSize.Small">Shrink</TbButton>
+    <TbButton OnClick="() => Dialog.Modal = !Dialog.Modal">@(Dialog.Modal ? "Pop out" : "Pop in")</TbButton>
+    <TbButton OnClick="() => Dialog.Size = DialogSize.Small">Shrink</TbButton>
     <TbButton OnClick="() => CloseDialogAsync(_name ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 

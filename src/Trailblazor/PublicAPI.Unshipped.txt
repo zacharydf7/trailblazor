@@ -692,6 +692,8 @@ Trailblazor.DialogPosition.Top = 1 -> Trailblazor.DialogPosition
 Trailblazor.DialogPosition.TopEnd = 6 -> Trailblazor.DialogPosition
 Trailblazor.DialogPosition.TopStart = 5 -> Trailblazor.DialogPosition
 Trailblazor.DialogReference
+Trailblazor.DialogReference.CloseButton.get -> bool
+Trailblazor.DialogReference.CloseButton.set -> void
 Trailblazor.DialogReference.CancelAsync() -> System.Threading.Tasks.Task!
 Trailblazor.DialogReference.ContentType.get -> System.Type?
 Trailblazor.DialogReference.Modal.get -> bool
@@ -700,6 +702,8 @@ Trailblazor.DialogReference.Options.get -> Trailblazor.DialogOptions!
 Trailblazor.DialogReference.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Trailblazor.DialogReference.Position.get -> Trailblazor.DialogPosition
 Trailblazor.DialogReference.Position.set -> void
+Trailblazor.DialogReference.ShowHeader.get -> bool
+Trailblazor.DialogReference.ShowHeader.set -> void
 Trailblazor.DialogReference.Size.get -> Trailblazor.DialogSize
 Trailblazor.DialogReference.Size.set -> void
 Trailblazor.DialogReference.Title.get -> string!
@@ -1490,19 +1494,8 @@ Trailblazor.TbDialogActions.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbDialogActions.ChildContent.set -> void
 Trailblazor.TbDialogActions.TbDialogActions() -> void
 Trailblazor.TbDialogContent<TResult>
-Trailblazor.TbDialogContent<TResult>.CloseButton.get -> bool
-Trailblazor.TbDialogContent<TResult>.CloseButton.set -> void
-Trailblazor.TbDialogContent<TResult>.Modal.get -> bool
-Trailblazor.TbDialogContent<TResult>.Modal.set -> void
-Trailblazor.TbDialogContent<TResult>.Position.get -> Trailblazor.DialogPosition
-Trailblazor.TbDialogContent<TResult>.Position.set -> void
-Trailblazor.TbDialogContent<TResult>.ShowHeader.get -> bool
-Trailblazor.TbDialogContent<TResult>.ShowHeader.set -> void
-Trailblazor.TbDialogContent<TResult>.Size.get -> Trailblazor.DialogSize
-Trailblazor.TbDialogContent<TResult>.Size.set -> void
+Trailblazor.TbDialogContent<TResult>.Dialog.get -> Trailblazor.DialogReference!
 Trailblazor.TbDialogContent<TResult>.TbDialogContent() -> void
-Trailblazor.TbDialogContent<TResult>.WindowState.get -> Trailblazor.DialogWindowState
-Trailblazor.TbDialogContent<TResult>.WindowState.set -> void
 Trailblazor.TbDialogContent<TResult>.CancelDialogAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbDialogContent<TResult>.CloseDialogAsync(TResult value) -> System.Threading.Tasks.Task!
 Trailblazor.TbDialogDescription

@@ -12,6 +12,8 @@ public abstract class DialogReference
     private DialogPosition _position;
     private DialogWindowState _windowState;
     private bool _dismissing;
+    private bool _showHeader;
+    private bool _closeButton;
 
     private protected DialogReference(string title, DialogOptions options, Type? component,
         IReadOnlyDictionary<string, object?> parameters, bool isAlert, Func<DialogReference, bool, object?, Task> close)
@@ -22,8 +24,8 @@ public abstract class DialogReference
         Parameters = parameters;
         IsAlert = isAlert;
         _close = close;
-        ShowHeader = options.ShowHeader;
-        CloseButton = options.CloseButton;
+        _showHeader = options.ShowHeader;
+        _closeButton = options.CloseButton;
         _modal = options.Modal;
         _size = options.Size;
         _position = options.Position;
@@ -95,6 +97,22 @@ public abstract class DialogReference
         }
     }
 
+    /// <summary>Whether the header with the title shows. It starts as <see cref="DialogOptions.ShowHeader"/>, and
+    /// setting it changes the open dialog.</summary>
+    public bool ShowHeader
+    {
+        get => _showHeader;
+        set => SetHeader(value, _closeButton);
+    }
+
+    /// <summary>Whether the header's close button shows. It starts as <see cref="DialogOptions.CloseButton"/>, and
+    /// setting it changes the open dialog.</summary>
+    public bool CloseButton
+    {
+        get => _closeButton;
+        set => SetHeader(_showHeader, value);
+    }
+
     // A minimized modal leaves the page usable, so it counts as modeless until it is restored.
     internal bool IsBlocking => _modal && _windowState != DialogWindowState.Minimized;
 
@@ -114,11 +132,6 @@ public abstract class DialogReference
     internal bool Described { get; private set; }
 
     internal string DescriptionId { get; } = $"tb-dialog-description-{Guid.NewGuid():N}";
-
-    // The dialog can change these while it's open, so they start from the options but live here.
-    internal bool ShowHeader { get; private set; }
-
-    internal bool CloseButton { get; private set; }
 
     // Called when the user dismisses the dialog, in place of canceling it; set by its content.
     internal Func<DialogDismissReason, Task>? Dismiss { get; set; }
@@ -144,10 +157,10 @@ public abstract class DialogReference
     /// <summary>Closes the dialog as canceled, without asking it first. Does nothing once it has closed.</summary>
     public Task CancelAsync() => CloseAsync(false, null);
 
-    internal void SetHeader(bool showHeader, bool closeButton)
+    private void SetHeader(bool showHeader, bool closeButton)
     {
-        ShowHeader = showHeader;
-        CloseButton = closeButton;
+        _showHeader = showHeader;
+        _closeButton = closeButton;
         // The Restore button goes with the header, so a minimized dialog comes back rather than stay stuck.
         Change(() =>
         {

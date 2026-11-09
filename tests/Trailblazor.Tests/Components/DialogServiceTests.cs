@@ -414,6 +414,18 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void Content_ShouldSeeTrailblazorsSizeEnum_WhenItWritesSizeLarge()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<LargeButtonDialog, string>("Notes");
+
+        host.WaitForAssertion(() => Assert.Contains("tb-button--large",
+            host.FindAll("dialog button").Single(button => button.TextContent == "Save").ClassList));
+        Assert.Contains("tb-dialog--medium", host.Find("dialog").ClassList);
+    }
+
+    [Fact]
     public async Task ShowDynamic_ShouldOpenTheContentTypeWithItsParametersByName_WhenGivenAType()
     {
         var host = Render<DialogHost>();
@@ -922,11 +934,13 @@ public class DialogServiceTests : BunitContext
         {
             builder.OpenElement(0, "button");
             builder.AddAttribute(1, "data-testid", "toggle-header");
-            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => ShowHeader = !ShowHeader));
+            builder.AddAttribute(2, "onclick",
+                EventCallback.Factory.Create(this, () => Dialog.ShowHeader = !Dialog.ShowHeader));
             builder.CloseElement();
             builder.OpenElement(3, "button");
             builder.AddAttribute(4, "data-testid", "toggle-close");
-            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () => CloseButton = !CloseButton));
+            builder.AddAttribute(5, "onclick",
+                EventCallback.Factory.Create(this, () => Dialog.CloseButton = !Dialog.CloseButton));
             builder.CloseElement();
         }
     }
@@ -936,7 +950,20 @@ public class DialogServiceTests : BunitContext
         [Parameter]
         public int Lines { get; set; }
 
-        protected override void OnInitialized() => Size = DialogSize.Small;
+        protected override void OnInitialized() => Dialog.Size = DialogSize.Small;
+    }
+
+    // Size.Large here must bind to Trailblazor.Size, not to a member of the content base.
+    private sealed class LargeButtonDialog : TbDialogContent<string>
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbButton>(0);
+            builder.AddComponentParameter(1, nameof(TbButton.Size), Size.Large);
+            builder.AddComponentParameter(2, nameof(TbButton.ChildContent),
+                (RenderFragment)(content => content.AddContent(0, "Save")));
+            builder.CloseComponent();
+        }
     }
 
     private sealed class LayoutDialog : TbDialogContent<string>
@@ -946,7 +973,7 @@ public class DialogServiceTests : BunitContext
             builder.OpenElement(0, "button");
             builder.AddAttribute(1, "data-testid", "maximize");
             builder.AddAttribute(2, "onclick",
-                EventCallback.Factory.Create(this, () => WindowState = DialogWindowState.Maximized));
+                EventCallback.Factory.Create(this, () => Dialog.WindowState = DialogWindowState.Maximized));
             builder.CloseElement();
         }
     }
