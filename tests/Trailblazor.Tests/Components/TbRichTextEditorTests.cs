@@ -77,6 +77,8 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Equal(["Heading 1", "Heading 2", "Heading 3", "Numbered list"],
             blocks.Select(button => button.GetAttribute("aria-label")));
         Assert.All(blocks, button => Assert.Equal("false", button.GetAttribute("aria-pressed")));
+        Assert.Equal(["Control+Alt+1 Meta+Alt+1", "Control+Alt+2 Meta+Alt+2", "Control+Alt+3 Meta+Alt+3",
+            "Control+Shift+7 Meta+Shift+7"], blocks.Select(button => button.GetAttribute("aria-keyshortcuts")));
         Assert.Equal(["outdent", "indent"], commands.Select(button => button.GetAttribute("data-command")));
         Assert.All(commands, button => Assert.Null(button.GetAttribute("aria-pressed")));
     }

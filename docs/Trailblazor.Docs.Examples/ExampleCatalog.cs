@@ -2107,8 +2107,9 @@ public static class ExampleCatalog
                     typeof(RichTextEditorFormatsExample)),
                 new("blocks", "Blocks", "`Blocks` lists the kinds of block the editor allows: headings, quotes, and "
                     + "bulleted and numbered lists. The toolbar shows a button for each, three for headings, with "
-                    + "Outdent and Indent for lists, and pasted text keeps only those. `RichTextBlocks.None` allows "
-                    + "only plain paragraphs.",
+                    + "Outdent and Indent for lists, and pasted text keeps only those. Typing Markdown such as `# `, "
+                    + "`> `, `- ` or `1. ` at the start of a plain paragraph turns it into a heading, quote or list. "
+                    + "`RichTextBlocks.None` allows only plain paragraphs.",
                     typeof(RichTextEditorBlocksExample)),
                 new("without-a-toolbar", "Without a toolbar", "`ShowToolbar=\"false\"` hides the toolbar for a small "
                     + "field. The shortcuts and paste still apply the formats it allows.",
@@ -2133,6 +2134,14 @@ public static class ExampleCatalog
                 new(["Ctrl+Shift+X"], "Turns strikethrough on or off."),
                 new(["Ctrl+,", "Ctrl+."], "Turns subscript or superscript on or off."),
                 new(["Ctrl+E"], "Turns inline code on or off."),
+                new(["Ctrl+Alt+1", "Ctrl+Alt+2", "Ctrl+Alt+3"], "Turns the selected paragraphs into a heading of "
+                    + "that level, or back into plain paragraphs. Cmd+Option on macOS."),
+                new(["Ctrl+Alt+0"], "Turns the selected paragraphs back into plain paragraphs."),
+                new(["Ctrl+Shift+7", "Ctrl+Shift+8"], "Turns the selected paragraphs into a numbered or bulleted list, "
+                    + "or back."),
+                new(["Ctrl+Shift+9"], "Turns the selected paragraphs into a quote, or back."),
+                new(["Tab", "Shift+Tab"], "Indents or outdents the list item.") { When = "In a list item" },
+                new(["Escape"], "Lets the next Tab leave the editor.") { When = "In a list item" },
                 new(["Enter"], "Starts a new paragraph; at the end of a heading, a plain one."),
                 new(["Enter"], "Leaves the list or quote, a level at a time.")
                 {
@@ -2146,7 +2155,7 @@ public static class ExampleCatalog
                 new(["Ctrl+Z"], "Undoes the last change, a word at a time while typing."),
                 new(["Ctrl+Y", "Ctrl+Shift+Z"], "Redoes the last change undone."),
                 new(["Ctrl+Shift+V"], "Pastes plain text."),
-                new(["Tab"], "Leaves the editor, as from any field."),
+                new(["Tab"], "Leaves the editor, as from any field.") { When = "Outside a list" },
                 new(["Left", "Right"], "Moves between the buttons.") { When = "In the toolbar" },
                 new(["Home", "End"], "Goes to the first or last button.") { When = "In the toolbar" },
             ],
@@ -2170,12 +2179,13 @@ public static class ExampleCatalog
                     + "and `aria-disabled` as they apply, and the placeholder as `aria-placeholder`.",
                 "The toolbar is a [toolbar](components/toolbar), following its WAI-ARIA pattern: one Tab stop, with "
                     + "the arrow keys moving between its buttons. Each format and block button uses `aria-pressed` to "
-                    + "report whether it applies to all of the selection, part of it (mixed) or none, and each format "
-                    + "button names its shortcuts with `aria-keyshortcuts`.",
+                    + "report whether it applies to all of the selection, part of it (mixed) or none, and names its "
+                    + "shortcuts with `aria-keyshortcuts`.",
                 "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>` and `<code>` elements, and "
                     + "blocks are real headings, block quotes and lists, which screen readers can report and move "
                     + "between.",
-                "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it.",
+                "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it. In a list "
+                    + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
             ],
             AppDuties =
             [

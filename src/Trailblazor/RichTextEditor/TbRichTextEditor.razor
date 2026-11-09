@@ -142,24 +142,25 @@
     {
         get
         {
-            var blocks = new (RichTextBlocks Block, string Kind, Icon Icon, string? Label, string Key)[]
+            var blocks = new (RichTextBlocks Block, string Kind, Icon Icon, string? Label, string Key, string Shortcuts)[]
             {
                 (RichTextBlocks.Headings, "heading1", RichTextEditorIcons.Heading1, Labels.Heading1,
-                    TbStrings.RichTextEditorHeading1),
+                    TbStrings.RichTextEditorHeading1, "Control+Alt+1 Meta+Alt+1"),
                 (RichTextBlocks.Headings, "heading2", RichTextEditorIcons.Heading2, Labels.Heading2,
-                    TbStrings.RichTextEditorHeading2),
+                    TbStrings.RichTextEditorHeading2, "Control+Alt+2 Meta+Alt+2"),
                 (RichTextBlocks.Headings, "heading3", RichTextEditorIcons.Heading3, Labels.Heading3,
-                    TbStrings.RichTextEditorHeading3),
+                    TbStrings.RichTextEditorHeading3, "Control+Alt+3 Meta+Alt+3"),
                 (RichTextBlocks.Quotes, "quote", RichTextEditorIcons.Quote, Labels.Quote,
-                    TbStrings.RichTextEditorQuote),
+                    TbStrings.RichTextEditorQuote, "Control+Shift+9 Meta+Shift+9"),
                 (RichTextBlocks.BulletedLists, "bullet", RichTextEditorIcons.BulletedList, Labels.BulletedList,
-                    TbStrings.RichTextEditorBulletedList),
+                    TbStrings.RichTextEditorBulletedList, "Control+Shift+8 Meta+Shift+8"),
                 (RichTextBlocks.NumberedLists, "number", RichTextEditorIcons.NumberedList, Labels.NumberedList,
-                    TbStrings.RichTextEditorNumberedList),
+                    TbStrings.RichTextEditorNumberedList, "Control+Shift+7 Meta+Shift+7"),
             };
             foreach (var tool in blocks.Where(tool => Blocks.HasFlag(tool.Block)))
             {
-                yield return new Tool(null, tool.Kind, null, tool.Icon, tool.Label ?? Localizer[tool.Key], null);
+                yield return new Tool(null, tool.Kind, null, tool.Icon, tool.Label ?? Localizer[tool.Key],
+                    tool.Shortcuts);
             }
 
             if ((Blocks & (RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists)) != 0)

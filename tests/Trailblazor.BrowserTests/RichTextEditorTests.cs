@@ -548,6 +548,108 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>run it</p>");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Blocks_ShouldApplyEachKind_WhenEachBlockShortcutIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>one</p>", "one");
+
+        foreach (var (keys, html) in new[]
+        {
+            ("Alt+Digit1", "<h1>one</h1>"), ("Alt+Digit2", "<h2>one</h2>"), ("Alt+Digit3", "<h3>one</h3>"),
+            ("Shift+Digit9", "<blockquote><p>one</p></blockquote>"), ("Shift+Digit8", "<ul><li>one</li></ul>"),
+            ("Shift+Digit7", "<ol><li>one</li></ol>"),
+        })
+        {
+            await CaretAsync(notes, 0, 1);
+            await page.Keyboard.PressAsync($"ControlOrMeta+{keys}");
+            await Expect(page.GetByTestId("notes")).ToHaveTextAsync(html);
+            await page.Keyboard.PressAsync("ControlOrMeta+Alt+Digit0");
+            await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>one</p>");
+        }
+
+        await page.Keyboard.TypeAsync("x");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>oxne</p>");
+        await page.Keyboard.PressAsync("ControlOrMeta+Alt+Digit0");
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>one</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Markdown_ShouldStartEachBlockAndUndoToTheText_WhenAStartIsTypedAtAParagraphsStart(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>a</p><p>b</p><p>c</p><p>d</p><p>e</p><p>f</p><p>g</p>", "abcdefg");
+        string[] starts = ["# ", "## ", "### ", "> ", "- ", "* ", "1. "];
+
+        for (var i = 0; i < starts.Length; i++)
+        {
+            await CaretAsync(notes, i, 0);
+            await page.Keyboard.TypeAsync(starts[i]);
+        }
+        const string started = "<h1>a</h1><h2>b</h2><h3>c</h3><blockquote><p>d</p></blockquote><ul><li>e</li><li>f</li></ul>";
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync(started + "<ol><li>g</li></ol>");
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync(started + "<p>1. g</p>");
+        await CaretAsync(notes, 4, 0);
+        await page.Keyboard.TypeAsync("# ");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync(started.Replace("<li>e", "<li># e") + "<p>1. g</p>");
+        await Editor(page, "Formula").ClickAsync();
+        await page.Keyboard.TypeAsync("# x");
+
+        await Expect(page.GetByTestId("formula")).ToHaveTextAsync("<p># x</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tab_ShouldIndentAndOutdentAListItemAndLeaveAfterEscape_WhenPressedInAList(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<ul><li>a</li><li>b</li></ul>", "ab");
+
+        await CaretAsync(notes, 1, 1);
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a<ul><li>b</li></ul></li></ul>");
+        await Expect(notes).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a</li><li>b</li></ul>");
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a<ul><li>b</li></ul></li></ul>");
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Source" })).ToBeFocusedAsync();
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a</li><li>b</li></ul>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Escape_ShouldLetTabLeaveAndPassTheNextEscapeToTheDialog_WhenPressedInAListItemInADialog(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open draft" }).ClickAsync();
+        var draft = Editor(page, "Draft");
+        await CaretAsync(draft, 1, 1);
+        // The dialog closes on any Escape not marked defaultPrevented, so record that flag for each Escape on its way up.
+        await draft.EvaluateAsync("""
+            editor => editor.parentElement.addEventListener('keydown', event => {
+                if (event.key === 'Escape') (window.escapes ??= []).push(event.defaultPrevented);
+            })
+            """);
+
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Save", Exact = true })).ToBeFocusedAsync();
+        await CaretAsync(draft, 1, 1);
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToBeHiddenAsync();
+        var escapes = await page.EvaluateAsync<bool[]>("() => window.escapes");
+        Assert.Equal([true, true, false], escapes);
+    }
+
     [Theory, MemberData(nameof(Chromium))]
     public async Task Composition_ShouldCommitTheTextInsideTheMark_WhenAnInputMethodComposesInABoldRun(string browser)
     {

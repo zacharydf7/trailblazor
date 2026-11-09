@@ -19,6 +19,12 @@ const FORMAT_INPUTS = {
 };
 // Ctrl or Cmd with these keys, as in word processors; strikethrough is Ctrl+Shift+X, as in most web editors.
 const SHORTCUTS = { b: 'bold', i: 'italic', u: 'underline', ',': 'subscript', '.': 'superscript', e: 'code' };
+// Ctrl+Alt with a digit and Ctrl+Shift with 7, 8 or 9, by key position, as in Google Docs; Cmd on a Mac.
+const ALT_BLOCK_KEYS = { Digit0: 'paragraph', Digit1: 'heading1', Digit2: 'heading2', Digit3: 'heading3' };
+const SHIFT_BLOCK_KEYS = { Digit7: 'number', Digit8: 'bullet', Digit9: 'quote' };
+// Typed at the start of a plain paragraph and followed by a space, these start a block, as in Markdown.
+const MARKDOWN_STARTS = new Map([['#', 'heading1'], ['##', 'heading2'], ['###', 'heading3'], ['>', 'quote'],
+    ['-', 'bullet'], ['*', 'bullet'], ['1.', 'number']]);
 const KINDS = ['paragraph', 'heading1', 'heading2', 'heading3', 'quote', 'bullet', 'number'];
 const HEADING_TAGS = { heading1: 'h1', heading2: 'h2', heading3: 'h3' };
 const BLOCKS = new Set(['address', 'article', 'aside', 'blockquote', 'caption', 'center', 'dd', 'details', 'dialog',
@@ -60,6 +66,7 @@ class Editor {
         this.lastEdit = null;
         this.composing = false;
         this.plainPaste = false;
+        this.tabLeaves = false;
         this.dragged = null;
         this.pendingBlocks = new Map();
         this.pendingAll = false;
@@ -89,6 +96,7 @@ class Editor {
             this.readBack();
         });
         on(root, 'focusout', event => {
+            this.tabLeaves = false;
             if (!root.contains(event.relatedTarget) && !toolbar?.contains(event.relatedTarget)) this.send();
         });
         on(document, 'selectionchange', () => this.onSelectionChange());
@@ -264,6 +272,8 @@ class Editor {
 
         if (type === 'insertParagraph') return handle(() => this.edit(() => this.splitBlock()));
         if (type === 'insertLineBreak') return handle(() => this.edit(() => this.insertText('\n')));
+        const start = type === 'insertText' && event.data === ' ' && collapsed ? this.markdownStart(from) : null;
+        if (start) return handle(() => this.startBlock(from, start));
         if (type === 'insertText' && spans) return handle(() => this.edit(() => this.insertText(event.data ?? '')));
         if (type === 'insertText' || type === 'insertReplacementText') return;
         // Drops are handled whole in onDrop.
@@ -284,8 +294,38 @@ class Editor {
 
     onKeyDown(event) {
         // Safari ends a composition before the keydown of the Enter that commits it, marking that key only as 229.
-        if (event.isComposing || event.keyCode === 229 || event.altKey) return;
+        if (event.isComposing || event.keyCode === 229) return;
+        // In a list item, Escape lets the next Tab leave the editor, so a keyboard user is never held in it.
+        // The first Escape is marked defaultPrevented so a surrounding dialog stays open; a second one closes it.
+        if (event.key === 'Escape') {
+            if (!this.tabLeaves && this.caretInListItem()) {
+                event.preventDefault();
+                this.tabLeaves = true;
+            }
+            return;
+        }
+
+        if (event.key !== 'Tab' && event.key !== 'Shift') this.tabLeaves = false;
         const mod = isMac ? event.metaKey : event.ctrlKey;
+        // Many keyboards type characters with AltGr, which Windows reports as Ctrl+Alt.
+        const altGraph = !isMac && event.getModifierState('AltGraph');
+        const kind = mod && event.altKey && !event.shiftKey && !altGraph ? ALT_BLOCK_KEYS[event.code]
+            : mod && event.shiftKey && !event.altKey ? SHIFT_BLOCK_KEYS[event.code] : undefined;
+        if (kind) {
+            event.preventDefault();
+            this.selection = this.readSelection() ?? this.selection;
+            this.setBlock(kind);
+            return;
+        }
+
+        if (event.altKey) return;
+        if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey) {
+            if (this.tabLeaves || !this.caretInListItem()) return;
+            event.preventDefault();
+            this.indent(event.shiftKey ? -1 : 1);
+            return;
+        }
+
         // WebKit reports Shift+Enter as a new paragraph, so Enter is handled here; beforeinput covers soft keyboards.
         if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey) {
             event.preventDefault();
@@ -314,6 +354,12 @@ class Editor {
         } else if (key === 'v' && event.shiftKey) {
             this.plainPaste = true;
         }
+    }
+
+    caretInListItem() {
+        this.readBack();
+        this.selection = this.readSelection() ?? this.selection;
+        return !this.readOnly && isListItem(this.doc[this.range().from.block].kind);
     }
 
     onPaste(event) {
@@ -536,16 +582,35 @@ class Editor {
 
     // Turns the selected paragraphs into this kind of block, or back into plain paragraphs when all of them are.
     setBlock(kind) {
-        if (this.readOnly || !this.blocks.has(kind)) return;
+        if (this.readOnly || (kind !== 'paragraph' && !this.blocks.has(kind))) return;
         this.readBack();
         const { from, to } = this.range();
         const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
+        if (this.doc.slice(from.block, to.block + 1).every(target => target.kind === next)) return;
         this.edit(() => {
             for (let block = from.block; block <= to.block; block++) {
                 const target = this.doc[block];
                 const level = isListItem(next) && isListItem(target.kind) ? target.level : 0;
                 this.doc[block] = { ...target, kind: next, level };
             }
+        });
+    }
+
+    // The kind of block the text before the caret starts, as heading1 for '#'; null outside a plain paragraph, or for a
+    // kind the editor doesn't allow.
+    markdownStart({ block, offset }) {
+        const target = this.doc[block];
+        const kind = target.kind === 'paragraph' ? MARKDOWN_STARTS.get(textOf(target.runs).slice(0, offset)) : null;
+        return kind && this.blocks.has(kind) ? kind : null;
+    }
+
+    // The space goes in as its own step, so undo brings back the typed text.
+    startBlock(from, kind) {
+        this.edit(() => this.insertText(' '));
+        this.edit(() => {
+            this.doc[from.block] = { kind, level: 0, runs: slice(this.doc[from.block].runs, from.offset + 1) };
+            const caret = { block: from.block, offset: 0 };
+            this.selection = { anchor: caret, head: caret };
         });
     }
 

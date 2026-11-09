@@ -19,6 +19,12 @@
                   UpdateOnInput />
 <output data-testid="live">@_live</output>
 
+<TbButton OnClick="() => _dialog = true">Open draft</TbButton>
+<TbDialog @bind-Open="_dialog" Title="Draft">
+    <TbRichTextEditor Label="Draft" @bind-Value="_draft" />
+    <TbButton>Save</TbButton>
+</TbDialog>
+
 <TbRichTextEditor Label="Approved" ReadOnly Value="@("<p>Read <strong>only</strong></p>")" />
 <TbRichTextEditor Label="Archived" Disabled Value="@("<p>Old</p>")" />
 
@@ -29,6 +35,8 @@
     private string? _summary;
     private string? _saved;
     private string? _live;
+    private bool _dialog;
+    private string? _draft = "<ul><li>a</li><li>b</li></ul>";
 
     private async Task OnLiveChangedAsync(string html)
     {
