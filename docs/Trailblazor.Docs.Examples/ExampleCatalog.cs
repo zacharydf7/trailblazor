@@ -4578,7 +4578,8 @@ public static class ExampleCatalog
                     + "dialog opens.",
                     typeof(DialogMarkupExample)),
                 new("updating", "Updating an open dialog", "`Show` returns a reference without waiting. The page can "
-                    + "`Update` a dialog's parameters through it, and close the dialog when the work is done.",
+                    + "`Update` a dialog's parameters through it, and close the dialog when the work is done. This "
+                    + "export dialog overrides `DefaultTitle`, so the page opens it without a title.",
                     typeof(DialogUpdateExample), typeof(ExportDialog)),
                 new("run-time", "Choosing at run time", "`ShowDynamicAsync` opens a dialog by its type, with its "
                     + "parameters by name, for a form chosen while the app "
@@ -4652,7 +4653,8 @@ public static class ExampleCatalog
             Labeling =
             [
                 "A native `<dialog>` named by its title. A blank title, in markup or passed to `IDialogService`, gets "
-                    + "build warning TB002. An icon in a `TbDialogTitle` is hidden from screen readers.",
+                    + "build warning TB002. Leaving the title out is fine when the content overrides `DefaultTitle`; "
+                    + "otherwise `Show` throws. An icon in a `TbDialogTitle` is hidden from screen readers.",
             ],
             Announcements =
             [

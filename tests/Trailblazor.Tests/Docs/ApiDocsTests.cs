@@ -32,7 +32,7 @@ public class ApiDocsTests
             "Result { get; }", "CancelAsync()",
             "CloseAsync(TResult? value)", "Update<TDialog>(Action<DialogParameters<TDialog>> parameters)"],
             reference.Select(member => member.Name));
-        Assert.Contains(dialogs, member => member.Name.StartsWith("Show<TDialog, TResult>(string title,",
+        Assert.Contains(dialogs, member => member.Name.StartsWith("Show<TDialog, TResult>(string? title = null,",
             StringComparison.Ordinal));
         Assert.All(reference.Concat(dialogs), member => Assert.NotEmpty(member.Description));
     }

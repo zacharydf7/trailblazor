@@ -131,6 +131,71 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void Show_ShouldTakeTheContentsDefaultTitle_WhenOpenedWithoutOne()
+    {
+        var host = Render<DialogHost>();
+
+        var dialog = Dialogs.Show<TrailNotesDialog, string>();
+
+        host.WaitForAssertion(() => Assert.Equal("Trail notes", host.Find("dialog h2").TextContent));
+        Assert.Equal("Trail notes", dialog.Title);
+    }
+
+    [Fact]
+    public void Show_ShouldKeepTheCallersTitle_WhenTheContentHasADefault()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.Show<TrailNotesDialog, string>("Pine Hollow notes");
+
+        host.WaitForAssertion(() => Assert.Equal("Pine Hollow notes", host.Find("dialog h2").TextContent));
+    }
+
+    [Fact]
+    public void Show_ShouldThrow_WhenNeitherTheCallerNorTheContentGivesATitle()
+    {
+        var typed = Assert.Throws<ArgumentException>(() => Dialogs.Show<SmallDialog, string>());
+        var dynamic = Assert.Throws<ArgumentException>(() => Dialogs.ShowDynamic<string>(typeof(SmallDialog)));
+
+        Assert.StartsWith("Give SmallDialog a title, or override its DefaultTitle.", typed.Message);
+        Assert.Equal("title", dynamic.ParamName);
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Fact]
+    public async Task Show_ShouldReportTheMissingTitleToTheRenderer_WhenTheContentsDefaultTitleIsBlank()
+    {
+        _ = Render<DialogHost>();
+
+        _ = Dialogs.Show<BlankTitleDialog, string>();
+
+        var exception = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5),
+            Xunit.TestContext.Current.CancellationToken);
+        Assert.Equal("BlankTitleDialog has no title. Pass one, or have its DefaultTitle return one.",
+            exception.Message);
+    }
+
+    [Fact]
+    public void Show_ShouldTakeTheContentsDefaultTitle_WhenTheCallersTitleIsBlank()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowDynamic<string>(typeof(TrailNotesDialog), " ");
+
+        host.WaitForAssertion(() => Assert.Equal("Trail notes", host.Find("dialog h2").TextContent));
+    }
+
+    [Fact]
+    public async Task ConfirmAsync_ShouldThrow_WhenTheTitleIsBlank()
+    {
+        var confirm = await Assert.ThrowsAsync<ArgumentException>(() => Dialogs.ConfirmAsync(" ", "Delete the trail?"));
+        var alert = await Assert.ThrowsAsync<ArgumentException>(() => Dialogs.AlertAsync("", "Trail closed."));
+
+        Assert.Equal(("title", "title"), (confirm.ParamName, alert.ParamName));
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Fact]
     public async Task CloseButton_ShouldCancelTheDialog_WhenClicked()
     {
         var host = Render<DialogHost>();
@@ -991,6 +1056,16 @@ public class DialogServiceTests : BunitContext
                 EventCallback.Factory.Create(this, () => Dialog.WindowState = DialogWindowState.Maximized));
             builder.CloseElement();
         }
+    }
+
+    private sealed class BlankTitleDialog : TbDialogContent<string>
+    {
+        protected override string DefaultTitle => " ";
+    }
+
+    private sealed class TrailNotesDialog : TbDialogContent<string>
+    {
+        protected override string DefaultTitle => "Trail notes";
     }
 
     private sealed class NoticeDialog : TbDialogContent

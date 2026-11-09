@@ -870,12 +870,12 @@ Trailblazor.IDialogService.AlertAsync(string! title, string! message, string? ok
 Trailblazor.IDialogService.CloseAllAsync() -> System.Threading.Tasks.Task!
 Trailblazor.IDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.IDialogService.OpenDialogs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
-Trailblazor.IDialogService.Show<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
-Trailblazor.IDialogService.ShowAsync<TDialog, TResult>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
-Trailblazor.IDialogService.Show<TDialog>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<bool>!
-Trailblazor.IDialogService.ShowAsync<TDialog>(string! title, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<bool>!
-Trailblazor.IDialogService.ShowDynamic<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
-Trailblazor.IDialogService.ShowDynamicAsync<TResult>(System.Type! dialog, string! title, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.IDialogService.Show<TDialog, TResult>(string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
+Trailblazor.IDialogService.ShowAsync<TDialog, TResult>(string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.IDialogService.Show<TDialog>(string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<bool>!
+Trailblazor.IDialogService.ShowAsync<TDialog>(string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.IDialogService.ShowDynamic<TResult>(System.Type! dialog, string? title = null, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
+Trailblazor.IDialogService.ShowDynamicAsync<TResult>(System.Type! dialog, string? title = null, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
 Trailblazor.ImageFit
 Trailblazor.ImageFit.Contain = 1 -> Trailblazor.ImageFit
 Trailblazor.ImageFit.Cover = 2 -> Trailblazor.ImageFit
@@ -2813,6 +2813,7 @@ Trailblazor.TbDialogTitle.ChildContent.get -> Microsoft.AspNetCore.Components.Re
 Trailblazor.TbDialogTitle.ChildContent.set -> void
 Trailblazor.TbDialogTitle.Dispose() -> void
 Trailblazor.TbDialogTitle.TbDialogTitle() -> void
+virtual Trailblazor.TbDialogContent<TResult>.DefaultTitle.get -> string!
 virtual Trailblazor.TbDialogContent<TResult>.OnDismissAsync(Trailblazor.DialogDismissReason reason) -> System.Threading.Tasks.Task!
 Trailblazor.DialogOptions.Width.get -> string?
 Trailblazor.DialogOptions.Width.init -> void

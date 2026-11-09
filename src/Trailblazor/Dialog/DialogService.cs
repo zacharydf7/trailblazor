@@ -24,28 +24,29 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     // Raised when a dialog opens, closes, or starts or stops blocking the page, so the hosts re-render.
     public event Action? Changed;
 
-    public DialogReference<TResult> Show<TDialog, TResult>(string title,
+    public DialogReference<TResult> Show<TDialog, TResult>(string? title = null,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>
     {
+        RequireTitle<TResult>(typeof(TDialog), title);
         var values = new DialogParameters<TDialog>();
         parameters?.Invoke(values);
         return Open<TResult>(title, typeof(TDialog), values.Values, options ?? new(), isAlert: false);
     }
 
-    public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string title,
+    public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string? title = null,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
 
-    public DialogReference<bool> Show<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
-        DialogOptions? options = null)
+    public DialogReference<bool> Show<TDialog>(string? title = null,
+        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => Show<TDialog, bool>(title, parameters, options);
 
-    public async Task<bool> ShowAsync<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
-        DialogOptions? options = null)
+    public async Task<bool> ShowAsync<TDialog>(string? title = null,
+        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
 
-    public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string title,
+    public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null)
     {
         if (dialog.IsAbstract || !typeof(TbDialogContent<TResult>).IsAssignableFrom(dialog))
@@ -53,6 +54,8 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             throw new ArgumentException($"{dialog.Name} isn't a TbDialogContent<{typeof(TResult).Name}>.",
                 nameof(dialog));
         }
+
+        RequireTitle<TResult>(dialog, title);
 
         // Blazor matches parameter names without regard to case, and finds a wrong name or value only as it renders.
         foreach (var (name, value) in parameters ?? ImmutableDictionary<string, object?>.Empty)
@@ -78,7 +81,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         return Open<TResult>(title, dialog, values, options ?? new(), isAlert: false);
     }
 
-    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string title,
+    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null) =>
         ShowDynamic<TResult>(dialog, title, parameters, options).Result;
 
@@ -93,6 +96,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     internal DialogReference<bool> OpenConfirm(string title, string message, string? confirmText, string? cancelText,
         Tone tone, string? telemetryName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
         var parameters = new Dictionary<string, object?>
         {
             [nameof(ConfirmDialog.Message)] = message,
@@ -108,6 +112,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     internal DialogReference<bool> OpenAlert(string title, string message, string? okText, Tone tone,
         string? telemetryName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
         var parameters = new Dictionary<string, object?>
         {
             [nameof(ConfirmDialog.Message)] = message,
@@ -132,7 +137,15 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     internal DialogReference<bool> OpenInPlace(string title, DialogOptions options) =>
         Open<bool>(title, null, new Dictionary<string, object?>(), options, isAlert: false);
 
-    private DialogReference<TResult> Open<TResult>(string title, Type? component,
+    private static void RequireTitle<TResult>(Type dialog, string? title)
+    {
+        if (string.IsNullOrWhiteSpace(title) && !TbDialogContent<TResult>.HasDefaultTitle(dialog))
+        {
+            throw new ArgumentException($"Give {dialog.Name} a title, or override its DefaultTitle.", nameof(title));
+        }
+    }
+
+    private DialogReference<TResult> Open<TResult>(string? title, Type? component,
         IReadOnlyDictionary<string, object?> parameters, DialogOptions options, bool isAlert)
     {
         var settings = trailblazorOptions.Value.Dialogs;

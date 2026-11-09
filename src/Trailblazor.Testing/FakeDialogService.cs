@@ -26,7 +26,8 @@ public sealed class FakeDialogService : IDialogService
     /// <inheritdoc />
     public IReadOnlyList<DialogReference> OpenDialogs => _dialogs.OpenDialogs;
 
-    /// <summary>The last <typeparamref name="TDialog"/> opened, to check its title and parameters and close it.
+    /// <summary>The last <typeparamref name="TDialog"/> opened, to check its title and parameters and close it. A title
+    /// from the content's <c>DefaultTitle</c> is there only once a rendered <see cref="TbRoot"/> shows the dialog.
     /// </summary>
     /// <exception cref="InvalidOperationException">No <typeparamref name="TDialog"/> was opened.</exception>
     public DialogReference<TResult> Last<TDialog, TResult>() where TDialog : TbDialogContent<TResult> =>
@@ -34,7 +35,8 @@ public sealed class FakeDialogService : IDialogService
             ?? throw new InvalidOperationException($"No {typeof(TDialog).Name} was opened.");
 
     /// <summary>The last <typeparamref name="TDialog"/> opened, a dialog with no result, to check its title and
-    /// parameters and close it: <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels.</summary>
+    /// parameters and close it: <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels. A title from the
+    /// content's <c>DefaultTitle</c> is there only once a rendered <see cref="TbRoot"/> shows the dialog.</summary>
     /// <exception cref="InvalidOperationException">No <typeparamref name="TDialog"/> was opened.</exception>
     public DialogReference<bool> Last<TDialog>() where TDialog : TbDialogContent => Last<TDialog, bool>();
 
@@ -48,33 +50,33 @@ public sealed class FakeDialogService : IDialogService
     // The overloads differ in their type parameter count, so no call is ambiguous.
 #pragma warning disable RS0026
     /// <inheritdoc />
-    public DialogReference<TResult> Show<TDialog, TResult>(string title,
+    public DialogReference<TResult> Show<TDialog, TResult>(string? title = null,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Record(_dialogs.Show<TDialog, TResult>(title, parameters, options));
 
     /// <inheritdoc />
-    public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string title,
+    public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string? title = null,
         Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
 
     /// <inheritdoc />
-    public DialogReference<bool> Show<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
-        DialogOptions? options = null)
+    public DialogReference<bool> Show<TDialog>(string? title = null,
+        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => Show<TDialog, bool>(title, parameters, options);
 
     /// <inheritdoc />
-    public async Task<bool> ShowAsync<TDialog>(string title, Action<DialogParameters<TDialog>>? parameters = null,
-        DialogOptions? options = null)
+    public async Task<bool> ShowAsync<TDialog>(string? title = null,
+        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
 #pragma warning restore RS0026
 
     /// <inheritdoc />
-    public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string title,
+    public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null) =>
         Record(_dialogs.ShowDynamic<TResult>(dialog, title, parameters, options));
 
     /// <inheritdoc />
-    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string title,
+    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null) =>
         ShowDynamic<TResult>(dialog, title, parameters, options).Result;
 

@@ -175,6 +175,52 @@ public class ComponentAnalyzerTests
     }
 
     [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNoDialogTitle_WhenADialogWithoutADefaultTitleIsOpenedWithoutOne()
+    {
+        var ids = await IdsAsync("", """
+            [Inject]
+            private IDialogService Dialogs { get; set; } = default!;
+
+            private Task<bool> ShowAsync() => Dialogs.ShowAsync<NoticeDialog>();
+
+            private sealed class NoticeDialog : TbDialogContent;
+            """);
+
+        Assert.Equal(["TB002"], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheDialogsContentOverridesDefaultTitle()
+    {
+        var ids = await IdsAsync("", """
+            [Inject]
+            private IDialogService Dialogs { get; set; } = default!;
+
+            private Task<bool> ShowAsync() => Dialogs.ShowAsync<NoticeDialog>();
+
+            private sealed class NoticeDialog : TbDialogContent
+            {
+                protected override string DefaultTitle => "Trail notice";
+            }
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheDialogTypeIsATypeParameter()
+    {
+        var ids = await IdsAsync("", """
+            [Inject]
+            private IDialogService Dialogs { get; set; } = default!;
+
+            private Task<bool> ShowAsync<TNotice>() where TNotice : TbDialogContent => Dialogs.ShowAsync<TNotice>();
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
     public async Task ComponentAnalyzer_ShouldReportValueWithoutValueChanged_WhenAnInputIsGivenOnlyAValue()
     {
         var ids = await IdsAsync("""

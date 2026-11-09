@@ -27,6 +27,12 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        if (Dialog.Unnamed)
+        {
+            throw new InvalidOperationException(
+                $"{Dialog.ContentType?.Name} has no title. Pass one, or have its DefaultTitle return one.");
+        }
+
         // Without a header the title still names the dialog, as plain text so it adds no heading.
         if (!Dialog.ShowHeader)
         {

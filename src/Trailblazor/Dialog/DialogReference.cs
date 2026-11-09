@@ -6,7 +6,8 @@ namespace Trailblazor;
 public abstract class DialogReference
 {
     private readonly Func<DialogReference, bool, object?, Task> _close;
-    private string _title;
+    private string? _title;
+    private Func<string>? _defaultTitle;
     private bool _modal;
     private DialogSize _size;
     private DialogPosition _position;
@@ -15,7 +16,7 @@ public abstract class DialogReference
     private bool _showHeader;
     private bool _closeButton;
 
-    private protected DialogReference(string title, DialogOptions options, Type? component,
+    private protected DialogReference(string? title, DialogOptions options, Type? component,
         IReadOnlyDictionary<string, object?> parameters, bool isAlert, Func<DialogReference, bool, object?, Task> close)
     {
         _title = title;
@@ -31,11 +32,13 @@ public abstract class DialogReference
         _position = options.Position;
     }
 
-    /// <summary>The dialog's title, which is also its accessible name. Setting it renames the open dialog. A
-    /// <see cref="TbDialogTitle"/> in the dialog shows richer content in its place.</summary>
+    /// <summary>The dialog's title, which is also its accessible name: the one it was opened with, or else its
+    /// content's <c>DefaultTitle</c>. A title from <c>DefaultTitle</c> is blank until the content has rendered. Setting
+    /// it renames the open dialog. A <see cref="TbDialogTitle"/> in the dialog shows richer content in its place.
+    /// </summary>
     public string Title
     {
-        get => _title;
+        get => !string.IsNullOrWhiteSpace(_title) ? _title : _defaultTitle?.Invoke() ?? _title ?? "";
         set
         {
             _title = value;
@@ -182,6 +185,18 @@ public abstract class DialogReference
         }
     }
 
+    // False until the content has rendered, since DefaultTitle may still fill in a blank title.
+    internal bool Unnamed => _defaultTitle is not null && string.IsNullOrWhiteSpace(Title);
+
+    internal void SetDefaultTitle(Func<string> title)
+    {
+        _defaultTitle = title;
+        if (string.IsNullOrWhiteSpace(_title))
+        {
+            TitleContentChanged?.Invoke();
+        }
+    }
+
     internal void SetTitleContent(RenderFragment? content)
     {
         TitleContent = content;
@@ -253,7 +268,7 @@ public sealed class DialogReference<TResult> : DialogReference
 {
     private readonly TaskCompletionSource<DialogResult<TResult>> _result = new();
 
-    internal DialogReference(string title, DialogOptions options, Type? component,
+    internal DialogReference(string? title, DialogOptions options, Type? component,
         IReadOnlyDictionary<string, object?> parameters, bool isAlert, Func<DialogReference, bool, object?, Task> close)
         : base(title, options, component, parameters, isAlert, close)
     {

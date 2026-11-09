@@ -11,4 +11,6 @@
     /// <summary>How far the export has got, which the page updates while the dialog is open.</summary>
     [Parameter]
     public int Percent { get; set; }
+
+    protected override string DefaultTitle => "Exporting report";
 }

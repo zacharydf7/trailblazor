@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
@@ -35,6 +36,7 @@ public abstract class TbDialogContent<TResult> : ComponentBase
             if (value is not null)
             {
                 value.Dismiss = OnDismissAsync;
+                value.SetDefaultTitle(() => DefaultTitle);
             }
         }
     }
@@ -46,6 +48,17 @@ public abstract class TbDialogContent<TResult> : ComponentBase
     /// <see cref="DialogReference.CloseButton"/>, as in <c>Dialog.Size = DialogSize.Large</c>.</summary>
     protected DialogReference Dialog => _dialog
         ?? throw new InvalidOperationException($"Open {GetType().Name} with {nameof(IDialogService)}.");
+
+    /// <summary>The title the dialog takes when it's opened without one, which names it for screen readers and shows in
+    /// its header. Override it in a dialog that always has the same title, so callers can leave the title out. Opening
+    /// a dialog without a title throws unless its content overrides this, and the dialog throws as it renders if the
+    /// override returns a blank title.</summary>
+    protected virtual string DefaultTitle => "";
+
+    // Read before the content exists, so a dialog opened without a title fails at once rather than opening unnamed.
+    internal static bool HasDefaultTitle(Type dialog) =>
+        dialog.GetProperty(nameof(DefaultTitle), BindingFlags.Instance | BindingFlags.NonPublic)?.DeclaringType
+            != typeof(TbDialogContent<TResult>);
 
     /// <summary>Closes the dialog as confirmed, with <paramref name="value"/> as its result.</summary>
     protected Task CloseDialogAsync(TResult value) => Dialog.CloseAsync(true, value);

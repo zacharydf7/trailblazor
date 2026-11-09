@@ -52,7 +52,7 @@ public static class TrailblazorBunitExtensions
     /// renderer interactive, since dialogs open only in interactive sessions. Later calls in the same test use the same
     /// <see cref="TbRoot"/>; don't render another one yourself, or every dialog shows in both.</summary>
     public static async Task<TestDialog<TDialog, TResult>> ShowDialogAsync<TDialog, TResult>(this BunitContext context,
-        string title, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>
     {
         if (!Roots.TryGetValue(context, out var root) || root.IsDisposed)
@@ -68,8 +68,8 @@ public static class TrailblazorBunitExtensions
 
     /// <summary>Opens a dialog with no result for a test, as <c>ShowDialogAsync&lt;TDialog, TResult&gt;</c> does.
     /// </summary>
-    public static Task<TestDialog<TDialog, bool>> ShowDialogAsync<TDialog>(this BunitContext context, string title,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public static Task<TestDialog<TDialog, bool>> ShowDialogAsync<TDialog>(this BunitContext context,
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => context.ShowDialogAsync<TDialog, bool>(title, parameters, options);
 #pragma warning restore RS0026
 
