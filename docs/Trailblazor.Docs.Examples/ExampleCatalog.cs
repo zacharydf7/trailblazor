@@ -444,6 +444,94 @@ public static class ExampleCatalog
                 + "event with `GetByRole(AriaRole.Listitem).Filter(new() { HasText = \"Trip booked\" })`. A `time` "
                 + "element's `datetime` attribute holds the time in ISO 8601, whatever the culture.",
         },
+        new("carousel", "Carousel", ExampleCategory.Content,
+            "Slides shown one at a time, such as featured trails or photos, with buttons to move between them.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a few items of equal weight that share one space, such as featured trails on a home page.",
+            ],
+            WhenNotToUse =
+            [
+                "For content people need to compare or read in full, show it all, in a [list](components/list) or a "
+                    + "grid of [cards](components/card).",
+                "For steps people move through in order, use a [stepper](components/stepper).",
+            ],
+            Related = ["image", "card", "tabs"],
+            Pattern = new("carousel", "https://www.w3.org/WAI/ARIA/apg/patterns/carousel/"),
+            Sections =
+            [
+                new("basic", "Carousel", "Each `TbCarouselSlide` is one slide. The previous and next buttons and a "
+                    + "button for each slide move between them, and `@bind-Index` is the shown slide's position. A "
+                    + "slide is named by its place, such as \"2 of 3\", unless `AriaLabel` names it.",
+                    typeof(CarouselExample)),
+                new("auto-play", "Turning by itself", "`AutoPlay` sets how often the carousel turns to the next "
+                    + "slide by itself, and adds a button, first in the controls, that stops and starts it. It pauses "
+                    + "while the pointer is over the carousel or focus is in it, stops when keyboard focus lands "
+                    + "anywhere in it, and starts stopped for someone who asks for reduced motion.",
+                    typeof(CarouselAutoPlayExample)),
+                new("ends", "Ends and buttons", "`Loop=\"false\"` stops at the first and last slides and turns off "
+                    + "the button that would pass them. `ShowPicker=\"false\"` leaves out the button for each slide.",
+                    typeof(CarouselEndsExample)),
+            ],
+            Api = [typeof(TbCarousel), typeof(TbCarouselSlide), typeof(CarouselLabels)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves to the stop button, when `AutoPlay` is set, then previous and next, into the "
+                    + "shown slide's content, and on to the slide buttons."),
+                new(["Enter", "Space"], "Presses the focused button."),
+            ],
+            Labeling =
+            [
+                "The carousel is a region named by `AriaLabel` and announced as a carousel. Each slide is a group "
+                    + "announced as a slide and named by its place, such as \"2 of 3\", or by its `AriaLabel`.",
+                "The buttons are named \"Previous slide\", \"Next slide\", \"Slide 2\" and \"Stop slide rotation\" "
+                    + "(\"Start slide rotation\" once stopped), or by `Labels`; the shown slide's button is marked as "
+                    + "the current one.",
+            ],
+            Announcements =
+            [
+                "A slide the user brings in is read out, since the slides are a polite live region. While the "
+                    + "slides turn by themselves, the live region is off, so the page doesn't keep talking.",
+            ],
+            Accessibility =
+            [
+                "Turning slides pause while the pointer is over the carousel or focus is in it. The stop button "
+                    + "stops them until the start button is pressed, as WCAG 2.2.2 asks, and keyboard focus anywhere "
+                    + "in the carousel does the same.",
+                "At the ends of a carousel that doesn't loop, previous or next turns off but keeps focus.",
+                "Each slide button's box is 24 pixels across, with a smaller dot drawn inside it.",
+            ],
+            Notes =
+            [
+                new("A slide added after the first render goes after the others, whatever its place in the markup. When "
+                    + "another slide is removed, the shown one stays shown and `@bind-Index` gets its new position; "
+                    + "when the shown slide itself is removed, the one after it shows, or the last one if there's "
+                    + "none after it."),
+            ],
+            BeforeInteractive =
+            [
+                "The first slide shows, and the buttons work once the page is interactive.",
+            ],
+            Target = new("region", "Featured trails"),
+            Blocks = ["tb-carousel"],
+            DataParts =
+            [
+                new("controls", "The stop, previous and next buttons."),
+                new("rotation", "The button that stops and starts the turning slides."),
+                new("previous", "The previous button."),
+                new("next", "The next button."),
+                new("slides", "The slides."),
+                new("slide", "One slide."),
+                new("picker", "The buttons for each slide."),
+                new("pick", "The button that shows one slide."),
+            ],
+            TestingTip = "Find it as `GetByRole(AriaRole.Region, new() { Name = \"Featured trails\" })`, move with "
+                + "`GetByRole(AriaRole.Button, new() { Name = \"Next slide\" })`, and find the shown slide as the "
+                + "visible `group` named, for example, \"2 of 3\". In bUnit, register a `FakeTimeProvider` as the "
+                + "`TimeProvider` and advance it past the `AutoPlay` interval to turn the slides.",
+        },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
         {

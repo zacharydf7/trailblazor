@@ -1,23 +1,53 @@
 #nullable enable
 const Trailblazor.TbStrings.BannerClose = "Banner.Close" -> string!
 const Trailblazor.TbStrings.BannerLabel = "Banner.Label" -> string!
+const Trailblazor.TbStrings.CarouselNext = "Carousel.Next" -> string!
+const Trailblazor.TbStrings.CarouselPrevious = "Carousel.Previous" -> string!
+const Trailblazor.TbStrings.CarouselSlide = "Carousel.Slide" -> string!
+const Trailblazor.TbStrings.CarouselSlideOf = "Carousel.SlideOf" -> string!
+const Trailblazor.TbStrings.CarouselStart = "Carousel.Start" -> string!
+const Trailblazor.TbStrings.CarouselStop = "Carousel.Stop" -> string!
 const Trailblazor.TbStrings.TagInputAdded = "TagInput.Added" -> string!
 const Trailblazor.TbStrings.TagInputDuplicate = "TagInput.Duplicate" -> string!
 const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
 const Trailblazor.TbStrings.TagInputRemove = "TagInput.Remove" -> string!
 const Trailblazor.TbStrings.TagInputRemoved = "TagInput.Removed" -> string!
 const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
+override Trailblazor.CarouselLabels.Equals(object? obj) -> bool
+override Trailblazor.CarouselLabels.GetHashCode() -> int
+override Trailblazor.CarouselLabels.ToString() -> string!
 override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
 override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
+override Trailblazor.TbCarousel.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbCarousel.OnParametersSet() -> void
+override Trailblazor.TbCarouselSlide.OnInitialized() -> void
 override Trailblazor.TbEmptyState.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbEmptyState.OnParametersSet() -> void
 override Trailblazor.TbKbd.OnParametersSet() -> void
 override Trailblazor.TbPopconfirm.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.CarouselLabels.operator !=(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
+static Trailblazor.CarouselLabels.operator ==(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
+Trailblazor.CarouselLabels
+Trailblazor.CarouselLabels.<Clone>$() -> Trailblazor.CarouselLabels!
+Trailblazor.CarouselLabels.CarouselLabels() -> void
+Trailblazor.CarouselLabels.Equals(Trailblazor.CarouselLabels? other) -> bool
+Trailblazor.CarouselLabels.Next.get -> string?
+Trailblazor.CarouselLabels.Next.init -> void
+Trailblazor.CarouselLabels.Previous.get -> string?
+Trailblazor.CarouselLabels.Previous.init -> void
+Trailblazor.CarouselLabels.Slide.get -> string?
+Trailblazor.CarouselLabels.Slide.init -> void
+Trailblazor.CarouselLabels.SlideOf.get -> string?
+Trailblazor.CarouselLabels.SlideOf.init -> void
+Trailblazor.CarouselLabels.Start.get -> string?
+Trailblazor.CarouselLabels.Start.init -> void
+Trailblazor.CarouselLabels.Stop.get -> string?
+Trailblazor.CarouselLabels.Stop.init -> void
 Trailblazor.TagAddEventArgs
 Trailblazor.TagAddEventArgs.TagAddEventArgs() -> void
 Trailblazor.TagAddEventArgs.Text.get -> string!
@@ -68,6 +98,32 @@ Trailblazor.TbBanner.Title.get -> string?
 Trailblazor.TbBanner.Title.set -> void
 Trailblazor.TbBanner.Tone.get -> Trailblazor.Tone
 Trailblazor.TbBanner.Tone.set -> void
+Trailblazor.TbCarousel
+Trailblazor.TbCarousel.AriaLabel.get -> string!
+Trailblazor.TbCarousel.AriaLabel.set -> void
+Trailblazor.TbCarousel.AutoPlay.get -> System.TimeSpan?
+Trailblazor.TbCarousel.AutoPlay.set -> void
+Trailblazor.TbCarousel.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCarousel.ChildContent.set -> void
+Trailblazor.TbCarousel.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbCarousel.Index.get -> int
+Trailblazor.TbCarousel.Index.set -> void
+Trailblazor.TbCarousel.IndexChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbCarousel.IndexChanged.set -> void
+Trailblazor.TbCarousel.Labels.get -> Trailblazor.CarouselLabels?
+Trailblazor.TbCarousel.Labels.set -> void
+Trailblazor.TbCarousel.Loop.get -> bool
+Trailblazor.TbCarousel.Loop.set -> void
+Trailblazor.TbCarousel.ShowPicker.get -> bool
+Trailblazor.TbCarousel.ShowPicker.set -> void
+Trailblazor.TbCarousel.TbCarousel() -> void
+Trailblazor.TbCarouselSlide
+Trailblazor.TbCarouselSlide.AriaLabel.get -> string?
+Trailblazor.TbCarouselSlide.AriaLabel.set -> void
+Trailblazor.TbCarouselSlide.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCarouselSlide.ChildContent.set -> void
+Trailblazor.TbCarouselSlide.Dispose() -> void
+Trailblazor.TbCarouselSlide.TbCarouselSlide() -> void
 Trailblazor.TbEmptyState
 Trailblazor.TbEmptyState.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbEmptyState.Actions.set -> void
@@ -2901,6 +2957,8 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbCarousel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbCarouselSlide.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCheckbox<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCheckboxGroup<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCheckboxItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

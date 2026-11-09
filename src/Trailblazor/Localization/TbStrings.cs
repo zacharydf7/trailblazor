@@ -16,6 +16,24 @@ public static class TbStrings
     /// <summary>"Dismiss": names a banner's close button.</summary>
     public const string BannerClose = "Banner.Close";
 
+    /// <summary>"Previous slide": names a carousel's previous button.</summary>
+    public const string CarouselPrevious = "Carousel.Previous";
+
+    /// <summary>"Next slide": names a carousel's next button.</summary>
+    public const string CarouselNext = "Carousel.Next";
+
+    /// <summary>"Slide {0}": names a carousel's button that shows a slide; {0} is the slide's number.</summary>
+    public const string CarouselSlide = "Carousel.Slide";
+
+    /// <summary>"{0} of {1}": names a carousel's slide; {0} is its number and {1} the number of slides.</summary>
+    public const string CarouselSlideOf = "Carousel.SlideOf";
+
+    /// <summary>"Stop slide rotation": names the button that stops a carousel turning its slides.</summary>
+    public const string CarouselStop = "Carousel.Stop";
+
+    /// <summary>"Start slide rotation": names the button that starts a carousel turning its slides again.</summary>
+    public const string CarouselStart = "Carousel.Start";
+
     /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
     public const string AppShellMenu = "AppShell.Menu";
 
@@ -731,6 +749,12 @@ public static class TbStrings
         [AlertClose] = "Close",
         [BannerLabel] = "Notice",
         [BannerClose] = "Dismiss",
+        [CarouselPrevious] = "Previous slide",
+        [CarouselNext] = "Next slide",
+        [CarouselSlide] = "Slide {0}",
+        [CarouselSlideOf] = "{0} of {1}",
+        [CarouselStop] = "Stop slide rotation",
+        [CarouselStart] = "Start slide rotation",
         [AppShellMenu] = "Navigation",
         [AppShellNavigation] = "Main",
         [AppShellSkipToContent] = "Skip to content",

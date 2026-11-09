@@ -1,0 +1,14 @@
+<TbCarousel AriaLabel="Trail photos" AutoPlay="TimeSpan.FromSeconds(5)" Style="max-inline-size: 32rem">
+    @foreach (var view in Views)
+    {
+        <TbCarouselSlide>
+            <TbSurface Outlined Style="padding: var(--tb-space-6); text-align: center">
+                <TbText>@view</TbText>
+            </TbSurface>
+        </TbCarouselSlide>
+    }
+</TbCarousel>
+
+@code {
+    private static readonly string[] Views = ["Sunrise over the ridge", "The falls in spring", "First snow"];
+}

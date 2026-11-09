@@ -1,0 +1,23 @@
+<TbCarousel AriaLabel="Featured trails" @bind-Index="_index" Style="max-inline-size: 32rem">
+    @foreach (var trail in Trails)
+    {
+        <TbCarouselSlide>
+            <TbSurface Outlined Style="padding: var(--tb-space-6); text-align: center">
+                <TbText TextStyle="TextStyle.Title">@trail.Name</TbText>
+                <TbText>@trail.Note</TbText>
+            </TbSurface>
+        </TbCarouselSlide>
+    }
+</TbCarousel>
+<TbText>Showing @Trails[_index].Name.</TbText>
+
+@code {
+    private static readonly (string Name, string Note)[] Trails =
+    [
+        ("Pine Hollow loop", "4.2 miles through old pines."),
+        ("Cedar Flats", "An easy walk along the creek."),
+        ("Eagle Ridge traverse", "A long day with views of the valley."),
+    ];
+
+    private int _index;
+}

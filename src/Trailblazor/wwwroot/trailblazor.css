@@ -2482,6 +2482,66 @@
         gap: var(--tb-space-2);
     }
 
+    /* The controls sit above the slides, and the slide buttons below them, as small dots. */
+    .tb-carousel {
+        display: grid;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-carousel__controls {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-carousel__slide[hidden] {
+        display: none;
+    }
+
+    .tb-carousel__picker {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--tb-space-2);
+    }
+
+    /* Each dot's box is big enough to press, with the visible dot drawn inside it. */
+    .tb-carousel__pick {
+        display: inline-grid;
+        place-items: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .tb-carousel__pick::before {
+        content: "";
+        width: 0.625rem;
+        height: 0.625rem;
+        border: 1px solid var(--tb-border-strong);
+        border-radius: var(--tb-radius-full);
+    }
+
+    .tb-carousel__pick[aria-current="true"]::before {
+        border-color: var(--tb-color-primary);
+        background: var(--tb-color-primary);
+    }
+
+    .tb-carousel__pick:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+        border-radius: var(--tb-radius-full);
+    }
+
+    @media (forced-colors: active) {
+        .tb-carousel__pick[aria-current="true"]::before {
+            background: Highlight;
+        }
+    }
+
     .tb-alert {
         display: flex;
         align-items: flex-start;

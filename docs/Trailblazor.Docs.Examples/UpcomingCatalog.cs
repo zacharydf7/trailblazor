@@ -29,7 +29,6 @@ public static class UpcomingCatalog
         new("Dock manager", ExampleCategory.Layout, 75),
         new("Masonry layout", ExampleCategory.Layout, 193),
         new("Viewport", ExampleCategory.Layout, 82),
-        new("Carousel", ExampleCategory.Content, 73),
         new("Charts", ExampleCategory.Content, 199),
         new("Chat", ExampleCategory.Content, 181),
         new("Diagram", ExampleCategory.Content, 207),

@@ -29,6 +29,7 @@ public static class AccessibilityStatusCatalog
         new("kbd", None, Tested, None),
         new("avatar", None, Tested, None),
         new("timeline", None, Tested, None),
+        new("carousel", Tested, Tested, Tested),
         new("image", None, NotYet, None),
         new("divider", None, NotYet, None),
         new("surface", None, NotYet, None),

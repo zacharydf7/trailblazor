@@ -1,0 +1,34 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+<div @attributes="AdditionalAttributes" role="group" aria-roledescription="slide" aria-label="@Name" hidden="@(!Shown)"
+     data-part="slide" class="@ClassNames.Join("tb-carousel__slide", Class)" style="@Style">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>The slide's content.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Names the slide for screen readers. Defaults to its place, such as "2 of 5".</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [CascadingParameter]
+    private TbCarousel? Carousel { get; set; }
+
+    private TbCarousel Owner => Carousel
+        ?? throw new InvalidOperationException($"{nameof(TbCarouselSlide)} must be inside a {nameof(TbCarousel)}.");
+
+    private bool Shown => Owner.IsShown(this);
+
+    private string Name => AriaLabel ?? Owner.SlideName(this);
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Owner.Add(this);
+
+    /// <inheritdoc />
+    public void Dispose() => Carousel?.Remove(this);
+}

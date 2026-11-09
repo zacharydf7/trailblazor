@@ -41,6 +41,10 @@ internal static class BuiltInIcons
 
     public static Icon ArrowDown { get; } = new("<path d=\"M13 4v12.2l5.6-5.6L20 12l-8 8-8-8 1.4-1.4 5.6 5.6V4z\" />");
 
+    public static Icon Pause { get; } = new("<path d=\"M6 5h4v14H6zm8 0h4v14h-4z\" />");
+
+    public static Icon Play { get; } = new("<path d=\"M8 5v14l11-7z\" />");
+
     // Points right; flip it in right-to-left text.
     public static Icon ChevronEnd { get; } = new("<path d=\"M8.6 16.6 13.2 12 8.6 7.4 10 6l6 6-6 6z\" />");
 
