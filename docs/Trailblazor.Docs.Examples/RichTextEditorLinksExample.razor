@@ -1,0 +1,7 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Trail notes" @bind-Value="_notes" LinkSchemes="@(["https"])" />
+</TbStack>
+
+@code {
+    private string? _notes = "<p>Check the <a href=\"https://example.com/trails\">trail conditions</a> first.</p>";
+}

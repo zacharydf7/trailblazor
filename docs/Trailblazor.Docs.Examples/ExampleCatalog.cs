@@ -2111,6 +2111,11 @@ public static class ExampleCatalog
                     + "`> `, `- ` or `1. ` at the start of a plain paragraph turns it into a heading, quote or list. "
                     + "`RichTextBlocks.None` allows only plain paragraphs.",
                     typeof(RichTextEditorBlocksExample)),
+                new("links", "Links", "The Link button and Ctrl+K open a dialog to add, edit, open or remove the link "
+                    + "on the selected text, or, with nothing selected, to insert linked text. A bare address such as "
+                    + "`example.com` gets `https://`, and an email address gets `mailto:`. `LinkSchemes` lists the URL "
+                    + "schemes a link may use; the dialog won't accept a link with any other scheme, and paste drops "
+                    + "such links.", typeof(RichTextEditorLinksExample)),
                 new("without-a-toolbar", "Without a toolbar", "`ShowToolbar=\"false\"` hides the toolbar for a small "
                     + "field. The shortcuts and paste still apply the formats it allows.",
                     typeof(RichTextEditorToolbarExample)),
@@ -2134,6 +2139,8 @@ public static class ExampleCatalog
                 new(["Ctrl+Shift+X"], "Turns strikethrough on or off."),
                 new(["Ctrl+,", "Ctrl+."], "Turns subscript or superscript on or off."),
                 new(["Ctrl+E"], "Turns inline code on or off."),
+                new(["Ctrl+K"], "Opens the link dialog for the selected text, or for the link the caret is in or "
+                    + "next to."),
                 new(["Ctrl+Alt+1", "Ctrl+Alt+2", "Ctrl+Alt+3"], "Turns the selected paragraphs into a heading of "
                     + "that level, or back into plain paragraphs. Cmd+Option on macOS."),
                 new(["Ctrl+Alt+0"], "Turns the selected paragraphs back into plain paragraphs."),
@@ -2165,7 +2172,7 @@ public static class ExampleCatalog
                 "The `Label` names the editing area with `aria-labelledby`, since it isn't a form control a `<label>` "
                     + "can point at. Clicking the label still focuses it.",
                 "The toolbar is named \"Formatting\" and each button by what it does, such as \"Bold\" or "
-                    + "\"Bulleted list\"; `Labels` changes these words.",
+                    + "\"Bulleted list\"; `Labels` changes these words and the link dialog's.",
             ],
             Announcements =
             [
@@ -2180,9 +2187,11 @@ public static class ExampleCatalog
                 "The toolbar is a [toolbar](components/toolbar), following its WAI-ARIA pattern: one Tab stop, with "
                     + "the arrow keys moving between its buttons. Each format and block button uses `aria-pressed` to "
                     + "report whether it applies to all of the selection, part of it (mixed) or none, and names its "
-                    + "shortcuts with `aria-keyshortcuts`.",
-                "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>` and `<code>` elements, and "
-                    + "blocks are real headings, block quotes and lists, which screen readers can report and move "
+                    + "shortcuts with `aria-keyshortcuts`. The Link button has `aria-haspopup=\"dialog\"`.",
+                "The link dialog is a modal [dialog](components/dialog) with labeled fields, and focus returns to the "
+                    + "editor, with the selection it had, when it closes.",
+                "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>` and `<a>` elements, "
+                    + "and blocks are real headings, block quotes and lists, which screen readers can report and move "
                     + "between.",
                 "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it. In a list "
                     + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
@@ -2190,6 +2199,7 @@ public static class ExampleCatalog
             AppDuties =
             [
                 "Give the editor a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
+                "Put a `TbRoot` in the layout, which hosts the link dialog.",
                 "Parse the value with `RichTextDocument` on the server before storing it; the editor does, but a "
                     + "value posted some other way may not have gone through it.",
             ],
@@ -2202,6 +2212,8 @@ public static class ExampleCatalog
             [
                 new("Typing, input methods, spellcheck and autocorrect go through the browser's own editing, so they "
                     + "work as in any text box, and the editor reads back the result."),
+                new("A click on a link places the caret, as on any text. Ctrl+click (Cmd+click on macOS) opens the link "
+                    + "in a new tab, and so does the link dialog's Open link."),
                 new("`@ref` the editor and call `FocusAsync()` to move focus to it."),
             ],
             Target = new("textbox", "Trail report"),

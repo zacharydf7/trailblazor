@@ -2603,6 +2603,13 @@
         font-size: 0.9em;
     }
 
+    .tb-rich-text-editor__content a {
+        color: var(--tb-color-primary-text);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+    }
+
     .tb-rich-text-editor__content[data-empty]::before {
         content: attr(data-placeholder);
         position: absolute;

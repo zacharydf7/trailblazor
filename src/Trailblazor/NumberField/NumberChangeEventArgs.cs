@@ -34,6 +34,17 @@ public sealed class RichTextChangeEventArgs : EventArgs
     public bool Continues { get; set; }
 }
 
+/// <summary>A rich text editor's request for its link dialog, sent by its script on Ctrl+K or the link button. Raised
+/// by <see cref="TbRichTextEditor"/>'s editing area; consumers don't normally handle it.</summary>
+public sealed class RichTextLinkEventArgs : EventArgs
+{
+    /// <summary>The link the selected text has, or null when it has none or more than one.</summary>
+    public string? Link { get; set; }
+
+    /// <summary>Whether nothing is selected, so the dialog inserts new linked text.</summary>
+    public bool Insert { get; set; }
+}
+
 /// <summary>Registers Trailblazor's custom browser events with Razor, which only reads them from a public class with
 /// this name. The browser side is in Trailblazor.lib.module.js.</summary>
 [EventHandler("ontbnumberchange", typeof(NumberChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
@@ -47,6 +58,8 @@ public sealed class RichTextChangeEventArgs : EventArgs
 [EventHandler("ontbeditstart", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbeditkey", typeof(GridEditKeyEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbrichtextchange", typeof(RichTextChangeEventArgs), enableStopPropagation: true,
+    enablePreventDefault: true)]
+[EventHandler("ontbrichtextlink", typeof(RichTextLinkEventArgs), enableStopPropagation: true,
     enablePreventDefault: true)]
 public static class EventHandlers
 {

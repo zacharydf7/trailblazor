@@ -1,7 +1,7 @@
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
-// A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order }; '\n' is a line
-// break, and offsets count UTF-16 code units.
+// A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order, link or null };
+// '\n' is a line break, and offsets count UTF-16 code units.
 
 const MARKS = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code'];
 const MARK_TAGS = {
@@ -42,8 +42,9 @@ const TYPING_PAUSE = 1000;
 const MAX_PART = 5000;
 const isMac = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform ?? navigator.platform);
 
-// options: { formats, blocks, readOnly, updateOnInput, updateDelay }, with formats as mark names and blocks as kinds
-// split by spaces, and updateDelay in milliseconds.
+// options: { formats, blocks, links, readOnly, updateOnInput, updateDelay }, with formats as mark names, blocks as
+// kinds and links as URL schemes split by spaces, links null where links aren't allowed, and updateDelay in
+// milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = document.getElementById(root.getAttribute('aria-labelledby') ?? '');
@@ -51,6 +52,7 @@ export function attachRichTextEditor(root, value, options) {
     return {
         setValue: html => editor.setValue(html),
         setOptions: changed => editor.setOptions(changed),
+        setLink: (url, text) => editor.setLink(url, text),
         dispose: () => editor.dispose(),
     };
 }
@@ -67,6 +69,8 @@ class Editor {
         this.composing = false;
         this.plainPaste = false;
         this.tabLeaves = false;
+        this.linkTarget = null;
+        this.restoreSelection = false;
         this.dragged = null;
         this.pendingBlocks = new Map();
         this.pendingAll = false;
@@ -99,6 +103,20 @@ class Editor {
             this.tabLeaves = false;
             if (!root.contains(event.relatedTarget) && !toolbar?.contains(event.relatedTarget)) this.send();
         });
+        // Focus coming back from the link dialog brings back the selection it was opened on.
+        on(root, 'focus', () => {
+            if (!this.restoreSelection) return;
+            this.restoreSelection = false;
+            this.writeSelection();
+        });
+        // A click on a link places the caret and mustn't follow it, which Blazor's router would do for a link in the
+        // app; Ctrl+click (Cmd+click on a Mac) opens it in a new tab, as word processors do.
+        on(root, 'click', event => {
+            const anchor = event.target.closest?.('a[href]');
+            if (!anchor || !root.contains(anchor)) return;
+            event.preventDefault();
+            if (isMac ? event.metaKey : event.ctrlKey) window.open(anchor.href, '_blank', 'noopener');
+        });
         on(document, 'selectionchange', () => this.onSelectionChange());
         // The label names the editor without a for attribute, so a click on it doesn't focus the editor by itself.
         on(label, 'click', () => {
@@ -111,10 +129,12 @@ class Editor {
         on(toolbar, 'click', event => {
             const button = event.target.closest('[data-format], [data-block], [data-command]');
             if (!button || button.disabled) return;
+            // The editor takes focus first, so the link dialog hands it back to the editor when it closes.
+            root.focus();
             if (button.dataset.format) this.toggleMark(button.dataset.format);
             else if (button.dataset.block) this.setBlock(button.dataset.block);
+            else if (button.dataset.command === 'link') this.requestLink();
             else this.indent(button.dataset.command === 'indent' ? 1 : -1);
-            root.focus();
             this.writeSelection();
         });
 
@@ -123,8 +143,11 @@ class Editor {
     }
 
     setOptions(options) {
-        this.formats = new Set(options.formats.split(' ').filter(mark => MARKS.includes(mark)));
-        this.blocks = new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind)));
+        this.schema = {
+            formats: new Set(options.formats.split(' ').filter(mark => MARKS.includes(mark))),
+            blocks: new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind))),
+            links: options.links === null ? null : options.links.toLowerCase().split(' ').filter(Boolean),
+        };
         this.readOnly = !!options.readOnly;
         this.updateOnInput = !!options.updateOnInput;
         this.updateDelay = options.updateDelay ?? 0;
@@ -140,7 +163,7 @@ class Editor {
     }
 
     load(html) {
-        this.doc = parseHtml(html, this.formats, this.blocks);
+        this.doc = parseHtml(html, this.schema);
         this.undoStack = [];
         this.redoStack = [];
         this.lastEdit = null;
@@ -222,7 +245,7 @@ class Editor {
     }
 
     readDocument() {
-        const doc = normalizeLevels(readBlocks(this.root, false, this.formats, this.blocks));
+        const doc = normalizeLevels(readBlocks(this.root, false, this.schema));
         return doc.length ? doc : [paragraph([])];
     }
 
@@ -230,7 +253,7 @@ class Editor {
     readOwn(element) {
         const own = element.cloneNode(true);
         for (const nested of own.querySelectorAll(':scope > ul, :scope > ol')) nested.remove();
-        return readBlocks(own, false, this.formats, this.blocks);
+        return readBlocks(own, false, this.schema);
     }
 
     // Applies the browser's change to one paragraph's text; the engine, not the DOM, decides the new text's marks.
@@ -240,10 +263,13 @@ class Editor {
         if (before === after) return;
         const { start, endBefore, endAfter } = diff(before, after, caret);
         const inserted = after.slice(start, endAfter);
-        const marks = this.storedMarks
-            ?? (endBefore > start ? slice(runs, start, start + 1)[0].marks : marksAt(runs, start));
+        const replaced = endBefore > start ? slice(runs, start, start + 1)[0] : null;
+        const marks = this.storedMarks ?? replaced?.marks ?? marksAt(runs, start);
+        const link = replaced ? replaced.link : linkInside(runs, start);
         this.checkpoint('type', inserted);
-        this.doc[block] = { ...this.doc[block], runs: replace(runs, start, endBefore, [{ text: inserted, marks }]) };
+        this.doc[block] = {
+            ...this.doc[block], runs: replace(runs, start, endBefore, [{ text: inserted, marks, link }]),
+        };
         if (inserted) this.storedMarks = null;
     }
 
@@ -288,7 +314,7 @@ class Editor {
             }
             return;
         }
-        // Links and raw HTML have no place in this model.
+        // Other inputs, such as the browser's own links or raw HTML, have no place in this model.
         event.preventDefault();
     }
 
@@ -351,6 +377,9 @@ class Editor {
         } else if (key === 'y' && !event.shiftKey) {
             event.preventDefault();
             this.redo();
+        } else if (key === 'k' && !event.shiftKey && !this.readOnly && this.schema.links !== null) {
+            event.preventDefault();
+            this.requestLink();
         } else if (key === 'v' && event.shiftKey) {
             this.plainPaste = true;
         }
@@ -436,13 +465,14 @@ class Editor {
     insertTransfer(data, plain) {
         const html = plain ? '' : data?.getData('text/html') ?? '';
         const text = data?.getData('text/plain') ?? '';
-        const pasted = html ? readBlocks(parseDocument(html), true, this.formats, this.blocks) : null;
+        const pasted = html ? readBlocks(parseDocument(html), true, this.schema) : null;
         if (pasted?.length === 0 || (!pasted && !text)) return;
         this.edit(() => {
             const { from, to } = this.range();
             const marks = this.storedMarks ?? this.marksForReplacing(from, to);
+            const link = this.linkForReplacing(from, to);
             this.insertParagraphs(pasted ?? text.split(/\r\n?|\n/)
-                .map(line => paragraph(normalize([{ text: line.replace(/[\t\f\xa0]/g, ' '), marks }]))));
+                .map(line => paragraph(normalize([{ text: line.replace(/[\t\f\xa0]/g, ' '), marks, link }]))));
         });
     }
 
@@ -476,9 +506,12 @@ class Editor {
     insertText(text) {
         const { from, to } = this.range();
         const marks = this.storedMarks ?? this.marksForReplacing(from, to);
+        const link = this.linkForReplacing(from, to);
         this.deleteRange(from, to);
         const target = this.doc[from.block];
-        this.doc[from.block] = { ...target, runs: replace(target.runs, from.offset, from.offset, [{ text, marks }]) };
+        this.doc[from.block] = {
+            ...target, runs: replace(target.runs, from.offset, from.offset, [{ text, marks, link }]),
+        };
         const caret = { block: from.block, offset: from.offset + text.length };
         this.selection = { anchor: caret, head: caret };
         this.storedMarks = null;
@@ -541,7 +574,7 @@ class Editor {
     }
 
     toggleMark(mark) {
-        if (this.readOnly || !this.formats.has(mark)) return;
+        if (this.readOnly || !this.schema.formats.has(mark)) return;
         this.readBack();
         const { from, to } = this.range();
         if (compare(from, to) === 0) {
@@ -555,8 +588,8 @@ class Editor {
             for (let block = from.block; block <= to.block; block++) {
                 const start = block === from.block ? from.offset : 0;
                 const end = block === to.block ? to.offset : Infinity;
-                this.doc[block] = { ...this.doc[block], runs: mapMarks(this.doc[block].runs, start, end,
-                    marks => add ? withMark(marks, mark) : marks.filter(m => m !== mark)) };
+                this.doc[block] = { ...this.doc[block], runs: mapRuns(this.doc[block].runs, start, end,
+                    run => ({ ...run, marks: add ? withMark(run.marks, mark) : run.marks.filter(m => m !== mark) })) };
             }
         });
     }
@@ -582,7 +615,7 @@ class Editor {
 
     // Turns the selected paragraphs into this kind of block, or back into plain paragraphs when all of them are.
     setBlock(kind) {
-        if (this.readOnly || (kind !== 'paragraph' && !this.blocks.has(kind))) return;
+        if (this.readOnly || (kind !== 'paragraph' && !this.schema.blocks.has(kind))) return;
         this.readBack();
         const { from, to } = this.range();
         const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
@@ -601,7 +634,7 @@ class Editor {
     markdownStart({ block, offset }) {
         const target = this.doc[block];
         const kind = target.kind === 'paragraph' ? MARKDOWN_STARTS.get(textOf(target.runs).slice(0, offset)) : null;
-        return kind && this.blocks.has(kind) ? kind : null;
+        return kind && this.schema.blocks.has(kind) ? kind : null;
     }
 
     // The space goes in as its own step, so undo brings back the typed text.
@@ -642,6 +675,89 @@ class Editor {
         return compare(from, to) < 0 && from.offset < length(runs)
             ? slice(runs, from.offset, from.offset + 1)[0].marks
             : marksAt(runs, from.offset);
+    }
+
+    // Typing over a selection keeps its first character's link too, and at a caret, only a link the caret is inside.
+    linkForReplacing(from, to) {
+        const runs = this.doc[from.block].runs;
+        return compare(from, to) < 0 && from.offset < length(runs)
+            ? linkAt(runs, from.offset)
+            : linkInside(runs, from.offset);
+    }
+
+    // Links: the editor asks .NET for its link dialog, and puts in what the dialog returns.
+
+    requestLink() {
+        if (this.readOnly || this.schema.links === null) return;
+        this.readBack();
+        this.selection = this.readSelection() ?? this.selection;
+        const target = this.linkRange();
+        this.linkTarget = target;
+        this.restoreSelection = true;
+        this.root.dispatchEvent(new CustomEvent('tb-rich-text-link', {
+            bubbles: true, detail: { link: this.linkIn(target), insert: compare(target.from, target.to) === 0 },
+        }));
+    }
+
+    // The selection, or at a caret in or next to a link, the whole link.
+    linkRange() {
+        const { from, to } = this.range();
+        const runs = this.doc[from.block].runs;
+        const link = compare(from, to) !== 0 ? null
+            : (from.offset > 0 ? linkAt(runs, from.offset - 1) : null) ?? linkAt(runs, from.offset);
+        if (link === null) return { from, to };
+        let start = from.offset;
+        while (start > 0 && linkAt(runs, start - 1) === link) start--;
+        let end = from.offset;
+        while (end < length(runs) && linkAt(runs, end) === link) end++;
+        return { from: { block: from.block, offset: start }, to: { block: from.block, offset: end } };
+    }
+
+    // The link every character of the range has, or null when they differ or have none.
+    linkIn({ from, to }) {
+        let link;
+        for (let block = from.block; block <= to.block; block++) {
+            const start = block === from.block ? from.offset : 0;
+            const end = block === to.block ? to.offset : Infinity;
+            for (const run of slice(this.doc[block].runs, start, end)) {
+                if (link === undefined) link = run.link;
+                else if (run.link !== link) return null;
+            }
+        }
+        return link ?? null;
+    }
+
+    // Puts the dialog's URL on the range it was opened on, or takes the link off with null; at a caret, it inserts the
+    // text, or else the URL, as a link.
+    setLink(url, text) {
+        const target = this.linkTarget;
+        this.linkTarget = null;
+        this.restoreSelection = false;
+        if (!target || this.readOnly || target.to.block >= this.doc.length) return;
+        const { from, to } = target;
+        const collapsed = compare(from, to) === 0;
+        if (collapsed && url === null) return;
+        this.root.focus();
+        this.edit(() => {
+            if (collapsed) {
+                const inserted = (text || url).replace(/[\t\n\r\f\xa0]/g, ' ');
+                const runs = this.doc[from.block].runs;
+                const marks = this.storedMarks ?? marksAt(runs, from.offset);
+                this.doc[from.block] = { ...this.doc[from.block],
+                    runs: replace(runs, from.offset, from.offset, [{ text: inserted, marks, link: url }]) };
+                const caret = { block: from.block, offset: from.offset + inserted.length };
+                this.selection = { anchor: caret, head: caret };
+                this.storedMarks = null;
+                return;
+            }
+            for (let block = from.block; block <= to.block; block++) {
+                const start = block === from.block ? from.offset : 0;
+                const end = block === to.block ? to.offset : Infinity;
+                this.doc[block] = { ...this.doc[block],
+                    runs: mapRuns(this.doc[block].runs, start, end, run => ({ ...run, link: url })) };
+            }
+            this.selection = { anchor: to, head: to };
+        });
     }
 
     // History: each step keeps only the paragraphs it replaced, with typing grouped into word-sized steps.
@@ -711,7 +827,7 @@ class Editor {
             const elements = this.blockElements();
             if (elements.length === this.doc.length) this.doc.forEach((target, i) => updateBlock(elements[i], target));
             // Changed lists or quotes, or anything else the browser left in the editor, mean rewriting it whole.
-            // Safe: documentHtml escapes every character of text, and its only tags are the blocks' and marks' own.
+            // Safe: documentHtml escapes all text and each href, and its only tags are the blocks', marks' and links'.
             if (this.root.innerHTML !== html) this.root.innerHTML = html;
         }
         this.root.toggleAttribute('data-empty',
@@ -821,8 +937,8 @@ const isListItem = kind => kind === 'bullet' || kind === 'number';
 const outdented = target => isListItem(target.kind) && target.level > 0
     ? { ...target, level: target.level - 1 } : { ...target, kind: 'paragraph', level: 0 };
 const sameMarks = (a, b) => a.length === b.length && a.every((mark, i) => mark === b[i]);
-const sameRuns = (a, b) => a.length === b.length
-    && a.every((run, i) => run.text === b[i].text && sameMarks(run.marks, b[i].marks));
+const sameStyle = (a, b) => sameMarks(a.marks, b.marks) && a.link === b.link;
+const sameRuns = (a, b) => a.length === b.length && a.every((run, i) => run.text === b[i].text && sameStyle(run, b[i]));
 const length = runs => runs.reduce((sum, run) => sum + run.text.length, 0);
 const textOf = runs => runs.map(run => run.text).join('');
 const compare = (a, b) => a.block - b.block || a.offset - b.offset;
@@ -843,8 +959,8 @@ function normalize(runs) {
     for (const run of runs) {
         if (!run.text) continue;
         const last = result.at(-1);
-        if (last && sameMarks(last.marks, run.marks)) {
-            result[result.length - 1] = { text: last.text + run.text, marks: last.marks };
+        if (last && sameStyle(last, run)) {
+            result[result.length - 1] = { text: last.text + run.text, marks: last.marks, link: last.link };
         } else {
             result.push(run);
         }
@@ -860,7 +976,8 @@ function slice(runs, from, to = Infinity) {
         const sliceStart = Math.max(from, start);
         const sliceEnd = Math.min(to, end);
         if (sliceStart < sliceEnd) {
-            result.push({ text: run.text.slice(sliceStart - start, sliceEnd - start), marks: run.marks });
+            const text = run.text.slice(sliceStart - start, sliceEnd - start);
+            result.push({ text, marks: run.marks, link: run.link });
         }
         start = end;
     }
@@ -869,16 +986,21 @@ function slice(runs, from, to = Infinity) {
 
 const replace = (runs, from, to, inserted) => normalize([...slice(runs, 0, from), ...inserted, ...slice(runs, to)]);
 
-const mapMarks = (runs, from, to, change) => normalize([
-    ...slice(runs, 0, from),
-    ...slice(runs, from, to).map(run => ({ text: run.text, marks: change(run.marks) })),
-    ...slice(runs, to),
-]);
+const mapRuns = (runs, from, to, change) => normalize([...slice(runs, 0, from), ...slice(runs, from, to).map(change),
+    ...slice(runs, to)]);
 
 // Text typed at an offset takes the marks of the character before it, or of the first at a paragraph's start.
 function marksAt(runs, offset) {
     const at = offset > 0 ? offset - 1 : 0;
     return slice(runs, at, at + 1)[0]?.marks ?? [];
+}
+
+const linkAt = (runs, offset) => slice(runs, offset, offset + 1)[0]?.link ?? null;
+
+// Text typed at either end of a link stays outside it, as in word processors.
+function linkInside(runs, offset) {
+    const before = offset > 0 ? linkAt(runs, offset - 1) : null;
+    return before !== null && before === linkAt(runs, offset) ? before : null;
 }
 
 function withMark(marks, mark) {
@@ -966,12 +1088,20 @@ function paragraphHtml(runs, forValue) {
     const text = textOf(runs);
     let html = '';
     let offset = 0;
+    let link = null;
     for (const run of runs) {
+        // One link stays one <a> across its differently formatted runs, as RichTextDocument writes it.
+        if (run.link !== link) {
+            if (link !== null) html += '</a>';
+            if (run.link !== null) html += `<a href="${run.link.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">`;
+            link = run.link;
+        }
         let inner = '';
         for (let i = 0; i < run.text.length; i++) inner += characterHtml(text, offset + i, forValue);
         offset += run.text.length;
         html += run.marks.reduceRight((content, mark) => `<${MARK_TAGS[mark]}>${content}</${MARK_TAGS[mark]}>`, inner);
     }
+    if (link !== null) html += '</a>';
     // A paragraph's last line break shows nothing, so an empty paragraph or a trailing break needs one more.
     return !text || text.endsWith('\n') ? html + '<br>' : html;
 }
@@ -1001,7 +1131,7 @@ function updateBlock(element, target) {
     if (ownHtml === html && !element.attributes.length) return;
     for (const node of own) node.remove();
     const template = document.createElement('template');
-    // Safe: paragraphHtml escapes every character of text, and its only tags are the marks' own.
+    // Safe: paragraphHtml escapes every character of text and each href, and its only tags are the marks' and links'.
     template.innerHTML = html;
     element.insertBefore(template.content, nested[0] ?? null);
     for (const attribute of [...element.attributes]) element.removeAttribute(attribute.name);
@@ -1015,14 +1145,14 @@ const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 // DOMParser's documents run no script and load nothing.
 const parseDocument = html => new DOMParser().parseFromString(html, 'text/html').body;
 
-function parseHtml(html, formats, blocks) {
-    const doc = normalizeLevels(readBlocks(parseDocument(html ?? ''), true, formats, blocks));
+function parseHtml(html, schema) {
+    const doc = normalizeLevels(readBlocks(parseDocument(html ?? ''), true, schema));
     return doc.length ? doc : [paragraph([])];
 }
 
 // A block context is what an element puts its text in: its own allowed heading, quote, list item or Word list
 // paragraph, else its parent's, with the lists around it counted.
-function readBlocks(container, collapse, formats, blocks) {
+function readBlocks(container, collapse, { formats, blocks, links }) {
     const paragraphs = [];
     let runs = null;
     let block = null;
@@ -1060,18 +1190,18 @@ function readBlocks(container, collapse, formats, blocks) {
         if (!own || !(own[2] ? blocks.has('bullet') || blocks.has('number') : blocks.has(own[0]))) return context;
         return { ...context, kind: own[0], level: own[1], word: own[2] };
     };
-    const walk = (node, marks, pre, inLink, context) => {
+    const walk = (node, marks, pre, link, context) => {
         for (const child of node.childNodes) {
             if (child.nodeType === Node.TEXT_NODE) {
                 const text = collapse && !pre ? child.data.replace(/[\t\n\r\f ]+/g, ' ') : child.data;
                 start(context);
-                runs.push({ text, marks: marks.filter(mark => formats.has(mark)), pre });
+                runs.push({ text, marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
             } else if (child.nodeType === Node.ELEMENT_NODE && isWordListMarker(child)) {
                 numbered = /^\(?([0-9]+|[a-z]+|[A-Z]+)[.)]$/.test(child.textContent.trim());
             } else if (child.nodeType === Node.ELEMENT_NODE && !SKIPPED.has(child.localName)) {
                 if (child.localName === 'br') {
                     start(context);
-                    runs.push({ text: '\n', marks: marks.filter(mark => formats.has(mark)), pre });
+                    runs.push({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
                     continue;
                 }
                 // A rule between two lines leaves them separate paragraphs.
@@ -1079,17 +1209,17 @@ function readBlocks(container, collapse, formats, blocks) {
                     finish();
                     continue;
                 }
-                const childInLink = child.localName === 'a' ? linkOf(child) !== null : inLink;
-                const childMarks = marksOf(child, marks, childInLink);
+                const childLink = child.localName === 'a' ? linkStateOf(child, links) : link;
+                const childMarks = marksOf(child, marks, childLink.target !== null);
                 const childPre = pre || PREFORMATTED.has(child.localName);
                 const childContext = contextOf(child, context);
                 if (!BLOCKS.has(child.localName)) {
-                    walk(child, childMarks, childPre, childInLink, childContext);
+                    walk(child, childMarks, childPre, childLink, childContext);
                     continue;
                 }
                 finish();
                 const first = paragraphs.length;
-                walk(child, childMarks, childPre, childInLink, childContext);
+                walk(child, childMarks, childPre, childLink, childContext);
                 finish();
                 if (paragraphs.length === first) {
                     const empty = resolve(childContext);
@@ -1099,15 +1229,34 @@ function readBlocks(container, collapse, formats, blocks) {
             }
         }
     };
-    walk(container, [], false, false, { kind: 'paragraph', level: 0, word: false, lists: 0, ordered: false });
+    walk(container, [], false, { target: null, kept: null },
+        { kind: 'paragraph', level: 0, word: false, lists: 0, ordered: false });
     finish();
     return paragraphs;
 }
 
-// As a browser reads a URL: without the tabs and line breaks inside it or the spaces and controls around it.
-function linkOf(element) {
+// An <a> starts a link whose target is its href as a browser reads it: tabs and line breaks inside are dropped, as are
+// spaces and controls around it. The text inside keeps the link only if the schema allows it, as in RichTextSchema.
+// Text inside an <a> without an href has no link.
+function linkStateOf(element, links) {
     const href = (element.getAttribute('href') ?? '').replace(/[\t\n\r]/g, '');
-    return href.replace(/^[\x00-\x20]+|[\x00-\x20]+$/g, '') || null;
+    const target = href.replace(/^[\x00-\x20]+|[\x00-\x20]+$/g, '') || null;
+    return { target, kept: target !== null && links !== null && allowsLink(target, links) ? target : null };
+}
+
+// A relative URL, which has no scheme, is always allowed; a listed scheme is, unless following the link runs script.
+function allowsLink(url, schemes) {
+    const scheme = schemeOf(url);
+    return scheme === null || (schemes.includes(scheme) && scheme !== 'javascript' && scheme !== 'vbscript');
+}
+
+// Null for a relative URL (no ':' before any '/', '?' or '#'); '' when what precedes the ':' isn't a valid scheme.
+function schemeOf(url) {
+    const colon = url.indexOf(':');
+    const path = url.search(/[/?#]/);
+    if (colon < 0 || (path >= 0 && path < colon)) return null;
+    const scheme = url.slice(0, colon);
+    return /^[a-z][a-z0-9+.-]*$/i.test(scheme) ? scheme.toLowerCase() : '';
 }
 
 function finishParagraph(runs, collapse) {
@@ -1122,7 +1271,8 @@ function finishParagraph(runs, collapse) {
     const text = textOf(runs);
     const trimmed = text.endsWith('\n') ? slice(runs, 0, text.length - 1) : runs;
     // The model holds plain spaces only, so the value it writes parses back to the same text.
-    return normalize(trimmed.map(run => ({ text: run.text.replace(/[\t\f\r\xa0]/g, ' '), marks: run.marks })));
+    return normalize(trimmed.map(run => ({ text: run.text.replace(/[\t\f\r\xa0]/g, ' '), marks: run.marks,
+        link: run.link })));
 }
 
 function keepCharacters(runs, keep) {
@@ -1134,7 +1284,7 @@ function keepCharacters(runs, keep) {
             if (keep(text, offset + i, run.pre)) kept += run.text[i];
         }
         offset += run.text.length;
-        return { text: kept, marks: run.marks, pre: run.pre };
+        return { text: kept, marks: run.marks, link: run.link, pre: run.pre };
     });
 }
 

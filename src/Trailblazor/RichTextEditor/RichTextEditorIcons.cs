@@ -25,6 +25,10 @@ internal static class RichTextEditorIcons
     public static Icon Code { get; } =
         new($"<path {Lines} stroke-width=\"2\" d=\"M8 7l-5 5 5 5M16 7l5 5-5 5M14 5l-4 14\" />");
 
+    // Two rounded links of a chain, joined on the diagonal.
+    public static Icon Link { get; } = new($"<path {Lines} stroke-width=\"2\" d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0"
+        + "-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\" />");
+
     public static Icon Heading1 { get; } = Heading("M16.5 13.5l2-1.5v7");
 
     public static Icon Heading2 { get; } = Heading("M16 13.6a1.8 1.8 0 1 1 3.3 1.1c-.7.9-3.3 3.3-3.3 3.3h3.6");

@@ -45,24 +45,11 @@ internal sealed class ConfirmDialog : TbDialogContent<bool>
         {
             if (CancelText is not null)
             {
-                AddButton(actions, 0, CancelText, Variant.Outlined, Tone.Neutral, CancelDialogAsync);
+                DialogButtons.Add(actions, 0, this, CancelText, Variant.Outlined, Tone.Neutral, CancelDialogAsync);
             }
 
-            AddButton(actions, 10, ConfirmText, Variant.Filled, Tone, () => CloseDialogAsync(true));
+            DialogButtons.Add(actions, 10, this, ConfirmText, Variant.Filled, Tone, () => CloseDialogAsync(true));
         }));
-        builder.CloseComponent();
-    }
-
-    private void AddButton(RenderTreeBuilder builder, int sequence, string text, Variant variant, Tone tone,
-        Func<Task> onClick)
-    {
-        builder.OpenComponent<TbButton>(sequence);
-        builder.AddComponentParameter(sequence + 1, nameof(TbButton.Variant), variant);
-        builder.AddComponentParameter(sequence + 2, nameof(TbButton.Tone), tone);
-        builder.AddComponentParameter(sequence + 3, nameof(TbButton.OnClick),
-            EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, onClick));
-        builder.AddComponentParameter(sequence + 4, nameof(TbButton.ChildContent),
-            (RenderFragment)(content => content.AddContent(0, text)));
         builder.CloseComponent();
     }
 }

@@ -389,6 +389,38 @@ public static class TbStrings
     /// <summary>"Indent": names a rich text editor's indent button.</summary>
     public const string RichTextEditorIndent = "RichTextEditor.Indent";
 
+    /// <summary>"Link": names a rich text editor's link button.</summary>
+    public const string RichTextEditorLink = "RichTextEditor.Link";
+
+    /// <summary>"Add link": titles a rich text editor's link dialog for text without a link.</summary>
+    public const string RichTextEditorAddLink = "RichTextEditor.AddLink";
+
+    /// <summary>"Edit link": titles a rich text editor's link dialog for a link.</summary>
+    public const string RichTextEditorEditLink = "RichTextEditor.EditLink";
+
+    /// <summary>"Text": labels the link dialog's field for the text to insert.</summary>
+    public const string RichTextEditorLinkText = "RichTextEditor.LinkText";
+
+    /// <summary>"Link": labels the link dialog's field for the URL.</summary>
+    public const string RichTextEditorLinkAddress = "RichTextEditor.LinkAddress";
+
+    /// <summary>"This kind of link isn't allowed here. Allowed: {0}": shown for a URL whose scheme isn't allowed; {0}
+    /// lists the allowed schemes, such as "https:, mailto:".</summary>
+    public const string RichTextEditorLinkNotAllowed = "RichTextEditor.LinkNotAllowed";
+
+    /// <summary>"Use a link within this site.": shown for a URL with a scheme where only relative links are allowed.
+    /// </summary>
+    public const string RichTextEditorRelativeLinkOnly = "RichTextEditor.RelativeLinkOnly";
+
+    /// <summary>"Apply": the link dialog's button that sets the link.</summary>
+    public const string RichTextEditorApplyLink = "RichTextEditor.ApplyLink";
+
+    /// <summary>"Remove link": the link dialog's button that takes the link off the text.</summary>
+    public const string RichTextEditorRemoveLink = "RichTextEditor.RemoveLink";
+
+    /// <summary>"Open link": the link dialog's link to the URL, which opens in a new tab.</summary>
+    public const string RichTextEditorOpenLink = "RichTextEditor.OpenLink";
+
     /// <summary>"Theme": names a theme picker.</summary>
     public const string ThemePicker = "Theme.Picker";
 
@@ -749,6 +781,16 @@ public static class TbStrings
         [RichTextEditorNumberedList] = "Numbered list",
         [RichTextEditorOutdent] = "Outdent",
         [RichTextEditorIndent] = "Indent",
+        [RichTextEditorLink] = "Link",
+        [RichTextEditorAddLink] = "Add link",
+        [RichTextEditorEditLink] = "Edit link",
+        [RichTextEditorLinkText] = "Text",
+        [RichTextEditorLinkAddress] = "Link",
+        [RichTextEditorLinkNotAllowed] = "This kind of link isn't allowed here. Allowed: {0}",
+        [RichTextEditorRelativeLinkOnly] = "Use a link within this site.",
+        [RichTextEditorApplyLink] = "Apply",
+        [RichTextEditorRemoveLink] = "Remove link",
+        [RichTextEditorOpenLink] = "Open link",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

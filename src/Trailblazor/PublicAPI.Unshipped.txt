@@ -3186,3 +3186,41 @@ Trailblazor.RichTextEditorLabels.Indent.get -> string?
 Trailblazor.RichTextEditorLabels.Indent.init -> void
 Trailblazor.TbRichTextEditor.Blocks.get -> Trailblazor.RichTextBlocks
 Trailblazor.TbRichTextEditor.Blocks.set -> void
+Trailblazor.RichTextEditorLabels.AddLink.get -> string?
+Trailblazor.RichTextEditorLabels.AddLink.init -> void
+Trailblazor.RichTextEditorLabels.ApplyLink.get -> string?
+Trailblazor.RichTextEditorLabels.ApplyLink.init -> void
+Trailblazor.RichTextEditorLabels.EditLink.get -> string?
+Trailblazor.RichTextEditorLabels.EditLink.init -> void
+Trailblazor.RichTextEditorLabels.Link.get -> string?
+Trailblazor.RichTextEditorLabels.Link.init -> void
+Trailblazor.RichTextEditorLabels.LinkAddress.get -> string?
+Trailblazor.RichTextEditorLabels.LinkAddress.init -> void
+Trailblazor.RichTextEditorLabels.LinkNotAllowed.get -> string?
+Trailblazor.RichTextEditorLabels.LinkNotAllowed.init -> void
+Trailblazor.RichTextEditorLabels.LinkText.get -> string?
+Trailblazor.RichTextEditorLabels.LinkText.init -> void
+Trailblazor.RichTextEditorLabels.OpenLink.get -> string?
+Trailblazor.RichTextEditorLabels.OpenLink.init -> void
+Trailblazor.RichTextEditorLabels.RemoveLink.get -> string?
+Trailblazor.RichTextEditorLabels.RemoveLink.init -> void
+Trailblazor.RichTextLinkEventArgs
+Trailblazor.RichTextLinkEventArgs.Insert.get -> bool
+Trailblazor.RichTextLinkEventArgs.Insert.set -> void
+Trailblazor.RichTextLinkEventArgs.Link.get -> string?
+Trailblazor.RichTextLinkEventArgs.Link.set -> void
+Trailblazor.RichTextLinkEventArgs.RichTextLinkEventArgs() -> void
+Trailblazor.TbRichTextEditor.LinkSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.TbRichTextEditor.LinkSchemes.set -> void
+const Trailblazor.TbStrings.RichTextEditorAddLink = "RichTextEditor.AddLink" -> string!
+const Trailblazor.TbStrings.RichTextEditorApplyLink = "RichTextEditor.ApplyLink" -> string!
+const Trailblazor.TbStrings.RichTextEditorEditLink = "RichTextEditor.EditLink" -> string!
+const Trailblazor.TbStrings.RichTextEditorLink = "RichTextEditor.Link" -> string!
+const Trailblazor.TbStrings.RichTextEditorLinkAddress = "RichTextEditor.LinkAddress" -> string!
+const Trailblazor.TbStrings.RichTextEditorLinkNotAllowed = "RichTextEditor.LinkNotAllowed" -> string!
+const Trailblazor.TbStrings.RichTextEditorLinkText = "RichTextEditor.LinkText" -> string!
+const Trailblazor.TbStrings.RichTextEditorOpenLink = "RichTextEditor.OpenLink" -> string!
+const Trailblazor.TbStrings.RichTextEditorRemoveLink = "RichTextEditor.RemoveLink" -> string!
+const Trailblazor.TbStrings.RichTextEditorRelativeLinkOnly = "RichTextEditor.RelativeLinkOnly" -> string!
+Trailblazor.RichTextEditorLabels.RelativeLinkOnly.get -> string?
+Trailblazor.RichTextEditorLabels.RelativeLinkOnly.init -> void

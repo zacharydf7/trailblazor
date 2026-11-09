@@ -51,7 +51,7 @@ public class TbRichTextEditorTests : BunitContext
     [Theory]
     [InlineData(false, RichTextFormats.Bold, RichTextBlocks.Quotes)]
     [InlineData(true, RichTextFormats.None, RichTextBlocks.None)]
-    [InlineData(true, RichTextFormats.Link, RichTextBlocks.Rules)]
+    [InlineData(true, RichTextFormats.None, RichTextBlocks.Rules)]
     public void Render_ShouldLeaveOutTheToolbar_WhenItIsHiddenOrHasNoFormats(bool showToolbar, RichTextFormats formats,
         RichTextBlocks blocks)
     {
@@ -89,13 +89,13 @@ public class TbRichTextEditorTests : BunitContext
         var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
             .Add(editor => editor.Blocks, RichTextBlocks.Headings | RichTextBlocks.Quotes));
 
-        Assert.Empty(cut.FindAll("button[data-command]"));
+        Assert.Empty(cut.FindAll("button[data-command=outdent], button[data-command=indent]"));
     }
 
     [Theory]
     [InlineData(RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules,
-        "<h2>Title</h2><ul><li><code>a</code></li></ul><p>b</p>")]
-    [InlineData(RichTextBlocks.None, "<p>Title</p><p><code>a</code></p><p>b</p>")]
+        "<h2>Title</h2><ul><li><code>a</code></li></ul><p><a href=\"https://example.com\">b</a></p>")]
+    [InlineData(RichTextBlocks.None, "<p>Title</p><p><code>a</code></p><p><a href=\"https://example.com\">b</a></p>")]
     public void Render_ShouldHandTheScriptOnlyTheAllowedBlocks_WhenGivenBlocks(RichTextBlocks blocks, string value)
     {
         Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
@@ -158,8 +158,120 @@ public class TbRichTextEditorTests : BunitContext
         var arguments = _module.Invocations["attachRichTextEditor"].Single().Arguments;
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
-        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","readOnly":false,"updateOnInput":true,"""
-            + "\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
+        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"readOnly":false,"""
+            + "\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
+    }
+
+    [Fact]
+    public void Render_ShouldShowALinkButtonThatOpensADialog_WhenLinksAreAllowed()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Formats, RichTextFormats.Link).Add(editor => editor.LinkSchemes, ["https"]));
+
+        var link = cut.Find("button[data-command=link]");
+        var options = JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]);
+
+        Assert.Equal("Link", link.GetAttribute("aria-label"));
+        Assert.Equal("dialog", link.GetAttribute("aria-haspopup"));
+        Assert.Equal("Control+K Meta+K", link.GetAttribute("aria-keyshortcuts"));
+        Assert.Null(link.GetAttribute("aria-pressed"));
+        Assert.Contains("\"links\":\"https\"", options);
+    }
+
+    [Theory]
+    [InlineData("example.com/trail", "https://example.com/trail")]
+    [InlineData("ada@example.com", "mailto:ada@example.com")]
+    [InlineData(" /trails#map ", "/trails#map")]
+    [InlineData("tel:+15550100", "tel:+15550100")]
+    public async Task RequestLink_ShouldPutTheCompletedLinkOnTheText_WhenTheDialogIsApplied(string typed,
+        string expected)
+    {
+        _handle.SetupVoid("setLink", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+
+        var request = cut.Find("[data-part=input]").TriggerEventAsync("ontbrichtextlink", new RichTextLinkEventArgs());
+        host.WaitForElement("dialog");
+        Assert.Equal("Add link", host.Find("h2").TextContent);
+        await host.Find("input").InputAsync(typed);
+        await host.Find("form").SubmitAsync();
+        await request;
+
+        Assert.Equal([expected, null], _handle.Invocations["setLink"].Single().Arguments);
+    }
+
+    [Fact]
+    public async Task RequestLink_ShouldAskForTheTextToo_WhenNothingIsSelected()
+    {
+        _handle.SetupVoid("setLink", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+
+        var request = cut.Find("[data-part=input]").TriggerEventAsync("ontbrichtextlink",
+            new RichTextLinkEventArgs { Insert = true });
+        host.WaitForElement("dialog");
+        await host.FindAll("input")[0].InputAsync("Trail map");
+        await host.FindAll("input")[1].InputAsync("https://example.com/map");
+        await host.Find("form").SubmitAsync();
+        await request;
+
+        Assert.Equal(["https://example.com/map", "Trail map"], _handle.Invocations["setLink"].Single().Arguments);
+    }
+
+    [Theory]
+    [InlineData(new[] { "https", "javascript" }, "This kind of link isn't allowed here. Allowed: https:")]
+    [InlineData(new string[0], "Use a link within this site.")]
+    public async Task RequestLink_ShouldRefuseTheLink_WhenItsSchemeIsNotAllowed(string[] schemes, string message)
+    {
+        _handle.SetupVoid("setLink", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.LinkSchemes, schemes));
+
+        _ = cut.Find("[data-part=input]").TriggerEventAsync("ontbrichtextlink", new RichTextLinkEventArgs());
+        host.WaitForElement("dialog");
+        await host.Find("input").InputAsync("javascript:alert(1)");
+        await host.Find("form").SubmitAsync();
+
+        Assert.Contains(message, host.Find("dialog").TextContent);
+        Assert.Empty(_handle.Invocations["setLink"]);
+    }
+
+    [Fact]
+    public async Task RequestLink_ShouldLeaveTheScriptAlone_WhenTheEditorIsGoneBeforeTheDialogCloses()
+    {
+        _handle.SetupVoid("setLink", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+
+        var request = cut.Find("[data-part=input]").TriggerEventAsync("ontbrichtextlink", new RichTextLinkEventArgs());
+        host.WaitForElement("dialog");
+        await host.Find("input").InputAsync("https://example.com");
+        await cut.Instance.DisposeAsync();
+        await host.Find("form").SubmitAsync();
+        await request;
+
+        Assert.Empty(_handle.Invocations["setLink"]);
+    }
+
+    [Fact]
+    public async Task RequestLink_ShouldOfferToOpenOrRemoveTheLink_WhenTheTextHasOne()
+    {
+        _handle.SetupVoid("setLink", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+
+        var request = cut.Find("[data-part=input]").TriggerEventAsync("ontbrichtextlink",
+            new RichTextLinkEventArgs { Link = "https://example.com" });
+        host.WaitForElement("dialog");
+        var open = host.Find("a.tb-link");
+        Assert.Equal("Edit link", host.Find("h2").TextContent);
+        Assert.Equal("https://example.com", host.Find("input").GetAttribute("value"));
+        Assert.Equal(("https://example.com", "_blank"), (open.GetAttribute("href"), open.GetAttribute("target")));
+        await host.FindAll("button").Single(button => button.TextContent.Trim() == "Remove link").ClickAsync();
+        await request;
+
+        Assert.Equal([null, null], _handle.Invocations["setLink"].Single().Arguments);
     }
 
     [Fact]

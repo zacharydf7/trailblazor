@@ -413,10 +413,9 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/rich-text-editor");
         var notes = Editor(page, "Notes");
         var html = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RichTextCorpus", $"{sample}.html"));
-        // What the editor keeps so far: every format but links, and every block but rules.
-        var expected = RichTextDocument.Parse(html, new RichTextSchema
+        // What the editor keeps so far: every format, and every block but rules.
+        var expected = RichTextDocument.Parse(html, RichTextSchema.Default with
         {
-            Formats = RichTextSchema.Default.Formats & ~RichTextFormats.Link,
             Blocks = RichTextSchema.Default.Blocks & ~RichTextBlocks.Rules,
         }).ToHtml();
 
@@ -546,6 +545,121 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ControlOrMeta+e");
 
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>run it</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Links_ShouldAddUndoEditAndRemoveALink_WhenTheLinkDialogIsUsed(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>see the map</p>", "see the map");
+        var dialog = page.GetByRole(AriaRole.Dialog);
+        var address = dialog.GetByRole(AriaRole.Textbox, new() { Name = "Link", Exact = true });
+
+        await SelectAsync(notes, 0, 4, 0, 11);
+        await page.Keyboard.PressAsync("ControlOrMeta+k");
+        await Expect(dialog).ToHaveAccessibleNameAsync("Add link");
+        await Expect(address).ToBeFocusedAsync();
+        await page.Keyboard.TypeAsync("example.com/map");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p>see <a href=\"https://example.com/map\">the map</a></p>");
+        await Expect(notes).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>see the map</p>");
+        await page.Keyboard.PressAsync("ControlOrMeta+y");
+        await CaretAsync(notes, 0, 6);
+        await Tool(notes, "Link").ClickAsync();
+        await Expect(dialog).ToHaveAccessibleNameAsync("Edit link");
+        await Expect(address).ToHaveValueAsync("https://example.com/map");
+        await address.FillAsync("https://example.com/trails");
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Apply" }).ClickAsync();
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p>see <a href=\"https://example.com/trails\">the map</a></p>");
+        await CaretAsync(notes, 0, 11);
+        await page.Keyboard.PressAsync("ControlOrMeta+k");
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Remove link" }).ClickAsync();
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>see the map</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Links_ShouldInsertLinkedTextThatTypingJoinsOnlyInside_WhenNothingIsSelected(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>Go to now</p>", "Go to now");
+        var dialog = page.GetByRole(AriaRole.Dialog);
+
+        await CaretAsync(notes, 0, 6);
+        await page.Keyboard.PressAsync("ControlOrMeta+k");
+        await dialog.GetByRole(AriaRole.Textbox, new() { Name = "Text" }).FillAsync("the map");
+        await dialog.GetByRole(AriaRole.Textbox, new() { Name = "Link", Exact = true })
+            .FillAsync("https://example.com");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p>Go to <a href=\"https://example.com\">the map</a>now</p>");
+        await page.Keyboard.TypeAsync(" ");
+        await CaretAsync(notes, 0, 9);
+        await page.Keyboard.TypeAsync("x");
+
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p>Go to <a href=\"https://example.com\">thex map</a> now</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Links_ShouldPutTheCaretBack_WhenTheLinkDialogIsCanceled(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>see the map</p>", "see the map");
+
+        await CaretAsync(notes, 0, 3);
+        await page.Keyboard.PressAsync("ControlOrMeta+k");
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToBeHiddenAsync();
+        await Expect(notes).ToBeFocusedAsync();
+        await page.Keyboard.TypeAsync("s");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>sees the map</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Paste_ShouldKeepOnlyTheAllowedLinks_WhenTheEditorLimitsSchemesOrHasNoLinks(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        const string html = "<a href=\"http://a.example\">a</a> <a href=\"https://b.example\">b</a> "
+            + "<a href=\"javascript:alert(1)\">c</a> <a href=\"/d\">d</a>";
+        // What the script sends, before .NET reads it again.
+        await page.EvaluateAsync("() => document.addEventListener('tb-rich-text-change', event => "
+            + "(window.sent ??= {})[event.target.getAttribute('aria-labelledby')] = event.detail.html)");
+
+        foreach (var (label, expected) in new[]
+        {
+            ("Citations", "<p>a <a href=\"https://b.example\">b</a> c <a href=\"/d\">d</a></p>"),
+            ("Formula", "<p>a b c d</p>"),
+        })
+        {
+            var editor = Editor(page, label);
+            await CaretAsync(editor, 0, 0);
+            await PasteAsync(editor, html, "ignored");
+            var sent = await page.WaitForFunctionAsync("label => window.sent?.[label]",
+                await editor.GetAttributeAsync("aria-labelledby"));
+            Assert.Equal(expected, await sent.JsonValueAsync<string>());
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Links_ShouldOpenInANewTab_WhenCtrlClickedButNotWhenClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p><a href=\"/rich-text-editor?opened\">site</a></p>", "site");
+        var url = page.Url;
+
+        await notes.GetByText("site").ClickAsync();
+        var popup = await page.RunAndWaitForPopupAsync(() =>
+            notes.GetByText("site").ClickAsync(new() { Modifiers = [KeyboardModifier.ControlOrMeta] }));
+
+        await popup.WaitForURLAsync("**/rich-text-editor?opened");
+        Assert.Equal(url, page.Url);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

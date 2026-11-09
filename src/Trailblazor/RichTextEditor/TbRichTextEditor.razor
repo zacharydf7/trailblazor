@@ -5,6 +5,7 @@
 @inherits TbBoxedFieldBase<string>
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
+@inject IDialogService Dialogs
 
 @Layout(Classes, @<text>
     <div data-part="editor" class="tb-rich-text-editor">
@@ -19,13 +20,15 @@
                                   Disabled="@(Disabled || ReadOnly)" data-format="@tool.Format"
                                   data-block="@tool.Block" data-command="@tool.Command"
                                   aria-pressed="@(tool.Command is null ? "false" : null)"
+                                  aria-haspopup="@(tool.Command == "link" ? "dialog" : null)"
                                   aria-keyshortcuts="@tool.Shortcuts" />
                 }
             </TbToolbar>
         }
         @* The script owns everything inside the editing area once the page is interactive; data-ready marks that it
            has attached, which tests wait for. *@
-        <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync" data-part="input"
+        <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync"
+             @ontbrichtextlink="OnLinkAsync" data-part="input"
              id="@InputId" role="textbox" data-ready="@(_handle is null ? null : "")"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-describedby="@InputDescribedBy" aria-required="@(Required ? "true" : null)"
@@ -61,16 +64,23 @@
     private bool _disposed;
 
     /// <summary>The formats the editor allows: the toolbar has a button for each, and text pasted in keeps only these.
-    /// Defaults to all seven; with <see cref="RichTextFormats.None"/> and <see cref="RichTextBlocks.None"/> in
-    /// <see cref="Blocks"/>, it's a plain multi-line field. Link is ignored.</summary>
+    /// <see cref="RichTextFormats.Link"/> adds a link button that opens a dialog, which needs a <see cref="TbRoot"/> in
+    /// the layout. Defaults to all of them; with <see cref="RichTextFormats.None"/> and
+    /// <see cref="RichTextBlocks.None"/> in <see cref="Blocks"/>, it's a plain multi-line field.</summary>
     [Parameter]
-    public RichTextFormats Formats { get; set; } = Marks;
+    public RichTextFormats Formats { get; set; } = RichTextHtmlReader.AllFormats;
 
     /// <summary>The kinds of block the editor allows: the toolbar has a button for each (three for headings), with
     /// outdent and indent buttons when it allows a list, and text pasted in keeps only these. Defaults to all of them;
     /// <see cref="RichTextBlocks.None"/> allows only plain paragraphs. Rules are ignored.</summary>
     [Parameter]
     public RichTextBlocks Blocks { get; set; } = RichTextHtmlReader.AllBlocks;
+
+    /// <summary>The URL schemes a link may use, as <see cref="RichTextSchema.LinkSchemes"/> describes: a link pasted in
+    /// with any other is dropped, and the link dialog won't take one. Defaults to <c>http</c>, <c>https</c>,
+    /// <c>mailto</c> and <c>tel</c>.</summary>
+    [Parameter]
+    public IReadOnlyList<string> LinkSchemes { get; set; } = RichTextSchema.Default.LinkSchemes;
 
     /// <summary>Shows the toolbar of formats. Turn it off for an editor whose formats come from shortcuts and paste
     /// only. Defaults to true.</summary>
@@ -115,7 +125,7 @@
     private sealed record Tool(string? Format, string? Block, string? Command, Icon Icon, string Label,
         string? Shortcuts);
 
-    private IReadOnlyList<Tool> Tools => [.. MarkTools, .. BlockTools];
+    private IReadOnlyList<Tool> Tools => [.. MarkTools, .. LinkTools, .. BlockTools];
 
     private IEnumerable<Tool> MarkTools =>
         new (RichTextFormats Format, string Mark, Icon Icon, string? Label, string Key, string Shortcuts)[]
@@ -137,6 +147,11 @@
         }
         .Where(tool => Formats.HasFlag(tool.Format))
         .Select(tool => new Tool(tool.Mark, null, null, tool.Icon, tool.Label ?? Localizer[tool.Key], tool.Shortcuts));
+
+    private IEnumerable<Tool> LinkTools => Formats.HasFlag(RichTextFormats.Link)
+        ? [new(null, null, "link", RichTextEditorIcons.Link, Labels.Link ?? Localizer[TbStrings.RichTextEditorLink],
+            "Control+K Meta+K")]
+        : [];
 
     private IEnumerable<Tool> BlockTools
     {
@@ -173,12 +188,10 @@
         }
     }
 
-    // The formats the toolbar and engine handle so far; links come in the next stage.
-    private const RichTextFormats Marks = RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Underline
-        | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript
-        | RichTextFormats.Code;
-
-    private RichTextSchema Schema => new() { Formats = Formats & Marks, Blocks = Blocks & ~RichTextBlocks.Rules };
+    private RichTextSchema Schema => new()
+    {
+        Formats = Formats, Blocks = Blocks & ~RichTextBlocks.Rules, LinkSchemes = LinkSchemes,
+    };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
     private string Canonical => RichTextDocument.Parse(Value, Schema).ToHtml();
@@ -188,6 +201,7 @@
     {
         formats = string.Join(' ', MarkTools.Select(tool => tool.Format)),
         blocks = string.Join(' ', BlockTools.Where(tool => tool.Block is not null).Select(tool => tool.Block)),
+        links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,
         updateDelay = UpdateDelay?.TotalMilliseconds,
@@ -289,6 +303,30 @@
         if (_delivering is null)
         {
             await DeliverAsync();
+        }
+    }
+
+    // The script asks for the link dialog on Ctrl+K or the link button, and puts in what it returns.
+    private async Task OnLinkAsync(RichTextLinkEventArgs request)
+    {
+        var title = request.Link is null ? Labels.AddLink ?? Localizer[TbStrings.RichTextEditorAddLink]
+            : Labels.EditLink ?? Localizer[TbStrings.RichTextEditorEditLink];
+        var result = await Dialogs.ShowAsync<RichTextLinkDialog, RichTextLinkEdit>(title, parameters => parameters
+            .Set(dialog => dialog.Link, request.Link).Set(dialog => dialog.Insert, request.Insert)
+            .Set(dialog => dialog.Schema, Schema).Set(dialog => dialog.Labels, Labels),
+            new DialogOptions { Size = DialogSize.Small });
+        if (_disposed || result is not { Confirmed: true, Value: { } edit } || _handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _handle.InvokeVoidAsync("setLink", edit.Url, edit.Text);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
         }
     }
 

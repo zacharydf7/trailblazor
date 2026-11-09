@@ -96,6 +96,10 @@ function registerEvents(blazor) {
         browserEventName: 'tb-rich-text-change',
         createEventArgs: event => ({ html: event.detail.html, continues: event.detail.continues }),
     });
+    blazor.registerCustomEventType('tbrichtextlink', {
+        browserEventName: 'tb-rich-text-link',
+        createEventArgs: event => ({ link: event.detail.link, insert: event.detail.insert }),
+    });
     blazor.registerCustomEventType('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
 
     // A key in a grid cell's edit says whether its field used it; the grid's own Enter and Escape guards don't count.
