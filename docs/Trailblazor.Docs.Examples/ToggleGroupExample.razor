@@ -1,8 +1,8 @@
 <TbStack Gap="2">
     <TbToggleGroup @bind-Value="_view" AriaLabel="Map view">
-        <TbToggleItem Value="@("Trails")">Trails</TbToggleItem>
-        <TbToggleItem Value="@("Satellite")">Satellite</TbToggleItem>
-        <TbToggleItem Value="@("Terrain")">Terrain</TbToggleItem>
+        <TbToggleItem Value="@("Trails")" Text="Trails" />
+        <TbToggleItem Value="@("Satellite")" Text="Satellite" />
+        <TbToggleItem Value="@("Terrain")" Text="Terrain" />
     </TbToggleGroup>
     <TbText>View: @_view</TbText>
 </TbStack>

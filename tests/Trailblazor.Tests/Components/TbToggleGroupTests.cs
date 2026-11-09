@@ -137,6 +137,62 @@ public class TbToggleGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowAnItemsTextBesideItsIcon_WhenGivenText()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters
+            .Add(group => group.AriaLabel, "Map view")
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbToggleItem<string>>(0);
+                builder.AddAttribute(1, nameof(TbToggleItem<string>.Value), "Trails");
+                builder.AddAttribute(2, nameof(TbToggleItem<string>.Text), "Trails");
+                builder.AddAttribute(3, nameof(TbToggleItem<string>.Icon), (Icon?)Square);
+                builder.CloseComponent();
+            })));
+
+        var item = cut.Find("[data-part=item]");
+        Assert.Equal("Trails", item.QuerySelector("[data-part=label]")!.TextContent);
+        Assert.NotNull(item.QuerySelector("svg"));
+        Assert.Empty(cut.FindAll("[role=tooltip]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowAnIconOnlyItem_WhenTextIsEmpty()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters
+            .Add(group => group.AriaLabel, "Map view")
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbToggleItem<string>>(0);
+                builder.AddAttribute(1, nameof(TbToggleItem<string>.Value), "Alerts");
+                builder.AddAttribute(2, nameof(TbToggleItem<string>.Text), "");
+                builder.AddAttribute(3, nameof(TbToggleItem<string>.Icon), (Icon?)Square);
+                builder.AddAttribute(4, nameof(TbToggleItem<string>.AriaLabel), "Alerts");
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal("Alerts", cut.Find("[data-part=item]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowChildContentInsteadOfText_WhenGivenBoth()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters
+            .Add(group => group.AriaLabel, "Map view")
+            .Add(group => group.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbToggleItem<string>>(0);
+                builder.AddAttribute(1, nameof(TbToggleItem<string>.Value), "Trails");
+                builder.AddAttribute(2, nameof(TbToggleItem<string>.Text), "Trails");
+                builder.AddAttribute(3, nameof(TbToggleItem<string>.ChildContent),
+                    (RenderFragment)(content => content.AddMarkupContent(0, "<strong>All trails</strong>")));
+                builder.CloseComponent();
+            })));
+
+        Assert.Equal("<strong>All trails</strong>", cut.Find("[data-part=label]").InnerHtml.Trim());
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenAClearableGroupsValueTypeIsNotNullable()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbToggleGroup<DayOfWeek>>(parameters => parameters

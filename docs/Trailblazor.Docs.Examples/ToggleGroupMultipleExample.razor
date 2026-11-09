@@ -1,8 +1,8 @@
 <TbStack Gap="2">
     <TbMultiToggleGroup @bind-Value="_seasons" AriaLabel="Seasons open">
-        <TbToggleItem Value="@("Spring")">Spring</TbToggleItem>
-        <TbToggleItem Value="@("Summer")">Summer</TbToggleItem>
-        <TbToggleItem Value="@("Fall")">Fall</TbToggleItem>
+        <TbToggleItem Value="@("Spring")" Text="Spring" />
+        <TbToggleItem Value="@("Summer")" Text="Summer" />
+        <TbToggleItem Value="@("Fall")" Text="Fall" />
     </TbMultiToggleGroup>
     <TbText>Open in: @(_seasons.Count == 0 ? "no season" : string.Join(", ", _seasons))</TbText>
 </TbStack>

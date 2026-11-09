@@ -2,7 +2,7 @@
 @typeparam TValue
 @inherits TbComponentBase
 
-@if (ChildContent is null && Icon is Icon icon)
+@if (ChildContent is null && string.IsNullOrEmpty(Text) && Icon is Icon icon)
 {
     <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Group!.Variant"
                   Tone="Group.Tone" Size="Group.Size" Disabled="@(Disabled || Group.Disabled)"
@@ -14,7 +14,14 @@ else
     <TbButton @attributes="AdditionalAttributes" Variant="Group!.Variant" Tone="Group.Tone" Size="Group.Size"
               Disabled="@(Disabled || Group.Disabled)" Pressed="Group.IsPressed(Value)" PressedChanged="OnPressedChanged"
               Start="StartIcon" data-part="item" Class="@Class" Style="@Style">
-        @ChildContent
+        @if (ChildContent is null)
+        {
+            @Text
+        }
+        else
+        {
+            @ChildContent
+        }
     </TbButton>
 }
 
@@ -25,7 +32,11 @@ else
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;
 
-    /// <summary>The item's text.</summary>
+    /// <summary>The item's text. Use <see cref="ChildContent"/> for richer content.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>Content shown instead of <see cref="Text"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 

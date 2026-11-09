@@ -5,8 +5,8 @@
         <TbText As="TextElement.H3" TextStyle="TextStyle.Subtitle" class="tb-mx-2">Notes</TbText>
         <TbSpacer />
         <TbToggleGroup @bind-Value="_sort" AriaLabel="Sort notes" Size="Size.Small">
-            <TbToggleItem Value="@("Newest")">Newest</TbToggleItem>
-            <TbToggleItem Value="@("Oldest")">Oldest</TbToggleItem>
+            <TbToggleItem Value="@("Newest")" Text="Newest" />
+            <TbToggleItem Value="@("Oldest")" Text="Oldest" />
         </TbToggleGroup>
         <TbToolbarButton Text="Add a note" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Add a note")" />
         <TbToolbarButton Text="Filter notes" Icon="ExampleIcons.Filter" OnClick="@(() => _last = "Filter notes")" />

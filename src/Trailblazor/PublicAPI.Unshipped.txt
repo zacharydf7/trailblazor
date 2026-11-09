@@ -2377,6 +2377,8 @@ Trailblazor.TbToggleItem<TValue>.Icon.set -> void
 Trailblazor.TbToggleItem<TValue>.TbToggleItem() -> void
 Trailblazor.TbToggleItem<TValue>.TelemetryName.get -> string?
 Trailblazor.TbToggleItem<TValue>.TelemetryName.set -> void
+Trailblazor.TbToggleItem<TValue>.Text.get -> string?
+Trailblazor.TbToggleItem<TValue>.Text.set -> void
 Trailblazor.TbToggleItem<TValue>.Value.get -> TValue
 Trailblazor.TbToggleItem<TValue>.Value.set -> void
 Trailblazor.TbToolbar

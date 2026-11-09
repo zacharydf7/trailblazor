@@ -966,8 +966,9 @@ public static class ExampleCatalog
                     typeof(ToggleGroupExample)),
                 new("any-number", "Pick any number", "`TbMultiToggleGroup` lets any number of items stay pressed, and "
                     + "`Value` holds them.", typeof(ToggleGroupMultipleExample)),
-                new("items", "Items", "In either group, an item can have an `Icon` or be `Disabled`, and one with only "
-                    + "an icon needs an `AriaLabel`.", typeof(ToggleGroupItemsExample)),
+                new("items", "Items", "In either group, an item shows its `Text`, or `ChildContent` for richer content. "
+                    + "It can have an `Icon` or be `Disabled`, and one with only an icon needs an `AriaLabel`.",
+                    typeof(ToggleGroupItemsExample)),
                 new("clearable", "Clearable", "`Clearable` lets people clear a `TbToggleGroup` by pressing its pressed "
                     + "item again. Without it, that item stays pressed.", typeof(ToggleGroupClearableExample)),
                 new("vertical", "Vertical", "`Vertical` stacks the items in a column, and the up and down arrows move "
@@ -979,12 +980,12 @@ public static class ExampleCatalog
             Api = [typeof(TbToggleGroup<>), typeof(TbMultiToggleGroup<>), typeof(TbToggleItem<>)],
             Anatomy = """
                 <TbToggleGroup AriaLabel="…" @bind-Value="_value">
-                    <TbToggleItem Value="…">…</TbToggleItem>
-                    <TbToggleItem Value="…">…</TbToggleItem>
+                    <TbToggleItem Value="…" Text="…" />
+                    <TbToggleItem Value="…" Text="…" />
                 </TbToggleGroup>
 
                 <TbMultiToggleGroup AriaLabel="…" @bind-Value="_values">
-                    <TbToggleItem Value="…">…</TbToggleItem>
+                    <TbToggleItem Value="…" Text="…" />
                 </TbMultiToggleGroup>
                 """,
             Keyboard =

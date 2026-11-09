@@ -1,7 +1,7 @@
 <TbStack Gap="2">
     <TbToggleGroup @bind-Value="_units" AriaLabel="Distance units" Clearable>
-        <TbToggleItem Value="@("Miles")">Miles</TbToggleItem>
-        <TbToggleItem Value="@("Kilometers")">Kilometers</TbToggleItem>
+        <TbToggleItem Value="@("Miles")" Text="Miles" />
+        <TbToggleItem Value="@("Kilometers")" Text="Kilometers" />
     </TbToggleGroup>
     <TbText>Units: @(_units ?? "none")</TbText>
 </TbStack>
