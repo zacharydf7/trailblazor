@@ -53,7 +53,7 @@
     public string? Label { get; set; }
 
     /// <summary>A trigger of your own, such as an avatar button or the arrow half of a split button, in place of the
-    /// built-in one. Put <c>context.Attributes</c> on a button.</summary>
+    /// built-in one. Put the context's attributes on the button: <c>@attributes="context.Attributes"</c>.</summary>
     [Parameter]
     public RenderFragment<MenuTrigger>? Trigger { get; set; }
 

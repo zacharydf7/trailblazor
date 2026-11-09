@@ -1020,6 +1020,13 @@ public static class ExampleCatalog
                 "The items render with any pressed ones marked. Pressing them, the arrow keys and the single tab stop "
                     + "start working once the page is interactive. Until then, each item is its own tab stop.",
             ],
+            Notes =
+            [
+                new("For a choice with three answers, such as Any, Yes and No, give each item its own value, such as "
+                    + "an enum member. Don't use `null` for one of them: `null` is also the group's value before "
+                    + "anything is chosen and after a `Clearable` group is cleared, so that item would look chosen "
+                    + "when nothing is."),
+            ],
             Target = new("group", "Map view"),
             Blocks = ["tb-toggle-group", "tb-button"],
             DataParts =
@@ -4431,10 +4438,10 @@ public static class ExampleCatalog
                     typeof(MenuKeepOpenExample)),
                 new("links", "Links", "A menu item with `Href` is a link. `NewTab` opens it in a new tab and tells "
                     + "screen readers so. `NewTabHint` changes what they hear.", typeof(MenuLinkExample)),
-                new("custom-trigger", "A custom trigger", "`Trigger` replaces a menu's button with your own. Put "
-                    + "`context.Attributes` on your button, which gives it the built-in trigger's behavior and "
-                    + "attributes, and give it a name, such as an `aria-label` on an "
-                    + "avatar.", typeof(MenuTriggerExample)),
+                new("custom-trigger", "A custom trigger", "Put `@attributes=\"context.Attributes\"` on your own "
+                    + "button inside `Trigger`. It takes the place of the menu's button and gets the built-in "
+                    + "trigger's behavior and attributes. Give it a name too, such as an `aria-label` on an avatar.",
+                    typeof(MenuTriggerExample)),
                 new("trigger-style", "The trigger's look", "`Variant` sets how a menu's text trigger looks, and `Size` "
                     + "how big its built-in trigger is.",
                     typeof(MenuStyleExample)),
@@ -4609,7 +4616,9 @@ public static class ExampleCatalog
                     + "set.", typeof(DialogPositionExample)),
                 new("header", "The header", "`ShowHeader = false` hides a dialog's header, and the title still names "
                     + "the dialog. `CloseButton = false` removes the close button. `TbDialogTitle` shows richer "
-                    + "content in place of the title; keep the title's text in it, since it names the dialog.",
+                    + "content in place of the title; keep the title's text in it, since it names the dialog. "
+                    + "`TbDialogTitle` renders inside an `h2`, so keep its content inline: text, icons and badges, but "
+                    + "no block elements.",
                     typeof(DialogHeaderExample)),
                 new("first-focus", "Where focus starts", "A dialog starts where Tab would, on its first field or "
                     + "button or a group's chosen radio, or on an element marked `autofocus`. "
@@ -4965,10 +4974,9 @@ public static class ExampleCatalog
                     + "panel too long for the window opens on the side with more room and scrolls, so everything in it "
                     + "stays reachable.",
                     typeof(PopoverPlacementExample)),
-                new("custom-trigger", "A custom trigger", "`Trigger` replaces a popover's button with your own. Put "
-                    + "`context.Attributes` on your button, which gives it the built-in trigger's behavior and "
-                    + "attributes.",
-                    typeof(PopoverTriggerExample)),
+                new("custom-trigger", "A custom trigger", "Put `@attributes=\"context.Attributes\"` on your own "
+                    + "button inside `Trigger`. It takes the place of the popover's button and gets the built-in "
+                    + "trigger's behavior and attributes.", typeof(PopoverTriggerExample)),
                 new("disabled", "Disabled", "`Disabled` turns off a popover's trigger, built in or custom, so neither "
                     + "a click, the keyboard nor the pointer resting on it opens the panel.",
                     typeof(PopoverDisabledExample)),
@@ -5363,6 +5371,9 @@ public static class ExampleCatalog
                     + "`HasChildren`. With `HasChildren`, the content renders only while the row is open: none of it "
                     + "exists or runs until the row opens, and closing the row removes all of it. `@bind-Expanded` "
                     + "opens a `TbTreeItem` from code.", typeof(TreeViewContentExample)),
+                new("open-state", "Open state kept on your items", "When your items keep their own open state, such as "
+                    + "an `IsOpen` flag, give `ExpandedKeys` the keys of the open items and update the items from "
+                    + "`ExpandedKeysChanged`.", typeof(TreeViewOpenStateExample)),
                 new("labels", "Built-in text", "`Labels` replaces the words the tree shows and reads out while "
                     + "children load, when they fail and when it has no rows.", typeof(TreeViewLabelsExample)),
             ],
@@ -5447,6 +5458,10 @@ public static class ExampleCatalog
                 new("With cascading checks, a `TbTreeItem` with no `Value` checks the rows inside it. Such a row is "
                     + "never in the bound keys, so several of them can share a text without needing keys."),
                 new("`ExpandAllAsync` opens rows with `HasChildren` too, and the rows that appear in them."),
+                new("Put a row's buttons and menus in `ItemEnd`, or a `TbTreeItem`'s `EndContent`, not in "
+                    + "`ItemTemplate`. `ItemTemplate` renders in the row's content (`data-part=\"content\"`), where a "
+                    + "click selects the row, or opens it when it can't be selected. The end (`data-part=\"end\"`) "
+                    + "keeps clicks and keys to itself."),
                 new("A row's `data-key` is its key's text for a string, number or date key. Any other key gets a "
                     + "made-up id such as `key-3`, and so does a key whose text is empty or that another key already "
                     + "has."),

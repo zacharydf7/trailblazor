@@ -211,6 +211,13 @@
         </ol>
         <CodeBlock Label="app.css" Code="@Restyle" />
         <TbText>
+            <code>Class</code> and <code>Style</code> go on a component's outer element. A menu, popover, select,
+            autocomplete, color picker or date range picker keeps its popup inside that element, so reach the popup
+            through your class and the popup's <code>data-part</code>, such as
+            <code>.account-menu [data-part="menu"]</code>. A tooltip's <code>Class</code> goes on a span around its
+            trigger, with the bubble inside, and <code>BubbleClass</code> adds a class to the bubble itself.
+        </TbText>
+        <TbText>
             Fields have tokens for their edges and fill, so you can make them quieter, such as underlined fields for a
             dense screen. <code>--tb-field-border-width</code> takes one to four widths, so <code>0 0 1px</code>
             keeps only the bottom line. Keep at least one edge that contrasts 3:1 with the page, so people can find the

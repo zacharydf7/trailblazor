@@ -1,0 +1,38 @@
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbTreeView TItem="Folder" TKey="string" AriaLabel="Saved maps" Items="_folders" KeySelector="folder => folder.Name"
+                ChildrenSelector="folder => folder.Children" ItemText="folder => folder.Name" ExpandedKeys="OpenKeys"
+                ExpandedKeysChanged="SetOpen" />
+    <TbText>Open: @string.Join(", ", OpenKeys)</TbText>
+</TbStack>
+
+@code {
+    // Each folder stores its own open state, as an app's saved data would.
+    private readonly Folder[] _folders =
+    [
+        new("Day hikes", isOpen: true, [new("Pine Hollow loop"), new("Cedar Flats")]),
+        new("Backpacking", isOpen: false, [new("High peaks", isOpen: false, [new("Summit Gate")])]),
+    ];
+
+    private IReadOnlyCollection<string> OpenKeys =>
+        [.. All(_folders).Where(folder => folder.IsOpen).Select(folder => folder.Name)];
+
+    private void SetOpen(IReadOnlyCollection<string> keys)
+    {
+        foreach (var folder in All(_folders))
+        {
+            folder.IsOpen = keys.Contains(folder.Name);
+        }
+    }
+
+    private static IEnumerable<Folder> All(IEnumerable<Folder> folders) =>
+        folders.SelectMany(folder => All(folder.Children ?? []).Prepend(folder));
+
+    private sealed class Folder(string name, bool isOpen = false, Folder[]? children = null)
+    {
+        public string Name { get; } = name;
+
+        public bool IsOpen { get; set; } = isOpen;
+
+        public Folder[]? Children { get; } = children;
+    }
+}

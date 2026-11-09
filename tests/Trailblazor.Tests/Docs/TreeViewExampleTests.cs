@@ -38,6 +38,21 @@ public class TreeViewExampleTests : DocsTest
     }
 
     [Fact]
+    public void OpenStateExample_ShouldKeepEachFoldersOpenStateOnIt_WhenRowsOpenAndClose()
+    {
+        var cut = Render<TreeViewOpenStateExample>();
+        var tree = cut.Tb().Tree("Saved maps");
+        Assert.Contains("Pine Hollow loop", tree.Texts);
+
+        tree.Item("Backpacking").QuerySelector("[data-part=toggle]")!.Click();
+        tree.Item("Day hikes").QuerySelector("[data-part=toggle]")!.Click();
+
+        Assert.Equal("Open: Backpacking", cut.Find(".tb-text").TextContent.Trim());
+        Assert.Contains("High peaks", tree.Texts);
+        Assert.DoesNotContain("Pine Hollow loop", tree.Texts);
+    }
+
+    [Fact]
     public void EmptyExample_ShouldShowTheDefaultMessageAndItsOwnContent_WhenThereAreNoRows()
     {
         var cut = Render<TreeViewEmptyExample>();
