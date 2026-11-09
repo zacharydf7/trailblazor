@@ -3535,3 +3535,4 @@ Trailblazor.TbRating.Classes.get -> Trailblazor.ChoiceClasses?
 Trailblazor.TbRating.Classes.set -> void
 Trailblazor.TbRadioGroup<TValue>.Segmented.get -> bool
 Trailblazor.TbRadioGroup<TValue>.Segmented.set -> void
+static Trailblazor.Icon.FromSvg(string! svg) -> Trailblazor.Icon

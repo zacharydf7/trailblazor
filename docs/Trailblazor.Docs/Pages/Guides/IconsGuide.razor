@@ -78,7 +78,8 @@
         <DocsHeading Id="your-own-icons" Text="Your own icons" Class="docs-section" />
         <TbText>
             An <code>Icon</code> holds the markup that goes inside an <code>&lt;svg&gt;</code>, plus its view box, so
-            any icon set works.
+            any icon set works. <code>Icon.FromSvg</code> takes a whole <code>&lt;svg&gt;</code> as a set publishes it,
+            and keeps its view box and its fill and stroke settings, so a stroke icon draws as outlines.
         </TbText>
         <CodeBlock Label="Icons.cs" Code="@Custom" />
         <DocsCallout Tone="Tone.Warning" Title="Never build an icon from user input">
@@ -145,6 +146,11 @@
             // Another set's own grid, such as a 16-unit one.
             public static Icon Pin =>
                 new("<circle cx=\"8\" cy=\"8\" r=\"5\" />", "0 0 16 16");
+
+            // A whole <svg> as a set publishes it, such as a stroke icon.
+            public static Icon Arrow { get; } = Icon.FromSvg(
+                "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">"
+                + "<path d=\"M5 12h14\" /></svg>");
         }
         """;
 }
