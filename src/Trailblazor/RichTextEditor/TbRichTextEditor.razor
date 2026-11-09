@@ -28,7 +28,7 @@
         @* The script owns everything inside the editing area once the page is interactive; data-ready marks that it
            has attached, which tests wait for. *@
         <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync"
-             @ontbrichtextlink="OnLinkAsync" data-part="input"
+             @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
              id="@InputId" role="textbox" data-ready="@(_handle is null ? null : "")"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-describedby="@InputDescribedBy" aria-required="@(Required ? "true" : null)"
@@ -52,8 +52,9 @@
     private IJSObjectReference? _handle;
     // The value the script holds, so the value coming back from the parent isn't sent to it again.
     private string? _sent;
-    // A long value comes in parts, one change event each.
+    // A long value or paste comes in parts, one event each.
     private readonly StringBuilder _parts = new();
+    private readonly StringBuilder _pasteParts = new();
     // Values given to the parent while its handler runs. A parent that stores each one late passes older ones back
     // while typing goes on, and those must not replace what the script now holds.
     private readonly List<string> _echoes = [];
@@ -82,6 +83,12 @@
     /// <c>mailto</c> and <c>tel</c>.</summary>
     [Parameter]
     public IReadOnlyList<string> LinkSchemes { get; set; } = RichTextSchema.Default.LinkSchemes;
+
+    /// <summary>Changes what is pasted or dropped in, after the editor's own cleanup: it gets the pasted text as a
+    /// document and returns the document to put in, such as one without its links, or
+    /// <see cref="RichTextDocument.Empty"/> to put in nothing. Without it, pasted text goes in as cleaned.</summary>
+    [Parameter]
+    public Func<RichTextDocument, RichTextDocument>? TransformPaste { get; set; }
 
     /// <summary>Shows the toolbar of formats. Turn it off for an editor whose formats come from shortcuts and paste
     /// only. Defaults to true.</summary>
@@ -215,6 +222,7 @@
         blocks = string.Join(' ', BlockTools.Select(tool => tool.Block).OfType<string>()
             .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])),
         links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
+        transformsPaste = TransformPaste is not null,
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,
         updateDelay = UpdateDelay?.TotalMilliseconds,
@@ -316,6 +324,34 @@
         if (_delivering is null)
         {
             await DeliverAsync();
+        }
+    }
+
+    // With a paste transform, the script hands over the cleaned paste and puts in what the app returns.
+    private async Task OnPasteAsync(RichTextChangeEventArgs paste)
+    {
+        _pasteParts.Append(paste.Html);
+        if (paste.Continues)
+        {
+            return;
+        }
+
+        var html = _pasteParts.ToString();
+        _pasteParts.Clear();
+        if (_handle is null || _disposed)
+        {
+            return;
+        }
+
+        // A paste sent just before the transform was removed still goes in, as cleaned.
+        var pasted = TransformPaste is null ? html : TransformPaste(RichTextDocument.Parse(html, Schema)).ToHtml();
+        try
+        {
+            await _handle.InvokeVoidAsync("insertPasted", pasted);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
         }
     }
 

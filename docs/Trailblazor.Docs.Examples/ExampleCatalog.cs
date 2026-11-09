@@ -2118,6 +2118,11 @@ public static class ExampleCatalog
                     + "`example.com` gets `https://`, and an email address gets `mailto:`. `LinkSchemes` lists the URL "
                     + "schemes a link may use; the dialog won't accept a link with any other scheme, and paste drops "
                     + "such links.", typeof(RichTextEditorLinksExample)),
+                new("changing-what-is-pasted", "Changing what's pasted", "`TransformPaste` changes what is pasted "
+                    + "or dropped in, after the built-in cleanup: it gets the pasted text as a `RichTextDocument` and "
+                    + "returns the document to put in. This example keeps the formats but drops the links. It's a "
+                    + "plain function, so test it on a `RichTextDocument` without rendering the editor.",
+                    typeof(RichTextEditorPasteExample)),
                 new("without-a-toolbar", "Without a toolbar", "`ShowToolbar=\"false\"` hides the toolbar for a small "
                     + "field. The shortcuts and paste still apply the formats it allows.",
                     typeof(RichTextEditorToolbarExample)),

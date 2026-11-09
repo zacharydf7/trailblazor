@@ -11,6 +11,9 @@
 
 <TbRichTextEditor Label="Citations" @bind-Value="_citations" UpdateOnInput LinkSchemes="@(["https"])" />
 
+<TbRichTextEditor Label="Shouting" @bind-Value="_shouting" UpdateOnInput TransformPaste="Shout" />
+<output data-testid="shouting">@_shouting</output>
+
 <TbRichTextEditor Label="Summary" @bind-Value="_summary" />
 <output data-testid="summary">@_summary</output>
 <TbButton OnClick="() => _saved = _summary">Save summary</TbButton>
@@ -35,11 +38,16 @@
     private string? _source;
     private string? _formula;
     private string? _citations;
+    private string? _shouting;
     private string? _summary;
     private string? _saved;
     private string? _live;
     private bool _dialog;
     private string? _draft = "<ul><li>a</li><li>b</li></ul>";
+
+    // Pasted text goes in as plain paragraphs, in capitals.
+    private static RichTextDocument Shout(RichTextDocument document) => new(document.Paragraphs
+        .Select(paragraph => new RichTextParagraph([new RichTextRun(paragraph.Text.ToUpperInvariant())])));
 
     private async Task OnLiveChangedAsync(string html)
     {

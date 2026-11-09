@@ -96,6 +96,10 @@ function registerEvents(blazor) {
         browserEventName: 'tb-rich-text-change',
         createEventArgs: event => ({ html: event.detail.html, continues: event.detail.continues }),
     });
+    blazor.registerCustomEventType('tbrichtextpaste', {
+        browserEventName: 'tb-rich-text-paste',
+        createEventArgs: event => ({ html: event.detail.html, continues: event.detail.continues }),
+    });
     blazor.registerCustomEventType('tbrichtextlink', {
         browserEventName: 'tb-rich-text-link',
         createEventArgs: event => ({ link: event.detail.link, insert: event.detail.insert }),

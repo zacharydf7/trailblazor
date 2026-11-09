@@ -3230,3 +3230,5 @@ Trailblazor.RichTextEditorLabels.HorizontalRule.get -> string?
 Trailblazor.RichTextEditorLabels.HorizontalRule.init -> void
 const Trailblazor.TbStrings.RichTextEditorClearFormatting = "RichTextEditor.ClearFormatting" -> string!
 const Trailblazor.TbStrings.RichTextEditorHorizontalRule = "RichTextEditor.HorizontalRule" -> string!
+Trailblazor.TbRichTextEditor.TransformPaste.get -> System.Func<Trailblazor.RichTextDocument!, Trailblazor.RichTextDocument!>?
+Trailblazor.TbRichTextEditor.TransformPaste.set -> void

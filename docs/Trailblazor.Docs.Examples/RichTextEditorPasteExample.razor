@@ -1,0 +1,13 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Comment" @bind-Value="_comment" TransformPaste="WithoutLinks"
+                      HelperText="Pasted text keeps its formats, but not its links." />
+</TbStack>
+
+@code {
+    private string? _comment;
+
+    private static RichTextDocument WithoutLinks(RichTextDocument pasted) => new(pasted.Paragraphs.Select(paragraph =>
+        new RichTextParagraph(
+            paragraph.Runs.Select(run => new RichTextRun(run.Text, run.Formats & ~RichTextFormats.Link)),
+            paragraph.Kind, paragraph.Level)));
+}

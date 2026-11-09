@@ -157,8 +157,8 @@ public class TbRichTextEditorTests : BunitContext
         var arguments = _module.Invocations["attachRichTextEditor"].Single().Arguments;
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
-        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"readOnly":false,"""
-            + "\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
+        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"transformsPaste":false,"""
+            + "\"readOnly\":false,\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
     }
 
     [Fact]
@@ -297,6 +297,36 @@ public class TbRichTextEditorTests : BunitContext
         await request;
 
         Assert.Equal([null, null], _handle.Invocations["setLink"].Single().Arguments);
+    }
+
+    [Fact]
+    public async Task Paste_ShouldHandTheScriptWhatTheTransformReturns_WhenAPasteArrivesInParts()
+    {
+        _handle.SetupVoid("insertPasted", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.TransformPaste, document => new RichTextDocument(document.Paragraphs
+                .Select(paragraph => new RichTextParagraph([new RichTextRun(paragraph.Text.ToUpperInvariant())])))));
+        var area = cut.Find("[data-part=input]");
+
+        await area.TriggerEventAsync("ontbrichtextpaste",
+            new RichTextChangeEventArgs { Html = "<p><b>a", Continues = true });
+        await area.TriggerEventAsync("ontbrichtextpaste", new RichTextChangeEventArgs { Html = "b</b></p><p>c</p>" });
+
+        Assert.Contains("\"transformsPaste\":true",
+            JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]));
+        Assert.Equal(["<p>AB</p><p>C</p>"], _handle.Invocations["insertPasted"].Single().Arguments);
+    }
+
+    [Fact]
+    public async Task Paste_ShouldHandTheScriptThePasteAsItCame_WhenTheTransformIsGoneByTheTimeItArrives()
+    {
+        _handle.SetupVoid("insertPasted", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+
+        await cut.Find("[data-part=input]").TriggerEventAsync("ontbrichtextpaste",
+            new RichTextChangeEventArgs { Html = "<p><strong>a</strong></p>" });
+
+        Assert.Equal(["<p><strong>a</strong></p>"], _handle.Invocations["insertPasted"].Single().Arguments);
     }
 
     [Fact]

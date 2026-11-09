@@ -644,6 +644,41 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Paste_ShouldPutInWhatTheAppTransformReturns_WhenTheEditorHasATransform(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var shouting = Editor(page, "Shouting");
+        var x = new string('x', 6000);
+
+        await CaretAsync(shouting, 0, 0);
+        await PasteAsync(shouting, "<p><b>ab</b></p><p>c</p>", "ignored");
+        await Expect(page.GetByTestId("shouting")).ToHaveTextAsync("<p>AB</p><p>C</p>");
+        await PasteAsync(shouting, null, x);
+        await Expect(page.GetByTestId("shouting")).ToHaveTextAsync($"<p>AB</p><p>C{x.ToUpperInvariant()}</p>");
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await Expect(page.GetByTestId("shouting")).ToHaveTextAsync("<p>AB</p><p>C</p>");
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Source" }).FocusAsync();
+        // Dropped between "A" and "B" while focus is in Source, so the editor's own caret isn't at the drop point.
+        await shouting.EvaluateAsync("""
+            editor => {
+                const text = editor.querySelector('p').firstChild;
+                const range = document.createRange();
+                range.setStart(text, 1);
+                range.setEnd(text, 2);
+                const box = range.getBoundingClientRect();
+                const data = new DataTransfer();
+                data.setData('text/html', '<b>x</b>');
+                const event = new DragEvent('drop', { bubbles: true, cancelable: true, clientX: box.left + 1,
+                    clientY: box.top + box.height / 2 });
+                Object.defineProperty(event, 'dataTransfer', { value: data });
+                editor.dispatchEvent(event);
+            }
+            """);
+
+        await Expect(page.GetByTestId("shouting")).ToHaveTextAsync("<p>AXB</p><p>C</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Links_ShouldOpenInANewTab_WhenCtrlClickedButNotWhenClicked(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");

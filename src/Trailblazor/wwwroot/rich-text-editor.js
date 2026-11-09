@@ -44,9 +44,9 @@ const TYPING_PAUSE = 1000;
 const MAX_PART = 5000;
 const isMac = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform ?? navigator.platform);
 
-// options: { formats, blocks, links, readOnly, updateOnInput, updateDelay }, with formats as mark names, blocks as
-// kinds and links as URL schemes split by spaces, links null where links aren't allowed, and updateDelay in
-// milliseconds.
+// options: { formats, blocks, links, transformsPaste, readOnly, updateOnInput, updateDelay }, with formats as mark
+// names, blocks as kinds and links as URL schemes split by spaces, links null where links aren't allowed, and
+// updateDelay in milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = document.getElementById(root.getAttribute('aria-labelledby') ?? '');
@@ -55,6 +55,7 @@ export function attachRichTextEditor(root, value, options) {
         setValue: html => editor.setValue(html),
         setOptions: changed => editor.setOptions(changed),
         setLink: (url, text) => editor.setLink(url, text),
+        insertPasted: html => editor.insertPasted(html),
         dispose: () => editor.dispose(),
     };
 }
@@ -154,6 +155,7 @@ class Editor {
             blocks: new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind))),
             links: options.links === null ? null : options.links.toLowerCase().split(' ').filter(Boolean),
         };
+        this.transformsPaste = !!options.transformsPaste;
         this.readOnly = !!options.readOnly;
         this.updateOnInput = !!options.updateOnInput;
         this.updateDelay = options.updateDelay ?? 0;
@@ -435,6 +437,9 @@ class Editor {
         if (!dragged || copy) {
             this.root.focus();
             this.selection = { anchor: target, head: target };
+            // Move the page's caret too, or the selectionchange from focus() would undo it before a paste transform
+            // answers.
+            this.writeSelection();
             this.insertTransfer(event.dataTransfer, false);
             return;
         }
@@ -502,13 +507,21 @@ class Editor {
         const text = data?.getData('text/plain') ?? '';
         const pasted = html ? readBlocks(parseDocument(html), true, this.schema) : null;
         if (pasted?.length === 0 || (!pasted && !text)) return;
-        this.edit(() => {
-            const { from, to } = this.range();
-            const marks = this.storedMarks ?? this.marksForReplacing(from, to);
-            const link = this.linkForReplacing(from, to);
-            this.insertParagraphs(pasted ?? text.split(/\r\n?|\n/)
-                .map(line => paragraph(normalize([{ text: line.replace(/[\t\f\xa0]/g, ' '), marks, link }]))));
-        });
+        const { from, to } = this.range();
+        const marks = this.storedMarks ?? this.marksForReplacing(from, to);
+        const link = this.linkForReplacing(from, to);
+        const paragraphs = pasted ?? text.split(/\r\n?|\n/)
+            .map(line => paragraph(normalize([{ text: line.replace(/[\t\f\xa0]/g, ' '), marks, link }])));
+        if (this.transformsPaste) this.dispatchInParts('tb-rich-text-paste', toHtml(paragraphs));
+        else this.edit(() => this.insertParagraphs(paragraphs));
+    }
+
+    // What the app's paste transform returned goes in at the caret.
+    insertPasted(html) {
+        const pasted = readBlocks(parseDocument(html), true, this.schema);
+        if (this.readOnly || !pasted.length) return;
+        this.readBack();
+        this.edit(() => this.insertParagraphs(pasted));
     }
 
     // Model edits.
@@ -1023,12 +1036,16 @@ class Editor {
         if (html === this.lastSent) return;
         this.lastSent = html;
         // Each part's handler finishes before the next browser event, so a click right after leaving sees the value.
+        this.dispatchInParts('tb-rich-text-change', html);
+    }
+
+    dispatchInParts(name, html) {
         for (let start = 0; ;) {
             let end = Math.min(start + MAX_PART, html.length);
             // A part never ends between the two halves of a surrogate pair, which JSON can't carry apart.
             if (end < html.length && /[\ud800-\udbff]/.test(html[end - 1])) end--;
             const continues = end < html.length;
-            this.root.dispatchEvent(new CustomEvent('tb-rich-text-change',
+            this.root.dispatchEvent(new CustomEvent(name,
                 { bubbles: true, detail: { html: html.slice(start, end), continues } }));
             if (!continues) return;
             start = end;
