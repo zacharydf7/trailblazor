@@ -2657,6 +2657,8 @@ Trailblazor.TrailblazorOptions.Theme.get -> Trailblazor.ThemeSettings!
 Trailblazor.TrailblazorOptions.Toasts.get -> Trailblazor.ToastSettings!
 Trailblazor.TrailblazorOptions.Tooltips.get -> Trailblazor.TooltipSettings!
 Trailblazor.TrailblazorOptions.TrailblazorOptions() -> void
+Trailblazor.TrailblazorOptions.WarnAboutUnlayeredStyles.get -> bool
+Trailblazor.TrailblazorOptions.WarnAboutUnlayeredStyles.set -> void
 Trailblazor.TreeDrop<TItem>
 Trailblazor.TreeDrop<TItem>.<Clone>$() -> Trailblazor.TreeDrop<TItem>!
 Trailblazor.TreeDrop<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out TItem Target, out Trailblazor.TreeDropPosition Position) -> void

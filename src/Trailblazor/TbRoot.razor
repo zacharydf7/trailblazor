@@ -3,8 +3,9 @@
 
 @code {
     /// <summary>The render mode for the dialogs, toasts and announcements when interactivity is set page by page, so
-    /// they run in the same session as the interactive pages that open them. Give it the render mode those pages use,
-    /// and leave it unset when the whole app is interactive.</summary>
+    /// they run in the same session as the interactive pages that open them. The check that warns about other
+    /// stylesheets overriding Trailblazor's runs in it too. Give it the render mode those pages use, and leave it unset
+    /// when the whole app is interactive.</summary>
     [Parameter]
     public IComponentRenderMode? HostRenderMode { get; set; }
 
@@ -18,6 +19,9 @@
         builder.AddComponentRenderMode(HostRenderMode);
         builder.CloseComponent();
         builder.OpenComponent<AnnouncerHost>(2);
+        builder.AddComponentRenderMode(HostRenderMode);
+        builder.CloseComponent();
+        builder.OpenComponent<StylesheetCheck>(3);
         builder.AddComponentRenderMode(HostRenderMode);
         builder.CloseComponent();
     }

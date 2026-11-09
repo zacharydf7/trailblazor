@@ -18,6 +18,12 @@ public sealed class TrailblazorOptions
     /// <summary>Whether the components report what people see and use through the <c>Trailblazor</c> meter.</summary>
     public TelemetrySettings Telemetry { get; } = new();
 
+    /// <summary>Whether a page, once interactive, warns in the browser's console about another stylesheet from the
+    /// same origin, such as a CSS reset, whose rules outside a cascade layer override Trailblazor's on every element or
+    /// on buttons, labels, legends or headings. Defaults to true; turn it off once the warning is dealt with, or when a
+    /// stylesheet overrides them on purpose.</summary>
+    public bool WarnAboutUnlayeredStyles { get; set; } = true;
+
     /// <summary>Text for built-in strings in place of the English, by the keys in <see cref="TbStrings"/>, for the
     /// default <see cref="TbLocalizer"/>. An app that registers its own <see cref="ITbLocalizer"/> applies them itself.
     /// </summary>

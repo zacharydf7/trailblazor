@@ -243,7 +243,7 @@
         <TbText>
             The rule that lets your CSS win also lets any other stylesheet outside a layer win. A global rule such as
             <code>* { margin: 0; padding: 0; }</code>, which many resets and some component libraries ship, then strips
-            the components' own spacing, and nothing warns about it:
+            the components' own spacing:
         </TbText>
         <ul>
             <li>Dialogs sit in the page's top corner.</li>
@@ -251,7 +251,8 @@
             <li>Radio buttons lose their dot.</li>
         </ul>
         <TbText>
-            If you see that, look for an unlayered rule from another stylesheet. Put that stylesheet in a cascade layer
+            Once a page is interactive, Trailblazor names such a stylesheet from the same origin in the browser's
+            console. Put that stylesheet in a cascade layer
             of its own, ordered before Trailblazor's, so Trailblazor's styles win over it and yours still win over both:
         </TbText>
         <ol>
@@ -260,6 +261,10 @@
         </ol>
         <CodeBlock Label="App.razor" Code="@LayerOrder" />
         <CodeBlock Label="app.css" Code="@LayerImport" />
+        <TbText>
+            Once the stylesheet is in a layer, the warning stops. To turn it off anyway, set
+            <code>options.WarnAboutUnlayeredStyles = false</code>.
+        </TbText>
 
         <DocsHeading Id="custom-palette" Text="Your own palette" Class="docs-section" />
         <TbText>
