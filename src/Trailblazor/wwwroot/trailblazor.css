@@ -2704,7 +2704,7 @@
         background: var(--tb-field-background, var(--tb-color-surface));
     }
 
-    /* Forced colors paint every fill in the page color, so a field that drops its edges would vanish; put each edge back. */
+    /* Forced colors paint every fill in the page color, so a field without edges would vanish; put each edge back. */
     @media (forced-colors: active) {
         .tb-field__control {
             border-width: 1px;
