@@ -40,6 +40,14 @@
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">3. Import the namespace</TbText>
         <CodeBlock Label="_Imports.razor" Code="@Imports" />
+        <TbText>
+            If another namespace imported there also has a <code>Size</code>, <code>Icon</code> or <code>Variant</code>
+            type, such as another component library's, those names become ambiguous (error CS0104). Choose
+            Trailblazor's with an alias in <code>_Imports.razor</code> too. A <code>global using</code> alias in a
+            <code>.cs</code> file doesn't help while the namespaces are imported here, because these imports are
+            searched first. It works only when both namespaces are imported with <code>global using</code> as well.
+        </TbText>
+        <CodeBlock Label="_Imports.razor, with another library" Code="@Aliases" />
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">4. Set up App.razor</TbText>
         <TbText>
@@ -55,9 +63,18 @@
             <a href="guides/theming#light-and-dark">the theming guide</a> shows.
         </TbText>
         <CodeBlock Label="index.html, standalone WebAssembly" Code="@IndexHead" />
+        <TbText>
+            By default, <code>TbThemeHead</code> follows the device's light or dark setting. If your app's own pages
+            aren't designed for dark, set the mode to light instead. In a standalone WebAssembly app, also set the theme
+            script's <code>data-mode</code> to <code>light</code>.
+        </TbText>
+        <CodeBlock Label="Program.cs, light only" Code="@LightOnly" />
         <DocsCallout Tone="Tone.Warning" Title="Another library's CSS">
-            A reset in another library's stylesheet can strip the components' spacing. See
-            <a href="guides/theming#other-stylesheets">Other stylesheets</a> in the theming guide.
+            Rules outside a cascade layer, such as a reset in another library's stylesheet, win over Trailblazor's and
+            can strip the components' spacing or square their buttons. Once the page is interactive, Trailblazor names
+            the same-origin stylesheets that have them in the browser's console.
+            <a href="guides/theming#other-stylesheets">Other stylesheets</a> in the theming guide shows how to put them
+            in a layer that Trailblazor's styles win over.
         </DocsCallout>
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">5. Add TbRoot to the layout</TbText>
@@ -206,6 +223,18 @@
 
     private const string Imports = """
         @using Trailblazor
+        """;
+
+    private const string Aliases = """
+        @using Trailblazor
+        @using OtherLibrary
+        @using Size = Trailblazor.Size
+        @using Icon = Trailblazor.Icon
+        @using Variant = Trailblazor.Variant
+        """;
+
+    private const string LightOnly = """
+        builder.Services.AddTrailblazor(options => options.Theme.Mode = ThemeMode.Light);
         """;
 
     private const string Layout = """
