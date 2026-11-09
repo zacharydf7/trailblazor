@@ -1,0 +1,173 @@
+@namespace Trailblazor
+@using Microsoft.AspNetCore.Components.Routing
+@inherits TbComponentBase
+@implements IDisposable
+@inject NavigationManager NavigationManager
+@inject ITbLocalizer Localizer
+
+<div @attributes="AdditionalAttributes" data-part="app-shell" style="@Style"
+     class="@ClassNames.Join("tb-app-shell", Header is null ? "tb-app-shell--no-header" : null,
+                Navigation is null ? "tb-app-shell--no-navigation" : null,
+                _collapsed && Navigation is not null ? "tb-app-shell--collapsed" : null, Class)">
+    @* An ordinary link before the page is interactive; once it is, it moves focus to the content itself. *@
+    <a href="@SkipHref" data-part="skip-link" class="tb-app-shell__skip" @onclick="SkipAsync"
+       @onclick:preventDefault>@(SkipLinkText ?? Localizer[TbStrings.AppShellSkipToContent])</a>
+    <CascadingValue Value="this">
+        @if (Header is not null)
+        {
+            <div class="tb-app-shell__header">@Header</div>
+        }
+        @if (Navigation is not null)
+        {
+            <nav id="@NavigationId" aria-label="@NavigationName" data-part="navigation"
+                 class="tb-app-shell__navigation">@Navigation</nav>
+        }
+        <main @ref="_main" id="@MainId" tabindex="-1" data-part="main" class="tb-app-shell__main">@ChildContent</main>
+        @if (Footer is not null)
+        {
+            <footer data-part="footer" class="tb-app-shell__footer">@Footer</footer>
+        }
+        @* On a narrow window the navigation beside the page is hidden, and opens in this drawer instead. *@
+        @if (Navigation is not null)
+        {
+            <TbDrawer Side="DrawerSide.Start" Title="@MenuName" Open="_open" OpenChanged="SetOpenAsync"
+                      class="tb-app-shell__drawer">
+                <nav aria-label="@NavigationName">@Navigation</nav>
+            </TbDrawer>
+        }
+    </CascadingValue>
+</div>
+
+@code {
+    private readonly string _id = $"tb-app-shell-{Guid.NewGuid():N}";
+    private ElementReference _main;
+    private bool _open;
+    private bool _lastOpen;
+    private bool _collapsed;
+    private bool _lastCollapsed;
+
+    /// <summary>The bar across the top of the app, usually a <see cref="TbAppBar"/>.</summary>
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    /// <summary>The app's navigation, usually a <see cref="TbNavMenu"/>. It sits beside the page on a wide window
+    /// and opens in a drawer from the app bar's menu button on a narrow one.</summary>
+    [Parameter]
+    public RenderFragment? Navigation { get; set; }
+
+    /// <summary>The page's content, in the <c>main</c> landmark.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Content after the page, such as a copyright line.</summary>
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    /// <summary>Whether the navigation drawer is open on a narrow window. Bind it with <c>@bind-NavigationOpen</c>:
+    /// the app bar's menu button opens it, and it closes when people follow a link or dismiss it.</summary>
+    [Parameter]
+    public bool NavigationOpen { get; set; }
+
+    /// <summary>Raised when the navigation drawer opens or closes.</summary>
+    [Parameter]
+    public EventCallback<bool> NavigationOpenChanged { get; set; }
+
+    /// <summary>Whether the navigation beside the page is narrowed to a rail of icons on a wide window. Bind it with
+    /// <c>@bind-NavigationCollapsed</c>: the app bar's menu button toggles it.</summary>
+    [Parameter]
+    public bool NavigationCollapsed { get; set; }
+
+    /// <summary>Raised when the navigation is collapsed or expanded.</summary>
+    [Parameter]
+    public EventCallback<bool> NavigationCollapsedChanged { get; set; }
+
+    /// <summary>Names the navigation landmark for screen readers. Defaults to the app's text for
+    /// <see cref="TbStrings.AppShellNavigation"/>, "Main" in English, heard as "Main navigation".</summary>
+    [Parameter]
+    public string? NavigationLabel { get; set; }
+
+    /// <summary>Names the app bar's menu button and titles the navigation drawer. Defaults to the app's text for
+    /// <see cref="TbStrings.AppShellMenu"/>, "Navigation" in English.</summary>
+    [Parameter]
+    public string? MenuLabel { get; set; }
+
+    /// <summary>The text of the link that skips to the page's content, shown when it has focus. Defaults to the app's
+    /// text for <see cref="TbStrings.AppShellSkipToContent"/>, "Skip to content" in English.</summary>
+    [Parameter]
+    public string? SkipLinkText { get; set; }
+
+    internal bool HasNavigation => Navigation is not null;
+
+    internal bool IsOpen => _open;
+
+    internal bool IsCollapsed => _collapsed;
+
+    internal string NavigationId => $"{_id}-navigation";
+
+    internal string MenuName => MenuLabel ?? Localizer[TbStrings.AppShellMenu];
+
+    private string NavigationName => NavigationLabel ?? Localizer[TbStrings.AppShellNavigation];
+
+    private string MainId => $"{_id}-main";
+
+    // The page keeps its own path, since a bare #id would resolve against the app's base address.
+    private string SkipHref => $"{NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('#')[0]}#{MainId}";
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => NavigationManager.LocationChanged += OnLocationChanged;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (NavigationOpen != _lastOpen)
+        {
+            _lastOpen = NavigationOpen;
+            _open = NavigationOpen;
+        }
+
+        if (NavigationCollapsed != _lastCollapsed)
+        {
+            _lastCollapsed = NavigationCollapsed;
+            _collapsed = NavigationCollapsed;
+        }
+    }
+
+    internal Task OpenNavigationAsync() => SetOpenAsync(true);
+
+    internal Task ToggleCollapsedAsync()
+    {
+        _collapsed = !_collapsed;
+        StateHasChanged();
+        return NavigationCollapsedChanged.InvokeAsync(_collapsed);
+    }
+
+    private Task SetOpenAsync(bool open)
+    {
+        if (open == _open)
+        {
+            return Task.CompletedTask;
+        }
+
+        _open = open;
+        StateHasChanged();
+        return NavigationOpenChanged.InvokeAsync(open);
+    }
+
+    // Following a link in the drawer closes it, since the page it opened is what people want to see.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => InvokeAsync(async () =>
+    {
+        try
+        {
+            await SetOpenAsync(false);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    });
+
+    private async Task SkipAsync() => await _main.FocusAsync();
+
+    /// <inheritdoc />
+    public void Dispose() => NavigationManager.LocationChanged -= OnLocationChanged;
+}

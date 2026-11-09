@@ -54,6 +54,18 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public void NavMenu_ShouldCountTheLinksFollowed_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbNavMenu>(parameters => parameters.Add(menu => menu.TelemetryName, "main-menu")
+            .AddChildContent<TbNavLink>(link => link.Add(l => l.Href, "trails").AddChildContent("Trails")));
+
+        cut.Find("a").Click();
+
+        Assert.Equal(["main-menu"], Names(_shown));
+        Assert.Equal([("main-menu", "TbNavMenu", null)], Uses());
+    }
+
+    [Fact]
     public void Card_ShouldCountItsLinkFollowed_WhenItHasATelemetryName()
     {
         var cut = Render<TbCard>(parameters => parameters.Add(card => card.TelemetryName, "trail-card")

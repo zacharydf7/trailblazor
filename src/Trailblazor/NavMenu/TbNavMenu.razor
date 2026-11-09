@@ -1,0 +1,34 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* Safari drops the list role from a list without bullets, so it is set again. *@
+<ul @attributes="AdditionalAttributes" role="list" data-part="nav-menu" style="@Style"
+    class="@ClassNames.Join("tb-nav-menu", Class)">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+</ul>
+
+@code {
+    private ControlTelemetry? _telemetry;
+
+    /// <summary>The menu's <see cref="TbNavLink"/> and <see cref="TbNavGroup"/> items.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>A label this menu's use is counted under, such as <c>"main-menu"</c>, so the app can count how often
+    /// people see it and follow its links through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. In a <see cref="TbAppShell"/>, the menu beside the page counts
+    /// as shown once, even on a narrow window that hides it, and the drawer's copy counts again each time the drawer
+    /// opens. It names what the control does, never the user, and must never hold a credential.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    internal void Followed() => Telemetry.Used(TelemetryName);
+}

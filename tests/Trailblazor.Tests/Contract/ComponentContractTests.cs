@@ -12,14 +12,14 @@ public class ComponentContractTests : BunitContext
 {
     // TbRoot and TbDialogTitle render no element of their own, TbStyles only a <link> and TbThemeHead only a <script>,
     // which take no class or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane,
-    // TbTreeItem, TbMenuRadioItem, TbDialogDescription, TbColumn, TbTableOfContentsItem and TbBreadcrumb only render
-    // inside their parent (see their parents' tests).
+    // TbTreeItem, TbMenuRadioItem, TbDialogDescription, TbColumn, TbTableOfContentsItem, TbBreadcrumb, TbNavLink and
+    // TbNavGroup only render inside their parent (see their parents' tests).
     private static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbRadio<>), typeof(TbCheckboxItem<>),
         typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>), typeof(TbSplitterPane), typeof(TbTreeItem<>),
         typeof(TbMenuRadioItem<>), typeof(TbDialogDescription), typeof(TbColumn<>), typeof(TbDialogTitle),
-        typeof(TbTableOfContentsItem), typeof(TbBreadcrumb),
+        typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.

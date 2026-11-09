@@ -1,0 +1,33 @@
+@* Framed and given a height, so the shell fits on this page; in an app it fills the window. *@
+<div style="block-size: 24rem; overflow: auto; border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
+    <TbAppShell Style="--tb-app-shell-height: 24rem" @bind-NavigationCollapsed="_collapsed">
+        <Header>
+            <TbAppBar>
+                <Start>
+                    <TbIcon Icon="ExampleIcons.Trail" />
+                </Start>
+                <ChildContent>Trail log</ChildContent>
+                <End>
+                    <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="Notifications" Variant="Variant.Text" />
+                </End>
+            </TbAppBar>
+        </Header>
+        <Navigation>
+            <TbNavMenu>
+                <TbNavLink Href="components/app-shell" Icon="ExampleIcons.Trail">Trips</TbNavLink>
+                <TbNavLink Href="components/card" Icon="ExampleIcons.Folder">Saved trails</TbNavLink>
+                <TbNavLink Href="components/drawer" Icon="ExampleIcons.Search">Find a trail</TbNavLink>
+            </TbNavMenu>
+        </Navigation>
+        <ChildContent>
+            <TbStack Gap="3" class="tb-p-4">
+                <TbText TextStyle="TextStyle.Title">Trips</TbText>
+                <TbText>The navigation is @(_collapsed ? "a rail of icons" : "open beside the page").</TbText>
+            </TbStack>
+        </ChildContent>
+    </TbAppShell>
+</div>
+
+@code {
+    private bool _collapsed;
+}

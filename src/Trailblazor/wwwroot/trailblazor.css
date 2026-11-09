@@ -3841,6 +3841,241 @@
         background: var(--tb-color-surface-raised);
     }
 
+    /* The bar runs across the top, the navigation sits beside the page, and the page and its footer fill the rest.
+       The window scrolls, while the bar and the navigation stay in view. */
+    .tb-app-shell {
+        --tb-app-shell-height: 100dvh;
+        --tb-app-shell-navigation-width: 16rem;
+        --tb-app-shell-rail-width: 5.5rem;
+        --tb-app-bar-height: 3.5rem;
+        position: relative;
+        display: grid;
+        grid-template-columns: var(--tb-app-shell-navigation-width) minmax(0, 1fr);
+        grid-template-rows: auto 1fr auto;
+        grid-template-areas: "header header" "navigation main" "navigation footer";
+        min-height: var(--tb-app-shell-height);
+    }
+
+    .tb-app-shell--collapsed {
+        grid-template-columns: var(--tb-app-shell-rail-width) minmax(0, 1fr);
+    }
+
+    .tb-app-shell--no-navigation {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "header" "main" "footer";
+    }
+
+    .tb-app-shell--no-header {
+        --tb-app-bar-height: 0px;
+    }
+
+    .tb-app-shell__header {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 10;
+        grid-area: header;
+    }
+
+    .tb-app-shell__navigation {
+        position: sticky;
+        inset-block-start: var(--tb-app-bar-height);
+        box-sizing: border-box;
+        height: calc(var(--tb-app-shell-height) - var(--tb-app-bar-height));
+        overflow-y: auto;
+        grid-area: navigation;
+        padding: var(--tb-space-2);
+        border-inline-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-app-shell__main {
+        grid-area: main;
+        min-width: 0;
+    }
+
+    /* It takes focus only from the skip link, so the next Tab starts there; it needs no ring of its own. */
+    .tb-app-shell__main:focus {
+        outline: none;
+    }
+
+    .tb-app-shell__footer {
+        grid-area: footer;
+    }
+
+    .tb-app-shell__skip {
+        position: absolute;
+        inset-block-start: var(--tb-space-2);
+        inset-inline-start: var(--tb-space-2);
+        z-index: 20;
+        padding: var(--tb-space-2) var(--tb-space-3);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface-raised);
+        color: var(--tb-color-text);
+        box-shadow: var(--tb-shadow-md);
+    }
+
+    .tb-app-shell__skip:not(:focus) {
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .tb-app-shell__skip:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-app-bar {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        box-sizing: border-box;
+        min-height: var(--tb-app-bar-height, 3.5rem);
+        padding-inline: var(--tb-space-3);
+        border-block-end: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+    }
+
+    .tb-app-bar__start,
+    .tb-app-bar__end {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-app-bar__title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        font-size: var(--tb-font-size-lg);
+        font-weight: var(--tb-font-weight-semibold);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tb-app-bar__menu--drawer {
+        display: none;
+    }
+
+    /* On a narrow window the navigation leaves the page, and the menu button opens it in a drawer instead. */
+    @media (max-width: 48em) {
+        .tb-app-shell {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas: "header" "main" "footer";
+        }
+
+        .tb-app-shell__navigation,
+        .tb-app-bar__menu--rail {
+            display: none;
+        }
+
+        .tb-app-bar__menu--drawer {
+            display: inline-flex;
+        }
+    }
+
+    .tb-nav-menu,
+    .tb-nav-menu__items {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-nav-menu__items {
+        margin-block-start: 2px;
+        padding-inline-start: var(--tb-space-4);
+    }
+
+    .tb-nav-menu__items[hidden] {
+        display: none;
+    }
+
+    .tb-nav-menu__link {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-3);
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 2.5rem;
+        padding: var(--tb-space-2) var(--tb-space-3);
+        border: 0;
+        border-radius: var(--tb-radius-md);
+        background: none;
+        color: var(--tb-color-text);
+        font: inherit;
+        text-align: start;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .tb-nav-menu__link:hover {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-nav-menu__link:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-nav-menu__link--current,
+    .tb-nav-menu__link--current:hover {
+        background: var(--tb-color-primary-subtle);
+        color: var(--tb-color-primary-text);
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-nav-menu__label {
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .tb-nav-menu__chevron {
+        transition: rotate var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-nav-menu__toggle[aria-expanded="true"] > .tb-nav-menu__chevron {
+        rotate: 180deg;
+    }
+
+    /* Collapsed to a rail, each link shows its icon above a short label, and groups lose their indent. */
+    .tb-app-shell--collapsed .tb-app-shell__navigation .tb-nav-menu__link {
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        padding-inline: var(--tb-space-1);
+        font-size: var(--tb-font-size-xs);
+        text-align: center;
+    }
+
+    .tb-app-shell--collapsed .tb-app-shell__navigation .tb-nav-menu__label {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tb-app-shell--collapsed .tb-app-shell__navigation :is(.tb-nav-menu__end, .tb-nav-menu__chevron) {
+        display: none;
+    }
+
+    .tb-app-shell--collapsed .tb-app-shell__navigation .tb-nav-menu__items {
+        padding-inline-start: 0;
+    }
+
+    @media (forced-colors: active) {
+        .tb-nav-menu__link--current {
+            background: Highlight;
+            color: HighlightText;
+            forced-color-adjust: none;
+        }
+    }
+
     .tb-select__trigger {
         display: flex;
         align-items: center;

@@ -1,0 +1,103 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<li @attributes="AdditionalAttributes" data-part="nav-group" style="@Style"
+    class="@ClassNames.Join("tb-nav-menu__item", Class)">
+    <button type="button" aria-expanded="@(_expanded ? "true" : "false")" aria-controls="@ItemsId"
+            data-part="group-toggle" class="tb-nav-menu__link tb-nav-menu__toggle" @onclick="ToggleAsync">
+        @if (Icon is { } icon)
+        {
+            <TbIcon Icon="icon" data-part="icon" class="tb-nav-menu__icon" />
+        }
+        <span data-part="label" class="tb-nav-menu__label">@Text</span>
+        <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" class="tb-nav-menu__chevron" />
+    </button>
+    @* The links stay rendered while the group is closed, so a link to the current page can open it. *@
+    <ul role="list" id="@ItemsId" hidden="@(!_expanded)" data-part="group-items" class="tb-nav-menu__items">
+        <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    </ul>
+</li>
+
+@code {
+    private readonly string _id = $"tb-nav-group-{Guid.NewGuid():N}";
+    private bool _expanded;
+    private bool _lastExpanded;
+
+    /// <summary>The group's name, on the button that opens and closes it.</summary>
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = "";
+
+    /// <summary>An icon before the name.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Whether the group is open. Bind it with <c>@bind-Expanded</c>. A group holding the link to the page
+    /// people are on opens by itself.</summary>
+    [Parameter]
+    public bool Expanded { get; set; }
+
+    /// <summary>Raised when the group opens or closes.</summary>
+    [Parameter]
+    public EventCallback<bool> ExpandedChanged { get; set; }
+
+    /// <summary>The group's <see cref="TbNavLink"/> items, and any groups inside it.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TbNavMenu? Menu { get; set; }
+
+    [CascadingParameter]
+    private TbNavGroup? Parent { get; set; }
+
+    private string ItemsId => $"{_id}-items";
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Menu is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbNavGroup)} must be inside a {nameof(TbNavMenu)}.");
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Expanded != _lastExpanded)
+        {
+            _lastExpanded = Expanded;
+            _expanded = Expanded;
+        }
+    }
+
+    internal void Reveal()
+    {
+        Parent?.Reveal();
+        if (!_expanded)
+        {
+            _expanded = true;
+            StateHasChanged();
+            _ = InvokeAsync(ReportRevealedAsync);
+        }
+    }
+
+    // Runs outside the render that found the current page, so a failing ExpandedChanged goes to the renderer.
+    private async Task ReportRevealedAsync()
+    {
+        try
+        {
+            await ExpandedChanged.InvokeAsync(true);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private Task ToggleAsync()
+    {
+        _expanded = !_expanded;
+        return ExpandedChanged.InvokeAsync(_expanded);
+    }
+}

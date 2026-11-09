@@ -10,6 +10,15 @@ public static class TbStrings
     /// <summary>"Close": names an alert's close button.</summary>
     public const string AlertClose = "Alert.Close";
 
+    /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
+    public const string AppShellMenu = "AppShell.Menu";
+
+    /// <summary>"Main": names an app shell's navigation landmark, heard as "Main navigation".</summary>
+    public const string AppShellNavigation = "AppShell.Navigation";
+
+    /// <summary>"Skip to content": the text of an app shell's link that skips to the page's content.</summary>
+    public const string AppShellSkipToContent = "AppShell.SkipToContent";
+
     /// <summary>"Clear": names an autocomplete's clear button.</summary>
     public const string AutocompleteClear = "Autocomplete.Clear";
 
@@ -670,6 +679,9 @@ public static class TbStrings
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
     {
         [AlertClose] = "Close",
+        [AppShellMenu] = "Navigation",
+        [AppShellNavigation] = "Main",
+        [AppShellSkipToContent] = "Skip to content",
         [AutocompleteClear] = "Clear",
         [AutocompleteSearching] = "Searching…",
         [AutocompleteNoResults] = "No matches",

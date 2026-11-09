@@ -1,0 +1,93 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<li @attributes="AdditionalAttributes" data-part="nav-item" style="@Style"
+    class="@ClassNames.Join("tb-nav-menu__item", Class)">
+    <a href="@Href" aria-current="@(_current ? "page" : null)" data-part="link" @onclick="Menu!.Followed"
+       class="@ClassNames.Join("tb-nav-menu__link", _current ? "tb-nav-menu__link--current" : null)">
+        @if (Icon is { } icon)
+        {
+            <TbIcon Icon="icon" data-part="icon" class="tb-nav-menu__icon" />
+        }
+        <span data-part="label" class="tb-nav-menu__label">@ChildContent</span>
+        @if (End is not null)
+        {
+            <span data-part="end" class="tb-nav-menu__end">@End</span>
+        }
+    </a>
+</li>
+
+@code {
+    private bool _current;
+
+    /// <summary>The address of the page the link goes to.</summary>
+    [Parameter, EditorRequired]
+    public string Href { get; set; } = "";
+
+    /// <summary>The link's text.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>An icon before the text. In a collapsed <see cref="TbAppShell"/>, the icon shows above a shorter
+    /// label.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Content after the text, such as a <see cref="TbBadge"/> with a count.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
+    /// <summary>Which addresses count as this link's page, as for Blazor's <c>NavLink</c>. Defaults to
+    /// <see cref="NavLinkMatch.Prefix"/>, so the link stays current on the pages under it; use
+    /// <see cref="NavLinkMatch.All"/> for the home page, which every address starts with.</summary>
+    [Parameter]
+    public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
+
+    [CascadingParameter]
+    private TbNavMenu? Menu { get; set; }
+
+    [CascadingParameter]
+    private TbNavGroup? Group { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Menu is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbNavLink)} must be inside a {nameof(TbNavMenu)}.");
+        }
+
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet() => Update();
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => InvokeAsync(() =>
+    {
+        var current = _current;
+        Update();
+        if (_current != current)
+        {
+            StateHasChanged();
+        }
+    });
+
+    // A group opens as one of its links becomes the current page, so people can see where they are; after that they
+    // can close it again.
+    private void Update()
+    {
+        var wasCurrent = _current;
+        _current = IsCurrent(Navigation.Uri, Navigation.ToAbsoluteUri(Href).AbsoluteUri, Match);
+        if (_current && !wasCurrent)
+        {
+            Group?.Reveal();
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

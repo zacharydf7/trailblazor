@@ -1,0 +1,50 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<header @attributes="AdditionalAttributes" data-part="app-bar" style="@Style"
+        class="@ClassNames.Join("tb-app-bar", Class)">
+    @* The stylesheet shows only one: the first opens the drawer on a narrow window, the second collapses the
+       navigation on a wide one. *@
+    @if (Shell is { HasNavigation: true } shell && MenuButton)
+    {
+        <TbIconButton Icon="BuiltInIcons.Menu" AriaLabel="@shell.MenuName" Variant="Variant.Text"
+                      aria-expanded="@(shell.IsOpen ? "true" : "false")" aria-haspopup="dialog"
+                      data-part="menu-button" Class="tb-app-bar__menu tb-app-bar__menu--drawer"
+                      OnClick="shell.OpenNavigationAsync" />
+        <TbIconButton Icon="BuiltInIcons.Menu" AriaLabel="@shell.MenuName" Variant="Variant.Text"
+                      aria-expanded="@(shell.IsCollapsed ? "false" : "true")" aria-controls="@shell.NavigationId"
+                      data-part="collapse-button" Class="tb-app-bar__menu tb-app-bar__menu--rail"
+                      OnClick="shell.ToggleCollapsedAsync" />
+    }
+    @if (Start is not null)
+    {
+        <div data-part="start" class="tb-app-bar__start">@Start</div>
+    }
+    <div data-part="title" class="tb-app-bar__title">@ChildContent</div>
+    @if (End is not null)
+    {
+        <div data-part="end" class="tb-app-bar__end">@End</div>
+    }
+</header>
+
+@code {
+    /// <summary>The app's name or the page's title, in the middle of the bar.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Content at the start of the bar, such as the app's logo.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content at the end of the bar, such as a search box, a theme picker or the account menu.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
+    /// <summary>Shows the menu button that opens or collapses the <see cref="TbAppShell"/>'s navigation. Defaults to
+    /// true; it shows only when the shell has navigation.</summary>
+    [Parameter]
+    public bool MenuButton { get; set; } = true;
+
+    [CascadingParameter]
+    private TbAppShell? Shell { get; set; }
+}

@@ -1,0 +1,29 @@
+@page "/app-shell"
+@page "/app-shell/{*Rest}"
+@using Microsoft.AspNetCore.Components.Routing
+
+@* Its links go to pages of its own, so following one keeps the shell on screen. *@
+<TbAppShell>
+    <Header>
+        <TbAppBar>Trail log</TbAppBar>
+    </Header>
+    <Navigation>
+        <TbNavMenu>
+            <TbNavLink Href="app-shell" Match="NavLinkMatch.All">Home</TbNavLink>
+            <TbNavLink Href="app-shell/trips">Trips</TbNavLink>
+            <TbNavGroup Text="Settings">
+                <TbNavLink Href="app-shell/settings/profile">Profile</TbNavLink>
+            </TbNavGroup>
+        </TbNavMenu>
+    </Navigation>
+    <ChildContent>
+        <h1>@(Rest ?? "home")</h1>
+        <button type="button">After the heading</button>
+        <div style="block-size: 3000px"></div>
+    </ChildContent>
+</TbAppShell>
+
+@code {
+    [Parameter]
+    public string? Rest { get; set; }
+}

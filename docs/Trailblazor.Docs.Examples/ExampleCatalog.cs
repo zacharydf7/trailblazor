@@ -1421,6 +1421,143 @@ public static class ExampleCatalog
             Target = null,
             Blocks = ["tb-container"],
         },
+        new("app-shell", "App shell", ExampleCategory.Layout,
+            "An app's frame: an app bar, navigation beside the page that narrows to a rail or opens in a drawer on a "
+                + "narrow window, and the page itself.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it once, in the app's layout, around the `@Body` of every page.",
+            ],
+            WhenNotToUse =
+            [
+                "For a panel that opens over the page, use a [drawer](components/drawer).",
+                "For the sections of one page, use [tabs](components/tabs) or a "
+                    + "[table of contents](components/table-of-contents).",
+            ],
+            Related = ["drawer", "breadcrumbs", "container"],
+            Pattern = new("disclosure navigation menu",
+                "https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/"),
+            Sections =
+            [
+                new("basic", "App shell", "`Header` holds a `TbAppBar` across the top, `Navigation` a `TbNavMenu` "
+                    + "beside the page, and the page goes in the `main` landmark, with a link that skips to it. The "
+                    + "app bar's menu button narrows the navigation to a rail of icons, bound with "
+                    + "`@bind-NavigationCollapsed`. On a window narrower than 48em, the navigation leaves the page and "
+                    + "the button opens it in a drawer instead, which closes when people follow a link. Here the shell "
+                    + "sits inside this page, so its landmarks are inside the page's own; in an app it is the frame.",
+                    typeof(AppShellExample)),
+                new("nav-menu", "Nav menu", "Each `TbNavLink` is marked as the current page when the address matches "
+                    + "it, the same way Blazor's `NavLink` matches: under its address by default, or exactly with "
+                    + "`Match=\"NavLinkMatch.All\"`, as the home page needs. `End` holds a badge or a count. A "
+                    + "`TbNavGroup` opens and closes its links, and opens by itself when it holds the current page. "
+                    + "On its own, put the menu in a `nav` with an `aria-label`.", typeof(AppShellNavMenuExample)),
+            ],
+            Api = [typeof(TbAppShell), typeof(TbAppBar), typeof(TbNavMenu), typeof(TbNavLink), typeof(TbNavGroup)],
+            Anatomy = """
+                <TbAppShell @bind-NavigationCollapsed="_collapsed">
+                    <Header>
+                        <TbAppBar>
+                            <Start>…</Start>
+                            …
+                            <End>…</End>
+                        </TbAppBar>
+                    </Header>
+                    <Navigation>
+                        <TbNavMenu>
+                            <TbNavLink Href="…" Icon="…">…</TbNavLink>
+                            <TbNavGroup Text="…">
+                                <TbNavLink Href="…">…</TbNavLink>
+                            </TbNavGroup>
+                        </TbNavMenu>
+                    </Navigation>
+                    <ChildContent>@Body</ChildContent>
+                </TbAppShell>
+                """,
+            Keyboard =
+            [
+                new(["Tab"], "The first Tab on a page reaches the skip link, and Enter on it moves focus to the page's "
+                    + "content."),
+                new(["Tab"], "Moves between the links and group buttons, each its own tab stop."),
+                new(["Enter"], "Follows the focused link."),
+                new(["Enter", "Space"], "Opens or closes the focused group."),
+                new(["Escape"], "Closes the navigation drawer.") { When = "On a narrow window" },
+            ],
+            Labeling =
+            [
+                "The app bar is the page's `banner` landmark, the navigation a `navigation` landmark named by "
+                    + "`NavigationLabel` (\"Main\" by default, heard as \"Main navigation\"), and the page the `main` "
+                    + "landmark.",
+                "The menu button is named by `MenuLabel` (\"Navigation\" by default), which also titles the drawer.",
+                "Each group's button is named by its `Text`.",
+            ],
+            Announcements =
+            [
+                "The link to the current page has `aria-current=\"page\"`. Group buttons and the menu button say "
+                    + "whether they're open with `aria-expanded`.",
+            ],
+            Accessibility =
+            [
+                "On a narrow window the navigation opens in a modal drawer, so focus moves into it, stays there, and "
+                    + "goes back to the menu button as it closes.",
+                "In forced-colors mode, such as Windows high contrast, the current link takes the system's highlight.",
+            ],
+            AppDuties =
+            [
+                "Put the app's name or the page's title in the app bar, and give every page's content a heading.",
+                "Use `Match=\"NavLinkMatch.All\"` on the link to the home page, which every address starts with.",
+            ],
+            BeforeInteractive =
+            [
+                "The links already work, and the skip link goes to the content. The menu button, the groups and the "
+                    + "drawer start working once the page is interactive; a group holding the current page is already "
+                    + "open.",
+            ],
+            Target = new("navigation", "Main"),
+            Blocks = ["tb-app-shell", "tb-app-bar", "tb-nav-menu"],
+            DataParts =
+            [
+                new("app-shell", "The shell around the whole app."),
+                new("skip-link", "The link that skips to the page's content."),
+                new("navigation", "The navigation beside the page."),
+                new("main", "The page's content."),
+                new("footer", "The content after the page."),
+                new("app-bar", "The bar across the top."),
+                new("menu-button", "The button that opens the navigation drawer on a narrow window."),
+                new("collapse-button", "The button that narrows the navigation to a rail on a wide window."),
+                new("start", "The content at the start of the app bar."),
+                new("title", "The app bar's title."),
+                new("end", "The content at the end of the app bar, or after a link's text."),
+                new("nav-menu", "The menu's list of links."),
+                new("nav-item", "One link's list item."),
+                new("link", "A link to a page."),
+                new("icon", "A link's or group's icon."),
+                new("label", "A link's or group's text."),
+                new("nav-group", "A group of links."),
+                new("group-toggle", "The button that opens and closes a group."),
+                new("group-items", "A group's links."),
+            ],
+            TestingTips =
+            [
+                "Find the navigation by its landmark, with "
+                    + "`GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the current page's link with "
+                    + "`Locator(\"[aria-current=page]\")`.",
+                "Playwright's window is wide unless you set `ViewportSize`; set it narrower than 48em to test the "
+                    + "drawer. On a narrow window, open it with "
+                    + "`GetByRole(AriaRole.Button, new() { Name = \"Navigation\" })`.",
+                "In bUnit, navigate with the `NavigationManager` to make a link current; both menu buttons render, "
+                    + "since only the stylesheet chooses between them.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName` on the `TbNavMenu`, such as `\"main-menu\"`, it counts "
+                    + "`trailblazor.control.shown` as it first renders and `trailblazor.control.used` for each link "
+                    + "followed. Which link was followed is never recorded.",
+                "In the shell, the menu beside the page counts as shown once, even on a narrow window that hides it, "
+                    + "and the drawer's copy counts again each time the drawer opens.",
+            ],
+        },
         new("alert", "Alert", ExampleCategory.Feedback,
             "A message in the page, such as a warning or an error, that can be closed.")
         {

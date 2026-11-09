@@ -3352,3 +3352,84 @@ Trailblazor.TbDrawer.Title.set -> void
 Trailblazor.TbDrawer.Width.get -> string?
 Trailblazor.TbDrawer.Width.set -> void
 ~override Trailblazor.TbDrawer.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbAppBar
+Trailblazor.TbAppBar.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAppBar.ChildContent.set -> void
+Trailblazor.TbAppBar.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAppBar.End.set -> void
+Trailblazor.TbAppBar.MenuButton.get -> bool
+Trailblazor.TbAppBar.MenuButton.set -> void
+Trailblazor.TbAppBar.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAppBar.Start.set -> void
+Trailblazor.TbAppBar.TbAppBar() -> void
+Trailblazor.TbAppShell
+Trailblazor.TbAppShell.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAppShell.ChildContent.set -> void
+Trailblazor.TbAppShell.Dispose() -> void
+Trailblazor.TbAppShell.Footer.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAppShell.Footer.set -> void
+Trailblazor.TbAppShell.Header.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAppShell.Header.set -> void
+Trailblazor.TbAppShell.MenuLabel.get -> string?
+Trailblazor.TbAppShell.MenuLabel.set -> void
+Trailblazor.TbAppShell.Navigation.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAppShell.Navigation.set -> void
+Trailblazor.TbAppShell.NavigationCollapsed.get -> bool
+Trailblazor.TbAppShell.NavigationCollapsed.set -> void
+Trailblazor.TbAppShell.NavigationCollapsedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbAppShell.NavigationCollapsedChanged.set -> void
+Trailblazor.TbAppShell.NavigationLabel.get -> string?
+Trailblazor.TbAppShell.NavigationLabel.set -> void
+Trailblazor.TbAppShell.NavigationOpen.get -> bool
+Trailblazor.TbAppShell.NavigationOpen.set -> void
+Trailblazor.TbAppShell.NavigationOpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbAppShell.NavigationOpenChanged.set -> void
+Trailblazor.TbAppShell.SkipLinkText.get -> string?
+Trailblazor.TbAppShell.SkipLinkText.set -> void
+Trailblazor.TbAppShell.TbAppShell() -> void
+Trailblazor.TbNavGroup
+Trailblazor.TbNavGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbNavGroup.ChildContent.set -> void
+Trailblazor.TbNavGroup.Expanded.get -> bool
+Trailblazor.TbNavGroup.Expanded.set -> void
+Trailblazor.TbNavGroup.ExpandedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbNavGroup.ExpandedChanged.set -> void
+Trailblazor.TbNavGroup.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbNavGroup.Icon.set -> void
+Trailblazor.TbNavGroup.TbNavGroup() -> void
+Trailblazor.TbNavGroup.Text.get -> string!
+Trailblazor.TbNavGroup.Text.set -> void
+Trailblazor.TbNavLink
+Trailblazor.TbNavLink.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbNavLink.ChildContent.set -> void
+Trailblazor.TbNavLink.Dispose() -> void
+Trailblazor.TbNavLink.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbNavLink.End.set -> void
+Trailblazor.TbNavLink.Href.get -> string!
+Trailblazor.TbNavLink.Href.set -> void
+Trailblazor.TbNavLink.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbNavLink.Icon.set -> void
+Trailblazor.TbNavLink.Match.get -> Microsoft.AspNetCore.Components.Routing.NavLinkMatch
+Trailblazor.TbNavLink.Match.set -> void
+Trailblazor.TbNavLink.TbNavLink() -> void
+Trailblazor.TbNavMenu
+Trailblazor.TbNavMenu.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbNavMenu.ChildContent.set -> void
+Trailblazor.TbNavMenu.TbNavMenu() -> void
+Trailblazor.TbNavMenu.TelemetryName.get -> string?
+Trailblazor.TbNavMenu.TelemetryName.set -> void
+const Trailblazor.TbStrings.AppShellMenu = "AppShell.Menu" -> string!
+const Trailblazor.TbStrings.AppShellNavigation = "AppShell.Navigation" -> string!
+const Trailblazor.TbStrings.AppShellSkipToContent = "AppShell.SkipToContent" -> string!
+override Trailblazor.TbAppShell.OnInitialized() -> void
+override Trailblazor.TbAppShell.OnParametersSet() -> void
+override Trailblazor.TbNavGroup.OnInitialized() -> void
+override Trailblazor.TbNavGroup.OnParametersSet() -> void
+override Trailblazor.TbNavLink.OnInitialized() -> void
+override Trailblazor.TbNavLink.OnParametersSet() -> void
+override Trailblazor.TbNavMenu.OnAfterRender(bool firstRender) -> void
+~override Trailblazor.TbAppBar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbAppShell.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbNavGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbNavLink.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbNavMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

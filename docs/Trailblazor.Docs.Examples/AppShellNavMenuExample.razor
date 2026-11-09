@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Components.Routing
+
+<nav aria-label="Account" style="max-inline-size: 18rem">
+    <TbNavMenu>
+        <TbNavLink Href="" Match="NavLinkMatch.All" Icon="ExampleIcons.Trail">Home</TbNavLink>
+        <TbNavLink Href="components/badge" Icon="ExampleIcons.Bell">
+            <ChildContent>Messages</ChildContent>
+            <End><TbBadge Count="3" Tone="Tone.Neutral" Label="3 new" /></End>
+        </TbNavLink>
+        <TbNavGroup Text="Settings" Icon="ExampleIcons.Filter">
+            <TbNavLink Href="components/text-field">Profile</TbNavLink>
+            <TbNavLink Href="components/switch">Notifications</TbNavLink>
+        </TbNavGroup>
+    </TbNavMenu>
+</nav>

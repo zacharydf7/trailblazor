@@ -25,7 +25,6 @@ public static class UpcomingCatalog
 {
     public static IReadOnlyList<UpcomingComponent> All { get; } =
     [
-        new("App shell", ExampleCategory.Layout, 58),
         new("Dashboard tile layout", ExampleCategory.Layout, 204),
         new("Dock manager", ExampleCategory.Layout, 75),
         new("Masonry layout", ExampleCategory.Layout, 193),
