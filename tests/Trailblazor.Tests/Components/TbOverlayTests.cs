@@ -94,6 +94,29 @@ public class TbOverlayTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=overlay]"));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldGiveTheOverlayALaterOpenOrder_WhenItIsClosedAndShownAgain(bool byClick)
+    {
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+            .Add(overlay => overlay.CloseOnClick, true));
+        var other = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true));
+        if (byClick)
+        {
+            cut.Find("[data-part=scrim]").Click();
+        }
+        else
+        {
+            cut.Render(parameters => parameters.Add(overlay => overlay.Visible, false));
+        }
+
+        cut.Render(parameters => parameters.Add(overlay => overlay.Visible, true));
+
+        Assert.True(long.Parse(cut.Find("[data-part=overlay]").GetAttribute("data-open-order")!)
+            > long.Parse(other.Find("[data-part=overlay]").GetAttribute("data-open-order")!));
+    }
+
     [Fact]
     public void Click_ShouldOnlyReportTheClick_WhenCloseOnClickIsOff()
     {

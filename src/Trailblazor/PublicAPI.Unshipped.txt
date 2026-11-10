@@ -4051,3 +4051,4 @@ Trailblazor.TbRadioGroup<TValue>.Segmented.get -> bool
 Trailblazor.TbRadioGroup<TValue>.Segmented.set -> void
 static Trailblazor.Icon.FromSvg(string! svg) -> Trailblazor.Icon
 ~override Trailblazor.TbVirtualList<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbOverlay.OnParametersSet() -> void

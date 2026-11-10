@@ -11,7 +11,7 @@
 {
     @* data-ready shows that Escape is wired, which happens just after the overlay appears. *@
     <div @attributes="AdditionalAttributes" @ref="_overlay" data-part="overlay" style="@Style"
-         data-ready="@(_layer is null ? null : "")"
+         data-ready="@(_layer is null ? null : "")" data-open-order="@_openOrder"
          class="@ClassNames.Join("tb-overlay", Contained ? "tb-overlay--contained" : "tb-overlay--fixed",
                     Blur ? "tb-overlay--blur" : null, Transparent ? "tb-overlay--transparent" : null,
                     LockScroll && !Contained ? "tb-overlay--lock-scroll" : null, Class)">
@@ -29,6 +29,8 @@
     private IJSObjectReference? _block;
     private bool _blocking;
     private bool _disposed;
+    private static long _lastOpenOrder;
+    private long _openOrder;
 
     /// <summary>Shows the overlay. Bind it with <c>@bind-Visible</c> when clicks or Escape can close it.</summary>
     [Parameter]
@@ -75,6 +77,19 @@
     /// <summary>Content shown in the overlay's center, such as a message or a <see cref="TbProgress"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (!Visible)
+        {
+            _openOrder = 0;
+        }
+        else if (_openOrder == 0)
+        {
+            _openOrder = Interlocked.Increment(ref _lastOpenOrder);
+        }
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -169,6 +184,7 @@
     private async Task CloseAsync()
     {
         Visible = false;
+        _openOrder = 0;
         await VisibleChanged.InvokeAsync(false);
     }
 

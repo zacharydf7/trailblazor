@@ -30,7 +30,13 @@ export function blockBehind(overlay, contained, outsidePopups) {
         return null;
     }
 
-    const usable = [...alwaysUsable, ...ownParts, ...outsidePopups].join(', ');
+    // Overlays opened after this one and drawn above it stay usable, as their own block may have run first or not yet.
+    // A contained overlay is never above a page overlay.
+    const order = Number(overlay.dataset.openOrder);
+    const later = [...document.querySelectorAll(contained ? '[data-open-order]' : '.tb-overlay--fixed[data-open-order]')]
+        .filter(other => Number(other.dataset.openOrder) > order)
+        .map(other => `[data-open-order="${other.dataset.openOrder}"]`);
+    const usable = [...alwaysUsable, ...ownParts, ...outsidePopups, ...later].join(', ');
     const top = contained ? overlay.offsetParent ?? overlay.parentElement : document.body;
     const focused = document.activeElement;
     const elements = [];

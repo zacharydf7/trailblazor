@@ -224,6 +224,33 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Overlay_ShouldLeaveTheLaterOverlayUsable_WhenTwoBlockingOverlaysOpenTogether(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Both" }).ClickAsync();
+        await Expect(page.Locator("[inert]").GetByText("Second", new() { Exact = true })).ToHaveCountAsync(1);
+        var close = page.GetByRole(AriaRole.Button, new() { Name = "Close the first" });
+
+        Assert.False(await close.EvaluateAsync<bool>("button => !!button.closest('[inert]')"));
+        await close.ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Second", IncludeHidden = true }))
+            .ToHaveCountAsync(0);
+        Assert.True(await page.GetByRole(AriaRole.Button, new() { Name = "First", Exact = true })
+            .EvaluateAsync<bool>("button => !!button.closest('[inert]')"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Overlay_ShouldKeepALaterContainedOverlayInert_WhenAPageOverlayIsBlockingAboveIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Page and card" }).ClickAsync();
+
+        await Expect(page.Locator("[inert]").GetByText("Cancel loading")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Overlay_ShouldMakeOnlyItsRegionInert_WhenAContainedOverlayIsBlocking(string browser)
     {
         var page = await OpenAsync(browser, "/examples/overlay");

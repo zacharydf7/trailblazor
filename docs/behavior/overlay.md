@@ -37,6 +37,8 @@ Familiar apps: loading scrims over a card or a page, the shade behind a lightbox
 - [x] Focus that was behind a `Blocking` overlay goes back when it closes. `OverlayTests.Overlay_ShouldKeepFocusFromThePageAndGiveItBack_WhenAPageOverlayIsBlocking`
 - [x] Focus the user moved elsewhere stays there. `overlay.js`
 - [x] What a second `Blocking` overlay covers stays inert when the first closes. `OverlayTests.Overlay_ShouldKeepThePageBlocked_WhenTheFirstOfTwoBlockingOverlaysClosesFirst`
+- [x] Of two `Blocking` page overlays opened close together, the later one stays usable. `OverlayTests.Overlay_ShouldLeaveTheLaterOverlayUsable_WhenTwoBlockingOverlaysOpenTogether`, `TbOverlayTests.Render_ShouldGiveTheOverlayALaterOpenOrder_WhenItIsClosedAndShownAgain`
+- [x] A contained overlay opened after a `Blocking` page overlay stays inert, since it is drawn below. `OverlayTests.Overlay_ShouldKeepALaterContainedOverlayInert_WhenAPageOverlayIsBlockingAboveIt`
 - [x] Dialogs, toasts and announcements stay usable above a `Blocking` overlay. `overlay.js`
 
 ## Not applicable

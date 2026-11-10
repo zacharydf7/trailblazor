@@ -2,12 +2,23 @@
 
 @* Two blocking page overlays, the second opened from the first and able to close it, so they close out of order. *@
 <TbButton OnClick="() => _first = true">First</TbButton>
+@* Opens both in one render, so the first one's block reaches the page after the second is there. *@
+<TbButton OnClick="() => _first = _second = true">Both</TbButton>
 <TbOverlay Visible="_first" Blocking>
     <TbButton OnClick="() => _second = true">Second</TbButton>
 </TbOverlay>
 <TbOverlay Visible="_second" Blocking>
     <TbButton OnClick="() => _first = false">Close the first</TbButton>
 </TbOverlay>
+
+@* A blocking page overlay and a card's contained one, opened in one render: the card's opens second but is drawn below. *@
+<TbButton OnClick="() => _page = _card = true">Page and card</TbButton>
+<TbOverlay Visible="_page" Blocking />
+<div style="position: relative">
+    <TbOverlay Visible="_card" Contained Blocking>
+        <TbButton>Cancel loading</TbButton>
+    </TbOverlay>
+</div>
 
 @* A closable overlay with a menu, a popover and a dialog that open above it. *@
 <TbButton OnClick="() => _closable = true">Closable</TbButton>
@@ -64,4 +75,6 @@
     private bool _modal;
     private bool _first;
     private bool _second;
+    private bool _page;
+    private bool _card;
 }
