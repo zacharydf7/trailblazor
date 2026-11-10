@@ -6,7 +6,8 @@
 </TbStack>
 
 @code {
-    private static readonly Tone[] Tones = [Tone.Primary, Tone.Success, Tone.Warning, Tone.Danger, Tone.Info];
+    private static readonly Tone[] Tones =
+        [Tone.Primary, Tone.Secondary, Tone.Success, Tone.Warning, Tone.Danger, Tone.Info];
 
     // Each person keeps the same color wherever they appear, because it comes from their id.
     private readonly (string Name, Tone Tone)[] _people = new (int Id, string Name)[]

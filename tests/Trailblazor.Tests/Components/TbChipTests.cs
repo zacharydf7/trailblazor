@@ -24,6 +24,36 @@ public class TbChipTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldGiveTheIconItsOwnTone_WhenIconToneIsSet()
+    {
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "New alerts")
+            .Add(chip => chip.Icon, ExampleIcon).Add(chip => chip.IconTone, Tone.Danger));
+
+        Assert.Contains("tb-icon--danger", cut.Find("[data-part=icon]").ClassList);
+        Assert.Contains("tb-chip--neutral", cut.Find(".tb-chip").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldIgnoreIconTone_WhenTheChipIsFilled()
+    {
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "New alerts")
+            .Add(chip => chip.Icon, ExampleIcon).Add(chip => chip.IconTone, Tone.Danger)
+            .Add(chip => chip.Variant, Variant.Filled));
+
+        Assert.Equal(["tb-icon", "tb-icon--small"], cut.Find("[data-part=icon]").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldLetTheIconTakeTheChipsColor_WhenIconToneIsNotSet()
+    {
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Field notes")
+            .Add(chip => chip.Icon, ExampleIcon).Add(chip => chip.Tone, Tone.Secondary));
+
+        Assert.Equal(["tb-icon", "tb-icon--small"], cut.Find("[data-part=icon]").ClassList);
+        Assert.Contains("tb-chip--secondary", cut.Find(".tb-chip").ClassList);
+    }
+
+    [Fact]
     public void Click_ShouldToggleAndShowACheck_WhenBoundToSelected()
     {
         bool? selected = null;

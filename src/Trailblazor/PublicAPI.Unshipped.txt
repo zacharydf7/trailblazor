@@ -1768,6 +1768,8 @@ Trailblazor.TbChip.Href.get -> string?
 Trailblazor.TbChip.Href.set -> void
 Trailblazor.TbChip.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbChip.Icon.set -> void
+Trailblazor.TbChip.IconTone.get -> Trailblazor.Tone?
+Trailblazor.TbChip.IconTone.set -> void
 Trailblazor.TbChip.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
 Trailblazor.TbChip.OnClick.set -> void
 Trailblazor.TbChip.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
@@ -3198,12 +3200,13 @@ Trailblazor.ToastSettings.Position.get -> Trailblazor.ToastPosition
 Trailblazor.ToastSettings.Position.set -> void
 Trailblazor.ToastSettings.ToastSettings() -> void
 Trailblazor.Tone
-Trailblazor.Tone.Danger = 4 -> Trailblazor.Tone
-Trailblazor.Tone.Info = 5 -> Trailblazor.Tone
-Trailblazor.Tone.Neutral = 1 -> Trailblazor.Tone
+Trailblazor.Tone.Danger = 5 -> Trailblazor.Tone
+Trailblazor.Tone.Info = 6 -> Trailblazor.Tone
+Trailblazor.Tone.Neutral = 2 -> Trailblazor.Tone
 Trailblazor.Tone.Primary = 0 -> Trailblazor.Tone
-Trailblazor.Tone.Success = 2 -> Trailblazor.Tone
-Trailblazor.Tone.Warning = 3 -> Trailblazor.Tone
+Trailblazor.Tone.Secondary = 1 -> Trailblazor.Tone
+Trailblazor.Tone.Success = 3 -> Trailblazor.Tone
+Trailblazor.Tone.Warning = 4 -> Trailblazor.Tone
 Trailblazor.TooltipSettings
 Trailblazor.TooltipSettings.HideDelay.get -> System.TimeSpan
 Trailblazor.TooltipSettings.HideDelay.set -> void

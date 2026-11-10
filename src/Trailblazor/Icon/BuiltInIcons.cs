@@ -95,7 +95,7 @@ internal static class BuiltInIcons
         + "3.5 1.4-1.4L5.8 13H11v5.2l-1.1-1.1-1.4 1.4L12 22l3.5-3.5-1.4-1.4-1.1 1.1V13h5.2l-1.1 1.1 1.4 1.4L22 12l-3.5"
         + "-3.5-1.4 1.4 1.1 1.1H13V5.8l1.1 1.1 1.4-1.4z\" />");
 
-    // The icon that backs a status tone's color; primary and neutral have none.
+    // The icon that backs a status tone's color; only the status tones have one.
     public static Icon? ForTone(Tone tone) => tone switch
     {
         Tone.Success => Success,

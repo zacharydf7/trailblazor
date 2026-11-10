@@ -184,7 +184,8 @@
             The primary's hover, pressed, subtle and text colors and the focus ring are worked out from
             <code>--tb-color-primary</code> wherever it is set: on the page, in a palette, or in an element's
             <code>style</code>. So one color re-themes a part of a page, states included. You can still set any of the
-            derived tokens yourself, on the same element as the primary.
+            derived tokens yourself, on the same element as the primary. The secondary's hover, pressed, subtle and
+            text colors follow <code>--tb-color-secondary</code> the same way.
         </TbText>
         <CodeBlock Label="A primary for part of a page" Code="@RegionPrimary" />
         <DocsCallout Tone="Tone.Warning" Title="A primary set from a class">
@@ -350,7 +351,8 @@
 
 @code {
     private static string TokenValue(string value) =>
-        value.Contains("from var(--tb-color-primary)") ? "From the primary" : value;
+        value.Contains("from var(--tb-color-primary)") ? "From the primary"
+        : value.Contains("from var(--tb-color-secondary)") ? "From the secondary" : value;
 
     private const string DefaultBrand = "#0f766e";
 

@@ -5,7 +5,8 @@ namespace Trailblazor.BrowserTests;
 
 public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    private static readonly string[] Tones = ["primary", "neutral", "success", "warning", "danger", "info"];
+    private static readonly string[] Tones =
+        ["primary", "secondary", "neutral", "success", "warning", "danger", "info"];
 
     private static readonly string[] Palettes = [.. PaletteCatalog.All.Select(palette => palette.Name)];
 
@@ -314,29 +315,45 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/tokens");
 
-        // Reads each state's hue under a region with a teal primary, and the hover under one that also pins it.
-        var hues = await page.EvaluateAsync<double[]>("""
-            () => {
-                const read = (style, token) => {
-                    const host = document.querySelector('main').appendChild(document.createElement('div'));
-                    host.setAttribute('style', style);
-                    const probe = host.appendChild(document.createElement('div'));
-                    probe.style.color = `oklch(from var(${token}) l c h)`;
-                    const hue = Number(getComputedStyle(probe).color.match(/oklch\(\S+ \S+ ([\d.]+)/)[1]);
-                    host.remove();
-                    return hue;
-                };
-                const teal = '--tb-color-primary: oklch(0.52 0.12 190)';
-                return [read(teal, '--tb-color-primary-hover'), read(teal, '--tb-color-primary-active'),
-                    read(teal, '--tb-color-primary-subtle'), read(teal, '--tb-color-primary-text'),
-                    read(teal, '--tb-focus-ring-color'),
-                    read(`${teal}; --tb-color-primary-hover: oklch(0.5 0.1 30)`, '--tb-color-primary-hover')];
-            }
-            """);
+        // Each state's hue under a region with a teal primary, and the hover under one that also pins it.
+        const string teal = "--tb-color-primary: oklch(0.52 0.12 190)";
+        var hues = await RegionHuesAsync(page, (teal, "--tb-color-primary-hover"), (teal, "--tb-color-primary-active"),
+            (teal, "--tb-color-primary-subtle"), (teal, "--tb-color-primary-text"), (teal, "--tb-focus-ring-color"),
+            ($"{teal}; --tb-color-primary-hover: oklch(0.5 0.1 30)", "--tb-color-primary-hover"));
 
         Assert.All(hues[..5], hue => Assert.Equal(190, hue, 1.0));
         Assert.Equal(30, hues[5], 1.0);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SecondaryStates_ShouldFollowASecondarySetOnARegion_WhenOnlyTheSecondaryIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/tokens");
+
+        // Each state's hue under a region with a rose secondary, and the hover under one that also pins it.
+        const string rose = "--tb-color-secondary: oklch(0.52 0.15 10)";
+        var hues = await RegionHuesAsync(page, (rose, "--tb-color-secondary-hover"),
+            (rose, "--tb-color-secondary-active"), (rose, "--tb-color-secondary-subtle"),
+            (rose, "--tb-color-secondary-text"),
+            ($"{rose}; --tb-color-secondary-hover: oklch(0.5 0.1 250)", "--tb-color-secondary-hover"));
+
+        Assert.All(hues[..4], hue => Assert.Equal(10, hue, 1.0));
+        Assert.Equal(250, hues[4], 1.0);
+    }
+
+    // The hue each token takes inside a region with that inline style.
+    private static Task<double[]> RegionHuesAsync(IPage page, params (string Style, string Token)[] reads) =>
+        page.EvaluateAsync<double[]>("""
+            reads => reads.map(([style, token]) => {
+                const host = document.querySelector('main').appendChild(document.createElement('div'));
+                host.setAttribute('style', style);
+                const probe = host.appendChild(document.createElement('div'));
+                probe.style.color = `oklch(from var(${token}) l c h)`;
+                const hue = Number(getComputedStyle(probe).color.match(/oklch\(\S+ \S+ ([\d.]+)/)[1]);
+                host.remove();
+                return hue;
+            })
+            """, reads.Select(read => new[] { read.Style, read.Token }).ToArray());
 
     [Theory, MemberData(nameof(BrowsersAndThemes))]
     public async Task PrimaryStates_ShouldMoveAndKeepTheFocusRingVisible_WhenARegionSetsAnyPrimary(string browser,
@@ -493,8 +510,8 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, MemberData(nameof(BrowsersAndThemes))]
-    public async Task Palettes_ShouldKeepPrimaryApartFromTheStatusColors_WhenTheirPrimaryIsColored(string browser,
-        string theme)
+    public async Task Palettes_ShouldKeepPrimaryAndSecondaryApartFromTheStatusColors_WhenTheyAreColored(
+        string browser, string theme)
     {
         var page = await OpenAsync(browser, "/tokens");
         await SetThemeAsync(page, theme);
@@ -503,20 +520,23 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         foreach (var palette in Palettes)
         {
             await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
-            var (chroma, hue) = ToChromaAndHue(await GetChannelsAsync(page, "--tb-color-primary"));
-            // An ink primary has no hue to mistake for a status color.
-            if (chroma < 0.04)
+            foreach (var brand in new[] { "primary", "secondary" })
             {
-                continue;
-            }
-
-            foreach (var tone in new[] { "success", "warning", "danger", "info" })
-            {
-                var (_, toneHue) = ToChromaAndHue(await GetChannelsAsync(page, $"--tb-color-{tone}"));
-                var apart = Math.Abs(hue - toneHue) is var gap && gap > 180 ? 360 - gap : gap;
-                if (apart < 20)
+                var (chroma, hue) = ToChromaAndHue(await GetChannelsAsync(page, $"--tb-color-{brand}"));
+                // An ink color has no hue to mistake for a status color.
+                if (chroma < 0.04)
                 {
-                    failures.Add($"{palette} primary is {apart:F0} degrees from {tone}");
+                    continue;
+                }
+
+                foreach (var tone in new[] { "success", "warning", "danger", "info" })
+                {
+                    var (_, toneHue) = ToChromaAndHue(await GetChannelsAsync(page, $"--tb-color-{tone}"));
+                    var apart = Math.Abs(hue - toneHue) is var gap && gap > 180 ? 360 - gap : gap;
+                    if (apart < 20)
+                    {
+                        failures.Add($"{palette} {brand} is {apart:F0} degrees from {tone}");
+                    }
                 }
             }
         }

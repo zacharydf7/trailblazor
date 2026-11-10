@@ -2250,7 +2250,8 @@ public static class ExampleCatalog
                 new("filter", "Filter", "`@bind-Selected` makes the chip a toggle, and a selected one shows a check.",
                     typeof(ChipFilterExample)),
                 new("style", "Tone, variant, size and icon", "`Tone`, `Variant` and `Size` set how the chip looks, and "
-                    + "`Icon` adds an icon before its text.", typeof(ChipStyleExample)),
+                    + "`Icon` adds an icon before its text. `IconTone` gives the icon a tone of its own, such as a red "
+                    + "bell on a neutral chip.", typeof(ChipStyleExample)),
                 new("actions", "Links and buttons", "`Href` makes the chip a link and `OnClick` a button, and either "
                     + "can also have `OnClose`.", typeof(ChipActionExample)),
                 new("disabled", "Disabled", "`Disabled` turns off the chip and its remove button.",

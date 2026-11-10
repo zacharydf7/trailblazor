@@ -56,6 +56,12 @@
     [Parameter]
     public Icon? Icon { get; set; }
 
+    /// <summary>Gives <see cref="Icon"/> a tone of its own, such as a red bell on a neutral chip. A filled chip
+    /// ignores it, since another tone's color can't stand out from the fill. When null, the icon takes the chip's
+    /// color.</summary>
+    [Parameter]
+    public Tone? IconTone { get; set; }
+
     /// <summary>The chip's meaning, which sets its color. Defaults to <see cref="Trailblazor.Tone.Neutral"/>.
     /// </summary>
     [Parameter]
@@ -129,7 +135,8 @@
             }
             else if (Icon is Icon icon)
             {
-                <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+                <TbIcon Icon="icon" Size="Size.Small" Tone="@(Variant == Variant.Filled ? null : IconTone)"
+                        data-part="icon" />
             }
             <span data-part="label" class="tb-chip__label">
                 @if (ChildContent is null)

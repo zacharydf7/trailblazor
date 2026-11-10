@@ -439,6 +439,8 @@
         /* The primary action is ink: near-black in light mode, near-white in dark. */
         --tb-color-primary: light-dark(var(--tb-graphite-900), var(--tb-graphite-50));
         --tb-color-on-primary: light-dark(white, var(--tb-graphite-950));
+        --tb-color-secondary: light-dark(var(--tb-blue-600), var(--tb-blue-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-graphite-950));
 
         --tb-color-neutral: light-dark(var(--tb-graphite-700), var(--tb-graphite-300));
         --tb-color-neutral-hover: light-dark(var(--tb-graphite-800), var(--tb-graphite-200));
@@ -461,6 +463,8 @@
         --tb-border-strong: light-dark(var(--tb-gray-500), var(--tb-gray-400));
         --tb-color-primary: light-dark(var(--tb-blue-600), var(--tb-blue-400));
         --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
+        --tb-color-secondary: light-dark(var(--tb-teal-600), var(--tb-teal-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-gray-950));
         --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
         --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
         --tb-color-neutral-active: light-dark(var(--tb-gray-900), var(--tb-gray-100));
@@ -481,6 +485,8 @@
         --tb-border-strong: light-dark(var(--tb-gray-500), var(--tb-gray-400));
         --tb-color-primary: light-dark(var(--tb-gray-800), var(--tb-gray-100));
         --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
+        --tb-color-secondary: light-dark(var(--tb-teal-600), var(--tb-teal-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-gray-950));
         --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
         --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
         --tb-color-neutral-active: light-dark(var(--tb-gray-900), var(--tb-gray-100));
@@ -501,6 +507,8 @@
         --tb-border-strong: light-dark(var(--tb-stone-500), var(--tb-stone-400));
         --tb-color-primary: light-dark(var(--tb-stone-800), var(--tb-stone-100));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
+        --tb-color-secondary: light-dark(var(--tb-moss-600), var(--tb-moss-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-stone-950));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
         --tb-color-neutral-active: light-dark(var(--tb-stone-900), var(--tb-stone-100));
@@ -521,6 +529,8 @@
         --tb-border-strong: light-dark(var(--tb-stone-500), var(--tb-stone-400));
         --tb-color-primary: light-dark(var(--tb-clay-600), var(--tb-clay-400));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
+        --tb-color-secondary: light-dark(var(--tb-teal-600), var(--tb-teal-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-stone-950));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
         --tb-color-neutral-active: light-dark(var(--tb-stone-900), var(--tb-stone-100));
@@ -541,6 +551,8 @@
         --tb-border-strong: light-dark(var(--tb-gray-500), var(--tb-gray-400));
         --tb-color-primary: light-dark(var(--tb-indigo-600), var(--tb-indigo-400));
         --tb-color-on-primary: light-dark(white, var(--tb-gray-950));
+        --tb-color-secondary: light-dark(var(--tb-fuchsia-600), var(--tb-fuchsia-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-gray-950));
         --tb-color-neutral: light-dark(var(--tb-gray-700), var(--tb-gray-300));
         --tb-color-neutral-hover: light-dark(var(--tb-gray-800), var(--tb-gray-200));
         --tb-color-neutral-active: light-dark(var(--tb-gray-900), var(--tb-gray-100));
@@ -561,6 +573,8 @@
         --tb-border-strong: light-dark(var(--tb-mauve-500), var(--tb-mauve-400));
         --tb-color-primary: light-dark(var(--tb-violet-600), var(--tb-violet-400));
         --tb-color-on-primary: light-dark(white, var(--tb-mauve-950));
+        --tb-color-secondary: light-dark(var(--tb-teal-600), var(--tb-teal-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-mauve-950));
         --tb-color-neutral: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
         --tb-color-neutral-hover: light-dark(var(--tb-mauve-800), var(--tb-mauve-200));
         --tb-color-neutral-active: light-dark(var(--tb-mauve-900), var(--tb-mauve-100));
@@ -581,6 +595,8 @@
         --tb-border-strong: light-dark(var(--tb-mauve-500), var(--tb-mauve-400));
         --tb-color-primary: light-dark(var(--tb-plum-600), var(--tb-plum-400));
         --tb-color-on-primary: light-dark(white, var(--tb-mauve-950));
+        --tb-color-secondary: light-dark(var(--tb-teal-600), var(--tb-teal-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-mauve-950));
         --tb-color-neutral: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
         --tb-color-neutral-hover: light-dark(var(--tb-mauve-800), var(--tb-mauve-200));
         --tb-color-neutral-active: light-dark(var(--tb-mauve-900), var(--tb-mauve-100));
@@ -601,6 +617,8 @@
         --tb-border-strong: light-dark(var(--tb-mauve-500), var(--tb-mauve-400));
         --tb-color-primary: light-dark(var(--tb-fuchsia-600), var(--tb-fuchsia-400));
         --tb-color-on-primary: light-dark(white, var(--tb-mauve-950));
+        --tb-color-secondary: light-dark(var(--tb-violet-600), var(--tb-violet-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-mauve-950));
         --tb-color-neutral: light-dark(var(--tb-mauve-700), var(--tb-mauve-300));
         --tb-color-neutral-hover: light-dark(var(--tb-mauve-800), var(--tb-mauve-200));
         --tb-color-neutral-active: light-dark(var(--tb-mauve-900), var(--tb-mauve-100));
@@ -621,6 +639,8 @@
         --tb-border-strong: light-dark(var(--tb-stone-500), var(--tb-stone-400));
         --tb-color-primary: light-dark(var(--tb-rose-600), var(--tb-rose-400));
         --tb-color-on-primary: light-dark(white, var(--tb-stone-950));
+        --tb-color-secondary: light-dark(var(--tb-plum-600), var(--tb-plum-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-stone-950));
         --tb-color-neutral: light-dark(var(--tb-stone-700), var(--tb-stone-300));
         --tb-color-neutral-hover: light-dark(var(--tb-stone-800), var(--tb-stone-200));
         --tb-color-neutral-active: light-dark(var(--tb-stone-900), var(--tb-stone-100));
@@ -641,6 +661,8 @@
         --tb-border-strong: light-dark(var(--tb-sage-500), var(--tb-sage-400));
         --tb-color-primary: light-dark(var(--tb-moss-600), var(--tb-moss-400));
         --tb-color-on-primary: light-dark(white, var(--tb-sage-950));
+        --tb-color-secondary: light-dark(var(--tb-clay-600), var(--tb-clay-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-sage-950));
         --tb-color-neutral: light-dark(var(--tb-sage-700), var(--tb-sage-300));
         --tb-color-neutral-hover: light-dark(var(--tb-sage-800), var(--tb-sage-200));
         --tb-color-neutral-active: light-dark(var(--tb-sage-900), var(--tb-sage-100));
@@ -661,6 +683,8 @@
         --tb-border-strong: light-dark(var(--tb-sage-500), var(--tb-sage-400));
         --tb-color-primary: light-dark(var(--tb-teal-600), var(--tb-teal-400));
         --tb-color-on-primary: light-dark(white, var(--tb-sage-950));
+        --tb-color-secondary: light-dark(var(--tb-indigo-600), var(--tb-indigo-400));
+        --tb-color-on-secondary: light-dark(white, var(--tb-sage-950));
         --tb-color-neutral: light-dark(var(--tb-sage-700), var(--tb-sage-300));
         --tb-color-neutral-hover: light-dark(var(--tb-sage-800), var(--tb-sage-200));
         --tb-color-neutral-active: light-dark(var(--tb-sage-900), var(--tb-sage-100));
@@ -687,6 +711,26 @@
             oklch(from var(--tb-color-primary) max(l, 0.81) calc(c * 0.72) h));
         --tb-focus-ring-color: light-dark(oklch(from var(--tb-color-primary) min(l, 0.55) c h),
             oklch(from var(--tb-color-primary) max(l, 0.81) calc(c * 0.72) h));
+    }
+
+    /* Derived from a secondary the same way as the primary's, wherever one is set. */
+    :where(:root, [data-tb-palette], [style*="--tb-color-secondary:"]) {
+        --tb-color-secondary-hover: light-dark(
+            oklch(from var(--tb-color-secondary) calc(l - 0.06 + 0.12 * clamp(0, (0.2 - l) * 1000, 1)) calc(c * 0.92)
+                h),
+            oklch(from var(--tb-color-secondary) calc(l + 0.1 - 0.16 * clamp(0, (l - 0.79) * 1000, 1)) calc(c * 0.72)
+                h));
+        --tb-color-secondary-active: light-dark(
+            oklch(from var(--tb-color-secondary) calc(l - 0.12 + 0.24 * clamp(0, (0.2 - l) * 1000, 1)) calc(c * 0.78)
+                h),
+            oklch(from var(--tb-color-secondary) calc(l + 0.18 - 0.32 * clamp(0, (l - 0.79) * 1000, 1))
+                calc(c * 0.48) h));
+        --tb-color-secondary-subtle: light-dark(
+            oklch(from var(--tb-color-secondary) calc(0.89 + 0.055 * min(c / 0.05, 1)) calc(c * 0.3) h),
+            oklch(from var(--tb-color-secondary) calc(0.47 - 0.14 * min(c / 0.05, 1)) calc(c * 0.75) h));
+        --tb-color-secondary-text: light-dark(
+            oklch(from var(--tb-color-secondary) min(l, 0.47) calc(c * 0.92) h),
+            oklch(from var(--tb-color-secondary) max(l, 0.81) calc(c * 0.72) h));
     }
 
     /* Hover and press tint whatever is under them with the text color, so they show on any surface; a region with
@@ -786,6 +830,10 @@
 
     .tb-text--info {
         color: var(--tb-color-info-text);
+    }
+
+    .tb-text--secondary {
+        color: var(--tb-color-secondary-text);
     }
 
     /* Always underlined, so a link never relies on color alone to stand out from the text around it. */
@@ -892,6 +940,11 @@
     .tb-avatar--info {
         --tb-avatar-subtle: var(--tb-color-info-subtle);
         --tb-avatar-text: var(--tb-color-info-text);
+    }
+
+    .tb-avatar--secondary {
+        --tb-avatar-subtle: var(--tb-color-secondary-subtle);
+        --tb-avatar-text: var(--tb-color-secondary-text);
     }
 
     .tb-avatar .tb-avatar__icon {
@@ -1083,6 +1136,11 @@
     .tb-badge--info {
         --tb-badge-fill: var(--tb-color-info);
         --tb-badge-on-fill: var(--tb-color-on-info);
+    }
+
+    .tb-badge--secondary {
+        --tb-badge-fill: var(--tb-color-secondary);
+        --tb-badge-on-fill: var(--tb-color-on-secondary);
     }
 
     /* A textless dot is under 3:1 in amber on a light surface, so it takes the warning text tone. */
@@ -1337,6 +1395,13 @@
         --tb-chip-on-fill: var(--tb-color-on-info);
         --tb-chip-subtle: var(--tb-color-info-subtle);
         --tb-chip-text: var(--tb-color-info-text);
+    }
+
+    .tb-chip--secondary {
+        --tb-chip-fill: var(--tb-color-secondary);
+        --tb-chip-on-fill: var(--tb-color-on-secondary);
+        --tb-chip-subtle: var(--tb-color-secondary-subtle);
+        --tb-chip-text: var(--tb-color-secondary-text);
     }
 
     .tb-chip--filled {
@@ -1928,6 +1993,10 @@
         color: var(--tb-color-info-text);
     }
 
+    .tb-icon--secondary {
+        color: var(--tb-color-secondary-text);
+    }
+
     /* Each tone sets the button's own tokens; each variant decides which of them it paints with. */
     .tb-button--primary {
         --tb-button-fill: var(--tb-color-primary);
@@ -1981,6 +2050,15 @@
         --tb-button-on-fill: var(--tb-color-on-info);
         --tb-button-subtle: var(--tb-color-info-subtle);
         --tb-button-text: var(--tb-color-info-text);
+    }
+
+    .tb-button--secondary {
+        --tb-button-fill: var(--tb-color-secondary);
+        --tb-button-fill-hover: var(--tb-color-secondary-hover);
+        --tb-button-fill-active: var(--tb-color-secondary-active);
+        --tb-button-on-fill: var(--tb-color-on-secondary);
+        --tb-button-subtle: var(--tb-color-secondary-subtle);
+        --tb-button-text: var(--tb-color-secondary-text);
     }
 
     .tb-button {
@@ -2611,6 +2689,11 @@
         --tb-banner-accent: var(--tb-color-info-text);
     }
 
+    .tb-banner--secondary {
+        --tb-banner-subtle: var(--tb-color-secondary-subtle);
+        --tb-banner-accent: var(--tb-color-secondary-text);
+    }
+
     .tb-banner__inner {
         display: flex;
         flex-wrap: wrap;
@@ -2753,6 +2836,13 @@
         --tb-alert-accent: var(--tb-color-info-text);
         --tb-alert-fill: var(--tb-color-info);
         --tb-alert-on-fill: var(--tb-color-on-info);
+    }
+
+    .tb-alert--secondary {
+        --tb-alert-subtle: var(--tb-color-secondary-subtle);
+        --tb-alert-accent: var(--tb-color-secondary-text);
+        --tb-alert-fill: var(--tb-color-secondary);
+        --tb-alert-on-fill: var(--tb-color-on-secondary);
     }
 
     .tb-alert__icon {
@@ -2987,6 +3077,10 @@
 
     .tb-progress--info {
         --tb-progress-fill: var(--tb-color-info-text);
+    }
+
+    .tb-progress--secondary {
+        --tb-progress-fill: var(--tb-color-secondary-text);
     }
 
     /* A still partial indicator would read as a real value, so reduced motion fills it and pulses instead. */
@@ -3365,6 +3459,14 @@
     .tb-checkbox-group--info {
         --tb-choice-fill: var(--tb-color-info);
         --tb-choice-on-fill: var(--tb-color-on-info);
+    }
+
+    .tb-checkbox--secondary,
+    .tb-switch--secondary,
+    .tb-radio-group--secondary,
+    .tb-checkbox-group--secondary {
+        --tb-choice-fill: var(--tb-color-secondary);
+        --tb-choice-on-fill: var(--tb-color-on-secondary);
     }
 
     /* The warning fill is too light to stand out from a light page, so checked warning controls take its text color. */
@@ -4870,6 +4972,11 @@
         --tb-timeline-on-fill: var(--tb-color-on-info);
     }
 
+    .tb-timeline__item--secondary {
+        --tb-timeline-fill: var(--tb-color-secondary);
+        --tb-timeline-on-fill: var(--tb-color-on-secondary);
+    }
+
     /* The dot sits beside the first line of text, and the line below it runs to the next event's dot. */
     .tb-timeline__marker {
         display: flex;
@@ -4957,6 +5064,10 @@
 
     .tb-rating--info {
         --tb-rating-on: var(--tb-color-info);
+    }
+
+    .tb-rating--secondary {
+        --tb-rating-on: var(--tb-color-secondary);
     }
 
     .tb-rating--neutral {
@@ -6238,6 +6349,10 @@
 
     .tb-toast--info {
         --tb-toast-accent: var(--tb-color-info-text);
+    }
+
+    .tb-toast--secondary {
+        --tb-toast-accent: var(--tb-color-secondary-text);
     }
 
     .tb-file-upload__zone,

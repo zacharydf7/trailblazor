@@ -24,7 +24,8 @@ public static partial class DesignTokens
         "--tb-tree-item-height", "--tb-tree-item-radius",
     ];
 
-    private static readonly string[] Tones = ["primary", "neutral", "success", "warning", "danger", "info"];
+    private static readonly string[] Tones =
+        ["primary", "secondary", "neutral", "success", "warning", "danger", "info"];
 
     private static readonly string[] PageColors =
         ["--tb-color-background", "--tb-color-surface", "--tb-color-text", "--tb-border-"];

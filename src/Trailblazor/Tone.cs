@@ -4,6 +4,7 @@ namespace Trailblazor;
 public enum Tone
 {
     Primary,
+    Secondary,
     Neutral,
     Success,
     Warning,
