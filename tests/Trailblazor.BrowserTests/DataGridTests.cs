@@ -1145,22 +1145,6 @@ public class DataGridTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task CellEdit_ShouldSaveAChoiceClickedInItsList_WhenTheListIsOpen(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
-        var cell = grid.Locator("tr[data-key='2'] td[data-column=Difficulty]");
-
-        await cell.DblClickAsync();
-        await cell.GetByRole(AriaRole.Combobox).ClickAsync();
-        await cell.GetByRole(AriaRole.Option, new() { Name = "Moderate" }).ClickAsync();
-
-        await Expect(Readout(page, "Last cell saved")).ToHaveTextAsync("Saved Difficulty of Eagle Ridge traverse.");
-        await Expect(cell).ToHaveTextAsync("Moderate");
-        await Expect(grid.Locator("tr[data-key='2']")).ToHaveAttributeAsync("aria-selected", "true");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CellEdit_ShouldKeepFocusInTheGrid_WhenTheSavedRowSortsElsewhere(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");

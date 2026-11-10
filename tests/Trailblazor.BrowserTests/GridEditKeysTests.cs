@@ -188,6 +188,23 @@ public class GridEditKeysTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellEdit_ShouldSaveAChoiceClickedInItsList_WhenTheListIsOpen(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        var cell = Cell(page, 2, "Difficulty");
+
+        await cell.DblClickAsync();
+        // A click opens the editor's list only after its script attaches, which a slow link delays.
+        await Expect(cell.GetByRole(AriaRole.Combobox)).ToHaveAttributeAsync("data-ready", "");
+        await cell.GetByRole(AriaRole.Combobox).ClickAsync();
+        await cell.GetByRole(AriaRole.Option, new() { Name = "Moderate" }).ClickAsync();
+
+        await Expect(Saved(page)).ToHaveTextAsync("Saved Difficulty of Eagle Ridge traverse.");
+        await Expect(cell).ToHaveTextAsync("Moderate");
+        await Expect(Grid(page).Locator("tr[data-key='2']")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tab_ShouldSaveWhatWasTyped_WhenTheEditorsFieldCommitsOnChange(string browser)
     {
         var page = await OpenAsync(browser, "/grid-edit-keys");
