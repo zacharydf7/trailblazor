@@ -6482,11 +6482,13 @@ public static class ExampleCatalog
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
-                new("resize-columns", "Resize columns", "With `ResizableColumns`, the user resizes a column by "
-                    + "dragging its header's edge, or from its column menu, which the keys and a single click reach. "
-                    + "The first resize fixes every column at its width, so the others hold still, and `State` keeps "
-                    + "the widths. A column's `MinWidth` is the narrowest it goes, and `Resizable=\"false\"` opts it "
-                    + "out.", typeof(DataGridResizeExample)),
+                new("resize-columns", "Resize and move columns", "With `ResizableColumns`, the user resizes a column "
+                    + "by dragging its header's edge, or from its column menu, which the keys and a single click "
+                    + "reach. The first resize fixes every column at its width, so the others hold still. A column's "
+                    + "`MinWidth` is the narrowest it goes, and `Resizable=\"false\"` opts it out. With "
+                    + "`ReorderableColumns`, dragging a header or choosing from its menu moves a column earlier or "
+                    + "later; a pinned column moves only among the columns pinned to its side. `State` keeps the "
+                    + "widths and the order.", typeof(DataGridResizeExample)),
                 new("height", "Fixed height and scrolling to a row", "`Height` gives the rows a box of their own to "
                     + "scroll in, under headers that stay in view. Without cell navigation, Tab reaches the box when the rows "
                     + "overflow it, so the arrow keys can scroll it. `ScrollToAsync` goes to the page that holds a row "
@@ -6640,9 +6642,11 @@ public static class ExampleCatalog
                     + "focus on the page, and so does scrolling the focused row out of view.",
                 "A cell holding just a menu's button or a row's move handle keeps focus until Enter, since those "
                     + "controls use the arrow keys.",
-                "A resizable column has a menu button, named \"Options for\" and the column's title, whose Make wider "
-                    + "and Make narrower items resize it with the keys or a single click, so dragging its edge is "
+                "A resizable or movable column has a menu button, named \"Options for\" and the column's title, whose "
+                    + "items resize it or move it earlier or later with the keys or a single click, so dragging is "
                     + "never the only way. The edge itself is hidden from screen readers.",
+                "After a move from its menu, focus stays on the column's menu button in its new place, and the move "
+                    + "is read out, such as \"Region moved to column 3 of 5\".",
             ],
             AppDuties =
             [
@@ -6739,6 +6743,9 @@ public static class ExampleCatalog
                 "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
                     + "dragging its edge, waiting for the grid to keep the width, and in bUnit as the grid's script "
                     + "reports it. A column's header carries the width the grid keeps in `data-width`.",
+                "A column moves from its menu: `page.Tb().Menu(\"Options for Region\").ChooseAsync(\"Move Region "
+                    + "later\")`, and the same in bUnit with `cut.Tb()`. In bUnit, `Columns` reads the column titles "
+                    + "in the order they show; in Playwright, use `await ColumnsAsync()`.",
                 "In bUnit, `ClickRowAsync(\"Cedar Flats\")` clicks a row as the browser reports it, raising "
                     + "`OnRowClick` and, with `RowClickSelects`, selecting it. A plain `Click()` on the row doesn't.",
                 "Double-click a cell or press Enter on it to edit it. Its field is named for its column, so in bUnit "
@@ -6750,9 +6757,9 @@ public static class ExampleCatalog
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
-                    + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit` or `resize` for each of "
-                    + "those the user does; a move also says whether a "
-                    + "`pointer` or the `keyboard` made it.",
+                    + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize` or `reorder` "
+                    + "for each of those the user does; a `move` also says whether a `pointer` or the `keyboard` "
+                    + "made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
                     + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",
             ],

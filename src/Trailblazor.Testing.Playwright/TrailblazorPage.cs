@@ -952,6 +952,10 @@ public sealed class TbGridLocator(ILocator scope, string name)
     // The render that changes the header or pager marks the table busy until the rows load.
     private Task RowsLoadedAsync() => Assertions.Expect(Table).Not.ToHaveAttributeAsync("aria-busy", "true");
 
+    /// <summary>The columns' titles, in the order they show.</summary>
+    public async Task<IReadOnlyList<string>> ColumnsAsync() => await Table.Locator("thead th[data-title]")
+        .EvaluateAllAsync<string[]>("headers => headers.map(header => header.dataset.title)");
+
     /// <summary>Resizes the column with this title to this many pixels by dragging its header's edge, and waits for
     /// the grid to keep the width. The column stops at its <c>MinWidth</c>.</summary>
     public async Task ResizeColumnAsync(string column, double width)

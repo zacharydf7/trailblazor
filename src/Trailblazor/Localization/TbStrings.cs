@@ -747,6 +747,18 @@ public static class TbStrings
     /// <summary>"Options for {0}": names a data grid column's menu; {0} is the column.</summary>
     public const string DataGridColumnMenu = "DataGrid.ColumnMenu";
 
+    /// <summary>"Move {0} earlier": a column menu item that moves the column one place toward the start of the row;
+    /// {0} is the column.</summary>
+    public const string DataGridEarlier = "DataGrid.Earlier";
+
+    /// <summary>"Move {0} later": a column menu item that moves the column one place toward the end of the row; {0} is
+    /// the column.</summary>
+    public const string DataGridLater = "DataGrid.Later";
+
+    /// <summary>"{0} moved to column {1} of {2}": read out after a column moves from its menu; {0} is the column, {1}
+    /// its new place, counting from 1, and {2} how many columns there are.</summary>
+    public const string DataGridColumnMoved = "DataGrid.ColumnMoved";
+
     /// <summary>"Make {0} wider": a column menu item that widens the column; {0} is the column.</summary>
     public const string DataGridWider = "DataGrid.Wider";
 
@@ -1064,6 +1076,9 @@ public static class TbStrings
         [DataGridCancelRow] = "Cancel editing {0}",
         [DataGridGroupBy] = "Group by",
         [DataGridColumnMenu] = "Options for {0}",
+        [DataGridEarlier] = "Move {0} earlier",
+        [DataGridLater] = "Move {0} later",
+        [DataGridColumnMoved] = "{0} moved to column {1} of {2}",
         [DataGridWider] = "Make {0} wider",
         [DataGridNarrower] = "Make {0} narrower",
         [DataGridResetWidths] = "Reset column widths",

@@ -96,6 +96,10 @@ function registerEvents(blazor) {
         browserEventName: 'tb-column-widths',
         createEventArgs: event => ({ widths: event.detail.widths }),
     });
+    blazor.registerCustomEventType('tbcolumnorder', {
+        browserEventName: 'tb-column-order',
+        createEventArgs: event => ({ order: event.detail.order }),
+    });
     blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
     blazor.registerCustomEventType('tbrichtextchange', {
         browserEventName: 'tb-rich-text-change',

@@ -37,15 +37,21 @@ public sealed record GridState
         init => field = value ?? ReadOnlyDictionary<string, double>.Empty;
     } = ReadOnlyDictionary<string, double>.Empty;
 
+    /// <summary>The columns' keys in the order the user put them, once the user has moved a column of a grid with
+    /// <see cref="TbDataGrid{TItem}.ReorderableColumns"/>; empty until then. A column it doesn't name follows the ones
+    /// it does, and a pinned column stays on its side. A null reads as none.</summary>
+    public IReadOnlyList<string> ColumnOrder { get; init => field = value ?? []; } = [];
+
     /// <summary>Whether the other state has equal sorts, filters and groups in the same order, the same page and page
-    /// size, and the same column widths.</summary>
+    /// size, the same column widths and the same column order.</summary>
     public bool Equals(GridState? other) => other is not null && Sorts.SequenceEqual(other.Sorts)
         && Filters.SequenceEqual(other.Filters) && Groups.SequenceEqual(other.Groups) && Page == other.Page
-        && PageSize == other.PageSize && SameWidths(ColumnWidths, other.ColumnWidths);
+        && PageSize == other.PageSize && SameWidths(ColumnWidths, other.ColumnWidths)
+        && ColumnOrder.SequenceEqual(other.ColumnOrder);
 
     /// <summary>A hash code that equal states share.</summary>
-    public override int GetHashCode() =>
-        HashCode.Combine(Sorts.Count, Filters.Count, Groups.Count, Page, PageSize, ColumnWidths.Count);
+    public override int GetHashCode() => HashCode.Combine(Sorts.Count, Filters.Count, Groups.Count, Page, PageSize,
+        ColumnWidths.Count, ColumnOrder.Count);
 
     internal static bool SameWidths(IReadOnlyDictionary<string, double> one,
         IReadOnlyDictionary<string, double> other) => one.Count == other.Count

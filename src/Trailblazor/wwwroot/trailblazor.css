@@ -6371,6 +6371,40 @@
         touch-action: none;
     }
 
+    /* While a column is dragged, a line marks where it would land. */
+    :where(.tb-data-grid__table th[data-drop]) {
+        position: relative;
+    }
+
+    .tb-data-grid__table th[data-drop]::before {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        inline-size: 2px;
+        background: var(--tb-color-primary);
+    }
+
+    .tb-data-grid__table th[data-drop=before]::before {
+        inset-inline-start: 0;
+    }
+
+    .tb-data-grid__table th[data-drop=after]::before {
+        inset-inline-end: 0;
+    }
+
+    .tb-data-grid__table th[data-moving] {
+        opacity: 0.6;
+    }
+
+    /* A header that drags its column gets a grab cursor, and dragging it doesn't select its title or open a touch
+       callout. */
+    .tb-data-grid__table[data-reorder-columns] th[data-column] {
+        cursor: grab;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
     .tb-data-grid__resize:hover,
     .tb-data-grid__resize[data-dragging] {
         background: linear-gradient(to right, transparent calc(50% - 1px), var(--tb-color-primary) calc(50% - 1px),

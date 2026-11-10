@@ -262,7 +262,7 @@ public class TelemetryNameTests : BunitContext
             .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
             .Add(grid => grid.TelemetryName, "trails").Add(grid => grid.PageSize, 1)
             .Add(grid => grid.PageSizes, [1, 2]).Add(grid => grid.SelectionMode, SelectionMode.Multiple)
-            .Add(grid => grid.ResizableColumns, true)
+            .Add(grid => grid.ResizableColumns, true).Add(grid => grid.ReorderableColumns, true)
             .AddChildContent<TbColumn<Trail>>(column => column.Add(name => name.Field, trail => trail.Name)
                 .Add(name => name.Sortable, true).Add(name => name.Filterable, true)
                 .Add(name => name.Groupable, true).Add(name => name.Editable, true))
@@ -280,10 +280,13 @@ public class TelemetryNameTests : BunitContext
         cut.Find("[data-part=group-toggle]").Click();
         cut.Find("[data-part=group-toggle]").Click();
         await cut.Tb().Grid("Trails").ResizeColumnAsync("Name", 200);
+        await cut.Find("table").TriggerEventAsync("ontbcolumnorder",
+            new ColumnOrderEventArgs { Order = ["Name"] });
 
         Assert.Equal(["trails"], Names(_shown));
         Assert.Equal(
-            ["sort", "page", "page_size", "select", "filter", "edit", "group", "collapse", "expand", "resize"],
+            ["sort", "page", "page_size", "select", "filter", "edit", "group", "collapse", "expand", "resize",
+                "reorder"],
             Uses().Where(use => Equals(use.Name, "trails")).Select(use => use.Action));
     }
 

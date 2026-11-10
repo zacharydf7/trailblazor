@@ -46,6 +46,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private int? _pageSizeFromParent;
     private GridState? _stateFromParent;
     private Dictionary<string, double> _widths = [];
+    private List<string> _order = [];
+    private string? _focusColumnMenu;
     // A provider's first load waits for the columns when a filter read back from JSON needs their types.
     private bool _showForColumns;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
@@ -233,8 +235,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public GridState? State { get; set; }
 
-    /// <summary>Raised when the user sorts, filters, groups or pages the rows, picks another page size, or resizes a
-    /// column.</summary>
+    /// <summary>Raised when the user sorts, filters, groups or pages the rows, picks another page size, or resizes or
+    /// moves a column.</summary>
     [Parameter]
     public EventCallback<GridState> StateChanged { get; set; }
 
@@ -244,6 +246,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <see cref="TbColumn{TItem}.Resizable"/>.</summary>
     [Parameter]
     public bool ResizableColumns { get; set; }
+
+    /// <summary>Lets the user move the columns: by dragging a header past another, or from its column menu, which the
+    /// keys and a single click or tap reach. A pinned column moves only among the columns pinned to its side. The order
+    /// is kept in <see cref="State"/>.</summary>
+    [Parameter]
+    public bool ReorderableColumns { get; set; }
 
     /// <summary>Shades every other row.</summary>
     [Parameter]
@@ -515,6 +523,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 {
                     scroll.Done.TrySetResult();
                 }
+            }
+
+            // The headers trade places as a column moves, so its menu button takes focus back in its new place.
+            if (_focusColumnMenu is { } moved && _handle is not null)
+            {
+                _focusColumnMenu = null;
+                await _handle.InvokeVoidAsync("focusColumnMenu", moved);
             }
         }
         catch (JSDisconnectedException)
@@ -990,12 +1005,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     // Pinned columns show at their side, those pinned at the start first and those pinned at the end last.
+    // Within its side, a column named in the saved order takes its place there, ahead of any it doesn't name.
     private void ArrangeColumns() => _shownColumns = [.. _columns.OrderBy(column => column.Pinned switch
     {
         ColumnPin.Start => 0,
         ColumnPin.End => 2,
         _ => 1,
-    })];
+    }).ThenBy(column => _order.IndexOf(column.Key) is >= 0 and var at ? at : int.MaxValue)];
 
     // The selection and order columns lead each row, so they stay with the columns pinned at the start.
     private bool PinsLead => _shownColumns is [{ Pinned: ColumnPin.Start }, ..];
@@ -1057,6 +1073,45 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             await _handle.InvokeVoidAsync("resizeColumn", column.Key, delta);
         }
+    }
+
+    // A menu with nothing to do would be an empty tab stop, as for a column that can't be resized and is alone on its
+    // pinned side.
+    private bool HasColumnMenu(TbColumn<TItem> column) => CanResize(column)
+        || ReorderableColumns && (NeighborOf(column, -1) ?? NeighborOf(column, 1)) is not null;
+
+    // The neighbor a column trades places with, among the columns pinned to its side.
+    private TbColumn<TItem>? NeighborOf(TbColumn<TItem> column, int by)
+    {
+        var side = _shownColumns.Where(other => other.Pinned == column.Pinned).ToList();
+        var at = side.IndexOf(column) + by;
+        return at >= 0 && at < side.Count ? side[at] : null;
+    }
+
+    private async Task OnColumnOrderAsync(ColumnOrderEventArgs e)
+    {
+        Telemetry.Used(TelemetryName, "reorder");
+        _order = [.. e.Order.Where(key => _columns.Any(column => column.Key == key))];
+        // Rows draw again only when told, and their cells follow the columns' order.
+        _rowVersion++;
+        await StateChangedAsync();
+    }
+
+    private async Task MoveColumnAsync(TbColumn<TItem> column, int by)
+    {
+        if (NeighborOf(column, by) is not { } neighbor)
+        {
+            return;
+        }
+
+        var keys = _shownColumns.Select(other => other.Key).ToList();
+        var (from, to) = (keys.IndexOf(column.Key), keys.IndexOf(neighbor.Key));
+        (keys[from], keys[to]) = (keys[to], keys[from]);
+        _focusColumnMenu = column.Key;
+        // The announced place counts the selection and order columns, as screen readers do.
+        Announcer.Polite(Format(TbStrings.DataGridColumnMoved, column.Heading, LeadCount + to + 1,
+            LeadCount + keys.Count));
+        await OnColumnOrderAsync(new() { Order = keys });
     }
 
     private async Task ResetWidthsAsync()
@@ -1613,6 +1668,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         Page = _page,
         PageSize = _pageSize,
         ColumnWidths = new Dictionary<string, double>(_widths),
+        ColumnOrder = [.. _order],
     };
 
     private Task StateChangedAsync() => StateChanged.InvokeAsync(CurrentState);
@@ -1628,6 +1684,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         if (!GridState.SameWidths(state.ColumnWidths, _widths))
         {
             _widths = new(state.ColumnWidths);
+        }
+
+        if (!state.ColumnOrder.SequenceEqual(_order))
+        {
+            _order = [.. state.ColumnOrder];
+            _rowVersion++;
         }
     }
 

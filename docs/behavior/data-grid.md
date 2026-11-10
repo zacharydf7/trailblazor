@@ -36,6 +36,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A value that fails its check keeps the edit open. Tab in the last editable cell leaves the grid, and Shift+Tab in the first goes back to its cell. `GridEditKeysTests.Tab_ShouldKeepTheEditOpenWithWhy_WhenTheValueFailsItsCheck`, `GridEditKeysTests.Tab_ShouldSaveAndLeaveTheGrid_WhenPressedInTheLastEditableCell`, `GridEditKeysTests.Tab_ShouldSaveAndGoBackToItsCell_WhenShiftIsHeldInTheFirstEditableCell`
 - [x] Tab opens no edit on a row its save filtered or sorted out of view. `TbDataGridEditTests.EditStart_ShouldOpenNoEdit_WhenTheSaveTookItsRowAway`
 - [x] A resizable column's menu is a button the keys reach, and Enter opens it to resize the column. `GridResizeTests.ColumnMenu_ShouldWidenTheColumn_WhenReachedAndChosenWithTheKeys`
+- [x] A column moved from its menu with the keys keeps focus on its menu button in its new place. `GridResizeTests.ColumnMenu_ShouldMoveTheColumnAndKeepFocusOnItsMenu_WhenMoveLaterIsChosenWithTheKeys`
 
 ## Pointer
 
@@ -63,7 +64,9 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A plain click on text already selected in a row still clicks the row. `DataGridTests.Row_ShouldBeClicked_WhenItsSelectedTextIsClicked`, `DataGridTests.Row_ShouldBeClicked_WhenThePointerSlipsWhileClickingItsSelectedText`
 - [x] Dragging a resizable column's header edge resizes it, no narrower than its `MinWidth`, while the other columns keep their widths, which the grid's state then holds. `GridResizeDragTests.Grid_ShouldResizeTheColumn_WhenItsHeadersEdgeIsDragged`, `GridResizeDragTests.Grid_ShouldStopAtTheColumnsMinimum_WhenItsEdgeIsDraggedPastIt`, `TbDataGridResizeTests.ColumnWidthsEvent_ShouldFixEveryColumnAndKeepTheWidthsInTheState_WhenRaised`
 - [x] A single click on a column's menu makes it wider or narrower, or resets every width, with no drag. `GridResizeTests.ColumnMenu_ShouldWidenTheColumnAndKeepTheOthers_WhenMakeWiderIsChosen`, `GridResizeTests.ColumnMenu_ShouldStopAtTheColumnsMinimum_WhenMakeNarrowerIsChosenAgain`, `GridResizeTests.ColumnMenu_ShouldGiveTheColumnsBackTheirWidths_WhenResetIsChosen`
-- [ ] Columns can be moved and hidden. #164
+- [x] Dragging a header past another moves its column there, among the columns pinned to its side, and the grid's state keeps the order. `GridResizeDragTests.Grid_ShouldMoveTheColumn_WhenItsHeaderIsDraggedPastAnother`, `TbDataGridColumnOrderTests.State_ShouldPutTheNamedColumnsFirstAndTheOthersAfter_WhenItHasAColumnOrder`
+- [x] A single click on a column's menu moves it earlier or later, with no drag, and a move past the first or last column on its side is turned off. `TbDataGridColumnOrderTests.ColumnMenu_ShouldMoveTheColumnAndItsCellsAndKeepTheOrder_WhenMoveEarlierIsChosen`, `TbDataGridColumnOrderTests.ColumnMenu_ShouldTurnOffAMoveOffItsSide_WhenAColumnIsAtTheEdgeOfIt`
+- [ ] Columns can be hidden. #164
 
 ## Touch
 

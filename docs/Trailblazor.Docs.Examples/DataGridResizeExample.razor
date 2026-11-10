@@ -1,18 +1,21 @@
 @using System.Globalization
 
-@* Drag a header's edge, or use its column menu, to resize a column. The widths are kept in the grid's state. *@
+@* Drag a header's edge or use its column menu to resize a column; drag a header or use the menu to move it.
+   The state keeps both. *@
 <TbStack Gap="3">
     <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail widths" KeySelector="trail => trail.Id"
-                ResizableColumns FilterMode="GridFilterMode.Menu" @bind-State="_state" Style="max-inline-size: 40rem">
+                ResizableColumns ReorderableColumns FilterMode="GridFilterMode.Menu" @bind-State="_state"
+                Style="max-inline-size: 40rem">
         <TbColumn Field="trail => trail.Name" MinWidth="10rem" />
-        <TbColumn Field="trail => trail.Region" />
+        <TbColumn Field="trail => trail.Region" Sortable />
         <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Filterable />
         <TbColumn Field="trail => trail.Surface" Filterable>
             <Header>Surface underfoot</Header>
         </TbColumn>
-        <TbColumn Field="trail => trail.Notes" Resizable="false" />
+        <TbColumn Field="trail => trail.Notes" Resizable="false" Pinned="ColumnPin.End" />
     </TbDataGrid>
     <output aria-label="Column widths">@Widths</output>
+    <output aria-label="Column order">@Order</output>
 </TbStack>
 
 @code {
@@ -29,6 +32,9 @@
     private string Widths => _state.ColumnWidths.Count == 0 ? "Columns at their starting widths."
         : string.Join(", ", _state.ColumnWidths.Select(width =>
             $"{width.Key} {width.Value.ToString(CultureInfo.InvariantCulture)}px"));
+
+    private string Order => _state.ColumnOrder.Count == 0 ? "Columns in their starting order."
+        : string.Join(", ", _state.ColumnOrder);
 
     private sealed record Trail(int Id, string Name, string Region, double LengthKm, string Surface, string Notes);
 }

@@ -1,3 +1,5 @@
+import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
+
 // Inputs that act on Enter themselves, as a button does, so the grid leaves their Enter alone.
 const actOnEnter = new Set(['button', 'color', 'file', 'image', 'reset', 'submit']);
 
@@ -186,6 +188,65 @@ export function createDataGrid(table) {
     table.addEventListener('pointerup', endResize);
     table.addEventListener('pointercancel', endResize);
 
+    // A dragged header moves its column among those pinned to its side, and Escape puts it back.
+    let carried = null;
+    let carriedX = 0;
+    const sideOf = cell => columnHeaders().filter(other => other.dataset.pinned === cell.dataset.pinned);
+    const passed = (x, cell) => {
+        const box = cell.getBoundingClientRect();
+        const middle = box.left + box.width / 2;
+        return getComputedStyle(table).direction === 'rtl' ? x < middle : x > middle;
+    };
+    const clearDrop = () =>
+        table.querySelectorAll('thead th[data-drop]').forEach(cell => cell.removeAttribute('data-drop'));
+    const others = () => sideOf(carried).filter(other => other !== carried);
+    const markDrop = () => {
+        clearDrop();
+        const rest = others();
+        const at = rest.filter(other => passed(carriedX, other)).length;
+        if (rest.length > 0) {
+            (rest[at] ?? rest.at(-1)).setAttribute('data-drop', at < rest.length ? 'before' : 'after');
+        }
+    };
+    const putDown = () => {
+        clearDrop();
+        carried?.removeAttribute('data-moving');
+    };
+    const reportOrder = () => {
+        const side = sideOf(carried);
+        const rest = others();
+        rest.splice(rest.filter(other => passed(carriedX, other)).length, 0, carried);
+        const keys = columnHeaders().map(other => other.dataset.column);
+        const order = keys.map(key => side.some(other => other.dataset.column === key)
+            ? rest.shift().dataset.column : key);
+        if (order.some((key, at) => key !== keys[at])) {
+            table.dispatchEvent(new CustomEvent('tb-column-order', { bubbles: true, detail: { order } }));
+        }
+    };
+    const columnDrag = createPointerDrag(table, {
+        itemSelector: 'thead th[data-column]',
+        ignoreSelector: '[data-part=resize], [data-part=column-menu], [data-part=filter-menu], input',
+        ownsPress: () => table.hasAttribute('data-reorder-columns') && !drag,
+        scrolls: false,
+        onStart: cell => {
+            carried = cell;
+            cell.setAttribute('data-moving', '');
+        },
+        onMove: event => {
+            carriedX = event.clientX;
+            markDrop();
+        },
+        onDrop: () => {
+            putDown();
+            reportOrder();
+            carried = null;
+        },
+        onCancel: () => {
+            putDown();
+            carried = null;
+        },
+    });
+
     // Virtualize can measure rows after a jump and redraw them elsewhere, so a row scrolled to is kept in view until
     // the rows settle, the person scrolls, clicks or presses a key, or another row is asked for, at most five seconds.
     let stopKeeping = () => {};
@@ -320,6 +381,10 @@ export function createDataGrid(table) {
                 keepInView(find, index);
             }
         },
+        focusColumnMenu(key) {
+            columnHeaders().find(cell => cell.dataset.column === key)
+                ?.querySelector('[data-part=column-menu] button')?.focus();
+        },
         resizeColumn(key, delta) {
             const cell = columnHeaders().find(other => other.dataset.column === key);
             if (cell) {
@@ -332,6 +397,7 @@ export function createDataGrid(table) {
             table.removeEventListener('pointermove', moveResize);
             table.removeEventListener('pointerup', endResize);
             table.removeEventListener('pointercancel', endResize);
+            columnDrag.dispose();
             stopKeeping();
             observer.disconnect();
             resizes.disconnect();

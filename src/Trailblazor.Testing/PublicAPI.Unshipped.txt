@@ -93,6 +93,7 @@ Trailblazor.Testing.TbContractSetup.Context(System.Action<Bunit.BunitContext!>! 
 Trailblazor.Testing.TbContractSetup.Parameter(string! name, object! value) -> Trailblazor.Testing.TbContractSetup!
 Trailblazor.Testing.TbContractSetup.Sample<T>(T first, T second) -> Trailblazor.Testing.TbContractSetup!
 Trailblazor.Testing.TbContractSetup.Services(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! register) -> Trailblazor.Testing.TbContractSetup!
+Trailblazor.Testing.TbGridDriver.Columns.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbGridDriver.ResizeColumnAsync(string! column, double width) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbListBoxDriver
 Trailblazor.Testing.TbListBoxDriver.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!

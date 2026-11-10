@@ -37,6 +37,7 @@
                data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
                data-row-click-selects="@(SelectionMode == SelectionMode.Multiple && RowClickSelects ? "" : null)"
                @ontbselectall="SelectAllAsync" @ontbcolumnwidths="OnColumnWidthsAsync"
+               @ontbcolumnorder="OnColumnOrderAsync" data-reorder-columns="@(ReorderableColumns ? "" : null)"
                aria-busy="@(IsLoading ? "true" : null)"
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) : null)"
                class="@ClassNames.Join("tb-data-grid__table", HasFixedWidths ? "tb-data-grid__table--fixed" : null)">
@@ -70,24 +71,28 @@
                     {
                         var at = _sorts.FindIndex(sort => sort.Column == column.Key);
                         var sort = at < 0 ? null : _sorts[at];
-                        <th scope="col" data-column="@column.Key" data-title="@column.Heading"
+                        @* Keyed, so a moved column's header, and the menu and button in it, move with it. *@
+                        <th @key="column.Key" scope="col" data-column="@column.Key" data-title="@column.Heading"
                             data-filtered="@(IsFiltered(column) ? "" : null)" aria-sort="@AriaSort(at, sort)"
                             data-pinned="@PinSide(column)" data-width="@KeptWidth(column)"
                             style="@HeaderStyle(column)"
                             class="@ClassNames.Join("tb-data-grid__header",
                                        ClassNames.Modifier("tb-data-grid__header", column.Alignment))">
-                            @if (CanResize(column))
+                            @if (HasColumnMenu(column))
                             {
                                 <div class="tb-data-grid__header-content">
                                     @HeaderContent(column, at, sort)
                                     @ColumnMenu(column)
                                 </div>
-                                @* The column menu resizes from the keys or a click, so the edge is for dragging. *@
-                                <div data-part="resize" aria-hidden="true" class="tb-data-grid__resize"></div>
                             }
                             else
                             {
                                 @HeaderContent(column, at, sort)
+                            }
+                            @if (CanResize(column))
+                            {
+                                @* The column menu resizes from the keys or a click, so the edge is for dragging. *@
+                                <div data-part="resize" aria-hidden="true" class="tb-data-grid__resize"></div>
                             }
                         </th>
                     }
@@ -106,7 +111,8 @@
                         }
                         @foreach (var column in _shownColumns)
                         {
-                            <td data-column="@column.Key" data-part="filter" data-value="@FilterText(column)"
+                            <td @key="column.Key" data-column="@column.Key" data-part="filter"
+                                data-value="@FilterText(column)"
                                 data-pinned="@PinSide(column)" style="@PinStyle(column)" class="@FilterClass(column)">
                                 @if (column.CanFilter)
                                 {
@@ -439,15 +445,27 @@
                               AriaLabel="@Format(TbStrings.DataGridColumnMenu, column.Heading)" />
             </Trigger>
             <ChildContent>
-                <TbMenuItem OnClick="() => StepWidthAsync(column, WidthStep)">
-                    @Format(TbStrings.DataGridWider, column.Heading)
-                </TbMenuItem>
-                <TbMenuItem OnClick="() => StepWidthAsync(column, -WidthStep)">
-                    @Format(TbStrings.DataGridNarrower, column.Heading)
-                </TbMenuItem>
-                <TbMenuItem Disabled="_widths.Count == 0" OnClick="ResetWidthsAsync">
-                    @Localizer[TbStrings.DataGridResetWidths]
-                </TbMenuItem>
+                @if (ReorderableColumns)
+                {
+                    <TbMenuItem Disabled="NeighborOf(column, -1) is null" OnClick="() => MoveColumnAsync(column, -1)">
+                        @Format(TbStrings.DataGridEarlier, column.Heading)
+                    </TbMenuItem>
+                    <TbMenuItem Disabled="NeighborOf(column, 1) is null" OnClick="() => MoveColumnAsync(column, 1)">
+                        @Format(TbStrings.DataGridLater, column.Heading)
+                    </TbMenuItem>
+                }
+                @if (CanResize(column))
+                {
+                    <TbMenuItem OnClick="() => StepWidthAsync(column, WidthStep)">
+                        @Format(TbStrings.DataGridWider, column.Heading)
+                    </TbMenuItem>
+                    <TbMenuItem OnClick="() => StepWidthAsync(column, -WidthStep)">
+                        @Format(TbStrings.DataGridNarrower, column.Heading)
+                    </TbMenuItem>
+                    <TbMenuItem Disabled="_widths.Count == 0" OnClick="ResetWidthsAsync">
+                        @Localizer[TbStrings.DataGridResetWidths]
+                    </TbMenuItem>
+                }
             </ChildContent>
         </TbMenu>;
 

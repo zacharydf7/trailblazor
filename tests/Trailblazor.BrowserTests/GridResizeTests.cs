@@ -45,6 +45,43 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ColumnMenu_ShouldMoveTheColumnAndKeepFocusOnItsMenu_WhenMoveLaterIsChosenWithTheKeys(
+        string browser)
+    {
+        var page = await OpenResizeAsync(browser);
+        var menu = page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true });
+        await menu.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByLabel("Column order")).ToHaveTextAsync("Name, LengthKm, Region, Surface, Notes");
+        var headers = Table(page).Locator("thead th[data-column]");
+        Assert.Equal(["Name", "LengthKm", "Region", "Surface", "Notes"],
+            await headers.EvaluateAllAsync<string[]>("cells => cells.map(cell => cell.dataset.column)"));
+        await Expect(menu).ToBeFocusedAsync();
+    }
+
+    // WebAssembly renders before the menu's own focus return runs, unlike a server circuit.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ColumnMenu_ShouldKeepFocusOnTheMovedColumnsMenu_WhenItRunsInWebAssembly(string browser)
+    {
+        var page = await ReadyAsync(await OpenDocsAsync(browser, "components/data-grid"));
+        var menu = page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true });
+        await menu.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByLabel("Column order")).ToHaveTextAsync("Name, LengthKm, Region, Surface, Notes");
+        await Expect(menu).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ColumnMenu_ShouldStopAtTheColumnsMinimum_WhenMakeNarrowerIsChosenAgain(string browser)
     {
         var page = await OpenResizeAsync(browser);
@@ -83,6 +120,9 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true }).FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("ArrowDown");
         await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Make Region wider" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Enter");
 
@@ -169,6 +209,71 @@ public class GridResizeDragTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
 
         return columns;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldMoveTheColumn_WhenItsHeaderIsDraggedPastAnother(string browser)
+    {
+        var page = await GridResizeTests.ReadyAsync(await OpenAsync(browser, "/examples/data-grid"));
+        var name = GridResizeTests.Header(page, "Name");
+        var region = GridResizeTests.Header(page, "Region");
+        await name.ScrollIntoViewIfNeededAsync();
+        var from = (await name.BoundingBoxAsync())!;
+        var past = (await region.BoundingBoxAsync())!;
+        var y = from.Y + from.Height / 2;
+
+        await page.Mouse.MoveAsync(from.X + 12, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(past.X + past.Width * 0.75f, y, new() { Steps = 8 });
+        await page.Mouse.UpAsync();
+
+        await Expect(page.GetByLabel("Column order")).ToHaveTextAsync("Region, Name, LengthKm, Surface, Notes");
+        Assert.Equal(["Region", "Name"], (await page.Tb().Grid("Trail widths").ColumnsAsync()).Take(2));
+    }
+
+    // Region is sortable and Notes is pinned at the end, so the drag must neither sort Region nor cross into the pinned
+    // side.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldMoveWithoutSortingAndStayOffThePinnedSide_WhenASortableHeaderIsDragged(string browser)
+    {
+        var page = await GridResizeTests.ReadyAsync(await OpenAsync(browser, "/examples/data-grid"));
+        var region = GridResizeTests.Header(page, "Region");
+        var notes = GridResizeTests.Header(page, "Notes");
+        await region.ScrollIntoViewIfNeededAsync();
+        var from = (await region.Locator("[data-part=sort]").BoundingBoxAsync())!;
+        var past = (await notes.BoundingBoxAsync())!;
+        var y = from.Y + from.Height / 2;
+
+        await page.Mouse.MoveAsync(from.X + 8, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(past.X + past.Width * 0.75f, y, new() { Steps = 8 });
+        await page.Mouse.UpAsync();
+
+        await Expect(page.GetByLabel("Column order")).ToHaveTextAsync("Name, LengthKm, Surface, Region, Notes");
+        await Expect(region).Not.ToHaveAttributeAsync("aria-sort", new System.Text.RegularExpressions.Regex("."));
+        await region.Locator("[data-part=sort]").ClickAsync();
+        await Expect(region).ToHaveAttributeAsync("aria-sort", "ascending");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldLeaveTheColumnsWhereTheyAre_WhenEscapeIsPressedDuringAHeaderDrag(string browser)
+    {
+        var page = await GridResizeTests.ReadyAsync(await OpenAsync(browser, "/examples/data-grid"));
+        var name = GridResizeTests.Header(page, "Name");
+        await name.ScrollIntoViewIfNeededAsync();
+        var from = (await name.BoundingBoxAsync())!;
+        var past = (await GridResizeTests.Header(page, "Region").BoundingBoxAsync())!;
+        var y = from.Y + from.Height / 2;
+
+        await page.Mouse.MoveAsync(from.X + 12, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(past.X + past.Width * 0.75f, y, new() { Steps = 8 });
+        await Expect(name).ToHaveAttributeAsync("data-moving", "");
+        await page.Keyboard.PressAsync("Escape");
+        await page.Mouse.UpAsync();
+
+        await Expect(name).Not.ToHaveAttributeAsync("data-moving", "");
+        await Expect(page.GetByLabel("Column order")).ToHaveTextAsync("Columns in their starting order.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -59,6 +59,8 @@ public sealed class RichTextLinkEventArgs : EventArgs
 [EventHandler("ontbeditkey", typeof(GridEditKeyEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbcolumnwidths", typeof(ColumnWidthsEventArgs), enableStopPropagation: true,
     enablePreventDefault: true)]
+[EventHandler("ontbcolumnorder", typeof(ColumnOrderEventArgs), enableStopPropagation: true,
+    enablePreventDefault: true)]
 [EventHandler("ontbrichtextchange", typeof(RichTextChangeEventArgs), enableStopPropagation: true,
     enablePreventDefault: true)]
 [EventHandler("ontbrichtextpaste", typeof(RichTextChangeEventArgs), enableStopPropagation: true,

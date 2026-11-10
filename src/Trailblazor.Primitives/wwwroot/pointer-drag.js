@@ -10,7 +10,7 @@ const scrollSpeed = 0.4;
 const longestStep = 50;
 
 export function createPointerDrag(container,
-    { itemSelector, ignoreSelector, ownsPress = () => true, onStart, onMove, onDrop, onCancel }) {
+    { itemSelector, ignoreSelector, ownsPress = () => true, scrolls = true, onStart, onMove, onDrop, onCancel }) {
     let pending = null;
     let drag = null;
     // Set when a drag ends, so the click that may follow doesn't also act on the row. That click comes before a timer
@@ -55,7 +55,12 @@ export function createPointerDrag(container,
         drag.pointer = { clientX: drag.x, clientY: drag.y };
         drag.scroller = scrollParent();
         drag.scrolledAt = performance.now();
-        drag.frame = requestAnimationFrame(scrollNearEdge);
+        // Items laid out in a row, such as headers, can sit at the top of what scrolls, where scrolling near the edge
+        // would start without the user asking.
+        if (scrolls) {
+            drag.frame = requestAnimationFrame(scrollNearEdge);
+        }
+
         onStart(drag.item);
     };
 

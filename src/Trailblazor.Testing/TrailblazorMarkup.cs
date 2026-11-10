@@ -646,6 +646,10 @@ public sealed class TbGridDriver
 
     private const string ValueSelector = "[data-part=input]:not([role=combobox]):not([type=checkbox])";
 
+    /// <summary>The columns' titles, in the order they show.</summary>
+    public IReadOnlyList<string> Columns => _find().QuerySelectorAll("thead th[data-title]")
+        .Select(header => header.GetAttribute("data-title")!).ToList();
+
     /// <summary>Resizes the column with this title to this many pixels, as the grid's script reports a drag of its
     /// header's edge. bUnit has no layout, so the other columns keep only the widths the grid already gave them, and
     /// the column's <c>MinWidth</c>, which the browser measures, doesn't apply.</summary>
