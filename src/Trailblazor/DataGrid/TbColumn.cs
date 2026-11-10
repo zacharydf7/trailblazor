@@ -278,6 +278,9 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal object? ValueOf(TItem item) => _value?.Invoke(item);
 
+    // A column drawn only by its Cell template has no value to export.
+    internal bool HasField => _value is not null;
+
     internal bool HasTotal =>
         Aggregate != ColumnAggregate.None || AggregateBy is not null || FooterTemplate is not null;
 

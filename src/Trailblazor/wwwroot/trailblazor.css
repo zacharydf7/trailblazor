@@ -6800,7 +6800,9 @@
         display: contents;
     }
 
-    .tb-data-grid__column-chooser {
+    /* The menus sit at the bar's end, after the group-by list. */
+    .tb-data-grid__column-chooser,
+    .tb-data-grid__export:not(.tb-data-grid__column-chooser + .tb-data-grid__export) {
         margin-inline-start: auto;
     }
 

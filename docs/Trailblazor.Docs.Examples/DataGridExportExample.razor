@@ -1,0 +1,21 @@
+@* The Export menu downloads the rows the filters leave, from every page, with the columns shown. *@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail list" KeySelector="trail => trail.Id" PageSize="3"
+            Exportable HideableColumns>
+    <TbColumn Field="trail => trail.Name" Filterable Sortable />
+    <TbColumn Field="trail => trail.Region" Filterable />
+    <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
+    <TbColumn Field="trail => trail.LastHiked" Title="Last hiked" Format="d" Sortable />
+</TbDataGrid>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", "North ridge", 6.4, new(2026, 5, 2)),
+        new(2, "Eagle Ridge traverse", "North ridge", 14.2, new(2026, 6, 14)),
+        new(3, "Cedar Flats", "River valley", 3.1, new(2026, 7, 9)),
+        new(4, "Fern Gully", "River valley", 5.8, new(2026, 8, 1)),
+        new(5, "Summit Gate", "High peaks", 11.9, new(2026, 8, 22)),
+    ];
+
+    private sealed record Trail(int Id, string Name, string Region, double LengthKm, DateOnly LastHiked);
+}

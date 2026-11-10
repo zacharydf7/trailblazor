@@ -379,7 +379,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>,
     /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c>, <c>move</c>, <c>group</c>, <c>expand</c>,
-    /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c> or <c>close_detail</c> each time the user does one. Which
+    /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c>, <c>close_detail</c>, <c>export_csv</c> or
+    /// <c>export_excel</c> each time the user does one. Which
     /// column, filter value, page, group, rows or value is never recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
@@ -1658,17 +1659,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             }
 
             var column = groups[level];
-            var grouped = items.GroupBy(column.GroupKeyOf);
-            var descending = _sorts.Any(sort =>
-                sort.Column == column.Key && sort.Direction == SortDirection.Descending);
-            Func<IGrouping<object?, TItem>, object?> value = group => column.GroupValueOf(group.First());
-            foreach (var group in descending ? grouped.OrderByDescending(value, Comparer<object?>.Default)
-                         : grouped.OrderBy(value, Comparer<object?>.Default))
+            foreach (var group in GroupsOf(items, column))
             {
                 var key = new GroupKey(outer, column.Key, group.Key);
                 var open = !_closedGroups.Contains(key);
-                lines.Add(new(default!, lines.Count, new(key, level + 1, column.Heading, column.TextOf(value(group)),
-                    group.Count(), open)));
+                lines.Add(new(default!, lines.Count, new(key, level + 1, column.Heading,
+                    column.TextOf(column.GroupValueOf(group.First())), group.Count(), open)));
                 if (open)
                 {
                     Add(group, level + 1, key);
@@ -1683,6 +1679,22 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         Add(arranged, 0, null);
         return lines;
     }
+
+    // A column's groups, in the order they show: by their first row's value, turned around when the column is
+    // sorted descending.
+    private IEnumerable<IGrouping<object?, TItem>> GroupsOf(IEnumerable<TItem> items, TbColumn<TItem> column)
+    {
+        var grouped = items.GroupBy(column.GroupKeyOf);
+        var descending = _sorts.Any(sort => sort.Column == column.Key && sort.Direction == SortDirection.Descending);
+        Func<IGrouping<object?, TItem>, object?> value = group => column.GroupValueOf(group.First());
+        return descending ? grouped.OrderByDescending(value, Comparer<object?>.Default)
+            : grouped.OrderBy(value, Comparer<object?>.Default);
+    }
+
+    // The rows in the order a grouped grid shows them, with the rows of closed groups too.
+    private IEnumerable<TItem> GroupedOrder(IEnumerable<TItem> items, List<TbColumn<TItem>> groups, int level) =>
+        level == groups.Count ? items
+            : GroupsOf(items, groups[level]).SelectMany(group => GroupedOrder(group, groups, level + 1));
 
     private int PlaceOf(List<GridLine> lines, object key) =>
         lines.FindIndex(line => line.IsRow && Equals(KeyOf(line.Item), key)) is var at and >= 0
@@ -1779,9 +1791,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
     }
 
-    private IEnumerable<TItem> Arranged()
+    private IEnumerable<TItem> Arranged(bool filtered = true)
     {
-        var filters = AppliedFilters.ToList();
+        var filters = filtered ? AppliedFilters.ToList() : [];
         IEnumerable<TItem> items = (Items ?? []).Where(item => filters.All(applied =>
         {
             var value = applied.Column.FilterValueOf(item);
@@ -2175,6 +2187,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         _disposed = true;
         _load?.Cancel();
+        _exporting.Cancel();
         _scrollAfterRender?.Done.TrySetResult();
         _nextRender?.TrySetResult();
         _edit = null;

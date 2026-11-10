@@ -6659,6 +6659,15 @@ public static class ExampleCatalog
                     + "into them and Escape comes back out. They keep their own Tab stops, so a grid inside them "
                     + "works as it would anywhere. A grid that virtualizes its rows can't show details.",
                     typeof(DataGridDetailExample)),
+                new("export", "Export", "`Exportable` adds an Export menu that downloads the rows as a CSV file or an "
+                    + "Excel workbook: the rows the filters leave, from every page and in the order they show, with "
+                    + "the columns shown. The file is named for the grid's `AriaLabel`, or for `ExportFileName` when "
+                    + "it's set. `ExportCsvAsync` and `ExportExcelAsync` return the same content to your own code, and "
+                    + "with `GridExportRows.All` they return every row and column. A CSV holds each cell's text as the "
+                    + "grid shows it; a workbook keeps numbers, dates and yes-or-no values as values a spreadsheet can "
+                    + "sum and sort. In a CSV, text a spreadsheet would run as a formula gets an apostrophe in front, "
+                    + "and a column drawn only by its `Cell` template has nothing to export.",
+                    typeof(DataGridExportExample)),
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
@@ -6893,6 +6902,7 @@ public static class ExampleCatalog
                 new("toolbar", "The bar above the rows that holds the group-by list and the Columns menu."),
                 new("group-by", "The list that chooses the columns to group by."),
                 new("column-chooser", "The Columns menu, which hides and shows columns."),
+                new("export", "The Export menu, which downloads the rows as a file."),
                 new("group", "A group's heading row."),
                 new("group-toggle", "The button that opens and closes a group."),
                 new("select-all", "The checkbox that selects every row on the page."),
@@ -6949,6 +6959,10 @@ public static class ExampleCatalog
                     + "invariant text, with a range's two dates separated by a space.",
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync` and "
                     + "`FilterAsync`.",
+                "In bUnit, `await cut.Tb().Menu(\"Export\").ChooseAsync(\"CSV\")` downloads the file into "
+                    + "`FakeBrowserService.Downloads`, where `Text` reads a CSV back, starting with its byte order "
+                    + "mark. In Playwright, wrap the choice in "
+                    + "`page.RunAndWaitForDownloadAsync`. `ExportCsvAsync` returns the text itself.",
                 "`Total(\"Length (km)\")` reads the totals row's cell under a column, such as \"Sum 49.9\", or null "
                     + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`. "
                     + "`GroupTotals(\"Length (km)\")` reads each open group's totals cell under that column, in "
@@ -6973,7 +6987,8 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
-                    + "`hide`, `show`, `open_detail` or `close_detail` for each of those the user does; a `move` also "
+                    + "`hide`, `show`, `open_detail`, `close_detail`, `export_csv` or `export_excel` for each of "
+                    + "those the user does; a `move` also "
                     + "says whether a `pointer` or the "
                     + "`keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "

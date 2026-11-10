@@ -4176,3 +4176,15 @@ Trailblazor.TbDataGrid<TItem>.SingleDetail.get -> bool
 Trailblazor.TbDataGrid<TItem>.SingleDetail.set -> void
 const Trailblazor.TbStrings.DataGridDetails = "DataGrid.Details" -> string!
 const Trailblazor.TbStrings.DataGridDetailsFor = "DataGrid.DetailsFor" -> string!
+Trailblazor.GridExportRows
+Trailblazor.GridExportRows.All = 1 -> Trailblazor.GridExportRows
+Trailblazor.GridExportRows.Shown = 0 -> Trailblazor.GridExportRows
+Trailblazor.TbDataGrid<TItem>.ExportCsvAsync(Trailblazor.GridExportRows rows = Trailblazor.GridExportRows.Shown) -> System.Threading.Tasks.Task<string!>!
+Trailblazor.TbDataGrid<TItem>.ExportExcelAsync(Trailblazor.GridExportRows rows = Trailblazor.GridExportRows.Shown) -> System.Threading.Tasks.Task<byte[]!>!
+Trailblazor.TbDataGrid<TItem>.ExportFileName.get -> string?
+Trailblazor.TbDataGrid<TItem>.ExportFileName.set -> void
+Trailblazor.TbDataGrid<TItem>.Exportable.get -> bool
+Trailblazor.TbDataGrid<TItem>.Exportable.set -> void
+const Trailblazor.TbStrings.DataGridExport = "DataGrid.Export" -> string!
+const Trailblazor.TbStrings.DataGridExportCsv = "DataGrid.ExportCsv" -> string!
+const Trailblazor.TbStrings.DataGridExportExcel = "DataGrid.ExportExcel" -> string!

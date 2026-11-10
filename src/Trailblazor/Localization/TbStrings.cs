@@ -652,6 +652,14 @@ public static class TbStrings
     /// <summary>"Details for {0}": names a row's button that opens and closes its details; {0} is the row's label.
     /// </summary>
     public const string DataGridDetailsFor = "DataGrid.DetailsFor";
+    /// <summary>"Export": names the data grid's menu that downloads its rows as a file.</summary>
+    public const string DataGridExport = "DataGrid.Export";
+
+    /// <summary>"CSV": the Export menu's item that downloads the rows as a CSV file.</summary>
+    public const string DataGridExportCsv = "DataGrid.ExportCsv";
+
+    /// <summary>"Excel": the Export menu's item that downloads the rows as an Excel workbook.</summary>
+    public const string DataGridExportExcel = "DataGrid.ExportExcel";
 
     /// <summary>"Order": names the column of a data grid whose rows can be moved, which holds each row's move
     /// handle.</summary>
@@ -1098,6 +1106,9 @@ public static class TbStrings
         [DataGridSelectRow] = "Select {0}",
         [DataGridDetails] = "Details",
         [DataGridDetailsFor] = "Details for {0}",
+        [DataGridExport] = "Export",
+        [DataGridExportCsv] = "CSV",
+        [DataGridExportExcel] = "Excel",
         [DataGridOrder] = "Order",
         [DataGridRange] = "{0}–{1} of {2}",
         [DataGridPages] = "Pages of {0}",

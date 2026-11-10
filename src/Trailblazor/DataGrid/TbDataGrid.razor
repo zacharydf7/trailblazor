@@ -10,7 +10,7 @@
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
     @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); DrawRowsForReorder(); }
-    @if (HasGroupBy || HideableColumns)
+    @if (HasGroupBy || HideableColumns || Exportable)
     {
         <div data-part="toolbar" class="tb-data-grid__toolbar">
             @if (HasGroupBy)
@@ -43,6 +43,18 @@
                             @column.Heading
                         </TbMenuCheckboxItem>
                     }
+                </TbMenu>
+            }
+            @if (Exportable)
+            {
+                <TbMenu Label="@Localizer[TbStrings.DataGridExport]" Variant="Variant.Text" Size="Size.Small"
+                        Align="PlacementAlign.End" data-part="export" Class="tb-data-grid__export">
+                    <TbMenuItem OnClick="() => ExportFromMenuAsync(excel: false)">
+                        @Localizer[TbStrings.DataGridExportCsv]
+                    </TbMenuItem>
+                    <TbMenuItem OnClick="() => ExportFromMenuAsync(excel: true)">
+                        @Localizer[TbStrings.DataGridExportExcel]
+                    </TbMenuItem>
                 </TbMenu>
             }
         </div>
