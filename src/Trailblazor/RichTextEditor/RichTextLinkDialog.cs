@@ -49,7 +49,7 @@ internal sealed partial class RichTextLinkDialog : TbDialogContent<RichTextLinkE
     {
         builder.OpenComponent<TbForm>(0);
         builder.AddComponentParameter(1, nameof(TbForm.OnValidSubmit),
-            EventCallback.Factory.Create<EditContext>(this, () => CloseDialogAsync(new(Complete(_address), _text))));
+            EventCallback.Factory.Create<EditContext>(this, () => Dialog.CloseAsync(new(Complete(_address), _text))));
         builder.AddComponentParameter(2, nameof(TbForm.ChildContent), (RenderFragment)BuildForm);
         builder.CloseComponent();
     }
@@ -80,11 +80,11 @@ internal sealed partial class RichTextLinkDialog : TbDialogContent<RichTextLinkE
             if (Link is not null)
             {
                 DialogButtons.Add(actions, 0, this, Labels.RemoveLink ?? Localizer[TbStrings.RichTextEditorRemoveLink],
-                    Variant.Outlined, Tone.Neutral, () => CloseDialogAsync(new(null, null)));
+                    Variant.Outlined, Tone.Neutral, () => Dialog.CloseAsync(new(null, null)));
             }
 
             DialogButtons.Add(actions, 10, this, Localizer[TbStrings.DialogCancel], Variant.Outlined, Tone.Neutral,
-                CancelDialogAsync);
+                Dialog.CancelAsync);
             actions.OpenComponent<TbButton>(20);
             actions.AddComponentParameter(21, nameof(TbButton.Type), ButtonType.Submit);
             actions.AddComponentParameter(22, nameof(TbButton.ChildContent),

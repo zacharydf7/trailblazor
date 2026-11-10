@@ -182,13 +182,23 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldNameTheIconTriggerWithTheLabel_WhenAnIconIsSet()
+    public void Render_ShouldNameTheIconTriggerWithTheAriaLabel_WhenAnIconIsSet()
     {
         var cut = Render<TbMenu>(parameters => parameters
-            .Add(menu => menu.Label, "More options")
+            .Add(menu => menu.AriaLabel, "More options")
             .Add(menu => menu.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />")));
 
         Assert.Equal("More options", cut.Find("[data-part=trigger]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenAnIconTriggerHasALabelButNoAriaLabel()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Label, "More options")
+            .Add(menu => menu.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />"))));
+
+        Assert.Contains("AriaLabel", error.Message);
     }
 
     [Fact]
@@ -216,7 +226,7 @@ public class TbMenuTests : BunitContext
     public void Render_ShouldSizeTheTrigger_WhenGivenASize(bool icon)
     {
         var cut = Render<TbMenu>(parameters => parameters
-            .Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Label, icon ? null : "Actions").Add(menu => menu.AriaLabel, icon ? "Actions" : null)
             .Add(menu => menu.Icon, icon ? new Icon("<path d=\"M4 4h16v16H4z\" />") : null)
             .Add(menu => menu.Size, Size.Small));
 

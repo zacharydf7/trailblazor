@@ -15,10 +15,15 @@ public partial class TbPopconfirm
     private ControlTelemetry? _telemetry;
     private readonly PopoverDescription _description = new($"tb-popconfirm-{Guid.NewGuid():N}-description");
 
-    /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required
-    /// unless <see cref="Trigger"/> gives a trigger of your own.</summary>
+    /// <summary>The text on the trigger button. Required unless an <see cref="Icon"/> or a <see cref="Trigger"/>
+    /// gives the trigger.</summary>
     [Parameter]
     public string? Label { get; set; }
+
+    /// <summary>The icon trigger's accessible name, which screen readers read and which is never shown. Required
+    /// with an <see cref="Icon"/>.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
 
     /// <summary>Shows an icon button as the trigger instead of a text button.</summary>
     [Parameter]
@@ -132,6 +137,12 @@ public partial class TbPopconfirm
         if (string.IsNullOrWhiteSpace(Title))
         {
             throw new InvalidOperationException($"{nameof(TbPopconfirm)} needs a {nameof(Title)}.");
+        }
+
+        if (Trigger is null && Icon is not null && string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            throw new InvalidOperationException($"{nameof(TbPopconfirm)} with an {nameof(Icon)} needs an "
+                + $"{nameof(AriaLabel)}, which names the icon button; {nameof(Label)} is for a text trigger.");
         }
 
         // A new Open from the parent opens or closes the confirmation; one it already reported changes nothing.

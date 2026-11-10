@@ -14,7 +14,7 @@
     }
     else if (Icon is { } icon)
     {
-        <TbIconButton Icon="icon" AriaLabel="@(Label ?? "")" Size="TriggerSize" Disabled="Disabled"
+        <TbIconButton Icon="icon" AriaLabel="@(AriaLabel ?? "")" Size="TriggerSize" Disabled="Disabled"
                       @attributes="TriggerAttributes" />
     }
     else
@@ -48,10 +48,15 @@
     private bool _openFromParent;
     private bool _attaching;
 
-    /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required
-    /// unless <see cref="Trigger"/> gives a trigger of your own.</summary>
+    /// <summary>The text on the trigger button. Required unless an <see cref="Icon"/> or a <see cref="Trigger"/>
+    /// gives the trigger.</summary>
     [Parameter]
     public string? Label { get; set; }
+
+    /// <summary>The icon trigger's accessible name, which screen readers read and which is never shown. Required
+    /// with an <see cref="Icon"/>.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
 
     /// <summary>A trigger of your own, such as an avatar button or the arrow half of a split button, in place of the
     /// built-in one. Put the context's attributes on the button: <c>@attributes="context.Attributes"</c>.</summary>
@@ -199,7 +204,13 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Trigger is null && string.IsNullOrWhiteSpace(Label))
+        if (Trigger is null && Icon is not null && string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            throw new InvalidOperationException($"{nameof(TbMenu)} with an {nameof(Icon)} needs an "
+                + $"{nameof(AriaLabel)}, which names the icon button; {nameof(Label)} is for a text trigger.");
+        }
+
+        if (Trigger is null && Icon is null && string.IsNullOrWhiteSpace(Label))
         {
             throw new InvalidOperationException($"{nameof(TbMenu)} needs a {nameof(Label)} or a {nameof(Trigger)}.");
         }

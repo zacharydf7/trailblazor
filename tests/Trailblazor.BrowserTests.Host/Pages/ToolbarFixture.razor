@@ -1,7 +1,7 @@
 @page "/toolbar"
 
 <TbToolbar AriaLabel="Search">
-    <TbToolbarButton Text="Back" />
+    <TbToolbarButton Label="Back" />
     @* Added after the toolbar's script attaches, so its own keys would be set up after the toolbar's. *@
     @if (_showModes)
     {
@@ -11,7 +11,7 @@
         </TbToggleGroup>
     }
     <input aria-label="Search notes" value="trail" />
-    <TbToolbarButton Text="Go" />
+    <TbToolbarButton Label="Go" />
     @* The panel sits inside the toolbar, but the toolbar's keys skip it, so the group inside keeps its own. *@
     <TbPopover Label="Units">
         <TbToggleGroup @bind-Value="_units" AriaLabel="Distance units">
@@ -22,8 +22,8 @@
 </TbToolbar>
 
 <TbToolbar AriaLabel="Tools" Vertical>
-    <TbToolbarButton Text="Pan" />
-    <TbToolbarButton Text="Zoom" />
+    <TbToolbarButton Label="Pan" />
+    <TbToolbarButton Label="Zoom" />
 </TbToolbar>
 
 @* A toolbar of the page's own, which runs no toolbar script, so the group inside keeps its own keys. *@

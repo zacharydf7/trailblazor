@@ -8,7 +8,7 @@ internal static class LabelInfo
     public static RenderFragment Render(string buttonName, string? text, RenderFragment? content) => builder =>
     {
         builder.OpenComponent<TbPopover>(0);
-        builder.AddComponentParameter(1, nameof(TbPopover.Label), buttonName);
+        builder.AddComponentParameter(1, nameof(TbPopover.AriaLabel), buttonName);
         builder.AddComponentParameter(2, nameof(TbPopover.Icon), BuiltInIcons.Info);
         builder.AddComponentParameter(3, nameof(TbPopover.Variant), Variant.Text);
         builder.AddComponentParameter(4, nameof(TbPopover.Size), Size.Small);

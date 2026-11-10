@@ -53,7 +53,7 @@ public class ComponentAnalyzerTests
 
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal("TB001", diagnostic.Id);
-        Assert.Equal("TbMenu has no accessible name. Set Label or Trigger.", diagnostic.GetMessage());
+        Assert.Equal("TbMenu has no accessible name. Set Label, AriaLabel or Trigger.", diagnostic.GetMessage());
     }
 
     [Fact]

@@ -3,7 +3,7 @@
 @inject ITbLocalizer Localizer
 
 <CascadingValue Value="Described" IsFixed="false">
-    <TbPopover @attributes="AdditionalAttributes" Label="@Label" Icon="Icon" Trigger="Trigger"
+    <TbPopover @attributes="AdditionalAttributes" Label="@Label" AriaLabel="@AriaLabel" Icon="Icon" Trigger="Trigger"
                Variant="TriggerVariant" Size="TriggerSize" Title="@Title" Placement="Placement" Align="Align"
                Disabled="Disabled" Open="_open" OpenChanged="OnOpenChangedAsync"
                Class="@ClassNames.Join("tb-popconfirm", Class)" Style="@Style">

@@ -5,8 +5,8 @@
 @* data-toolbar-item marks what the toolbar hides when the button moves into its overflow menu. *@
 @if (Icon is Icon icon)
 {
-    <TbTooltip Text="@Text" Placement="Placement.Bottom" data-toolbar-item="@Id">
-        <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@Text" Variant="Variant"
+    <TbTooltip Text="@AriaLabel" Placement="Placement.Bottom" data-toolbar-item="@Id">
+        <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Variant"
                       Disabled="Disabled" OnClick="OnClick" Class="@Class" Style="@Style" />
     </TbTooltip>
 }
@@ -14,17 +14,22 @@ else
 {
     <TbButton @attributes="AdditionalAttributes" Variant="Variant" Disabled="Disabled" OnClick="OnClick"
               data-toolbar-item="@Id" Class="@Class" Style="@Style">
-        @Text
+        @Label
     </TbButton>
 }
 
 @code {
-    /// <summary>The button's text, which names it, shows in its tooltip when it has an <see cref="Icon"/>, and labels
-    /// its item in the overflow menu. Required.</summary>
-    [Parameter, EditorRequired]
-    public string Text { get; set; } = "";
+    /// <summary>The button's text, which also labels its item in the overflow menu. Required without an
+    /// <see cref="Icon"/>.</summary>
+    [Parameter]
+    public string? Label { get; set; }
 
-    /// <summary>Shows only this icon, with <see cref="Text"/> in a tooltip, instead of the text.</summary>
+    /// <summary>The icon button's accessible name, which its tooltip shows and which labels its item in the overflow
+    /// menu. Required with an <see cref="Icon"/>.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>Shows only this icon, with <see cref="AriaLabel"/> in a tooltip, instead of the text.</summary>
     [Parameter]
     public Icon? Icon { get; set; }
 
@@ -45,15 +50,24 @@ else
 
     internal string Id { get; } = $"tb-toolbar-button-{Guid.NewGuid():N}";
 
+    // What names the button, and its item in the overflow menu.
+    internal string Name => (Icon is null ? Label : AriaLabel) ?? "";
+
     /// <inheritdoc />
     protected override void OnInitialized() => Toolbar?.Add(this);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (string.IsNullOrWhiteSpace(Text))
+        if (Icon is not null && string.IsNullOrWhiteSpace(AriaLabel))
         {
-            throw new InvalidOperationException($"{nameof(TbToolbarButton)} needs a {nameof(Text)}.");
+            throw new InvalidOperationException($"{nameof(TbToolbarButton)} with an {nameof(Icon)} needs an "
+                + $"{nameof(AriaLabel)}, which names the icon button; {nameof(Label)} is for a text button.");
+        }
+
+        if (Icon is null && string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException($"{nameof(TbToolbarButton)} needs a {nameof(Label)}.");
         }
 
         Toolbar?.Refresh(this);

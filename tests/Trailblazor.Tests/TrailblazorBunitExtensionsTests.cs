@@ -199,7 +199,7 @@ public class TrailblazorBunitExtensionsTests : BunitContext
             builder.CloseComponent();
             builder.OpenElement(3, "button");
             builder.AddAttribute(4, "data-testid", "save");
-            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () => CloseDialogAsync(Name)));
+            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () => Dialog.CloseAsync(Name)));
             builder.AddContent(6, RendererInfo.IsInteractive ? "Save" : "Not interactive");
             builder.CloseElement();
         }

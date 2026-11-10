@@ -4,7 +4,7 @@
 <TbTextField Label="Name" @bind-Value="Name" UpdateOnInput />
 <TbDialogActions>
     <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelEditAsync">Cancel</TbButton>
-    <TbButton OnClick="() => CloseDialogAsync(Name ?? string.Empty)">Save</TbButton>
+    <TbButton OnClick="() => Dialog.CloseAsync(Name ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {
@@ -23,7 +23,7 @@
         if (Name == _original || await Dialogs.ConfirmAsync("Discard the new name?",
             $"The report keeps its name, {_original}.", "Discard", "Keep editing", Tone.Danger))
         {
-            await CancelDialogAsync();
+            await Dialog.CancelAsync();
         }
     }
 }

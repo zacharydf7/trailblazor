@@ -21,7 +21,7 @@
                    aria-required="@(Required ? "true" : null)" aria-invalid="@AriaInvalid(_dateBad)"
                    aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-time__date", Classes?.Input)" />
-            <TbPopover Icon="BuiltInIcons.Calendar" Label="@OpenLabel" Size="Size.Small"
+            <TbPopover Icon="BuiltInIcons.Calendar" AriaLabel="@OpenLabel" Size="Size.Small"
                        Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || ReadOnly)" Open="_open"
                        OpenChanged="OnOpenChanged" data-part="popover">
                 @* The calendar here only shows and picks; the picker is the form's field, so the form's cascades stop.

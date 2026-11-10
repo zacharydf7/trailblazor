@@ -8,7 +8,7 @@
     <TbRadio Value="@("Fast")">Fast</TbRadio>
 </TbRadioGroup>
 <TbDialogActions>
-    <TbButton OnClick="() => CloseDialogAsync(_pace ?? string.Empty)">Save</TbButton>
+    <TbButton OnClick="() => Dialog.CloseAsync(_pace ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {

@@ -30,7 +30,7 @@ internal static class DialogMenus
         where T : struct, Enum
     {
         builder.OpenComponent<TbMenu>(sequence);
-        builder.AddComponentParameter(sequence + 1, nameof(TbMenu.Label), label);
+        builder.AddComponentParameter(sequence + 1, nameof(TbMenu.AriaLabel), label);
         builder.AddComponentParameter(sequence + 2, nameof(TbMenu.Icon), icon);
         builder.AddComponentParameter(sequence + 3, nameof(TbMenu.Description), description);
         builder.AddComponentParameter(sequence + 4, nameof(TbMenu.Size), Size.Small);

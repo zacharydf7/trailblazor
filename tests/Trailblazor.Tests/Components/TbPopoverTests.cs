@@ -12,6 +12,25 @@ public class TbPopoverTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameTheIconTriggerWithTheAriaLabel_WhenAnIconIsSet()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.AriaLabel, "Filters")
+            .Add(popover => popover.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />")).AddChildContent("Options"));
+
+        Assert.Equal("Filters", cut.Find("[data-part=trigger]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenAnIconTriggerHasALabelButNoAriaLabel()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbPopover>(parameters => parameters
+            .Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />"))));
+
+        Assert.Contains("AriaLabel", error.Message);
+    }
+
+    [Fact]
     public void Render_ShouldWireTheTriggerToANamedPanel_WhenGivenALabelAndTitle()
     {
         var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")

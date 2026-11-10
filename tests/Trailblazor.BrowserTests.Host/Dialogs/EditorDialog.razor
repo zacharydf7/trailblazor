@@ -4,7 +4,7 @@
 <TbDialogActions>
     <TbButton OnClick="() => Dialog.Modal = !Dialog.Modal">@(Dialog.Modal ? "Pop out" : "Pop in")</TbButton>
     <TbButton OnClick="() => Dialog.Size = DialogSize.Small">Shrink</TbButton>
-    <TbButton OnClick="() => CloseDialogAsync(_name ?? string.Empty)">Save</TbButton>
+    <TbButton OnClick="() => Dialog.CloseAsync(_name ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {

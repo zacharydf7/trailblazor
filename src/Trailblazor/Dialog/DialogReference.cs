@@ -160,6 +160,13 @@ public abstract class DialogReference
     /// <summary>Closes the dialog as canceled, without asking it first. Does nothing once it has closed.</summary>
     public Task CancelAsync() => CloseAsync(false, null);
 
+    /// <summary>Closes the dialog as confirmed, for a dialog with no result, such as one that only informs. Does
+    /// nothing once it has closed. Throws for a dialog whose result isn't a <see cref="bool"/>, which closes with
+    /// <see cref="DialogReference{TResult}.CloseAsync"/> instead.</summary>
+    public Task ConfirmAsync() => this is DialogReference<bool> ? CloseAsync(true, true)
+        : throw new InvalidOperationException(
+            "ConfirmAsync is only for a dialog with no result; close this one with CloseAsync(value).");
+
     private void SetHeader(bool showHeader, bool closeButton)
     {
         _showHeader = showHeader;

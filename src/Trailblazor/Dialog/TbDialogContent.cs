@@ -4,18 +4,16 @@ using Microsoft.AspNetCore.Components;
 namespace Trailblazor;
 
 /// <summary>The base for a dialog's content when the dialog has no result, such as one that only informs. Open it with
-/// <see cref="IDialogService.ShowAsync{TDialog}"/>, which returns whether it was confirmed. Its markup becomes the
-/// dialog's body; put the buttons in a <see cref="TbDialogActions"/>.</summary>
+/// <see cref="IDialogService.ShowAsync{TDialog}"/>, which returns whether it was confirmed. Close it with
+/// <c>Dialog.ConfirmAsync()</c> to confirm or <c>Dialog.CancelAsync()</c> to cancel. Its markup becomes the dialog's
+/// body; put the buttons in a <see cref="TbDialogActions"/>.</summary>
 public abstract class TbDialogContent : TbDialogContent<bool>
 {
-    /// <summary>Closes the dialog as confirmed.</summary>
-    protected Task CloseDialogAsync() => base.CloseDialogAsync(true);
-
-    // Hidden because CloseDialogAsync(false) would still close the dialog as confirmed.
-    /// <summary>Not for a dialog with no result; use <see cref="CloseDialogAsync()"/> or
-    /// <see cref="TbDialogContent{TResult}.CancelDialogAsync"/>.</summary>
-    [Obsolete("A dialog with no result closes with CloseDialogAsync() or CancelDialogAsync().", error: true)]
-    protected new Task CloseDialogAsync(bool value) => base.CloseDialogAsync(value);
+    // A dialog with no result has no value to close with, so its reference offers ConfirmAsync in place of CloseAsync.
+    /// <summary>The open dialog, so the content can close it, with <c>Dialog.ConfirmAsync()</c> or
+    /// <c>Dialog.CancelAsync()</c>, and change it while it's open, as in <c>Dialog.Size = DialogSize.Large</c>.
+    /// </summary>
+    protected new DialogReference Dialog => base.Dialog;
 }
 
 /// <summary>The base for a dialog's content that closes with a <typeparamref name="TResult"/>, opened with
@@ -41,12 +39,14 @@ public abstract class TbDialogContent<TResult> : ComponentBase
         }
     }
 
-    // One member rather than one per setting, so names such as Size stay free for markup like Size.Large.
-    /// <summary>The open dialog, so the content can change it while it's open: set its
-    /// <see cref="DialogReference.Size"/>, <see cref="DialogReference.Modal"/>, <see cref="DialogReference.Position"/>,
+    // One member rather than one per action or setting, so the names an app gives its own handlers and markup, such
+    // as CloseDialogAsync or Size.Large, stay free.
+    /// <summary>The open dialog, so the content can close it, with <c>Dialog.CloseAsync(value)</c> or
+    /// <c>Dialog.CancelAsync()</c>, and change it while it's open: set its <see cref="DialogReference.Size"/>,
+    /// <see cref="DialogReference.Modal"/>, <see cref="DialogReference.Position"/>,
     /// <see cref="DialogReference.WindowState"/>, <see cref="DialogReference.ShowHeader"/> or
     /// <see cref="DialogReference.CloseButton"/>, as in <c>Dialog.Size = DialogSize.Large</c>.</summary>
-    protected DialogReference Dialog => _dialog
+    protected DialogReference<TResult> Dialog => _dialog as DialogReference<TResult>
         ?? throw new InvalidOperationException($"Open {GetType().Name} with {nameof(IDialogService)}.");
 
     /// <summary>The title the dialog takes when it's opened without one, which names it for screen readers and shows in
@@ -60,16 +60,10 @@ public abstract class TbDialogContent<TResult> : ComponentBase
         dialog.GetProperty(nameof(DefaultTitle), BindingFlags.Instance | BindingFlags.NonPublic)?.DeclaringType
             != typeof(TbDialogContent<TResult>);
 
-    /// <summary>Closes the dialog as confirmed, with <paramref name="value"/> as its result.</summary>
-    protected Task CloseDialogAsync(TResult value) => Dialog.CloseAsync(true, value);
-
-    /// <summary>Closes the dialog as canceled.</summary>
-    protected Task CancelDialogAsync() => Dialog.CloseAsync(false, null);
-
     /// <summary>Called when the user presses Escape, clicks the backdrop or presses the close button, and cancels the
     /// dialog unless overridden. Override it to send these through the dialog's own cancel, such as one that asks
     /// about unsaved changes first; the dialog stays open unless the override closes it. Closing from code doesn't call
     /// it.
     /// </summary>
-    protected virtual Task OnDismissAsync(DialogDismissReason reason) => CancelDialogAsync();
+    protected virtual Task OnDismissAsync(DialogDismissReason reason) => Dialog.CancelAsync();
 }

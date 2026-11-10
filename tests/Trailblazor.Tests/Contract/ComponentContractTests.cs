@@ -42,6 +42,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbPopover)] = (nameof(TbPopover.Label), "Sample"),
         [typeof(TbPopconfirm)] = (nameof(TbPopconfirm.Label), "Sample"),
         [typeof(TbMenu)] = (nameof(TbMenu.Label), "Sample"),
+        [typeof(TbToolbarButton)] = (nameof(TbToolbarButton.Label), "Sample"),
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
         [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
         [typeof(TbDialog)] = (nameof(TbDialog.Open), true),

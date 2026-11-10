@@ -19,10 +19,10 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbChipGroup", ["AriaLabel"]),
         ("Trailblazor.TbToolbar", ["AriaLabel"]),
         ("Trailblazor.TbToggleGroupBase`1", ["AriaLabel"]),
-        ("Trailblazor.TbToolbarButton", ["Text"]),
+        ("Trailblazor.TbToolbarButton", ["Label", "AriaLabel"]),
         ("Trailblazor.TbProgress", ["Label", "AriaLabel"]),
-        ("Trailblazor.TbMenu", ["Label", "Trigger"]),
-        ("Trailblazor.TbPopover", ["Label", "Trigger"]),
+        ("Trailblazor.TbMenu", ["Label", "AriaLabel", "Trigger"]),
+        ("Trailblazor.TbPopover", ["Label", "AriaLabel", "Trigger"]),
         ("Trailblazor.TbTab", ["Text", "TextContent"]),
         ("Trailblazor.TbTreeView`2", ["AriaLabel", "aria-labelledby"]),
         ("Trailblazor.TbSubMenu", ["Label"]),
@@ -99,8 +99,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         var component = usage.Component;
         foreach (var (_, names) in types.Named.Where(entry => InheritsFrom(component, entry.Type)))
         {
-            CheckName(context, usage, names, Rules.NoAccessibleName, component.Name,
-                string.Join(" or ", names.Where(name => char.IsUpper(name[0]))));
+            var shown = names.Where(name => char.IsUpper(name[0])).ToList();
+            CheckName(context, usage, names, Rules.NoAccessibleName, component.Name, shown.Count > 2
+                ? $"{string.Join(", ", shown.Take(shown.Count - 1))} or {shown.Last()}" : string.Join(" or ", shown));
         }
 
         if (SymbolEqualityComparer.Default.Equals(component, types.Dialog))

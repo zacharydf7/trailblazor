@@ -155,6 +155,26 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task Show_ShouldResolveAsConfirmed_WhenANoResultDialogIsConfirmed()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<NoticeDialog>("Notice");
+
+        await host.WaitForElement("[data-testid=accept]").ClickAsync(new());
+
+        Assert.Equal(DialogResult<bool>.Ok(true), await dialog.Result);
+    }
+
+    [Fact]
+    public async Task ConfirmAsync_ShouldThrow_WhenTheDialogHasAResult()
+    {
+        Render<DialogHost>();
+        var dialog = Dialogs.Show<SmallDialog, string>("Small");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ((DialogReference)dialog).ConfirmAsync());
+    }
+
+    [Fact]
     public void Show_ShouldTakeTheContentsDefaultTitle_WhenOpenedWithoutOne()
     {
         var host = Render<DialogHost>();
@@ -943,11 +963,11 @@ public class DialogServiceTests : BunitContext
 
             if (CloseWith is { } value)
             {
-                await CloseDialogAsync(value);
+                await Dialog.CloseAsync(value);
             }
             else if (Allow)
             {
-                await CancelDialogAsync();
+                await Dialog.CancelAsync();
             }
         }
     }
@@ -1098,11 +1118,11 @@ public class DialogServiceTests : BunitContext
         {
             builder.OpenElement(0, "button");
             builder.AddAttribute(1, "data-testid", "accept");
-            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, CloseDialogAsync));
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, Dialog.ConfirmAsync));
             builder.CloseElement();
             builder.OpenElement(3, "button");
             builder.AddAttribute(4, "data-testid", "cancel");
-            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, CancelDialogAsync));
+            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, Dialog.CancelAsync));
             builder.CloseElement();
         }
     }
@@ -1117,7 +1137,7 @@ public class DialogServiceTests : BunitContext
             builder.AddContent(0, $"Hello {Name}");
             builder.OpenElement(1, "button");
             builder.AddAttribute(2, "data-testid", "accept");
-            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => CloseDialogAsync(Name ?? "")));
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => Dialog.CloseAsync(Name ?? "")));
             builder.CloseElement();
         }
     }

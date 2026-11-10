@@ -5,7 +5,7 @@
     <TbNumberField Label="Kilometers" @bind-Value="_kilometers" Min="1" Required
                    RequiredMessage="Enter how long the trail is." />
     <TbDialogActions>
-        <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="CancelDialogAsync">Cancel</TbButton>
+        <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="Dialog.CancelAsync">Cancel</TbButton>
         <TbButton Type="ButtonType.Submit">Save</TbButton>
     </TbDialogActions>
 </TbForm>
@@ -22,5 +22,5 @@
 
     protected override void OnInitialized() => (_name, _kilometers) = (Name, Kilometers);
 
-    private Task SaveAsync() => CloseDialogAsync((_name!, _kilometers!.Value));
+    private Task SaveAsync() => Dialog.CloseAsync((_name!, _kilometers!.Value));
 }

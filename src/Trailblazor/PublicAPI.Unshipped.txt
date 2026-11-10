@@ -445,6 +445,8 @@ Trailblazor.TbPopconfirm.Disabled.get -> bool
 Trailblazor.TbPopconfirm.Disabled.set -> void
 Trailblazor.TbPopconfirm.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbPopconfirm.Icon.set -> void
+Trailblazor.TbPopconfirm.AriaLabel.get -> string?
+Trailblazor.TbPopconfirm.AriaLabel.set -> void
 Trailblazor.TbPopconfirm.Label.get -> string?
 Trailblazor.TbPopconfirm.Label.set -> void
 Trailblazor.TbPopconfirm.OnCancel.get -> Microsoft.AspNetCore.Components.EventCallback
@@ -1166,6 +1168,7 @@ Trailblazor.DialogReference
 Trailblazor.DialogReference.CloseButton.get -> bool
 Trailblazor.DialogReference.CloseButton.set -> void
 Trailblazor.DialogReference.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.DialogReference.ConfirmAsync() -> System.Threading.Tasks.Task!
 Trailblazor.DialogReference.ContentType.get -> System.Type?
 Trailblazor.DialogReference.Modal.get -> bool
 Trailblazor.DialogReference.Modal.set -> void
@@ -1974,14 +1977,11 @@ Trailblazor.TbDialogActions.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbDialogActions.ChildContent.set -> void
 Trailblazor.TbDialogActions.TbDialogActions() -> void
 Trailblazor.TbDialogContent
-Trailblazor.TbDialogContent.CloseDialogAsync() -> System.Threading.Tasks.Task!
-Trailblazor.TbDialogContent.CloseDialogAsync(bool value) -> System.Threading.Tasks.Task!
+Trailblazor.TbDialogContent.Dialog.get -> Trailblazor.DialogReference!
 Trailblazor.TbDialogContent.TbDialogContent() -> void
 Trailblazor.TbDialogContent<TResult>
-Trailblazor.TbDialogContent<TResult>.Dialog.get -> Trailblazor.DialogReference!
+Trailblazor.TbDialogContent<TResult>.Dialog.get -> Trailblazor.DialogReference<TResult>!
 Trailblazor.TbDialogContent<TResult>.TbDialogContent() -> void
-Trailblazor.TbDialogContent<TResult>.CancelDialogAsync() -> System.Threading.Tasks.Task!
-Trailblazor.TbDialogContent<TResult>.CloseDialogAsync(TResult value) -> System.Threading.Tasks.Task!
 Trailblazor.TbDialogDescription
 Trailblazor.TbDialogDescription.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDialogDescription.ChildContent.set -> void
@@ -2288,6 +2288,8 @@ Trailblazor.TbMenu.FullWidth.get -> bool
 Trailblazor.TbMenu.FullWidth.set -> void
 Trailblazor.TbMenu.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbMenu.Icon.set -> void
+Trailblazor.TbMenu.AriaLabel.get -> string?
+Trailblazor.TbMenu.AriaLabel.set -> void
 Trailblazor.TbMenu.Label.get -> string?
 Trailblazor.TbMenu.Label.set -> void
 Trailblazor.TbMenu.Open.get -> bool
@@ -2485,6 +2487,8 @@ Trailblazor.TbPopover.Disabled.set -> void
 Trailblazor.TbPopover.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbPopover.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbPopover.Icon.set -> void
+Trailblazor.TbPopover.AriaLabel.get -> string?
+Trailblazor.TbPopover.AriaLabel.set -> void
 Trailblazor.TbPopover.Label.get -> string?
 Trailblazor.TbPopover.Label.set -> void
 Trailblazor.TbPopover.Open.get -> bool
@@ -2905,8 +2909,10 @@ Trailblazor.TbToolbarButton.Icon.set -> void
 Trailblazor.TbToolbarButton.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
 Trailblazor.TbToolbarButton.OnClick.set -> void
 Trailblazor.TbToolbarButton.TbToolbarButton() -> void
-Trailblazor.TbToolbarButton.Text.get -> string!
-Trailblazor.TbToolbarButton.Text.set -> void
+Trailblazor.TbToolbarButton.AriaLabel.get -> string?
+Trailblazor.TbToolbarButton.AriaLabel.set -> void
+Trailblazor.TbToolbarButton.Label.get -> string?
+Trailblazor.TbToolbarButton.Label.set -> void
 Trailblazor.TbToolbarButton.Variant.get -> Trailblazor.Variant
 Trailblazor.TbToolbarButton.Variant.set -> void
 Trailblazor.TbTooltip

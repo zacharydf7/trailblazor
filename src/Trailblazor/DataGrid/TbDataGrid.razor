@@ -626,7 +626,7 @@
     {
         var draft = DraftFor(column);
         var label = IsFiltered(column) ? Format(TbStrings.DataGridFilterOn, column.Heading) : FilterLabel(column);
-        return @<TbPopover Icon="BuiltInIcons.Filter" Label="@label" Title="@FilterLabel(column)"
+        return @<TbPopover Icon="BuiltInIcons.Filter" AriaLabel="@label" Title="@FilterLabel(column)"
                            Variant="Variant.Text" Size="Size.Small" Open="draft.Open"
                            OpenChanged="open => OpenFilterMenu(column, open)" data-part="filter-menu"
                            class="tb-data-grid__filter-menu">

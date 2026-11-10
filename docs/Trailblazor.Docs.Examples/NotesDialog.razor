@@ -13,7 +13,7 @@
     <TbButton Variant="Variant.Text" OnClick="ToggleWindow">
         @(Dialog.WindowState == DialogWindowState.Maximized ? "Back to normal size" : "Fill the window")
     </TbButton>
-    <TbButton OnClick="() => CloseDialogAsync(_notes ?? string.Empty)">Save</TbButton>
+    <TbButton OnClick="() => Dialog.CloseAsync(_notes ?? string.Empty)">Save</TbButton>
 </TbDialogActions>
 
 @code {

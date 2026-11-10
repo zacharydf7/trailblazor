@@ -155,6 +155,17 @@ public class TbPopconfirmTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameItselfInTheError_WhenAnIconTriggerHasNoAriaLabel()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbPopconfirm>(parameters => parameters
+            .Add(confirm => confirm.Label, "Delete")
+            .Add(confirm => confirm.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />"))
+            .Add(confirm => confirm.Title, "Delete Pine Hollow loop?")));
+
+        Assert.StartsWith("TbPopconfirm with an Icon needs an AriaLabel", error.Message);
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenTheTitleIsBlank()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbPopconfirm>(parameters => parameters
@@ -175,7 +186,7 @@ public class TbPopconfirmTests : BunitContext
         {
             Renders++;
             builder.OpenComponent<TbPopconfirm>(0);
-            builder.AddComponentParameter(1, nameof(TbPopconfirm.Label), "Archive");
+            builder.AddComponentParameter(1, nameof(TbPopconfirm.AriaLabel), "Archive");
             builder.AddComponentParameter(2, nameof(TbPopconfirm.Title), "Archive Cedar Flats?");
             builder.AddComponentParameter(3, nameof(TbPopconfirm.OnConfirm),
                 EventCallback.Factory.Create(this, () => Save.Task));

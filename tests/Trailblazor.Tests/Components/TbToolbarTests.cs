@@ -27,7 +27,7 @@ public class TbToolbarTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldNameAnIconButtonByItsText_WhenItHasAnIcon()
+    public void Render_ShouldNameAnIconButtonByItsAriaLabel_WhenItHasAnIcon()
     {
         var cut = RenderToolbar();
 
@@ -85,7 +85,7 @@ public class TbToolbarTests : BunitContext
             {
                 AddButton(builder, 0, "Add a note", Square, null);
                 builder.OpenComponent<TbToolbarButton>(10);
-                builder.AddAttribute(11, nameof(TbToolbarButton.Text), "Delete note");
+                builder.AddAttribute(11, nameof(TbToolbarButton.Label), "Delete note");
                 builder.AddAttribute(12, nameof(TbToolbarButton.Disabled), true);
                 builder.CloseComponent();
             }));
@@ -111,10 +111,19 @@ public class TbToolbarTests : BunitContext
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    public void Render_ShouldThrow_WhenAToolbarButtonHasNoText(string text)
+    public void Render_ShouldThrow_WhenAToolbarButtonHasNoLabel(string text)
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbToolbarButton>(parameters => parameters
-            .Add(button => button.Text, text)));
+            .Add(button => button.Label, text)));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenAnIconToolbarButtonHasALabelButNoAriaLabel()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbToolbarButton>(parameters => parameters
+            .Add(button => button.Icon, Square).Add(button => button.Label, "Add a note")));
+
+        Assert.Contains("AriaLabel", error.Message);
     }
 
     private IRenderedComponent<TbToolbar> RenderToolbar(bool vertical = false, Action<string>? onClick = null) =>
@@ -131,7 +140,8 @@ public class TbToolbarTests : BunitContext
     private void AddButton(RenderTreeBuilder builder, int sequence, string text, Icon? icon, Action<string>? onClick)
     {
         builder.OpenComponent<TbToolbarButton>(sequence);
-        builder.AddAttribute(sequence + 1, nameof(TbToolbarButton.Text), text);
+        var name = icon is null ? nameof(TbToolbarButton.Label) : nameof(TbToolbarButton.AriaLabel);
+        builder.AddAttribute(sequence + 1, name, text);
         builder.AddAttribute(sequence + 2, nameof(TbToolbarButton.Icon), icon);
         builder.AddAttribute(sequence + 3, nameof(TbToolbarButton.OnClick),
             EventCallback.Factory.Create<MouseEventArgs>(this, () => onClick?.Invoke(text)));
@@ -152,7 +162,7 @@ public class TbToolbarTests : BunitContext
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<TbToolbarButton>(0);
-            builder.AddAttribute(1, nameof(TbToolbarButton.Text), _text);
+            builder.AddAttribute(1, nameof(TbToolbarButton.Label), _text);
             builder.CloseComponent();
         }
     }

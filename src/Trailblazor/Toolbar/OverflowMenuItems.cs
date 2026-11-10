@@ -22,7 +22,7 @@ internal sealed class OverflowMenuItems : ComponentBase
             builder.AddComponentParameter(2, nameof(TbMenuItem.Disabled), button.Disabled);
             builder.AddComponentParameter(3, nameof(TbMenuItem.OnClick), button.OnClick);
             builder.AddComponentParameter(4, nameof(TbMenuItem.ChildContent),
-                (RenderFragment)(content => content.AddContent(0, button.Text)));
+                (RenderFragment)(content => content.AddContent(0, button.Name)));
             builder.CloseComponent();
         }
     }

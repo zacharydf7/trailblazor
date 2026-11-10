@@ -1590,8 +1590,8 @@ public static class ExampleCatalog
             Labeling =
             [
                 "A `toolbar` named by its required `AriaLabel`.",
-                "A `TbToolbarButton` with an `Icon` is an icon button named by its `Text`, which its tooltip shows "
-                    + "too.",
+                "A `TbToolbarButton` shows its `Label`. With an `Icon`, it is an icon button named by its "
+                    + "`AriaLabel`, which its tooltip shows too.",
                 "The overflow menu's button is named by `OverflowLabel`, \"More\" unless set.",
             ],
             Announcements =
@@ -1622,11 +1622,11 @@ public static class ExampleCatalog
             ],
             Anatomy = """
                 <TbToolbar AriaLabel="…">
-                    <TbToolbarButton Text="…" Icon="…" OnClick="…" />
-                    <TbToolbarButton Text="…" Icon="…" OnClick="…" />
+                    <TbToolbarButton AriaLabel="…" Icon="…" OnClick="…" />
+                    <TbToolbarButton AriaLabel="…" Icon="…" OnClick="…" />
                 </TbToolbar>
                 """,
-            TestingTip = "Find a toolbar button by its `Text`, as `GetByRole(AriaRole.Button, new() { Name = \"Add a "
+            TestingTip = "Find a toolbar button by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Add a "
                 + "note\" })`. To test the overflow, set the page's viewport narrow, wait for the toolbar's "
                 + "`data-ready`, open the menu button named \"More\" and choose the `menuitem`.",
         },
@@ -5575,7 +5575,7 @@ public static class ExampleCatalog
                 new("submenus", "Submenus", "`TbSubMenu` opens a second list beside an item. Resting the pointer on "
                     + "the item opens the list without moving focus into it, and on the way there the pointer can "
                     + "cross other items without the submenu closing. This menu also sets `Icon`, which makes its "
-                    + "trigger an icon button named by `Label`.", typeof(MenuSubmenuExample)),
+                    + "trigger an icon button named by `AriaLabel`.", typeof(MenuSubmenuExample)),
                 new("checks-and-radios", "Checkbox and radio items", "`TbMenuCheckboxItem` and `TbMenuRadioItem` keep "
                     + "a value in a menu. `TbMenuGroup` and `TbMenuRadioGroup` group items under a `Label`, and "
                     + "`TbMenuSeparator` draws a line between them.", typeof(MenuCheckExample)),
@@ -5634,7 +5634,7 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
-                "The trigger is named by `Label`.",
+                "The trigger is named by `Label`, or with an `Icon`, by `AriaLabel`.",
             ],
             Announcements =
             [
@@ -5735,12 +5735,13 @@ public static class ExampleCatalog
                     },
                 },
                 new("opening", "Opening a dialog", "`IDialogService.ShowAsync` opens a component that inherits "
-                    + "`TbDialogContent<TResult>` and waits for its result. A dialog with no result, such as one that "
-                    + "only informs, inherits `TbDialogContent`, and `ShowAsync` then returns whether it was "
-                    + "confirmed. Escape, the backdrop and the close button call `OnDismissAsync`, which cancels by "
-                    + "default. Override it to run a cancel of your own, as this "
-                    + "rename dialog does to ask before discarding a changed "
-                    + "name.", typeof(DialogExample), typeof(RenameDialog)),
+                    + "`TbDialogContent<TResult>` and waits for its result. The content closes the dialog with "
+                    + "`Dialog.CloseAsync(value)` or `Dialog.CancelAsync()`. A dialog with no result, such as one "
+                    + "that only informs, inherits `TbDialogContent` and closes with `Dialog.ConfirmAsync()` in place "
+                    + "of `CloseAsync`. `ShowAsync` then returns whether it was confirmed. Escape, the backdrop and "
+                    + "the close button call `OnDismissAsync`, which cancels by default. Override it to run a cancel "
+                    + "of your own, as this rename dialog does to ask before discarding a changed name.",
+                    typeof(DialogExample), typeof(RenameDialog)),
                 new("confirming", "Confirming and alerting", "`ConfirmAsync` asks a question with two buttons, and "
                     + "`AlertAsync` tells the user something with one. Focus starts on the first button, so a "
                     + "confirmation dialog starts on Cancel, and Enter doesn't confirm by accident. The alert's tone "
@@ -5901,7 +5902,7 @@ public static class ExampleCatalog
                 <TbDialogDescription>…</TbDialogDescription>
                 …
                 <TbDialogActions>
-                    <TbButton>…</TbButton>
+                    <TbButton OnClick="() => Dialog.CloseAsync(…)">…</TbButton>
                 </TbDialogActions>
 
                 @* A dialog written in the page's markup *@
@@ -6109,7 +6110,7 @@ public static class ExampleCatalog
             Sections =
             [
                 new("trigger", "The trigger", "`Label` is the text on a popover's trigger. `Icon` makes the trigger an "
-                    + "icon button, named by the label, and `Variant` and `Size` set how it looks.",
+                    + "icon button, named by `AriaLabel`, and `Variant` and `Size` set how it looks.",
                     typeof(PopoverExample)),
                 new("title", "Title", "`Title` adds a heading to the top of a popover's panel and names the panel for "
                     + "screen readers. Without one, the trigger names it.", typeof(PopoverTitleExample)),
@@ -6197,8 +6198,8 @@ public static class ExampleCatalog
                     + "away. `ConfirmText` and `Tone` set the confirm button, such as Delete in the danger tone.",
                     typeof(PopconfirmExample)),
                 new("slow", "A slow action", "The confirm button shows it's busy until `OnConfirm` finishes, and then "
-                    + "the confirmation closes. `Icon` makes the trigger an icon button, named by `Label`. `Trigger` "
-                    + "takes a button of your own, as on a [popover](components/popover#custom-trigger).",
+                    + "the confirmation closes. `Icon` makes the trigger an icon button, named by `AriaLabel`. "
+                    + "`Trigger` takes a button of your own, as on a [popover](components/popover#custom-trigger).",
                     typeof(PopconfirmSlowExample)),
             ],
             Api = [typeof(TbPopconfirm)],

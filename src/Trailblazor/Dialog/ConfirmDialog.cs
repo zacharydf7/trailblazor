@@ -45,10 +45,10 @@ internal sealed class ConfirmDialog : TbDialogContent<bool>
         {
             if (CancelText is not null)
             {
-                DialogButtons.Add(actions, 0, this, CancelText, Variant.Outlined, Tone.Neutral, CancelDialogAsync);
+                DialogButtons.Add(actions, 0, this, CancelText, Variant.Outlined, Tone.Neutral, Dialog.CancelAsync);
             }
 
-            DialogButtons.Add(actions, 10, this, ConfirmText, Variant.Filled, Tone, () => CloseDialogAsync(true));
+            DialogButtons.Add(actions, 10, this, ConfirmText, Variant.Filled, Tone, () => Dialog.CloseAsync(true));
         }));
         builder.CloseComponent();
     }

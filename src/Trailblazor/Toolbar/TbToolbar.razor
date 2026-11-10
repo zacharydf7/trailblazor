@@ -14,7 +14,7 @@
     {
         @* The script shows it once a button has moved in; the server then fills it with those buttons. *@
         <div @ref="_more" data-part="overflow" class="tb-toolbar__overflow">
-            <TbMenu Label="@(OverflowLabel ?? Localizer[TbStrings.ToolbarMore])" Icon="BuiltInIcons.More"
+            <TbMenu AriaLabel="@(OverflowLabel ?? Localizer[TbStrings.ToolbarMore])" Icon="BuiltInIcons.More"
                     Align="PlacementAlign.End">@OverflowItems</TbMenu>
         </div>
     }

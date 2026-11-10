@@ -4,7 +4,7 @@
 <TbTextField Label="Street" @bind-Value="_street" />
 <TbNumberField Label="Floor" @bind-Value="_floor" Disabled="FloorLocked" AutoFocus />
 <TbDialogActions>
-    <TbButton OnClick='() => CloseDialogAsync($"{_street}, floor {_floor}")'>Save</TbButton>
+    <TbButton OnClick='() => Dialog.CloseAsync($"{_street}, floor {_floor}")'>Save</TbButton>
 </TbDialogActions>
 
 @code {

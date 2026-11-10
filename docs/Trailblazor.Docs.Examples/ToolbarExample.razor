@@ -8,11 +8,12 @@
             <TbToggleItem Value="@("Newest")" Text="Newest" />
             <TbToggleItem Value="@("Oldest")" Text="Oldest" />
         </TbToggleGroup>
-        <TbToolbarButton Text="Add a note" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Add a note")" />
-        <TbToolbarButton Text="Filter notes" Icon="ExampleIcons.Filter" OnClick="@(() => _last = "Filter notes")" />
-        <TbToolbarButton Text="Set an alert" Icon="ExampleIcons.Bell" OnClick="@(() => _last = "Set an alert")" />
-        <TbToolbarButton Text="Mark as done" Icon="ExampleIcons.Check" OnClick="@(() => _last = "Mark as done")" />
-        <TbToolbarButton Text="Delete note" Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete note")" />
+        <TbToolbarButton AriaLabel="Add a note" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Add a note")" />
+        <TbToolbarButton AriaLabel="Filter notes" Icon="ExampleIcons.Filter"
+                         OnClick="@(() => _last = "Filter notes")" />
+        <TbToolbarButton AriaLabel="Set an alert" Icon="ExampleIcons.Bell" OnClick="@(() => _last = "Set an alert")" />
+        <TbToolbarButton AriaLabel="Mark as done" Icon="ExampleIcons.Check" OnClick="@(() => _last = "Mark as done")" />
+        <TbToolbarButton AriaLabel="Delete note" Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete note")" />
     </TbToolbar>
 </div>
 <TbText>Last action: @(_last ?? "none")</TbText>

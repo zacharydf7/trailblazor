@@ -13,7 +13,7 @@ internal static class MoveHandle
         ITbLocalizer localizer, Func<int, MouseEventArgs, Task> moveTo)
     {
         builder.OpenComponent<TbMenu>(sequence);
-        builder.AddComponentParameter(sequence + 1, nameof(TbMenu.Label), label);
+        builder.AddComponentParameter(sequence + 1, nameof(TbMenu.AriaLabel), label);
         builder.AddComponentParameter(sequence + 2, nameof(TbMenu.Icon), BuiltInIcons.DragHandle);
         builder.AddComponentParameter(sequence + 3, nameof(TbMenu.Description), localizer[TbStrings.SortableHint]);
         builder.AddComponentParameter(sequence + 4, nameof(TbMenu.Size), Size.Small);
