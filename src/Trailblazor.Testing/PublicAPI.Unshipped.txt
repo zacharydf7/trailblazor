@@ -9,6 +9,7 @@ static Trailblazor.Testing.BrowserFile.operator !=(Trailblazor.Testing.BrowserFi
 static Trailblazor.Testing.BrowserFile.operator ==(Trailblazor.Testing.BrowserFile? left, Trailblazor.Testing.BrowserFile? right) -> bool
 static Trailblazor.Testing.ScrollRequest.operator !=(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
 static Trailblazor.Testing.ScrollRequest.operator ==(Trailblazor.Testing.ScrollRequest? left, Trailblazor.Testing.ScrollRequest? right) -> bool
+static Trailblazor.Testing.TbContract.VerifyAsync<TComponent>(System.Action<Trailblazor.Testing.TbContractSetup!>? setup = null) -> System.Threading.Tasks.Task!
 static Trailblazor.Testing.TrailblazorBunitExtensions.AddTrailblazor(this Bunit.BunitContext! context, System.Action<Trailblazor.TrailblazorOptions!>? configure = null) -> Bunit.BunitContext!
 static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.BunitContext! context, string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
 static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog>(this Bunit.BunitContext! context, string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, bool>!>!
@@ -83,6 +84,15 @@ Trailblazor.Testing.ScrollRequest.Smooth.get -> bool
 Trailblazor.Testing.ScrollRequest.Smooth.init -> void
 Trailblazor.Testing.TbCalendarDriver
 Trailblazor.Testing.TbCalendarDriver.ChooseAsync(System.DateOnly date) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbContract
+Trailblazor.Testing.TbContractException
+Trailblazor.Testing.TbContractException.Failures.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbContractException.TbContractException(System.Collections.Generic.IReadOnlyList<string!>! failures) -> void
+Trailblazor.Testing.TbContractSetup
+Trailblazor.Testing.TbContractSetup.Context(System.Action<Bunit.BunitContext!>! configure) -> Trailblazor.Testing.TbContractSetup!
+Trailblazor.Testing.TbContractSetup.Parameter(string! name, object! value) -> Trailblazor.Testing.TbContractSetup!
+Trailblazor.Testing.TbContractSetup.Sample<T>(T first, T second) -> Trailblazor.Testing.TbContractSetup!
+Trailblazor.Testing.TbContractSetup.Services(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! register) -> Trailblazor.Testing.TbContractSetup!
 Trailblazor.Testing.TbListBoxDriver
 Trailblazor.Testing.TbListBoxDriver.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbListBoxDriver.Chosen.get -> System.Collections.Generic.IReadOnlyList<string!>!

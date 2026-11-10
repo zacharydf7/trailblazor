@@ -239,7 +239,29 @@
             <li>
                 A disabled or read-only field never changes its value, whatever is clicked or typed in it.
             </li>
+            <li>
+                Once removed from the page, a component leaves nothing running: no handler on Trailblazor's services,
+                no callback the browser can still make, and no timer that later calls your page.
+            </li>
+            <li>
+                An element you found keeps working after the component renders again, so you can click a button twice
+                without finding it a second time. A text box's input and change events are the exception: Blazor's
+                <code>@@bind</code> gives them a new handler on each render, so find the box again before you type in
+                it a second time.
+            </li>
         </ul>
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Check your own components</TbText>
+        <TbText>
+            <code>TbContract.VerifyAsync&lt;TComponent&gt;()</code> checks a component of your own, such as a field
+            that wraps a Trailblazor one, against the same rules. Each rule renders it afresh in bUnit, and the call
+            throws a <code>TbContractException</code> listing every rule it breaks. Use its setup to give the
+            parameters the component needs, the services it injects, stand-ins for the JavaScript calls it makes
+            itself, and two sample values for any type it binds other than <code>string</code>, <code>bool</code>,
+            the numeric types, <code>DateOnly</code>, <code>TimeOnly</code>, <code>DateTime</code>,
+            <code>DateTimeOffset</code>, <code>TimeSpan</code> and Trailblazor's own value types: date and slider
+            ranges, and the grid's state, sorts and filters.
+        </TbText>
+        <CodeBlock Label="Checking your own component" Code="@Contract" />
 
         <DocsHeading Id="playwright" Text="Drive components in Playwright" Class="docs-section" />
         <TbText>
@@ -621,6 +643,17 @@
 
         dialogs.Answer = confirm => confirm.Title == "Delete trail?";
         await page.Find("button.delete").ClickAsync(new());
+        """;
+
+    private const string Contract = """
+        [Fact]
+        public async Task TrailField_ShouldKeepTrailblazorsRules_WhenChecked()
+        {
+            await TbContract.VerifyAsync<TrailField>(setup => setup
+                .Parameter(nameof(TrailField.Label), "Trail")
+                .Services(services => services.AddSingleton<TrailCatalog>())
+                .Sample(new TrailId(1), new TrailId(2)));
+        }
         """;
 
     private const string Playwright = """

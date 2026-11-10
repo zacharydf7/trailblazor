@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests.Contract;
 
@@ -47,37 +44,8 @@ public class DisposeContractTests : BunitContext
     [Theory, MemberData(nameof(Components))]
     public async Task Dispose_ShouldLeaveNothingRunning_WhenTheComponentIsDisposed(Type component)
     {
-        var services = WatchedServices();
-        var handlers = Handlers(services);
-        var cut = Render<DynamicComponent>(parameters => Host(parameters, component, Parameters));
-        // Time moves on while the controls are used, so work that waits on it, such as a debounce, finishes.
-        var use = ValueContractTests.UseEveryControlAsync(cut);
-        for (var second = 0; !use.IsCompleted; second++)
-        {
-            Assert.True(second < 600, $"Using the controls of {component.Name} never finished.");
-            _time.Advance(TimeSpan.FromSeconds(1));
-            await Task.Delay(1, Xunit.TestContext.Current.CancellationToken);
-        }
-
-        await use;
-        // Each combobox is typed in once more without moving the time on, so its delayed search is still pending at
-        // dispose.
-        var typing = cut.FindAll("input[role=combobox]")
-            .Select(box => box.InputAsync(new ChangeEventArgs { Value = "Cedar" })).ToList();
-        var references = JSInterop.Invocations.SelectMany(call => call.Arguments).Where(IsObjectReference).ToList();
-
-        await DisposeComponentsAsync();
-        var callbacks = _callbacks.Count;
-        _time.Advance(TimeSpan.FromHours(1));
-        // Work that waited on the time is handed to the renderer, so waiting on the renderer lets it run before
-        // anything is checked.
-        await Renderer.Dispatcher.InvokeAsync(() => { });
-        await Task.WhenAll(typing).WaitAsync(TimeSpan.FromSeconds(30), Xunit.TestContext.Current.CancellationToken);
-
-        Assert.Equal(handlers, Handlers(services));
-        Assert.All(references, reference => Assert.True(IsDisposed(reference), $"{reference!.GetType()} is live."));
-        Assert.Equal(callbacks, _callbacks.Count);
-        Assert.Null(Renderer.UnhandledException.IsCompleted ? await Renderer.UnhandledException : null);
+        Assert.Empty(await ContractRules.CheckDisposeAsync(this, _time,
+            parameters => Host(parameters, component, Parameters), component.Name, _callbacks));
     }
 
     // Renders the component, inside its parent when it only renders inside one, with the parameters parametersOf gives
@@ -117,21 +85,7 @@ public class DisposeContractTests : BunitContext
             values[name] = value;
         }
 
-        foreach (var property in component.GetProperties().Where(property =>
-            property.IsDefined(typeof(ParameterAttribute)) && !values.ContainsKey(property.Name)
-            && !Unhandled.Contains($"{component.Name}.{property.Name}")))
-        {
-            if (property.PropertyType == typeof(EventCallback))
-            {
-                values[property.Name] = EventCallback.Factory.Create(this, () => _callbacks.Add(null));
-            }
-            else if (property.PropertyType.IsGenericType
-                && property.PropertyType.GetGenericTypeDefinition() == typeof(EventCallback<>))
-            {
-                values[property.Name] = ValueContractTests.Recorder(property, _callbacks);
-            }
-        }
-
+        ContractRules.AddCallbacks(component, values, _callbacks, name => Unhandled.Contains($"{component.Name}.{name}"));
         return values;
     }
 
@@ -159,62 +113,4 @@ public class DisposeContractTests : BunitContext
     private static Type Close(Type type) => type.IsGenericTypeDefinition
         ? type.MakeGenericType([.. type.GetGenericArguments().Select(_ => typeof(string))])
         : type;
-
-    // The services a component can subscribe to: Trailblazor's own and the navigation manager.
-    private List<object> WatchedServices() => Services.ToList()
-        .Where(service => service.ServiceType.Assembly == typeof(TbRoot).Assembly
-            || service.ServiceType.Assembly == typeof(TrailblazorBunitExtensions).Assembly
-            || service.ServiceType == typeof(NavigationManager))
-        .Select(service => Services.GetRequiredService(service.ServiceType))
-        .Distinct(ReferenceEqualityComparer.Instance).ToList()!;
-
-    // How many handlers each event, and each list of callbacks, on the services holds.
-    private static List<string> Handlers(List<object> services) =>
-    [
-        .. from service in services
-           from field in Fields(service.GetType())
-           let value = field.GetValue(service)
-           let count = value switch
-           {
-               Delegate handler => handler.GetInvocationList().Length,
-               ICollection list when IsCallbackList(field.FieldType) => list.Count,
-               _ => -1,
-           }
-           where count >= 0
-           select $"{service.GetType().Name}.{field.Name}: {count}",
-    ];
-
-    private static IEnumerable<FieldInfo> Fields(Type? type)
-    {
-        for (; type is not null; type = type.BaseType)
-        {
-            foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-                | BindingFlags.DeclaredOnly))
-            {
-                yield return field;
-            }
-        }
-    }
-
-    private static bool IsCallbackList(Type type) => type.IsGenericType
-        && type.GetGenericArguments() is [var item] && typeof(Delegate).IsAssignableFrom(item);
-
-    // Blazor's own components, such as Virtualize, look after their references themselves.
-    private static bool IsObjectReference(object? argument) => argument?.GetType() is { IsGenericType: true } type
-        && type.GetGenericTypeDefinition() == typeof(DotNetObjectReference<>)
-        && type.GetGenericArguments()[0].Assembly.GetName().Name!.StartsWith("Trailblazor", StringComparison.Ordinal);
-
-    // A disposed reference refuses to give up its object.
-    private static bool IsDisposed(object? reference)
-    {
-        try
-        {
-            reference!.GetType().GetProperty(nameof(DotNetObjectReference<object>.Value))!.GetValue(reference);
-            return false;
-        }
-        catch (TargetInvocationException exception) when (exception.InnerException is ObjectDisposedException)
-        {
-            return true;
-        }
-    }
 }
