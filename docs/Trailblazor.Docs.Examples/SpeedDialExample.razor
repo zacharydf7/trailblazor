@@ -1,0 +1,12 @@
+<TbSurface Outlined class="tb-p-4" style="contain: layout; min-block-size: 16rem" role="region" aria-label="Planner">
+    <output aria-label="Last action">@(_last ?? "Nothing added yet.")</output>
+    <TbSpeedDial Label="Add">
+        <TbMenuItem Icon="ExampleIcons.Trail" OnClick="@(() => _last = "Added a trail.")">Trail</TbMenuItem>
+        <TbMenuItem Icon="ExampleIcons.Folder" OnClick="@(() => _last = "Added a folder.")">Folder</TbMenuItem>
+        <TbMenuItem Icon="ExampleIcons.Bell" OnClick="@(() => _last = "Added a reminder.")">Reminder</TbMenuItem>
+    </TbSpeedDial>
+</TbSurface>
+
+@code {
+    private string? _last;
+}

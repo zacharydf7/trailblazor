@@ -17,10 +17,11 @@ public static partial class DesignTokens
     public static IReadOnlyList<string> ComponentTokens { get; } =
     [
         "--tb-button-height", "--tb-button-radius", "--tb-data-grid-row-height", "--tb-dialog-radius",
-        "--tb-dialog-z-index", "--tb-field-background", "--tb-field-border-color", "--tb-field-border-width",
-        "--tb-field-height", "--tb-field-radius", "--tb-menu-item-height", "--tb-menu-radius",
-        "--tb-popover-radius", "--tb-table-row-height", "--tb-table-sticky-top", "--tb-tabs-indicator-color",
-        "--tb-tabs-indicator-size", "--tb-tooltip-max-width", "--tb-tree-item-height", "--tb-tree-item-radius",
+        "--tb-dialog-z-index", "--tb-fab-offset", "--tb-fab-radius", "--tb-fab-z-index", "--tb-field-background",
+        "--tb-field-border-color", "--tb-field-border-width", "--tb-field-height", "--tb-field-radius",
+        "--tb-menu-item-height", "--tb-menu-radius", "--tb-popover-radius", "--tb-table-row-height",
+        "--tb-table-sticky-top", "--tb-tabs-indicator-color", "--tb-tabs-indicator-size", "--tb-tooltip-max-width",
+        "--tb-tree-item-height", "--tb-tree-item-radius",
     ];
 
     private static readonly string[] Tones = ["primary", "neutral", "success", "warning", "danger", "info"];

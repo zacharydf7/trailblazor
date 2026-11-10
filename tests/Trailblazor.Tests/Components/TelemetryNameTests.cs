@@ -111,6 +111,24 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task SpeedDial_ShouldCountItsOpensAndItsActionsChosen_WhenTheyHaveTelemetryNames()
+    {
+        var cut = Render<TbSpeedDial>(parameters => parameters.Add(dial => dial.Label, "Add")
+            .Add(dial => dial.TelemetryName, "new-item")
+            .AddChildContent<TbMenuItem>(item => item.Add(action => action.TelemetryName, "new-trail")
+                .AddChildContent("Trail")));
+        var events = ((DotNetObjectReference<MenuEvents>)JSInterop.Invocations["createMenu"].Single()
+            .Arguments[3]!).Value;
+
+        cut.Find("[data-part=trigger]").Click();
+        await cut.InvokeAsync(() => events.OnToggle(true));
+        cut.Find("[role=menuitem]").Click();
+
+        Assert.Equal(["new-item"], Names(_shown));
+        Assert.Equal([("new-item", "TbSpeedDial", null), ("new-trail", "TbMenuItem", null)], Uses());
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldCountEachAnswer_WhenItHasATelemetryName()
     {
         var cut = Render<TbPopconfirm>(parameters => parameters.Add(confirm => confirm.Label, "Delete")

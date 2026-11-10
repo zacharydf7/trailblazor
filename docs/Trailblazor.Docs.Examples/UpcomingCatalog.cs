@@ -46,7 +46,6 @@ public static class UpcomingCatalog
         new("Tree grid", ExampleCategory.Content, 81),
         new("Watermark", ExampleCategory.Content, 192),
         new("Back to top button", ExampleCategory.Actions, 194),
-        new("Floating action button", ExampleCategory.Actions, 172),
         new("Ribbon", ExampleCategory.Actions, 83),
         new("Smart paste", ExampleCategory.Actions, 198),
         new("Speech-to-text button", ExampleCategory.Actions, 197),

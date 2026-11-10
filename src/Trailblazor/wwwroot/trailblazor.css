@@ -2138,6 +2138,160 @@
         min-width: var(--tb-control-height-lg);
     }
 
+    .tb-fab {
+        --tb-fab-size: 3.5rem;
+        min-width: var(--tb-fab-size);
+        min-height: var(--tb-fab-size);
+        padding: 0;
+        border-radius: var(--tb-fab-radius, var(--tb-radius-full));
+        box-shadow: var(--tb-shadow-md);
+        transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard),
+            box-shadow var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-fab.tb-button--small {
+        --tb-fab-size: 2.5rem;
+    }
+
+    .tb-fab.tb-button--large {
+        --tb-fab-size: 4.5rem;
+    }
+
+    .tb-fab:hover:not(:disabled, [aria-disabled="true"]) {
+        box-shadow: var(--tb-shadow-lg);
+    }
+
+    .tb-fab--extended {
+        padding-inline: var(--tb-space-4) var(--tb-space-5);
+    }
+
+    /* Over the page as it scrolls, clear of a phone's rounded corners and home bar, and under dialogs and popups. */
+    :is(.tb-fab, .tb-speed-dial):not(.tb-fab--inline, .tb-speed-dial--inline) {
+        --tb-fab-edge: var(--tb-fab-offset, var(--tb-space-4));
+        --tb-fab-side: calc(var(--tb-fab-edge)
+            + max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)));
+        position: fixed;
+        z-index: var(--tb-fab-z-index, 10);
+    }
+
+    :is(.tb-fab--bottomend, .tb-fab--bottomstart, .tb-fab--bottomcenter, .tb-speed-dial--bottomend,
+        .tb-speed-dial--bottomstart, .tb-speed-dial--bottomcenter) {
+        inset-block-end: calc(var(--tb-fab-edge) + env(safe-area-inset-bottom, 0px));
+    }
+
+    :is(.tb-fab--topend, .tb-fab--topstart, .tb-speed-dial--topend, .tb-speed-dial--topstart) {
+        inset-block-start: calc(var(--tb-fab-edge) + env(safe-area-inset-top, 0px));
+    }
+
+    :is(.tb-fab--bottomend, .tb-fab--topend, .tb-speed-dial--bottomend, .tb-speed-dial--topend) {
+        inset-inline-end: var(--tb-fab-side);
+    }
+
+    :is(.tb-fab--bottomstart, .tb-fab--topstart, .tb-speed-dial--bottomstart, .tb-speed-dial--topstart) {
+        inset-inline-start: var(--tb-fab-side);
+    }
+
+    /* Both insets with auto margins center it in either reading direction. */
+    :is(.tb-fab--bottomcenter, .tb-speed-dial--bottomcenter) {
+        inset-inline: 0;
+        width: fit-content;
+        margin-inline: auto;
+    }
+
+    /* A speed dial is a menu drawn as round actions over the page, each icon centered over the trigger's. */
+    .tb-speed-dial {
+        --tb-speed-dial-inset: var(--tb-space-2);
+    }
+
+    .tb-speed-dial--small {
+        --tb-speed-dial-inset: 0px;
+    }
+
+    .tb-speed-dial--large {
+        --tb-speed-dial-inset: var(--tb-space-4);
+    }
+
+    .tb-speed-dial__plus .tb-fab__icon {
+        transition: rotate var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    .tb-speed-dial__plus[aria-expanded="true"] .tb-fab__icon {
+        rotate: 45deg;
+    }
+
+    /* A few actions never need to scroll, and a scrolling list would clip their shadows and focus rings. */
+    .tb-speed-dial .tb-menu__list {
+        min-width: 0;
+        overflow: visible;
+        padding: var(--tb-space-2) var(--tb-speed-dial-inset);
+        border: none;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .tb-speed-dial .tb-menu__list:popover-open {
+        gap: var(--tb-space-3);
+    }
+
+    .tb-speed-dial .tb-menu__item {
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+        min-height: 0;
+        padding: 0;
+        border-radius: var(--tb-radius-full);
+    }
+
+    /* The actions rise into place as the dial opens. */
+    .tb-speed-dial [role="menuitem"] {
+        transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard),
+            translate var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
+    :is(.tb-speed-dial--bottomstart, .tb-speed-dial--topstart) .tb-menu__item {
+        flex-direction: row;
+    }
+
+    @starting-style {
+        .tb-speed-dial [role="menu"]:popover-open [role="menuitem"] {
+            opacity: 0;
+            translate: 0 var(--tb-space-2);
+        }
+    }
+
+    /* .tb-speed-dial.tb-menu outranks the menu's hover, focus and press backgrounds, which the icon shows instead. */
+    .tb-speed-dial.tb-menu .tb-menu__item:is(:hover, :focus, :active) {
+        background: transparent;
+    }
+
+    .tb-speed-dial .tb-menu__item:focus-visible {
+        outline-offset: 2px;
+    }
+
+    .tb-speed-dial .tb-menu__item > :is([data-part="icon"], [data-part="label"]) {
+        box-sizing: border-box;
+        border: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface-raised);
+        box-shadow: var(--tb-shadow-md);
+    }
+
+    .tb-speed-dial .tb-menu__item > [data-part="icon"] {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0.625rem;
+        border-radius: var(--tb-radius-full);
+    }
+
+    .tb-speed-dial .tb-menu__item > [data-part="label"] {
+        padding: var(--tb-space-1) var(--tb-space-2);
+        border-radius: var(--tb-radius-sm);
+        white-space: nowrap;
+    }
+
+    :where(.tb-speed-dial:not(:has([data-ready]))) .tb-menu__item:hover > [data-part="icon"],
+    .tb-speed-dial .tb-menu__item:focus > [data-part="icon"] {
+        background-image: linear-gradient(var(--tb-color-hover) 0 0);
+    }
+
     .tb-button__spinner,
     .tb-tree__spinner {
         width: 1em;

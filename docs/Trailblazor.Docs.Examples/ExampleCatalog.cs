@@ -1156,6 +1156,113 @@ public static class ExampleCatalog
                 + "Name = \"Text alignment\" }).GetByRole(AriaRole.Button, new() { Name = \"Center\" })` in "
                 + "Playwright, or `[role=group][aria-label='Text alignment'] button` in bUnit.",
         },
+        new("floating-action-button", "Floating action button", ExampleCategory.Actions,
+            "A round button for the main action of a screen that stays in view as the page scrolls, and a speed dial "
+                + "that opens a few related actions from it.")
+        {
+            WhenToUse =
+            [
+                "Use it for the one action a screen is for, such as writing a message in a mail app, especially on a "
+                    + "phone, where it sits within reach of a thumb.",
+                "Use a speed dial when that action comes in a few kinds, such as a new trail, folder or reminder.",
+            ],
+            WhenNotToUse =
+            [
+                "For an action among others, or for one that is minor or destructive, use a "
+                    + "[button](components/button).",
+                "For more than about six actions, or actions without icons, use a [menu](components/menu).",
+            ],
+            Related = ["button", "menu", "app-shell"],
+            Sections =
+            [
+                new("basic", "A floating button", "`TbFab` takes an `Icon` and a `Label`, which names it for screen "
+                    + "readers. It stays in the window's bottom corner on the reading direction's end as the page "
+                    + "scrolls, clear of a phone's rounded corners and home bar. Dialogs and popups open over it. "
+                    + "`--tb-fab-offset` moves it further from the edge, such as above a bottom bar. Here the frame's "
+                    + "`contain: layout` holds it, as it would hold any fixed element.",
+                    typeof(FabExample)),
+                new("extended", "With its label", "`Extended` shows the `Label` beside the icon, for an action the "
+                    + "icon alone doesn't make clear. `Position` picks a corner, the bottom edge's center, or "
+                    + "`Inline`, which leaves the button where the layout puts it, such as in an app bar.",
+                    typeof(FabExtendedExample)),
+                new("speed-dial", "Speed dial", "`TbSpeedDial` opens its `TbMenuItem`s as round actions above the "
+                    + "trigger, or below it at the top of the window, each with its text beside it. It is a menu "
+                    + "button, so it takes a menu's keys. Choosing an action, pressing Escape or clicking outside "
+                    + "closes it. "
+                    + "Its default plus turns into a cross while it is open.", typeof(SpeedDialExample)),
+            ],
+            Api = [typeof(TbFab), typeof(TbSpeedDial), typeof(FabPosition)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Runs a floating button's action."),
+                new(["Enter", "Space", "Down"], "Opens a speed dial on its first action.") { When = "On a speed dial" },
+                new(["Up"], "Opens a speed dial on its last action.") { When = "On a speed dial" },
+                new(["Up", "Down"], "Moves through the actions, wrapping at the ends.") { When = "In a speed dial" },
+                new(["Home", "End"], "Jumps to the first or last action.") { When = "In a speed dial" },
+                new(["Enter", "Space"], "Chooses the focused action.") { When = "In a speed dial" },
+                new(["Escape"], "Closes the speed dial and returns focus to its trigger.") { When = "In a speed dial" },
+                new(["Tab"], "Closes the speed dial and moves on.") { When = "In a speed dial" },
+            ],
+            Labeling =
+            [
+                "A floating button and a speed dial's trigger are named by `Label`, shown as text only with "
+                    + "`Extended`.",
+                "Each action is named by its text, which shows beside its icon.",
+            ],
+            Announcements =
+            [
+                "A floating button is a `button`. A speed dial's trigger is a button with `aria-haspopup=\"menu\"` "
+                    + "and `aria-expanded`, and its actions are `menuitem`s in a `menu`.",
+            ],
+            Accessibility =
+            [
+                "Tab reaches the button where it comes in the page's markup, not where it shows, so put it right "
+                    + "after the content it acts on.",
+                "A fixed button can cover the end of the page. Leave room at the bottom of a scrolling page, as much "
+                    + "as the button and its `--tb-fab-offset`, so nothing stays hidden under it.",
+            ],
+            AppDuties =
+            [
+                "Give each screen one floating button at most, and a `Label` that says what it does.",
+                "Leave room under the page's last content for a fixed button.",
+            ],
+            BeforeInteractive =
+            [
+                "A floating button shows in place; its `OnClick` starts working once the page is interactive. A speed "
+                    + "dial opens on click before then, as a menu does, with its actions at the window's corner "
+                    + "rather than beside the trigger.",
+            ],
+            Target = new("button", "New message"),
+            Blocks = ["tb-fab", "tb-speed-dial"],
+            DataParts =
+            [
+                new("icon", "The button's icon, and each action's."),
+                new("label", "An extended button's text, and each action's."),
+                new("trigger", "The button that opens a speed dial."),
+                new("menu", "A speed dial's list of actions."),
+            ],
+            Anatomy = """
+                <TbFab Icon="…" Label="…" OnClick="…" />
+                <TbSpeedDial Label="…">
+                    <TbMenuItem Icon="…" OnClick="…">…</TbMenuItem>
+                </TbSpeedDial>
+                """,
+            TestingTips =
+            [
+                "Find a floating button by its name: `GetByRole(AriaRole.Button, new() { Name = \"New message\" })` "
+                    + "in Playwright, or `button[aria-label='New message']` in bUnit.",
+                "A speed dial is a menu: `await page.Tb().Menu(\"Add\").ChooseAsync(\"Trail\")` from "
+                    + "`Trailblazor.Testing.Playwright` opens it and chooses the action, and so does "
+                    + "`await cut.Tb().Menu(\"Add\").ChooseAsync(\"Trail\")` in bUnit.",
+            ],
+            Telemetry =
+            [
+                .. ButtonTelemetry("TbFab"),
+                "A speed dial with a `TelemetryName` counts `trailblazor.control.shown` as it first renders and "
+                    + "`trailblazor.control.used` each time it opens, tagged `trailblazor.component` `TbSpeedDial`. An "
+                    + "action with its own `TelemetryName` counts `trailblazor.control.used` each time it is chosen.",
+            ],
+        },
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
             "A row of toggle buttons where one, or any number, can be pressed.")
         {

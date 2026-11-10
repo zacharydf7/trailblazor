@@ -4122,3 +4122,47 @@ Trailblazor.TbRadioGroup<TValue>.Segmented.set -> void
 static Trailblazor.Icon.FromSvg(string! svg) -> Trailblazor.Icon
 ~override Trailblazor.TbVirtualList<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbOverlay.OnParametersSet() -> void
+Trailblazor.FabPosition
+Trailblazor.FabPosition.BottomCenter = 2 -> Trailblazor.FabPosition
+Trailblazor.FabPosition.BottomEnd = 0 -> Trailblazor.FabPosition
+Trailblazor.FabPosition.BottomStart = 1 -> Trailblazor.FabPosition
+Trailblazor.FabPosition.Inline = 5 -> Trailblazor.FabPosition
+Trailblazor.FabPosition.TopEnd = 3 -> Trailblazor.FabPosition
+Trailblazor.FabPosition.TopStart = 4 -> Trailblazor.FabPosition
+Trailblazor.TbFab
+Trailblazor.TbFab.Extended.get -> bool
+Trailblazor.TbFab.Extended.set -> void
+Trailblazor.TbFab.Icon.get -> Trailblazor.Icon
+Trailblazor.TbFab.Icon.set -> void
+Trailblazor.TbFab.Label.get -> string!
+Trailblazor.TbFab.Label.set -> void
+Trailblazor.TbFab.Position.get -> Trailblazor.FabPosition
+Trailblazor.TbFab.Position.set -> void
+Trailblazor.TbFab.TbFab() -> void
+Trailblazor.TbSpeedDial
+Trailblazor.TbSpeedDial.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSpeedDial.ChildContent.set -> void
+Trailblazor.TbSpeedDial.Disabled.get -> bool
+Trailblazor.TbSpeedDial.Disabled.set -> void
+Trailblazor.TbSpeedDial.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbSpeedDial.Icon.set -> void
+Trailblazor.TbSpeedDial.Label.get -> string!
+Trailblazor.TbSpeedDial.Label.set -> void
+Trailblazor.TbSpeedDial.Open.get -> bool
+Trailblazor.TbSpeedDial.Open.set -> void
+Trailblazor.TbSpeedDial.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbSpeedDial.OpenChanged.set -> void
+Trailblazor.TbSpeedDial.Position.get -> Trailblazor.FabPosition
+Trailblazor.TbSpeedDial.Position.set -> void
+Trailblazor.TbSpeedDial.Size.get -> Trailblazor.Size
+Trailblazor.TbSpeedDial.Size.set -> void
+Trailblazor.TbSpeedDial.TbSpeedDial() -> void
+Trailblazor.TbSpeedDial.TelemetryName.get -> string?
+Trailblazor.TbSpeedDial.TelemetryName.set -> void
+Trailblazor.TbSpeedDial.Tone.get -> Trailblazor.Tone
+Trailblazor.TbSpeedDial.Tone.set -> void
+override Trailblazor.TbFab.OnParametersSet() -> void
+override Trailblazor.TbSpeedDial.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbSpeedDial.OnParametersSet() -> void
+~override Trailblazor.TbFab.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbSpeedDial.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

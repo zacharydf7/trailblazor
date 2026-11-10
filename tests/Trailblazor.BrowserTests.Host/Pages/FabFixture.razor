@@ -1,0 +1,18 @@
+@page "/fab"
+
+@* A page taller than the window, with a button in one bottom corner and a speed dial in the other. *@
+<div style="block-size: 300vh; padding: 2rem">
+    <output aria-label="Last action">@_last</output>
+</div>
+<TbFab Icon="Square" Label="Compose" OnClick="@(() => _last = "Composing.")" />
+<TbSpeedDial Label="Add" Position="FabPosition.BottomStart">
+    <TbMenuItem Icon="Square" OnClick="@(() => _last = "Added a trail.")">Trail</TbMenuItem>
+    <TbMenuItem Icon="Square" OnClick="@(() => _last = "Added a folder.")">Folder</TbMenuItem>
+    <TbMenuItem Icon="Square" OnClick="@(() => _last = "Added a reminder.")">Reminder</TbMenuItem>
+</TbSpeedDial>
+
+@code {
+    private static readonly Icon Square = new("<path d=\"M5 5h14v14H5z\" />");
+
+    private string? _last;
+}

@@ -95,8 +95,8 @@ public class ComponentContractTests : BunitContext
         var field = typeof(IFormField).IsAssignableFrom(component);
         if (named != root)
         {
-            Assert.True(field || component == typeof(TbMenu) || component == typeof(TbPopover)
-                || component == typeof(TbPopconfirm),
+            Assert.True(field || component == typeof(TbMenu) || component == typeof(TbSpeedDial)
+                || component == typeof(TbPopover) || component == typeof(TbPopconfirm),
                 $"{component.Name} moved its id off its root.");
             Assert.Equal(field ? "input" : "trigger", named.GetAttribute("data-part"));
         }

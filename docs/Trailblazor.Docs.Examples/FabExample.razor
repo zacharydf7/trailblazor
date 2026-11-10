@@ -1,0 +1,17 @@
+@* Layout containment makes the frame hold the fixed button, which on a real page keeps the window's corner. *@
+<TbSurface Outlined class="tb-p-4" style="contain: layout; min-block-size: 12rem" role="region" aria-label="Inbox">
+    <TbStack Gap="2">
+        <TbText TextStyle="TextStyle.Subtitle">Inbox</TbText>
+        @foreach (var draft in _drafts)
+        {
+            <TbText>@draft</TbText>
+        }
+    </TbStack>
+    <TbFab Icon="ExampleIcons.Plus" Label="New message" OnClick="Compose" />
+</TbSurface>
+
+@code {
+    private readonly List<string> _drafts = ["Trail report for the weekend"];
+
+    private void Compose() => _drafts.Add($"New message {_drafts.Count}");
+}

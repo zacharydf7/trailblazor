@@ -1,0 +1,100 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A speed dial is a menu button: the menu brings its keys, focus and popup, and the styles draw it as a dial. *@
+<TbMenu @attributes="AdditionalAttributes" Label="@Label" Disabled="Disabled" Open="Open"
+        OpenChanged="OnOpenChangedAsync" Placement="OpensOn" Align="LinesUp" Style="@Style"
+        Class="@ClassNames.Join("tb-speed-dial", ClassNames.Modifier("tb-speed-dial", Position),
+                   ClassNames.Modifier("tb-speed-dial", Size), Class)">
+    <Trigger>
+        <TbFab Icon="Icon ?? BuiltInIcons.Plus" Label="@Label" Tone="Tone" Size="Size" Position="FabPosition.Inline"
+               Disabled="Disabled" Class="@(Icon is null ? "tb-speed-dial__plus" : null)"
+               @attributes="context.Attributes" />
+    </Trigger>
+    <ChildContent>@ChildContent</ChildContent>
+</TbMenu>
+
+@code {
+    private ControlTelemetry? _telemetry;
+
+    /// <summary>The trigger's accessible name, such as "New". Required.</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>The trigger's icon. Defaults to a plus, which turns into a cross while the dial is open.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Where the dial sits. Defaults to <see cref="FabPosition.BottomEnd"/>. Its actions open above the
+    /// trigger, or below it at the top of the window, with their text on the side away from the window's edge.
+    /// </summary>
+    [Parameter]
+    public FabPosition Position { get; set; }
+
+    /// <summary>The trigger's color. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
+    [Parameter]
+    public Tone Tone { get; set; }
+
+    /// <summary>How big the trigger is. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>Stops the trigger from opening the dial.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Whether the dial is open. Bind it with <c>@bind-Open</c> to open or close it from code and hear when
+    /// the user does.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the user opens or closes the dial.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>The dial's actions: <see cref="TbMenuItem"/>s, each with an <see cref="TbMenuItem.Icon"/> and text that
+    /// shows beside it, listed top to bottom in the order given.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>A label the dial's use is counted under, such as <c>"new-item"</c>, through the <c>Trailblazor</c>
+    /// meter: shown when it first renders, and used each time it opens. Give each action its own
+    /// <see cref="TbMenuItem.TelemetryName"/> to count which ones are chosen. It names what the dial does, never the
+    /// user. Read on the first render.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    private Placement OpensOn =>
+        Position is FabPosition.TopEnd or FabPosition.TopStart ? Placement.Bottom : Placement.Top;
+
+    // The actions' icons line up over the trigger's, so their text goes to the side with room.
+    private PlacementAlign LinesUp =>
+        Position is FabPosition.BottomStart or FabPosition.TopStart ? PlacementAlign.Start : PlacementAlign.End;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException($"{nameof(TbSpeedDial)} needs a {nameof(Label)}.");
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    private Task OnOpenChangedAsync(bool open)
+    {
+        if (open)
+        {
+            Telemetry.Used(TelemetryName);
+        }
+
+        return OpenChanged.InvokeAsync(open);
+    }
+}

@@ -211,6 +211,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static readonly Dictionary<string, Opening> Opened = new()
     {
         ["menu"] = new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync()),
+        ["floating-action-button"] = new(new("menu", "Add"), page => ClickWhenReadyAsync(Button(page, "Add"))),
         ["label"] = new(new("dialog", "Information about Project code"),
             page => Button(page, "Information about Project code").ClickAsync()),
         ["select"] = new(new("listbox", "Shipping"),

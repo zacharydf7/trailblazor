@@ -1,0 +1,48 @@
+@namespace Trailblazor
+@inherits TbButtonBase
+
+@Root(ClassNames.Join("tb-fab", ClassNames.Modifier("tb-fab", Position), Extended ? "tb-fab--extended" : null),
+    Extended ? null : Label, @<text>
+        @if (Loading)
+        {
+            <span data-part="spinner" class="tb-button__spinner"></span>
+        }
+        else
+        {
+            <TbIcon Icon="Icon" Size="Size.Large" Class="tb-fab__icon" data-part="icon" />
+        }
+        @if (Extended)
+        {
+            <span data-part="label" class="tb-fab__label">@Label</span>
+        }
+    </text>)
+
+@code {
+    /// <summary>The icon to show.</summary>
+    [Parameter, EditorRequired]
+    public Icon Icon { get; set; }
+
+    /// <summary>The button's name: its accessible name, and with <see cref="Extended"/> its visible text too.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>Shows <see cref="Label"/> beside the icon, for an action an icon alone doesn't make clear.</summary>
+    [Parameter]
+    public bool Extended { get; set; }
+
+    /// <summary>Where the button sits. Defaults to <see cref="FabPosition.BottomEnd"/>, the bottom corner on the
+    /// reading direction's end.</summary>
+    [Parameter]
+    public FabPosition Position { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException($"{nameof(TbFab)} needs a {nameof(Label)}.");
+        }
+    }
+}

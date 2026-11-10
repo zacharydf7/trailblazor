@@ -1,0 +1,9 @@
+<TbSurface Outlined class="tb-p-4" style="contain: layout; min-block-size: 10rem" role="region" aria-label="Tasks">
+    <TbText>@(_tasks == 0 ? "No tasks yet." : $"Tasks: {_tasks}")</TbText>
+    <TbFab Icon="ExampleIcons.Plus" Label="New task" Extended Position="FabPosition.BottomStart"
+           OnClick="() => _tasks++" />
+</TbSurface>
+
+@code {
+    private int _tasks;
+}
