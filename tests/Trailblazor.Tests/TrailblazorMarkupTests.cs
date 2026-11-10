@@ -2,6 +2,7 @@ using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Trailblazor.Tests;
 
@@ -218,6 +219,100 @@ public class TrailblazorMarkupTests : BunitContext
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             cut.Tb().RichTextEditor("Notes").EnterAsync("<p>x</p>"));
+    }
+
+    [Fact]
+    public async Task Menu_ShouldClickTheItemThroughItsSubmenus_WhenChosenByPath()
+    {
+        var clicked = new List<string>();
+        var cut = RenderMenu(clicked);
+
+        await cut.Tb().Menu("Actions").ChooseAsync("Rename");
+        await cut.Tb().Menu("Actions").ChooseAsync("Export", "PDF");
+        await cut.Tb().Menu("Actions").ChooseAsync("Show hidden");
+        await cut.Tb().Menu("Actions").ChooseAsync("Docs (opens in a new tab)");
+
+        Assert.Equal(["Rename", "PDF", "Show hidden", "Docs"], clicked);
+    }
+
+    [Theory]
+    [InlineData("Actions", "Archive", "is disabled")]
+    [InlineData("Actions", "Print", "no item named")]
+    [InlineData("Actions", "PDF", "no item named")]
+    [InlineData("Actions", "Rename/PDF", "no submenu named")]
+    [InlineData("Nope", "Rename", "Expected one menu trigger")]
+    public async Task Menu_ShouldThrow_WhenThePathCantBeChosen(string menu, string path, string message)
+    {
+        var cut = RenderMenu([]);
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Menu(menu).ChooseAsync(path.Split('/')));
+
+        Assert.Contains(message, failure.Message);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldThrow_WhenAButtonItemIsChosenOnAStaticPage()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = RenderMenu([]);
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Menu("Actions").ChooseAsync("Rename"));
+
+        Assert.Contains("static page", failure.Message);
+        await cut.Tb().Menu("Actions").ChooseAsync("Docs (opens in a new tab)");
+    }
+
+    [Fact]
+    public async Task Menu_ShouldThrow_WhenTheMenuIsDisabled()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Disabled, true).AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Menu("Actions").ChooseAsync("Rename"));
+
+        Assert.Contains("is disabled", failure.Message);
+    }
+
+    private IRenderedComponent<TbMenu> RenderMenu(List<string> clicked)
+    {
+        return Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions").AddChildContent(builder =>
+        {
+            Item(builder, "Rename");
+            builder.OpenComponent<TbMenuItem>(10);
+            builder.AddAttribute(11, nameof(TbMenuItem.Disabled), true);
+            builder.AddAttribute(12, nameof(TbMenuItem.ChildContent), Text("Archive"));
+            builder.CloseComponent();
+            builder.OpenComponent<TbSubMenu>(20);
+            builder.AddAttribute(21, nameof(TbSubMenu.Label), "Export");
+            builder.AddAttribute(22, nameof(TbSubMenu.ChildContent), (RenderFragment)(sub => Item(sub, "PDF")));
+            builder.CloseComponent();
+            builder.OpenComponent<TbMenuCheckboxItem>(30);
+            builder.AddAttribute(31, nameof(TbMenuCheckboxItem.CheckedChanged),
+                EventCallback.Factory.Create<bool>(this, () => clicked.Add("Show hidden")));
+            builder.AddAttribute(32, nameof(TbMenuCheckboxItem.ChildContent), Text("Show hidden"));
+            builder.CloseComponent();
+            builder.OpenComponent<TbMenuItem>(40);
+            builder.AddAttribute(41, nameof(TbMenuItem.Href), "docs");
+            builder.AddAttribute(42, nameof(TbMenuItem.NewTab), true);
+            builder.AddAttribute(43, nameof(TbMenuItem.OnClick),
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked.Add("Docs")));
+            builder.AddAttribute(44, nameof(TbMenuItem.ChildContent), Text("Docs"));
+            builder.CloseComponent();
+        }));
+
+        void Item(RenderTreeBuilder builder, string text)
+        {
+            builder.OpenComponent<TbMenuItem>(0);
+            builder.AddAttribute(1, nameof(TbMenuItem.OnClick),
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked.Add(text)));
+            builder.AddAttribute(2, nameof(TbMenuItem.ChildContent), Text(text));
+            builder.CloseComponent();
+        }
+
+        static RenderFragment Text(string text) => content => content.AddContent(0, text);
     }
 
     [Fact]

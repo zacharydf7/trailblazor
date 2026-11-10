@@ -47,6 +47,9 @@ public sealed class TrailblazorMarkup
     public TbRichTextEditorDriver RichTextEditor(string label) =>
         new(() => Field(label, "[role=textbox][contenteditable]"));
 
+    /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
+    public TbMenuDriver Menu(string trigger) => new(trigger, _findAll);
+
     /// <summary>The <c>TbTabs</c> with this accessible name, or the only tabs in the markup when no name is given.
     /// </summary>
     public TbTabsDriver Tabs(string? name = null) => new(() =>
@@ -659,4 +662,81 @@ public sealed class TbTabsDriver
         (_find().QuerySelectorAll("[role=tab]").SingleOrDefault(element => element.TextContent.Trim() == tab)
             ?? throw new InvalidOperationException($"No tab reads \"{tab}\"."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
+}
+
+/// <summary>A <c>TbMenu</c>, found by its trigger's name.</summary>
+public sealed class TbMenuDriver
+{
+    private const string Items = "[role=menuitem]:not([data-part=submenu-trigger]), [role=menuitemcheckbox], "
+        + "[role=menuitemradio]";
+
+    private readonly string _trigger;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbMenuDriver(string trigger, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_trigger, _findAll) = (trigger, findAll);
+
+    /// <summary>Clicks the item with this name, through the submenus named before it, as in
+    /// <c>ChooseAsync("Export", "PDF")</c>. A checkbox or radio item is clicked the same way. Throws for a disabled
+    /// menu or item, a name the menu doesn't have, or a button item on a static page, where only links work.</summary>
+    public Task ChooseAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        var trigger = Trigger();
+        if (trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException($"The menu \"{_trigger}\" is disabled.");
+        }
+
+        var list = ListOf(trigger);
+        foreach (var name in path[..^1])
+        {
+            list = ListOf(Find(list, name, "[data-part=submenu-trigger]", "submenu"));
+        }
+
+        var item = Find(list, path[^1], Items, "item");
+        if (item.GetAttribute("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException($"The menu item \"{path[^1]}\" is disabled.");
+        }
+
+        if (trigger.HasAttribute("data-static") && item.TagName != "A")
+        {
+            throw new InvalidOperationException(
+                "This menu is on a static page, where only its links work; render it on an interactive page.");
+        }
+
+        return item.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    // The name the Playwright helpers match, with runs of whitespace collapsed, since a new-tab link's hint follows a
+    // line break.
+    private static string NameOf(IElement element) =>
+        string.Join(' ', Choices.NameOf(element).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+    private IElement Trigger()
+    {
+        var triggers = _findAll("[aria-haspopup=menu][data-part=trigger]")
+            .Where(button => NameOf(button) == _trigger).ToList();
+        return triggers.Count == 1 ? triggers[0]
+            : throw new InvalidOperationException(
+                $"Expected one menu trigger named \"{_trigger}\", found {triggers.Count}.");
+    }
+
+    private IElement ListOf(IElement opener) =>
+        _findAll($"[id='{opener.GetAttribute("aria-controls")}']").SingleOrDefault()
+        ?? throw new InvalidOperationException($"The menu that \"{NameOf(opener)}\" opens isn't in the markup.");
+
+    // A submenu's items sit inside the parent's list, so only the items whose nearest list is this one count.
+    private static IElement Find(IElement list, string name, string selector, string kind)
+    {
+        var found = list.QuerySelectorAll(selector)
+            .Where(item => item.Closest("[role=menu]") == list && NameOf(item) == name).ToList();
+        return found.Count switch
+        {
+            1 => found[0],
+            0 => throw new InvalidOperationException($"The menu has no {kind} named \"{name}\"."),
+            _ => throw new InvalidOperationException($"The menu has {found.Count} {kind}s named \"{name}\"."),
+        };
+    }
 }

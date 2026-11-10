@@ -87,6 +87,8 @@ Trailblazor.Testing.TbListBoxDriver
 Trailblazor.Testing.TbListBoxDriver.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbListBoxDriver.Chosen.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbListBoxDriver.Options.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbMenuDriver
+Trailblazor.Testing.TbMenuDriver.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbNumberFieldDriver
 Trailblazor.Testing.TbNumberFieldDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbNumberFieldDriver.Text.get -> string?
@@ -118,6 +120,7 @@ Trailblazor.Testing.TrailblazorBunitExtensions
 Trailblazor.Testing.TrailblazorMarkup
 Trailblazor.Testing.TrailblazorMarkup.Calendar(string! label) -> Trailblazor.Testing.TbCalendarDriver!
 Trailblazor.Testing.TrailblazorMarkup.ListBox(string! label) -> Trailblazor.Testing.TbListBoxDriver!
+Trailblazor.Testing.TrailblazorMarkup.Menu(string! trigger) -> Trailblazor.Testing.TbMenuDriver!
 Trailblazor.Testing.TrailblazorMarkup.NumberField(string! label) -> Trailblazor.Testing.TbNumberFieldDriver!
 Trailblazor.Testing.TrailblazorMarkup.Select(string! label) -> Trailblazor.Testing.TbSelectDriver!
 Trailblazor.Testing.TrailblazorMarkup.Tabs(string? name = null) -> Trailblazor.Testing.TbTabsDriver!
