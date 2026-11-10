@@ -7,6 +7,7 @@
         <TbTableOfContentsItem TargetId="bunit" Text="Set up bUnit" />
         <TbTableOfContentsItem TargetId="bunit-fields" Text="Drive fields in bUnit" />
         <TbTableOfContentsItem TargetId="bunit-dialogs" Text="Test dialogs in bUnit" />
+        <TbTableOfContentsItem TargetId="announcements" Text="Test what screen readers hear" />
         <TbTableOfContentsItem TargetId="playwright" Text="Drive components in Playwright" />
         <TbTableOfContentsItem TargetId="waiting" Text="Wait for the page" />
         <TbTableOfContentsItem TargetId="time" Text="Time and motion" />
@@ -51,6 +52,10 @@
             <li>
                 A <code>FakeDialogService</code>, described under
                 <a href="guides/testing#bunit-dialogs">Test dialogs in bUnit</a>.
+            </li>
+            <li>
+                A <code>FakeAnnouncer</code>, described under
+                <a href="guides/testing#announcements">Test what screen readers hear</a>.
             </li>
             <li>
                 An interactive renderer, so components render as they do once a page is interactive, with no renderer
@@ -186,6 +191,29 @@
             <li>Await the click.</li>
         </ol>
         <CodeBlock Label="Checking the dialogs a page opens" Code="@FakeDialogs" />
+
+        <DocsHeading Id="announcements" Text="Test what screen readers hear" Class="docs-section" />
+        <TbText>
+            Components tell screen readers about changes they can't see, such as a search's result count or a field's
+            error, through live regions in <code>TbRoot</code> and each modal dialog. A test can check those messages
+            too.
+        </TbText>
+        <ul>
+            <li>
+                In bUnit, <code>AddTrailblazor()</code> makes a <code>FakeAnnouncer</code> the
+                <code>IAnnouncer</code>; get it from <code>Services</code>. Its <code>Polite</code> and
+                <code>Assertive</code> lists hold every message, oldest first, even ones since withdrawn or cleared.
+                The messages still reach the live regions, so a rendered <code>TbRoot</code> shows them too.
+            </li>
+            <li>
+                In Playwright, <code>page.Tb().Announcements.ExpectAnnouncedAsync(text)</code> waits for a message
+                that contains <code>text</code>.
+                <code>Messages</code>, <code>Polite</code> and <code>Assertive</code> are locators for assertions. A
+                message stays in its live region for seven seconds, unless five newer messages of its kind push it out
+                first.
+            </li>
+        </ul>
+        <CodeBlock Label="Checking what screen readers hear" Code="@Announcements" />
 
         <DocsHeading Id="playwright" Text="Drive components in Playwright" Class="docs-section" />
         <TbText>
@@ -482,6 +510,16 @@
         await page.Tb().Grid("Orders").ClickRowAsync("Cedar Flats");
 
         Assert.Equal("Olives, Basil", page.Tb().Select("Toppings").Text);
+        """;
+
+    private const string Announcements = """
+        // bUnit
+        await cut.Find("input").ChangeAsync(new ChangeEventArgs { Value = "Ox" });
+        Assert.Equal(["Use at least 3 letters."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+
+        // Playwright
+        await page.GetByLabel("Search trails").FillAsync("ridge");
+        await page.Tb().Announcements.ExpectAnnouncedAsync("3 results");
         """;
 
     private const string BunitDialog = """

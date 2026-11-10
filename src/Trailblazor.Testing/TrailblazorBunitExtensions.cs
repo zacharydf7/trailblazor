@@ -18,19 +18,22 @@ public static class TrailblazorBunitExtensions
     /// <summary>Registers Trailblazor's services and answers its JavaScript modules, so components render and respond
     /// to clicks in bUnit with no JSInterop setup. Calls into the modules return defaults, which Trailblazor's
     /// components take to mean the browser part isn't there. <see cref="IBrowserService"/> is a
-    /// <see cref="FakeBrowserService"/>, to check and steer from the test, and <see cref="IDialogService"/> is a
-    /// <see cref="FakeDialogService"/>, which records the dialogs opened. A module or service set up by the test
-    /// itself still wins. Components render as on an interactive page: the renderer becomes an interactive Server one
-    /// when the first component is created, unless the test has called <c>SetRendererInfo</c> itself, as it does to
-    /// test what a static page shows; that call starts the services, so make it after the test registers its own
-    /// services. The interactive default is a component factory, so clearing <c>ComponentFactories</c> removes it. Call
-    /// this before rendering, since bUnit takes no new services once one has been resolved.</summary>
+    /// <see cref="FakeBrowserService"/>, to check and steer from the test; <see cref="IDialogService"/> is a
+    /// <see cref="FakeDialogService"/>, which records the dialogs opened; and <see cref="IAnnouncer"/> is a
+    /// <see cref="FakeAnnouncer"/>, which records what was said to screen readers. A module or service set up by the
+    /// test itself still wins. Components render as on an interactive page: the renderer becomes an interactive Server
+    /// one when the first component is created, unless the test has called <c>SetRendererInfo</c> itself, as it does
+    /// to test what a static page shows; that call starts the services, so make it after the test registers its own
+    /// services. The interactive default is a component factory, so clearing <c>ComponentFactories</c> removes it.
+    /// Call this before rendering, since bUnit takes no new services once one has been resolved.</summary>
     public static BunitContext AddTrailblazor(this BunitContext context, Action<TrailblazorOptions>? configure = null)
     {
         context.Services.TryAddSingleton<FakeBrowserService>();
         context.Services.TryAddSingleton<IBrowserService>(provider => provider.GetRequiredService<FakeBrowserService>());
         context.Services.TryAddScoped(provider => new FakeDialogService(provider.GetRequiredService<DialogService>()));
         context.Services.TryAddScoped<IDialogService>(provider => provider.GetRequiredService<FakeDialogService>());
+        context.Services.TryAddScoped(provider => new FakeAnnouncer(provider.GetRequiredService<Announcer>()));
+        context.Services.TryAddScoped<IAnnouncer>(provider => provider.GetRequiredService<FakeAnnouncer>());
         context.Services.AddTrailblazor(configure);
         var modules = context.JSInterop.SetupModule(
             invocation => invocation.Arguments.FirstOrDefault() is string path

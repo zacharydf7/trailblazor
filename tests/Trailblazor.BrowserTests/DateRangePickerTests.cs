@@ -45,6 +45,18 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldSayTheEndComesNext_WhenTheStartIsPicked(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+
+        await Day(page, "Friday, June 12, 2026").ClickAsync();
+
+        await page.Tb().Announcements.ExpectAnnouncedAsync("Now choose the end date.");
+        await Expect(page.Tb().Announcements.Polite).ToContainTextAsync(["Now choose the end date."]);
+        await Expect(page.Tb().Announcements.Assertive).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldOpenOnTheStartAndCommitTheRange_WhenTwoDaysArePicked(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);

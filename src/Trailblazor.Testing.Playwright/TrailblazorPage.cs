@@ -75,6 +75,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The toasts on the page.</summary>
     public TbToastsLocator Toasts => new(page);
 
+    /// <summary>What the page's components say to screen readers.</summary>
+    public TbAnnouncementsLocator Announcements => new(page);
+
     /// <summary>The <c>TbNumberField</c> with this label.</summary>
     public TbNumberFieldLocator NumberField(string label) => new(page, label);
 

@@ -1,5 +1,11 @@
 #nullable enable
 static Trailblazor.Testing.Playwright.TrailblazorPageExtensions.Tb(this Microsoft.Playwright.IPage! page) -> Trailblazor.Testing.Playwright.TrailblazorPage!
+Trailblazor.Testing.Playwright.TbAnnouncementsLocator
+Trailblazor.Testing.Playwright.TbAnnouncementsLocator.Assertive.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbAnnouncementsLocator.ExpectAnnouncedAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAnnouncementsLocator.Messages.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbAnnouncementsLocator.Polite.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbAnnouncementsLocator.TbAnnouncementsLocator(Microsoft.Playwright.IPage! page) -> void
 Trailblazor.Testing.Playwright.TbAutocompleteLocator
 Trailblazor.Testing.Playwright.TbAutocompleteLocator.ChooseAsync(string! text, string! option) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbAutocompleteLocator.TbAutocompleteLocator(Microsoft.Playwright.IPage! page, string! label) -> void
@@ -76,6 +82,7 @@ Trailblazor.Testing.Playwright.TbTreeLocator.ItemAsync(params string![]! path) -
 Trailblazor.Testing.Playwright.TbTreeLocator.SelectAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.TbTreeLocator(Microsoft.Playwright.IPage! page, string! name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage
+Trailblazor.Testing.Playwright.TrailblazorPage.Announcements.get -> Trailblazor.Testing.Playwright.TbAnnouncementsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Autocomplete(string! label) -> Trailblazor.Testing.Playwright.TbAutocompleteLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Calendar(string! label) -> Trailblazor.Testing.Playwright.TbCalendarLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbColorPickerLocator!

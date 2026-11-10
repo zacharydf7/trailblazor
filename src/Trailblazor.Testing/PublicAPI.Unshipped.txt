@@ -25,6 +25,9 @@ Trailblazor.Testing.BrowserFile.Equals(Trailblazor.Testing.BrowserFile? other) -
 Trailblazor.Testing.BrowserFile.FileName.get -> string!
 Trailblazor.Testing.BrowserFile.FileName.init -> void
 Trailblazor.Testing.BrowserFile.Text.get -> string!
+Trailblazor.Testing.FakeAnnouncer
+Trailblazor.Testing.FakeAnnouncer.Assertive.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.FakeAnnouncer.Polite.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.FakeBrowserService
 Trailblazor.Testing.FakeBrowserService.CancelsSave.get -> bool
 Trailblazor.Testing.FakeBrowserService.CancelsSave.set -> void
