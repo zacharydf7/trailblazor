@@ -1,0 +1,11 @@
+@page "/splitter-three"
+
+@* Three panes that save their layout, so each size report waits on the browser and a collapse can render in the
+   meantime. *@
+<div style="block-size: 10rem">
+    <TbSplitter PersistenceKey="splitter-three">
+        <TbSplitterPane Label="Left" Size="30" Collapsible>Left pane</TbSplitterPane>
+        <TbSplitterPane Label="Middle" Size="40">Middle pane</TbSplitterPane>
+        <TbSplitterPane Label="Right">Right pane</TbSplitterPane>
+    </TbSplitter>
+</div>

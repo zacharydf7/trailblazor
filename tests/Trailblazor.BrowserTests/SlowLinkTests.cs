@@ -44,6 +44,11 @@ public class SlowLinkGridEditKeysTests(BrowserFixture fixture) : GridEditKeysTes
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }
 
+public class SlowLinkSplitterTests(BrowserFixture fixture) : SplitterTests(fixture)
+{
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
+}
+
 public class SlowLinkTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     private static readonly TimeSpan Delay = TimeSpan.FromSeconds(1);

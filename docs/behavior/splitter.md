@@ -9,6 +9,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Left and Right resize by 1% on a side-by-side separator. `SplitterTests.Splitter_ShouldResizeWithinTheLimits_WhenTheKeysAreUsed`
 - [x] Up and Down resize a stacked separator, and a nested one leaves its outer panes alone. `SplitterTests.Splitter_ShouldResizeTheNestedPanes_WhenTheirSeparatorUsesUpAndDown`
 - [x] Shift with an arrow resizes by 10%. `SplitterTests.Splitter_ShouldResizeWithinTheLimits_WhenTheKeysAreUsed`
+- [x] Every key press counts, even when presses come faster than the server takes the sizes: a render of an earlier size doesn't undo later presses. `SplitterTests.ResizeAsync_ShouldMoveTheSeparatorWithItsKeys_WhenCalled`
 - [x] Home and End take the pane to its smallest and largest, within its limits. `SplitterTests.Splitter_ShouldResizeWithinTheLimits_WhenTheKeysAreUsed`
 - [x] Enter collapses a collapsible pane and restores it at its size. `SplitterTests.Splitter_ShouldCollapseAndRestoreThePane_WhenEnterIsPressed`
 - [x] Enter collapses the next pane when the one before can't collapse. `SplitterTests.Splitter_ShouldCollapseTheNextPane_WhenThePaneBeforeTheSeparatorCannot`
@@ -16,6 +17,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Enter restores a collapsed last pane, even when the pane before it can collapse. With both collapsed, the pane before comes back first. `SplitterTests.Splitter_ShouldRestoreTheLastPane_WhenThePaneBeforeItCanCollapseToo`, `TbSplitterTests.Toggle_ShouldRestoreThePaneBeforeFirst_WhenTheLastPaneIsCollapsedToo`
 - [x] Enter does nothing when neither pane can collapse. `TbSplitter.razor`
 - [x] The arrows, Home and End do nothing while either neighbor is collapsed. `splitter.js`
+- [x] A pane collapsed while sizes are on their way to the server stays shut when another separator moves. `SplitterTests.Splitter_ShouldKeepACollapsedPaneShut_WhenAnotherSeparatorMovesWhileSizesAreOnTheirWay`
 - [x] Left and Right move the separator the way they point in right-to-left text. `SplitterTests.Splitter_ShouldGrowThePaneWithTheLeftArrow_WhenTheTextIsRightToLeft`
 - [x] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. `SplitterTests.Splitter_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld`
 

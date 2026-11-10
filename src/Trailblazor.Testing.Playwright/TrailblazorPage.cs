@@ -64,6 +64,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbTooltip</c> around this trigger.</summary>
     public TbTooltipLocator Tooltip(ILocator trigger) => new(trigger);
 
+    /// <summary>The <c>TbSplitter</c> separator with this name, such as "Resize Trails".</summary>
+    public TbSplitterLocator Splitter(string separator) => new(scope, separator);
+
     /// <summary>The <c>TbSlider</c> with this label.</summary>
     public TbSliderLocator Slider(string label) => new(scope, label);
 

@@ -42,10 +42,22 @@ export function attachSplitter(root, reporter, key) {
         separator.setAttribute('aria-valuenow', String(Math.round(next[before])));
         return next;
     };
+    // Keys can come faster than the server renders the sizes they report, and the render for an earlier key would move
+    // the panes back, so while a report is on its way the keys start from the sizes last reported. data-reporting
+    // tells a test the app doesn't have the sizes yet.
+    let reported = null;
+    let reporting = 0;
     const report = sizes => {
         if (sizes) {
+            reported = sizes;
+            reporting++;
+            root.dataset.reporting = '';
             reporter.invokeMethodAsync('OnResize', panes().map(pane => pane.id),
-                sizes.map(size => Math.round(size * 100) / 100));
+                sizes.map(size => Math.round(size * 100) / 100)).finally(() => {
+                if (--reporting === 0) {
+                    delete root.dataset.reporting;
+                }
+            });
         }
     };
     // The separator that a press on it, or on its grip's button, drags, unless it belongs to a nested splitter.
@@ -118,7 +130,7 @@ export function attachSplitter(root, reporter, key) {
         const grow = vertical() ? 'ArrowDown' : rtl ? 'ArrowLeft' : 'ArrowRight';
         const shrink = vertical() ? 'ArrowUp' : rtl ? 'ArrowRight' : 'ArrowLeft';
         const step = event.shiftKey ? 10 : 1;
-        const from = shares();
+        const from = reporting > 0 && reported?.length === panes().length ? reported : shares();
         let sizes;
         switch (event.key) {
             case grow:
@@ -166,8 +178,10 @@ export function attachSplitter(root, reporter, key) {
     reportOrder();
 
     // A collapsed pane is hidden, and focus inside it would fall to the page. An observer runs before the browser drops
-    // that focus, and moves it to the pane's separator: the one after it, or the one before it for the last pane.
+    // that focus, and moves it to the pane's separator: the one after it, or the one before it for the last pane. A
+    // collapse or restore also changes the sizes outside the reports, so the keys measure them again.
     const collapses = new MutationObserver(records => {
+        reported = null;
         for (const { target: pane } of records) {
             if (panes().includes(pane) && pane.hasAttribute('data-collapsed') && pane.contains(document.activeElement)) {
                 const bar = pane.nextElementSibling ?? pane.previousElementSibling;

@@ -90,6 +90,11 @@ Trailblazor.Testing.Playwright.TbSliderLocator.Input.get -> Microsoft.Playwright
 Trailblazor.Testing.Playwright.TbSliderLocator.SetAsync(decimal value) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSliderLocator.TbSliderLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbSliderLocator.ValueAsync() -> System.Threading.Tasks.Task<decimal>!
+Trailblazor.Testing.Playwright.TbSplitterLocator
+Trailblazor.Testing.Playwright.TbSplitterLocator.ResizeAsync(int percent) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSplitterLocator.Separator.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbSplitterLocator.SizeAsync() -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TbSplitterLocator.TbSplitterLocator(Microsoft.Playwright.ILocator! scope, string! separator) -> void
 Trailblazor.Testing.Playwright.TbTabsLocator
 Trailblazor.Testing.Playwright.TbTabsLocator.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTabsLocator.TbTabsLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
@@ -138,6 +143,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.RangeSlider(string! label) -> Tra
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(string! label) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Slider(string! label) -> Trailblazor.Testing.Playwright.TbSliderLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Splitter(string! separator) -> Trailblazor.Testing.Playwright.TbSplitterLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(string? name = null) -> Trailblazor.Testing.Playwright.TbTabsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TagInput(string! label) -> Trailblazor.Testing.Playwright.TbTagInputLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Toasts.get -> Trailblazor.Testing.Playwright.TbToastsLocator!

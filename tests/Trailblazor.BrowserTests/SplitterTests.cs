@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class SplitterTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -65,6 +67,37 @@ public class SplitterTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(trails).ToHaveAttributeAsync("aria-valuenow", "15");
         await Expect(page.GetByText("Trails 15%")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldKeepACollapsedPaneShut_WhenAnotherSeparatorMovesWhileSizesAreOnTheirWay(
+        string browser)
+    {
+        var page = await OpenSplitterAsync(browser, "/splitter-three");
+        await Separator(page, "Resize Left").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("Enter");
+        var collapsed = page.Locator("[data-part=pane][data-collapsed]");
+        await Expect(collapsed).ToHaveCountAsync(1);
+
+        await Separator(page, "Resize Middle").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(page.Locator(".tb-splitter[data-reporting]")).ToHaveCountAsync(0);
+        Assert.Equal("0", await collapsed.EvaluateAsync<string>("pane => pane.style.flexGrow"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ResizeAsync_ShouldMoveTheSeparatorWithItsKeys_WhenCalled(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/splitter");
+        var trails = page.Tb().Splitter("Resize Trails");
+
+        await trails.ResizeAsync(37);
+        await trails.ResizeAsync(19);
+
+        Assert.Equal(19, await trails.SizeAsync());
+        await Expect(page.GetByText("Trails 19%")).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
