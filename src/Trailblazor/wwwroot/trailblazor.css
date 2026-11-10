@@ -6243,6 +6243,77 @@
         color: var(--tb-color-primary-text);
     }
 
+    .tb-data-grid__column-menu {
+        margin-inline-start: var(--tb-space-1);
+    }
+
+    /* A resizable column's title shrinks before its buttons do, so its menu stays in reach at any width. */
+    .tb-data-grid__header-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .tb-data-grid__header--center .tb-data-grid__header-content {
+        justify-content: center;
+    }
+
+    .tb-data-grid__header--end .tb-data-grid__header-content {
+        justify-content: flex-end;
+    }
+
+    .tb-data-grid__header-content > :is(.tb-data-grid__sort, .tb-data-grid__title) {
+        min-inline-size: 0;
+    }
+
+    .tb-data-grid__header-content :is(.tb-data-grid__sort > span:first-child, .tb-data-grid__title) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Room inside the clip for the focus ring of a control in a custom header. */
+    .tb-data-grid__header-content .tb-data-grid__title {
+        padding: calc(var(--tb-focus-ring-width) + var(--tb-focus-ring-offset));
+        margin: calc(-1 * (var(--tb-focus-ring-width) + var(--tb-focus-ring-offset)));
+    }
+
+    .tb-data-grid__header-content > :is(.tb-data-grid__filter-menu, .tb-data-grid__column-menu) {
+        flex: none;
+    }
+
+    /* Widths the user set hold, rather than the browser squeezing them to fit the rows. */
+    .tb-data-grid__table--fixed {
+        table-layout: fixed;
+        /* A fixed table is never narrower than its columns, so it takes exactly their widths. */
+        width: 0;
+    }
+
+    /* A cell narrower than what it holds clips it, rather than spilling over the next column. */
+    .tb-data-grid__table--fixed :is(th, td) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Zero specificity, so a pinned header keeps position: sticky, which places the edge against the header just as
+       relative does. */
+    :where(.tb-data-grid__table th:has(> .tb-data-grid__resize)) {
+        position: relative;
+    }
+
+    .tb-data-grid__resize {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 0;
+        inline-size: var(--tb-space-2);
+        cursor: col-resize;
+        touch-action: none;
+    }
+
+    .tb-data-grid__resize:hover,
+    .tb-data-grid__resize[data-dragging] {
+        background: linear-gradient(to right, transparent calc(50% - 1px), var(--tb-color-primary) calc(50% - 1px),
+            var(--tb-color-primary) calc(50% + 1px), transparent calc(50% + 1px));
+    }
+
     .tb-data-grid__filter-form {
         display: grid;
         gap: var(--tb-space-3);

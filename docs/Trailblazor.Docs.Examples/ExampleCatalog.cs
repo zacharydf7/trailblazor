@@ -6400,6 +6400,11 @@ public static class ExampleCatalog
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
+                new("resize-columns", "Resize columns", "With `ResizableColumns`, the user resizes a column by "
+                    + "dragging its header's edge, or from its column menu, which the keys and a single click reach. "
+                    + "The first resize fixes every column at its width, so the others hold still, and `State` keeps "
+                    + "the widths. A column's `MinWidth` is the narrowest it goes, and `Resizable=\"false\"` opts it "
+                    + "out.", typeof(DataGridResizeExample)),
                 new("height", "Fixed height and scrolling to a row", "`Height` gives the rows a box of their own to "
                     + "scroll in, under headers that stay in view. Without cell navigation, Tab reaches the box when the rows "
                     + "overflow it, so the arrow keys can scroll it. `ScrollToAsync` goes to the page that holds a row "
@@ -6553,6 +6558,9 @@ public static class ExampleCatalog
                     + "focus on the page, and so does scrolling the focused row out of view.",
                 "A cell holding just a menu's button or a row's move handle keeps focus until Enter, since those "
                     + "controls use the arrow keys.",
+                "A resizable column has a menu button, named \"Options for\" and the column's title, whose Make wider "
+                    + "and Make narrower items resize it with the keys or a single click, so dragging its edge is "
+                    + "never the only way. The edge itself is hidden from screen readers.",
             ],
             AppDuties =
             [
@@ -6593,6 +6601,8 @@ public static class ExampleCatalog
                 new("filters", "The row of filter fields under the headers."),
                 new("filter", "One column's cell in the row of filter fields."),
                 new("filter-menu", "A column's filter menu: its button in the header and the popup of conditions."),
+                new("column-menu", "A resizable column's menu of widths, in its header."),
+                new("resize", "The edge of a resizable column's header, which a drag moves."),
                 new("filter-apply", "The filter menu's Apply button."),
                 new("filter-clear", "The filter menu's Clear button."),
                 new("group-by", "The bar that chooses the columns to group by."),
@@ -6644,6 +6654,9 @@ public static class ExampleCatalog
                     + "invariant text, with a range's two dates separated by a space.",
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync` and "
                     + "`FilterAsync`.",
+                "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
+                    + "dragging its edge, waiting for the grid to keep the width, and in bUnit as the grid's script "
+                    + "reports it. A column's header carries the width the grid keeps in `data-width`.",
                 "In bUnit, `ClickRowAsync(\"Cedar Flats\")` clicks a row as the browser reports it, raising "
                     + "`OnRowClick` and, with `RowClickSelects`, selecting it. A plain `Click()` on the row doesn't.",
                 "Double-click a cell or press Enter on it to edit it. Its field is named for its column, so in bUnit "
@@ -6655,11 +6668,11 @@ public static class ExampleCatalog
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
-                    + "`page_size`, `select`, `move`, `group`, `expand`, `collapse` or `edit` for each of those the "
-                    + "user does; a move also says whether a "
+                    + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit` or `resize` for each of "
+                    + "those the user does; a move also says whether a "
                     + "`pointer` or the `keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
-                    + "value, page, group or rows were used, or what value an edit saved, is never recorded.",
+                    + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",
             ],
         },
         new("table", "Table", ExampleCategory.Content,

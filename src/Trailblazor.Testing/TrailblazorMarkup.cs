@@ -610,6 +610,25 @@ public sealed class TbGridDriver
 
     private const string ValueSelector = "[data-part=input]:not([role=combobox]):not([type=checkbox])";
 
+    /// <summary>Resizes the column with this title to this many pixels, as the grid's script reports a drag of its
+    /// header's edge. bUnit has no layout, so the other columns keep only the widths the grid already gave them, and
+    /// the column's <c>MinWidth</c>, which the browser measures, doesn't apply.</summary>
+    public Task ResizeColumnAsync(string column, double width)
+    {
+        var header = Header(column);
+        if (header.QuerySelector("[data-part=resize]") is null)
+        {
+            throw new InvalidOperationException($"The \"{column}\" column can't be resized; set the grid's "
+                + "ResizableColumns and leave the column's Resizable on.");
+        }
+
+        var widths = _find().QuerySelectorAll("thead th[data-width]").ToDictionary(
+            other => other.GetAttribute("data-column")!,
+            other => double.Parse(other.GetAttribute("data-width")!, CultureInfo.InvariantCulture));
+        widths[header.GetAttribute("data-column")!] = width;
+        return _find().TriggerEventAsync("ontbcolumnwidths", new ColumnWidthsEventArgs { Widths = widths });
+    }
+
     private IElement Header(string column) => _find().QuerySelectorAll("thead th")
         .FirstOrDefault(header => header.GetAttribute("data-title") == column)
         ?? throw new InvalidOperationException($"No column is titled \"{column}\".");

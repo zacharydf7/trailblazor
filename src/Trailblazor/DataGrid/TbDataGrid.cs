@@ -45,6 +45,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private int? _pageFromParent;
     private int? _pageSizeFromParent;
     private GridState? _stateFromParent;
+    private Dictionary<string, double> _widths = [];
     // A provider's first load waits for the columns when a filter read back from JSON needs their types.
     private bool _showForColumns;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
@@ -225,16 +226,24 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<int> PageChanged { get; set; }
 
-    /// <summary>The rows' sorts, filters, groups, page and page size in one value. Bind it with <c>@bind-State</c> to
-    /// save how the user has arranged the rows, such as to local storage as JSON, and to restore it later; a state set
-    /// here replaces the grid's sorts, filters, groups, page and page size. A virtualized grid has no pages, so it
-    /// ignores the state's page and page size.</summary>
+    /// <summary>The rows' sorts, filters, groups, page and page size, and the column widths, in one value. Bind it
+    /// with <c>@bind-State</c> to save how the user has arranged the grid, such as to local storage as JSON, and to
+    /// restore it later; a state set here replaces all of them. A virtualized grid has no pages, so it ignores the
+    /// state's page and page size.</summary>
     [Parameter]
     public GridState? State { get; set; }
 
-    /// <summary>Raised when the user sorts, filters, groups or pages the rows, or picks another page size.</summary>
+    /// <summary>Raised when the user sorts, filters, groups or pages the rows, picks another page size, or resizes a
+    /// column.</summary>
     [Parameter]
     public EventCallback<GridState> StateChanged { get; set; }
+
+    /// <summary>Lets the user resize the columns: by dragging a header's edge, or from its column menu, which the keys
+    /// and a single click or tap reach. The first resize fixes every column at the width it has, so the others don't
+    /// move; the widths are kept in <see cref="State"/>. A column opts out with
+    /// <see cref="TbColumn{TItem}.Resizable"/>.</summary>
+    [Parameter]
+    public bool ResizableColumns { get; set; }
 
     /// <summary>Shades every other row.</summary>
     [Parameter]
@@ -1014,7 +1023,48 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     private string? HeaderStyle(TbColumn<TItem> column) =>
-        Styles.Join(column.Width is null ? null : $"width: {column.Width}", PinStyle(column));
+        Styles.Join(WidthOf(column) is { } width ? $"width: {width}" : null,
+            CanResize(column) ? $"min-inline-size: {column.MinWidth ?? "8rem"}" : null, PinStyle(column));
+
+    private string? WidthOf(TbColumn<TItem> column) => _widths.TryGetValue(column.Key, out var width)
+        ? $"{width.ToString(CultureInfo.InvariantCulture)}px" : column.Width;
+
+    private bool CanResize(TbColumn<TItem> column) => ResizableColumns && column.Resizable;
+
+    private string? KeptWidth(TbColumn<TItem> column) =>
+        _widths.TryGetValue(column.Key, out var width) ? width.ToString(CultureInfo.InvariantCulture) : null;
+
+    // How far a column menu's Make wider and Make narrower move the column's edge, in pixels.
+    private const double WidthStep = 32;
+
+    // Widths the user set hold; the browser's own layout would squeeze them when the rows are wider than the grid. A
+    // fixed layout gives a column without a width nothing, so until every column has one, the widths only guide the
+    // browser's layout.
+    private bool HasFixedWidths => ResizableColumns && _shownColumns.Count > 0
+        && _shownColumns.All(column => _widths.ContainsKey(column.Key));
+
+    private async Task OnColumnWidthsAsync(ColumnWidthsEventArgs e)
+    {
+        Telemetry.Used(TelemetryName, "resize");
+        _widths = e.Widths.Where(width => _columns.Any(column => column.Key == width.Key))
+            .ToDictionary(width => width.Key, width => Math.Round(width.Value));
+        await StateChangedAsync();
+    }
+
+    private async Task StepWidthAsync(TbColumn<TItem> column, double delta)
+    {
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync("resizeColumn", column.Key, delta);
+        }
+    }
+
+    private async Task ResetWidthsAsync()
+    {
+        Telemetry.Used(TelemetryName, "resize");
+        _widths = [];
+        await StateChangedAsync();
+    }
 
     private static string StartPinStyle(int slot) => $"inset-inline-start: var(--tb-data-grid-pin-{slot}, 0px)";
 
@@ -1562,6 +1612,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         Groups = [.. _groups],
         Page = _page,
         PageSize = _pageSize,
+        ColumnWidths = new Dictionary<string, double>(_widths),
     };
 
     private Task StateChangedAsync() => StateChanged.InvokeAsync(CurrentState);
@@ -1574,6 +1625,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         TakeGroups(state.Groups);
         _page = Virtualize ? 1 : Math.Max(1, state.Page);
         _pageSize = !Virtualize && state.PageSize is > 0 ? state.PageSize : null;
+        if (!GridState.SameWidths(state.ColumnWidths, _widths))
+        {
+            _widths = new(state.ColumnWidths);
+        }
     }
 
     // When a binding passes the grid's own sorts, filters or groups back, the grid keeps its own, so the rows aren't

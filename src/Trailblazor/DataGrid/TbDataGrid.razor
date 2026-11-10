@@ -36,10 +36,10 @@
                data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
                data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
                data-row-click-selects="@(SelectionMode == SelectionMode.Multiple && RowClickSelects ? "" : null)"
-               @ontbselectall="SelectAllAsync"
+               @ontbselectall="SelectAllAsync" @ontbcolumnwidths="OnColumnWidthsAsync"
                aria-busy="@(IsLoading ? "true" : null)"
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) : null)"
-               class="tb-data-grid__table">
+               class="@ClassNames.Join("tb-data-grid__table", HasFixedWidths ? "tb-data-grid__table--fixed" : null)">
             <thead>
                 <tr aria-rowindex="@(Virtualize ? 1 : null)">
                     @if (CanReorder)
@@ -72,41 +72,22 @@
                         var sort = at < 0 ? null : _sorts[at];
                         <th scope="col" data-column="@column.Key" data-title="@column.Heading"
                             data-filtered="@(IsFiltered(column) ? "" : null)" aria-sort="@AriaSort(at, sort)"
-                            data-pinned="@PinSide(column)"
+                            data-pinned="@PinSide(column)" data-width="@KeptWidth(column)"
                             style="@HeaderStyle(column)"
                             class="@ClassNames.Join("tb-data-grid__header",
                                        ClassNames.Modifier("tb-data-grid__header", column.Alignment))">
-                            @if (column.CanSort)
+                            @if (CanResize(column))
                             {
-                                <button type="button" data-part="sort" class="tb-data-grid__sort"
-                                        @onkeydown="OnSortKeyDown" @onclick="_sort.For(column)">
-                                    <span>@column.Heading</span>
-                                    @if (sort is not null)
-                                    {
-                                        <TbIcon Size="Size.Small" class="tb-data-grid__sort-icon"
-                                                Icon="@(sort.Direction == SortDirection.Ascending
-                                                          ? BuiltInIcons.ArrowUp : BuiltInIcons.ArrowDown)" />
-                                        @if (_sorts.Count > 1)
-                                        {
-                                            <span data-part="sort-order" class="tb-data-grid__sort-order"
-                                                  aria-hidden="true">@(at + 1)</span>
-                                            <span class="tb-visually-hidden">
-                                                @Format(TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
-                                                    Localizer[sort.Direction == SortDirection.Ascending
-                                                        ? TbStrings.DataGridAscending : TbStrings.DataGridDescending])
-                                            </span>
-                                        }
-                                    }
-                                </button>
-                                @column.Header
+                                <div class="tb-data-grid__header-content">
+                                    @HeaderContent(column, at, sort)
+                                    @ColumnMenu(column)
+                                </div>
+                                @* The column menu resizes from the keys or a click, so the edge is for dragging. *@
+                                <div data-part="resize" aria-hidden="true" class="tb-data-grid__resize"></div>
                             }
                             else
                             {
-                                @(column.Header ?? (RenderFragment)(builder => builder.AddContent(0, column.Heading)))
-                            }
-                            @if (HasFilterMenu(column))
-                            {
-                                @FilterMenu(column)
+                                @HeaderContent(column, at, sort)
                             }
                         </th>
                     }
@@ -407,6 +388,68 @@
     };
 
     private static readonly TimeSpan FilterDelay = TimeSpan.FromMilliseconds(300);
+
+    private RenderFragment HeaderContent(TbColumn<TItem> column, int at, GridSort? sort) =>
+        @<text>
+            @if (column.CanSort)
+            {
+                <button type="button" data-part="sort" class="tb-data-grid__sort"
+                        @onkeydown="OnSortKeyDown" @onclick="_sort.For(column)">
+                    <span>@column.Heading</span>
+                    @if (sort is not null)
+                    {
+                        <TbIcon Size="Size.Small" class="tb-data-grid__sort-icon"
+                                Icon="@(sort.Direction == SortDirection.Ascending
+                                          ? BuiltInIcons.ArrowUp : BuiltInIcons.ArrowDown)" />
+                        @if (_sorts.Count > 1)
+                        {
+                            <span data-part="sort-order" class="tb-data-grid__sort-order"
+                                  aria-hidden="true">@(at + 1)</span>
+                            <span class="tb-visually-hidden">
+                                @Format(TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
+                                    Localizer[sort.Direction == SortDirection.Ascending
+                                        ? TbStrings.DataGridAscending : TbStrings.DataGridDescending])
+                            </span>
+                        }
+                    }
+                </button>
+                @if (column.Header is { } extra)
+                {
+                    <span class="tb-data-grid__title">@extra</span>
+                }
+            }
+            else if (column.Header is { } header)
+            {
+                <span class="tb-data-grid__title">@header</span>
+            }
+            else
+            {
+                <span class="tb-data-grid__title">@column.Heading</span>
+            }
+            @if (HasFilterMenu(column))
+            {
+                @FilterMenu(column)
+            }
+        </text>;
+
+    private RenderFragment ColumnMenu(TbColumn<TItem> column) =>
+        @<TbMenu Class="tb-data-grid__column-menu" data-part="column-menu">
+            <Trigger>
+                <TbIconButton Icon="BuiltInIcons.More" Size="Size.Small" @attributes="context.Attributes"
+                              AriaLabel="@Format(TbStrings.DataGridColumnMenu, column.Heading)" />
+            </Trigger>
+            <ChildContent>
+                <TbMenuItem OnClick="() => StepWidthAsync(column, WidthStep)">
+                    @Format(TbStrings.DataGridWider, column.Heading)
+                </TbMenuItem>
+                <TbMenuItem OnClick="() => StepWidthAsync(column, -WidthStep)">
+                    @Format(TbStrings.DataGridNarrower, column.Heading)
+                </TbMenuItem>
+                <TbMenuItem Disabled="_widths.Count == 0" OnClick="ResetWidthsAsync">
+                    @Localizer[TbStrings.DataGridResetWidths]
+                </TbMenuItem>
+            </ChildContent>
+        </TbMenu>;
 
     // A menu holds a draft of the column's filter, applied with its Apply button; a template applies its own.
     private RenderFragment FilterMenu(TbColumn<TItem> column)

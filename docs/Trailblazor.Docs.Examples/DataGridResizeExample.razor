@@ -1,0 +1,34 @@
+@using System.Globalization
+
+@* Drag a header's edge, or use its column menu, to resize a column. The widths are kept in the grid's state. *@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail widths" KeySelector="trail => trail.Id"
+                ResizableColumns FilterMode="GridFilterMode.Menu" @bind-State="_state" Style="max-inline-size: 40rem">
+        <TbColumn Field="trail => trail.Name" MinWidth="10rem" />
+        <TbColumn Field="trail => trail.Region" />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Filterable />
+        <TbColumn Field="trail => trail.Surface" Filterable>
+            <Header>Surface underfoot</Header>
+        </TbColumn>
+        <TbColumn Field="trail => trail.Notes" Resizable="false" />
+    </TbDataGrid>
+    <output aria-label="Column widths">@Widths</output>
+</TbStack>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", "North ridge", 6.4, "Dirt", "Shaded most of the way, with a creek crossing"),
+        new(2, "Eagle Ridge traverse", "North ridge", 14.2, "Rock", "Exposed on the ridge; start early"),
+        new(3, "Cedar Flats", "River valley", 3.1, "Gravel", "Flat and wide, good for strollers"),
+        new(4, "Summit Gate", "High peaks", 11.9, "Rock", "Snow until July above the gate"),
+    ];
+
+    private GridState _state = new();
+
+    private string Widths => _state.ColumnWidths.Count == 0 ? "Columns at their starting widths."
+        : string.Join(", ", _state.ColumnWidths.Select(width =>
+            $"{width.Key} {width.Value.ToString(CultureInfo.InvariantCulture)}px"));
+
+    private sealed record Trail(int Id, string Name, string Region, double LengthKm, string Surface, string Notes);
+}

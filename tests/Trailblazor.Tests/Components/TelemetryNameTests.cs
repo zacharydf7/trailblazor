@@ -262,6 +262,7 @@ public class TelemetryNameTests : BunitContext
             .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
             .Add(grid => grid.TelemetryName, "trails").Add(grid => grid.PageSize, 1)
             .Add(grid => grid.PageSizes, [1, 2]).Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.ResizableColumns, true)
             .AddChildContent<TbColumn<Trail>>(column => column.Add(name => name.Field, trail => trail.Name)
                 .Add(name => name.Sortable, true).Add(name => name.Filterable, true)
                 .Add(name => name.Groupable, true).Add(name => name.Editable, true))
@@ -278,9 +279,11 @@ public class TelemetryNameTests : BunitContext
         await cut.Tb().Select("Group by").ChooseAsync("Name");
         cut.Find("[data-part=group-toggle]").Click();
         cut.Find("[data-part=group-toggle]").Click();
+        await cut.Tb().Grid("Trails").ResizeColumnAsync("Name", 200);
 
         Assert.Equal(["trails"], Names(_shown));
-        Assert.Equal(["sort", "page", "page_size", "select", "filter", "edit", "group", "collapse", "expand"],
+        Assert.Equal(
+            ["sort", "page", "page_size", "select", "filter", "edit", "group", "collapse", "expand", "resize"],
             Uses().Where(use => Equals(use.Name, "trails")).Select(use => use.Action));
     }
 

@@ -127,9 +127,21 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public RenderFragment? Header { get; set; }
 
-    /// <summary>The column's width, as CSS, such as <c>"8rem"</c> or <c>"20%"</c>.</summary>
+    /// <summary>The column's width, as CSS, such as <c>"8rem"</c> or <c>"20%"</c>. The browser treats it as the width
+    /// it prefers, so a column can grow or shrink to fit the grid; once the user resizes a column of a grid with
+    /// <see cref="TbDataGrid{TItem}.ResizableColumns"/>, every column keeps the width it has.</summary>
     [Parameter]
     public string? Width { get; set; }
+
+    /// <summary>Whether the user can resize the column, when the grid has
+    /// <see cref="TbDataGrid{TItem}.ResizableColumns"/>. On by default.</summary>
+    [Parameter]
+    public bool Resizable { get; set; } = true;
+
+    /// <summary>The narrowest the user can make the column, as CSS, such as <c>"8rem"</c>. Defaults to 8rem, room for
+    /// its header's buttons and the start of its title.</summary>
+    [Parameter]
+    public string? MinWidth { get; set; }
 
     /// <summary>Keeps the column in view at the start or end of the row while the rows scroll sideways. A pinned
     /// column moves to its side, after any earlier column pinned to the same side. A column pinned at the start pins

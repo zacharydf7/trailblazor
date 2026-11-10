@@ -723,6 +723,19 @@ public static class TbStrings
     /// <summary>"Group by": labels the list of columns a data grid's rows can be grouped by.</summary>
     public const string DataGridGroupBy = "DataGrid.GroupBy";
 
+    /// <summary>"Options for {0}": names a data grid column's menu; {0} is the column.</summary>
+    public const string DataGridColumnMenu = "DataGrid.ColumnMenu";
+
+    /// <summary>"Make {0} wider": a column menu item that widens the column; {0} is the column.</summary>
+    public const string DataGridWider = "DataGrid.Wider";
+
+    /// <summary>"Make {0} narrower": a column menu item that narrows the column; {0} is the column.</summary>
+    public const string DataGridNarrower = "DataGrid.Narrower";
+
+    /// <summary>"Reset column widths": a column menu item that gives every column back the width it started with.
+    /// </summary>
+    public const string DataGridResetWidths = "DataGrid.ResetWidths";
+
     /// <summary>"{0}: {1}": a group's heading; {0} is the column and {1} the group's value.</summary>
     public const string DataGridGroupHeading = "DataGrid.GroupHeading";
 
@@ -1023,6 +1036,10 @@ public static class TbStrings
         [DataGridCancel] = "Cancel",
         [DataGridCancelRow] = "Cancel editing {0}",
         [DataGridGroupBy] = "Group by",
+        [DataGridColumnMenu] = "Options for {0}",
+        [DataGridWider] = "Make {0} wider",
+        [DataGridNarrower] = "Make {0} narrower",
+        [DataGridResetWidths] = "Reset column widths",
         [DataGridGroupHeading] = "{0}: {1}",
         [DataGridGroupCount] = "Rows: {0}",
         [DataGridGroupNone] = "None",

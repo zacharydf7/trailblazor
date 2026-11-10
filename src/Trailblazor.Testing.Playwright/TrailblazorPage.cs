@@ -906,6 +906,34 @@ public sealed class TbGridLocator(ILocator scope, string name)
     // The render that changes the header or pager marks the table busy until the rows load.
     private Task RowsLoadedAsync() => Assertions.Expect(Table).Not.ToHaveAttributeAsync("aria-busy", "true");
 
+    /// <summary>Resizes the column with this title to this many pixels by dragging its header's edge, and waits for
+    /// the grid to keep the width. The column stops at its <c>MinWidth</c>.</summary>
+    public async Task ResizeColumnAsync(string column, double width)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var header = Header(column);
+        var edge = header.Locator("[data-part=resize]");
+        if (await edge.CountAsync() == 0)
+        {
+            throw new InvalidOperationException($"The \"{column}\" column can't be resized; set the grid's "
+                + "ResizableColumns and leave the column's Resizable on.");
+        }
+
+        await header.ScrollIntoViewIfNeededAsync();
+        var box = (await edge.BoundingBoxAsync())!;
+        var by = width - (await header.BoundingBoxAsync())!.Width;
+        var rtl = await header.EvaluateAsync<bool>("header => getComputedStyle(header).direction === 'rtl'");
+        var (x, y) = (box.X + box.Width / 2, box.Y + box.Height / 2);
+        await scope.Page.Mouse.MoveAsync(x, y);
+        await scope.Page.Mouse.DownAsync();
+        await scope.Page.Mouse.MoveAsync(x + (float)(rtl ? -by : by), y, new() { Steps = 5 });
+        await scope.Page.Mouse.UpAsync();
+        // The grid renders the width it keeps, which matches the header once the server has it.
+        await scope.Page.WaitForFunctionAsync("header => header.dataset.width"
+            + " && Math.abs(header.getBoundingClientRect().width - Number(header.dataset.width)) < 1",
+            await header.ElementHandleAsync());
+    }
+
     private ILocator Header(string column) => Table.Locator($"thead th[data-title=\"{column}\"]");
 }
 

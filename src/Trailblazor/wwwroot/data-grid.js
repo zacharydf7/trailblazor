@@ -140,6 +140,52 @@ export function createDataGrid(table) {
 
     const navigation = createCellNavigation(table, scroll, rowHeight, waitFor);
 
+    // A resize reports every column's width, so the columns the user didn't touch keep the widths they have.
+    const columnHeaders = () => [...headers.cells].filter(cell => cell.dataset.column);
+    const minWidth = cell => parseFloat(getComputedStyle(cell).minInlineSize) || 0;
+    const reportWidths = (changed, width) => {
+        const widths = Object.fromEntries(columnHeaders().map(cell => [cell.dataset.column,
+            cell === changed ? Math.max(width, minWidth(cell)) : cell.getBoundingClientRect().width]));
+        table.dispatchEvent(new CustomEvent('tb-column-widths', { bubbles: true, detail: { widths } }));
+    };
+
+    // A drag fixes every column at its width first, so only the dragged edge moves while it lasts.
+    let drag = null;
+    const startResize = event => {
+        const edge = event.target.closest?.('[data-part=resize]');
+        if (!edge || event.button !== 0) {
+            return;
+        }
+
+        event.preventDefault();
+        const cell = edge.closest('th');
+        const widths = columnHeaders().map(other => [other, other.getBoundingClientRect().width]);
+        widths.forEach(([other, width]) => other.style.width = `${width}px`);
+        table.classList.add('tb-data-grid__table--fixed');
+        const rtl = getComputedStyle(table).direction === 'rtl';
+        drag = { cell, edge, x: event.clientX, width: cell.getBoundingClientRect().width, rtl };
+        edge.setPointerCapture(event.pointerId);
+        edge.setAttribute('data-dragging', '');
+    };
+    const moveResize = event => {
+        if (drag) {
+            const delta = (event.clientX - drag.x) * (drag.rtl ? -1 : 1);
+            drag.cell.style.width = `${Math.max(drag.width + delta, minWidth(drag.cell))}px`;
+        }
+    };
+    const endResize = () => {
+        if (drag) {
+            const { cell, edge } = drag;
+            drag = null;
+            edge.removeAttribute('data-dragging');
+            reportWidths(cell, cell.getBoundingClientRect().width);
+        }
+    };
+    table.addEventListener('pointerdown', startResize);
+    table.addEventListener('pointermove', moveResize);
+    table.addEventListener('pointerup', endResize);
+    table.addEventListener('pointercancel', endResize);
+
     // Virtualize can measure rows after a jump and redraw them elsewhere, so a row scrolled to is kept in view until
     // the rows settle, the person scrolls, clicks or presses a key, or another row is asked for, at most five seconds.
     let stopKeeping = () => {};
@@ -274,8 +320,18 @@ export function createDataGrid(table) {
                 keepInView(find, index);
             }
         },
+        resizeColumn(key, delta) {
+            const cell = columnHeaders().find(other => other.dataset.column === key);
+            if (cell) {
+                reportWidths(cell, cell.getBoundingClientRect().width + delta);
+            }
+        },
         dispose() {
             scrolls++;
+            table.removeEventListener('pointerdown', startResize);
+            table.removeEventListener('pointermove', moveResize);
+            table.removeEventListener('pointerup', endResize);
+            table.removeEventListener('pointercancel', endResize);
             stopKeeping();
             observer.disconnect();
             resizes.disconnect();

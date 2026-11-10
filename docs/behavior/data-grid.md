@@ -35,6 +35,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Tab in a cell's edit saves it and opens the next editable cell, and Shift+Tab the one before, across rows. `GridEditKeysTests.Tab_ShouldSaveAndOpenTheNextCell_WhenPressedInACellsEdit`, `GridEditKeysTests.Tab_ShouldSaveAndOpenThePreviousCell_WhenPressedWithShift`, `GridEditKeysTests.Tab_ShouldGoOnToTheNextRow_WhenPressedInARowsLastEditableCell`, `GridEditKeysTests.Tab_ShouldGoOnFromAChoice_WhenItsListIsClosed`, `GridEditKeysTests.Tab_ShouldSaveWhatWasTyped_WhenTheEditorsFieldCommitsOnChange`
 - [x] A value that fails its check keeps the edit open. Tab in the last editable cell leaves the grid, and Shift+Tab in the first goes back to its cell. `GridEditKeysTests.Tab_ShouldKeepTheEditOpenWithWhy_WhenTheValueFailsItsCheck`, `GridEditKeysTests.Tab_ShouldSaveAndLeaveTheGrid_WhenPressedInTheLastEditableCell`, `GridEditKeysTests.Tab_ShouldSaveAndGoBackToItsCell_WhenShiftIsHeldInTheFirstEditableCell`
 - [x] Tab opens no edit on a row its save filtered or sorted out of view. `TbDataGridEditTests.EditStart_ShouldOpenNoEdit_WhenTheSaveTookItsRowAway`
+- [x] A resizable column's menu is a button the keys reach, and Enter opens it to resize the column. `GridResizeTests.ColumnMenu_ShouldWidenTheColumn_WhenReachedAndChosenWithTheKeys`
 
 ## Pointer
 
@@ -60,7 +61,9 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Shift+clicking a row's checkbox selects the range too, and every checkbox shows what's selected. `GridSelectTests.Grid_ShouldSelectARangeAndKeepItsBoxesRight_WhenABoxIsShiftClicked`
 - [x] Dragging across a row's text to copy it leaves the row unselected and raises no row click. `DataGridTests.Row_ShouldNotBeClicked_WhenADragSelectsItsText`
 - [x] A plain click on text already selected in a row still clicks the row. `DataGridTests.Row_ShouldBeClicked_WhenItsSelectedTextIsClicked`, `DataGridTests.Row_ShouldBeClicked_WhenThePointerSlipsWhileClickingItsSelectedText`
-- [ ] Columns can be resized, moved and hidden. #164
+- [x] Dragging a resizable column's header edge resizes it, no narrower than its `MinWidth`, while the other columns keep their widths, which the grid's state then holds. `GridResizeDragTests.Grid_ShouldResizeTheColumn_WhenItsHeadersEdgeIsDragged`, `GridResizeDragTests.Grid_ShouldStopAtTheColumnsMinimum_WhenItsEdgeIsDraggedPastIt`, `TbDataGridResizeTests.ColumnWidthsEvent_ShouldFixEveryColumnAndKeepTheWidthsInTheState_WhenRaised`
+- [x] A single click on a column's menu makes it wider or narrower, or resets every width, with no drag. `GridResizeTests.ColumnMenu_ShouldWidenTheColumnAndKeepTheOthers_WhenMakeWiderIsChosen`, `GridResizeTests.ColumnMenu_ShouldStopAtTheColumnsMinimum_WhenMakeNarrowerIsChosenAgain`, `GridResizeTests.ColumnMenu_ShouldGiveTheColumnsBackTheirWidths_WhenResetIsChosen`
+- [ ] Columns can be moved and hidden. #164
 
 ## Touch
 
@@ -68,6 +71,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A finger held on a handle for 300 ms starts a drag, through pointer events, and a swipe elsewhere scrolls. `pointer-drag.js`
 - [x] A tap on a handle opens its menu, which moves the row with no drag. `MoveHandle.cs`
 - [ ] A double tap opens a cell's edit, which touch has no other way to do. UNCONFIRMED
+- [ ] A finger drags a column's edge too, since the edge takes pointer events and turns off touch scrolling. #332
 
 ## Focus
 

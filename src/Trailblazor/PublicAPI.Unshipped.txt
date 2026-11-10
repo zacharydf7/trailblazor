@@ -15,6 +15,10 @@ const Trailblazor.TbStrings.CarouselSlide = "Carousel.Slide" -> string!
 const Trailblazor.TbStrings.CarouselSlideOf = "Carousel.SlideOf" -> string!
 const Trailblazor.TbStrings.CarouselStart = "Carousel.Start" -> string!
 const Trailblazor.TbStrings.CarouselStop = "Carousel.Stop" -> string!
+const Trailblazor.TbStrings.DataGridColumnMenu = "DataGrid.ColumnMenu" -> string!
+const Trailblazor.TbStrings.DataGridNarrower = "DataGrid.Narrower" -> string!
+const Trailblazor.TbStrings.DataGridResetWidths = "DataGrid.ResetWidths" -> string!
+const Trailblazor.TbStrings.DataGridWider = "DataGrid.Wider" -> string!
 const Trailblazor.TbStrings.DatePickerBadDate = "DatePicker.BadDate" -> string!
 const Trailblazor.TbStrings.DatePickerClear = "DatePicker.Clear" -> string!
 const Trailblazor.TbStrings.DatePickerOpen = "DatePicker.Open" -> string!
@@ -121,6 +125,10 @@ Trailblazor.CarouselLabels.Start.get -> string?
 Trailblazor.CarouselLabels.Start.init -> void
 Trailblazor.CarouselLabels.Stop.get -> string?
 Trailblazor.CarouselLabels.Stop.init -> void
+Trailblazor.ColumnWidthsEventArgs
+Trailblazor.ColumnWidthsEventArgs.ColumnWidthsEventArgs() -> void
+Trailblazor.ColumnWidthsEventArgs.Widths.get -> System.Collections.Generic.Dictionary<string!, double>!
+Trailblazor.ColumnWidthsEventArgs.Widths.set -> void
 Trailblazor.DatePickerLabels
 Trailblazor.DatePickerLabels.<Clone>$() -> Trailblazor.DatePickerLabels!
 Trailblazor.DatePickerLabels.BadDate.get -> string?
@@ -159,6 +167,8 @@ Trailblazor.DateTimePickerLabels.Time.get -> string?
 Trailblazor.DateTimePickerLabels.Time.init -> void
 Trailblazor.DateTimePickerLabels.Unavailable.get -> string?
 Trailblazor.DateTimePickerLabels.Unavailable.init -> void
+Trailblazor.GridState.ColumnWidths.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>!
+Trailblazor.GridState.ColumnWidths.init -> void
 Trailblazor.TagAddEventArgs
 Trailblazor.TagAddEventArgs.TagAddEventArgs() -> void
 Trailblazor.TagAddEventArgs.Text.get -> string!
@@ -258,6 +268,12 @@ Trailblazor.TbCarouselSlide.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbCarouselSlide.ChildContent.set -> void
 Trailblazor.TbCarouselSlide.Dispose() -> void
 Trailblazor.TbCarouselSlide.TbCarouselSlide() -> void
+Trailblazor.TbColumn<TItem>.MinWidth.get -> string?
+Trailblazor.TbColumn<TItem>.MinWidth.set -> void
+Trailblazor.TbColumn<TItem>.Resizable.get -> bool
+Trailblazor.TbColumn<TItem>.Resizable.set -> void
+Trailblazor.TbDataGrid<TItem>.ResizableColumns.get -> bool
+Trailblazor.TbDataGrid<TItem>.ResizableColumns.set -> void
 Trailblazor.TbDatePicker<TDate>
 Trailblazor.TbDatePicker<TDate>.Classes.get -> Trailblazor.FieldClasses?
 Trailblazor.TbDatePicker<TDate>.Classes.set -> void
