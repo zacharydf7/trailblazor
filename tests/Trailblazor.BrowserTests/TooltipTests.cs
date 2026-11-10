@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -377,5 +379,41 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
         var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "This description is long" });
         await Expect(tooltip).ToBeVisibleAsync();
         Assert.Equal("192px", await tooltip.EvaluateAsync<string>("tooltip => getComputedStyle(tooltip).maxWidth"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextAsync_ShouldShowTheTooltipAndReturnItsText_WhenCalled(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var tooltip = page.Tb().Tooltip(page.GetByRole(AriaRole.Button, new() { Name = "Add" }));
+
+        Assert.Equal("Add an item", await tooltip.TextAsync());
+        await Expect(tooltip.Bubble).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextAsync_ShouldReturnTheText_WhenTheTooltipIsShowingOrItsTriggerWasClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var add = page.GetByRole(AriaRole.Button, new() { Name = "Add" });
+        var tooltip = page.Tb().Tooltip(add);
+
+        Assert.Equal("Add an item", await tooltip.TextAsync());
+        Assert.Equal("Add an item", await tooltip.TextAsync());
+        await add.ClickAsync();
+
+        Assert.Equal("Add an item", await tooltip.TextAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextAsync_ShouldReadTheTriggersOwnTooltip_WhenTriggersShareAName(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var remove = page.GetByRole(AriaRole.Button, new() { Name = "Remove", Exact = true });
+
+        Assert.Equal("Remove Cedar", await page.Tb().Tooltip(remove.Nth(1)).TextAsync());
+        Assert.Equal("Remove Pine",
+            await page.Tb().Tooltip(page.GetByRole(AriaRole.List, new() { Name = "Trails" })
+                .GetByRole(AriaRole.Listitem).First.Locator(remove)).TextAsync());
     }
 }

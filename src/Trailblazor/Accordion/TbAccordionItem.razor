@@ -90,6 +90,7 @@
     private RenderFragment Trigger =>
         @<button type="button" id="@TriggerId" aria-expanded="@(_expanded ? "true" : "false")"
                  aria-controls="@PanelId" disabled="@Disabled" data-part="trigger" class="tb-accordion__trigger"
+                 data-ready="@(RendererInfo.IsInteractive ? "" : null)"
                  @onclick="ToggleAsync">
             <span class="tb-accordion__title">
                 @if (TitleContent is not null)

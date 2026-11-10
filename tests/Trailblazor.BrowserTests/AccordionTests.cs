@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -191,5 +193,43 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(packingTips).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(page.GetByRole(AriaRole.Region, new() { Name = "Packing tips" })).ToHaveTextAsync(
             "Packing content");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldOpenTheItemHandBackItsPanelAndCloseIt_WhenGivenItsHeader(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/accordion");
+        var sizing = page.Tb().AccordionItem("Sizing");
+
+        var panel = await sizing.ExpandAsync();
+
+        await Expect(panel).ToContainTextAsync("Sizes run true");
+        await Expect(sizing.Trigger).ToHaveAttributeAsync("aria-expanded", "true");
+        await sizing.CollapseAsync();
+        await Expect(sizing.Trigger).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldOpenTheItem_WhenItIsOnItsOwnOrAlreadyOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/accordion");
+
+        await page.Tb().AccordionItem("Care instructions").ExpandAsync();
+        var shipping = await page.Tb().AccordionItem("Shipping").ExpandAsync();
+
+        await Expect(page.Tb().AccordionItem("Care instructions").Trigger)
+            .ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(shipping).ToContainTextAsync("two business days");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldThrow_WhenTheItemIsDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/accordion");
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().AccordionItem("Warranty").ExpandAsync());
+
+        Assert.Contains("Warranty", failure.Message);
     }
 }

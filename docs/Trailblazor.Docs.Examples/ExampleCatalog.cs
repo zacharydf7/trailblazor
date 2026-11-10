@@ -5144,8 +5144,10 @@ public static class ExampleCatalog
                 new("tooltip", "The tooltip bubble."),
                 new("arrow", "The arrow that points at the trigger."),
             ],
-            TestingTip = "Tab to or hover the trigger, since `FocusAsync` after a click isn't keyboard focus, then "
-                + "find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
+            TestingTip = "`await page.Tb().Tooltip(trigger).TextAsync()` from `Trailblazor.Testing.Playwright` rests "
+                + "the pointer on the trigger and returns the tooltip's text once it shows. By hand, tab to or hover "
+                + "the trigger, since `FocusAsync` after a click isn't keyboard focus, then find the tooltip with "
+                + "`GetByRole(AriaRole.Tooltip)`; "
                 + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit the "
                 + "tooltip's text is in the markup from the start, with `role=\"tooltip\"`.",
         },
@@ -6114,8 +6116,10 @@ public static class ExampleCatalog
                     <TbAccordionItem Title="…">…</TbAccordionItem>
                 </TbAccordion>
                 """,
-            TestingTip = "The arrow keys, Home and End work once the accordion's script has attached, which "
-                + "is marked by `data-ready` on its root, `[data-part=accordion]`; wait for it before pressing them.",
+            TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
+                + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, and hands back its "
+                + "panel. The arrow keys, Home and End work once the accordion's script has attached, which is marked "
+                + "by `data-ready` on its root, `[data-part=accordion]`; wait for it before pressing them.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
