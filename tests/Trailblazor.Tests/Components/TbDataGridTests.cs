@@ -1149,6 +1149,18 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void RowMove_ShouldStartNoMenuScriptForItsHandles_WhenALongGridRenders()
+    {
+        List<Trail> trails = [.. Enumerable.Range(1, 500).Select(id => new Trail(id, $"Trail {id}", id, default))];
+
+        var cut = RenderTrails(trails, parameters => parameters
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+
+        Assert.Equal(500, cut.FindAll("[data-part=handle] > [data-part=trigger]").Count);
+        Assert.Empty(JSInterop.Invocations["createMenu"]);
+    }
+
+    [Fact]
     public async Task RowMove_ShouldMoveAmongAllTheItemsAndFollowTheRowToItsPage_WhenAHandleKeyIsPressed()
     {
         List<Trail> trails = [.. Trails];

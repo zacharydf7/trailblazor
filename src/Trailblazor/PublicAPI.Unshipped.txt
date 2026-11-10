@@ -4198,3 +4198,5 @@ Trailblazor.TbColumnGroup<TItem>.Title.set -> void
 override Trailblazor.TbColumnGroup<TItem>.OnInitialized() -> void
 Trailblazor.TbColumnGroup<TItem>.Dispose() -> void
 override Trailblazor.TbColumnGroup<TItem>.OnParametersSet() -> void
+Trailblazor.TbMenu.AttachOnFirstUse.get -> bool
+Trailblazor.TbMenu.AttachOnFirstUse.set -> void

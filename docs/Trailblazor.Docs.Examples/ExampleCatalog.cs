@@ -5450,7 +5450,10 @@ public static class ExampleCatalog
                     + "you when the user does. The items are drawn again each time the menu opens, so one whose text "
                     + "or `Disabled` depends on state that changed since the page last rendered is up to date. This "
                     + "menu also sets `Description`, which adds text that screen readers read after the trigger's "
-                    + "name, such as a hint about other keys it takes.", typeof(MenuOpenExample)),
+                    + "name, such as a hint about other keys it takes. `AttachOnFirstUse` waits to set up a menu's "
+                    + "script until its trigger is first focused, pointed at or clicked, which saves a call to the "
+                    + "browser for each menu in a long list; the move handles on a data grid's or a sortable list's "
+                    + "rows use it.", typeof(MenuOpenExample)),
                 new("disabled", "Disabled", "`Disabled` on a menu turns off its trigger, built in or custom.",
                     typeof(MenuDisabledExample)),
             ],
@@ -5536,7 +5539,8 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`. The trigger gets `data-ready` once a "
                 + "click on an item reaches the server; `await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", "
                 + "\"Email\")` from `Trailblazor.Testing.Playwright` waits for it, opens the menu and its submenus, "
-                + "and clicks the item.",
+                + "and clicks the item. With `AttachOnFirstUse`, the trigger gets `data-ready` only once it's "
+                + "first focused, pointed at or clicked, so `ChooseAsync` focuses it first.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"row-actions\"`, it counts `trailblazor.control.shown` as it "

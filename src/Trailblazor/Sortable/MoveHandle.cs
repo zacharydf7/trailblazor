@@ -19,8 +19,9 @@ internal static class MoveHandle
         builder.AddComponentParameter(sequence + 4, nameof(TbMenu.Size), Size.Small);
         builder.AddComponentParameter(sequence + 5, nameof(TbMenu.Disabled), disabled);
         builder.AddComponentParameter(sequence + 6, nameof(TbMenu.Class), "tb-sortable__handle");
-        builder.AddAttribute(sequence + 7, "data-part", "handle");
-        builder.AddComponentParameter(sequence + 8, nameof(TbMenu.ChildContent), (RenderFragment)(items =>
+        builder.AddComponentParameter(sequence + 7, nameof(TbMenu.AttachOnFirstUse), true);
+        builder.AddAttribute(sequence + 8, "data-part", "handle");
+        builder.AddComponentParameter(sequence + 9, nameof(TbMenu.ChildContent), (RenderFragment)(items =>
         {
             AddItem(items, 0, localizer[TbStrings.SortableMoveUp], index - 1);
             AddItem(items, 10, localizer[TbStrings.SortableMoveDown], index + 1);

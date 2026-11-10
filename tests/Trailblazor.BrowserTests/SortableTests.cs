@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -44,8 +46,9 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Keys_ShouldLeaveTheHandlesMenuClosed_WhenUpOrDownIsPressedWithAModifier(string browser)
     {
         var page = await OpenReadyAsync(browser);
-        await Expect(Handle(page, "Block spam")).ToHaveAttributeAsync("aria-expanded", "false");
+        // The handle's menu starts its script on first focus, and only then answers keys.
         await Handle(page, "Block spam").FocusAsync();
+        await Expect(Handle(page, "Block spam")).ToHaveAttributeAsync("aria-expanded", "false");
 
         foreach (var key in new[] { "Alt+ArrowDown", "Control+ArrowUp", "Meta+ArrowDown", "Shift+ArrowUp" })
         {
@@ -120,6 +123,17 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ArrowDown");
 
         await Expect(page.GetByTestId("crews")).ToHaveTextAsync("South crew, North crew; Ben, Ada");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Handle_ShouldChooseFromItsMenu_WhenTheTestingHelperUsesItAsThePageLoads(string browser)
+    {
+        // Not waiting for the page to turn interactive, so the helper meets the prerendered handle first.
+        var page = await OpenStaticAsync(browser, "/sortable");
+
+        await page.Tb().Menu("Move Block spam").ChooseAsync("Move down");
+
+        await Expect(page.GetByTestId("order")).ToHaveTextAsync("Flag invoices, Block spam, Star the team, Catch-all");
     }
 
     // The lists and the grids hear drags and keys once their scripts have attached.

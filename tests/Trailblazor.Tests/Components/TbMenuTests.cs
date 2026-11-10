@@ -45,6 +45,72 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScriptOnlyOnceTheTriggerTakesFocus_WhenSet()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.AttachOnFirstUse, true)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+        Assert.Empty(JSInterop.Invocations["createMenu"]);
+        var trigger = cut.Find("[data-part=trigger]");
+        Assert.True(trigger.HasAttribute("data-attach-on-use"));
+        Assert.Equal(cut.Find("[role=menu]").Id, trigger.GetAttribute("popovertarget"));
+
+        trigger.Focus();
+
+        Assert.Single(JSInterop.Invocations["createMenu"]);
+        Assert.False(cut.Find("[data-part=trigger]").HasAttribute("data-attach-on-use"));
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenThePointerReachesTheTrigger()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.AttachOnFirstUse, true)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        cut.Find("[data-part=trigger]").PointerEnter();
+
+        Assert.Single(JSInterop.Invocations["createMenu"]);
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenTheTriggerIsClickedWithoutFocus()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.AttachOnFirstUse, true)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        cut.Find("[data-part=trigger]").Click();
+
+        Assert.Single(JSInterop.Invocations["createMenu"]);
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScriptAndOpen_WhenTheParentOpensItBeforeUse()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/menu.js").SetupModule("createMenu", _ => true);
+        handle.SetupVoid("setOpen", _ => true);
+        Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.AttachOnFirstUse, true).Add(menu => menu.Open, true)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        Assert.Single(JSInterop.Invocations["createMenu"]);
+        Assert.Equal([true], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenTurnedOffBeforeUse()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.AttachOnFirstUse, true)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        cut.Render(parameters => parameters.Add(menu => menu.AttachOnFirstUse, false));
+
+        Assert.Single(JSInterop.Invocations["createMenu"]);
+    }
+
+    [Fact]
     public void Render_ShouldWireTheTriggerToTheMenu_WhenCalled()
     {
         var cut = Render<TbMenu>(parameters => parameters

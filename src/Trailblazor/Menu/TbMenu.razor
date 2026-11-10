@@ -46,6 +46,7 @@
     private bool _open;
     private bool _lastOpen;
     private bool _openFromParent;
+    private bool _attaching;
 
     /// <summary>The trigger's text, or with an <see cref="Icon"/>, the icon button's accessible name. Required
     /// unless <see cref="Trigger"/> gives a trigger of your own.</summary>
@@ -109,6 +110,12 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Sets up the menu's script when its trigger is first focused, pointed at or clicked, not when the menu
+    /// first renders. That saves a call to the browser for each menu in a long list, such as a menu on every row. The
+    /// menu is placed and its keys added as it opens, as they are for any menu.</summary>
+    [Parameter]
+    public bool AttachOnFirstUse { get; set; }
+
     /// <summary>A label the menu's use is counted under, such as <c>"row-actions"</c>, through the <c>Trailblazor</c>
     /// meter: shown when it first renders, and used each time it opens, by pointer or key, which is how often its items
     /// are seen. It names what the menu does, never the user. Read on the first render.</summary>
@@ -169,6 +176,16 @@
                 attributes["data-static"] = "";
             }
 
+            // A menu that waits for its first use listens on its trigger and marks it, so tests know to focus it first.
+            // A prerendered trigger is replaced as the page turns interactive, so only the interactive one is marked.
+            if (AttachOnFirstUse && RendererInfo.IsInteractive && !_attaching)
+            {
+                attributes["data-attach-on-use"] = "";
+                attributes["onfocus"] = EventCallback.Factory.Create(this, AttachOnUseAsync);
+                attributes["onpointerenter"] = EventCallback.Factory.Create(this, AttachOnUseAsync);
+                attributes["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, AttachOnUseAsync);
+            }
+
             // The built-in triggers take Disabled as a parameter; a custom one gets the attribute.
             if (Disabled && Trigger is not null)
             {
@@ -206,8 +223,9 @@
         Telemetry.Rendered(TelemetryName);
         try
         {
-            if (firstRender)
+            if ((!AttachOnFirstUse || _openFromParent) && !_attaching)
             {
+                _attaching = true;
                 await AttachAsync();
             }
 
@@ -216,6 +234,24 @@
                 _openFromParent = false;
                 await _handle.InvokeVoidAsync("setOpen", _open);
             }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the menu went with it.
+        }
+    }
+
+    private async Task AttachOnUseAsync()
+    {
+        if (_attaching)
+        {
+            return;
+        }
+
+        _attaching = true;
+        try
+        {
+            await AttachAsync();
         }
         catch (JSDisconnectedException)
         {
