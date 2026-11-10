@@ -109,7 +109,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         from component in new[]
         {
             "slider", "splitter", "menu", "tabs", "toggle-group", "toolbar", "tree-view", "pagination",
-            "date-range-picker", "sortable", "accordion", "icon",
+            "date-range-picker", "sortable", "accordion", "icon", "calendar",
         }
         select (browser, $"components/{component}"));
 

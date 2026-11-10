@@ -39,6 +39,9 @@ public sealed class TrailblazorMarkup
     public TbTagInputDriver TagInput(string label) =>
         new(() => Field(label, "input[data-part=input].tb-tag-input__input"));
 
+    /// <summary>The <c>TbCalendar</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbCalendarDriver Calendar(string label) => new(() => Field(label, ".tb-calendar"));
+
     /// <summary>The <c>TbRichTextEditor</c> with this label, or with this <c>AriaLabel</c> when it has no label.
     /// </summary>
     public TbRichTextEditorDriver RichTextEditor(string label) =>
@@ -293,6 +296,53 @@ public sealed class TbTagInputDriver
 
     private IEnumerable<IElement> TagElements() =>
         _find().Closest("[data-part=control]")?.QuerySelectorAll("[data-part=tag]") ?? Enumerable.Empty<IElement>();
+}
+
+/// <summary>A <c>TbCalendar</c>, found by its label.</summary>
+public sealed class TbCalendarDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbCalendarDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Picks this date as a user would: up to the years, over to its decade, then down through its year and
+    /// month to the day. A disabled or read-only calendar, or a date it can't choose, throws.</summary>
+    public async Task ChooseAsync(DateOnly date)
+    {
+        var grid = Grid();
+        if (grid.GetAttribute("aria-disabled") == "true" || grid.GetAttribute("aria-readonly") == "true")
+        {
+            throw new InvalidOperationException("This calendar is disabled or read-only, so no date can be chosen.");
+        }
+
+        while (Grid().GetAttribute("data-view") != "years")
+        {
+            await ClickAsync(_find().QuerySelector("[data-part=title]")!);
+        }
+
+        var year = $"{date.Year:0000}-01-01";
+        while (Cell(year) is null)
+        {
+            var shown = int.Parse(Grid().QuerySelector("[data-date]")!.GetAttribute("data-date")![..4],
+                CultureInfo.InvariantCulture);
+            await ClickAsync(_find().QuerySelector(shown > date.Year ? "[data-part=previous]" : "[data-part=next]")!);
+        }
+
+        await ClickCellAsync(year, date);
+        await ClickCellAsync($"{date.Year:0000}-{date.Month:00}-01", date);
+        await ClickCellAsync(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), date);
+    }
+
+    private IElement Grid() => _find().QuerySelector("[role=grid]")
+        ?? throw new InvalidOperationException("This calendar isn't interactive, so it shows no grid to pick from.");
+
+    private IElement? Cell(string iso) => Grid().QuerySelector($"[data-date='{iso}']");
+
+    private Task ClickCellAsync(string iso, DateOnly date) =>
+        Cell(iso) is { } cell && cell.GetAttribute("aria-disabled") != "true" ? ClickAsync(cell)
+            : throw new InvalidOperationException($"The calendar can't choose {date:yyyy-MM-dd}.");
+
+    private static Task ClickAsync(IElement button) => button.ClickAsync(new MouseEventArgs { Detail = 1 });
 }
 
 /// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>

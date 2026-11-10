@@ -1,0 +1,24 @@
+@page "/static-calendar"
+@attribute [ExcludeFromInteractiveRouting]
+
+<EditForm Model="Model" FormName="static-calendar" OnValidSubmit="Post">
+    <TbCalendar TDate="DateOnly" Label="Hike date" @bind-Value="Model!.Date" />
+    <TbButton Type="ButtonType.Submit">Send</TbButton>
+</EditForm>
+<output data-testid="posted">@_posted</output>
+
+@code {
+    private string? _posted;
+
+    [SupplyParameterFromForm]
+    private Hike? Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    private void Post() => _posted = $"{Model!.Date:yyyy-MM-dd}";
+
+    private sealed class Hike
+    {
+        public DateOnly? Date { get; set; } = new DateOnly(2026, 6, 3);
+    }
+}

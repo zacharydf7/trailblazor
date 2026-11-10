@@ -1,32 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
-
-const dayMs = 24 * 60 * 60 * 1000;
-
-const toDate = iso => new Date(`${iso}T00:00:00Z`);
-const toIso = date => date.toISOString().slice(0, 10);
-
-// Moves by months the way a calendar does: from January 31, one month on is the last day of February.
-function addMonths(date, months) {
-    const moved = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1));
-    const last = new Date(Date.UTC(moved.getUTCFullYear(), moved.getUTCMonth() + 1, 0)).getUTCDate();
-    moved.setUTCDate(Math.min(date.getUTCDate(), last));
-    return moved;
-}
-
-function target(key, shift, date, firstDayOfWeek) {
-    const weekday = (date.getUTCDay() - firstDayOfWeek + 7) % 7;
-    switch (key) {
-        case 'ArrowLeft': return new Date(date - dayMs);
-        case 'ArrowRight': return new Date(+date + dayMs);
-        case 'ArrowUp': return new Date(date - 7 * dayMs);
-        case 'ArrowDown': return new Date(+date + 7 * dayMs);
-        case 'Home': return new Date(date - weekday * dayMs);
-        case 'End': return new Date(+date + (6 - weekday) * dayMs);
-        case 'PageUp': return addMonths(date, shift ? -12 : -1);
-        case 'PageDown': return addMonths(date, shift ? 12 : 1);
-        default: return null;
-    }
-}
+import { browserToday, dayTarget, toDate, toIso } from './date-grid.js';
 
 // The calendar's focus moves here among the days on show; the server is told, and shows another month when needed.
 export function createDateRangePicker(panel, events, firstDayOfWeek) {
@@ -110,7 +83,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         const key = rtl() && event.key.startsWith('Arrow')
             ? { ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft' }[event.key] ?? event.key
             : event.key;
-        const next = target(key, event.shiftKey, toDate(intended ?? button.dataset.date), firstDayOfWeek);
+        const next = dayTarget(key, event.shiftKey, toDate(intended ?? button.dataset.date), firstDayOfWeek);
         if (!next) {
             return;
         }
@@ -210,10 +183,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     }
 
     return {
-        today() {
-            const now = new Date();
-            return toIso(new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())));
-        },
+        today: browserToday,
         close() {
             if (panel.matches(':popover-open')) {
                 panel.hidePopover();

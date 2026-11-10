@@ -1,6 +1,14 @@
 #nullable enable
 const Trailblazor.TbStrings.BannerClose = "Banner.Close" -> string!
 const Trailblazor.TbStrings.BannerLabel = "Banner.Label" -> string!
+const Trailblazor.TbStrings.CalendarChooseMonth = "Calendar.ChooseMonth" -> string!
+const Trailblazor.TbStrings.CalendarChooseYear = "Calendar.ChooseYear" -> string!
+const Trailblazor.TbStrings.CalendarNextDecade = "Calendar.NextDecade" -> string!
+const Trailblazor.TbStrings.CalendarNextMonth = "Calendar.NextMonth" -> string!
+const Trailblazor.TbStrings.CalendarNextYear = "Calendar.NextYear" -> string!
+const Trailblazor.TbStrings.CalendarPreviousDecade = "Calendar.PreviousDecade" -> string!
+const Trailblazor.TbStrings.CalendarPreviousMonth = "Calendar.PreviousMonth" -> string!
+const Trailblazor.TbStrings.CalendarPreviousYear = "Calendar.PreviousYear" -> string!
 const Trailblazor.TbStrings.CarouselNext = "Carousel.Next" -> string!
 const Trailblazor.TbStrings.CarouselPrevious = "Carousel.Previous" -> string!
 const Trailblazor.TbStrings.CarouselSlide = "Carousel.Slide" -> string!
@@ -13,12 +21,20 @@ const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
 const Trailblazor.TbStrings.TagInputRemove = "TagInput.Remove" -> string!
 const Trailblazor.TbStrings.TagInputRemoved = "TagInput.Removed" -> string!
 const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
+override Trailblazor.CalendarLabels.Equals(object? obj) -> bool
+override Trailblazor.CalendarLabels.GetHashCode() -> int
+override Trailblazor.CalendarLabels.ToString() -> string!
 override Trailblazor.CarouselLabels.Equals(object? obj) -> bool
 override Trailblazor.CarouselLabels.GetHashCode() -> int
 override Trailblazor.CarouselLabels.ToString() -> string!
 override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
 override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
+override Trailblazor.TbCalendar<TDate>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbCalendar<TDate>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbCalendar<TDate>.OnInitialized() -> void
+override Trailblazor.TbCalendar<TDate>.OnParametersSet() -> void
+override Trailblazor.TbCalendar<TDate>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Trailblazor.TbCarousel.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbCarousel.OnParametersSet() -> void
 override Trailblazor.TbCarouselSlide.OnInitialized() -> void
@@ -28,10 +44,32 @@ override Trailblazor.TbKbd.OnParametersSet() -> void
 override Trailblazor.TbPopconfirm.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.CalendarLabels.operator !=(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
+static Trailblazor.CalendarLabels.operator ==(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CarouselLabels.operator !=(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
 static Trailblazor.CarouselLabels.operator ==(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
+Trailblazor.CalendarLabels
+Trailblazor.CalendarLabels.<Clone>$() -> Trailblazor.CalendarLabels!
+Trailblazor.CalendarLabels.CalendarLabels() -> void
+Trailblazor.CalendarLabels.ChooseMonth.get -> string?
+Trailblazor.CalendarLabels.ChooseMonth.init -> void
+Trailblazor.CalendarLabels.ChooseYear.get -> string?
+Trailblazor.CalendarLabels.ChooseYear.init -> void
+Trailblazor.CalendarLabels.Equals(Trailblazor.CalendarLabels? other) -> bool
+Trailblazor.CalendarLabels.NextDecade.get -> string?
+Trailblazor.CalendarLabels.NextDecade.init -> void
+Trailblazor.CalendarLabels.NextMonth.get -> string?
+Trailblazor.CalendarLabels.NextMonth.init -> void
+Trailblazor.CalendarLabels.NextYear.get -> string?
+Trailblazor.CalendarLabels.NextYear.init -> void
+Trailblazor.CalendarLabels.PreviousDecade.get -> string?
+Trailblazor.CalendarLabels.PreviousDecade.init -> void
+Trailblazor.CalendarLabels.PreviousMonth.get -> string?
+Trailblazor.CalendarLabels.PreviousMonth.init -> void
+Trailblazor.CalendarLabels.PreviousYear.get -> string?
+Trailblazor.CalendarLabels.PreviousYear.init -> void
 Trailblazor.CarouselLabels
 Trailblazor.CarouselLabels.<Clone>$() -> Trailblazor.CarouselLabels!
 Trailblazor.CarouselLabels.CarouselLabels() -> void
@@ -98,6 +136,27 @@ Trailblazor.TbBanner.Title.get -> string?
 Trailblazor.TbBanner.Title.set -> void
 Trailblazor.TbBanner.Tone.get -> Trailblazor.Tone
 Trailblazor.TbBanner.Tone.set -> void
+Trailblazor.TbCalendar<TDate>
+Trailblazor.TbCalendar<TDate>.Classes.get -> Trailblazor.ChoiceClasses?
+Trailblazor.TbCalendar<TDate>.Classes.set -> void
+Trailblazor.TbCalendar<TDate>.Culture.get -> System.Globalization.CultureInfo?
+Trailblazor.TbCalendar<TDate>.Culture.set -> void
+Trailblazor.TbCalendar<TDate>.DayContent.get -> Microsoft.AspNetCore.Components.RenderFragment<TDate>?
+Trailblazor.TbCalendar<TDate>.DayContent.set -> void
+Trailblazor.TbCalendar<TDate>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbCalendar<TDate>.IsDateDisabled.get -> System.Func<TDate, bool>?
+Trailblazor.TbCalendar<TDate>.IsDateDisabled.set -> void
+Trailblazor.TbCalendar<TDate>.Labels.get -> Trailblazor.CalendarLabels!
+Trailblazor.TbCalendar<TDate>.Labels.set -> void
+Trailblazor.TbCalendar<TDate>.Max.get -> TDate?
+Trailblazor.TbCalendar<TDate>.Max.set -> void
+Trailblazor.TbCalendar<TDate>.Min.get -> TDate?
+Trailblazor.TbCalendar<TDate>.Min.set -> void
+Trailblazor.TbCalendar<TDate>.Month.get -> TDate?
+Trailblazor.TbCalendar<TDate>.Month.set -> void
+Trailblazor.TbCalendar<TDate>.MonthChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TDate?>
+Trailblazor.TbCalendar<TDate>.MonthChanged.set -> void
+Trailblazor.TbCalendar<TDate>.TbCalendar() -> void
 Trailblazor.TbCarousel
 Trailblazor.TbCarousel.AriaLabel.get -> string!
 Trailblazor.TbCarousel.AriaLabel.set -> void
@@ -2957,6 +3016,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbButtonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbCalendar<TDate>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCarousel.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCarouselSlide.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCheckbox<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

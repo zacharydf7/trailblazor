@@ -38,7 +38,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static readonly string[] StatefulExamples =
     [
         "button", "toggle-group", "chip", "alert", "badge", "checkbox", "select", "listbox", "tabs", "data-grid",
-        "tree-view", "date-range-picker",
+        "tree-view", "date-range-picker", "calendar",
     ];
 
     public static TheoryData<string, string, string> StatefulExamplesInEachPaletteAndTheme => new(

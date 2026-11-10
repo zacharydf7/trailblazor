@@ -1,0 +1,177 @@
+@namespace Trailblazor
+@typeparam TDate where TDate : struct
+@inherits TbFieldBase<TDate?>
+@using static Trailblazor.CalendarDates
+
+<div @attributes="RootAttributes" role="group" aria-labelledby="@(ShownLabel is null ? null : LabelId)" style="@Style"
+     class="@ClassNames.Join("tb-calendar", ShowsInvalid ? "tb-calendar--invalid" : null,
+                Disabled ? "tb-calendar--disabled" : null, ReadOnly ? "tb-calendar--readonly" : null, Class)">
+    @if (ShownLabel is not null)
+    {
+        @WithInfo(CalendarLabel)
+    }
+    @if (RendererInfo.IsInteractive)
+    {
+        <div class="tb-calendar__header">
+            <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@PreviousLabel" Size="Size.Small"
+                          Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || Paged(-1) is null)"
+                          FocusableWhenDisabled="!Disabled" data-part="previous"
+                          OnClick="() => PageAsync(-1)" class="tb-calendar__flip" />
+            @* The years view has no wider view, but its title stays a button so focus on it isn't lost. *@
+            <button type="button" data-part="title" aria-label="@(_view == View.Years ? null : ZoomOutLabel)"
+                    aria-disabled="@(_view == View.Years ? "true" : null)" disabled="@Disabled"
+                    class="tb-calendar__title" @onclick="ZoomOut">
+                <span id="@TitleId">@Title</span>
+                @if (_view != View.Years)
+                {
+                    <TbIcon Icon="BuiltInIcons.ChevronDown" class="tb-calendar__title-icon" />
+                }
+            </button>
+            <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@NextLabel" Size="Size.Small"
+                          Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || Paged(1) is null)"
+                          FocusableWhenDisabled="!Disabled" data-part="next"
+                          OnClick="() => PageAsync(1)" class="tb-calendar__flip" />
+        </div>
+        <span class="tb-visually-hidden" aria-live="polite">@Title</span>
+        @* The grid stays one element across the views, since the script listens on it. *@
+        <table @ref="_grid" @attributes="ControlAttributes" id="@InputId" role="grid" data-part="grid"
+               data-view="@_view.ToString().ToLowerInvariant()" data-ready="@(_handle is null ? null : "")"
+               aria-labelledby="@(ShownLabel is null ? TitleId : $"{LabelId} {TitleId}")"
+               aria-describedby="@InputDescribedBy" aria-required="@(Required ? "true" : null)"
+               aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+               aria-disabled="@(Disabled ? "true" : null)"
+               class="@ClassNames.Join("tb-calendar__grid", ClassNames.Modifier("tb-calendar__grid", _view), Classes?.Input)">
+            @if (_view == View.Days)
+            {
+                <thead>
+                    <tr>
+                        @foreach (var day in WeekDays(DateCulture))
+                        {
+                            <th scope="col" abbr="@DateCulture.DateTimeFormat.DayNames[day]">
+                                @DateCulture.DateTimeFormat.ShortestDayNames[day]
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var week in Weeks(FirstOfMonth(_focus), DateCulture))
+                    {
+                        <tr>
+                            @foreach (var day in week)
+                            {
+                                @if (day is { } date)
+                                {
+                                    <td aria-selected="@(IsChosen(date, DayOf) ? "true" : null)">
+                                        <button type="button" data-part="day" data-date="@Iso(date)"
+                                                tabindex="@(date == _focus ? 0 : -1)"
+                                                aria-label="@DayName(date, DateCulture)"
+                                                aria-describedby="@(DayContent is null ? null : DayContentId(date))"
+                                                aria-disabled="@(IsUnavailable(date) ? "true" : null)"
+                                                aria-current="@(IsToday(date, DayOf) ? "date" : null)" disabled="@Disabled"
+                                                class="@CellClass(date, DayOf)" @onclick="() => PickAsync(date)">
+                                            <span class="tb-calendar__number">@date.Day.ToString(DateCulture)</span>
+                                            @if (DayContent is not null)
+                                            {
+                                                <span id="@DayContentId(date)" data-part="day-content"
+                                                      class="tb-calendar__day-content">
+                                                    @DayContent(FromDate<TDate>(date))
+                                                </span>
+                                            }
+                                        </button>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            }
+            else if (_view == View.Months)
+            {
+                <tbody>
+                    @for (var row = 0; row < 3; row++)
+                    {
+                        <tr>
+                            @for (var column = 0; column < 4; column++)
+                            {
+                                var month = new DateOnly(_focus.Year, row * 4 + column + 1, 1);
+                                <td aria-selected="@(IsChosen(month, FirstOfMonth) ? "true" : null)">
+                                    <button type="button" data-part="month" data-date="@Iso(month)"
+                                            tabindex="@(month.Month == _focus.Month ? 0 : -1)"
+                                            aria-label="@month.ToString("Y", DateCulture)"
+                                            aria-disabled="@(IsUnavailableMonth(month) ? "true" : null)"
+                                            aria-current="@(IsToday(month, FirstOfMonth) ? "true" : null)"
+                                            disabled="@Disabled" class="@CellClass(month, FirstOfMonth)"
+                                            @onclick="() => PickAsync(month)">
+                                        @DateCulture.DateTimeFormat.GetAbbreviatedMonthName(month.Month)
+                                    </button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            }
+            else
+            {
+                <tbody>
+                    @for (var row = 0; row < 3; row++)
+                    {
+                        <tr>
+                            @for (var column = 0; column < 4; column++)
+                            {
+                                var year = DecadeStart + row * 4 + column;
+                                @if (year < DecadeStart + 10 && year is >= 1 and <= 9999)
+                                {
+                                    var first = new DateOnly(year, 1, 1);
+                                    <td aria-selected="@(IsChosen(first, YearOf) ? "true" : null)">
+                                        <button type="button" data-part="year" data-date="@Iso(first)"
+                                                tabindex="@(year == _focus.Year ? 0 : -1)"
+                                                aria-disabled="@(IsUnavailableYear(year) ? "true" : null)"
+                                                aria-current="@(IsToday(first, YearOf) ? "true" : null)"
+                                                disabled="@Disabled" class="@CellClass(first, YearOf)"
+                                                @onclick="() => PickAsync(first)">
+                                            @year.ToString(DateCulture)
+                                        </button>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    }
+    else
+    {
+        @* Without a circuit the calendar can't move or pick, so the browser's own date box stands in; data-static marks
+           a date box that no interactive calendar will replace. *@
+        <div data-part="control" class="tb-field__control">
+            <input @attributes="ControlAttributes" type="date" id="@InputId" name="@InputNameAttribute" data-part="input"
+                   data-static="@(AssignedRenderMode is null ? "" : null)"
+                   value="@(Chosen is { } chosen ? Iso(chosen) : null)" min="@(Min is { } min ? Iso(ToDate(min)) : null)"
+                   max="@(Max is { } max ? Iso(ToDate(max)) : null)" disabled="@Disabled" readonly="@ReadOnly"
+                   aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+                   aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", "tb-calendar__input", Classes?.Input)" />
+        </div>
+    }
+    @Messages(Classes?.Helper, Classes?.Error)
+</div>
+
+@code {
+    private RenderFragment CalendarLabel =>
+        @<label data-part="label" id="@LabelId" for="@(RendererInfo.IsInteractive ? null : InputId)"
+                class="@ClassNames.Join("tb-field__label", LabelHiddenClass, Classes?.Label)">
+            @ShownLabel
+            @RequiredMarker
+        </label>;
+
+    private string DayContentId(DateOnly date) => $"{FieldId}-{Iso(date)}-content";
+}

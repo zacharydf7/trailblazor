@@ -109,6 +109,34 @@ public static class TbStrings
     /// <summary>"Enter a color as #RRGGBB.": shown when the typed color can't be read.</summary>
     public const string ColorPickerBadColor = "ColorPicker.BadColor";
 
+    /// <summary>"Previous month": names a calendar's button that shows the month before.</summary>
+    public const string CalendarPreviousMonth = "Calendar.PreviousMonth";
+
+    /// <summary>"Next month": names a calendar's button that shows the month after.</summary>
+    public const string CalendarNextMonth = "Calendar.NextMonth";
+
+    /// <summary>"Previous year": names a calendar's button that shows the year before, while months are shown.
+    /// </summary>
+    public const string CalendarPreviousYear = "Calendar.PreviousYear";
+
+    /// <summary>"Next year": names a calendar's button that shows the year after, while months are shown.</summary>
+    public const string CalendarNextYear = "Calendar.NextYear";
+
+    /// <summary>"Previous decade": names a calendar's button that shows the decade before, while years are shown.
+    /// </summary>
+    public const string CalendarPreviousDecade = "Calendar.PreviousDecade";
+
+    /// <summary>"Next decade": names a calendar's button that shows the decade after, while years are shown.</summary>
+    public const string CalendarNextDecade = "Calendar.NextDecade";
+
+    /// <summary>"{0}, choose a month": names a calendar's title button while days are shown, which shows the year's
+    /// months; {0} is the month and year.</summary>
+    public const string CalendarChooseMonth = "Calendar.ChooseMonth";
+
+    /// <summary>"{0}, choose a year": names a calendar's title button while months are shown, which shows the
+    /// decade's years; {0} is the year.</summary>
+    public const string CalendarChooseYear = "Calendar.ChooseYear";
+
     /// <summary>"Start date": names a date range's start field, and is added to the start day's name in the calendar.
     /// </summary>
     public const string DateRangePickerStart = "DateRangePicker.Start";
@@ -780,6 +808,14 @@ public static class TbStrings
         [ColorPickerGreen] = "Green",
         [ColorPickerBlue] = "Blue",
         [ColorPickerBadColor] = "Enter a color as #RRGGBB.",
+        [CalendarPreviousMonth] = "Previous month",
+        [CalendarNextMonth] = "Next month",
+        [CalendarPreviousYear] = "Previous year",
+        [CalendarNextYear] = "Next year",
+        [CalendarPreviousDecade] = "Previous decade",
+        [CalendarNextDecade] = "Next decade",
+        [CalendarChooseMonth] = "{0}, choose a month",
+        [CalendarChooseYear] = "{0}, choose a year",
         [DateRangePickerStart] = "Start date",
         [DateRangePickerEnd] = "End date",
         [DateRangePickerOpen] = "Choose dates",

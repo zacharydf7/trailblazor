@@ -1,0 +1,8 @@
+<TbStack Gap="2">
+    <TbCalendar TDate="DateOnly" Label="Hike date" @bind-Value="_hike" />
+    <output>@(_hike is { } date ? $"Hiking on {date:D}." : "No date chosen yet.")</output>
+</TbStack>
+
+@code {
+    private DateOnly? _hike = DateOnly.FromDateTime(DateTime.Today).AddDays(3);
+}

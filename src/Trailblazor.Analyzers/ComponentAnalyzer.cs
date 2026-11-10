@@ -46,6 +46,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbListBoxBase`1", ["Label", "AriaLabel", "InputAttributes"]),
         ("Trailblazor.TbRangeSlider`1", ["Label", "AriaLabel", "InputAttributes"]),
         ("Trailblazor.TbDateRangePicker`1", ["Label", "AriaLabel", "InputAttributes"]),
+        ("Trailblazor.TbCalendar`1", ["Label", "AriaLabel", "InputAttributes"]),
     ];
 
     /// <inheritdoc />

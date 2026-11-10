@@ -1,6 +1,7 @@
 @namespace Trailblazor
 @typeparam TDate where TDate : struct
 @inherits TbBoxedFieldBase<DateRange<TDate>>
+@using static Trailblazor.CalendarDates
 
 @Layout(Classes, @<text>
     <span id="@($"{StartId}-name")" hidden>@StartLabel</span>
@@ -110,7 +111,7 @@
             <table role="grid" aria-labelledby="@titleId" class="tb-date-range__grid">
                 <thead>
                     <tr>
-                        @foreach (var day in WeekDays)
+                        @foreach (var day in WeekDays(DateCulture))
                         {
                             <th scope="col" abbr="@DateCulture.DateTimeFormat.DayNames[day]">
                                 @DateCulture.DateTimeFormat.ShortestDayNames[day]
@@ -119,7 +120,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var week in Weeks(month))
+                    @foreach (var week in Weeks(month, DateCulture))
                     {
                         <tr>
                             @foreach (var day in week)

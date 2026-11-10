@@ -78,6 +78,8 @@ Trailblazor.Testing.ScrollRequest.Equals(Trailblazor.Testing.ScrollRequest? othe
 Trailblazor.Testing.ScrollRequest.ScrollRequest(Microsoft.AspNetCore.Components.ElementReference Element, Trailblazor.ScrollAlignment Alignment, bool Smooth) -> void
 Trailblazor.Testing.ScrollRequest.Smooth.get -> bool
 Trailblazor.Testing.ScrollRequest.Smooth.init -> void
+Trailblazor.Testing.TbCalendarDriver
+Trailblazor.Testing.TbCalendarDriver.ChooseAsync(System.DateOnly date) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbListBoxDriver
 Trailblazor.Testing.TbListBoxDriver.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbListBoxDriver.Chosen.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -111,6 +113,7 @@ Trailblazor.Testing.TestDialog<TDialog, TResult>.Reference.get -> Trailblazor.Di
 Trailblazor.Testing.TestDialog<TDialog, TResult>.Root.get -> Bunit.IRenderedComponent<Trailblazor.TbRoot!>!
 Trailblazor.Testing.TrailblazorBunitExtensions
 Trailblazor.Testing.TrailblazorMarkup
+Trailblazor.Testing.TrailblazorMarkup.Calendar(string! label) -> Trailblazor.Testing.TbCalendarDriver!
 Trailblazor.Testing.TrailblazorMarkup.ListBox(string! label) -> Trailblazor.Testing.TbListBoxDriver!
 Trailblazor.Testing.TrailblazorMarkup.NumberField(string! label) -> Trailblazor.Testing.TbNumberFieldDriver!
 Trailblazor.Testing.TrailblazorMarkup.Select(string! label) -> Trailblazor.Testing.TbSelectDriver!

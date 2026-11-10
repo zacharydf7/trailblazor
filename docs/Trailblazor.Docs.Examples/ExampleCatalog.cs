@@ -4308,6 +4308,111 @@ public static class ExampleCatalog
                 + "taken them. In bUnit, `FindComponent<InputFile>().UploadFiles(...)` chooses files. The field is "
                 + "ready as soon as `Render` returns, with nothing left to run, so a test can raise events at once.",
         },
+        new("calendar", "Calendar", ExampleCategory.Inputs,
+            "Shows a month in place for choosing one date, with views of the year's months and the decade's years.")
+        {
+            WhenToUse =
+            [
+                "Use it when there's room to show a month and seeing it helps someone choose, such as which days are "
+                    + "free.",
+            ],
+            WhenNotToUse =
+            [
+                "For a start and an end date, use a [date range picker](components/date-range-picker).",
+                "For a date people know by heart, such as a birthday, use a [text field](components/text-field) bound "
+                    + "to a `DateOnly`.",
+            ],
+            Related = ["date-range-picker", "text-field", "form"],
+            Pattern = new("date picker dialog's grid",
+                "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/"),
+            RightToLeftKeys = "Left moves to the next day, month or year, and Right to the previous one.",
+            Sections =
+            [
+                new("value", "Value", "`@bind-Value` holds the chosen date. `TDate` can be `DateOnly` or `DateTime`; "
+                    + "time zones are never converted, a date left alone keeps its time, and a picked date is "
+                    + "midnight. Click the title for the year's months, and again for the decade's years, to reach a "
+                    + "distant date quickly.",
+                    typeof(CalendarExample)),
+                new("min-and-max", "Dates that can't be chosen", "`Min` and `Max` set the earliest and latest dates, "
+                    + "and `IsDateDisabled` returns true for a date that can't be chosen, such as a weekend. Focus can "
+                    + "still reach those days, so a screen reader can say they're unavailable.",
+                    typeof(CalendarLimitsExample)),
+                new("day-content", "Content in the days", "`DayContent` adds content under a day's number, such as a "
+                    + "dot for a day with events. Give it words for screen readers, which hear them after the date. "
+                    + "`@bind-Month` holds the month that's shown, so your app can load what its days show.",
+                    typeof(CalendarDayContentExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the date from changing while "
+                    + "the months can still be browsed. `Disabled` turns every button off and takes the calendar out "
+                    + "of the tab order.", typeof(CalendarStatesExample)),
+            ],
+            Api = [typeof(TbCalendar<>), typeof(CalendarLabels), typeof(ChoiceClasses)],
+            Keyboard =
+            [
+                new(["Left", "Right"], "Moves by a day, or by a month or year in the months and years views.")
+                    { When = "In the grid" },
+                new(["Up", "Down"], "Moves by a week, or by a row of four months or years.") { When = "In the grid" },
+                new(["Home", "End"], "Goes to the start or end of the week or row.") { When = "In the grid" },
+                new(["Page Up", "Page Down"], "Changes the month, or the year or decade in the months and years views.")
+                    { When = "In the grid" },
+                new(["Shift+Page Up", "Shift+Page Down"], "Changes the year.") { When = "In the days view" },
+                new(["Enter", "Space"], "Picks the day, or opens the month or year.") { When = "In the grid" },
+                new(["Tab"], "Moves between the previous button, the title, the next button and the grid."),
+            ],
+            Labeling =
+            [
+                "The calendar is a `group` named by the `Label`, and its `grid` is named by the label and the title, "
+                    + "such as \"Hike date November 2026\".",
+                "Each day is named by its full date. The title button is named by the title and what it shows next, "
+                    + "such as \"November 2026, choose a month\".",
+            ],
+            Announcements =
+            [
+                "The chosen day is `aria-selected`, today is `aria-current=\"date\"`, and days that can't be chosen "
+                    + "are `aria-disabled`.",
+                "Moving to another month, year or decade reads out the new title.",
+                "A validation message that appears as someone picks a date is read out once, as on a "
+                    + "[text field](components/text-field).",
+            ],
+            Accessibility =
+            [
+                "In forced-colors mode, such as Windows high contrast, the chosen day takes the system's highlight.",
+            ],
+            AppDuties =
+            [
+                "Purely visual content in `DayContent`, such as a dot, needs words for screen readers too, for example "
+                    + "visually hidden text.",
+            ],
+            Notes =
+            [
+                new("`@ref` the calendar and call `FocusAsync()` to move focus to its grid."),
+            ],
+            BeforeInteractive =
+            [
+                "It shows the browser's own date box, so a static form still posts the date.",
+            ],
+            Target = new("group", "Hike date"),
+            Blocks = ["tb-calendar"],
+            DataParts =
+            [
+                new("label", "The calendar's label."),
+                new("control", "The box around the browser's date box, shown before the page is interactive."),
+                new("previous", "The button that shows the month, year or decade before."),
+                new("title", "The title button, which shows the year's months and then the decade's years."),
+                new("next", "The button that shows the month, year or decade after."),
+                new("grid", "The grid of days, months or years; `data-view` says which."),
+                new("day", "One day."),
+                new("day-content", "The content `DayContent` adds to a day."),
+                new("month", "One month, in the months view."),
+                new("year", "One year, in the years view."),
+                new("input", "The browser's date box."),
+                new("helper", "The help text under the calendar."),
+                new("error", "The validation message, shown while the value is invalid."),
+            ],
+            TestingTip = "`await page.Tb().Calendar(\"Hike date\").ChooseAsync(date)` from "
+                + "`Trailblazor.Testing.Playwright` picks a date through the years and months views, as a user would, "
+                + "and waits until the calendar has taken it. In bUnit, `cut.Tb().Calendar(\"Hike date\")"
+                + ".ChooseAsync(date)` from `Trailblazor.Testing` does the same.",
+        },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
         {

@@ -1,0 +1,26 @@
+<TbStack Gap="2">
+    <TbCalendar TDate="DateOnly" Label="Group hikes" @bind-Value="_day" @bind-Month="_month">
+        <DayContent>
+            @{ var count = HikesOn(context); }
+            @if (count > 0)
+            {
+                <span aria-hidden="true" style="inline-size: 0.375rem; block-size: 0.375rem; border-radius: 50%;
+                                                background: currentColor"></span>
+                <span class="tb-visually-hidden">@HikeCount(count)</span>
+            }
+        </DayContent>
+    </TbCalendar>
+    <output>@HikeCount(_hikes.Count(hike => hike.Year == _month?.Year && hike.Month == _month?.Month)) this month.</output>
+</TbStack>
+
+@code {
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private static readonly DateOnly[] _hikes = [.. new[] { 2, 2, 5, 9, 16, 23, 30, 37, 44 }.Select(_today.AddDays)];
+
+    private DateOnly? _day;
+    private DateOnly? _month;
+
+    private static int HikesOn(DateOnly date) => _hikes.Count(hike => hike == date);
+
+    private static string HikeCount(int count) => count == 1 ? "1 hike" : $"{count} hikes";
+}

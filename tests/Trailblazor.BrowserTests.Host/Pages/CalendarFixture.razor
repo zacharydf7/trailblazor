@@ -1,0 +1,28 @@
+@page "/calendar"
+@using System.Globalization
+
+<TbStack Gap="4">
+    <TbCalendar TDate="DateOnly" Label="Hike date" @bind-Value="_hike" @bind-Value:after="Count" Culture="_culture"
+                Min="new DateOnly(2020, 1, 1)" IsDateDisabled="IsClosed" />
+    <output data-testid="hike">@(_hike?.ToString("yyyy-MM-dd") ?? "none")</output>
+    <output data-testid="changes">@_changes</output>
+    <TbCalendar TDate="DateOnly" Label="First years" @bind-Value="_firstYears" Culture="_culture" />
+    <TbCalendar TDate="DateOnly" Label="Last year" @bind-Value="_lastYear" Culture="_culture" />
+    <div dir="rtl">
+        <TbCalendar TDate="DateOnly" Label="Right to left" @bind-Value="_rightToLeft" Culture="_culture" />
+    </div>
+</TbStack>
+
+@code {
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("en-US");
+    private DateOnly? _hike = new DateOnly(2026, 6, 3);
+    private DateOnly? _rightToLeft = new DateOnly(2026, 6, 3);
+    private DateOnly? _firstYears = new DateOnly(5, 3, 10);
+    private DateOnly? _lastYear = new DateOnly(9999, 12, 20);
+    private int _changes;
+
+    // The 25th of every month is closed, so a test can find a day that can't be chosen.
+    private static bool IsClosed(DateOnly date) => date.Day == 25;
+
+    private void Count() => _changes++;
+}

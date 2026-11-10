@@ -6922,6 +6922,148 @@
         cursor: not-allowed;
     }
 
+    .tb-calendar {
+        display: inline-flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-calendar__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-calendar__flip:dir(rtl) {
+        transform: scaleX(-1);
+    }
+
+    .tb-calendar__title {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+        min-height: 2rem;
+        padding-inline: var(--tb-space-2);
+        border: 0;
+        border-radius: var(--tb-radius-sm);
+        background: transparent;
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: var(--tb-font-weight-semibold);
+        cursor: pointer;
+    }
+
+    .tb-calendar__title:hover:not(:disabled, [aria-disabled="true"]) {
+        background: var(--tb-color-hover);
+    }
+
+    .tb-calendar__title[aria-disabled="true"] {
+        cursor: default;
+    }
+
+    .tb-calendar__title:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-calendar__title-icon {
+        width: 1.25em;
+        height: 1.25em;
+    }
+
+    .tb-calendar__grid {
+        border-collapse: collapse;
+    }
+
+    .tb-calendar__grid th {
+        width: calc(var(--tb-control-height) - 0.25rem);
+        padding-block: var(--tb-space-1);
+        color: var(--tb-color-text-muted);
+        font-weight: var(--tb-font-weight-regular);
+    }
+
+    .tb-calendar__grid td {
+        padding: 0;
+    }
+
+    .tb-calendar__cell {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: calc(var(--tb-control-height) - 0.25rem);
+        min-height: calc(var(--tb-control-height) - 0.25rem);
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: var(--tb-radius-sm);
+        background: transparent;
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: var(--tb-line-height-tight);
+        cursor: pointer;
+    }
+
+    /* Months and years share the width of a week, four to a row. */
+    .tb-calendar__grid--months .tb-calendar__cell,
+    .tb-calendar__grid--years .tb-calendar__cell {
+        width: calc(7 * (var(--tb-control-height) - 0.25rem) / 4);
+        min-height: calc(1.5 * var(--tb-control-height));
+    }
+
+    .tb-calendar__cell:hover:not([aria-disabled="true"], :disabled, .tb-calendar__cell--selected) {
+        background: var(--tb-color-hover);
+    }
+
+    .tb-calendar__cell:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-calendar__cell--today {
+        border-color: var(--tb-border-strong);
+    }
+
+    .tb-calendar__cell--selected {
+        background: var(--tb-color-primary);
+        color: var(--tb-color-on-primary);
+    }
+
+    .tb-calendar__cell[aria-disabled="true"],
+    .tb-calendar__cell:disabled {
+        color: var(--tb-color-text-disabled);
+        cursor: not-allowed;
+    }
+
+    .tb-calendar__cell[aria-disabled="true"] .tb-calendar__number {
+        text-decoration: line-through;
+    }
+
+    .tb-calendar__day-content {
+        display: flex;
+        justify-content: center;
+        min-height: 0.375rem;
+        font-size: var(--tb-font-size-xs);
+    }
+
+    /* Forced colors drop the backgrounds, so the chosen cell is drawn in the system's highlight colors. */
+    @media (forced-colors: active) {
+        .tb-calendar__cell--selected {
+            forced-color-adjust: none;
+            background: Highlight;
+            color: HighlightText;
+        }
+
+        .tb-calendar__cell[aria-disabled="true"],
+        .tb-calendar__cell:disabled {
+            color: GrayText;
+        }
+    }
+
     /* A see-through color shows over a checkerboard, so its opacity can be seen. */
     .tb-color-picker__preview,
     .tb-color-picker__swatch,

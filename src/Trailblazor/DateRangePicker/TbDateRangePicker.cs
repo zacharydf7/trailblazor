@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
+using static Trailblazor.CalendarDates;
 
 namespace Trailblazor;
 
@@ -135,12 +136,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (typeof(TDate) != typeof(DateOnly) && typeof(TDate) != typeof(DateTime))
-        {
-            throw new InvalidOperationException(
-                $"{nameof(TbDateRangePicker<TDate>)} chooses DateOnly or DateTime, not {typeof(TDate).Name}.");
-        }
-
+        ThrowUnlessDate<TDate>(nameof(TbDateRangePicker<TDate>));
         base.OnParametersSet();
         // The typed dates go with their error, which a new range from the parent or a new binding clears.
         if (!HasParseError)
@@ -350,7 +346,6 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         await _startInput.FocusAsync();
     }
 
-    // A date the user left alone keeps its time of day; only a changed date becomes midnight.
     private Task CommitAsync(DateOnly? start, DateOnly? end)
     {
         ClearTexts();
@@ -380,7 +375,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private protected override bool IsMissing(DateRange<TDate> value) => value.Start is null || value.End is null;
 
     private bool IsUnavailable(DateOnly date) =>
-        date < MinDate || date > MaxDate || (IsDateDisabled?.Invoke(FromDate(date)) ?? false);
+        date < MinDate || date > MaxDate || (IsDateDisabled?.Invoke(FromDate<TDate>(date)) ?? false);
 
     private bool IsSelected(DateOnly date) => _anchor is { } anchor ? date == anchor
         : (StartDate, EndDate) switch
@@ -396,11 +391,10 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private bool IsEnd(DateOnly date) => _anchor is null && date == EndDate;
 
     // The ends of the range name which end they are; the days between keep just their date, and aria-selected marks
-    // them. The day is written unpadded, as the button shows it: a culture's long date can pad it (the invariant
-    // culture writes "04"), and the accessible name must contain the visible label.
+    // them.
     private string DayName(DateOnly date)
     {
-        var name = date.ToString(PaddedDay().Replace(DateCulture.DateTimeFormat.LongDatePattern, "d"), DateCulture);
+        var name = CalendarDates.DayName(date, DateCulture);
         name = IsStart(date) ? $"{name}, {StartLabel}" : name;
         return IsEnd(date) ? $"{name}, {EndLabel}" : name;
     }
@@ -411,44 +405,12 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         IsEnd(date) ? "tb-date-range__day--end" : null,
         date == Today ? "tb-date-range__day--today" : null);
 
-    // The month's days in weeks, with null for the days of the months either side.
-    private IEnumerable<DateOnly?[]> Weeks(DateOnly month)
-    {
-        var lead = ((int)month.DayOfWeek - (int)DateCulture.DateTimeFormat.FirstDayOfWeek + 7) % 7;
-        var length = DateTime.DaysInMonth(month.Year, month.Month);
-        for (var first = -lead; first < length; first += 7)
-        {
-            yield return [.. Enumerable.Range(first, 7)
-                .Select(day => day >= 0 && day < length ? month.AddDays(day) : (DateOnly?)null)];
-        }
-    }
-
-    private IEnumerable<int> WeekDays => Enumerable.Range(0, 7)
-        .Select(day => ((int)DateCulture.DateTimeFormat.FirstDayOfWeek + day) % 7);
-
     private DateOnly Clamp(DateOnly date) => date < MinDate ? MinDate : date > MaxDate ? MaxDate : date;
 
     private string? FormatDate(DateOnly? date) => date?.ToString(DateFormat, DateCulture);
 
-    private static DateOnly FirstOfMonth(DateOnly date) => new(date.Year, date.Month, 1);
-
-    private static string Iso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
-    private static DateOnly ToDate(TDate value) =>
-        value is DateTime time ? DateOnly.FromDateTime(time) : (DateOnly)(object)value;
-
-    private static TDate FromDate(DateOnly date) => typeof(TDate) == typeof(DateTime)
-        ? (TDate)(object)date.ToDateTime(TimeOnly.MinValue)
-        : (TDate)(object)date;
-
-    private static TDate? Keep(DateOnly? date, TDate? old) =>
-        date is not { } day ? null : old is { } kept && ToDate(kept) == day ? kept : FromDate(day);
-
     [GeneratedRegex("(?<![dM])(?:d{1,2}|M{1,2})(?![dM])")]
     private static partial Regex DayOrMonth();
-
-    [GeneratedRegex("(?<!d)dd(?!d)")]
-    private static partial Regex PaddedDay();
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

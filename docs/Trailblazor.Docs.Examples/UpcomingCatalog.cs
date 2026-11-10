@@ -52,7 +52,6 @@ public static class UpcomingCatalog
         new("Smart paste", ExampleCategory.Actions, 198),
         new("Speech-to-text button", ExampleCategory.Actions, 197),
         new("AI prompt", ExampleCategory.Inputs, 182),
-        new("Calendar", ExampleCategory.Inputs, 74),
         new("Cascader", ExampleCategory.Inputs, 186),
         new("Date picker", ExampleCategory.Inputs, 63),
         new("Form from a model", ExampleCategory.Inputs, 180),

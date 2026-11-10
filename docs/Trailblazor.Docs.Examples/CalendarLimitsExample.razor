@@ -1,0 +1,10 @@
+<TbCalendar TDate="DateOnly" Label="Guided walk" @bind-Value="_walk" Min="_today" Max="_today.AddMonths(2)"
+            IsDateDisabled="IsWeekend" HelperText="Weekdays in the next two months." />
+
+@code {
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+
+    private DateOnly? _walk;
+
+    private static bool IsWeekend(DateOnly date) => date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+}
