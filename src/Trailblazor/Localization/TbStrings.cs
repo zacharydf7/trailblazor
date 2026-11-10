@@ -361,6 +361,10 @@ public static class TbStrings
     /// </summary>
     public const string TransferListMoved = "TransferList.Moved";
 
+    /// <summary>"{0} needs all {1} characters.": the error a code field shows while its code is only partly typed;
+    /// {0} is the field's label and {1} how many characters the code has.</summary>
+    public const string CodeFieldIncomplete = "CodeField.Incomplete";
+
     /// <summary>"Search {0}": labels the search box above a list; {0} is the list's title.</summary>
     public const string TransferListSearch = "TransferList.Search";
 
@@ -977,6 +981,7 @@ public static class TbStrings
         [TransferListMove] = "Move to {0}",
         [TransferListMoveAll] = "Move all to {0}",
         [TransferListMoved] = "Moved {0} to {1}",
+        [CodeFieldIncomplete] = "{0} needs all {1} characters.",
         [TransferListSearch] = "Search {0}",
         [NewTabHint] = "opens in a new tab",
         [NumberFieldDecrease] = "Decrease",

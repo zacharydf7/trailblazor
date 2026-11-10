@@ -80,6 +80,7 @@ public static class AccessibilityStatusCatalog
         new("date-range-picker", Tested, Tested, None),
         new("listbox", Tested, NotYet, None),
         new("transfer-list", Tested, NotYet, None),
+        new("code-field", Tested, NotYet, None),
         new("tooltip", Tested, NotYet, None),
         new("menu", Tested, NotYet, None),
         new("dialog", Tested, NotYet, Tested),

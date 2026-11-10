@@ -15,6 +15,7 @@ const Trailblazor.TbStrings.CarouselSlide = "Carousel.Slide" -> string!
 const Trailblazor.TbStrings.CarouselSlideOf = "Carousel.SlideOf" -> string!
 const Trailblazor.TbStrings.CarouselStart = "Carousel.Start" -> string!
 const Trailblazor.TbStrings.CarouselStop = "Carousel.Stop" -> string!
+const Trailblazor.TbStrings.CodeFieldIncomplete = "CodeField.Incomplete" -> string!
 const Trailblazor.TbStrings.DataGridColumnHidden = "DataGrid.ColumnHidden" -> string!
 const Trailblazor.TbStrings.DataGridColumnMenu = "DataGrid.ColumnMenu" -> string!
 const Trailblazor.TbStrings.DataGridColumnMoved = "DataGrid.ColumnMoved" -> string!
@@ -70,6 +71,9 @@ override Trailblazor.TbCalendar<TDate>.OnParametersSetAsync() -> System.Threadin
 override Trailblazor.TbCarousel.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbCarousel.OnParametersSet() -> void
 override Trailblazor.TbCarouselSlide.OnInitialized() -> void
+override Trailblazor.TbCodeField.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbCodeField.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbCodeField.OnParametersSet() -> void
 override Trailblazor.TbDatePicker<TDate>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbDatePicker<TDate>.OnInitialized() -> void
 override Trailblazor.TbDateTimePicker<TDateTime>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
@@ -143,6 +147,9 @@ Trailblazor.CarouselLabels.Start.get -> string?
 Trailblazor.CarouselLabels.Start.init -> void
 Trailblazor.CarouselLabels.Stop.get -> string?
 Trailblazor.CarouselLabels.Stop.init -> void
+Trailblazor.CodeCharacters
+Trailblazor.CodeCharacters.Digits = 0 -> Trailblazor.CodeCharacters
+Trailblazor.CodeCharacters.LettersAndDigits = 1 -> Trailblazor.CodeCharacters
 Trailblazor.ColumnOrderEventArgs
 Trailblazor.ColumnOrderEventArgs.ColumnOrderEventArgs() -> void
 Trailblazor.ColumnOrderEventArgs.Order.get -> System.Collections.Generic.List<string!>!
@@ -294,6 +301,17 @@ Trailblazor.TbCarouselSlide.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbCarouselSlide.ChildContent.set -> void
 Trailblazor.TbCarouselSlide.Dispose() -> void
 Trailblazor.TbCarouselSlide.TbCarouselSlide() -> void
+Trailblazor.TbCodeField
+Trailblazor.TbCodeField.Characters.get -> Trailblazor.CodeCharacters
+Trailblazor.TbCodeField.Characters.set -> void
+Trailblazor.TbCodeField.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbCodeField.Classes.set -> void
+Trailblazor.TbCodeField.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbCodeField.Length.get -> int
+Trailblazor.TbCodeField.Length.set -> void
+Trailblazor.TbCodeField.OnComplete.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Trailblazor.TbCodeField.OnComplete.set -> void
+Trailblazor.TbCodeField.TbCodeField() -> void
 Trailblazor.TbColumn<TItem>.Hideable.get -> bool
 Trailblazor.TbColumn<TItem>.Hideable.set -> void
 Trailblazor.TbColumn<TItem>.MinWidth.get -> string?
@@ -3268,6 +3286,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbCheckboxItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbChip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbChipGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbCodeField.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbColorPicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDataGrid<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDatePicker<TDate>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

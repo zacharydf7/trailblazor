@@ -5151,6 +5151,64 @@ public static class ExampleCatalog
                     + "each move. Which items moved is never recorded.",
             ],
         },
+        new("code-field", "Code field", ExampleCategory.Inputs,
+            "Takes a short verification code, such as the six digits sent to a phone, with a box for each character.")
+        {
+            WhenToUse =
+            [
+                "Use it for a one-time code from a text message, an email or an authenticator app, such as in a "
+                    + "sign-in step.",
+            ],
+            WhenNotToUse =
+            [
+                "For a password, use a [text field](components/text-field) of type `Password`.",
+                "For a numeric value, such as a quantity or a price, use a [number field](components/number-field).",
+            ],
+            Related = ["text-field", "number-field", "form"],
+            Sections =
+            [
+                new("verification-code", "A verification code", "`Length` sets how many characters the code has, six "
+                    + "by default, and `Characters` whether it takes only digits or letters too. The field is one "
+                    + "input, so a phone can fill it from a text message, and pasting or deleting works as in any "
+                    + "field; a paste of \"123-456\" keeps only the digits. The value is the code once every box is "
+                    + "filled, and `OnComplete` runs when the last box is. A partly typed code isn't a value: the "
+                    + "bound value keeps the last full code, and the field shows an error once it loses focus.",
+                    typeof(CodeFieldExample)),
+            ],
+            Api = [typeof(TbCodeField), typeof(CodeCharacters), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Backspace"], "Removes the character before the caret, from any box."),
+                new(["Left", "Right"], "Moves the caret between the boxes."),
+            ],
+            Labeling =
+            [
+                "One input named by its `Label`, so the whole code has a single name rather than one per box.",
+            ],
+            Accessibility =
+            [
+                "The input says it holds a one-time code (`autocomplete=\"one-time-code\"`), so browsers and phones "
+                    + "offer a code they received. A code of digits brings up a number keyboard.",
+                "A partly typed code shows \"Verification code needs all 6 characters.\" once the field loses focus "
+                    + "or Enter is pressed, not while the code is being typed.",
+            ],
+            Target = new("textbox", "Verification code"),
+            Blocks = ["tb-code-field"],
+            DataParts =
+            [
+                new("input", "The input that holds the code."),
+            ],
+            Anatomy = """
+                <TbCodeField Label="…" @bind-Value="_code" OnComplete="…" />
+                """,
+            TestingTips =
+            [
+                "In bUnit, raise one input event with the whole code, as the browser reports it: "
+                    + "`cut.Find(\"[data-part=input]\").Input(\"246810\")`.",
+                "In Playwright, fill it by its label: "
+                    + "`await page.GetByLabel(\"Verification code\").FillAsync(\"246810\")`.",
+            ],
+        },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or keyboard focus.")
         {

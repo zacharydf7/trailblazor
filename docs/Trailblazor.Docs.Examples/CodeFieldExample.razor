@@ -1,0 +1,13 @@
+@* A phone can fill the code from a text message; a paste of "123-456" keeps only the digits. *@
+<TbStack Gap="3">
+    <TbCodeField Label="Verification code" HelperText="We sent a 6-digit code to your phone." @bind-Value="_code"
+                 OnComplete="Check" />
+    <output aria-label="Result">@_result</output>
+</TbStack>
+
+@code {
+    private string? _code;
+    private string _result = "Waiting for the code.";
+
+    private void Check(string code) => _result = code == "246810" ? "Code accepted." : $"{code} isn't the code.";
+}

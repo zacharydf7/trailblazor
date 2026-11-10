@@ -1,0 +1,139 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbBoxedFieldBase<string>
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+@Layout(Classes, @<text>
+    <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+           type="text" dir="ltr" @bind:get="Text" @bind:set="OnInputAsync" @bind:event="oninput"
+           @onchange="OnCommitAsync" autocomplete="one-time-code"
+           inputmode="@(Characters == CodeCharacters.Digits ? "numeric" : "text")"
+           autocapitalize="@(Characters == CodeCharacters.Digits ? null : "characters")" spellcheck="false"
+           maxlength="@Length" data-characters="@(Characters == CodeCharacters.Digits ? "digits" : "letters")"
+           data-ready="@(_handle is null ? null : "")" disabled="@Disabled" readonly="@ReadOnly"
+           aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+           aria-describedby="@InputDescribedBy" style="--tb-code-field-length: @Length"
+           class="@ClassNames.Join("tb-field__input", "tb-code-field__input", Classes?.Input)" />
+</text>, null, null)
+
+@code {
+    private ElementReference _input;
+    private IJSObjectReference? _handle;
+    private bool _disposed;
+
+    /// <summary>How many characters the code has. Defaults to 6.</summary>
+    [Parameter]
+    public int Length { get; set; } = 6;
+
+    /// <summary>The characters the code takes. Defaults to <see cref="CodeCharacters.Digits"/>; anything else typed or
+    /// pasted, such as the dash in "123-456", is left out.</summary>
+    [Parameter]
+    public CodeCharacters Characters { get; set; }
+
+    /// <summary>Raised when the code reaches all <see cref="Length"/> characters, for example to check it without a
+    /// submit button.</summary>
+    [Parameter]
+    public EventCallback<string> OnComplete { get; set; }
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
+    private protected override string FieldModifiers => $"{base.FieldModifiers} tb-code-field";
+
+    // A partly typed code isn't a value: it stays as typed, and says what it lacks once the field commits.
+    private protected override bool TryParse(string? text, out string? value, out string? error)
+    {
+        value = text;
+        error = string.IsNullOrEmpty(text) || text.Length == Length
+            ? null : Message(TbStrings.CodeFieldIncomplete, Length);
+        return error is null;
+    }
+
+    // A static form post skips the script and the filter, so a short code or one with other characters fails here.
+    private protected override string? ValueError(string? value) =>
+        !TryParse(value, out _, out var error) ? error
+        : string.IsNullOrEmpty(value) || value.All(Takes) ? null : Message(TbStrings.CodeFieldIncomplete, Length);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Length < 1)
+        {
+            throw new InvalidOperationException($"{nameof(TbCodeField)} needs a {nameof(Length)} of at least 1.");
+        }
+
+        base.OnParametersSet();
+    }
+
+    private async Task OnInputAsync(string? text)
+    {
+        if (!Editable)
+        {
+            return;
+        }
+
+        var code = CodeOf(text);
+        var completes = code.Length == Length && code != Text;
+        await SetTypedTextAsync(code);
+        if (completes)
+        {
+            await OnComplete.InvokeAsync(code);
+        }
+    }
+
+    private Task OnCommitAsync(ChangeEventArgs e) =>
+        Editable ? SetTextAsync(CodeOf(e.Value as string)) : Task.CompletedTask;
+
+    private bool Editable => !Disabled && !ReadOnly;
+
+    private string CodeOf(string? text) =>
+        new([.. (text ?? "").Where(Takes).Select(char.ToUpperInvariant).Take(Length)]);
+
+    private bool Takes(char character) => Characters == CodeCharacters.Digits
+        ? char.IsAsciiDigit(character) : char.IsAsciiLetterOrDigit(character);
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            try
+            {
+                var module = await Modules.ImportAsync("./_content/Trailblazor/code-field.js");
+                var handle = await module.InvokeAsync<IJSObjectReference?>("attachCodeField", _input);
+                if (_disposed)
+                {
+                    if (handle is not null)
+                    {
+                        await handle.DisposeHandleAsync();
+                    }
+
+                    return;
+                }
+
+                _handle = handle;
+                StateHasChanged();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is gone, and the field went with it.
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        _disposed = true;
+        return _handle?.DisposeHandleAsync() ?? ValueTask.CompletedTask;
+    }
+}

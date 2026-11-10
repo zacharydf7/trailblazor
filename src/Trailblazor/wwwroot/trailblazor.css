@@ -3454,6 +3454,37 @@
         gap: var(--tb-space-1) var(--tb-space-4);
     }
 
+    /* Each monospace character plus its letter-spacing fills a box; the gradient underlines each box. */
+    .tb-code-field {
+        --tb-code-field-slot: 2.5rem;
+        --tb-code-field-font-size: 1.25rem;
+        inline-size: max-content;
+    }
+
+    .tb-code-field.tb-field--small {
+        --tb-code-field-slot: 2rem;
+        --tb-code-field-font-size: 1rem;
+    }
+
+    .tb-code-field.tb-field--large {
+        --tb-code-field-slot: 3rem;
+        --tb-code-field-font-size: 1.5rem;
+    }
+
+    .tb-code-field .tb-code-field__input {
+        box-sizing: content-box;
+        inline-size: calc(var(--tb-code-field-length) * var(--tb-code-field-slot));
+        padding-inline: calc((var(--tb-code-field-slot) - 1ch) / 2) 0;
+        font-family: var(--tb-font-family-mono);
+        font-size: var(--tb-code-field-font-size);
+        letter-spacing: calc(var(--tb-code-field-slot) - 1ch);
+        text-transform: uppercase;
+        background: repeating-linear-gradient(to right, var(--tb-border-strong) 0
+                calc(var(--tb-code-field-slot) - var(--tb-space-2)), transparent 0 var(--tb-code-field-slot))
+            calc(var(--tb-space-2) / 2) calc(100% - var(--tb-space-1)) /
+            calc(var(--tb-code-field-length) * var(--tb-code-field-slot)) 2px no-repeat;
+    }
+
     .tb-transfer-list {
         display: flex;
         flex-direction: column;

@@ -57,7 +57,6 @@ public static class UpcomingCatalog
         new("Markdown editor", ExampleCategory.Inputs, 189),
         new("Mention input", ExampleCategory.Inputs, 190),
         new("Multi-column combobox", ExampleCategory.Inputs, 185),
-        new("One-time code input", ExampleCategory.Inputs, 171),
         new("Property grid", ExampleCategory.Inputs, 80),
         new("Query builder", ExampleCategory.Inputs, 174),
         new("Signature pad", ExampleCategory.Inputs, 179),
