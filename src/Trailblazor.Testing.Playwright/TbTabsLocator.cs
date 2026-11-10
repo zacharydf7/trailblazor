@@ -2,11 +2,11 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbTabs</c>, found by its accessible name, or the only one on the page.</summary>
-public sealed class TbTabsLocator(IPage page, string? name)
+/// <summary>A <c>TbTabs</c>, found by its accessible name, or the only one in the scope.</summary>
+public sealed class TbTabsLocator(ILocator scope, string? name)
 {
-    private ILocator List => name is null ? page.GetByRole(AriaRole.Tablist)
-        : page.GetByRole(AriaRole.Tablist, new() { Name = name, Exact = true });
+    private ILocator List => name is null ? scope.GetByRole(AriaRole.Tablist)
+        : scope.GetByRole(AriaRole.Tablist, new() { Name = name, Exact = true });
 
     /// <summary>Clicks the tab with this name and waits until it is selected.</summary>
     public async Task SelectAsync(string tab)

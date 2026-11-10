@@ -4,12 +4,12 @@ namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A dialog, found by its title: a <c>TbDialog</c>, or one from <c>IDialogService</c> such as a confirm.
 /// </summary>
-public sealed class TbDialogLocator(IPage page, string title)
+public sealed class TbDialogLocator(ILocator scope, string title)
 {
     // A confirm or alert is an alertdialog; a dialog that is closing stays on the page while it fades.
-    private ILocator Dialog => page.GetByRole(AriaRole.Dialog, new() { Name = title, Exact = true })
-        .Or(page.GetByRole(AriaRole.Alertdialog, new() { Name = title, Exact = true }))
-        .And(page.Locator(":not([data-leaving])"));
+    private ILocator Dialog => scope.GetByRole(AriaRole.Dialog, new() { Name = title, Exact = true })
+        .Or(scope.GetByRole(AriaRole.Alertdialog, new() { Name = title, Exact = true }))
+        .And(scope.Locator(":not([data-leaving])"));
 
     /// <summary>Waits for the dialog to open and returns it, to find what it shows.</summary>
     public async Task<ILocator> WaitForAsync()
@@ -31,7 +31,7 @@ public sealed class TbDialogLocator(IPage page, string title)
     public async Task CancelAsync()
     {
         await WaitForAsync();
-        await page.Keyboard.PressAsync("Escape");
+        await scope.Page.Keyboard.PressAsync("Escape");
         await Assertions.Expect(Dialog).ToBeHiddenAsync();
     }
 }

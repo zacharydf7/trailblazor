@@ -1,0 +1,44 @@
+@page "/scoped-helpers"
+
+@* Trail is on the page and in a dialog, and Count is in every grid row; the helpers tell them apart by scope. *@
+<TbStack Gap="4">
+    <TbSelect TValue="string" Label="Trail" @bind-Value="_pageTrail">
+        <TbOption Value="@("Pine")" />
+        <TbOption Value="@("Ridge")" />
+    </TbSelect>
+    <output data-testid="page-trail">@(_pageTrail ?? "none")</output>
+    <TbDataGrid TItem="Order" Items="_orders" AriaLabel="Orders" KeySelector="order => order.Id">
+        <TbColumn TItem="Order" Field="order => order.Name" Sortable />
+        <TbColumn TItem="Order" Title="Count" Id="count">
+            <Cell>
+                <TbNumberField TValue="int" AriaLabel="Count" @bind-Value="context.Count" />
+            </Cell>
+        </TbColumn>
+    </TbDataGrid>
+    <output data-testid="counts">@string.Join(",", _orders.Select(order => order.Count))</output>
+</TbStack>
+
+<TbDialog @bind-Open="_open" Title="Edit" Options="Modeless">
+    <TbSelect TValue="string" Label="Trail" @bind-Value="_dialogTrail">
+        <TbOption Value="@("Pine")" />
+        <TbOption Value="@("Ridge")" />
+    </TbSelect>
+    <output data-testid="dialog-trail">@(_dialogTrail ?? "none")</output>
+</TbDialog>
+
+@code {
+    private static readonly DialogOptions Modeless = new() { Modal = false };
+    private readonly List<Order> _orders = [new(1, "Tent"), new(2, "Stove")];
+    private string? _pageTrail;
+    private string? _dialogTrail;
+    private bool _open = true;
+
+    private sealed class Order(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; } = name;
+
+        public int Count { get; set; }
+    }
+}

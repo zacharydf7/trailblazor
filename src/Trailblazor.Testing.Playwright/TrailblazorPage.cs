@@ -9,104 +9,121 @@ namespace Trailblazor.Testing.Playwright;
 public static class TrailblazorPageExtensions
 {
     /// <summary>The Trailblazor helpers for this page.</summary>
-    public static TrailblazorPage Tb(this IPage page) => new(page);
+    public static TrailblazorPage Tb(this IPage page) => new(page.Locator(":root"));
+
+    /// <summary>The Trailblazor helpers for the components inside what this finds, such as an open dialog or a grid
+    /// row, so a label used again elsewhere on the page doesn't get in the way. Dialogs, toasts, announcements and the
+    /// lists a field opens are still found anywhere on the page, but only while the scope is on it; once it's gone,
+    /// as when a dialog you scoped to has closed, use <c>page.Tb()</c> for them.</summary>
+    public static TrailblazorPage Tb(this ILocator scope) => new(scope);
+
+    /// <summary>The Trailblazor helpers for the page in this frame.</summary>
+    public static TrailblazorPage Tb(this IFrameLocator frame) => new(frame.Locator(":root"));
 }
 
-/// <summary>The Trailblazor components on a page.</summary>
-public sealed class TrailblazorPage(IPage page)
+internal static class Scope
+{
+    // What a component's aria-controls names, and what lives at the page's root, such as dialogs, toasts and the
+    // announcer, can be outside a scope, so they're found in the scope's document.
+    public static ILocator Document(ILocator scope) => scope.Locator("xpath=ancestor-or-self::html").First;
+}
+
+/// <summary>The Trailblazor components on a page, or in one part of it.</summary>
+public sealed class TrailblazorPage(ILocator scope)
 {
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label.</summary>
-    public TbSelectLocator Select(string label) => new(page, page.GetByLabel(FieldLabel.Matching(label)));
+    public TbSelectLocator Select(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 
-    /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> this finds, such as one in a row of fields that share
-    /// their labels, as <c>row.GetByLabel("Size")</c>, or one with an id, as <c>page.Locator("#size")</c>.</summary>
-    public TbSelectLocator Select(ILocator field) => new(page, field);
+    /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> this finds, inside the scope, such as one in a row of
+    /// fields that share their labels, as <c>row.GetByLabel("Size")</c>, or one with an id, as
+    /// <c>page.Locator("#size")</c>.</summary>
+    public TbSelectLocator Select(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbAutocomplete</c> with this label.</summary>
-    public TbAutocompleteLocator Autocomplete(string label) => new(page, label);
+    public TbAutocompleteLocator Autocomplete(string label) => new(scope, label);
 
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
-    public TbListBoxLocator ListBox(string label) => new(page, label);
+    public TbListBoxLocator ListBox(string label) => new(scope, label);
 
     /// <summary>The <c>TbColorPicker</c> with this label.</summary>
-    public TbColorPickerLocator ColorPicker(string label) => new(page, page.GetByLabel(FieldLabel.Matching(label)));
+    public TbColorPickerLocator ColorPicker(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 
-    /// <summary>The <c>TbColorPicker</c> this finds, such as one in a row of fields that share their labels, as
-    /// <c>row.GetByLabel("Color")</c>, or one with an id, as <c>page.Locator("#color")</c>.</summary>
-    public TbColorPickerLocator ColorPicker(ILocator field) => new(page, field);
+    /// <summary>The <c>TbColorPicker</c> this finds, inside the scope, such as one in a row of fields that share their
+    /// labels, as <c>row.GetByLabel("Color")</c>, or one with an id, as <c>page.Locator("#color")</c>.</summary>
+    public TbColorPickerLocator ColorPicker(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbFileUpload</c> with this label.</summary>
-    public TbFileUploadLocator FileUpload(string label) => new(page, label);
+    public TbFileUploadLocator FileUpload(string label) => new(scope, label);
 
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
-    public TbDateRangePickerLocator DateRangePicker(string label) => new(page, label);
+    public TbDateRangePickerLocator DateRangePicker(string label) => new(scope, label);
 
     /// <summary>The <c>TbAccordion</c> item with this header.</summary>
-    public TbAccordionItemLocator AccordionItem(string header) => new(page, header);
+    public TbAccordionItemLocator AccordionItem(string header) => new(scope, header);
 
     /// <summary>The <c>TbTooltip</c> around this trigger.</summary>
     public TbTooltipLocator Tooltip(ILocator trigger) => new(trigger);
 
     /// <summary>The <c>TbSlider</c> with this label.</summary>
-    public TbSliderLocator Slider(string label) => new(page, label);
+    public TbSliderLocator Slider(string label) => new(scope, label);
 
     /// <summary>The <c>TbRangeSlider</c> with this label.</summary>
-    public TbRangeSliderLocator RangeSlider(string label) => new(page, label);
+    public TbRangeSliderLocator RangeSlider(string label) => new(scope, label);
 
     /// <summary>The <c>TbDatePicker</c> with this label.</summary>
-    public TbDatePickerLocator DatePicker(string label) => new(page, label);
+    public TbDatePickerLocator DatePicker(string label) => new(scope, label);
 
     /// <summary>The <c>TbDateTimePicker</c> with this label.</summary>
-    public TbDateTimePickerLocator DateTimePicker(string label) => new(page, label);
+    public TbDateTimePickerLocator DateTimePicker(string label) => new(scope, label);
 
     /// <summary>The <c>TbCalendar</c> with this label.</summary>
-    public TbCalendarLocator Calendar(string label) => new(page, label);
+    public TbCalendarLocator Calendar(string label) => new(scope, label);
 
     /// <summary>The <c>TbTreeView</c> with this accessible name.</summary>
-    public TbTreeLocator Tree(string name) => new(page, name);
+    public TbTreeLocator Tree(string name) => new(scope, name);
 
     /// <summary>The <c>TbPagination</c> with this accessible name.</summary>
-    public TbPaginationLocator Pagination(string name) => new(page, name);
+    public TbPaginationLocator Pagination(string name) => new(scope, name);
 
     /// <summary>The <c>TbDataGrid</c> whose table has this accessible name.</summary>
-    public TbGridLocator Grid(string name) => new(page, name);
+    public TbGridLocator Grid(string name) => new(scope, name);
 
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
-    public TbPopoverLocator Popover(string trigger) => new(page, trigger);
+    public TbPopoverLocator Popover(string trigger) => new(scope, trigger);
 
     /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
-    public TbPopconfirmLocator Popconfirm(string trigger) => new(new TbPopoverLocator(page, trigger));
+    public TbPopconfirmLocator Popconfirm(string trigger) => new(new TbPopoverLocator(scope, trigger));
 
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
-    public TbMenuLocator Menu(string trigger) => new(page, trigger);
+    public TbMenuLocator Menu(string trigger) => new(scope, trigger);
 
     /// <summary>The dialog with this title.</summary>
-    public TbDialogLocator Dialog(string title) => new(page, title);
+    public TbDialogLocator Dialog(string title) => new(Scope.Document(scope), title);
 
-    /// <summary>The <c>TbTabs</c> with this accessible name, or the only one on the page when no name is
+    /// <summary>The <c>TbTabs</c> with this accessible name, or the only one in the scope when no name is
     /// given.</summary>
-    public TbTabsLocator Tabs(string? name = null) => new(page, name);
+    public TbTabsLocator Tabs(string? name = null) => new(scope, name);
 
     /// <summary>The toasts on the page.</summary>
-    public TbToastsLocator Toasts => new(page);
+    public TbToastsLocator Toasts => new(Scope.Document(scope));
 
     /// <summary>What the page's components say to screen readers.</summary>
-    public TbAnnouncementsLocator Announcements => new(page);
+    public TbAnnouncementsLocator Announcements => new(Scope.Document(scope));
 
     /// <summary>The <c>TbNumberField</c> with this label.</summary>
-    public TbNumberFieldLocator NumberField(string label) => new(page, label);
+    public TbNumberFieldLocator NumberField(string label) => new(scope, label);
 
     /// <summary>The <c>TbTagInput</c> with this label.</summary>
-    public TbTagInputLocator TagInput(string label) => new(page, label);
+    public TbTagInputLocator TagInput(string label) => new(scope, label);
 
     /// <summary>The <c>TbRichTextEditor</c> with this label.</summary>
-    public TbRichTextEditorLocator RichTextEditor(string label) => new(page, label);
+    public TbRichTextEditorLocator RichTextEditor(string label) => new(scope, label);
 }
 
 /// <summary>A <c>TbPopover</c>, found by its trigger's name.</summary>
-public sealed class TbPopoverLocator(IPage page, string trigger)
+public sealed class TbPopoverLocator(ILocator scope, string trigger)
 {
-    private ILocator Trigger => page.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true });
+    private ILocator Trigger => scope.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true });
 
     /// <summary>Opens the popover, if it isn't open, and returns its panel. On a statically rendered page it opens
     /// natively, without the script.</summary>
@@ -129,7 +146,7 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
         var panel = await PanelAsync();
         if (await panel.IsVisibleAsync())
         {
-            await page.Keyboard.PressAsync("Escape");
+            await scope.Page.Keyboard.PressAsync("Escape");
             await Assertions.Expect(panel).ToBeHiddenAsync();
             await SettledAsync(open: false);
         }
@@ -153,7 +170,7 @@ public sealed class TbPopoverLocator(IPage page, string trigger)
             await Assertions.Expect(Trigger).ToHaveAttributeAsync("data-ready", "");
         }
 
-        return page.Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
+        return Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
     }
 }
 
@@ -172,7 +189,7 @@ public sealed class TbPopconfirmLocator
 }
 
 /// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label or a locator.</summary>
-public sealed class TbSelectLocator(IPage page, ILocator field)
+public sealed class TbSelectLocator(ILocator scope, ILocator field)
 {
     /// <summary>Chooses the options with these names: the one option of a select, or each one not yet chosen in a
     /// multiple select, keeping what is already chosen. A statically rendered select is a native one, and is chosen
@@ -181,7 +198,7 @@ public sealed class TbSelectLocator(IPage page, ILocator field)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
         // The list shares the label, so only the combobox, or the native select it replaces, counts as the field.
-        var control = field.And(page.Locator("[role=combobox], select"));
+        var control = field.And(scope.Locator("[role=combobox], select"));
         if (await NativeSelect.TryChooseAsync(control, options, "select"))
         {
             return;
@@ -191,7 +208,8 @@ public sealed class TbSelectLocator(IPage page, ILocator field)
         await Assertions.Expect(control).ToHaveAttributeAsync("data-ready", "");
         // A filterable select points to the dialog that holds its filter and listbox.
         var controls = await control.GetAttributeAsync("aria-controls");
-        var listbox = page.Locator($"[id='{controls}'][role=listbox], [id='{controls}'] [role=listbox]");
+        var listbox = Scope.Document(scope)
+            .Locator($"[id='{controls}'][role=listbox], [id='{controls}'] [role=listbox]");
         NativeSelect.ThrowIfSeveral(options, await listbox.GetAttributeAsync("aria-multiselectable") == "true",
             "select");
         // The keyboard opens the list, since a click could land on a chip's remove button.
@@ -223,13 +241,13 @@ public sealed class TbSelectLocator(IPage page, ILocator field)
 }
 
 /// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>
-public sealed class TbAutocompleteLocator(IPage page, string label)
+public sealed class TbAutocompleteLocator(ILocator scope, string label)
 {
     /// <summary>Types the text, waits for the suggestions, and chooses the option with this name, waiting until the
     /// field has taken it. A statically rendered field is a plain input, which just gets the text.</summary>
     public async Task ChooseAsync(string text, string option)
     {
-        var input = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input"));
+        var input = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(text);
@@ -239,7 +257,7 @@ public sealed class TbAutocompleteLocator(IPage page, string label)
         // Typing opens the list once the field's script has attached.
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
         await input.FillAsync(text);
-        var listbox = page.Locator($"[id='{await input.GetAttributeAsync("aria-controls")}']");
+        var listbox = Scope.Document(scope).Locator($"[id='{await input.GetAttributeAsync("aria-controls")}']");
         await listbox.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
         // The list closes as the option is clicked, and the server marks the choice a round trip later.
         await Assertions.Expect(listbox.GetByRole(AriaRole.Option,
@@ -248,7 +266,7 @@ public sealed class TbAutocompleteLocator(IPage page, string label)
 }
 
 /// <summary>A <c>TbColorPicker</c>, found by its label or a locator.</summary>
-public sealed partial class TbColorPickerLocator(IPage page, ILocator field)
+public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
 {
     /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and waits until
     /// the field has taken it. A statically rendered field just gets the text.</summary>
@@ -259,7 +277,7 @@ public sealed partial class TbColorPickerLocator(IPage page, ILocator field)
             throw new ArgumentException($"Pass the color as #rrggbb or #rrggbbaa, not {color}.", nameof(color));
         }
 
-        var input = field.And(page.Locator("input"));
+        var input = field.And(scope.Locator("input"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(color);
@@ -281,7 +299,7 @@ public sealed partial class TbColorPickerLocator(IPage page, ILocator field)
 }
 
 /// <summary>A <c>TbFileUpload</c>, found by its label.</summary>
-public sealed class TbFileUploadLocator(IPage page, string label)
+public sealed class TbFileUploadLocator(ILocator scope, string label)
 {
     /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog would, and waits
     /// until the field has taken the choice. A statically rendered field just gets the files.</summary>
@@ -293,7 +311,7 @@ public sealed class TbFileUploadLocator(IPage page, string label)
 
     private async Task ChooseAsync(Func<ILocator, Task> choose)
     {
-        var input = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input[type=file]"));
+        var input = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[type=file]"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await choose(input);
@@ -310,13 +328,13 @@ public sealed class TbFileUploadLocator(IPage page, string label)
 }
 
 /// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>
-public sealed class TbDateRangePickerLocator(IPage page, string label)
+public sealed class TbDateRangePickerLocator(ILocator scope, string label)
 {
     /// <summary>Types both dates in the field's own format and waits until the field has taken them; null leaves a
     /// box empty. A statically rendered field gets them in the browser's own date boxes.</summary>
     public async Task ChooseAsync(DateOnly? start, DateOnly? end)
     {
-        var group = page.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
+        var group = scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
         var boxes = group.Locator("input");
         if (await boxes.First.GetAttributeAsync("data-static") is not null)
         {
@@ -340,13 +358,13 @@ public sealed class TbDateRangePickerLocator(IPage page, string label)
 
 /// <summary>A <c>TbTreeView</c>, found by its accessible name. Rows are named by their path of texts from a root,
 /// such as <c>("North", "Ridge")</c>.</summary>
-public sealed class TbTreeLocator(IPage page, string name)
+public sealed class TbTreeLocator(ILocator scope, string name)
 {
     private int? _depth;
 
     // A tree with no rows is a group, so that it can hold its message.
-    private ILocator Tree => page.GetByRole(AriaRole.Tree, new() { Name = name, Exact = true })
-        .Or(page.GetByRole(AriaRole.Group, new() { Name = name, Exact = true }).And(page.Locator(".tb-tree")));
+    private ILocator Tree => scope.GetByRole(AriaRole.Tree, new() { Name = name, Exact = true })
+        .Or(scope.GetByRole(AriaRole.Group, new() { Name = name, Exact = true }).And(scope.Locator(".tb-tree")));
 
     /// <summary>The row at this path, which must be showing. When several rows match, as rows with the same text
     /// do, it is the first.</summary>
@@ -458,12 +476,12 @@ public sealed class TbTreeLocator(IPage page, string name)
 
         await source.ScrollIntoViewIfNeededAsync();
         var from = await BoxAsync(source, row);
-        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
-        await page.Mouse.DownAsync();
-        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2 + 8, new() { Steps = 2 });
+        await scope.Page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await scope.Page.Mouse.DownAsync();
+        await scope.Page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2 + 8, new() { Steps = 2 });
         var to = await BoxAsync(destination, target);
-        await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * at, new() { Steps = 10 });
-        await page.Mouse.UpAsync();
+        await scope.Page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * at, new() { Steps = 10 });
+        await scope.Page.Mouse.UpAsync();
     }
 
     // A virtualized tree renders only the rows in view, so a row it still has must show, clipped by the tree and the
@@ -629,7 +647,7 @@ public sealed class TbTreeLocator(IPage page, string name)
 }
 
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>
-public sealed class TbListBoxLocator(IPage page, string label)
+public sealed class TbListBoxLocator(ILocator scope, string label)
 {
     /// <summary>Chooses the options with these names: the one option of a list box, or each one not yet chosen in a
     /// multiple list box, keeping what is already chosen. A statically rendered list box is a native list, and is
@@ -637,7 +655,7 @@ public sealed class TbListBoxLocator(IPage page, string label)
     public async Task ChooseAsync(params string[] options)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
-        var field = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("[role=listbox], select"));
+        var field = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("[role=listbox], select"));
         if (await NativeSelect.TryChooseAsync(field, options, "listbox"))
         {
             return;
@@ -663,19 +681,17 @@ public sealed class TbListBoxLocator(IPage page, string label)
 
 /// <summary>A <c>TbDataGrid</c>, found by its table's accessible name. Rows are found by the exact text of one of
 /// their cells, and columns by their header's title.</summary>
-public sealed class TbGridLocator(IPage page, string name)
+public sealed class TbGridLocator(ILocator scope, string name)
 {
     // With cell navigation the table is a grid to assistive technology.
-    private ILocator Table => page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true })
-        .Or(page.GetByRole(AriaRole.Grid, new() { Name = name, Exact = true }));
+    private ILocator Table => scope.GetByRole(AriaRole.Table, new() { Name = name, Exact = true })
+        .Or(scope.GetByRole(AriaRole.Grid, new() { Name = name, Exact = true }));
 
-    private ILocator Root => page.Locator("[data-part=grid]").Filter(new() { Has = Table });
+    private ILocator Root => Table.Locator("xpath=ancestor::*[@data-part='grid'][1]");
 
     /// <summary>The row with a cell whose text is exactly this.</summary>
-    public ILocator Row(string cell) => Table.Locator("tbody tr[data-part=row]").Filter(new()
-    {
-        Has = page.Locator("td", new() { HasTextRegex = new Regex($"^{Regex.Escape(cell)}$") }),
-    });
+    public ILocator Row(string cell) => Table.Locator("tbody tr[data-part=row] > td")
+        .Filter(new() { HasTextRegex = new Regex($"^{Regex.Escape(cell)}$") }).Locator("xpath=parent::tr");
 
     /// <summary>The cell in the column with this title, of the row with a cell whose text is exactly
     /// <paramref name="row"/>.</summary>
@@ -704,7 +720,7 @@ public sealed class TbGridLocator(IPage page, string name)
             }
 
             await header.Locator("[data-part=sort]").ClickAsync();
-            await page.WaitForFunctionAsync($"([header, before]) => ({state})(header) !== before",
+            await scope.Page.WaitForFunctionAsync($"([header, before]) => ({state})(header) !== before",
                 new object[] { await header.ElementHandleAsync(), before });
         }
 
@@ -766,7 +782,7 @@ public sealed class TbGridLocator(IPage page, string name)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
         var panel = await OpenAsync(Menu(column));
-        await new TbSelectLocator(page, panel.Locator("[role=combobox]")).ChooseAsync(condition);
+        await new TbSelectLocator(scope, panel.Locator("[role=combobox]")).ChooseAsync(condition);
         if (await panel.Locator(ValueSelector).CountAsync() > 0)
         {
             await panel.Locator(ValueSelector).FillAsync(text);
@@ -795,7 +811,7 @@ public sealed class TbGridLocator(IPage page, string name)
 
             if (choices.Length > 0)
             {
-                await new TbSelectLocator(page, cell.Locator("[role=combobox]")).ChooseAsync(choices);
+                await new TbSelectLocator(scope, cell.Locator("[role=combobox]")).ChooseAsync(choices);
             }
 
             await RowsLoadedAsync();
@@ -862,7 +878,7 @@ public sealed class TbGridLocator(IPage page, string name)
     {
         var pages = Root.Locator("[data-part=pager] nav");
         await Assertions.Expect(pages).ToHaveAttributeAsync("aria-label", new Regex("."));
-        await new TbPaginationLocator(page, (await pages.GetAttributeAsync("aria-label"))!).GoToPageAsync(number);
+        await new TbPaginationLocator(scope, (await pages.GetAttributeAsync("aria-label"))!).GoToPageAsync(number);
         await RowsLoadedAsync();
     }
 
@@ -873,9 +889,9 @@ public sealed class TbGridLocator(IPage page, string name)
 }
 
 /// <summary>A <c>TbPagination</c>, found by its accessible name.</summary>
-public sealed class TbPaginationLocator(IPage page, string name)
+public sealed class TbPaginationLocator(ILocator scope, string name)
 {
-    private ILocator Navigation => page.GetByRole(AriaRole.Navigation, new() { Name = name, Exact = true });
+    private ILocator Navigation => scope.GetByRole(AriaRole.Navigation, new() { Name = name, Exact = true });
 
     /// <summary>Goes to this page and waits until it is current. A compact pagination gets the number typed into its
     /// box; otherwise the page's button is clicked, after stepping toward it through the shown pages when it isn't

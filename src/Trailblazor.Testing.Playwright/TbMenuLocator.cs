@@ -3,10 +3,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbMenu</c>, found by its trigger's name.</summary>
-public sealed class TbMenuLocator(IPage page, string trigger)
+public sealed class TbMenuLocator(ILocator scope, string trigger)
 {
-    private ILocator Trigger => page.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true })
-        .And(page.Locator("[aria-haspopup=menu]"));
+    private ILocator Trigger => scope.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true })
+        .And(scope.Locator("[aria-haspopup=menu]"));
 
     /// <summary>Opens the menu and clicks the item with this name, through the submenus named before it, as in
     /// <c>ChooseAsync("Export", "PDF")</c>. Waits until the menu has closed or, for a <c>KeepOpen</c> item, until it
@@ -22,7 +22,7 @@ public sealed class TbMenuLocator(IPage page, string trigger)
             await Assertions.Expect(Trigger).ToHaveAttributeAsync("data-ready", "");
         }
 
-        var menu = page.Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
+        var menu = Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
         if (!await menu.IsVisibleAsync())
         {
             // A data-open left from the last open would pass the wait below before this open's items are drawn.
@@ -52,7 +52,7 @@ public sealed class TbMenuLocator(IPage page, string trigger)
             }
 
             await Assertions.Expect(opener).ToHaveAttributeAsync("aria-expanded", "true");
-            list = page.Locator($"[id='{await opener.GetAttributeAsync("aria-controls")}']");
+            list = Scope.Document(scope).Locator($"[id='{await opener.GetAttributeAsync("aria-controls")}']");
         }
 
         var item = Item(list, path[^1]);

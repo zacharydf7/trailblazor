@@ -5,10 +5,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbDatePicker</c>, found by its label.</summary>
-public sealed class TbDatePickerLocator(IPage page, string label)
+public sealed class TbDatePickerLocator(ILocator scope, string label)
 {
     /// <summary>The box the date is typed in.</summary>
-    public ILocator Input => page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input"));
+    public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
 
     /// <summary>Types the date in the field's own format and waits until the field has taken it; null clears it. A
     /// statically rendered field gets it in the browser's own date box.</summary>

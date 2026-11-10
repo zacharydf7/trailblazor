@@ -4,10 +4,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbSlider</c>, found by its label.</summary>
-public sealed class TbSliderLocator(IPage page, string label)
+public sealed class TbSliderLocator(ILocator scope, string label)
 {
     /// <summary>The slider's range input.</summary>
-    public ILocator Input => page.GetByRole(AriaRole.Slider, new() { NameRegex = FieldLabel.Matching(label) });
+    public ILocator Input => scope.GetByRole(AriaRole.Slider, new() { NameRegex = FieldLabel.Matching(label) });
 
     /// <summary>Moves the slider to this value and waits until the field has taken it. A value between steps lands on
     /// the nearest step, as it would for the user. A statically rendered slider just moves.</summary>
@@ -18,10 +18,12 @@ public sealed class TbSliderLocator(IPage page, string label)
 }
 
 /// <summary>A <c>TbRangeSlider</c>, found by its label.</summary>
-public sealed class TbRangeSliderLocator(IPage page, string label)
+public sealed class TbRangeSliderLocator(ILocator scope, string label)
 {
-    private ILocator Field => page.Locator(".tb-slider--range")
-        .Filter(new() { Has = page.Locator("label", new() { HasTextRegex = FieldLabel.Matching(label) }) });
+    // Found from its label upward, since a Has filter on the scope would look for the scope inside each match.
+    private ILocator Field => scope.Locator(".tb-slider--range label")
+        .Filter(new() { HasTextRegex = FieldLabel.Matching(label) })
+        .Locator("xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' tb-slider--range ')][1]");
 
     /// <summary>The thumb for the start of the range.</summary>
     public ILocator Start => Field.Locator("[data-part=start-thumb]");

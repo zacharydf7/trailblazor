@@ -3,13 +3,13 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbNumberField</c>, found by its label.</summary>
-public sealed class TbNumberFieldLocator(IPage page, string label)
+public sealed class TbNumberFieldLocator(ILocator scope, string label)
 {
     /// <summary>Types this text into the field and leaves it, which commits it. A statically rendered field just gets
     /// the text.</summary>
     public async Task EnterAsync(string text)
     {
-        var input = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input"));
+        var input = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(text);

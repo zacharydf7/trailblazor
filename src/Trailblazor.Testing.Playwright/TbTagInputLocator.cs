@@ -4,16 +4,16 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbTagInput</c>, found by its label.</summary>
-public sealed class TbTagInputLocator(IPage page, string label)
+public sealed class TbTagInputLocator(ILocator scope, string label)
 {
     /// <summary>The input that tags are typed into.</summary>
-    public ILocator Input => page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input"));
+    public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
 
     /// <summary>The tags, in order, for assertions such as
     /// <c>Expect(tags.Tags).ToHaveTextAsync(["Shade", "Water"])</c>.</summary>
     public ILocator Tags => Field.Locator("[data-part=tag]");
 
-    private ILocator Field => page.Locator("[data-part=control]").Filter(new() { Has = Input });
+    private ILocator Field => Input.Locator("xpath=ancestor::*[@data-part='control'][1]");
 
     /// <summary>Types this text and presses Enter, which adds it as a tag, once the field's keys work.</summary>
     public async Task AddAsync(string text)

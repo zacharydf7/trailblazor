@@ -3,10 +3,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>
-public sealed class TbRichTextEditorLocator(IPage page, string label)
+public sealed class TbRichTextEditorLocator(ILocator scope, string label)
 {
     /// <summary>The editing area, for typing into and reading its text.</summary>
-    public ILocator Input => page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("[contenteditable]"));
+    public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("[contenteditable]"));
 
     /// <summary>Replaces the editor's text with this HTML, as pasting it over everything does, and leaves the editor,
     /// which commits it. The editor keeps only the formats it allows, as with any paste.</summary>

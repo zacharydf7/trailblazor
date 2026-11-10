@@ -246,6 +246,16 @@
             Reference <code>Trailblazor.Testing.Playwright</code>, once it's available to install, and
             <code>page.Tb()</code> drives components the way a person does. Each helper waits for its component to be ready before it clicks or types.
         </TbText>
+        <TbText>
+            When a label is used more than once, as in an open dialog over a form or in every row of a grid, call
+            <code>Tb()</code> on what holds the component you want, such as <code>dialog.Tb()</code> or
+            <code>row.Tb()</code>, and the helpers look only inside it. Dialogs, toasts, announcements and the lists a
+            field opens are still found anywhere on the page, so <code>row.Tb().Dialog("Remove order")</code> finds the
+            dialog the row opened. That works only while the scope is still on the page: once it's gone, as when a
+            dialog you scoped to has closed, use <code>page.Tb()</code> for them. For a page inside an iframe, use
+            <code>page.FrameLocator(...).Tb()</code>.
+        </TbText>
+        <CodeBlock Label="Scoping the helpers" Code="@Scoped" />
         <div class="docs-api" tabindex="0" role="region" aria-label="Playwright helpers">
             <table>
                 <thead>
@@ -519,6 +529,12 @@
         new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows."),
     ];
+
+    private const string Scoped = """
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Edit order" });
+        await dialog.Tb().Select("Size").ChooseAsync("Large");
+        await page.Tb().Grid("Orders").Row("Tent").Tb().NumberField("Count").EnterAsync("2");
+        """;
 
     private const string SlowLinkPage = """
         await page.UseSlowLinkAsync(TimeSpan.FromMilliseconds(150));

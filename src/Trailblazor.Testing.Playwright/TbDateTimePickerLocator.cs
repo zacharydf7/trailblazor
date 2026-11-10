@@ -5,10 +5,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbDateTimePicker</c>, found by its label.</summary>
-public sealed class TbDateTimePickerLocator(IPage page, string label)
+public sealed class TbDateTimePickerLocator(ILocator scope, string label)
 {
     /// <summary>The group that holds the date box, the calendar button and the time box.</summary>
-    public ILocator Group => page.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) });
+    public ILocator Group => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) });
 
     /// <summary>The box the date is typed in.</summary>
     public ILocator DateInput => Group.Locator("[data-part=date-input]");
@@ -20,7 +20,7 @@ public sealed class TbDateTimePickerLocator(IPage page, string label)
     /// clears the date. A statically rendered field gets the value in the browser's own date and time box.</summary>
     public async Task ChooseAsync(DateTime? value)
     {
-        var staticBox = page.GetByLabel(FieldLabel.Matching(label)).And(page.Locator("input[data-static]"));
+        var staticBox = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[data-static]"));
         if (await staticBox.CountAsync() > 0)
         {
             await staticBox.FillAsync(

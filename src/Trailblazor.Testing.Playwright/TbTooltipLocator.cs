@@ -24,7 +24,7 @@ public sealed class TbTooltipLocator(ILocator trigger)
         }
 
         // Close a shown bubble, which can cover the trigger; Escape with none open would close an enclosing dialog.
-        var shown = trigger.Page.Locator(".tb-tooltip:popover-open");
+        var shown = Scope.Document(trigger).Locator(".tb-tooltip:popover-open");
         if (await shown.CountAsync() > 0)
         {
             await trigger.Page.Keyboard.PressAsync("Escape");
