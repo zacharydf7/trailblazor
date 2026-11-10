@@ -140,6 +140,51 @@ export function createDataGrid(table) {
 
     const navigation = createCellNavigation(table, scroll, rowHeight, waitFor);
 
+    // Virtualize can measure rows after a jump and redraw them elsewhere, so a row scrolled to is kept in view until
+    // the rows settle, the person scrolls, clicks or presses a key, or another row is asked for, at most five seconds.
+    let stopKeeping = () => {};
+    let scrolls = 0;
+    const keepInView = (find, index) => {
+        const place = () => {
+            const row = find();
+            if (row) {
+                row.scrollIntoView({ block: 'nearest' });
+                return;
+            }
+
+            const anchor = [...table.tBodies[0].rows].find(other => other.hasAttribute('aria-rowindex'));
+            if (anchor) {
+                const away = table.tHead.rows.length + index + 1 - Number(anchor.getAttribute('aria-rowindex'));
+                scroll.scrollTop += anchor.getBoundingClientRect().top - scroll.getBoundingClientRect().top
+                    - table.tHead.offsetHeight + away * rowHeight();
+            }
+        };
+        const inputs = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+        let quiet;
+        const stop = () => {
+            watch.disconnect();
+            clearTimeout(quiet);
+            clearTimeout(limit);
+            inputs.forEach(name => scroll.removeEventListener(name, stop));
+            if (stopKeeping === stop) {
+                stopKeeping = () => {};
+            }
+        };
+        const limit = setTimeout(stop, 5000);
+        const settle = () => {
+            clearTimeout(quiet);
+            quiet = setTimeout(stop, 1000);
+        };
+        const watch = new MutationObserver(() => {
+            place();
+            settle();
+        });
+        watch.observe(table.tBodies[0], { childList: true, subtree: true, attributeFilter: ['data-key', 'style'] });
+        inputs.forEach(name => scroll.addEventListener(name, stop, { passive: true }));
+        stopKeeping = stop;
+        settle();
+    };
+
     // Enter in a filter's input mustn't also submit a page's form around the grid. An Enter a widget already canceled,
     // such as an autocomplete choosing an option, is left to the widget.
     const keepPageFormUnsubmitted = event => {
@@ -212,15 +257,26 @@ export function createDataGrid(table) {
         },
         // A virtualized grid draws only the rows in view, so it scrolls near a row's place before the row is drawn.
         async scrollToRow(id, index) {
+            const scrolling = ++scrolls;
+            stopKeeping();
             const find = () => [...table.tBodies[0].rows].find(row => row.dataset.key === id);
             if (!find()) {
                 scroll.scrollTop = index * rowHeight();
             }
 
             const row = await waitFor(find);
+            if (scrolling !== scrolls) {
+                return;
+            }
+
             row?.scrollIntoView({ block: 'nearest' });
+            if (row) {
+                keepInView(find, index);
+            }
         },
         dispose() {
+            scrolls++;
+            stopKeeping();
             observer.disconnect();
             resizes.disconnect();
             names.disconnect();

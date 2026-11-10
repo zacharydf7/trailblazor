@@ -3,7 +3,7 @@ using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
-// Keyboard tests of the components needing the most round trips, rerun with each message delayed as on a slow link.
+// Tests of the components needing the most round trips, rerun with each message delayed as on a slow link.
 internal static class SlowLinkDelay
 {
     public static readonly TimeSpan Value = TimeSpan.FromMilliseconds(150);
@@ -40,6 +40,11 @@ public class SlowLinkGridSelectTests(BrowserFixture fixture) : GridSelectTests(f
 }
 
 public class SlowLinkGridEditKeysTests(BrowserFixture fixture) : GridEditKeysTests(fixture)
+{
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
+}
+
+public class SlowLinkGridScrollTests(BrowserFixture fixture) : GridScrollTests(fixture)
 {
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }

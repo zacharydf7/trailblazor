@@ -437,22 +437,6 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task VirtualRows_ShouldScrollToARowClearOfTheHeader_WhenItIsntDrawnYet(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/data-grid");
-        var table = Table(page, "Readings");
-        await Expect(table.Locator("tbody tr[data-part=row]").First).ToBeVisibleAsync();
-        await Expect(table.Locator("tr[data-key='5000']")).ToHaveCountAsync(0);
-
-        await page.GetByRole(AriaRole.Button, new() { Name = "Go to reading 5000" }).ClickAsync();
-
-        var row = table.Locator("tr[data-key='5000']");
-        await Expect(row).ToBeInViewportAsync();
-        Assert.True(await row.EvaluateAsync<bool>("row => { const box = row.getBoundingClientRect();"
-            + " return row.contains(document.elementFromPoint(box.left + 4, box.top + 4)); }"));
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task VirtualRows_ShouldLoadOnlyTheRowsInViewAndAgainWhenSorted_WhenAProviderGivesThem(string browser)
     {
         var page = await OpenAsync(browser, "/virtual-grid");
