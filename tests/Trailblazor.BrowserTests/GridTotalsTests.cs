@@ -22,7 +22,7 @@ public class GridTotalsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal("Count 6", await grid.TotalAsync("Name"));
         Assert.Equal("Sum 49.9", await grid.TotalAsync("Length (km)"));
         Assert.Equal("Max 1,250", await grid.TotalAsync("Climb (m)"));
-        Assert.Equal("50% done", await grid.TotalAsync("Done"));
+        Assert.Equal("3 of 6 done", await grid.TotalAsync("Done"));
         Assert.Null(await grid.TotalAsync("Region"));
     }
 

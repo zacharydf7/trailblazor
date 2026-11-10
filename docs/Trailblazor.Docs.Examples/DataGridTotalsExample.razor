@@ -22,7 +22,7 @@
     ];
 
     private static object? DoneShare(IReadOnlyList<Trail> trails) =>
-        trails.Count == 0 ? null : $"{trails.Count(trail => trail.Done) / (double)trails.Count:P0}";
+        trails.Count == 0 ? null : $"{trails.Count(trail => trail.Done)} of {trails.Count}";
 
     private sealed record Trail(int Id, string Name, string Region, double LengthKm, int ClimbM, bool Done);
 }
