@@ -47,6 +47,8 @@ export function createCalendar(grid, events, firstDayOfWeek) {
     // Set while a cell stands in for one not yet shown, so taking focus doesn't change where the keys are heading.
     let standingIn = false;
     let view = grid.dataset.view;
+    // Changes when the server shows the chosen date again, such as when a date picker's popup closes.
+    let showing = grid.dataset.shown;
 
     const cell = iso => grid.querySelector(`[data-date="${iso}"]`);
     const current = () => grid.querySelector('[data-date][tabindex="0"]');
@@ -93,9 +95,10 @@ export function createCalendar(grid, events, firstDayOfWeek) {
     };
     // A render can remove or reuse the focused cell, or show another view, so focus goes to the cell it belongs on.
     const renders = new MutationObserver(() => {
-        const viewChanged = grid.dataset.view !== view;
+        const viewChanged = grid.dataset.view !== view || grid.dataset.shown !== showing;
         if (viewChanged) {
             view = grid.dataset.view;
+            showing = grid.dataset.shown;
             intended = null;
         }
 
@@ -112,7 +115,7 @@ export function createCalendar(grid, events, firstDayOfWeek) {
             standingIn = false;
         }
     });
-    renders.observe(grid, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-date', 'data-view'] });
+    renders.observe(grid, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-date', 'data-view', 'data-shown'] });
 
     const onFocusIn = event => {
         const focused = event.target.closest('[data-date]');

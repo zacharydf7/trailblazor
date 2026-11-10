@@ -15,6 +15,10 @@ const Trailblazor.TbStrings.CarouselSlide = "Carousel.Slide" -> string!
 const Trailblazor.TbStrings.CarouselSlideOf = "Carousel.SlideOf" -> string!
 const Trailblazor.TbStrings.CarouselStart = "Carousel.Start" -> string!
 const Trailblazor.TbStrings.CarouselStop = "Carousel.Stop" -> string!
+const Trailblazor.TbStrings.DatePickerBadDate = "DatePicker.BadDate" -> string!
+const Trailblazor.TbStrings.DatePickerClear = "DatePicker.Clear" -> string!
+const Trailblazor.TbStrings.DatePickerOpen = "DatePicker.Open" -> string!
+const Trailblazor.TbStrings.DatePickerUnavailable = "DatePicker.Unavailable" -> string!
 const Trailblazor.TbStrings.TagInputAdded = "TagInput.Added" -> string!
 const Trailblazor.TbStrings.TagInputDuplicate = "TagInput.Duplicate" -> string!
 const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
@@ -27,6 +31,9 @@ override Trailblazor.CalendarLabels.ToString() -> string!
 override Trailblazor.CarouselLabels.Equals(object? obj) -> bool
 override Trailblazor.CarouselLabels.GetHashCode() -> int
 override Trailblazor.CarouselLabels.ToString() -> string!
+override Trailblazor.DatePickerLabels.Equals(object? obj) -> bool
+override Trailblazor.DatePickerLabels.GetHashCode() -> int
+override Trailblazor.DatePickerLabels.ToString() -> string!
 override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
 override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
@@ -38,6 +45,8 @@ override Trailblazor.TbCalendar<TDate>.OnParametersSetAsync() -> System.Threadin
 override Trailblazor.TbCarousel.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbCarousel.OnParametersSet() -> void
 override Trailblazor.TbCarouselSlide.OnInitialized() -> void
+override Trailblazor.TbDatePicker<TDate>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbDatePicker<TDate>.OnInitialized() -> void
 override Trailblazor.TbEmptyState.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbEmptyState.OnParametersSet() -> void
 override Trailblazor.TbKbd.OnParametersSet() -> void
@@ -51,6 +60,8 @@ static Trailblazor.CalendarLabels.operator !=(Trailblazor.CalendarLabels? left, 
 static Trailblazor.CalendarLabels.operator ==(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CarouselLabels.operator !=(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
 static Trailblazor.CarouselLabels.operator ==(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
+static Trailblazor.DatePickerLabels.operator !=(Trailblazor.DatePickerLabels? left, Trailblazor.DatePickerLabels? right) -> bool
+static Trailblazor.DatePickerLabels.operator ==(Trailblazor.DatePickerLabels? left, Trailblazor.DatePickerLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 Trailblazor.CalendarLabels
@@ -89,6 +100,20 @@ Trailblazor.CarouselLabels.Start.get -> string?
 Trailblazor.CarouselLabels.Start.init -> void
 Trailblazor.CarouselLabels.Stop.get -> string?
 Trailblazor.CarouselLabels.Stop.init -> void
+Trailblazor.DatePickerLabels
+Trailblazor.DatePickerLabels.<Clone>$() -> Trailblazor.DatePickerLabels!
+Trailblazor.DatePickerLabels.BadDate.get -> string?
+Trailblazor.DatePickerLabels.BadDate.init -> void
+Trailblazor.DatePickerLabels.Calendar.get -> Trailblazor.CalendarLabels?
+Trailblazor.DatePickerLabels.Calendar.init -> void
+Trailblazor.DatePickerLabels.Clear.get -> string?
+Trailblazor.DatePickerLabels.Clear.init -> void
+Trailblazor.DatePickerLabels.DatePickerLabels() -> void
+Trailblazor.DatePickerLabels.Equals(Trailblazor.DatePickerLabels? other) -> bool
+Trailblazor.DatePickerLabels.Open.get -> string?
+Trailblazor.DatePickerLabels.Open.init -> void
+Trailblazor.DatePickerLabels.Unavailable.get -> string?
+Trailblazor.DatePickerLabels.Unavailable.init -> void
 Trailblazor.TagAddEventArgs
 Trailblazor.TagAddEventArgs.TagAddEventArgs() -> void
 Trailblazor.TagAddEventArgs.Text.get -> string!
@@ -159,6 +184,8 @@ Trailblazor.TbCalendar<TDate>.Month.get -> TDate?
 Trailblazor.TbCalendar<TDate>.Month.set -> void
 Trailblazor.TbCalendar<TDate>.MonthChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TDate?>
 Trailblazor.TbCalendar<TDate>.MonthChanged.set -> void
+Trailblazor.TbCalendar<TDate>.OnDayPicked.get -> Microsoft.AspNetCore.Components.EventCallback<TDate>
+Trailblazor.TbCalendar<TDate>.OnDayPicked.set -> void
 Trailblazor.TbCalendar<TDate>.TbCalendar() -> void
 Trailblazor.TbCarousel
 Trailblazor.TbCarousel.AriaLabel.get -> string!
@@ -186,6 +213,26 @@ Trailblazor.TbCarouselSlide.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbCarouselSlide.ChildContent.set -> void
 Trailblazor.TbCarouselSlide.Dispose() -> void
 Trailblazor.TbCarouselSlide.TbCarouselSlide() -> void
+Trailblazor.TbDatePicker<TDate>
+Trailblazor.TbDatePicker<TDate>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbDatePicker<TDate>.Classes.set -> void
+Trailblazor.TbDatePicker<TDate>.Clearable.get -> bool
+Trailblazor.TbDatePicker<TDate>.Clearable.set -> void
+Trailblazor.TbDatePicker<TDate>.Culture.get -> System.Globalization.CultureInfo?
+Trailblazor.TbDatePicker<TDate>.Culture.set -> void
+Trailblazor.TbDatePicker<TDate>.Format.get -> string?
+Trailblazor.TbDatePicker<TDate>.Format.set -> void
+Trailblazor.TbDatePicker<TDate>.IsDateDisabled.get -> System.Func<TDate, bool>?
+Trailblazor.TbDatePicker<TDate>.IsDateDisabled.set -> void
+Trailblazor.TbDatePicker<TDate>.Labels.get -> Trailblazor.DatePickerLabels!
+Trailblazor.TbDatePicker<TDate>.Labels.set -> void
+Trailblazor.TbDatePicker<TDate>.Max.get -> TDate?
+Trailblazor.TbDatePicker<TDate>.Max.set -> void
+Trailblazor.TbDatePicker<TDate>.Min.get -> TDate?
+Trailblazor.TbDatePicker<TDate>.Min.set -> void
+Trailblazor.TbDatePicker<TDate>.Placeholder.get -> string?
+Trailblazor.TbDatePicker<TDate>.Placeholder.set -> void
+Trailblazor.TbDatePicker<TDate>.TbDatePicker() -> void
 Trailblazor.TbEmptyState
 Trailblazor.TbEmptyState.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbEmptyState.Actions.set -> void
@@ -3054,6 +3101,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbChipGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbColorPicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDataGrid<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbDatePicker<TDate>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDateRangePicker<TDate>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDialogActions.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDialogDescription.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

@@ -9,6 +9,10 @@ Trailblazor.Testing.Playwright.TbCalendarLocator.TbCalendarLocator(Microsoft.Pla
 Trailblazor.Testing.Playwright.TbColorPickerLocator
 Trailblazor.Testing.Playwright.TbColorPickerLocator.ChooseAsync(string! color) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbColorPickerLocator.TbColorPickerLocator(Microsoft.Playwright.IPage! page, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TbDatePickerLocator
+Trailblazor.Testing.Playwright.TbDatePickerLocator.ChooseAsync(System.DateOnly? date) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDatePickerLocator.Input.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbDatePickerLocator.TbDatePickerLocator(Microsoft.Playwright.IPage! page, string! label) -> void
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.TbDateRangePickerLocator(Microsoft.Playwright.IPage! page, string! label) -> void
@@ -76,6 +80,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Autocomplete(string! label) -> Tr
 Trailblazor.Testing.Playwright.TrailblazorPage.Calendar(string! label) -> Trailblazor.Testing.Playwright.TbCalendarLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbColorPickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(string! label) -> Trailblazor.Testing.Playwright.TbColorPickerLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.DatePicker(string! label) -> Trailblazor.Testing.Playwright.TbDatePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.DateRangePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateRangePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Dialog(string! title) -> Trailblazor.Testing.Playwright.TbDialogLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.FileUpload(string! label) -> Trailblazor.Testing.Playwright.TbFileUploadLocator!

@@ -93,6 +93,20 @@ public class TbCalendarTests : BunitContext
     }
 
     [Fact]
+    public async Task OnDayPicked_ShouldBeRaised_WhenTheChosenDayIsPickedAgain()
+    {
+        var picked = new List<DateOnly>();
+        var cut = RenderCalendar(June3, parameters => parameters.Add(calendar => calendar.OnDayPicked,
+            (DateOnly date) => picked.Add(date)));
+
+        await Cell(cut, "2026-06-03").ClickAsync(new MouseEventArgs());
+        await Cell(cut, "2026-06-25").ClickAsync(new MouseEventArgs());
+
+        Assert.Equal([June3, new DateOnly(2026, 6, 25)], picked);
+        Assert.Equal([new DateOnly(2026, 6, 25)], _changes);
+    }
+
+    [Fact]
     public async Task Click_ShouldLeaveTheDateAlone_WhenTheDayCantBeChosen()
     {
         var cut = RenderCalendar(June3, parameters => parameters.Add(calendar => calendar.Max, new DateOnly(2026, 6, 20))

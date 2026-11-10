@@ -4493,6 +4493,94 @@ public static class ExampleCatalog
                 + "and waits until the calendar has taken it. In bUnit, `cut.Tb().Calendar(\"Hike date\")"
                 + ".ChooseAsync(date)` from `Trailblazor.Testing` does the same.",
         },
+        new("date-picker", "Date picker", ExampleCategory.Inputs,
+            "Chooses one date, typed in a box or picked in a calendar that opens beside it.")
+        {
+            WhenToUse =
+            [
+                "Use it for one date in a form, when seeing it in a calendar helps someone choose.",
+            ],
+            WhenNotToUse =
+            [
+                "For a start and an end date, use a [date range picker](components/date-range-picker).",
+                "When the month itself should stay on the page, use a [calendar](components/calendar).",
+                "For a date people know by heart, such as a birthday, use a [text field](components/text-field) bound "
+                    + "to a `DateOnly`.",
+            ],
+            Related = ["calendar", "date-range-picker", "text-field", "form"],
+            Pattern = new("date picker dialog",
+                "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/"),
+            RightToLeftKeys = "Left moves to the next day, month or year, and Right to the previous one.",
+            Sections =
+            [
+                new("value", "Value", "`@bind-Value` holds the date. It can be typed in the box, in the field's format, "
+                    + "or picked in the calendar, which opens on the chosen date. `TDate` can be `DateOnly` or "
+                    + "`DateTime`; time zones are never converted, a date left alone keeps its time, and a newly typed "
+                    + "or picked date is midnight.",
+                    typeof(DatePickerExample)),
+                new("limits", "Dates that can't be chosen", "`Min`, `Max` and `IsDateDisabled` set which dates can be "
+                    + "chosen. Typing any other date shows a message, and the calendar marks those days as "
+                    + "unavailable. `Clearable` shows a button that clears the date.", typeof(DatePickerLimitsExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the date from changing: the "
+                    + "box can't be edited and the calendar button turns off. `Disabled` takes the field out of the tab "
+                    + "order and the post.", typeof(DatePickerStatesExample)),
+            ],
+            Api = [typeof(TbDatePicker<>), typeof(DatePickerLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the calendar with focus on the chosen date, or today.")
+                    { When = "On the calendar button" },
+                new(["Left", "Right", "Up", "Down"], "Moves by a day or a week, as in a "
+                    + "[calendar](components/calendar#accessibility).") { When = "In the calendar" },
+                new(["Enter", "Space"], "Picks the day, closes the calendar and returns focus to the button.")
+                    { When = "In the calendar" },
+                new(["Escape"], "Closes the calendar without changing the date.") { When = "In the calendar" },
+                new(["Tab"], "Moves through the calendar's controls, and closes it as focus leaves.")
+                    { When = "In the calendar" },
+            ],
+            Labeling =
+            [
+                "The box is named by the `Label`, and shows the format as its placeholder unless `Placeholder` sets "
+                    + "another.",
+                "The calendar button and the calendar are named \"Choose a date\", or by `Labels.Open`.",
+            ],
+            Announcements =
+            [
+                "A date that can't be read or chosen shows a message that is read out once, as on a "
+                    + "[text field](components/text-field).",
+            ],
+            Accessibility =
+            [
+                "The popover holds a [calendar](components/calendar) and opens on the side with more room, so the "
+                    + "keys, views and forced-colors look are the calendar's.",
+            ],
+            AppDuties =
+            [
+                "A `Placeholder` replaces the format shown in the empty box, but the box still reads dates only in that "
+                    + "format, so give the format in `HelperText`.",
+            ],
+            Notes =
+            [
+                new("`@ref` the picker and call `FocusAsync()` to move focus to the box."),
+            ],
+            BeforeInteractive =
+            [
+                "It shows the browser's own date box, so a static form still posts the date.",
+            ],
+            Target = new("textbox", "Start date"),
+            Blocks = ["tb-field"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The box the date is typed in."),
+                new("clear", "The button that clears the date."),
+                new("popover", "The calendar button and the calendar it opens."),
+            ],
+            TestingTip = "`await page.Tb().DatePicker(\"Start date\").ChooseAsync(date)` from "
+                + "`Trailblazor.Testing.Playwright` types the date in the field's own format and waits until the field "
+                + "has taken it. In bUnit, `Change(\"6/12/2026\")` on the `input` sets it; write the date in the field's "
+                + "format, as here for en-US.",
+        },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
         {

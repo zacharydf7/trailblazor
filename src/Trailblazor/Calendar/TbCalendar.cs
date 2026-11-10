@@ -24,6 +24,9 @@ public partial class TbCalendar<TDate> : IAsyncDisposable where TDate : struct
     // The month last shown or reported, so MonthChanged is raised once for each.
     private DateOnly? _reportedMonth;
     private bool _moved;
+    // Counts ShowChosen calls, so the grid's data-shown changes and the script moves focus in the grid to the shown
+    // day.
+    private int _shown;
     private bool _disposed;
 
     private enum View { Days, Months, Years }
@@ -50,6 +53,12 @@ public partial class TbCalendar<TDate> : IAsyncDisposable where TDate : struct
     /// it.</summary>
     [Parameter]
     public Func<TDate, bool>? IsDateDisabled { get; set; }
+
+    /// <summary>Raised when a day that can be chosen is picked, even the one already chosen, so a popup holding
+    /// the calendar can close. <see cref="TbFieldBase{TValue}.ValueChanged"/> is raised only for a new date.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TDate> OnDayPicked { get; set; }
 
     /// <summary>Content shown under a day's number, such as a dot for a day with events. Screen readers hear its text
     /// after the date.</summary>
@@ -229,6 +238,7 @@ public partial class TbCalendar<TDate> : IAsyncDisposable where TDate : struct
             var value = Keep(day, Value);
             _lastValue = value;
             await SetValueAsync(value);
+            await OnDayPicked.InvokeAsync(value!.Value);
         }
 
         await ReportMonthAsync();
@@ -247,6 +257,15 @@ public partial class TbCalendar<TDate> : IAsyncDisposable where TDate : struct
         _view = view;
         _focus = Clamp(SameDayIn(_view == View.Days ? date : new DateOnly(date.Year, _focus.Month, 1), _focus.Day));
         await ReportMonthAsync();
+    }
+
+    // Shows the chosen date's month again, or today's, such as each time a date picker's popup closes.
+    internal void ShowChosen()
+    {
+        _view = View.Days;
+        _focus = Clamp(Chosen ?? Today);
+        _shown++;
+        StateHasChanged();
     }
 
     private void ZoomOut()
@@ -293,8 +312,7 @@ public partial class TbCalendar<TDate> : IAsyncDisposable where TDate : struct
         await MonthChanged.InvokeAsync(FromDate<TDate>(month));
     }
 
-    private bool IsUnavailable(DateOnly date) =>
-        date < MinDate || date > MaxDate || (IsDateDisabled?.Invoke(FromDate<TDate>(date)) ?? false);
+    private bool IsUnavailable(DateOnly date) => CalendarDates.IsUnavailable(date, Min, Max, IsDateDisabled);
 
     private bool IsUnavailableMonth(DateOnly month) => month < FirstOfMonth(MinDate) || month > MaxDate;
 

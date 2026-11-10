@@ -1,5 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
-import { firstTabbable } from '../Trailblazor.Primitives/focus-scope.js';
+import { firstTabbable, markedTarget } from '../Trailblazor.Primitives/focus-scope.js';
 
 const showDelay = 300;
 // The pointer crosses the gap between the trigger and the panel; this keeps the panel open on the way (WCAG 1.4.13).
@@ -25,7 +25,10 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     // The replay at attach and a toggle still queued from before it can both report one opening.
     let shown = false;
 
-    const takeFocus = () => (firstTabbable(panel) ?? panel).focus();
+    // A part marked data-tb-popover-focus, such as a date picker's calendar grid, takes focus instead of the first
+    // tabbable control. It isn't autofocus, which a dialog or focus scope around a closed popover would look for.
+    const focusMark = () => panel.querySelector('[data-tb-popover-focus]');
+    const takeFocus = () => ((focusMark() && markedTarget(focusMark())) ?? firstTabbable(panel) ?? panel).focus();
     const onBeforeToggle = event => {
         // The browser gives focus back to what had it when the panel opened, which after a hover isn't the trigger.
         if (event.newState === 'closed') {

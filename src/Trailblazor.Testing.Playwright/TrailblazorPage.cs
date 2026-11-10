@@ -41,6 +41,9 @@ public sealed class TrailblazorPage(IPage page)
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
     public TbDateRangePickerLocator DateRangePicker(string label) => new(page, label);
 
+    /// <summary>The <c>TbDatePicker</c> with this label.</summary>
+    public TbDatePickerLocator DatePicker(string label) => new(page, label);
+
     /// <summary>The <c>TbCalendar</c> with this label.</summary>
     public TbCalendarLocator Calendar(string label) => new(page, label);
 

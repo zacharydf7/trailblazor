@@ -36,6 +36,12 @@ internal static partial class CalendarDates
 
     public static DateOnly FirstOfMonth(DateOnly date) => new(date.Year, date.Month, 1);
 
+    // A date before min, after max, or one isDisabled rules out can't be chosen.
+    public static bool IsUnavailable<TDate>(DateOnly date, TDate? min, TDate? max, Func<TDate, bool>? isDisabled)
+        where TDate : struct =>
+        (min is { } first && date < ToDate(first)) || (max is { } last && date > ToDate(last))
+        || (isDisabled?.Invoke(FromDate<TDate>(date)) ?? false);
+
     public static string Iso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     public static DateOnly ToDate<TDate>(TDate value) where TDate : struct =>
@@ -49,6 +55,13 @@ internal static partial class CalendarDates
     public static TDate? Keep<TDate>(DateOnly? date, TDate? old) where TDate : struct =>
         date is not { } day ? null : old is { } kept && ToDate(kept) == day ? kept : FromDate<TDate>(day);
 
+    // The format as people write it, such as MM/DD/YYYY, for a placeholder and messages.
+    public static string FormatHint(string format) => DayOrMonth().Replace(format.Replace('y', 'Y'),
+        match => match.Value[0] == 'd' ? "DD" : "MM");
+
     [GeneratedRegex("(?<!d)dd(?!d)")]
     private static partial Regex PaddedDay();
+
+    [GeneratedRegex("(?<![dM])(?:d{1,2}|M{1,2})(?![dM])")]
+    private static partial Regex DayOrMonth();
 }

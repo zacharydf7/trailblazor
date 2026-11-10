@@ -35,7 +35,8 @@
         <span class="tb-visually-hidden" aria-live="polite">@Title</span>
         @* The grid stays one element across the views, since the script listens on it. *@
         <table @ref="_grid" @attributes="ControlAttributes" id="@InputId" role="grid" data-part="grid"
-               data-view="@_view.ToString().ToLowerInvariant()" data-ready="@(_handle is null ? null : "")"
+               data-view="@_view.ToString().ToLowerInvariant()" data-shown="@_shown"
+               data-ready="@(_handle is null ? null : "")"
                aria-labelledby="@(ShownLabel is null ? TitleId : $"{LabelId} {TitleId}")"
                aria-describedby="@InputDescribedBy" aria-required="@(Required ? "true" : null)"
                aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"

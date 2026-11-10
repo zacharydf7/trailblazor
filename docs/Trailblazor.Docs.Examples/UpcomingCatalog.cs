@@ -52,7 +52,6 @@ public static class UpcomingCatalog
         new("Speech-to-text button", ExampleCategory.Actions, 197),
         new("AI prompt", ExampleCategory.Inputs, 182),
         new("Cascader", ExampleCategory.Inputs, 186),
-        new("Date picker", ExampleCategory.Inputs, 63),
         new("Form from a model", ExampleCategory.Inputs, 180),
         new("In-place editor", ExampleCategory.Inputs, 196),
         new("Markdown editor", ExampleCategory.Inputs, 189),

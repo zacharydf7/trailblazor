@@ -1,0 +1,9 @@
+<TbStack Gap="2">
+    <TbDatePicker TDate="DateOnly" Label="Start date" @bind-Value="_start"
+                  HelperText="Type the date or pick it in the calendar." />
+    <output>@(_start is { } date ? $"Starting {date:D}." : "No date chosen yet.")</output>
+</TbStack>
+
+@code {
+    private DateOnly? _start = DateOnly.FromDateTime(DateTime.Today).AddDays(14);
+}

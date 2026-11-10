@@ -1,0 +1,55 @@
+@namespace Trailblazor
+@typeparam TDate where TDate : struct
+@inherits TbBoxedFieldBase<TDate?>
+@using static Trailblazor.CalendarDates
+@using Microsoft.AspNetCore.Components.Forms
+
+@Layout(Classes, @<text>
+    @if (RendererInfo.IsInteractive)
+    {
+        @* Tests type dates in the field's format and wait for the committed date, which data-format, data-culture and
+           data-value give them. *@
+        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
+               type="text" autocomplete="off" value="@Text" @onchange="args => SetTextAsync(args.Value as string)"
+               data-format="@DateFormat" data-culture="@DateCulture.Name"
+               data-value="@(Chosen is { } committed ? Iso(committed) : "")"
+               placeholder="@(Placeholder ?? FormatHint(DateFormat))" disabled="@Disabled" readonly="@ReadOnly"
+               aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+               aria-describedby="@InputDescribedBy"
+               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    }
+    else
+    {
+        @* Without a circuit there is no calendar, so the browser's own date box stands in. *@
+        <input @attributes="ControlAttributes" data-part="input" data-static="@(AssignedRenderMode is null ? "" : null)"
+               id="@InputId" name="@InputNameAttribute" type="date" value="@(Chosen is { } chosen ? Iso(chosen) : null)"
+               min="@(Min is { } min ? Iso(ToDate(min)) : null)" max="@(Max is { } max ? Iso(ToDate(max)) : null)"
+               disabled="@Disabled" readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
+               aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
+               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    }
+</text>, null, RendererInfo.IsInteractive ? End : null)
+
+@code {
+    private RenderFragment End => @<text>
+        @if (Clearable && !Disabled && !ReadOnly && (Value is not null || Text is { Length: > 0 }))
+        {
+            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" aria-describedby="@ClearDescribedBy"
+                          Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
+        }
+        <TbPopover Icon="BuiltInIcons.Calendar" Label="@OpenLabel" Size="Size.Small" Variant="Trailblazor.Variant.Text"
+                   Disabled="@(Disabled || ReadOnly)" Open="_open" OpenChanged="OnOpenChanged" data-part="popover">
+            @* The calendar here only shows and picks; the picker is the form's field, so the form's cascades stop. The
+               popover's dialog names it, its grid takes focus as it opens, and each closing shows the chosen date again
+               for the next opening. *@
+            <CascadingValue TValue="EditContext" Value="null">
+                <CascadingValue TValue="TbForm" Value="null">
+                    <TbCalendar @ref="_calendar" TDate="TDate" Value="Value" ValueChanged="KeepCalendarValue"
+                                OnDayPicked="PickAsync" Min="Min" Max="Max" IsDateDisabled="IsDateDisabled"
+                                Culture="DateCulture" Labels="@(Labels.Calendar ?? new())"
+                                InputAttributes="GridAttributes" />
+                </CascadingValue>
+            </CascadingValue>
+        </TbPopover>
+    </text>;
+}

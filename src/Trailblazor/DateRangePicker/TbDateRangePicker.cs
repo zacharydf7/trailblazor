@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
@@ -93,9 +92,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
     private string DateFormat => Format ?? DateCulture.DateTimeFormat.ShortDatePattern;
 
-    // The format as people write it, such as MM/DD/YYYY, for the placeholder and the messages.
-    private string FormatHint => DayOrMonth().Replace(DateFormat.Replace('y', 'Y'),
-        match => match.Value[0] == 'd' ? "DD" : "MM");
+    private string FormatHint => CalendarDates.FormatHint(DateFormat);
 
     // The server's clock can be in another time zone, so the browser's date wins once its script has attached.
     private DateOnly Today => _browserToday ?? DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
@@ -375,7 +372,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private protected override bool IsMissing(DateRange<TDate> value) => value.Start is null || value.End is null;
 
     private bool IsUnavailable(DateOnly date) =>
-        date < MinDate || date > MaxDate || (IsDateDisabled?.Invoke(FromDate<TDate>(date)) ?? false);
+        CalendarDates.IsUnavailable(date, Min, Max, IsDateDisabled);
 
     private bool IsSelected(DateOnly date) => _anchor is { } anchor ? date == anchor
         : (StartDate, EndDate) switch
@@ -409,8 +406,6 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
     private string? FormatDate(DateOnly? date) => date?.ToString(DateFormat, DateCulture);
 
-    [GeneratedRegex("(?<![dM])(?:d{1,2}|M{1,2})(?![dM])")]
-    private static partial Regex DayOrMonth();
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

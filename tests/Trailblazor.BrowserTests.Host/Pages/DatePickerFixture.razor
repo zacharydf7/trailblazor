@@ -1,0 +1,12 @@
+@page "/date-picker"
+@using System.Globalization
+
+<TbStack Gap="4">
+    <TbDatePicker TDate="DateOnly" Label="Start date" @bind-Value="_start" Culture="_culture" />
+    <output data-testid="start">@(_start?.ToString("yyyy-MM-dd") ?? "none")</output>
+</TbStack>
+
+@code {
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("en-US");
+    private DateOnly? _start = new DateOnly(2026, 6, 3);
+}

@@ -137,6 +137,20 @@ public static class TbStrings
     /// decade's years; {0} is the year.</summary>
     public const string CalendarChooseYear = "Calendar.ChooseYear";
 
+    /// <summary>"Choose a date": names a date picker's button that opens the calendar, and the calendar.</summary>
+    public const string DatePickerOpen = "DatePicker.Open";
+
+    /// <summary>"Clear": names a date picker's button that clears the date.</summary>
+    public const string DatePickerClear = "DatePicker.Clear";
+
+    /// <summary>"Enter the date as {0}.": shown when a date picker can't read the typed date; {0} is the format, such as
+    /// MM/DD/YYYY.</summary>
+    public const string DatePickerBadDate = "DatePicker.BadDate";
+
+    /// <summary>"{0} can't be chosen.": shown when a typed date is outside Min and Max, or IsDateDisabled rules it
+    /// out; {0} is the date as typed.</summary>
+    public const string DatePickerUnavailable = "DatePicker.Unavailable";
+
     /// <summary>"Start date": names a date range's start field, and is added to the start day's name in the calendar.
     /// </summary>
     public const string DateRangePickerStart = "DateRangePicker.Start";
@@ -816,6 +830,10 @@ public static class TbStrings
         [CalendarNextDecade] = "Next decade",
         [CalendarChooseMonth] = "{0}, choose a month",
         [CalendarChooseYear] = "{0}, choose a year",
+        [DatePickerOpen] = "Choose a date",
+        [DatePickerClear] = "Clear",
+        [DatePickerBadDate] = "Enter the date as {0}.",
+        [DatePickerUnavailable] = "{0} can't be chosen.",
         [DateRangePickerStart] = "Start date",
         [DateRangePickerEnd] = "End date",
         [DateRangePickerOpen] = "Choose dates",
