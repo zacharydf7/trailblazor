@@ -539,6 +539,8 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
         var page = await OpenAsync(browser, "/examples/data-grid");
         var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
         var cell = grid.Locator("tr[data-key='1'] td[data-column=LengthKm]");
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
 
         await cell.DblClickAsync();
         await cell.GetByRole(AriaRole.Spinbutton).FillAsync("99");
@@ -555,7 +557,10 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
     public async Task CellEdit_ShouldSaveWithoutSubmittingThePagesForm_WhenEnterIsPressedInIt(string browser)
     {
         var page = await OpenAsync(browser, "/grid-in-form");
-        var cell = page.GetByRole(AriaRole.Grid, new() { Name = "Edited trails" }).Locator("tbody td").First;
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Edited trails" });
+        var cell = grid.Locator("tbody td").First;
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
 
         await cell.DblClickAsync();
         await cell.Locator("input").FillAsync("Pine Hollow loop");
@@ -571,6 +576,8 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
         var page = await OpenAsync(browser, "/examples/data-grid");
         var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail edits" });
         var cell = grid.Locator("tr[data-key='2'] td[data-column=Name]");
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
         // A dialog around the grid would close on an Escape nothing has used; this page listener sees what it would.
         await page.EvaluateAsync("() => document.addEventListener('keydown', event => "
             + "window.escapeUsed = event.key === 'Escape' && event.defaultPrevented)");
