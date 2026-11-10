@@ -130,6 +130,101 @@ public class TbDataGridTotalsTests : BunitContext
         Assert.Equal([new GridAggregate("LengthKm", ColumnAggregate.Sum)], asked[^1].Aggregates);
     }
 
+    private IRenderedComponent<TbDataGrid<Hike>> RenderGrouped(bool groupTotals,
+        Action<ComponentParameterCollectionBuilder<TbDataGrid<Hike>>>? configure = null,
+        Action<ComponentParameterCollectionBuilder<TbColumn<Hike>>>? length = null,
+        IReadOnlyList<string>? groups = null) =>
+        Render<TbDataGrid<Hike>>(parameters =>
+        {
+            parameters.Add(grid => grid.Items, Hikes).Add(grid => grid.AriaLabel, "Hikes")
+                .Add(grid => grid.KeySelector, hike => hike.Id).Add(grid => grid.Groups, groups ?? ["Done"])
+                .Add(grid => grid.GroupTotals, groupTotals)
+                .AddChildContent<TbColumn<Hike>>(column => column.Add(name => name.Field, hike => hike.Name)
+                    .Add(name => name.Groupable, true))
+                .AddChildContent<TbColumn<Hike>>(column => column.Add(done => done.Field, hike => hike.Done)
+                    .Add(done => done.Groupable, true))
+                .AddChildContent<TbColumn<Hike>>(column =>
+                {
+                    column.Add(km => km.Field, hike => hike.LengthKm).Add(km => km.Format, "N1")
+                        .Add(km => km.Aggregate, ColumnAggregate.Sum);
+                    length?.Invoke(column);
+                });
+            configure?.Invoke(parameters);
+        });
+
+    [Fact]
+    public void GroupTotals_ShouldShowEachGroupsTotalUnderItsRows_WhenOn()
+    {
+        var cut = RenderGrouped(groupTotals: true);
+
+        Assert.Equal(["Sum 26.1", "Sum 9.5"], cut.Tb().Grid("Hikes").GroupTotals("Length km"));
+        Assert.Equal("Sum 35.6", cut.Tb().Grid("Hikes").Total("Length km"));
+        var lines = cut.FindAll("tbody tr").Select(row => row.GetAttribute("data-part")).ToList();
+        Assert.Equal(["group", "row", "row", "group-totals", "group", "row", "row", "group-totals"], lines);
+    }
+
+    [Fact]
+    public void GroupTotals_ShouldPutEachInnerGroupsTotalsBeforeItsOuterGroups_WhenGroupedTwice()
+    {
+        var cut = RenderGrouped(groupTotals: true, groups: ["Done", "Name"]);
+
+        Assert.Equal(["Sum 14.2", "Sum 11.9", "Sum 26.1", "Sum 3.1", "Sum 6.4", "Sum 9.5"],
+            cut.Tb().Grid("Hikes").GroupTotals("Length km"));
+        Assert.Equal(["2", "2", "1", "2", "2", "1"],
+            cut.FindAll("tr[data-part=group-totals]").Select(row => row.GetAttribute("data-level")));
+    }
+
+    [Fact]
+    public void GroupTotals_ShouldLeaveOutAGroupsTotals_WhenTheGroupIsClosed()
+    {
+        var cut = RenderGrouped(groupTotals: true);
+
+        cut.FindAll("[data-part=group-toggle]")[0].Click();
+
+        Assert.Equal(["Sum 9.5"], cut.Tb().Grid("Hikes").GroupTotals("Length km"));
+    }
+
+    [Fact]
+    public void GroupTotals_ShouldShowNone_WhenOff()
+    {
+        var cut = RenderGrouped(groupTotals: false);
+
+        Assert.Empty(cut.Tb().Grid("Hikes").GroupTotals("Length km"));
+    }
+
+    [Fact]
+    public async Task GroupTotals_ShouldGoAndComeBack_WhenTheTotalsColumnIsHiddenAndShown()
+    {
+        var cut = RenderGrouped(groupTotals: true, grid => grid.Add(grid => grid.HideableColumns, true));
+
+        await cut.Tb().Menu("Columns").ChooseAsync("Length km");
+        Assert.Empty(cut.FindAll("tr[data-part=group-totals]"));
+        await cut.Tb().Menu("Columns").ChooseAsync("Length km");
+
+        Assert.Equal(["Sum 26.1", "Sum 9.5"], cut.Tb().Grid("Hikes").GroupTotals("Length km"));
+    }
+
+    [Fact]
+    public void GroupTotals_ShouldGiveTheFooterTemplateTheGroupsTotal_WhenTheColumnHasOne()
+    {
+        var cut = RenderGrouped(groupTotals: true, length: column => column.Add(km => km.FooterTemplate,
+            total => builder => builder.AddContent(0, $"{total:0.0} km in all")));
+
+        Assert.Equal(["26.1 km in all", "9.5 km in all"], cut.Tb().Grid("Hikes").GroupTotals("Length km"));
+        Assert.Equal("35.6 km in all", cut.Tb().Grid("Hikes").Total("Length km"));
+    }
+
+    [Fact]
+    public async Task ScrollToAsync_ShouldReachARowInALaterGroup_WhenGroupTotalsComeBeforeIt()
+    {
+        var cut = RenderGrouped(groupTotals: true, grid => grid.Add(grid => grid.PageSize, 2));
+
+        await cut.InvokeAsync(() => cut.Instance.ScrollToAsync(Hikes[0]));
+
+        cut.WaitForAssertion(() => Assert.Contains("Pine Hollow",
+            cut.FindAll("tr[data-part=row] td[data-column=Name]").Select(cell => cell.TextContent.Trim())));
+    }
+
     [Fact]
     public void Totals_ShouldAddUpDurations_WhenTheColumnHoldsTimeSpans()
     {

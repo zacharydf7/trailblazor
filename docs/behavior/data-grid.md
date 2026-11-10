@@ -41,6 +41,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 
 ## Pointer
 
+- [x] Closing a group from its heading takes its `GroupTotals` row away with its rows. `TbDataGridTotalsTests.GroupTotals_ShouldLeaveOutAGroupsTotals_WhenTheGroupIsClosed`
 - [x] The pager moves between pages and says which rows show; `ShowFirstLast` adds first and last page buttons, and `Labels.Range` words the count. `TbDataGridTests.Page_ShouldShowThePagesRowsAndRange_WhenPagedAndMovedToAnotherPage`, `TbDataGridTests.Pager_ShouldShowFirstAndLastAndTheAppsRangeText_WhenTheGridAsks`, `TbDataGridTests.Pager_ShouldLeaveOutFirstAndLast_WhenNotAsked`
 - [x] Clicking a header sorts ascending, then descending, then not at all. `TbDataGridTests.Sort_ShouldOrderTheRowsTurnThemAroundAndStop_WhenAHeaderIsClickedThreeTimes`
 - [x] Shift+clicking a header adds it to the sorts and shows its place. `TbDataGridTests.Sort_ShouldBreakTiesWithASecondColumnAndSayItsPlace_WhenShiftClicked`

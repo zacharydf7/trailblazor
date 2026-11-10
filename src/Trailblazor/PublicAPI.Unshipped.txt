@@ -354,6 +354,8 @@ Trailblazor.TbColumn<TItem>.MinWidth.get -> string?
 Trailblazor.TbColumn<TItem>.MinWidth.set -> void
 Trailblazor.TbColumn<TItem>.Resizable.get -> bool
 Trailblazor.TbColumn<TItem>.Resizable.set -> void
+Trailblazor.TbDataGrid<TItem>.GroupTotals.get -> bool
+Trailblazor.TbDataGrid<TItem>.GroupTotals.set -> void
 Trailblazor.TbDataGrid<TItem>.HideableColumns.get -> bool
 Trailblazor.TbDataGrid<TItem>.HideableColumns.set -> void
 Trailblazor.TbDataGrid<TItem>.ReorderableColumns.get -> bool

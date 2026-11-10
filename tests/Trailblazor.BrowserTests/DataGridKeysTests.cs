@@ -321,8 +321,8 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
 
         await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(toggle).ToBeFocusedAsync();
-        await Expect(table.Locator("tbody td[data-column=Name]")).ToHaveTextAsync(["Summit Gate", "Lake camp",
-            "Cedar Flats", "Fern Gully", "Waterfall spur"]);
+        await Expect(table.Locator("tr[data-part=row] td[data-column=Name]")).ToHaveTextAsync(["Summit Gate",
+            "Lake camp", "Cedar Flats", "Fern Gully", "Waterfall spur"]);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

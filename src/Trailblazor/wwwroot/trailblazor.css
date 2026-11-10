@@ -6304,7 +6304,8 @@
         z-index: 2;
     }
 
-    .tb-data-grid__totals td {
+    .tb-data-grid__totals td,
+    .tb-data-grid__group-totals td {
         border-block-start: 1px solid var(--tb-border-subtle);
         background: var(--tb-color-surface);
         font-weight: var(--tb-font-weight-semibold);

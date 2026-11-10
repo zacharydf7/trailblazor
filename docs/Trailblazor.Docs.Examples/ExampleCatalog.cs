@@ -6536,7 +6536,8 @@ public static class ExampleCatalog
                     typeof(DataGridFilterMenuExample)),
                 new("group-rows", "Group rows", "The rows can be grouped by any `Groupable` column, picked from the "
                     + "\"Group by\" list or set from code through `Groups`. Groups nest in the order they are picked, "
-                    + "and each starts with a heading that shows its row count and opens or closes the group.",
+                    + "and each starts with a heading that shows its row count and opens or closes the group. "
+                    + "`GroupTotals` adds a row under each open group with that group's totals.",
                     typeof(DataGridGroupExample)),
                 new("totals", "Totals", "A column's `Aggregate` shows its `Sum`, `Average`, `Count`, `Min` or `Max` "
                     + "in a totals row under the rows. Each total covers every row the filters leave, not only the "
@@ -6774,6 +6775,7 @@ public static class ExampleCatalog
                 new("group-toggle", "The button that opens and closes a group."),
                 new("select-all", "The checkbox that selects every row on the page."),
                 new("totals", "The totals row, under the rows."),
+                new("group-totals", "A group's totals row, under its rows."),
                 new("total-label", "The name of a total, such as \"Sum\", before its value."),
                 new("row", "One row."),
                 new("placeholder", "A row a large grid hasn't loaded yet."),
@@ -6821,7 +6823,9 @@ public static class ExampleCatalog
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync` and "
                     + "`FilterAsync`.",
                 "`Total(\"Length (km)\")` reads the totals row's cell under a column, such as \"Sum 49.9\", or null "
-                    + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`.",
+                    + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`. "
+                    + "`GroupTotals(\"Length (km)\")` reads each open group's totals cell under that column, in "
+                    + "order; in Playwright, use `await GroupTotalsAsync(\"Length (km)\")`.",
                 "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
                     + "dragging its edge, waiting for the grid to keep the width, and in bUnit as the grid's script "
                     + "reports it. A column's header carries the width the grid keeps in `data-width`.",

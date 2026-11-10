@@ -201,20 +201,7 @@
                 <tfoot>
                     <tr data-part="totals" class="tb-data-grid__totals"
                         aria-rowindex="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + 1 : null)">
-                        @if (CanReorder)
-                        {
-                            <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
-                        }
-                        @if (SelectionMode != SelectionMode.None)
-                        {
-                            <td data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)" class="tb-data-grid__select">
-                            </td>
-                        }
-                        @foreach (var column in _shownColumns)
-                        {
-                            <td @key="column.Key" data-column="@column.Key" data-pinned="@PinSide(column)"
-                                style="@PinStyle(column)" class="@column.CellClass">@TotalCell(column)</td>
-                        }
+                        @TotalCells(_totals)
                     </tr>
                 </tfoot>
             }
@@ -481,9 +468,34 @@
             }
         </text>;
 
-    private RenderFragment TotalCell(TbColumn<TItem> column)
+    private RenderFragment GroupTotalsRow(GroupTotalsLine totals, int at) =>
+        @<tr data-part="group-totals" data-level="@totals.Level"
+             aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" class="tb-data-grid__group-totals">
+            @TotalCells(totals.Values)
+        </tr>;
+
+    // The grid's totals row and each group's totals row share these cells: blank lead cells, then one total per column.
+    private RenderFragment TotalCells(Dictionary<string, object?> totals) =>
+        @<text>
+            @if (CanReorder)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
+            }
+            @if (SelectionMode != SelectionMode.None)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)" class="tb-data-grid__select"></td>
+            }
+            @foreach (var column in _shownColumns)
+            {
+                <td @key="column.Key" data-column="@column.Key" data-pinned="@PinSide(column)"
+                    style="@PinStyle(column)" class="@column.CellClass">
+                    @TotalCell(column, totals.GetValueOrDefault(column.Key))
+                </td>
+            }
+        </text>;
+
+    private RenderFragment TotalCell(TbColumn<TItem> column, object? total)
     {
-        var total = _totals.GetValueOrDefault(column.Key);
         if (column.FooterTemplate is { } template)
         {
             return template(total);

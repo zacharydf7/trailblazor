@@ -129,9 +129,9 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     public RenderFragment? Header { get; set; }
 
     /// <summary>The total the column shows in the grid's totals row, worked out over every row that meets the filters,
-    /// not only the page shown. A grid with a <see cref="TbDataGrid{TItem}.DataProvider"/> asks for it in
-    /// <see cref="GridRequest.Aggregates"/>, so one rendered without interactivity, such as on a static page, shows
-    /// no totals.</summary>
+    /// not only the page shown. With <see cref="TbDataGrid{TItem}.GroupTotals"/>, each open group shows its own. A
+    /// grid with a <see cref="TbDataGrid{TItem}.DataProvider"/> asks for it in <see cref="GridRequest.Aggregates"/>,
+    /// so one rendered without interactivity, such as on a static page, shows no totals.</summary>
     [Parameter]
     public ColumnAggregate Aggregate { get; set; }
 
@@ -139,12 +139,14 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     /// <see cref="Aggregate"/> doesn't offer, such as the share of rows that are done. Its value shows in place of the
     /// <see cref="Aggregate"/>, written with the column's <see cref="Format"/>. Only a grid with
     /// <see cref="TbDataGrid{TItem}.Items"/> calls it; a <see cref="TbDataGrid{TItem}.DataProvider"/> gives the
-    /// column's total in <see cref="GridResult{TItem}.Totals"/> itself.</summary>
+    /// column's total in <see cref="GridResult{TItem}.Totals"/> itself. With
+    /// <see cref="TbDataGrid{TItem}.GroupTotals"/>, it's called again with each open group's rows.</summary>
     [Parameter]
     public Func<IReadOnlyList<TItem>, object?>? AggregateBy { get; set; }
 
     /// <summary>Draws the column's cell in the totals row. Its context is the column's total, or null when it has
-    /// none.</summary>
+    /// none. With <see cref="TbDataGrid{TItem}.GroupTotals"/>, it draws each open group's cell too, with that group's
+    /// total as its context.</summary>
     [Parameter]
     public RenderFragment<object?>? FooterTemplate { get; set; }
 

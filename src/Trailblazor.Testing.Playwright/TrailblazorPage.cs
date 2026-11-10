@@ -962,7 +962,23 @@ public sealed class TbGridLocator(ILocator scope, string name)
     {
         var key = await Header(column).GetAttributeAsync("data-column");
         var texts = await Table.Locator($"tfoot [data-part=totals] td[data-column=\"{key}\"]").AllInnerTextsAsync();
-        var words = string.Join(' ', texts).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        return TotalText(string.Join(' ', texts));
+    }
+
+    /// <summary>The text of each open group's totals cell under the column with this title, in the order the groups
+    /// show, with null for a group that shows no total there. The grid shows these rows with <c>GroupTotals</c>.
+    /// </summary>
+    public async Task<IReadOnlyList<string?>> GroupTotalsAsync(string column)
+    {
+        var key = await Header(column).GetAttributeAsync("data-column");
+        var texts = await Table.Locator($"tbody [data-part=group-totals] td[data-column=\"{key}\"]")
+            .AllInnerTextsAsync();
+        return [.. texts.Select(TotalText)];
+    }
+
+    private static string? TotalText(string text)
+    {
+        var words = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         return words.Length == 0 ? null : string.Join(' ', words);
     }
 

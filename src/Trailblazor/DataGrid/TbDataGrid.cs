@@ -211,6 +211,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public EventCallback<IReadOnlyList<string>> GroupsChanged { get; set; }
 
+    /// <summary>Adds a row under each open group with that group's totals, on the columns with an
+    /// <see cref="TbColumn{TItem}.Aggregate"/>, <see cref="TbColumn{TItem}.AggregateBy"/> or
+    /// <see cref="TbColumn{TItem}.FooterTemplate"/>, as the totals row under the grid does for every row. Like
+    /// grouping, it works only on rows held in <see cref="Items"/>, and with a <see cref="PageSize"/> these rows count
+    /// among a page's rows, as the headings do.</summary>
+    [Parameter]
+    public bool GroupTotals { get; set; }
+
     /// <summary>How many rows a page holds. Null, the default, shows every row with no pages.</summary>
     [Parameter]
     public int? PageSize { get; set; }
@@ -398,6 +406,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private int ColumnCount => _shownColumns.Count + LeadCount;
 
     private bool HasTotals => _shownColumns.Any(column => column.HasTotal);
+
+    private Dictionary<string, object?> TotalsOf(IReadOnlyList<TItem> rows) =>
+        _columns.Where(column => column.HasTotal).ToDictionary(column => column.Key, column => column.TotalOf(rows));
 
     private IReadOnlyList<GridAggregate> Aggregates =>
     [
@@ -681,6 +692,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         if (line.Group is { } group)
         {
             AddGroupRow(builder, group, line.Index);
+        }
+        else if (line.Totals is { } totals)
+        {
+            builder.OpenComponent<GridRow<GroupTotalsLine>>(0);
+            builder.SetKey((totals.Key, "totals"));
+            builder.AddComponentParameter(1, nameof(GridRow<GroupTotalsLine>.Item), totals);
+            builder.AddComponentParameter(2, nameof(GridRow<GroupTotalsLine>.Version), _rowVersion);
+            builder.AddComponentParameter(3, nameof(GridRow<GroupTotalsLine>.ChildContent),
+                GroupTotalsRow(totals, line.Index));
+            builder.CloseComponent();
         }
         else
         {
@@ -1047,8 +1068,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         public string? Error { get; set; }
     }
 
-    // A line the grid draws: an item's row, or a group's heading, with its place among all the lines.
-    private readonly record struct GridLine(TItem Item, int Index, GroupHeading? Group = null);
+    // A line the grid draws: an item's row, a group's heading or a group's totals, with its place among all the lines.
+    private readonly record struct GridLine(TItem Item, int Index, GroupHeading? Group = null,
+        GroupTotalsLine? Totals = null)
+    {
+        public bool IsRow => Group is null && Totals is null;
+    }
+
+    private sealed record GroupTotalsLine(GroupKey Key, int Level, Dictionary<string, object?> Values);
 
     private sealed record GroupHeading(GroupKey Key, int Level, string Column, string? Value, int Count, bool Open);
 
@@ -1536,8 +1563,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         var arranged = Arranged().ToList();
-        _totals = _columns.Where(column => column.HasTotal)
-            .ToDictionary(column => column.Key, column => column.TotalOf(arranged));
+        _totals = TotalsOf(arranged);
         var lines = Lines(arranged);
         _matched = arranged.Count;
         _total = lines.Count;
@@ -1552,7 +1578,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _arrangedFor = ArrangedFor;
     }
 
-    private object ArrangedFor => (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion);
+    private object ArrangedFor =>
+        (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion, GroupTotals && HasTotals);
 
     // Each group starts with its heading; an open group then lists its inner groups, or its rows in their sorted
     // order. Groups sort by their first row's value, not their key, since a formatted column's key is text.
@@ -1583,6 +1610,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 if (open)
                 {
                     Add(group, level + 1, key);
+                    if (GroupTotals && HasTotals)
+                    {
+                        lines.Add(new(default!, lines.Count, Totals: new(key, level + 1, TotalsOf([.. group]))));
+                    }
                 }
             }
         }
@@ -1592,7 +1623,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     private int PlaceOf(List<GridLine> lines, object key) =>
-        lines.FindIndex(line => line.Group is null && Equals(KeyOf(line.Item), key)) is var at and >= 0
+        lines.FindIndex(line => line.IsRow && Equals(KeyOf(line.Item), key)) is var at and >= 0
             ? lines[at].Index : -1;
 
     // A row in a closed group is shown before the grid goes to it.
@@ -1661,7 +1692,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private void ShowLines(List<GridLine> lines)
     {
-        List<TItem> rows = [.. lines.Where(line => line.Group is null).Select(line => line.Item)];
+        List<TItem> rows = [.. lines.Where(line => line.IsRow).Select(line => line.Item)];
         var shown = rows.Select(KeyOf).ToHashSet();
         if (shown.Count != rows.Count)
         {

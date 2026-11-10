@@ -1,10 +1,11 @@
 <TbStack Gap="3">
     <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Routes by region" KeySelector="trail => trail.Id"
-                @bind-Groups="_groups">
+                @bind-Groups="_groups" GroupTotals>
         <TbColumn Field="trail => trail.Name" Sortable />
         <TbColumn Field="trail => trail.Region" Groupable Sortable />
         <TbColumn Field="trail => trail.Difficulty" Groupable Sortable />
-        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable
+                  Aggregate="ColumnAggregate.Sum" />
     </TbDataGrid>
     <output aria-label="Groups">
         @(_groups.Count == 0 ? "Not grouped." : $"Grouped by {string.Join(", then ", _groups)}.")

@@ -59,6 +59,7 @@ Trailblazor.Testing.Playwright.TbGridLocator.SelectAsync(string! row) -> System.
 Trailblazor.Testing.Playwright.TbGridLocator.SortAsync(string! column, bool descending = false) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.TbGridLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
 Trailblazor.Testing.Playwright.TbGridLocator.TotalAsync(string! column) -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbGridLocator.GroupTotalsAsync(string! column) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string?>!>!
 Trailblazor.Testing.Playwright.TbListBoxLocator
 Trailblazor.Testing.Playwright.TbListBoxLocator.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbListBoxLocator.TbListBoxLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void

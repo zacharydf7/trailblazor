@@ -27,6 +27,16 @@ public class GridTotalsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GroupTotals_ShouldShowEachGroupsTotalUnderItsRows_WhenTheGridGroups(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.Tb().Grid("Routes by region");
+
+        Assert.Equal(["Sum 20.4", "Sum 20.6", "Sum 10.1"], await grid.GroupTotalsAsync("Length (km)"));
+        Assert.Equal([null, null, null], await grid.GroupTotalsAsync("Name"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Totals_ShouldBeReachedByTheArrowKeys_WhenCellNavigationIsOn(string browser)
     {
         var page = await OpenTotalsAsync(browser);
