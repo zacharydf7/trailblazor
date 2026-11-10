@@ -46,8 +46,8 @@
                 <CascadingValue TValue="TbForm" Value="null">
                     <TbCalendar @ref="_calendar" TDate="TDate" Value="Value" ValueChanged="KeepCalendarValue"
                                 OnDayPicked="PickAsync" Min="Min" Max="Max" IsDateDisabled="IsDateDisabled"
-                                Culture="DateCulture" Labels="@(Labels.Calendar ?? new())"
-                                InputAttributes="GridAttributes" />
+                                Culture="DateCulture" Labels="@(Labels.Calendar ?? new())" Disabled="Disabled"
+                                ReadOnly="ReadOnly" InputAttributes="GridAttributes" />
                 </CascadingValue>
             </CascadingValue>
         </TbPopover>

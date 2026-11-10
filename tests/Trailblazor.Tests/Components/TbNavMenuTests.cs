@@ -94,6 +94,28 @@ public class TbNavMenuTests : BunitContext
     }
 
     [Fact]
+    public void Group_ShouldNotReportExpanded_WhenTheParentSetsIt()
+    {
+        var changes = new List<bool>();
+        var cut = Render<TbNavMenu>(parameters => parameters.AddChildContent(Group(true)));
+
+        cut.Render(parameters => parameters.AddChildContent(Group(false)));
+
+        Assert.Equal("false", cut.Find("[data-part=group-toggle]").GetAttribute("aria-expanded"));
+        Assert.Empty(changes);
+
+        RenderFragment Group(bool expanded) => builder =>
+        {
+            builder.OpenComponent<TbNavGroup>(0);
+            builder.AddAttribute(1, nameof(TbNavGroup.Text), "Settings");
+            builder.AddAttribute(2, nameof(TbNavGroup.Expanded), expanded);
+            builder.AddAttribute(3, nameof(TbNavGroup.ExpandedChanged),
+                EventCallback.Factory.Create<bool>(this, changes.Add));
+            builder.CloseComponent();
+        };
+    }
+
+    [Fact]
     public void Group_ShouldClose_WhenItsButtonIsPressedWhileItHoldsTheCurrentPage()
     {
         Navigation.NavigateTo("settings/profile");

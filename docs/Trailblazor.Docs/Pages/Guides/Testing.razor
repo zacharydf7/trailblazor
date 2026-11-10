@@ -8,6 +8,7 @@
         <TbTableOfContentsItem TargetId="bunit-fields" Text="Drive fields in bUnit" />
         <TbTableOfContentsItem TargetId="bunit-dialogs" Text="Test dialogs in bUnit" />
         <TbTableOfContentsItem TargetId="announcements" Text="Test what screen readers hear" />
+        <TbTableOfContentsItem TargetId="promises" Text="What every component promises" />
         <TbTableOfContentsItem TargetId="playwright" Text="Drive components in Playwright" />
         <TbTableOfContentsItem TargetId="waiting" Text="Wait for the page" />
         <TbTableOfContentsItem TargetId="time" Text="Time and motion" />
@@ -214,6 +215,23 @@
             </li>
         </ul>
         <CodeBlock Label="Checking what screen readers hear" Code="@Announcements" />
+
+        <DocsHeading Id="promises" Text="What every component promises" Class="docs-section" />
+        <TbText>
+            These hold for every Trailblazor component, and Trailblazor's own tests check them, so your tests can rely
+            on them.
+        </TbText>
+        <ul>
+            <li>
+                A value your page sets is never sent back through its <code>Changed</code> callback, such as
+                <code>ValueChanged</code> or <code>OpenChanged</code>. A component may still report a value it had to
+                correct or refuse: a data grid set to a page past the last one reports the last page, and a disabled
+                select asked to open reports that it stayed closed.
+            </li>
+            <li>
+                A disabled or read-only field never changes its value, whatever is clicked or typed in it.
+            </li>
+        </ul>
 
         <DocsHeading Id="playwright" Text="Drive components in Playwright" Class="docs-section" />
         <TbText>

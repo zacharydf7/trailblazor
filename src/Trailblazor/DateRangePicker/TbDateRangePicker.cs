@@ -246,7 +246,8 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     // new range.
     private async Task PickAsync(DateOnly day)
     {
-        if (IsUnavailable(day))
+        // The panel can't open while the field is disabled or read-only, but a pick that still arrives changes nothing.
+        if (Disabled || ReadOnly || IsUnavailable(day))
         {
             return;
         }
@@ -267,6 +268,11 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
     private async Task ChoosePresetAsync(DateRangePreset<TDate> preset)
     {
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
         ClearTexts();
         await SetValueAsync(preset.Range);
         await CloseAsync();

@@ -210,7 +210,7 @@ public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, I
 
     async Task<bool> ISelect.ChooseAsync(object? value, string input)
     {
-        if (ReadOnly)
+        if (Disabled || ReadOnly)
         {
             return false;
         }

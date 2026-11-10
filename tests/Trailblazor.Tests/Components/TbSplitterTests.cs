@@ -49,6 +49,23 @@ public class TbSplitterTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNotReportCollapsed_WhenTheParentSetsIt()
+    {
+        var reports = new List<bool>();
+        var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true, Collapsed: true, OnCollapsed: reports.Add),
+            new Pane("Right"));
+
+        cut.Render(parameters => parameters.Add(splitter => splitter.ChildContent, builder =>
+        {
+            AddPane(builder, new Pane("Left", 30, Collapsible: true, OnCollapsed: reports.Add));
+            AddPane(builder, new Pane("Right"));
+        }));
+
+        Assert.False(cut.Find("[data-part=pane]").HasAttribute("data-collapsed"));
+        Assert.Empty(reports);
+    }
+
+    [Fact]
     public void Render_ShouldStartTheRangeAtZero_WhenThePaneCanCollapse()
     {
         var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true, MinSize: 15), new Pane("Right"));
@@ -314,9 +331,11 @@ public class TbSplitterTests : BunitContext
         builder.AddAttribute(6, nameof(TbSplitterPane.MaxSize), pane.MaxSize);
         builder.AddAttribute(7, nameof(TbSplitterPane.SizeChanged),
             EventCallback.Factory.Create<double?>(this, size => pane.OnSize?.Invoke(size)));
+        builder.AddAttribute(8, nameof(TbSplitterPane.CollapsedChanged),
+            EventCallback.Factory.Create<bool>(this, collapsed => pane.OnCollapsed?.Invoke(collapsed)));
         builder.CloseComponent();
     }
 
     private sealed record Pane(string Label, double? Size = null, bool Collapsible = false, bool Collapsed = false,
-        double MinSize = 0, double MaxSize = 100, Action<double?>? OnSize = null);
+        double MinSize = 0, double MaxSize = 100, Action<double?>? OnSize = null, Action<bool>? OnCollapsed = null);
 }

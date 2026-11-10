@@ -14,7 +14,7 @@ public class ComponentContractTests : BunitContext
     // which take no class or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane,
     // TbTreeItem, TbMenuRadioItem, TbDialogDescription, TbColumn, TbTableOfContentsItem, TbBreadcrumb, TbNavLink,
     // TbNavGroup, TbStep and TbCarouselSlide only render inside their parent (see their parents' tests).
-    private static readonly Type[] NotRenderedAlone =
+    internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbRadio<>), typeof(TbCheckboxItem<>),
         typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>), typeof(TbSplitterPane), typeof(TbTreeItem<>),
@@ -35,7 +35,7 @@ public class ComponentContractTests : BunitContext
     // Components that render nothing until they are shown are checked shown; a popover, a popconfirm, a menu, a
     // tooltip, a progress, an avatar, a kbd and a virtual list get the label, text, name, keys or items they need when
     // they are given none.
-    private static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
+    internal static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
     {
         [typeof(TbOverlay)] = (nameof(TbOverlay.Visible), true),
         [typeof(TbPopover)] = (nameof(TbPopover.Label), "Sample"),
@@ -248,6 +248,15 @@ public class ComponentContractTests : BunitContext
     // Supplies a sample value for each [EditorRequired] parameter, so every component renders without setup.
     private static void AddRequiredParameters(RenderTreeBuilder builder, Type component, int sequence)
     {
+        foreach (var (name, value) in RequiredParameters(component))
+        {
+            builder.AddAttribute(sequence++, name, value);
+        }
+    }
+
+    // A sample for each parameter a component requires, so it renders.
+    internal static IEnumerable<(string Name, object Value)> RequiredParameters(Type component)
+    {
         var required = component.GetProperties()
             .Where(property => property.IsDefined(typeof(EditorRequiredAttribute), inherit: true));
         foreach (var property in required)
@@ -265,7 +274,7 @@ public class ComponentContractTests : BunitContext
                 _ => throw new NotSupportedException($"Add a sample {property.PropertyType.Name} to the contract " +
                     $"kit for {component.Name}.{property.Name}."),
             };
-            builder.AddAttribute(sequence++, property.Name, value);
+            yield return (property.Name, value);
         }
     }
 }
