@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace Trailblazor;
 
-// What the number field and the sliders need to know about the number types they hold.
+// What the number field, the sliders and the data grid's totals need to know about the number types they hold.
 internal static class NumberTypes
 {
     public static bool IsNumber(Type type) =>

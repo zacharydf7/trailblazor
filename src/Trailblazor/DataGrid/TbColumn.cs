@@ -17,6 +17,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     private object?[] _captured = [];
     private int _compiled;
     private object? _shown;
+    private bool _averageNeedsFallback;
     private Action<TItem, object?>? _setter;
 
     [CascadingParameter]
@@ -126,6 +127,26 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     /// sortable column keeps its sort button, with this content after it.</summary>
     [Parameter]
     public RenderFragment? Header { get; set; }
+
+    /// <summary>The total the column shows in the grid's totals row, worked out over every row that meets the filters,
+    /// not only the page shown. A grid with a <see cref="TbDataGrid{TItem}.DataProvider"/> asks for it in
+    /// <see cref="GridRequest.Aggregates"/>, so one rendered without interactivity, such as on a static page, shows
+    /// no totals.</summary>
+    [Parameter]
+    public ColumnAggregate Aggregate { get; set; }
+
+    /// <summary>Works out the column's total from the rows that meet the filters, for a total
+    /// <see cref="Aggregate"/> doesn't offer, such as the share of rows that are done. Its value shows in place of the
+    /// <see cref="Aggregate"/>, written with the column's <see cref="Format"/>. Only a grid with
+    /// <see cref="TbDataGrid{TItem}.Items"/> calls it; a <see cref="TbDataGrid{TItem}.DataProvider"/> gives the
+    /// column's total in <see cref="GridResult{TItem}.Totals"/> itself.</summary>
+    [Parameter]
+    public Func<IReadOnlyList<TItem>, object?>? AggregateBy { get; set; }
+
+    /// <summary>Draws the column's cell in the totals row. Its context is the column's total, or null when it has
+    /// none.</summary>
+    [Parameter]
+    public RenderFragment<object?>? FooterTemplate { get; set; }
 
     /// <summary>The column's width, as CSS, such as <c>"8rem"</c> or <c>"20%"</c>. The browser treats it as the width
     /// it prefers, so a column can grow or shrink to fit the grid; once the user resizes a column of a grid with
@@ -241,17 +262,102 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
         object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method,
             FilterChoices is null, FilterTemplate is null, Groupable, GroupBy?.Method, Width, Pinned, Align, Class,
-            Cell is null, Header is null, Editable, EditTemplate is null, Validate?.Method);
+            Cell is null, Header is null, Editable, EditTemplate is null, Validate?.Method, Aggregate,
+            AggregateBy?.Method, FooterTemplate is null);
         if (!shown.Equals(_shown))
         {
             _shown = shown;
             CellClass = ClassNames.Join("tb-data-grid__cell", ClassNames.Modifier("tb-data-grid__cell", Alignment),
                 Class);
+            _averageNeedsFallback = Format is null || !WritesDecimals(Format);
             Grid.ColumnChanged();
         }
     }
 
     internal object? ValueOf(TItem item) => _value?.Invoke(item);
+
+    internal bool HasTotal =>
+        Aggregate != ColumnAggregate.None || AggregateBy is not null || FooterTemplate is not null;
+
+    // Whole numbers and decimals add up exactly as decimal; doubles and floats as double, which holds their range.
+    internal object? TotalOf(IReadOnlyList<TItem> rows)
+    {
+        if (AggregateBy is not null)
+        {
+            return AggregateBy(rows);
+        }
+
+        var values = rows.Select(ValueOf).Where(value => value is not null).ToList();
+        if (Aggregate == ColumnAggregate.Count)
+        {
+            return values.Count;
+        }
+
+        if (Aggregate is ColumnAggregate.Min or ColumnAggregate.Max)
+        {
+            return values.Count == 0 ? null : Aggregate == ColumnAggregate.Min
+                ? values.Min(Comparer<object?>.Default) : values.Max(Comparer<object?>.Default);
+        }
+
+        if (Aggregate is not (ColumnAggregate.Sum or ColumnAggregate.Average) || values.Count == 0)
+        {
+            return null;
+        }
+
+        if (values.All(value => value is TimeSpan))
+        {
+            var ticks = values.Sum(value => ((TimeSpan)value!).Ticks);
+            return TimeSpan.FromTicks(Aggregate == ColumnAggregate.Sum ? ticks : ticks / values.Count);
+        }
+
+        if (values.FirstOrDefault(value => !NumberTypes.IsNumber(value!.GetType())) is { } other)
+        {
+            throw new InvalidOperationException($"The \"{Key}\" column can't show the {Aggregate} of its " +
+                $"{other.GetType().Name} values; give it {nameof(AggregateBy)} to work out its total instead.");
+        }
+
+        if (values.Any(value => value is double or float))
+        {
+            var doubles = values.Select(value => Convert.ToDouble(value, CultureInfo.InvariantCulture)).ToList();
+            return Aggregate == ColumnAggregate.Sum ? doubles.Sum() : doubles.Average();
+        }
+
+        var decimals = values.Select(value => Convert.ToDecimal(value, CultureInfo.InvariantCulture)).ToList();
+        var sum = decimals.Sum();
+        if (Aggregate == ColumnAggregate.Sum)
+        {
+            // A sum of whole numbers stays whole, so an integer format such as "D4" still applies.
+            var whole = values.All(value => NumberTypes.IsWhole(value!.GetType()));
+            return whole && sum is >= long.MinValue and <= long.MaxValue ? (long)sum : (object)sum;
+        }
+
+        return decimals.Average();
+    }
+
+    // A count is whole rows whatever the format; an unformatted whole-number or decimal average shows two decimals.
+    internal string? TotalTextOf(object? total) => total switch
+    {
+        _ when AggregateBy is not null => TextOf(total),
+        { } whole when Aggregate == ColumnAggregate.Count && NumberTypes.IsWhole(whole.GetType()) =>
+            Convert.ToDecimal(total, CultureInfo.InvariantCulture).ToString("N0", CultureInfo.CurrentCulture),
+        decimal average when Aggregate == ColumnAggregate.Average && _averageNeedsFallback =>
+            average.ToString("#,0.##", CultureInfo.CurrentCulture),
+        _ => TextOf(total),
+    };
+
+    // An integer-only format, such as "D4", can't write a decimal; checked when the format changes, not each render.
+    private static bool WritesDecimals(string format)
+    {
+        try
+        {
+            _ = 1.5m.ToString(format, CultureInfo.InvariantCulture);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
 
     internal object? SortValueOf(TItem item) => SortBy is not null ? SortBy(item) : ValueOf(item);
 

@@ -53,7 +53,7 @@ export function createDataGrid(table) {
 
     // A pinned cell sticks just after the cells pinned before it on its side, so their widths are measured into the
     // variables its style reads, numbered from that side. Scroll padding as wide as the pinned cells, and as tall as
-    // a header that stays in view, keeps a focused cell or a row scrolled to from landing under them.
+    // a header and totals row that stay in view, keeps a focused cell or a row scrolled to from landing under them.
     const headers = table.tHead.rows[0];
     const scroll = table.parentElement;
     const measurePins = () => {
@@ -69,10 +69,16 @@ export function createDataGrid(table) {
             scroll.style.scrollPaddingInline = padding;
         }
 
-        const top = scroll.parentElement.classList.contains('tb-data-grid--scrolls')
-            ? `${table.tHead.getBoundingClientRect().height}px` : '';
+        const scrolls = scroll.parentElement.classList.contains('tb-data-grid--scrolls');
+        const top = scrolls ? `${table.tHead.getBoundingClientRect().height}px` : '';
         if (scroll.style.scrollPaddingBlockStart !== top) {
             scroll.style.scrollPaddingBlockStart = top;
+        }
+
+        // A totals row kept in view needs padding too; adding one resizes the watched table, so this runs again.
+        const bottom = scrolls && table.tFoot ? `${table.tFoot.getBoundingClientRect().height}px` : '';
+        if (scroll.style.scrollPaddingBlockEnd !== bottom) {
+            scroll.style.scrollPaddingBlockEnd = bottom;
         }
     };
     // The box is a stop for Tab only when keys have something to scroll and cell navigation doesn't scroll it for them.

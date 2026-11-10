@@ -6538,6 +6538,12 @@ public static class ExampleCatalog
                     + "\"Group by\" list or set from code through `Groups`. Groups nest in the order they are picked, "
                     + "and each starts with a heading that shows its row count and opens or closes the group.",
                     typeof(DataGridGroupExample)),
+                new("totals", "Totals", "A column's `Aggregate` shows its `Sum`, `Average`, `Count`, `Min` or `Max` "
+                    + "in a totals row under the rows. Each total covers every row the filters leave, not only the "
+                    + "page shown. `AggregateBy` works out any other total from the rows in `Items`, and "
+                    + "`FooterTemplate` draws the cell. "
+                    + "A `DataProvider` is asked for the totals in `GridRequest.Aggregates` and gives them back in "
+                    + "`GridResult.Totals`.", typeof(DataGridTotalsExample)),
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
@@ -6607,7 +6613,7 @@ public static class ExampleCatalog
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
                 typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>),
-                typeof(GridState),
+                typeof(GridState), typeof(ColumnAggregate), typeof(GridAggregate),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Keyboard =
@@ -6691,6 +6697,9 @@ public static class ExampleCatalog
                     + "says its place, such as \"sort 2 of 3, ascending\".",
                 "The header checkbox shows \"mixed\" when only some rows are selected.",
                 "A group's button reports its state with `aria-expanded`.",
+                "The totals row is the table's footer, so each total is read with its column's header. Each cell "
+                    + "names its total before the value, such as \"Sum 49.9\". With cell navigation, the arrow keys "
+                    + "reach the row like any other.",
                 "A pinned column moves to its side of the table in the page's order too, so screen readers and Tab "
                     + "reach its cells in the order they show.",
                 "With `Virtualize`, the table's `aria-rowcount` holds the number of rows, headers included, and "
@@ -6764,6 +6773,8 @@ public static class ExampleCatalog
                 new("group", "A group's heading row."),
                 new("group-toggle", "The button that opens and closes a group."),
                 new("select-all", "The checkbox that selects every row on the page."),
+                new("totals", "The totals row, under the rows."),
+                new("total-label", "The name of a total, such as \"Sum\", before its value."),
                 new("row", "One row."),
                 new("placeholder", "A row a large grid hasn't loaded yet."),
                 new("editor", "The field that edits a cell."),
@@ -6809,6 +6820,8 @@ public static class ExampleCatalog
                     + "invariant text, with a range's two dates separated by a space.",
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync` and "
                     + "`FilterAsync`.",
+                "`Total(\"Length (km)\")` reads the totals row's cell under a column, such as \"Sum 49.9\", or null "
+                    + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`.",
                 "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
                     + "dragging its edge, waiting for the grid to keep the width, and in bUnit as the grid's script "
                     + "reports it. A column's header carries the width the grid keeps in `data-width`.",

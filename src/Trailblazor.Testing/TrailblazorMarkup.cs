@@ -650,6 +650,16 @@ public sealed class TbGridDriver
     public IReadOnlyList<string> Columns => _find().QuerySelectorAll("thead th[data-title]")
         .Select(header => header.GetAttribute("data-title")!).ToList();
 
+    /// <summary>The text of the totals row's cell under the column with this title, such as <c>"Sum 42.1"</c>, or
+    /// null when the column shows no total.</summary>
+    public string? Total(string column)
+    {
+        var key = Header(column).GetAttribute("data-column");
+        var text = _find().QuerySelector($"tfoot [data-part=totals] td[data-column=\"{key}\"]")?.TextContent;
+        return string.IsNullOrWhiteSpace(text) ? null
+            : string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    }
+
     /// <summary>Resizes the column with this title to this many pixels, as the grid's script reports a drag of its
     /// header's edge. bUnit has no layout, so the other columns keep only the widths the grid already gave them, and
     /// the column's <c>MinWidth</c>, which the browser measures, doesn't apply.</summary>

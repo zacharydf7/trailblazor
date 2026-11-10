@@ -1,0 +1,28 @@
+@* A column's Aggregate shows its total under the rows, covering every row the filters leave, not just this page. *@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail totals" KeySelector="trail => trail.Id" PageSize="3"
+            CellNavigation>
+    <TbColumn Field="trail => trail.Name" Filterable Aggregate="ColumnAggregate.Count" />
+    <TbColumn Field="trail => trail.Region" Filterable />
+    <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Aggregate="ColumnAggregate.Sum" />
+    <TbColumn Field="trail => trail.ClimbM" Title="Climb (m)" Format="N0" Aggregate="ColumnAggregate.Max" />
+    <TbColumn TItem="Trail" Field="trail => trail.Done" Title="Done" AggregateBy="DoneShare">
+        <FooterTemplate>@context done</FooterTemplate>
+    </TbColumn>
+</TbDataGrid>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", "North ridge", 6.4, 210, true),
+        new(2, "Eagle Ridge traverse", "North ridge", 14.2, 980, false),
+        new(3, "Cedar Flats", "River valley", 3.1, 40, true),
+        new(4, "Fern Gully", "River valley", 5.8, 320, true),
+        new(5, "Summit Gate", "High peaks", 11.9, 1250, false),
+        new(6, "Lake camp", "High peaks", 8.5, 610, false),
+    ];
+
+    private static object? DoneShare(IReadOnlyList<Trail> trails) =>
+        trails.Count == 0 ? null : $"{trails.Count(trail => trail.Done) / (double)trails.Count:P0}";
+
+    private sealed record Trail(int Id, string Name, string Region, double LengthKm, int ClimbM, bool Done);
+}

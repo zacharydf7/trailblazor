@@ -771,6 +771,22 @@ public static class TbStrings
 
     /// <summary>"{0} hidden": read out after a column is hidden from its own menu; {0} is the column.</summary>
     public const string DataGridColumnHidden = "DataGrid.ColumnHidden";
+    /// <summary>"Sum": names a column's total in a data grid's totals row when it adds up the values.</summary>
+    public const string DataGridSum = "DataGrid.Sum";
+
+    /// <summary>"Average": names a column's total in a data grid's totals row when it is the mean of the values.
+    /// </summary>
+    public const string DataGridAverage = "DataGrid.Average";
+
+    /// <summary>"Count": names a column's total in a data grid's totals row when it counts the rows with a value.
+    /// </summary>
+    public const string DataGridCount = "DataGrid.Count";
+
+    /// <summary>"Min": names a column's total in a data grid's totals row when it is the smallest value.</summary>
+    public const string DataGridMin = "DataGrid.Min";
+
+    /// <summary>"Max": names a column's total in a data grid's totals row when it is the largest value.</summary>
+    public const string DataGridMax = "DataGrid.Max";
 
     /// <summary>"Make {0} wider": a column menu item that widens the column; {0} is the column.</summary>
     public const string DataGridWider = "DataGrid.Wider";
@@ -1096,6 +1112,11 @@ public static class TbStrings
         [DataGridColumns] = "Columns",
         [DataGridHide] = "Hide {0}",
         [DataGridColumnHidden] = "{0} hidden",
+        [DataGridSum] = "Sum",
+        [DataGridAverage] = "Average",
+        [DataGridCount] = "Count",
+        [DataGridMin] = "Min",
+        [DataGridMax] = "Max",
         [DataGridWider] = "Make {0} wider",
         [DataGridNarrower] = "Make {0} narrower",
         [DataGridResetWidths] = "Reset column widths",

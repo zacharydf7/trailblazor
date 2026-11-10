@@ -59,7 +59,8 @@
                @ontbselectall="SelectAllAsync" @ontbcolumnwidths="OnColumnWidthsAsync"
                @ontbcolumnorder="OnColumnOrderAsync" data-reorder-columns="@(ReorderableColumns ? "" : null)"
                aria-busy="@(IsLoading ? "true" : null)"
-               aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) : null)"
+               aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + (HasTotals ? 1 : 0)
+                                  : null)"
                class="@ClassNames.Join("tb-data-grid__table", HasFixedWidths ? "tb-data-grid__table--fixed" : null)">
             <thead>
                 <tr aria-rowindex="@(Virtualize ? 1 : null)">
@@ -195,6 +196,28 @@
                     @Rows
                 }
             </tbody>
+            @if (HasTotals)
+            {
+                <tfoot>
+                    <tr data-part="totals" class="tb-data-grid__totals"
+                        aria-rowindex="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + 1 : null)">
+                        @if (CanReorder)
+                        {
+                            <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
+                        }
+                        @if (SelectionMode != SelectionMode.None)
+                        {
+                            <td data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)" class="tb-data-grid__select">
+                            </td>
+                        }
+                        @foreach (var column in _shownColumns)
+                        {
+                            <td @key="column.Key" data-column="@column.Key" data-pinned="@PinSide(column)"
+                                style="@PinStyle(column)" class="@column.CellClass">@TotalCell(column)</td>
+                        }
+                    </tr>
+                </tfoot>
+            }
         </table>
     </div>
     @if (OnRowMove.HasDelegate)
@@ -457,6 +480,27 @@
                 @FilterMenu(column)
             }
         </text>;
+
+    private RenderFragment TotalCell(TbColumn<TItem> column)
+    {
+        var total = _totals.GetValueOrDefault(column.Key);
+        if (column.FooterTemplate is { } template)
+        {
+            return template(total);
+        }
+
+        var labeled = total is not null && column.AggregateBy is null && column.Aggregate != ColumnAggregate.None;
+        return @<text>
+            @if (labeled)
+            {
+                <span data-part="total-label" class="tb-data-grid__total-label">
+                    @AggregateLabel(column.Aggregate)
+                </span>
+                @(" ")
+            }
+            @column.TotalTextOf(total)
+        </text>;
+    }
 
     private RenderFragment ColumnMenu(TbColumn<TItem> column) =>
         @<TbMenu Class="tb-data-grid__column-menu" data-part="column-menu">

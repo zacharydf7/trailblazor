@@ -20,11 +20,16 @@ const Trailblazor.TbStrings.DataGridColumnHidden = "DataGrid.ColumnHidden" -> st
 const Trailblazor.TbStrings.DataGridColumnMenu = "DataGrid.ColumnMenu" -> string!
 const Trailblazor.TbStrings.DataGridColumnMoved = "DataGrid.ColumnMoved" -> string!
 const Trailblazor.TbStrings.DataGridColumns = "DataGrid.Columns" -> string!
+const Trailblazor.TbStrings.DataGridAverage = "DataGrid.Average" -> string!
+const Trailblazor.TbStrings.DataGridCount = "DataGrid.Count" -> string!
 const Trailblazor.TbStrings.DataGridEarlier = "DataGrid.Earlier" -> string!
 const Trailblazor.TbStrings.DataGridHide = "DataGrid.Hide" -> string!
 const Trailblazor.TbStrings.DataGridLater = "DataGrid.Later" -> string!
+const Trailblazor.TbStrings.DataGridMax = "DataGrid.Max" -> string!
+const Trailblazor.TbStrings.DataGridMin = "DataGrid.Min" -> string!
 const Trailblazor.TbStrings.DataGridNarrower = "DataGrid.Narrower" -> string!
 const Trailblazor.TbStrings.DataGridResetWidths = "DataGrid.ResetWidths" -> string!
+const Trailblazor.TbStrings.DataGridSum = "DataGrid.Sum" -> string!
 const Trailblazor.TbStrings.DataGridWider = "DataGrid.Wider" -> string!
 const Trailblazor.TbStrings.DatePickerBadDate = "DatePicker.BadDate" -> string!
 const Trailblazor.TbStrings.DatePickerClear = "DatePicker.Clear" -> string!
@@ -60,6 +65,9 @@ override Trailblazor.DatePickerLabels.ToString() -> string!
 override Trailblazor.DateTimePickerLabels.Equals(object? obj) -> bool
 override Trailblazor.DateTimePickerLabels.GetHashCode() -> int
 override Trailblazor.DateTimePickerLabels.ToString() -> string!
+override Trailblazor.GridAggregate.Equals(object? obj) -> bool
+override Trailblazor.GridAggregate.GetHashCode() -> int
+override Trailblazor.GridAggregate.ToString() -> string!
 override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
 override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
@@ -105,6 +113,8 @@ static Trailblazor.DatePickerLabels.operator !=(Trailblazor.DatePickerLabels? le
 static Trailblazor.DatePickerLabels.operator ==(Trailblazor.DatePickerLabels? left, Trailblazor.DatePickerLabels? right) -> bool
 static Trailblazor.DateTimePickerLabels.operator !=(Trailblazor.DateTimePickerLabels? left, Trailblazor.DateTimePickerLabels? right) -> bool
 static Trailblazor.DateTimePickerLabels.operator ==(Trailblazor.DateTimePickerLabels? left, Trailblazor.DateTimePickerLabels? right) -> bool
+static Trailblazor.GridAggregate.operator !=(Trailblazor.GridAggregate? left, Trailblazor.GridAggregate? right) -> bool
+static Trailblazor.GridAggregate.operator ==(Trailblazor.GridAggregate? left, Trailblazor.GridAggregate? right) -> bool
 static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TimePickerLabels.operator !=(Trailblazor.TimePickerLabels? left, Trailblazor.TimePickerLabels? right) -> bool
@@ -150,6 +160,13 @@ Trailblazor.CarouselLabels.Stop.init -> void
 Trailblazor.CodeCharacters
 Trailblazor.CodeCharacters.Digits = 0 -> Trailblazor.CodeCharacters
 Trailblazor.CodeCharacters.LettersAndDigits = 1 -> Trailblazor.CodeCharacters
+Trailblazor.ColumnAggregate
+Trailblazor.ColumnAggregate.Average = 2 -> Trailblazor.ColumnAggregate
+Trailblazor.ColumnAggregate.Count = 3 -> Trailblazor.ColumnAggregate
+Trailblazor.ColumnAggregate.Max = 5 -> Trailblazor.ColumnAggregate
+Trailblazor.ColumnAggregate.Min = 4 -> Trailblazor.ColumnAggregate
+Trailblazor.ColumnAggregate.None = 0 -> Trailblazor.ColumnAggregate
+Trailblazor.ColumnAggregate.Sum = 1 -> Trailblazor.ColumnAggregate
 Trailblazor.ColumnOrderEventArgs
 Trailblazor.ColumnOrderEventArgs.ColumnOrderEventArgs() -> void
 Trailblazor.ColumnOrderEventArgs.Order.get -> System.Collections.Generic.List<string!>!
@@ -196,6 +213,19 @@ Trailblazor.DateTimePickerLabels.Time.get -> string?
 Trailblazor.DateTimePickerLabels.Time.init -> void
 Trailblazor.DateTimePickerLabels.Unavailable.get -> string?
 Trailblazor.DateTimePickerLabels.Unavailable.init -> void
+Trailblazor.GridAggregate
+Trailblazor.GridAggregate.<Clone>$() -> Trailblazor.GridAggregate!
+Trailblazor.GridAggregate.Aggregate.get -> Trailblazor.ColumnAggregate
+Trailblazor.GridAggregate.Aggregate.init -> void
+Trailblazor.GridAggregate.Column.get -> string!
+Trailblazor.GridAggregate.Column.init -> void
+Trailblazor.GridAggregate.Deconstruct(out string! Column, out Trailblazor.ColumnAggregate Aggregate) -> void
+Trailblazor.GridAggregate.Equals(Trailblazor.GridAggregate? other) -> bool
+Trailblazor.GridAggregate.GridAggregate(string! Column, Trailblazor.ColumnAggregate Aggregate) -> void
+Trailblazor.GridRequest.Aggregates.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridAggregate!>!
+Trailblazor.GridRequest.Aggregates.init -> void
+Trailblazor.GridResult<TItem>.Totals.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Trailblazor.GridResult<TItem>.Totals.init -> void
 Trailblazor.GridState.ColumnOrder.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.GridState.ColumnOrder.init -> void
 Trailblazor.GridState.ColumnWidths.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>!
@@ -314,6 +344,12 @@ Trailblazor.TbCodeField.OnComplete.set -> void
 Trailblazor.TbCodeField.TbCodeField() -> void
 Trailblazor.TbColumn<TItem>.Hideable.get -> bool
 Trailblazor.TbColumn<TItem>.Hideable.set -> void
+Trailblazor.TbColumn<TItem>.Aggregate.get -> Trailblazor.ColumnAggregate
+Trailblazor.TbColumn<TItem>.Aggregate.set -> void
+Trailblazor.TbColumn<TItem>.AggregateBy.get -> System.Func<System.Collections.Generic.IReadOnlyList<TItem>!, object?>?
+Trailblazor.TbColumn<TItem>.AggregateBy.set -> void
+Trailblazor.TbColumn<TItem>.FooterTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<object?>?
+Trailblazor.TbColumn<TItem>.FooterTemplate.set -> void
 Trailblazor.TbColumn<TItem>.MinWidth.get -> string?
 Trailblazor.TbColumn<TItem>.MinWidth.set -> void
 Trailblazor.TbColumn<TItem>.Resizable.get -> bool

@@ -36,6 +36,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A value that fails its check keeps the edit open. Tab in the last editable cell leaves the grid, and Shift+Tab in the first goes back to its cell. `GridEditKeysTests.Tab_ShouldKeepTheEditOpenWithWhy_WhenTheValueFailsItsCheck`, `GridEditKeysTests.Tab_ShouldSaveAndLeaveTheGrid_WhenPressedInTheLastEditableCell`, `GridEditKeysTests.Tab_ShouldSaveAndGoBackToItsCell_WhenShiftIsHeldInTheFirstEditableCell`
 - [x] Tab opens no edit on a row its save filtered or sorted out of view. `TbDataGridEditTests.EditStart_ShouldOpenNoEdit_WhenTheSaveTookItsRowAway`
 - [x] A resizable column's menu is a button the keys reach, and Enter opens it to resize the column. `GridResizeTests.ColumnMenu_ShouldWidenTheColumn_WhenReachedAndChosenWithTheKeys`
+- [x] With cell navigation, the arrow keys and Ctrl+End reach the totals row like any other row. `GridTotalsTests.Totals_ShouldBeReachedByTheArrowKeys_WhenCellNavigationIsOn`
 - [x] A column moved from its menu with the keys keeps focus on its menu button in its new place. `GridResizeTests.ColumnMenu_ShouldMoveTheColumnAndKeepFocusOnItsMenu_WhenMoveLaterIsChosenWithTheKeys`
 
 ## Pointer

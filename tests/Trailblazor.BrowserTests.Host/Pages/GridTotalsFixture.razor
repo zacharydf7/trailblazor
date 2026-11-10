@@ -1,0 +1,14 @@
+@page "/grid-totals"
+
+@* Rows that scroll in a set height under a totals row that stays in view. *@
+<TbDataGrid TItem="Leg" Items="Legs" AriaLabel="Scrolling totals" KeySelector="leg => leg.Id" Height="12rem"
+            CellNavigation>
+    <TbColumn Field="leg => leg.Name" />
+    <TbColumn Field="leg => leg.LengthKm" Title="Length (km)" Format="N1" Aggregate="ColumnAggregate.Sum" />
+</TbDataGrid>
+
+@code {
+    private static readonly Leg[] Legs = [.. Enumerable.Range(1, 30).Select(at => new Leg(at, $"Leg {at}", at / 2.0))];
+
+    private sealed record Leg(int Id, string Name, double LengthKm);
+}

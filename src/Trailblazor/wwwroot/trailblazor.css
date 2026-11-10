@@ -6297,6 +6297,24 @@
         background: var(--tb-color-surface);
     }
 
+    /* Rows that scroll in a set height keep the totals in view below them, as the header stays above. */
+    .tb-data-grid--scrolls tfoot {
+        position: sticky;
+        inset-block-end: 0;
+        z-index: 2;
+    }
+
+    .tb-data-grid__totals td {
+        border-block-start: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface);
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-data-grid__total-label {
+        color: var(--tb-color-text-muted);
+        font-weight: normal;
+    }
+
     /* A cell's field fills the width its column already has, so the column doesn't widen as an edit opens. */
     .tb-data-grid__editor {
         contain: inline-size;

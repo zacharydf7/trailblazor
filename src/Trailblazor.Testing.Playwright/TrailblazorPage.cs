@@ -956,6 +956,16 @@ public sealed class TbGridLocator(ILocator scope, string name)
     public async Task<IReadOnlyList<string>> ColumnsAsync() => await Table.Locator("thead th[data-title]")
         .EvaluateAllAsync<string[]>("headers => headers.map(header => header.dataset.title)");
 
+    /// <summary>The text of the totals row's cell under the column with this title, such as <c>"Sum 42.1"</c>, or
+    /// null when the column shows no total.</summary>
+    public async Task<string?> TotalAsync(string column)
+    {
+        var key = await Header(column).GetAttributeAsync("data-column");
+        var texts = await Table.Locator($"tfoot [data-part=totals] td[data-column=\"{key}\"]").AllInnerTextsAsync();
+        var words = string.Join(' ', texts).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        return words.Length == 0 ? null : string.Join(' ', words);
+    }
+
     /// <summary>Resizes the column with this title to this many pixels by dragging its header's edge, and waits for
     /// the grid to keep the width. The column stops at its <c>MinWidth</c>.</summary>
     public async Task ResizeColumnAsync(string column, double width)

@@ -49,11 +49,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private Dictionary<string, double> _widths = [];
     private List<string> _order = [];
     private List<string> _hidden = [];
+    private Dictionary<string, object?> _totals = [];
+    private string _aggregatesAsked = "";
     private string? _focusColumnMenu;
     private bool _focusColumnChooser;
     private string? _measureColumn;
     private bool _measuring;
-    // A provider's first load waits for the columns when a filter read back from JSON needs their types.
+    // A provider's first load waits for the columns, for their totals and for the types JSON filters need.
     private bool _showForColumns;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
     // A Shift range runs from its anchor to where it has reached, on top of the selection it started with, so it can
@@ -395,6 +397,27 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int ColumnCount => _shownColumns.Count + LeadCount;
 
+    private bool HasTotals => _shownColumns.Any(column => column.HasTotal);
+
+    private IReadOnlyList<GridAggregate> Aggregates =>
+    [
+        .. _columns.Where(column => column.Aggregate != ColumnAggregate.None)
+            .Select(column => new GridAggregate(column.Key, column.Aggregate)),
+    ];
+
+    private string AggregatesKey => string.Join(",", Aggregates.Select(asked => $"{asked.Column}:{asked.Aggregate}"));
+
+    private string VirtualLoadKey => $"{string.Join(",", _sorts)}|{FiltersKey}|{AggregatesKey}";
+
+    private string AggregateLabel(ColumnAggregate aggregate) => Localizer[aggregate switch
+    {
+        ColumnAggregate.Sum => TbStrings.DataGridSum,
+        ColumnAggregate.Average => TbStrings.DataGridAverage,
+        ColumnAggregate.Count => TbStrings.DataGridCount,
+        ColumnAggregate.Min => TbStrings.DataGridMin,
+        _ => TbStrings.DataGridMax,
+    }];
+
     // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
     private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0
         && !AppliedFilters.Any() && !AppliedGroups.Any();
@@ -575,6 +598,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 StateHasChanged();
             }
         }
+        // Ask the provider again when a column with an Aggregate joins after the first load, such as one shown later.
+        else if (DataProvider is not null && AggregatesKey != _aggregatesAsked)
+        {
+            await ShowAsync(force: false);
+            StateHasChanged();
+        }
     }
 
     /// <summary>Loads the rows again from the <see cref="DataProvider"/>, or sorts and pages <see cref="Items"/> again
@@ -705,7 +734,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async ValueTask<ItemsProviderResult<GridLine>> LoadVirtualRowsAsync(ItemsProviderRequest request)
     {
         TypeFilters();
-        var asked = new GridRequest(request.StartIndex, request.Count, [.. _sorts]) { Filters = [.. _filters] };
+        var asked = new GridRequest(request.StartIndex, request.Count, [.. _sorts])
+        {
+            Filters = [.. _filters],
+            Aggregates = Aggregates,
+        };
+        _aggregatesAsked = AggregatesKey;
+        _loaded = VirtualLoadKey;
         _loading = true;
         _failed = false;
         GridResult<TItem> result;
@@ -736,6 +771,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _loading = false;
         List<TItem> rows = [.. result.Items];
         ShowRows(rows);
+        _totals = new(result.Totals);
         _rowsStart = request.StartIndex;
         _total = result.TotalCount;
         if (_total == 0)
@@ -1395,7 +1431,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
-        if (_columns.Count == 0 && _filters.Any(FilterJson.IsUntyped))
+        // Wait for the columns' JSON filter types and totals; with no next render, static renders load without totals.
+        if (_columns.Count == 0 && (RendererInfo.IsInteractive || _filters.Any(FilterJson.IsUntyped)))
         {
             _showForColumns = true;
             _loading = true;
@@ -1405,8 +1442,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         var request = new GridRequest((_page - 1) * (_pageSize ?? 0), _pageSize, [.. _sorts])
         {
             Filters = [.. _filters],
+            Aggregates = Aggregates,
         };
-        var asked = $"{request.StartIndex}|{request.Count}|{string.Join(",", _sorts)}|{FiltersKey}";
+        _aggregatesAsked = AggregatesKey;
+        var asked = $"{request.StartIndex}|{request.Count}|{string.Join(",", _sorts)}|{FiltersKey}|{AggregatesKey}";
         if (!force && asked == _loaded)
         {
             return;
@@ -1446,6 +1485,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         ShowRows([.. result.Items]);
+        _totals = new(result.Totals);
         _total = result.TotalCount;
         if (_total == 0)
         {
@@ -1463,6 +1503,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         _failed = true;
         ShowRows([]);
+        _totals = [];
         Announcer.Polite(LoadFailedLabel);
         await OnLoadFailed.InvokeAsync(exception);
     }
@@ -1471,7 +1512,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // first renders, it asks of its own accord.
     private async Task ReloadVirtualRowsAsync(bool force)
     {
-        var asked = $"{string.Join(",", _sorts)}|{FiltersKey}";
+        _aggregatesAsked = AggregatesKey;
+        var asked = VirtualLoadKey;
         if (!force && asked == _loaded)
         {
             return;
@@ -1494,6 +1536,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         var arranged = Arranged().ToList();
+        _totals = _columns.Where(column => column.HasTotal)
+            .ToDictionary(column => column.Key, column => column.TotalOf(arranged));
         var lines = Lines(arranged);
         _matched = arranged.Count;
         _total = lines.Count;
