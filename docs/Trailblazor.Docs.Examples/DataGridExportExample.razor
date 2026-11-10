@@ -1,6 +1,6 @@
 @* The Export menu downloads the rows the filters leave, from every page, with the columns shown. *@
 <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail list" KeySelector="trail => trail.Id" PageSize="3"
-            Exportable HideableColumns>
+            Exportable>
     <TbColumn Field="trail => trail.Name" Filterable Sortable />
     <TbColumn Field="trail => trail.Region" Filterable />
     <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
