@@ -12,15 +12,15 @@ public class ComponentContractTests : BunitContext
 {
     // TbRoot and TbDialogTitle render no element of their own, TbStyles only a <link> and TbThemeHead only a <script>,
     // which take no class or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane,
-    // TbTreeItem, TbMenuRadioItem, TbDialogDescription, TbColumn, TbTableOfContentsItem, TbBreadcrumb, TbNavLink,
-    // TbNavGroup, TbStep and TbCarouselSlide only render inside their parent (see their parents' tests).
+    // TbTreeItem, TbMenuRadioItem, TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb,
+    // TbNavLink, TbNavGroup, TbStep and TbCarouselSlide only render inside their parent (see their parents' tests).
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbRadio<>), typeof(TbCheckboxItem<>),
         typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>), typeof(TbSplitterPane), typeof(TbTreeItem<>),
         typeof(TbMenuRadioItem<>), typeof(TbDialogDescription), typeof(TbColumn<>), typeof(TbDialogTitle),
         typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),
-        typeof(TbStep), typeof(TbCarouselSlide),
+        typeof(TbStep), typeof(TbCarouselSlide), typeof(TbColumnGroup<>),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.

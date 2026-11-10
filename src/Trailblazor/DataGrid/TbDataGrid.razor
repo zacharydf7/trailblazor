@@ -76,8 +76,42 @@
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + (HasTotals ? 1 : 0)
                                   : null)"
                class="@ClassNames.Join("tb-data-grid__table", HasFixedWidths ? "tb-data-grid__table--fixed" : null)">
+            @if (BandDepth > 0)
+            {
+                @* A fixed table takes its widths from its first row, here group headings, so the <col>s carry them. *@
+                <colgroup>
+                    @for (var lead = 0; lead < LeadCount; lead++)
+                    {
+                        <col />
+                    }
+                    @foreach (var column in _shownColumns)
+                    {
+                        <col @key="column.Key" data-column="@column.Key"
+                             style="@(WidthOf(column) is { } width ? $"width: {width}" : null)" />
+                    }
+                </colgroup>
+            }
             <thead>
-                <tr aria-rowindex="@(Virtualize ? 1 : null)">
+                @for (var level = 0; level < BandDepth; level++)
+                {
+                    <tr data-part="bands" aria-rowindex="@(Virtualize ? level + 1 : null)" class="tb-data-grid__bands">
+                        @BlankLeadCells
+                        @foreach (var (group, columns) in BandsAt(level))
+                        {
+                            if (group is null)
+                            {
+                                <td data-pinned="@PinSide(columns[0])" style="@PinStyle(columns[0])"></td>
+                            }
+                            else
+                            {
+                                <th scope="col" colspan="@columns.Count" data-part="band"
+                                    data-pinned="@PinSide(columns[0])" style="@BandPinStyle(columns)"
+                                    class="tb-data-grid__band">@group.Title</th>
+                            }
+                        }
+                    </tr>
+                }
+                <tr aria-rowindex="@(Virtualize ? BandDepth + 1 : null)">
                     @if (CanReorder)
                     {
                         <th scope="col" data-part="order" data-pinned="@LeadPin" style="@LeadStyle(0)"
@@ -141,21 +175,9 @@
                 </tr>
                 @if (HasFilterRow)
                 {
-                    <tr data-part="filters" aria-rowindex="@(Virtualize ? 2 : null)" class="tb-data-grid__filters">
-                        @if (CanReorder)
-                        {
-                            <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
-                        }
-                        @if (HasDetails)
-                        {
-                            <td data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)"
-                                class="tb-data-grid__detail-toggle"></td>
-                        }
-                        @if (SelectionMode != SelectionMode.None)
-                        {
-                            <td data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)" class="tb-data-grid__select">
-                            </td>
-                        }
+                    <tr data-part="filters" aria-rowindex="@(Virtualize ? BandDepth + 2 : null)"
+                        class="tb-data-grid__filters">
+                        @BlankLeadCells
                         @foreach (var column in _shownColumns)
                         {
                             <td @key="column.Key" data-column="@column.Key" data-part="filter"
@@ -512,8 +534,8 @@
             @TotalCells(totals.Values)
         </tr>;
 
-    // The grid's totals row and each group's totals row share these cells: blank lead cells, then one total per column.
-    private RenderFragment TotalCells(Dictionary<string, object?> totals) =>
+    // The handle, details and selection columns hold nothing in the rows that aren't items.
+    private RenderFragment BlankLeadCells =>
         @<text>
             @if (CanReorder)
             {
@@ -527,6 +549,12 @@
             {
                 <td data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)" class="tb-data-grid__select"></td>
             }
+        </text>;
+
+    // The grid's totals row and each group's totals row share these cells: blank lead cells, then one total per column.
+    private RenderFragment TotalCells(Dictionary<string, object?> totals) =>
+        @<text>
+            @BlankLeadCells
             @foreach (var column in _shownColumns)
             {
                 <td @key="column.Key" data-column="@column.Key" data-pinned="@PinSide(column)"

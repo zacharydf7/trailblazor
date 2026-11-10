@@ -1,0 +1,23 @@
+@page "/grid-bands-late"
+
+@* The columns, and the group over them, arrive only once the grid is ready, as they would if they depended on settings
+   the page loads. *@
+<button type="button" @onclick="() => _columns = true">Show the columns</button>
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Late trails" KeySelector="trail => trail.Id" CellNavigation
+            ResizableColumns>
+    @if (_columns)
+    {
+        <TbColumn Field="trail => trail.Name" />
+        <TbColumnGroup Title="Distance">
+            <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" />
+        </TbColumnGroup>
+    }
+</TbDataGrid>
+
+@code {
+    private static readonly Trail[] Trails = [new(1, "Pine Hollow loop", 6.4), new(2, "Cedar Flats", 3.1)];
+
+    private bool _columns;
+
+    private sealed record Trail(int Id, string Name, double LengthKm);
+}

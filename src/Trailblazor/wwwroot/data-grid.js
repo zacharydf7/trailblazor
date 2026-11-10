@@ -26,6 +26,9 @@ const takesCellFocus = element => !element.hasAttribute('aria-haspopup') && !ele
 // The row height to assume when no rows are drawn to measure.
 const fallbackRowHeight = 40;
 
+// The row of column headers, under any rows of group headings, even before the grid has any columns.
+const headerRowOf = table => [...table.tHead.rows].find(row => row.dataset.part !== 'bands');
+
 // A table's rows that hold cells, leaving out a virtualized grid's spacers and the rows it hides.
 const linesOf = table => [...table.rows].filter(row => row.cells.length > 0 && !row.hasAttribute('aria-hidden'));
 const selectsMany = table => table.dataset.selection === 'multiple';
@@ -54,7 +57,7 @@ export function createDataGrid(table) {
     // A pinned cell sticks just after the cells pinned before it on its side, so their widths are measured into the
     // variables its style reads, numbered from that side. Scroll padding as wide as the pinned cells, and as tall as
     // a header and totals row that stay in view, keeps a focused cell or a row scrolled to from landing under them.
-    const headers = table.tHead.rows[0];
+    const headers = headerRowOf(table);
     const scroll = table.parentElement;
     const measurePins = () => {
         const place = (cells, name) => cells.reduce((offset, cell, slot) => {
@@ -157,6 +160,14 @@ export function createDataGrid(table) {
         table.dispatchEvent(new CustomEvent('tb-column-widths', { bubbles: true, detail: { widths } }));
     };
 
+    // A grid with group headings sizes its columns through its <col>s too, since a fixed table reads its first row.
+    const setWidth = (header, width) => {
+        header.style.width = width;
+        const column = [...table.querySelectorAll(':scope > colgroup > col')]
+            .find(col => col.dataset.column === header.dataset.column);
+        column?.style.setProperty('width', width);
+    };
+
     // A drag fixes every column at its width first, so only the dragged edge moves while it lasts.
     let drag = null;
     const startResize = event => {
@@ -168,7 +179,7 @@ export function createDataGrid(table) {
         event.preventDefault();
         const cell = edge.closest('th');
         const widths = columnHeaders().map(other => [other, other.getBoundingClientRect().width]);
-        widths.forEach(([other, width]) => other.style.width = `${width}px`);
+        widths.forEach(([other, width]) => setWidth(other, `${width}px`));
         table.classList.add('tb-data-grid__table--fixed');
         const rtl = getComputedStyle(table).direction === 'rtl';
         drag = { cell, edge, x: event.clientX, width: cell.getBoundingClientRect().width, rtl };
@@ -178,7 +189,7 @@ export function createDataGrid(table) {
     const moveResize = event => {
         if (drag) {
             const delta = (event.clientX - drag.x) * (drag.rtl ? -1 : 1);
-            drag.cell.style.width = `${Math.max(drag.width + delta, minWidth(drag.cell))}px`;
+            setWidth(drag.cell, `${Math.max(drag.width + delta, minWidth(drag.cell))}px`);
         }
     };
     const endResize = () => {
@@ -450,7 +461,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         ? rows.find(row => Number(row.getAttribute('aria-rowindex')) === index) : rows[index - 1];
     const rowCount = rows => isVirtual() ? Number(table.getAttribute('aria-rowcount')) : rows.length;
     let stop = null;
-    let place = { key: null, index: 1, column: 0 };
+    // Until a cell takes focus, the stop is on the column headers, found each time since columns can come later.
+    let place = { key: null, index: null, column: 0 };
+    const placeIndex = rows => place.index ?? (indexOf(headerRowOf(table), rows) || 1);
     // While the grid moves focus itself, a move up or down keeps its column, even through a group's heading.
     let steering = false;
     let moves = 0;
@@ -531,12 +544,12 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             }
 
             const row = rows.find(line => place.key !== null && line.dataset.key === place.key)
-                ?? rowAt(place.index, rows) ?? rows.at(-1);
+                ?? rowAt(placeIndex(rows), rows) ?? rows.at(-1);
             stop = row ? stopOf(cellAt(row, place.column)) : null;
             // Focus that fell to the page with its row goes to what takes the row's place. A virtualized grid also drops
             // rows as it scrolls, which leaves nothing in that place and mustn't pull focus back.
             if (document.activeElement === document.body) {
-                refocus = holdsFocus && (!isVirtual() || !!rowAt(place.index, rows));
+                refocus = holdsFocus && (!isVirtual() || !!rowAt(placeIndex(rows), rows));
                 holdsFocus = refocus;
             }
         }
@@ -819,7 +832,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         focusCell,
         focusPlace() {
             const rows = linesOf(table);
-            const row = rowAt(place.index, rows) ?? rows.at(-1);
+            const row = rowAt(placeIndex(rows), rows) ?? rows.at(-1);
             if (row) {
                 focusCell(cellAt(row, place.column));
             }

@@ -1,0 +1,49 @@
+@namespace Trailblazor
+@typeparam TItem
+@implements IDisposable
+
+<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+
+@code {
+    /// <summary>The heading shown across the group's columns.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    /// <summary>The group's columns: <see cref="TbColumn{TItem}"/>s, and other groups to nest under this one.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TbDataGrid<TItem> Grid { get; set; } = default!;
+
+    [CascadingParameter]
+    private TbColumnGroup<TItem>? Outer { get; set; }
+
+    private string? _lastTitle;
+
+    // The group's columns and inner groups in the order they're written. The grid takes its column order from these
+    // because a group's columns are added only once the group renders, after the columns written beside it.
+    internal List<object> Members { get; } = [];
+
+    // The groups a column sits in, outermost first.
+    internal IReadOnlyList<TbColumnGroup<TItem>> Chain => Outer is { } outer ? [.. outer.Chain, this] : [this];
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Grid.AddMember(this, Outer);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // The grid draws the heading, so it draws again when the title changes.
+        if (_lastTitle is not null && _lastTitle != Title)
+        {
+            Grid.ColumnChanged();
+        }
+
+        _lastTitle = Title;
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Grid.RemoveMember(this, Outer);
+}

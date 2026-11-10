@@ -1,0 +1,29 @@
+@* Groups put a heading over their columns, and nest, each adding a row of headings. *@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail effort" KeySelector="trail => trail.Id" ResizableColumns
+            CellNavigation>
+    <TbColumn Field="trail => trail.Name" Title="Trail" Pinned="ColumnPin.Start" Sortable />
+    <TbColumnGroup Title="Effort">
+        <TbColumnGroup Title="Distance">
+            <TbColumn Field="trail => trail.LengthKm" Title="Length" Format="N1" Sortable />
+            <TbColumn Field="trail => trail.ClimbM" Title="Climb" Format="N0" Sortable />
+        </TbColumnGroup>
+        <TbColumn Field="trail => trail.Hours" Title="Hours" Format="N1" Sortable />
+    </TbColumnGroup>
+    <TbColumnGroup Title="Where">
+        <TbColumn Field="trail => trail.Park" Sortable />
+        <TbColumn Field="trail => trail.Trailhead" />
+    </TbColumnGroup>
+</TbDataGrid>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", 6.4, 210, 2.0, "Hollow Woods", "Pine Hollow lot"),
+        new(2, "Eagle Ridge traverse", 14.2, 980, 6.5, "Hollow Woods", "Saddle gate"),
+        new(3, "Cedar Flats", 3.1, 40, 1.0, "Mill River", "Mill bridge"),
+        new(4, "Summit Gate", 11.9, 1250, 5.5, "Granite Peaks", "Summit road"),
+    ];
+
+    private sealed record Trail(int Id, string Name, double LengthKm, int ClimbM, double Hours, string Park,
+        string Trailhead);
+}

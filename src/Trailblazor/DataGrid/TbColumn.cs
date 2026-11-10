@@ -23,6 +23,12 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [CascadingParameter]
     private TbDataGrid<TItem> Grid { get; set; } = default!;
 
+    [CascadingParameter]
+    private TbColumnGroup<TItem>? Band { get; set; }
+
+    // The groups the column sits in, outermost first; their headings fill the rows above its header.
+    internal IReadOnlyList<TbColumnGroup<TItem>> Bands => Band?.Chain ?? [];
+
     /// <summary>The value the column shows, such as <c>job => job.Name</c>. It also names the column, sorts it and
     /// gives its title, unless <see cref="Id"/>, <see cref="SortBy"/> or <see cref="Title"/> say otherwise. Values it
     /// reads from outside, such as a loop's variable, are compared to tell when it changed, so they should compare
@@ -244,7 +250,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     private Type? ValueType => FieldType is null ? null : Nullable.GetUnderlyingType(FieldType) ?? FieldType;
 
     /// <inheritdoc />
-    protected override void OnInitialized() => Grid.AddColumn(this);
+    protected override void OnInitialized() => Grid.AddMember(this, Band);
 
     /// <inheritdoc />
     // Markup makes a new field expression and new templates on every render, so the column compares what they say and
@@ -419,7 +425,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     };
 
     /// <inheritdoc />
-    public void Dispose() => Grid.RemoveColumn(this);
+    public void Dispose() => Grid.RemoveMember(this, Band);
 
     // The values a field reads from variables outside it, which C# keeps as fields of a closure object.
     private sealed class Captured : ExpressionVisitor

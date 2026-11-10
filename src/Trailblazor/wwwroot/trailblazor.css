@@ -6449,7 +6449,8 @@
         border-inline-start: 1px solid var(--tb-border-subtle);
     }
 
-    .tb-data-grid__filters td {
+    .tb-data-grid__filters td,
+    .tb-data-grid__bands td {
         background: var(--tb-color-surface);
     }
 
@@ -6715,6 +6716,12 @@
         width: 2.75rem;
         padding-block: 0;
         text-align: center;
+    }
+
+    /* A group's heading spans its columns, centered over them. */
+    .tb-data-grid__band {
+        text-align: center;
+        border-inline: 1px solid var(--tb-border-subtle);
     }
 
     .tb-data-grid__detail-toggle {

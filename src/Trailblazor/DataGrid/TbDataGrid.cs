@@ -15,6 +15,7 @@ namespace Trailblazor;
 public partial class TbDataGrid<TItem> : IAsyncDisposable
 {
     private readonly List<TbColumn<TItem>> _columns = [];
+    private readonly List<object> _members = [];
     private List<TbColumn<TItem>> _arrangedColumns = [];
     private List<TbColumn<TItem>> _shownColumns = [];
     private readonly Dictionary<object, TItem> _selection = [];
@@ -408,7 +409,36 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private bool CanSelectAll => !(Virtualize && DataProvider is not null);
 
     // A virtualized table's aria-rowcount and aria-rowindex count its header rows too.
-    private int HeaderRowCount => HasFilterRow ? 2 : 1;
+    private int HeaderRowCount => BandDepth + (HasFilterRow ? 2 : 1);
+
+    // How many rows of group headings sit above the column headers.
+    private int BandDepth => _shownColumns.Count == 0 ? 0 : _shownColumns.Max(column => column.Bands.Count);
+
+    // A row of group headings: each run of shown columns in the same group, and pinned to the same side, shares one
+    // heading, and a column in no group at that level gets a blank cell of its own.
+    private List<(TbColumnGroup<TItem>? Group, List<TbColumn<TItem>> Columns)> BandsAt(int level)
+    {
+        List<(TbColumnGroup<TItem>? Group, List<TbColumn<TItem>> Columns)> bands = [];
+        foreach (var column in _shownColumns)
+        {
+            var group = level < column.Bands.Count ? column.Bands[level] : null;
+            if (group is not null && bands is [.., var last] && last.Group == group
+                && last.Columns[^1].Pinned == column.Pinned)
+            {
+                last.Columns.Add(column);
+            }
+            else
+            {
+                bands.Add((group, [column]));
+            }
+        }
+
+        return bands;
+    }
+
+    // A heading pinned to the end sticks where its last column does; one pinned to the start, where its first does.
+    private string? BandPinStyle(List<TbColumn<TItem>> columns) =>
+        PinStyle(columns[0].Pinned == ColumnPin.End ? columns[^1] : columns[0]);
 
     // Editing a cell, as much as moving between them, makes the table an ARIA grid.
     private bool IsGrid => CellNavigation || _columns.Any(CanEdit);
@@ -1145,11 +1175,22 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private bool _sortKeyHasShift;
 
-    internal void AddColumn(TbColumn<TItem> column)
+    // Columns and groups, each added to the group it's written in, or to the grid, in the order they're written.
+    internal void AddMember(object member, TbColumnGroup<TItem>? group)
     {
-        _columns.Add(column);
+        (group?.Members ?? _members).Add(member);
+        TakeColumnsInOrder();
         StateHasChanged();
     }
+
+    private void TakeColumnsInOrder()
+    {
+        _columns.Clear();
+        _columns.AddRange(ColumnsOf(_members));
+    }
+
+    private static IEnumerable<TbColumn<TItem>> ColumnsOf(List<object> members) => members.SelectMany(member =>
+        member is TbColumnGroup<TItem> group ? ColumnsOf(group.Members) : [(TbColumn<TItem>)member]);
 
     // Pinned columns show at their side, those pinned at the start first and those pinned at the end last.
     // Within its side, a column named in the saved order takes its place there, ahead of any it doesn't name.
@@ -1350,10 +1391,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
     }
 
-    internal void RemoveColumn(TbColumn<TItem> column)
+    internal void RemoveMember(object member, TbColumnGroup<TItem>? group)
     {
-        if (!_disposed && _columns.Remove(column))
+        if (!_disposed && (group?.Members ?? _members).Remove(member))
         {
+            TakeColumnsInOrder();
             _sort.KeepOnly(_columns.Contains);
             _applyOnEnter.KeepOnly(_columns.Contains);
             _columnVersion++;

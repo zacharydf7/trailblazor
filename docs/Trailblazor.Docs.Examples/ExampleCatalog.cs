@@ -6668,6 +6668,10 @@ public static class ExampleCatalog
                     + "sum and sort. In a CSV, text a spreadsheet would run as a formula gets an apostrophe in front, "
                     + "and a column drawn only by its `Cell` template has nothing to export.",
                     typeof(DataGridExportExample)),
+                new("header-bands", "Header bands", "`TbColumnGroup` puts a heading over the columns inside it, in a "
+                    + "row above their headers. Groups nest, and each level adds a row. Sorting, resizing, hiding and "
+                    + "pinning work on the columns as usual; a heading spans the columns of its group that show, and "
+                    + "splits where some of them are pinned and others aren't.", typeof(DataGridBandsExample)),
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
@@ -6733,7 +6737,8 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridLabels), typeof(GridRequest),
+                typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(TbColumnGroup<>), typeof(DataGridLabels),
+                typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
                 typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>),
@@ -6826,6 +6831,8 @@ public static class ExampleCatalog
                     + "says its place, such as \"sort 2 of 3, ascending\".",
                 "The header checkbox shows \"mixed\" when only some rows are selected.",
                 "A group's button reports its state with `aria-expanded`.",
+                "A `TbColumnGroup`'s heading is a column header that spans its columns (`colspan`), so screen "
+                    + "readers read it with the cells under it.",
                 "A row's details button is named for the row, such as \"Details for Cedar Flats\", and reports its "
                     + "state with `aria-expanded`; while the details are open, its `aria-controls` points to the "
                     + "detail row.",
@@ -6908,6 +6915,8 @@ public static class ExampleCatalog
                 new("select-all", "The checkbox that selects every row on the page."),
                 new("totals", "The totals row, under the rows."),
                 new("group-totals", "A group's totals row, under its rows."),
+                new("bands", "A row of group headings above the column headers."),
+                new("band", "A group's heading, across its columns."),
                 new("detail-toggle", "A row's button that opens and closes its details."),
                 new("detail", "The row of details under a row whose details are open."),
                 new("detail-cell", "The one cell of a detail row, which holds the `DetailTemplate`."),
