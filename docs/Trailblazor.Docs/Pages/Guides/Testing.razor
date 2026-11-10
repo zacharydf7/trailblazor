@@ -11,6 +11,7 @@
         <TbTableOfContentsItem TargetId="promises" Text="What every component promises" />
         <TbTableOfContentsItem TargetId="playwright" Text="Drive components in Playwright" />
         <TbTableOfContentsItem TargetId="waiting" Text="Wait for the page" />
+        <TbTableOfContentsItem TargetId="slow-link" Text="Test over a slow link" />
         <TbTableOfContentsItem TargetId="time" Text="Time and motion" />
         <TbTableOfContentsItem TargetId="finding" Text="Find components" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
@@ -314,6 +315,17 @@
         </div>
         <CodeBlock Label="Waiting for the page" Code="@Waiting" />
 
+        <DocsHeading Id="slow-link" Text="Test over a slow link" Class="docs-section" />
+        <TbText>
+            On a fast machine every click and key reaches the server at once, so a test can pass even when the page
+            drops a key pressed before the previous one was handled. <code>page.UseSlowLinkAsync(delay)</code> from
+            <code>Trailblazor.Testing.Playwright</code> holds back every message the page sends to an interactive
+            server app by <code>delay</code>, as a slow link would. Call it before the page opens the app. Trailblazor
+            runs the keyboard tests for its select, slider, toggle group and tree, plus the data grid's typing, Tab and
+            selection key tests, both ways. Your own keyboard tests are worth running over a slow link too.
+        </TbText>
+        <CodeBlock Label="Opening a page over a slow link" Code="@SlowLinkPage" />
+
         <DocsHeading Id="time" Text="Time and motion" Class="docs-section" />
         <TbText>Some components wait on timers or transitions. Skip the wait rather than sleep through it.</TbText>
         <div class="docs-api" tabindex="0" role="region" aria-label="Skipping waits">
@@ -500,6 +512,12 @@
         new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows."),
     ];
+
+    private const string SlowLinkPage = """
+        await page.UseSlowLinkAsync(TimeSpan.FromMilliseconds(150));
+        await page.GotoAsync("/settings");
+        await page.Tb().Select("Theme").ChooseAsync("Dark");
+        """;
 
     private const string Bunit = """
         using Trailblazor.Testing;

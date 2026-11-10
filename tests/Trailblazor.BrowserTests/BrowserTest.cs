@@ -6,6 +6,9 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 
     protected BrowserFixture Fixture { get; } = fixture;
 
+    // Runs before a page opens anything, for a test class that sets up every page the same way.
+    protected virtual Task PreparePageAsync(IPage page) => Task.CompletedTask;
+
     protected async Task<IPage> OpenAsync(string browser, string path, BrowserNewContextOptions? options = null)
     {
         var page = await OpenStaticAsync(browser, path, options);
@@ -48,6 +51,7 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         var context = await Fixture.NewContextAsync(browser, options);
         _contexts.Add(context);
         var page = await context.NewPageAsync();
+        await PreparePageAsync(page);
         await page.GotoAsync(address.ToString());
         return page;
     }

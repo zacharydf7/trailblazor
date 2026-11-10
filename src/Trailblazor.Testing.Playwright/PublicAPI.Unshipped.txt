@@ -1,10 +1,12 @@
 #nullable enable
+static Trailblazor.Testing.Playwright.SlowLink.UseSlowLinkAsync(this Microsoft.Playwright.IPage! page, System.TimeSpan delay) -> System.Threading.Tasks.Task!
 static Trailblazor.Testing.Playwright.TrailblazorPageExtensions.Tb(this Microsoft.Playwright.IPage! page) -> Trailblazor.Testing.Playwright.TrailblazorPage!
 Trailblazor.Testing.Playwright.TbAccordionItemLocator
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.CollapseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.ExpandAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.TbAccordionItemLocator(Microsoft.Playwright.IPage! page, string! header) -> void
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.Trigger.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.SlowLink
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator.Assertive.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator.ExpectAnnouncedAsync(string! text) -> System.Threading.Tasks.Task!
