@@ -13,6 +13,11 @@ export function createTagInput(input) {
     }
 
     const buttons = () => [...field.querySelectorAll('[data-part="remove"]')];
+    // A removal moves focus once the server has rendered it, unless a key pressed in the field since moved focus to the
+    // input or out of the field. The tags aren't keyed, so after the render the button a key moved to shows another
+    // tag or is gone, leaving focus on the page itself; either way the removal moves focus as it would have.
+    let keyAfterRemoval = false;
+    const startRemoval = () => keyAfterRemoval = false;
     const separators = () => input.dataset.separators ?? '';
     const backKey = () => getComputedStyle(field).direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
     const forwardKey = () => getComputedStyle(field).direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
@@ -41,6 +46,7 @@ export function createTagInput(input) {
         } else if (event.key === 'Backspace' && input.value === '' && buttons().length > 0) {
             // WebKit's Windows and Linux ports would otherwise go back a page.
             event.preventDefault();
+            startRemoval();
             remove(input, buttons().length - 1, 'input');
         } else if (event.key === backKey() && input.selectionStart === 0 && input.selectionEnd === 0
             && buttons().length > 0) {
@@ -62,8 +68,14 @@ export function createTagInput(input) {
             [forwardKey()]: () => (all[index + 1] ?? input).focus(),
             Home: () => all[0].focus(),
             End: () => input.focus(),
-            Backspace: () => remove(input, index, 'previous'),
-            Delete: () => remove(input, index, 'next'),
+            Backspace: () => {
+                startRemoval();
+                remove(input, index, 'previous');
+            },
+            Delete: () => {
+                startRemoval();
+                remove(input, index, 'next');
+            },
         };
         if (moves[event.key]) {
             event.preventDefault();
@@ -94,6 +106,15 @@ export function createTagInput(input) {
         }
     };
 
+    const onAnyKey = () => keyAfterRemoval = true;
+    const onClick = event => {
+        if (event.target.closest?.('[data-part="remove"]')) {
+            startRemoval();
+        }
+    };
+
+    field.addEventListener('keydown', onAnyKey, true);
+    field.addEventListener('click', onClick);
     input.addEventListener('keydown', onInputKey);
     input.addEventListener('paste', onPaste);
     input.addEventListener('blur', onLeave);
@@ -108,13 +129,18 @@ export function createTagInput(input) {
         },
         // A tag's remove button by its position, or the input for -1 or a position past the last tag.
         focusTag(index) {
-            (buttons()[index] ?? input).focus();
+            const active = document.activeElement;
+            if (!keyAfterRemoval || active === document.body || buttons().includes(active)) {
+                (buttons()[index] ?? input).focus();
+            }
         },
         dispose() {
             input.removeEventListener('keydown', onInputKey);
             input.removeEventListener('paste', onPaste);
             input.removeEventListener('blur', onLeave);
             field.removeEventListener('keydown', onTagKey);
+            field.removeEventListener('keydown', onAnyKey, true);
+            field.removeEventListener('click', onClick);
         },
     };
 }

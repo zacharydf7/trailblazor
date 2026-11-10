@@ -216,3 +216,91 @@ public class TagInputTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Tb().TagInput("Features").Tags).ToHaveTextAsync(["Shade", "Water"]);
     }
 }
+
+// The page's messages are held back, as on a slow link, so a key pressed after a removal comes before its render.
+public class TagInputLateRenderTests(BrowserFixture fixture) : BrowserTest(fixture)
+{
+    private static readonly TimeSpan Delay = TimeSpan.FromMilliseconds(400);
+
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(Delay);
+
+    // The removal moves focus a round trip after its render, so the test waits a few round trips past it.
+    private static Task AfterTheRemovalAsync(IPage page) =>
+        page.WaitForTimeoutAsync((float)(4 * Delay).TotalMilliseconds);
+
+    private async Task<TbTagInputLocator> OpenOnShadeAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tag-input");
+        var features = page.Tb().TagInput("Trail features");
+        await Expect(features.Input).ToHaveAttributeAsync("data-ready", "");
+        await features.Input.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("Home");
+        return features;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldKeepFocusWhereAKeyMovedIt_WhenTheRemovalRendersAfterTheKey(string browser)
+    {
+        var features = await OpenOnShadeAsync(browser);
+        var page = features.Input.Page;
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("End");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Water"]);
+        await AfterTheRemovalAsync(page);
+        await Expect(features.Input).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldFocusTheTagTheKeyMovedTo_WhenTheRemovalRendersAwayTheButtonItWasOn(string browser)
+    {
+        var features = await OpenOnShadeAsync(browser);
+        var page = features.Input.Page;
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Water"]);
+        await AfterTheRemovalAsync(page);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove Water", Exact = true })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldFocusTheTagAfterTheRemovedOne_WhenAKeyMovedToATagBeforeTheRender(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tag-input");
+        var features = page.Tb().TagInput("Trail features");
+        await Expect(features.Input).ToHaveAttributeAsync("data-ready", "");
+        await features.AddAsync("Views");
+        await Expect(features.Tags).ToHaveTextAsync(["Shade", "Water", "Views"]);
+        await features.Input.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("Home");
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Water", "Views"]);
+        await AfterTheRemovalAsync(page);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove Water", Exact = true })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldLeaveFocusOutOfTheField_WhenAKeyMovedItOutBeforeTheRender(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tag-input");
+        var features = page.Tb().TagInput("Trail features");
+        await Expect(features.Input).ToHaveAttributeAsync("data-ready", "");
+        await features.Input.FocusAsync();
+
+        await page.Keyboard.PressAsync("Backspace");
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Shade"]);
+        await AfterTheRemovalAsync(page);
+        Assert.False(await features.Input.EvaluateAsync<bool>(
+            "input => input.closest('[data-part=control]').contains(document.activeElement)"));
+    }
+}
