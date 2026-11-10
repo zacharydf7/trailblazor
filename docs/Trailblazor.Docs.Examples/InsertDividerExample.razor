@@ -1,5 +1,5 @@
 <TbStack Gap="0">
-    <TbInsertDivider Label="Add a step at the start" OnInsert="() => Insert(0)" />
+    <TbInsertDivider Label="Add a step at the start" OnInsert="() => Insert(0)" AlwaysVisible />
     <TbStack As="LayoutElement.Ol" Gap="0" aria-label="Trip checklist">
         @for (var index = 0; index < _steps.Count; index++)
         {

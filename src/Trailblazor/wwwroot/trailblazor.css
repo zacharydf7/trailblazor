@@ -1613,13 +1613,17 @@
     /* The reveal is a hover affordance, so a click's focus doesn't hold it; keyboard focus does. */
     .tb-insert-divider:hover::before,
     .tb-insert-divider:has(:focus-visible)::before,
+    .tb-insert-divider--visible::before,
     .tb-insert-divider:hover .tb-insert-divider__button,
-    .tb-insert-divider:has(:focus-visible) .tb-insert-divider__button {
+    .tb-insert-divider:has(:focus-visible) .tb-insert-divider__button,
+    .tb-insert-divider--visible .tb-button.tb-insert-divider__button {
         opacity: 1;
     }
 
     .tb-insert-divider:hover:has(:disabled)::before,
-    .tb-insert-divider:hover .tb-insert-divider__button:disabled {
+    .tb-insert-divider--visible:has(:disabled)::before,
+    .tb-insert-divider:hover .tb-insert-divider__button:disabled,
+    .tb-insert-divider--visible .tb-insert-divider__button:disabled {
         opacity: var(--tb-disabled-opacity);
     }
 

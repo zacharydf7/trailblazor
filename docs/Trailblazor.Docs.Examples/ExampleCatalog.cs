@@ -90,8 +90,11 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     private const string FieldNote = "`OnFocus` and `OnBlur` report focus moving into the field and out of it, not "
         + "between its own parts, so they suit checking or saving when the user moves on. `AutoFocus` moves focus to "
         + "it as it appears on an interactive page, unless the user is typing in another field by then, or, in a "
-        + "dialog or focus scope, as that opens. A `Value` set without `ValueChanged` gets build warning TB003. The "
-        + "[forms and validation guide](guides/forms) covers messages, server errors and when validation runs.";
+        + "dialog or focus scope, as that opens. A `Value` set without `ValueChanged` gets build warning TB003. With "
+        + "`Value` and a `ValueChanged` lambda in place of `@bind-Value`, Razor can't work out a generic field's value "
+        + "type, so name its type parameter yourself, such as `TValue=\"string\"` on a text field or "
+        + "`TDate=\"DateOnly\"` on a date picker. The [forms and validation guide](guides/forms) covers "
+        + "messages, server errors and when validation runs.";
 
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
@@ -261,6 +264,13 @@ public static class ExampleCatalog
             BeforeInteractive =
             [
                 PlainHtml,
+            ],
+            Notes =
+            [
+                new("`As` defaults to a paragraph, so a heading moved into `TbText` can keep its look through "
+                    + "`TextStyle` but stops being a heading to screen readers. "
+                    + "Give it a heading level, such as `As=\"TextElement.H2\"`.")
+                    { Pitfall = true },
             ],
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
@@ -891,6 +901,11 @@ public static class ExampleCatalog
             [
                 PlainHtml,
             ],
+            Notes =
+            [
+                new("`Size` goes up to `Large`; an empty state's `Icon` already shows larger. For another big icon, "
+                    + "set its width and height through `Style`: `Style=\"width: 3rem; height: 3rem\"`."),
+            ],
             Target = new("img", "Failed"),
             Blocks = ["tb-icon"],
             TestingTip = "Find an icon with a `Label` by its role and name: `GetByRole(AriaRole.Img, new() { Name = "
@@ -994,6 +1009,12 @@ public static class ExampleCatalog
             [
                 "It renders as the same native element. A link already works, and a submit button posts its form. "
                     + "`OnClick` starts working once the page is interactive.",
+            ],
+            Notes =
+            [
+                new("A button is `Filled` and `Primary` unless told otherwise, which suits the one main action in an "
+                    + "area. Give the other actions an `Outlined` or `Text` variant, or `Tone.Neutral`, so the main "
+                    + "one stands out."),
             ],
             Target = new("button", "Add item"),
             Blocks = ["tb-button"],
@@ -1346,6 +1367,8 @@ public static class ExampleCatalog
                     + "an enum member. Don't use `null` for one of them: `null` is also the group's value before "
                     + "anything is chosen and after a `Clearable` group is cleared, so that item would look chosen "
                     + "when nothing is."),
+                new("In a `TbToggleGroup` that isn't `Clearable`, pressing the pressed item again raises no "
+                    + "`ValueChanged`, since the value stays the same."),
             ],
             Target = new("group", "Map view"),
             Blocks = ["tb-toggle-group", "tb-button"],
@@ -1612,7 +1635,8 @@ public static class ExampleCatalog
                 new("between-items", "Between items", "`OnInsert` runs when the divider's button is pressed, and the "
                     + "app adds the item. The button shows when the pointer rests on the line or the button has "
                     + "keyboard focus, and stays in view on a touch screen, which can't hover. It takes up its space "
-                    + "whether it shows or not, so the list doesn't jump. A disabled divider's button shows dimmed.",
+                    + "whether it shows or not, so the list doesn't jump. A disabled divider's button shows dimmed. "
+                    + "`AlwaysVisible` shows the line and the button at rest, as on the first divider here.",
                     typeof(InsertDividerExample)),
             ],
             Api = [typeof(TbInsertDivider)],
@@ -3995,6 +4019,11 @@ public static class ExampleCatalog
                 new("A select bound to a value type, such as `Guid`, clears to its default, which shows the option "
                     + "with that value or else the placeholder, and `Required` never fires on it. Bind the nullable "
                     + "form, such as `Guid?`.") { Pitfall = true },
+                new("In a single select, choosing the option that's already chosen raises no `ValueChanged`, since "
+                    + "the value doesn't change."),
+                new("`TbMultiSelect` binds an `IReadOnlyList<T>`. A model that holds a `List<T>` passes it as `Value` "
+                    + "and copies the new list back in `ValueChanged`, such as "
+                    + "`ValueChanged=\"chosen => _model.Tags = [.. chosen]\"`."),
             ],
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select", "tb-chip"],
@@ -4232,6 +4261,8 @@ public static class ExampleCatalog
             [
                 new("A press anywhere in the box outside its controls, such as its padding, focuses the "
                     + "input."),
+                new("With `FreeText`, typed text becomes the value when the user presses Enter or leaves the field. "
+                    + "To act on the text as it's typed, such as filtering a list, handle `OnTextChanged`."),
             ],
             Accessibility =
             [
@@ -5213,6 +5244,11 @@ public static class ExampleCatalog
                     + "one doesn't post.",
                 "Until the page is interactive, an option with `Text` shows that text instead of its content, since the "
                     + "browser's own list can only show text.",
+            ],
+            Notes =
+            [
+                new("`Rows` sets how many options show before the list scrolls, 5 by default. To show them all, set it "
+                    + "to their count, such as `Rows=\"@trails.Count\"`."),
             ],
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],

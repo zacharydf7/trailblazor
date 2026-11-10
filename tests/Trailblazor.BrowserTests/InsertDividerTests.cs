@@ -9,6 +9,12 @@ public class InsertDividerTests(BrowserFixture fixture) : BrowserTest(fixture)
         () => getComputedStyle(document.documentElement).getPropertyValue('--tb-disabled-opacity').trim()
         """);
 
+    // The line's opacity, then the button's.
+    private static Task<string[]> OpacitiesAsync(ILocator button) => button.EvaluateAsync<string[]>("""
+        button => [getComputedStyle(button.closest('.tb-insert-divider'), '::before').opacity,
+            getComputedStyle(button).opacity]
+        """);
+
     private static async Task SkipOnTouchScreenAsync(IPage page) => Assert.SkipWhen(
         await page.EvaluateAsync<bool>("() => matchMedia('(any-pointer: coarse)').matches"),
         "This machine has a touch screen, so the button is always shown.");
@@ -42,10 +48,7 @@ public class InsertDividerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         // The click's hover starts a fade-in from 0, so a divider left lit could read as hidden until the fades settle.
         await WaitForFadesAsync(page);
-        var shown = await button.EvaluateAsync<string[]>("""
-            button => [getComputedStyle(button.closest('.tb-insert-divider'), '::before').opacity,
-                getComputedStyle(button).opacity]
-            """);
+        var shown = await OpacitiesAsync(button);
         Assert.Equal(["0", "0"], shown);
     }
 
@@ -61,10 +64,33 @@ public class InsertDividerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await button.HoverAsync(new() { Force = true });
 
         await WaitForFadesAsync(page);
-        var shown = await button.EvaluateAsync<string[]>("""
-            button => [getComputedStyle(button.closest('.tb-insert-divider'), '::before').opacity,
-                getComputedStyle(button).opacity]
-            """);
+        var shown = await OpacitiesAsync(button);
+        Assert.Equal([disabled, disabled], shown);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task InsertDivider_ShouldShowItsLineAndButtonAtRest_WhenAlwaysVisible(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/insert-divider");
+        var button = Insert(page, "Add a step at the start");
+
+        await page.Mouse.MoveAsync(1, 1);
+
+        await WaitForFadesAsync(page);
+        var shown = await OpacitiesAsync(button);
+        Assert.Equal(["1", "1"], shown);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task InsertDivider_ShouldShowADisabledButtonDimmedAtRest_WhenAlwaysVisible(string browser)
+    {
+        var page = await OpenAsync(browser, "/insert-dividers");
+        var disabled = await DisabledOpacityAsync(page);
+
+        await page.Mouse.MoveAsync(1, 1);
+
+        await WaitForFadesAsync(page);
+        var shown = await OpacitiesAsync(Insert(page, "Can't add here yet"));
         Assert.Equal([disabled, disabled], shown);
     }
 

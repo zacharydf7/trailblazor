@@ -17,6 +17,7 @@ Familiar apps: the add-block button in Notion, the insert handles between rows i
 - [x] The divider keeps its height shown or hidden, so the list doesn't jump. `InsertDividerTests.InsertDivider_ShouldCenterItsLineOnTheButton_WhenShown`
 - [x] After a click, the line and button hide once the pointer leaves; only keyboard focus keeps them shown. `InsertDividerTests.InsertDivider_ShouldHideOnceThePointerLeaves_WhenItsButtonWasClicked`
 - [x] A disabled divider's button stays hidden at rest, and the line and button look off when the line is hovered. `InsertDividerTests.InsertDivider_ShouldHideADisabledButtonAtRestAndDimItOnHover_WhenDisabled`
+- [x] With `AlwaysVisible`, the line and button show at rest, dimmed when disabled. `InsertDividerTests.InsertDivider_ShouldShowItsLineAndButtonAtRest_WhenAlwaysVisible`, `InsertDividerTests.InsertDivider_ShouldShowADisabledButtonDimmedAtRest_WhenAlwaysVisible`
 
 ## Touch
 

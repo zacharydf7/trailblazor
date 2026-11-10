@@ -2184,6 +2184,8 @@ Trailblazor.TbImage.TbImage() -> void
 Trailblazor.TbImage.Width.get -> int?
 Trailblazor.TbImage.Width.set -> void
 Trailblazor.TbInsertDivider
+Trailblazor.TbInsertDivider.AlwaysVisible.get -> bool
+Trailblazor.TbInsertDivider.AlwaysVisible.set -> void
 Trailblazor.TbInsertDivider.Disabled.get -> bool
 Trailblazor.TbInsertDivider.Disabled.set -> void
 Trailblazor.TbInsertDivider.Label.get -> string!

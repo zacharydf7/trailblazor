@@ -33,4 +33,13 @@ public class TbInsertDividerTests : BunitContext
 
         Assert.True(cut.Find("[data-part=insert]").HasAttribute("disabled"));
     }
+
+    [Fact]
+    public void Render_ShouldMarkTheDividerToShowAtRest_WhenAlwaysVisible()
+    {
+        var cut = Render<TbInsertDivider>(parameters => parameters.Add(divider => divider.Label, "Add a step")
+            .Add(divider => divider.AlwaysVisible, true));
+
+        Assert.Contains("tb-insert-divider--visible", cut.Find(".tb-insert-divider").ClassList);
+    }
 }

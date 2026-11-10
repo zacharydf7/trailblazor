@@ -83,6 +83,11 @@
             <code>Validation</code> takes the value and returns its messages, or none. It doesn't run while the field
             shows its required message, so that is the only message then.
         </TbText>
+        <TbText>
+            The value it takes can be null, so a text field's <code>Validation</code> is a
+            <code>Func&lt;string?, IEnumerable&lt;string&gt;&gt;</code>. To reuse a check written for <code>string</code>,
+            wrap it in a lambda, such as <code>Validation="name =&gt; CheckName(name ?? string.Empty)"</code>.
+        </TbText>
         <CodeBlock Label="Checking one value" Code="@CheckOne" />
         <TbText>
             A field's <code>Validation</code> runs when that field changes, so it won't notice a change in another field.
