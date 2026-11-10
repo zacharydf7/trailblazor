@@ -6788,6 +6788,23 @@
         width: 0;
     }
 
+    .tb-date-time__boxes {
+        display: flex;
+        flex: 1 1 auto;
+        align-items: center;
+        gap: var(--tb-space-1);
+        min-width: 0;
+    }
+
+    .tb-date-time__date {
+        width: 0;
+    }
+
+    .tb-date-time__time {
+        flex: 0 0 auto;
+        width: auto;
+    }
+
     .tb-date-range__dash {
         color: var(--tb-color-text-muted);
     }

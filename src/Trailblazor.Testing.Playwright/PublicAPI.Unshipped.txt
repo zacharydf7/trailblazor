@@ -22,6 +22,12 @@ Trailblazor.Testing.Playwright.TbDatePickerLocator.TbDatePickerLocator(Microsoft
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.TbDateRangePickerLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.ChooseAsync(System.DateTime? value) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.DateInput.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.Group.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.TbDateTimePickerLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.TimeInput.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbDialogLocator
 Trailblazor.Testing.Playwright.TbDialogLocator.CancelAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDialogLocator.ChooseAsync(string! button) -> System.Threading.Tasks.Task!
@@ -89,6 +95,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(Microsoft.Playwright.
 Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(string! label) -> Trailblazor.Testing.Playwright.TbColorPickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.DatePicker(string! label) -> Trailblazor.Testing.Playwright.TbDatePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.DateRangePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateRangePickerLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.DateTimePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateTimePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Dialog(string! title) -> Trailblazor.Testing.Playwright.TbDialogLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.FileUpload(string! label) -> Trailblazor.Testing.Playwright.TbFileUploadLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Grid(string! name) -> Trailblazor.Testing.Playwright.TbGridLocator!

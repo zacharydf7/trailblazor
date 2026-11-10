@@ -1,0 +1,9 @@
+<TbStack Gap="2">
+    <TbDateTimePicker TDateTime="DateTime" Label="Guided hike starts" @bind-Value="_start"
+                      HelperText="Type the date or pick it in the calendar, then set the time." />
+    <output>@(_start is { } start ? $"Starting {start:f}." : "No date chosen yet.")</output>
+</TbStack>
+
+@code {
+    private DateTime? _start = DateTime.Today.AddDays(14).AddHours(8.5);
+}

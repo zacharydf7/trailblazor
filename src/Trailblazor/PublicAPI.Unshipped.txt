@@ -19,6 +19,9 @@ const Trailblazor.TbStrings.DatePickerBadDate = "DatePicker.BadDate" -> string!
 const Trailblazor.TbStrings.DatePickerClear = "DatePicker.Clear" -> string!
 const Trailblazor.TbStrings.DatePickerOpen = "DatePicker.Open" -> string!
 const Trailblazor.TbStrings.DatePickerUnavailable = "DatePicker.Unavailable" -> string!
+const Trailblazor.TbStrings.DateTimePickerDate = "DateTimePicker.Date" -> string!
+const Trailblazor.TbStrings.DateTimePickerOutOfRange = "DateTimePicker.OutOfRange" -> string!
+const Trailblazor.TbStrings.DateTimePickerTime = "DateTimePicker.Time" -> string!
 const Trailblazor.TbStrings.TagInputAdded = "TagInput.Added" -> string!
 const Trailblazor.TbStrings.TagInputDuplicate = "TagInput.Duplicate" -> string!
 const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
@@ -37,6 +40,9 @@ override Trailblazor.CarouselLabels.ToString() -> string!
 override Trailblazor.DatePickerLabels.Equals(object? obj) -> bool
 override Trailblazor.DatePickerLabels.GetHashCode() -> int
 override Trailblazor.DatePickerLabels.ToString() -> string!
+override Trailblazor.DateTimePickerLabels.Equals(object? obj) -> bool
+override Trailblazor.DateTimePickerLabels.GetHashCode() -> int
+override Trailblazor.DateTimePickerLabels.ToString() -> string!
 override Trailblazor.TagInputLabels.Equals(object? obj) -> bool
 override Trailblazor.TagInputLabels.GetHashCode() -> int
 override Trailblazor.TagInputLabels.ToString() -> string!
@@ -50,6 +56,9 @@ override Trailblazor.TbCarousel.OnParametersSet() -> void
 override Trailblazor.TbCarouselSlide.OnInitialized() -> void
 override Trailblazor.TbDatePicker<TDate>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbDatePicker<TDate>.OnInitialized() -> void
+override Trailblazor.TbDateTimePicker<TDateTime>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbDateTimePicker<TDateTime>.OnInitialized() -> void
+override Trailblazor.TbDateTimePicker<TDateTime>.OnParametersSet() -> void
 override Trailblazor.TbEmptyState.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbEmptyState.OnParametersSet() -> void
 override Trailblazor.TbKbd.OnParametersSet() -> void
@@ -70,6 +79,8 @@ static Trailblazor.CarouselLabels.operator !=(Trailblazor.CarouselLabels? left, 
 static Trailblazor.CarouselLabels.operator ==(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
 static Trailblazor.DatePickerLabels.operator !=(Trailblazor.DatePickerLabels? left, Trailblazor.DatePickerLabels? right) -> bool
 static Trailblazor.DatePickerLabels.operator ==(Trailblazor.DatePickerLabels? left, Trailblazor.DatePickerLabels? right) -> bool
+static Trailblazor.DateTimePickerLabels.operator !=(Trailblazor.DateTimePickerLabels? left, Trailblazor.DateTimePickerLabels? right) -> bool
+static Trailblazor.DateTimePickerLabels.operator ==(Trailblazor.DateTimePickerLabels? left, Trailblazor.DateTimePickerLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TimePickerLabels.operator !=(Trailblazor.TimePickerLabels? left, Trailblazor.TimePickerLabels? right) -> bool
@@ -124,6 +135,30 @@ Trailblazor.DatePickerLabels.Open.get -> string?
 Trailblazor.DatePickerLabels.Open.init -> void
 Trailblazor.DatePickerLabels.Unavailable.get -> string?
 Trailblazor.DatePickerLabels.Unavailable.init -> void
+Trailblazor.DateTimePickerLabels
+Trailblazor.DateTimePickerLabels.<Clone>$() -> Trailblazor.DateTimePickerLabels!
+Trailblazor.DateTimePickerLabels.AtLeast.get -> string?
+Trailblazor.DateTimePickerLabels.AtLeast.init -> void
+Trailblazor.DateTimePickerLabels.AtMost.get -> string?
+Trailblazor.DateTimePickerLabels.AtMost.init -> void
+Trailblazor.DateTimePickerLabels.BadDate.get -> string?
+Trailblazor.DateTimePickerLabels.BadDate.init -> void
+Trailblazor.DateTimePickerLabels.Calendar.get -> Trailblazor.CalendarLabels?
+Trailblazor.DateTimePickerLabels.Calendar.init -> void
+Trailblazor.DateTimePickerLabels.Clear.get -> string?
+Trailblazor.DateTimePickerLabels.Clear.init -> void
+Trailblazor.DateTimePickerLabels.Date.get -> string?
+Trailblazor.DateTimePickerLabels.Date.init -> void
+Trailblazor.DateTimePickerLabels.DateTimePickerLabels() -> void
+Trailblazor.DateTimePickerLabels.Equals(Trailblazor.DateTimePickerLabels? other) -> bool
+Trailblazor.DateTimePickerLabels.Open.get -> string?
+Trailblazor.DateTimePickerLabels.Open.init -> void
+Trailblazor.DateTimePickerLabels.OutOfRange.get -> string?
+Trailblazor.DateTimePickerLabels.OutOfRange.init -> void
+Trailblazor.DateTimePickerLabels.Time.get -> string?
+Trailblazor.DateTimePickerLabels.Time.init -> void
+Trailblazor.DateTimePickerLabels.Unavailable.get -> string?
+Trailblazor.DateTimePickerLabels.Unavailable.init -> void
 Trailblazor.TagAddEventArgs
 Trailblazor.TagAddEventArgs.TagAddEventArgs() -> void
 Trailblazor.TagAddEventArgs.Text.get -> string!
@@ -243,6 +278,30 @@ Trailblazor.TbDatePicker<TDate>.Min.set -> void
 Trailblazor.TbDatePicker<TDate>.Placeholder.get -> string?
 Trailblazor.TbDatePicker<TDate>.Placeholder.set -> void
 Trailblazor.TbDatePicker<TDate>.TbDatePicker() -> void
+Trailblazor.TbDateTimePicker<TDateTime>
+Trailblazor.TbDateTimePicker<TDateTime>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbDateTimePicker<TDateTime>.Classes.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Clearable.get -> bool
+Trailblazor.TbDateTimePicker<TDateTime>.Clearable.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Culture.get -> System.Globalization.CultureInfo?
+Trailblazor.TbDateTimePicker<TDateTime>.Culture.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Format.get -> string?
+Trailblazor.TbDateTimePicker<TDateTime>.Format.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.IsDateDisabled.get -> System.Func<System.DateOnly, bool>?
+Trailblazor.TbDateTimePicker<TDateTime>.IsDateDisabled.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Labels.get -> Trailblazor.DateTimePickerLabels!
+Trailblazor.TbDateTimePicker<TDateTime>.Labels.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Max.get -> TDateTime?
+Trailblazor.TbDateTimePicker<TDateTime>.Max.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Min.get -> TDateTime?
+Trailblazor.TbDateTimePicker<TDateTime>.Min.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Placeholder.get -> string?
+Trailblazor.TbDateTimePicker<TDateTime>.Placeholder.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Step.get -> System.TimeSpan?
+Trailblazor.TbDateTimePicker<TDateTime>.Step.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.TbDateTimePicker() -> void
+Trailblazor.TbDateTimePicker<TDateTime>.TimeZone.get -> System.TimeZoneInfo?
+Trailblazor.TbDateTimePicker<TDateTime>.TimeZone.set -> void
 Trailblazor.TbEmptyState
 Trailblazor.TbEmptyState.Actions.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbEmptyState.Actions.set -> void
@@ -3135,6 +3194,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbDataGrid<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDatePicker<TDate>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDateRangePicker<TDate>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbDateTimePicker<TDateTime>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDialogActions.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDialogDescription.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbDivider.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

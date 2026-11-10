@@ -4653,6 +4653,110 @@ public static class ExampleCatalog
             TestingTip = "In Playwright, `GetByLabel(\"Start time\").FillAsync(\"14:30\")` sets the time in 24-hour "
                 + "form, whatever the box shows. In bUnit, `Change(\"14:30\")` on the `input` does the same.",
         },
+        new("date-time-picker", "Date-time picker", ExampleCategory.Inputs,
+            "Chooses a date and a time of day: the date typed or picked in a calendar, the time in the browser's own "
+                + "time box.")
+        {
+            WhenToUse =
+            [
+                "Use it for a moment on a given day, such as when a guided hike starts or a shuttle picks up.",
+            ],
+            WhenNotToUse =
+            [
+                "For a day alone, use a [date picker](components/date-picker).",
+                "For a time of day that repeats, such as opening hours, use a [time picker](components/time-picker).",
+            ],
+            Related = ["date-picker", "time-picker", "calendar", "form"],
+            Pattern = new("date picker dialog",
+                "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/"),
+            RightToLeftKeys = "Left moves to the next day, month or year, and Right to the previous one.",
+            Sections =
+            [
+                new("value", "Value", "`@bind-Value` holds the date and time. The date is typed in its box, in the "
+                    + "field's format, or picked in the calendar; the time is set in the browser's own time box, shown "
+                    + "in the user's language. A date chosen with no time is midnight, and a time set first waits for "
+                    + "a date. `TDateTime` can be `DateTime` or `DateTimeOffset`; the picker shows exactly the date "
+                    + "and time it is given and never converts time zones.", typeof(DateTimePickerExample)),
+                new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest moments; a "
+                    + "value outside them shows a message, and the calendar marks the days outside them as "
+                    + "unavailable. `IsDateDisabled` rules out whole days. `Step` sets how far apart the times are, "
+                    + "such as 15 minutes. `Clearable` shows a button that clears both boxes.",
+                    typeof(DateTimePickerLimitsExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the value from changing: the "
+                    + "boxes can't be edited and the calendar button turns off. `Disabled` takes the field out of the "
+                    + "tab order and the post.", typeof(DateTimePickerStatesExample)),
+            ],
+            Api = [typeof(TbDateTimePicker<>), typeof(DateTimePickerLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves from the date box to the calendar button, then to the time box.")
+                    { When = "In the field" },
+                new(["Enter", "Space"], "Opens the calendar with focus on the chosen date, or today.")
+                    { When = "On the calendar button" },
+                new(["Left", "Right", "Up", "Down"], "Moves by a day or a week, as in a "
+                    + "[calendar](components/calendar#accessibility).") { When = "In the calendar" },
+                new(["Enter", "Space"], "Picks the day, keeps the time, closes the calendar and returns focus to the "
+                    + "button.") { When = "In the calendar" },
+                new(["Escape"], "Closes the calendar without changing the date.") { When = "In the calendar" },
+                new(["Left", "Right"], "Moves between the hours, minutes and, in some languages, AM or PM.")
+                    { When = "In the time box" },
+                new(["Up", "Down"], "Changes the part with focus. The minutes move by `Step`.")
+                    { When = "In the time box" },
+            ],
+            Labeling =
+            [
+                "The `Label` names the group of boxes, and each box adds its own name: \"Date\" and \"Time\", or "
+                    + "`Labels.Date` and `Labels.Time`.",
+                "The date box shows the format as its placeholder unless `Placeholder` sets another.",
+                "The calendar button and the calendar are named \"Choose a date\", or by `Labels.Open`.",
+            ],
+            Announcements =
+            [
+                "A date that can't be read or chosen, and a value outside `Min` and `Max`, show a message that is read "
+                    + "out once, as on a [text field](components/text-field).",
+            ],
+            Accessibility =
+            [
+                "The calendar is a [calendar](components/calendar) in a popover, and the time box is the browser's "
+                    + "own, so their keys and forced-colors looks are the ones people know.",
+                "A message from typing marks only the box it is about as invalid.",
+            ],
+            AppDuties =
+            [
+                "For a `DateTimeOffset`, set `TimeZone` to the user's time zone. Without it, a changed value keeps its "
+                    + "offset and a first value takes the offset of the app's `TimeProvider`, which on a server is the "
+                    + "server's time zone.",
+                "A static form posts the date and time with no offset, and Blazor reads it in the server's time zone "
+                    + "whatever `TimeZone` says, so bind a `DateTime` in a static form and add the user's offset after "
+                    + "the post.",
+                "The time box shows the time in the browser's language, not the app's `Culture`.",
+            ],
+            Notes =
+            [
+                new("`@ref` the picker and call `FocusAsync()` to move focus to the date box."),
+            ],
+            BeforeInteractive =
+            [
+                "It shows the browser's own date and time box, so a static form still posts the value, with no "
+                    + "offset.",
+            ],
+            Target = new("group", "Guided hike starts"),
+            Blocks = ["tb-field"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("date-input", "The box the date is typed in."),
+                new("time-input", "The browser's own time box."),
+                new("clear", "The button that clears the date and time."),
+                new("popover", "The calendar button and the calendar it opens."),
+                new("input", "The browser's own date and time box, shown before the page is interactive."),
+            ],
+            TestingTip = "`await page.Tb().DateTimePicker(\"Guided hike starts\").ChooseAsync(start)` from "
+                + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and waits "
+                + "until the field has taken both. In bUnit, `Change(\"6/12/2026\")` on the `date-input` and "
+                + "`Change(\"14:30\")` on the `time-input` set them; write the date in the field's format and the time "
+                + "in 24-hour form.",
+        },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
         {

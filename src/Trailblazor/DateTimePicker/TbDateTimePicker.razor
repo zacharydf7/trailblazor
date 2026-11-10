@@ -1,0 +1,75 @@
+@namespace Trailblazor
+@typeparam TDateTime where TDateTime : struct
+@inherits TbBoxedFieldBase<TDateTime?>
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
+
+@Layout(Classes, @<text>
+    @if (RendererInfo.IsInteractive)
+    {
+        <span id="@($"{DateId}-name")" hidden>@DateLabel</span>
+        <span id="@($"{TimeId}-name")" hidden>@TimeLabel</span>
+        @* Tests type dates in the field's format and wait for the committed value, which data-format, data-culture
+           and data-value give them. *@
+        <div role="group" aria-labelledby="@(ShownLabel is null ? null : LabelId)" data-format="@DateFormat"
+             data-culture="@DateCulture.Name" data-value="@(Chosen is { } chosen ? Iso(chosen) : "")"
+             class="tb-date-time__boxes">
+            <input @attributes="ControlAttributes" @ref="_dateInput" data-part="date-input" id="@DateId"
+                   name="@NameOf("Date")" type="text" autocomplete="off" @bind:get="DateText"
+                   @bind:set="SetDateTextAsync" placeholder="@(Placeholder ?? CalendarDates.FormatHint(DateFormat))"
+                   disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(DateId)"
+                   aria-required="@(Required ? "true" : null)" aria-invalid="@AriaInvalid(_dateBad)"
+                   aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", "tb-date-time__date", Classes?.Input)" />
+            <TbPopover Icon="BuiltInIcons.Calendar" Label="@OpenLabel" Size="Size.Small"
+                       Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || ReadOnly)" Open="_open"
+                       OpenChanged="OnOpenChanged" data-part="popover">
+                @* The calendar here only shows and picks; the picker is the form's field, so the form's cascades stop.
+                   The popover's dialog names it, its grid takes focus as it opens, and each closing shows the chosen
+                   date again for the next opening. *@
+                <CascadingValue TValue="EditContext" Value="null">
+                    <CascadingValue TValue="TbForm" Value="null">
+                        <TbCalendar @ref="_calendar" TDate="DateOnly" Value="ChosenDate"
+                                    ValueChanged="KeepCalendarValue" OnDayPicked="PickAsync" Min="MinDate" Max="MaxDate"
+                                    IsDateDisabled="IsDateDisabled" Culture="DateCulture"
+                                    Labels="@(Labels.Calendar ?? new())" Disabled="Disabled" ReadOnly="ReadOnly"
+                                    InputAttributes="GridAttributes" />
+                    </CascadingValue>
+                </CascadingValue>
+            </TbPopover>
+            @* The browser's own time box shows the time in the user's language and handles the keys for each part. *@
+            <input data-part="time-input" id="@TimeId" name="@NameOf("Time")" type="time" value="@TimeText"
+                   @onchange="args => SetTimeTextAsync(args.Value as string)" step="@StepSeconds"
+                   disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(TimeId)"
+                   aria-required="@(Required ? "true" : null)" aria-invalid="@AriaInvalid(_timeBad)"
+                   aria-describedby="@InputDescribedBy"
+                   class="@ClassNames.Join("tb-field__input", "tb-date-time__time", Classes?.Input)" />
+            @if (Clearable && !Disabled && !ReadOnly && HasEntry)
+            {
+                <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" aria-describedby="@ClearDescribedBy"
+                              Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
+            }
+        </div>
+    }
+    else
+    {
+        @* Without a circuit there is no calendar, so the browser's own date and time box stands in. *@
+        <input @attributes="ControlAttributes" data-part="input" data-static="@(AssignedRenderMode is null ? "" : null)"
+               id="@InputId" name="@InputNameAttribute" type="datetime-local"
+               value="@(Chosen is { } chosen ? Iso(chosen) : null)" min="@(Min is { } min ? Iso(WallClock(min)) : null)"
+               max="@(Max is { } max ? Iso(WallClock(max)) : null)" step="@StepSeconds" disabled="@Disabled"
+               readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
+               aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
+               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    }
+</text>, null, null)
+
+@code {
+    private string Names(string box) => ShownLabel is null ? $"{box}-name" : $"{LabelId} {box}-name";
+
+    private string? NameOf(string part) => InputNameAttribute is null ? null : $"{InputNameAttribute}.{part}";
+
+    // The value as the browser's date and time boxes write it.
+    private string Iso(DateTime value) =>
+        value.ToString(ShowsSeconds ? "yyyy-MM-ddTHH:mm:ss" : "yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+}

@@ -1,0 +1,12 @@
+@page "/date-time-picker"
+@using System.Globalization
+
+<TbStack Gap="4">
+    <TbDateTimePicker TDateTime="DateTime" Label="Starts" @bind-Value="_start" Culture="_culture" Clearable />
+    <output data-testid="start">@(_start?.ToString("yyyy-MM-dd HH:mm") ?? "none")</output>
+</TbStack>
+
+@code {
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("en-US");
+    private DateTime? _start = new DateTime(2026, 6, 3, 14, 30, 0);
+}

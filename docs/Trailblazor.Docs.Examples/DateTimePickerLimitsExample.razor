@@ -1,0 +1,11 @@
+<TbDateTimePicker TDateTime="DateTime" Label="Shuttle pickup" @bind-Value="_pickup" Min="_opens"
+                  Max="_opens.AddDays(30).AddHours(10)" IsDateDisabled="IsSunday" Step="TimeSpan.FromMinutes(15)"
+                  Clearable HelperText="Every quarter hour from 8 AM tomorrow for a month, but not on Sundays." />
+
+@code {
+    private static readonly DateTime _opens = DateTime.Today.AddDays(1).AddHours(8);
+
+    private DateTime? _pickup;
+
+    private static bool IsSunday(DateOnly date) => date.DayOfWeek == DayOfWeek.Sunday;
+}

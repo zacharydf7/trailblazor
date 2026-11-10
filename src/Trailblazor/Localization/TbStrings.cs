@@ -155,13 +155,23 @@ public static class TbStrings
     /// {1} are the earliest and latest times.</summary>
     public const string TimePickerOutOfRange = "TimePicker.OutOfRange";
 
-    /// <summary>"Choose {0} or later.": shown when a time is before a time picker's Min and there is no Max; {0} is the
-    /// earliest time.</summary>
+    /// <summary>"Choose {0} or later.": shown when a time, or a date and time, is before a picker's Min and there is no
+    /// Max; {0} is the earliest.</summary>
     public const string TimePickerAtLeast = "TimePicker.AtLeast";
 
-    /// <summary>"Choose {0} or earlier.": shown when a time is after a time picker's Max and there is no Min; {0} is
-    /// the latest time.</summary>
+    /// <summary>"Choose {0} or earlier.": shown when a time, or a date and time, is after a picker's Max and there is
+    /// no Min; {0} is the latest.</summary>
     public const string TimePickerAtMost = "TimePicker.AtMost";
+
+    /// <summary>"Date": names a date-time picker's date box.</summary>
+    public const string DateTimePickerDate = "DateTimePicker.Date";
+
+    /// <summary>"Time": names a date-time picker's time box.</summary>
+    public const string DateTimePickerTime = "DateTimePicker.Time";
+
+    /// <summary>"Choose a date and time from {0} to {1}.": shown when a date-time picker's value is outside its Min
+    /// and Max; {0} and {1} are the earliest and latest.</summary>
+    public const string DateTimePickerOutOfRange = "DateTimePicker.OutOfRange";
 
     /// <summary>"Start date": names a date range's start field, and is added to the start day's name in the calendar.
     /// </summary>
@@ -849,6 +859,9 @@ public static class TbStrings
         [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
         [TimePickerAtLeast] = "Choose {0} or later.",
         [TimePickerAtMost] = "Choose {0} or earlier.",
+        [DateTimePickerDate] = "Date",
+        [DateTimePickerTime] = "Time",
+        [DateTimePickerOutOfRange] = "Choose a date and time from {0} to {1}.",
         [DateRangePickerStart] = "Start date",
         [DateRangePickerEnd] = "End date",
         [DateRangePickerOpen] = "Choose dates",

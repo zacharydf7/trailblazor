@@ -164,6 +164,7 @@ public class ValueContractTests : BunitContext
         _ when type == typeof(bool) => (false, true),
         _ when type == typeof(DateOnly) => (new DateOnly(2026, 6, 3), new DateOnly(2026, 7, 10)),
         _ when type == typeof(TimeOnly) => (new TimeOnly(8, 30), new TimeOnly(14, 45)),
+        _ when type == typeof(DateTime) => (new DateTime(2026, 6, 3, 8, 30, 0), new DateTime(2026, 7, 10, 14, 45, 0)),
         _ when type == typeof(DateRange<DateOnly>) => (new DateRange<DateOnly>(new(2026, 6, 3), new(2026, 6, 5)),
             new DateRange<DateOnly>(new(2026, 7, 1), new(2026, 7, 9))),
         _ when type == typeof(SliderRange<int>) => (new SliderRange<int>(1, 3), new SliderRange<int>(2, 4)),
