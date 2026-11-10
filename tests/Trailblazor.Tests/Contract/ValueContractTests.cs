@@ -81,7 +81,14 @@ public class ValueContractTests : BunitContext
 
         var cut = Render<DynamicComponent>(parameters => parameters.Add(host => host.Type, field)
             .Add(host => host.Parameters, values));
+        await UseEveryControlAsync(cut);
 
+        Assert.Empty(changes);
+    }
+
+    // Clicks, changes, types in and presses Enter on every control the component shows.
+    internal static async Task UseEveryControlAsync(IRenderedComponent<DynamicComponent> cut)
+    {
         // A browser sends no events to a control turned off by the disabled attribute, but bUnit would, so those
         // controls are skipped. A read-only box can be clicked but not typed in, and read-only.js holds the native
         // controls that ignore readonly still, so neither gets change or input events here.
@@ -104,8 +111,6 @@ public class ValueContractTests : BunitContext
 
             await TryAsync(() => Control()?.KeyDownAsync(new KeyboardEventArgs { Key = "Enter" }));
         }
-
-        Assert.Empty(changes);
     }
 
     // A control the field turned off usually has no handler at all, which bUnit reports by throwing.
@@ -143,7 +148,7 @@ public class ValueContractTests : BunitContext
     private static string Name(Type component, string parameter) =>
         $"{(component.IsGenericType ? component.GetGenericTypeDefinition().Name : component.Name)}.{parameter}";
 
-    private static Dictionary<string, object> BaseParameters(Type component)
+    internal static Dictionary<string, object> BaseParameters(Type component)
     {
         var values = ComponentContractTests.RequiredParameters(component)
             .ToDictionary(pair => pair.Name, pair => pair.Value);
@@ -181,7 +186,7 @@ public class ValueContractTests : BunitContext
     };
 
     // An EventCallback of the callback property's type that records each value it's given.
-    private static object Recorder(PropertyInfo callback, List<object?> values) => typeof(ValueContractTests)
+    internal static object Recorder(PropertyInfo callback, List<object?> values) => typeof(ValueContractTests)
         .GetMethod(nameof(Record), BindingFlags.NonPublic | BindingFlags.Static)!
         .MakeGenericMethod(callback.PropertyType.GetGenericArguments()[0]).Invoke(null, [values])!;
 
