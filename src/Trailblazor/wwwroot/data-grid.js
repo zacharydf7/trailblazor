@@ -385,6 +385,9 @@ export function createDataGrid(table) {
             columnHeaders().find(cell => cell.dataset.column === key)
                 ?.querySelector('[data-part=column-menu] button')?.focus();
         },
+        focusColumnChooser() {
+            table.closest('[data-part=grid]')?.querySelector('[data-part=column-chooser] [data-part=trigger]')?.focus();
+        },
         resizeColumn(key, delta) {
             const cell = columnHeaders().find(other => other.dataset.column === key);
             if (cell) {

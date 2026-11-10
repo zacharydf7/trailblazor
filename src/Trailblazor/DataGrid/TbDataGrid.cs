@@ -15,6 +15,7 @@ namespace Trailblazor;
 public partial class TbDataGrid<TItem> : IAsyncDisposable
 {
     private readonly List<TbColumn<TItem>> _columns = [];
+    private List<TbColumn<TItem>> _arrangedColumns = [];
     private List<TbColumn<TItem>> _shownColumns = [];
     private readonly Dictionary<object, TItem> _selection = [];
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
@@ -47,7 +48,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private GridState? _stateFromParent;
     private Dictionary<string, double> _widths = [];
     private List<string> _order = [];
+    private List<string> _hidden = [];
     private string? _focusColumnMenu;
+    private bool _focusColumnChooser;
+    private string? _measureColumn;
+    private bool _measuring;
     // A provider's first load waits for the columns when a filter read back from JSON needs their types.
     private bool _showForColumns;
     private IReadOnlyCollection<TItem>? _selectedFromParent;
@@ -253,6 +258,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public bool ReorderableColumns { get; set; }
 
+    /// <summary>Lets the user hide and show columns from a Columns menu above the grid, which lists every column, and
+    /// hide one from its own menu. At least one column always shows, and a column with
+    /// <see cref="TbColumn{TItem}.Hideable"/> off can't be hidden. The hidden columns are kept in <see cref="State"/>.
+    /// </summary>
+    [Parameter]
+    public bool HideableColumns { get; set; }
+
     /// <summary>Shades every other row.</summary>
     [Parameter]
     public bool Striped { get; set; }
@@ -381,7 +393,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A grouped grid's lines count headings too, so the rows the filters leave are counted apart.
     private int RowCount => DataProvider is null ? _matched : _total;
 
-    private int ColumnCount => _columns.Count + LeadCount;
+    private int ColumnCount => _shownColumns.Count + LeadCount;
 
     // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
     private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0
@@ -530,6 +542,21 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             {
                 _focusColumnMenu = null;
                 await _handle.InvokeVoidAsync("focusColumnMenu", moved);
+            }
+
+            // A column hidden from its own menu takes that menu's button with it.
+            if (_focusColumnChooser && _handle is not null)
+            {
+                _focusColumnChooser = false;
+                await _handle.InvokeVoidAsync("focusColumnChooser");
+            }
+
+            // A column shown without a width is measured, so the user's widths hold fixed again.
+            if (_measureColumn is { } shown && _handle is not null)
+            {
+                _measureColumn = null;
+                _measuring = true;
+                await _handle.InvokeVoidAsync("resizeColumn", shown, 0);
             }
         }
         catch (JSDisconnectedException)
@@ -1006,12 +1033,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     // Pinned columns show at their side, those pinned at the start first and those pinned at the end last.
     // Within its side, a column named in the saved order takes its place there, ahead of any it doesn't name.
-    private void ArrangeColumns() => _shownColumns = [.. _columns.OrderBy(column => column.Pinned switch
+    // A saved state that hides every column shows them all, so the grid is never empty.
+    private void ArrangeColumns()
     {
-        ColumnPin.Start => 0,
-        ColumnPin.End => 2,
-        _ => 1,
-    }).ThenBy(column => _order.IndexOf(column.Key) is >= 0 and var at ? at : int.MaxValue)];
+        _arrangedColumns = [.. _columns.OrderBy(column => column.Pinned switch
+        {
+            ColumnPin.Start => 0,
+            ColumnPin.End => 2,
+            _ => 1,
+        }).ThenBy(column => _order.IndexOf(column.Key) is >= 0 and var at ? at : int.MaxValue)];
+        var shown = _arrangedColumns.Where(column => !(HideableColumns && column.Hideable
+            && _hidden.Contains(column.Key))).ToList();
+        _shownColumns = shown.Count > 0 ? shown : _arrangedColumns;
+    }
 
     // The selection and order columns lead each row, so they stay with the columns pinned at the start.
     private bool PinsLead => _shownColumns is [{ Pinned: ColumnPin.Start }, ..];
@@ -1061,9 +1095,21 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private async Task OnColumnWidthsAsync(ColumnWidthsEventArgs e)
     {
-        Telemetry.Used(TelemetryName, "resize");
-        _widths = e.Widths.Where(width => _columns.Any(column => column.Key == width.Key))
-            .ToDictionary(width => width.Key, width => Math.Round(width.Value));
+        if (!_measuring)
+        {
+            Telemetry.Used(TelemetryName, "resize");
+        }
+
+        _measuring = false;
+        // The script measures only the columns it shows, so a hidden column keeps the width it had.
+        var widths = _widths.Where(width => _arrangedColumns.Any(column => column.Key == width.Key
+            && !_shownColumns.Contains(column))).ToDictionary(width => width.Key, width => width.Value);
+        foreach (var width in e.Widths.Where(width => _columns.Any(column => column.Key == width.Key)))
+        {
+            widths[width.Key] = Math.Round(width.Value);
+        }
+
+        _widths = widths;
         await StateChangedAsync();
     }
 
@@ -1077,8 +1123,40 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     // A menu with nothing to do would be an empty tab stop, as for a column that can't be resized and is alone on its
     // pinned side.
-    private bool HasColumnMenu(TbColumn<TItem> column) => CanResize(column)
+    private bool HasColumnMenu(TbColumn<TItem> column) => CanResize(column) || CanHide(column)
         || ReorderableColumns && (NeighborOf(column, -1) ?? NeighborOf(column, 1)) is not null;
+
+    // The last column shown stays, so the grid is never empty.
+    private bool CanHide(TbColumn<TItem> column) =>
+        HideableColumns && column.Hideable && _shownColumns.Contains(column) && _shownColumns.Count > 1;
+
+    private bool CanShowOrHide(TbColumn<TItem> column) => !_shownColumns.Contains(column) || CanHide(column);
+
+    private async Task SetColumnShownAsync(TbColumn<TItem> column, bool shown)
+    {
+        Telemetry.Used(TelemetryName, shown ? "show" : "hide");
+        // A saved state that hid every column shows them all, so drop any hidden key whose column is now in view.
+        _hidden = [.. _hidden.Where(key => key != column.Key && !_shownColumns.Any(other => other.Key == key))];
+        if (!shown)
+        {
+            _hidden.Add(column.Key);
+        }
+        else if (ResizableColumns && _widths.Count > 0 && !_widths.ContainsKey(column.Key))
+        {
+            _measureColumn = column.Key;
+        }
+
+        // Rows draw again only when told, and their cells follow the shown columns.
+        _rowVersion++;
+        await StateChangedAsync();
+    }
+
+    private async Task HideFromMenuAsync(TbColumn<TItem> column)
+    {
+        _focusColumnChooser = true;
+        Announcer.Polite(Format(TbStrings.DataGridColumnHidden, column.Heading));
+        await SetColumnShownAsync(column, false);
+    }
 
     // The neighbor a column trades places with, among the columns pinned to its side.
     private TbColumn<TItem>? NeighborOf(TbColumn<TItem> column, int by)
@@ -1091,7 +1169,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task OnColumnOrderAsync(ColumnOrderEventArgs e)
     {
         Telemetry.Used(TelemetryName, "reorder");
-        _order = [.. e.Order.Where(key => _columns.Any(column => column.Key == key))];
+        // The script reports only the columns it shows, so each hidden column keeps its place among them.
+        var moved = e.Order.Where(key => _shownColumns.Any(column => column.Key == key)).ToList();
+        if (moved.Count == _shownColumns.Count && _shownColumns.Count < _arrangedColumns.Count)
+        {
+            var next = new Queue<string>(moved);
+            _order = [.. _arrangedColumns.Select(column =>
+                _shownColumns.Contains(column) ? next.Dequeue() : column.Key)];
+        }
+        else
+        {
+            _order = [.. e.Order.Where(key => _columns.Any(column => column.Key == key))];
+        }
+
         // Rows draw again only when told, and their cells follow the columns' order.
         _rowVersion++;
         await StateChangedAsync();
@@ -1669,6 +1759,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         PageSize = _pageSize,
         ColumnWidths = new Dictionary<string, double>(_widths),
         ColumnOrder = [.. _order],
+        HiddenColumns = [.. _hidden],
     };
 
     private Task StateChangedAsync() => StateChanged.InvokeAsync(CurrentState);
@@ -1690,6 +1781,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             _order = [.. state.ColumnOrder];
             _rowVersion++;
+        }
+
+        if (!state.HiddenColumns.SequenceEqual(_hidden))
+        {
+            var shownAgain = _hidden.Except(state.HiddenColumns).ToList();
+            _hidden = [.. state.HiddenColumns];
+            _rowVersion++;
+            var unmeasured = shownAgain.FirstOrDefault(key => !_widths.ContainsKey(key)
+                && _columns.Any(column => column.Key == key));
+            if (ResizableColumns && _widths.Count > 0 && unmeasured is not null)
+            {
+                _measureColumn = unmeasured;
+            }
         }
     }
 

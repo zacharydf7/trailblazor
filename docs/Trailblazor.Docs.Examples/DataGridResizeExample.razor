@@ -1,12 +1,12 @@
 @using System.Globalization
 
-@* Drag a header's edge or use its column menu to resize a column; drag a header or use the menu to move it.
-   The state keeps both. *@
+@* Drag a header's edge or use its column menu to resize a column; drag a header or use the menu to move it; use
+   the Columns menu to hide or show it, or its own menu to hide it. The state keeps all three. *@
 <TbStack Gap="3">
     <TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail widths" KeySelector="trail => trail.Id"
-                ResizableColumns ReorderableColumns FilterMode="GridFilterMode.Menu" @bind-State="_state"
-                Style="max-inline-size: 40rem">
-        <TbColumn Field="trail => trail.Name" MinWidth="10rem" />
+                ResizableColumns ReorderableColumns HideableColumns FilterMode="GridFilterMode.Menu"
+                @bind-State="_state" Style="max-inline-size: 40rem">
+        <TbColumn Field="trail => trail.Name" MinWidth="10rem" Hideable="false" />
         <TbColumn Field="trail => trail.Region" Sortable />
         <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Filterable />
         <TbColumn Field="trail => trail.Surface" Filterable>
@@ -16,6 +16,7 @@
     </TbDataGrid>
     <output aria-label="Column widths">@Widths</output>
     <output aria-label="Column order">@Order</output>
+    <output aria-label="Hidden columns">@Hidden</output>
 </TbStack>
 
 @code {
@@ -35,6 +36,9 @@
 
     private string Order => _state.ColumnOrder.Count == 0 ? "Columns in their starting order."
         : string.Join(", ", _state.ColumnOrder);
+
+    private string Hidden => _state.HiddenColumns.Count == 0 ? "Every column shown."
+        : string.Join(", ", _state.HiddenColumns);
 
     private sealed record Trail(int Id, string Name, string Region, double LengthKm, string Surface, string Notes);
 }

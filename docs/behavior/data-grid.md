@@ -66,7 +66,9 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A single click on a column's menu makes it wider or narrower, or resets every width, with no drag. `GridResizeTests.ColumnMenu_ShouldWidenTheColumnAndKeepTheOthers_WhenMakeWiderIsChosen`, `GridResizeTests.ColumnMenu_ShouldStopAtTheColumnsMinimum_WhenMakeNarrowerIsChosenAgain`, `GridResizeTests.ColumnMenu_ShouldGiveTheColumnsBackTheirWidths_WhenResetIsChosen`
 - [x] Dragging a header past another moves its column there, among the columns pinned to its side, and the grid's state keeps the order. `GridResizeDragTests.Grid_ShouldMoveTheColumn_WhenItsHeaderIsDraggedPastAnother`, `TbDataGridColumnOrderTests.State_ShouldPutTheNamedColumnsFirstAndTheOthersAfter_WhenItHasAColumnOrder`
 - [x] A single click on a column's menu moves it earlier or later, with no drag, and a move past the first or last column on its side is turned off. `TbDataGridColumnOrderTests.ColumnMenu_ShouldMoveTheColumnAndItsCellsAndKeepTheOrder_WhenMoveEarlierIsChosen`, `TbDataGridColumnOrderTests.ColumnMenu_ShouldTurnOffAMoveOffItsSide_WhenAColumnIsAtTheEdgeOfIt`
-- [ ] Columns can be hidden. #164
+- [x] A single click on the Columns menu hides or shows a column, keeping its place, and the grid's state keeps the hidden columns. The last column shown, and one with `Hideable` off, can't be hidden. `TbDataGridHideTests.Chooser_ShouldHideTheColumnAndItsCellsAndKeepItInTheState_WhenItsItemIsUnchecked`, `TbDataGridHideTests.Chooser_ShouldShowTheColumnInItsPlaceAgain_WhenItsItemIsChecked`, `TbDataGridHideTests.Chooser_ShouldKeepTheLastColumnShown_WhenEveryOtherIsHidden`, `TbDataGridHideTests.Chooser_ShouldTurnOffAColumnThatCantBeHidden_WhenItsHideableIsOff`
+- [x] A column's own menu hides it, and the change is read out. `TbDataGridHideTests.ColumnMenu_ShouldHideTheColumnAndReadItOut_WhenHideIsChosen`
+- [x] A hidden column keeps its place while the shown columns are dragged. `TbDataGridHideTests.ColumnOrderEvent_ShouldKeepAHiddenColumnInItsPlace_WhenTheShownColumnsMove`
 
 ## Touch
 

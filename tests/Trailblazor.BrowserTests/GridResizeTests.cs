@@ -64,6 +64,50 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(menu).ToBeFocusedAsync();
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ColumnMenu_ShouldHideTheColumnAndFocusTheColumnsMenu_WhenHideIsChosenWithTheKeys(string browser)
+    {
+        var page = await OpenResizeAsync(browser);
+        await HideRegionWithTheKeysAsync(page);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ColumnMenu_ShouldFocusTheColumnsMenuAfterAHide_WhenItRunsInWebAssembly(string browser)
+    {
+        var page = await ReadyAsync(await OpenDocsAsync(browser, "components/data-grid"));
+        await HideRegionWithTheKeysAsync(page);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Chooser_ShouldKeepTheWidthsFixed_WhenAColumnHiddenBeforeTheFirstResizeIsShown(string browser)
+    {
+        var page = await OpenResizeAsync(browser);
+        await page.Tb().Menu("Columns").ChooseAsync("Region");
+        await Expect(Header(page, "Region")).ToHaveCountAsync(0);
+        await ChooseAsync(page, "Name", "Make Name wider");
+        await Expect(Table(page)).ToHaveClassAsync(new Regex("tb-data-grid__table--fixed"));
+
+        await page.Tb().Menu("Columns").ChooseAsync("Region");
+
+        await Expect(page.GetByLabel("Column widths")).ToContainTextAsync("Region");
+        await Expect(Table(page)).ToHaveClassAsync(new Regex("tb-data-grid__table--fixed"));
+    }
+
+    private static async Task HideRegionWithTheKeysAsync(IPage page)
+    {
+        await page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("End");
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Hide Region" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByLabel("Hidden columns")).ToHaveTextAsync("Region");
+        await Expect(Header(page, "Region")).ToHaveCountAsync(0);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Columns", Exact = true })).ToBeFocusedAsync();
+    }
+
     // WebAssembly renders before the menu's own focus return runs, unlike a server circuit.
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ColumnMenu_ShouldKeepFocusOnTheMovedColumnsMenu_WhenItRunsInWebAssembly(string browser)

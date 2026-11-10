@@ -759,6 +759,15 @@ public static class TbStrings
     /// its new place, counting from 1, and {2} how many columns there are.</summary>
     public const string DataGridColumnMoved = "DataGrid.ColumnMoved";
 
+    /// <summary>"Columns": names the menu above a data grid that shows and hides its columns.</summary>
+    public const string DataGridColumns = "DataGrid.Columns";
+
+    /// <summary>"Hide {0}": a column menu item that hides the column; {0} is the column.</summary>
+    public const string DataGridHide = "DataGrid.Hide";
+
+    /// <summary>"{0} hidden": read out after a column is hidden from its own menu; {0} is the column.</summary>
+    public const string DataGridColumnHidden = "DataGrid.ColumnHidden";
+
     /// <summary>"Make {0} wider": a column menu item that widens the column; {0} is the column.</summary>
     public const string DataGridWider = "DataGrid.Wider";
 
@@ -1079,6 +1088,9 @@ public static class TbStrings
         [DataGridEarlier] = "Move {0} earlier",
         [DataGridLater] = "Move {0} later",
         [DataGridColumnMoved] = "{0} moved to column {1} of {2}",
+        [DataGridColumns] = "Columns",
+        [DataGridHide] = "Hide {0}",
+        [DataGridColumnHidden] = "{0} hidden",
         [DataGridWider] = "Make {0} wider",
         [DataGridNarrower] = "Make {0} narrower",
         [DataGridResetWidths] = "Reset column widths",

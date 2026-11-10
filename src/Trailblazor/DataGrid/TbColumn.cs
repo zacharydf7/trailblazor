@@ -138,6 +138,12 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public bool Resizable { get; set; } = true;
 
+    /// <summary>Whether the user can hide the column, when the grid has
+    /// <see cref="TbDataGrid{TItem}.HideableColumns"/>. On by default; a column that must stay, such as the one that
+    /// names each row, turns it off.</summary>
+    [Parameter]
+    public bool Hideable { get; set; } = true;
+
     /// <summary>The narrowest the user can make the column, as CSS, such as <c>"8rem"</c>. Defaults to 8rem, room for
     /// its header's buttons and the start of its title.</summary>
     [Parameter]

@@ -6483,13 +6483,16 @@ public static class ExampleCatalog
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
-                new("resize-columns", "Resize and move columns", "With `ResizableColumns`, the user resizes a column "
-                    + "by dragging its header's edge, or from its column menu, which the keys and a single click "
-                    + "reach. The first resize fixes every column at its width, so the others hold still. A column's "
-                    + "`MinWidth` is the narrowest it goes, and `Resizable=\"false\"` opts it out. With "
+                new("resize-columns", "Resize, move and hide columns", "With `ResizableColumns`, the user resizes "
+                    + "a column by dragging its header's edge, or from its column menu, which the keys and a single "
+                    + "click reach. The first resize fixes every column at its width, so the others hold still. A "
+                    + "column's `MinWidth` is the narrowest it goes, and `Resizable=\"false\"` opts it out. With "
                     + "`ReorderableColumns`, dragging a header or choosing from its menu moves a column earlier or "
-                    + "later; a pinned column moves only among the columns pinned to its side. `State` keeps the "
-                    + "widths and the order.", typeof(DataGridResizeExample)),
+                    + "later; a pinned column moves only among the columns pinned to its side. With "
+                    + "`HideableColumns`, the user hides and shows columns from a Columns menu above the rows, or "
+                    + "hides one from its own menu; at least one column always shows, and `Hideable=\"false\"` keeps "
+                    + "a column in view. `State` keeps the widths, the order and the hidden columns.",
+                    typeof(DataGridResizeExample)),
                 new("height", "Fixed height and scrolling to a row", "`Height` gives the rows a box of their own to "
                     + "scroll in, under headers that stay in view. Without cell navigation, Tab reaches the box when the rows "
                     + "overflow it, so the arrow keys can scroll it. `ScrollToAsync` goes to the page that holds a row "
@@ -6643,9 +6646,14 @@ public static class ExampleCatalog
                     + "focus on the page, and so does scrolling the focused row out of view.",
                 "A cell holding just a menu's button or a row's move handle keeps focus until Enter, since those "
                     + "controls use the arrow keys.",
-                "A resizable or movable column has a menu button, named \"Options for\" and the column's title, whose "
-                    + "items resize it or move it earlier or later with the keys or a single click, so dragging is "
-                    + "never the only way. The edge itself is hidden from screen readers.",
+                "A resizable, movable or hideable column has a menu button, named \"Options for\" and the column's "
+                    + "title, whose items resize it, move it earlier or later, or hide it with the keys or a single "
+                    + "click, so dragging is never the only way. The edge itself is hidden from screen readers.",
+                "The Columns menu lists every column as a checkbox item, in the grid's column order, and stays open "
+                    + "while the user turns several on or off. The item for the last column shown, or for a column "
+                    + "with `Hideable=\"false\"`, is disabled.",
+                "After a column is hidden from its own menu, whose button goes with it, focus moves to the Columns "
+                    + "menu's button, and the change is read out, such as \"Region hidden\".",
                 "After a move from its menu, focus stays on the column's menu button in its new place, and the move "
                     + "is read out, such as \"Region moved to column 3 of 5\".",
             ],
@@ -6688,11 +6696,13 @@ public static class ExampleCatalog
                 new("filters", "The row of filter fields under the headers."),
                 new("filter", "One column's cell in the row of filter fields."),
                 new("filter-menu", "A column's filter menu: its button in the header and the popup of conditions."),
-                new("column-menu", "A resizable column's menu of widths, in its header."),
+                new("column-menu", "A column's menu, in its header, that resizes, moves or hides it."),
                 new("resize", "The edge of a resizable column's header, which a drag moves."),
                 new("filter-apply", "The filter menu's Apply button."),
                 new("filter-clear", "The filter menu's Clear button."),
-                new("group-by", "The bar that chooses the columns to group by."),
+                new("toolbar", "The bar above the rows that holds the group-by list and the Columns menu."),
+                new("group-by", "The list that chooses the columns to group by."),
+                new("column-chooser", "The Columns menu, which hides and shows columns."),
                 new("group", "A group's heading row."),
                 new("group-toggle", "The button that opens and closes a group."),
                 new("select-all", "The checkbox that selects every row on the page."),
@@ -6747,6 +6757,8 @@ public static class ExampleCatalog
                 "A column moves from its menu: `page.Tb().Menu(\"Options for Region\").ChooseAsync(\"Move Region "
                     + "later\")`, and the same in bUnit with `cut.Tb()`. In bUnit, `Columns` reads the column titles "
                     + "in the order they show; in Playwright, use `await ColumnsAsync()`.",
+                "Hide or show a column from the Columns menu: `cut.Tb().Menu(\"Columns\").ChooseAsync(\"Region\")`, "
+                    + "and the same in Playwright with `page.Tb()`.",
                 "In bUnit, `ClickRowAsync(\"Cedar Flats\")` clicks a row as the browser reports it, raising "
                     + "`OnRowClick` and, with `RowClickSelects`, selecting it. A plain `Click()` on the row doesn't.",
                 "Double-click a cell or press Enter on it to edit it. Its field is named for its column, so in bUnit "
@@ -6758,9 +6770,9 @@ public static class ExampleCatalog
             [
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
-                    + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize` or `reorder` "
-                    + "for each of those the user does; a `move` also says whether a `pointer` or the `keyboard` "
-                    + "made it.",
+                    + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
+                    + "`hide` or `show` for each of those the user does; a `move` also says whether a `pointer` or the "
+                    + "`keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
                     + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",
             ],

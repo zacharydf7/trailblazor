@@ -3,11 +3,11 @@ using System.Collections.ObjectModel;
 namespace Trailblazor;
 
 /// <summary>How the user has arranged a <see cref="TbDataGrid{TItem}"/>: its sorts, filters, groups, page, page size
-/// and column widths, bound with <see cref="TbDataGrid{TItem}.State"/>. It serializes with System.Text.Json, so an app
-/// can save it, such as to local storage, and restore it later; a filter's values read back from JSON take the type of
-/// their column's values, except on a column with <see cref="TbColumn{TItem}.FilterBy"/>, where they keep the types
-/// their JSON gives them. Two states are equal when their lists hold equal items in the same order and their column
-/// widths match.</summary>
+/// and column widths, order and visibility, bound with <see cref="TbDataGrid{TItem}.State"/>. It serializes with
+/// System.Text.Json, so an app can save it, such as to local storage, and restore it later; a filter's values read
+/// back from JSON take the type of their column's values, except on a column with
+/// <see cref="TbColumn{TItem}.FilterBy"/>, where they keep the types their JSON gives them. Two states are equal when
+/// their lists hold equal items in the same order and their column widths match.</summary>
 public sealed record GridState
 {
     /// <summary>The columns the rows sort by, in order, as in <see cref="TbDataGrid{TItem}.Sorts"/>. A null, such as
@@ -42,16 +42,20 @@ public sealed record GridState
     /// it does, and a pinned column stays on its side. A null reads as none.</summary>
     public IReadOnlyList<string> ColumnOrder { get; init => field = value ?? []; } = [];
 
+    /// <summary>The keys of the columns the user hid, in a grid with <see cref="TbDataGrid{TItem}.HideableColumns"/>,
+    /// in the order they were hidden. Set it to start with a column hidden. A null reads as none.</summary>
+    public IReadOnlyList<string> HiddenColumns { get; init => field = value ?? []; } = [];
+
     /// <summary>Whether the other state has equal sorts, filters and groups in the same order, the same page and page
-    /// size, the same column widths and the same column order.</summary>
+    /// size, the same column widths, the same column order and the same hidden columns.</summary>
     public bool Equals(GridState? other) => other is not null && Sorts.SequenceEqual(other.Sorts)
         && Filters.SequenceEqual(other.Filters) && Groups.SequenceEqual(other.Groups) && Page == other.Page
         && PageSize == other.PageSize && SameWidths(ColumnWidths, other.ColumnWidths)
-        && ColumnOrder.SequenceEqual(other.ColumnOrder);
+        && ColumnOrder.SequenceEqual(other.ColumnOrder) && HiddenColumns.SequenceEqual(other.HiddenColumns);
 
     /// <summary>A hash code that equal states share.</summary>
     public override int GetHashCode() => HashCode.Combine(Sorts.Count, Filters.Count, Groups.Count, Page, PageSize,
-        ColumnWidths.Count, ColumnOrder.Count);
+        ColumnWidths.Count, ColumnOrder.Count, HiddenColumns.Count);
 
     internal static bool SameWidths(IReadOnlyDictionary<string, double> one,
         IReadOnlyDictionary<string, double> other) => one.Count == other.Count

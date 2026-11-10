@@ -15,9 +15,12 @@ const Trailblazor.TbStrings.CarouselSlide = "Carousel.Slide" -> string!
 const Trailblazor.TbStrings.CarouselSlideOf = "Carousel.SlideOf" -> string!
 const Trailblazor.TbStrings.CarouselStart = "Carousel.Start" -> string!
 const Trailblazor.TbStrings.CarouselStop = "Carousel.Stop" -> string!
+const Trailblazor.TbStrings.DataGridColumnHidden = "DataGrid.ColumnHidden" -> string!
 const Trailblazor.TbStrings.DataGridColumnMenu = "DataGrid.ColumnMenu" -> string!
 const Trailblazor.TbStrings.DataGridColumnMoved = "DataGrid.ColumnMoved" -> string!
+const Trailblazor.TbStrings.DataGridColumns = "DataGrid.Columns" -> string!
 const Trailblazor.TbStrings.DataGridEarlier = "DataGrid.Earlier" -> string!
+const Trailblazor.TbStrings.DataGridHide = "DataGrid.Hide" -> string!
 const Trailblazor.TbStrings.DataGridLater = "DataGrid.Later" -> string!
 const Trailblazor.TbStrings.DataGridNarrower = "DataGrid.Narrower" -> string!
 const Trailblazor.TbStrings.DataGridResetWidths = "DataGrid.ResetWidths" -> string!
@@ -190,6 +193,8 @@ Trailblazor.GridState.ColumnOrder.get -> System.Collections.Generic.IReadOnlyLis
 Trailblazor.GridState.ColumnOrder.init -> void
 Trailblazor.GridState.ColumnWidths.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>!
 Trailblazor.GridState.ColumnWidths.init -> void
+Trailblazor.GridState.HiddenColumns.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.GridState.HiddenColumns.init -> void
 Trailblazor.TagAddEventArgs
 Trailblazor.TagAddEventArgs.TagAddEventArgs() -> void
 Trailblazor.TagAddEventArgs.Text.get -> string!
@@ -289,10 +294,14 @@ Trailblazor.TbCarouselSlide.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbCarouselSlide.ChildContent.set -> void
 Trailblazor.TbCarouselSlide.Dispose() -> void
 Trailblazor.TbCarouselSlide.TbCarouselSlide() -> void
+Trailblazor.TbColumn<TItem>.Hideable.get -> bool
+Trailblazor.TbColumn<TItem>.Hideable.set -> void
 Trailblazor.TbColumn<TItem>.MinWidth.get -> string?
 Trailblazor.TbColumn<TItem>.MinWidth.set -> void
 Trailblazor.TbColumn<TItem>.Resizable.get -> bool
 Trailblazor.TbColumn<TItem>.Resizable.set -> void
+Trailblazor.TbDataGrid<TItem>.HideableColumns.get -> bool
+Trailblazor.TbDataGrid<TItem>.HideableColumns.set -> void
 Trailblazor.TbDataGrid<TItem>.ReorderableColumns.get -> bool
 Trailblazor.TbDataGrid<TItem>.ReorderableColumns.set -> void
 Trailblazor.TbDataGrid<TItem>.ResizableColumns.get -> bool

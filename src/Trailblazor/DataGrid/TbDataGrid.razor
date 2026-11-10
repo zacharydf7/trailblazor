@@ -10,21 +10,41 @@
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
     @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); DrawRowsForReorder(); }
-    @if (HasGroupBy)
+    @if (HasGroupBy || HideableColumns)
     {
-        @* As with the filters, a page's form around the grid doesn't own the list. *@
-        <div data-part="group-by" class="tb-data-grid__toolbar">
-            <CascadingValue TValue="EditContext" Value="null">
-                <CascadingValue TValue="TbForm" Value="null">
-                    <TbMultiSelect TItem="string" Label="@Localizer[TbStrings.DataGridGroupBy]" Size="Size.Small"
-                                   Clearable Value="_groups" ValueChanged="GroupByAsync" class="tb-data-grid__group-by">
-                        @foreach (var column in _shownColumns.Where(column => column.CanGroup))
-                        {
-                            <TbOption Value="column.Key">@column.Heading</TbOption>
-                        }
-                    </TbMultiSelect>
-                </CascadingValue>
-            </CascadingValue>
+        <div data-part="toolbar" class="tb-data-grid__toolbar">
+            @if (HasGroupBy)
+            {
+                @* As with the filters, a page's form around the grid doesn't own the list. *@
+                <div data-part="group-by" class="tb-data-grid__group-by-bar">
+                    <CascadingValue TValue="EditContext" Value="null">
+                        <CascadingValue TValue="TbForm" Value="null">
+                            <TbMultiSelect TItem="string" Label="@Localizer[TbStrings.DataGridGroupBy]"
+                                           Size="Size.Small" Clearable Value="_groups" ValueChanged="GroupByAsync"
+                                           class="tb-data-grid__group-by">
+                                @foreach (var column in _arrangedColumns.Where(column => column.CanGroup))
+                                {
+                                    <TbOption Value="column.Key">@column.Heading</TbOption>
+                                }
+                            </TbMultiSelect>
+                        </CascadingValue>
+                    </CascadingValue>
+                </div>
+            }
+            @if (HideableColumns)
+            {
+                <TbMenu Label="@Localizer[TbStrings.DataGridColumns]" Variant="Variant.Text" Size="Size.Small"
+                        Align="PlacementAlign.End" data-part="column-chooser" Class="tb-data-grid__column-chooser">
+                    @foreach (var column in _arrangedColumns)
+                    {
+                        <TbMenuCheckboxItem KeepOpen Checked="_shownColumns.Contains(column)"
+                                            Disabled="!CanShowOrHide(column)"
+                                            CheckedChanged="shown => SetColumnShownAsync(column, shown)">
+                            @column.Heading
+                        </TbMenuCheckboxItem>
+                    }
+                </TbMenu>
+            }
         </div>
     }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")"
@@ -464,6 +484,12 @@
                     </TbMenuItem>
                     <TbMenuItem Disabled="_widths.Count == 0" OnClick="ResetWidthsAsync">
                         @Localizer[TbStrings.DataGridResetWidths]
+                    </TbMenuItem>
+                }
+                @if (CanHide(column))
+                {
+                    <TbMenuItem OnClick="() => HideFromMenuAsync(column)">
+                        @Format(TbStrings.DataGridHide, column.Heading)
                     </TbMenuItem>
                 }
             </ChildContent>
