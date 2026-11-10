@@ -7292,6 +7292,36 @@
         }
     }
 
+    .tb-virtual-list {
+        display: flex;
+        flex-direction: column;
+        color: var(--tb-color-text);
+    }
+
+    .tb-virtual-list--scrolls {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .tb-virtual-list:focus-visible,
+    .tb-virtual-list__item:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-virtual-list__item {
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-virtual-list__placeholder {
+        background: var(--tb-color-surface-sunken);
+    }
+
+    .tb-virtual-list__empty {
+        padding: var(--tb-space-4);
+        color: var(--tb-color-text-muted);
+    }
+
     .tb-sortable {
         position: relative;
     }

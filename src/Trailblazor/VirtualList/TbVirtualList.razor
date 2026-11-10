@@ -1,0 +1,51 @@
+@namespace Trailblazor
+@typeparam TItem
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+@* tabindex -1 lets the feed hold focus when the focused item scrolls out and is no longer drawn. *@
+<div @ref="_feed" @attributes="AdditionalAttributes" role="@Role" aria-label="@AriaLabel" tabindex="-1"
+     aria-busy="@(Loading ? "true" : "false")" data-part="feed" data-count="@Total" data-item-size="@ItemSizeText"
+     data-ready="@(_handle is null ? null : "")"
+     style="@Styles.Join(Height is null ? null : $"block-size: {Height}", Style)"
+     class="@ClassNames.Join("tb-virtual-list", Height is null ? null : "tb-virtual-list--scrolls", Class)">
+    @if (RendererInfo.IsInteractive)
+    {
+        <Virtualize @ref="_virtualize" TItem="VirtualItem<TItem>" ItemsProvider="ProvideAsync" ItemSize="ItemSize"
+                    OverscanCount="OverscanCount" ItemContent="Item">
+            <Placeholder Context="place">
+                <div data-part="placeholder" data-index="@place.Index" aria-hidden="true"
+                     class="tb-virtual-list__placeholder" style="min-block-size: @(ItemSizeText)px">
+                    @Placeholder?.Invoke(place)
+                </div>
+            </Placeholder>
+            <EmptyContent>@Empty</EmptyContent>
+        </Virtualize>
+    }
+    else if (Items is { Count: > 0 } items)
+    {
+        @* Virtualize draws nothing until the browser reports the view, so a static page shows every item. *@
+        @for (var index = 0; index < items.Count; index++)
+        {
+            @Item(new VirtualItem<TItem>(index, items[index]))
+        }
+    }
+    else if (Items is not null)
+    {
+        @Empty
+    }
+</div>
+
+@code {
+    // Keyed, so an item scrolled out leaves the page instead of its element showing another item.
+    private RenderFragment<VirtualItem<TItem>> Item => entry =>
+        @<article @key="entry.Index" data-part="item" data-index="@entry.Index" tabindex="-1"
+                  aria-posinset="@(entry.Index + 1)" aria-setsize="@Total" aria-label="@ItemLabel?.Invoke(entry.Item)"
+                  class="tb-virtual-list__item">
+            @ChildContent?.Invoke(entry.Item)
+        </article>;
+
+    private RenderFragment Empty =>
+        @<div data-part="empty" class="tb-virtual-list__empty">@EmptyContent</div>;
+}

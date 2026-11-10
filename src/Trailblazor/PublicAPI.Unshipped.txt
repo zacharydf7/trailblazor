@@ -44,6 +44,9 @@ override Trailblazor.TbKbd.OnParametersSet() -> void
 override Trailblazor.TbPopconfirm.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbVirtualList<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbVirtualList<TItem>.OnParametersSet() -> void
+override Trailblazor.TbVirtualList<TItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 static Trailblazor.CalendarLabels.operator !=(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CalendarLabels.operator ==(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CarouselLabels.operator !=(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
@@ -2799,6 +2802,31 @@ Trailblazor.TbTreeView<TItem, TKey>.TelemetryName.get -> string?
 Trailblazor.TbTreeView<TItem, TKey>.TelemetryName.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.Virtualize.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.Virtualize.set -> void
+Trailblazor.TbVirtualList<TItem>
+Trailblazor.TbVirtualList<TItem>.AriaLabel.get -> string!
+Trailblazor.TbVirtualList<TItem>.AriaLabel.set -> void
+Trailblazor.TbVirtualList<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
+Trailblazor.TbVirtualList<TItem>.ChildContent.set -> void
+Trailblazor.TbVirtualList<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbVirtualList<TItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbVirtualList<TItem>.EmptyContent.set -> void
+Trailblazor.TbVirtualList<TItem>.Height.get -> string?
+Trailblazor.TbVirtualList<TItem>.Height.set -> void
+Trailblazor.TbVirtualList<TItem>.ItemLabel.get -> System.Func<TItem, string!>?
+Trailblazor.TbVirtualList<TItem>.ItemLabel.set -> void
+Trailblazor.TbVirtualList<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>?
+Trailblazor.TbVirtualList<TItem>.Items.set -> void
+Trailblazor.TbVirtualList<TItem>.ItemSize.get -> float
+Trailblazor.TbVirtualList<TItem>.ItemSize.set -> void
+Trailblazor.TbVirtualList<TItem>.ItemsProvider.get -> Microsoft.AspNetCore.Components.Web.Virtualization.ItemsProviderDelegate<TItem>?
+Trailblazor.TbVirtualList<TItem>.ItemsProvider.set -> void
+Trailblazor.TbVirtualList<TItem>.OverscanCount.get -> int
+Trailblazor.TbVirtualList<TItem>.OverscanCount.set -> void
+Trailblazor.TbVirtualList<TItem>.Placeholder.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Virtualization.PlaceholderContext>?
+Trailblazor.TbVirtualList<TItem>.Placeholder.set -> void
+Trailblazor.TbVirtualList<TItem>.RefreshDataAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbVirtualList<TItem>.ScrollToAsync(int index, bool focus = false) -> System.Threading.Tasks.Task!
+Trailblazor.TbVirtualList<TItem>.TbVirtualList() -> void
 Trailblazor.TelemetrySettings
 Trailblazor.TelemetrySettings.Enabled.get -> bool
 Trailblazor.TelemetrySettings.Enabled.set -> void
@@ -3815,3 +3843,4 @@ Trailblazor.TbRating.Classes.set -> void
 Trailblazor.TbRadioGroup<TValue>.Segmented.get -> bool
 Trailblazor.TbRadioGroup<TValue>.Segmented.set -> void
 static Trailblazor.Icon.FromSvg(string! svg) -> Trailblazor.Icon
+~override Trailblazor.TbVirtualList<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

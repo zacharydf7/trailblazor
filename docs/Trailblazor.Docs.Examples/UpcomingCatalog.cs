@@ -44,7 +44,6 @@ public static class UpcomingCatalog
         new("Spreadsheet", ExampleCategory.Content, 206),
         new("Text highlighter", ExampleCategory.Content, 195),
         new("Tree grid", ExampleCategory.Content, 81),
-        new("Virtual list", ExampleCategory.Content, 57),
         new("Watermark", ExampleCategory.Content, 192),
         new("Back to top button", ExampleCategory.Actions, 194),
         new("Floating action button", ExampleCategory.Actions, 172),

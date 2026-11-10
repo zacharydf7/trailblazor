@@ -1,0 +1,24 @@
+@page "/virtual-list"
+
+<TbVirtualList TItem="Post" AriaLabel="Posts" Items="_posts" Height="20rem" ItemLabel="@(post => post.Title)">
+    <TbStack Gap="2" class="tb-p-3">
+        <TbText>@context.Title</TbText>
+        <TbToggleGroup @bind-Value="context.Reaction" AriaLabel="@($"Reaction to {context.Title}")">
+            <TbToggleItem Value="@("Like")" Text="Like" />
+            <TbToggleItem Value="@("Dislike")" Text="Dislike" />
+        </TbToggleGroup>
+        <textarea aria-label="@($"Reply to {context.Title}")" rows="2"></textarea>
+        <label><input type="checkbox" /> Mark @context.Title read</label>
+    </TbStack>
+</TbVirtualList>
+
+@code {
+    private readonly Post[] _posts = [.. Enumerable.Range(1, 200).Select(number => new Post($"Post {number}"))];
+
+    private sealed class Post(string title)
+    {
+        public string Title { get; } = title;
+
+        public string? Reaction { get; set; }
+    }
+}

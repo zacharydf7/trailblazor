@@ -32,7 +32,8 @@ public class ComponentContractTests : BunitContext
     };
 
     // Components that render nothing until they are shown are checked shown; a popover, a popconfirm, a menu, a
-    // tooltip, a progress, an avatar and a kbd get the label, text, name or keys they need when they are given none.
+    // tooltip, a progress, an avatar, a kbd and a virtual list get the label, text, name, keys or items they need when
+    // they are given none.
     private static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
     {
         [typeof(TbOverlay)] = (nameof(TbOverlay.Visible), true),
@@ -45,6 +46,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbDrawer)] = (nameof(TbDrawer.Open), true),
         [typeof(TbAvatar)] = (nameof(TbAvatar.Name), "Sample"),
         [typeof(TbKbd)] = (nameof(TbKbd.Keys), "Ctrl+K"),
+        [typeof(TbVirtualList<string>)] = (nameof(TbVirtualList<string>.Items), Array.Empty<string>()),
     };
 
     public ComponentContractTests()

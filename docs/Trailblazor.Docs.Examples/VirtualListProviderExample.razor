@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<TbStack Gap="2">
+    <TbButton OnClick="() => _list!.ScrollToAsync(750, focus: true)">Go to sighting 751</TbButton>
+    <TbVirtualList @ref="_list" TItem="string" AriaLabel="Wildlife sightings" ItemsProvider="LoadAsync" Height="16rem"
+                   ItemSize="40">
+        <ChildContent>
+            <div class="tb-p-2">@context</div>
+        </ChildContent>
+        <Placeholder>
+            <div class="tb-p-2">Loading…</div>
+        </Placeholder>
+    </TbVirtualList>
+</TbStack>
+
+@code {
+    private static readonly string[] Animals = ["Elk", "Black bear", "Red fox", "Golden eagle", "Marmot"];
+
+    private TbVirtualList<string>? _list;
+
+    // Stands in for a database query that reads only the rows asked for.
+    private static async ValueTask<ItemsProviderResult<string>> LoadAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(300, request.CancellationToken);
+        var rows = Enumerable.Range(request.StartIndex, Math.Min(request.Count, 2000 - request.StartIndex))
+            .Select(index => $"Sighting {index + 1}: {Animals[index % Animals.Length]}");
+        return new(rows, 2000);
+    }
+}

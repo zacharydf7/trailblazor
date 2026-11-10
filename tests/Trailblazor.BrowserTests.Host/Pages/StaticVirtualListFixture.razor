@@ -1,0 +1,11 @@
+@page "/static-virtual-list"
+@attribute [ExcludeFromInteractiveRouting]
+
+<TbVirtualList TItem="string" AriaLabel="Trail reports" Items="Reports" Height="12rem">
+    <ChildContent>@context</ChildContent>
+    <EmptyContent>No reports yet.</EmptyContent>
+</TbVirtualList>
+
+@code {
+    private static readonly string[] Reports = [.. Enumerable.Range(1, 500).Select(number => $"Report {number}")];
+}

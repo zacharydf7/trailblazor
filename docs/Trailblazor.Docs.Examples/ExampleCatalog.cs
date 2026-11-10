@@ -532,6 +532,86 @@ public static class ExampleCatalog
                 + "visible `group` named, for example, \"2 of 3\". In bUnit, register a `FakeTimeProvider` as the "
                 + "`TimeProvider` and advance it past the `AutoPlay` interval to turn the slides.",
         },
+        new("virtual-list", "Virtual list", ExampleCategory.Content,
+            "A long list of items of any height, such as thousands of trail reports, that draws only those near the "
+                + "view.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for hundreds or thousands of items read one after another, such as a feed of reports, where "
+                    + "drawing them all would slow the page.",
+            ],
+            WhenNotToUse =
+            [
+                "For rows with columns to sort and filter, use a [data grid](components/data-grid), which can "
+                    + "virtualize too.",
+                "For a list people choose from, use a [list box](components/listbox).",
+                "For a few dozen items, use a plain [list](components/list).",
+            ],
+            Related = ["data-grid", "list", "listbox"],
+            Pattern = new("feed", "https://www.w3.org/WAI/ARIA/apg/patterns/feed/"),
+            Sections =
+            [
+                new("items", "Items in memory", "`Items` holds every item, and the content draws each one, at any height. "
+                    + "`Height` gives the list a height to scroll in; without it the page scrolls. `ItemLabel` names "
+                    + "each item for screen readers.", typeof(VirtualListExample)),
+                new("provider", "Loading as it scrolls", "`ItemsProvider` loads only the items in view, such as from "
+                    + "a database, and gives their total. `Placeholder` stands in while they load, and `ItemSize` is "
+                    + "the height to expect until items are measured. `ScrollToAsync` scrolls an item into view, and "
+                    + "can focus it.", typeof(VirtualListProviderExample)),
+                new("empty", "No items", "`EmptyContent` shows when there are no items.",
+                    typeof(VirtualListEmptyExample)),
+            ],
+            Api = [typeof(TbVirtualList<>)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the list, to the item that last had focus, and on through that item's "
+                    + "controls."),
+                new(["Page Down", "Page Up"], "Moves to the next or previous item, drawing it first if needed.")
+                    { When = "In the list, outside a text field" },
+                new(["Ctrl+End"], "Moves to the first control after the list.")
+                    { When = "In the list, outside a text field" },
+                new(["Ctrl+Home"], "Moves to the last control before the list.")
+                    { When = "In the list, outside a text field" },
+            ],
+            Labeling =
+            [
+                "The list is a `feed` named by `AriaLabel`. Each item is an `article` named by `ItemLabel`, with its "
+                    + "place and the total, such as 12 of 5000. Without `ItemLabel`, an item has no name, though screen "
+                    + "readers still read its content.",
+                "A list with no items is a `group` with the same name, holding `EmptyContent`, since a feed holds only "
+                    + "articles.",
+            ],
+            Announcements =
+            [
+                "The feed is `aria-busy` while `ItemsProvider` loads, so screen readers wait for the new items.",
+            ],
+            Accessibility =
+            [
+                "When the focused item scrolls out and is no longer drawn, focus moves to the list, and Page Down and "
+                    + "Page Up go on from that item.",
+            ],
+            BeforeInteractive =
+            [
+                "A static or prerendered page lists every item in `Items`, so for a very long list use "
+                    + "`ItemsProvider` or turn prerendering off. With `ItemsProvider`, nothing shows until the page is "
+                    + "interactive. Either way, the keys work only once the page is interactive.",
+            ],
+            Target = new("feed", "Trail reports"),
+            Blocks = ["tb-virtual-list"],
+            DataParts =
+            [
+                new("feed", "The list."),
+                new("item", "One item, with `data-index` for its place from 0."),
+                new("placeholder", "An item's place while it loads."),
+                new("empty", "The content shown when there are no items."),
+            ],
+            TestingTip = "Find it as `GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
+                + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`. Only items near the view "
+                + "are drawn, so call `ScrollToAsync` or press Page Down to reach a far one. The keys work once the "
+                + "feed has `data-ready`, so wait for it first. In bUnit, `Items` draws the first ones.",
+        },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
         {

@@ -1,0 +1,22 @@
+<TbVirtualList TItem="TrailReport" AriaLabel="Trail reports" Items="Reports" Height="20rem"
+               ItemLabel="@(report => report.Trail)">
+    <div class="tb-p-3">
+        <TbText TextStyle="TextStyle.Subtitle">@context.Trail</TbText>
+        <TbText>@context.Note</TbText>
+    </div>
+</TbVirtualList>
+
+@code {
+    private static readonly string[] Notes =
+    [
+        "Clear and dry.",
+        "Muddy after the bridge, so bring boots. The upper meadow is full of flowers this week.",
+        "A tree is down across the path near the second switchback. It can be climbed over, but take care with dogs "
+            + "and small children, and expect it to slow you down.",
+    ];
+
+    private static readonly TrailReport[] Reports = [.. Enumerable.Range(1, 5000)
+        .Select(number => new TrailReport($"Report {number}: Trail {(number % 40) + 1}", Notes[number % 3]))];
+
+    private sealed record TrailReport(string Trail, string Note);
+}

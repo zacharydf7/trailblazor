@@ -144,8 +144,9 @@ export function firstTabbable(container) {
     return getTabbables(container)[0] ?? null;
 }
 
-// A radio group is one stop: its checked radio, or its first when none is checked.
-function getTabbables(container) {
+// The controls Tab reaches in the container, in order. A radio group is one stop: its checked radio, or its first when
+// none is checked.
+export function getTabbables(container) {
     const tabbables = [...container.querySelectorAll(focusableSelector)].filter(isTabbable);
     return tabbables.filter(element => {
         if (element.type !== 'radio') {
