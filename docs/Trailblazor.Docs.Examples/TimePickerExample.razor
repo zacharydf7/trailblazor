@@ -1,0 +1,9 @@
+<TbStack Gap="2">
+    <TbTimePicker TTime="TimeOnly" Label="Start time" @bind-Value="_start"
+                  HelperText="The time shows in your browser's language." />
+    <output>@(_start is { } time ? $"Starting at {time:t}." : "No time chosen yet.")</output>
+</TbStack>
+
+@code {
+    private TimeOnly? _start = new(8, 30);
+}

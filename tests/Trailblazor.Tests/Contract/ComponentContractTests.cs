@@ -29,7 +29,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbNumberField<>)] = typeof(int), [typeof(TbCheckbox<>)] = typeof(bool),
         [typeof(TbSlider<>)] = typeof(int), [typeof(TbRangeSlider<>)] = typeof(int),
         [typeof(TbDateRangePicker<>)] = typeof(DateOnly), [typeof(TbCalendar<>)] = typeof(DateOnly),
-        [typeof(TbDatePicker<>)] = typeof(DateOnly),
+        [typeof(TbDatePicker<>)] = typeof(DateOnly), [typeof(TbTimePicker<>)] = typeof(TimeOnly),
     };
 
     // Components that render nothing until they are shown are checked shown; a popover, a popconfirm, a menu, a

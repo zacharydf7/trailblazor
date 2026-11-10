@@ -1,0 +1,7 @@
+<TbTimePicker TTime="TimeOnly" Label="Pickup time" @bind-Value="_pickup" Min="new TimeOnly(9, 0)"
+              Max="new TimeOnly(17, 0)" Step="TimeSpan.FromMinutes(15)"
+              HelperText="Every quarter hour, 9 AM to 5 PM." />
+
+@code {
+    private TimeOnly? _pickup;
+}

@@ -25,6 +25,9 @@ const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
 const Trailblazor.TbStrings.TagInputRemove = "TagInput.Remove" -> string!
 const Trailblazor.TbStrings.TagInputRemoved = "TagInput.Removed" -> string!
 const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
+const Trailblazor.TbStrings.TimePickerAtLeast = "TimePicker.AtLeast" -> string!
+const Trailblazor.TbStrings.TimePickerAtMost = "TimePicker.AtMost" -> string!
+const Trailblazor.TbStrings.TimePickerOutOfRange = "TimePicker.OutOfRange" -> string!
 override Trailblazor.CalendarLabels.Equals(object? obj) -> bool
 override Trailblazor.CalendarLabels.GetHashCode() -> int
 override Trailblazor.CalendarLabels.ToString() -> string!
@@ -53,9 +56,14 @@ override Trailblazor.TbKbd.OnParametersSet() -> void
 override Trailblazor.TbPopconfirm.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbTimePicker<TTime>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbTimePicker<TTime>.OnInitialized() -> void
 override Trailblazor.TbVirtualList<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbVirtualList<TItem>.OnParametersSet() -> void
 override Trailblazor.TbVirtualList<TItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+override Trailblazor.TimePickerLabels.Equals(object? obj) -> bool
+override Trailblazor.TimePickerLabels.GetHashCode() -> int
+override Trailblazor.TimePickerLabels.ToString() -> string!
 static Trailblazor.CalendarLabels.operator !=(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CalendarLabels.operator ==(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CarouselLabels.operator !=(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
@@ -64,6 +72,8 @@ static Trailblazor.DatePickerLabels.operator !=(Trailblazor.DatePickerLabels? le
 static Trailblazor.DatePickerLabels.operator ==(Trailblazor.DatePickerLabels? left, Trailblazor.DatePickerLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
+static Trailblazor.TimePickerLabels.operator !=(Trailblazor.TimePickerLabels? left, Trailblazor.TimePickerLabels? right) -> bool
+static Trailblazor.TimePickerLabels.operator ==(Trailblazor.TimePickerLabels? left, Trailblazor.TimePickerLabels? right) -> bool
 Trailblazor.CalendarLabels
 Trailblazor.CalendarLabels.<Clone>$() -> Trailblazor.CalendarLabels!
 Trailblazor.CalendarLabels.CalendarLabels() -> void
@@ -2655,6 +2665,18 @@ Trailblazor.TbThemePicker.Dispose() -> void
 Trailblazor.TbThemePicker.Size.get -> Trailblazor.Size
 Trailblazor.TbThemePicker.Size.set -> void
 Trailblazor.TbThemePicker.TbThemePicker() -> void
+Trailblazor.TbTimePicker<TTime>
+Trailblazor.TbTimePicker<TTime>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbTimePicker<TTime>.Classes.set -> void
+Trailblazor.TbTimePicker<TTime>.Labels.get -> Trailblazor.TimePickerLabels!
+Trailblazor.TbTimePicker<TTime>.Labels.set -> void
+Trailblazor.TbTimePicker<TTime>.Max.get -> TTime?
+Trailblazor.TbTimePicker<TTime>.Max.set -> void
+Trailblazor.TbTimePicker<TTime>.Min.get -> TTime?
+Trailblazor.TbTimePicker<TTime>.Min.set -> void
+Trailblazor.TbTimePicker<TTime>.Step.get -> System.TimeSpan?
+Trailblazor.TbTimePicker<TTime>.Step.set -> void
+Trailblazor.TbTimePicker<TTime>.TbTimePicker() -> void
 Trailblazor.TbToggleGroup<TValue>
 Trailblazor.TbToggleGroup<TValue>.Clearable.get -> bool
 Trailblazor.TbToggleGroup<TValue>.Clearable.set -> void
@@ -2919,6 +2941,16 @@ Trailblazor.ThemeSettings.Palette.set -> void
 Trailblazor.ThemeSettings.Remember.get -> bool
 Trailblazor.ThemeSettings.Remember.set -> void
 Trailblazor.ThemeSettings.ThemeSettings() -> void
+Trailblazor.TimePickerLabels
+Trailblazor.TimePickerLabels.<Clone>$() -> Trailblazor.TimePickerLabels!
+Trailblazor.TimePickerLabels.AtLeast.get -> string?
+Trailblazor.TimePickerLabels.AtLeast.init -> void
+Trailblazor.TimePickerLabels.AtMost.get -> string?
+Trailblazor.TimePickerLabels.AtMost.init -> void
+Trailblazor.TimePickerLabels.Equals(Trailblazor.TimePickerLabels? other) -> bool
+Trailblazor.TimePickerLabels.OutOfRange.get -> string?
+Trailblazor.TimePickerLabels.OutOfRange.init -> void
+Trailblazor.TimePickerLabels.TimePickerLabels() -> void
 Trailblazor.ToastAction
 Trailblazor.ToastAction.<Clone>$() -> Trailblazor.ToastAction!
 Trailblazor.ToastAction.Deconstruct(out string! Text, out Microsoft.AspNetCore.Components.EventCallback OnClick) -> void
@@ -3158,6 +3190,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbTextField<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbThemeHead.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbThemePicker.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTimePicker<TTime>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbToggleGroupBase<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbToggleItem<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbToolbar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

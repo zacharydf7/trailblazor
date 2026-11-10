@@ -151,6 +151,18 @@ public static class TbStrings
     /// out; {0} is the date as typed.</summary>
     public const string DatePickerUnavailable = "DatePicker.Unavailable";
 
+    /// <summary>"Choose a time from {0} to {1}.": shown when a time is outside a time picker's Min and Max; {0} and
+    /// {1} are the earliest and latest times.</summary>
+    public const string TimePickerOutOfRange = "TimePicker.OutOfRange";
+
+    /// <summary>"Choose {0} or later.": shown when a time is before a time picker's Min and there is no Max; {0} is the
+    /// earliest time.</summary>
+    public const string TimePickerAtLeast = "TimePicker.AtLeast";
+
+    /// <summary>"Choose {0} or earlier.": shown when a time is after a time picker's Max and there is no Min; {0} is
+    /// the latest time.</summary>
+    public const string TimePickerAtMost = "TimePicker.AtMost";
+
     /// <summary>"Start date": names a date range's start field, and is added to the start day's name in the calendar.
     /// </summary>
     public const string DateRangePickerStart = "DateRangePicker.Start";
@@ -834,6 +846,9 @@ public static class TbStrings
         [DatePickerClear] = "Clear",
         [DatePickerBadDate] = "Enter the date as {0}.",
         [DatePickerUnavailable] = "{0} can't be chosen.",
+        [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
+        [TimePickerAtLeast] = "Choose {0} or later.",
+        [TimePickerAtMost] = "Choose {0} or earlier.",
         [DateRangePickerStart] = "Start date",
         [DateRangePickerEnd] = "End date",
         [DateRangePickerOpen] = "Choose dates",

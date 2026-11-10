@@ -4581,6 +4581,78 @@ public static class ExampleCatalog
                 + "has taken it. In bUnit, `Change(\"6/12/2026\")` on the `input` sets it; write the date in the field's "
                 + "format, as here for en-US.",
         },
+        new("time-picker", "Time picker", ExampleCategory.Inputs,
+            "Chooses a time of day in the browser's own time box, shown in the user's language.")
+        {
+            WhenToUse =
+            [
+                "Use it for a time of day, such as a start time or a pickup slot.",
+            ],
+            WhenNotToUse =
+            [
+                "For a length of time, such as a hike's duration, use a [number field](components/number-field).",
+                "For a day, use a [date picker](components/date-picker).",
+            ],
+            Related = ["date-picker", "number-field", "form"],
+            Sections =
+            [
+                new("value", "Value", "`@bind-Value` holds the time. `TTime` can be `TimeOnly`, or `TimeSpan` from "
+                    + "midnight. The browser shows the time in the user's own language, such as 8:30 AM or 08:30.",
+                    typeof(TimePickerExample)),
+                new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest times, and a "
+                    + "time outside them shows a message. A `Min` after `Max` is a range across midnight. `Step` sets "
+                    + "how far apart the times are, such as 15 minutes; a step that isn't a whole number of minutes "
+                    + "adds seconds to the box.", typeof(TimePickerLimitsExample)),
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the time from changing. "
+                    + "`Disabled` takes the field out of the tab order and the post.", typeof(TimePickerStatesExample)),
+            ],
+            Api = [typeof(TbTimePicker<>), typeof(TimePickerLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Left", "Right"], "Moves between the hours, minutes and, in some languages, AM or PM.")
+                    { When = "In the box" },
+                new(["Up", "Down"], "Changes the part with focus. The minutes move by `Step`.") { When = "In the box" },
+                new(["0-9"], "Types the part with focus.") { When = "In the box" },
+            ],
+            Labeling =
+            [
+                "The box is named by the `Label`. Each part of the time is announced by the browser, such as "
+                    + "\"hours\" and \"minutes\".",
+            ],
+            Announcements =
+            [
+                "A time outside `Min` and `Max` shows a message that is read out once, as on a "
+                    + "[text field](components/text-field).",
+            ],
+            Accessibility =
+            [
+                "The time box is the browser's own, so its keys, its parts' names and its look in forced-colors mode "
+                    + "are the ones people know from other sites.",
+            ],
+            AppDuties =
+            [
+                "The box shows the time in the browser's language, not the app's `Culture`, but its value is always "
+                    + "24-hour `HH:mm`, so a test reads and fills it that way.",
+            ],
+            Notes =
+            [
+                new("`@ref` the picker and call `FocusAsync()` to move focus to the box."),
+            ],
+            BeforeInteractive =
+            [
+                "It is the browser's own time box either way, so the time can be chosen and a static form still posts "
+                    + "it.",
+            ],
+            Target = new("textbox", "Start time"),
+            Blocks = ["tb-field"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The time box."),
+            ],
+            TestingTip = "In Playwright, `GetByLabel(\"Start time\").FillAsync(\"14:30\")` sets the time in 24-hour "
+                + "form, whatever the box shows. In bUnit, `Change(\"14:30\")` on the `input` does the same.",
+        },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
         {

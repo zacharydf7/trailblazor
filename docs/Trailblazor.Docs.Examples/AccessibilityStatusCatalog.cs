@@ -75,6 +75,7 @@ public static class AccessibilityStatusCatalog
         new("file-upload", NotYet, NotYet, None),
         new("calendar", Tested, Tested, None),
         new("date-picker", Tested, NotYet, None),
+        new("time-picker", None, NotYet, None),
         new("date-range-picker", Tested, Tested, None),
         new("listbox", Tested, NotYet, None),
         new("tooltip", Tested, NotYet, None),
