@@ -252,10 +252,12 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Label_ShouldFocusTheEditor_WhenClicked(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");
+        var summary = Editor(page, "Summary");
+        await Expect(summary).ToHaveAttributeAsync("data-ready", "");
 
         await page.Locator("label", new() { HasText = "Summary" }).ClickAsync();
 
-        await Expect(Editor(page, "Summary")).ToBeFocusedAsync();
+        await Expect(summary).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
