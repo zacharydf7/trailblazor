@@ -161,7 +161,7 @@ export function createDataGrid(table) {
     let drag = null;
     const startResize = event => {
         const edge = event.target.closest?.('[data-part=resize]');
-        if (!edge || event.button !== 0) {
+        if (!edge || event.button !== 0 || edge.closest('table') !== table) {
             return;
         }
 
@@ -232,7 +232,7 @@ export function createDataGrid(table) {
     const columnDrag = createPointerDrag(table, {
         itemSelector: 'thead th[data-column]',
         ignoreSelector: '[data-part=resize], [data-part=column-menu], [data-part=filter-menu], input',
-        ownsPress: () => table.hasAttribute('data-reorder-columns') && !drag,
+        ownsPress: target => target.closest('table') === table && table.hasAttribute('data-reorder-columns') && !drag,
         scrolls: false,
         onStart: cell => {
             carried = cell;
@@ -339,7 +339,7 @@ export function createDataGrid(table) {
     const endPress = () => pressedWithShift = false;
     const keepTextUnselected = event => {
         const target = event.target.nodeType === Node.ELEMENT_NODE ? event.target : event.target.parentElement;
-        if (pressedWithShift && table.hasAttribute('data-row-click-selects')
+        if (pressedWithShift && table.hasAttribute('data-row-click-selects') && target.closest('table') === table
             && target.closest('tr')?.dataset.part === 'row' && !target.closest('[contenteditable]')) {
             event.preventDefault();
         }
@@ -347,7 +347,8 @@ export function createDataGrid(table) {
     // A Shift+click on a box goes through the range, since its own toggle would turn off a box already in the range.
     // The range waits for the click to finish, since canceling it would undo a render that came during it.
     const extendFromBox = event => {
-        if (event.shiftKey && selectsMany(table) && event.target.matches?.('tr[data-part=row] [data-part=select] input')) {
+        if (event.shiftKey && selectsMany(table) && event.target.matches?.('tr[data-part=row] [data-part=select] input')
+            && event.target.closest('table') === table) {
             event.preventDefault();
             setTimeout(() => extendTo(event.target.closest('tr'), null));
         }
@@ -438,7 +439,11 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         const controls = controlsOf(cell);
         return controls.length === 1 && takesCellFocus(controls[0]) ? controls[0] : null;
     };
-    const stopOf = cell => loneControl(cell) ?? cell;
+    // A row's details can hold anything, even another grid, so they keep their own Tab stops.
+    const isDetail = cell => cell.parentElement.dataset.part === 'detail';
+    const firstStopIn = cell => [...cell.querySelectorAll(focusable)].find(element => !element.disabled
+        && !element.closest('[popover]') && element.tabIndex >= 0);
+    const stopOf = cell => isDetail(cell) ? cell : loneControl(cell) ?? cell;
     // A virtualized grid numbers its rows, since the rows drawn are only some of them.
     const indexOf = (row, rows) => isVirtual() ? Number(row.getAttribute('aria-rowindex')) : rows.indexOf(row) + 1;
     const rowAt = (index, rows) => isVirtual()
@@ -462,8 +467,14 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             index: indexOf(cell.parentElement, linesOf(table)) };
     };
 
+    // A grid inside a row's details keeps the stops its own script gave it.
+    const own = element => element.closest('table') === table;
     const restoreTabStops = () => {
         table.querySelectorAll('[data-tb-tab]').forEach(element => {
+            if (!own(element)) {
+                return;
+            }
+
             const before = element.dataset.tbTab;
             delete element.dataset.tbTab;
             if (before === '') {
@@ -472,7 +483,11 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
                 element.setAttribute('tabindex', before);
             }
         });
-        table.querySelectorAll('td[tabindex], th[tabindex]').forEach(cell => cell.removeAttribute('tabindex'));
+        table.querySelectorAll('td[tabindex], th[tabindex]').forEach(cell => {
+            if (own(cell)) {
+                cell.removeAttribute('tabindex');
+            }
+        });
         stop = null;
     };
 
@@ -487,6 +502,11 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         const rows = linesOf(table);
         let refocus = false;
         for (const row of rows) {
+            if (row.dataset.part === 'detail') {
+                row.cells[0].tabIndex = -1;
+                continue;
+            }
+
             for (const cell of row.cells) {
                 const controls = controlsOf(cell);
                 for (const control of controls) {
@@ -585,14 +605,27 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     };
 
     const onKeyDown = event => {
-        const cell = event.target.closest?.('td, th');
-        if (!isGrid() || event.defaultPrevented || event.altKey || event.isComposing || !cell
-            || cell.closest('table') !== table || event.target.closest('[popover]')) {
+        // Escape anywhere in a row's details, even in a grid inside them, comes back to the details' cell.
+        const detail = event.target.closest?.('tr[data-part=detail]');
+        if (isGrid() && event.key === 'Escape' && !event.defaultPrevented && detail?.closest('table') === table
+            && event.target !== detail.cells[0] && !event.target.closest('[popover]')) {
+            event.preventDefault();
+            focusCell(detail.cells[0]);
             return;
         }
 
+        const cell = event.target.closest?.('td, th');
+        if (!isGrid() || event.defaultPrevented || event.altKey || event.isComposing || !cell
+            || cell.closest('table') !== table || event.target.closest('[popover]')
+            || isDetail(cell) && event.target !== cell) {
+            return;
+        }
+
+        // A grid inside a row's details can hold an edit of its own, which isn't this grid's.
+        const inDetail = isDetail(cell);
+
         // A row's edit keeps Tab among its fields and its Save and Cancel buttons.
-        if (event.key === 'Tab' && cell.parentElement.querySelector('[data-part=row-actions]')) {
+        if (event.key === 'Tab' && !inDetail && cell.parentElement.querySelector('[data-part=row-actions]')) {
             const stops = [...cell.parentElement.cells].flatMap(controlsOf)
                 .filter(element => element.closest('[data-part=editor], [data-part=row-actions]'));
             const at = stops.indexOf(event.target);
@@ -602,7 +635,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         }
 
         // Tab in a cell's edit opens the next editable cell, which saves this one first; past the last it leaves the grid.
-        if (event.key === 'Tab' && cell.querySelector('[data-part=editor]')) {
+        if (event.key === 'Tab' && !inDetail && cell.querySelector('[data-part=editor]')) {
             const editable = linesOf(table).filter(line => line.dataset.part === 'row')
                 .flatMap(line => [...line.cells]).filter(one => one.hasAttribute('data-editable'));
             const next = editable[editable.indexOf(cell) + (event.shiftKey ? -1 : 1)];
@@ -615,7 +648,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         }
 
         // A cell being edited, or one Enter or F2 starts editing, leaves those keys to the grid.
-        const editing = cell.querySelector('[data-part=editor], [data-part=row-actions]');
+        const editing = !inDetail && cell.querySelector('[data-part=editor], [data-part=row-actions]');
         if (editing && ['Enter', 'Escape'].includes(event.key)
             || cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)) {
             return;
@@ -719,6 +752,11 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             case 'F2':
                 if (stopOf(cell) !== cell) {
                     return;
+                }
+
+                if (isDetail(cell)) {
+                    firstStopIn(cell)?.focus();
+                    break;
                 }
 
                 if (controlsOf(cell).length > 0) {

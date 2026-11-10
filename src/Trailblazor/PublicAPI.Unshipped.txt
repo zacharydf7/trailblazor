@@ -4166,3 +4166,13 @@ override Trailblazor.TbSpeedDial.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbSpeedDial.OnParametersSet() -> void
 ~override Trailblazor.TbFab.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbSpeedDial.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbDataGrid<TItem>.DetailTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
+Trailblazor.TbDataGrid<TItem>.DetailTemplate.set -> void
+Trailblazor.TbDataGrid<TItem>.ExpandedItems.get -> System.Collections.Generic.IReadOnlyCollection<TItem>?
+Trailblazor.TbDataGrid<TItem>.ExpandedItems.set -> void
+Trailblazor.TbDataGrid<TItem>.ExpandedItemsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyCollection<TItem>!>
+Trailblazor.TbDataGrid<TItem>.ExpandedItemsChanged.set -> void
+Trailblazor.TbDataGrid<TItem>.SingleDetail.get -> bool
+Trailblazor.TbDataGrid<TItem>.SingleDetail.set -> void
+const Trailblazor.TbStrings.DataGridDetails = "DataGrid.Details" -> string!
+const Trailblazor.TbStrings.DataGridDetailsFor = "DataGrid.DetailsFor" -> string!

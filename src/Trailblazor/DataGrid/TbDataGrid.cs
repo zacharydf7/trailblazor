@@ -79,6 +79,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly ItemHandlers<object, Func<RowClickEventArgs, Task>> _rowClick;
     private readonly ItemHandlers<object, Func<RowExtendEventArgs, Task>> _rowExtend;
     private readonly ItemHandlers<object, Func<Task>> _choose;
+    private readonly ItemHandlers<object, Func<Task>> _toggleDetail;
+    private readonly Dictionary<object, TItem> _expanded = [];
+    private readonly string _detailPrefix = $"tb-grid-detail-{Guid.NewGuid():N}";
+    private IReadOnlyCollection<TItem>? _expandedFromParent;
     private readonly ItemHandlers<(object, TbColumn<TItem>), Func<Task>> _startEdit;
     private readonly ItemHandlers<(object, TbColumn<TItem>), Func<KeyboardEventArgs, Task>> _cellKey;
     private readonly ItemHandlers<GroupKey, Action> _toggleGroup;
@@ -97,6 +101,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _rowClick = new(key => args => OnRowAsync(key, item => OnRowClickedAsync(item, args)), byValue: true);
         _rowExtend = new(key => args => OnRowAsync(key, item => OnRowExtendedAsync(item, args)), byValue: true);
         _choose = new(key => () => OnRowAsync(key, ChooseAsync), byValue: true);
+        _toggleDetail = new(key => () => OnRowAsync(key, ToggleDetailAsync), byValue: true);
         _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
         _cellKey = new(cell => args => OnRowAsync(cell.Item1, item => OnCellKeyAsync(item, cell.Item2, args)));
         _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
@@ -218,6 +223,25 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// among a page's rows, as the headings do.</summary>
     [Parameter]
     public bool GroupTotals { get; set; }
+
+    /// <summary>Content shown in a row of its own under a row whose details are open, such as a grid of that row's
+    /// orders. Each row then starts with a button that opens and closes its details. A grid that virtualizes its rows
+    /// can't show details.</summary>
+    [Parameter]
+    public RenderFragment<TItem>? DetailTemplate { get; set; }
+
+    /// <summary>Keeps one row's details open at a time, so opening another row's closes the first.</summary>
+    [Parameter]
+    public bool SingleDetail { get; set; }
+
+    /// <summary>The items whose details are open. Bind it with <c>@bind-ExpandedItems</c> to open or close them from
+    /// code and hear when the user does.</summary>
+    [Parameter]
+    public IReadOnlyCollection<TItem>? ExpandedItems { get; set; }
+
+    /// <summary>Raised when the user opens or closes a row's details.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyCollection<TItem>> ExpandedItemsChanged { get; set; }
 
     /// <summary>How many rows a page holds. Null, the default, shows every row with no pages.</summary>
     [Parameter]
@@ -355,8 +379,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>,
     /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c>, <c>move</c>, <c>group</c>, <c>expand</c>,
-    /// <c>collapse</c> or <c>edit</c> each time the user does one. Which column, filter value, page, group, rows or
-    /// value is never recorded. It names the grid, never the user.</summary>
+    /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c> or <c>close_detail</c> each time the user does one. Which
+    /// column, filter value, page, group, rows or value is never recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -472,6 +496,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 $"{nameof(Items)}, not rows from a {nameof(DataProvider)}.");
         }
 
+        // A virtualized grid numbers its rows for screen readers, and a detail row has no number of its own.
+        if (Virtualize && DetailTemplate is not null)
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} that virtualizes its rows can't " +
+                $"have a {nameof(DetailTemplate)}.");
+        }
+
         // Without a height the rows' box grows with them, so every row would count as in view.
         if (Virtualize && (Height is null || PageSize is not null))
         {
@@ -529,6 +560,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         TakeSelectionFromParent();
+        TakeExpandedFromParent();
         await ShowAsync(force: false);
     }
 
@@ -735,9 +767,33 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         builder.AddComponentParameter(5, nameof(GridRow<TItem>.Version), _rowVersion);
         builder.AddComponentParameter(6, nameof(GridRow<TItem>.Editing),
             _edit is { } edit && Equals(edit.Key, key) ? (edit, _editVersion) : null);
-        builder.AddComponentParameter(7, nameof(GridRow<TItem>.ChildContent),
-            Row(item, key, selected, at, rowClass, label));
+        var expanded = HasDetails && IsExpanded(item);
+        builder.AddComponentParameter(7, nameof(GridRow<TItem>.Expanded), expanded);
+        builder.AddComponentParameter(8, nameof(GridRow<TItem>.ChildContent),
+            Row(item, key, selected, at, rowClass, label, expanded));
         builder.CloseComponent();
+        if (expanded)
+        {
+            AddDetailRow(builder, item, key);
+        }
+    }
+
+    // Drawn with the grid rather than with its row, so details that show the page's own state stay up to date, and
+    // keyed beside the row, so they move with it when the rows reorder rather than being drawn anew.
+    private void AddDetailRow(RenderTreeBuilder builder, TItem item, object key)
+    {
+        builder.OpenElement(9, "tr");
+        builder.SetKey((key, "detail"));
+        builder.AddAttribute(10, "id", DetailId(key));
+        builder.AddAttribute(11, "data-part", "detail");
+        builder.AddAttribute(12, "class", "tb-data-grid__detail");
+        builder.OpenElement(13, "td");
+        builder.AddAttribute(14, "colspan", ColumnCount);
+        builder.AddAttribute(15, "data-part", "detail-cell");
+        builder.AddAttribute(16, "class", "tb-data-grid__detail-cell");
+        builder.AddContent(17, DetailTemplate!(item));
+        builder.CloseElement();
+        builder.CloseElement();
     }
 
     private ItemsProviderDelegate<GridLine>? VirtualRowsProvider =>
@@ -1113,7 +1169,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // The selection and order columns lead each row, so they stay with the columns pinned at the start.
     private bool PinsLead => _shownColumns is [{ Pinned: ColumnPin.Start }, ..];
 
-    private int LeadCount => (CanReorder ? 1 : 0) + (SelectionMode == SelectionMode.None ? 0 : 1);
+    private int LeadCount =>
+        (CanReorder ? 1 : 0) + (HasDetails ? 1 : 0) + (SelectionMode == SelectionMode.None ? 0 : 1);
+
+    private bool HasDetails => DetailTemplate is not null;
+
+    // The details button comes after a row's move handle and before its selection box.
+    private int DetailSlot => CanReorder ? 1 : 0;
 
     private string? LeadPin => PinsLead ? "start" : null;
 
@@ -1705,6 +1767,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _rowClick.KeepOnly(shown.Contains);
         _rowExtend.KeepOnly(shown.Contains);
         _choose.KeepOnly(shown.Contains);
+        _toggleDetail.KeepOnly(shown.Contains);
         _startEdit.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
         _cellKey.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
         var groups = lines.Where(line => line.Group is not null).Select(line => line.Group!.Key).ToHashSet();
@@ -1949,6 +2012,42 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     private bool IsSelected(TItem item) => _selection.ContainsKey(KeyOf(item));
+
+    private void TakeExpandedFromParent()
+    {
+        if (!ReferenceEquals(ExpandedItems, _expandedFromParent))
+        {
+            _expandedFromParent = ExpandedItems;
+            _expanded.Clear();
+            foreach (var item in ExpandedItems ?? [])
+            {
+                _expanded[KeyOf(item)] = item;
+            }
+        }
+    }
+
+    private bool IsExpanded(TItem item) => _expanded.ContainsKey(KeyOf(item));
+
+    // A key's text can hold spaces, which an id can't, so it's escaped.
+    private string DetailId(object key) => $"{_detailPrefix}-{Uri.EscapeDataString(_ids.IdOf(key))}";
+
+    private async Task ToggleDetailAsync(TItem item)
+    {
+        var key = KeyOf(item);
+        var open = !_expanded.Remove(key);
+        if (open)
+        {
+            if (SingleDetail)
+            {
+                _expanded.Clear();
+            }
+
+            _expanded[key] = item;
+        }
+
+        Telemetry.Used(TelemetryName, open ? "open_detail" : "close_detail");
+        await ExpandedItemsChanged.InvokeAsync([.. _expanded.Values]);
+    }
 
     private async Task SetSelectionAsync(IEnumerable<TItem> items)
     {

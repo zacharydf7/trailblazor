@@ -6370,22 +6370,24 @@
         font-weight: var(--tb-font-weight-medium);
     }
 
+    /* A grid's own cells only, so a grid inside a row's details keeps its own size. */
     .tb-table--small :is(th, td),
-    .tb-data-grid--small .tb-data-grid__table :is(th, td) {
+    .tb-data-grid--small > .tb-data-grid__scroll > .tb-data-grid__table > * > tr > :is(th, td) {
         height: max(1.5rem, calc(var(--tb-table-row-height, var(--tb-row-height)) - 0.75rem));
         padding-block: 0;
     }
 
     .tb-table--large :is(th, td),
-    .tb-data-grid--large .tb-data-grid__table :is(th, td) {
+    .tb-data-grid--large > .tb-data-grid__scroll > .tb-data-grid__table > * > tr > :is(th, td) {
         height: calc(var(--tb-table-row-height, var(--tb-row-height)) + 0.5rem);
     }
 
     /* A grid's stripe yields to hover, press and selection. A virtualized grid's rows come and go and share their
        body with spacer rows, so each row says whether it is striped. */
     .tb-table--striped tbody tr:nth-child(even),
-    .tb-data-grid--striped:where(:not(.tb-data-grid--virtual)) :where(.tb-data-grid__row:nth-child(even)),
-    .tb-data-grid--striped :where(.tb-data-grid__row--stripe) {
+    .tb-data-grid__row:where(.tb-data-grid--striped:not(.tb-data-grid--virtual) > .tb-data-grid__scroll
+        > .tb-data-grid__table > tbody > :nth-child(even of .tb-data-grid__row)),
+    .tb-data-grid__row--stripe:where(.tb-data-grid--striped > .tb-data-grid__scroll > .tb-data-grid__table > * > *) {
         --tb-data-grid-row-shade: var(--tb-color-surface-sunken);
         background: var(--tb-color-surface-sunken);
     }
@@ -6555,7 +6557,7 @@
     }
 
     /* A cell narrower than what it holds clips it, rather than spilling over the next column. */
-    .tb-data-grid__table--fixed :is(th, td) {
+    .tb-data-grid__table--fixed > * > tr > :is(th, td) {
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -6715,6 +6717,31 @@
         text-align: center;
     }
 
+    .tb-data-grid__detail-toggle {
+        width: 2.75rem;
+        padding-block: 0;
+        text-align: center;
+    }
+
+    .tb-data-grid__detail-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-inline-size: 24px;
+        min-block-size: 24px;
+        padding: 0;
+        border: none;
+        border-radius: var(--tb-radius-sm);
+        background: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .tb-data-grid__detail-cell {
+        padding: var(--tb-space-3) var(--tb-space-4);
+        background: var(--tb-color-surface-sunken);
+    }
+
     .tb-data-grid__row[data-dragging] {
         opacity: 0.5;
     }
@@ -6805,25 +6832,31 @@
         cursor: pointer;
     }
 
-    .tb-data-grid__group-toggle:hover {
+    .tb-data-grid__group-toggle:hover,
+    .tb-data-grid__detail-button:hover {
         background: var(--tb-color-hover);
     }
 
-    .tb-data-grid__group-toggle:focus-visible {
+    .tb-data-grid__group-toggle:focus-visible,
+    .tb-data-grid__detail-button:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);
     }
 
-    .tb-data-grid__group-chevron {
+    .tb-data-grid__group-chevron,
+    .tb-data-grid__detail-chevron {
         transition: transform var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
-    /* A closed group's chevron points toward the reading direction's end; an open one points down either way. */
-    .tb-data-grid__group-chevron:dir(rtl) {
+    /* A closed group's or row's chevron points toward the reading direction's end; an open one points down either
+       way. */
+    .tb-data-grid__group-chevron:dir(rtl),
+    .tb-data-grid__detail-chevron:dir(rtl) {
         transform: scaleX(-1);
     }
 
-    .tb-data-grid__group-toggle[aria-expanded="true"] > .tb-data-grid__group-chevron {
+    .tb-data-grid__group-toggle[aria-expanded="true"] > .tb-data-grid__group-chevron,
+    .tb-data-grid__detail-button[aria-expanded="true"] > .tb-data-grid__detail-chevron {
         transform: rotate(90deg);
     }
 

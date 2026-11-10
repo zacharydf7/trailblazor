@@ -6652,6 +6652,13 @@ public static class ExampleCatalog
                     + "`FooterTemplate` draws the cell. "
                     + "A `DataProvider` is asked for the totals in `GridRequest.Aggregates` and gives them back in "
                     + "`GridResult.Totals`.", typeof(DataGridTotalsExample)),
+                new("detail-rows", "Detail rows", "`DetailTemplate` starts each row with a button that opens a row of "
+                    + "details under it, here another grid of the trail's stages. `@bind-ExpandedItems` "
+                    + "tells you which rows are open and opens them from code, and `SingleDetail` keeps one open at "
+                    + "a time. With cell navigation, the arrow keys reach the details as one wide cell: Enter goes "
+                    + "into them and Escape comes back out. They keep their own Tab stops, so a grid inside them "
+                    + "works as it would anywhere. A grid that virtualizes its rows can't show details.",
+                    typeof(DataGridDetailExample)),
                 new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
                     + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
                     + "column with it.", typeof(DataGridPinnedExample)),
@@ -6740,7 +6747,8 @@ public static class ExampleCatalog
                 new(["Ctrl+A", "Cmd+A"], "Selects every row on the page, the same rows as the header's checkbox. A "
                     + "virtualized grid with a `DataProvider` leaves these keys to the browser.")
                     { When = "With cell navigation and `SelectionMode.Multiple`" },
-                new(["Tab"], "Reaches the grid once.") { When = "With cell navigation" },
+                new(["Tab"], "Reaches the grid once, and then the controls in any open details.")
+                    { When = "With cell navigation" },
                 new(["Up", "Down", "Left", "Right"], "Moves between cells.") { When = "With cell navigation" },
                 new(["Home", "End"], "Goes to the ends of the row.") { When = "With cell navigation" },
                 new(["Ctrl+Home", "Ctrl+End"], "Goes to the first or last cell.") { When = "With cell navigation" },
@@ -6753,6 +6761,10 @@ public static class ExampleCatalog
                     + "number field's value; a select or checkbox just opens.") { When = "With cell navigation" },
                 new(["Enter"], "On a cell with nothing to go into, clicks the row, raising `OnRowClick` and, with "
                     + "`RowClickSelects`, selecting or unselecting it.") { When = "With cell navigation" },
+                new(["Enter", "Space"], "Opens or closes the row's details.") { When = "On a row's details button" },
+                new(["Enter"], "On a row's details, moves into them.") { When = "With cell navigation and details" },
+                new(["Escape"], "From anywhere in a row's details, even a grid inside them, comes back to the "
+                    + "details.") { When = "With cell navigation and details" },
                 new(["Tab"], "Cycles through the cell's fields.") { When = "Inside a cell" },
                 new(["Escape"], "Comes back out to the cell.") { When = "Inside a cell" },
                 new(["Enter"], "Saves the edit, and focus goes back to the cell.") { When = "Editing a cell" },
@@ -6805,6 +6817,9 @@ public static class ExampleCatalog
                     + "says its place, such as \"sort 2 of 3, ascending\".",
                 "The header checkbox shows \"mixed\" when only some rows are selected.",
                 "A group's button reports its state with `aria-expanded`.",
+                "A row's details button is named for the row, such as \"Details for Cedar Flats\", and reports its "
+                    + "state with `aria-expanded`; while the details are open, its `aria-controls` points to the "
+                    + "detail row.",
                 "The totals row is the table's footer, so each total is read with its column's header. Each cell "
                     + "names its total before the value, such as \"Sum 49.9\". With cell navigation, the arrow keys "
                     + "reach the row like any other.",
@@ -6883,6 +6898,9 @@ public static class ExampleCatalog
                 new("select-all", "The checkbox that selects every row on the page."),
                 new("totals", "The totals row, under the rows."),
                 new("group-totals", "A group's totals row, under its rows."),
+                new("detail-toggle", "A row's button that opens and closes its details."),
+                new("detail", "The row of details under a row whose details are open."),
+                new("detail-cell", "The one cell of a detail row, which holds the `DetailTemplate`."),
                 new("total-label", "The name of a total, such as \"Sum\", before its value."),
                 new("row", "One row."),
                 new("placeholder", "A row a large grid hasn't loaded yet."),
@@ -6920,6 +6938,8 @@ public static class ExampleCatalog
                     + "`page.Tb().Select(\"Filter Difficulty\").ChooseAsync(\"Easy\")`.",
                 "`page.Tb().Select(\"Group by\").ChooseAsync(\"Region\")` groups the rows. Each group's heading is a "
                     + "`[data-part=group]` row whose `[data-part=group-toggle]` button opens or closes it.",
+                "A row's details button is named for the row: `GetByRole(AriaRole.Button, new() { Name = \"Details "
+                    + "for Cedar Flats\" })`. Its `aria-controls` names the `[data-part=detail]` row it opens.",
                 "Without the helpers, wait for the table's `aria-busy` to clear, and for `data-ready` on "
                     + "`[data-part=grid]` before clicking a row.",
                 "Rows carry `data-key` and `data-selected`, a filtered column's header `data-filtered`, and cells "
@@ -6953,7 +6973,8 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
-                    + "`hide` or `show` for each of those the user does; a `move` also says whether a `pointer` or the "
+                    + "`hide`, `show`, `open_detail` or `close_detail` for each of those the user does; a `move` also "
+                    + "says whether a `pointer` or the "
                     + "`keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
                     + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",

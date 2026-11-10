@@ -22,6 +22,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Enter in a filter or an edit doesn't submit a form around the grid. `DataGridTests.Filters_ShouldApplyWithoutSubmittingThePagesForm_WhenEnterIsPressedInThem`, `data-grid.js`
 - [x] Enter in a filter menu's value applies it, and Escape closes the menu without applying. `DataGridTests.FilterMenu_ShouldApplyTheValue_WhenEnterIsPressedInIt`
 - [x] Arrows, Home and End on a row's handle move the row. `SortableTests.GridRows_ShouldReorderByKeysAndByDragging_WhenTheGridLetsRowsMove`
+- [x] Enter on a row's details button opens its details; the arrows reach them as one cell, Enter goes into them, and Escape from anywhere in them, even a nested grid, comes back to the details. `GridDetailTests.Details_ShouldOpenAndLetFocusMoveInAndOutOfANestedGrid_WhenUsedFromTheKeyboard`
 - [x] Enter on a group's heading opens or closes the group. `DataGridTests.GroupToggle_ShouldCloseItsGroupAndKeepFocus_WhenEnterIsPressedOnIt`
 - [x] With cell navigation, Enter on a cell with nothing to go into clicks the row, which is how an app opens it, as in a mail list or a file list. `DataGridTests.Row_ShouldBeClicked_WhenEnterIsPressedOnACellWithNothingToGoInto`, `DataGridTests.Row_ShouldBeClicked_WhenEnterIsPressedWithTextSelected`, `DataGridTests.Row_ShouldNotBeClicked_WhenEnterStartsAnEdit`, `DataGridTests.Row_ShouldNotBeClicked_WhenF2IsPressedOnACellWithNothingToGoInto`, `DataGridTests.HeaderRow_ShouldGetNoClick_WhenEnterIsPressedOnAHeaderCell`
 - [x] With cell navigation, holding Enter on a cell with nothing to go into, or on a control the cell hands focus to, acts once. `DataGridTests.Row_ShouldBeClickedOnce_WhenEnterIsHeld`, `DataGridTests.Row_ShouldLoseOnlyOneRow_WhenEnterIsHeldOnADeleteButton`
@@ -41,6 +42,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 
 ## Pointer
 
+- [x] A row's details button opens a row of details under it and closes it again, several rows can be open at once, and with `SingleDetail` opening a row's details closes any others. `GridDetailTests.Details_ShouldOpenUnderTheirRow_WhenTheButtonIsClicked`, `TbDataGridDetailTests.Toggle_ShouldCloseTheRowsDetails_WhenItsButtonIsClickedAgain`, `TbDataGridDetailTests.SingleDetail_ShouldCloseTheOpenDetails_WhenAnotherRowsDetailsOpen`
 - [x] Closing a group from its heading takes its `GroupTotals` row away with its rows. `TbDataGridTotalsTests.GroupTotals_ShouldLeaveOutAGroupsTotals_WhenTheGroupIsClosed`
 - [x] The pager moves between pages and says which rows show; `ShowFirstLast` adds first and last page buttons, and `Labels.Range` words the count. `TbDataGridTests.Page_ShouldShowThePagesRowsAndRange_WhenPagedAndMovedToAnotherPage`, `TbDataGridTests.Pager_ShouldShowFirstAndLastAndTheAppsRangeText_WhenTheGridAsks`, `TbDataGridTests.Pager_ShouldLeaveOutFirstAndLast_WhenNotAsked`
 - [x] Clicking a header sorts ascending, then descending, then not at all. `TbDataGridTests.Sort_ShouldOrderTheRowsTurnThemAroundAndStop_WhenAHeaderIsClickedThreeTimes`
@@ -82,6 +84,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 
 ## Focus
 
+- [x] A row's details keep their own Tab stops, so a grid inside them keeps its own cell navigation. `GridDetailTests.Details_ShouldOpenAndLetFocusMoveInAndOutOfANestedGrid_WhenUsedFromTheKeyboard`, `data-grid.js`
 - [x] Cell navigation makes the grid one tab stop, and Tab leaves it. `DataGridTests.CellNavigation_ShouldScrollToRowsNotYetDrawn_WhenControlEndAndHomeArePressed`
 - [x] A cell holding just a button, link, checkbox or radio button hands focus to it, and a focused cell shows a ring. `DataGridTests.CellNavigation_ShouldMoveBetweenCellsIntoAFieldAndBack_WhenDrivenByKeys`
 - [x] A grid always keeps one tab stop, even when the button holding it turns itself off. `DataGridTests.CellNavigation_ShouldKeepAStopForTab_WhenTheButtonHoldingItTurnsItselfOff`

@@ -1,0 +1,34 @@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trails and their stages" KeySelector="trail => trail.Id"
+            RowLabel="trail => trail.Name" CellNavigation @bind-ExpandedItems="_open">
+    <ChildContent>
+        <TbColumn Field="trail => trail.Name" />
+        <TbColumn Field="trail => trail.Region" />
+        <TbColumn Field="trail => trail.Stages.Count" Title="Stages" />
+    </ChildContent>
+    <DetailTemplate>
+        <TbDataGrid TItem="Stage" Items="context.Stages" AriaLabel="@($"Stages of {context.Name}")" Size="Size.Small"
+                    KeySelector="stage => stage.Name" CellNavigation>
+            <TbColumn Field="stage => stage.Name" Title="Stage" />
+            <TbColumn Field="stage => stage.LengthKm" Title="Length (km)" Format="N1" />
+        </TbDataGrid>
+    </DetailTemplate>
+</TbDataGrid>
+<output aria-label="Open details">
+    @(_open.Count == 0 ? "No details open." : $"Open: {string.Join(", ", _open.Select(trail => trail.Name))}.")
+</output>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", "North ridge", [new("Trailhead to the falls", 2.1), new("Falls loop", 4.3)]),
+        new(2, "Eagle Ridge traverse", "North ridge",
+            [new("Saddle climb", 3.8), new("Ridge walk", 6.9), new("Descent to the lake", 3.5)]),
+        new(3, "Cedar Flats", "River valley", [new("River path", 3.1)]),
+    ];
+
+    private IReadOnlyCollection<Trail> _open = [];
+
+    private sealed record Stage(string Name, double LengthKm);
+
+    private sealed record Trail(int Id, string Name, string Region, IReadOnlyList<Stage> Stages);
+}

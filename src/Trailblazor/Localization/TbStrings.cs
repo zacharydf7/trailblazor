@@ -646,6 +646,13 @@ public static class TbStrings
     /// <summary>"Select {0}": names a row's selection box; {0} is the row's label.</summary>
     public const string DataGridSelectRow = "DataGrid.SelectRow";
 
+    /// <summary>"Details": names the column of a data grid that holds each row's details button.</summary>
+    public const string DataGridDetails = "DataGrid.Details";
+
+    /// <summary>"Details for {0}": names a row's button that opens and closes its details; {0} is the row's label.
+    /// </summary>
+    public const string DataGridDetailsFor = "DataGrid.DetailsFor";
+
     /// <summary>"Order": names the column of a data grid whose rows can be moved, which holds each row's move
     /// handle.</summary>
     public const string DataGridOrder = "DataGrid.Order";
@@ -1089,6 +1096,8 @@ public static class TbStrings
         [DataGridSelectAll] = "Select all rows",
         [DataGridSelect] = "Select",
         [DataGridSelectRow] = "Select {0}",
+        [DataGridDetails] = "Details",
+        [DataGridDetailsFor] = "Details for {0}",
         [DataGridOrder] = "Order",
         [DataGridRange] = "{0}–{1} of {2}",
         [DataGridPages] = "Pages of {0}",

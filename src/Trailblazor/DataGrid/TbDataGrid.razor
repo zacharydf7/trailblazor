@@ -56,8 +56,10 @@
                data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
                data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
                data-row-click-selects="@(SelectionMode == SelectionMode.Multiple && RowClickSelects ? "" : null)"
-               @ontbselectall="SelectAllAsync" @ontbcolumnwidths="OnColumnWidthsAsync"
-               @ontbcolumnorder="OnColumnOrderAsync" data-reorder-columns="@(ReorderableColumns ? "" : null)"
+               @ontbselectall="SelectAllAsync" @ontbselectall:stopPropagation
+               @ontbcolumnwidths="OnColumnWidthsAsync" @ontbcolumnwidths:stopPropagation
+               @ontbcolumnorder="OnColumnOrderAsync" @ontbcolumnorder:stopPropagation
+               data-reorder-columns="@(ReorderableColumns ? "" : null)"
                aria-busy="@(IsLoading ? "true" : null)"
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + (HasTotals ? 1 : 0)
                                   : null)"
@@ -69,6 +71,13 @@
                         <th scope="col" data-part="order" data-pinned="@LeadPin" style="@LeadStyle(0)"
                             class="tb-data-grid__handle">
                             <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridOrder]</span>
+                        </th>
+                    }
+                    @if (HasDetails)
+                    {
+                        <th scope="col" data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)"
+                            class="tb-data-grid__detail-toggle">
+                            <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridDetails]</span>
                         </th>
                     }
                     @if (SelectionMode == SelectionMode.Multiple && CanSelectAll)
@@ -124,6 +133,11 @@
                         @if (CanReorder)
                         {
                             <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
+                        }
+                        @if (HasDetails)
+                        {
+                            <td data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)"
+                                class="tb-data-grid__detail-toggle"></td>
                         }
                         @if (SelectionMode != SelectionMode.None)
                         {
@@ -242,7 +256,8 @@
 </div>
 
 @code {
-    private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label) =>
+    private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label,
+        bool expanded) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
              data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "" : null)"
@@ -258,6 +273,17 @@
                     @((RenderFragment)(handle => MoveHandle.Add(handle, 0, Format(TbStrings.SortableHandle,
                         label ?? LabelOf(item)), at, _total, disabled: false, Localizer,
                         (to, args) => MoveRowAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
+                </td>
+            }
+            @if (HasDetails)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)" class="tb-data-grid__detail-toggle">
+                    <button type="button" data-part="detail-toggle" aria-expanded="@(expanded ? "true" : "false")"
+                            aria-controls="@(expanded ? DetailId(key) : null)"
+                            aria-label="@Format(TbStrings.DataGridDetailsFor, label ?? LabelOf(item))"
+                            class="tb-data-grid__detail-button" @onclick="_toggleDetail.For(key)">
+                        <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__detail-chevron" />
+                    </button>
                 </td>
             }
             @if (SelectionMode != SelectionMode.None)
@@ -480,6 +506,10 @@
             @if (CanReorder)
             {
                 <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle"></td>
+            }
+            @if (HasDetails)
+            {
+                <td data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)" class="tb-data-grid__detail-toggle"></td>
             }
             @if (SelectionMode != SelectionMode.None)
             {

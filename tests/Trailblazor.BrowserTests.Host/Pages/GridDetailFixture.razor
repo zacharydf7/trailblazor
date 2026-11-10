@@ -1,0 +1,39 @@
+@page "/grid-detail"
+
+@* Both grids select many rows, so a key or event the inner grid handles mustn't also reach the outer one. *@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail.Id" CellNavigation
+            SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_trails" ExpandedItems="Trails">
+    <ChildContent>
+        <TbColumn Field="trail => trail.Name" />
+    </ChildContent>
+    <DetailTemplate>
+        <TbDataGrid TItem="string" Items="context.Stages" AriaLabel="@($"Stages of {context.Name}")"
+                    KeySelector="stage => stage" CellNavigation SelectionMode="SelectionMode.Multiple">
+            <TbColumn Field="stage => stage" Title="Stage" />
+        </TbDataGrid>
+    </DetailTemplate>
+</TbDataGrid>
+<output aria-label="Trails chosen">@_trails.Count</output>
+
+@* Details that hold one button, which keeps its own Tab stop. *@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail links" KeySelector="trail => trail.Id" CellNavigation
+            ExpandedItems="Trails">
+    <ChildContent>
+        <TbColumn Field="trail => trail.Name" />
+    </ChildContent>
+    <DetailTemplate>
+        <button type="button">Map of @context.Name</button>
+    </DetailTemplate>
+</TbDataGrid>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new(1, "Pine Hollow loop", ["Trailhead to the falls", "Falls loop"]),
+        new(2, "Cedar Flats", ["River path"]),
+    ];
+
+    private IReadOnlyCollection<Trail> _trails = [];
+
+    private sealed record Trail(int Id, string Name, IReadOnlyList<string> Stages);
+}
