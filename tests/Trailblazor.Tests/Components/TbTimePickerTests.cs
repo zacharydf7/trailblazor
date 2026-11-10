@@ -56,7 +56,7 @@ public class TbTimePickerTests : BunitContext
 
         await cut.Find("input").ChangeAsync(new ChangeEventArgs { Value = text });
 
-        Assert.Equal("Choose a time from 9:00 AM to 5:00 PM.", cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Equal("Choose a time from 9:00 AM to 5:00 PM.", ErrorText(cut));
         Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid"));
     }
 
@@ -106,7 +106,7 @@ public class TbTimePickerTests : BunitContext
 
         await cut.Find("input").ChangeAsync(new ChangeEventArgs { Value = text });
 
-        Assert.Equal(message, cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Equal(message, ErrorText(cut));
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public class TbTimePickerTests : BunitContext
 
         await cut.Find("input").ChangeAsync(new ChangeEventArgs { Value = "18:00" });
 
-        Assert.Equal("Open 9:00 AM to 5:00 PM only.", cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Equal("Open 9:00 AM to 5:00 PM only.", ErrorText(cut));
     }
 
     [Fact]
@@ -179,6 +179,10 @@ public class TbTimePickerTests : BunitContext
 
         Assert.Contains("DateTime", failure.Message);
     }
+
+    // Newer ICU versions write a narrow no-break space before AM and PM.
+    private static string ErrorText(IRenderedComponent<IComponent> cut) =>
+        cut.Find("[data-part=error]").TextContent.Trim().Replace('\u202F', ' ');
 
     private static ComponentParameterCollectionBuilder<TbTimePicker<TimeOnly>> NineToFive(
         ComponentParameterCollectionBuilder<TbTimePicker<TimeOnly>> parameters) =>

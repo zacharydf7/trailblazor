@@ -16,7 +16,7 @@ public class TimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await start.FillAsync("14:45");
         await start.PressAsync("Tab");
 
-        await Expect(page.GetByText("Starting at 2:45 PM.")).ToBeVisibleAsync();
+        await Expect(page.GetByText($"Starting at {new TimeOnly(14, 45):t}.")).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -29,7 +29,9 @@ public class TimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await pickup.FillAsync("18:00");
         await pickup.PressAsync("Tab");
 
-        await Expect(page.Locator("[data-part=error]")).ToHaveTextAsync("Choose a time from 9:00 AM to 5:00 PM.");
+        // The app runs in this process, so it shows times in this process's culture.
+        await Expect(page.Locator("[data-part=error]"))
+            .ToHaveTextAsync($"Choose a time from {new TimeOnly(9, 0):t} to {new TimeOnly(17, 0):t}.");
         await Expect(pickup).ToHaveAttributeAsync("aria-invalid", "true");
     }
 

@@ -170,7 +170,7 @@ public class TbDateTimePickerTests : BunitContext
 
         await DateBox(cut).ChangeAsync(new ChangeEventArgs { Value = date });
 
-        Assert.Equal(message, cut.Find("[data-part=error]").TextContent.Trim());
+        Assert.Equal(message, ErrorText(cut));
     }
 
     [Fact]
@@ -353,6 +353,10 @@ public class TbDateTimePickerTests : BunitContext
 
         Assert.Contains("DateOnly", failure.Message);
     }
+
+    // Newer ICU versions write a narrow no-break space before AM and PM.
+    private static string ErrorText(IRenderedComponent<IComponent> cut) =>
+        cut.Find("[data-part=error]").TextContent.Trim().Replace('\u202F', ' ');
 
     private static AngleSharp.Dom.IElement DateBox(IRenderedComponent<IComponent> cut) =>
         cut.Find("input[data-part=date-input]");
