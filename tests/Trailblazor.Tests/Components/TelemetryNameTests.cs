@@ -316,6 +316,19 @@ public class TelemetryNameTests : BunitContext
             Uses().Select(use => use.Action));
     }
 
+    [Fact]
+    public async Task TransferList_ShouldCountEachMoveButNotTheItems_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbTransferList<string>>(parameters => parameters.Add(list => list.Label, "Crew")
+            .Add(list => list.Items, ["Avery", "Blake"]).Add(list => list.TelemetryName, "crew"));
+
+        await cut.Tb().TransferList("Crew").MoveAsync("Avery");
+        await cut.Find("[data-part=move-all-available]").ClickAsync(new());
+
+        Assert.Equal([("crew", (object?)"TbTransferList", (object?)"move"), ("crew", "TbTransferList", "move")],
+            Uses());
+    }
+
     private static List<object?> Names(MetricCollector<long> collector) =>
         [.. collector.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.telemetry_name"])];
 

@@ -112,6 +112,11 @@ Trailblazor.Testing.Playwright.TbTooltipLocator
 Trailblazor.Testing.Playwright.TbTooltipLocator.Bubble.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbTooltipLocator.TbTooltipLocator(Microsoft.Playwright.ILocator! trigger) -> void
 Trailblazor.Testing.Playwright.TbTooltipLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbTransferListLocator
+Trailblazor.Testing.Playwright.TbTransferListLocator.ChosenAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbTransferListLocator.MoveAsync(params string![]! items) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTransferListLocator.MoveBackAsync(params string![]! items) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTransferListLocator.TbTransferListLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbTreeLocator
 Trailblazor.Testing.Playwright.TbTreeLocator.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.DragAfterAsync(string![]! row, string![]! target) -> System.Threading.Tasks.Task!
@@ -150,6 +155,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.TagInput(string! label) -> Trailb
 Trailblazor.Testing.Playwright.TrailblazorPage.Toasts.get -> Trailblazor.Testing.Playwright.TbToastsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Tooltip(Microsoft.Playwright.ILocator! trigger) -> Trailblazor.Testing.Playwright.TbTooltipLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TrailblazorPage(Microsoft.Playwright.ILocator! scope) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.TransferList(string! label) -> Trailblazor.Testing.Playwright.TbTransferListLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Tree(string! name) -> Trailblazor.Testing.Playwright.TbTreeLocator!
 Trailblazor.Testing.Playwright.TbTreeLocator.ExpandAllAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.ItemsAsync(params string![]! path) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Playwright.ILocator!>!>!

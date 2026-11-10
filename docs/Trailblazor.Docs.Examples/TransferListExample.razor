@@ -1,0 +1,20 @@
+<TbStack Gap="3">
+    <TbTransferList TItem="Hiker" Label="Trip crew" Items="Hikers" ItemText="hiker => hiker.Name" Searchable
+                    Labels="@(new() { Available = "Hikers", Chosen = "On this trip" })" @bind-Value="_crew" />
+    <output aria-label="Crew">@CrewText</output>
+</TbStack>
+
+@code {
+    private static readonly Hiker[] Hikers =
+    [
+        new(1, "Avery"), new(2, "Blake"), new(3, "Casey"), new(4, "Devon"), new(5, "Emery"), new(6, "Finley"),
+        new(7, "Harper"), new(8, "Jordan"),
+    ];
+
+    private IReadOnlyList<Hiker> _crew = [Hikers[1], Hikers[4]];
+
+    private string CrewText => _crew.Count == 0 ? "Nobody on the trip yet."
+        : string.Join(", ", _crew.Select(hiker => hiker.Name));
+
+    private sealed record Hiker(int Id, string Name);
+}

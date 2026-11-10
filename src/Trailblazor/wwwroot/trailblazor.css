@@ -3454,6 +3454,69 @@
         gap: var(--tb-space-1) var(--tb-space-4);
     }
 
+    .tb-transfer-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-2);
+        min-inline-size: 0;
+        margin: 0;
+        padding: 0;
+        border: none;
+        color: var(--tb-color-text);
+        container-type: inline-size;
+    }
+
+    .tb-transfer-list__label {
+        padding: 0;
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-transfer-list__panes {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: var(--tb-space-3);
+        align-items: center;
+    }
+
+    .tb-transfer-list__pane {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-2);
+        min-inline-size: 0;
+    }
+
+    .tb-transfer-list__moves {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+    }
+
+    /* Right to left, the lists swap sides, so the arrows turn around to point at the list they move items to. */
+    .tb-transfer-list:dir(rtl) .tb-transfer-list__moves .tb-icon {
+        transform: scaleX(-1);
+    }
+
+    /* When the field is too narrow for the lists side by side, they stack with the buttons in a row between them,
+       their arrows turned to point at the list above or below. */
+    @container (max-width: 30rem) {
+        .tb-transfer-list__panes {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .tb-transfer-list__moves {
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .tb-transfer-list__moves .tb-icon {
+            rotate: 90deg;
+        }
+
+        .tb-transfer-list:dir(rtl) .tb-transfer-list__moves .tb-icon {
+            transform: none;
+        }
+    }
+
     /* A segmented group draws its options as joined segments in a row, the chosen one filled with the tone. */
     .tb-radio-group--segmented .tb-radio-group__options {
         flex-direction: row;

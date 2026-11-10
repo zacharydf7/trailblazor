@@ -1,0 +1,130 @@
+using Bunit;
+using Microsoft.AspNetCore.Components;
+using Trailblazor.Testing;
+
+namespace Trailblazor.Tests.Components;
+
+public class TbTransferListTests : BunitContext
+{
+    public TbTransferListTests()
+    {
+        this.AddTrailblazor();
+    }
+
+    public sealed record Hiker(int Id, string Name);
+
+    private static readonly Hiker[] Hikers = [new(1, "Avery"), new(2, "Blake"), new(3, "Casey"), new(4, "Devon")];
+
+    private List<IReadOnlyList<Hiker>> Changes { get; } = [];
+
+    private IRenderedComponent<TbTransferList<Hiker>> RenderCrew(IReadOnlyList<Hiker> chosen,
+        Action<ComponentParameterCollectionBuilder<TbTransferList<Hiker>>>? configure = null) =>
+        Render<TbTransferList<Hiker>>(parameters =>
+        {
+            parameters.Add(list => list.Label, "Crew").Add(list => list.Items, Hikers)
+                .Add(list => list.ItemText, hiker => hiker.Name).Add(list => list.Value, chosen)
+                .Add(list => list.ValueChanged, (IReadOnlyList<Hiker> next) => Changes.Add(next));
+            configure?.Invoke(parameters);
+        });
+
+    private static IReadOnlyList<string> Names(IEnumerable<Hiker> hikers) => [.. hikers.Select(hiker => hiker.Name)];
+
+    [Fact]
+    public void Render_ShouldListTheItemsNotChosenAndTheChosenOnes_WhenGivenAValue()
+    {
+        var cut = RenderCrew([Hikers[2]]);
+
+        Assert.Equal("Crew", cut.Find("legend[data-part=label]").TextContent.Trim());
+        Assert.Equal(["Avery", "Blake", "Devon"], cut.Tb().ListBox("Available").Options);
+        Assert.Equal(["Casey"], cut.Tb().TransferList("Crew").Chosen);
+        Assert.Equal("true", cut.Find("[data-part=move-chosen]").GetAttribute("aria-disabled"));
+        Assert.Null(cut.Find("[data-part=move-all-chosen]").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public async Task MoveAsync_ShouldMoveTheMarkedItemsKeepingTheItemsOrderAndSaySo_WhenCalled()
+    {
+        var host = Render<AnnouncerHost>();
+        var cut = RenderCrew([Hikers[2]]);
+
+        await cut.Tb().TransferList("Crew").MoveAsync("Devon", "Avery");
+
+        Assert.Equal(["Avery", "Casey", "Devon"], Names(Changes.Single()));
+        host.WaitForAssertion(() => Assert.Equal(["Moved 2 to Chosen"],
+            host.FindAll("[role=status] p").Select(p => p.TextContent)));
+    }
+
+    [Fact]
+    public async Task MoveBackAsync_ShouldReturnTheMarkedItems_WhenCalled()
+    {
+        var cut = RenderCrew([Hikers[0], Hikers[2]]);
+
+        await cut.Tb().TransferList("Crew").MoveBackAsync("Avery");
+
+        Assert.Equal(["Casey"], Names(Changes.Single()));
+    }
+
+    [Fact]
+    public async Task MoveAll_ShouldMoveOnlyTheItemsTheSearchShows_WhenTheListIsSearched()
+    {
+        var cut = RenderCrew([], parameters => parameters.Add(list => list.Searchable, true));
+
+        await cut.Find("input[type=text]").InputAsync(new ChangeEventArgs { Value = "a" });
+        await cut.Find("[data-part=move-all-chosen]").ClickAsync(new());
+
+        Assert.Equal(["Avery", "Blake", "Casey"], Names(Changes.Single()));
+    }
+
+    [Fact]
+    public void Value_ShouldMatchItsItems_WhenTheComparerSaysTheyAreTheSame()
+    {
+        var cut = RenderCrew([new Hiker(2, "Blake (loaded again)")], parameters => parameters.Add(list => list.Comparer,
+            EqualityComparer<Hiker>.Create((one, other) => one?.Id == other?.Id, hiker => hiker.Id)));
+
+        Assert.Equal(["Blake"], cut.Tb().TransferList("Crew").Chosen);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Render_ShouldOfferNoMoves_WhenDisabledOrReadOnly(bool disabled, bool readOnly)
+    {
+        var cut = RenderCrew([Hikers[0]], parameters => parameters.Add(list => list.Disabled, disabled)
+            .Add(list => list.ReadOnly, readOnly));
+
+        Assert.All(cut.FindAll("[data-part=moves] button"), button => Assert.True(
+            button.HasAttribute("disabled") || button.GetAttribute("aria-disabled") == "true"));
+    }
+
+    [Fact]
+    public async Task MoveAsync_ShouldKeepAChosenValueThatMatchesNoItem_WhenOtherItemsMove()
+    {
+        var gone = new Hiker(9, "Morgan");
+        var cut = RenderCrew([gone]);
+
+        await cut.Tb().TransferList("Crew").MoveAsync("Avery");
+
+        Assert.Equal(["Avery", "Morgan"], Names(Changes.Single()));
+    }
+
+    [Fact]
+    public async Task MoveButton_ShouldHaveNothingToMove_WhenTheSearchHidesTheMarkedItem()
+    {
+        var cut = RenderCrew([], parameters => parameters.Add(list => list.Searchable, true));
+        await cut.Tb().ListBox("Available").ChooseAsync("Avery");
+
+        await cut.Find("input[type=text]").InputAsync(new ChangeEventArgs { Value = "lake" });
+
+        Assert.Equal("true", cut.Find("[data-part=move-chosen]").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public async Task MoveAllBack_ShouldReturnEveryChosenItem_WhenClicked()
+    {
+        var cut = RenderCrew([Hikers[0], Hikers[3]]);
+
+        await cut.Find("[data-part=move-all-available]").ClickAsync(new());
+
+        Assert.Empty(Changes.Single());
+    }
+}

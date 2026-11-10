@@ -61,7 +61,6 @@ public static class UpcomingCatalog
         new("Property grid", ExampleCategory.Inputs, 80),
         new("Query builder", ExampleCategory.Inputs, 174),
         new("Signature pad", ExampleCategory.Inputs, 179),
-        new("Transfer list", ExampleCategory.Inputs, 169),
         new("Tree select", ExampleCategory.Inputs, 170),
         new("Command palette", ExampleCategory.Overlays, 76),
         new("Context menu", ExampleCategory.Overlays, 77),

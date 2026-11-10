@@ -45,6 +45,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
     public TbListBoxLocator ListBox(string label) => new(scope, label);
 
+    /// <summary>The <c>TbTransferList</c> with this label.</summary>
+    public TbTransferListLocator TransferList(string label) => new(scope, label);
+
     /// <summary>The <c>TbColorPicker</c> with this label.</summary>
     public TbColorPickerLocator ColorPicker(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 
@@ -698,6 +701,49 @@ public sealed class TbListBoxLocator(ILocator scope, string label)
         }
     }
 
+}
+
+/// <summary>A <c>TbTransferList</c>, found by its label.</summary>
+public sealed class TbTransferListLocator(ILocator scope, string label)
+{
+    private ILocator Root => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
+        .And(scope.Locator("fieldset.tb-transfer-list"));
+
+    /// <summary>The chosen items' text, in order.</summary>
+    public Task<IReadOnlyList<string>> ChosenAsync() =>
+        Root.Locator("[data-part=chosen] [role=option]").AllInnerTextsAsync();
+
+    /// <summary>Marks the available items with this text, moves them to the chosen list with its button, and waits
+    /// for them to arrive.</summary>
+    public Task MoveAsync(params string[] items) => MoveAsync("available", "chosen", "move-chosen", items);
+
+    /// <summary>Marks the chosen items with this text, moves them back to the available list with its button, and
+    /// waits for them to arrive.</summary>
+    public Task MoveBackAsync(params string[] items) => MoveAsync("chosen", "available", "move-available", items);
+
+    private async Task MoveAsync(string from, string to, string button, string[] items)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(items.Length, nameof(items));
+        var list = Root.Locator($"[data-part={from}] [role=listbox]");
+        // The keys and clicks work once the list's script has attached.
+        await Assertions.Expect(list).ToHaveAttributeAsync("data-ready", "");
+        foreach (var item in items)
+        {
+            var option = list.GetByRole(AriaRole.Option, new() { Name = item, Exact = true });
+            if (await option.GetAttributeAsync("aria-selected") != "true")
+            {
+                await option.ClickAsync();
+                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", "true");
+            }
+        }
+
+        await Root.Locator($"[data-part={button}]").ClickAsync();
+        foreach (var item in items)
+        {
+            await Assertions.Expect(Root.Locator($"[data-part={to}]")
+                .GetByRole(AriaRole.Option, new() { Name = item, Exact = true })).ToHaveCountAsync(1);
+        }
+    }
 }
 
 /// <summary>A <c>TbDataGrid</c>, found by its table's accessible name. Rows are found by the exact text of one of

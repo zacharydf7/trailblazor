@@ -31,6 +31,15 @@ public sealed class TrailblazorMarkup
     /// has no label.</summary>
     public TbListBoxDriver ListBox(string label) => new(() => Field(label, "[role=listbox]", "select"));
 
+    /// <summary>The <c>TbTransferList</c> with this label.</summary>
+    public TbTransferListDriver TransferList(string label) => new(() =>
+    {
+        var lists = _findAll("fieldset.tb-transfer-list").Where(list =>
+            list.QuerySelector("legend[data-part=label]") is { } legend && LabelText(legend) == label).ToList();
+        return lists.Count == 1 ? lists[0] : throw new InvalidOperationException(lists.Count == 0
+            ? $"No transfer list is labeled \"{label}\"." : $"{lists.Count} transfer lists are labeled \"{label}\".");
+    });
+
     /// <summary>The <c>TbNumberField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbNumberFieldDriver NumberField(string label) =>
         new(() => Field(label, "input[type=number]", "input[role=spinbutton]"));
@@ -193,6 +202,33 @@ public sealed class TbListBoxDriver
 
     private static IEnumerable<IElement> OptionElements(IElement list) =>
         list.QuerySelectorAll("[role=option]:not([data-part=status]), option:not([data-part=status])");
+}
+
+/// <summary>A <c>TbTransferList</c>, found by its label.</summary>
+public sealed class TbTransferListDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbTransferListDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The chosen items' text, in order.</summary>
+    public IReadOnlyList<string> Chosen => new TbListBoxDriver(() => List("chosen")).Options;
+
+    /// <summary>Marks the available items with this text and moves them to the chosen list with its button.</summary>
+    public Task MoveAsync(params string[] items) => MoveAsync("available", "move-chosen", items);
+
+    /// <summary>Marks the chosen items with this text and moves them back to the available list with its button.
+    /// </summary>
+    public Task MoveBackAsync(params string[] items) => MoveAsync("chosen", "move-available", items);
+
+    private async Task MoveAsync(string from, string button, string[] items)
+    {
+        await new TbListBoxDriver(() => List(from)).ChooseAsync(items);
+        await _find().QuerySelector($"[data-part={button}]")!.ClickAsync(new MouseEventArgs());
+    }
+
+    private IElement List(string part) => _find().QuerySelector($"[data-part={part}] [role=listbox]")
+        ?? throw new InvalidOperationException("The transfer list isn't interactive yet.");
 }
 
 // What choosing in a select and a list box share, with the Playwright helpers' rules.

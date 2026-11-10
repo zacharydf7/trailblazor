@@ -5068,6 +5068,88 @@ public static class ExampleCatalog
                     + "Shift+click.",
             ],
         },
+        new("transfer-list", "Transfer list", ExampleCategory.Inputs,
+            "Moves items between a list of those available and a list of those chosen.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to choose several items from a long list when it helps to see the chosen ones together, apart "
+                    + "from the rest, such as the hikers on a trip.",
+            ],
+            WhenNotToUse =
+            [
+                "For a short list, use a [checkbox group](components/checkbox-group) or a "
+                    + "[multiple list box](components/listbox#multiple).",
+                "To save space with a list that opens only when needed, use a [multiple select](components/select).",
+            ],
+            Related = ["listbox", "select", "checkbox-group", "form"],
+            Pattern = new("listbox", "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/"),
+            Sections =
+            [
+                new("move-items", "Moving items", "`Items` holds every item, and `@bind-Value` the chosen ones, which "
+                    + "keep the order of `Items`. Mark items in a list, then move them with the button beside it, or "
+                    + "move every item a list shows. `ItemText` gives each item's text, `Labels` the lists' titles, and "
+                    + "`Searchable` a search box above each list, which then shows only the items whose text contains "
+                    + "what's typed.", typeof(TransferListExample)),
+            ],
+            Api = [typeof(TbTransferList<>), typeof(TransferListLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Down", "Up"], "Moves through a list's items.") { When = "In a list" },
+                new(["Space"], "Marks or unmarks the active item.") { When = "In a list" },
+                new(["Ctrl+A", "Cmd+A"], "Marks every item in the list.") { When = "In a list" },
+                new(["Tab"], "Moves from a list to the move buttons, then to the other list."),
+                new(["Enter", "Space"], "Moves the marked items, or every item, to the other list.")
+                    { When = "On a move button" },
+            ],
+            Labeling =
+            [
+                "A `fieldset` named by its `Label`. Each list is a `listbox` named by its title, and each search box "
+                    + "by \"Search\" and the title.",
+                "Each move button is named for what it does and where to, such as \"Move to Chosen\".",
+            ],
+            Announcements =
+            [
+                "After a move, how many items moved and to which list, such as \"Moved 2 to Chosen\".",
+            ],
+            Accessibility =
+            [
+                "A move button is turned off while it has nothing to move, but stays in the tab order, so focus stays "
+                    + "on it after a move. Each shows its name as a tooltip.",
+                "Below about 30rem wide, the lists stack, with the buttons in a row between them.",
+            ],
+            Target = new("group", "Trip crew"),
+            Blocks = ["tb-transfer-list"],
+            DataParts =
+            [
+                new("label", "The transfer list's label."),
+                new("available", "The list of items not chosen, with its search box."),
+                new("chosen", "The list of chosen items, with its search box."),
+                new("moves", "The move buttons between the lists."),
+                new("move-chosen", "The button that moves the marked items to the chosen list."),
+                new("move-all-chosen", "The button that moves every item shown to the chosen list."),
+                new("move-available", "The button that moves the marked items back to the available list."),
+                new("move-all-available", "The button that moves every item shown in the chosen list back to the "
+                    + "available list."),
+            ],
+            Anatomy = """
+                <TbTransferList TItem="…" Label="…" Items="_items" ItemText="…" @bind-Value="_chosen" />
+                """,
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().TransferList(\"Trip crew\")` from `Trailblazor.Testing.Playwright` moves "
+                    + "items with `await MoveAsync(\"Casey\", \"Devon\")` and back with `MoveBackAsync(...)`, and "
+                    + "reads the chosen items with `await ChosenAsync()`.",
+                "In bUnit, `cut.Tb().TransferList(\"Trip crew\")` from `Trailblazor.Testing` has the same "
+                    + "`MoveAsync`, `MoveBackAsync` and `Chosen`.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, it also counts `trailblazor.control.used` with `trailblazor.action` `move` for "
+                    + "each move. Which items moved is never recorded.",
+            ],
+        },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or keyboard focus.")
         {

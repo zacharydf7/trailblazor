@@ -35,6 +35,12 @@ const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
 const Trailblazor.TbStrings.TimePickerAtLeast = "TimePicker.AtLeast" -> string!
 const Trailblazor.TbStrings.TimePickerAtMost = "TimePicker.AtMost" -> string!
 const Trailblazor.TbStrings.TimePickerOutOfRange = "TimePicker.OutOfRange" -> string!
+const Trailblazor.TbStrings.TransferListAvailable = "TransferList.Available" -> string!
+const Trailblazor.TbStrings.TransferListChosen = "TransferList.Chosen" -> string!
+const Trailblazor.TbStrings.TransferListMove = "TransferList.Move" -> string!
+const Trailblazor.TbStrings.TransferListMoveAll = "TransferList.MoveAll" -> string!
+const Trailblazor.TbStrings.TransferListMoved = "TransferList.Moved" -> string!
+const Trailblazor.TbStrings.TransferListSearch = "TransferList.Search" -> string!
 override Trailblazor.CalendarLabels.Equals(object? obj) -> bool
 override Trailblazor.CalendarLabels.GetHashCode() -> int
 override Trailblazor.CalendarLabels.ToString() -> string!
@@ -71,12 +77,16 @@ override Trailblazor.TbTagInput.FocusAsync(bool preventScroll = false) -> System
 override Trailblazor.TbTagInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTimePicker<TTime>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbTimePicker<TTime>.OnInitialized() -> void
+override Trailblazor.TbTransferList<TItem>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbVirtualList<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbVirtualList<TItem>.OnParametersSet() -> void
 override Trailblazor.TbVirtualList<TItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Trailblazor.TimePickerLabels.Equals(object? obj) -> bool
 override Trailblazor.TimePickerLabels.GetHashCode() -> int
 override Trailblazor.TimePickerLabels.ToString() -> string!
+override Trailblazor.TransferListLabels.Equals(object? obj) -> bool
+override Trailblazor.TransferListLabels.GetHashCode() -> int
+override Trailblazor.TransferListLabels.ToString() -> string!
 static Trailblazor.CalendarLabels.operator !=(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CalendarLabels.operator ==(Trailblazor.CalendarLabels? left, Trailblazor.CalendarLabels? right) -> bool
 static Trailblazor.CarouselLabels.operator !=(Trailblazor.CarouselLabels? left, Trailblazor.CarouselLabels? right) -> bool
@@ -89,6 +99,8 @@ static Trailblazor.TagInputLabels.operator !=(Trailblazor.TagInputLabels? left, 
 static Trailblazor.TagInputLabels.operator ==(Trailblazor.TagInputLabels? left, Trailblazor.TagInputLabels? right) -> bool
 static Trailblazor.TimePickerLabels.operator !=(Trailblazor.TimePickerLabels? left, Trailblazor.TimePickerLabels? right) -> bool
 static Trailblazor.TimePickerLabels.operator ==(Trailblazor.TimePickerLabels? left, Trailblazor.TimePickerLabels? right) -> bool
+static Trailblazor.TransferListLabels.operator !=(Trailblazor.TransferListLabels? left, Trailblazor.TransferListLabels? right) -> bool
+static Trailblazor.TransferListLabels.operator ==(Trailblazor.TransferListLabels? left, Trailblazor.TransferListLabels? right) -> bool
 Trailblazor.CalendarLabels
 Trailblazor.CalendarLabels.<Clone>$() -> Trailblazor.CalendarLabels!
 Trailblazor.CalendarLabels.CalendarLabels() -> void
@@ -2836,6 +2848,24 @@ Trailblazor.TbTooltip.Text.get -> string?
 Trailblazor.TbTooltip.Text.set -> void
 Trailblazor.TbTooltip.TextContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTooltip.TextContent.set -> void
+Trailblazor.TbTransferList<TItem>
+Trailblazor.TbTransferList<TItem>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbTransferList<TItem>.Classes.set -> void
+Trailblazor.TbTransferList<TItem>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
+Trailblazor.TbTransferList<TItem>.Comparer.set -> void
+Trailblazor.TbTransferList<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.TbTransferList<TItem>.Items.set -> void
+Trailblazor.TbTransferList<TItem>.ItemText.get -> System.Func<TItem, string!>?
+Trailblazor.TbTransferList<TItem>.ItemText.set -> void
+Trailblazor.TbTransferList<TItem>.Labels.get -> Trailblazor.TransferListLabels?
+Trailblazor.TbTransferList<TItem>.Labels.set -> void
+Trailblazor.TbTransferList<TItem>.Rows.get -> int
+Trailblazor.TbTransferList<TItem>.Rows.set -> void
+Trailblazor.TbTransferList<TItem>.Searchable.get -> bool
+Trailblazor.TbTransferList<TItem>.Searchable.set -> void
+Trailblazor.TbTransferList<TItem>.Size.get -> Trailblazor.Size
+Trailblazor.TbTransferList<TItem>.Size.set -> void
+Trailblazor.TbTransferList<TItem>.TbTransferList() -> void
 Trailblazor.TbTreeItem<TItem>
 Trailblazor.TbTreeItem<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTreeItem<TItem>.ChildContent.set -> void
@@ -3108,6 +3138,14 @@ Trailblazor.TrailblazorOptions.Tooltips.get -> Trailblazor.TooltipSettings!
 Trailblazor.TrailblazorOptions.TrailblazorOptions() -> void
 Trailblazor.TrailblazorOptions.WarnAboutUnlayeredStyles.get -> bool
 Trailblazor.TrailblazorOptions.WarnAboutUnlayeredStyles.set -> void
+Trailblazor.TransferListLabels
+Trailblazor.TransferListLabels.<Clone>$() -> Trailblazor.TransferListLabels!
+Trailblazor.TransferListLabels.Available.get -> string?
+Trailblazor.TransferListLabels.Available.init -> void
+Trailblazor.TransferListLabels.Chosen.get -> string?
+Trailblazor.TransferListLabels.Chosen.init -> void
+Trailblazor.TransferListLabels.Equals(Trailblazor.TransferListLabels? other) -> bool
+Trailblazor.TransferListLabels.TransferListLabels() -> void
 Trailblazor.TreeDrop<TItem>
 Trailblazor.TreeDrop<TItem>.<Clone>$() -> Trailblazor.TreeDrop<TItem>!
 Trailblazor.TreeDrop<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out TItem Target, out Trailblazor.TreeDropPosition Position) -> void
@@ -3272,6 +3310,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbToolbar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbToolbarButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTooltip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbTransferList<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbTreeView<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 

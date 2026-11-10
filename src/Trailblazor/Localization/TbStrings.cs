@@ -343,6 +343,27 @@ public static class TbStrings
     /// <summary>"Nothing to choose from": shown in a list box when it has no options.</summary>
     public const string ListBoxEmpty = "ListBox.Empty";
 
+    /// <summary>"Available": titles a transfer list's list of items not chosen.</summary>
+    public const string TransferListAvailable = "TransferList.Available";
+
+    /// <summary>"Chosen": titles a transfer list's list of chosen items.</summary>
+    public const string TransferListChosen = "TransferList.Chosen";
+
+    /// <summary>"Move to {0}": names the button that moves the marked items to the other list; {0} is that list's
+    /// title.</summary>
+    public const string TransferListMove = "TransferList.Move";
+
+    /// <summary>"Move all to {0}": names the button that moves every item shown to the other list; {0} is that list's
+    /// title.</summary>
+    public const string TransferListMoveAll = "TransferList.MoveAll";
+
+    /// <summary>"Moved {0} to {1}": read out after a move; {0} is how many items moved and {1} the list's title.
+    /// </summary>
+    public const string TransferListMoved = "TransferList.Moved";
+
+    /// <summary>"Search {0}": labels the search box above a list; {0} is the list's title.</summary>
+    public const string TransferListSearch = "TransferList.Search";
+
     /// <summary>"opens in a new tab": read after the text of a link or menu item that opens a new tab.</summary>
     public const string NewTabHint = "NewTabHint";
 
@@ -930,6 +951,12 @@ public static class TbStrings
         [FileUploadTooManyOne] = "Choose only one file.",
         [LabelInfo] = "Information about {0}",
         [ListBoxEmpty] = "Nothing to choose from",
+        [TransferListAvailable] = "Available",
+        [TransferListChosen] = "Chosen",
+        [TransferListMove] = "Move to {0}",
+        [TransferListMoveAll] = "Move all to {0}",
+        [TransferListMoved] = "Moved {0} to {1}",
+        [TransferListSearch] = "Search {0}",
         [NewTabHint] = "opens in a new tab",
         [NumberFieldDecrease] = "Decrease",
         [NumberFieldIncrease] = "Increase",

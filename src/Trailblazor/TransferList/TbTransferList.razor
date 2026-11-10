@@ -1,0 +1,84 @@
+@namespace Trailblazor
+@using Microsoft.AspNetCore.Components.Forms
+@typeparam TItem
+@inherits TbFieldBase<IReadOnlyList<TItem>>
+
+@{
+    var available = AvailableShown.ToList();
+    var chosen = ChosenShown.ToList();
+    var markedAvailable = Shown(_markedAvailable, available);
+    var markedChosen = Shown(_markedChosen, chosen);
+}
+<fieldset @attributes="GroupRootAttributes" disabled="@Disabled" style="@Style"
+          aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedBy"
+          class="@ClassNames.Join("tb-transfer-list", ClassNames.Modifier("tb-transfer-list", Size),
+                     ShowsInvalid ? "tb-transfer-list--invalid" : null, Class)">
+    @if (ShownLabel is not null)
+    {
+        <legend data-part="label" class="@ClassNames.Join("tb-transfer-list__label", LabelHiddenClass, Classes?.Label)">
+            @ShownLabel @RequiredMarker @InfoButton
+        </legend>
+    }
+    @* Hide the page's form from the inner lists and search boxes, so the form tracks only the transfer list's value. *@
+    <CascadingValue TValue="EditContext" Value="null">
+        <CascadingValue TValue="TbForm" Value="null">
+            <div class="tb-transfer-list__panes">
+                <div data-part="available" class="tb-transfer-list__pane">
+                    @if (Searchable)
+                    {
+                        <TbTextField TValue="string" Size="Size" UpdateOnInput Disabled="Disabled"
+                                     Label="@Format(Localizer[TbStrings.TransferListSearch], AvailableTitle)"
+                                     @bind-Value="_searchAvailable" />
+                    }
+                    <TbMultiListBox @ref="_available" TItem="TItem" Label="@AvailableTitle" Rows="Rows" Size="Size"
+                                    Disabled="Disabled" ReadOnly="ReadOnly" Comparer="Comparer"
+                                    Value="markedAvailable" ValueChanged="marked => _markedAvailable = marked">
+                        @foreach (var item in available)
+                        {
+                            <TbOption Value="item">@TextOf(item)</TbOption>
+                        }
+                    </TbMultiListBox>
+                </div>
+                <div data-part="moves" class="tb-transfer-list__moves">
+                    <TbIconButton Icon="BuiltInIcons.ChevronEnd" Size="Size" data-part="move-chosen"
+                                  ShowTooltip FocusableWhenDisabled="!Disabled"
+                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMove], ChosenTitle)"
+                                  Disabled="!Editable || markedAvailable.Count == 0"
+                                  OnClick="() => MoveToChosenAsync(markedAvailable)" />
+                    <TbIconButton Icon="BuiltInIcons.PageLast" Size="Size" data-part="move-all-chosen"
+                                  ShowTooltip FocusableWhenDisabled="!Disabled"
+                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMoveAll], ChosenTitle)"
+                                  Disabled="!Editable || available.Count == 0"
+                                  OnClick="() => MoveToChosenAsync(available)" />
+                    <TbIconButton Icon="BuiltInIcons.ChevronStart" Size="Size" data-part="move-available"
+                                  ShowTooltip FocusableWhenDisabled="!Disabled"
+                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMove], AvailableTitle)"
+                                  Disabled="!Editable || markedChosen.Count == 0"
+                                  OnClick="() => MoveToAvailableAsync(markedChosen)" />
+                    <TbIconButton Icon="BuiltInIcons.PageFirst" Size="Size" data-part="move-all-available"
+                                  ShowTooltip FocusableWhenDisabled="!Disabled"
+                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMoveAll], AvailableTitle)"
+                                  Disabled="!Editable || chosen.Count == 0"
+                                  OnClick="() => MoveToAvailableAsync(chosen)" />
+                </div>
+                <div data-part="chosen" class="tb-transfer-list__pane">
+                    @if (Searchable)
+                    {
+                        <TbTextField TValue="string" Size="Size" UpdateOnInput Disabled="Disabled"
+                                     Label="@Format(Localizer[TbStrings.TransferListSearch], ChosenTitle)"
+                                     @bind-Value="_searchChosen" />
+                    }
+                    <TbMultiListBox TItem="TItem" Label="@ChosenTitle" Rows="Rows" Size="Size" Disabled="Disabled"
+                                    ReadOnly="ReadOnly" Comparer="Comparer" Value="markedChosen"
+                                    ValueChanged="marked => _markedChosen = marked">
+                        @foreach (var item in chosen)
+                        {
+                            <TbOption Value="item">@TextOf(item)</TbOption>
+                        }
+                    </TbMultiListBox>
+                </div>
+            </div>
+        </CascadingValue>
+    </CascadingValue>
+    @Messages(Classes?.Helper, Classes?.Error)
+</fieldset>
