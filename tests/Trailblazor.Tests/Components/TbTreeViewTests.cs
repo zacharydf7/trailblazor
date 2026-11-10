@@ -812,6 +812,30 @@ public class TbTreeViewTests : BunitContext
     private static void Check(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         Row(cut, key).QuerySelector("[data-part=check]")!.Click();
 
+    [Fact]
+    public async Task SelectAsync_ShouldSelectOnlyThatRowAndRaiseTheChange_WhenGivenAKey()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.Multiple));
+
+        await cut.InvokeAsync(() => cut.Instance.SelectAsync(1));
+        await cut.InvokeAsync(() => cut.Instance.SelectAsync(4));
+
+        Assert.Equal([[1], [4]], _selectedChanges);
+        Assert.Equal("true", cut.Find("[role=treeitem][data-key='4']").GetAttribute("aria-selected"));
+        Assert.Equal("false", cut.Find("[role=treeitem][data-key='1']").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public async Task SelectAsync_ShouldChangeNothing_WhenTheRowCantBeSelectedOrNoRowHasTheKey()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.IsSelectable, place => place.Id != 4));
+
+        await cut.InvokeAsync(() => cut.Instance.SelectAsync(4));
+        await cut.InvokeAsync(() => cut.Instance.SelectAsync(99));
+
+        Assert.Empty(_selectedChanges);
+    }
+
     private static string[] Texts(IRenderedComponent<TbTreeView<Place, int>> cut) =>
         [.. cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")!)];
 

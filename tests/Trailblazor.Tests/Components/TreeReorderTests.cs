@@ -2,6 +2,7 @@ using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Components;
 
@@ -86,7 +87,8 @@ public class TreeReorderTests : BunitContext
         var announcer = Render<AnnouncerHost>();
         var cut = RenderPlaces();
 
-        await cut.InvokeAsync(() => Events().OnDrop(["2", "4"], "6", TreeDropPosition.After));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["2", "4"], Target = "6", Position = TreeDropPosition.After });
 
         var drop = Assert.Single(_drops);
         Assert.Equal(["Ridge", "South"], drop.Items.Select(place => place.Name));
@@ -102,7 +104,8 @@ public class TreeReorderTests : BunitContext
         var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanDrop,
             _ => Task.FromResult(MoveCheck.Refuse("Places are read only."))));
 
-        await cut.InvokeAsync(() => Events().OnDrop(["6"], "4", TreeDropPosition.Inside));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["6"], Target = "4", Position = TreeDropPosition.Inside });
 
         Assert.Empty(_drops);
         announcer.WaitForAssertion(() =>
@@ -114,7 +117,8 @@ public class TreeReorderTests : BunitContext
     {
         var cut = RenderPlaces();
 
-        await cut.InvokeAsync(() => Events().OnDrop(["6"], "4", TreeDropPosition.Inside));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["6"], Target = "4", Position = TreeDropPosition.Inside });
 
         Assert.Equal("true", Row(cut, "4").GetAttribute("aria-expanded"));
     }
@@ -154,7 +158,8 @@ public class TreeReorderTests : BunitContext
     {
         var cut = RenderPlaces();
 
-        await cut.InvokeAsync(() => Events().OnDrop(["1", "2"], "4", TreeDropPosition.After));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["1", "2"], Target = "4", Position = TreeDropPosition.After });
 
         Assert.Equal(["North"], Assert.Single(_drops).Items.Select(place => place.Name));
     }
@@ -215,9 +220,101 @@ public class TreeReorderTests : BunitContext
                 places.Insert(places.IndexOf(drop.Target), drop.Items[0]);
             }));
 
-        await cut.InvokeAsync(() => Events().OnDrop(["4"], "1", TreeDropPosition.Before));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["4"], Target = "1", Position = TreeDropPosition.Before });
 
         Assert.Equal(["4", "1"], cut.FindAll("[role=treeitem]").Select(row => row.GetAttribute("data-key")));
+    }
+
+    [Theory]
+    [InlineData(TreeDropPosition.Before)]
+    [InlineData(TreeDropPosition.After)]
+    [InlineData(TreeDropPosition.Inside)]
+    public async Task TreeDriver_ShouldReportTheDropThroughOnDrop_WhenItDragsARowOntoAnother(TreeDropPosition position)
+    {
+        var cut = RenderPlaces();
+        var tree = cut.Tb().Tree("Places");
+        await tree.ExpandAllAsync();
+        Func<string[], string[], Task> drag = position switch
+        {
+            TreeDropPosition.Before => tree.DragBeforeAsync,
+            TreeDropPosition.After => tree.DragAfterAsync,
+            _ => tree.DragIntoAsync,
+        };
+
+        await drag(["North", "Pass"], ["South", "Lake"]);
+
+        var drop = Assert.Single(_drops);
+        Assert.Equal(["Pass"], drop.Items.Select(place => place.Name));
+        Assert.Equal(("Lake", position), (drop.Target.Name, drop.Position));
+    }
+
+    [Fact]
+    public async Task TreeDriver_ShouldDropAboveTheFirstChild_WhenItDragsARowBelowAnOpenOne()
+    {
+        var cut = RenderPlaces();
+        var tree = cut.Tb().Tree("Places");
+        await tree.ExpandAllAsync();
+
+        await tree.DragAfterAsync(["North", "Pass"], ["South"]);
+
+        var drop = Assert.Single(_drops);
+        Assert.Equal(("Lake", TreeDropPosition.Before), (drop.Target.Name, drop.Position));
+    }
+
+    [Fact]
+    public async Task TreeDriver_ShouldMoveEverySelectedRow_WhenItDragsASelectedOne()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.Multiple)
+            .Add(tree => tree.SelectedKeys, [2, 6]));
+        var tree = cut.Tb().Tree("Places");
+        await tree.ExpandAllAsync();
+
+        await tree.DragAfterAsync(["North", "Pass"], ["South", "Lake"]);
+
+        Assert.Equal(["Ridge", "Pass"], Assert.Single(_drops).Items.Select(place => place.Name));
+    }
+
+    [Fact]
+    public async Task TreeDriver_ShouldDropNothing_WhenTheTargetIsOneOfTheMovingRows()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.Multiple)
+            .Add(tree => tree.SelectedKeys, [2, 6]));
+        var tree = cut.Tb().Tree("Places");
+        await tree.ExpandAllAsync();
+
+        await tree.DragBeforeAsync(["North", "Pass"], ["North", "Ridge"]);
+        await tree.DragAfterAsync(["North", "Pass"], ["North", "Ridge"]);
+
+        Assert.Empty(_drops);
+        Assert.Empty(announcer.FindAll("[role=status] p"));
+    }
+
+    [Fact]
+    public async Task TreeDriver_ShouldDropNothing_WhenADropBelowAnOpenRowLandsOnAMovingChild()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.Multiple)
+            .Add(tree => tree.SelectedKeys, [3, 6]));
+        var tree = cut.Tb().Tree("Places");
+        await tree.ExpandAllAsync();
+
+        await tree.DragAfterAsync(["North", "Pass"], ["North", "Ridge"]);
+
+        Assert.Empty(_drops);
+        Assert.Empty(announcer.FindAll("[role=status] p"));
+    }
+
+    [Fact]
+    public async Task TreeDriver_ShouldSayTheRowCantBeDragged_WhenTheTreeHasNoOnDrop()
+    {
+        var cut = Render<TbTreeView<Place, int>>(parameters => parameters.Add(tree => tree.Items, Nested)
+            .Add(tree => tree.ChildrenSelector, place => place.Children)
+            .Add(tree => tree.KeySelector, place => place.Id).Add(tree => tree.AriaLabel, "Places"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Tree("Places").DragAfterAsync(["North"], ["South"]));
     }
 
     private TreeViewEvents Events() =>

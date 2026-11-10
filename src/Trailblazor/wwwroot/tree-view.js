@@ -389,7 +389,10 @@ export function createTreeView(tree, events) {
             const moved = sources.map(source => source.dataset.key);
             endDrag();
             if (target) {
-                events.invokeMethodAsync('OnDrop', moved, target.row.dataset.key, target.position);
+                tree.dispatchEvent(new CustomEvent('tb-tree-drop', {
+                    bubbles: true,
+                    detail: { rows: moved, target: target.row.dataset.key, position: target.position },
+                }));
             }
         },
         onCancel: endDrag,

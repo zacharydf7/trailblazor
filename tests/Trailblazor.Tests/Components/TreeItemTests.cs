@@ -239,7 +239,11 @@ public class TreeItemTests : BunitContext
 
         var check = await cut.InvokeAsync(() =>
             Events().OnDragOver(["src"], heading.GetAttribute("data-key")!, TreeDropPosition.Before));
-        await cut.InvokeAsync(() => Events().OnDrop(["src"], heading.GetAttribute("data-key")!, TreeDropPosition.Inside));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs
+            {
+                Rows = ["src"], Target = heading.GetAttribute("data-key")!, Position = TreeDropPosition.Inside,
+            });
 
         Assert.False(check.Allowed);
         Assert.Empty(drops);

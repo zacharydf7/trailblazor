@@ -6556,7 +6556,8 @@ public static class ExampleCatalog
                     typeof(TreeViewExample)),
                 new("multiple-selection", "Multiple selection", "`SelectionMode.Multiple` lets several rows be "
                     + "selected, and `SelectedKeys` holds their keys. A click selects one row, Ctrl or Cmd with a click "
-                    + "adds or removes a row, and Shift with a click extends the selection.",
+                    + "adds or removes a row, and Shift with a click extends the selection. From code, "
+                    + "`SelectAsync(key)` makes one row the only selected row and raises `SelectedKeysChanged`.",
                     typeof(TreeViewMultipleExample)),
                 new("checkboxes", "Checkboxes", "Rows written as markup suit a tree that is part of the page. With "
                     + "`Checkable`, checking a parent checks its children, and a parent with only some of them "
@@ -6736,8 +6737,10 @@ public static class ExampleCatalog
                     + "`data-drop`.",
                 "A tree of `TbTreeItem`s sets `aria-busy` while items it has just been given become rows.",
                 "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same `ExpandAsync`, "
-                    + "`ExpandAllAsync`, `SelectAsync` and `CheckAsync`, with `Texts` for the rows that show and `Item` "
-                    + "and `Items` to find rows.",
+                    + "`ExpandAllAsync`, `SelectAsync`, `CheckAsync`, `DragBeforeAsync`, `DragAfterAsync` and "
+                    + "`DragIntoAsync`, with `Texts` for the rows that show and `Item` and `Items` to find rows. A drag "
+                    + "step moves what a drag in the browser would, selected rows included, and goes through `CanDrop` "
+                    + "and `OnDrop`.",
             ],
             Telemetry =
             [

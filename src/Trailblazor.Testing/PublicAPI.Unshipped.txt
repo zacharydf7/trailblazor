@@ -124,6 +124,9 @@ Trailblazor.Testing.TbTransferListDriver.MoveAsync(params string![]! items) -> S
 Trailblazor.Testing.TbTransferListDriver.MoveBackAsync(params string![]! items) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeDriver
 Trailblazor.Testing.TbTreeDriver.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.DragAfterAsync(string![]! row, string![]! target) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.DragBeforeAsync(string![]! row, string![]! target) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.DragIntoAsync(string![]! row, string![]! target) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeDriver.ExpandAllAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeDriver.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeDriver.Item(params string![]! path) -> AngleSharp.Dom.IElement!

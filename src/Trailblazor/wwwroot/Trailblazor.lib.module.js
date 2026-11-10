@@ -92,6 +92,10 @@ function registerEvents(blazor) {
         browserEventName: 'tb-row-extend',
         createEventArgs: event => ({ from: event.detail }),
     });
+    blazor.registerCustomEventType('tbtreedrop', {
+        browserEventName: 'tb-tree-drop',
+        createEventArgs: event => event.detail,
+    });
     blazor.registerCustomEventType('tbcolumnwidths', {
         browserEventName: 'tb-column-widths',
         createEventArgs: event => ({ widths: event.detail.widths }),

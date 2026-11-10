@@ -14,7 +14,7 @@
 <div @ref="_tree" @attributes="AdditionalAttributes" role="@(ShowsEmpty ? "group" : "tree")" aria-label="@AriaLabel"
      aria-multiselectable="@(!ShowsEmpty && SelectionMode == SelectionMode.Multiple ? "true" : null)"
      aria-disabled="@(Disabled ? "true" : null)" aria-busy="@(Building ? "true" : null)"
-     data-ready="@(_handle is null ? null : "")"
+     data-ready="@(_handle is null ? null : "")" @ontbtreedrop="OnDropAsync" @ontbtreedrop:stopPropagation
      data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
      data-follows-focus="@(FollowsFocus ? "" : null)" data-no-typeahead="@(TypeAhead ? null : "")"
      data-row-size="@(Virtualize ? RowSize : null)"

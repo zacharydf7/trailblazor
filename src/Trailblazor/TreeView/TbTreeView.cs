@@ -561,7 +561,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnExtendAsync,
-            OnItemOrderAsync, OnDragOverAsync, OnDropAsync, OnViewAsync, OnFindAsync));
+            OnItemOrderAsync, OnDragOverAsync, OnViewAsync, OnFindAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createTreeView", _tree, _events);
         if (handle is null)
         {
@@ -659,6 +659,19 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         await SetExpandedAsync(_expanded.Where(other => !Equals(other, key)), asking);
+    }
+
+    /// <summary>Makes the row with this key the only selected row, and raises <see cref="SelectedKeysChanged"/> if
+    /// that changes the selection. Focus stays where it is. A key no row has, or a row that can't be selected,
+    /// changes nothing.</summary>
+    public async Task SelectAsync(TKey key)
+    {
+        if (_nodes.TryGetValue(key, out var node) && CanSelect(node))
+        {
+            _anchor = node.Key;
+            await SetSelectedAsync([node.Key], byUser: false);
+            StateHasChanged();
+        }
     }
 
     /// <summary>Opens the rows the row with this key sits in, and scrolls it into view, focusing it if asked.
@@ -1179,11 +1192,12 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         _byId.TryGetValue(targetId, out var target) ? CheckDropAsync(NodesOf(ids), target, position)
             : Task.FromResult(new MoveCheck(false));
 
-    private async Task OnDropAsync(string[] ids, string targetId, TreeDropPosition position)
+    // A drop arrives as an event on the tree rather than a script call, so a bUnit test can raise it too.
+    private async Task OnDropAsync(TreeDropEventArgs args)
     {
-        if (_byId.TryGetValue(targetId, out var target))
+        if (_byId.TryGetValue(args.Target, out var target))
         {
-            await DropAsync(NodesOf(ids), target, position, keepFocus: false);
+            await DropAsync(NodesOf(args.Rows), target, args.Position, keepFocus: false);
         }
     }
 
@@ -1541,7 +1555,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
     }
 
-    private async Task SetSelectedAsync(IEnumerable<object> keys)
+    private async Task SetSelectedAsync(IEnumerable<object> keys, bool byUser = true)
     {
         var selected = keys.ToHashSet();
         if (selected.SetEquals(_selected))
@@ -1549,8 +1563,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
-        // Only the user's clicks and keys get here, and only a selection that changed counts.
-        Telemetry.Used(TelemetryName, "select");
+        // Only a selection the user changed counts, not one SelectAsync makes.
+        if (byUser)
+        {
+            Telemetry.Used(TelemetryName, "select");
+        }
 
         _selected = selected;
         await SelectedKeysChanged.InvokeAsync(Reported(_selected));

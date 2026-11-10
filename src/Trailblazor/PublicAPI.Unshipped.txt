@@ -4237,3 +4237,12 @@ Trailblazor.TbTreeSelect<TItem, TKey>.UnmatchedText.set -> void
 const Trailblazor.TbStrings.TreeSelectSearch = "TreeSelect.Search" -> string!
 override Trailblazor.TbTreeSelect<TItem, TKey>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 ~override Trailblazor.TbTreeSelect<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbTreeView<TItem, TKey>.SelectAsync(TKey key) -> System.Threading.Tasks.Task!
+Trailblazor.TreeDropEventArgs
+Trailblazor.TreeDropEventArgs.Position.get -> Trailblazor.TreeDropPosition
+Trailblazor.TreeDropEventArgs.Position.set -> void
+Trailblazor.TreeDropEventArgs.Rows.get -> string![]!
+Trailblazor.TreeDropEventArgs.Rows.set -> void
+Trailblazor.TreeDropEventArgs.Target.get -> string!
+Trailblazor.TreeDropEventArgs.Target.set -> void
+Trailblazor.TreeDropEventArgs.TreeDropEventArgs() -> void

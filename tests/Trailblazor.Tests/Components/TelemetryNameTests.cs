@@ -333,8 +333,10 @@ public class TelemetryNameTests : BunitContext
         await cut.InvokeAsync(() => events.OnKey("4", "*", false, false));
         TreeRow(cut, "4").QuerySelector("[data-part=check]")!.Click();
         TreeRow(cut, "4").DoubleClick();
-        await cut.InvokeAsync(() => events.OnDrop(["4"], "1", TreeDropPosition.Before));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["4"], Target = "1", Position = TreeDropPosition.Before });
         await cut.InvokeAsync(() => cut.Instance.ExpandAsync(4));
+        await cut.InvokeAsync(() => cut.Instance.SelectAsync(1));
 
         Assert.Equal(["places"], Names(_shown));
         Assert.Equal(["expand", "collapse", "select", "expand", "check", "activate", "collapse", "move"],
