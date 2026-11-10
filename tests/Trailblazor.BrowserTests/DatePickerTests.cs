@@ -56,6 +56,25 @@ public class DatePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().DatePicker("Start date").ChooseAsync(new DateOnly(2026, 9, 14));
 
         await Expect(page.GetByTestId("start")).ToHaveTextAsync("2026-09-14");
+        Assert.Equal(new DateOnly(2026, 9, 14), await page.Tb().DatePicker("Start date").ValueAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ValueAsync_ShouldWaitForTheInteractiveField_WhenThePageIsStillPrerendered(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/date-picker");
+
+        Assert.Equal(new DateOnly(2026, 6, 3), await page.Tb().DatePicker("Start date").ValueAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ValueAsync_ShouldReturnNull_WhenTheFieldIsCleared(string browser)
+    {
+        var page = await OpenAsync(browser, "/date-picker");
+
+        await page.Tb().DatePicker("Start date").ChooseAsync(null);
+
+        Assert.Null(await page.Tb().DatePicker("Start date").ValueAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -64,6 +83,7 @@ public class DatePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenStaticAsync(browser, "/static-date-picker");
 
         await page.Tb().DatePicker("Start date").ChooseAsync(new DateOnly(2026, 9, 14));
+        Assert.Equal(new DateOnly(2026, 9, 14), await page.Tb().DatePicker("Start date").ValueAsync());
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
 
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("2026-09-14");

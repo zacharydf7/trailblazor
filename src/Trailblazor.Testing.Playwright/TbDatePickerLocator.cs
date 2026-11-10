@@ -30,4 +30,22 @@ public sealed class TbDatePickerLocator(ILocator scope, string label)
         await Assertions.Expect(Input).ToHaveAttributeAsync("data-value",
             date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "");
     }
+
+    /// <summary>The date the field holds, or null when it has none. For a statically rendered field, this reads the
+    /// browser's own date box.</summary>
+    public async Task<DateOnly?> ValueAsync()
+    {
+        if (await Input.GetAttributeAsync("data-static") is not null)
+        {
+            return ReadIso(await Input.InputValueAsync());
+        }
+
+        // A prerendered field has no value of its own to report until the page is interactive.
+        await Assertions.Expect(Input).ToHaveAttributeAsync("data-format", new Regex(".+"));
+        return ReadIso(await Input.GetAttributeAsync("data-value")
+            ?? throw new InvalidOperationException($"The date picker \"{label}\" doesn't report its date."));
+    }
+
+    internal static DateOnly? ReadIso(string? text) => string.IsNullOrEmpty(text) ? null
+        : DateOnly.ParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 }

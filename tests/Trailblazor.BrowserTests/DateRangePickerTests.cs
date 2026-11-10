@@ -539,6 +539,10 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("trip")).ToHaveTextAsync("2026-07-02 to 2026-07-09");
         await Expect(page.GetByTestId("created")).ToHaveTextAsync("2026-04-01T00:00:00.0000000 to ");
+        Assert.Equal((new DateOnly(2026, 7, 2), new DateOnly(2026, 7, 9)),
+            await page.Tb().DateRangePicker("Trip dates").RangeAsync());
+        Assert.Equal((new DateOnly(2026, 4, 1), (DateOnly?)null),
+            await page.Tb().DateRangePicker("Created").RangeAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -557,6 +561,8 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenStaticAsync(browser, "/static-date-range");
 
         await page.Tb().DateRangePicker("Trip dates").ChooseAsync(new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 4));
+        Assert.Equal((new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 4)),
+            await page.Tb().DateRangePicker("Trip dates").RangeAsync());
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
 
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("2026-08-01 to 2026-08-04");

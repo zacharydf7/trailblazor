@@ -46,6 +46,24 @@ public sealed class TbDateTimePickerLocator(ILocator scope, string label)
             new Regex($"^{chosen.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)}"));
     }
 
+    /// <summary>The date and time the field holds, or null when it has none. For a statically rendered field, this
+    /// reads the browser's own date and time box.</summary>
+    public async Task<DateTime?> ValueAsync()
+    {
+        var staticBox = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[data-static]"));
+        var text = await staticBox.CountAsync() > 0 ? await staticBox.InputValueAsync() : null;
+        if (text is null)
+        {
+            // A prerendered field has no value of its own to report until the page is interactive.
+            await Assertions.Expect(Group).ToHaveAttributeAsync("data-format", new Regex(".+"));
+            text = await Group.GetAttributeAsync("data-value")
+                ?? throw new InvalidOperationException($"The date-time picker \"{label}\" doesn't report its value.");
+        }
+
+        return string.IsNullOrEmpty(text) ? null
+            : DateTime.ParseExact(text, ["yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss"], CultureInfo.InvariantCulture);
+    }
+
     // The time boxes take seconds only when the step has them, so whole minutes are written without.
     private static string TimeFormat(DateTime value) => value.Second == 0 ? "HH:mm" : "HH:mm:ss";
 }

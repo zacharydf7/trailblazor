@@ -503,8 +503,12 @@
         new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names."),
         new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color."),
         new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files."),
-        new("Date range picker", "Its label",
-            "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates."),
+        new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "
+            + "and waits until the field has it, and `ValueAsync()` reads it."),
+        new("Date-time picker", "Its label", "`DateTimePicker(label).ChooseAsync(value)` types the date and fills the "
+            + "time, and `ValueAsync()` reads them."),
+        new("Date range picker", "Its label", "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates, and "
+            + "`RangeAsync()` reads them."),
         new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number."),
         new("Slider", "Its label", "`Slider(label).SetAsync(value)` moves it and waits until the field has the value, "
             + "and `ValueAsync()` reads it."),

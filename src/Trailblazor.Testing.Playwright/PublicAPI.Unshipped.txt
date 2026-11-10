@@ -28,8 +28,10 @@ Trailblazor.Testing.Playwright.TbDatePickerLocator
 Trailblazor.Testing.Playwright.TbDatePickerLocator.ChooseAsync(System.DateOnly? date) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDatePickerLocator.Input.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbDatePickerLocator.TbDatePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbDatePickerLocator.ValueAsync() -> System.Threading.Tasks.Task<System.DateOnly?>!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDateRangePickerLocator.RangeAsync() -> System.Threading.Tasks.Task<(System.DateOnly? Start, System.DateOnly? End)>!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.TbDateRangePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.ChooseAsync(System.DateTime? value) -> System.Threading.Tasks.Task!
@@ -37,6 +39,7 @@ Trailblazor.Testing.Playwright.TbDateTimePickerLocator.DateInput.get -> Microsof
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.Group.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.TbDateTimePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.TimeInput.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.ValueAsync() -> System.Threading.Tasks.Task<System.DateTime?>!
 Trailblazor.Testing.Playwright.TbDialogLocator
 Trailblazor.Testing.Playwright.TbDialogLocator.CancelAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDialogLocator.ChooseAsync(string! button) -> System.Threading.Tasks.Task!

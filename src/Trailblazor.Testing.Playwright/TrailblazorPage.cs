@@ -353,6 +353,24 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label)
         await Assertions.Expect(group).ToHaveAttributeAsync("data-value", $"{Iso(start)}/{Iso(end)}");
     }
 
+    /// <summary>The range the field holds; either date is null when the field has none. For a statically rendered
+    /// field, this reads the browser's own date boxes.</summary>
+    public async Task<(DateOnly? Start, DateOnly? End)> RangeAsync()
+    {
+        var group = scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
+        var boxes = group.Locator("input");
+        if (await boxes.First.GetAttributeAsync("data-static") is not null)
+        {
+            return (TbDatePickerLocator.ReadIso(await boxes.Nth(0).InputValueAsync()),
+                TbDatePickerLocator.ReadIso(await boxes.Nth(1).InputValueAsync()));
+        }
+
+        var value = await group.GetAttributeAsync("data-value")
+            ?? throw new InvalidOperationException($"The date range picker \"{label}\" doesn't report its range.");
+        var dates = value.Split('/');
+        return (TbDatePickerLocator.ReadIso(dates[0]), TbDatePickerLocator.ReadIso(dates[1]));
+    }
+
     private static string Iso(DateOnly? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
 }
 
