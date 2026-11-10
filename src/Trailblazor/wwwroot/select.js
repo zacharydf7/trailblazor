@@ -318,6 +318,12 @@ export function createSelect(combobox, listbox, toggle) {
     control.addEventListener('pointerdown', onPointerDown, { capture: true });
     control.addEventListener('click', onControlClick);
     label?.addEventListener('click', onLabelClick);
+    // select-early-click.js marks a select that was clicked before this script attached.
+    if ('openWhenReady' in combobox.dataset) {
+        delete combobox.dataset.openWhenReady;
+        combobox.focus();
+        open();
+    }
 
     return {
         // Returns whether the list ended up open, since a disabled or read-only select won't open.

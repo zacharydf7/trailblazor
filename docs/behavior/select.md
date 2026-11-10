@@ -26,6 +26,7 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 ## Pointer
 
 - [x] Clicking the field or its chevron opens the list, and clicking it again closes it. `SelectTests.Select_ShouldCloseWithoutChoosing_WhenEscapeIsPressedOrTheComboboxIsClickedAgain`
+- [x] Clicking the field before its script attaches, as on a slow link, opens the list once the script is ready, unless focus has moved on. `SelectTests.Select_ShouldOpenItsList_WhenClickedBeforeItsScriptHasLoaded`, `SelectTests.Select_ShouldStayClosed_WhenFocusMovesOnBeforeItsScriptHasLoaded`, `SelectTests.Select_ShouldStayClosed_WhenClickedTwiceBeforeItsScriptHasLoaded`
 - [x] Clicking an option chooses it and closes a single select. `SelectTests.Select_ShouldChooseAClickedOptionAndRefocusTheCombobox_WhenOpenedByClicking`
 - [x] Clicking options in a multi-select toggles them and leaves the list open. `SelectTests.MultiSelect_ShouldToggleOptionsAndStayOpen_WhenOptionsAreClicked`
 - [x] Clicking a disabled option leaves the value alone and the list open. `SelectTests.Select_ShouldStayOpenAndUnchanged_WhenADisabledOptionIsClicked`

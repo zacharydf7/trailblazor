@@ -1,6 +1,7 @@
 // Blazor runs this initializer itself, so consumers add no script tags.
 import '../Trailblazor.Primitives/pointer-origin.js';
 import './read-only.js';
+import './select-early-click.js';
 import './number-field.js';
 import './autofocus.js';
 import './file-upload.js';

@@ -5,6 +5,53 @@ namespace Trailblazor.BrowserTests;
 public class SelectTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldOpenItsList_WhenClickedBeforeItsScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithAScriptHeldAsync(browser, "/examples/select", "**/select.*js");
+        var shipping = page.GetByRole(AriaRole.Combobox, new() { Name = "Shipping" });
+
+        // A click on the field's edge, outside the combobox, takes no focus, so the focus that follows is the script's.
+        await shipping.Locator("xpath=..").ClickAsync(new() { Position = new() { X = 2, Y = 2 } });
+        await Expect(shipping).Not.ToHaveAttributeAsync("data-ready", "");
+        script.SetResult();
+
+        await Expect(shipping).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Shipping" })).ToBeVisibleAsync();
+        await Expect(shipping).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldStayClosed_WhenClickedTwiceBeforeItsScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithAScriptHeldAsync(browser, "/examples/select", "**/select.*js");
+        var shipping = page.GetByRole(AriaRole.Combobox, new() { Name = "Shipping" });
+
+        await shipping.ClickAsync();
+        await shipping.ClickAsync();
+        script.SetResult();
+
+        await Expect(shipping).ToHaveAttributeAsync("data-ready", "");
+        await Expect(shipping).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Shipping" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldStayClosed_WhenFocusMovesOnBeforeItsScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithAScriptHeldAsync(browser, "/examples/select", "**/select.*js");
+        var shipping = page.GetByRole(AriaRole.Combobox, new() { Name = "Shipping" });
+
+        await shipping.ClickAsync();
+        await page.Keyboard.PressAsync("Tab");
+        var moved = await page.EvaluateAsync<string>("() => document.activeElement.id");
+        script.SetResult();
+
+        await Expect(shipping).ToHaveAttributeAsync("data-ready", "");
+        await Expect(shipping).ToHaveAttributeAsync("aria-expanded", "false");
+        Assert.Equal(moved, await page.EvaluateAsync<string>("() => document.activeElement.id"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldChooseInTheGivenRowOrById_WhenSelectsShareTheirLabel(string browser)
     {
         var page = await OpenAsync(browser, "/repeated-fields");
