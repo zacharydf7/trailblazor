@@ -3012,6 +3012,10 @@ Trailblazor.TbVirtualList<TItem>.Placeholder.set -> void
 Trailblazor.TbVirtualList<TItem>.RefreshDataAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbVirtualList<TItem>.ScrollToAsync(int index, bool focus = false) -> System.Threading.Tasks.Task!
 Trailblazor.TbVirtualList<TItem>.TbVirtualList() -> void
+Trailblazor.TelemetryCatalogEntryAttribute
+Trailblazor.TelemetryCatalogEntryAttribute.Component.get -> string!
+Trailblazor.TelemetryCatalogEntryAttribute.Name.get -> string!
+Trailblazor.TelemetryCatalogEntryAttribute.TelemetryCatalogEntryAttribute(string! name, string! component) -> void
 Trailblazor.TelemetrySettings
 Trailblazor.TelemetrySettings.Enabled.get -> bool
 Trailblazor.TelemetrySettings.Enabled.set -> void

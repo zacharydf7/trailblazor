@@ -49,5 +49,12 @@ public static class TelemetryCatalog
         new("trailblazor.field.invalid", "Counter", "{field}",
             "Fields with a TelemetryName that had an error when their form was submitted.", CommonTags,
             "A TbForm's submit is invalid, once for each field with a TelemetryName that has an error."),
+        new("trailblazor.control.catalog", "ObservableGauge", "{control}",
+            "Controls with a TelemetryName that the app has, 1 each, whether or not they have been shown.",
+            CommonTags,
+            "Whenever the app's metrics are read, after a control with a TelemetryName has rendered: 1 for each "
+            + "literal TelemetryName in the app's markup and each TelemetryCatalogEntry the app adds by hand, shown or not. "
+            + "Its component is the one the markup names, such as an app's own wrapper, and it carries none of the "
+            + "app's own tags."),
     ];
 }

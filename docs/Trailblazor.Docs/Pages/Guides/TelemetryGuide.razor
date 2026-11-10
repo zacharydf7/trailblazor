@@ -318,6 +318,23 @@
             shown in the last month but never used:
         </TbText>
         <CodeBlock Label="Shown but never used, in PromQL" Code="@NeverUsed" Language="CodeLanguage.Plain" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Controls nobody reached</TbText>
+        <TbText>
+            A control only counts as shown once it renders, so one on a page nobody opens never appears at all.
+            <code>trailblazor.control.catalog</code> lists every control the app has, shown or not: when the app
+            builds, Trailblazor reads each literal <code>TelemetryName</code> in its <code>.razor</code> files. For a
+            name set from code or bound to a value, add a <code>TelemetryCatalogEntry</code> attribute yourself.
+        </TbText>
+        <CodeBlock Label="A name set from code" Code="@CatalogEntry" />
+        <TbText>
+            The catalog names a control's component as the markup does, so a wrapper such as <code>AppButton</code>
+            keeps its own name, and it carries none of your own tags. Match it to the other counts by
+            <code>trailblazor_telemetry_name</code> alone. It only starts reporting after a labeled control renders, so
+            the query looks back over the month rather than at this moment. A name in an assembly that a WebAssembly
+            app loads lazily, or in markup written inside an <code>@@code</code> block, needs an attribute in the main
+            app. Controls the app has but nobody saw in the last month:
+        </TbText>
+        <CodeBlock Label="Never shown, in PromQL" Code="@NeverShown" Language="CodeLanguage.Plain" />
 
         <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
         <TbText>
@@ -338,6 +355,7 @@
         <DocsHeading Id="api" Text="API" Class="docs-section" />
         <ApiTable Type="typeof(TelemetrySettings)" />
         <ApiTable Type="typeof(ITelemetryTags)" />
+        <ApiTable Type="typeof(TelemetryCatalogEntryAttribute)" />
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
@@ -442,6 +460,21 @@
         unless
         sum by (trailblazor_telemetry_name)
           (increase(trailblazor_control_used_total[30d]) > 0)
+        """;
+
+    private const string CatalogEntry = """
+        // In any .cs file of the app. The page binds
+        // TelemetryName="@($"export-{format}")", so list each name it takes.
+        [assembly: TelemetryCatalogEntry("export-csv", "TbButton")]
+        [assembly: TelemetryCatalogEntry("export-pdf", "TbButton")]
+        """;
+
+    private const string NeverShown = """
+        sum by (trailblazor_telemetry_name)
+          (max_over_time(trailblazor_control_catalog[30d]))
+        unless
+        sum by (trailblazor_telemetry_name)
+          (increase(trailblazor_control_shown_total[30d]) > 0)
         """;
 
     private const string Test = """

@@ -8,7 +8,7 @@ namespace Trailblazor.Analyzers.Tests;
 // Compiles a page's render code, written the way Razor generates it from markup, and runs the analyzer on it.
 internal static class Analysis
 {
-    private static readonly MetadataReference[] References =
+    internal static readonly MetadataReference[] References =
     [
         .. ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
             .Select(path => MetadataReference.CreateFromFile(path)),

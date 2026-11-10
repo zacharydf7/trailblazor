@@ -58,7 +58,7 @@ public static class GuideCatalog
         new("guides/telemetry", "Telemetry",
             "See which features people use and which they never touch, in the dashboard you already have.")
         {
-            Api = [typeof(TelemetrySettings), typeof(ITelemetryTags)],
+            Api = [typeof(TelemetrySettings), typeof(ITelemetryTags), typeof(TelemetryCatalogEntryAttribute)],
         },
         new("recipes/filter-and-grid", "A filter bar with a data grid",
             "Narrow a long list from a server, with fields above a grid that loads a page at a time."),

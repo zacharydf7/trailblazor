@@ -6,6 +6,9 @@ using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Trailblazor.Docs.Examples;
 using Trailblazor.Testing;
 
+// The docs examples' markup lists this name too, so the catalog finds it in two assemblies and must report it once.
+[assembly: Trailblazor.TelemetryCatalogEntry("edit-name", "AppButton")]
+
 namespace Trailblazor.Tests.Components;
 
 public class TelemetryTests : BunitContext
@@ -36,6 +39,49 @@ public class TelemetryTests : BunitContext
         Assert.Equal("export-csv", measurement.Tags["trailblazor.telemetry_name"]);
         Assert.Equal("TbButton", measurement.Tags["trailblazor.component"]);
         Assert.Equal(2, used.GetMeasurementSnapshot().Count);
+    }
+
+    [Fact]
+    public void Catalog_ShouldReportEachControlTheAppHasOnce_WhenCollected()
+    {
+        Start();
+
+        var catalog = ReadCatalog();
+
+        var entry = Assert.Single(catalog,
+            measurement => Equals(measurement.Tags["trailblazor.telemetry_name"], "edit-name"));
+        Assert.Equal("AppButton", entry.Tags["trailblazor.component"]);
+        Assert.Equal(1, entry.Value);
+    }
+
+    [Fact]
+    public void Catalog_ShouldReportTheNamesInALibrarysMarkup_WhenTheLibraryIsBuilt()
+    {
+        Start();
+
+        var catalog = ReadCatalog();
+
+        Assert.Contains(catalog, measurement => Equals(measurement.Tags["trailblazor.telemetry_name"], "trail-name")
+            && Equals(measurement.Tags["trailblazor.component"], "AppTextField"));
+    }
+
+    [Fact]
+    public void AppAssemblies_ShouldReachTheLibrariesAnAssemblyReferences_WhenGivenOnlyThatAssembly()
+    {
+        var found = TelemetryInstruments.AppAssemblies([typeof(TelemetryCatalog).Assembly]);
+
+        // The examples reference Trailblazor, which references its primitives, so the walk goes two levels deep.
+        Assert.Contains(typeof(TbButton).Assembly, found);
+        Assert.Contains(typeof(Trailblazor.Primitives.JsModuleLoader).Assembly, found);
+        Assert.DoesNotContain(typeof(object).Assembly, found);
+    }
+
+    [Fact]
+    public void Catalog_ShouldReportNothing_WhenTelemetryIsOff()
+    {
+        Start(options => options.Telemetry.Enabled = false);
+
+        Assert.Empty(ReadCatalog());
     }
 
     [Fact]
@@ -162,6 +208,15 @@ public class TelemetryTests : BunitContext
     private void Start(Action<TrailblazorOptions>? configure = null)
     {
         this.AddTrailblazor(configure);
+    }
+
+    private IReadOnlyList<CollectedMeasurement<int>> ReadCatalog()
+    {
+        using var catalog = new MetricCollector<int>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.catalog");
+        Services.GetRequiredService<TelemetryInstruments>();
+        catalog.RecordObservableInstruments();
+        return catalog.GetMeasurementSnapshot();
     }
 
     // Scoped to this test's meter factory, so tests running alongside it don't add to its counts.
