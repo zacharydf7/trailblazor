@@ -13,7 +13,10 @@
             @for (var index = 0; index < Tags.Count; index++)
             {
                 var at = index;
-                <li data-part="tag" class="tb-chip tb-chip--small tb-chip--soft tb-chip--neutral tb-tag-input__tag">
+                var key = KeyOf(at);
+                @* Each tag keeps its own element through a removal, so focus stays on the tag a key moved to. *@
+                <li @key="key" data-part="tag"
+                    class="tb-chip tb-chip--small tb-chip--soft tb-chip--neutral tb-tag-input__tag">
                     <span class="tb-chip__action" aria-disabled="@(Disabled ? "true" : null)">
                         <span class="tb-chip__label">@Tags[at]</span>
                     </span>
@@ -21,7 +24,7 @@
                     {
                         @* The arrow keys reach the remove buttons from the input, so Tab passes over them. *@
                         <button type="button" data-part="remove" tabindex="-1" aria-label="@Format(RemoveFormat, Tags[at])"
-                                class="tb-chip__remove" @onclick="_remove.For(at)">
+                                class="tb-chip__remove" @onclick="_remove.For(key)">
                             <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
                         </button>
                     }

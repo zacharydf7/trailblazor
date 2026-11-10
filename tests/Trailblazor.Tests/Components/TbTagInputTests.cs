@@ -153,6 +153,16 @@ public class TbTagInputTests : BunitContext
         cut.WaitForAssertion(() => Assert.Equal(-1, _handle.VerifyInvoke("focusTag").Arguments[0]));
     }
 
+    [Fact]
+    public async Task RemoveAsync_ShouldRemoveTheTagClicked_WhenTheValueRepeatsATag()
+    {
+        var cut = RenderTags(["Shade", "Water", "Shade"]);
+
+        await cut.FindAll("[data-part=remove]")[2].ClickAsync(new());
+
+        Assert.Equal(["Shade", "Water"], Changes.Single());
+    }
+
     [Theory]
     [InlineData(0, "previous", 0)]
     [InlineData(1, "previous", 0)]

@@ -13,9 +13,9 @@ export function createTagInput(input) {
     }
 
     const buttons = () => [...field.querySelectorAll('[data-part="remove"]')];
-    // A removal moves focus once the server has rendered it, unless a key pressed in the field since moved focus to the
-    // input or out of the field. The tags aren't keyed, so after the render the button a key moved to shows another
-    // tag or is gone, leaving focus on the page itself; either way the removal moves focus as it would have.
+    // A removal moves focus once the server has rendered it, unless a key pressed in the field since then has moved
+    // focus; focus then stays where the key put it. If the render takes away the button that still had focus (the
+    // removed tag's own), focus falls to the page itself and the removal moves it as it would have.
     let keyAfterRemoval = false;
     const startRemoval = () => keyAfterRemoval = false;
     const separators = () => input.dataset.separators ?? '';
@@ -129,8 +129,7 @@ export function createTagInput(input) {
         },
         // A tag's remove button by its position, or the input for -1 or a position past the last tag.
         focusTag(index) {
-            const active = document.activeElement;
-            if (!keyAfterRemoval || active === document.body || buttons().includes(active)) {
+            if (!keyAfterRemoval || document.activeElement === document.body) {
                 (buttons()[index] ?? input).focus();
             }
         },

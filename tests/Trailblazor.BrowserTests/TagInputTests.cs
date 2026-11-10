@@ -228,6 +228,18 @@ public class TagInputLateRenderTests(BrowserFixture fixture) : BrowserTest(fixtu
     private static Task AfterTheRemovalAsync(IPage page) =>
         page.WaitForTimeoutAsync((float)(4 * Delay).TotalMilliseconds);
 
+    // Shade, Water and Views, with focus in the box.
+    private async Task<TbTagInputLocator> OpenWithThreeTagsAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tag-input");
+        var features = page.Tb().TagInput("Trail features");
+        await Expect(features.Input).ToHaveAttributeAsync("data-ready", "");
+        await features.AddAsync("Views");
+        await Expect(features.Tags).ToHaveTextAsync(["Shade", "Water", "Views"]);
+        await features.Input.FocusAsync();
+        return features;
+    }
+
     private async Task<TbTagInputLocator> OpenOnShadeAsync(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tag-input");
@@ -254,13 +266,13 @@ public class TagInputLateRenderTests(BrowserFixture fixture) : BrowserTest(fixtu
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task TagInput_ShouldFocusTheTagTheKeyMovedTo_WhenTheRemovalRendersAwayTheButtonItWasOn(string browser)
+    public async Task TagInput_ShouldFocusTheNextTag_WhenAKeyLeftFocusOnTheRemovedTagsButton(string browser)
     {
         var features = await OpenOnShadeAsync(browser);
         var page = features.Input.Page;
 
         await page.Keyboard.PressAsync("Delete");
-        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("Home");
 
         await Expect(features.Tags).ToHaveTextAsync(["Water"]);
         await AfterTheRemovalAsync(page);
@@ -270,12 +282,8 @@ public class TagInputLateRenderTests(BrowserFixture fixture) : BrowserTest(fixtu
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TagInput_ShouldFocusTheTagAfterTheRemovedOne_WhenAKeyMovedToATagBeforeTheRender(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/tag-input");
-        var features = page.Tb().TagInput("Trail features");
-        await Expect(features.Input).ToHaveAttributeAsync("data-ready", "");
-        await features.AddAsync("Views");
-        await Expect(features.Tags).ToHaveTextAsync(["Shade", "Water", "Views"]);
-        await features.Input.FocusAsync();
+        var features = await OpenWithThreeTagsAsync(browser);
+        var page = features.Input.Page;
         await page.Keyboard.PressAsync("ArrowLeft");
         await page.Keyboard.PressAsync("Home");
 
@@ -285,6 +293,55 @@ public class TagInputLateRenderTests(BrowserFixture fixture) : BrowserTest(fixtu
         await Expect(features.Tags).ToHaveTextAsync(["Water", "Views"]);
         await AfterTheRemovalAsync(page);
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove Water", Exact = true })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldKeepFocusOnTheTagBefore_WhenAKeyMovedBackToItBeforeTheRender(string browser)
+    {
+        var features = await OpenWithThreeTagsAsync(browser);
+        var page = features.Input.Page;
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Shade", "Views"]);
+        await AfterTheRemovalAsync(page);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove Shade", Exact = true })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldKeepFocusOnTheFirstTag_WhenHomeIsPressedAfterRemovingAMiddleOne(string browser)
+    {
+        var features = await OpenWithThreeTagsAsync(browser);
+        var page = features.Input.Page;
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("Home");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Shade", "Views"]);
+        await AfterTheRemovalAsync(page);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove Shade", Exact = true })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldKeepFocusOnTheLastTag_WhenTwoArrowsReachItBeforeTheRender(string browser)
+    {
+        var features = await OpenWithThreeTagsAsync(browser);
+        var page = features.Input.Page;
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("Home");
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Water", "Views"]);
+        await AfterTheRemovalAsync(page);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove Views", Exact = true })).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

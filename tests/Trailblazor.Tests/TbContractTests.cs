@@ -108,6 +108,35 @@ public class TbContractTests
         }
     }
 
+    // A list whose rows each have a checkbox and a remove button, with handlers kept from render to render.
+    private sealed class TrailList : ComponentBase
+    {
+        private readonly List<string> _trails = ["Pine", "Cedar"];
+        private readonly Dictionary<string, Action> _removes = [];
+        private readonly Action _check = () => { };
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            foreach (var trail in _trails)
+            {
+                builder.OpenElement(0, "li");
+                builder.SetKey(trail);
+                builder.OpenElement(1, "input");
+                builder.AddAttribute(2, "type", "checkbox");
+                builder.AddAttribute(3, "onchange", EventCallback.Factory.Create(this, _check));
+                builder.CloseElement();
+                builder.OpenElement(4, "button");
+                builder.AddAttribute(5, "aria-label", $"Remove {trail}");
+                builder.AddAttribute(6, "onclick", EventCallback.Factory.Create(this, RemoveOf(trail)));
+                builder.CloseElement();
+                builder.CloseElement();
+            }
+        }
+
+        private Action RemoveOf(string trail) =>
+            _removes.TryGetValue(trail, out var remove) ? remove : _removes[trail] = () => _trails.Remove(trail);
+    }
+
     private sealed class LinkField : ComponentBase
     {
         [Parameter]
@@ -192,6 +221,12 @@ public class TbContractTests
     public async Task VerifyAsync_ShouldNeedNoSamples_WhenTheBoundTypeIsARangeOfATypeWithSamples()
     {
         await TbContract.VerifyAsync<DistanceField>();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ShouldPass_WhenRemovingARowMovesTheNextRowsPartsIntoItsPlace()
+    {
+        await TbContract.VerifyAsync<TrailList>();
     }
 
     [Fact]

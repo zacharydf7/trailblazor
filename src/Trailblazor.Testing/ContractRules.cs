@@ -146,8 +146,11 @@ internal static class ContractRules
         for (var at = 0; at < cut.FindAll(Handled).Count; at++)
         {
             var part = cut.FindAll(Handled)[at];
-            await UsePartAsync(cut, part, at, failures);
-            await UsePartAsync(cut, part, at, failures);
+            // The parts after this one, one of which moves into its place if using this part removes it, such as the
+            // next tag's button.
+            var later = cut.FindAll(Handled).Skip(at + 1).Select(HandlerIdsOf).ToHashSet();
+            await UsePartAsync(cut, part, at, later, failures);
+            await UsePartAsync(cut, part, at, later, failures);
         }
 
         return failures.Distinct().ToList();
@@ -279,12 +282,13 @@ internal static class ContractRules
     // Raises each event the part handles, unless an earlier event removed the part. Change is raised only on checkboxes
     // and radio buttons, which a click changes; a text box's change comes from @bind.
     private static async Task UsePartAsync(IRenderedComponent<DynamicComponent> cut, IElement part, int at,
-        List<string> failures)
+        HashSet<string> later, List<string> failures)
     {
         foreach (var (name, raise) in Events.Where(pair => part.HasAttribute($"blazor:{pair.Key}")
             && (pair.Key != "onchange" || part.Matches("[type=checkbox], [type=radio]"))))
         {
-            if (cut.FindAll(Handled).ElementAtOrDefault(at) is not { } shown || !IsSamePart(part, shown))
+            if (cut.FindAll(Handled).ElementAtOrDefault(at) is not { } shown || !IsSamePart(part, shown)
+                || later.Contains(HandlerIdsOf(shown)))
             {
                 return;
             }
@@ -317,6 +321,10 @@ internal static class ContractRules
     // Label and text aren't compared, since they can change to show the part's new state, as a picked day's does.
     private static bool IsSamePart(IElement before, IElement after) => before.TagName == after.TagName
         && before.Id == after.Id && before.GetAttribute("data-part") == after.GetAttribute("data-part");
+
+    private static string HandlerIdsOf(IElement part) => string.Join(" ",
+        part.Attributes.Where(attribute => attribute.Name.StartsWith("blazor:on", StringComparison.Ordinal))
+            .Select(attribute => $"{attribute.Name}={attribute.Value}"));
 
     private static string Describe(IElement part) => $"<{part.TagName.ToLowerInvariant()} "
         + $"data-part=\"{part.GetAttribute("data-part")}\" aria-label=\"{part.GetAttribute("aria-label")}\">";

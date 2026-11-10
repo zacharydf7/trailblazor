@@ -20,10 +20,10 @@ public partial class TbTagInput : IAsyncDisposable
     private IJSObjectReference? _handle;
     private int? _focusAfter;
     private bool _disposed;
-    private readonly ItemHandlers<int, Func<MouseEventArgs, Task>> _remove;
+    private readonly ItemHandlers<string, Func<MouseEventArgs, Task>> _remove;
 
     /// <summary>Creates the tag input.</summary>
-    public TbTagInput() => _remove = new(index => args => OnRemoveClickAsync(index, args));
+    public TbTagInput() => _remove = new(key => args => OnRemoveClickAsync(key, args));
 
     /// <summary>Example text shown while nothing is typed. It is not a label.</summary>
     [Parameter]
@@ -80,6 +80,7 @@ public partial class TbTagInput : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+        _remove.KeepOnly(Enumerable.Range(0, Tags.Count).Select(KeyOf));
         if (!RendererInfo.IsInteractive)
         {
             return;
@@ -178,9 +179,14 @@ public partial class TbTagInput : IAsyncDisposable
         return TagValidation?.Invoke(text);
     }
 
-    // A click with the pointer goes back to typing; Enter or Space on the button moves on to the next tag.
-    private Task OnRemoveClickAsync(int index, MouseEventArgs e) =>
-        RemoveAsync(index, e.Detail > 0 ? FocusInput : FocusNext);
+    // A click with the pointer goes back to typing; Enter or Space on the button moves on to the next tag. The tag is
+    // looked up by its key when the click arrives, since an earlier removal can shift its position.
+    private Task OnRemoveClickAsync(string key, MouseEventArgs e) =>
+        RemoveAsync(Enumerable.Range(0, Tags.Count).FirstOrDefault(at => KeyOf(at) == key, -1),
+            e.Detail > 0 ? FocusInput : FocusNext);
+
+    // A tag's key is its text and how many times the same text comes before it, since a bound value can repeat a tag.
+    private string KeyOf(int at) => $"{Tags[at]}\u001f{Tags.Take(at).Count(tag => tag == Tags[at])}";
 
     private Task OnRemoveKeyAsync(TagRemoveEventArgs e) => RemoveAsync(e.Index, e.Focus);
 
