@@ -93,6 +93,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public IEnumerable<TItem> Items { get; set; } = [];
 
+    [CascadingParameter]
+    private ITreeChoice? Choice { get; set; }
+
     /// <summary>The rows as nested <see cref="TbTreeItem{TItem}"/>s, in place of <see cref="Items"/>. Other content
     /// written among them shows where it is written.</summary>
     [Parameter]
@@ -674,6 +677,17 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
         await SetExpandedAsync(_expanded.Union(node.Ancestors().Select(ancestor => ancestor.Key)));
         await ScrollAfterRenderAsync(node, focus);
+    }
+
+    // Focus from outside, such as a tree select's search, goes to the first shown match or else the tab-stop row.
+    internal async Task FocusRowAsync(Func<TItem, bool>? match)
+    {
+        var node = (match is null ? null : _rows.Where(row => row.IsItem).Select(row => row.Node)
+            .FirstOrDefault(node => match(node.Item))) ?? (FocusId() is { } id ? _byId[id] : null);
+        if (node is not null)
+        {
+            await ScrollAfterRenderAsync(node, focus: true);
+        }
     }
 
     private async Task ScrollAfterRenderAsync(TreeNode<TItem> node, bool focus)
@@ -1390,7 +1404,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         if (SelectionMode == SelectionMode.Single)
         {
             _anchor = node.Key;
-            return SetSelectedAsync([node.Key]);
+            return ChooseAsync(node.Key);
         }
 
         if (shift && _anchor is not null && _rowIndex.ContainsKey(_anchor))
@@ -1515,6 +1529,15 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             {
                 await item.ReportExpandedAsync(_expanded.Contains(item.Key));
             }
+        }
+    }
+
+    private async Task ChooseAsync(object key)
+    {
+        await SetSelectedAsync([key]);
+        if (Choice is not null)
+        {
+            await Choice.ChosenAsync(key);
         }
     }
 

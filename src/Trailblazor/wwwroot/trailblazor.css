@@ -5202,6 +5202,36 @@
         overflow: hidden;
     }
 
+    /* A tree select's trigger is a button drawn as the field's box, which fills the field and shows the choice. */
+    .tb-tree-select__popover {
+        display: flex;
+        flex: 1;
+        min-inline-size: 0;
+    }
+
+    .tb-tree-select__trigger {
+        flex: 1;
+        gap: var(--tb-space-2);
+        min-inline-size: 0;
+        border: none;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: start;
+    }
+
+    .tb-tree-select__trigger > .tb-select__value,
+    .tb-tree-select__trigger > .tb-select__placeholder {
+        flex: 1;
+    }
+
+    .tb-tree-select__popover .tb-popover__panel {
+        min-inline-size: max(16rem, var(--tb-anchor-width, 0px));
+        max-block-size: min(24rem, var(--tb-available-block-size, 24rem));
+        overflow-y: auto;
+        padding: 0;
+    }
+
     .tb-select__filter {
         display: block;
         box-sizing: border-box;

@@ -1,0 +1,227 @@
+@namespace Trailblazor
+@typeparam TItem
+@typeparam TKey where TKey : notnull
+@inherits TbBoxedFieldBase<TKey>
+@implements ITreeChoice
+
+@Layout(Classes, @<text>
+    @if (ReadOnly)
+    {
+        @* A read-only field can be focused and read, but opens nothing. *@
+        <button @ref="_trigger" type="button" @attributes="ControlAttributes" id="@InputId" data-part="input"
+                aria-labelledby="@NamedBy" aria-describedby="@InputDescribedBy" class="@TriggerClass">
+            @ValueText
+        </button>
+    }
+    else
+    {
+        <TbPopover @bind-Open="_open" @bind-Open:after="OpenChanged" id="@InputId" Disabled="Disabled"
+                   Class="tb-tree-select__popover">
+            <Trigger>
+                @* The label and the chosen item name the button, as they would a select. The popup is named by the
+                   button's id, which skips the button's aria-labelledby, so it takes just the label from aria-label. *@
+                <button @ref="_trigger" type="button" @attributes="TriggerAttributes(context)" id="@InputId"
+                        data-part="input" aria-labelledby="@NamedBy" aria-label="@ShownLabel"
+                        aria-required="@(Required ? "true" : null)"
+                        aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
+                        class="@TriggerClass">
+                    @ValueText
+                    <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" />
+                </button>
+            </Trigger>
+            <ChildContent>
+                @if (Searchable)
+                {
+                    <input type="search" data-part="search" autocomplete="off" aria-label="@SearchText"
+                           placeholder="@SearchText" @bind="_search" @bind:event="oninput" @bind:after="Searched"
+                           @onkeydown="SearchKeyDownAsync" class="tb-select__filter" />
+                }
+                <CascadingValue TValue="ITreeChoice" Value="this" IsFixed="true">
+                    <TbTreeView @ref="_tree" TItem="TItem" TKey="TKey" Items="Items" KeySelector="KeySelector"
+                                ChildrenSelector="ChildrenSelector"
+                                LoadChildren="@(LoadChildren is null ? null : LoadAndKeepAsync)"
+                                HasChildren="HasChildren" ItemText="ItemText" ItemIcon="ItemIcon"
+                                IsSelectable="IsSelectable" IsDisabled="IsDisabled"
+                                InitialExpandDepth="InitialExpandDepth" AriaLabel="@ShownLabel" Filter="SearchFilter"
+                                FilterKeepsDescendants SelectedKeys="@(IsMissing(Value) ? [] : [Value!])"
+                                EmptyContent="@(SearchFilter is null ? null : NoMatches)"
+                                Class="tb-tree-select__tree" />
+                </CascadingValue>
+            </ChildContent>
+        </TbPopover>
+    }
+</text>, null, null)
+
+@code {
+    private readonly Dictionary<TKey, TItem> _loaded = [];
+    private ElementReference _trigger;
+    private TbTreeView<TItem, TKey>? _tree;
+    private bool _open;
+    private string? _search;
+    private bool _saidNoMatches;
+
+    /// <summary>The items at the top of the tree.</summary>
+    [Parameter, EditorRequired]
+    public IEnumerable<TItem> Items { get; set; } = [];
+
+    /// <summary>Gives each item the key the value holds. The key type's default, such as 0 for an <c>int</c>,
+    /// means nothing is chosen. Required.</summary>
+    [Parameter, EditorRequired]
+    public Func<TItem, TKey> KeySelector { get; set; } = default!;
+
+    /// <summary>The text an item shows in the tree and, once chosen, in the field. Required.</summary>
+    [Parameter, EditorRequired]
+    public Func<TItem, string> ItemText { get; set; } = default!;
+
+    /// <summary>An item's children, held in memory.</summary>
+    [Parameter]
+    public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
+
+    /// <summary>Loads an item's children when it first opens, in place of <see cref="ChildrenSelector"/>.</summary>
+    [Parameter]
+    public Func<TItem, CancellationToken, Task<IEnumerable<TItem>>>? LoadChildren { get; set; }
+
+    /// <summary>Whether an item has children to load, so it shows as openable before they load.</summary>
+    [Parameter]
+    public Func<TItem, bool>? HasChildren { get; set; }
+
+    /// <summary>The text the field shows for a value whose item hasn't loaded, such as a saved choice under a branch
+    /// that <see cref="LoadChildren"/> hasn't opened yet. Defaults to the key's own text.</summary>
+    [Parameter]
+    public Func<TKey, string>? UnmatchedText { get; set; }
+
+    /// <summary>An icon before an item's text.</summary>
+    [Parameter]
+    public Func<TItem, Icon?>? ItemIcon { get; set; }
+
+    /// <summary>Whether an item can be chosen, so a heading such as a country can open without being chosen.
+    /// Defaults to every item.</summary>
+    [Parameter]
+    public Func<TItem, bool>? IsSelectable { get; set; }
+
+    /// <summary>Whether an item is turned off: it shows, but can't be chosen.</summary>
+    [Parameter]
+    public Func<TItem, bool>? IsDisabled { get; set; }
+
+    /// <summary>How many levels of the tree start open.</summary>
+    [Parameter]
+    public int InitialExpandDepth { get; set; }
+
+    /// <summary>Adds a search field above the tree. It keeps the items whose text contains what's typed, with the
+    /// items above and below them. It searches only the items loaded so far, so with <see cref="LoadChildren"/> it
+    /// skips branches that haven't been opened.</summary>
+    [Parameter]
+    public bool Searchable { get; set; }
+
+    /// <summary>The search field's name and placeholder. Defaults to the app's text for
+    /// <see cref="TbStrings.TreeSelectSearch"/>, "Search" in English.</summary>
+    [Parameter]
+    public string? SearchLabel { get; set; }
+
+    /// <summary>The text the field shows with nothing chosen.</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>Extra CSS classes for the field's parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
+    private string ValueId => $"{FieldId}-value";
+
+    private string NamedBy => ShownLabel is null ? ValueId : $"{LabelId} {ValueId}";
+
+    private string TriggerClass => ClassNames.Join("tb-field__input", "tb-select__trigger", "tb-tree-select__trigger",
+        Classes?.Input);
+
+    private string SearchText => SearchLabel ?? Localizer[TbStrings.TreeSelectSearch];
+
+    private RenderFragment ValueText => IsMissing(Value)
+        ? @<span id="@ValueId" data-part="value" class="tb-select__placeholder">@Placeholder</span>
+        : @<span id="@ValueId" data-part="value" class="tb-select__value">@TextOf(Value!)</span>;
+
+    private RenderFragment NoMatches => @<div data-part="no-results" class="tb-select__no-results">
+        @Localizer[TbStrings.SelectNoResults]
+    </div>;
+
+    private Func<TItem, bool>? SearchFilter => string.IsNullOrWhiteSpace(_search) ? null
+        : item => ItemText(item).Contains(_search.Trim(), StringComparison.CurrentCultureIgnoreCase);
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _trigger.FocusAsync(preventScroll);
+
+    // The children it loads are kept, so the field can show a chosen one's text.
+    private async Task<IEnumerable<TItem>> LoadAndKeepAsync(TItem item, CancellationToken cancel)
+    {
+        List<TItem> children = [.. await LoadChildren!(item, cancel)];
+        children.ForEach(child => _loaded[KeySelector(child)] = child);
+        return children;
+    }
+
+    // A live region that joins the page already holding its text isn't spoken, so the announcer says it.
+    private void Searched()
+    {
+        var none = SearchFilter is { } filter && !Known().Any(filter);
+        if (none && !_saidNoMatches)
+        {
+            Announcer.Polite(Localizer[TbStrings.SelectNoResults]);
+        }
+
+        _saidNoMatches = none;
+    }
+
+    private async Task SearchKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "ArrowDown" && _tree is not null)
+        {
+            await _tree.FocusRowAsync(SearchFilter);
+        }
+    }
+
+    private void OpenChanged()
+    {
+        if (!_open)
+        {
+            ClearSearch();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        _search = null;
+        _saidNoMatches = false;
+    }
+
+    // The items held in memory, in tree order, then the children loaded so far.
+    private IEnumerable<TItem> Known() => Walk(Items).Concat(_loaded.Values);
+
+    private IEnumerable<TItem> Walk(IEnumerable<TItem>? items) =>
+        (items ?? []).SelectMany(item => (IEnumerable<TItem>)[item, .. Walk(ChildrenSelector?.Invoke(item))]);
+
+    private protected override bool IsMissing(TKey? value) =>
+        value is null || EqualityComparer<TKey>.Default.Equals(value, default);
+
+    // An element takes one set of splatted attributes, so the field's and the popover's go together.
+    private Dictionary<string, object> TriggerAttributes(PopoverTrigger trigger)
+    {
+        var attributes = new Dictionary<string, object>(ControlAttributes ?? new Dictionary<string, object>());
+        foreach (var (name, value) in trigger.Attributes)
+        {
+            attributes[name] = value;
+        }
+
+        return attributes;
+    }
+
+    private string TextOf(TKey key) =>
+        Known().Where(item => EqualityComparer<TKey>.Default.Equals(KeySelector(item), key)).Select(ItemText)
+            .FirstOrDefault() ?? UnmatchedText?.Invoke(key) ?? key.ToString() ?? "";
+
+    // Choosing an item closes the tree, as a select closes its list, even when it's the item already chosen.
+    async Task ITreeChoice.ChosenAsync(object key)
+    {
+        _open = false;
+        ClearSearch();
+        await SetValueAsync((TKey)key);
+        StateHasChanged();
+    }
+}

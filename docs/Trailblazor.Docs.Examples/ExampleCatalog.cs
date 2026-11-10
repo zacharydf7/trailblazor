@@ -4051,6 +4051,85 @@ public static class ExampleCatalog
                     + "renders hidden, so it counts uses only; its value is never recorded.",
             ],
         },
+        new("tree-select", "Tree select", ExampleCategory.Inputs,
+            "A form field that opens a tree under it for choosing one item from a hierarchy, such as a trail within "
+                + "its region.")
+        {
+            WhenToUse =
+            [
+                "Use it when the choices nest, such as folders, categories or places, and seeing where an item sits "
+                    + "helps tell it apart.",
+            ],
+            WhenNotToUse =
+            [
+                "For a flat list of choices, use a [select](components/select).",
+                "For a tree that stays on the page, such as a folder pane, use a [tree view](components/tree-view).",
+            ],
+            Related = ["select", "tree-view", "autocomplete"],
+            Sections =
+            [
+                new("choose-one", "Choosing one item", "`Items`, `KeySelector`, `ItemText` and `ChildrenSelector` "
+                    + "build the tree as they do for a tree view, and `@bind-Value` holds the chosen item's key. "
+                    + "Choosing an item, by click, Enter or Space, closes the tree and shows its text in the field; "
+                    + "choosing the item already chosen just closes it. The key type's default, such as 0 for an "
+                    + "`int`, means nothing is chosen. `IsSelectable` lets headings such as a region open without "
+                    + "being chosen. `Searchable` adds a search that keeps the items whose text contains what's typed, "
+                    + "with the items above and below them. `LoadChildren` loads a branch when it opens, and the "
+                    + "search covers only the branches loaded so far. `UnmatchedText` names a value whose item hasn't "
+                    + "loaded, such as a saved choice in a branch not yet opened.", typeof(TreeSelectExample)),
+            ],
+            Api = [typeof(TbTreeSelect<,>), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Opens the tree, with focus in its search when it has one.")
+                    { When = "On the field" },
+                new(["Down"], "Moves into the tree, to the first match of what's typed, or else to the row Tab would "
+                    + "reach: the last one focused, the chosen item or the first one.") { When = "In the search" },
+                new(["Tab"], "Moves from the search into the tree.") { When = "In the search" },
+                new(["Up", "Down", "Left", "Right", "Home", "End"], "Move through the tree and open or close its "
+                    + "branches, as in a tree view.") { When = "In the tree" },
+                new(["Enter", "Space"], "Chooses the focused item, closes the tree and returns to the field.")
+                    { When = "In the tree" },
+                new(["Escape"], "Closes the tree without choosing, and returns to the field.") { When = "In the tree" },
+            ],
+            Labeling =
+            [
+                "The field's `Label` and the chosen item's text name its button together, as they would a select.",
+            ],
+            Announcements =
+            [
+                "The button has `aria-haspopup=\"dialog\"` and `aria-expanded`; the tree is a `tree` of `treeitem`s, "
+                    + "named by the label, with the chosen item `aria-selected`.",
+            ],
+            Accessibility =
+            [
+                "Focus moves into the tree as it opens and back to the field as it closes, by a choice, Escape or a "
+                    + "click outside.",
+                "A read-only field can still be focused and read, but opens nothing; a disabled one can't be focused.",
+                "A search that matches nothing shows \"No matches\" and announces it.",
+                "A required field with nothing chosen is invalid, and says so once the form validates, as any field "
+                    + "does.",
+            ],
+            Target = new("button", "Trail Choose a trail"),
+            Blocks = ["tb-tree-select"],
+            DataParts =
+            [
+                new("input", "The button that opens the tree and shows the choice."),
+                new("value", "The chosen item's text, or the placeholder."),
+                new("search", "The search field above the tree."),
+                new("no-results", "The message shown when the search matches nothing."),
+            ],
+            Anatomy = """
+                <TbTreeSelect Label="…" Items="…" KeySelector="…" ItemText="…" @bind-Value="_key" />
+                """,
+            TestingTips =
+            [
+                "Open it from its button, which its label names, then choose an item by its text: "
+                    + "`await page.GetByRole(AriaRole.Button, new() { Name = \"Trail\" }).ClickAsync()` and "
+                    + "`await page.GetByRole(AriaRole.Treeitem, new() { Name = \"Cedar Flats\" }).ClickAsync()` in "
+                    + "Playwright, or `cut.Find(\"[role=treeitem]\")` and `Click()` in bUnit.",
+            ],
+        },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
             "A text field that suggests values as the user types, from a list or an async search.")
         {

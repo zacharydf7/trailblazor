@@ -898,6 +898,9 @@ public static class TbStrings
     /// <summary>"An item can't move into itself.": why a tree move into an item's own branch is refused.</summary>
     public const string TreeViewCantMoveIntoItself = "TreeView.CantMoveIntoItself";
 
+    /// <summary>"Search": names a tree select's search field and is its placeholder.</summary>
+    public const string TreeSelectSearch = "TreeSelect.Search";
+
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
     {
         [AlertClose] = "Close",
@@ -1175,6 +1178,7 @@ public static class TbStrings
         [TreeViewMovedInside] = "{0} moved into {1}.",
         [TreeViewItemCount] = "{0} items",
         [TreeViewCantMoveIntoItself] = "An item can't move into itself.",
+        [TreeSelectSearch] = "Search",
         [SortableHandle] = "Move {0}",
         [SortableHint] =
             "Arrow keys move it, and Home and End move it to the start or end. Enter opens a menu of moves.",

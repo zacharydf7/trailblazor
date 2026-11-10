@@ -70,6 +70,7 @@ public static class AccessibilityStatusCatalog
         new("radio-group", Tested, Tested, None),
         new("rating", Tested, Tested, None),
         new("select", Tested, Tested, None),
+        new("tree-select", Tested, NotYet, None),
         new("autocomplete", Tested, NotYet, None),
         new("tag-input", Tested, NotYet, None),
         new("color-picker", Tested, NotYet, None),

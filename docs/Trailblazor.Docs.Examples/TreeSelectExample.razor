@@ -1,0 +1,20 @@
+<TbStack Gap="3">
+    <TbTreeSelect TItem="Place" TKey="string" Label="Trail" Items="Places" KeySelector="place => place.Id"
+                  ItemText="place => place.Name" ChildrenSelector="place => place.Children"
+                  IsSelectable="place => place.Children is null" Placeholder="Choose a trail" Searchable
+                  @bind-Value="_trail" />
+    <output aria-label="Chosen trail">@(_trail is null ? "No trail chosen." : $"Chosen: {_trail}.")</output>
+</TbStack>
+
+@code {
+    private static readonly Place[] Places =
+    [
+        new("north", "North ridge", [new("pine", "Pine Hollow loop"), new("eagle", "Eagle Ridge traverse")]),
+        new("valley", "River valley", [new("cedar", "Cedar Flats"), new("fern", "Fern Gully")]),
+        new("peaks", "High peaks", [new("summit", "Summit Gate")]),
+    ];
+
+    private string? _trail;
+
+    private sealed record Place(string Id, string Name, IReadOnlyList<Place>? Children = null);
+}

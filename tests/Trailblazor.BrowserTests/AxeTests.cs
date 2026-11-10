@@ -216,6 +216,8 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
             page => Button(page, "Information about Project code").ClickAsync()),
         ["select"] = new(new("listbox", "Shipping"),
             page => ClickWhenReadyAsync(page.GetByRole(AriaRole.Combobox, new() { Name = "Shipping" }))),
+        ["tree-select"] = new(new("dialog", "Trail"),
+            page => ClickWhenReadyAsync(Button(page, "Trail Choose a trail"))),
         ["autocomplete"] = new(new("listbox", "Trailhead"), async page =>
         {
             var field = page.GetByRole(AriaRole.Combobox, new() { Name = "Trailhead" });

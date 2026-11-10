@@ -274,6 +274,7 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(RenderFragment<string>) =>
                     (RenderFragment<string>)(text => item => item.AddContent(0, text)),
                 var type when type == typeof(Func<string, object>) => (Func<string, object>)(text => text),
+                var type when type == typeof(Func<string, string>) => (Func<string, string>)(text => text),
                 _ => throw new NotSupportedException($"Add a sample {property.PropertyType.Name} to the contract " +
                     $"kit for {component.Name}.{property.Name}."),
             };
