@@ -58,6 +58,8 @@ export function createColorPad(pad, events) {
     pad.addEventListener('pointerdown', onPointerDown);
     pad.addEventListener('pointerup', onPointerUp);
     pad.addEventListener('pointercancel', onPointerUp);
+    // Marks that a drag on the pad is heard, which tests wait for.
+    pad.dataset.ready = '';
     return {
         dispose() {
             cancelAnimationFrame(frame);

@@ -311,7 +311,10 @@
 
         <DocsHeading Id="waiting" Text="Wait for the page" Class="docs-section" />
         <TbText>
-            A page shows before its event handlers are attached, so a click that comes too soon does nothing.
+            A page shows before its event handlers are attached, so a click that comes too soon does nothing. Before it
+            clicks or types, Playwright waits for the element to be in the page, visible, still, enabled and able to take
+            the pointer. It can't tell whether Blazor has wired the element up yet, or whether a component's script has
+            attached, so wait for those yourself, or use the helpers, which do.
         </TbText>
         <DocsCallout Tone="Tone.Warning" Title="Clicks don't retry">
             Playwright's <code>Expect</code> assertions retry, but clicks and key presses don't, so wait first.
@@ -337,9 +340,9 @@
                     <tr>
                         <th scope="row">A component</th>
                         <td>
-                            <code>data-ready</code>, an empty attribute, on the element its page's testing notes name,
-                            such as a tree, a data grid, a select's combobox, a tab list, a menu's trigger or a number
-                            field's input. The helpers wait for it too, and it stays the same between versions.
+                            <code>data-ready</code>, an empty attribute, on the element the table below names, such as
+                            a tree, a data grid, a select's combobox, a tab list, a menu's trigger or a number field's
+                            input. The helpers wait for it too, and it stays the same between versions.
                         </td>
                     </tr>
                     <tr>
@@ -349,10 +352,42 @@
                             <code>DataProvider</code> sets while rows load.
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">The app to settle</th>
+                        <td>
+                            A page-level wait that holds until Blazor has no render or server call in flight, such as a
+                            test library's wait-for-idle helper. It covers what the markers can't, such as the result of
+                            a click whose handler is still running.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
         <CodeBlock Label="Waiting for the page" Code="@Waiting" />
+        <TbText>
+            The components below set <code>data-ready</code> on the element listed once they're ready to use: those
+            that rely on a script once it has attached, and a few others once the page is interactive. Any other
+            component works as soon as the page is interactive.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Where components set data-ready">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">Sets <code>data-ready</code> on</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var example in ExampleCatalog.All.Where(example => example.Ready is not null))
+                    {
+                        <tr>
+                            <th scope="row"><a href="components/@(example.Name)#testing">@example.Title</a></th>
+                            <td>@example.Ready!.Element</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
         <DocsHeading Id="slow-link" Text="Test over a slow link" Class="docs-section" />
         <TbText>

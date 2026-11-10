@@ -58,6 +58,10 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // How a test finds the component in the example; null for a layout component with no role of its own.
     public required TestTarget? Target { get; init; }
 
+    // Where a component sets data-ready once it's ready to use, after its script attaches or the page turns
+    // interactive; null for one that sets none.
+    public ReadyMark? Ready { get; init; }
+
     // The CSS blocks the component is styled under, such as tb-button, which its design tokens are read from.
     public required IReadOnlyList<string> Blocks { get; init; }
 
@@ -173,6 +177,13 @@ public sealed record TestTarget(string Role, string? Name = null)
         : $"await {OpenedBy.Locator}.{(OpenOnHover ? "Hover" : "Click")}Async();\n{Locator}";
 
     private string RoleName => $"{char.ToUpperInvariant(Role[0])}{Role[1..]}";
+}
+
+// The element a component marks with data-ready, as a CSS selector and as the testing guide names it. An element
+// marked only while it's shown is checked after OpenedBy is clicked.
+public sealed record ReadyMark(string Selector, string Element)
+{
+    public TestTarget? OpenedBy { get; init; }
 }
 
 public sealed record ExampleSource(string File, string Text)
@@ -524,6 +535,7 @@ public static class ExampleCatalog
             [
                 "The first slide shows, and the buttons work once the page is interactive.",
             ],
+            Ready = new(".tb-carousel", "a carousel that plays on its own"),
             Target = new("region", "Featured trails"),
             Blocks = ["tb-carousel"],
             DataParts =
@@ -608,6 +620,7 @@ public static class ExampleCatalog
                     + "`ItemsProvider` or turn prerendering off. With `ItemsProvider`, nothing shows until the page is "
                     + "interactive. Either way, the keys work only once the page is interactive.",
             ],
+            Ready = new("[data-part=feed]", "the feed"),
             Target = new("feed", "Trail reports"),
             Blocks = ["tb-virtual-list"],
             DataParts =
@@ -619,8 +632,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "Find it as `GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
                 + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`. Only items near the view "
-                + "are drawn, so call `ScrollToAsync` or press Page Down to reach a far one. The keys work once the "
-                + "feed has `data-ready`, so wait for it first. In bUnit, `Items` draws the first ones.",
+                + "are drawn, so call `ScrollToAsync` or press Page Down to reach a far one. In bUnit, `Items` draws "
+                + "the first ones.",
         },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
@@ -1253,6 +1266,7 @@ public static class ExampleCatalog
                     + "dial opens on click before then, as a menu does, with its actions at the window's corner "
                     + "rather than beside the trigger.",
             ],
+            Ready = new("[aria-haspopup=menu]", "a speed dial's button"),
             Target = new("button", "New message"),
             Blocks = ["tb-fab", "tb-speed-dial"],
             DataParts =
@@ -1370,6 +1384,7 @@ public static class ExampleCatalog
                 new("In a `TbToggleGroup` that isn't `Clearable`, pressing the pressed item again raises no "
                     + "`ValueChanged`, since the value stays the same."),
             ],
+            Ready = new(".tb-toggle-group", "the group"),
             Target = new("group", "Map view"),
             Blocks = ["tb-toggle-group", "tb-button"],
             DataParts =
@@ -1377,9 +1392,8 @@ public static class ExampleCatalog
                 new("item", "One toggle button in the group."),
             ],
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
-                + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Wait for the group's "
-                + "`data-ready` attribute before testing the arrow keys. Focusing an icon-only item shows a `tooltip` "
-                + "role with its name.",
+                + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Focusing an icon-only item shows "
+                + "a `tooltip` role with its name.",
             Telemetry =
             [
                 "With a `TelemetryName` on an item, such as `\"view-as-list\"`, the item counts "
@@ -1526,6 +1540,7 @@ public static class ExampleCatalog
                 "`TbThemeHead` applies a remembered theme before the page paints. Picking a choice starts working once "
                     + "the page is interactive.",
             ],
+            Ready = new(".tb-toggle-group", "the group"),
             Target = new("group", "Theme"),
             Blocks = ["tb-toggle-group", "tb-button"],
             TestingTip = "Pick a mode with `GetByRole(AriaRole.Button, new() { Name = \"Dark\" })`, and check the "
@@ -1598,6 +1613,7 @@ public static class ExampleCatalog
             [
                 new("A text field, select or editable area in the toolbar keeps its own arrow, Home and End keys."),
             ],
+            Ready = new("[role=toolbar]", "the toolbar"),
             Target = new("toolbar", "Trail notes"),
             Blocks = ["tb-toolbar"],
             DataParts =
@@ -1876,6 +1892,7 @@ public static class ExampleCatalog
             [
                 "The panes render at their sizes. Resizing starts working once the page is interactive.",
             ],
+            Ready = new("[data-part=splitter]", "the splitter"),
             Target = new("separator", "Resize Trails"),
             Blocks = ["tb-splitter"],
             DataParts =
@@ -1896,8 +1913,7 @@ public static class ExampleCatalog
                 """,
             TestingTip = "Resize with the keys, as `var separator = page.GetByRole(AriaRole.Separator, new() { Name "
                 + "= \"Resize Trails\" }); await separator.FocusAsync(); await page.Keyboard.PressAsync(\"End\");`, "
-                + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`. Wait first for `data-ready` "
-                + "on the splitter's root, `[data-part=splitter]`.",
+                + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`.",
         },
         new("container", "Container", ExampleCategory.Layout,
             "Centers content and caps its width at a readable size.")
@@ -2455,6 +2471,7 @@ public static class ExampleCatalog
             [
                 "The items render in their order. Dragging and the handles start working once the page is interactive.",
             ],
+            Ready = new(".tb-sortable", "the list's root"),
             Target = new("list", "Trail alerts, first match wins"),
             Blocks = ["tb-sortable"],
             DataParts =
@@ -2464,7 +2481,7 @@ public static class ExampleCatalog
                 new("handle", "The item's drag handle, which also moves it with the keyboard or its menu."),
                 new("drop-reason", "The reason shown while a dragged item is held over a place it may not go."),
             ],
-            TestingTip = "Wait for `data-ready` on the list's root, then press keys on a handle, found as "
+            TestingTip = "Press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
                 + "follow. In bUnit, `MoveAsync` makes a move as the user would.",
@@ -2946,6 +2963,7 @@ public static class ExampleCatalog
                     + "of digits brings up a number keyboard."),
                 new("Each `Size` is set from the theme's density, as a button's is."),
             ],
+            Ready = new("[data-part=input]", "a masked field's input"),
             Target = new("textbox", "Name"),
             Blocks = ["tb-field"],
             DataParts =
@@ -3118,6 +3136,7 @@ public static class ExampleCatalog
                     + "in a new tab, and so does the link dialog's Open link."),
                 new("`@ref` the editor and call `FocusAsync()` to move focus to it."),
             ],
+            Ready = new("[role=textbox]", "the editing area"),
             Target = new("textbox", "Trail report"),
             Blocks = ["tb-field", "tb-rich-text-editor"],
             DataParts =
@@ -3236,6 +3255,7 @@ public static class ExampleCatalog
                     + "click a step button that's off at a limit, and an error waits until then too."),
                 new("`ClampToRange` also moves a number too large or small for the value's type to the nearer limit."),
             ],
+            Ready = new("[data-part=input]", "the input"),
             Target = new("spinbutton", "Quantity"),
             Blocks = ["tb-field"],
             DataParts =
@@ -3614,6 +3634,7 @@ public static class ExampleCatalog
                     + "static post, check that `Start` isn't above `End`.",
                 "`ReadOnly` already works on a static page.",
             ],
+            Ready = new("[data-part=input]", "the input, or each thumb of a range slider"),
             Target = new("slider", "Map brightness"),
             Blocks = ["tb-slider"],
             DataParts =
@@ -4025,6 +4046,7 @@ public static class ExampleCatalog
                     + "and copies the new list back in `ValueChanged`, such as "
                     + "`ValueChanged=\"chosen => _model.Tags = [.. chosen]\"`."),
             ],
+            Ready = new("[role=combobox]", "the combobox"),
             Target = new("combobox", "Shipping"),
             Blocks = ["tb-field", "tb-select", "tb-chip"],
             DataParts =
@@ -4139,6 +4161,7 @@ public static class ExampleCatalog
                 "A required field with nothing chosen is invalid, and says so once the form validates, as any field "
                     + "does.",
             ],
+            Ready = new("[data-part=input]", "the field's button"),
             Target = new("button", "Trail Choose a trail"),
             Blocks = ["tb-tree-select"],
             DataParts =
@@ -4273,6 +4296,7 @@ public static class ExampleCatalog
             [
                 "It is a plain text input, so a static form still posts what was typed.",
             ],
+            Ready = new("[role=combobox]", "the input"),
             Target = new("combobox", "Trailhead"),
             Blocks = ["tb-field", "tb-select", "tb-autocomplete"],
             DataParts =
@@ -4363,6 +4387,7 @@ public static class ExampleCatalog
                 "The tags render, and a static form posts them, but adding and removing tags start working once the "
                     + "page is interactive. Until then the tags have no remove buttons.",
             ],
+            Ready = new("[data-part=input]", "the input"),
             Target = new("textbox", "Trail features"),
             Blocks = ["tb-tag-input", "tb-chip"],
             DataParts =
@@ -4485,6 +4510,7 @@ public static class ExampleCatalog
                 "It is a plain text box that only takes `#rrggbb` (or `#rrggbbaa` with `Alpha`), so a static form posts "
                     + "a hex color, as typed.",
             ],
+            Ready = new("[data-part=pad]", "the button that opens it and the color pad"),
             Target = new("textbox", "Trail marker"),
             Blocks = ["tb-field", "tb-color-picker"],
             DataParts =
@@ -4599,6 +4625,7 @@ public static class ExampleCatalog
                 new("Check each file's type and size again on your server. They come from the browser, so the limits "
                     + "here only help the person choosing.") { Pitfall = true },
             ],
+            Ready = new("[data-part=input]", "the file input"),
             Target = new("button", "Trail maps"),
             Blocks = ["tb-field", "tb-file-upload"],
             DataParts =
@@ -4701,6 +4728,7 @@ public static class ExampleCatalog
             [
                 "It shows the browser's own date box, so a static form still posts the date.",
             ],
+            Ready = new("[role=grid]", "the grid"),
             Target = new("group", "Hike date"),
             Blocks = ["tb-calendar"],
             DataParts =
@@ -4798,6 +4826,7 @@ public static class ExampleCatalog
             [
                 "It shows the browser's own date box, so a static form still posts the date.",
             ],
+            Ready = new("[data-part=trigger]", "the button that opens the calendar"),
             Target = new("textbox", "Start date"),
             Blocks = ["tb-field"],
             DataParts =
@@ -4971,6 +5000,7 @@ public static class ExampleCatalog
                 "It shows the browser's own date and time box, so a static form still posts the value, with no "
                     + "offset.",
             ],
+            Ready = new("[data-part=trigger]", "the button that opens the calendar"),
             Target = new("group", "Guided hike starts"),
             Blocks = ["tb-field"],
             DataParts =
@@ -5108,6 +5138,7 @@ public static class ExampleCatalog
             [
                 "It shows the browser's own date boxes, so a static form still posts both dates.",
             ],
+            Ready = new("[data-part=trigger]", "the button that opens the calendar"),
             Target = new("group", "Trip dates"),
             Blocks = ["tb-field", "tb-date-range"],
             DataParts =
@@ -5250,6 +5281,7 @@ public static class ExampleCatalog
                 new("`Rows` sets how many options show before the list scrolls, 5 by default. To show them all, set it "
                     + "to their count, such as `Rows=\"@trails.Count\"`."),
             ],
+            Ready = new("[role=listbox]", "the listbox"),
             Target = new("listbox", "Trail"),
             Blocks = ["tb-field", "tb-listbox"],
             DataParts =
@@ -5342,6 +5374,7 @@ public static class ExampleCatalog
                     + "on it after a move. Each shows its name as a tooltip.",
                 "Below about 30rem wide, the lists stack, with the buttons in a row between them.",
             ],
+            Ready = new("[role=listbox]", "each list"),
             Target = new("group", "Trip crew"),
             Blocks = ["tb-transfer-list"],
             DataParts =
@@ -5414,6 +5447,7 @@ public static class ExampleCatalog
                 "A partly typed code shows \"Verification code needs all 6 characters.\" once the field loses focus "
                     + "or Enter is pressed, not while the code is being typed.",
             ],
+            Ready = new("[data-part=input]", "the input"),
             Target = new("textbox", "Verification code"),
             Blocks = ["tb-code-field"],
             DataParts =
@@ -5500,6 +5534,7 @@ public static class ExampleCatalog
                 "The control works, but no tooltip shows and no description is added until the page is interactive, "
                     + "because a script does both.",
             ],
+            Ready = new(".tb-tooltip-anchor", "the element it describes"),
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },
             Blocks = ["tb-tooltip", "tb-tooltip-anchor"],
             DataParts =
@@ -5621,6 +5656,7 @@ public static class ExampleCatalog
                     + "the page is interactive, the arrow keys don't move through the items, the list shows at the "
                     + "corner of the window rather than beside the trigger, and an item with `OnClick` does nothing.",
             ],
+            Ready = new("[aria-haspopup=menu]", "the trigger"),
             Target = new("button", "Actions"),
             Blocks = ["tb-menu"],
             DataParts =
@@ -6126,6 +6162,7 @@ public static class ExampleCatalog
                     + "interactive, hover doesn't open it, focus doesn't move into it, and it shows at the corner of "
                     + "the window rather than beside the button.",
             ],
+            Ready = new("[data-part=trigger]", "the trigger"),
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },
             Blocks = ["tb-popover"],
             DataParts =
@@ -6189,6 +6226,7 @@ public static class ExampleCatalog
                 "The trigger opens the confirmation and Escape closes it, as on a popover, but its buttons do nothing "
                     + "until the page is interactive.",
             ],
+            Ready = new("[data-part=trigger]", "the trigger"),
             Target = new("dialog", "Delete Pine Hollow loop?") { OpenedBy = new("button", "Delete trail") },
             Blocks = ["tb-popconfirm", "tb-popover"],
             DataParts =
@@ -6265,6 +6303,7 @@ public static class ExampleCatalog
                 "An overlay with `Visible` already shows and catches the pointer. `Blocking`, `CloseOnClick` and "
                     + "Escape start working once the page is interactive.",
             ],
+            Ready = new("[data-part=overlay]", "a visible overlay") { OpenedBy = new("button", "Show page overlay") },
             Target = null,
             Blocks = ["tb-overlay"],
             DataParts =
@@ -6274,8 +6313,7 @@ public static class ExampleCatalog
                 new("content", "The overlay's content."),
             ],
             TestingTip = "The overlay's element has `data-part=\"overlay\"`; click its `data-part=\"scrim\"` to "
-                + "close one with `CloseOnClick`. Before pressing Escape, wait for the overlay's `data-ready` "
-                + "attribute, which appears once Escape is wired.",
+                + "close one with `CloseOnClick`.",
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.")
@@ -6373,6 +6411,7 @@ public static class ExampleCatalog
             [
                 "The selected tab's panel shows. The tabs don't switch until the page is interactive.",
             ],
+            Ready = new("[role=tablist]", "the tab list"),
             Target = new("tablist", "Report sections"),
             Blocks = ["tb-tabs"],
             DataParts =
@@ -6390,8 +6429,7 @@ public static class ExampleCatalog
                 </TbTabs>
                 """,
             TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
-                + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. Wait for the tab list's "
-                + "`data-ready` attribute before testing the arrow keys. "
+                + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. "
                 + "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its "
                 + "text in bUnit, and `await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
                 + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready.",
@@ -6464,6 +6502,7 @@ public static class ExampleCatalog
                 "Accordion sections show open or closed as `Expanded` sets them, and don't open or close until the "
                     + "page is interactive.",
             ],
+            Ready = new("[data-part=accordion]", "the accordion and each item's header"),
             Target = new("button", "Shipping"),
             Blocks = ["tb-accordion"],
             DataParts =
@@ -6485,8 +6524,7 @@ public static class ExampleCatalog
                 """,
             TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
                 + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, and hands back its "
-                + "panel. The arrow keys, Home and End work once the accordion's script has attached, which is marked "
-                + "by `data-ready` on its root, `[data-part=accordion]`; wait for it before pressing them.",
+                + "panel.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
@@ -6657,6 +6695,7 @@ public static class ExampleCatalog
                     + "made-up id such as `key-3`, and so does a key whose text is empty or that another key already "
                     + "has."),
             ],
+            Ready = new(".tb-tree", "the tree"),
             Target = new("tree", "Trails by region"),
             Blocks = ["tb-tree"],
             DataParts =
@@ -6695,8 +6734,7 @@ public static class ExampleCatalog
                     + "together. Rows also carry `data-index` and `data-inside`, the number of rows in their branch.",
                 "Every row carries `data-key`, `data-level` and `data-text`, and a row being dragged over carries "
                     + "`data-drop`.",
-                "Without the helpers, wait for the tree's `data-ready` before pressing keys or dragging. A tree of "
-                    + "`TbTreeItem`s also sets `aria-busy` while items it has just been given become rows.",
+                "A tree of `TbTreeItem`s sets `aria-busy` while items it has just been given become rows.",
                 "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same `ExpandAsync`, "
                     + "`ExpandAllAsync`, `SelectAsync` and `CheckAsync`, with `Texts` for the rows that show and `Item` "
                     + "and `Items` to find rows.",
@@ -7010,6 +7048,7 @@ public static class ExampleCatalog
                 new("A row's `data-key` is its key's text for a string, number or date key, and a made-up id such as "
                     + "`key-3` for any other key, when the text is empty, or when another key has it."),
             ],
+            Ready = new("[data-part=grid]", "the grid"),
             Target = new("table", "Trails"),
             Blocks = ["tb-data-grid"],
             DataParts =
@@ -7078,8 +7117,7 @@ public static class ExampleCatalog
                     + "`[data-part=group]` row whose `[data-part=group-toggle]` button opens or closes it.",
                 "A row's details button is named for the row: `GetByRole(AriaRole.Button, new() { Name = \"Details "
                     + "for Cedar Flats\" })`. Its `aria-controls` names the `[data-part=detail]` row it opens.",
-                "Without the helpers, wait for the table's `aria-busy` to clear, and for `data-ready` on "
-                    + "`[data-part=grid]` before clicking a row.",
+                "Without the helpers, wait for the table's `aria-busy` to clear before clicking a row.",
                 "Rows carry `data-key` and `data-selected`, a filtered column's header `data-filtered`, and cells "
                     + "`data-column`, the field's path such as "
                     + "`Shipping.City` unless the column has an `Id`. A pinned column's header and cells also carry "
@@ -7436,6 +7474,7 @@ public static class ExampleCatalog
                 "With `PageHref`, every item is already a link. Without it, the buttons do nothing until the page is "
                     + "interactive.",
             ],
+            Ready = new(".tb-pagination", "the navigation"),
             Target = new("navigation", "Trail reports"),
             Blocks = ["tb-pagination"],
             DataParts =
@@ -7513,6 +7552,7 @@ public static class ExampleCatalog
                 "The links are plain addresses with the section's id, so they already work, and open in a new tab with "
                     + "Ctrl or a middle click. Marking the section in view starts once the page is interactive.",
             ],
+            Ready = new(".tb-table-of-contents", "the navigation"),
             Target = new("navigation", "Trail guide"),
             Blocks = ["tb-table-of-contents"],
             DataParts =
@@ -7520,8 +7560,7 @@ public static class ExampleCatalog
                 new("link", "A link to one section."),
             ],
             TestingTip = "Scroll a section into view and check its link with `ToHaveAttributeAsync(\"aria-current\", "
-                + "\"location\")`. Wait first for `data-ready` on the `navigation`, which marks that its script is "
-                + "tracking the scroll.",
+                + "\"location\")`.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"guide-contents\"`, it counts `trailblazor.control.shown` as it "
@@ -7762,6 +7801,7 @@ public static class ExampleCatalog
             [
                 "No toast shows until the page is interactive, because they're shown from code.",
             ],
+            Ready = new("[data-part=toaster]", "the toast region"),
             Target = new("listitem") { Text = "Report saved", OpenedBy = new("button", "Save report") },
             Blocks = ["tb-toast", "tb-toaster"],
             DataParts =

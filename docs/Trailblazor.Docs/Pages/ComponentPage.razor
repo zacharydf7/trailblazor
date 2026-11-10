@@ -180,6 +180,14 @@
                     It has no role and name a test can single out, so find what it holds or what sits next to it.
                 </TbText>
             }
+            @if (example.Ready is { } ready)
+            {
+                <TbText>
+                    Once it's ready to use, it sets <code>data-ready</code> on @ready.Element. If a test doesn't
+                    use the Playwright helpers, wait for it first, as the
+                    <a href="guides/testing#waiting">testing guide</a> explains.
+                </TbText>
+            }
             @if (example.TestingTip is { } tip)
             {
                 <TbText>@DocsText.Render(tip)</TbText>

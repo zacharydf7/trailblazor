@@ -3,9 +3,10 @@
 @implements IAsyncDisposable
 
 @* The controls come first, so a keyboard user reaches the button that stops the slides before the slides. *@
+@* data-ready marks that focus inside pauses the slides, which tests wait for. *@
 <section @ref="_section" @attributes="AdditionalAttributes" aria-roledescription="carousel" aria-label="@AriaLabel"
-         style="@Style" class="@ClassNames.Join("tb-carousel", Class)" @onmouseenter="() => _hovered = true"
-         @onmouseleave="() => _hovered = false">
+         data-ready="@(_handle is null ? null : "")" style="@Style" class="@ClassNames.Join("tb-carousel", Class)"
+         @onmouseenter="() => _hovered = true" @onmouseleave="() => _hovered = false">
     <div data-part="controls" class="tb-carousel__controls">
         @if (AutoPlay is not null)
         {

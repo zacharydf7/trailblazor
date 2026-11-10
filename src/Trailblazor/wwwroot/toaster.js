@@ -70,6 +70,8 @@ export function attachToaster(toaster, events) {
     toaster.addEventListener('pointerleave', onPointerLeave);
     document.addEventListener('visibilitychange', updatePause);
     updatePause();
+    // Marks that F8 and the pause on hover or focus work, which tests wait for.
+    toaster.dataset.ready = '';
 
     return {
         // Runs after every render: shows or hides the toaster and keeps focus when the toast holding it closes.
