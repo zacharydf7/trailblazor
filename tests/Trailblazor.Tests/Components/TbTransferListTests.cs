@@ -55,6 +55,30 @@ public class TbTransferListTests : BunitContext
     }
 
     [Fact]
+    public async Task Option_ShouldMoveToTheOtherList_WhenDoubleClicked()
+    {
+        var cut = RenderCrew([Hikers[2]]);
+
+        await cut.FindAll("[data-part=available] [role=option]").Single(option => option.TextContent.Trim() == "Blake")
+            .DoubleClickAsync(new());
+        cut.Render(parameters => parameters.Add(list => list.Value, Changes[^1]));
+        await cut.FindAll("[data-part=chosen] [role=option]").Single(option => option.TextContent.Trim() == "Casey")
+            .DoubleClickAsync(new());
+
+        Assert.Equal([["Blake", "Casey"], ["Blake"]], Changes.Select(Names));
+    }
+
+    [Fact]
+    public async Task Option_ShouldStayInItsList_WhenDoubleClickedInAReadOnlyList()
+    {
+        var cut = RenderCrew([Hikers[2]], parameters => parameters.Add(list => list.ReadOnly, true));
+
+        await cut.Find("[data-part=available] [role=option]").DoubleClickAsync(new());
+
+        Assert.Empty(Changes);
+    }
+
+    [Fact]
     public async Task MoveBackAsync_ShouldReturnTheMarkedItems_WhenCalled()
     {
         var cut = RenderCrew([Hikers[0], Hikers[2]]);

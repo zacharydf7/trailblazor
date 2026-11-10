@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -35,6 +36,33 @@ public class TransferListTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(move).ToBeFocusedAsync();
         await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "On this trip" }).GetByRole(AriaRole.Option))
             .ToHaveTextAsync(["Blake", "Casey", "Emery"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Option_ShouldMoveToTheOtherList_WhenDoubleClicked(string browser)
+    {
+        var page = await OpenCrewAsync(browser);
+        var crew = page.GetByLabel("Crew");
+
+        await page.GetByRole(AriaRole.Listbox, new() { Name = "Hikers" })
+            .GetByRole(AriaRole.Option, new() { Name = "Avery" }).DblClickAsync();
+        await Expect(crew).ToHaveTextAsync("Avery, Blake, Emery");
+        await page.GetByRole(AriaRole.Listbox, new() { Name = "On this trip" })
+            .GetByRole(AriaRole.Option, new() { Name = "Blake" }).DblClickAsync();
+
+        await Expect(crew).ToHaveTextAsync("Avery, Emery");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task List_ShouldHaveNoActiveOption_WhenItsLastItemIsDoubleClickedAway(string browser)
+    {
+        var page = await OpenCrewAsync(browser);
+        var hikers = page.GetByRole(AriaRole.Listbox, new() { Name = "Hikers" });
+
+        await hikers.GetByRole(AriaRole.Option, new() { Name = "Jordan" }).DblClickAsync();
+
+        await Expect(page.GetByLabel("Crew")).ToHaveTextAsync("Blake, Emery, Jordan");
+        await Expect(hikers).Not.ToHaveAttributeAsync("aria-activedescendant", new Regex("."));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

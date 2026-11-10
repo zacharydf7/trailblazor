@@ -14,9 +14,18 @@ public partial class TbTransferList<TItem>
     private IReadOnlyList<TItem> _markedChosen = [];
     private string _searchAvailable = "";
     private string _searchChosen = "";
+    private readonly ItemHandlers<TItem, Func<Task>> _moveToChosen;
+    private readonly ItemHandlers<TItem, Func<Task>> _moveToAvailable;
 
-    /// <summary>Every item the lists can hold. The chosen items, in <c>Value</c>, are taken from these; a chosen value
-    /// that matches no item stays chosen, at the end, though neither list shows it.</summary>
+    /// <summary>Creates the transfer list.</summary>
+    public TbTransferList()
+    {
+        _moveToChosen = new(item => () => MoveToChosenAsync([item]));
+        _moveToAvailable = new(item => () => MoveToAvailableAsync([item]));
+    }
+
+    /// <summary>Every item the lists can hold, each one distinct. The chosen items, in <c>Value</c>, are taken from
+    /// these; a chosen value that matches no item stays chosen, at the end, though neither list shows it.</summary>
     [Parameter, EditorRequired]
     public IReadOnlyList<TItem> Items { get; set; } = [];
 

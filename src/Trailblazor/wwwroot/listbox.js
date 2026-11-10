@@ -14,6 +14,13 @@ export function attachListBox(listbox, events) {
     // Marks that the keys work, which tests wait for.
     listbox.dataset.ready = '';
     const unnamed = watchForUnnamedOptions(listbox);
+    // An option the server removes, such as one moved to another list, can't stay the active one.
+    const removals = new MutationObserver(() => {
+        if (active && !listbox.contains(active)) {
+            setActive(null);
+        }
+    });
+    removals.observe(listbox, { childList: true, subtree: true });
     const label = document.getElementById(listbox.getAttribute('aria-labelledby'));
     let active = null;
     // Where a range from a Shift+click starts.
@@ -192,6 +199,7 @@ export function attachListBox(listbox, events) {
     return {
         dispose() {
             unnamed.disconnect();
+            removals.disconnect();
             listbox.removeEventListener('pointerdown', onPointerDown);
             listbox.removeEventListener('click', onClick, { capture: true });
             listbox.removeEventListener('focus', onFocus);

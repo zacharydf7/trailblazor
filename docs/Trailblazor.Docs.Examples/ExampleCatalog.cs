@@ -5089,7 +5089,8 @@ public static class ExampleCatalog
             [
                 new("move-items", "Moving items", "`Items` holds every item, and `@bind-Value` the chosen ones, which "
                     + "keep the order of `Items`. Mark items in a list, then move them with the button beside it, or "
-                    + "move every item a list shows. `ItemText` gives each item's text, `Labels` the lists' titles, and "
+                    + "move every item a list shows. Double-clicking an item moves it to the other list. "
+                    + "`ItemText` gives each item's text, `Labels` the lists' titles, and "
                     + "`Searchable` a search box above each list, which then shows only the items whose text contains "
                     + "what's typed.", typeof(TransferListExample)),
             ],

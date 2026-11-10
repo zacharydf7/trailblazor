@@ -21,6 +21,7 @@ public class HandlerContractTests : BunitContext
         [typeof(TbTagInput)] = new() { ["Value"] = new[] { "Pine", "Cedar" } },
         [typeof(TbColorPicker)] = new() { ["Palette"] = new[] { "#336699", "#993366" } },
         [typeof(TbCarousel)] = new() { ["ChildContent"] = TwoSlides() },
+        [typeof(TbTransferList<string>)] = new() { ["Items"] = new[] { "Pine", "Cedar" } },
     };
 
     public HandlerContractTests() => this.AddTrailblazor();

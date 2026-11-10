@@ -4,6 +4,8 @@
 @inherits TbFieldBase<IReadOnlyList<TItem>>
 
 @{
+    _moveToChosen.KeepOnly(Items);
+    _moveToAvailable.KeepOnly(Items);
     var available = AvailableShown.ToList();
     var chosen = ChosenShown.ToList();
     var markedAvailable = Shown(_markedAvailable, available);
@@ -35,7 +37,9 @@
                                     Value="markedAvailable" ValueChanged="marked => _markedAvailable = marked">
                         @foreach (var item in available)
                         {
-                            <TbOption Value="item">@TextOf(item)</TbOption>
+                            <TbOption @key="item" Value="item" @ondblclick="_moveToChosen.For(item)">
+                                @TextOf(item)
+                            </TbOption>
                         }
                     </TbMultiListBox>
                 </div>
@@ -73,7 +77,9 @@
                                     ValueChanged="marked => _markedChosen = marked">
                         @foreach (var item in chosen)
                         {
-                            <TbOption Value="item">@TextOf(item)</TbOption>
+                            <TbOption @key="item" Value="item" @ondblclick="_moveToAvailable.For(item)">
+                                @TextOf(item)
+                            </TbOption>
                         }
                     </TbMultiListBox>
                 </div>
