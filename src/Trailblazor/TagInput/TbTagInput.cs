@@ -182,13 +182,14 @@ public partial class TbTagInput : IAsyncDisposable
     // A click with the pointer goes back to typing; Enter or Space on the button moves on to the next tag. The tag is
     // looked up by its key when the click arrives, since an earlier removal can shift its position.
     private Task OnRemoveClickAsync(string key, MouseEventArgs e) =>
-        RemoveAsync(Enumerable.Range(0, Tags.Count).FirstOrDefault(at => KeyOf(at) == key, -1),
-            e.Detail > 0 ? FocusInput : FocusNext);
+        RemoveAsync(IndexOf(key), e.Detail > 0 ? FocusInput : FocusNext);
 
     // A tag's key is its text and how many times the same text comes before it, since a bound value can repeat a tag.
     private string KeyOf(int at) => $"{Tags[at]}\u001f{Tags.Take(at).Count(tag => tag == Tags[at])}";
 
-    private Task OnRemoveKeyAsync(TagRemoveEventArgs e) => RemoveAsync(e.Index, e.Focus);
+    private int IndexOf(string key) => Enumerable.Range(0, Tags.Count).FirstOrDefault(at => KeyOf(at) == key, -1);
+
+    private Task OnRemoveKeyAsync(TagRemoveEventArgs e) => RemoveAsync(IndexOf(e.Key), e.Focus);
 
     private async Task RemoveAsync(int index, string focus)
     {

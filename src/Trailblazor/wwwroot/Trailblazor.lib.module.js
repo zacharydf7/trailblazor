@@ -111,7 +111,7 @@ function registerEvents(blazor) {
     });
     blazor.registerCustomEventType('tbtagremove', {
         browserEventName: 'tb-tag-remove',
-        createEventArgs: event => ({ index: event.detail.index, focus: event.detail.focus }),
+        createEventArgs: event => ({ key: event.detail.key, focus: event.detail.focus }),
     });
     blazor.registerCustomEventType('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
 

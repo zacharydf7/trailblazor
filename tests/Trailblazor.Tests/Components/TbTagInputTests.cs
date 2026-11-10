@@ -173,12 +173,24 @@ public class TbTagInputTests : BunitContext
         int focused)
     {
         var cut = RenderTags(["Shade", "Water", "Views"]);
+        var key = cut.FindAll("[data-part=remove]")[index].GetAttribute("data-key")!;
 
-        await cut.Find("input").TriggerEventAsync("ontbtagremove",
-            new TagRemoveEventArgs { Index = index, Focus = focus });
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = key, Focus = focus });
 
         Assert.Equal(2, Changes.Single().Count);
         cut.WaitForAssertion(() => Assert.Equal(focused, _handle.VerifyInvoke("focusTag").Arguments[0]));
+    }
+
+    [Fact]
+    public async Task RemoveEvent_ShouldRemoveOnlyTheNamedTag_WhenTheSameKeyArrivesTwice()
+    {
+        var cut = RenderTags(["Shade", "Water", "Views"]);
+        var key = cut.FindAll("[data-part=remove]")[1].GetAttribute("data-key")!;
+
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = key, Focus = "next" });
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = key, Focus = "next" });
+
+        Assert.Equal(["Shade", "Views"], Changes.Single());
     }
 
     [Fact]
@@ -202,7 +214,7 @@ public class TbTagInputTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=remove]"));
         Assert.Null(cut.Find("input").GetAttribute("aria-describedby"));
         await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().TagInput("Features").AddAsync("Water"));
-        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Index = 0 });
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = "Shade\u001f0" });
         Assert.Empty(Changes);
     }
 

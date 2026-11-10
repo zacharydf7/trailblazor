@@ -182,8 +182,8 @@ Trailblazor.TagInputLabels.TooMany.init -> void
 Trailblazor.TagRemoveEventArgs
 Trailblazor.TagRemoveEventArgs.Focus.get -> string!
 Trailblazor.TagRemoveEventArgs.Focus.set -> void
-Trailblazor.TagRemoveEventArgs.Index.get -> int
-Trailblazor.TagRemoveEventArgs.Index.set -> void
+Trailblazor.TagRemoveEventArgs.Key.get -> string!
+Trailblazor.TagRemoveEventArgs.Key.set -> void
 Trailblazor.TagRemoveEventArgs.TagRemoveEventArgs() -> void
 const Trailblazor.TbStrings.PopconfirmCancel = "Popconfirm.Cancel" -> string!
 const Trailblazor.TbStrings.PopconfirmConfirm = "Popconfirm.Confirm" -> string!

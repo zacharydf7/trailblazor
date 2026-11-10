@@ -12,8 +12,10 @@ public sealed class TagAddEventArgs : EventArgs
 /// normally handle it.</summary>
 public sealed class TagRemoveEventArgs : EventArgs
 {
-    /// <summary>The tag's position, from 0.</summary>
-    public int Index { get; set; }
+    /// <summary>The tag's key from its remove button's <c>data-key</c>, which finds the tag even after an earlier
+    /// removal has moved it, and a key whose tag is already gone removes nothing. Neither holds when another tag has
+    /// the same text.</summary>
+    public string Key { get; set; } = "";
 
     /// <summary>Where focus goes once the tag is gone: <c>"previous"</c>, <c>"next"</c> or <c>"input"</c>.</summary>
     public string Focus { get; set; } = "input";

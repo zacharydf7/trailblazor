@@ -3,8 +3,10 @@
 // as an event on the input, which a test can raise the same way.
 const add = (input, text) =>
     input.dispatchEvent(new CustomEvent('tb-tag-add', { bubbles: true, detail: { text } }));
-const remove = (input, index, focus) =>
-    input.dispatchEvent(new CustomEvent('tb-tag-remove', { bubbles: true, detail: { index, focus } }));
+// A removal names its tag by key, as a click does, since an earlier removal not yet rendered can shift its position.
+const remove = (input, button, focus) =>
+    input.dispatchEvent(new CustomEvent('tb-tag-remove',
+        { bubbles: true, detail: { key: button.dataset.key, focus } }));
 
 export function createTagInput(input) {
     const field = input.closest('[data-part="control"]');
@@ -47,7 +49,7 @@ export function createTagInput(input) {
             // WebKit's Windows and Linux ports would otherwise go back a page.
             event.preventDefault();
             startRemoval();
-            remove(input, buttons().length - 1, 'input');
+            remove(input, buttons().at(-1), 'input');
         } else if (event.key === backKey() && input.selectionStart === 0 && input.selectionEnd === 0
             && buttons().length > 0) {
             event.preventDefault();
@@ -70,11 +72,11 @@ export function createTagInput(input) {
             End: () => input.focus(),
             Backspace: () => {
                 startRemoval();
-                remove(input, index, 'previous');
+                remove(input, button, 'previous');
             },
             Delete: () => {
                 startRemoval();
-                remove(input, index, 'next');
+                remove(input, button, 'next');
             },
         };
         if (moves[event.key]) {

@@ -360,4 +360,21 @@ public class TagInputLateRenderTests(BrowserFixture fixture) : BrowserTest(fixtu
         Assert.False(await features.Input.EvaluateAsync<bool>(
             "input => input.closest('[data-part=control]').contains(document.activeElement)"));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TagInput_ShouldRemoveOnlyTheFocusedTag_WhenDeleteIsPressedTwiceBeforeTheRender(string browser)
+    {
+        var features = await OpenWithThreeTagsAsync(browser);
+        var page = features.Input.Page;
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove Water", Exact = true })).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(features.Tags).ToHaveTextAsync(["Shade", "Views"]);
+        await AfterTheRemovalAsync(page);
+        await Expect(features.Tags).ToHaveTextAsync(["Shade", "Views"]);
+    }
 }
