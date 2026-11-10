@@ -21,6 +21,9 @@ public partial class TbTagInput : IAsyncDisposable
     private int? _focusAfter;
     private bool _disposed;
     private readonly ItemHandlers<string, Func<MouseEventArgs, Task>> _remove;
+    private readonly List<int> _ids = [];
+    private List<string> _idsFor = [];
+    private int _nextId;
 
     /// <summary>Creates the tag input.</summary>
     public TbTagInput() => _remove = new(key => args => OnRemoveClickAsync(key, args));
@@ -80,7 +83,7 @@ public partial class TbTagInput : IAsyncDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        _remove.KeepOnly(Enumerable.Range(0, Tags.Count).Select(KeyOf));
+        _remove.KeepOnly(_ids.Select(id => id.ToString(CultureInfo.InvariantCulture)));
         if (!RendererInfo.IsInteractive)
         {
             return;
@@ -146,6 +149,9 @@ public partial class TbTagInput : IAsyncDisposable
         if (added.Count > 0)
         {
             Telemetry.Used(TelemetryName, "add");
+            SyncIds();
+            _ids.AddRange(added.Select(_ => _nextId++));
+            _idsFor = [.. tags];
             await SetValueAsync(tags);
             Announcer.Polite(string.Join(", ", added.Select(tag => Format(Labels?.Added
                 ?? Localizer[TbStrings.TagInputAdded], tag))));
@@ -184,10 +190,25 @@ public partial class TbTagInput : IAsyncDisposable
     private Task OnRemoveClickAsync(string key, MouseEventArgs e) =>
         RemoveAsync(IndexOf(key), e.Detail > 0 ? FocusInput : FocusNext);
 
-    // A tag's key is its text and how many times the same text comes before it, since a bound value can repeat a tag.
-    private string KeyOf(int at) => $"{Tags[at]}\u001f{Tags.Take(at).Count(tag => tag == Tags[at])}";
+    // A tag keeps its id through the field's own changes, since a bound value can repeat a tag's text. Any other change
+    // to the tags, such as a value the app replaced or changed in place, gives every tag a new id.
+    private void SyncIds()
+    {
+        if (!Tags.SequenceEqual(_idsFor))
+        {
+            _ids.Clear();
+            _ids.AddRange(Tags.Select(_ => _nextId++));
+            _idsFor = [.. Tags];
+        }
+    }
 
-    private int IndexOf(string key) => Enumerable.Range(0, Tags.Count).FirstOrDefault(at => KeyOf(at) == key, -1);
+    private string KeyOf(int at) => _ids[at].ToString(CultureInfo.InvariantCulture);
+
+    private int IndexOf(string key)
+    {
+        SyncIds();
+        return Enumerable.Range(0, Tags.Count).FirstOrDefault(at => KeyOf(at) == key, -1);
+    }
 
     private Task OnRemoveKeyAsync(TagRemoveEventArgs e) => RemoveAsync(IndexOf(e.Key), e.Focus);
 
@@ -201,6 +222,8 @@ public partial class TbTagInput : IAsyncDisposable
         var tag = Tags[index];
         var tags = Tags.Where((_, at) => at != index).ToList();
         Telemetry.Used(TelemetryName, "remove");
+        _ids.RemoveAt(index);
+        _idsFor = [.. tags];
         await SetValueAsync(tags);
         Announcer.Polite(Format(Labels?.Removed ?? Localizer[TbStrings.TagInputRemoved], tag));
         // -1 is the input, which takes focus when no tag is left in that direction.

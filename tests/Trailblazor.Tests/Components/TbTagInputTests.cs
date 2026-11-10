@@ -194,6 +194,71 @@ public class TbTagInputTests : BunitContext
     }
 
     [Fact]
+    public async Task RemoveEvent_ShouldRemoveOnlyTheNamedCopy_WhenTheValueRepeatsATagAndItsKeyArrivesTwice()
+    {
+        var cut = RenderTags(["Shade", "Water", "Shade"]);
+        var key = cut.FindAll("[data-part=remove]")[0].GetAttribute("data-key")!;
+
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = key });
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = key });
+
+        Assert.Equal(["Water", "Shade"], Changes.Single());
+    }
+
+    [Fact]
+    public async Task RemoveEvent_ShouldFindTheLaterCopy_WhenAnEarlierCopyOfARepeatedTagWasRemovedFirst()
+    {
+        var cut = RenderTags(["Shade", "Water", "Shade"]);
+        var keys = cut.FindAll("[data-part=remove]").Select(button => button.GetAttribute("data-key")!).ToList();
+
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = keys[0] });
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = keys[2] });
+
+        Assert.Equal(["Water"], Changes.Last());
+    }
+
+    [Fact]
+    public async Task RemoveEvent_ShouldFindTheLaterCopy_WhenTheAppPassesBackACopyOfTheValue()
+    {
+        var cut = RenderTags(["Shade", "Water", "Shade"]);
+        var keys = cut.FindAll("[data-part=remove]").Select(button => button.GetAttribute("data-key")!).ToList();
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = keys[0] });
+        cut.Render(parameters => parameters.Add(field => field.Value, Changes.Last().ToList()));
+
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = keys[2] });
+
+        Assert.Equal(["Water"], Changes.Last());
+    }
+
+    [Fact]
+    public async Task RemoveEvent_ShouldRemoveNothingAndRenderTheNewTag_WhenTheAppChangedTheListInPlace()
+    {
+        var tags = new List<string> { "Shade", "Water" };
+        var cut = RenderTags(tags);
+        var key = cut.FindAll("[data-part=remove]")[0].GetAttribute("data-key")!;
+        tags.RemoveAt(0);
+        tags.Add("Views");
+        cut.Render(parameters => parameters.Add(field => field.Value, tags));
+
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = key });
+
+        Assert.Empty(Changes);
+        Assert.Equal(["Water", "Views"], cut.FindAll(".tb-chip__label").Select(label => label.TextContent));
+    }
+
+    [Fact]
+    public async Task RemoveEvent_ShouldRemoveNothing_WhenTheAppReplacedTheValueSinceTheKeyWasSent()
+    {
+        var cut = RenderTags(["Shade", "Water"]);
+        var key = cut.FindAll("[data-part=remove]")[0].GetAttribute("data-key")!;
+        cut.Render(parameters => parameters.Add(field => field.Value, ["Shade", "Views"]));
+
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = key });
+
+        Assert.Empty(Changes);
+    }
+
+    [Fact]
     public async Task RemoveAsync_ShouldMoveOnToTheNextTag_WhenTheButtonIsPressedFromTheKeyboard()
     {
         var cut = RenderTags(["Shade", "Water"]);
@@ -214,7 +279,7 @@ public class TbTagInputTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=remove]"));
         Assert.Null(cut.Find("input").GetAttribute("aria-describedby"));
         await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().TagInput("Features").AddAsync("Water"));
-        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = "Shade\u001f0" });
+        await cut.Find("input").TriggerEventAsync("ontbtagremove", new TagRemoveEventArgs { Key = "0" });
         Assert.Empty(Changes);
     }
 

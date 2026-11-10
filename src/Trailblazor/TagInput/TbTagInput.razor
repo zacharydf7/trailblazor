@@ -5,6 +5,7 @@
 @inject JsModuleLoader Modules
 
 @Layout(Classes, @<text>
+    @{ SyncIds(); }
     @if (Tags.Count > 0)
     {
         @* Safari drops a list's role once its bullets are gone, so the role is spelled out. *@
