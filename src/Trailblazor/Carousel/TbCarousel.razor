@@ -33,7 +33,7 @@
                 var at = index;
                 <button type="button" data-part="pick" class="tb-carousel__pick" aria-controls="@_slidesId"
                         aria-label="@Format(Text(Labels?.Slide, TbStrings.CarouselSlide), at + 1)"
-                        aria-current="@(at == Current ? "true" : null)" @onclick="() => GoToAsync(at)"></button>
+                        aria-current="@(at == Current ? "true" : null)" @onclick="_goTo.For(at)"></button>
             }
         </div>
     }

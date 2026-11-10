@@ -26,6 +26,10 @@ public partial class TbCarousel
     private ITimer? _timer;
     private TimeSpan _timerInterval;
     private bool _disposed;
+    private readonly ItemHandlers<int, Func<Task>> _goTo;
+
+    /// <summary>Creates the carousel.</summary>
+    public TbCarousel() => _goTo = new(index => () => GoToAsync(index));
 
     /// <summary>Names the carousel for screen readers, such as "Trail photos". Required.</summary>
     [Parameter, EditorRequired]

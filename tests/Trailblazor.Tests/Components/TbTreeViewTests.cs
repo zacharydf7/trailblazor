@@ -320,6 +320,22 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public async Task Toggle_ShouldTakeASecondClick_WhenFoundBeforeTheChildrenLoaded()
+    {
+        var load = new TaskCompletionSource<IEnumerable<Place>>();
+        var cut = RenderPlaces([new(1, "North")], parameters => parameters
+            .Add(tree => tree.LoadChildren, (_, _) => load.Task), nested: false);
+        var toggle = Row(cut, "1").QuerySelector("[data-part=toggle]")!;
+
+        toggle.Click();
+        await cut.InvokeAsync(() => load.SetResult([new(2, "Ridge")]));
+        cut.WaitForAssertion(() => Assert.Equal(["North", "Ridge"], Texts(cut)));
+        toggle.Click();
+
+        Assert.Equal(["North"], Texts(cut));
+    }
+
+    [Fact]
     public async Task Expand_ShouldLoadAgain_WhenTheRowReopensBeforeItsCancelledLoadEnds()
     {
         var loads = new List<TaskCompletionSource<IEnumerable<Place>>>();

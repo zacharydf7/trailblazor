@@ -69,7 +69,7 @@
                                                 aria-describedby="@(DayContent is null ? null : DayContentId(date))"
                                                 aria-disabled="@(IsUnavailable(date) ? "true" : null)"
                                                 aria-current="@(IsToday(date, DayOf) ? "date" : null)" disabled="@Disabled"
-                                                class="@CellClass(date, DayOf)" @onclick="() => PickAsync(date)">
+                                                class="@CellClass(date, DayOf)" @onclick="_pick.For(date)">
                                             <span class="tb-calendar__number">@date.Day.ToString(DateCulture)</span>
                                             @if (DayContent is not null)
                                             {
@@ -106,7 +106,7 @@
                                             aria-disabled="@(IsUnavailableMonth(month) ? "true" : null)"
                                             aria-current="@(IsToday(month, FirstOfMonth) ? "true" : null)"
                                             disabled="@Disabled" class="@CellClass(month, FirstOfMonth)"
-                                            @onclick="() => PickAsync(month)">
+                                            @onclick="_pick.For(month)">
                                         @DateCulture.DateTimeFormat.GetAbbreviatedMonthName(month.Month)
                                     </button>
                                 </td>
@@ -133,7 +133,7 @@
                                                 aria-disabled="@(IsUnavailableYear(year) ? "true" : null)"
                                                 aria-current="@(IsToday(first, YearOf) ? "true" : null)"
                                                 disabled="@Disabled" class="@CellClass(first, YearOf)"
-                                                @onclick="() => PickAsync(first)">
+                                                @onclick="_pick.For(first)">
                                             @year.ToString(DateCulture)
                                         </button>
                                     </td>

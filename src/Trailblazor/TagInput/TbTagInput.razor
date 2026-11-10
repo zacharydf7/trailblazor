@@ -21,7 +21,7 @@
                     {
                         @* The arrow keys reach the remove buttons from the input, so Tab passes over them. *@
                         <button type="button" data-part="remove" tabindex="-1" aria-label="@Format(RemoveFormat, Tags[at])"
-                                class="tb-chip__remove" @onclick="args => OnRemoveClickAsync(at, args)">
+                                class="tb-chip__remove" @onclick="_remove.For(at)">
                             <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
                         </button>
                     }

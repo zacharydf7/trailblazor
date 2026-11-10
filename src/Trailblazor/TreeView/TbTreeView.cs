@@ -62,6 +62,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private IJSObjectReference? _handle;
     private DotNetObjectReference<TreeViewEvents>? _events;
     private bool _disposed;
+    private readonly ItemHandlers<object, Func<MouseEventArgs, Task>> _rowClick;
+    private readonly ItemHandlers<object, Func<Task>> _rowDoubleClick;
+    private readonly ItemHandlers<object, Func<Task>> _toggle;
+    private readonly ItemHandlers<object, Func<Task>> _toggleCheck;
     private ControlTelemetry? _telemetry;
     private object? _builtFor;
     private object? _flattenedFor;
@@ -73,6 +77,15 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // The open rows before the parent gave new ExpandedKeys, so the declared rows that changed can raise
     // ExpandedChanged.
     private HashSet<object>? _expandedByParent;
+
+    /// <summary>Creates the tree view.</summary>
+    public TbTreeView()
+    {
+        _rowClick = new(key => args => OnNodeAsync(key, node => OnRowClickAsync(node, args)), byValue: true);
+        _rowDoubleClick = new(key => () => OnNodeAsync(key, OnRowDoubleClickAsync), byValue: true);
+        _toggle = new(key => () => OnNodeAsync(key, ToggleAsync), byValue: true);
+        _toggleCheck = new(key => () => OnNodeAsync(key, ToggleCheckAsync), byValue: true);
+    }
 
     /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item. The rows are built again when this
     /// is a new collection; call <see cref="RefreshAsync"/> after changing it, or the children it holds, in place.
@@ -788,6 +801,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     {
         BuildNodes();
         _ids.Keep(_nodes.Keys.ToHashSet());
+        _rowClick.KeepOnly(_nodes.ContainsKey);
+        _rowDoubleClick.KeepOnly(_nodes.ContainsKey);
+        _toggle.KeepOnly(_nodes.ContainsKey);
+        _toggleCheck.KeepOnly(_nodes.ContainsKey);
         _builtFor = BuiltFor;
     }
 
@@ -1219,6 +1236,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // A parent row that can't be selected opens or closes on a click, as a sidebar's heading does. A double-click's
     // second click and its dblclick leave it alone, so the row toggles once.
     private bool TogglesOnClick(TreeNode<TItem> node) => node.HasChildren && !CanSelect(node) && !IsItemDisabled(node);
+
+    // A row's handlers find its node as they run, since a rebuild, such as after a lazy load, makes new nodes.
+    private Task OnNodeAsync(object key, Func<TreeNode<TItem>, Task> handle) =>
+        _nodes.TryGetValue(key, out var node) ? handle(node) : Task.CompletedTask;
 
     private async Task OnRowClickAsync(TreeNode<TItem> node, MouseEventArgs args)
     {

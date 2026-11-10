@@ -20,6 +20,10 @@ public partial class TbColorPicker : IAsyncDisposable
     private byte _alpha = 255;
     private bool _canPickColor;
     private bool _disposed;
+    private readonly ItemHandlers<string, Func<Task>> _chooseSwatch;
+
+    /// <summary>Creates the color picker.</summary>
+    public TbColorPicker() => _chooseSwatch = new(swatch => () => ChooseSwatchAsync(swatch));
 
     /// <summary>Colors offered as swatches, such as the brand's or the document's, as <c>#rrggbb</c>, <c>#rgb</c> or
     /// <c>rgb()</c>.</summary>

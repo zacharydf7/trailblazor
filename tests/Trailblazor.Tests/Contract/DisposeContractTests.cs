@@ -49,7 +49,7 @@ public class DisposeContractTests : BunitContext
     {
         var services = WatchedServices();
         var handlers = Handlers(services);
-        var cut = Render<DynamicComponent>(parameters => Host(parameters, component));
+        var cut = Render<DynamicComponent>(parameters => Host(parameters, component, Parameters));
         // Time moves on while the controls are used, so work that waits on it, such as a debounce, finishes.
         var use = ValueContractTests.UseEveryControlAsync(cut);
         for (var second = 0; !use.IsCompleted; second++)
@@ -80,16 +80,19 @@ public class DisposeContractTests : BunitContext
         Assert.Null(Renderer.UnhandledException.IsCompleted ? await Renderer.UnhandledException : null);
     }
 
-    private void Host(ComponentParameterCollectionBuilder<DynamicComponent> parameters, Type component)
+    // Renders the component, inside its parent when it only renders inside one, with the parameters parametersOf gives
+    // each.
+    internal static void Host(ComponentParameterCollectionBuilder<DynamicComponent> parameters, Type component,
+        Func<Type, Dictionary<string, object>> parametersOf)
     {
-        var values = Parameters(component);
+        var values = parametersOf(component);
         var shown = component;
         if (component.IsGenericType && Parents.TryGetValue(component.GetGenericTypeDefinition(), out var parent)
             || Parents.TryGetValue(component, out parent))
         {
             var child = values;
             shown = Close(parent);
-            values = Parameters(shown);
+            values = parametersOf(shown);
             values["ChildContent"] = (RenderFragment)(builder =>
             {
                 builder.OpenComponent(0, component);

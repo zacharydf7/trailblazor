@@ -28,8 +28,12 @@ public partial class TbCalendar<TDate> : IAsyncDisposable where TDate : struct
     // day.
     private int _shown;
     private bool _disposed;
+    private readonly ItemHandlers<DateOnly, Func<Task>> _pick;
 
     private enum View { Days, Months, Years }
+
+    /// <summary>Creates the calendar.</summary>
+    public TbCalendar() => _pick = new(date => () => PickAsync(date));
 
     /// <summary>The month shown, as any date in it. It defaults to the value's month, or else today's, and follows the
     /// user as they move to other months; bind it with <c>@bind-Month</c> to load what <see cref="DayContent"/> shows.

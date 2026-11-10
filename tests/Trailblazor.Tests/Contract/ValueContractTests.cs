@@ -23,7 +23,7 @@ public class ValueContractTests : BunitContext
     private static readonly HashSet<string> NoSample = ["TbFileUpload.Value"];
 
     // Fields whose controls come from their children, items or presets get one of each, so those controls are used too.
-    private static readonly Dictionary<Type, (string Name, object Value)> Content = new()
+    internal static readonly Dictionary<Type, (string Name, object Value)> Content = new()
     {
         [typeof(TbSelect<string>)] = Child<TbOption<string>>(),
         [typeof(TbMultiSelect<string>)] = Child<TbOption<string>>(),

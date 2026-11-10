@@ -503,6 +503,39 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task Select_ShouldTakeAFoundCheckboxTwice_WhenAnotherRowWasSelectedFirst()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        var first = Row(cut, "1").QuerySelector("input")!;
+        var second = Row(cut, "2").QuerySelector("input")!;
+
+        await first.ChangeAsync(new ChangeEventArgs { Value = true });
+        await second.ChangeAsync(new ChangeEventArgs { Value = true });
+        await second.ChangeAsync(new ChangeEventArgs { Value = false });
+
+        Assert.Equal([1], selected.Select(trail => trail.Id));
+    }
+
+    [Fact]
+    public async Task Select_ShouldChooseTheNewItem_WhenTheParentPassedANewOneWithTheSameKey()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        var box = Row(cut, "1").QuerySelector("input")!;
+        var renamed = Trails[0] with { Name = "Pine Hollow Loop" };
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, [renamed, .. Trails.Skip(1)]));
+        await box.ChangeAsync(new ChangeEventArgs { Value = true });
+
+        Assert.Same(renamed, Assert.Single(selected));
+    }
+
+    [Fact]
     public async Task ShiftClick_ShouldAddTheRowAndKeepItSelected_WhenTheParentSetTheSelectionSinceTheLastChoice()
     {
         IReadOnlyCollection<Trail> selected = [];

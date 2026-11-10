@@ -65,12 +65,33 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private ItemMover<TItem>? _mover;
     private bool _reorderable;
     private bool _disposed;
+    private readonly ItemHandlers<TbColumn<TItem>, Func<MouseEventArgs, Task>> _sort;
+    private readonly ItemHandlers<object, Func<RowClickEventArgs, Task>> _rowClick;
+    private readonly ItemHandlers<object, Func<RowExtendEventArgs, Task>> _rowExtend;
+    private readonly ItemHandlers<object, Func<Task>> _choose;
+    private readonly ItemHandlers<(object, TbColumn<TItem>), Func<Task>> _startEdit;
+    private readonly ItemHandlers<(object, TbColumn<TItem>), Func<KeyboardEventArgs, Task>> _cellKey;
+    private readonly ItemHandlers<GroupKey, Action> _toggleGroup;
+    private readonly ItemHandlers<TbColumn<TItem>, Func<KeyboardEventArgs, Task>> _applyOnEnter;
     private bool _columnsChanged;
     private ControlTelemetry? _telemetry;
     private int _columnVersion;
     private int _rowVersion;
     private object? _arrangedFor;
     private object? _rowOptions;
+
+    /// <summary>Creates the data grid.</summary>
+    public TbDataGrid()
+    {
+        _sort = new(column => args => SortAsync(column, args));
+        _rowClick = new(key => args => OnRowAsync(key, item => OnRowClickedAsync(item, args)), byValue: true);
+        _rowExtend = new(key => args => OnRowAsync(key, item => OnRowExtendedAsync(item, args)), byValue: true);
+        _choose = new(key => () => OnRowAsync(key, ChooseAsync), byValue: true);
+        _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
+        _cellKey = new(cell => args => OnRowAsync(cell.Item1, item => OnCellKeyAsync(item, cell.Item2, args)));
+        _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
+        _applyOnEnter = new(column => args => ApplyOnEnterAsync(column, args));
+    }
 
     /// <summary>The rows, held in memory. The grid filters, sorts and pages them itself, again when this is a new
     /// collection; call <see cref="RefreshAsync"/> after changing the same collection or its items in place.</summary>
@@ -1012,6 +1033,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         if (!_disposed && _columns.Remove(column))
         {
+            _sort.KeepOnly(_columns.Contains);
+            _applyOnEnter.KeepOnly(_columns.Contains);
             _columnVersion++;
             _rowVersion++;
             StateHasChanged();
@@ -1352,12 +1375,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return opened;
     }
 
-    private void ToggleGroup(GroupHeading group)
+    private void ToggleGroup(GroupKey key)
     {
-        Telemetry.Used(TelemetryName, group.Open ? "collapse" : "expand");
-        if (!_closedGroups.Remove(group.Key))
+        Telemetry.Used(TelemetryName, _closedGroups.Contains(key) ? "expand" : "collapse");
+        if (!_closedGroups.Remove(key))
         {
-            _closedGroups.Add(group.Key);
+            _closedGroups.Add(key);
         }
 
         Arrange(force: true);
@@ -1409,6 +1432,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         _rows = rows;
         _lines = lines;
+        _rowClick.KeepOnly(shown.Contains);
+        _rowExtend.KeepOnly(shown.Contains);
+        _choose.KeepOnly(shown.Contains);
+        _startEdit.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
+        _cellKey.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
+        var groups = lines.Where(line => line.Group is not null).Select(line => line.Group!.Key).ToHashSet();
+        _toggleGroup.KeepOnly(groups.Contains);
         _ids.Keep(shown);
         foreach (var gone in _rowRefs.Keys.Where(key => !shown.Contains(key)).ToList())
         {
@@ -1670,6 +1700,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _rangeAnchor = key;
         _rangeBase = [.. _selection.Values];
     }
+
+    // A row's handlers find its item by key as they run, since the parent can pass a new instance with the same key.
+    private Task OnRowAsync(object key, Func<TItem, Task> handle) =>
+        _rows.FindIndex(row => Equals(KeyOf(row), key)) is var at and >= 0 ? handle(_rows[at]) : Task.CompletedTask;
 
     private async Task ChooseAsync(TItem item)
     {

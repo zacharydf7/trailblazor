@@ -29,9 +29,9 @@
                    posts. *@
                 <input @attributes="InputAttributes" type="radio" name="@RadioGroupName" value="@value"
                        data-part="input" checked="@(Value == value)" disabled="@(ReadOnly && Value != value)"
-                       class="@ClassNames.Join("tb-rating__input", Classes?.Input)" @onclick="() => ClearAsync(value)"
-                       @onkeyup="args => SpaceAsync(args, value)" @onkeyup:preventDefault="@ClearsOn(value)"
-                       @onchange="() => SetValueAsync(value)" />
+                       class="@ClassNames.Join("tb-rating__input", Classes?.Input)" @onclick="_clear.For(value)"
+                       @onkeyup="_space.For(value)" @onkeyup:preventDefault="@ClearsOn(value)"
+                       @onchange="_choose.For(value)" />
                 <TbIcon Icon="@(Icon ?? BuiltInIcons.Star)" class="tb-rating__icon" />
                 <span class="tb-visually-hidden">@NameOf(value)</span>
             </label>
@@ -42,6 +42,17 @@
 
 @code {
     private ElementReference _group;
+    private readonly ItemHandlers<int, Func<Task>> _clear;
+    private readonly ItemHandlers<int, Func<KeyboardEventArgs, Task>> _space;
+    private readonly ItemHandlers<int, Func<Task>> _choose;
+
+    /// <summary>Creates the rating.</summary>
+    public TbRating()
+    {
+        _clear = new(star => () => ClearAsync(star));
+        _space = new(star => args => SpaceAsync(args, star));
+        _choose = new(star => () => SetValueAsync(star));
+    }
 
     /// <summary>How many stars there are, from 1. Defaults to 5.</summary>
     [Parameter]

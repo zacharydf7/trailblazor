@@ -21,7 +21,7 @@
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
                     class="@ClassNames.Join("tb-tabs__tab", tab.HeaderClass)"
-                    @onclick="args => ClickAsync(tab, args)">@tab.HeaderContent</button>
+                    @onclick="_click.For(tab)">@tab.HeaderContent</button>
         }
     </div>
     @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
@@ -34,6 +34,7 @@
     private IJSObjectReference? _handle;
     private DotNetObjectReference<TabOrder>? _order;
     private bool _disposed;
+    private readonly ItemHandlers<TbTab, Func<MouseEventArgs, Task>> _click;
     private int _active;
     private int? _lastActiveIndex;
     private bool _indexFromParent;
@@ -43,6 +44,9 @@
     private string? _activeKey;
     private string? _lastActiveKey;
     private bool _selectsByKey;
+
+    /// <summary>Creates the tabs.</summary>
+    public TbTabs() => _click = new(tab => args => ClickAsync(tab, args));
 
     /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. A new index
     /// from the parent applies a render later, once the tabs rendered along with it have registered, and one set along
@@ -229,6 +233,7 @@
     {
         var index = _tabs.IndexOf(tab);
         _tabs.Remove(tab);
+        _click.KeepOnly(_tabs.Contains);
         // A removed tab can't stay selected while the parent's index settles.
         if (tab == _settled)
         {

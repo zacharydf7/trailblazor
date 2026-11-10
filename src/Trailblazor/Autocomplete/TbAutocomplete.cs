@@ -28,6 +28,10 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
     private bool _lastOpen;
     private bool _openFromParent;
     private bool _disposed;
+    private readonly ItemHandlers<TValue, Func<Task>> _choose;
+
+    /// <summary>Creates the autocomplete.</summary>
+    public TbAutocomplete() => _choose = new(item => () => ChooseAsync(item));
 
     /// <summary>Finds the suggestions for what the user typed. It runs once the user stops typing for
     /// <see cref="DebounceDelay"/>, and the token is canceled when the user types again.</summary>
@@ -296,6 +300,7 @@ public partial class TbAutocomplete<TValue> : IAsyncDisposable
 
             token.ThrowIfCancellationRequested();
             _results = [.. MaxItems is int most ? found.Take(most) : found];
+            _choose.KeepOnly(_results);
             _searching = false;
             _searched = true;
             // Only a new count is spoken, so typing doesn't bring an announcement with every key.

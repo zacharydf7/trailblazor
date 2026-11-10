@@ -34,7 +34,7 @@
             {
                 var item = _results[index];
                 <div id="@($"{ListboxId}-{index}")" role="option" data-part="option" class="tb-select__option"
-                     aria-selected="@(IsChosen(item) ? "true" : "false")" @onclick="() => ChooseAsync(item)">
+                     aria-selected="@(IsChosen(item) ? "true" : "false")" @onclick="_choose.For(item)">
                     @if (ItemTemplate is null)
                     {
                         @TextOf(item)

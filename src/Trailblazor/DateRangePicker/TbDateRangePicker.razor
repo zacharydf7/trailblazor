@@ -133,7 +133,7 @@
                                                 aria-label="@DayName(date)"
                                                 aria-disabled="@(IsUnavailable(date) ? "true" : null)"
                                                 aria-current="@(date == Today ? "date" : null)" class="@DayClass(date)"
-                                                @onclick="() => PickAsync(date)">
+                                                @onclick="_pick.For(date)">
                                             @date.Day.ToString(DateCulture)
                                         </button>
                                     </td>

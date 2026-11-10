@@ -79,7 +79,7 @@
                             @if (column.CanSort)
                             {
                                 <button type="button" data-part="sort" class="tb-data-grid__sort"
-                                        @onkeydown="OnSortKeyDown" @onclick="args => SortAsync(column, args)">
+                                        @onkeydown="OnSortKeyDown" @onclick="_sort.For(column)">
                                     <span>@column.Heading</span>
                                     @if (sort is not null)
                                     {
@@ -231,8 +231,8 @@
              data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "" : null)"
              @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is { } leaving ? LeftHandler(leaving)
                                  : null)!)"
-             @ontbrowclick="args => OnRowClickedAsync(item, args)"
-             @ontbrowextend="args => OnRowExtendedAsync(item, args)"
+             @ontbrowclick="_rowClick.For(key)"
+             @ontbrowextend="_rowExtend.For(key)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
                         Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, rowClass)">
             @if (CanReorder)
@@ -252,7 +252,7 @@
                                       : "tb-checkbox__input tb-data-grid__check")" checked="@selected"
                            name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
                            aria-label="@Format(TbStrings.DataGridSelectRow, label ?? LabelOf(item))"
-                           @onchange="() => ChooseAsync(item)" />
+                           @onchange="_choose.For(key)" />
                 </td>
             }
             @foreach (var column in _shownColumns)
@@ -260,9 +260,9 @@
                 var editable = CanEdit(column);
                 <td data-column="@column.Key" data-pinned="@PinSide(column)" style="@PinStyle(column)"
                     data-editable="@(editable ? "" : null)" class="@column.CellClass"
-                    @ondblclick="@((editable ? () => StartEditAsync(item, column) : null)!)"
-                    @ontbeditstart="@((editable ? () => StartEditAsync(item, column) : null)!)"
-                    @onkeydown="@((editable ? (KeyboardEventArgs args) => OnCellKeyAsync(item, column, args) : null)!)">
+                    @ondblclick="@((editable ? _startEdit.For((key, column)) : null)!)"
+                    @ontbeditstart="@((editable ? _startEdit.For((key, column)) : null)!)"
+                    @onkeydown="@((editable ? _cellKey.For((key, column)) : null)!)">
                     @if (RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
                     {
                         @Editor(edit, cell)
@@ -356,7 +356,7 @@
             <td colspan="@ColumnCount" style="--tb-data-grid-group-level: @(group.Level - 1)"
                 class="tb-data-grid__group-cell">
                 <button type="button" data-part="group-toggle" aria-expanded="@(group.Open ? "true" : "false")"
-                        class="tb-data-grid__group-toggle" @onclick="() => ToggleGroup(group)">
+                        class="tb-data-grid__group-toggle" @onclick="_toggleGroup.For(group.Key)">
                     <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__group-chevron" />
                     <span>@Format(TbStrings.DataGridGroupHeading, group.Column,
                         group.Value ?? Localizer[TbStrings.DataGridGroupNone])</span>
@@ -453,7 +453,7 @@
                                 </TbSelect>
                                 @if (NeedsValue(draft.Operator))
                                 {
-                                    <div @onkeydown="args => ApplyOnEnterAsync(column, args)">
+                                    <div @onkeydown="_applyOnEnter.For(column)">
                                         @if (column.FilterKind == ColumnFilterKind.Number)
                                         {
                                             <TbNumberField TValue="decimal?" Size="Size.Small" HideStepButtons

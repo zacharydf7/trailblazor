@@ -27,6 +27,10 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private DateOnly? _anchor;
     private DateOnly? _browserToday;
     private bool _disposed;
+    private readonly ItemHandlers<DateOnly, Func<Task>> _pick;
+
+    /// <summary>Creates the date range picker.</summary>
+    public TbDateRangePicker() => _pick = new(day => () => PickAsync(day));
 
     /// <summary>The earliest date that can be chosen.</summary>
     [Parameter]

@@ -65,7 +65,7 @@ else
                                 <input type="radio" name="@($"{FieldId}-swatch")" data-part="swatch"
                                        aria-label="@NameOf(swatch)" checked="@IsChosen(swatch)"
                                        disabled="@(Disabled || ReadOnly)"
-                                       @onchange="() => ChooseSwatchAsync(swatch)"
+                                       @onchange="_chooseSwatch.For(swatch)"
                                        style="@($"--tb-swatch: {Read(swatch).ToHex(true)}")"
                                        class="tb-color-picker__swatch" />
                             }

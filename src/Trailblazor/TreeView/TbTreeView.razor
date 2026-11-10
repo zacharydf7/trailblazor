@@ -133,9 +133,9 @@
              class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
                         context.Matches ? "tb-tree__item--match" : null, declared?.Class,
                         valued ? ItemClass?.Invoke(node.Item) : null)"
-             @onclick="args => OnRowClickAsync(node, args)" @ondblclick="() => OnRowDoubleClickAsync(node)">
+             @onclick="_rowClick.For(node.Key)" @ondblclick="_rowDoubleClick.For(node.Key)">
             <span data-part="toggle" aria-hidden="true" class="tb-tree__toggle"
-                  @onclick="() => ToggleAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
+                  @onclick="_toggle.For(node.Key)" @onclick:stopPropagation @ondblclick:stopPropagation>
                 @if (node.HasChildren)
                 {
                     <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-tree__chevron" />
@@ -144,7 +144,7 @@
             @if (checkable)
             {
                 <span data-part="check" aria-hidden="true" class="@CheckClass(context.Checked)"
-                      @onclick="() => ToggleCheckAsync(node)" @onclick:stopPropagation @ondblclick:stopPropagation>
+                      @onclick="_toggleCheck.For(node.Key)" @onclick:stopPropagation @ondblclick:stopPropagation>
                 </span>
             }
             <span data-part="content" id="@(InsertTemplate is null ? null : $"{nameId}-content")"

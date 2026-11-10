@@ -20,6 +20,10 @@ public partial class TbTagInput : IAsyncDisposable
     private IJSObjectReference? _handle;
     private int? _focusAfter;
     private bool _disposed;
+    private readonly ItemHandlers<int, Func<MouseEventArgs, Task>> _remove;
+
+    /// <summary>Creates the tag input.</summary>
+    public TbTagInput() => _remove = new(index => args => OnRemoveClickAsync(index, args));
 
     /// <summary>Example text shown while nothing is typed. It is not a label.</summary>
     [Parameter]
