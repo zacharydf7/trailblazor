@@ -69,6 +69,17 @@ public class ExampleCatalogTests
     }
 
     [Theory, MemberData(nameof(Names))]
+    public void Example_ShouldGiveATestingTip_WhenATestCanFindItsComponent(string name)
+    {
+        var example = ExampleCatalog.Find(name)!;
+
+        if (example.Target is not null)
+        {
+            Assert.True(example.TestingTip is not null || example.TestingTips.Count > 0);
+        }
+    }
+
+    [Theory, MemberData(nameof(Names))]
     public void Example_ShouldListTheTypeOfEachClassesParameter_WhenItsComponentsHaveOne(string name)
     {
         var example = ExampleCatalog.Find(name)!;

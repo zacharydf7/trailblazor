@@ -477,6 +477,10 @@
         new("Date range picker", "Its label",
             "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates."),
         new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number."),
+        new("Slider", "Its label", "`Slider(label).SetAsync(value)` moves it and waits until the field has the value, "
+            + "and `ValueAsync()` reads it."),
+        new("Range slider", "Its label", "`RangeSlider(label).SetAsync(start, end)` moves both thumbs and waits until "
+            + "the field has the range, and `RangeAsync()` reads it."),
         new("Tag input", "Its label", "`TagInput(label).AddAsync(text)` types a tag and presses Enter, "
             + "`RemoveAsync(tag)` clicks its remove button, and `Tags` is the tags, for assertions."),
         new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text "

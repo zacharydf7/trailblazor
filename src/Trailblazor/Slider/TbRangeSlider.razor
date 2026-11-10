@@ -7,7 +7,8 @@
     <span id="@($"{StartId}-name")" hidden>@(StartLabel ?? Localizer[TbStrings.RangeSliderStart])</span>
     <span id="@($"{EndId}-name")" hidden>@(EndLabel ?? Localizer[TbStrings.RangeSliderEnd])</span>
     <input @attributes="InputAttributes" @ref="_start" data-part="start-thumb" id="@StartId"
-           data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="range"
+           data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="range" data-value="@Invariant(Start)"
+           data-static="@StaticMark" data-ready="@ReadyMark"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Start)"
            @bind:set="SetStartAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(Start)" aria-labelledby="@Names(StartId)"
@@ -15,6 +16,7 @@
            aria-describedby="@InputDescribedBy"
            class="@ClassNames.Join("tb-slider__input", SharedClass, Classes?.Input)" />
     <input @attributes="InputAttributes" data-part="end-thumb" id="@EndId" name="@NameOf("End")" type="range"
+           data-value="@Invariant(End)" data-static="@StaticMark" data-ready="@ReadyMark"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(End)"
            @bind:set="SetEndAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
            aria-valuetext="@Format(End)" aria-labelledby="@Names(EndId)"

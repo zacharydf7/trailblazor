@@ -27,6 +27,33 @@ public class TbSliderTests : BunitContext
         Assert.All(thumbs, thumb => Assert.False(thumb.HasAttribute("disabled")));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Render_ShouldMarkEveryThumbReadyOrStaticWithItsValue_WhenTheRendererIsOrIsntInteractive(
+        bool interactive)
+    {
+        SetRendererInfo(new RendererInfo(interactive ? "Server" : "Static", interactive));
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+        List<AngleSharp.Dom.IElement> thumbs;
+        try
+        {
+            var slider = Render<TbSlider<double>>(parameters => parameters.Add(field => field.Value, 2.5)
+                .Add(field => field.Step, 0.5m));
+            var range = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.Value, new(20, 70)));
+            thumbs = [.. slider.FindAll("input").Concat(range.FindAll("input"))];
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+        }
+
+        Assert.Equal(["2.5", "20", "70"], thumbs.Select(thumb => thumb.GetAttribute("data-value")));
+        Assert.All(thumbs, thumb => Assert.Equal([interactive, !interactive],
+            [thumb.HasAttribute("data-ready"), thumb.HasAttribute("data-static")]));
+    }
+
     [Fact]
     public void Input_ShouldKeepTheValueAndCommitNothing_WhenReadOnly()
     {

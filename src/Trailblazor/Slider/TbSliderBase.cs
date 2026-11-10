@@ -75,6 +75,12 @@ public abstract partial class TbSliderBase<TValue> : TbFieldBase<TValue>
     // A range input always holds its value with a period, whatever the user's culture.
     private protected static string Invariant(decimal number) => number.ToString(CultureInfo.InvariantCulture);
 
+    // Tests wait for data-ready before moving a thumb, since a prerendered slider is replaced and loses the move;
+    // data-static tells them not to wait.
+    private protected string? StaticMark => AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null;
+
+    private protected string? ReadyMark => RendererInfo.IsInteractive ? "" : null;
+
     private protected static decimal? Parse(string? text) =>
         decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? number : null;
 

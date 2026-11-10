@@ -63,9 +63,20 @@ Trailblazor.Testing.Playwright.TbPopoverLocator
 Trailblazor.Testing.Playwright.TbPopoverLocator.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbPopoverLocator.OpenAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbPopoverLocator.TbPopoverLocator(Microsoft.Playwright.IPage! page, string! trigger) -> void
+Trailblazor.Testing.Playwright.TbRangeSliderLocator
+Trailblazor.Testing.Playwright.TbRangeSliderLocator.End.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbRangeSliderLocator.RangeAsync() -> System.Threading.Tasks.Task<(decimal Start, decimal End)>!
+Trailblazor.Testing.Playwright.TbRangeSliderLocator.SetAsync(decimal start, decimal end) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRangeSliderLocator.Start.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbRangeSliderLocator.TbRangeSliderLocator(Microsoft.Playwright.IPage! page, string! label) -> void
 Trailblazor.Testing.Playwright.TbSelectLocator
 Trailblazor.Testing.Playwright.TbSelectLocator.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSelectLocator.TbSelectLocator(Microsoft.Playwright.IPage! page, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TbSliderLocator
+Trailblazor.Testing.Playwright.TbSliderLocator.Input.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbSliderLocator.SetAsync(decimal value) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSliderLocator.TbSliderLocator(Microsoft.Playwright.IPage! page, string! label) -> void
+Trailblazor.Testing.Playwright.TbSliderLocator.ValueAsync() -> System.Threading.Tasks.Task<decimal>!
 Trailblazor.Testing.Playwright.TbTabsLocator
 Trailblazor.Testing.Playwright.TbTabsLocator.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTabsLocator.TbTabsLocator(Microsoft.Playwright.IPage! page, string? name) -> void
@@ -105,8 +116,10 @@ Trailblazor.Testing.Playwright.TrailblazorPage.NumberField(string! label) -> Tra
 Trailblazor.Testing.Playwright.TrailblazorPage.Pagination(string! name) -> Trailblazor.Testing.Playwright.TbPaginationLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Popconfirm(string! trigger) -> Trailblazor.Testing.Playwright.TbPopconfirmLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Popover(string! trigger) -> Trailblazor.Testing.Playwright.TbPopoverLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.RangeSlider(string! label) -> Trailblazor.Testing.Playwright.TbRangeSliderLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(string! label) -> Trailblazor.Testing.Playwright.TbSelectLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Slider(string! label) -> Trailblazor.Testing.Playwright.TbSliderLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(string? name = null) -> Trailblazor.Testing.Playwright.TbTabsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TagInput(string! label) -> Trailblazor.Testing.Playwright.TbTagInputLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Toasts.get -> Trailblazor.Testing.Playwright.TbToastsLocator!

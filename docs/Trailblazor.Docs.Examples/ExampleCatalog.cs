@@ -663,6 +663,9 @@ public static class ExampleCatalog
             ],
             Target = new("img", "A trail winding between two hills"),
             Blocks = ["tb-image"],
+            TestingTip = "Find an image by its alternative text: `GetByRole(AriaRole.Img, new() { Name = \"A trail "
+                + "winding between two hills\" })` in Playwright, or `img[alt='A trail winding between two hills']` in "
+                + "bUnit.",
         },
         new("divider", "Divider", ExampleCategory.Layout,
             "A horizontal or vertical line that separates content.")
@@ -890,6 +893,9 @@ public static class ExampleCatalog
             ],
             Target = new("img", "Failed"),
             Blocks = ["tb-icon"],
+            TestingTip = "Find an icon with a `Label` by its role and name: `GetByRole(AriaRole.Img, new() { Name = "
+                + "\"Failed\" })` in Playwright, or `[role=img][aria-label='Failed']` in bUnit. An icon without one is "
+                + "hidden from screen readers and from `GetByRole`, so check the text beside it instead.",
         },
         new("button", "Button", ExampleCategory.Actions,
             "Starts an action, in filled, outlined or text styles and every tone.")
@@ -1146,6 +1152,9 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Text alignment"),
             Blocks = ["tb-button-group"],
+            TestingTip = "Find the group by its name, then its buttons inside it: `GetByRole(AriaRole.Group, new() { "
+                + "Name = \"Text alignment\" }).GetByRole(AriaRole.Button, new() { Name = \"Center\" })` in "
+                + "Playwright, or `[role=group][aria-label='Text alignment'] button` in bUnit.",
         },
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
             "A row of toggle buttons where one, or any number, can be pressed.")
@@ -2004,6 +2013,9 @@ public static class ExampleCatalog
                 new("actions", "The buttons the alert offers."),
                 new("close", "The button that dismisses the alert."),
             ],
+            TestingTip = "A danger or warning alert has the `alert` role, and the other tones have `status`, so find "
+                + "one by its role and text: `GetByRole(AriaRole.Alert).Filter(new() { HasText = \"Danger alert.\" })` "
+                + "in Playwright, or `[role=alert]` in bUnit. The close button is `[data-part=close]`.",
         },
         new("banner", "Banner", ExampleCategory.Feedback,
             "A strip across the top of the page or app with a notice for everyone using it, such as planned "
@@ -3486,11 +3498,13 @@ public static class ExampleCatalog
                 new("start-thumb", "A range slider's input for its low end."),
                 new("end-thumb", "A range slider's input for its high end."),
             ],
-            TestingTip = "Set a slider with `await page.GetByRole(AriaRole.Slider, new() { Name = \"Map brightness\" "
-                + "}).FillAsync(\"80\")`, which Playwright supports for range inputs. Then check what the app "
-                + "did with it, such as `Expect(page.GetByText(\"Saved at\")).ToHaveTextAsync(\"Saved at 80%\")`: "
-                + "`ToHaveValueAsync(\"80\")` passes as soon as the input changes, before the app hears of it. A range "
-                + "slider's thumbs are named \"Elevation Minimum\" and \"Elevation Maximum\".",
+            TestingTip = "`await page.Tb().Slider(\"Map brightness\").SetAsync(80)` from "
+                + "`Trailblazor.Testing.Playwright` moves the slider and waits until the app has the value, and "
+                + "`ValueAsync()` reads it back. "
+                + "`RangeSlider(\"Elevation\").SetAsync(1000, 3000)` does the same for both thumbs. With "
+                + "`GetByRole(AriaRole.Slider).FillAsync(\"80\")` alone, `ToHaveValueAsync(\"80\")` passes before the "
+                + "app hears of the change. A range slider's thumbs are named \"Elevation Minimum\" and \"Elevation "
+                + "Maximum\".",
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.")
@@ -5666,6 +5680,8 @@ public static class ExampleCatalog
             [
                 new("focus-scope", "The element that keeps focus inside it."),
             ],
+            TestingTip = "bUnit can't move focus, so test the trap in Playwright: press Tab from the last control in "
+                + "the scope and expect the first to be focused with `ToBeFocusedAsync()`.",
         },
         new("popover", "Popover", ExampleCategory.Overlays,
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "

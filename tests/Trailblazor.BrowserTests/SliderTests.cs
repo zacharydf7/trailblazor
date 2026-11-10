@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
@@ -164,6 +165,85 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
         var shortLabel = await page.GetByText("Steepest grade").BoundingBoxAsync();
 
         Assert.True(longLabel!.Height > shortLabel!.Height * 1.5, $"The label is {longLabel.Height}px tall.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SetAsync_ShouldMoveTheSliderAndWaitForTheField_WhenCalled(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+        var brightness = page.Tb().Slider("Map brightness");
+
+        await brightness.SetAsync(35);
+
+        Assert.Equal(35, await brightness.ValueAsync());
+        await Expect(brightness.Input).ToHaveAttributeAsync("aria-valuetext", "35%");
+        await Expect(page.GetByText("Saved at")).ToHaveTextAsync("Saved at 35%");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SetAsync_ShouldLandOnTheNearestStep_WhenTheValueIsBetweenSteps(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+        var grade = page.Tb().Slider("Steepest grade");
+
+        await grade.SetAsync(12);
+
+        Assert.Equal(10, await grade.ValueAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SetAsync_ShouldMoveBothThumbs_WhenTheNewStartIsPastTheOldEnd(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+        var elevation = page.Tb().RangeSlider("Elevation");
+
+        await elevation.SetAsync(3000, 3600);
+        Assert.Equal((3000m, 3600m), await elevation.RangeAsync());
+        await elevation.SetAsync(200, 900);
+
+        Assert.Equal((200m, 900m), await elevation.RangeAsync());
+        await Expect(page.GetByText("Between")).ToHaveTextAsync("Between 200 and 900 m");
+    }
+
+    [Theory]
+    [MemberData(nameof(TurnedOffSliders))]
+    public async Task SetAsync_ShouldFail_WhenTheSliderIsDisabledOrReadOnly(string browser, string label)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+        var slider = page.Tb().Slider(label);
+        var before = await slider.ValueAsync();
+
+        await Assert.ThrowsAsync<PlaywrightException>(() => slider.SetAsync(4));
+
+        Assert.Equal(before, await slider.ValueAsync());
+    }
+
+    public static TheoryData<string, string> TurnedOffSliders => new(AllBrowsers.Names
+        .SelectMany(browser => new[] { (browser, "Campfire level"), (browser, "Trail difficulty") }));
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SetAsync_ShouldWriteTheValueWithoutTrailingZeros_WhenGivenThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/slider");
+        var brightness = page.Tb().Slider("Map brightness");
+
+        await brightness.SetAsync(35.00m);
+
+        Assert.Equal(35, await brightness.ValueAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SetAsync_ShouldMoveTheInputsAndReadThemBack_WhenTheSlidersAreStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-slider");
+
+        await page.Tb().Slider("Brightness").SetAsync(70);
+        await page.Tb().RangeSlider("Elevation").SetAsync(1000, 3000);
+
+        Assert.Equal(70, await page.Tb().Slider("Brightness").ValueAsync());
+        Assert.Equal((1000m, 3000m), await page.Tb().RangeSlider("Elevation").RangeAsync());
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("70 | 1000-3000");
     }
 }
 
