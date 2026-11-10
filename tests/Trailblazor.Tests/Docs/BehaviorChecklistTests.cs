@@ -40,9 +40,16 @@ public partial class BehaviorChecklistTests
         var tests = Directory.GetFiles(Path.Combine(Repository.Root, "tests"), "*.cs", SearchOption.AllDirectories)
             .Select(File.ReadAllText).ToList();
 
+        // A checklist test may be declared on a base class, since a component's keyboard tests live in its keys class.
+        bool Declares(string type, string method) =>
+            tests.Any(text => Regex.IsMatch(text, $@"\bclass {type}\b")
+                && Regex.IsMatch(text, $@"\b(?:Task|void) {method}\("))
+            || tests.Select(text => Regex.Match(text, $@"\bclass {type}\b(?:\([^)]*\))?\s*:\s*(?<base>\w+)"))
+                .FirstOrDefault(found => found.Success) is { } derived
+            && Declares(derived.Groups["base"].Value, method);
+
         var missing = Items("- [x]").SelectMany(item => NamedTest().Matches(item.Line)
-            .Where(match => !tests.Any(text => Regex.IsMatch(text, $@"\bclass {match.Groups["class"].Value}\b")
-                && Regex.IsMatch(text, $@"\b(?:Task|void) {match.Groups["method"].Value}\(")))
+            .Where(match => !Declares(match.Groups["class"].Value, match.Groups["method"].Value))
             .Select(match => $"{item.File}: {match.Value}"));
 
         Assert.Empty(missing);

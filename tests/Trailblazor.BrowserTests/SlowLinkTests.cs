@@ -3,28 +3,28 @@ using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
-// The components whose keys need the most round trips, tested again with every message held back as on a slow link.
+// Keyboard tests of the components needing the most round trips, rerun with each message delayed as on a slow link.
 internal static class SlowLinkDelay
 {
     public static readonly TimeSpan Value = TimeSpan.FromMilliseconds(150);
 }
 
-public class SlowLinkSelectTests(BrowserFixture fixture) : SelectTests(fixture)
+public class SlowLinkSelectKeysTests(BrowserFixture fixture) : SelectKeysTests(fixture)
 {
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }
 
-public class SlowLinkSliderTests(BrowserFixture fixture) : SliderTests(fixture)
+public class SlowLinkSliderKeysTests(BrowserFixture fixture) : SliderKeysTests(fixture)
 {
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }
 
-public class SlowLinkToggleGroupTests(BrowserFixture fixture) : ToggleGroupTests(fixture)
+public class SlowLinkToggleGroupKeysTests(BrowserFixture fixture) : ToggleGroupKeysTests(fixture)
 {
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }
 
-public class SlowLinkTreeViewTests(BrowserFixture fixture) : TreeViewTests(fixture)
+public class SlowLinkTreeViewKeysTests(BrowserFixture fixture) : TreeViewKeysTests(fixture)
 {
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }
@@ -44,7 +44,12 @@ public class SlowLinkGridEditKeysTests(BrowserFixture fixture) : GridEditKeysTes
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }
 
-public class SlowLinkSplitterTests(BrowserFixture fixture) : SplitterTests(fixture)
+public class SlowLinkSplitterKeysTests(BrowserFixture fixture) : SplitterKeysTests(fixture)
+{
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
+}
+
+public class SlowLinkDataGridKeysTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
 {
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }

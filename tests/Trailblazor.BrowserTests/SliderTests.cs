@@ -1,32 +1,10 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
-public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
+public class SliderTests(BrowserFixture fixture) : SliderKeysTests(fixture)
 {
-    private static ILocator Slider(IPage page, string name) =>
-        page.GetByRole(AriaRole.Slider, new() { Name = name, Exact = true });
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Slider_ShouldStepJumpAndReachTheEnds_WhenTheKeysAreUsed(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/slider");
-        var brightness = Slider(page, "Map brightness");
-        await brightness.FocusAsync();
-
-        await page.Keyboard.PressAsync("ArrowRight");
-        await Expect(brightness).ToHaveValueAsync("61");
-        await page.Keyboard.PressAsync("Home");
-        await Expect(brightness).ToHaveValueAsync("0");
-        await page.Keyboard.PressAsync("End");
-
-        await Expect(brightness).ToHaveValueAsync("100");
-        await Expect(brightness).ToHaveAttributeAsync("aria-valuetext", "100%");
-        await Expect(page.GetByText("Saved at")).ToHaveTextAsync("Saved at 100%");
-    }
-
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Slider_ShouldMoveItsThumbAndFillToThePointer_WhenTheTrackIsClicked(string browser)
     {
@@ -41,24 +19,6 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
         var fill = page.Locator(".tb-slider").Filter(new() { Has = grade }).Locator("[data-part=fill]");
         var track = page.Locator(".tb-slider").Filter(new() { Has = grade }).Locator("[data-part=track]");
         Assert.True((await fill.BoundingBoxAsync())!.Width > (await track.BoundingBoxAsync())!.Width * 0.9);
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task RangeSlider_ShouldMoveEachThumbAndStopItAtTheOther_WhenUsedWithTheKeys(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/slider");
-        var minimum = Slider(page, "Elevation Minimum");
-        var maximum = Slider(page, "Elevation Maximum");
-
-        await minimum.FocusAsync();
-        await page.Keyboard.PressAsync("End");
-        await Expect(minimum).ToHaveValueAsync("2400");
-        await page.Keyboard.PressAsync("Tab");
-        await Expect(maximum).ToBeFocusedAsync();
-        await page.Keyboard.PressAsync("Home");
-
-        await Expect(maximum).ToHaveValueAsync("2400");
-        await Expect(page.GetByText("Between")).ToHaveTextAsync("Between 2400 and 2400 m");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -123,39 +83,6 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(thumb, bubble.X + bubble.Width / 2, tolerance: 2);
     }
 
-    private static async Task ExpectLeftToRaiseAsync(IPage page, ILocator input)
-    {
-        var value = decimal.Parse(await input.InputValueAsync(), CultureInfo.InvariantCulture);
-        var step = decimal.Parse((await input.GetAttributeAsync("step"))!, CultureInfo.InvariantCulture);
-        // The value text comes from the server, so it shows the slider's value changed, not only the input's.
-        Task ExpectAsync(decimal expected) => Expect(input).ToHaveAttributeAsync("aria-valuetext",
-            new Regex($"^{expected.ToString(CultureInfo.InvariantCulture)}\\b"));
-        await input.FocusAsync();
-
-        await page.Keyboard.PressAsync("ArrowLeft");
-        await ExpectAsync(value + step);
-        await page.Keyboard.PressAsync("ArrowRight");
-        await page.Keyboard.PressAsync("ArrowRight");
-
-        await ExpectAsync(value - step);
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Slider_ShouldRaiseTheValueWithTheLeftArrow_WhenTheTextIsRightToLeft(string browser)
-    {
-        var page = await OpenAsync(browser, "/examples/slider");
-
-        await ExpectLeftToRaiseAsync(page, Slider(page, "Trail length"));
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task RangeSlider_ShouldRaiseAThumbWithTheLeftArrow_WhenTheTextIsRightToLeft(string browser)
-    {
-        var page = await OpenAsync(browser, "/range-slider");
-
-        await ExpectLeftToRaiseAsync(page, Slider(page, "Flipped Minimum"));
-    }
-
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Slider_ShouldWrapItsLabel_WhenTheLabelIsLongerThanTheSliderIsWide(string browser)
     {
@@ -218,9 +145,6 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(before, await slider.ValueAsync());
     }
 
-    public static TheoryData<string, string> TurnedOffSliders => new(AllBrowsers.Names
-        .SelectMany(browser => new[] { (browser, "Campfire level"), (browser, "Trail difficulty") }));
-
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SetAsync_ShouldWriteTheValueWithoutTrailingZeros_WhenGivenThem(string browser)
     {
@@ -245,6 +169,9 @@ public class SliderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("70 | 1000-3000");
     }
+
+    public static TheoryData<string, string> TurnedOffSliders => new(AllBrowsers.Names
+        .SelectMany(browser => new[] { (browser, "Campfire level"), (browser, "Trail difficulty") }));
 }
 
 // Dragging a thumb captures the pointer, which Firefox can leak into parallel pages, so it runs with the other drags.
