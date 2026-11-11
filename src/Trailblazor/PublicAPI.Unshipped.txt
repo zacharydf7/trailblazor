@@ -4318,3 +4318,5 @@ Trailblazor.TbForm.IsTouched.set -> void
 Trailblazor.TbForm.IsTouchedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
 Trailblazor.TbForm.IsTouchedChanged.set -> void
 Trailblazor.TbForm.MarkAsSavedAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbFieldBase<TValue>.ValidationAsync.get -> System.Func<TValue?, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!>?
+Trailblazor.TbFieldBase<TValue>.ValidationAsync.set -> void

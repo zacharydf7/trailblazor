@@ -12,6 +12,12 @@ internal interface IFormField
     // Makes the current value the one a reset goes back to.
     void MarkAsSaved();
 
+    // The field's ValidationAsync check still running, if any.
+    Task CheckingAsync();
+
+    // Whether the field's ValidationAsync hasn't passed the value it holds now, such as when the check threw.
+    bool AwaitsCheck();
+
     // Messages in the edit context that the field hides while it shows only its required message.
     IEnumerable<string> HiddenMessages();
 

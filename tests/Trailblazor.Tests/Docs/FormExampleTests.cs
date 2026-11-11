@@ -299,4 +299,15 @@ public class FormExampleTests : DocsTest
 
         Assert.Equal("Unsaved changes", cut.Find("output").TextContent);
     }
+
+    [Fact]
+    public void CheckExample_ShouldSayANameIsTaken_WhenTheCheckAnswers()
+    {
+        var cut = Render<FormCheckExample>();
+
+        cut.Find("input").Change("Pine walkers");
+
+        cut.WaitForAssertion(() => Assert.Equal("That name is taken.",
+            cut.Find("[data-part=error]").TextContent.Trim()), TimeSpan.FromSeconds(5));
+    }
 }

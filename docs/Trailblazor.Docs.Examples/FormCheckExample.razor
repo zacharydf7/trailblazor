@@ -1,0 +1,18 @@
+<TbForm aria-label="Trail club sign-up" OnValidSubmit="() => _joined = _name" Style="max-inline-size: 24rem">
+    <TbTextField Label="Club name" @bind-Value="_name" Required ValidationAsync="NameIsFreeAsync" />
+    <TbButton Type="ButtonType.Submit">Join</TbButton>
+    <output>@(_joined is null ? "" : $"Joined as {_joined}.")</output>
+</TbForm>
+
+@code {
+    private static readonly string[] Taken = ["Ridge runners", "Pine walkers"];
+    private string? _name;
+    private string? _joined;
+
+    // Stands in for a call to the server, which a newer name cancels through the token.
+    private static async Task<IEnumerable<string>> NameIsFreeAsync(string? name, CancellationToken token)
+    {
+        await Task.Delay(400, token);
+        return Taken.Contains(name, StringComparer.OrdinalIgnoreCase) ? ["That name is taken."] : [];
+    }
+}

@@ -251,6 +251,15 @@
             _edits--;
         }
 
+        // A field's ValidationAsync may still be running, and its answer counts toward whether the form is valid. A
+        // newer value can start another check while the form waits, so it waits until none is running.
+        while (_fields.Select(field => field.CheckingAsync()).Where(check => !check.IsCompleted).ToList() is
+            { Count: > 0 } running)
+        {
+            await Task.WhenAll(running);
+        }
+
+        valid = valid && !_editContext.GetValidationMessages().Any() && !_fields.Any(field => field.AwaitsCheck());
         await ReportAsync();
         return valid;
     }

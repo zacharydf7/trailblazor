@@ -40,6 +40,13 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private bool _ownDisabled;
     private bool _ownReadOnly;
     private bool _disposed;
+    private CancellationTokenSource? _checking;
+    private Task _check = Task.CompletedTask;
+    private TValue? _checkingValue;
+    // What ValidationAsync last found, and the value it checked; Messages is null when the check threw.
+    private (TValue? Value, List<string>? Messages)? _checked;
+    // A check that a form's validation starts says nothing aloud, as the rest of that validation doesn't.
+    private bool _validationRequested;
 
     /// <summary>The field's value.</summary>
     [Parameter]
@@ -121,6 +128,13 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     /// <see cref="RequiredMessage"/>, so that message is the only one then.</summary>
     [Parameter]
     public Func<TValue?, IEnumerable<string>>? Validation { get; set; }
+
+    /// <summary>Checks a value with a slow call, such as asking the server whether a name is already taken, and
+    /// returns its error messages, if any. It runs once <see cref="Validation"/> and the field's own checks pass. A
+    /// newer value cancels the check still running by canceling its token. <see cref="TbForm.ValidateAsync"/> and a
+    /// submit wait for it, and a check that throws counts as failed until it's run again.</summary>
+    [Parameter]
+    public Func<TValue?, CancellationToken, Task<IEnumerable<string>>>? ValidationAsync { get; set; }
 
     /// <summary>Attributes for the input element itself, such as <c>autocomplete</c> or <c>name</c>.</summary>
     [Parameter]
@@ -351,6 +365,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         if (!EqualityComparer<TValue>.Default.Equals(Value, _lastValue))
         {
             _lastValue = _valueToResetTo = Value;
+            _checking?.Cancel();
         }
 
         // A new value from the parent replaces text the user typed that didn't parse.
@@ -610,7 +625,12 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         }
     }
 
-    private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e) => Validate();
+    private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
+    {
+        _validationRequested = true;
+        Validate();
+        _validationRequested = false;
+    }
 
     private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e) => StateHasChanged();
 
@@ -636,7 +656,81 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             _messages.AddRange(Validation(Value));
         }
 
+        if (_messages.Count > 0)
+        {
+            // The value fails before ValidationAsync would run, so a check of an older value has nothing to say.
+            _checking?.Cancel();
+        }
+        else if (ValidationAsync is not null)
+        {
+            if (CheckedMessages is { } found)
+            {
+                _messages.AddRange(found);
+            }
+            // A form validating while a check runs waits for it rather than starting it again.
+            else if (_check.IsCompleted || _checking!.IsCancellationRequested || !SameValue(_checkingValue, Value))
+            {
+                Check(Value);
+            }
+        }
+
         Store();
+    }
+
+    // What ValidationAsync found for the value the field holds now, or null if it hasn't checked that value or threw.
+    private List<string>? CheckedMessages =>
+        _checked is { } found && SameValue(found.Value, Value) ? found.Messages : null;
+
+    private bool CheckFailed => _checked is { Messages: null } found && SameValue(found.Value, Value);
+
+    private void Check(TValue? value)
+    {
+        _checking?.Cancel();
+        _checking = new CancellationTokenSource();
+        _checkingValue = value;
+        _check = CheckAsync(value, announce: !_validationRequested, _checking.Token);
+    }
+
+    private async Task CheckAsync(TValue? value, bool announce, CancellationToken token)
+    {
+        // A check that answers at once would otherwise finish inside Validate, before the edit that started it does.
+        await Task.Yield();
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        List<string>? messages = null;
+        try
+        {
+            messages = (await ValidationAsync!(value, token)).ToList();
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // A newer value took its place.
+            return;
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+
+        // An answer for a value the field no longer holds, such as after a reset, has nothing to say.
+        if (token.IsCancellationRequested || _disposed || !SameValue(value, Value))
+        {
+            return;
+        }
+
+        var before = Errors.ToList();
+        _checked = (value, messages);
+        Validate();
+        _editContext?.NotifyValidationStateChanged();
+        if (announce)
+        {
+            AnnounceNewErrors(before);
+        }
+
+        StateHasChanged();
     }
 
     private void Store()
@@ -690,7 +784,12 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     bool IFormField.HasProblems() =>
         _parseError is not null || ValueProblem is not null || MissesRequired
-        || (Validation?.Invoke(Value).Any() ?? false);
+        || (Validation?.Invoke(Value).Any() ?? false) || CheckedMessages is { Count: > 0 } || CheckFailed;
+
+    // A canceled check's answer is dropped, so a form has no reason to wait for it.
+    Task IFormField.CheckingAsync() => _checking?.IsCancellationRequested == true ? Task.CompletedTask : _check;
+
+    bool IFormField.AwaitsCheck() => ValidationAsync is not null && _messages.Count == 0 && CheckedMessages is null;
 
     void IFormField.CountIfInvalid()
     {
@@ -767,6 +866,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // The parent's error stays: only the parent can clear it.
     void IFormField.HideMessages()
     {
+        _checking?.Cancel();
         _messages.Clear();
         Store();
     }
@@ -806,6 +906,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     public void Dispose()
     {
         _disposed = true;
+        _checking?.Cancel();
         _form?.Remove(this);
         DetachEditContext();
         WithdrawFixedErrors([]);

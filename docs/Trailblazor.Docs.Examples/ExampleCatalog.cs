@@ -2797,6 +2797,9 @@ public static class ExampleCatalog
                 new("your-own-checks", "Your own checks", "`Validation` checks one value and returns its messages. To "
                     + "compare two fields, as here when the largest group goes below the smallest, an `Error` works "
                     + "from both values and an `Invalid` marks the other field.", typeof(FormValidationExample)),
+                new("checks-that-take-time", "Checks that take time", "`ValidationAsync` checks a value with a slow "
+                    + "call, such as asking the server whether a name is taken, once the field's other checks pass. A newer value "
+                    + "cancels the check still running, and a submit waits for it.", typeof(FormCheckExample)),
                 new("model-and-annotations", "Model and data annotations", "`Model` and `DataAnnotations` check a "
                     + "class's annotations alongside the fields' own checks. Here each field's `Required` covers "
                     + "empty values, and the annotations cover the rest.", typeof(FormModelExample)),
@@ -2870,6 +2873,9 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`IsValid` doesn't wait for a `ValidationAsync` check, so it can stay true while one runs. It "
+                    + "counts a check's answer once it arrives, and a check that threw counts as failed. "
+                    + "`ValidateAsync` and a submit wait for every check."),
                 new("`@bind-IsValid` checks the fields' `Validation`, and with `DataAnnotations` the model's "
                     + "annotations, without showing any message. When the app calls `AddValidation` and marks the "
                     + "model `[ValidatableType]`, it checks nested objects too, as a submit does."),
@@ -2892,7 +2898,8 @@ public static class ExampleCatalog
             Blocks = ["tb-form"],
             TestingTip = "Submit with the button, then find errors through the fields: "
                 + "`ToHaveAttributeAsync(\"aria-invalid\", \"true\")` on the input, and its message with "
-                + "`ToHaveAccessibleDescriptionAsync`.",
+                + "`ToHaveAccessibleDescriptionAsync`. A `ValidationAsync` message shows only once its check answers, "
+                + "so wait for it: use `WaitForAssertion` in bUnit, or let Playwright's assertions retry.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"new-trail\"`, it counts `trailblazor.control.shown` as it first "
