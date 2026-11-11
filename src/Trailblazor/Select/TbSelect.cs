@@ -44,7 +44,7 @@ public class TbSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
-    private protected override bool HasChoice => !EqualityComparer<TValue>.Default.Equals(Value, default);
+    private protected override bool HasChoice => !OptionValues.Same(Comparer, Value, default(TValue));
 
     private protected override TValue? Cleared => default;
 

@@ -40,6 +40,11 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     public Func<string, CancellationToken, Task<IEnumerable<TValue>>>? Search { get; set; }
 
+    /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
+    /// still matches its option. Defaults to the values' own equality.</summary>
+    [Parameter]
+    public IEqualityComparer<TValue>? Comparer { get; set; }
+
     /// <summary>Suggestions to filter by what the user typed, when there is no <see cref="Search"/>.</summary>
     [Parameter]
     public IEnumerable<TValue>? Items { get; set; }
@@ -142,8 +147,9 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        // A value from the parent, or a choice the user made, puts its text in the field.
-        if (!EqualityComparer<TValue>.Default.Equals(Value, _shownValue))
+        // A new value from the parent or the user, or new text for the same value, puts its text in the field.
+        if (!SameValue(Value, _shownValue) || (Value is not null && _shownValue is not null
+            && TextOf(Value) != TextOf(_shownValue)))
         {
             _shownValue = Value;
             _text = Value is null ? "" : TextOf(Value);
@@ -216,7 +222,10 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private string TextOf(TValue item) => ItemText?.Invoke(item) ?? FormatValue(item) ?? "";
 
-    private bool IsChosen(TValue item) => EqualityComparer<TValue>.Default.Equals(item, Value);
+    private bool IsChosen(TValue item) => OptionValues.Same(Comparer, item, Value);
+
+    private protected override bool SameValue(TValue? value, TValue? other) =>
+        OptionValues.Same(Comparer, value, other);
 
     // Each keystroke cancels the search before it, so only the latest text's suggestions are shown.
     private async Task OnTypedAsync(string? text)

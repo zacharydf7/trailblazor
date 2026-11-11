@@ -1415,6 +1415,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Comparer` decides whether two values are the same, such as entities matched by id, so a value "
+                    + "loaded again still presses its item."),
                 new("For a choice with three answers, such as Any, Yes and No, give each item its own value, such as "
                     + "an enum member. Don't use `null` for one of them: `null` is also the group's value before "
                     + "anything is chosen and after a `Clearable` group is cleared, so that item would look chosen "
@@ -3838,6 +3840,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Comparer` decides whether two values are the same, such as entities matched by id, so a value "
+                    + "loaded again still checks its radio."),
                 new("`@ref` the group and call `FocusAsync()` to move focus where Tab would: to the chosen radio, or "
                     + "else the first radio that isn't disabled."),
             ],
@@ -4404,6 +4408,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Comparer` decides whether two values are the same, such as entities matched by id, so a value "
+                    + "loaded again still marks its suggestion."),
                 new("A press anywhere in the box outside its controls, such as its padding, focuses the "
                     + "input."),
                 new("With `FreeText`, typed text becomes the value when the user presses Enter or leaves the field. "

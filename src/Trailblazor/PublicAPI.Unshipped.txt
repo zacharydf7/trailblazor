@@ -4374,3 +4374,11 @@ Trailblazor.TbDateRangePicker<TDate>.Open.get -> bool
 Trailblazor.TbDateRangePicker<TDate>.Open.set -> void
 Trailblazor.TbDateRangePicker<TDate>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
 Trailblazor.TbDateRangePicker<TDate>.OpenChanged.set -> void
+Trailblazor.TbRadioGroup<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
+Trailblazor.TbRadioGroup<TValue>.Comparer.set -> void
+Trailblazor.TbToggleGroup<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
+Trailblazor.TbToggleGroup<TValue>.Comparer.set -> void
+Trailblazor.TbMultiToggleGroup<TItem>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
+Trailblazor.TbMultiToggleGroup<TItem>.Comparer.set -> void
+Trailblazor.TbAutocomplete<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
+Trailblazor.TbAutocomplete<TValue>.Comparer.set -> void

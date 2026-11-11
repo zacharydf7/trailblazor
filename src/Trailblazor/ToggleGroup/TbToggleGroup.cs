@@ -11,6 +11,11 @@ public class TbToggleGroup<TValue> : TbToggleGroupBase<TValue>
     [Parameter]
     public bool Clearable { get; set; }
 
+    /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
+    /// still matches its option. Defaults to the values' own equality.</summary>
+    [Parameter]
+    public IEqualityComparer<TValue>? Comparer { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -25,7 +30,7 @@ public class TbToggleGroup<TValue> : TbToggleGroupBase<TValue>
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
-    private protected override bool IsPressed(object? item) => Equals(item, Value);
+    private protected override bool IsPressed(object? item) => OptionValues.Same(Comparer, item, Value);
 
     // Pressing the pressed item clears the group only when it is clearable.
     private protected override TValue? Toggle(object? item) =>

@@ -19,6 +19,7 @@ Familiar apps: Word's text alignment and its bold, italic and underline buttons
 
 ## Pointer
 
+- [x] With a `Comparer`, such as one matching entities by id, a value loaded again still presses its item in a single or multiple group. In a multiple group, pressing that item again releases it. `ComparerTests.ToggleGroup_ShouldPressTheReloadedValuesItem_WhenGivenAComparer`, `ComparerTests.MultiToggleGroup_ShouldPressAndReleaseTheReloadedItem_WhenGivenAComparer`
 - [x] A click presses only that item in a single-selection group. `TbToggleGroupTests.Click_ShouldPressOnlyTheClickedItem_WhenAnotherItemIsClicked`
 - [x] Clicking the pressed item keeps it pressed and raises nothing. `TbToggleGroupTests.Click_ShouldKeepTheItemPressedWithoutRaisingValueChanged_WhenThePressedItemIsClickedAgain`
 - [x] Clicking the pressed item clears a clearable group. `ToggleGroupTests.ToggleGroup_ShouldClearThePressedItem_WhenItIsPressedAgainInAClearableGroup`

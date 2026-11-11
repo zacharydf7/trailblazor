@@ -19,6 +19,7 @@ Familiar apps: the browser's own radio buttons, the shipping choice at a checkou
 
 ## Pointer
 
+- [x] With a `Comparer`, such as one matching entities by id, a value loaded again still checks its radio, and checking that radio again leaves the form clean. `ComparerTests.RadioGroup_ShouldCheckTheReloadedValuesOption_WhenGivenAComparer`, `ComparerTests.RadioGroup_ShouldLeaveTheFormClean_WhenTheReloadedValuesOptionIsCheckedAgain`
 - [x] Clicking a radio or its label chooses it. `RadioGroupExampleTests.RadioGroupExample_ShouldShowTheChosenValue_WhenAnOptionIsChosen`
 - [x] All of an option's content, such as a badge, is part of its click target and name. `RadioGroupTests.RadioGroup_ShouldNameAnOptionByAllItsContent_WhenItHoldsABadge`
 - [x] A disabled option ignores clicks while the others stay usable. `TbRadioGroupTests.Render_ShouldDisableOneOption_WhenTheOptionIsDisabled`

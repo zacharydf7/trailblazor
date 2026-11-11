@@ -23,6 +23,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 
 ## Pointer
 
+- [x] With a `Comparer`, such as one matching entities by id, a value loaded again still marks its suggestion as chosen, and choosing that suggestion again leaves the form clean. A value loaded again with new text puts that text in the field. `ComparerTests.Autocomplete_ShouldMarkTheReloadedValuesSuggestion_WhenGivenAComparer`, `ComparerTests.Autocomplete_ShouldLeaveTheFormClean_WhenTheReloadedValuesSuggestionIsChosenAgain`, `ComparerTests.Autocomplete_ShouldShowTheNewText_WhenTheParentPassesTheValueAgainRenamed`
 - [x] Clicking anywhere in the box outside its controls, such as its padding, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`
 - [x] A press on the box's padding leaves an open list open. `FieldBoxTests.Box_ShouldLeaveAnOpenListOpen_WhenItsPaddingIsPressed`
 - [x] A press on a control inside the box closes an open list when focus was in the input. A list opened from code, with focus elsewhere, stays open until a click outside the box or Escape. `FieldBoxTests.Box_ShouldCloseAnOpenList_WhenItsClearButtonIsPressedWithFocusInTheInput`

@@ -38,6 +38,14 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
+    /// still matches its option. Defaults to the values' own equality.</summary>
+    [Parameter]
+    public IEqualityComparer<TValue>? Comparer { get; set; }
+
+    private protected override bool SameValue(TValue? value, TValue? other) =>
+        OptionValues.Same(Comparer, value, other);
+
     /// <summary>The color a chosen radio takes. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
     [Parameter]
     public Tone Tone { get; set; } = Tone.Primary;
@@ -73,8 +81,7 @@
 
     string? IRadioGroup.FormatOption(object? value) => FormatValue(GroupValues.Fit<TValue>(value));
 
-    bool IRadioGroup.IsSelected(object? value) =>
-        EqualityComparer<TValue>.Default.Equals(GroupValues.Fit<TValue>(value), Value);
+    bool IRadioGroup.IsSelected(object? value) => OptionValues.Same(Comparer, GroupValues.Fit<TValue>(value), Value);
 
     // The change event belongs to the chosen TbRadio, so the group re-renders itself for its messages.
     async Task IRadioGroup.SelectAsync(object? value)
