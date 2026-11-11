@@ -1,3 +1,4 @@
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 // A tag input's keys. Enter or a separator adds what was typed, pasted text is split into tags, Backspace in an empty
 // input removes the last tag, and the arrow keys move between the tags' remove buttons. Each change reaches the server
 // as an event on the input, which a test can raise the same way.
@@ -32,7 +33,7 @@ export function createTagInput(input) {
     };
 
     const onInputKey = event => {
-        if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey) {
+        if (isComposing(event) || event.ctrlKey || event.metaKey || event.altKey) {
             return;
         }
 

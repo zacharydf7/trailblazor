@@ -1,3 +1,4 @@
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
 // A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order, link or null };
@@ -330,8 +331,7 @@ class Editor {
     }
 
     onKeyDown(event) {
-        // Safari ends a composition before the keydown of the Enter that commits it, marking that key only as 229.
-        if (event.isComposing || event.keyCode === 229) return;
+        if (isComposing(event)) return;
         const move = CARET_MOVES[event.key];
         if (move) {
             const flips = ['ArrowLeft', 'ArrowRight'].includes(event.key)

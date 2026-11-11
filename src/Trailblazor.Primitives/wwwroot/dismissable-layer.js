@@ -1,3 +1,4 @@
+import { isComposing } from './composing.js';
 // Layers stack in creation order; only the topmost one reacts to a dismiss gesture.
 const layers = [];
 
@@ -44,7 +45,7 @@ function markTopmost() {
 }
 
 function onKeyDown(event) {
-    if (event.key !== 'Escape' || event.defaultPrevented) {
+    if (event.key !== 'Escape' || event.defaultPrevented || isComposing(event)) {
         return;
     }
 

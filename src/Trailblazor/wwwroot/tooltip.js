@@ -1,4 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 
 // Hover, focus and Escape stay in the browser, and one set of listeners serves every tooltip, so a tooltip costs the
 // server nothing, even to set up. The JS initializer imports this at startup; each bubble carries its own settings.
@@ -89,6 +90,10 @@ document.addEventListener('pointerdown', event => hide(anchorOf(event.target)));
 // Escape always dismisses a tooltip (WCAG 1.4.13), even one still waiting to show. The Escape that hides a shown one
 // is used up, so a dialog around it stays open.
 document.addEventListener('keydown', event => {
+    if (isComposing(event)) {
+        return;
+    }
+
     if (event.key === 'Escape') {
         clearTimeout(timers.get(waiting));
     }

@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { createTypeahead } from './typeahead.js';
 import { watchForUnnamedOptions } from './unnamed-options.js';
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
 export function createSelect(combobox, listbox, toggle) {
@@ -251,7 +252,8 @@ export function createSelect(combobox, listbox, toggle) {
     };
     // The list keys work as on the combobox; Home, End and the other editing keys stay with the text box.
     const onFilterKeyDown = event => {
-        if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
+        if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Enter', 'Escape', 'Tab'].includes(event.key)
+            && !isComposing(event)) {
             onKeyDown(event);
         }
     };

@@ -1,6 +1,7 @@
 using System.Globalization;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Trailblazor.Tests.Components;
 
@@ -583,6 +584,18 @@ public class TbNumberFieldTests : BunitContext
         cut.Find("input").KeyDown(key);
 
         Assert.Equal(expected, value);
+    }
+
+    [Fact]
+    public void KeyDown_ShouldLeaveTheNumber_WhenAnImeIsComposing()
+    {
+        var value = 5;
+        var cut = RenderFormatted<int>("N0", "en-US", value, parameters => parameters
+            .Add(field => field.ValueChanged, (int number) => value = number));
+
+        cut.Find("input").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", IsComposing = true });
+
+        Assert.Equal(5, value);
     }
 
     private IRenderedComponent<TbNumberField<TValue>> RenderFormatted<TValue>(string format, string culture,

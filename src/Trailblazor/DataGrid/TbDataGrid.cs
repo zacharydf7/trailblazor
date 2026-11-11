@@ -946,7 +946,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             await SaveEditAsync(refocus: true);
         }
-        else if (args.Key == "Escape")
+        else if (args is { Key: "Escape", IsComposing: false })
         {
             await CancelEditAsync();
         }

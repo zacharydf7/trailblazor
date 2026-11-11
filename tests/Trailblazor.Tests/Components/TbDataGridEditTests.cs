@@ -144,6 +144,17 @@ public class TbDataGridEditTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=editor]"));
     }
 
+    [Fact]
+    public async Task Escape_ShouldKeepTheEditOpen_WhenAnImeIsComposing()
+    {
+        var cut = RenderHikes();
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+
+        await EditorKeyAsync(cut, "Escape", composing: true);
+
+        Assert.Single(cut.FindAll("[data-part=editor]"));
+    }
+
     [Theory]
     [InlineData("500", "The field Length km must be between 1 and 100.")]
     [InlineData("", "Length km is required.")]
@@ -399,9 +410,9 @@ public class TbDataGridEditTests : BunitContext
             configure?.Invoke(parameters);
         });
 
-    private static Task EditorKeyAsync(IRenderedComponent<TbDataGrid<Hike>> cut, string key, bool handled = false) =>
-        cut.Find("[data-part=editor]").TriggerEventAsync("ontbeditkey",
-            new GridEditKeyEventArgs { Key = key, Handled = handled });
+    private static Task EditorKeyAsync(IRenderedComponent<TbDataGrid<Hike>> cut, string key, bool handled = false,
+        bool composing = false) => cut.Find("[data-part=editor]").TriggerEventAsync("ontbeditkey",
+            new GridEditKeyEventArgs { Key = key, Handled = handled, IsComposing = composing });
 
     private static IElement Cell(IRenderedComponent<TbDataGrid<Hike>> cut, int id, string column) =>
         cut.Find($"tr[data-key='{id}'] td[data-column={column}]");

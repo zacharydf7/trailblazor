@@ -322,6 +322,30 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByText("Starting at:")).ToHaveTextAsync("Starting at: Pine Hollow");
     }
 
+    [Theory]
+    [MemberData(nameof(ComposingKeys))]
+    public async Task Autocomplete_ShouldLeaveTheKeyToTheIme_WhenItIsComposing(string browser, string key,
+        string composing)
+    {
+        var page = await OpenFieldsAsync(browser);
+        var trailhead = Field(page, "Trailhead");
+        var listbox = page.GetByRole(AriaRole.Listbox, new() { Name = "Trailhead" });
+        await trailhead.PressSequentiallyAsync("ridge");
+        await Expect(listbox.GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await trailhead.EvaluateAsync($"input => input.dispatchEvent(new KeyboardEvent('keydown', {{ key: '{key}', "
+            + $"bubbles: true, cancelable: true, {composing} }}))");
+
+        await Expect(listbox).ToBeVisibleAsync();
+        await Expect(trailhead).ToHaveValueAsync("ridge");
+    }
+
+    // Safari marks the Enter that commits a composition only with keyCode 229.
+    public static TheoryData<string, string, string> ComposingKeys() => new(AllBrowsers.Names.SelectMany(browser =>
+        new[] { (browser, "Enter", "isComposing: true"), (browser, "Enter", "keyCode: 229"),
+            (browser, "Escape", "isComposing: true") }));
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Autocomplete_ShouldShowThatItIsSearching_WhileTheSearchRuns(string browser)
     {

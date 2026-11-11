@@ -1,6 +1,7 @@
 import { autofocusTarget, firstTabbable } from '../Trailblazor.Primitives/focus-scope.js';
 import { focusForLastInput, focusOrigin } from '../Trailblazor.Primitives/pointer-origin.js';
 import { alwaysUsable, hold, release } from './inert.js';
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 
 // Open dialogs, back to front; keys go to the frontmost, or to a modeless one that has focus, so a nested dialog closes
 // before the one beneath it.
@@ -216,7 +217,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     // working in; focus in a dialog nested inside it belongs to the nested one.
     const onKeyDown = event => {
         const frontmost = stack.at(-1) === entry;
-        if (event.key !== 'Escape' || event.defaultPrevented
+        if (event.key !== 'Escape' || event.defaultPrevented || isComposing(event)
             || !(frontmost || !entry.modal && document.activeElement?.closest('dialog') === dialog)
             || dialog.querySelector(`${lightDismissPopup}, [role="tooltip"]:popover-open, [data-dismissable-layer]`)
             || event.target.closest?.('[data-part="toaster"]')) {

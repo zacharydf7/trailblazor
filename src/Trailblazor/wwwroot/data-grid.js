@@ -1,4 +1,5 @@
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 
 // Inputs that act on Enter themselves, as a button does, so the grid leaves their Enter alone.
 const actOnEnter = new Set(['button', 'color', 'file', 'image', 'reset', 'submit']);
@@ -315,7 +316,7 @@ export function createDataGrid(table, waitForReorder) {
     // such as an autocomplete choosing an option, is left to the widget.
     const keepPageFormUnsubmitted = event => {
         const input = event.target;
-        if (event.key !== 'Enter' || event.isComposing || event.defaultPrevented
+        if (event.key !== 'Enter' || isComposing(event) || event.defaultPrevented
             || !(input instanceof HTMLInputElement) || actOnEnter.has(input.type)
             || !input.closest('.tb-data-grid__filters, .tb-data-grid__filter-form, .tb-data-grid__editor')) {
             return;
@@ -328,7 +329,7 @@ export function createDataGrid(table, waitForReorder) {
     // Escape that ends a cell's edit is marked used, so a dialog around the grid stays open; one a field has already
     // used, such as a select closing its list, is already marked.
     const keepEscapeInEdit = event => {
-        if (event.key === 'Escape' && !event.defaultPrevented
+        if (event.key === 'Escape' && !event.defaultPrevented && !isComposing(event)
             && event.target.closest?.('.tb-data-grid__editor, .tb-data-grid__row-actions')) {
             event.preventDefault();
             event.tbGridGuarded = true;
@@ -633,7 +634,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         }
 
         const cell = event.target.closest?.('td, th');
-        if (!isGrid() || event.defaultPrevented || event.altKey || event.isComposing || !cell
+        if (!isGrid() || event.defaultPrevented || event.altKey || isComposing(event) || !cell
             || cell.closest('table') !== table || event.target.closest('[popover]')
             || isDetail(cell) && event.target !== cell) {
             return;

@@ -19,6 +19,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Escape on a closed list is left for what surrounds it, such as a dialog. `autocomplete.js`
 - [x] Arrows pass over the status message. `AutocompleteTests.Listbox_ShouldStayOpenWithNothingActive_WhenItsMessageIsClickedOrArrowedTo`
 - [x] Tab closes the list and settles the typed text the same way. `AutocompleteTests.Autocomplete_ShouldTakeTypedTextAsTheValue_WhenFreeTextIsEnteredOrLeft`
+- [x] Enter and Escape go to an input method while it composes text, not to the list. `AutocompleteTests.Autocomplete_ShouldLeaveTheKeyToTheIme_WhenItIsComposing`
 
 ## Pointer
 

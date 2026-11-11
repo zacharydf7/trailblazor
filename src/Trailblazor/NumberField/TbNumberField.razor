@@ -207,7 +207,7 @@
 
     // A text box would move the caret on the arrows, so number-field.js holds the caret and the keys step instead, as
     // in a number box.
-    private Task OnKeyDownAsync(KeyboardEventArgs e) => ReadOnly ? Task.CompletedTask : e.Key switch
+    private Task OnKeyDownAsync(KeyboardEventArgs e) => ReadOnly || e.IsComposing ? Task.CompletedTask : e.Key switch
     {
         "ArrowUp" => StepAsync(1),
         "ArrowDown" => StepAsync(-1),

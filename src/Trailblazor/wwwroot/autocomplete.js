@@ -1,5 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { discard, flush } from './debounced-input.js';
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 
 // The list opens as the user types and the server fills it; the keys move an active option in the browser, and
 // choosing clicks it, which reaches the server. Focus never leaves the input.
@@ -80,7 +81,7 @@ export function createAutocomplete(input, listbox, events) {
     };
     const onKeyDown = event => {
         // The list can still hold results from before the field turned read-only, and the keys must not reach them.
-        if (input.readOnly) {
+        if (input.readOnly || isComposing(event)) {
             return;
         }
 
@@ -141,7 +142,7 @@ export function createAutocomplete(input, listbox, events) {
     };
     // Added only while the list is open, so Escape on a closed list reaches what surrounds it, such as a dialog.
     const onDocumentKeyDown = event => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && !isComposing(event)) {
             event.preventDefault();
             close();
         }
