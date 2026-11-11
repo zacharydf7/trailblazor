@@ -88,6 +88,9 @@ public class TbContractTests
     // A watch that keeps its timer and its browser callback when it's gone.
     private sealed class LingeringWatch : ComponentBase
     {
+        // Held in a field like a real component's timer: one nothing refers to can be garbage-collected and never fire.
+        private ITimer? _timer;
+
         [Inject]
         private TimeProvider Time { get; set; } = default!;
 
@@ -101,7 +104,7 @@ public class TbContractTests
         {
             if (firstRender)
             {
-                Time.CreateTimer(_ => InvokeAsync(OnTick.InvokeAsync), null, TimeSpan.FromMinutes(1),
+                _timer = Time.CreateTimer(_ => InvokeAsync(OnTick.InvokeAsync), null, TimeSpan.FromMinutes(1),
                     Timeout.InfiniteTimeSpan);
                 await Script.InvokeVoidAsync("watch", DotNetObjectReference.Create(this));
             }
