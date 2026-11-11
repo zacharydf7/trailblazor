@@ -5,6 +5,76 @@ namespace Trailblazor.BrowserTests;
 
 public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldSearchOnceForTheTextTypedBeforeAPause_WhenGivenASearch(string browser)
+    {
+        var page = await OpenAsync(browser, "/autocomplete-search");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.PressSequentiallyAsync("ridge");
+
+        await Expect(page.GetByRole(AriaRole.Option)).ToHaveTextAsync(["Eagle Ridge", "Ridge Loop"]);
+        await Expect(page.GetByTestId("searches")).ToHaveTextAsync("1");
+        await Expect(page.GetByTestId("inputs")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldTakeTheTextTypedJustBefore_WhenEnterIsPressedDuringTheWait(string browser)
+    {
+        var page = await OpenAsync(browser, "/autocomplete-search");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.PressSequentiallyAsync("Cedar");
+        await trail.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("trail")).ToHaveTextAsync("Cedar");
+        // Wait past the one-second delay, by which time any input still waiting would have reopened the list.
+        await page.WaitForTimeoutAsync(1500);
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldChooseWithoutSearchingTheWaitingText_WhenASuggestionIsChosenDuringTheWait(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/autocomplete-search");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+        await trail.PressSequentiallyAsync("ridge");
+        await Expect(page.GetByRole(AriaRole.Option)).ToHaveTextAsync(["Eagle Ridge", "Ridge Loop"]);
+
+        // The choice replaces "ridge l", so it's neither searched nor sent.
+        await trail.PressSequentiallyAsync(" l");
+        await trail.PressAsync("ArrowDown");
+        await trail.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("trail")).ToHaveTextAsync("Eagle Ridge");
+        await page.WaitForTimeoutAsync(1500);
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        await Expect(page.GetByTestId("trail")).ToHaveTextAsync("Eagle Ridge");
+        await Expect(page.GetByTestId("searches")).ToHaveTextAsync("1");
+        await Expect(page.GetByTestId("inputs")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldStayClosedAndSearchTheTypedText_WhenEscapeIsPressedDuringTheWait(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/autocomplete-search");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.PressSequentiallyAsync("ridge");
+        await trail.PressAsync("Escape");
+
+        await Expect(page.GetByTestId("searches")).ToHaveTextAsync("1");
+        await page.WaitForTimeoutAsync(1500);
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
     private static ILocator Field(IPage page, string name) =>
         page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
 

@@ -59,7 +59,9 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     public bool FreeText { get; set; }
 
     /// <summary>How long the user must stop typing before <see cref="Search"/> runs. Defaults to 200 milliseconds;
-    /// zero searches at once. It is timed by the app's <see cref="TimeProvider"/>.</summary>
+    /// zero searches at once. With a <see cref="Search"/>, the browser does the waiting, so the server hears nothing
+    /// while the user types; without one, <see cref="OnTextChanged"/> waits on the app's <see cref="TimeProvider"/>.
+    /// </summary>
     [Parameter]
     public TimeSpan DebounceDelay { get; set; } = TimeSpan.FromMilliseconds(200);
 
@@ -227,7 +229,8 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         await report;
     }
 
-    // Each keystroke restarts the wait, so only text the user paused on is reported.
+    // Each keystroke restarts the wait, so only text the user paused on is reported; with a search, the browser has
+    // already waited.
     private async Task ReportTypedAsync()
     {
         if (!OnTextChanged.HasDelegate)
@@ -240,7 +243,10 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         _typing = new CancellationTokenSource();
         try
         {
-            await Task.Delay(DebounceDelay, Time, _typing.Token);
+            if (InputDelay is null)
+            {
+                await Task.Delay(DebounceDelay, Time, _typing.Token);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -271,6 +277,11 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         _searching = _failed = false;
     }
 
+    // With a search, debounced-input.js holds keystrokes back in the browser until typing pauses for the delay, so the
+    // server hears one input per pause and searches at once.
+    private string? InputDelay => Search is not null && DebounceDelay > TimeSpan.Zero
+        ? DebounceDelay.TotalMilliseconds.ToString(CultureInfo.InvariantCulture) : null;
+
     private async Task SearchAsync()
     {
         _search?.Cancel();
@@ -291,7 +302,6 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
             IEnumerable<TValue> found;
             if (Search is not null)
             {
-                await Task.Delay(DebounceDelay, Time, token);
                 found = await Search(_text, token);
             }
             else

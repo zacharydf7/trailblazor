@@ -1,0 +1,24 @@
+@page "/autocomplete-search"
+
+@* The search's delay outlasts the gap between quick keystrokes, so typing a word sends the server one input and
+   searches once. *@
+<div @oninput="() => _inputs++">
+    <TbAutocomplete TValue="string" @bind-Value="_trail" Label="Trail" Search="SearchAsync" FreeText
+                    DebounceDelay="TimeSpan.FromSeconds(1)" />
+</div>
+<output data-testid="inputs">@_inputs</output>
+<output data-testid="searches">@_searches</output>
+<output data-testid="trail">@_trail</output>
+
+@code {
+    private static readonly string[] Trails = ["Eagle Ridge", "Pine Hollow", "Ridge Loop"];
+    private string? _trail;
+    private int _searches;
+    private int _inputs;
+
+    private Task<IEnumerable<string>> SearchAsync(string text, CancellationToken _)
+    {
+        _searches++;
+        return Task.FromResult(Trails.Where(trail => trail.Contains(text, StringComparison.OrdinalIgnoreCase)));
+    }
+}

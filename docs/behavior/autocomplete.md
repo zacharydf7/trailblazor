@@ -7,6 +7,10 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 ## Keyboard
 
 - [x] Typing opens the list and searches. `AutocompleteTests.Autocomplete_ShouldSearchAndChooseWithTheKeys_WhenTheUserTypes`
+- [x] With a `Search`, quick typing searches once, for the text typed before the pause, since the browser waits out `DebounceDelay`. `AutocompleteTests.Autocomplete_ShouldSearchOnceForTheTextTypedBeforeAPause_WhenGivenASearch`
+- [x] Enter during that wait still commits everything typed before it, and the list stays closed. `AutocompleteTests.Autocomplete_ShouldTakeTheTextTypedJustBefore_WhenEnterIsPressedDuringTheWait`
+- [x] Escape during that wait still searches the typed text, and the list stays closed. `AutocompleteTests.Autocomplete_ShouldStayClosedAndSearchTheTypedText_WhenEscapeIsPressedDuringTheWait`
+- [x] Choosing a suggestion during that wait drops the waiting text instead of searching it. `AutocompleteTests.Autocomplete_ShouldChooseWithoutSearchingTheWaitingText_WhenASuggestionIsChosenDuringTheWait`
 - [x] Down and Up move through an open list, and wrap at its ends. `autocomplete.js`
 - [x] Alt+Down opens the list without moving to an option. `autocomplete.js`
 - [x] Enter chooses the active option, closes the list and stays in the field. `AutocompleteTests.Autocomplete_ShouldSearchAndChooseWithTheKeys_WhenTheUserTypes`

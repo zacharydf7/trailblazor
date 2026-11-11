@@ -1,4 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
+import { discard, flush } from './debounced-input.js';
 
 // The list opens as the user types and the server fills it; the keys move an active option in the browser, and
 // choosing clicks it, which reaches the server. Focus never leaves the input.
@@ -47,7 +48,10 @@ export function createAutocomplete(input, listbox, events) {
             events.invokeMethodAsync('OnBrowse');
         }
     };
+    // Text still waiting out the delay is sent first, so the server handles Enter or Escape against the latest text,
+    // and no input sent later reopens the list.
     const close = () => {
+        flush(input);
         if (!isOpen()) {
             return;
         }
@@ -158,8 +162,10 @@ export function createAutocomplete(input, listbox, events) {
     };
     // Pressing an option would take focus from the input, which closes the list before the click arrives.
     const onListboxPointerDown = event => event.preventDefault();
+    // A choice replaces the typed text, so text still waiting is dropped rather than searched and reported first.
     const onListboxClick = event => {
         if (event.target.closest(choosable)) {
+            discard(input);
             close();
         }
     };

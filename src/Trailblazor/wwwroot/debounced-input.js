@@ -12,6 +12,19 @@ const send = field => {
     sending = false;
 };
 
+// Sends a field's waiting input now, so the server has the typed text before what follows, such as Enter or a change.
+export function flush(field) {
+    if (waiting.has(field)) {
+        send(field);
+    }
+}
+
+// Drops a field's waiting input, as when a choice replaces the typed text anyway.
+export function discard(field) {
+    clearTimeout(waiting.get(field));
+    waiting.delete(field);
+}
+
 // Blazor hears input on the document, so stopping it at the root keeps it from the server but not from the field.
 document.documentElement.addEventListener('input', event => {
     const field = event.target;
@@ -24,8 +37,4 @@ document.documentElement.addEventListener('input', event => {
     waiting.set(field, setTimeout(() => send(field), +field.dataset.inputDelay));
 });
 
-window.addEventListener('change', event => {
-    if (waiting.has(event.target)) {
-        send(event.target);
-    }
-}, { capture: true });
+window.addEventListener('change', event => flush(event.target), { capture: true });

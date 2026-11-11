@@ -4330,9 +4330,10 @@ public static class ExampleCatalog
             ],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
-                + "search, and clicks the option by its name. In bUnit, `Search` runs and `OnTextChanged` fires once "
-                + "`DebounceDelay` has passed on the app's `TimeProvider`, so advance a `FakeTimeProvider` past it, or "
-                + "set it to `TimeSpan.Zero`.",
+                + "search, and clicks the option by its name. With a `Search`, the browser waits out `DebounceDelay`, "
+                + "so in bUnit, which has no browser, `Search` runs and `OnTextChanged` fires on each input. Without a "
+                + "`Search`, `OnTextChanged` fires once `DebounceDelay` has passed on the app's `TimeProvider`, so advance a "
+                + "`FakeTimeProvider` past it, or set it to `TimeSpan.Zero`.",
         },
         new("tag-input", "Tag input", ExampleCategory.Inputs,
             "A field where people type any number of short labels, such as a trail's features, each shown as a chip.")

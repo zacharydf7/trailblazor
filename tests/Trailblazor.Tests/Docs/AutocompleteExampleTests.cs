@@ -34,7 +34,6 @@ public class AutocompleteExampleTests : DocsTest
         cut.Find("input[type=checkbox]").Change(true);
 
         cut.Find("[role=combobox]").Input("alder");
-        Time.Advance(TimeSpan.FromSeconds(1));
 
         cut.WaitForAssertion(() =>
         {
@@ -49,7 +48,6 @@ public class AutocompleteExampleTests : DocsTest
         var cut = Render<AutocompleteStatesOfSearchExample>();
 
         cut.Find("[role=combobox]").Input("zzz");
-        Time.Advance(TimeSpan.FromSeconds(1));
 
         cut.WaitForAssertion(() => Assert.Equal("No matches", cut.Find("[data-part=status]").TextContent.Trim()),
             TimeSpan.FromSeconds(5));

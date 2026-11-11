@@ -89,10 +89,9 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
-    public void Input_ShouldSearchOnceTypingHasSettledForTheDelay_WhenTheUserTypes()
+    public void Input_ShouldSearchAtOnceAndLeaveTheWaitToTheBrowser_WhenGivenASearch()
     {
         var searched = new List<string>();
-        // A minute the wall clock won't reach, so only the app's TimeProvider can end it.
         var cut = Render<TbAutocomplete<string>>(parameters => parameters
             .Add(field => field.DebounceDelay, TimeSpan.FromMinutes(1)).Add(field => field.Search, (text, _) =>
             {
@@ -100,16 +99,34 @@ public class TbAutocompleteTests : BunitContext
                 return Task.FromResult(Trails.Where(trail => trail.Contains(text, StringComparison.OrdinalIgnoreCase)));
             }));
 
-        cut.Find("input").Input("p");
-        _time.Advance(TimeSpan.FromSeconds(50));
         cut.Find("input").Input("pine b");
-        _time.Advance(TimeSpan.FromSeconds(59));
-        Assert.Empty(searched);
-        _time.Advance(TimeSpan.FromSeconds(1));
 
         cut.WaitForAssertion(() => Assert.Equal(["Pine Bluff"],
             cut.FindAll("[role=option]").Select(option => option.TextContent.Trim())));
         Assert.Equal(["pine b"], searched);
+        Assert.Equal("60000", cut.Find("input").GetAttribute("data-input-delay"));
+    }
+
+    [Fact]
+    public void OnTextChanged_ShouldReportAtOnce_WhenTheBrowserWaitsForASearch()
+    {
+        var reported = new List<string>();
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters
+            .Add(field => field.DebounceDelay, TimeSpan.FromMinutes(1))
+            .Add(field => field.Search, (_, _) => Task.FromResult<IEnumerable<string>>(Trails))
+            .Add(field => field.OnTextChanged, (string text) => reported.Add(text)));
+
+        cut.Find("input").Input("pin");
+
+        cut.WaitForAssertion(() => Assert.Equal(["pin"], reported));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheWaitToTheServer_WhenGivenNoSearch()
+    {
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.Items, Trails));
+
+        Assert.False(cut.Find("input").HasAttribute("data-input-delay"));
     }
 
     [Fact]
@@ -474,7 +491,6 @@ public class TbAutocompleteTests : BunitContext
             .Add(field => field.OnTextChanged, (string _) => listening.Task));
 
         cut.Find("input").Input("Eagle");
-        _time.Advance(TimeSpan.FromMilliseconds(200));
 
         cut.WaitForAssertion(() => Assert.Equal("Eagle Ridge", cut.Find("[role=option]").TextContent.Trim()));
         listening.SetResult();
