@@ -3,7 +3,7 @@
 @inject NavigationManager Navigation
 
 @* The sort headers and pager are links to the view each one leads to, so the grid's place is in the address. *@
-<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Linked trails" PageSize="3" Sorts="_place.Sorts"
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trail lengths" PageSize="3" Sorts="_place.Sorts"
             Page="_place.Page" StateHref="Link">
     <TbColumn Field="trail => trail.Name" Sortable />
     <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
