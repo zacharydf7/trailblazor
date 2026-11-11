@@ -3641,7 +3641,8 @@
         transform: translateX(calc(var(--tb-switch-thumb) + 6px - var(--tb-switch-width)));
     }
 
-    /* A thumb icon sits on the thumb and moves with it. It's inside the label, so a click on it toggles the switch. */
+    /* A thumb icon sits on the thumb and moves with it. Clicks pass through it to the switch, so the icon isn't
+       a separate, undersized click target. */
     .tb-switch__control {
         position: relative;
         display: grid;
@@ -3657,6 +3658,7 @@
         width: var(--tb-switch-thumb);
         height: var(--tb-switch-thumb);
         color: var(--tb-color-surface);
+        pointer-events: none;
     }
 
     .tb-switch__thumb-icon .tb-icon {

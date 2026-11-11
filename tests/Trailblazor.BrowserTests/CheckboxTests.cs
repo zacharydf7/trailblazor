@@ -84,7 +84,9 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(maps).ToBeCheckedAsync();
 
         await ExpectIconOnThumbAsync(maps, "on");
-        await maps.Locator("xpath=..").Locator("[data-part=thumb-icon][data-state=on]").ClickAsync();
+        var icon = (await maps.Locator("xpath=..").Locator("[data-part=thumb-icon][data-state=on]")
+            .BoundingBoxAsync())!;
+        await page.Mouse.ClickAsync(icon.X + icon.Width / 2, icon.Y + icon.Height / 2);
         await Expect(maps).Not.ToBeCheckedAsync();
         await ExpectIconOnThumbAsync(maps, "off");
     }
