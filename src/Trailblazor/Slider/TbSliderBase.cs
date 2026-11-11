@@ -7,6 +7,12 @@ namespace Trailblazor;
 /// <see cref="Min"/> and <see cref="Max"/> with native range inputs as its thumbs.</summary>
 public abstract partial class TbSliderBase<TValue> : TbFieldBase<TValue>
 {
+    /// <summary>
+    /// The size of the thumb, the track and the text. Defaults to <see cref="Trailblazor.Size.Medium"/>.
+    /// </summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
     /// <summary>The lowest value. Defaults to 0.</summary>
     [Parameter]
     public decimal Min { get; set; }

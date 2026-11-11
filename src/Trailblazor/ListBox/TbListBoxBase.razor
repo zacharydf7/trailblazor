@@ -12,7 +12,8 @@
              aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
              aria-invalid="@(ShowsInvalid ? "true" : null)"
              aria-describedby="@InputDescribedBy" style="--tb-listbox-rows: @Rows"
-             class="@ClassNames.Join("tb-field__input", "tb-listbox", Classes?.Input)">
+             class="@ClassNames.Join("tb-field__input", "tb-listbox", ClassNames.Modifier("tb-listbox", Size),
+                        Classes?.Input)">
             <CascadingValue Value="this">@ChildContent</CascadingValue>
             @if (_options.Count == 0)
             {
@@ -33,7 +34,8 @@
                 disabled="@Disabled" aria-readonly="@(ReadOnly ? "true" : null)"
                 aria-required="@(Required ? "true" : null)"
                 aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
-                class="@ClassNames.Join("tb-field__input", "tb-listbox", "tb-listbox--native", Classes?.Input)">
+                class="@ClassNames.Join("tb-field__input", "tb-listbox", "tb-listbox--native",
+                           ClassNames.Modifier("tb-listbox", Size), Classes?.Input)">
             <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
             @if (_options.Count == 0)
             {

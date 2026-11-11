@@ -5424,9 +5424,11 @@
         padding: var(--tb-space-1);
     }
 
+    /* Each size offsets the option height from the density's item height; small never drops below 24px. */
     .tb-listbox {
+        --tb-listbox-item-height: var(--tb-item-height);
         box-sizing: border-box;
-        max-block-size: calc(var(--tb-listbox-rows) * var(--tb-item-height));
+        max-block-size: calc(var(--tb-listbox-rows) * var(--tb-listbox-item-height));
         padding-block: 0;
         overflow-y: auto;
         font-size: var(--tb-font-size-sm);
@@ -5434,6 +5436,21 @@
 
     .tb-listbox--native {
         max-block-size: none;
+    }
+
+    .tb-listbox .tb-select__option {
+        min-height: var(--tb-listbox-item-height);
+        font-size: inherit;
+    }
+
+    .tb-listbox--small {
+        --tb-listbox-item-height: max(24px, calc(var(--tb-item-height) - 4px));
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-listbox--large {
+        --tb-listbox-item-height: calc(var(--tb-item-height) + 8px);
+        font-size: var(--tb-font-size-md);
     }
 
     .tb-listbox:focus .tb-select__option[data-active] {
@@ -5614,6 +5631,24 @@
     .tb-slider__label {
         font-size: var(--tb-font-size-sm);
         font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-slider--small {
+        --tb-slider-thumb: 0.875rem;
+        --tb-slider-track: 0.1875rem;
+    }
+
+    .tb-slider--small .tb-slider__label {
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-slider--large {
+        --tb-slider-thumb: 1.375rem;
+        --tb-slider-track: 0.375rem;
+    }
+
+    .tb-slider--large .tb-slider__label {
+        font-size: var(--tb-font-size-md);
     }
 
     /* Native thumbs stay inside the track, so values are placed half a thumb in from each end. */
@@ -5989,6 +6024,19 @@
         flex: 1;
         min-width: 0;
         padding-block: 0;
+    }
+
+    /* Sizes follow density as a button's do, and reach only this list's tabs, not a nested tab list's. */
+    .tb-tabs--small > .tb-tabs__list > .tb-tabs__tab {
+        min-height: var(--tb-control-height-sm);
+        padding-inline: var(--tb-space-2);
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-tabs--large > .tb-tabs__list > .tb-tabs__tab {
+        min-height: var(--tb-control-height-lg);
+        padding-inline: var(--tb-space-4);
+        font-size: var(--tb-font-size-md);
     }
 
     .tb-tabs__tab {

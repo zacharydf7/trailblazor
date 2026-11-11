@@ -1,0 +1,14 @@
+<TbStack Row Wrap Gap="4" Align="Align.Start">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbListBox @bind-Value="_start" Label="@($"{size} start time")" Size="size" Rows="3">
+            <TbOption Value="@("Sunrise")" />
+            <TbOption Value="@("Midday")" />
+            <TbOption Value="@("Sunset")" />
+        </TbListBox>
+    }
+</TbStack>
+
+@code {
+    private string? _start = "Sunrise";
+}

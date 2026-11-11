@@ -15,7 +15,8 @@
 
     private protected RenderFragment Layout(string? labelFor, double? from, double to, RenderFragment thumbs) =>
         @<div @attributes="RootAttributes" style="@Style"
-              class="@ClassNames.Join("tb-slider", from is null ? null : "tb-slider--range",
+              class="@ClassNames.Join("tb-slider", ClassNames.Modifier("tb-slider", Size),
+                         from is null ? null : "tb-slider--range",
                          ShowsInvalid ? "tb-slider--invalid" : null, Disabled ? "tb-slider--disabled" : null,
                          Class)">
             @if (ShownLabel is not null)

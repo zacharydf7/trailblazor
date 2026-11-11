@@ -6,8 +6,8 @@
 @inject JsModuleLoader Modules
 
 <div @attributes="AdditionalAttributes" style="@Style"
-     class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), Vertical ? "tb-tabs--vertical" : null,
-                Class)">
+     class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), ClassNames.Modifier("tb-tabs", Size),
+                Vertical ? "tb-tabs--vertical" : null, Class)">
     @* data-ready marks that the arrow keys work, which tests wait for. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")" data-ready="@(_handle is null ? null : "")"
@@ -74,6 +74,12 @@
     /// <summary>Stacks the tabs in a column beside their panels, moved between with Up and Down.</summary>
     [Parameter]
     public bool Vertical { get; set; }
+
+    /// <summary>
+    /// The height of the tabs and the size of their text. Defaults to <see cref="Trailblazor.Size.Medium"/>.
+    /// </summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
 
     /// <summary>How the selected tab is marked: <see cref="Trailblazor.Variant.Text"/>, the default, underlines it;
     /// <see cref="Trailblazor.Variant.Soft"/> and <see cref="Trailblazor.Variant.Filled"/> draw it as a tinted or

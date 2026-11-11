@@ -1,0 +1,10 @@
+<TbStack Gap="4">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbSlider @bind-Value="_volume" Label="@($"{size} volume")" Size="size" ShowValue />
+    }
+</TbStack>
+
+@code {
+    private int _volume = 40;
+}

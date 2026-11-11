@@ -1,0 +1,10 @@
+<TbStack Gap="4">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbTabs AriaLabel="@($"{size} tabs")" Size="size">
+            <TbTab Text="Map"><TbText>The trail on a map.</TbText></TbTab>
+            <TbTab Text="Elevation"><TbText>How the trail climbs.</TbText></TbTab>
+            <TbTab Text="Reviews"><TbText>What hikers say.</TbText></TbTab>
+        </TbTabs>
+    }
+</TbStack>

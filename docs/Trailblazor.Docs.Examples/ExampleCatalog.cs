@@ -1576,6 +1576,9 @@ public static class ExampleCatalog
                 new("vertical", "Vertical", "`Vertical` stacks the controls in a column, and the up and down arrows "
                     + "move between them. A vertical toolbar never moves buttons into a menu.",
                     typeof(ToolbarVerticalExample)),
+                new("sizes", "Sizes", "`Size` on the toolbar is `Small`, `Medium` or `Large`, the same steps as a "
+                    + "button's. It sizes the toolbar buttons and the More button, but a `TbToolbarButton` with its "
+                    + "own `Size` keeps it.", typeof(ToolbarSizeExample)),
             ],
             Api = [typeof(TbToolbar), typeof(TbToolbarButton)],
             Keyboard =
@@ -3576,6 +3579,10 @@ public static class ExampleCatalog
                     + "other. A click on the track moves the nearer thumb. Thumbs on one value, or close enough to "
                     + "overlap, separate in the direction they're dragged. `StartLabel` and `EndLabel` name the thumbs.",
                     typeof(SliderRangeExample)),
+                new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and scales the thumb, the track and the "
+                    + "label. The slider stays at least 24 pixels high, so it is still easy to press. Unlike other "
+                    + "components' sizes, a slider's don't change with density.",
+                    typeof(SliderSizeExample)),
                 new("validation", "Validation", "The thumb always sits on a value, so `Required` only catches a "
                     + "nullable slider still bound to `null`. `Validation` checks the value once it is changed or its "
                     + "form validates.",
@@ -5202,6 +5209,9 @@ public static class ExampleCatalog
                     + "rather search than scroll, use a filterable [select](components/select) or an "
                     + "[autocomplete](components/autocomplete).",
                     typeof(ListBoxManyExample)),
+                new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and sets the options' height and text "
+                    + "size. Each size follows the page's density, and an option is never shorter than 24 pixels.",
+                    typeof(ListBoxSizeExample)),
                 new("comparer", "Values loaded again", "`Comparer` decides whether two values are the same, so a value "
                     + "from another query, equal only by id, still matches its option.", typeof(ListBoxComparerExample)),
                 new("required", "Required", "`Required` shows a marker. Once the list box is changed or its form "
@@ -6343,6 +6353,7 @@ public static class ExampleCatalog
                     + "Text=\"Third\">…</TbTab>\n</TbTabs>",
                         ExampleControl.Choice(nameof(TbTabs.Variant), Variant.Text),
                         ExampleControl.Choice(nameof(TbTabs.Activation), TabActivation.Automatic),
+                        ExampleControl.Choice(nameof(TbTabs.Size), Size.Medium),
                         ExampleControl.Switch(nameof(TbTabs.Vertical)), ExampleControl.Switch(nameof(TbTabs.Centered))),
                 },
                 new("tabs", "Tabs and panels", "Each `TbTab` adds a tab and its panel. `Text` or `TextContent` is the "
@@ -6350,6 +6361,8 @@ public static class ExampleCatalog
                     + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Only the selected panel "
                     + "renders.",
                     typeof(TabsExample)),
+                new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and sets the tabs' height and text "
+                    + "size, the same steps as a button's.", typeof(TabsSizeExample)),
                 new("variants", "Variants", "`Variant` marks the selected tab: `Text` and `Outlined` underline it, and "
                     + "`Soft` and `Filled` make it a pill, in vertical lists too. `--tb-tabs-indicator-color` and "
                     + "`--tb-tabs-indicator-size` restyle the underline.", typeof(TabsVariantExample)),

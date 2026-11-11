@@ -15,6 +15,12 @@ public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISele
     private DotNetObjectReference<ListBoxEvents>? _events;
     private bool _disposed;
 
+    /// <summary>
+    /// The height of the options and the size of their text. Defaults to <see cref="Trailblazor.Size.Medium"/>.
+    /// </summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
     /// <summary>The <see cref="TbOption{TValue}"/>s to choose from.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

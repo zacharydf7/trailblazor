@@ -126,6 +126,52 @@ public class TbToolbarTests : BunitContext
         Assert.Contains("AriaLabel", error.Message);
     }
 
+    [Theory]
+    [InlineData(Size.Small, "tb-button--small")]
+    [InlineData(Size.Large, "tb-button--large")]
+    public void Render_ShouldSizeItsButtonsAndOverflowButton_WhenGivenASize(Size size, string modifier)
+    {
+        var cut = RenderToolbar();
+
+        cut.Render(parameters => parameters.Add(toolbar => toolbar.Size, size));
+
+        var buttons = cut.FindAll("[role=toolbar] button");
+        Assert.Equal(3, buttons.Count);
+        Assert.All(buttons, button => Assert.Contains(modifier, button.ClassList));
+    }
+
+    [Fact]
+    public void Render_ShouldResizeATextOnlyButton_WhenTheToolbarsSizeChanges()
+    {
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Notes")
+            .Add(toolbar => toolbar.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbToolbarButton>(0);
+                builder.AddAttribute(1, nameof(TbToolbarButton.Label), "Delete note");
+                builder.CloseComponent();
+            })));
+
+        cut.Render(parameters => parameters.Add(toolbar => toolbar.Size, Size.Small));
+
+        Assert.Contains("tb-button--small", cut.Find("button[data-toolbar-item]").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldKeepAButtonsOwnSize_WhenTheToolbarHasAnother()
+    {
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Notes")
+            .Add(toolbar => toolbar.Size, Size.Small)
+            .Add(toolbar => toolbar.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbToolbarButton>(0);
+                builder.AddAttribute(1, nameof(TbToolbarButton.Label), "Delete note");
+                builder.AddAttribute(2, nameof(TbToolbarButton.Size), Size.Large);
+                builder.CloseComponent();
+            })));
+
+        Assert.Contains("tb-button--large", cut.Find("button[data-toolbar-item]").ClassList);
+    }
+
     private IRenderedComponent<TbToolbar> RenderToolbar(bool vertical = false, Action<string>? onClick = null) =>
         Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Notes")
             .Add(toolbar => toolbar.Vertical, vertical)

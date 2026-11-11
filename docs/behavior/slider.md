@@ -34,13 +34,14 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 ## Touch
 
 - [x] Touch on a thumb is the browser's own, since each thumb is a native range input, unless a press lands on both of a range slider's thumbs. `TbSlider.razor`, `range-slider.js`
+- [x] Each `Size` scales the thumb and track, and the slider stays 24px high at every size, so it's easy to press. `SizeTests.Slider_ShouldScaleTheTrackButKeepA24PixelTarget_WhenSmallMediumOrLarge`
 - [x] On a range slider, a tap on the track moves the nearer thumb, and a finger sliding across drags it. A finger sliding from thumbs on one value separates them, and so does one sliding from thumbs that overlap, in Chromium. `SliderDragTests.RangeSlider_ShouldMoveTheNearerThumb_WhenTheTrackIsTapped`, `SliderDragTests.RangeSlider_ShouldFollowAFinger_WhenItSlidesAcrossTheTrack`, `SliderDragTests.RangeSlider_ShouldSeparateItsThumbs_WhenAFingerSlidesFromThem`, `SliderDragTests.RangeSlider_ShouldMoveTheThumbOnTheSideAFingerHeadsTo_WhenItsThumbsOverlap`
 - [x] A finger scrolling the page from a range slider's track changes nothing and takes no focus, in Chromium. From thumbs that overlap, the page doesn't scroll, since their own touch handling is held back, but the swipe still changes nothing and takes no focus. `SliderDragTests.RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnTheTrack`, `SliderDragTests.RangeSlider_ShouldStayPut_WhenAFingerStartsScrollingOnOverlappingThumbs`
 - [ ] A finger scrolling the page from a range slider's track changes nothing on phones, which relies on the browser canceling the press. UNCONFIRMED
 - [ ] Two fingers on one range slider can each drag a thumb. UNCONFIRMED
 - [ ] A finger sliding from thumbs that overlap separates them on phones, which relies on the browser letting the page hold back a thumb's own touch handling. UNCONFIRMED
 - [ ] Tapping a single slider's track moves the thumb there on phones. UNCONFIRMED
-- [ ] A range slider's thumbs can be dragged on phones, though they're just 18px across. UNCONFIRMED
+- [ ] A range slider's thumbs can be dragged on phones, though they're just 18px across, or 14px when small. UNCONFIRMED
 
 ## Focus
 

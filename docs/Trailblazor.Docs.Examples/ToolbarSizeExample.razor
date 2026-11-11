@@ -1,0 +1,10 @@
+<TbStack Gap="3">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbToolbar AriaLabel="@($"{size} map tools")" Size="size">
+            <TbToolbarButton AriaLabel="Zoom in" Icon="ExampleIcons.Plus" />
+            <TbToolbarButton AriaLabel="Zoom out" Icon="ExampleIcons.Minus" />
+            <TbToolbarButton Label="Reset view" />
+        </TbToolbar>
+    }
+</TbStack>

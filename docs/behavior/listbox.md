@@ -33,6 +33,7 @@ Familiar apps: a native `<select size>`, the list panes in Windows dialogs and m
 ## Touch
 
 - [x] A tap chooses through the same click handler, and a swipe scrolls the list without choosing. `listbox.js`
+- [x] Each `Size` steps the options' height with density, and a small option stays at least 24px high. `SizeTests.Size_ShouldStepThePartsHeightWithDensity_WhenSmallMediumOrLarge`
 
 ## Focus
 

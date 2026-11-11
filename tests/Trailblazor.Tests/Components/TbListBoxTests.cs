@@ -165,6 +165,29 @@ public class TbListBoxTests : BunitContext
         Assert.Equal("true", cut.Find("[role=listbox]").GetAttribute("aria-readonly"));
     }
 
+    [Theory]
+    [InlineData(Size.Small, "tb-listbox--small")]
+    [InlineData(Size.Large, "tb-listbox--large")]
+    public void Render_ShouldMarkTheSize_WhenGivenASize(Size size, string modifier)
+    {
+        var cut = RenderListBox(null);
+
+        cut.Render(parameters => parameters.Add(listbox => listbox.Size, size));
+
+        Assert.Contains(modifier, cut.Find("[role=listbox]").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheNativeListsSize_WhenRenderedStatically()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = RenderListBox(null);
+
+        cut.Render(parameters => parameters.Add(listbox => listbox.Size, Size.Small));
+
+        Assert.Contains("tb-listbox--small", cut.Find("select").ClassList);
+    }
+
     private IRenderedComponent<TbListBox<string?>> RenderListBox(string? value, bool disabled = false, int rows = 5)
     {
         Trail = value;

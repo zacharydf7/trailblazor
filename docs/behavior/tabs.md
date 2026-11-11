@@ -26,6 +26,7 @@ Familiar apps: Windows property dialogs, browser developer tools, VS Code's sett
 ## Touch
 
 - [x] Tapping a tab selects it, since selection listens for the click. `TbTabs.razor`
+- [x] Each `Size` steps the tabs' height with density, and a small tab stays at least 24px high. `SizeTests.Size_ShouldStepThePartsHeightWithDensity_WhenSmallMediumOrLarge`
 - [x] Tabs wider than their row swipe sideways. `trailblazor.css`
 - [x] The selected tab scrolls fully into view when the row overflows, without moving the page. That holds on first render, from code and on a click, and in right-to-left text. `TabsOverflowTests.Tabs_ShouldShowTheSelectedTab_WhenItStartsOutOfSight`, `TabsOverflowTests.Tabs_ShouldShowTheSelectedTabAndLeaveThePageAlone_WhenSelectedFromCode`, `TabsOverflowTests.Tabs_ShouldShowAllOfATab_WhenAPartlyHiddenOneIsClicked`, `TabsOverflowTests.Tabs_ShouldShowTheSelectedTab_WhenTheTextIsRightToLeft`
 - [x] The selected tab also scrolls into view when its tabs load after the first render, when it moves as tabs arrive, when its row is hidden until later, and in a `Centered` row. `TabsOverflowTests.Tabs_ShouldShowTheSelectedTab_WhenTheTabsLoadLate`, `TabsOverflowTests.Tabs_ShouldShowTheSelectedTab_WhenItMovesToItsPlaceInTheRow`, `TabsOverflowTests.Tabs_ShouldShowTheSelectedTab_WhenItsRowIsShownLater`, `TabsOverflowTests.Tabs_ShouldReachTheFirstTab_WhenACenteredRowOverflows`

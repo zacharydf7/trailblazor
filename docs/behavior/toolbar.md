@@ -35,6 +35,7 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 ## Touch
 
 - [x] A tap presses a button or opens the More menu through the same click a mouse sends. `TbToolbarButton.razor`
+- [x] The toolbar's `Size` sizes its toolbar buttons and More button, and each size steps with density, keeping a small button at least 24px high. A button's own `Size` wins. `TbToolbarTests.Render_ShouldKeepAButtonsOwnSize_WhenTheToolbarHasAnother`, `SizeTests.Size_ShouldStepThePartsHeightWithDensity_WhenSmallMediumOrLarge`
 - [x] A tap doesn't leave an icon button's tooltip open, since the press hides it and cancels its timer. `tooltip.js`
 
 ## Focus

@@ -9,13 +9,13 @@
 <div @attributes="AdditionalAttributes" @ref="_toolbar" role="toolbar" aria-label="@AriaLabel"
      aria-orientation="@(Vertical ? "vertical" : "horizontal")" style="@Style"
      class="@ClassNames.Join("tb-toolbar", Vertical ? "tb-toolbar--vertical" : null, Class)">
-    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    <CascadingValue Value="this">@ChildContent</CascadingValue>
     @if (!Vertical)
     {
         @* The script shows it once a button has moved in; the server then fills it with those buttons. *@
         <div @ref="_more" data-part="overflow" class="tb-toolbar__overflow">
             <TbMenu AriaLabel="@(OverflowLabel ?? Localizer[TbStrings.ToolbarMore])" Icon="BuiltInIcons.More"
-                    Align="PlacementAlign.End">@OverflowItems</TbMenu>
+                    Size="Size" Align="PlacementAlign.End">@OverflowItems</TbMenu>
         </div>
     }
 </div>
@@ -48,6 +48,11 @@
     /// Defaults to the app's text for <see cref="TbStrings.ToolbarMore"/>, "More" in English.</summary>
     [Parameter]
     public string? OverflowLabel { get; set; }
+
+    /// <summary>The size of the toolbar buttons and the overflow menu button, unless a toolbar button sets its own.
+    /// Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
 
     // Razor only finds public components by tag, so the internal menu items are added here.
     private RenderFragment OverflowItems => builder =>

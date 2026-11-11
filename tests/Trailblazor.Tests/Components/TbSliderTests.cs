@@ -234,6 +234,21 @@ public class TbSliderTests : BunitContext
         Assert.Contains("tb-slider__input--shared", cut.Find("[data-part=end-thumb]").ClassList);
     }
 
+    [Theory]
+    [InlineData(Size.Small, "tb-slider--small")]
+    [InlineData(Size.Large, "tb-slider--large")]
+    public void Render_ShouldMarkTheSize_WhenGivenASize(Size size, string modifier)
+    {
+        var cut = RenderSlider(50);
+        var range = RenderRange(new(500, 1500));
+
+        cut.Render(parameters => parameters.Add(slider => slider.Size, size));
+        range.Render(parameters => parameters.Add(slider => slider.Size, size));
+
+        Assert.Contains(modifier, cut.Find(".tb-slider").ClassList);
+        Assert.Contains(modifier, range.Find(".tb-slider").ClassList);
+    }
+
     private IRenderedComponent<TbSlider<int>> RenderSlider(int value, Action<int>? onCommit = null,
         Func<int, string>? formatter = null)
     {

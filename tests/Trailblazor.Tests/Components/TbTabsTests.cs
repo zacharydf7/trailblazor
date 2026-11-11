@@ -593,6 +593,18 @@ public class TbTabsTests : BunitContext
         Assert.Contains("tb-tabs--text", cut.Find(".tb-tabs").ClassList);
     }
 
+    [Theory]
+    [InlineData(Size.Small, "tb-tabs--small")]
+    [InlineData(Size.Large, "tb-tabs--large")]
+    public void Render_ShouldMarkTheSize_WhenGivenASize(Size size, string modifier)
+    {
+        var cut = RenderTabs();
+
+        cut.Render(parameters => parameters.Add(tabs => tabs.Size, size));
+
+        Assert.Contains(modifier, cut.Find(".tb-tabs").ClassList);
+    }
+
     private IRenderedComponent<TbTabs> RenderKeyedTabs(string active, bool includeIntro,
         Action<string?>? keyChanged = null, Action? indexChanged = null) =>
         Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ActiveKey, active)

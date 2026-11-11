@@ -4255,3 +4255,14 @@ Trailblazor.TreeDropEventArgs.Rows.set -> void
 Trailblazor.TreeDropEventArgs.Target.get -> string!
 Trailblazor.TreeDropEventArgs.Target.set -> void
 Trailblazor.TreeDropEventArgs.TreeDropEventArgs() -> void
+Trailblazor.TbListBoxBase<TValue>.Size.get -> Trailblazor.Size
+Trailblazor.TbListBoxBase<TValue>.Size.set -> void
+Trailblazor.TbSliderBase<TValue>.Size.get -> Trailblazor.Size
+Trailblazor.TbSliderBase<TValue>.Size.set -> void
+Trailblazor.TbTabs.Size.get -> Trailblazor.Size
+Trailblazor.TbTabs.Size.set -> void
+Trailblazor.TbToolbarButton.Size.get -> Trailblazor.Size
+Trailblazor.TbToolbarButton.Size.set -> void
+Trailblazor.TbToolbar.Size.get -> Trailblazor.Size
+Trailblazor.TbToolbar.Size.set -> void
+override Trailblazor.TbToolbarButton.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
