@@ -1,0 +1,14 @@
+@* commandfor opens the dialog before the page is interactive; once it is, OnClick opens it instead, since both would
+   open it twice. *@
+<TbButton Variant="Variant.Outlined" commandfor="@(RendererInfo.IsInteractive ? null : "returns-policy")"
+          command="show-modal" OnClick="() => _open = true">
+    Returns policy
+</TbButton>
+
+<TbDialog id="returns-policy" @bind-Open="_open" Title="Returns policy">
+    Return any item within 30 days for a full refund.
+</TbDialog>
+
+@code {
+    private bool _open;
+}

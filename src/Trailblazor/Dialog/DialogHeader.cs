@@ -13,6 +13,10 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     [Parameter, EditorRequired]
     public string TitleId { get; set; } = "";
 
+    // The dialog element's id, for the close button's commandfor, so it closes the dialog before the page is interactive.
+    [Parameter]
+    public object? DialogId { get; set; }
+
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
 
@@ -93,6 +97,12 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
             builder.AddComponentParameter(43, nameof(TbIconButton.OnClick),
                 EventCallback.Factory.Create<MouseEventArgs>(this, CloseAsync));
             builder.AddAttribute(44, "data-part", "close");
+            if (!RendererInfo.IsInteractive)
+            {
+                builder.AddAttribute(45, "command", "close");
+                builder.AddAttribute(46, "commandfor", DialogId);
+            }
+
             builder.CloseComponent();
         }
 

@@ -58,6 +58,10 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         var options = Dialog.Options;
         builder.OpenElement(0, "dialog");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
+        // Before the page is interactive the browser opens and closes the dialog, so it's told what may dismiss it.
+        // closedby has no backdrop-only value, so a dialog that Escape can't dismiss ignores the backdrop too.
+        builder.AddAttribute(2, "closedby", RendererInfo.IsInteractive ? null
+            : options.DismissOnEscape != true ? "none" : options.DismissOnBackdrop == true ? "any" : "closerequest");
         builder.AddAttribute(3, "data-part", "dialog");
         builder.AddAttribute(4, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
@@ -72,6 +76,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.OpenComponent<DialogHeader>(11);
         builder.AddComponentParameter(12, nameof(DialogHeader.Dialog), Dialog);
         builder.AddComponentParameter(13, nameof(DialogHeader.TitleId), TitleId);
+        builder.AddComponentParameter(14, nameof(DialogHeader.DialogId), AdditionalAttributes?.GetValueOrDefault("id"));
         builder.CloseComponent();
 
         builder.OpenElement(30, "div");

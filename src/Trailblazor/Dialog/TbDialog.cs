@@ -4,10 +4,13 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Trailblazor;
 
 /// <summary>A dialog written in markup, opened and closed with <c>@bind-Open</c>, for a simple dialog that needs no
-/// class of its own. Its content renders where it is, so it sees the page's cascading values.</summary>
+/// class of its own. Its content renders where it is, so it sees the page's cascading values. Until the page is
+/// interactive, a dialog with an <c>id</c> renders closed, so a button with <c>commandfor</c> set to that id and
+/// <c>command="show-modal"</c> opens it in browsers that support invoker commands.</summary>
 public sealed class TbDialog : TbComponentBase, IAsyncDisposable
 {
     private DialogReference<bool>? _dialog;
+    private DialogReference<bool>? _closed;
     private DialogReference<bool>? _closingForParent;
     private bool _disposed;
 
@@ -58,19 +61,26 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
         {
             _dialog.Title = Title;
         }
+
+        if (_closed is not null)
+        {
+            _closed.Title = Title;
+        }
     }
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        if (_dialog is null)
+        var dialog = _dialog ?? (RendererInfo.IsInteractive || AdditionalAttributes?.ContainsKey("id") != true ? null
+            : _closed ??= Dialogs.Closed(Title, Options ?? new()));
+        if (dialog is null)
         {
             return;
         }
 
         builder.OpenComponent<DialogFrame>(0);
-        builder.SetKey(_dialog);
-        builder.AddComponentParameter(1, nameof(DialogFrame.Dialog), _dialog);
+        builder.SetKey(dialog);
+        builder.AddComponentParameter(1, nameof(DialogFrame.Dialog), dialog);
         builder.AddComponentParameter(2, nameof(DialogFrame.ChildContent), ChildContent);
         builder.AddComponentParameter(3, nameof(DialogFrame.Class), Class);
         builder.AddComponentParameter(4, nameof(DialogFrame.Style), Style);

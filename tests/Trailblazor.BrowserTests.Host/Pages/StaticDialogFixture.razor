@@ -1,0 +1,8 @@
+@page "/static-dialog"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where the browser opens the dialog through the button's command. *@
+<TbButton commandfor="returns-dialog" command="show-modal">Returns policy</TbButton>
+<TbDialog id="returns-dialog" Title="Returns">
+    Returns are free for a month.
+</TbDialog>

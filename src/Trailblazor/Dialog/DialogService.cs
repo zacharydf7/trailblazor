@@ -142,6 +142,22 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     internal DialogReference<bool> OpenInPlace(string title, DialogOptions options) =>
         Open<bool>(title, null, new Dictionary<string, object?>(), options, isAlert: false);
 
+    private DialogOptions Settled(DialogOptions options)
+    {
+        var settings = trailblazorOptions.Value.Dialogs;
+        // The app's width would override a size or width the options chose, so it applies only when they set neither.
+        var sized = options.Size is not null || options.Width is not null;
+        return options with
+        {
+            DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
+            DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
+            TopLayer = options.TopLayer ?? settings.TopLayer,
+            Size = options.Size ?? settings.Size,
+            Width = sized ? options.Width : settings.Width,
+            CloseButton = options.CloseButton ?? settings.CloseButton,
+        };
+    }
+
     // Read before the content exists, so a dialog opened without a title fails at once rather than opening unnamed.
     private static void RequireTitle<TResult>(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicProperties)] Type dialog, string? title)
@@ -154,23 +170,16 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         }
     }
 
+    // Until the page is interactive, a TbDialog with an id renders closed for the browser to open; the service doesn't
+    // track it, since only an interactive page can close what the service opens.
+    internal DialogReference<bool> Closed(string title, DialogOptions options) =>
+        new(title, Settled(options), null, new Dictionary<string, object?>(), isAlert: false, CloseAsync);
+
     private DialogReference<TResult> Open<TResult>(
         string? title, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? component,
         IReadOnlyDictionary<string, object?> parameters, DialogOptions options, bool isAlert)
     {
-        var settings = trailblazorOptions.Value.Dialogs;
-        // The app's width would override a size or width the options chose, so it applies only when they set neither.
-        var sized = options.Size is not null || options.Width is not null;
-        options = options with
-        {
-            DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
-            DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
-            TopLayer = options.TopLayer ?? settings.TopLayer,
-            Size = options.Size ?? settings.Size,
-            Width = sized ? options.Width : settings.Width,
-            CloseButton = options.CloseButton ?? settings.CloseButton,
-        };
-        var dialog = new DialogReference<TResult>(title, options, component, parameters, isAlert, CloseAsync)
+        var dialog = new DialogReference<TResult>(title, Settled(options), component, parameters, isAlert, CloseAsync)
         {
             OpenedAt = time.GetTimestamp(),
         };

@@ -30,6 +30,70 @@ public class TbDialogTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldRenderTheDialogClosedForItsCloseButtonToClose_WhenThePageIsStaticAndItHasAnId()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Title, "Returns")
+            .AddUnmatched("id", "returns-dialog").AddChildContent("Returns are free for a month."));
+
+        var dialog = cut.Find("dialog#returns-dialog");
+        Assert.False(dialog.HasAttribute("open"));
+        Assert.Equal("Returns", dialog.QuerySelector("h2")!.TextContent);
+        var close = dialog.QuerySelector("[data-part=close]")!;
+        Assert.Equal(("close", "returns-dialog"), (close.GetAttribute("command"), close.GetAttribute("commandfor")));
+        Assert.Equal("any", dialog.GetAttribute("closedby"));
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Theory]
+    [InlineData(true, false, "closerequest")]
+    [InlineData(false, true, "none")]
+    [InlineData(false, false, "none")]
+    public void Render_ShouldLetTheBrowserDismissAsTheOptionsSay_WhenThePageIsStatic(bool escape, bool backdrop,
+        string closedBy)
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Title, "Returns")
+            .Add(d => d.Options, new DialogOptions { DismissOnEscape = escape, DismissOnBackdrop = backdrop })
+            .AddUnmatched("id", "returns-dialog"));
+
+        Assert.Equal(closedBy, cut.Find("dialog").GetAttribute("closedby"));
+    }
+
+    [Fact]
+    public void Render_ShouldFollowTheTitle_WhenItChangesWhileTheDialogIsRenderedClosed()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Title, "Loading")
+            .AddUnmatched("id", "returns-dialog"));
+
+        cut.Render(parameters => parameters.Add(d => d.Title, "Returns"));
+
+        Assert.Equal("Returns", cut.Find("dialog h2").TextContent);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void Render_ShouldRenderNothing_WhenClosedAndInteractiveOrWithoutAnId(bool interactive, bool hasId)
+    {
+        SetRendererInfo(new RendererInfo(interactive ? "Server" : "Static", interactive));
+
+        var cut = Render<TbDialog>(parameters =>
+        {
+            parameters.Add(d => d.Title, "Returns");
+            if (hasId)
+            {
+                parameters.AddUnmatched("id", "returns-dialog");
+            }
+        });
+
+        Assert.Empty(cut.FindAll("dialog"));
+    }
+
+    [Fact]
     public void Open_ShouldCloseTheDialogWithoutRaisingOpenChanged_WhenTheParentSetsItFalse()
     {
         var changes = new List<bool>();

@@ -571,4 +571,18 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(dialog).ToBeVisibleAsync();
         return (await dialog.BoundingBoxAsync())!;
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldOpenFromACommandAndCloseFromItsButton_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-dialog");
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Returns" });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Returns policy" }).ClickAsync();
+
+        await Expect(dialog).ToBeVisibleAsync();
+        await Expect(dialog).ToContainTextAsync("Returns are free for a month.");
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Close" }).ClickAsync();
+        await Expect(dialog).ToBeHiddenAsync();
+    }
 }

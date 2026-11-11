@@ -5887,6 +5887,14 @@ public static class ExampleCatalog
                     + "dialog, in markup or opened from code, so screen readers read that text with the title as the "
                     + "dialog opens.",
                     typeof(DialogMarkupExample)),
+                new("commands", "Opening before the page is interactive", "Until the page is interactive, a "
+                    + "`TbDialog` with an `id` renders closed, so a button with `commandfor` set to that id and "
+                    + "`command=\"show-modal\"` opens it in browsers that support invoker commands, and the close "
+                    + "button closes it. Where the browser supports `closedby`, Escape and the backdrop close it as "
+                    + "`DismissOnEscape` and `DismissOnBackdrop` say, except that the backdrop closes it only if Escape "
+                    + "may too. Set `commandfor` only while the page isn't interactive, and give the button an "
+                    + "`OnClick` that opens the dialog, so the button still works once the page is interactive.",
+                    typeof(DialogCommandExample)),
                 new("updating", "Updating an open dialog", "`Show` returns a reference without waiting. The page can "
                     + "`Update` a dialog's parameters through it, and close the dialog when the work is done. This "
                     + "export dialog overrides `DefaultTitle`, so the page opens it without a title.",
@@ -6009,11 +6017,13 @@ public static class ExampleCatalog
                     + "parent with a transform or a stacking context of its own can hold the dialog beneath the "
                     + "page.") { Pitfall = true },
             ],
-            Modes = new(ModeSupport.None, ModeSupport.None),
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
-                "No dialog opens until the page is interactive, because opening one takes a script. The buttons that "
-                    + "open them do nothing until then.",
+                "A dialog opened from code waits until the page is interactive. Before then, a `TbDialog` with an `id` "
+                    + "opens from a button's `commandfor` and closes from its close button, but buttons inside it that "
+                    + "run code do nothing. On a prerendered page, a dialog opened this way closes as the page turns "
+                    + "interactive.",
             ],
             Target = new("dialog", "Rename report") { OpenedBy = new("button", "Rename report") },
             Blocks = ["tb-dialog"],
