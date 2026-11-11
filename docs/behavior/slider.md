@@ -50,6 +50,7 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 - [x] A click on a range slider's track focuses the thumb without the ring, and the ring appears once a key is pressed, or when focus comes back. `SliderDragTests.RangeSlider_ShouldHoldBackTheRingUntilAKey_WhenTheTrackIsClicked`, `SliderDragTests.RangeSlider_ShouldStopHoldingBackTheRing_WhenFocusLeavesTheThumb`
 - [x] A read-only slider stays focusable. `ReadOnlyTests.ReadOnlySlider_ShouldKeepItsValue_WhenDraggedOrMovedWithTheKeys`
 - [x] A disabled slider can't take focus. `SliderExampleTests.StatesExample_ShouldMarkOneReadOnlySoItPostsAndDisableTheOther_WhenRendered`
+- [x] A slider whose `Min` equals its `Max` shows that value, disabled, and isn't required of the user. `TbSliderTests.Render_ShouldShowTheOneValueDisabled_WhenMinEqualsMax`, `TbSliderTests.Validate_ShouldNotAskForTheOneValue_WhenARequiredSlidersMinEqualsMax`
 - [x] `FocusAsync` moves focus to the thumb, or to a range slider's start thumb. `FieldFocusTests.FocusAsync_ShouldMoveFocusToTheFieldsInput_WhenCalled`
 - [x] Moving between a range slider's thumbs doesn't raise `OnFocus` or `OnBlur`. `TbFieldBase.cs`
 

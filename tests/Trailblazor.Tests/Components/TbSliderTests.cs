@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Trailblazor.Tests.Components;
 
@@ -141,7 +142,7 @@ public class TbSliderTests : BunitContext
     }
 
     [Theory]
-    [InlineData(10, 10, 1)]
+    [InlineData(11, 10, 1)]
     [InlineData(0, 10, 0)]
     [InlineData(0, 10, 0.5)]
     [InlineData(0.5, 10, 1)]
@@ -150,6 +151,48 @@ public class TbSliderTests : BunitContext
         Assert.Throws<InvalidOperationException>(() => Render<TbSlider<int>>(parameters => parameters
             .Add(slider => slider.Min, min).Add(slider => slider.Max, max).Add(slider => slider.Step, step)));
     }
+
+    [Fact]
+    public void Render_ShouldShowTheOneValueDisabled_WhenMinEqualsMax()
+    {
+        var cut = Render<TbSlider<int>>(parameters => parameters.Add(slider => slider.Label, "Price")
+            .Add(slider => slider.Min, 40).Add(slider => slider.Max, 40).Add(slider => slider.Value, 0));
+
+        var input = cut.Find("input[type=range]");
+        Assert.True(input.HasAttribute("disabled"));
+        Assert.Equal("40", input.GetAttribute("value"));
+        Assert.Contains("tb-slider--disabled", cut.Find(".tb-slider").ClassName);
+    }
+
+    [Fact]
+    public void Render_ShouldShowBothThumbsDisabled_WhenARangeSlidersMinEqualsMax()
+    {
+        var cut = Render<TbRangeSlider<int>>(parameters => parameters.Add(slider => slider.Label, "Price")
+            .Add(slider => slider.Min, 40).Add(slider => slider.Max, 40));
+
+        Assert.All(cut.FindAll("input[type=range]"), input => Assert.True(input.HasAttribute("disabled")));
+    }
+
+    [Fact]
+    public void Validate_ShouldNotAskForTheOneValue_WhenARequiredSlidersMinEqualsMax()
+    {
+        var editContext = new EditContext(this);
+        Render<EditForm>(parameters => parameters.Add(form => form.EditContext, editContext)
+            .Add(form => form.ChildContent, (RenderFragment<EditContext>)(_ => builder =>
+            {
+                builder.OpenComponent<TbSlider<int?>>(0);
+                builder.AddAttribute(1, nameof(TbSlider<int?>.Label), "Price");
+                builder.AddAttribute(2, nameof(TbSlider<int?>.ValueExpression), (Expression<Func<int?>>)(() => Price));
+                builder.AddAttribute(3, nameof(TbSlider<int?>.Required), true);
+                builder.AddAttribute(4, nameof(TbSlider<int?>.Min), 40m);
+                builder.AddAttribute(5, nameof(TbSlider<int?>.Max), 40m);
+                builder.CloseComponent();
+            })));
+
+        Assert.True(editContext.Validate());
+    }
+
+    public int? Price { get; set; }
 
     [Fact]
     public void Render_ShouldThrow_WhenTheMaxIsPastTheTypesRange()

@@ -19,7 +19,8 @@ public abstract partial class TbSliderBase<[DynamicallyAccessedMembers(Dynamical
     [Parameter]
     public decimal Min { get; set; }
 
-    /// <summary>The highest value. Defaults to 100.</summary>
+    /// <summary>The highest value. Defaults to 100. When it equals <see cref="Min"/>, as when both limits come from data
+    /// whose items all share one value, the slider shows that value and is disabled.</summary>
     [Parameter]
     public decimal Max { get; set; } = 100;
 
@@ -57,10 +58,10 @@ public abstract partial class TbSliderBase<[DynamicallyAccessedMembers(Dynamical
         }
 
         var (lowest, highest) = NumberTypes.Limits(NumberType);
-        if (Min >= Max || Step <= 0 || Min < lowest || Max > highest)
+        if (Min > Max || Step <= 0 || Min < lowest || Max > highest)
         {
             throw new InvalidOperationException(
-                $"A slider needs a Min below its Max, both within {NumberType.Name}, and a Step above 0.");
+                $"A slider needs a Min no higher than its Max, both within {NumberType.Name}, and a Step above 0.");
         }
 
         // A whole number type can't hold a fractional step, which would round back and leave the thumb stuck.
@@ -72,7 +73,11 @@ public abstract partial class TbSliderBase<[DynamicallyAccessedMembers(Dynamical
     }
 
     // Where a number sits along the track, from 0 at the start to 1 at the end.
-    private protected double Fraction(decimal number) => (double)((Math.Clamp(number, Min, Max) - Min) / (Max - Min));
+    private protected double Fraction(decimal number) =>
+        Min == Max ? 0 : (double)((Math.Clamp(number, Min, Max) - Min) / (Max - Min));
+
+    // A track with only one value leaves nothing to choose, so the thumb can't move.
+    private protected override bool CantChange => Disabled || Min == Max;
 
     private protected decimal? ToNumber(object? value) =>
         value is null ? null : Convert.ToDecimal(value, CultureInfo.InvariantCulture);

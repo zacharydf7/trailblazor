@@ -306,7 +306,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     // A field the user can't change isn't asked of them, as the browser's own validation skips one.
     // The model's [Required] judges a value as the model does, so it never fails a false or a zero.
-    private bool MissesRequired => !Disabled && !ReadOnly && _parseError is null
+    private bool MissesRequired => !CantChange && !ReadOnly && _parseError is null
         && ((Required && IsMissing(Value)) || _modelRequired?.IsValid(Value) == false);
 
     // A [Required] that sets its own message keeps it; the default one gives way to the app's text.
@@ -318,7 +318,10 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // What's wrong with a value however it arrived (typed, posted or set by code), such as a number past a limit.
     private protected virtual string? ValueError(TValue? value) => null;
 
-    private string? ValueProblem => Disabled || ReadOnly || _parseError is not null ? null : ValueError(Value);
+    private string? ValueProblem => CantChange || ReadOnly || _parseError is not null ? null : ValueError(Value);
+
+    // Disabled, or held to one value some other way, such as a slider whose Min equals its Max.
+    private protected virtual bool CantChange => Disabled;
 
     // A blank error from the parent is no error, so it doesn't mark the field invalid.
     private string? ParentError => string.IsNullOrWhiteSpace(Error) ? null : Error;

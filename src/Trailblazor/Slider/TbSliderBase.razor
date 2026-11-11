@@ -17,7 +17,7 @@
         @<div @attributes="RootAttributes" style="@Style"
               class="@ClassNames.Join("tb-slider", ClassNames.Modifier("tb-slider", Size),
                          from is null ? null : "tb-slider--range",
-                         ShowsInvalid ? "tb-slider--invalid" : null, Disabled ? "tb-slider--disabled" : null,
+                         ShowsInvalid ? "tb-slider--invalid" : null, CantChange ? "tb-slider--disabled" : null,
                          Class)">
             @if (ShownLabel is not null)
             {

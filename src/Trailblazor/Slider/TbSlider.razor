@@ -7,7 +7,7 @@
     <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
            type="range" data-value="@Invariant(Number)" data-static="@StaticMark" data-ready="@ReadyMark"
            min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Number)"
-           @bind:set="SetAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@Disabled"
+           @bind:set="SetAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@CantChange"
            aria-valuetext="@ValueText" aria-readonly="@(ReadOnly ? "true" : null)"
            aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />

@@ -4,7 +4,7 @@
 
 <div role="progressbar" aria-label="@Name" aria-labelledby="@(Name is null ? _labelId : null)"
      aria-valuemin="@Format(Min)" aria-valuemax="@Format(Max)"
-     aria-valuenow="@ValueNow" aria-valuetext="@(ValueFormatter is null ? null : _valueText)"
+     aria-valuenow="@ValueNow" aria-valuetext="@(ValueFormatter is null && Max != Min ? null : _valueText)"
      @attributes="AdditionalAttributes"
      class="@ClassNames.Join("tb-progress", Circular ? "tb-progress--circular" : "tb-progress--linear",
                 ClassNames.Modifier("tb-progress", Tone), ClassNames.Modifier("tb-progress", Size),
@@ -61,7 +61,8 @@
     [Parameter]
     public double Min { get; set; }
 
-    /// <summary>The value at which the work is finished. Defaults to 100.</summary>
+    /// <summary>The value at which the work is finished. Defaults to 100. When it equals <see cref="Min"/>, as for zero
+    /// total work, the bar shows the work as finished.</summary>
     [Parameter]
     public double Max { get; set; } = 100;
 
@@ -107,9 +108,9 @@
                 $"{nameof(TbProgress)} needs a {nameof(Label)} or an {nameof(AriaLabel)} to name it.");
         }
 
-        if (Max <= Min)
+        if (Max < Min)
         {
-            throw new ArgumentOutOfRangeException(nameof(Max), Max, $"{nameof(Max)} must be greater than {nameof(Min)}.");
+            throw new ArgumentOutOfRangeException(nameof(Max), Max, $"{nameof(Max)} can't be less than {nameof(Min)}.");
         }
 
         // The value as the user reads it, in their culture.
@@ -121,7 +122,8 @@
 
     private string? ValueNow => Value is { } value ? Format(Math.Clamp(value, Min, Max)) : null;
 
-    private double? Fraction => Value is { } value ? Math.Clamp((value - Min) / (Max - Min), 0, 1) : null;
+    private double? Fraction => Value is not { } value ? null
+        : Max == Min ? 1 : Math.Clamp((value - Min) / (Max - Min), 0, 1);
 
     private string? PercentStyle =>
         Fraction is { } fraction ? $"--tb-progress-percent: {Format(fraction * 100)}" : null;

@@ -170,13 +170,24 @@ public class TbProgressTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldThrow_WhenGivenAMaxNotAboveMin()
+    public void Render_ShouldThrow_WhenGivenAMaxBelowMin()
     {
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Render<TbProgress>(parameters => parameters
             .Add(progress => progress.AriaLabel, "Loading")
-            .Add(progress => progress.Min, 5)
+            .Add(progress => progress.Min, 6)
             .Add(progress => progress.Max, 5)));
 
         Assert.Equal(nameof(TbProgress.Max), exception.ParamName);
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheWorkAsFinished_WhenMinEqualsMax()
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Importing")
+            .Add(progress => progress.Min, 0).Add(progress => progress.Max, 0).Add(progress => progress.Value, 0));
+
+        var progress = cut.Find("[role=progressbar]");
+        Assert.Equal("--tb-progress-percent: 100", progress.GetAttribute("style"));
+        Assert.Equal(1.0.ToString("P0", CultureInfo.CurrentCulture), progress.GetAttribute("aria-valuetext"));
     }
 }

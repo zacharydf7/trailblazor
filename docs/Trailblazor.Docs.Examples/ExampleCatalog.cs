@@ -2575,8 +2575,8 @@ public static class ExampleCatalog
             Sections =
             [
                 new("value", "Value or indeterminate", "A progress bar's `Value` shows how far along the work is. "
-                    + "Leaving it null makes the bar indeterminate, for work with no known "
-                    + "end.", typeof(ProgressExample)),
+                    + "Leaving it null makes the bar indeterminate, for work with no known end. When `Min` equals `Max`, "
+                    + "as for zero total work, the bar shows the work as finished.", typeof(ProgressExample)),
                 new("label", "Label and value text", "`Label` and `ShowValue` add visible text to a progress bar or "
                     + "ring. `Min` and `Max` set the range, and `ValueFormatter` words the value, such as \"3 of 10 "
                     + "files\".",
@@ -3634,8 +3634,9 @@ public static class ExampleCatalog
                 new("While the thumb moves, `ValueChanged` is raised at most every 50 ms, and once more when it stops, so "
                     + "a drag over a slow link doesn't send a message per frame. `ValueCommitted` always has the value "
                     + "where the thumb was let go."),
-                new("`Min` must be below `Max`, both must fit the number type, and `Step` must be above 0. A whole number "
-                    + "type also needs a whole `Min`, `Max` and `Step`. Anything else throws when it renders."),
+                new("`Min` can't be above `Max`, both must fit the number type, and `Step` must be above 0. A whole "
+                    + "number type also needs a whole `Min`, `Max` and `Step`. Anything else throws when it renders. When "
+                    + "`Min` equals `Max`, the slider shows that value and is disabled, so it isn't posted with a form."),
                 new("`@ref` the slider and call `FocusAsync()` to move focus to it. A range slider focuses its start "
                     + "thumb."),
             ],

@@ -22,6 +22,7 @@ Nothing of its own, for the same reason.
 - [x] Screen readers find it by its name, from `Label` or `AriaLabel`. `TbProgressTests.Render_ShouldBeNamedByItsLabel_WhenItHasNoAriaLabel`
 - [x] They read its value, or the formatted text in its place. `TbProgressTests.Render_ShouldShowAndAnnounceTheFormattedValue_WhenGivenAValueFormatter`
 - [x] Work with no known end has no value to read. `TbProgressTests.Render_ShouldBeAnIndeterminateLinearBar_WhenNoValueIsSet`
+- [x] Zero total work, with `Min` equal to `Max`, shows and reads as finished. `TbProgressTests.Render_ShouldShowTheWorkAsFinished_WhenMinEqualsMax`
 
 ## Not applicable
 
