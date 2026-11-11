@@ -777,7 +777,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         else if (line.Totals is { } totals)
         {
             builder.OpenComponent<GridRow<GroupTotalsLine>>(0);
-            builder.SetKey((totals.Key, "totals"));
+            builder.SetKey((totals.Group.Key, "totals"));
             builder.AddComponentParameter(1, nameof(GridRow<GroupTotalsLine>.Item), totals);
             builder.AddComponentParameter(2, nameof(GridRow<GroupTotalsLine>.Version), _rowVersion);
             builder.AddComponentParameter(3, nameof(GridRow<GroupTotalsLine>.ChildContent),
@@ -1180,7 +1180,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         public bool IsRow => Group is null && Totals is null;
     }
 
-    private sealed record GroupTotalsLine(GroupKey Key, int Level, Dictionary<string, object?> Values);
+    private sealed record GroupTotalsLine(GroupHeading Group, Dictionary<string, object?> Values);
 
     private sealed record GroupHeading(GroupKey Key, int Level, string Column, string? Value, int Count, bool Open);
 
@@ -1739,14 +1739,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             {
                 var key = new GroupKey(outer, column.Key, group.Key);
                 var open = !_closedGroups.Contains(key);
-                lines.Add(new(default!, lines.Count, new(key, level + 1, column.Heading,
-                    column.TextOf(column.GroupValueOf(group.First())), group.Count(), open)));
+                var heading = new GroupHeading(key, level + 1, column.Heading,
+                    column.TextOf(column.GroupValueOf(group.First())), group.Count(), open);
+                lines.Add(new(default!, lines.Count, heading));
                 if (open)
                 {
                     Add(group, level + 1, key);
                     if (GroupTotals && HasTotals)
                     {
-                        lines.Add(new(default!, lines.Count, Totals: new(key, level + 1, TotalsOf([.. group]))));
+                        lines.Add(new(default!, lines.Count, Totals: new(heading, TotalsOf([.. group]))));
                     }
                 }
             }

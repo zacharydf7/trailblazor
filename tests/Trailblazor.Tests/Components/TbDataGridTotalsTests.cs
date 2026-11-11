@@ -174,6 +174,19 @@ public class TbDataGridTotalsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameEachTotalsRowForScreenReadersAndLeaveItOutOfTheTotals_WhenGroupTotalsAreOn()
+    {
+        var cut = RenderGrouped(groupTotals: true);
+
+        var names = cut.FindAll("tr td:first-child [data-part=totals-name]");
+        Assert.Equal(["Totals for Done: False", "Totals for Done: True", "Totals"],
+            names.Select(name => name.TextContent));
+        Assert.All(names, name => Assert.Contains("tb-visually-hidden", name.ClassList));
+        Assert.Null(cut.Tb().Grid("Hikes").Total("Name"));
+        Assert.Equal([null, null], cut.Tb().Grid("Hikes").GroupTotals("Name"));
+    }
+
+    [Fact]
     public void GroupTotals_ShouldPutEachInnerGroupsTotalsBeforeItsOuterGroups_WhenGroupedTwice()
     {
         var cut = RenderGrouped(groupTotals: true, groups: ["Done", "Name"]);

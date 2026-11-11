@@ -4507,3 +4507,5 @@ Trailblazor.TreeViewClasses.Insert.get -> string?
 Trailblazor.TreeViewClasses.Insert.init -> void
 Trailblazor.TreeViewClasses.Empty.get -> string?
 Trailblazor.TreeViewClasses.Empty.init -> void
+const Trailblazor.TbStrings.DataGridTotals = "DataGrid.Totals" -> string!
+const Trailblazor.TbStrings.DataGridGroupTotals = "DataGrid.GroupTotals" -> string!

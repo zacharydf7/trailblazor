@@ -975,7 +975,7 @@ public sealed class TbGridLocator(ILocator scope, string name)
     public async Task<string?> TotalAsync(string column)
     {
         var key = await Header(column).GetAttributeAsync("data-column");
-        var texts = await Table.Locator($"tfoot [data-part=totals] td[data-column=\"{key}\"]").AllInnerTextsAsync();
+        var texts = await TotalTextsAsync(Table.Locator($"tfoot [data-part=totals] td[data-column=\"{key}\"]"));
         return TotalText(string.Join(' ', texts));
     }
 
@@ -985,10 +985,17 @@ public sealed class TbGridLocator(ILocator scope, string name)
     public async Task<IReadOnlyList<string?>> GroupTotalsAsync(string column)
     {
         var key = await Header(column).GetAttributeAsync("data-column");
-        var texts = await Table.Locator($"tbody [data-part=group-totals] td[data-column=\"{key}\"]")
-            .AllInnerTextsAsync();
+        var texts = await TotalTextsAsync(Table.Locator($"tbody [data-part=group-totals] td[data-column=\"{key}\"]"));
         return [.. texts.Select(TotalText)];
     }
+
+    // The row's name for screen readers isn't part of the total.
+    private static Task<string[]> TotalTextsAsync(ILocator cells) => cells.EvaluateAllAsync<string[]>("""
+        cells => cells.map(cell => {
+            const name = cell.querySelector('[data-part=totals-name]');
+            return name ? cell.innerText.replace(name.innerText, '') : cell.innerText;
+        })
+        """);
 
     private static string? TotalText(string text)
     {

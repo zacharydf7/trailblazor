@@ -820,6 +820,13 @@ public static class TbStrings
 
     /// <summary>"{0} hidden": read out after a column is hidden from its own menu; {0} is the column.</summary>
     public const string DataGridColumnHidden = "DataGrid.ColumnHidden";
+
+    /// <summary>"Totals": names a data grid's totals row for screen readers.</summary>
+    public const string DataGridTotals = "DataGrid.Totals";
+
+    /// <summary>"Totals for {0}": names a group's totals row for screen readers; {0} is the group's heading.</summary>
+    public const string DataGridGroupTotals = "DataGrid.GroupTotals";
+
     /// <summary>"Sum": names a column's total in a data grid's totals row when it adds up the values.</summary>
     public const string DataGridSum = "DataGrid.Sum";
 
@@ -1188,6 +1195,8 @@ public static class TbStrings
         [DataGridColumns] = "Columns",
         [DataGridHide] = "Hide {0}",
         [DataGridColumnHidden] = "{0} hidden",
+        [DataGridTotals] = "Totals",
+        [DataGridGroupTotals] = "Totals for {0}",
         [DataGridSum] = "Sum",
         [DataGridAverage] = "Average",
         [DataGridCount] = "Count",

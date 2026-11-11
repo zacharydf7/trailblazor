@@ -249,7 +249,7 @@
                 <tfoot>
                     <tr data-part="totals" class="@ClassNames.Join("tb-data-grid__totals", Classes?.Totals)"
                         aria-rowindex="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + 1 : null)">
-                        @TotalCells(_totals)
+                        @TotalCells(_totals, Localizer[TbStrings.DataGridTotals])
                     </tr>
                 </tfoot>
             }
@@ -441,8 +441,7 @@
                 <button type="button" data-part="group-toggle" aria-expanded="@(group.Open ? "true" : "false")"
                         class="tb-data-grid__group-toggle" @onclick="_toggleGroup.For(group.Key)">
                     <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__group-chevron" />
-                    <span>@Format(TbStrings.DataGridGroupHeading, group.Column,
-                        group.Value ?? Localizer[TbStrings.DataGridGroupNone])</span>
+                    <span>@GroupName(group)</span>
                     <span class="tb-data-grid__group-count">@Format(TbStrings.DataGridGroupCount, group.Count)</span>
                 </button>
             </td>
@@ -550,10 +549,13 @@
         </text>;
 
     private RenderFragment GroupTotalsRow(GroupTotalsLine totals, int at) =>
-        @<tr data-part="group-totals" data-level="@totals.Level"
+        @<tr data-part="group-totals" data-level="@totals.Group.Level"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" class="tb-data-grid__group-totals">
-            @TotalCells(totals.Values)
+            @TotalCells(totals.Values, Format(TbStrings.DataGridGroupTotals, GroupName(totals.Group)))
         </tr>;
+
+    private string GroupName(GroupHeading group) =>
+        Format(TbStrings.DataGridGroupHeading, group.Column, group.Value ?? Localizer[TbStrings.DataGridGroupNone]);
 
     // The handle, details and selection columns hold nothing in the rows that aren't items.
     private RenderFragment BlankLeadCells =>
@@ -573,13 +575,19 @@
         </text>;
 
     // The grid's totals row and each group's totals row share these cells: blank lead cells, then one total per column.
-    private RenderFragment TotalCells(Dictionary<string, object?> totals) =>
+    // Screen readers can't tell a totals row from the rows above it, so the first column's cell starts with its name.
+    private RenderFragment TotalCells(Dictionary<string, object?> totals, string name) =>
         @<text>
             @BlankLeadCells
             @foreach (var column in _shownColumns)
             {
                 <td @key="column.Key" data-column="@column.Key" data-pinned="@PinSide(column)"
                     style="@PinStyle(column)" class="@column.CellClass">
+                    @if (column == _shownColumns[0])
+                    {
+                        <span data-part="totals-name" class="tb-visually-hidden">@name</span>
+                        @(" ")
+                    }
                     @TotalCell(column, totals.GetValueOrDefault(column.Key))
                 </td>
             }

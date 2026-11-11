@@ -7221,6 +7221,8 @@ public static class ExampleCatalog
                 "An edit's field is named by its column, and a row's Save and Cancel buttons by the row, such as "
                     + "\"Save Cedar Flats\".",
                 "A row's move handle is a menu `button` named \"Move\" followed by the row's label.",
+                "The totals row starts with hidden text that screen readers read first: \"Totals\", or for a group's "
+                    + "totals row \"Totals for\" and the group's heading, such as \"Totals for Region: North ridge\".",
             ],
             Announcements =
             [
@@ -7331,6 +7333,8 @@ public static class ExampleCatalog
                 new("detail", "The row of details under a row whose details are open."),
                 new("detail-cell", "The one cell of a detail row, which holds the `DetailTemplate`."),
                 new("total-label", "The name of a total, such as \"Sum\", before its value."),
+                new("totals-name",
+                    "A totals row's name for screen readers, hidden at the start of the first column's cell."),
                 new("row", "One row."),
                 new("placeholder", "A row a large grid hasn't loaded yet."),
                 new("editor", "The field that edits a cell."),
@@ -7388,7 +7392,8 @@ public static class ExampleCatalog
                 "`Total(\"Length (km)\")` reads the totals row's cell under a column, such as \"Sum 49.9\", or null "
                     + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`. "
                     + "`GroupTotals(\"Length (km)\")` reads each open group's totals cell under that column, in "
-                    + "order; in Playwright, use `await GroupTotalsAsync(\"Length (km)\")`.",
+                    + "order; in Playwright, use `await GroupTotalsAsync(\"Length (km)\")`. Both leave out the row's "
+                    + "hidden name.",
                 "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
                     + "dragging its edge, waiting for the grid to keep the width, and in bUnit as the grid's script "
                     + "reports it. A column's header carries the width the grid keeps in `data-width`.",

@@ -710,7 +710,7 @@ public sealed class TbGridDriver
     public string? Total(string column)
     {
         var key = Header(column).GetAttribute("data-column");
-        return TotalText(_find().QuerySelector($"tfoot [data-part=totals] td[data-column=\"{key}\"]")?.TextContent);
+        return TotalText(_find().QuerySelector($"tfoot [data-part=totals] td[data-column=\"{key}\"]"));
     }
 
     /// <summary>The text of each open group's totals cell under the column with this title, in the order the groups
@@ -720,11 +720,18 @@ public sealed class TbGridDriver
     {
         var key = Header(column).GetAttribute("data-column");
         return [.. _find().QuerySelectorAll($"tbody [data-part=group-totals] td[data-column=\"{key}\"]")
-            .Select(cell => TotalText(cell.TextContent))];
+            .Select(TotalText)];
     }
 
-    private static string? TotalText(string? text) => string.IsNullOrWhiteSpace(text) ? null
-        : string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    // The row's name for screen readers isn't part of the total.
+    private static string? TotalText(IElement? cell)
+    {
+        var shown = (IElement?)cell?.Clone();
+        shown?.QuerySelector("[data-part=totals-name]")?.Remove();
+        var text = shown?.TextContent;
+        return string.IsNullOrWhiteSpace(text) ? null
+            : string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    }
 
     /// <summary>Resizes the column with this title to this many pixels, as the grid's script reports a drag of its
     /// header's edge. bUnit has no layout, so the other columns keep only the widths the grid already gave them, and
