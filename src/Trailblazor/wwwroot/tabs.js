@@ -1,7 +1,8 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 // The arrow keys, Home and End move focus between enabled tabs; with automatic activation they also select it, through
 // `order` rather than a click, so the tab's OnClick hears only clicks. The headers follow the order in which tabs
-// register, so the tabs' order in the markup is reported to `order` too.
+// register, so the tabs' order in the markup is reported to `order` too. Delete or Backspace on a closable tab closes
+// it, as on a chip.
 export function attachTabs(list, order) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!list) {
@@ -9,6 +10,14 @@ export function attachTabs(list, order) {
     }
 
     const onKeyDown = event => {
+        const tab = event.target;
+        if ((event.key === 'Delete' || event.key === 'Backspace') && !event.altKey && !event.ctrlKey && !event.metaKey
+            && tab.parentElement === list && tab.hasAttribute('aria-keyshortcuts')) {
+            event.preventDefault();
+            callDotNet(order, 'OnClose', tab.id);
+            return;
+        }
+
         const next = nextTab(list, event);
         if (!next) {
             return;

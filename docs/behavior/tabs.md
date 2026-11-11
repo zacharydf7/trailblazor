@@ -15,12 +15,14 @@ Familiar apps: Windows property dialogs, browser developer tools, VS Code's sett
 - [x] In right-to-left text, Left moves forward and Right moves back. `TabsTests.Tabs_ShouldMoveForwardWithTheLeftArrow_WhenThePageIsRightToLeft`
 - [x] The arrows select without raising the tab's `OnClick`, while Enter raises it. `TabsTests.Tab_ShouldRaiseItsOnClickForClicksButNotArrowKeys_WhenItsHeaderIsClickedEvenWhileSelected`
 - [x] Alt, Ctrl or Cmd with these keys stays with the browser, so Alt+Left still goes back. `TabsTests.Tabs_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld`
+- [x] Delete or Backspace closes a focused tab that has an `OnClose`, but Ctrl+Delete doesn't; the tab names both keys in `aria-keyshortcuts`. `TabsTests.Tabs_ShouldCloseTheFocusedTabAndFocusTheNext_WhenDeleteOrBackspaceIsPressedAlone`, `TbTabsTests.Delete_ShouldRaiseOnCloseOnlyForAClosableTab_WhenTheScriptReportsIt`, `TbTabsTests.Render_ShouldShowACloseMarkAndNameItsKeys_WhenATabCanClose`
 
 ## Pointer
 
 - [x] Clicking a tab selects it and raises `ActiveIndexChanged`. `TbTabsTests.Click_ShouldSelectTheTabAndRaiseActiveIndexChanged_WhenAnotherTabIsClicked`
 - [x] Clicking the selected tab keeps it selected and raises its `OnClick` again. `TbTabsTests.Click_ShouldRaiseTheTabsOnClickOnceItIsSelected_WhenItsHeaderIsClickedSelectedOrNot`
 - [x] Clicking a disabled tab does nothing. `TbTabs.razor`
+- [x] Clicking a tab's close mark raises `OnClose` without selecting the tab. Only a tab with an `OnClose` shows the mark, and a disabled tab, or one on a static page, shows none. `TabsTests.Tabs_ShouldCloseATabWithoutSelectingIt_WhenItsCloseMarkIsClicked`, `TbTabsTests.Close_ShouldRaiseOnCloseWithoutSelectingTheTab_WhenItsMarkIsClicked`, `TbTabsTests.Render_ShouldShowNoCloseMark_WhenThePageIsStatic`
 - [x] A parent rendering again with the old index doesn't undo a click. `TbTabsTests.Render_ShouldKeepSelectionFromAClick_WhenTheParentRendersAgainWithTheSameIndex`
 - [x] Before the page is interactive, every panel renders, and a click, or an arrow key with automatic activation, still selects a tab and shows its panel. Tab from the selected tab reaches only its panel. `TbTabsTests.Render_ShouldRenderEveryPanelHiddenUntilFound_WhenThePageIsStatic`, `TabsTests.Tabs_ShouldSwitchByClickOrArrowKey_WhenThePageIsStatic`, `TabsTests.Tabs_ShouldTabFromThePanelOutOfTheTabs_WhenThePageIsStatic`
 - [x] Before the page is interactive, the browser's find selects the tab whose panel holds a match. `TabsTests.Tabs_ShouldSelectTheTabHoldingTheText_WhenTheBrowserFindsItOnAStaticPage`
@@ -28,6 +30,7 @@ Familiar apps: Windows property dialogs, browser developer tools, VS Code's sett
 ## Touch
 
 - [x] Tapping a tab selects it, since selection listens for the click. `TbTabs.razor`
+- [x] A close mark is a 24px target that leaves its tab as tall as the others. `TabsTests.Tabs_ShouldCloseATabWithoutSelectingIt_WhenItsCloseMarkIsClicked`
 - [x] Each `Size` steps the tabs' height with density, and a small tab stays at least 24px high. `SizeTests.Size_ShouldStepThePartsHeightWithDensity_WhenSmallMediumOrLarge`
 - [x] Tabs wider than their row swipe sideways. `trailblazor.css`
 - [x] The selected tab scrolls fully into view when the row overflows, without moving the page. That holds on first render, from code and on a click, and in right-to-left text. `TabsOverflowTests.Tabs_ShouldShowTheSelectedTab_WhenItStartsOutOfSight`, `TabsOverflowTests.Tabs_ShouldShowTheSelectedTabAndLeaveThePageAlone_WhenSelectedFromCode`, `TabsOverflowTests.Tabs_ShouldShowAllOfATab_WhenAPartlyHiddenOneIsClicked`, `TabsOverflowTests.Tabs_ShouldShowTheSelectedTab_WhenTheTextIsRightToLeft`
@@ -43,8 +46,8 @@ Familiar apps: Windows property dialogs, browser developer tools, VS Code's sett
 - [x] A focused tab shows a focus ring. `trailblazor.css`
 - [x] Focus stays on the same tab when a tab renders before it. `TabsTests.Tabs_ShouldKeepFocusOnTheSameTab_WhenALateTabRendersBeforeIt`
 - [ ] When the focused tab goes away, focus moves to the tab selected in its place. #148
+- [x] Once a closed tab is removed, focus moves to the next enabled tab, or to the one before it when no enabled tab follows. A tab the parent keeps open, or removes later, leaves focus alone. `NavigationExampleTests.TabsClosableExample_ShouldRemoveTheTabAndFocusTheNextOne_WhenATabIsClosed`, `NavigationExampleTests.TabsClosableExample_ShouldFocusTheTabBefore_WhenTheLastTabIsClosed`, `TbTabsTests.Close_ShouldLeaveFocusAlone_WhenTheParentKeepsTheTabAndRemovesItLater`, `TbTabsTests.Close_ShouldFocusTheEnabledTabBefore_WhenTheNextTabIsDisabled`, `TbTabsTests.Close_ShouldFocusTheNextTab_WhenOnCloseRemovesTheTabAfterAwaiting`
 
 ## Not applicable
 
-- Delete to close a tab: an optional key in the pattern, and these tabs have no close action of their own.
 - Tab leaving the list from an unselected tab, with manual activation: when that tab comes before the selected one, Tab stops on the selected tab first, since that tab holds the list's one tab stop.

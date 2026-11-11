@@ -170,3 +170,4 @@ Trailblazor.Testing.Playwright.TbRichTextEditorLocator
 Trailblazor.Testing.Playwright.TbRichTextEditorLocator.EnterAsync(string! html) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbRichTextEditorLocator.Input.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.RichTextEditor(string! label) -> Trailblazor.Testing.Playwright.TbRichTextEditorLocator!
+Trailblazor.Testing.Playwright.TbTabsLocator.CloseAsync(string! tab) -> System.Threading.Tasks.Task!

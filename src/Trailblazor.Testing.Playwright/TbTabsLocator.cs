@@ -17,4 +17,11 @@ public sealed class TbTabsLocator(ILocator scope, string? name)
         await button.ClickAsync();
         await Assertions.Expect(button).ToHaveAttributeAsync("aria-selected", "true");
     }
+
+    /// <summary>Clicks the close mark of the tab with this name.</summary>
+    public async Task CloseAsync(string tab)
+    {
+        await Assertions.Expect(List).ToHaveAttributeAsync("data-ready", "");
+        await List.GetByRole(AriaRole.Tab, new() { Name = tab, Exact = true }).Locator("[data-part=close]").ClickAsync();
+    }
 }

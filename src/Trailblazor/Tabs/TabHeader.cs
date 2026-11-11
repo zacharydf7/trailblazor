@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Trailblazor;
 
@@ -33,6 +34,22 @@ internal sealed class TabHeader : ComponentBase
         else
         {
             builder.AddContent(5, Tab.TextContent);
+        }
+
+        // A tab can't hold a button, so the mark serves the pointer, and the keys in aria-keyshortcuts the keyboard.
+        if (Tab.CanClose)
+        {
+            builder.OpenElement(6, "span");
+            builder.AddAttribute(7, "data-part", "close");
+            builder.AddAttribute(8, "aria-hidden", "true");
+            builder.AddAttribute(9, "class", "tb-tabs__close");
+            builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, Tab.CloseAsync));
+            builder.AddEventStopPropagationAttribute(11, "onclick", true);
+            builder.OpenComponent<TbIcon>(12);
+            builder.AddComponentParameter(13, nameof(TbIcon.Icon), BuiltInIcons.Close);
+            builder.AddComponentParameter(14, nameof(TbIcon.Size), Size.Small);
+            builder.CloseComponent();
+            builder.CloseElement();
         }
     }
 }

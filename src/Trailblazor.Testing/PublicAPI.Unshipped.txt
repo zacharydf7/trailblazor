@@ -160,3 +160,4 @@ Trailblazor.Testing.TbGridDriver.FilterChoicesAsync(string! column, params strin
 Trailblazor.Testing.TbRichTextEditorDriver
 Trailblazor.Testing.TbRichTextEditorDriver.EnterAsync(string! html) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.RichTextEditor(string! label) -> Trailblazor.Testing.TbRichTextEditorDriver!
+Trailblazor.Testing.TbTabsDriver.CloseAsync(string! tab) -> System.Threading.Tasks.Task!

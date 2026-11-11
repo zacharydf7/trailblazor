@@ -18,6 +18,7 @@
     private bool _shown;
     private string? _text;
     private bool _disabled;
+    private bool _closable;
     private string? _givenId;
     private string? _key;
     private string? _headerClass;
@@ -46,6 +47,14 @@
     /// <summary>Turns this tab off while the others stay usable.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>Raised when the user closes the tab, by its close mark or by Delete or Backspace while it has focus.
+    /// With it, the tab shows a close mark; a disabled tab, or one on a static page, can't be closed. Remove the tab
+    /// here to close it, and focus moves to the next enabled tab, or to the one before it when none follows. Keep
+    /// rendering it to leave it open, such as after asking about unsaved work. With <see cref="TbTabs.ActiveKey"/>,
+    /// closing the selected tab leaves none selected until you set another key.</summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
 
     /// <summary>Extra CSS classes for the tab's header, such as one marking a tab whose fields need attention.
     /// <c>Class</c> styles its panel. A class only changes how the header looks, so say what it means in the header's
@@ -100,6 +109,19 @@
 
     internal TabHeader? HeaderView { get; set; }
 
+    // The header button, which takes focus when a neighboring tab is closed.
+    internal ElementReference Header { get; set; }
+
+    // Closing needs the page to be interactive, so a static page shows no close mark.
+    internal bool CanClose => OnClose.HasDelegate && !Disabled && RendererInfo.IsInteractive;
+
+    // Closing counts as a use, as removing a chip does.
+    internal Task CloseAsync()
+    {
+        Telemetry.Used(TelemetryName, "close");
+        return Tabs!.CloseAsync(this);
+    }
+
     private bool IsSelected => Tabs!.ActiveTab == this;
 
     internal void CountUse() => Telemetry.Used(TelemetryName);
@@ -117,6 +139,7 @@
 
         _text = Text;
         _disabled = Disabled;
+        _closable = OnClose.HasDelegate;
         _key = Key;
         _headerClass = HeaderClass;
         _icon = Icon;
@@ -140,10 +163,11 @@
 
         _shown |= IsSelected;
         if (Text != _text || Disabled != _disabled || Key != _key || HeaderClass != _headerClass || Icon != _icon
-            || GivenId != _givenId)
+            || GivenId != _givenId || OnClose.HasDelegate != _closable)
         {
             _text = Text;
             _disabled = Disabled;
+            _closable = OnClose.HasDelegate;
             _givenId = GivenId;
             _key = Key;
             _headerClass = HeaderClass;

@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Trailblazor.Docs.Examples;
 using Trailblazor.Testing;
 
@@ -16,6 +17,35 @@ public class NavigationExampleTests : DocsTest
 
         Assert.Equal("Day 2 of 3", cut.Find("output").TextContent);
     }
+
+    [Fact]
+    public async Task TabsClosableExample_ShouldRemoveTheTabAndFocusTheNextOne_WhenATabIsClosed()
+    {
+        var cut = Render<TabsClosableExample>();
+
+        await cut.Tb().Tabs("Open trails").CloseAsync("Ridge loop");
+
+        Assert.Equal(["All trails", "Lake shore", "Cedar flats"], cut.Tb().Tabs("Open trails").Tabs);
+        Assert.Equal("Lake shore", cut.Tb().Tabs("Open trails").Selected);
+        Assert.Equal(Header(cut, "Lake shore").Id, FocusedReference().Id);
+    }
+
+    [Fact]
+    public async Task TabsClosableExample_ShouldFocusTheTabBefore_WhenTheLastTabIsClosed()
+    {
+        var cut = Render<TabsClosableExample>();
+
+        await cut.Tb().Tabs("Open trails").CloseAsync("Cedar flats");
+
+        Assert.Equal(["All trails", "Ridge loop", "Lake shore"], cut.Tb().Tabs("Open trails").Tabs);
+        Assert.Equal(Header(cut, "Lake shore").Id, FocusedReference().Id);
+    }
+
+    // bUnit's markup loses a re-rendered header's reference id, so the tab's own reference is compared instead.
+    private static ElementReference Header(IRenderedComponent<TabsClosableExample> cut, string text) =>
+        cut.FindComponents<TbTab>().Single(tab => tab.Instance.Text == text).Instance.Header;
+
+    private ElementReference FocusedReference() => (ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!;
 
     [Fact]
     public void AccordionMultipleExample_ShouldKeepBothOpen_WhenBothAreOpened()

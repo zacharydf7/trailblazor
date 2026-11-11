@@ -4336,3 +4336,5 @@ Trailblazor.TbMultiSelect<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Compon
 Trailblazor.TbMultiSelect<TItem>.ItemTemplate.set -> void
 Trailblazor.TbMultiSelect<TItem>.ItemDisabled.get -> System.Func<TItem, bool>?
 Trailblazor.TbMultiSelect<TItem>.ItemDisabled.set -> void
+Trailblazor.TbTab.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbTab.OnClose.set -> void

@@ -1,0 +1,14 @@
+<TbTabs AriaLabel="Open trails" @bind-ActiveIndex="_index">
+    <TbTab Text="All trails"><TbText>@_trails.Count of 3 trails open.</TbText></TbTab>
+    @foreach (var trail in _trails)
+    {
+        <TbTab @key="trail" Text="@trail" OnClose="() => _trails.Remove(trail)">
+            <TbText>Conditions on @trail.</TbText>
+        </TbTab>
+    }
+</TbTabs>
+
+@code {
+    private readonly List<string> _trails = ["Ridge loop", "Lake shore", "Cedar flats"];
+    private int _index = 1;
+}

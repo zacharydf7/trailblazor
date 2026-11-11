@@ -6554,6 +6554,11 @@ public static class ExampleCatalog
                 new("on-click", "Clicks on a tab", "A tab's `OnClick` is raised each time its header is clicked, or "
                     + "Enter or Space is pressed on it, even if it was already selected. It is raised after the tab is "
                     + "selected, and the arrow keys select without raising it.", typeof(TabsClickExample)),
+                new("closable", "Closing tabs", "A tab with an `OnClose` shows a close mark, and Delete or Backspace "
+                    + "closes it while it has focus. Closing raises `OnClose` without selecting the tab. Remove the tab "
+                    + "there, and focus moves to the next enabled tab, or to the one before it when none follows; keep "
+                    + "rendering it to leave it open, such as after asking about unsaved work.",
+                    typeof(TabsClosableExample)),
             ],
             Api = [typeof(TbTabs), typeof(TbTab)],
             Keyboard =
@@ -6571,6 +6576,7 @@ public static class ExampleCatalog
                 new(["Home", "End"], "Jumps to the first or last tab and selects it, unless activation is manual."),
                 new(["Enter", "Space"], "Selects the focused tab.") { When = "With manual activation" },
                 new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel."),
+                new(["Delete", "Backspace"], "Closes the focused tab.") { When = "On a tab with an `OnClose`" },
             ],
             Labeling =
             [
@@ -6580,10 +6586,14 @@ public static class ExampleCatalog
             [
                 "A `tablist` of `tab`s, each controlling a `tabpanel`. A `Vertical` list has "
                     + "`aria-orientation=\"vertical\"`.",
+                "A tab that can close has `aria-keyshortcuts=\"Delete Backspace\"`. Its close mark is hidden from "
+                    + "screen readers, since a tab can't hold a button.",
             ],
             Accessibility =
             [
                 "Each panel is focusable, so keyboard users can reach content that has no controls.",
+                "A screen reader on a touch screen can't reach a tab's close mark, and a double tap selects the tab, so "
+                    + "when tabs can close, also offer a way to close one from its panel or a menu.",
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
                     + "system's highlight color, and a selected pill keeps an outline in it.",
             ],
@@ -6594,7 +6604,8 @@ public static class ExampleCatalog
                     + "content and anything it loads. A click selects a tab, as do the arrow keys with automatic "
                     + "activation. The browser's find selects the tab whose panel holds a match. A tab with no panel "
                     + "does nothing until the page is interactive. On a prerendered page, the selection goes back to "
-                    + "`ActiveIndex` once the page is interactive.",
+                    + "`ActiveIndex` once the page is interactive. A tab with an `OnClose` shows its close mark once the "
+                    + "page is interactive.",
             ],
             Ready = new("[role=tablist]", "the tab list"),
             Target = new("tablist", "Report sections"),
@@ -6605,6 +6616,7 @@ public static class ExampleCatalog
                 new("tab", "One tab."),
                 new("tab-anchor", "A hidden marker that keeps a tab's place when tabs move."),
                 new("icon", "A tab's icon."),
+                new("close", "The close mark of a tab with an `OnClose`."),
                 new("panel", "A tab's panel."),
             ],
             Anatomy = """
@@ -6618,11 +6630,13 @@ public static class ExampleCatalog
                 + "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its "
                 + "text in bUnit, and `await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
                 + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready. On a static page, which "
-                + "never becomes ready, click the tab instead.",
+                + "never becomes ready, click the tab instead. Both helpers also have `CloseAsync(\"Summary\")`, which "
+                + "clicks the close mark of a tab with an `OnClose`.",
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "
-                    + "header first renders and `trailblazor.control.used` each time the user selects it.",
+                    + "header first renders and `trailblazor.control.used` each time the user selects it, or with "
+                    + "`trailblazor.action` `close` when the user closes it.",
             ],
         },
         new("accordion", "Accordion", ExampleCategory.Navigation,

@@ -327,6 +327,16 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Tabs_ShouldThrow_WhenAskedToCloseATabThatIsNotClosable()
+    {
+        var cut = RenderForm();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Tabs().CloseAsync("Route"));
+
+        Assert.Equal("The tab \"Route\" can't be closed.", error.Message);
+    }
+
+    [Fact]
     public async Task Grid_ShouldClickAndSelectRowsByACellsText_WhenTheRowsCanBeSelected()
     {
         Trail? clicked = null;

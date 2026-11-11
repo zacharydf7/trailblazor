@@ -793,10 +793,18 @@ public sealed class TbTabsDriver
     public string? Selected => _find().QuerySelector("[role=tab][aria-selected=true]")?.TextContent.Trim();
 
     /// <summary>Selects the tab with this text, as clicking it does.</summary>
-    public Task SelectAsync(string tab) =>
-        (_find().QuerySelectorAll("[role=tab]").SingleOrDefault(element => element.TextContent.Trim() == tab)
-            ?? throw new InvalidOperationException($"No tab reads \"{tab}\"."))
+    public Task SelectAsync(string tab) => Find(tab).ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>Closes the tab with this text, as clicking its close mark does. Throws for a tab that can't be closed.
+    /// </summary>
+    public Task CloseAsync(string tab) =>
+        (Find(tab).QuerySelector("[data-part=close]")
+            ?? throw new InvalidOperationException($"The tab \"{tab}\" can't be closed."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    private IElement Find(string tab) =>
+        _find().QuerySelectorAll("[role=tab]").SingleOrDefault(element => element.TextContent.Trim() == tab)
+            ?? throw new InvalidOperationException($"No tab reads \"{tab}\".");
 }
 
 /// <summary>A <c>TbMenu</c>, found by its trigger's name.</summary>

@@ -724,6 +724,162 @@ public class TbTabsTests : BunitContext
                 AddTab(builder, 20, "Reviews", "Reviews panel", disabledIndex == 2);
             })));
 
+    [Fact]
+    public void Render_ShouldShowACloseMarkAndNameItsKeys_WhenATabCanClose()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, ClosableTabs(() => { })));
+
+        var tabs = cut.FindAll("[role=tab]");
+        Assert.Equal(["Overview", "Specs", "Reviews"], tabs.Select(tab => tab.TextContent));
+        Assert.Equal([null, "Delete Backspace", null], tabs.Select(tab => tab.GetAttribute("aria-keyshortcuts")));
+        var mark = Assert.Single(cut.FindAll("[data-part=close]"));
+        Assert.Equal("true", mark.GetAttribute("aria-hidden"));
+        Assert.Same(tabs[1], mark.Closest("[role=tab]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowNoCloseMark_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, ClosableTabs(() => { })));
+
+        Assert.Empty(cut.FindAll("[data-part=close]"));
+        Assert.Null(cut.FindAll("[role=tab]")[1].GetAttribute("aria-keyshortcuts"));
+    }
+
+    [Fact]
+    public void Close_ShouldRaiseOnCloseWithoutSelectingTheTab_WhenItsMarkIsClicked()
+    {
+        var events = new List<string>();
+        var cut = Render<TbTabs>(parameters => parameters
+            .Add(tabs => tabs.ActiveIndexChanged, (int index) => events.Add($"selected {index}"))
+            .Add(tabs => tabs.ChildContent, ClosableTabs(() => events.Add("closed"))));
+
+        cut.Find("[data-part=close]").Click();
+
+        Assert.Equal(["closed"], events);
+        Assert.Equal("Overview panel", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Delete_ShouldRaiseOnCloseOnlyForAClosableTab_WhenTheScriptReportsIt()
+    {
+        var order = SetUpOrder();
+        var closed = 0;
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, ClosableTabs(() => closed++)));
+        var tabs = cut.FindAll("[role=tab]");
+
+        foreach (var tab in tabs)
+        {
+            await cut.InvokeAsync(() => order().Value.OnClose(tab.Id!));
+        }
+
+        Assert.Equal(1, closed);
+    }
+
+    [Fact]
+    public void Close_ShouldLeaveFocusAlone_WhenTheParentKeepsTheTabAndRemovesItLater()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, ClosableTabs(() => { })));
+
+        cut.Find("[data-part=close]").Click();
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            AddTab(builder, 0, "Overview", "Overview panel");
+            AddTab(builder, 20, "Reviews", "Reviews panel");
+        })));
+
+        Assert.Equal(2, cut.FindAll("[role=tab]").Count);
+        Assert.Empty(JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [Fact]
+    public void Close_ShouldFocusTheEnabledTabBefore_WhenTheNextTabIsDisabled()
+    {
+        var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.DisabledText, "Reviews"));
+
+        cut.FindAll("[data-part=close]")[1].Click();
+
+        Assert.Equal(["Overview", "Reviews"], cut.FindAll("[role=tab]").Select(tab => tab.TextContent));
+        Assert.Equal(Header(cut, "Overview").Id, FocusedReference().Id);
+    }
+
+    [Fact]
+    public async Task Close_ShouldFocusTheNextTab_WhenOnCloseRemovesTheTabAfterAwaiting()
+    {
+        var answer = new TaskCompletionSource();
+        var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.Answer, answer.Task));
+        cut.FindAll("[data-part=close]")[1].Click();
+        Assert.Equal(3, cut.FindAll("[role=tab]").Count);
+
+        await cut.InvokeAsync(answer.SetResult);
+
+        Assert.Equal(["Overview", "Reviews"], cut.FindAll("[role=tab]").Select(tab => tab.TextContent));
+        Assert.Equal(Header(cut, "Reviews").Id, FocusedReference().Id);
+    }
+
+    // bUnit's markup loses a re-rendered header's reference id, so the tab's own reference is compared instead.
+    private static ElementReference Header(IRenderedComponent<ClosingHost> cut, string text) =>
+        cut.FindComponents<TbTab>().Single(tab => tab.Instance.Text == text).Instance.Header;
+
+    private ElementReference FocusedReference() => (ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!;
+
+    // Every tab can be closed, and is removed once Answer completes, when one is given.
+    private sealed class ClosingHost : ComponentBase
+    {
+        private readonly List<string> _tabs = ["Overview", "Specs", "Reviews"];
+
+        [Parameter]
+        public string? DisabledText { get; set; }
+
+        [Parameter]
+        public Task? Answer { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbTabs>(0);
+            builder.AddAttribute(1, nameof(TbTabs.ChildContent), (RenderFragment)(content =>
+            {
+                foreach (var text in _tabs)
+                {
+                    content.OpenComponent<TbTab>(2);
+                    content.SetKey(text);
+                    content.AddAttribute(3, nameof(TbTab.Text), text);
+                    content.AddAttribute(4, nameof(TbTab.Disabled), text == DisabledText);
+                    content.AddAttribute(5, nameof(TbTab.OnClose), EventCallback.Factory.Create(this, async () =>
+                    {
+                        await (Answer ?? Task.CompletedTask);
+                        _tabs.Remove(text);
+                    }));
+                    content.AddAttribute(6, nameof(TbTab.ChildContent),
+                        (RenderFragment)(panel => panel.AddContent(0, $"{text} panel")));
+                    content.CloseComponent();
+                }
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    // Specs and Reviews hear OnClose, but only Specs can be closed, since Reviews is disabled.
+    private RenderFragment ClosableTabs(Action onClose) => builder =>
+    {
+        AddTab(builder, 0, "Overview", "Overview panel");
+        Add(10, "Specs", disabled: false);
+        Add(20, "Reviews", disabled: true);
+
+        void Add(int sequence, string text, bool disabled)
+        {
+            builder.OpenComponent<TbTab>(sequence);
+            builder.AddAttribute(sequence + 1, nameof(TbTab.Text), text);
+            builder.AddAttribute(sequence + 2, nameof(TbTab.Disabled), disabled);
+            builder.AddAttribute(sequence + 3, nameof(TbTab.OnClose), EventCallback.Factory.Create(this, onClose));
+            builder.AddAttribute(sequence + 4, nameof(TbTab.ChildContent),
+                (RenderFragment)(panel => panel.AddContent(0, $"{text} panel")));
+            builder.CloseComponent();
+        }
+    };
+
     private static void AddTab(RenderTreeBuilder builder, int sequence, string text, string content,
         bool disabled = false, string? key = null)
     {

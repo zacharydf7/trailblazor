@@ -191,6 +191,27 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task Tab_ShouldCountEachClose_WhenItHasATelemetryNameAndIsClosedByItsMarkOrAKey()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/tabs.js");
+        module.Setup<TabsAttachment?>("attachTabs", _ => true).SetResult(null);
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbTab>(0);
+            builder.AddAttribute(1, nameof(TbTab.Text), "Billing");
+            builder.AddAttribute(2, nameof(TbTab.TelemetryName), "billing-tab");
+            builder.AddAttribute(3, nameof(TbTab.OnClose), EventCallback.Factory.Create(this, () => { }));
+            builder.CloseComponent();
+        })));
+        var order = (DotNetObjectReference<TabOrder>)module.Invocations["attachTabs"].Single().Arguments[1]!;
+
+        cut.Find("[data-part=close]").Click();
+        await cut.InvokeAsync(() => order.Value.OnClose(cut.Find("[role=tab]").Id!));
+
+        Assert.Equal([("billing-tab", "TbTab", "close"), ("billing-tab", "TbTab", "close")], Uses());
+    }
+
+    [Fact]
     public void Switch_ShouldCountEachChangeButNotTheValue_WhenItHasATelemetryName()
     {
         var cut = Render<TbSwitch>(parameters => parameters.Add(toggle => toggle.Label, "Email alerts")

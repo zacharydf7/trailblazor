@@ -66,6 +66,46 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldCloseTheFocusedTabAndFocusTheNext_WhenDeleteOrBackspaceIsPressedAlone(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        await WaitForKeysAsync(page, "Open trails");
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Open trails" });
+        await list.GetByRole(AriaRole.Tab, new() { Name = "Ridge loop", Exact = true }).FocusAsync();
+
+        // Had Ctrl+Delete closed Ridge loop, Delete would then close Lake shore.
+        await page.Keyboard.PressAsync("Control+Delete");
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(list.GetByRole(AriaRole.Tab)).ToHaveTextAsync(["All trails", "Lake shore", "Cedar flats"]);
+        await Expect(list.GetByRole(AriaRole.Tab, new() { Name = "Lake shore", Exact = true })).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Backspace");
+
+        await Expect(list.GetByRole(AriaRole.Tab)).ToHaveTextAsync(["All trails", "Cedar flats"]);
+        await Expect(list.GetByRole(AriaRole.Tab, new() { Name = "Cedar flats", Exact = true })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldCloseATabWithoutSelectingIt_WhenItsCloseMarkIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Open trails" });
+        await WaitForKeysAsync(page, "Open trails");
+        var mark = (await list.Locator("[data-part=close]").First.BoundingBoxAsync())!;
+        var plain = (await list.GetByRole(AriaRole.Tab, new() { Name = "All trails" }).BoundingBoxAsync())!;
+        var closable = (await list.GetByRole(AriaRole.Tab, new() { Name = "Ridge loop" }).BoundingBoxAsync())!;
+        Assert.Equal((24, 24), (mark.Width, mark.Height));
+        Assert.Equal(plain.Height, closable.Height, tolerance: 0.5);
+
+        await page.Tb().Tabs("Open trails").CloseAsync("Cedar flats");
+
+        await Expect(list.GetByRole(AriaRole.Tab)).ToHaveTextAsync(["All trails", "Ridge loop", "Lake shore"]);
+        await Expect(list.GetByRole(AriaRole.Tab, new() { Name = "Ridge loop", Exact = true }))
+            .ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
     {
         var page = await OpenAsync(browser, "/tabs");

@@ -6162,6 +6162,22 @@
         padding: 0;
     }
 
+    /* A 24px target that doesn't make the tab taller. */
+    .tb-tabs__close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 24px;
+        block-size: 24px;
+        margin-block: -4px;
+        margin-inline-end: calc(-1 * var(--tb-space-1));
+        border-radius: var(--tb-radius-sm);
+    }
+
+    .tb-tabs__close:hover {
+        background: var(--tb-color-hover);
+    }
+
     .tb-tabs__panel:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);

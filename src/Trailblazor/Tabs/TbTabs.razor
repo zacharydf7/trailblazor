@@ -17,9 +17,11 @@
         {
             var selected = tab == ActiveTab;
             @* Keyed, so a reordered header keeps its focus. *@
-            <button @key="tab" type="button" role="tab" id="@tab.TabId" aria-selected="@(selected ? "true" : "false")"
+            <button @key="tab" @ref="tab.Header" type="button" role="tab" id="@tab.TabId"
+                    aria-selected="@(selected ? "true" : "false")"
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
+                    aria-keyshortcuts="@(tab.CanClose ? "Delete Backspace" : null)"
                     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
                     class="@ClassNames.Join("tb-tabs__tab", tab.HeaderClass)"
                     @onclick="_click.For(tab)">@tab.HeaderContent</button>
@@ -36,6 +38,9 @@
     private DotNetObjectReference<TabOrder>? _order;
     private bool _disposed;
     private readonly ItemHandlers<TbTab, Func<MouseEventArgs, Task>> _click;
+    private (TbTab Tab, TbTab? Neighbor)? _closing;
+    private bool _closeEnded;
+    private TbTab? _focusAfterRender;
     private int _active;
     private int? _lastActiveIndex;
     private bool _indexFromParent;
@@ -169,6 +174,22 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_focusAfterRender is { } next)
+        {
+            _focusAfterRender = null;
+            if (_tabs.Contains(next))
+            {
+                await next.Header.FocusAsync();
+            }
+        }
+
+        // A tab the parent keeps open, or removes later, moves no focus.
+        if (_closeEnded)
+        {
+            _closeEnded = false;
+            _closing = null;
+        }
+
         // The render that took the parent's index has added and removed its tabs by now, so the index can apply.
         if (_indexFromParent)
         {
@@ -191,7 +212,7 @@
                 return;
             }
 
-            _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync, SelectAsync));
+            _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync, SelectAsync, CloseFromKeyAsync));
             var attached = await module.InvokeAsync<TabsAttachment?>("attachTabs", _list, _order);
             if (attached is null)
             {
@@ -236,6 +257,11 @@
         var index = _tabs.IndexOf(tab);
         _tabs.Remove(tab);
         _click.KeepOnly(_tabs.Contains);
+        if (tab == _closing?.Tab)
+        {
+            _focusAfterRender = _closing.Value.Neighbor;
+        }
+
         // A removed tab can't stay selected while the parent's index settles.
         if (tab == _settled)
         {
@@ -328,6 +354,40 @@
         catch (Exception exception)
         {
             await DispatchExceptionAsync(exception);
+        }
+    }
+
+    // Called from the script for Delete or Backspace, so a failing callback goes to the renderer instead of the
+    // browser's console.
+    private async Task CloseFromKeyAsync(string tabId)
+    {
+        try
+        {
+            if (_tabs.Find(tab => tab.TabId == tabId) is { CanClose: true } tab)
+            {
+                await tab.CloseAsync();
+            }
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    // Focus goes to the next enabled tab, or the one before it, if the parent removes the tab while closing it.
+    internal async Task CloseAsync(TbTab tab)
+    {
+        var enabled = _tabs.FindAll(other => !other.Disabled);
+        var index = enabled.IndexOf(tab);
+        _closing = (tab, enabled.ElementAtOrDefault(index + 1) ?? enabled.ElementAtOrDefault(index - 1));
+        try
+        {
+            await tab.OnClose.InvokeAsync();
+        }
+        finally
+        {
+            _closeEnded = true;
+            StateHasChanged();
         }
     }
 
