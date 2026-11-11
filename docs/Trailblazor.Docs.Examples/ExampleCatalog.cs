@@ -3586,6 +3586,9 @@ public static class ExampleCatalog
                     + "order and the post.", typeof(SwitchStatesExample)),
                 new("tone-and-size", "Tone and size", "`Tone` colors the track when on, and `Size` scales the track "
                     + "and its label.", typeof(SwitchToneExample)),
+                new("thumb-icons", "Thumb icons", "`ThumbIcon` shows an icon in the thumb while the switch is on, and "
+                    + "`OffThumbIcon` while it's off, so the state shows by more than color and position.",
+                    typeof(SwitchIconsExample)),
             ],
             Api = [typeof(TbSwitch), typeof(ChoiceClasses)],
             Keyboard =
@@ -3611,7 +3614,8 @@ public static class ExampleCatalog
                     + "readers.",
                 "With reduced motion, the thumb moves without sliding.",
                 "In forced-colors mode it falls back to the system's own control, so it stays visible in every "
-                    + "high-contrast theme.",
+                    + "high-contrast theme. That control has no thumb, so thumb icons don't show there.",
+                "Thumb icons are hidden from screen readers, which already read the switch as on or off.",
                 "Every `Tone` stands out from the page by at least 3:1 when on; warning uses its text color to reach "
                     + "that contrast.",
             ],
@@ -3629,6 +3633,8 @@ public static class ExampleCatalog
                 new("label", "The switch's label."),
                 new("helper", "The help text under the switch."),
                 new("error", "The validation message, shown while the value is invalid."),
+                new("thumb-icon", "An icon in the thumb, from `ThumbIcon` or `OffThumbIcon`, with `data-state` set to "
+                    + "`on` or `off`."),
             ],
             TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
                 + "`GetByRole(AriaRole.Switch, ...)`. In bUnit, `Change(true)` on the `input` turns it on, but a "

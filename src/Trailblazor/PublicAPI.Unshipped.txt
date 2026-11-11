@@ -4509,3 +4509,7 @@ Trailblazor.TreeViewClasses.Empty.get -> string?
 Trailblazor.TreeViewClasses.Empty.init -> void
 const Trailblazor.TbStrings.DataGridTotals = "DataGrid.Totals" -> string!
 const Trailblazor.TbStrings.DataGridGroupTotals = "DataGrid.GroupTotals" -> string!
+Trailblazor.TbSwitch.ThumbIcon.get -> Trailblazor.Icon?
+Trailblazor.TbSwitch.ThumbIcon.set -> void
+Trailblazor.TbSwitch.OffThumbIcon.get -> Trailblazor.Icon?
+Trailblazor.TbSwitch.OffThumbIcon.set -> void

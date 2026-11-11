@@ -8,6 +8,26 @@ public class TbSwitchTests : BunitContext
     public TbSwitchTests() => this.AddTrailblazor();
 
     [Fact]
+    public void Render_ShouldPutAHiddenIconForEachStateOverTheInput_WhenGivenThumbIcons()
+    {
+        var cut = Render<TbSwitch>(parameters => parameters.Add(item => item.Label, "Dark trail maps")
+            .Add(item => item.ThumbIcon, BuiltInIcons.Check).Add(item => item.OffThumbIcon, BuiltInIcons.Close));
+
+        var icons = cut.FindAll(".tb-switch__control > input ~ [data-part=thumb-icon]");
+        Assert.Equal(["on", "off"], icons.Select(icon => icon.GetAttribute("data-state")));
+        Assert.All(icons, icon => Assert.Equal("true", icon.GetAttribute("aria-hidden")));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheInputUnwrapped_WhenGivenNoThumbIcon()
+    {
+        var cut = Render<TbSwitch>(parameters => parameters.Add(item => item.Label, "Dark trail maps"));
+
+        Assert.Empty(cut.FindAll(".tb-switch__control"));
+        Assert.Equal("LABEL", cut.Find("input").ParentElement!.TagName);
+    }
+
+    [Fact]
     public void Render_ShouldNameTheToneAndSizeAfterTheSwitch_WhenSet()
     {
         var cut = Render<TbSwitch>(parameters => parameters.Add(item => item.Tone, Tone.Danger)

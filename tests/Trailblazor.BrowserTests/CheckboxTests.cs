@@ -72,6 +72,47 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(direction == "rtl" ? shift < 0 : shift > 0, $"The thumb moved {shift}px in {direction}.");
     }
 
+    [Theory]
+    [MemberData(nameof(FeedbackTests.BrowsersAndDirections), MemberType = typeof(FeedbackTests))]
+    public async Task Switch_ShouldKeepItsThumbIconOnTheThumbAndToggleOnAnIconClick_WhenGivenThumbIcons(
+        string browser, string direction)
+    {
+        // Without motion the thumb is where it ends up as soon as the switch changes.
+        var page = await OpenAsync(browser, "/examples/switch", new() { ReducedMotion = ReducedMotion.Reduce });
+        await SetDirectionAsync(page, direction);
+        var maps = page.GetByRole(AriaRole.Switch, new() { Name = "Dark trail maps" });
+        await Expect(maps).ToBeCheckedAsync();
+
+        await ExpectIconOnThumbAsync(maps, "on");
+        await maps.Locator("xpath=..").Locator("[data-part=thumb-icon][data-state=on]").ClickAsync();
+        await Expect(maps).Not.ToBeCheckedAsync();
+        await ExpectIconOnThumbAsync(maps, "off");
+    }
+
+    // The shown icon's center is the thumb's, which the input draws as its ::before.
+    private static async Task ExpectIconOnThumbAsync(ILocator track, string state)
+    {
+        var icons = track.Locator("xpath=..").Locator("[data-part=thumb-icon]");
+        await Expect(icons.Filter(new() { Visible = true })).ToHaveCountAsync(1);
+        var icon = (await icons.And(track.Page.Locator($"[data-state={state}]")).BoundingBoxAsync())!;
+        var thumb = await track.EvaluateAsync<double[]>("""
+            track => {
+                const box = track.getBoundingClientRect();
+                const style = getComputedStyle(track);
+                const thumb = getComputedStyle(track, '::before');
+                const size = parseFloat(thumb.width);
+                const edge = style.direction === 'rtl'
+                    ? box.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight) - size
+                    : box.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+                return [edge + new DOMMatrix(thumb.transform).m41 + size / 2, box.top + box.height / 2];
+            }
+            """);
+        var (x, y) = (icon.X + icon.Width / 2, icon.Y + icon.Height / 2);
+        Assert.True(Math.Abs(x - thumb[0]) < 1 && Math.Abs(y - thumb[1]) < 1,
+            $"The {state} icon is centered at {x},{y}, the thumb at "
+                + $"{thumb[0]},{thumb[1]}.");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Switch_ShouldOpenTheLinkWithoutToggling_WhenALinkInItsRichLabelIsClicked(string browser)
     {
@@ -122,6 +163,8 @@ public class CheckboxTests(BrowserFixture fixture) : BrowserTest(fixture)
                 """);
 
             Assert.Empty(drawn);
+            // The native control has no thumb to carry an icon.
+            await Expect(page.Locator("[data-part=thumb-icon]").Filter(new() { Visible = true })).ToHaveCountAsync(0);
         }
     }
 

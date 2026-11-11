@@ -21,13 +21,14 @@
 
     private RenderFragment ChoiceLabel =>
         @<label data-part="label" class="@ClassNames.Join($"{Block}__label", Classes?.Label)">
-            <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
-                   name="@InputNameAttribute" type="checkbox" role="@Role" value="true" checked="@(Value is true)"
-                   disabled="@Disabled"
-                   aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@AriaRequired"
-                   aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
-                   class="@ClassNames.Join($"{Block}__input", Classes?.Input)"
-                   @onchange="OnChangeAsync" />
+            @if (OverInput is { } over)
+            {
+                <span class="@($"{Block}__control")">@Input@over</span>
+            }
+            else
+            {
+                @Input
+            }
             <span class="@(ChildContent is null ? LabelHiddenClass : null)">
                 @if (ChildContent is null)
                 {
@@ -40,6 +41,18 @@
                 @RequiredMarker
             </span>
         </label>;
+
+    private RenderFragment Input =>
+        @<input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
+                name="@InputNameAttribute" type="checkbox" role="@Role" value="true" checked="@(Value is true)"
+                disabled="@Disabled"
+                aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@AriaRequired"
+                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
+                class="@ClassNames.Join($"{Block}__input", Classes?.Input)"
+                @onchange="OnChangeAsync" />;
+
+    // Content drawn over the input, such as a switch's thumb icons.
+    private protected virtual RenderFragment? OverInput => null;
 
     /// <summary>The label as rich content, such as "I agree to the <c>&lt;a&gt;</c>terms<c>&lt;/a&gt;</c>", shown
     /// in place of <see cref="TbFieldBase{TValue}.Label"/>. It names the control, so keep a link in it short.</summary>

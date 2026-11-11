@@ -3613,6 +3613,10 @@
         height: var(--tb-switch-thumb);
         border-radius: var(--tb-radius-full);
         background: var(--tb-color-text-muted);
+    }
+
+    .tb-switch__input::before,
+    .tb-switch__thumb-icon {
         transition: transform var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
@@ -3621,14 +3625,53 @@
         background: var(--tb-choice-fill);
     }
 
-    /* The thumb travels the track less its own width, the 2px padding each side and the 1px border each side. */
     .tb-switch__input:checked::before {
         background: var(--tb-choice-on-fill);
+    }
+
+    /* The thumb and its icons travel the track less the thumb's width, the 2px padding each side and the 1px border
+       each side. */
+    .tb-switch__input:checked::before,
+    .tb-switch__input:checked ~ .tb-switch__thumb-icon {
         transform: translateX(calc(var(--tb-switch-width) - var(--tb-switch-thumb) - 6px));
     }
 
-    .tb-switch__input:dir(rtl):checked::before {
+    .tb-switch__input:dir(rtl):checked::before,
+    .tb-switch__input:dir(rtl):checked ~ .tb-switch__thumb-icon {
         transform: translateX(calc(var(--tb-switch-thumb) + 6px - var(--tb-switch-width)));
+    }
+
+    /* A thumb icon sits on the thumb and moves with it. It's inside the label, so a click on it toggles the switch. */
+    .tb-switch__control {
+        position: relative;
+        display: grid;
+        flex-shrink: 0;
+    }
+
+    .tb-switch__thumb-icon {
+        position: absolute;
+        inset-block-start: calc((var(--tb-switch-height) - var(--tb-switch-thumb)) / 2);
+        inset-inline-start: 3px;
+        display: grid;
+        place-content: center;
+        width: var(--tb-switch-thumb);
+        height: var(--tb-switch-thumb);
+        color: var(--tb-color-surface);
+    }
+
+    .tb-switch__thumb-icon .tb-icon {
+        width: calc(var(--tb-switch-thumb) * 0.75);
+        height: calc(var(--tb-switch-thumb) * 0.75);
+    }
+
+    .tb-switch__input:checked ~ .tb-switch__thumb-icon {
+        color: var(--tb-choice-fill);
+    }
+
+    /* Hidden rather than removed, so both icons slide with the thumb and the one shown is never left behind. */
+    .tb-switch__input:checked ~ .tb-switch__thumb-icon--off,
+    .tb-switch__input:not(:checked) ~ .tb-switch__thumb-icon--on {
+        visibility: hidden;
     }
 
     .tb-checkbox--invalid .tb-checkbox__input,
@@ -3662,6 +3705,11 @@
         .tb-switch__input::before,
         .tb-radio__input:checked::before {
             content: none;
+        }
+
+        /* The native checkbox has no thumb to carry an icon. */
+        .tb-switch__thumb-icon {
+            display: none;
         }
     }
 

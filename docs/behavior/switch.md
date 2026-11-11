@@ -13,6 +13,7 @@ Familiar apps: the toggles in phone settings, Windows Settings and macOS System 
 ## Pointer
 
 - [x] Clicking the switch or its label toggles it. `CheckboxTests.Switch_ShouldOpenTheLinkWithoutToggling_WhenALinkInItsRichLabelIsClicked`
+- [x] A thumb icon rides on the thumb as it moves, in either reading direction, and a click on the icon toggles the switch. `CheckboxTests.Switch_ShouldKeepItsThumbIconOnTheThumbAndToggleOnAnIconClick_WhenGivenThumbIcons`
 - [x] The thumb slides to the far edge of the track when on, at every size. `CheckboxTests.Switch_ShouldSlideItsThumbToTheTracksFarEdge_WhenOnAtEverySize`
 - [x] The on position follows the reading direction. `CheckboxTests.Switch_ShouldPutTheThumbAtTheEndOfTheReadingDirection_WhenOn`
 - [x] Clicking a link in a rich label opens the link without toggling. `CheckboxTests.Switch_ShouldOpenTheLinkWithoutToggling_WhenALinkInItsRichLabelIsClicked`
