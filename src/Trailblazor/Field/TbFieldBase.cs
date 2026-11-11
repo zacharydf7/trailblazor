@@ -673,6 +673,21 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         return hidden;
     }
 
+    bool IFormField.IsDirty() => _parseError is not null || !SameValue(Value, _valueToResetTo);
+
+    void IFormField.MarkAsSaved() => _lastValue = _valueToResetTo = Value;
+
+    // Whether two values are the same, for IsDirty; a field whose Comparer decides sameness overrides this to use it.
+    private protected virtual bool SameValue(TValue? value, TValue? other) =>
+        EqualityComparer<TValue>.Default.Equals(value, other);
+
+    // A multiple choice builds a new list on each change and keeps the order things were picked in, so two lists hold
+    // the same value when they hold the same items in any order.
+    private protected static bool SameItems<TItem>(IReadOnlyList<TItem>? items, IReadOnlyList<TItem>? other,
+        IEqualityComparer<TItem>? comparer) =>
+        ReferenceEquals(items, other) || items is not null && other is not null && items.Count == other.Count
+            && items.All(item => other.Any(match => OptionValues.Same(comparer, item, match)));
+
     bool IFormField.HasProblems() =>
         _parseError is not null || ValueProblem is not null || MissesRequired
         || (Validation?.Invoke(Value).Any() ?? false);

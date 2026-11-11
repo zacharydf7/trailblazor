@@ -39,6 +39,9 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     public IEqualityComparer<TItem>? Comparer { get; set; }
 
+    private protected override bool SameValue(IReadOnlyList<TItem>? value, IReadOnlyList<TItem>? other) =>
+        SameItems(value, other, Comparer);
+
     /// <summary>Adds a search box above each list; the list then shows only the items whose text contains what's
     /// typed. Moving every item moves only the ones shown.</summary>
     [Parameter]

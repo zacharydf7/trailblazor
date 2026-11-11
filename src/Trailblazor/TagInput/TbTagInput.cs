@@ -47,6 +47,10 @@ public partial class TbTagInput : IAsyncDisposable
     [Parameter]
     public IEqualityComparer<string>? Comparer { get; set; }
 
+    // Comparer only finds duplicates, so a tag typed again in another case is still a change.
+    private protected override bool SameValue(IReadOnlyList<string>? value, IReadOnlyList<string>? other) =>
+        SameItems(value, other, comparer: null);
+
     /// <summary>Checks a typed tag before it's added, returning a message to show, or null to add it. A tag with a
     /// message stays in the input for the user to fix.</summary>
     [Parameter]

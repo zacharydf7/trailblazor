@@ -1,0 +1,20 @@
+<TbForm @ref="_form" aria-label="Trail notes" @bind-IsDirty="_dirty" @bind-IsTouched="_touched" OnValidSubmit="Save"
+        Style="max-inline-size: 24rem">
+    <TbTextField Label="Trail" @bind-Value="_trail" />
+    <TbTextField Label="Notes" @bind-Value="_notes" Lines="3" />
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Type="ButtonType.Submit">Save notes</TbButton>
+        <output>@(_dirty ? "Unsaved changes" : _touched ? "No changes to save" : "")</output>
+    </TbStack>
+</TbForm>
+
+@code {
+    private TbForm? _form;
+    private bool _dirty;
+    private bool _touched;
+    private string? _trail = "Ridge loop";
+    private string? _notes = "Muddy after rain.";
+
+    // Once the notes are saved, the form compares against the saved values.
+    private Task Save() => _form!.MarkAsSavedAsync();
+}

@@ -4309,3 +4309,12 @@ Trailblazor.TbForm.Disabled.get -> bool
 Trailblazor.TbForm.Disabled.set -> void
 Trailblazor.TbForm.ReadOnly.get -> bool
 Trailblazor.TbForm.ReadOnly.set -> void
+Trailblazor.TbForm.IsDirty.get -> bool
+Trailblazor.TbForm.IsDirty.set -> void
+Trailblazor.TbForm.IsDirtyChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbForm.IsDirtyChanged.set -> void
+Trailblazor.TbForm.IsTouched.get -> bool
+Trailblazor.TbForm.IsTouched.set -> void
+Trailblazor.TbForm.IsTouchedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbForm.IsTouchedChanged.set -> void
+Trailblazor.TbForm.MarkAsSavedAsync() -> System.Threading.Tasks.Task!

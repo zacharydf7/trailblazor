@@ -43,6 +43,9 @@
     [Parameter]
     public IEqualityComparer<TItem>? Comparer { get; set; }
 
+    private protected override bool SameValue(IReadOnlyList<TItem>? value, IReadOnlyList<TItem>? other) =>
+        SameItems(value, other, Comparer);
+
     /// <summary>The color a checked box takes. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
     [Parameter]
     public Tone Tone { get; set; } = Tone.Primary;

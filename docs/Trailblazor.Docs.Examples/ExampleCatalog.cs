@@ -2817,6 +2817,11 @@ public static class ExampleCatalog
                 new("error-summary", "Error summary", "For a long form, list the errors above it, and let each one "
                     + "move focus to its field. `OnSubmit` leaves focus to you, so the summary can take it, and the "
                     + "page title starts with \"Error:\" while there are errors.", typeof(FormErrorSummaryExample)),
+                new("changes", "Unsaved changes", "`IsDirty` says whether any field differs from the value its parent "
+                    + "last gave it, so you can ask before the user leaves the page, and `IsTouched` says whether the "
+                    + "user has changed any field at all, even back again. After a save, `MarkAsSavedAsync` makes the "
+                    + "saved values the ones the form compares against, and a reset makes it clean and untouched too.",
+                    typeof(FormChangesExample)),
                 new("static-form-post", "Static form post", "A `FormName` lets the form post from a static page, "
                     + "with its model supplied by `[SupplyParameterFromForm]`. These docs run in the browser with no "
                     + "server, so here the same code submits without a post.", typeof(FormStaticExample)),

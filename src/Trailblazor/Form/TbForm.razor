@@ -88,6 +88,28 @@
     [Parameter]
     public EventCallback<bool> IsValidChanged { get; set; }
 
+    /// <summary>Whether the user has changed any field since the form first rendered, was last reset, or
+    /// <see cref="MarkAsSavedAsync"/> last ran, even if they changed it back. Bind it with <c>@bind-IsTouched</c>.
+    /// </summary>
+    [Parameter]
+    public bool IsTouched { get; set; }
+
+    /// <summary>Raised when <see cref="IsTouched"/> changes.</summary>
+    [Parameter]
+    public EventCallback<bool> IsTouchedChanged { get; set; }
+
+    /// <summary>Whether any field's value differs from the one a reset goes back to, or a field holds text it can't
+    /// read. That's the value its parent last gave it, or its value when <see cref="MarkAsSavedAsync"/> last ran, so
+    /// call that once changes are saved. A field that holds several values matches them in any order, and a field
+    /// whose <c>Comparer</c> decides when two values are the same, such as a select's, matches values with it. Use this
+    /// to ask before the user leaves with unsaved changes. Bind it with <c>@bind-IsDirty</c>.</summary>
+    [Parameter]
+    public bool IsDirty { get; set; }
+
+    /// <summary>Raised when <see cref="IsDirty"/> changes.</summary>
+    [Parameter]
+    public EventCallback<bool> IsDirtyChanged { get; set; }
+
     /// <summary>The messages the form is showing. Bind it with <c>@bind-Errors</c>.</summary>
     [Parameter]
     public IReadOnlyList<string> Errors { get; set; } = [];
@@ -256,7 +278,8 @@
         await ReportAsync();
     }
 
-    /// <summary>Takes every field back to the value its parent last gave it, updating what it's bound to, and hides
+    /// <summary>Takes every field back to the value its parent last gave it, or its value when
+    /// <see cref="MarkAsSavedAsync"/> last ran, updating what it's bound to, and hides
     /// the messages from the fields' own checks and from <see cref="DataAnnotations"/>, as a button with
     /// <see cref="ButtonType.Reset"/> does. Focus stays where it is. A field's <c>Error</c> from the parent stays. A
     /// message from a validator inside the form stays too, unless the reset changes the field's value, in which case the
@@ -291,6 +314,19 @@
 
         await ReportAsync();
         await OnReset.InvokeAsync();
+    }
+
+    /// <summary>Call after a save: makes every field's current value the one <see cref="IsDirty"/> compares against
+    /// and a reset goes back to, and marks the form untouched.</summary>
+    public async Task MarkAsSavedAsync()
+    {
+        foreach (var field in _fields)
+        {
+            field.MarkAsSaved();
+        }
+
+        _editContext.MarkAsUnmodified();
+        await ReportAsync();
     }
 
     internal void Add(IFormField field) => _fields.Add(field);
@@ -399,6 +435,21 @@
         {
             IsValid = valid;
             await IsValidChanged.InvokeAsync(valid);
+        }
+
+        var dirty = _fields.Any(field => field.IsDirty());
+        // Text a field can't read changes no value, so it counts as touched without the context knowing.
+        var touched = dirty || _editContext.IsModified();
+        if (touched != IsTouched)
+        {
+            IsTouched = touched;
+            await IsTouchedChanged.InvokeAsync(touched);
+        }
+
+        if (dirty != IsDirty)
+        {
+            IsDirty = dirty;
+            await IsDirtyChanged.InvokeAsync(dirty);
         }
 
         var errors = _editContext.GetValidationMessages().ToList();

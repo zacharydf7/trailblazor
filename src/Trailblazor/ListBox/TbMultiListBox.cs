@@ -14,6 +14,9 @@ public class TbMultiListBox<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     [Parameter]
     public IEqualityComparer<TItem>? Comparer { get; set; }
 
+    private protected override bool SameValue(IReadOnlyList<TItem>? value, IReadOnlyList<TItem>? other) =>
+        SameItems(value, other, Comparer);
+
     private protected override bool Multiple => true;
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TItem)) ?? typeof(TItem);

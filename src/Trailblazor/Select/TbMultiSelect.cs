@@ -15,6 +15,9 @@ public class TbMultiSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMember
     [Parameter]
     public IEqualityComparer<TItem>? Comparer { get; set; }
 
+    private protected override bool SameValue(IReadOnlyList<TItem>? value, IReadOnlyList<TItem>? other) =>
+        SameItems(value, other, Comparer);
+
     /// <summary>Shows the chosen options as chips, each with a button that removes it; Backspace removes the last.
     /// </summary>
     [Parameter]

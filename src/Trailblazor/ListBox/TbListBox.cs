@@ -12,6 +12,8 @@ public class TbListBox<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
     [Parameter]
     public IEqualityComparer<TValue>? Comparer { get; set; }
 
+    private protected override bool SameValue(TValue? value, TValue? other) => OptionValues.Same(Comparer, value, other);
+
     private protected override bool Multiple => false;
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);

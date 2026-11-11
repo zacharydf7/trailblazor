@@ -6,6 +6,12 @@ internal interface IFormField
     // Whether the field would fail validation now, without showing any message.
     bool HasProblems();
 
+    // Whether the value differs from the one a reset goes back to, or the field holds text it can't read.
+    bool IsDirty();
+
+    // Makes the current value the one a reset goes back to.
+    void MarkAsSaved();
+
     // Messages in the edit context that the field hides while it shows only its required message.
     IEnumerable<string> HiddenMessages();
 

@@ -11,6 +11,8 @@ public class TbSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes
     [Parameter]
     public IEqualityComparer<TValue>? Comparer { get; set; }
 
+    private protected override bool SameValue(TValue? value, TValue? other) => OptionValues.Same(Comparer, value, other);
+
     /// <summary>The text shown for a value that none of the options has, such as one that has left the list.
     /// Defaults to the value's text.</summary>
     [Parameter]

@@ -288,4 +288,15 @@ public class FormExampleTests : DocsTest
         Assert.False(cut.FindAll("input").Single(input => input.GetAttribute("value") == "Ridge loop")
             .HasAttribute("readonly"));
     }
+
+    [Fact]
+    public void ChangesExample_ShouldSayThereAreUnsavedChanges_WhenAFieldDiffersFromItsSavedValue()
+    {
+        var cut = Render<FormChangesExample>();
+        Assert.Equal("", cut.Find("output").TextContent);
+
+        cut.Find("input").Change("Lake shore");
+
+        Assert.Equal("Unsaved changes", cut.Find("output").TextContent);
+    }
 }
