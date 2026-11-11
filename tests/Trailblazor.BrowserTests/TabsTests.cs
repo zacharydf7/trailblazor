@@ -364,8 +364,11 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await save.ClickAsync();
         await plan.GetByRole(AriaRole.Tab, new() { Name = "Itinerary (needs attention)" }).ClickAsync();
         await Expect(page.GetByText("Saved")).ToHaveCountAsync(0);
-        await page.GetByRole(AriaRole.Tabpanel, new() { Name = "Itinerary" }).GetByRole(AriaRole.Textbox)
-            .FillAsync("Pine Hollow");
+        var trail = page.GetByRole(AriaRole.Tabpanel, new() { Name = "Itinerary" }).GetByRole(AriaRole.Textbox);
+        await trail.FillAsync("Pine Hollow");
+        // Committing the trail clears its message and moves Save, so clicking Save before it's committed can miss.
+        await trail.PressAsync("Tab");
+        await Expect(plan.GetByRole(AriaRole.Tab, new() { Name = "Itinerary", Exact = true })).ToBeVisibleAsync();
         await save.ClickAsync();
 
         await Expect(page.GetByText("Saved Ada's trip on Pine Hollow.")).ToBeVisibleAsync();
