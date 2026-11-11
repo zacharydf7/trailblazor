@@ -16,4 +16,7 @@ internal interface IFormField
 
     // Counts the field in trailblazor.field.invalid when it has an error, after its form failed to submit.
     void CountIfInvalid();
+
+    // Applies the form's new Disabled or ReadOnly.
+    Task FollowFormAsync();
 }

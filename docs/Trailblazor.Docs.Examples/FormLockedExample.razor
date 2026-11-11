@@ -1,0 +1,17 @@
+@* ReadOnly on the form makes every field read only, while the switch outside it stays usable. *@
+<TbSwitch Label="Edit the report" @bind-Value="_editing" />
+<TbForm aria-label="Locked trail report" ReadOnly="!_editing" Style="max-inline-size: 24rem">
+    <TbTextField Label="Trail" @bind-Value="_trail" />
+    <TbNumberField TValue="int?" Label="Hikers" @bind-Value="_hikers" />
+    <TbSelect TValue="string" Label="Difficulty" @bind-Value="_difficulty">
+        <TbOption Value="@("Easy")">Easy</TbOption>
+        <TbOption Value="@("Hard")">Hard</TbOption>
+    </TbSelect>
+</TbForm>
+
+@code {
+    private bool _editing;
+    private string? _trail = "Ridge loop";
+    private int? _hikers = 4;
+    private string? _difficulty = "Easy";
+}

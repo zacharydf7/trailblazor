@@ -36,6 +36,7 @@
     // The model's own check from the last report, kept until a value may have changed.
     private bool? _modelPasses;
     private ControlTelemetry? _telemetry;
+    private (bool Disabled, bool ReadOnly) _fieldState;
 
     /// <inheritdoc />
     public TbForm() => _editContext = new EditContext(_noModel);
@@ -63,6 +64,17 @@
     /// <summary>Names the form, so it posts as a static SSR form.</summary>
     [Parameter]
     public string? FormName { get; set; }
+
+    /// <summary>Turns off every field in the form, as a field's own <c>Disabled</c> does: the fields can't be focused
+    /// or changed, and they aren't posted. A field's own <c>Disabled</c> still applies while this is false.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Makes every field in the form read only, as a field's own <c>ReadOnly</c> does: their values can be
+    /// read and copied, and still post, but not changed. A field's own <c>ReadOnly</c> still applies while this is
+    /// false.</summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
 
     /// <summary>Whether the form would pass now: no <c>Required</c> field is empty, no field holds a number past its
     /// limits, every field's <c>Validation</c> passes, the model's data annotations pass when <see
@@ -136,6 +148,20 @@
             attributes["onreset"] = EventCallback.Factory.Create(this, ResetAsync);
             attributes["__internal_preventDefault_onreset"] = true;
             return attributes;
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        // A field whose own parameters didn't change isn't rendered again, so it's told to follow the form.
+        if ((Disabled, ReadOnly) != _fieldState)
+        {
+            _fieldState = (Disabled, ReadOnly);
+            foreach (var field in _fields.ToList())
+            {
+                await field.FollowFormAsync();
+            }
         }
     }
 

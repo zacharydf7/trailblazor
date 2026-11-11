@@ -37,6 +37,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // Each message this field announced and the errors it named, so the message is withdrawn once any is fixed.
     private readonly List<(AnnouncementHandle Handle, List<string> Errors)> _announced = [];
     private TbForm? _form;
+    private bool _ownDisabled;
+    private bool _ownReadOnly;
     private bool _disposed;
 
     /// <summary>The field's value.</summary>
@@ -75,13 +77,15 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     [Parameter]
     public string? InfoButtonLabel { get; set; }
 
-    /// <summary>Turns the field off: it can't be focused or changed, and it isn't posted with its form.</summary>
+    /// <summary>Turns the field off: it can't be focused or changed, and it isn't posted with its form. A
+    /// <see cref="TbForm"/> with <see cref="TbForm.Disabled"/> turns it off too.</summary>
     [Parameter]
     public bool Disabled { get; set; }
 
     /// <summary>Lets the user focus the field and read or copy its value, but not change it. Unlike
     /// <see cref="Disabled"/>, the value still posts with its form. A file upload, whose input can't be read only,
-    /// turns its picker off instead.</summary>
+    /// turns its picker off instead. A <see cref="TbForm"/> with <see cref="TbForm.ReadOnly"/> makes it read only too.
+    /// </summary>
     [Parameter]
     public bool ReadOnly { get; set; }
 
@@ -432,6 +436,27 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         }
     }
 
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // Keeps the field's own Disabled and ReadOnly so they can be combined with the form's again whenever the
+        // form's change.
+        if (parameters.TryGetValue<bool>(nameof(Disabled), out var disabled))
+        {
+            _ownDisabled = disabled;
+        }
+
+        if (parameters.TryGetValue<bool>(nameof(ReadOnly), out var readOnly))
+        {
+            _ownReadOnly = readOnly;
+        }
+
+        parameters.SetParameterProperties(this);
+        Disabled = _ownDisabled || Form?.Disabled == true;
+        ReadOnly = _ownReadOnly || Form?.ReadOnly == true;
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
     /// <summary>Moves focus to the field's input, such as to the field to fix after a failed save.</summary>
     /// <param name="preventScroll">Whether to keep the page from scrolling the field into view.</param>
     public abstract ValueTask FocusAsync(bool preventScroll = false);
@@ -721,6 +746,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         marked["data-tb-autofocus"] = "";
         return marked;
     }
+
+    Task IFormField.FollowFormAsync() => SetParametersAsync(ParameterView.Empty);
 
     // The parent's error stays: only the parent can clear it.
     void IFormField.HideMessages()

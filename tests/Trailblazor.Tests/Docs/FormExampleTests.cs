@@ -275,4 +275,17 @@ public class FormExampleTests : DocsTest
 
         Assert.Contains(cut.FindAll("a"), link => link.GetAttribute("href") == "guides/forms");
     }
+
+    [Fact]
+    public void LockedExample_ShouldMakeTheFieldsReadOnlyUntilEditingIsSwitchedOn_WhenRendered()
+    {
+        var cut = Render<FormLockedExample>();
+        var trail = cut.FindAll("input").Single(input => input.GetAttribute("value") == "Ridge loop");
+        Assert.True(trail.HasAttribute("readonly"));
+
+        cut.Find("input[role=switch]").Change(true);
+
+        Assert.False(cut.FindAll("input").Single(input => input.GetAttribute("value") == "Ridge loop")
+            .HasAttribute("readonly"));
+    }
 }

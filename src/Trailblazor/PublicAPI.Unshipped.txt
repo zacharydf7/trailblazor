@@ -4303,3 +4303,9 @@ Trailblazor.TbDataGrid<TItem>.StateHref.get -> System.Func<Trailblazor.GridState
 Trailblazor.TbDataGrid<TItem>.StateHref.set -> void
 Trailblazor.GridState.ToQueryParameters(string? prefix = null) -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 static Trailblazor.GridState.FromQuery(string? query, string? prefix = null) -> Trailblazor.GridState!
+override Trailblazor.TbFieldBase<TValue>.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+override Trailblazor.TbForm.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbForm.Disabled.get -> bool
+Trailblazor.TbForm.Disabled.set -> void
+Trailblazor.TbForm.ReadOnly.get -> bool
+Trailblazor.TbForm.ReadOnly.set -> void

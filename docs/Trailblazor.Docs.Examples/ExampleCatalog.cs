@@ -2807,6 +2807,10 @@ public static class ExampleCatalog
                     + "what they're bound to, back to the values the parent last gave them, and hides their messages. "
                     + "`ResetAsync` does the same from code, and `OnReset` lets you reset anything else.",
                     typeof(FormResetExample)),
+                new("locked", "Read-only and disabled forms", "`ReadOnly` on the form makes every field in it read "
+                    + "only, as each field's own `ReadOnly` would, and `Disabled` turns them all off. A field's own "
+                    + "setting still applies when the form's is off, and buttons in the form aren't affected.",
+                    typeof(FormLockedExample)),
                 new("server-errors", "Server errors", "A field's `Error` shows what the server said, and blocks the "
                     + "next submit until it is cleared, so clear it when the value changes. `Loading` shows the save "
                     + "is running and ignores more clicks.", typeof(FormServerExample)),

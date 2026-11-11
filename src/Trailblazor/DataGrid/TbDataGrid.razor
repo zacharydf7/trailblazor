@@ -270,14 +270,20 @@
             </span>
             @if (PageSizes is { Count: > 0 } sizes)
             {
-                <TbSelect TValue="int" Label="@(Labels.PageSize ?? Localizer[TbStrings.DataGridPageSize])"
-                          Size="Size.Small" Value="size" ValueChanged="ChangePageSizeAsync"
-                          class="tb-data-grid__page-size">
-                    @foreach (var option in sizes)
-                    {
-                        <TbOption Value="option">@option</TbOption>
-                    }
-                </TbSelect>
+                @* The page-size select belongs to the grid, not to any form around it, so even a disabled form leaves it
+                   alone. *@
+                <CascadingValue TValue="EditContext" Value="null">
+                    <CascadingValue TValue="TbForm" Value="null">
+                        <TbSelect TValue="int" Label="@(Labels.PageSize ?? Localizer[TbStrings.DataGridPageSize])"
+                                  Size="Size.Small" Value="size" ValueChanged="ChangePageSizeAsync"
+                                  class="tb-data-grid__page-size">
+                            @foreach (var option in sizes)
+                            {
+                                <TbOption Value="option">@option</TbOption>
+                            }
+                        </TbSelect>
+                    </CascadingValue>
+                </CascadingValue>
             }
             @if (PageCount > 1)
             {

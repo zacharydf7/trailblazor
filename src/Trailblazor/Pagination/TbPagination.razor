@@ -1,5 +1,6 @@
 @namespace Trailblazor
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
 @inherits TbComponentBase
 @inject NavigationManager Navigation
 @inject ITbLocalizer Localizer
@@ -24,9 +25,14 @@
         @if (Compact)
         {
             <li class="tb-pagination__jump">
-                <TbNumberField TValue="int?" Value="CurrentPage" ValueChanged="GoToTypedPageAsync" HideStepButtons
-                               Disabled="Disabled" InputAttributes="PageBoxAttributes" data-part="page-box"
-                               Class="tb-pagination__box" />
+                @* The page box is the pager's own, so a form around it neither counts it nor turns it off. *@
+                <CascadingValue TValue="EditContext" Value="null">
+                    <CascadingValue TValue="TbForm" Value="null">
+                        <TbNumberField TValue="int?" Value="CurrentPage" ValueChanged="GoToTypedPageAsync"
+                                       HideStepButtons Disabled="Disabled" InputAttributes="PageBoxAttributes"
+                                       data-part="page-box" Class="tb-pagination__box" />
+                    </CascadingValue>
+                </CascadingValue>
                 <span id="@CountId" data-part="page-count">
                     @string.Format(CultureInfo.CurrentCulture, OfLabel, Count)
                 </span>
