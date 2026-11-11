@@ -6841,7 +6841,7 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
-                typeof(MoveCheck), typeof(TreeInsertContext<>),
+                typeof(MoveCheck), typeof(TreeInsertContext<>), typeof(TreeViewClasses),
             ],
             Keyboard =
             [
@@ -7140,6 +7140,7 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(TbColumnGroup<>), typeof(DataGridLabels),
+                typeof(DataGridClasses),
                 typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),

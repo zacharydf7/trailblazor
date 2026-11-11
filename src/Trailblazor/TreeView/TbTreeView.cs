@@ -150,6 +150,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public Func<TItem, string?>? ItemClass { get; set; }
 
+    /// <summary>Extra CSS classes for the tree's inner parts.</summary>
+    [Parameter]
+    public TreeViewClasses? Classes { get; set; }
+
     /// <summary>Draws a row's content instead of its icon and text.</summary>
     [Parameter]
     public RenderFragment<TreeItemContext<TItem, TKey>>? ItemTemplate { get; set; }

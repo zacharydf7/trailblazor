@@ -22,6 +22,16 @@ public class TbDataGridTotalsTests : BunitContext
         new(4, "Summit Gate", 11.9, 1250, false, 0.2m, TimeSpan.FromMinutes(285)),
     ];
 
+    [Fact]
+    public void Render_ShouldAddTheTotalsClass_WhenClassesAreSet()
+    {
+        var cut = RenderHikes(length => length.Add(km => km.Aggregate, ColumnAggregate.Sum));
+
+        cut.Render(parameters => parameters.Add(grid => grid.Classes, new DataGridClasses { Totals = "my-totals" }));
+
+        Assert.Contains("my-totals", cut.Find("[data-part=totals]").ClassList);
+    }
+
     private IRenderedComponent<TbDataGrid<Hike>> RenderHikes(
         Action<ComponentParameterCollectionBuilder<TbColumn<Hike>>> length,
         Action<ComponentParameterCollectionBuilder<TbColumn<Hike>>>? climb = null, IReadOnlyList<Hike>? items = null) =>

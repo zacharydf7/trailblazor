@@ -20,14 +20,16 @@ else
 {
     @* Without a circuit the tree can't render rows from what registered, so each item renders its own. *@
     var open = ChildContent is not null && (ExpandedGiven ? Expanded : Level <= Tree!.InitialExpandDepth);
+    var classes = Tree!.Classes;
     <div @attributes="AdditionalAttributes" role="treeitem" data-part="item" aria-level="@Level"
          aria-disabled="@(Disabled ? "true" : null)"
-         aria-expanded="@(ChildContent is null ? null : open ? "true" : "false")" style="@RowStyle" class="@ClassNames.Join("tb-tree__item", Class)">
-        <span class="tb-tree__toggle" aria-hidden="true"></span>
-        <span data-part="content" class="tb-tree__content">@Row</span>
+         aria-expanded="@(ChildContent is null ? null : open ? "true" : "false")" style="@RowStyle"
+         class="@ClassNames.Join("tb-tree__item", classes?.Item, Class)">
+        <span class="@ClassNames.Join("tb-tree__toggle", classes?.Toggle)" aria-hidden="true"></span>
+        <span data-part="content" class="@ClassNames.Join("tb-tree__content", classes?.Content)">@Row</span>
         @if (EndContent is not null)
         {
-            <span data-part="end" class="tb-tree__end">@EndContent</span>
+            <span data-part="end" class="@ClassNames.Join("tb-tree__end", classes?.End)">@EndContent</span>
         }
     </div>
     @if (open)

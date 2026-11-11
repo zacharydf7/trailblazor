@@ -181,6 +181,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public Func<TItem, string?>? RowClass { get; set; }
 
+    /// <summary>Extra CSS classes for the grid's inner parts.</summary>
+    [Parameter]
+    public DataGridClasses? Classes { get; set; }
+
     /// <summary>The columns the rows sort by, in order. Bind it with <c>@bind-Sorts</c> to sort from code or to save
     /// it.</summary>
     [Parameter]
@@ -594,10 +598,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             }
         }
 
-        // Rows draw again for a new collection, whose items may have changed in place, or when the selection mode or
-        // cell navigation changes what each row says. Each row compares its own class and label, which may read from
-        // outside the item.
-        object rowOptions = (Items, SelectionMode, CellNavigation);
+        // Rows draw again for a new collection, whose items may have changed in place, or when the selection mode,
+        // cell navigation or part classes change a row's markup. Each row compares its own class and label, which may
+        // read from outside the item.
+        object rowOptions = (Items, SelectionMode, CellNavigation, Classes);
         if (!rowOptions.Equals(_rowOptions))
         {
             _rowOptions = rowOptions;

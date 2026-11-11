@@ -25,7 +25,7 @@
     @ChildContent
     @if (ShowsEmpty)
     {
-        <div data-part="empty" class="tb-tree__empty">
+        <div data-part="empty" class="@ClassNames.Join("tb-tree__empty", Classes?.Empty)">
             @if (EmptyContent is null)
             {
                 @EmptyLabel
@@ -131,10 +131,10 @@
              aria-labelledby="@(InsertTemplate is null ? null : $"{nameId}-content {nameId}-end")"
              style="@(declared?.RowStyle ?? $"--tb-tree-level: {node.Level - 1}")"
              class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
-                        context.Matches ? "tb-tree__item--match" : null, declared?.Class,
+                        context.Matches ? "tb-tree__item--match" : null, Classes?.Item, declared?.Class,
                         valued ? ItemClass?.Invoke(node.Item) : null)"
              @onclick="_rowClick.For(node.Key)" @ondblclick="_rowDoubleClick.For(node.Key)">
-            <span data-part="toggle" aria-hidden="true" class="tb-tree__toggle"
+            <span data-part="toggle" aria-hidden="true" class="@ClassNames.Join("tb-tree__toggle", Classes?.Toggle)"
                   @onclick="_toggle.For(node.Key)" @onclick:stopPropagation @ondblclick:stopPropagation>
                 @if (node.HasChildren)
                 {
@@ -143,12 +143,13 @@
             </span>
             @if (checkable)
             {
-                <span data-part="check" aria-hidden="true" class="@CheckClass(context.Checked)"
+                <span data-part="check" aria-hidden="true"
+                      class="@ClassNames.Join(CheckClass(context.Checked), Classes?.Check)"
                       @onclick="_toggleCheck.For(node.Key)" @onclick:stopPropagation @ondblclick:stopPropagation>
                 </span>
             }
             <span data-part="content" id="@(InsertTemplate is null ? null : $"{nameId}-content")"
-                  class="tb-tree__content">
+                  class="@ClassNames.Join("tb-tree__content", Classes?.Content)">
                 @if (ItemTemplate is not null && valued)
                 {
                     @ItemTemplate(context)
@@ -169,7 +170,8 @@
             @if ((declared?.EndContent ?? (ItemEnd is not null && valued ? ItemEnd(context) : null)) is { } end)
             {
                 @* The end slot's own controls keep their clicks and keys from the row. *@
-                <span data-part="end" id="@(InsertTemplate is null ? null : $"{nameId}-end")" class="tb-tree__end"
+                <span data-part="end" id="@(InsertTemplate is null ? null : $"{nameId}-end")"
+                      class="@ClassNames.Join("tb-tree__end", Classes?.End)"
                       @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown:stopPropagation>
                     @end
                 </span>
@@ -178,14 +180,17 @@
             {
                 @if (index == 0)
                 {
-                    <span data-part="insert" data-edge="start" class="tb-tree__insert" @onclick:stopPropagation
+                    <span data-part="insert" data-edge="start"
+                          class="@ClassNames.Join("tb-tree__insert", Classes?.Insert)"
+                          @onclick:stopPropagation
                           @ondblclick:stopPropagation @onkeydown:stopPropagation>
                         @InsertTemplate(new(default, 0))
                     </span>
                 }
                 @if (InsertBelow(node, context) is { } below)
                 {
-                    <span data-part="insert" class="tb-tree__insert" @onclick:stopPropagation
+                    <span data-part="insert" class="@ClassNames.Join("tb-tree__insert", Classes?.Insert)"
+                          @onclick:stopPropagation
                           @ondblclick:stopPropagation @onkeydown:stopPropagation>
                         @InsertTemplate(below)
                     </span>

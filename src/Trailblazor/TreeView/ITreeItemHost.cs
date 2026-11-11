@@ -7,6 +7,8 @@ internal interface ITreeItemHost<TItem>
 {
     int InitialExpandDepth { get; }
 
+    TreeViewClasses? Classes { get; }
+
     object KeyOf(TItem item);
 
     void AddItem(TbTreeItem<TItem> item, TbTreeItem<TItem>? parent);

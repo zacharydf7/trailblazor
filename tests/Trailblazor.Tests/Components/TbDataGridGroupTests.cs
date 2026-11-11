@@ -324,6 +324,29 @@ public class TbDataGridGroupTests : BunitContext
 
     private static Expression<Func<Hike, object?>> Field(Expression<Func<Hike, object?>> field) => field;
 
+    [Fact]
+    public void Render_ShouldAddPartClassesAndDrawTheRowsAgain_WhenClassesAreSetLater()
+    {
+        var cut = RenderHikes(parameters => parameters.Add(grid => grid.Groups, ["Difficulty"])
+            .Add(grid => grid.PageSize, 2));
+
+        cut.Render(parameters => parameters.Add(grid => grid.Classes, new DataGridClasses
+        {
+            Toolbar = "my-toolbar", Header = "my-header", Row = "my-row", Cell = "my-cell", Group = "my-group",
+            Pager = "my-pager",
+        }));
+
+        Assert.Contains("my-toolbar", cut.Find("[data-part=toolbar]").ClassList);
+        Assert.All(cut.FindAll("th[data-column]"), header => Assert.Contains("my-header", header.ClassList));
+        Assert.All(cut.FindAll("tr[data-part=row]"), row => Assert.Contains("my-row", row.ClassList));
+        Assert.All(cut.FindAll("tr[data-part=row] td[data-column]"),
+            cell => Assert.Contains("my-cell", cell.ClassList));
+        Assert.All(cut.FindAll("tr[data-part=group]"), group => Assert.Contains("my-group", group.ClassList));
+        Assert.Contains("my-pager", cut.Find("[data-part=pager]").ClassList);
+        Assert.NotEmpty(cut.FindAll("tr[data-part=row]"));
+        Assert.NotEmpty(cut.FindAll("tr[data-part=group]"));
+    }
+
     private IRenderedComponent<TbDataGrid<Hike>> RenderHikes(
         Action<ComponentParameterCollectionBuilder<TbDataGrid<Hike>>>? configure = null, bool filterable = false) =>
         Render<TbDataGrid<Hike>>(parameters =>

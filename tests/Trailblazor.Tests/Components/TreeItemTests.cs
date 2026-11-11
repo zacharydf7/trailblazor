@@ -575,6 +575,31 @@ public class TreeItemTests : BunitContext
     }
 
     [Fact]
+    public void TreeItem_ShouldAddTheTreesPartClasses_WhenStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        RenderFragment rows = builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.EndContent),
+                (RenderFragment)(end => end.AddContent(0, "3 new")));
+            builder.CloseComponent();
+        };
+
+        var cut = RenderFiles([], parameters => parameters.Add(tree => tree.ChildContent, rows)
+            .Add(tree => tree.Classes, new TreeViewClasses
+            {
+                Item = "my-item", Toggle = "my-toggle", Content = "my-content", End = "my-end",
+            }));
+
+        Assert.Contains("my-item", cut.Find("[role=treeitem]").ClassList);
+        Assert.Contains("my-toggle", cut.Find(".tb-tree__toggle").ClassList);
+        Assert.Contains("my-content", cut.Find("[data-part=content]").ClassList);
+        Assert.Contains("my-end", cut.Find("[data-part=end]").ClassList);
+    }
+
+    [Fact]
     public void TreeItem_ShouldFollowItsExpandedAndShowItsEndContent_WhenStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));

@@ -12,7 +12,7 @@
     @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); DrawRowsForReorder(); }
     @if (HasGroupBy || HideableColumns || Exportable)
     {
-        <div data-part="toolbar" class="tb-data-grid__toolbar">
+        <div data-part="toolbar" class="@ClassNames.Join("tb-data-grid__toolbar", Classes?.Toolbar)">
             @if (HasGroupBy)
             {
                 @* As with the filters, a page's form around the grid doesn't own the list. *@
@@ -153,7 +153,7 @@
                             data-pinned="@PinSide(column)" data-width="@KeptWidth(column)"
                             style="@HeaderStyle(column)"
                             class="@ClassNames.Join("tb-data-grid__header",
-                                       ClassNames.Modifier("tb-data-grid__header", column.Alignment))">
+                                       ClassNames.Modifier("tb-data-grid__header", column.Alignment), Classes?.Header)">
                             @if (HasColumnMenu(column))
                             {
                                 <div class="tb-data-grid__header-content">
@@ -247,7 +247,7 @@
             @if (HasTotals)
             {
                 <tfoot>
-                    <tr data-part="totals" class="tb-data-grid__totals"
+                    <tr data-part="totals" class="@ClassNames.Join("tb-data-grid__totals", Classes?.Totals)"
                         aria-rowindex="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + 1 : null)">
                         @TotalCells(_totals)
                     </tr>
@@ -264,7 +264,7 @@
     {
         var first = _total == 0 ? 0 : (_page - 1) * size + 1;
         var last = Math.Min(_page * size, _total);
-        <div data-part="pager" class="tb-data-grid__pager">
+        <div data-part="pager" class="@ClassNames.Join("tb-data-grid__pager", Classes?.Pager)">
             <span data-part="summary" class="tb-data-grid__summary">
                 @RangeText(first, last)
             </span>
@@ -306,7 +306,7 @@
              @ontbrowclick="_rowClick.For(key)"
              @ontbrowextend="_rowExtend.For(key)"
              class="@ClassNames.Join("tb-data-grid__row", selected ? "tb-data-grid__row--selected" : null,
-                        Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, rowClass)">
+                        Virtualize && at % 2 == 1 ? "tb-data-grid__row--stripe" : null, Classes?.Row, rowClass)">
             @if (CanReorder)
             {
                 <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle">
@@ -342,7 +342,7 @@
             {
                 var editable = CanEdit(column);
                 <td data-column="@column.Key" data-pinned="@PinSide(column)" style="@PinStyle(column)"
-                    data-editable="@(editable ? "" : null)" class="@column.CellClass"
+                    data-editable="@(editable ? "" : null)" class="@ClassNames.Join(column.CellClass, Classes?.Cell)"
                     @ondblclick="@((editable ? _startEdit.For((key, column)) : null)!)"
                     @ontbeditstart="@((editable ? _startEdit.For((key, column)) : null)!)"
                     @onkeydown="@((editable ? _cellKey.For((key, column)) : null)!)">
@@ -435,7 +435,7 @@
     // A group's heading spans the row, and its button stays in view while the rows scroll sideways.
     private RenderFragment GroupRow(GroupHeading group, int at) =>
         @<tr data-part="group" data-level="@group.Level" aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)"
-             class="tb-data-grid__group">
+             class="@ClassNames.Join("tb-data-grid__group", Classes?.Group)">
             <td colspan="@ColumnCount" style="--tb-data-grid-group-level: @(group.Level - 1)"
                 class="tb-data-grid__group-cell">
                 <button type="button" data-part="group-toggle" aria-expanded="@(group.Open ? "true" : "false")"

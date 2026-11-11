@@ -905,6 +905,39 @@ public class TbTreeViewTests : BunitContext
         Assert.Empty(_selectedChanges);
     }
 
+    [Fact]
+    public void Render_ShouldAddPartClasses_WhenClassesAreSet()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Checkable, true)
+            .Add(tree => tree.ItemEnd, context => builder => builder.AddContent(0, "3 new"))
+            .Add(tree => tree.InsertTemplate, context => builder => builder.AddContent(0, "Add"))
+            .Add(tree => tree.Classes, new TreeViewClasses
+            {
+                Item = "my-item", Toggle = "my-toggle", Check = "my-check", Content = "my-content", End = "my-end",
+                Insert = "my-insert",
+            }));
+
+        foreach (var (part, name) in new[]
+        {
+            ("item", "my-item"), ("toggle", "my-toggle"), ("check", "my-check"), ("content", "my-content"),
+            ("end", "my-end"), ("insert", "my-insert"),
+        })
+        {
+            var parts = cut.FindAll($"[data-part={part}]");
+            Assert.NotEmpty(parts);
+            Assert.All(parts, element => Assert.Contains(name, element.ClassList));
+        }
+    }
+
+    [Fact]
+    public void Render_ShouldAddTheEmptyClass_WhenTheTreeHasNoItems()
+    {
+        var cut = RenderPlaces([], parameters => parameters.Add(tree => tree.Classes,
+            new TreeViewClasses { Empty = "my-empty" }));
+
+        Assert.Contains("my-empty", cut.Find("[data-part=empty]").ClassList);
+    }
+
     private static string[] Texts(IRenderedComponent<TbTreeView<Place, int>> cut) =>
         [.. cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")!)];
 

@@ -4457,3 +4457,53 @@ Trailblazor.DialogClasses.WindowButton.get -> string?
 Trailblazor.DialogClasses.WindowButton.init -> void
 Trailblazor.MenuClasses.Chevron.get -> string?
 Trailblazor.MenuClasses.Chevron.init -> void
+Trailblazor.TreeViewClasses
+Trailblazor.TreeViewClasses.TreeViewClasses() -> void
+override Trailblazor.TreeViewClasses.Equals(object? obj) -> bool
+override Trailblazor.TreeViewClasses.GetHashCode() -> int
+override Trailblazor.TreeViewClasses.ToString() -> string!
+static Trailblazor.TreeViewClasses.operator !=(Trailblazor.TreeViewClasses? left, Trailblazor.TreeViewClasses? right) -> bool
+static Trailblazor.TreeViewClasses.operator ==(Trailblazor.TreeViewClasses? left, Trailblazor.TreeViewClasses? right) -> bool
+Trailblazor.TreeViewClasses.<Clone>$() -> Trailblazor.TreeViewClasses!
+Trailblazor.TreeViewClasses.Equals(Trailblazor.TreeViewClasses? other) -> bool
+Trailblazor.TreeViewClasses.Item.get -> string?
+Trailblazor.TreeViewClasses.Item.init -> void
+Trailblazor.TreeViewClasses.Toggle.get -> string?
+Trailblazor.TreeViewClasses.Toggle.init -> void
+Trailblazor.TreeViewClasses.Check.get -> string?
+Trailblazor.TreeViewClasses.Check.init -> void
+Trailblazor.TreeViewClasses.Content.get -> string?
+Trailblazor.TreeViewClasses.Content.init -> void
+Trailblazor.TreeViewClasses.End.get -> string?
+Trailblazor.TreeViewClasses.End.init -> void
+Trailblazor.DataGridClasses
+Trailblazor.DataGridClasses.DataGridClasses() -> void
+override Trailblazor.DataGridClasses.Equals(object? obj) -> bool
+override Trailblazor.DataGridClasses.GetHashCode() -> int
+override Trailblazor.DataGridClasses.ToString() -> string!
+static Trailblazor.DataGridClasses.operator !=(Trailblazor.DataGridClasses? left, Trailblazor.DataGridClasses? right) -> bool
+static Trailblazor.DataGridClasses.operator ==(Trailblazor.DataGridClasses? left, Trailblazor.DataGridClasses? right) -> bool
+Trailblazor.DataGridClasses.<Clone>$() -> Trailblazor.DataGridClasses!
+Trailblazor.DataGridClasses.Equals(Trailblazor.DataGridClasses? other) -> bool
+Trailblazor.DataGridClasses.Toolbar.get -> string?
+Trailblazor.DataGridClasses.Toolbar.init -> void
+Trailblazor.DataGridClasses.Header.get -> string?
+Trailblazor.DataGridClasses.Header.init -> void
+Trailblazor.DataGridClasses.Row.get -> string?
+Trailblazor.DataGridClasses.Row.init -> void
+Trailblazor.DataGridClasses.Cell.get -> string?
+Trailblazor.DataGridClasses.Cell.init -> void
+Trailblazor.DataGridClasses.Totals.get -> string?
+Trailblazor.DataGridClasses.Totals.init -> void
+Trailblazor.DataGridClasses.Pager.get -> string?
+Trailblazor.DataGridClasses.Pager.init -> void
+Trailblazor.TbTreeView<TItem, TKey>.Classes.get -> Trailblazor.TreeViewClasses?
+Trailblazor.TbTreeView<TItem, TKey>.Classes.set -> void
+Trailblazor.TbDataGrid<TItem>.Classes.get -> Trailblazor.DataGridClasses?
+Trailblazor.TbDataGrid<TItem>.Classes.set -> void
+Trailblazor.DataGridClasses.Group.get -> string?
+Trailblazor.DataGridClasses.Group.init -> void
+Trailblazor.TreeViewClasses.Insert.get -> string?
+Trailblazor.TreeViewClasses.Insert.init -> void
+Trailblazor.TreeViewClasses.Empty.get -> string?
+Trailblazor.TreeViewClasses.Empty.init -> void
