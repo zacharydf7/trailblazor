@@ -101,6 +101,27 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldRenderEveryPanelHiddenUntilFound_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            AddTab(builder, 0, "Overview", "Overview panel");
+            AddTab(builder, 10, "Specs", "Specs panel");
+            AddTab(builder, 20, "Pricing", "Pricing panel", disabled: true);
+        })));
+
+        var panels = cut.FindAll("[role=tabpanel]");
+        Assert.Equal(["Overview panel", "Specs panel", "Pricing panel"], panels.Select(panel => panel.TextContent.Trim()));
+        Assert.Equal([null, "until-found", ""], panels.Select(panel => panel.GetAttribute("hidden")));
+        Assert.Equal(["0", null, null], panels.Select(panel => panel.GetAttribute("tabindex")));
+        Assert.Equal(panels.Select(panel => panel.Id),
+            cut.FindAll("[role=tab]").Select(tab => tab.GetAttribute("aria-controls")));
+        Assert.All(cut.FindAll("[role=tab]"), tab => Assert.False(tab.HasAttribute("data-ready")));
+    }
+
+    [Fact]
     public void Render_ShouldPutTheHeaderClassOnTheTabAndFollowIt_WhenATabHasOne()
     {
         var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, HeaderClassTab("attention")));

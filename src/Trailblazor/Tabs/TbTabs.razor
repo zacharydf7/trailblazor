@@ -20,6 +20,7 @@
             <button @key="tab" type="button" role="tab" id="@tab.TabId" aria-selected="@(selected ? "true" : "false")"
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
+                    data-ready="@(RendererInfo.IsInteractive ? "" : null)"
                     class="@ClassNames.Join("tb-tabs__tab", tab.HeaderClass)"
                     @onclick="_click.For(tab)">@tab.HeaderContent</button>
         }
@@ -95,7 +96,8 @@
     public TabActivation Activation { get; set; } = TabActivation.Automatic;
 
     /// <summary>Keeps a panel rendered, but hidden, once it has been shown, so its state survives switching tabs.
-    /// Without it, only the selected panel is rendered.</summary>
+    /// Without it, only the selected panel is rendered once the page is interactive; until then, every panel is.
+    /// </summary>
     [Parameter]
     public bool KeepAlive { get; set; }
 

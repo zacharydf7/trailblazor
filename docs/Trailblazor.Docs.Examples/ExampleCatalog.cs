@@ -6388,8 +6388,8 @@ public static class ExampleCatalog
                 },
                 new("tabs", "Tabs and panels", "Each `TbTab` adds a tab and its panel. `Text` or `TextContent` is the "
                     + "tab's name, so a count inside it is read as part of the name, and `Disabled` turns a tab off. "
-                    + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Only the selected panel "
-                    + "renders.",
+                    + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Once the page is "
+                    + "interactive, only the selected panel renders.",
                     typeof(TabsExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and sets the tabs' height and text "
                     + "size, the same steps as a button's.", typeof(TabsSizeExample)),
@@ -6454,7 +6454,10 @@ public static class ExampleCatalog
             ],
             BeforeInteractive =
             [
-                "The selected tab's panel shows. The tabs don't switch until the page is interactive.",
+                "Every tab's panel renders and the selected one shows, so each prerender includes every panel's "
+                    + "content and anything it loads. A click selects a tab, as do the arrow keys with automatic "
+                    + "activation. The browser's find selects the tab whose panel holds a match. On a prerendered page, "
+                    + "the selection goes back to `ActiveIndex` once the page is interactive.",
             ],
             Ready = new("[role=tablist]", "the tab list"),
             Target = new("tablist", "Report sections"),
@@ -6477,7 +6480,8 @@ public static class ExampleCatalog
                 + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. "
                 + "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its "
                 + "text in bUnit, and `await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
-                + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready.",
+                + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready. On a static page, which "
+                + "never becomes ready, click the tab instead.",
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "
@@ -6544,8 +6548,9 @@ public static class ExampleCatalog
             ],
             BeforeInteractive =
             [
-                "Accordion sections show open or closed as `Expanded` sets them, and don't open or close until the "
-                    + "page is interactive.",
+                "Accordion sections show open or closed as `Expanded` sets them. A header opens and closes its "
+                    + "section, and the browser's find opens the section holding a match. On a prerendered page, the "
+                    + "sections go back to `Expanded` once the page is interactive.",
             ],
             Ready = new("[data-part=accordion]", "the accordion and each item's header"),
             Target = new("button", "Shipping"),
@@ -6568,8 +6573,8 @@ public static class ExampleCatalog
                 </TbAccordion>
                 """,
             TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
-                + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, and hands back its "
-                + "panel.",
+                + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, once the page is "
+                + "interactive, and hands back its panel. On a static page, click the item's header instead.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "

@@ -22,6 +22,8 @@ Familiar apps: Windows property dialogs, browser developer tools, VS Code's sett
 - [x] Clicking the selected tab keeps it selected and raises its `OnClick` again. `TbTabsTests.Click_ShouldRaiseTheTabsOnClickOnceItIsSelected_WhenItsHeaderIsClickedSelectedOrNot`
 - [x] Clicking a disabled tab does nothing. `TbTabs.razor`
 - [x] A parent rendering again with the old index doesn't undo a click. `TbTabsTests.Render_ShouldKeepSelectionFromAClick_WhenTheParentRendersAgainWithTheSameIndex`
+- [x] Before the page is interactive, every panel renders, and a click, or an arrow key with automatic activation, still selects a tab and shows its panel. Tab from the selected tab reaches only its panel. `TbTabsTests.Render_ShouldRenderEveryPanelHiddenUntilFound_WhenThePageIsStatic`, `TabsTests.Tabs_ShouldSwitchByClickOrArrowKey_WhenThePageIsStatic`, `TabsTests.Tabs_ShouldTabFromThePanelOutOfTheTabs_WhenThePageIsStatic`
+- [x] Before the page is interactive, the browser's find selects the tab whose panel holds a match. `TabsTests.Tabs_ShouldSelectTheTabHoldingTheText_WhenTheBrowserFindsItOnAStaticPage`
 
 ## Touch
 

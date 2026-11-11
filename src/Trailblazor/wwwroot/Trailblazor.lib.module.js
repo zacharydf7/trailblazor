@@ -7,6 +7,7 @@ import './autofocus.js';
 import './file-upload.js';
 import './accordion.js';
 import './pagination.js';
+import './tabs.js';
 import './field-box.js';
 import './range-slider.js';
 import './slider-keys.js';

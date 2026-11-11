@@ -1,0 +1,21 @@
+@page "/static-disclosure"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where the startup script opens the items and switches the tabs. *@
+<TbAccordion>
+    <TbAccordionItem Title="Sizing" Expanded>Sizes run small.</TbAccordionItem>
+    <TbAccordionItem Title="Care">Wash cold and hang to dry.</TbAccordionItem>
+    <TbAccordionItem Title="Recalls" Expanded Disabled>None this year.</TbAccordionItem>
+    <TbAccordionItem Title="Allergens" Disabled>Made in a nut-free kitchen.</TbAccordionItem>
+</TbAccordion>
+<TbAccordion Multiple>
+    <TbAccordionItem Title="Shipping" Expanded>Ships in two days.</TbAccordionItem>
+    <TbAccordionItem Title="Returns">Returns are free for a month.</TbAccordionItem>
+</TbAccordion>
+<TbTabs AriaLabel="Report sections">
+    <TbTab Text="Summary">Totals for the quarter.</TbTab>
+    <TbTab Text="Details">Every order placed.</TbTab>
+    <TbTab Text="Notes">Refunds were up in March.</TbTab>
+    <TbTab Text="Archive" Disabled>Last year's reports.</TbTab>
+</TbTabs>
+<button type="button">Past the tabs</button>

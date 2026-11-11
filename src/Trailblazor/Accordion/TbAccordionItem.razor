@@ -16,8 +16,11 @@
             <div data-part="actions" class="tb-accordion__actions">@HeaderActions</div>
         </div>
     }
-    @* The content stays rendered while closed, so fields inside keep what was typed; inert keeps it out of reach. *@
-    <div id="@PanelId" role="region" aria-labelledby="@TriggerId" inert="@(!_expanded)" data-part="panel"
+    @* The content stays rendered while closed, so fields inside keep what was typed; inert keeps it out of reach.
+       Until the page is interactive, an enabled item's panel is hidden until found instead, so find-in-page can
+       reveal it and the startup script can open it. *@
+    <div id="@PanelId" role="region" aria-labelledby="@TriggerId" inert="@(!_expanded && !FindsPanel)"
+         hidden="@(FindsPanel ? "until-found" : null)" data-part="panel"
          class="tb-accordion__panel">
         <div class="tb-accordion__clip">
             @* An item in the panel belongs to an accordion of its own, or to none, never to this one. *@
@@ -74,6 +77,8 @@
     private TbAccordion? Accordion { get; set; }
 
     private string TriggerId => $"{_id}-trigger";
+
+    private bool FindsPanel => !_expanded && !Disabled && !RendererInfo.IsInteractive;
 
     private string PanelId => $"{_id}-panel";
 

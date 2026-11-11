@@ -22,6 +22,8 @@ Familiar apps: FAQ pages, settings pages with collapsible sections, the sections
 - [x] Opening an item inside a panel leaves the item around it open. `TbAccordionTests.Click_ShouldLeaveTheItemAroundItOpen_WhenAnItemInItsPanelOpens`
 - [x] A panel slides open only when motion is allowed. `AccordionTests.AccordionPanel_ShouldSlideOnlyWhenMotionIsAllowed_WhenAnItemOpens`
 - [x] What was typed in a panel survives closing and opening it. `AccordionTests.Accordion_ShouldKeepWhatWasTyped_WhenAnItemIsClosedAndOpenedAgain`
+- [x] Before the page is interactive, a header still opens its item and closes the open one, or leaves the others open with `Multiple`. `AccordionTests.Accordion_ShouldOpenAnItemAndCloseTheOthers_WhenThePageIsStatic`, `AccordionTests.Accordion_ShouldLeaveTheOthersOpen_WhenThePageIsStaticAndSeveralMayBeOpen`
+- [x] Before the page is interactive, the browser's find opens the item whose closed panel holds a match, unless the item is disabled. `AccordionTests.Accordion_ShouldOpenTheItemHoldingTheText_WhenTheBrowserFindsItOnAStaticPage`, `TbAccordionTests.Render_ShouldKeepADisabledItemsPanelOutOfFind_WhenThePageIsStatic`
 
 ## Touch
 
@@ -40,4 +42,4 @@ Familiar apps: FAQ pages, settings pages with collapsible sections, the sections
 ## Not applicable
 
 - Keeping the only open item open: the pattern allows it, but here an open item always closes, so all may be closed.
-- Browser find opening a closed panel: a closed panel's content is hidden until opened.
+- Browser find opening a closed panel once the page is interactive: the panel is inert until opened, which keeps its content out of find.

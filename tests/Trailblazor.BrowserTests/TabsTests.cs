@@ -395,4 +395,62 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(map).ToHaveAttributeAsync("aria-selected", "true");
         await Expect(page.GetByText("Map refreshed 3 times.")).ToBeVisibleAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldSwitchByClickOrArrowKey_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-disclosure");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        var details = page.GetByRole(AriaRole.Tab, new() { Name = "Details" });
+        var notes = page.GetByRole(AriaRole.Tab, new() { Name = "Notes" });
+
+        await details.ClickAsync();
+
+        await Expect(details).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByText("Every order placed.")).ToBeVisibleAsync();
+        await Expect(page.GetByText("Totals for the quarter.")).ToBeHiddenAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(notes).ToBeFocusedAsync();
+        await Expect(notes).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByText("Refunds were up in March.")).ToBeVisibleAsync();
+        await Expect(page.GetByText("Every order placed.")).ToBeHiddenAsync();
+        await Expect(page.Locator("[role=tabpanel]", new() { HasText = "Last year's reports." }))
+            .ToHaveAttributeAsync("hidden", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldTabFromThePanelOutOfTheTabs_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-disclosure");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        var details = page.GetByRole(AriaRole.Tab, new() { Name = "Details" });
+        var past = page.GetByRole(AriaRole.Button, new() { Name = "Past the tabs" });
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Summary" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Summary" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(past).ToBeFocusedAsync();
+
+        await details.ClickAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(past).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.PressAsync("Shift+Tab");
+
+        await Expect(details).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldSelectTheTabHoldingTheText_WhenTheBrowserFindsItOnAStaticPage(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-disclosure#:~:text=Refunds");
+
+        await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Notes" }))
+            .ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByText("Refunds were up in March.")).ToBeVisibleAsync();
+    }
 }

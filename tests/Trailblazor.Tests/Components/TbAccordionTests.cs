@@ -87,6 +87,43 @@ public class TbAccordionTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldHideAClosedPanelUntilFound_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbAccordion>(parameters => parameters.Add(accordion => accordion.Multiple, true)
+            .Add(accordion => accordion.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbAccordionItem>(0);
+                builder.AddAttribute(1, nameof(TbAccordionItem.Title), "Sizing");
+                builder.AddAttribute(2, nameof(TbAccordionItem.Expanded), true);
+                builder.CloseComponent();
+                builder.OpenComponent<TbAccordionItem>(3);
+                builder.AddAttribute(4, nameof(TbAccordionItem.Title), "Care");
+                builder.CloseComponent();
+            })));
+
+        var panels = cut.FindAll("[data-part=panel]");
+        Assert.Equal([null, "until-found"], panels.Select(panel => panel.GetAttribute("hidden")));
+        Assert.All(panels, panel => Assert.False(panel.HasAttribute("inert")));
+        Assert.All(cut.FindAll("[data-part=trigger]"), trigger => Assert.False(trigger.HasAttribute("data-ready")));
+        Assert.True(cut.Find("[data-part=accordion]").HasAttribute("data-multiple"));
+    }
+
+    [Fact]
+    public void Render_ShouldKeepADisabledItemsPanelOutOfFind_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Care")
+            .Add(item => item.Disabled, true));
+
+        var panel = cut.Find("[data-part=panel]");
+        Assert.False(panel.HasAttribute("hidden"));
+        Assert.True(panel.HasAttribute("inert"));
+    }
+
+    [Fact]
     public void Render_ShouldUseTheHeadingLevelAndTitleContent_WhenGiven()
     {
         var cut = Render<TbAccordion>(parameters => parameters

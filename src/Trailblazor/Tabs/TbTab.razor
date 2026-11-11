@@ -6,8 +6,8 @@
 <span hidden data-part="tab-anchor" data-tab="@TabId"></span>
 @if (IsPanelRendered)
 {
-    <div @attributes="AttributesWithoutId" role="tabpanel" id="@PanelId" aria-labelledby="@TabId" tabindex="0"
-         hidden="@(!IsSelected)" data-part="panel" class="@ClassNames.Join("tb-tabs__panel", Class)"
+    <div @attributes="AttributesWithoutId" role="tabpanel" id="@PanelId" aria-labelledby="@TabId"
+         tabindex="@(IsSelected ? 0 : null)" hidden="@PanelHidden" data-part="panel" class="@ClassNames.Join("tb-tabs__panel", Class)"
          style="@Style">
         @ChildContent
     </div>
@@ -84,8 +84,11 @@
 
     internal string PanelId => $"{_id}-panel";
 
+    // Until the page is interactive, every panel renders, so the startup script and find-in-page can show any of them.
     internal bool IsPanelRendered => ChildContent is not null
-        && (IsSelected || Tabs!.RenderAllPanels || Tabs.KeepAlive && _shown);
+        && (IsSelected || !RendererInfo.IsInteractive || Tabs!.RenderAllPanels || Tabs.KeepAlive && _shown);
+
+    private object? PanelHidden => IsSelected ? null : RendererInfo.IsInteractive || Disabled ? true : "until-found";
 
     // TabHeader is internal, so Razor can't name it; the list renders it through this.
     internal RenderFragment HeaderContent => builder =>

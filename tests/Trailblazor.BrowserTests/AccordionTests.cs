@@ -232,4 +232,52 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Contains("Warranty", failure.Message);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Accordion_ShouldOpenAnItemAndCloseTheOthers_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-disclosure");
+        // The startup script, which handles the page until it's interactive, has loaded once the network is idle.
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        var sizing = page.GetByRole(AriaRole.Button, new() { Name = "Sizing" });
+        var care = page.GetByRole(AriaRole.Button, new() { Name = "Care" });
+        // A disabled item that starts closed stays closed as the page loads.
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Allergens" }))
+            .ToHaveAttributeAsync("aria-expanded", "false");
+
+        await care.ClickAsync();
+
+        await Expect(care).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByText("Wash cold and hang to dry.")).ToBeVisibleAsync();
+        await Expect(sizing).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(page.GetByText("Sizes run small.")).ToBeHiddenAsync();
+        var recalls = page.Locator("[data-part=panel]", new() { HasText = "None this year." });
+        await Expect(recalls).ToHaveAttributeAsync("inert", "");
+        Assert.Null(await recalls.GetAttributeAsync("hidden"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Accordion_ShouldLeaveTheOthersOpen_WhenThePageIsStaticAndSeveralMayBeOpen(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-disclosure");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        var returns = page.GetByRole(AriaRole.Button, new() { Name = "Returns" });
+
+        await returns.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(returns).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Shipping" }))
+            .ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Accordion_ShouldOpenTheItemHoldingTheText_WhenTheBrowserFindsItOnAStaticPage(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-disclosure#:~:text=hang%20to%20dry");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Care" }))
+            .ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(page.GetByText("Wash cold and hang to dry.")).ToBeVisibleAsync();
+    }
 }

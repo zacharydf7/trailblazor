@@ -9,22 +9,7 @@ export function attachTabs(list, order) {
     }
 
     const onKeyDown = event => {
-        const tabs = [...list.querySelectorAll(':scope > [role="tab"]:not(:disabled)')];
-        const index = tabs.indexOf(event.target);
-        if (index < 0 || event.altKey || event.ctrlKey || event.metaKey) {
-            return;
-        }
-
-        const rtl = getComputedStyle(list).direction === 'rtl';
-        const forward = list.getAttribute('aria-orientation') === 'vertical' ? 'ArrowDown'
-            : rtl ? 'ArrowLeft' : 'ArrowRight';
-        const back = { ArrowDown: 'ArrowUp', ArrowRight: 'ArrowLeft', ArrowLeft: 'ArrowRight' }[forward];
-        const next = {
-            [forward]: tabs[(index + 1) % tabs.length],
-            [back]: tabs[(index - 1 + tabs.length) % tabs.length],
-            Home: tabs[0],
-            End: tabs.at(-1),
-        }[event.key];
+        const next = nextTab(list, event);
         if (!next) {
             return;
         }
@@ -108,4 +93,78 @@ export function attachTabs(list, order) {
         },
     });
     return { handle };
+}
+
+// The enabled tab that an arrow key, Home or End moves to from the focused one, if the key moves at all.
+function nextTab(list, event) {
+    const tabs = [...list.querySelectorAll(':scope > [role="tab"]:not(:disabled)')];
+    const index = tabs.indexOf(event.target);
+    if (index < 0 || event.altKey || event.ctrlKey || event.metaKey) {
+        return null;
+    }
+
+    const rtl = getComputedStyle(list).direction === 'rtl';
+    const forward = list.getAttribute('aria-orientation') === 'vertical' ? 'ArrowDown'
+        : rtl ? 'ArrowLeft' : 'ArrowRight';
+    const back = { ArrowDown: 'ArrowUp', ArrowRight: 'ArrowLeft', ArrowLeft: 'ArrowRight' }[forward];
+    return {
+        [forward]: tabs[(index + 1) % tabs.length],
+        [back]: tabs[(index - 1 + tabs.length) % tabs.length],
+        Home: tabs[0],
+        End: tabs.at(-1),
+    }[event.key];
+}
+
+// Until the page is interactive, clicks and keys select tabs here, and find-in-page selects the tab whose panel holds a
+// match. Blazor renders an interactive tab with data-ready and selects it from then on.
+const staticTab = event => event.target.closest?.('.tb-tabs__list > [role="tab"]:not([data-ready], :disabled)');
+document.addEventListener('click', event => {
+    const tab = staticTab(event);
+    if (tab) {
+        select(tab);
+    }
+});
+document.addEventListener('keydown', event => {
+    const tab = staticTab(event);
+    const next = tab && nextTab(tab.parentElement, event);
+    if (next) {
+        event.preventDefault();
+        next.focus();
+        if (tab.parentElement.dataset.activation === 'automatic') {
+            select(next);
+        }
+    }
+});
+document.addEventListener('beforematch', event => {
+    if (event.target.matches('.tb-tabs__panel')) {
+        select(document.getElementById(event.target.getAttribute('aria-labelledby')));
+    }
+}, true);
+// The browser may show a match before this script runs, so the tab whose panel it showed is selected now.
+for (const tab of document.querySelectorAll('.tb-tabs__list > [role="tab"]:not([data-ready])[aria-selected="false"]')) {
+    if (document.getElementById(tab.getAttribute('aria-controls'))?.hidden === false) {
+        select(tab);
+    }
+}
+
+// A tab with no panel switches a view rendered elsewhere, which only Blazor can do.
+function select(tab) {
+    if (!tab.hasAttribute('aria-controls')) {
+        return;
+    }
+
+    for (const other of tab.parentElement.querySelectorAll(':scope > [role="tab"]')) {
+        const selected = other === tab;
+        other.setAttribute('aria-selected', selected);
+        other.tabIndex = selected ? 0 : -1;
+        const panel = document.getElementById(other.getAttribute('aria-controls'));
+        if (panel && selected) {
+            panel.removeAttribute('hidden');
+            panel.tabIndex = 0;
+        } else if (panel) {
+            // Like the server's markup, a disabled tab's panel is plain hidden, so find skips it.
+            panel.setAttribute('hidden', other.disabled ? '' : 'until-found');
+            panel.removeAttribute('tabindex');
+        }
+    }
 }

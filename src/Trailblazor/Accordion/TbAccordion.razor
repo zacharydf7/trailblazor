@@ -6,7 +6,7 @@
 @inject JsModuleLoader Modules
 
 @* The script sets data-ready here once the arrow keys work, which tests wait for. *@
-<div @attributes="AdditionalAttributes" @ref="_accordion" data-part="accordion"
+<div @attributes="AdditionalAttributes" @ref="_accordion" data-part="accordion" data-multiple="@Multiple"
      class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>
