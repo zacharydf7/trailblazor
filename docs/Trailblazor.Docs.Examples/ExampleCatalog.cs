@@ -14,6 +14,28 @@ public enum ExampleCategory
 
 public sealed record DataPart(string Name, string Description);
 
+// How much of a component works before the page is interactive, from all of it to nothing.
+public enum ModeSupport
+{
+    Full,
+    Partial,
+    DisplayOnly,
+    None,
+}
+
+// A static page and a prerendered one render alike, but only a static page's forms post, and what someone types or
+// chooses on a prerendered page is lost when it turns interactive. Everything works once it has.
+public sealed record RenderModes(ModeSupport Static, ModeSupport BeforeInteractive)
+{
+    public static string Label(ModeSupport support) => support switch
+    {
+        ModeSupport.Full => "Works",
+        ModeSupport.Partial => "Partly",
+        ModeSupport.DisplayOnly => "Display only",
+        _ => "Not shown",
+    };
+}
+
 public sealed record Example(string Name, string Title, ExampleCategory Category, string Summary)
 {
     // The types whose parameters or options the example's page tables.
@@ -50,7 +72,10 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     public IReadOnlyList<string> AppDuties { get; init; } = [];
 
     // What renders before the page is interactive, what works then, and what a static form posts.
-    public IReadOnlyList<string> BeforeInteractive { get; init; } = [];
+    public required IReadOnlyList<string> BeforeInteractive { get; init; }
+
+    // How much of the component works on a static page, and on a prerendered page before it turns interactive.
+    public required RenderModes Modes { get; init; }
 
     // Behavior, limitations and known issues that belong to no other section; a pitfall shows as a warning.
     public IReadOnlyList<ExampleNote> Notes { get; init; } = [];
@@ -83,10 +108,6 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // Every field takes OnFocus, OnBlur and AutoFocus, and warns about a Value without ValueChanged, so a field's page
     // ends its notes with them.
     public IReadOnlyList<ExampleNote> NotesShown => Api.Any(IsField) ? [.. Notes, new(FieldNote)] : Notes;
-
-    // The accessibility section splits into headings once the entry fills any part beyond what the component does.
-    public bool HasAccessibilityParts => Keyboard.Count > 0 || LabelingNotes.Count > 0 || Announcements.Count > 0
-        || AppDuties.Count > 0 || BeforeInteractive.Count > 0;
 
     private const string FieldLabeling = "With no room for a label, an `AriaLabel` names the field through a label "
         + "only screen readers see. A field with neither gets build warning TB004.";
@@ -206,7 +227,7 @@ public sealed record ExampleSource(string File, string Text)
 public static class ExampleCatalog
 {
     // What a component with no script does before the page is interactive.
-    private const string PlainHtml = "It is plain HTML, so it all renders the same before the page is interactive.";
+    public const string PlainHtml = "It is plain HTML, so it all renders the same before the page is interactive.";
 
     // What a button reports, which a link button and an icon button share.
     private static string[] ButtonTelemetry(string component) =>
@@ -272,6 +293,7 @@ public static class ExampleCatalog
             [
                 "Don't cut off text sighted people need without showing it somewhere else.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -312,6 +334,7 @@ public static class ExampleCatalog
                 "It renders `kbd` elements, so screen readers read the keys as text and the plus sign as \"plus\".",
                 "Each keycap keeps its border in forced-colors mode, such as Windows high contrast.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -378,6 +401,7 @@ public static class ExampleCatalog
                     + "trigger, whose name says what it does.",
                 "In forced-colors mode, such as Windows high contrast, each avatar keeps an outline.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 "It renders as plain HTML. A picture that fails to load lets the initials show through, with or "
@@ -446,6 +470,7 @@ public static class ExampleCatalog
                 "Say in the title what a tone means, such as \"Payment failed\", since color alone doesn't reach "
                     + "everyone.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -531,6 +556,7 @@ public static class ExampleCatalog
                     + "when the shown slide itself is removed, the one after it shows, or the last one if there's "
                     + "none after it."),
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "The first slide shows, and the buttons work once the page is interactive.",
@@ -614,6 +640,7 @@ public static class ExampleCatalog
                 "When the focused item scrolls out and is no longer drawn, focus moves to the list, and Page Down and "
                     + "Page Up go on from that item.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "A static or prerendered page lists every item in `Items`, so for a very long list use "
@@ -679,6 +706,7 @@ public static class ExampleCatalog
             [
                 "It is a native `img`.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It renders and loads as a plain `img`. A load or failure before the page is interactive raises "
@@ -721,6 +749,7 @@ public static class ExampleCatalog
                 "A divider with content is a plain `div` rather than a separator, whose children screen readers skip, "
                     + "so the content is read as text and the lines are only drawn.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -766,6 +795,7 @@ public static class ExampleCatalog
                 "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order on "
                     + "screen.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -839,6 +869,7 @@ public static class ExampleCatalog
                 "Name each button inside a card for the card it belongs to, such as \"Save Old mill\", so it makes "
                     + "sense on its own.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 "It renders as plain HTML, and a card with an `Href` already works as a link.",
@@ -910,6 +941,7 @@ public static class ExampleCatalog
             [
                 "Color alone can't carry the meaning, so pair a `Tone` with a label or text.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -1018,6 +1050,7 @@ public static class ExampleCatalog
                 "Give it text that says what it does. If it opens a panel of your own, return focus to it when the panel "
                     + "closes. A [dialog](components/dialog) or [menu](components/menu) does this for you.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It renders as the same native element. A link already works, and a submit button posts its form. "
@@ -1113,6 +1146,7 @@ public static class ExampleCatalog
                 "Word `AriaLabel` as what the button does, and say which item it acts on where several look the same, "
                     + "as in \"Remove Pine Hollow\".",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It renders a native button, or a link with an `Href`. The link already works, and `OnClick` starts "
@@ -1180,9 +1214,11 @@ public static class ExampleCatalog
             [
                 "Give the group an `aria-label` that says what the buttons do together.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
-                "It renders its buttons, joined. Their `OnClick` starts working once the page is interactive.",
+                "It renders its buttons, joined. A link or submit button in it already works, and `OnClick` starts "
+                    + "working once the page is interactive.",
             ],
             Target = new("group", "Text alignment"),
             Blocks = ["tb-button-group"],
@@ -1260,6 +1296,7 @@ public static class ExampleCatalog
                 "Give each screen one floating button at most, and a `Label` that says what it does.",
                 "Leave room under the page's last content for a fixed button.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "A floating button shows in place; its `OnClick` starts working once the page is interactive. A speed "
@@ -1370,6 +1407,7 @@ public static class ExampleCatalog
             [
                 "Give the group an `AriaLabel` that says what people are choosing, such as \"Map view\".",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "The items render with any pressed ones marked. Pressing them, the arrow keys and the single tab stop "
@@ -1469,6 +1507,7 @@ public static class ExampleCatalog
             [
                 "Keep each option to a word or two, so the segments fit on one line on a narrow screen.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Native radios give the tab stop and the arrow keys, and CSS fills the chosen segment from its checked "
@@ -1535,6 +1574,7 @@ public static class ExampleCatalog
             [
                 "It behaves as a [toggle group](components/toggle-group) does.",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "`TbThemeHead` applies a remembered theme before the page paints. Picking a choice starts working once "
@@ -1607,6 +1647,7 @@ public static class ExampleCatalog
                 "When the focused button moves into the overflow menu, focus moves to the menu's button. When that "
                     + "button goes away, focus moves to the last control.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Every control renders in the row. The arrow keys, the single tab stop and the overflow menu start "
@@ -1676,6 +1717,7 @@ public static class ExampleCatalog
             [
                 "The button stays in the tab order while it's hidden, and shows when it has keyboard focus.",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "The lines render. `OnInsert` starts working once the page is interactive.",
@@ -1730,6 +1772,7 @@ public static class ExampleCatalog
                 "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order on "
                     + "screen.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -1765,6 +1808,7 @@ public static class ExampleCatalog
             [
                 "A plain `div` with no role and no content; screen readers skip it.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -1820,6 +1864,7 @@ public static class ExampleCatalog
                 "Screen readers and the keyboard follow the order in the markup, so keep it the same as the order on "
                     + "screen.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -1891,6 +1936,7 @@ public static class ExampleCatalog
                     + "2.5.7).",
                 "The grip stays out of the tab order, since the separator's keys do the same as its menu.",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "The panes render at their sizes. Resizing starts working once the page is interactive.",
@@ -1946,6 +1992,7 @@ public static class ExampleCatalog
             [
                 "A plain `div` by default; it only limits the width of what it holds.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -2040,6 +2087,7 @@ public static class ExampleCatalog
                 "Put the app's name or the page's title in the app bar, and give every page's content a heading.",
                 "Use `Match=\"NavLinkMatch.All\"` on the link to the home page, which every address starts with.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "The links already work, and the skip link goes to the content. The menu button, the groups and the "
@@ -2149,6 +2197,7 @@ public static class ExampleCatalog
                 "Screen readers may not read a status alert that is added to the page with its message already in it. "
                     + "Add it empty and then set the message, or use `IAnnouncer`.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It renders as it will look. `OnClose` starts working once the page is interactive.",
@@ -2213,6 +2262,7 @@ public static class ExampleCatalog
                 "After the close button hides the banner, move focus somewhere useful, such as the page's main "
                     + "heading, since the button that had it is gone.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "The banner and its links render as plain HTML; the close button works once the page is interactive.",
@@ -2298,6 +2348,7 @@ public static class ExampleCatalog
                 "In forced-colors mode, such as Windows high contrast, every chip keeps an outline and a selected "
                     + "one is outlined in the system's highlight color.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Chips render as they will look once interactive, and a link already works. Selecting and removing "
@@ -2391,6 +2442,7 @@ public static class ExampleCatalog
                     + "reached right after their item.",
                 "`Selected` sets `aria-current`: `page` on a link and `true` on a button or plain item.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Items and links render in full. A link already works, and an item with `OnClick` starts working once "
@@ -2471,6 +2523,7 @@ public static class ExampleCatalog
                     + "is dashed, so it doesn't rely on color.",
                 "A drag held near the top or bottom of what scrolls keeps it scrolling, so a drop can reach any item.",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "The items render in their order. Dragging and the handles start working once the page is interactive.",
@@ -2545,6 +2598,7 @@ public static class ExampleCatalog
                 "In forced-colors mode, such as Windows high contrast, the badge keeps an outline and a dot keeps its "
                     + "fill.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -2608,6 +2662,7 @@ public static class ExampleCatalog
                 "With reduced motion, the moving bar and the spinning ring pulse instead.",
                 "In forced-colors mode, such as Windows high contrast, the fill takes the system's highlight color.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -2696,6 +2751,7 @@ public static class ExampleCatalog
             [
                 new("An info button with no `Text` throws when it renders, because nothing would name it."),
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "With `For`, the `<label>` names its control before the page is interactive.",
@@ -2795,6 +2851,7 @@ public static class ExampleCatalog
                 "Say when a submit succeeds, with an `output` element as in these examples, or the [announcer]"
                     + "(guides/announcements).",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "With a `FormName`, it posts as a static form. The fields check themselves on the server, and the "
@@ -2940,6 +2997,7 @@ public static class ExampleCatalog
                 "The `Filled` variant keeps a line with 3:1 contrast along the box's bottom, red when the field is invalid "
                     + "and dashed when it's read only.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "After a static form post, text that doesn't convert, such as letters in a number, stays in the field "
@@ -3130,6 +3188,7 @@ public static class ExampleCatalog
                 "Parse the value with `RichTextDocument` on the server before storing it; the editor does, but a "
                     + "value posted some other way may not have gone through it.",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "Before the page is interactive, the value shows as formatted text that can't yet be edited. A static "
@@ -3247,6 +3306,7 @@ public static class ExampleCatalog
                     + "`aria-invalid`, and `Required` sets `aria-required`; the asterisk it adds is hidden from screen "
                     + "readers.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Before the page is interactive, a field with a `Format` is a plain number box, since a static form "
@@ -3345,6 +3405,7 @@ public static class ExampleCatalog
                 "Every `Tone` stands out from the page by at least 3:1 when checked; warning uses its text color to "
                     + "reach that contrast.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "A `null` value looks unchecked until the page is interactive, because a script sets the mixed state.",
@@ -3444,6 +3505,7 @@ public static class ExampleCatalog
             [
                 new("`@ref` the group and call `FocusAsync()` to move focus to the first option that isn't disabled."),
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "A static form posts the checked options in the order they're listed, not the order they were checked.",
@@ -3532,6 +3594,7 @@ public static class ExampleCatalog
                 "Every `Tone` stands out from the page by at least 3:1 when on; warning uses its text color to reach "
                     + "that contrast.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "`ReadOnly` already works on a static page, so a click or Space doesn't change the switch.",
@@ -3640,6 +3703,7 @@ public static class ExampleCatalog
                 new("`@ref` the slider and call `FocusAsync()` to move focus to it. A range slider focuses its start "
                     + "thumb."),
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It posts in a static form, as a number or as `Start` and `End`.",
@@ -3758,6 +3822,7 @@ public static class ExampleCatalog
                 new("`@ref` the group and call `FocusAsync()` to move focus where Tab would: to the chosen radio, or "
                     + "else the first radio that isn't disabled."),
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Native radios give the tab stop and the arrow keys, so choosing works before the page is interactive, "
@@ -3847,6 +3912,7 @@ public static class ExampleCatalog
                     + "doesn't stay lit.",
                 "In forced-colors mode, such as Windows high contrast, the chosen stars take the system's highlight.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Native radios give the tab stop and the arrow keys, so choosing works before the page is interactive, "
@@ -4047,6 +4113,7 @@ public static class ExampleCatalog
                 "If a single select's options load as the list opens, give it an `UnmatchedText`, such as a lookup of "
                     + "the value's name, so the chosen value doesn't show as a key such as a `Guid` before they arrive.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It renders as the browser's own `<select>`, so it still works and posts with its form.",
@@ -4184,6 +4251,12 @@ public static class ExampleCatalog
                 "A required field with nothing chosen is invalid, and says so once the form validates, as any field "
                     + "does.",
             ],
+            BeforeInteractive =
+            [
+                "The button shows the chosen items and already opens the list, but choosing starts working once "
+                    + "the page is interactive, and a static form posts nothing for it.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             Ready = new("[data-part=input]", "the field's button"),
             Target = new("button", "Trail Choose a trail"),
             Blocks = ["tb-tree-select"],
@@ -4316,6 +4389,7 @@ public static class ExampleCatalog
                 "The input has `aria-autocomplete=\"list\"` and controls a `listbox` of `option`s. Up and Down move "
                     + "through the list, not the caret.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It is a plain text input, so a static form still posts what was typed.",
@@ -4408,6 +4482,7 @@ public static class ExampleCatalog
                     + "it, and `Required` sets `aria-required`.",
                 "A long tag ends in an ellipsis, and the box grows a row at a time as tags fill it.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "The tags render, and a static form posts them, but adding and removing tags start working once the "
@@ -4534,6 +4609,7 @@ public static class ExampleCatalog
                     + "sliders and the Red, Green and Blue boxes give keyboard and screen reader users the same "
                     + "control.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It is a plain text box that only takes `#rrggbb` (or `#rrggbbaa` with `Alpha`), so a static form posts "
@@ -4641,6 +4717,7 @@ public static class ExampleCatalog
             [
                 "Focus moves back to the input when a file is removed.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It is the same file input, with a `name` for its form, so a static form posts the chosen files. The "
@@ -4753,6 +4830,7 @@ public static class ExampleCatalog
             [
                 new("`@ref` the calendar and call `FocusAsync()` to move focus to its grid."),
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It shows the browser's own date box, so a static form still posts the date.",
@@ -4852,6 +4930,7 @@ public static class ExampleCatalog
             [
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the box."),
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It shows the browser's own date box, so a static form still posts the date.",
@@ -4928,6 +5007,7 @@ public static class ExampleCatalog
             [
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the box."),
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It is the browser's own time box either way, so the time can be chosen and a static form still posts "
@@ -5026,6 +5106,7 @@ public static class ExampleCatalog
             [
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the date box."),
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It shows the browser's own date and time box, so a static form still posts the value, with no "
@@ -5168,6 +5249,7 @@ public static class ExampleCatalog
                     + "on a button."),
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the start box."),
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It shows the browser's own date boxes, so a static form still posts both dates.",
@@ -5305,6 +5387,7 @@ public static class ExampleCatalog
             [
                 "It is one tab stop.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "It renders as the browser's own `<select>` list, so it still works and posts with its form.",
@@ -5411,6 +5494,12 @@ public static class ExampleCatalog
                     + "on it after a move. Each shows its name as a tooltip.",
                 "Below about 30rem wide, the lists stack, with the buttons in a row between them.",
             ],
+            BeforeInteractive =
+            [
+                "Both lists render with their items. Moving items starts working once the page is interactive, and "
+                    + "a static form posts nothing for it.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             Ready = new("[role=listbox]", "each list"),
             Target = new("group", "Trip crew"),
             Blocks = ["tb-transfer-list"],
@@ -5484,6 +5573,14 @@ public static class ExampleCatalog
                 "A partly typed code shows \"Verification code needs all 6 characters.\" once the field loses focus "
                     + "or Enter is pressed, not while the code is being typed.",
             ],
+            BeforeInteractive =
+            [
+                "It is a single text box with a `name`, so a static form posts the code as typed. Nothing filters "
+                    + "what's typed or pasted until the page is interactive, so a dash or space in a pasted code "
+                    + "counts toward the field's length and cuts off the code's last characters, and other characters "
+                    + "are rejected only when the form posts.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             Ready = new("[data-part=input]", "the input"),
             Target = new("textbox", "Verification code"),
             Blocks = ["tb-code-field"],
@@ -5566,6 +5663,7 @@ public static class ExampleCatalog
                 "Only one tooltip shows at a time: showing one, by hover or focus, hides any other, including one "
                     + "shown for keyboard focus.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 "Tooltips work before the page is interactive, and on static pages, once Blazor's script has loaded. "
@@ -5688,6 +5786,7 @@ public static class ExampleCatalog
                 "The highlight marks the focused item, which is what Enter chooses. A mouse moves it, and opening the "
                     + "menu puts it on the first item.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "The trigger already opens the list on click, Enter or Space, and a link in it already works. Until "
@@ -5910,6 +6009,7 @@ public static class ExampleCatalog
                     + "parent with a transform or a stacking context of its own can hold the dialog beneath the "
                     + "page.") { Pitfall = true },
             ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
             BeforeInteractive =
             [
                 "No dialog opens until the page is interactive, because opening one takes a script. The buttons that "
@@ -6034,6 +6134,7 @@ public static class ExampleCatalog
             [
                 "Open it from a button whose text says what the drawer holds, such as \"Filters\".",
             ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
             BeforeInteractive =
             [
                 "No drawer opens until the page is interactive, because opening one takes a script.",
@@ -6113,6 +6214,7 @@ public static class ExampleCatalog
                 new("A focus scope's options apply when it first renders, so render it conditionally, as these "
                     + "examples do, to start it again."),
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "Its content renders in full. Focus doesn't move or stay inside until the page is interactive, because "
@@ -6197,6 +6299,7 @@ public static class ExampleCatalog
                 "A click elsewhere closes the panel. Escape works on a panel opened by `OpenOnHover` too, as WCAG "
                     + "1.4.13 asks.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "The trigger already opens the panel on click, Enter or Space, and Escape closes it. Until the page is "
@@ -6263,6 +6366,7 @@ public static class ExampleCatalog
                 "Focus lands on Cancel as it opens, so a stray Enter doesn't confirm. The confirm button stays "
                     + "focusable while it's busy, so focus isn't lost.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "The trigger opens the confirmation and Escape closes it, as on a popover, but its buttons do nothing "
@@ -6340,6 +6444,7 @@ public static class ExampleCatalog
                     + "behind it, it goes back there when the overlay closes. Dialogs opened through `IDialogService`, "
                     + "toasts and announcements stay usable; content added beside it after it opens isn't blocked.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "An overlay with `Visible` already shows and catches the pointer. `Blocking`, `CloseOnClick` and "
@@ -6452,12 +6557,14 @@ public static class ExampleCatalog
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
                     + "system's highlight color, and a selected pill keeps an outline in it.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Every tab's panel renders and the selected one shows, so each prerender includes every panel's "
                     + "content and anything it loads. A click selects a tab, as do the arrow keys with automatic "
-                    + "activation. The browser's find selects the tab whose panel holds a match. On a prerendered page, "
-                    + "the selection goes back to `ActiveIndex` once the page is interactive.",
+                    + "activation. The browser's find selects the tab whose panel holds a match. A tab with no panel "
+                    + "does nothing until the page is interactive. On a prerendered page, the selection goes back to "
+                    + "`ActiveIndex` once the page is interactive.",
             ],
             Ready = new("[role=tablist]", "the tab list"),
             Target = new("tablist", "Report sections"),
@@ -6546,11 +6653,13 @@ public static class ExampleCatalog
                 "When code closes a section while focus is in its panel, focus moves to that section's title, unless "
                     + "that title is disabled.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Accordion sections show open or closed as `Expanded` sets them. A header opens and closes its "
-                    + "section, and the browser's find opens the section holding a match. On a prerendered page, the "
-                    + "sections go back to `Expanded` once the page is interactive.",
+                    + "section, and the browser's find opens the section holding a match. Tab, Enter and Space work from "
+                    + "the start; Up, Down, Home and End move between headers only once the page is interactive. On a "
+                    + "prerendered page, each section goes back to its `Expanded` value once the page is interactive.",
             ],
             Ready = new("[data-part=accordion]", "the accordion and each item's header"),
             Target = new("button", "Shipping"),
@@ -6721,6 +6830,7 @@ public static class ExampleCatalog
                     + "miss it. Keep what people need in the rows, or show it beside the tree for the selected row, as "
                     + "the [Master and detail recipe](recipes/master-detail) does.",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "A `TbTreeItem` renders a plain row, open to `InitialExpandDepth`.",
@@ -7094,6 +7204,7 @@ public static class ExampleCatalog
                 "Set `RowLabel` when a row's first column doesn't say which row it is, so its checkbox and move handle "
                     + "can.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "Overflow can't be measured yet, so the box the rows scroll in is a tab stop, and with an `AriaLabel` a "
@@ -7281,6 +7392,7 @@ public static class ExampleCatalog
                 "If the table scrolls in an area of its own, give that area `tabindex=\"0\"`, `role=\"region\"` and a "
                     + "name, so keyboard users can reach and scroll it.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -7357,6 +7469,7 @@ public static class ExampleCatalog
             [
                 "Mark the page people are on with `Current`, on the last item when the trail ends at it.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 "It renders as plain HTML, and its links already work.",
@@ -7450,6 +7563,7 @@ public static class ExampleCatalog
                 "Give a step's content a heading, so people can find it after moving on.",
                 "A horizontal stepper takes its container's width, so in a row give it `flex: 1` or a width.",
             ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "It renders as plain HTML. Its step buttons start working once the page is interactive.",
@@ -7541,6 +7655,7 @@ public static class ExampleCatalog
                     + "on Next after it reaches the last page. Focus stays on a chosen page as the pages around it "
                     + "shift.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "With `PageHref`, every item is already a link. Without it, the buttons do nothing until the page is "
@@ -7619,6 +7734,7 @@ public static class ExampleCatalog
                 "Following a link scrolls smoothly to the section, or jumps there when the user has asked for reduced "
                     + "motion.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "The links are plain addresses with the section's id, so they already work, and open in a new tab with "
@@ -7688,6 +7804,7 @@ public static class ExampleCatalog
                 "In forced-colors mode, such as Windows high contrast, a link takes the system's link color with or "
                     + "without an `Href`, and a disabled one the system's gray.",
             ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "A link with an `Href` already works. `OnClick` starts working once the page is interactive.",
@@ -7740,6 +7857,7 @@ public static class ExampleCatalog
                 "When an empty state replaces content after the user acts, such as a search that finds nothing, tell "
                     + "screen readers too, with the [announcer](guides/announcements) or a status message.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -7797,6 +7915,7 @@ public static class ExampleCatalog
                 "When a skeleton doesn't wrap the content, mark the region that is loading with `aria-busy=\"true\"`, "
                     + "and set it back to `false` when the content arrives.",
             ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
@@ -7869,6 +7988,7 @@ public static class ExampleCatalog
                     + "top end unless set), how many show at once (`MaxVisible`, 3 unless set) and how long they stay "
                     + "(`Duration`, 5 seconds unless set)."),
             ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
             BeforeInteractive =
             [
                 "No toast shows until the page is interactive, because they're shown from code.",

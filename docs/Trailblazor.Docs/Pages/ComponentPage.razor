@@ -51,50 +51,44 @@
                     Practices.
                 </TbText>
             }
-            @if (example.HasAccessibilityParts)
+            @if (example.Keyboard.Count > 0)
             {
-                @if (example.Keyboard.Count > 0)
-                {
-                    <DocsHeading Id="keyboard" Text="Keyboard" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
-                    <KeyboardTable Rows="example.Keyboard" />
-                    @RightToLeft(example)
-                }
-                @if (example.LabelingNotes.Count > 0)
-                {
-                    <DocsHeading Id="labeling" Text="Labeling" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
-                    @Notes("Labeling", example.LabelingNotes)
-                }
-                @if (example.Announcements.Count > 0)
-                {
-                    <DocsHeading Id="announcements" Text="What screen readers announce" Level="TextElement.H3"
-                                 TextStyle="TextStyle.Subtitle" />
-                    @Notes("What screen readers announce", example.Announcements)
-                }
-                <DocsHeading Id="what-it-does" Text="What the component does" Level="TextElement.H3"
-                             TextStyle="TextStyle.Subtitle" />
-                @Notes("Accessibility", example.Accessibility)
-                @if (example.Keyboard.Count == 0)
-                {
-                    @RightToLeft(example)
-                }
-                @if (example.AppDuties.Count > 0)
-                {
-                    <DocsHeading Id="app-duties" Text="What your app must do" Level="TextElement.H3"
-                                 TextStyle="TextStyle.Subtitle" />
-                    @Notes("What your app must do", example.AppDuties)
-                }
-                @if (example.BeforeInteractive.Count > 0)
-                {
-                    <DocsHeading Id="before-interactive" Text="Before the page is interactive" Level="TextElement.H3"
-                                 TextStyle="TextStyle.Subtitle" />
-                    @Notes("Before the page is interactive", example.BeforeInteractive)
-                }
-            }
-            else
-            {
-                @Notes("Accessibility", example.Accessibility)
+                <DocsHeading Id="keyboard" Text="Keyboard" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
+                <KeyboardTable Rows="example.Keyboard" />
                 @RightToLeft(example)
             }
+            @if (example.LabelingNotes.Count > 0)
+            {
+                <DocsHeading Id="labeling" Text="Labeling" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
+                @Notes("Labeling", example.LabelingNotes)
+            }
+            @if (example.Announcements.Count > 0)
+            {
+                <DocsHeading Id="announcements" Text="What screen readers announce" Level="TextElement.H3"
+                             TextStyle="TextStyle.Subtitle" />
+                @Notes("What screen readers announce", example.Announcements)
+            }
+            <DocsHeading Id="what-it-does" Text="What the component does" Level="TextElement.H3"
+                         TextStyle="TextStyle.Subtitle" />
+            @Notes("Accessibility", example.Accessibility)
+            @if (example.Keyboard.Count == 0)
+            {
+                @RightToLeft(example)
+            }
+            @if (example.AppDuties.Count > 0)
+            {
+                <DocsHeading Id="app-duties" Text="What your app must do" Level="TextElement.H3"
+                             TextStyle="TextStyle.Subtitle" />
+                @Notes("What your app must do", example.AppDuties)
+            }
+            <DocsHeading Id="before-interactive" Text="Before the page is interactive" Level="TextElement.H3"
+                         TextStyle="TextStyle.Subtitle" />
+            <TbText data-testid="render-modes">
+                On a static page: <strong>@RenderModes.Label(example.Modes.Static)</strong>. On a prerendered page
+                before it turns interactive: <strong>@RenderModes.Label(example.Modes.BeforeInteractive)</strong>.
+                See <a href="guides/getting-started#render-modes">every component's render modes</a>.
+            </TbText>
+            @Notes("Before the page is interactive", example.BeforeInteractive)
 
             <TbText class="docs-note">
                 The <a href="guides/accessibility">accessibility guide</a> lists what your app must do, and

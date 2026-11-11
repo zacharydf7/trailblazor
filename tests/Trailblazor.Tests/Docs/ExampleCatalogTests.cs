@@ -121,10 +121,10 @@ public class ExampleCatalogTests
     }
 
     [Fact]
-    public void ExampleCatalog_ShouldGiveEveryPageItsUsageSectionsAndRelated_WhenCalled()
+    public void ExampleCatalog_ShouldGiveEveryPageItsUsageSectionsRelatedAndBeforeInteractiveNotes_WhenCalled()
     {
-        var incomplete = ExampleCatalog.All
-            .Where(example => example.WhenToUse.Count == 0 || example.Sections.Count == 0 || example.Related.Count == 0);
+        var incomplete = ExampleCatalog.All.Where(example => example.WhenToUse.Count == 0 || example.Sections.Count == 0
+            || example.Related.Count == 0 || example.BeforeInteractive.Count == 0);
 
         Assert.Empty(incomplete.Select(example => example.Name));
     }

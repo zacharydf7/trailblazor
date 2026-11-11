@@ -154,16 +154,46 @@
         <DocsHeading Id="render-modes" Text="Render modes" Class="docs-section" />
         <TbText>
             Every component works in Interactive Server, Interactive WebAssembly and Interactive Auto. Pages rendered
-            statically on the server still show every component, with these differences:
+            statically on the server show nearly every component, with these differences:
         </TbText>
         <ul>
             <li>Fields post their values with a form.</li>
             <li>A select renders the browser's own <code>&lt;select&gt;</code>.</li>
             <li>
-                Anything that responds to clicks or keys, such as a dialog, a menu or tabs, needs an interactive render
-                mode.
+                Some components work in part or not at all until the page is interactive, as the table shows. Each
+                component's page says what works under "Before the page is interactive".
             </li>
         </ul>
+        <TbText>
+            A prerendered page renders as a static one does until it turns interactive, but its forms don't post, and
+            anything typed or chosen before then is lost.
+        </TbText>
+        <TbText>
+            "Works" means everything a person can do with it works, "Partly" that some of it does, "Display only" that
+            it renders but doesn't respond, and "Not shown" that it doesn't appear until the page is interactive. The
+            app's own event handlers, such as <code>OnClick</code>, run only once the page is interactive.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="What works before the page is interactive">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Component</th>
+                        <th scope="col">Static page</th>
+                        <th scope="col">Prerendered, before interactive</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var example in ExampleCatalog.All)
+                    {
+                        <tr>
+                            <th scope="row"><a href="components/@example.Name#before-interactive">@example.Title</a></th>
+                            <td>@RenderModes.Label(example.Modes.Static)</td>
+                            <td>@RenderModes.Label(example.Modes.BeforeInteractive)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
         <DocsHeading Id="options" Text="App-wide options" Class="docs-section" />
         <TbText>
