@@ -14,6 +14,7 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 ## Pointer
 
 - [x] Clicking submit on a form with problems shows every field's message. `FormTests.Form_ShouldShowEveryErrorAndFocusTheFirst_WhenASubmitFails`
+- [x] Pressing a button below a field whose message clears as the press blurs it still clicks the button: the field keeps its height until the press ends, then gives the space back, even with two messages showing. `MessageHoldTests.Press_ShouldSubmitTheFormAndThenGiveTheSpaceBack_WhenTheBlurItCausesClearsAMessage`, `MessageHoldTests.Press_ShouldGiveBackTheSpaceOfAFieldWithTwoMessages_WhenThePressEnds`
 - [x] The submit button stays on while the form is invalid, so a click can show what to fix. `FormExampleTests.FormExample_ShouldLeaveSignUpOnAndCountWhatToFix_WhenSubmittedEmpty`
 - [x] A form nobody has touched shows no messages. `TbFormTests.Render_ShouldReportInvalidWithoutShowingMessages_WhenAFieldWouldFail`
 - [x] A field fixed after a failed submit lets the next submit through. `TbTextFieldTests.Submit_ShouldGoThrough_WhenTheFieldIsFixedAfterAFailedSubmit`
@@ -38,7 +39,7 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 
 ## Touch
 
-Nothing of its own: taps reach the form as clicks on its fields and buttons.
+- [x] Tapping a button below a field whose message clears as the tap blurs it still clicks the button. `MessageHoldTests.Tap_ShouldSubmitTheForm_WhenTheBlurItCausesClearsAMessageInWebAssembly`
 
 ## Focus
 

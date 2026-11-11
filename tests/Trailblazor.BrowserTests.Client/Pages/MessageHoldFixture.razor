@@ -1,0 +1,19 @@
+@page "/message-hold"
+
+@* A required field above the form's button, so clearing its message would move the button up. *@
+<TbForm aria-label="Trip" OnValidSubmit="() => _saves++">
+    <TbTextField TValue="string" Label="Name" Required @bind-Value="_name" />
+    <TbButton Type="ButtonType.Submit">Save</TbButton>
+</TbForm>
+<output aria-label="Saves">@_saves</output>
+
+@* An upload that can show its required message and a rejected file's message at once. *@
+<TbForm aria-label="Map">
+    <TbFileUpload Label="Trail map" Required Accept=".png" DropZone="false" />
+    <TbButton Type="ButtonType.Submit">Upload</TbButton>
+</TbForm>
+
+@code {
+    private string? _name;
+    private int _saves;
+}

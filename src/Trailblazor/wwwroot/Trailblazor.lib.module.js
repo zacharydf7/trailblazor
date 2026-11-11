@@ -15,6 +15,7 @@ import './chip.js';
 import './tooltip.js';
 import './throttled-input.js';
 import './debounced-input.js';
+import './message-hold.js';
 import { measurePageScrollbar } from './page-scroll.js';
 // Every module that another one imports loads here too, so a component's module finds its imports already loaded.
 import '../Trailblazor.Primitives/anchored-position.js';
