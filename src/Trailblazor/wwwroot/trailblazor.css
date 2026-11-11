@@ -6026,6 +6026,44 @@
         padding-block: 0;
     }
 
+    /* The add button ends the row, outside the list's scrolling, and the panels take the whole width below. */
+    .tb-tabs--actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .tb-tabs--actions > :not(.tb-tabs__list, .tb-tabs__actions) {
+        grid-column: 1 / -1;
+    }
+
+    .tb-tabs__actions {
+        display: flex;
+        align-items: center;
+        padding-inline-start: var(--tb-space-1);
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    /* In a column, the add button sits under the tabs, and the panels beside both. */
+    .tb-tabs--vertical.tb-tabs--actions {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+    }
+
+    /* Placed explicitly, so it stays under the tabs even when no panel shows beside them. */
+    .tb-tabs--vertical > .tb-tabs__actions {
+        grid-column: 1;
+        grid-row: 2;
+        align-items: start;
+        padding: var(--tb-space-1) 0 0;
+        border-block-end: none;
+        border-inline-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-tabs--vertical.tb-tabs--actions > :not(.tb-tabs__list, .tb-tabs__actions) {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+
     /* Sizes follow density as a button's do, and reach only this list's tabs, not a nested tab list's. */
     .tb-tabs--small > .tb-tabs__list > .tb-tabs__tab {
         min-height: var(--tb-control-height-sm);
@@ -6095,8 +6133,8 @@
             var(--tb-tabs-indicator-color, var(--tb-color-primary));
     }
 
-    /* Soft and filled tabs are pills with no line under the list; the selected one takes the variant's fill. */
-    :is(.tb-tabs--soft, .tb-tabs--filled) > .tb-tabs__list {
+    /* Soft and filled tabs are pills with no line under the row; the selected one takes the variant's fill. */
+    :is(.tb-tabs--soft, .tb-tabs--filled) > :is(.tb-tabs__list, .tb-tabs__actions) {
         border: none;
     }
 

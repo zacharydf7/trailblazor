@@ -41,6 +41,18 @@ public class NavigationExampleTests : DocsTest
         Assert.Equal(Header(cut, "Lake shore").Id, FocusedReference().Id);
     }
 
+    [Fact]
+    public async Task TabsAddExample_ShouldAddADayAndShowIt_WhenTheAddButtonIsClicked()
+    {
+        var cut = Render<TabsAddExample>();
+
+        await cut.Tb().Tabs("Trip days").AddAsync();
+
+        Assert.Equal(["Day 1", "Day 2", "Day 3"], cut.Tb().Tabs("Trip days").Tabs);
+        Assert.Equal("Day 3", cut.Tb().Tabs("Trip days").Selected);
+        Assert.Equal("Plans for day 3.", cut.Find("[role=tabpanel]").TextContent.Trim());
+    }
+
     // bUnit's markup loses a re-rendered header's reference id, so the tab's own reference is compared instead.
     private static ElementReference Header(IRenderedComponent<TabsClosableExample> cut, string text) =>
         cut.FindComponents<TbTab>().Single(tab => tab.Instance.Text == text).Instance.Header;

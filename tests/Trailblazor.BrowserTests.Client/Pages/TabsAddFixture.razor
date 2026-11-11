@@ -1,0 +1,34 @@
+@page "/tabs-add"
+
+@* Too many tabs for a narrow row, so the list scrolls while the add button stays in view. *@
+<div style="inline-size: 320px">
+    <TbTabs AriaLabel="Narrow" OnAdd="() => _added++">
+        @for (var index = 1; index <= 12; index++)
+        {
+            <TbTab Text="@($"Section {index}")">Section panel</TbTab>
+        }
+    </TbTabs>
+</div>
+<output data-testid="added">@_added</output>
+
+@* Pills draw no line under the row, including under the add button, nor beside it in a column. *@
+<TbTabs AriaLabel="Pills" Variant="Variant.Soft" OnAdd="() => _added++">
+    <TbTab Text="First">First panel</TbTab>
+</TbTabs>
+<TbTabs AriaLabel="Pill column" Variant="Variant.Soft" Vertical OnAdd="() => _added++">
+    <TbTab Text="First">First panel</TbTab>
+</TbTabs>
+
+<TbTabs AriaLabel="Column" Vertical OnAdd="() => _added++">
+    <TbTab Text="First">First panel</TbTab>
+    <TbTab Text="Second">Second panel</TbTab>
+</TbTabs>
+
+@* Its one tab has no panel, so nothing shows beside the column. *@
+<TbTabs AriaLabel="Bare column" Vertical OnAdd="() => _added++">
+    <TbTab Text="Only" />
+</TbTabs>
+
+@code {
+    private int _added;
+}

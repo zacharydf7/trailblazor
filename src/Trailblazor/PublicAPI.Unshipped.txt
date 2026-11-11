@@ -4338,3 +4338,8 @@ Trailblazor.TbMultiSelect<TItem>.ItemDisabled.get -> System.Func<TItem, bool>?
 Trailblazor.TbMultiSelect<TItem>.ItemDisabled.set -> void
 Trailblazor.TbTab.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbTab.OnClose.set -> void
+const Trailblazor.TbStrings.TabsAdd = "Tabs.Add" -> string!
+Trailblazor.TbTabs.AddLabel.get -> string?
+Trailblazor.TbTabs.AddLabel.set -> void
+Trailblazor.TbTabs.OnAdd.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbTabs.OnAdd.set -> void

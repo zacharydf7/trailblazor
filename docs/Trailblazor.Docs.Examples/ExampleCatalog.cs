@@ -6561,6 +6561,9 @@ public static class ExampleCatalog
                     + "there, and focus moves to the next enabled tab, or to the one before it when none follows; keep "
                     + "rendering it to leave it open, such as after asking about unsaved work.",
                     typeof(TabsClosableExample)),
+                new("add", "Adding tabs", "`OnAdd` ends the row of tabs with an add button, named by `AddLabel`, or "
+                    + "\"Add tab\" in English. Add a tab there, and select it to show it. The button stays at the row's "
+                    + "end while the tabs scroll, and sits under them in a `Vertical` list.", typeof(TabsAddExample)),
             ],
             Api = [typeof(TbTabs), typeof(TbTab)],
             Keyboard =
@@ -6606,8 +6609,8 @@ public static class ExampleCatalog
                     + "content and anything it loads. A click selects a tab, as do the arrow keys with automatic "
                     + "activation. The browser's find selects the tab whose panel holds a match. A tab with no panel "
                     + "does nothing until the page is interactive. On a prerendered page, the selection goes back to "
-                    + "`ActiveIndex` once the page is interactive. A tab with an `OnClose` shows its close mark once the "
-                    + "page is interactive.",
+                    + "`ActiveIndex` once the page is interactive. A tab with an `OnClose` shows its close mark, and tabs with "
+                    + "an `OnAdd` show their add button, once the page is interactive.",
             ],
             Ready = new("[role=tablist]", "the tab list"),
             Target = new("tablist", "Report sections"),
@@ -6619,6 +6622,7 @@ public static class ExampleCatalog
                 new("tab-anchor", "A hidden marker that keeps a tab's place when tabs move."),
                 new("icon", "A tab's icon."),
                 new("close", "The close mark of a tab with an `OnClose`."),
+                new("add", "The add button that `OnAdd` shows."),
                 new("panel", "A tab's panel."),
             ],
             Anatomy = """
@@ -6633,7 +6637,7 @@ public static class ExampleCatalog
                 + "text in bUnit, and `await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
                 + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready. On a static page, which "
                 + "never becomes ready, click the tab instead. Both helpers also have `CloseAsync(\"Summary\")`, which "
-                + "clicks the close mark of a tab with an `OnClose`.",
+                + "clicks the close mark of a tab with an `OnClose`, and `AddAsync()`, which clicks the add button.",
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "

@@ -505,6 +505,9 @@ public static class TbStrings
     /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
     public const string TableOfContentsNavigation = "TableOfContents.Navigation";
 
+    /// <summary>"Add tab": names the add button that follows a tab list.</summary>
+    public const string TabsAdd = "Tabs.Add";
+
     /// <summary>"Enter adds a tag. Left Arrow moves to the tags.": describes a tag input's text box to screen
     /// readers. Right-to-left languages should say Right Arrow.</summary>
     public const string TagInputHint = "TagInput.Hint";
@@ -1095,6 +1098,7 @@ public static class TbStrings
         [PopconfirmConfirm] = "OK",
         [PopconfirmCancel] = "Cancel",
         [TableOfContentsNavigation] = "On this page",
+        [TabsAdd] = "Add tab",
         [TagInputHint] = "Enter adds a tag. Left Arrow moves to the tags.",
         [TagInputRemove] = "Remove {0}",
         [TagInputAdded] = "{0} added",

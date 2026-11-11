@@ -802,6 +802,15 @@ public sealed class TbTabsDriver
             ?? throw new InvalidOperationException($"The tab \"{tab}\" can't be closed."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
 
+    /// <summary>Clicks the add button that follows the tab list. Throws for tabs with no add button.</summary>
+    public Task AddAsync()
+    {
+        var add = _find().NextElementSibling is { ClassName: "tb-tabs__actions" } actions
+            ? actions.QuerySelector("[data-part=add]") : null;
+        return (add ?? throw new InvalidOperationException("The tabs have no add button."))
+            .ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
     private IElement Find(string tab) =>
         _find().QuerySelectorAll("[role=tab]").SingleOrDefault(element => element.TextContent.Trim() == tab)
             ?? throw new InvalidOperationException($"No tab reads \"{tab}\".");

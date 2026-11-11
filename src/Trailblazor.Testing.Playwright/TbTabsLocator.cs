@@ -18,6 +18,14 @@ public sealed class TbTabsLocator(ILocator scope, string? name)
         await Assertions.Expect(button).ToHaveAttributeAsync("aria-selected", "true");
     }
 
+    /// <summary>Clicks the add button that follows the tab list.</summary>
+    public async Task AddAsync()
+    {
+        await Assertions.Expect(List).ToHaveAttributeAsync("data-ready", "");
+        await List.Locator("xpath=following-sibling::*[1][@class='tb-tabs__actions']").Locator("[data-part=add]")
+            .ClickAsync();
+    }
+
     /// <summary>Clicks the close mark of the tab with this name.</summary>
     public async Task CloseAsync(string tab)
     {

@@ -4,10 +4,11 @@
 @inherits TbComponentBase
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
 
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), ClassNames.Modifier("tb-tabs", Size),
-                Vertical ? "tb-tabs--vertical" : null, Class)">
+                Vertical ? "tb-tabs--vertical" : null, ShowsAdd ? "tb-tabs--actions" : null, Class)">
     @* The script sets data-ready here once the arrow keys work, which tests wait for. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")"
@@ -27,6 +28,14 @@
                     @onclick="_click.For(tab)">@tab.HeaderContent</button>
         }
     </div>
+    @* A tab list holds only tabs, so the add button follows it. *@
+    @if (ShowsAdd)
+    {
+        <div class="tb-tabs__actions">
+            <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(AddLabel ?? Localizer[TbStrings.TabsAdd])" Size="Size"
+                          OnClick="() => OnAdd.InvokeAsync()" data-part="add" />
+        </div>
+    }
     @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
     <CascadingValue Value="this">@ChildContent</CascadingValue>
 </div>
@@ -116,6 +125,16 @@
     [Parameter]
     public bool Centered { get; set; }
 
+    /// <summary>Raised when the user clicks the add button, which follows the tab list when this is set. Add a tab
+    /// here, and select it to show it. The button shows only once the page is interactive.</summary>
+    [Parameter]
+    public EventCallback OnAdd { get; set; }
+
+    /// <summary>The add button's accessible name. Defaults to the app's text for <see cref="TbStrings.TabsAdd"/>,
+    /// "Add tab" in English.</summary>
+    [Parameter]
+    public string? AddLabel { get; set; }
+
     /// <summary>The tab list's accessible name, when nothing nearby already names it.</summary>
     [Parameter]
     public string? AriaLabel { get; set; }
@@ -127,6 +146,8 @@
     public RenderFragment? ChildContent { get; set; }
 
     internal bool SelectsByKey => _selectsByKey;
+
+    private bool ShowsAdd => OnAdd.HasDelegate && RendererInfo.IsInteractive;
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)

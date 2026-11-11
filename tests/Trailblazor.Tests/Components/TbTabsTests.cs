@@ -795,6 +795,45 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldEndTheRowWithAnAddButtonThatRaisesOnAdd_WhenGivenOnAdd()
+    {
+        var added = 0;
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => added++)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        var actions = cut.Find("[role=tablist]").NextElementSibling!;
+        Assert.Contains("tb-tabs__actions", actions.ClassList);
+        Assert.Contains("tb-tabs--actions", cut.Find(".tb-tabs").ClassList);
+        var add = actions.QuerySelector("[data-part=add]")!;
+        Assert.Equal("Add tab", add.GetAttribute("aria-label"));
+        add.Click();
+        Assert.Equal(1, added);
+    }
+
+    [Fact]
+    public void Render_ShouldNameTheAddButtonByAddLabel_WhenGivenOne()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })
+            .Add(tabs => tabs.AddLabel, "New report")
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Equal("New report", cut.Find("[data-part=add]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowNoAddButton_WhenNoOnAddIsGivenOrThePageIsStatic()
+    {
+        var plain = RenderTabs();
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var @static = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Empty(plain.FindAll("[data-part=add]"));
+        Assert.Empty(@static.FindAll("[data-part=add]"));
+        Assert.DoesNotContain("tb-tabs--actions", @static.Find(".tb-tabs").ClassList);
+    }
+
+    [Fact]
     public void Close_ShouldFocusTheEnabledTabBefore_WhenTheNextTabIsDisabled()
     {
         var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.DisabledText, "Reviews"));

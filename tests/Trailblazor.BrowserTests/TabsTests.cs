@@ -106,6 +106,65 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldKeepTheAddButtonInViewAtTheRowsEnd_WhenTheListScrolls(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-add");
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Narrow" });
+        var tabs = list.Locator("xpath=..");
+        var add = tabs.Locator(":scope > .tb-tabs__actions > [data-part=add]");
+
+        var row = (await list.BoundingBoxAsync())!;
+        var button = (await add.BoundingBoxAsync())!;
+        var whole = (await tabs.BoundingBoxAsync())!;
+        Assert.True(await list.EvaluateAsync<bool>("list => list.scrollWidth > list.clientWidth"), "The list fits.");
+        Assert.True(button.X >= row.X + row.Width - 1, "The add button isn't after the list.");
+        Assert.True(button.X + button.Width <= whole.X + whole.Width + 0.5, "The add button is cut off.");
+        Assert.InRange(button.Y + button.Height / 2, row.Y, row.Y + row.Height);
+        await page.Tb().Tabs("Narrow").AddAsync();
+        await Expect(page.GetByTestId("added")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldDrawNoLineUnderTheAddButton_WhenTheTabsArePills(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-add");
+        const string borders = "cell => [getComputedStyle(cell).borderBottomWidth, "
+            + "getComputedStyle(cell).borderInlineEndWidth]";
+
+        foreach (var name in new[] { "Pills", "Pill column" })
+        {
+            var actions = page.GetByRole(AriaRole.Tablist, new() { Name = name, Exact = true }).Locator("xpath=..")
+                .Locator(":scope > .tb-tabs__actions");
+            Assert.Equal(["0px", "0px"], await actions.EvaluateAsync<string[]>(borders));
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldPutTheAddButtonUnderTheTabs_WhenTheListIsVertical(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-add");
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Column", Exact = true });
+        var tabs = list.Locator("xpath=..");
+
+        var column = (await list.BoundingBoxAsync())!;
+        var button = (await tabs.Locator(":scope > .tb-tabs__actions > [data-part=add]").BoundingBoxAsync())!;
+        var panel = (await tabs.GetByRole(AriaRole.Tabpanel).BoundingBoxAsync())!;
+        Assert.True(button.Y >= column.Y + column.Height - 1, "The add button isn't under the tabs.");
+        Assert.True(button.X < column.X + column.Width, "The add button isn't in the tabs' column.");
+        Assert.Equal(column.X + column.Width, panel.X, tolerance: 1);
+        Assert.Equal(column.Y, panel.Y, tolerance: 1);
+
+        // With no panel beside the column, the button still sits under the tabs.
+        var bare = page.GetByRole(AriaRole.Tablist, new() { Name = "Bare column" });
+        var bareColumn = (await bare.BoundingBoxAsync())!;
+        var bareButton = (await bare.Locator("xpath=..").Locator(":scope > .tb-tabs__actions > [data-part=add]")
+            .BoundingBoxAsync())!;
+        Assert.True(bareButton.Y >= bareColumn.Y + bareColumn.Height - 1,
+            "The add button isn't under the bare column.");
+        Assert.True(bareButton.X < bareColumn.X + bareColumn.Width, "The add button isn't in the bare column.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
     {
         var page = await OpenAsync(browser, "/tabs");

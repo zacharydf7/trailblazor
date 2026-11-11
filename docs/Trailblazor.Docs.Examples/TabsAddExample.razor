@@ -1,0 +1,18 @@
+<TbTabs AriaLabel="Trip days" @bind-ActiveIndex="_index" OnAdd="AddDay">
+    @foreach (var day in _days)
+    {
+        <TbTab @key="day" Text="@($"Day {day}")"><TbText>Plans for day @day.</TbText></TbTab>
+    }
+</TbTabs>
+
+@code {
+    private readonly List<int> _days = [1, 2];
+    private int _index;
+
+    // The new day is selected, so its panel shows.
+    private void AddDay()
+    {
+        _days.Add(_days.Count + 1);
+        _index = _days.Count - 1;
+    }
+}

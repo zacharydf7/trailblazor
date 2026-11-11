@@ -337,6 +337,16 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Tabs_ShouldThrow_WhenAskedToAddToTabsWithNoAddButton()
+    {
+        var cut = RenderForm();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Tabs().AddAsync());
+
+        Assert.Equal("The tabs have no add button.", error.Message);
+    }
+
+    [Fact]
     public async Task Grid_ShouldClickAndSelectRowsByACellsText_WhenTheRowsCanBeSelected()
     {
         Trail? clicked = null;
