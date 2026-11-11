@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Trailblazor.BrowserTests;
 
 [assembly: AssemblyFixture(typeof(BrowserFixture))]
@@ -15,7 +17,10 @@ namespace Trailblazor.BrowserTests;
 // for the whole run.
 public sealed class BrowserFixture : IAsyncLifetime
 {
-    private readonly WebApplicationFactory<Program> _factory = new();
+    // Circuits log their creation and disposal at Debug, so a test can follow its own circuit in what the server logged.
+    private readonly WebApplicationFactory<Program> _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(
+        host => host.ConfigureServices(services => services.AddFakeLogging().AddLogging(logging =>
+            logging.AddFilter("Microsoft.AspNetCore.Components.Server.Circuits", LogLevel.Debug))));
     private readonly Dictionary<string, Lazy<Task<IBrowser>>> _browsers = [];
     private IPlaywright? _playwright;
     private readonly List<WebApplication> _sites = [];
@@ -24,6 +29,9 @@ public sealed class BrowserFixture : IAsyncLifetime
     public const string ChromiumWithScrollbars = "chromium with scrollbars";
 
     public Uri BaseAddress { get; private set; } = null!;
+
+    // What the test host has logged.
+    public FakeLogCollector ServerLogs => _factory.Services.GetFakeLogCollector();
 
     public Uri DocsAddress { get; private set; } = null!;
 

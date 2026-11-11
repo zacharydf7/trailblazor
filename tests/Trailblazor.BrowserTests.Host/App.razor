@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="@Direction">
 
 <head>
     <meta charset="utf-8" />
@@ -23,6 +23,9 @@
 @code {
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    // A test opens a page right to left with ?dir=rtl, so scripts read the direction from the start.
+    private string? Direction => HttpContext.Request.Query["dir"] == "rtl" ? "rtl" : null;
 
     // Pages marked [ExcludeFromInteractiveRouting] render as static SSR, to test plain form posts.
     private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveServer : null;

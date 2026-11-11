@@ -243,6 +243,8 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(day).ToHaveAttributeAsync("aria-expanded", "true");
         await page.Keyboard.PressAsync("ArrowLeft");
         await Expect(Row(page, "Trailhead")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(day).ToBeFocusedAsync();
         await Row(page, "Pine Hollow").FocusAsync();
         await page.Keyboard.PressAsync("Alt+Shift+ArrowRight");
 

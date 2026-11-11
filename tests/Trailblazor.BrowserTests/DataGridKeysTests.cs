@@ -344,6 +344,22 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldMirrorLeftAndRight_WhenThePageIsRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid?dir=rtl");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail keys" });
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        var selectAll = grid.GetByRole(AriaRole.Checkbox, new() { Name = "Select all rows" });
+        await selectAll.FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(grid.GetByRole(AriaRole.Button, new() { Name = "Name", Exact = true })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(selectAll).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CellNavigation_ShouldMoveBetweenCellsIntoAFieldAndBack_WhenDrivenByKeys(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");

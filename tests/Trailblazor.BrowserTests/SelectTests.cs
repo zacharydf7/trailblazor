@@ -5,6 +5,19 @@ namespace Trailblazor.BrowserTests;
 public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldPutItsChevronAtTheLeft_WhenThePageIsRightToLeft(string browser)
+    {
+        var page = await OpenAsync(browser, "/select?dir=rtl");
+        var field = page.Locator(".tb-field").Filter(new() { Has = page.GetByText("Size", new() { Exact = true }) });
+
+        var chevron = (await field.Locator("[data-part=chevron]").BoundingBoxAsync())!;
+        var box = (await field.Locator("[role=combobox][data-part=input]").BoundingBoxAsync())!;
+
+        Assert.True(chevron.X + chevron.Width / 2 < box.X + box.Width / 2,
+            $"The chevron's center {chevron.X + chevron.Width / 2} should be left of the box's {box.X + box.Width / 2}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldChooseThroughTheTestingHelper_WhenItAttachesOnFirstUse(string browser)
     {
         var page = await OpenAsync(browser, "/select-on-use");
