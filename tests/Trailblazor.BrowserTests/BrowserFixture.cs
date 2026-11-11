@@ -18,9 +18,11 @@ namespace Trailblazor.BrowserTests;
 public sealed class BrowserFixture : IAsyncLifetime
 {
     // Circuits log their creation and disposal at Debug, so a test can follow its own circuit in what the server logged.
+    // The derived factory ignores UseKestrel(port), so UseUrls asks for a free one; otherwise the app takes port 5000.
     private readonly WebApplicationFactory<Program> _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(
-        host => host.ConfigureServices(services => services.AddFakeLogging().AddLogging(logging =>
-            logging.AddFilter("Microsoft.AspNetCore.Components.Server.Circuits", LogLevel.Debug))));
+        host => host.UseUrls("http://127.0.0.1:0")
+            .ConfigureServices(services => services.AddFakeLogging().AddLogging(logging =>
+                logging.AddFilter("Microsoft.AspNetCore.Components.Server.Circuits", LogLevel.Debug))));
     private readonly Dictionary<string, Lazy<Task<IBrowser>>> _browsers = [];
     private IPlaywright? _playwright;
     private readonly List<WebApplication> _sites = [];
@@ -39,7 +41,7 @@ public sealed class BrowserFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        _factory.UseKestrel(0);
+        _factory.UseKestrel();
         _factory.StartServer();
         BaseAddress = _factory.ClientOptions.BaseAddress;
         DocsAddress = await StartSiteAsync("docs-site");
