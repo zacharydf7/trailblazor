@@ -147,6 +147,15 @@ public static class TbStrings
     /// MM/DD/YYYY.</summary>
     public const string DatePickerBadDate = "DatePicker.BadDate";
 
+    /// <summary>"D": the letter for a day in a date format hint, such as the D in MM/DD/YYYY; French uses J.</summary>
+    public const string DateHintDay = "Date.HintDay";
+
+    /// <summary>"M": the letter for a month in a date format hint, such as the M in MM/DD/YYYY.</summary>
+    public const string DateHintMonth = "Date.HintMonth";
+
+    /// <summary>"Y": the letter for a year in a date format hint, such as the Y in MM/DD/YYYY; German uses J.</summary>
+    public const string DateHintYear = "Date.HintYear";
+
     /// <summary>"{0} can't be chosen.": shown when a typed date is outside Min and Max, or IsDateDisabled rules it
     /// out; {0} is the date as typed.</summary>
     public const string DatePickerUnavailable = "DatePicker.Unavailable";
@@ -974,6 +983,9 @@ public static class TbStrings
         [DatePickerOpen] = "Choose a date",
         [DatePickerClear] = "Clear",
         [DatePickerBadDate] = "Enter the date as {0}.",
+        [DateHintDay] = "D",
+        [DateHintMonth] = "M",
+        [DateHintYear] = "Y",
         [DatePickerUnavailable] = "{0} can't be chosen.",
         [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
         [TimePickerAtLeast] = "Choose {0} or later.",

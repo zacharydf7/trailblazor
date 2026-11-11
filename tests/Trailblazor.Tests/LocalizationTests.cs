@@ -21,6 +21,8 @@ public class LocalizationTests : BunitContext
             options.Strings[TbStrings.ChipRemoveNamed] = "{0} entfernen";
             options.Strings[TbStrings.LabelInfo] = "Infos zu {0}";
             options.Strings[TbStrings.FileUploadKilobytes] = "{0} Ko";
+            options.Strings[TbStrings.DateHintDay] = "J";
+            options.Strings[TbStrings.DateHintYear] = "A";
         });
     }
 
@@ -166,6 +168,15 @@ public class LocalizationTests : BunitContext
 
         Assert.Equal($"{1.5.ToString(System.Globalization.CultureInfo.CurrentCulture)} Ko",
             cut.Find(".tb-file-upload__size").TextContent);
+    }
+
+    [Fact]
+    public void DatePicker_ShouldWriteItsFormatHintInTheLocalizersLetters_WhenTheyAreTranslated()
+    {
+        var cut = Render<TbDatePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Début")
+            .Add(picker => picker.Culture, System.Globalization.CultureInfo.GetCultureInfo("fr-FR")));
+
+        Assert.Equal("JJ/MM/AAAA", cut.Find("input[data-part=input]").GetAttribute("placeholder"));
     }
 
     [Fact]

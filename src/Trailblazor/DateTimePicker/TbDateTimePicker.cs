@@ -232,9 +232,9 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
             return true;
         }
 
-        if (!DateOnly.TryParseExact(text.Trim(), DateFormat, DateCulture, DateTimeStyles.None, out var read))
+        if (!CalendarDates.TryReadDate(text, DateFormat, DateCulture, out var read))
         {
-            error = string.Format(DateCulture, BadDateLabel, FormatHint(DateFormat));
+            error = string.Format(DateCulture, BadDateLabel, FormatHint(DateFormat, Localizer));
             return false;
         }
 

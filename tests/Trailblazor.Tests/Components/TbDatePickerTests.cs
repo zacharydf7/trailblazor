@@ -44,6 +44,22 @@ public class TbDatePickerTests : BunitContext
         Assert.Equal([new DateOnly(2026, 6, 12)], _changes);
     }
 
+    [Theory]
+    [InlineData("1.5.2026")]
+    [InlineData("01.05.26")]
+    [InlineData("1.5.26")]
+    [InlineData("1.5.99", 1999)]
+    public async Task Change_ShouldReadTheDate_WhenItLeavesOutLeadingZerosOrTwoYearDigits(string text, int year = 2026)
+    {
+        var cut = Render<TbDatePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Start date")
+            .Add(picker => picker.Value, June3).Add(picker => picker.Culture, CultureInfo.GetCultureInfo("de-DE"))
+            .Add(picker => picker.ValueChanged, (DateOnly? date) => _changes.Add(date)));
+
+        await cut.Find("input[data-part=input]").ChangeAsync(new ChangeEventArgs { Value = text });
+
+        Assert.Equal([new DateOnly(year, 5, 1)], _changes);
+    }
+
     [Fact]
     public async Task Change_ShouldSetTheDate_WhenTheTextIsInTheFormat()
     {

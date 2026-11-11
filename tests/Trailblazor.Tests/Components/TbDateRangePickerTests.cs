@@ -181,6 +181,16 @@ public class TbDateRangePickerTests : BunitContext
     }
 
     [Fact]
+    public void Change_ShouldReadTheStart_WhenItLeavesOutLeadingZeros()
+    {
+        var cut = RenderPicker(June3To10, culture: CultureInfo.GetCultureInfo("de-DE"));
+
+        cut.Find("[data-part=start-input]").Change("1.6.2026");
+
+        Assert.Equal([new(new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 10))], _changes);
+    }
+
+    [Fact]
     public void Change_ShouldCommitBothDates_WhenTheyReadInOrder()
     {
         var cut = RenderPicker(June3To10);

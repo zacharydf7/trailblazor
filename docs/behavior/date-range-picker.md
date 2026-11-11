@@ -16,6 +16,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 - [x] Enter or Space picks the day, since each day is a button. `TbDateRangePicker.razor`
 - [x] Escape closes the calendar, keeps the range and returns focus to the button. `DateRangePickerTests.Calendar_ShouldCloseAndKeepTheRange_WhenEscapeIsPressed`
 - [x] Typed dates commit when both read in order, on Enter or on leaving the box. `DateRangePickerTests.Typing_ShouldCommitBothDates_WhenTheyReadInOrder`
+- [x] A typed date may leave out leading zeros. `TbDateRangePickerTests.Change_ShouldReadTheStart_WhenItLeavesOutLeadingZeros`
 - [x] While the end is being chosen, moving focus with the keys previews the range, as the pointer does. `DateRangePickerTests.Calendar_ShouldPreviewTheRange_WhenTheKeysMoveFocusToALaterDay`, `DateRangePickerTests.Calendar_ShouldPreviewTheWholeRange_WhenPagingKeepsFocusOnTheSameButton`, `DateRangePickerTests.Calendar_ShouldPreviewTheRange_WhenAnArrowFollowsEnterBeforeTheServerAnswers`
 
 ## Pointer

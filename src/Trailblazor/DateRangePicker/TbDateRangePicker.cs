@@ -97,7 +97,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
     private string DateFormat => Format ?? DateCulture.DateTimeFormat.ShortDatePattern;
 
-    private string FormatHint => CalendarDates.FormatHint(DateFormat);
+    private string FormatHint => CalendarDates.FormatHint(DateFormat, Localizer);
 
     // The server's clock can be in another time zone, so the browser's date wins once its script has attached.
     private DateOnly Today => _browserToday ?? DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
@@ -329,7 +329,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
             return true;
         }
 
-        if (!DateOnly.TryParseExact(text.Trim(), DateFormat, DateCulture, DateTimeStyles.None, out var read))
+        if (!CalendarDates.TryReadDate(text, DateFormat, DateCulture, out var read))
         {
             error = string.Format(DateCulture, badFormat, FormatHint);
             return false;

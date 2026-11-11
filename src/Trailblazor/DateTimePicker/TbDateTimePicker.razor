@@ -16,7 +16,8 @@
              class="tb-date-time__boxes">
             <input @attributes="ControlAttributes" @ref="_dateInput" data-part="date-input" id="@DateId"
                    name="@NameOf("Date")" type="text" autocomplete="off" @bind:get="DateText"
-                   @bind:set="SetDateTextAsync" placeholder="@(Placeholder ?? CalendarDates.FormatHint(DateFormat))"
+                   @bind:set="SetDateTextAsync"
+                   placeholder="@(Placeholder ?? CalendarDates.FormatHint(DateFormat, Localizer))"
                    disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(DateId)"
                    aria-required="@AriaRequired" aria-invalid="@AriaInvalid(_dateBad)"
                    aria-describedby="@InputDescribedBy"

@@ -57,6 +57,16 @@ public class TbDateTimePickerTests : BunitContext
     }
 
     [Fact]
+    public async Task Change_ShouldReadTheDate_WhenItLeavesOutLeadingZeros()
+    {
+        var cut = RenderPicker(June3At2, culture: CultureInfo.GetCultureInfo("de-DE"));
+
+        await DateBox(cut).ChangeAsync(new ChangeEventArgs { Value = "1.6.2026" });
+
+        Assert.Equal([new DateTime(2026, 6, 1, 14, 30, 0)], _changes);
+    }
+
+    [Fact]
     public async Task Change_ShouldKeepTheTime_WhenADateIsTyped()
     {
         var cut = RenderPicker(June3At2);

@@ -4801,8 +4801,9 @@ public static class ExampleCatalog
             RightToLeftKeys = "Left moves to the next day, month or year, and Right to the previous one.",
             Sections =
             [
-                new("value", "Value", "`@bind-Value` holds the date. It can be typed in the box, in the field's format, "
-                    + "or picked in the calendar, which opens on the chosen date. `TDate` can be `DateOnly` or "
+                new("value", "Value", "`@bind-Value` holds the date. It can be typed in the box or picked in the "
+                    + "calendar, which opens on the chosen date. A typed date follows the field's format but may leave "
+                    + "out leading zeros or give the year in two digits. `TDate` can be `DateOnly` or "
                     + "`DateTime`; time zones are never converted, a date left alone keeps its time, and a newly typed "
                     + "or picked date is midnight.",
                     typeof(DatePickerExample)),
@@ -4961,10 +4962,11 @@ public static class ExampleCatalog
             RightToLeftKeys = "Left moves to the next day, month or year, and Right to the previous one.",
             Sections =
             [
-                new("value", "Value", "`@bind-Value` holds the date and time. The date is typed in its box, in the "
-                    + "field's format, or picked in the calendar; the time is set in the browser's own time box, shown "
-                    + "in the user's language. A date chosen with no time is midnight, and a time set first waits for "
-                    + "a date. `TDateTime` can be `DateTime` or `DateTimeOffset`; the picker shows exactly the date "
+                new("value", "Value", "`@bind-Value` holds the date and time. The date is typed in its box or "
+                    + "picked in the calendar; a typed date follows the field's format but may leave out leading zeros "
+                    + "or give the year in two digits. The time is set in the browser's own time box, shown in the "
+                    + "user's language. A date chosen with no time is midnight, and a time set first waits for a date. "
+                    + "`TDateTime` can be `DateTime` or `DateTimeOffset`; the picker shows exactly the date "
                     + "and time it is given and never converts time zones.", typeof(DateTimePickerExample)),
                 new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest moments; a "
                     + "value outside them shows a message, and the calendar marks the days outside them as "
@@ -5077,7 +5079,8 @@ public static class ExampleCatalog
                     + "can't be chosen, such as a weekend. Focus can still reach it, so a screen reader can say it's "
                     + "unavailable.",
                     typeof(DateRangePickerDisabledDaysExample)),
-                new("format-and-culture", "Format and culture", "`Format` sets how the boxes show and read dates. "
+                new("format-and-culture", "Format and culture", "`Format` sets how the boxes show and read dates; "
+                    + "typed dates may also leave out leading zeros or give the year in two digits. "
                     + "`Culture` sets the month and day names, the first day of the week, and the format when `Format` "
                     + "isn't set. It defaults to the current culture. Dates stay Gregorian, like the calendar's grid, "
                     + "even for a culture with its own calendar, such as th-TH.",

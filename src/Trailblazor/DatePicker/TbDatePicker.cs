@@ -86,9 +86,9 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
             return true;
         }
 
-        if (!DateOnly.TryParseExact(text.Trim(), DateFormat, DateCulture, DateTimeStyles.None, out var date))
+        if (!TryReadDate(text, DateFormat, DateCulture, out var date))
         {
-            error = string.Format(DateCulture, BadDateLabel, FormatHint(DateFormat));
+            error = string.Format(DateCulture, BadDateLabel, FormatHint(DateFormat, Localizer));
             return false;
         }
 

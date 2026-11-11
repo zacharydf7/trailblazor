@@ -69,13 +69,32 @@ internal static partial class CalendarDates
     public static TDate? Keep<TDate>(DateOnly? date, TDate? old) where TDate : struct =>
         date is not { } day ? null : old is { } kept && ToDate(kept) == day ? kept : FromDate<TDate>(day);
 
-    // The format as people write it, such as MM/DD/YYYY, for a placeholder and messages.
-    public static string FormatHint(string format) => DayOrMonth().Replace(format.Replace('y', 'Y'),
-        match => match.Value[0] == 'd' ? "DD" : "MM");
+    // The format as people write it, such as MM/DD/YYYY, in the localizer's letters, for a placeholder and messages.
+    public static string FormatHint(string format, ITbLocalizer localizer) => DatePart().Replace(format,
+        match => string.Concat(Enumerable.Repeat(localizer[match.Value[0] switch
+        {
+            'd' => TbStrings.DateHintDay,
+            'M' => TbStrings.DateHintMonth,
+            _ => TbStrings.DateHintYear,
+        }], match.Value[0] == 'y' ? match.Length : 2)));
+
+    // Typed text may leave out a day's or month's leading zero, or give the year in two digits.
+    public static bool TryReadDate(string text, string format, CultureInfo culture, out DateOnly date)
+    {
+        var loose = PaddedMonth().Replace(PaddedDay().Replace(format, "d"), "M");
+        return DateOnly.TryParseExact(text.Trim(), [loose, FullYear().Replace(loose, "yy")], culture,
+            DateTimeStyles.None, out date);
+    }
 
     [GeneratedRegex("(?<!d)dd(?!d)")]
     private static partial Regex PaddedDay();
 
-    [GeneratedRegex("(?<![dM])(?:d{1,2}|M{1,2})(?![dM])")]
-    private static partial Regex DayOrMonth();
+    [GeneratedRegex("(?<!M)MM(?!M)")]
+    private static partial Regex PaddedMonth();
+
+    [GeneratedRegex("(?<!y)yyyy(?!y)")]
+    private static partial Regex FullYear();
+
+    [GeneratedRegex("(?<!d)d{1,2}(?!d)|(?<!M)M{1,2}(?!M)|y+")]
+    private static partial Regex DatePart();
 }

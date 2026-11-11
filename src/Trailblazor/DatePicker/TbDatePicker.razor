@@ -13,7 +13,8 @@
                type="text" autocomplete="off" value="@Text" @onchange="args => SetTextAsync(args.Value as string)"
                data-format="@DateFormat" data-culture="@DateCulture.Name"
                data-value="@(Chosen is { } committed ? Iso(committed) : "")"
-               placeholder="@(Placeholder ?? FormatHint(DateFormat))" disabled="@Disabled" readonly="@ReadOnly"
+               placeholder="@(Placeholder ?? FormatHint(DateFormat, Localizer))"
+               disabled="@Disabled" readonly="@ReadOnly"
                aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
                aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
