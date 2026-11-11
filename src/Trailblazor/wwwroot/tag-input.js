@@ -122,6 +122,7 @@ export function createTagInput(input) {
     input.addEventListener('blur', onLeave);
     field.addEventListener('keydown', onTagKey);
 
+    input.dataset.ready = '';
     return {
         // Text the server refused goes back in front of anything typed since, joined by a separator so it splits the
         // same way when it's added again. With no separator to join them, only the first comes back, not a merged tag.

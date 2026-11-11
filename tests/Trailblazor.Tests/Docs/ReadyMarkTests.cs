@@ -12,7 +12,7 @@ public partial class ReadyMarkTests
         ["ToastHost"] = "toast", ["DialogFrame"] = null, ["BrowserService"] = null,
     };
 
-    [GeneratedRegex(@"InvokeAsync<IJSObjectReference\??>\(")]
+    [GeneratedRegex(@"InvokeAsync<(IJSObjectReference|TabsAttachment)\??>\(")]
     private static partial Regex CreatesScriptObject();
 
     private static IEnumerable<string> ScriptedComponents() =>

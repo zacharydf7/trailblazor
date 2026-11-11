@@ -575,7 +575,6 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         _handle = handle;
-        StateHasChanged();
     }
 
     // Declared items that have appeared become rows only after the render they appear in, such as those of a row

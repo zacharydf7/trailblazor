@@ -44,6 +44,7 @@ export function attachAccordion(accordion) {
     };
 
     accordion.addEventListener('keydown', onKeyDown);
+    accordion.dataset.ready = '';
     return {
         dispose() {
             accordion.removeEventListener('keydown', onKeyDown);

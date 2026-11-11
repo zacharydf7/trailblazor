@@ -27,6 +27,7 @@ export function attachCodeField(input) {
 
     input.addEventListener('beforeinput', onBeforeInput);
     input.addEventListener('paste', onPaste);
+    input.dataset.ready = '';
     return {
         dispose() {
             input.removeEventListener('beforeinput', onBeforeInput);

@@ -445,6 +445,7 @@ export function createTreeView(tree, events) {
     syncEnds();
     reportOrder();
     scheduleView();
+    tree.dataset.ready = '';
     return {
         dispose() {
             cancelAnimationFrame(frame);

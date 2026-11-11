@@ -23,7 +23,7 @@
         <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                type="@Type.ToString().ToLowerInvariant()" @bind:get="Shown" @bind:set="OnTextAsync"
                @bind:event="@BindEvent" @onchange="FlushOnChange" placeholder="@(Placeholder ?? _mask?.Hint)"
-               inputmode="@InputMode" data-ready="@(_maskHandle is null ? null : "")" disabled="@Disabled"
+               inputmode="@InputMode" disabled="@Disabled"
                readonly="@ReadOnly" aria-required="@AriaRequired"
                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
@@ -185,7 +185,6 @@
             }
 
             _maskHandle = handle;
-            StateHasChanged();
         }
         catch (JSDisconnectedException)
         {

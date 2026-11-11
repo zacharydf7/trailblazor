@@ -3,8 +3,8 @@
 @inherits TbComponentBase
 @implements IAsyncDisposable
 
-@* data-ready tells tests the drags and keys are heard. *@
-<div @attributes="AdditionalAttributes" style="@Style" data-ready="@(_handle is null ? null : "")"
+@* The script sets data-ready here once the drags and keys are heard, which tests wait for. *@
+<div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-sortable", Disabled ? "tb-sortable--disabled" : null, Class)">
     @* Safari drops a list's semantics when its markers are hidden, so the role is set as well. *@
     <ul @ref="_list" role="list" aria-label="@Label" data-part="list" data-sortable class="tb-sortable__list">

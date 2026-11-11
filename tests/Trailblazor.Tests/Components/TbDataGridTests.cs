@@ -1149,6 +1149,36 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void RowMove_ShouldTellTheScriptToWaitForReordering_WhenRowsCanMoveFromTheStart()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/data-grid.js");
+        module.SetupModule("createDataGrid", _ => true).Mode = JSRuntimeMode.Loose;
+        List<Trail> trails = [.. Trails];
+
+        var cut = RenderTrails(trails, parameters => parameters
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+
+        cut.WaitForAssertion(() => Assert.Equal(true, module.Invocations["createDataGrid"].Single().Arguments[1]));
+    }
+
+    [Fact]
+    public void RowMove_ShouldMarkTheGridUnreadyUntilRowsCanMove_WhenRowMoveIsAddedLater()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/data-grid.js");
+        var script = module.SetupModule("createDataGrid", _ => true);
+        script.SetupVoid("setReady", _ => true).SetVoidResult();
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails);
+        cut.WaitForAssertion(() => Assert.Equal(false, module.Invocations["createDataGrid"].Single().Arguments[1]));
+
+        cut.Render(parameters => parameters
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+
+        cut.WaitForAssertion(() => Assert.Equal([false, true],
+            script.Invocations["setReady"].Select(call => (bool)call.Arguments[0]!)));
+    }
+
+    [Fact]
     public void RowMove_ShouldStartNoMenuScriptForItsHandles_WhenALongGridRenders()
     {
         List<Trail> trails = [.. Enumerable.Range(1, 500).Select(id => new Trail(id, $"Trail {id}", id, default))];

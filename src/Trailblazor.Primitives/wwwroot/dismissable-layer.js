@@ -18,10 +18,13 @@ export function createDismissableLayer(element, trigger, dotNetReference) {
 
     layers.push(layer);
     markTopmost();
+    // Tests wait for data-ready before pressing Escape.
+    element.dataset.ready = '';
     return layer;
 
     function dispose() {
         delete element.dataset.dismissableLayer;
+        delete element.dataset.ready;
         layers.splice(layers.indexOf(layer), 1);
         markTopmost();
         if (layers.length === 0) {

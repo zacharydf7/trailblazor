@@ -88,8 +88,10 @@ export function createTooltip(anchor, tooltip, options, delays) {
         showSoon();
     }
 
+    anchor.dataset.ready = '';
     return {
         dispose() {
+            delete anchor.dataset.ready;
             observer.disconnect();
             hide();
             anchor.removeEventListener('pointerenter', showSoon);

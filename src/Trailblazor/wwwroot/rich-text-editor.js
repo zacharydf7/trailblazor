@@ -51,6 +51,7 @@ export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = document.getElementById(root.getAttribute('aria-labelledby') ?? '');
     const editor = new Editor(root, toolbar, label, value, options);
+    root.dataset.ready = '';
     return {
         setValue: html => editor.setValue(html),
         setOptions: changed => editor.setOptions(changed),

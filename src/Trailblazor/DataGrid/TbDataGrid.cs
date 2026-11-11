@@ -76,6 +76,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private ItemMover<TItem>? _mover;
     private bool _reorderable;
     private bool _disposed;
+    private bool _createdWaitingForReorder;
     private readonly ItemHandlers<TbColumn<TItem>, Func<MouseEventArgs, Task>> _sort;
     private readonly ItemHandlers<object, Func<RowClickEventArgs, Task>> _rowClick;
     private readonly ItemHandlers<object, Func<RowExtendEventArgs, Task>> _rowExtend;
@@ -1425,7 +1426,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
-        var handle = await module.InvokeAsync<IJSObjectReference?>("createDataGrid", _table);
+        // Tests wait for data-ready, so with rows that move it waits for their reordering too.
+        var waitForReorder = _createdWaitingForReorder = OnRowMove.HasDelegate && _reorder is null;
+        var handle = await module.InvokeAsync<IJSObjectReference?>("createDataGrid", _table, waitForReorder);
         if (handle is not null && _disposed)
         {
             await handle.DisposeHandleAsync();
@@ -1433,7 +1436,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         _handle = handle;
-        StateHasChanged();
+        if (handle is not null && waitForReorder && _reorder is not null)
+        {
+            await handle.InvokeVoidAsync("setReady", true);
+        }
+        else if (handle is not null && !waitForReorder && _moveEvents is not null && _reorder is null)
+        {
+            // Rows became movable while createDataGrid ran, and their sortable is still attaching.
+            await handle.InvokeVoidAsync("setReady", false);
+        }
     }
 
     // Rows can move once the app handles OnRowMove, which it may start doing after the first render.
@@ -1441,6 +1452,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     {
         _moveEvents = DotNetObjectReference.Create(new SortableEvents(OnRowDragOverAsync, OnRowDropAsync,
             OnRowKeyAsync));
+        // A grid marked ready before its rows could move isn't ready again until they can.
+        if (_handle is not null && !_createdWaitingForReorder)
+        {
+            await _handle.InvokeVoidAsync("setReady", false);
+        }
+
         var sortable = await Modules.ImportAsync("./_content/Trailblazor/sortable.js");
         var reorder = _disposed ? null
             : await sortable.InvokeAsync<IJSObjectReference?>("attachSortable", _body, _moveEvents,
@@ -1452,11 +1469,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         _reorder = reorder;
-        StateHasChanged();
+        if (_handle is not null && !_disposed)
+        {
+            await _handle.InvokeVoidAsync("setReady", true);
+        }
     }
-
-    // Tests wait for data-ready, so it waits for whatever hears their clicks and keys.
-    private bool IsReady => _handle is not null && (!OnRowMove.HasDelegate || _reorder is not null);
 
     // Rows that can move count among all the items, which they show in order, so a row's place follows from its page.
     private int Offset => _pageSize is { } size ? (_page - 1) * size : 0;

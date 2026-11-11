@@ -1,6 +1,9 @@
 // Fits a field's text to its mask as it is typed, the way TextMask.cs fits it on the server: 0 takes a digit, a a
 // letter and * either, \ makes the next character literal, and every other character is shown as it is.
 const tokens = { '0': /^[0-9]$/, 'a': /^\p{L}$/u, '*': /^[\p{L}\p{Nd}]$/u };
+// A mask swapped for another can be disposed after its replacement attaches, so only the input's current mask
+// clears its data-ready.
+const current = new WeakMap();
 
 const parse = pattern => {
     const parts = [];
@@ -109,8 +112,14 @@ export function createMask(input, pattern) {
     input.addEventListener('focus', onFocus);
     input.addEventListener('change', onChange);
     input.addEventListener('blur', onBlur);
-    return {
+    input.dataset.ready = '';
+    const mask = {
         dispose() {
+            if (current.get(input) === mask) {
+                current.delete(input);
+                delete input.dataset.ready;
+            }
+
             input.removeEventListener('beforeinput', onBeforeInput);
             input.removeEventListener('input', onInput);
             input.removeEventListener('focus', onFocus);
@@ -118,4 +127,6 @@ export function createMask(input, pattern) {
             input.removeEventListener('blur', onBlur);
         },
     };
+    current.set(input, mask);
+    return mask;
 }

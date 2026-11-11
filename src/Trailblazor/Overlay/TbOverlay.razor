@@ -9,9 +9,9 @@
 
 @if (Visible)
 {
-    @* data-ready shows that Escape is wired, which happens just after the overlay appears. *@
+    @* The layer's script sets data-ready here once Escape is wired, just after the overlay appears. *@
     <div @attributes="AdditionalAttributes" @ref="_overlay" data-part="overlay" style="@Style"
-         data-ready="@(_layer is null ? null : "")" data-open-order="@_openOrder"
+         data-open-order="@_openOrder"
          class="@ClassNames.Join("tb-overlay", Contained ? "tb-overlay--contained" : "tb-overlay--fixed",
                     Blur ? "tb-overlay--blur" : null, Transparent ? "tb-overlay--transparent" : null,
                     LockScroll && !Contained ? "tb-overlay--lock-scroll" : null, Class)">
@@ -110,7 +110,6 @@
                 }
 
                 _layer = layer;
-                StateHasChanged();
             }
             catch (JSDisconnectedException)
             {

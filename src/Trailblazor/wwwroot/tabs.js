@@ -97,14 +97,14 @@ export function attachTabs(list, order) {
     // A tab may have rendered between the first render and this call.
     reportOrder();
     list.addEventListener('keydown', onKeyDown);
-    return {
-        // A test stand-in answers false here, which tells the server that no order report will come.
-        reportsOrder: () => true,
+    list.dataset.ready = '';
+    const handle = DotNet.createJSObjectReference({
         dispose() {
             observer.disconnect();
             selection.disconnect();
             sizes.disconnect();
             list.removeEventListener('keydown', onKeyDown);
         },
-    };
+    });
+    return { handle };
 }

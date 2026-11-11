@@ -160,6 +160,7 @@ export function createVirtualList(feed) {
     document.addEventListener('pointerdown', onPointerDown, true);
     renders.observe(feed, { childList: true });
     holdTabStop();
+    feed.dataset.ready = '';
     return {
         scrollToIndex,
         dispose() {

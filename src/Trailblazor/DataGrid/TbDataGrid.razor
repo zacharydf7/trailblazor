@@ -4,7 +4,7 @@
 @typeparam TItem
 @inherits TbComponentBase
 
-<div @attributes="AdditionalAttributes" data-part="grid" data-ready="@(IsReady ? "" : null)" style="@Style"
+<div @attributes="AdditionalAttributes" data-part="grid" style="@Style"
      class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">

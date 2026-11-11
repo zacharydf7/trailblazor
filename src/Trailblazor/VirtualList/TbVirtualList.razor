@@ -7,7 +7,6 @@
 @* tabindex -1 lets the feed hold focus when the focused item scrolls out and is no longer drawn. *@
 <div @ref="_feed" @attributes="AdditionalAttributes" role="@Role" aria-label="@AriaLabel" tabindex="-1"
      aria-busy="@(Loading ? "true" : "false")" data-part="feed" data-count="@Total" data-item-size="@ItemSizeText"
-     data-ready="@(_handle is null ? null : "")"
      style="@Styles.Join(Height is null ? null : $"block-size: {Height}", Style)"
      class="@ClassNames.Join("tb-virtual-list", Height is null ? null : "tb-virtual-list--scrolls", Class)">
     @if (RendererInfo.IsInteractive)

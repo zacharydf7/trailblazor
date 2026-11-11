@@ -41,7 +41,9 @@ const startOf = cell => [...cell.parentElement.cells].slice(0, cell.cellIndex)
 const cellAt = (row, column) => [...row.cells].find(cell => startOf(cell) + cell.colSpan > column)
     ?? row.cells[row.cells.length - 1];
 
-export function createDataGrid(table) {
+// With rows that move, the grid is ready only once their reordering is wired too, and the server says so through
+// setReady.
+export function createDataGrid(table, waitForReorder) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!table) {
         return null;
@@ -368,7 +370,10 @@ export function createDataGrid(table) {
     document.addEventListener('mouseup', endPress);
     table.addEventListener('selectstart', keepTextUnselected);
     table.addEventListener('click', extendFromBox);
+    const setReady = ready => table.closest('[data-part="grid"]')?.toggleAttribute('data-ready', ready);
+    setReady(!waitForReorder);
     return {
+        setReady,
         // A cell whose edit ended takes focus back once its field is gone, or its place does when the edit moved
         // its row away, such as by its sort.
         focusCell(id, column) {

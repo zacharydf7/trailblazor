@@ -123,13 +123,15 @@ public class TbAccordionTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldMarkTheAccordionReady_WhenItsScriptHasAttached()
+    public void Render_ShouldNotRenderAgain_WhenItsScriptAttaches()
     {
-        JSInterop.SetupModule("./_content/Trailblazor/accordion.js").SetupModule("attachAccordion", _ => true);
+        var module = JSInterop.SetupModule("./_content/Trailblazor/accordion.js");
+        module.SetupModule("attachAccordion", _ => true);
 
         var cut = RenderAccordion();
 
-        cut.WaitForAssertion(() => Assert.True(cut.Find(".tb-accordion").HasAttribute("data-ready")));
+        cut.WaitForAssertion(() => module.VerifyInvoke("attachAccordion"));
+        Assert.Equal(1, cut.RenderCount);
     }
 
     [Fact]

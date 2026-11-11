@@ -154,6 +154,7 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
     list.addEventListener('click', onClick, { capture: true });
     list.addEventListener('pointerdown', onPointerDown, { capture: true });
 
+    list.closest('.tb-sortable')?.setAttribute('data-ready', '');
     return {
         // Blazor may move the item's element, which takes focus off its handle, so the server gives it back here.
         focusHandle(key) {

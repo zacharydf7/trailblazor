@@ -13,7 +13,8 @@ public partial class TbVirtualList<TItem>
 {
     private ElementReference _feed;
     private Virtualize<VirtualItem<TItem>>? _virtualize;
-    // Set once the script has attached; the feed's keys and ScrollToAsync work from then on, and data-ready says so.
+    // Set once the script has attached; the feed's keys and ScrollToAsync work from then on, and the script's
+    // data-ready says so.
     private IJSObjectReference? _handle;
     private int _total;
     private int _loads;
@@ -152,7 +153,6 @@ public partial class TbVirtualList<TItem>
             }
 
             _handle = handle;
-            StateHasChanged();
         }
         catch (JSDisconnectedException)
         {

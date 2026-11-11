@@ -25,11 +25,11 @@
                 }
             </TbToolbar>
         }
-        @* The script owns everything inside the editing area once the page is interactive; data-ready marks that it
-           has attached, which tests wait for. *@
+        @* The script owns everything inside the editing area once the page is interactive, and sets data-ready
+           here as it attaches, which tests wait for. *@
         <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync"
              @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
-             id="@InputId" role="textbox" data-ready="@(_handle is null ? null : "")"
+             id="@InputId" role="textbox"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-describedby="@InputDescribedBy" aria-required="@AriaRequired"
              aria-invalid="@(ShowsInvalid ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
@@ -293,7 +293,6 @@
             _handle = handle;
             // The parent may have set a value while the script loaded.
             await OnParametersSetAsync();
-            StateHasChanged();
         }
         catch (JSDisconnectedException)
         {

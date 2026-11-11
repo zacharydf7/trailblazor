@@ -8,9 +8,9 @@
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), ClassNames.Modifier("tb-tabs", Size),
                 Vertical ? "tb-tabs--vertical" : null, Class)">
-    @* data-ready marks that the arrow keys work, which tests wait for. *@
+    @* The script sets data-ready here once the arrow keys work, which tests wait for. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
-         aria-orientation="@(Vertical ? "vertical" : "horizontal")" data-ready="@(_handle is null ? null : "")"
+         aria-orientation="@(Vertical ? "vertical" : "horizontal")"
          data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
          class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null)">
         @foreach (var tab in _tabs)
@@ -190,8 +190,8 @@
             }
 
             _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync, SelectAsync));
-            var handle = await module.InvokeAsync<IJSObjectReference?>("attachTabs", _list, _order);
-            if (handle is null)
+            var attached = await module.InvokeAsync<TabsAttachment?>("attachTabs", _list, _order);
+            if (attached is null)
             {
                 StopWaitingForOrder();
                 return;
@@ -199,17 +199,11 @@
 
             if (_disposed)
             {
-                await handle.DisposeHandleAsync();
+                await attached.Handle.DisposeHandleAsync();
                 return;
             }
 
-            _handle = handle;
-            StateHasChanged();
-            // bUnit's loose mode hands back a stand-in whose calls return defaults, and a stand-in never reports.
-            if (!await handle.InvokeAsync<bool>("reportsOrder"))
-            {
-                StopWaitingForOrder();
-            }
+            _handle = attached.Handle;
         }
         catch (JSDisconnectedException)
         {

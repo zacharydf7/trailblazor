@@ -316,8 +316,7 @@ public class TbTabsTests : BunitContext
     [Fact]
     public async Task Dispose_ShouldDetachTheKeyboardScript_WhenTheTabsGoAway()
     {
-        var handle = JSInterop.SetupModule("./_content/Trailblazor/tabs.js").SetupModule("attachTabs", _ => true);
-        handle.Setup<bool>("reportsOrder").SetResult(true);
+        var handle = await AttachTabsAsync(JSInterop.SetupModule("./_content/Trailblazor/tabs.js"));
         handle.SetupVoid("dispose").SetVoidResult();
         RenderTabs();
 
@@ -628,8 +627,17 @@ public class TbTabsTests : BunitContext
     private Func<DotNetObjectReference<TabOrder>> SetUpOrder()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/tabs.js");
-        module.SetupModule("attachTabs", _ => true).Setup<bool>("reportsOrder").SetResult(true);
+        AttachTabsAsync(module).GetAwaiter().GetResult();
         return () => (DotNetObjectReference<TabOrder>)module.Invocations["attachTabs"].Single().Arguments[1]!;
+    }
+
+    // The script hands back its handle inside an object; here a module of its own stands in for the handle.
+    private async Task<BunitJSModuleInterop> AttachTabsAsync(BunitJSModuleInterop module)
+    {
+        var handle = JSInterop.SetupModule("tabs-handle");
+        var reference = await JSInterop.JSRuntime.InvokeAsync<IJSObjectReference>("import", "tabs-handle");
+        module.Setup<TabsAttachment?>("attachTabs", _ => true).SetResult(new TabsAttachment(reference));
+        return handle;
     }
 
     private static void WithIntroAfterOverview(RenderTreeBuilder builder)

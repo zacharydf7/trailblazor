@@ -101,9 +101,7 @@ public partial class TbTagInput : IAsyncDisposable
                     return;
                 }
 
-                // data-ready tells a test the keys work now.
                 _handle = handle;
-                StateHasChanged();
             }
 
             if (_focusAfter is { } index && _handle is not null)

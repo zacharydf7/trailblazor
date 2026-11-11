@@ -12,7 +12,7 @@
            inputmode="@(Characters == CodeCharacters.Digits ? "numeric" : "text")"
            autocapitalize="@(Characters == CodeCharacters.Digits ? null : "characters")" spellcheck="false"
            maxlength="@Length" data-characters="@(Characters == CodeCharacters.Digits ? "digits" : "letters")"
-           data-ready="@(_handle is null ? null : "")" disabled="@Disabled" readonly="@ReadOnly"
+           disabled="@Disabled" readonly="@ReadOnly"
            aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy" style="--tb-code-field-length: @Length"
            class="@ClassNames.Join("tb-field__input", "tb-code-field__input", Classes?.Input)" />
@@ -119,7 +119,6 @@
                 }
 
                 _handle = handle;
-                StateHasChanged();
             }
             catch (JSDisconnectedException)
             {

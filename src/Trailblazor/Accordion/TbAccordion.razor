@@ -5,9 +5,9 @@
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 
-@* data-ready marks that the arrow keys work, which tests wait for. *@
+@* The script sets data-ready here once the arrow keys work, which tests wait for. *@
 <div @attributes="AdditionalAttributes" @ref="_accordion" data-part="accordion"
-     data-ready="@(_handle is null ? null : "")" class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
+     class="@ClassNames.Join("tb-accordion", Class)" style="@Style">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>
 
@@ -62,7 +62,6 @@
             }
 
             _handle = handle;
-            StateHasChanged();
         }
         catch (JSDisconnectedException)
         {

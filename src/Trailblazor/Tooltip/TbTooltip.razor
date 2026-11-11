@@ -8,9 +8,9 @@
 @inject IOptions<TrailblazorOptions> TrailblazorOptions
 
 @* The bubble's width comes from the anchor, since the positioning script writes the bubble's own style. *@
-@* Tests wait for data-ready before hovering, since a tooltip shows only once its script has attached. *@
+@* The script sets data-ready as it attaches; tests wait for it before hovering, since a tooltip shows only then. *@
 <span @ref="_anchor" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tooltip-anchor", Class)"
-      style="@AnchorStyle" data-ready="@(_handle is null ? null : "")">
+      style="@AnchorStyle">
     @ChildContent
     @if (Active)
     {
@@ -177,7 +177,6 @@
             }
 
             _handle = handle;
-            StateHasChanged();
         }
         catch (JSDisconnectedException)
         {

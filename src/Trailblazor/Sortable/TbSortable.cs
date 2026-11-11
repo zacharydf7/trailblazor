@@ -117,7 +117,6 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
             }
 
             _handle = handle;
-            StateHasChanged();
         }
         catch (JSDisconnectedException)
         {
