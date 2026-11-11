@@ -57,7 +57,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await MeasureStatusesAsync(page);
         AssertNoViolations(await page.RunAxe(WcagAA));
-        if (OpeningOf(ExampleCatalog.Find(example)!) is { } opening)
+        if (OpeningsOf(ExampleCatalog.Find(example)!).FirstOrDefault() is { } opening)
         {
             await CheckOpenAsync(page, opening);
         }
@@ -75,14 +75,14 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await WaitForFadesAsync(page);
 
         AssertNoViolations(await page.RunAxe(WcagAA));
-        if (OpeningOf(ExampleCatalog.Find(example)!) is { } opening)
+        if (OpeningsOf(ExampleCatalog.Find(example)!).FirstOrDefault() is { } opening)
         {
             await CheckOpenAsync(page, opening);
         }
     }
 
-    // Popups aren't on the page until they open, so examples with one are also checked while open: those whose
-    // target has an opener, and those listed here, whose target is the control or field the popup opens from.
+    // Popups aren't on the page until they open, so examples with one are also checked while open: the popup their
+    // target opens, if it has an opener, and each popup listed here.
     private sealed record Opening(TestTarget Shown, Func<IPage, Task> OpenAsync, bool ByHover = false);
 
     // Axe skips contrast on anything aria-disabled, and a list's status messages are information, so they're measured.
@@ -208,31 +208,58 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
                 .GetByRole(AriaRole.Button, new() { Name = open }))));
     }
 
-    private static readonly Dictionary<string, Opening> Opened = new()
+    private static readonly Dictionary<string, Opening[]> Opened = new()
     {
-        ["menu"] = new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync()),
-        ["floating-action-button"] = new(new("menu", "Add"), page => ClickWhenReadyAsync(Button(page, "Add"))),
-        ["label"] = new(new("dialog", "Information about Project code"),
-            page => Button(page, "Information about Project code").ClickAsync()),
-        ["select"] = new(new("listbox", "Shipping"),
-            page => ClickWhenReadyAsync(page.GetByRole(AriaRole.Combobox, new() { Name = "Shipping" }))),
-        ["tree-select"] = new(new("dialog", "Trail"),
-            page => ClickWhenReadyAsync(Button(page, "Trail Choose a trail"))),
-        ["autocomplete"] = new(new("listbox", "Trailhead"), async page =>
+        ["menu"] = [new(new("menu", "Actions"), page => Button(page, "Actions").ClickAsync())],
+        ["floating-action-button"] = [new(new("menu", "Add"), page => ClickWhenReadyAsync(Button(page, "Add")))],
+        ["label"] =
+        [
+            new(new("dialog", "Information about Project code"),
+                page => Button(page, "Information about Project code").ClickAsync()),
+        ],
+        ["select"] =
+        [
+            SelectOpening("listbox", "Shipping"), SelectOpening("dialog", "Time zone"),
+            SelectOpening("listbox", "Trails to hike"), SelectOpening("dialog", "Huts"),
+        ],
+        ["tree-select"] =
+        [
+            new(new("dialog", "Trail"), page => ClickWhenReadyAsync(Button(page, "Trail Choose a trail"))),
+        ],
+        ["popover"] =
+        [
+            .. new[] { ("Trip details", "Trip details"), ("Notifications", "Notifications"),
+                ("Packing list", "Packing list"), ("Share", "Share this trail"),
+                ("Keyboard shortcuts", "Keyboard shortcuts"), ("Opens beside", "Opens beside"),
+                ("Ada Lovelace", "Ada Lovelace") }
+                .Select(popup => new Opening(new("dialog", popup.Item2),
+                    page => Button(page, popup.Item1).ClickAsync())),
+        ],
+        ["dialog"] = [new(new("dialog", "Notes on the report"), page => Button(page, "Take notes").ClickAsync())],
+        ["autocomplete"] = [new(new("listbox", "Trailhead"), async page =>
         {
             var field = page.GetByRole(AriaRole.Combobox, new() { Name = "Trailhead" });
             await Expect(field).ToHaveAttributeAsync("data-ready", "");
             await field.PressSequentiallyAsync("ridge");
             await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Trailhead" }).GetByRole(AriaRole.Option))
                 .ToHaveCountAsync(2);
-        }),
-        ["date-range-picker"] = new(new("dialog", "Choose dates"),
-            page => ClickWhenReadyAsync(page.GetByRole(AriaRole.Group, new() { Name = "Trip dates" })
+        })],
+        ["date-range-picker"] =
+        [
+            new(new("dialog", "Choose dates"), page => ClickWhenReadyAsync(page
+                .GetByRole(AriaRole.Group, new() { Name = "Trip dates" })
                 .GetByRole(AriaRole.Button, new() { Name = "Choose dates" }))),
-        ["color-picker"] = new(new("dialog", "Choose a color"),
-            page => ClickWhenReadyAsync(ColorPickerTests.Field(page, "Trail marker")
-                .GetByRole(AriaRole.Button, new() { Name = "Choose a color" }))),
+        ],
+        ["color-picker"] =
+        [
+            new(new("dialog", "Choose a color"), page => ClickWhenReadyAsync(ColorPickerTests
+                .Field(page, "Trail marker").GetByRole(AriaRole.Button, new() { Name = "Choose a color" }))),
+        ],
     };
+
+    // A select's popup is its listbox, or with Filterable, a dialog holding the filter and the listbox.
+    private static Opening SelectOpening(string role, string name) => new(new(role, name),
+        page => ClickWhenReadyAsync(page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true })));
 
     private static ILocator Button(IPage page, string name) =>
         page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
@@ -244,27 +271,50 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await control.ClickAsync();
     }
 
-    private static Opening? OpeningOf(Example example) =>
-        Opened.GetValueOrDefault(example.Name) ?? (example.Target is { OpenedBy: { } opener } target
-            ? new(target, page => target.OpenOnHover ? ExampleTargetTests.Find(page, opener).HoverAsync()
-                : ExampleTargetTests.Find(page, opener).ClickAsync(), target.OpenOnHover)
-            : null);
+    private static Opening[] OpeningsOf(Example example) =>
+    [
+        .. example.Target is { OpenedBy: { } opener } target
+            ? [new Opening(target, page => target.OpenOnHover ? ExampleTargetTests.Find(page, opener).HoverAsync()
+                : ExampleTargetTests.Find(page, opener).ClickAsync(), target.OpenOnHover)]
+            : Array.Empty<Opening>(),
+        .. Opened.GetValueOrDefault(example.Name, []),
+    ];
 
-    public static TheoryData<string, string, string> OpenedExamplesInBothThemes => new(
+    // A row for each popup, named so a failure says which one.
+    public static TheoryData<string, string, string, string> OpenedExamplesInBothThemes => new(
         from browser in AllBrowsers.Names
         from example in ExampleCatalog.All
-        where OpeningOf(example) is not null
+        from opening in OpeningsOf(example)
         from theme in new[] { "light", "dark" }
-        select (browser, example.Name, theme));
+        select (browser, example.Name, PopupName(opening), theme));
+
+    private static string PopupName(Opening opening) => opening.Shown.Name ?? opening.Shown.Role;
 
     [Theory, MemberData(nameof(OpenedExamplesInBothThemes))]
     public async Task Example_ShouldHaveNoAccessibilityViolations_WhenOpenInTheme(string browser, string example,
-        string theme)
+        string popup, string theme)
     {
         var page = await OpenAsync(browser, $"/examples/{example}");
         await SetThemeAsync(page, theme);
 
-        await CheckOpenAsync(page, OpeningOf(ExampleCatalog.Find(example)!)!);
+        await CheckOpenAsync(page,
+            OpeningsOf(ExampleCatalog.Find(example)!).Single(opening => PopupName(opening) == popup));
+    }
+
+    public static TheoryData<string, string> BrowsersAndThemes => new(
+        from browser in AllBrowsers.Names
+        from theme in new[] { "light", "dark" }
+        select (browser, theme));
+
+    // The export example closes its dialog once the export finishes, too soon to check, so a page keeps one open.
+    [Theory, MemberData(nameof(BrowsersAndThemes))]
+    public async Task ExportDialog_ShouldHaveNoAccessibilityViolations_WhenOpenInTheme(string browser, string theme)
+    {
+        var page = await OpenAsync(browser, "/export-dialog");
+        await SetThemeAsync(page, theme);
+
+        await CheckOpenAsync(page, new(new("dialog", "Exporting report"),
+            opened => Button(opened, "Export report").ClickAsync()));
     }
 
     private static async Task CheckOpenAsync(IPage page, Opening opening)
@@ -309,13 +359,6 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("tooltip", "Slow to appear", "tooltip", "Appears after a second"),
         ("tooltip", "Slow to hide", "tooltip", "Stays for two seconds"),
         ("tooltip", "Delete", "tooltip", "Delete the selection"),
-        ("popover", "Trip details", "dialog", "Trip details"),
-        ("popover", "Notifications", "dialog", "Notifications"),
-        ("popover", "Packing list", "dialog", "Packing list"),
-        ("popover", "Share", "dialog", "Share this trail"),
-        ("popover", "Keyboard shortcuts", "dialog", "Keyboard shortcuts"),
-        ("popover", "Opens beside", "dialog", "Opens beside"),
-        ("popover", "Ada Lovelace", "dialog", "Ada Lovelace"),
         ("menu", "More options", "menu", "More options"),
         ("menu", "View", "menu", "View"),
         ("menu", "Filters", "menu", "Filters"),
@@ -337,7 +380,6 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("dialog", "Read the trail rules", "dialog", "Trail rules"),
         ("dialog", "Book the hut", "dialog", "Book the hut"),
         ("dialog", "Edit beside the page", "dialog", "Edit name"),
-        ("dialog", "Take notes", "dialog", "Notes on the report"),
         ("dialog", "Open on the page", "dialog", "A dialog on the page"),
         ("dialog", "Open a form", "menu", "Open a form"),
         ("focus-scope", "Edit the note", "group", "Note"),
@@ -370,7 +412,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await CheckOpenAsync(page, new(new("listitem") { Text = text }, opened => Button(opened, opener).ClickAsync()));
     }
 
-    // Each listed popup is checked open, in chromium alone. The export dialog closes itself too soon to be listed.
+    // Each listed popup is checked open, in chromium alone.
     [Theory, MemberData(nameof(OverlaySectionsInBothThemes))]
     public async Task OverlaySection_ShouldHaveNoAccessibilityViolations_WhenOpen(string example, string opener,
         string role, string shown, string theme)

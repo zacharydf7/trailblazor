@@ -1,0 +1,10 @@
+@page "/export-dialog"
+@using Trailblazor.Docs.Examples
+@inject IDialogService Dialogs
+
+@* The docs example's export dialog, shown at 50% and left open, since the example closes it once its export ends. *@
+<TbButton OnClick="Open">Export report</TbButton>
+
+@code {
+    private void Open() => Dialogs.Show<ExportDialog>(parameters: dialog => dialog.Set(export => export.Percent, 50));
+}
