@@ -4,8 +4,8 @@
 <button @attributes="AdditionalAttributes" type="button" role="menuitemcheckbox" tabindex="-1" style="@Style"
         aria-checked="@(Checked ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
         data-keep-open="@(KeepOpen ? "" : null)"
-        class="@ClassNames.Join("tb-menu__item", Class)" @onclick="ToggleAsync">
-    <span data-part="indicator" class="tb-menu__indicator">
+        class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)" @onclick="ToggleAsync">
+    <span data-part="indicator" class="@ClassNames.Join("tb-menu__indicator", Classes?.Indicator)">
         @if (Checked)
         {
             <TbIcon Icon="BuiltInIcons.Check" Size="Size.Small" />
@@ -13,12 +13,14 @@
     </span>
     @if (Icon is { } icon)
     {
-        <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+        <TbIcon Icon="icon" Size="Size.Small" Class="@Classes?.Icon" data-part="icon" />
     }
-    <span data-part="label">@ChildContent</span>
+    <span data-part="label" class="@Classes?.Label">@ChildContent</span>
 </button>
 
 @code {
+    [CascadingParameter]
+    private MenuClasses? Classes { get; set; }
     /// <summary>The item's text.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

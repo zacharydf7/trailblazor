@@ -28,6 +28,52 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldAddPartClasses_WhenClassesAreSet()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Classes, new MenuClasses
+            {
+                Trigger = "my-trigger", Menu = "my-menu", Item = "my-item", Icon = "my-icon", Label = "my-label",
+                Chevron = "my-chevron", Indicator = "my-indicator", GroupLabel = "my-group-label",
+            })
+            .AddChildContent<TbMenuItem>(item => item.Add(i => i.Icon, BuiltInIcons.Plus).AddChildContent("Rename"))
+            .AddChildContent<TbMenuGroup>(group => group.Add(g => g.Label, "View")
+                .AddChildContent<TbMenuCheckboxItem>(item => item.AddChildContent("Wrap lines")))
+            .AddChildContent<TbSubMenu>(submenu => submenu.Add(s => s.Label, "Sort").Add(s => s.Icon, BuiltInIcons.Plus)
+                .AddChildContent<TbMenuRadioGroup<string>>(group => group.Add(g => g.Label, "By")
+                    .AddChildContent<TbMenuRadioItem<string>>(item => item.Add(i => i.Value, "name")
+                        .AddChildContent("Name")))));
+
+        Assert.Contains("my-trigger", cut.Find("[data-part=trigger]").ClassList);
+        AssertEachHas(cut, "[data-part=menu]", 2, "my-menu");
+        AssertEachHas(cut, "[role^=menuitem]", 4, "my-item");
+        AssertEachHas(cut, "[role=menu] [data-part=icon]", 2, "my-icon");
+        AssertEachHas(cut, "[role=menu] [data-part=label]", 4, "my-label");
+        AssertEachHas(cut, "[data-part=chevron]", 1, "my-chevron");
+        AssertEachHas(cut, "[data-part=indicator]", 2, "my-indicator");
+        AssertEachHas(cut, "[data-part=group-label]", 2, "my-group-label");
+    }
+
+    [Fact]
+    public void Render_ShouldAddPartClasses_WhenTheTriggerIsAnIconAndAnItemALink()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Icon, BuiltInIcons.Plus)
+            .Add(menu => menu.AriaLabel, "Actions")
+            .Add(menu => menu.Classes, new MenuClasses { Trigger = "my-trigger", Item = "my-item" })
+            .AddChildContent<TbMenuItem>(item => item.Add(i => i.Href, "/help").AddChildContent("Help")));
+
+        Assert.Contains("my-trigger", cut.Find("[data-part=trigger]").ClassList);
+        Assert.Contains("my-item", cut.Find("a[role=menuitem]").ClassList);
+    }
+
+    private static void AssertEachHas(IRenderedComponent<TbMenu> cut, string selector, int count, string className)
+    {
+        var parts = cut.FindAll(selector);
+        Assert.Equal(count, parts.Count);
+        Assert.All(parts, part => Assert.Contains(className, part.ClassList));
+    }
+
+    [Fact]
     public void Render_ShouldPutAGivenIdOnACustomTriggerAndNameTheMenuByIt_WhenTheMenuHasOne()
     {
         var cut = Render<TbMenu>(parameters => parameters.AddUnmatched("id", "account")

@@ -48,26 +48,28 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
             return;
         }
 
+        var classes = Dialog.Options.Classes;
         builder.OpenElement(10, "header");
         builder.AddAttribute(11, "data-part", "header");
-        builder.AddAttribute(12, "class", "tb-dialog__header");
+        builder.AddAttribute(12, "class", ClassNames.Join("tb-dialog__header", classes?.Header));
         builder.OpenElement(13, "h2");
         builder.AddAttribute(14, "id", TitleId);
-        builder.AddAttribute(15, "class", "tb-dialog__title");
+        builder.AddAttribute(15, "data-part", "title");
+        builder.AddAttribute(16, "class", ClassNames.Join("tb-dialog__title", classes?.Title));
         if (Dialog.TitleContent is { } title)
         {
-            builder.AddContent(16, title);
+            builder.AddContent(17, title);
         }
         else
         {
-            builder.AddContent(17, Dialog.Title);
+            builder.AddContent(18, Dialog.Title);
         }
 
         builder.CloseElement();
         var state = Dialog.WindowState;
         if (Dialog.Options.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal)
         {
-            DialogMenus.AddMove(builder, 18, Dialog, Localizer);
+            DialogMenus.AddMove(builder, 19, Dialog, Localizer);
         }
 
         if (Dialog.Options.Minimizable)
@@ -82,7 +84,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         if (Dialog.Options.Maximizable)
         {
             var maximized = state == DialogWindowState.Maximized;
-            AddWindowButton(builder, 33, "maximize",
+            AddWindowButton(builder, 34, "maximize",
                 Localizer[maximized ? TbStrings.DialogRestore : TbStrings.DialogMaximize],
                 maximized ? BuiltInIcons.Restore : BuiltInIcons.Maximize,
                 maximized ? DialogWindowState.Normal : DialogWindowState.Maximized);
@@ -90,17 +92,18 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
 
         if (Dialog.CloseButton)
         {
-            builder.OpenComponent<TbIconButton>(39);
-            builder.AddComponentParameter(40, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-            builder.AddComponentParameter(41, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.DialogClose]);
-            builder.AddComponentParameter(42, nameof(TbIconButton.Size), Size.Small);
-            builder.AddComponentParameter(43, nameof(TbIconButton.OnClick),
+            builder.OpenComponent<TbIconButton>(41);
+            builder.AddComponentParameter(42, nameof(TbIconButton.Icon), BuiltInIcons.Close);
+            builder.AddComponentParameter(43, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.DialogClose]);
+            builder.AddComponentParameter(44, nameof(TbIconButton.Size), Size.Small);
+            builder.AddComponentParameter(45, nameof(TbIconButton.OnClick),
                 EventCallback.Factory.Create<MouseEventArgs>(this, CloseAsync));
-            builder.AddAttribute(44, "data-part", "close");
+            builder.AddComponentParameter(46, nameof(TbIconButton.Class), classes?.Close);
+            builder.AddAttribute(47, "data-part", "close");
             if (!RendererInfo.IsInteractive)
             {
-                builder.AddAttribute(45, "command", "close");
-                builder.AddAttribute(46, "commandfor", DialogId);
+                builder.AddAttribute(48, "command", "close");
+                builder.AddAttribute(49, "commandfor", DialogId);
             }
 
             builder.CloseComponent();
@@ -119,7 +122,8 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddComponentParameter(sequence + 3, nameof(TbIconButton.Size), Size.Small);
         builder.AddComponentParameter(sequence + 4, nameof(TbIconButton.OnClick),
             EventCallback.Factory.Create<MouseEventArgs>(this, () => SetWindowState(next)));
-        builder.AddAttribute(sequence + 5, "data-part", part);
+        builder.AddComponentParameter(sequence + 5, nameof(TbIconButton.Class), Dialog.Options.Classes?.WindowButton);
+        builder.AddAttribute(sequence + 6, "data-part", part);
         builder.CloseComponent();
     }
 

@@ -69,7 +69,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             : Styles.Join($"--tb-dialog-width: {options.Width}", Style));
         builder.AddAttribute(7, "class", ClassNames.Join("tb-dialog", SizeClass(Dialog.Size),
             PositionClass(Dialog.Position),
-            Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null, Class));
+            Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null,
+            options.Classes?.Dialog, Class));
         builder.AddAttribute(8, "role", Dialog.IsAlert ? "alertdialog" : null);
         builder.AddAttribute(9, "aria-describedby", Dialog.IsAlert || Dialog.Described ? Dialog.DescriptionId : null);
         builder.AddElementReferenceCapture(10, element => _element = element);
@@ -81,7 +82,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
         builder.OpenElement(30, "div");
         builder.AddAttribute(31, "data-part", "body");
-        builder.AddAttribute(32, "class", "tb-dialog__body");
+        builder.AddAttribute(32, "class", ClassNames.Join("tb-dialog__body", options.Classes?.Body));
         builder.OpenComponent<CascadingValue<DialogReference>>(33);
         builder.AddComponentParameter(34, "Value", Dialog);
         builder.AddComponentParameter(35, "IsFixed", true);

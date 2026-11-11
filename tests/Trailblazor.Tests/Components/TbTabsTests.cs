@@ -841,6 +841,38 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldAddPartClasses_WhenClassesAreSet()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })
+            .Add(tabs => tabs.ScrollButtons, true)
+            .Add(tabs => tabs.Classes, new TabsClasses
+            {
+                List = "my-list", Tab = "my-tab", Icon = "my-icon", Close = "my-close", Panel = "my-panel",
+                Add = "my-add", ScrollButton = "my-scroll",
+            })
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTab>(0);
+                builder.AddAttribute(1, nameof(TbTab.Text), "Overview");
+                builder.AddAttribute(2, nameof(TbTab.Icon), BuiltInIcons.Plus);
+                builder.AddAttribute(3, nameof(TbTab.OnClose), EventCallback.Factory.Create(this, () => { }));
+                builder.AddAttribute(4, nameof(TbTab.ChildContent),
+                    (RenderFragment)(panel => panel.AddContent(0, "Panel")));
+                builder.CloseComponent();
+            })));
+
+        Assert.Contains("my-list", cut.Find("[data-part=list]").ClassList);
+        Assert.Contains("my-tab", cut.Find("[data-part=tab]").ClassList);
+        Assert.Contains("my-icon", cut.Find("[data-part=tab] [data-part=icon]").ClassList);
+        Assert.Contains("my-close", cut.Find("[data-part=close]").ClassList);
+        Assert.Contains("my-panel", cut.Find("[data-part=panel]").ClassList);
+        Assert.Contains("my-add", cut.Find("[data-part=add]").ClassList);
+        var scrolls = cut.FindAll("[data-part^=scroll-]");
+        Assert.Equal(2, scrolls.Count);
+        Assert.All(scrolls, button => Assert.Contains("my-scroll", button.ClassList));
+    }
+
+    [Fact]
     public void Render_ShouldNameTheAddButtonByAddLabel_WhenGivenOne()
     {
         var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })

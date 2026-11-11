@@ -5,12 +5,14 @@
 <button @attributes="AdditionalAttributes" type="button" role="menuitemradio" tabindex="-1" style="@Style"
         aria-checked="@(Chosen ? "true" : "false")" aria-disabled="@(Disabled ? "true" : null)"
         data-keep-open="@(KeepOpen ? "" : null)"
-        class="@ClassNames.Join("tb-menu__item", Class)" @onclick="ChooseAsync">
-    <span data-part="indicator" class="tb-menu__indicator"></span>
-    <span data-part="label">@ChildContent</span>
+        class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)" @onclick="ChooseAsync">
+    <span data-part="indicator" class="@ClassNames.Join("tb-menu__indicator", Classes?.Indicator)"></span>
+    <span data-part="label" class="@Classes?.Label">@ChildContent</span>
 </button>
 
 @code {
+    [CascadingParameter]
+    private MenuClasses? Classes { get; set; }
     /// <summary>The value the group takes when this item is chosen. A plain value fits a group of its nullable type,
     /// such as <c>Value="2"</c> in a group bound to an <c>int?</c>.</summary>
     [Parameter, EditorRequired]

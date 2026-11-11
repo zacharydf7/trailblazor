@@ -15,11 +15,12 @@
     else if (Icon is { } icon)
     {
         <TbIconButton Icon="icon" AriaLabel="@(AriaLabel ?? "")" Size="TriggerSize" Disabled="Disabled"
-                      @attributes="TriggerAttributes" />
+                      Class="@Classes?.Trigger" @attributes="TriggerAttributes" />
     }
     else
     {
-        <TbButton Variant="TriggerVariant" Size="TriggerSize" Disabled="Disabled" @attributes="TriggerAttributes">
+        <TbButton Variant="TriggerVariant" Size="TriggerSize" Disabled="Disabled" Class="@Classes?.Trigger"
+                  @attributes="TriggerAttributes">
             <ChildContent>@Label</ChildContent>
             <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
         </TbButton>
@@ -30,8 +31,8 @@
     }
     @* data-open comes with the items drawn as the menu opened, which tests wait for. *@
     <div @ref="_menu" id="@MenuId" popover="auto" role="menu" aria-labelledby="@TriggerId" data-part="menu"
-         data-open="@(_open ? "" : null)" class="tb-menu__list">
-        @ChildContent
+         data-open="@(_open ? "" : null)" class="@ClassNames.Join("tb-menu__list", Classes?.Menu)">
+        <CascadingValue Value="Classes">@ChildContent</CascadingValue>
     </div>
 </div>
 
@@ -110,6 +111,10 @@
     /// </summary>
     [Parameter]
     public string? Description { get; set; }
+
+    /// <summary>Extra CSS classes for the trigger, the menu and its submenus, and every item and its parts.</summary>
+    [Parameter]
+    public MenuClasses? Classes { get; set; }
 
     /// <summary>The menu's items: <see cref="TbMenuItem"/>s, <see cref="TbMenuCheckboxItem"/>s, a
     /// <see cref="TbMenuRadioGroup{TValue}"/>, <see cref="TbSubMenu"/>s, and <see cref="TbMenuGroup"/>s and

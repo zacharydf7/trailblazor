@@ -4382,3 +4382,78 @@ Trailblazor.TbMultiToggleGroup<TItem>.Comparer.get -> System.Collections.Generic
 Trailblazor.TbMultiToggleGroup<TItem>.Comparer.set -> void
 Trailblazor.TbAutocomplete<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
 Trailblazor.TbAutocomplete<TValue>.Comparer.set -> void
+Trailblazor.TabsClasses
+Trailblazor.TabsClasses.Add.get -> string?
+Trailblazor.TabsClasses.Add.init -> void
+Trailblazor.TabsClasses.List.get -> string?
+Trailblazor.TabsClasses.List.init -> void
+Trailblazor.TabsClasses.Panel.get -> string?
+Trailblazor.TabsClasses.Panel.init -> void
+Trailblazor.TabsClasses.ScrollButton.get -> string?
+Trailblazor.TabsClasses.ScrollButton.init -> void
+Trailblazor.TabsClasses.Tab.get -> string?
+Trailblazor.TabsClasses.Tab.init -> void
+Trailblazor.TabsClasses.TabsClasses() -> void
+Trailblazor.TbTabs.Classes.get -> Trailblazor.TabsClasses?
+Trailblazor.TbTabs.Classes.set -> void
+Trailblazor.DialogClasses
+Trailblazor.DialogClasses.Body.get -> string?
+Trailblazor.DialogClasses.Body.init -> void
+Trailblazor.DialogClasses.Close.get -> string?
+Trailblazor.DialogClasses.Close.init -> void
+Trailblazor.DialogClasses.Dialog.get -> string?
+Trailblazor.DialogClasses.Dialog.init -> void
+Trailblazor.DialogClasses.DialogClasses() -> void
+Trailblazor.DialogClasses.Header.get -> string?
+Trailblazor.DialogClasses.Header.init -> void
+Trailblazor.DialogClasses.Title.get -> string?
+Trailblazor.DialogClasses.Title.init -> void
+Trailblazor.DialogOptions.Classes.get -> Trailblazor.DialogClasses?
+Trailblazor.DialogOptions.Classes.init -> void
+Trailblazor.MenuClasses
+Trailblazor.MenuClasses.GroupLabel.get -> string?
+Trailblazor.MenuClasses.GroupLabel.init -> void
+Trailblazor.MenuClasses.Icon.get -> string?
+Trailblazor.MenuClasses.Icon.init -> void
+Trailblazor.MenuClasses.Indicator.get -> string?
+Trailblazor.MenuClasses.Indicator.init -> void
+Trailblazor.MenuClasses.Item.get -> string?
+Trailblazor.MenuClasses.Item.init -> void
+Trailblazor.MenuClasses.Label.get -> string?
+Trailblazor.MenuClasses.Label.init -> void
+Trailblazor.MenuClasses.Menu.get -> string?
+Trailblazor.MenuClasses.Menu.init -> void
+Trailblazor.MenuClasses.MenuClasses() -> void
+Trailblazor.MenuClasses.Trigger.get -> string?
+Trailblazor.MenuClasses.Trigger.init -> void
+Trailblazor.TbMenu.Classes.get -> Trailblazor.MenuClasses?
+Trailblazor.TbMenu.Classes.set -> void
+override Trailblazor.TabsClasses.Equals(object? obj) -> bool
+override Trailblazor.TabsClasses.GetHashCode() -> int
+override Trailblazor.TabsClasses.ToString() -> string!
+static Trailblazor.TabsClasses.operator !=(Trailblazor.TabsClasses? left, Trailblazor.TabsClasses? right) -> bool
+static Trailblazor.TabsClasses.operator ==(Trailblazor.TabsClasses? left, Trailblazor.TabsClasses? right) -> bool
+Trailblazor.TabsClasses.<Clone>$() -> Trailblazor.TabsClasses!
+Trailblazor.TabsClasses.Equals(Trailblazor.TabsClasses? other) -> bool
+override Trailblazor.DialogClasses.Equals(object? obj) -> bool
+override Trailblazor.DialogClasses.GetHashCode() -> int
+override Trailblazor.DialogClasses.ToString() -> string!
+static Trailblazor.DialogClasses.operator !=(Trailblazor.DialogClasses? left, Trailblazor.DialogClasses? right) -> bool
+static Trailblazor.DialogClasses.operator ==(Trailblazor.DialogClasses? left, Trailblazor.DialogClasses? right) -> bool
+Trailblazor.DialogClasses.<Clone>$() -> Trailblazor.DialogClasses!
+Trailblazor.DialogClasses.Equals(Trailblazor.DialogClasses? other) -> bool
+override Trailblazor.MenuClasses.Equals(object? obj) -> bool
+override Trailblazor.MenuClasses.GetHashCode() -> int
+override Trailblazor.MenuClasses.ToString() -> string!
+static Trailblazor.MenuClasses.operator !=(Trailblazor.MenuClasses? left, Trailblazor.MenuClasses? right) -> bool
+static Trailblazor.MenuClasses.operator ==(Trailblazor.MenuClasses? left, Trailblazor.MenuClasses? right) -> bool
+Trailblazor.MenuClasses.<Clone>$() -> Trailblazor.MenuClasses!
+Trailblazor.MenuClasses.Equals(Trailblazor.MenuClasses? other) -> bool
+Trailblazor.TabsClasses.Icon.get -> string?
+Trailblazor.TabsClasses.Icon.init -> void
+Trailblazor.TabsClasses.Close.get -> string?
+Trailblazor.TabsClasses.Close.init -> void
+Trailblazor.DialogClasses.WindowButton.get -> string?
+Trailblazor.DialogClasses.WindowButton.init -> void
+Trailblazor.MenuClasses.Chevron.get -> string?
+Trailblazor.MenuClasses.Chevron.init -> void

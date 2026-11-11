@@ -94,6 +94,29 @@ public class TbDialogTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldAddPartClasses_WhenTheOptionsHaveClasses()
+    {
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Rename")
+            .Add(d => d.Options, new DialogOptions
+            {
+                Minimizable = true, Maximizable = true,
+                Classes = new()
+                {
+                    Dialog = "my-dialog", Header = "my-header", Title = "my-title", WindowButton = "my-window",
+                    Close = "my-close", Body = "my-body",
+                },
+            }));
+
+        Assert.Contains("my-dialog", cut.Find("[data-part=dialog]").ClassList);
+        Assert.Contains("my-header", cut.Find("[data-part=header]").ClassList);
+        Assert.Contains("my-title", cut.Find("[data-part=title]").ClassList);
+        Assert.Contains("my-window", cut.Find("[data-part=minimize]").ClassList);
+        Assert.Contains("my-window", cut.Find("[data-part=maximize]").ClassList);
+        Assert.Contains("my-close", cut.Find("[data-part=close]").ClassList);
+        Assert.Contains("my-body", cut.Find("[data-part=body]").ClassList);
+    }
+
+    [Fact]
     public void Open_ShouldCloseTheDialogWithoutRaisingOpenChanged_WhenTheParentSetsItFalse()
     {
         var changes = new List<bool>();

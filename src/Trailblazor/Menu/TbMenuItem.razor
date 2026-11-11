@@ -8,7 +8,7 @@
     @* A disabled link loses its address, so it can't be followed. *@
     <a @attributes="AdditionalAttributes" href="@(Disabled ? null : Href)" target="@TargetAttribute"
        rel="@RelAttribute" role="menuitem" tabindex="-1" style="@Style"
-       aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-menu__item", Class)"
+       aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)"
        @onclick="OnClickAsync">
         @Content
         @if (NewTab)
@@ -20,13 +20,15 @@
 else
 {
     <button @attributes="AdditionalAttributes" type="button" role="menuitem" tabindex="-1" style="@Style"
-            aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-menu__item", Class)"
+            aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)"
             @onclick="OnClickAsync">
         @Content
     </button>
 }
 
 @code {
+    [CascadingParameter]
+    private MenuClasses? Classes { get; set; }
     private ControlTelemetry? _telemetry;
 
     /// <summary>The item's text.</summary>
@@ -73,9 +75,9 @@ else
     private RenderFragment Content => @<text>
         @if (Icon is { } icon)
         {
-            <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+            <TbIcon Icon="icon" Size="Size.Small" Class="@Classes?.Icon" data-part="icon" />
         }
-        <span data-part="label">@ChildContent</span>
+        <span data-part="label" class="@Classes?.Label">@ChildContent</span>
     </text>;
 
     // These come after the consumer's attributes, so they carry the consumer's own target and rel along.

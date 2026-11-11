@@ -15,14 +15,14 @@
     {
         <div class="tb-tabs__scroll tb-tabs__scroll--start" hidden>
             <TbIconButton Icon="ScrollStartIcon" AriaLabel="@Localizer[TbStrings.TabsScrollStart]" Size="Size"
-                          tabindex="-1" data-part="scroll-start" />
+                          Class="@Classes?.ScrollButton" tabindex="-1" data-part="scroll-start" />
         </div>
     }
     @* The script sets data-ready here once the arrow keys work, which tests wait for. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")"
          data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
-         class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null)">
+         class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null, Classes?.List)">
         @foreach (var tab in _tabs)
         {
             var selected = tab == ActiveTab;
@@ -33,7 +33,7 @@
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
                     aria-keyshortcuts="@(tab.CanClose ? "Delete Backspace" : null)"
                     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
-                    class="@ClassNames.Join("tb-tabs__tab", tab.HeaderClass)"
+                    class="@ClassNames.Join("tb-tabs__tab", Classes?.Tab, tab.HeaderClass)"
                     @onclick="_click.For(tab)">@tab.HeaderContent</button>
         }
     </div>
@@ -41,7 +41,7 @@
     {
         <div class="tb-tabs__scroll tb-tabs__scroll--end" hidden>
             <TbIconButton Icon="ScrollEndIcon" AriaLabel="@Localizer[TbStrings.TabsScrollEnd]" Size="Size"
-                          tabindex="-1" data-part="scroll-end" />
+                          Class="@Classes?.ScrollButton" tabindex="-1" data-part="scroll-end" />
         </div>
     }
     @* A tab list holds only tabs, so the add button follows it. *@
@@ -49,7 +49,7 @@
     {
         <div class="tb-tabs__actions">
             <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(AddLabel ?? Localizer[TbStrings.TabsAdd])" Size="Size"
-                          OnClick="() => OnAdd.InvokeAsync()" data-part="add" />
+                          OnClick="() => OnAdd.InvokeAsync()" Class="@Classes?.Add" data-part="add" />
         </div>
     }
     @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
@@ -156,6 +156,10 @@
     /// keys already bring each tab into view. A <see cref="Vertical"/> list has none.</summary>
     [Parameter]
     public bool ScrollButtons { get; set; }
+
+    /// <summary>Extra CSS classes for the tabs' inner parts.</summary>
+    [Parameter]
+    public TabsClasses? Classes { get; set; }
 
     /// <summary>The tab list's accessible name, when nothing nearby already names it.</summary>
     [Parameter]

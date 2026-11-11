@@ -5783,7 +5783,7 @@ public static class ExampleCatalog
             [
                 typeof(TbMenu), typeof(MenuTrigger), typeof(TbMenuItem), typeof(TbMenuCheckboxItem),
                 typeof(TbMenuRadioGroup<>), typeof(TbMenuRadioItem<>), typeof(TbMenuGroup), typeof(TbMenuSeparator),
-                typeof(TbSubMenu),
+                typeof(TbSubMenu), typeof(MenuClasses),
             ],
             Keyboard =
             [
@@ -5991,6 +5991,7 @@ public static class ExampleCatalog
             [
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
                 typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogDescription),
+                typeof(DialogClasses),
             ],
             Keyboard =
             [
@@ -6067,6 +6068,7 @@ public static class ExampleCatalog
             [
                 new("dialog", "The dialog window."),
                 new("header", "The title bar, with the title and the window buttons."),
+                new("title", "The dialog's title, in its header."),
                 new("icon", "The tone icon beside a confirmation dialog's message."),
                 new("move", "The Move menu: its button and its list of places for the dialog."),
                 new("minimize", "The button that minimizes the dialog."),
@@ -6583,7 +6585,7 @@ public static class ExampleCatalog
                     + "\"Add tab\" in English. Add a tab there, and select it to show it. The button stays at the row's "
                     + "end while the tabs scroll, and sits under them in a `Vertical` list.", typeof(TabsAddExample)),
             ],
-            Api = [typeof(TbTabs), typeof(TbTab)],
+            Api = [typeof(TbTabs), typeof(TbTab), typeof(TabsClasses)],
             Keyboard =
             [
                 new(["Left", "Right"], "Moves between tabs and selects the one reached, unless activation is manual. "
