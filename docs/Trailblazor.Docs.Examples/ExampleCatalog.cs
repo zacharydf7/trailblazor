@@ -4512,6 +4512,8 @@ public static class ExampleCatalog
             Notes =
             [
                 new("A press around the text box, such as on the field's padding, focuses it, unless it lands on a button."),
+                new("During a drag on the pad, the thumb follows the pointer at once, but `ValueChanged` is raised only a "
+                    + "few times a second, and once more when the drag ends."),
             ],
             Accessibility =
             [

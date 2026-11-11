@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Testing.Playwright;
 
@@ -223,6 +224,35 @@ public class ColorPickerPadTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
         await trigger.ClickAsync();
         return (page, ColorPickerTests.Picker(page).Locator("[data-part=pad]"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pad_ShouldReportADragAFewTimesASecondAndAtItsEnd_WhenThePointerMovesAcrossIt(string browser)
+    {
+        var (page, pad) = await OpenPadAsync(browser);
+        var box = (await pad.BoundingBoxAsync())!;
+        var changes = page.GetByTestId("changes");
+        var before = int.Parse(await changes.TextContentAsync() ?? "0");
+
+        // Moves about a frame apart, from the pad's left edge to its right; color-picker.js reports every 120 ms.
+        const int moves = 60, moveGap = 20, reportEvery = 120;
+        await page.Mouse.MoveAsync(box.X + 1, box.Y + box.Height / 2);
+        await page.Mouse.DownAsync();
+        var drag = Stopwatch.StartNew();
+        for (var step = 1; step <= moves; step++)
+        {
+            await page.Mouse.MoveAsync(box.X + 1 + (box.Width - 2) * step / moves, box.Y + box.Height / 2);
+            await page.WaitForTimeoutAsync(moveGap);
+        }
+
+        await page.Mouse.UpAsync();
+        drag.Stop();
+
+        await Expect(ColorPickerTests.Picker(page).GetByRole(AriaRole.Slider, new() { Name = "Saturation" }))
+            .ToHaveAttributeAsync("aria-valuetext", "100%");
+        // Several reports while dragging, one per interval at most, plus the one at the end.
+        Assert.InRange(int.Parse(await changes.TextContentAsync() ?? "0") - before, 4,
+            (int)(drag.ElapsedMilliseconds / reportEvery) + 2);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -1,6 +1,8 @@
-// The pad follows the pointer at once; the server hears the new saturation and brightness at most once a frame.
-// While dragging, the position goes on the thumb, whose style the server's renders never overwrite, until the server
-// has the final position.
+// The pad follows the pointer at once; the server hears the new saturation and brightness when the drag ends, and at
+// most every reportEvery milliseconds before then. While dragging, the position goes on the thumb, whose style the
+// server's renders never overwrite, until the server has the final position.
+const reportEvery = 120;
+
 export function createColorPad(pad, events) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!pad) {
@@ -8,12 +10,14 @@ export function createColorPad(pad, events) {
     }
 
     const thumb = pad.querySelector('.tb-color-picker__pad-thumb');
-    let frame = 0;
+    let timer = 0;
+    let reportedAt = -Infinity;
     let dragging = false;
     let latest = null;
 
     const report = () => {
-        frame = 0;
+        timer = 0;
+        reportedAt = performance.now();
         return events.invokeMethodAsync('OnPad', latest.x, 1 - latest.y);
     };
     const move = event => {
@@ -25,7 +29,7 @@ export function createColorPad(pad, events) {
         };
         thumb.style.setProperty('--tb-color-picker-x', latest.x);
         thumb.style.setProperty('--tb-color-picker-y', latest.y);
-        frame ||= requestAnimationFrame(report);
+        timer ||= setTimeout(report, Math.max(0, reportedAt + reportEvery - performance.now()));
     };
     const onPointerDown = event => {
         if (event.button !== 0) {
@@ -46,7 +50,7 @@ export function createColorPad(pad, events) {
         dragging = false;
         pad.releasePointerCapture(event.pointerId);
         pad.removeEventListener('pointermove', move);
-        cancelAnimationFrame(frame);
+        clearTimeout(timer);
         report().finally(() => {
             if (!dragging) {
                 thumb.style.removeProperty('--tb-color-picker-x');
@@ -62,7 +66,7 @@ export function createColorPad(pad, events) {
     pad.dataset.ready = '';
     return {
         dispose() {
-            cancelAnimationFrame(frame);
+            clearTimeout(timer);
             pad.removeEventListener('pointerdown', onPointerDown);
             pad.removeEventListener('pointerup', onPointerUp);
             pad.removeEventListener('pointercancel', onPointerUp);
