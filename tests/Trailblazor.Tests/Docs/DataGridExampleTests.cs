@@ -23,14 +23,12 @@ public class DataGridExampleTests : DocsTest
     }
 
     [Fact]
-    public void DataGridFilterExample_ShouldFilterAndCountTheRowsOnceTypingPauses_WhenFilterTextIsTyped()
+    public void DataGridFilterExample_ShouldFilterAndCountTheRows_WhenFilterTextIsTyped()
     {
         var announcer = Render<AnnouncerHost>();
         var cut = Render<DataGridFilterExample>();
 
         Input(cut.Find("table[aria-label=Hikes]"), "Filter Name").Input("ridge");
-        Assert.Equal(6, Names(cut, "Hikes").Count);
-        Time.Advance(TimeSpan.FromMilliseconds(300));
 
         cut.WaitForAssertion(() => Assert.Equal(["Eagle Ridge traverse"], Names(cut, "Hikes")));
         Assert.Equal("Filters: Name Contains ridge.", cut.Find("output").TextContent.Trim());

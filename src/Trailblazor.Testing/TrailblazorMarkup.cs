@@ -622,7 +622,7 @@ public sealed class TbGridDriver
             return;
         }
 
-        // A text filter updates as the user types, after a pause that committing the text cuts short.
+        // Send the text as an input and then as a change, the way typing and then pressing Enter would.
         await input.InputAsync(new ChangeEventArgs { Value = text });
         await input.ChangeAsync(new ChangeEventArgs { Value = text });
     }

@@ -26,7 +26,7 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 - [x] A reset that changes a field's value lets a validator inside the form check again, so its message clears when the value is good. `TbFormTests.Reset_ShouldLetAValidatorCheckAgain_WhenTheValueChanged`
 - [x] A reset that removes a later field doesn't fail. `TbFormTests.Reset_ShouldNotFail_WhenAnEarlierFieldsResetRemovesAnAutocomplete`
 - [x] A reset reads out nothing. `TbFormTests.Reset_ShouldReadOutNothing_WhenTheValueItGoesBackToWouldFail`
-- [x] A reset drops text a field is still holding: an autocomplete's unreadable text and a text field's input waiting out `UpdateDelay`. `TbFormTests.Reset_ShouldClearAnAutocompletesUnreadableText_WhenItsValueStaysTheSame`, `TbTextFieldTests.Reset_ShouldDropTextWaitingOutTheDelay_WhenTheFormResets`
+- [x] A reset drops text a field is still holding, such as an autocomplete's unreadable text. `TbFormTests.Reset_ShouldClearAnAutocompletesUnreadableText_WhenItsValueStaysTheSame`
 - [x] A reset clears a field's unreadable text and the message about it, from code too. `FormTests.Form_ShouldClearUnreadableText_WhenItsResetButtonIsPressed`, `TbFormTests.Reset_ShouldClearUnreadableDates_WhenCalledFromCode`
 - [x] A reset empties a file upload's picker and its rejections. `TbFormTests.Reset_ShouldEmptyAFileUploadsPickerAndItsRejections_WhenCalled`
 - [x] A reset marks the edit context unmodified. `TbFormTests.Reset_ShouldMarkTheFormUnmodified_WhenAFieldHadChanged`

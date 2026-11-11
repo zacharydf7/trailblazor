@@ -97,6 +97,17 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldSendOnlyTheTextTypedBeforeAPause_WhenGivenAnUpdateDelay(string browser)
+    {
+        var page = await OpenAsync(browser, "/delayed-search");
+
+        await page.GetByLabel("Filter").PressSequentiallyAsync("ridge");
+
+        await Expect(page.GetByTestId("filter-echo")).ToHaveTextAsync("ridge");
+        await Expect(page.GetByTestId("filter-changes")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldUpdateAtOnce_WhenEnterOrLeavingTheFieldEndsTheDelay(string browser)
     {
         var page = await OpenAsync(browser, "/delayed-search");

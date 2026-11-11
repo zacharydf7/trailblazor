@@ -89,14 +89,11 @@ public class DisposeContractTests : BunitContext
         return values;
     }
 
-    // Components whose timers or script callbacks only start with a setting get that setting: a text field set to
-    // update on input reports what's typed after a delay, a carousel set to turn and an overlay that closes on a click
-    // hand the browser a callback, and an autocomplete given a search waits before calling it, and each call is
-    // counted.
+    // Components whose timers or script callbacks only start with a setting get that setting: a carousel set to turn
+    // and an overlay that closes on a click hand the browser a callback, and an autocomplete given a search waits
+    // before calling it, and each call is counted.
     private Dictionary<string, object> Settings(Type component) => component switch
     {
-        _ when component == typeof(TbTextField<string>) =>
-            new() { ["UpdateOnInput"] = true, ["UpdateDelay"] = TimeSpan.FromSeconds(1) },
         _ when component == typeof(TbCarousel) => new() { ["AutoPlay"] = TimeSpan.FromSeconds(5) },
         _ when component == typeof(TbOverlay) => new() { ["CloseOnClick"] = true },
         _ when component == typeof(TbAutocomplete<string>) => new()

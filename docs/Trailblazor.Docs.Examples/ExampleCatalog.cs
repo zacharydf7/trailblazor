@@ -2962,7 +2962,9 @@ public static class ExampleCatalog
                 new("`@ref` the field and call `FocusAsync()` to move focus to it, or `SelectTextAsync()` to also select "
                     + "its text so typing replaces it."),
                 new("`Clearable` on a number needs a nullable type, such as `int?`."),
-                new("With `UpdateDelay`, Enter in a single-line field, or leaving the field, updates the value at once."),
+                new("With `UpdateDelay`, the browser waits for typing to pause, so the server hears nothing while the "
+                    + "user types. Enter in a single-line field, or leaving the field, updates the value at once. A "
+                    + "`Clearable` field's clear button follows the value, so it shows or goes once typing pauses."),
                 new("`MaxLines` needs a browser with CSS `field-sizing`."),
                 new("With a `Mask`, empty slots make the field invalid, the placeholder shows the pattern, and a pattern "
                     + "of digits brings up a number keyboard."),
@@ -2978,8 +2980,8 @@ public static class ExampleCatalog
                 new("clear", "The button that clears the text."),
             ],
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
-                + "`Expect`, which waits, or press Enter to update it at once. In bUnit, register a `FakeTimeProvider` "
-                + "as the `TimeProvider` and advance it past the delay.",
+                + "`Expect`, which waits, or press Enter to update it at once. In bUnit, which runs no browser, the "
+                + "value updates on each input, so there's nothing to wait for.",
         },
         new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
             "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")

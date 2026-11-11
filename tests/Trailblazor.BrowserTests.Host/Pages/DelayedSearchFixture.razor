@@ -1,10 +1,17 @@
 @page "/delayed-search"
 
-@* The delay outlasts any test, so a value that arrives came from Enter or leaving the field. *@
+@* The search's delay outlasts any test, so a value that arrives came from Enter or leaving the field. The filter's
+   delay outlasts the gap between quick keystrokes, so it updates once. *@
 <TbTextField Label="Search" @bind-Value="_search" UpdateOnInput UpdateDelay="TimeSpan.FromMinutes(1)" />
 <output data-testid="search-echo">@_search</output>
+<TbTextField Label="Filter" @bind-Value="_filter" @bind-Value:after="() => _filterChanges++" UpdateOnInput
+             UpdateDelay="TimeSpan.FromSeconds(1)" />
+<output data-testid="filter-echo">@_filter</output>
+<output data-testid="filter-changes">@_filterChanges</output>
 <button type="button">Next</button>
 
 @code {
     private string? _search;
+    private string? _filter;
+    private int _filterChanges;
 }

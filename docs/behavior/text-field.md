@@ -9,6 +9,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] Enter in a single-line field commits the text and submits its form. `FormTests.Form_ShouldSubmit_WhenEnterIsPressedInASingleLineField`
 - [x] Enter in a text area adds a line. `TbTextField.razor`
 - [x] Tab out of the field commits the text. `TextFieldTests.TextField_ShouldUpdateAtOnce_WhenEnterOrLeavingTheFieldEndsTheDelay`
+- [x] With `UpdateDelay`, quick typing sends the server only the text typed before the pause. `TextFieldTests.TextField_ShouldSendOnlyTheTextTypedBeforeAPause_WhenGivenAnUpdateDelay`
 - [x] Keystrokes aren't lost while updates are slow to come back. `TextFieldTests.TextField_ShouldKeepEveryKeystroke_WhenEachUpdateIsSlowToComeBack`
 - [x] Tab reaches the clear button, and Enter or Space presses it. `TbTextField.razor`
 - [x] In a mask, typing or deleting mid-text keeps the caret in place. `TextFieldTests.TextField_ShouldKeepTheCaretInPlace_WhenADigitIsTypedOrDeletedMidMask`

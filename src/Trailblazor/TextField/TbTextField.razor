@@ -1,18 +1,18 @@
 @namespace Trailblazor
+@using System.Globalization
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @typeparam TValue
 @inherits TbBoxedFieldBase<TValue>
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
-@inject TimeProvider Time
 
 @Layout(Classes, @<text>
     @if (Lines > 1)
     {
         <textarea @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-                  rows="@Lines" @bind:get="Shown" @bind:set="OnTextAsync" @bind:event="@BindEvent"
-                  @onchange="FlushOnChange" data-max-lines="@(Grows ? MaxLines : null)"
+                  rows="@Lines" @bind:get="Text" @bind:set="SetTextAsync" @bind:event="@BindEvent"
+                  @onchange="CommitOnChange" data-input-delay="@InputDelay" data-max-lines="@(Grows ? MaxLines : null)"
                   style="@(Grows ? $"--tb-text-field-lines: {Lines}; --tb-text-field-max-lines: {MaxLines}" : null)"
                   placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
                   aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
@@ -21,8 +21,9 @@
     else
     {
         <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-               type="@Type.ToString().ToLowerInvariant()" @bind:get="Shown" @bind:set="OnTextAsync"
-               @bind:event="@BindEvent" @onchange="FlushOnChange" placeholder="@(Placeholder ?? _mask?.Hint)"
+               type="@Type.ToString().ToLowerInvariant()" @bind:get="Text" @bind:set="SetTextAsync"
+               @bind:event="@BindEvent" @onchange="CommitOnChange" data-input-delay="@InputDelay"
+               placeholder="@(Placeholder ?? _mask?.Hint)"
                inputmode="@InputMode" disabled="@Disabled"
                readonly="@ReadOnly" aria-required="@AriaRequired"
                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
@@ -32,8 +33,6 @@
 
 @code {
     private ElementReference _input;
-    private ITimer? _delay;
-    private string? _typed;
     private TextMask? _mask;
     private IJSObjectReference? _maskHandle;
     private string? _maskAttached;
@@ -83,7 +82,8 @@
     public int? MaxLines { get; set; }
 
     /// <summary>With <see cref="UpdateOnInput"/>, waits until typing has paused this long before updating the value.
-    /// Enter in a single-line field, or leaving the field, updates it at once.</summary>
+    /// Enter in a single-line field, or leaving the field, updates it at once. The browser does the waiting, so the
+    /// server hears nothing until then.</summary>
     [Parameter]
     public TimeSpan? UpdateDelay { get; set; }
 
@@ -118,14 +118,17 @@
     private object? InputMode =>
         InputAttributes?.GetValueOrDefault("inputmode") ?? (_mask?.DigitsOnly == true ? "numeric" : null);
 
-    // Text still waiting out the delay shows as typed, so a render in the meantime doesn't undo it.
-    private string? Shown => _typed ?? Text;
+    // debounced-input.js holds keystrokes back in the browser until typing pauses this long, so the server hears one
+    // input per pause.
+    private string? InputDelay => UpdateOnInput && UpdateDelay is { } delay
+        ? delay.TotalMilliseconds.ToString(CultureInfo.InvariantCulture) : null;
 
-    // Change comes on Enter and on leaving the field; without a delay @bind already uses it, and nothing waits.
-    private EventCallback FlushOnChange => UpdateOnInput && UpdateDelay is not null
-        ? EventCallback.Factory.Create(this, FlushAsync) : default;
+    // Enter and leaving the field update it at once. In the browser, debounced-input.js has already sent the waiting
+    // text by then, so this matters where that script isn't running, as in bUnit tests that commit with a change.
+    private EventCallback<ChangeEventArgs> CommitOnChange => InputDelay is null ? default
+        : EventCallback.Factory.Create<ChangeEventArgs>(this, change => SetTextAsync(change.Value as string));
 
-    private RenderFragment? EndWithClear => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(Shown) ? End :
+    private RenderFragment? EndWithClear => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(Text) ? End :
         @<text>
             <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(ClearLabel ?? Localizer[TbStrings.TextFieldClear])"
                           aria-describedby="@ClearDescribedBy"
@@ -217,56 +220,8 @@
         return base.TryParse(IncludeMaskLiterals ? shown : slotted, out value, out error);
     }
 
-    private protected override Task OnResetAsync()
-    {
-        _delay?.Dispose();
-        _delay = null;
-        _typed = null;
-        return Task.CompletedTask;
-    }
-
-    private Task OnTextAsync(string? text)
-    {
-        if (!UpdateOnInput || UpdateDelay is not { } delay)
-        {
-            return SetTextAsync(text);
-        }
-
-        _typed = text;
-        _delay?.Dispose();
-        _delay = Time.CreateTimer(_ => InvokeAsync(FlushFromTimerAsync), null, delay, Timeout.InfiniteTimeSpan);
-        return Task.CompletedTask;
-    }
-
-    private async Task FlushAsync()
-    {
-        _delay?.Dispose();
-        _delay = null;
-        if (_typed is { } typed)
-        {
-            _typed = null;
-            await SetTextAsync(typed);
-        }
-    }
-
-    // Runs outside any event handler, so it renders the new messages and hands a failing callback to the renderer.
-    private async Task FlushFromTimerAsync()
-    {
-        try
-        {
-            await FlushAsync();
-            StateHasChanged();
-        }
-        catch (Exception exception)
-        {
-            await DispatchExceptionAsync(exception);
-        }
-    }
-
     private async Task ClearAsync()
     {
-        _delay?.Dispose();
-        _typed = null;
         await SetValueAsync(default);
         await _input.FocusAsync();
     }
@@ -277,7 +232,6 @@
         // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
         Dispose();
         _disposed = true;
-        _delay?.Dispose();
         return _maskHandle?.DisposeHandleAsync() ?? ValueTask.CompletedTask;
     }
 }

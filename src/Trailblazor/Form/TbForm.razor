@@ -191,8 +191,7 @@
     /// message from a validator inside the form stays too, unless the reset changes the field's value, in which case the
     /// validator checks the field again. A value the parent set in answer to an edit, such as a trimmed one, is the value
     /// the field goes back to. Text still being typed in a focused input isn't part of the reset: if the field's value
-    /// doesn't change, the text stays and becomes the value once it's committed. Input waiting out a text field's
-    /// <c>UpdateDelay</c> is dropped.</summary>
+    /// doesn't change, the text stays and becomes the value once it's committed.</summary>
     public async Task ResetAsync()
     {
         foreach (var field in _fields.ToList())
