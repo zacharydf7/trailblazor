@@ -243,4 +243,29 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(account).ToBeDisabledAsync();
         await Expect(page.Locator("[data-part=panel]:popover-open")).ToHaveCountAsync(0);
     }
+
+    // Closing the panel in the task that opened it merges the two toggle events into one that says it stayed closed.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldTellTheParentItClosed_WhenItClosesBeforeTheOpeningFromCodeIsReported(string browser)
+    {
+        var page = await OpenAsync(browser, "/popover");
+        await Expect(Trigger(page, "Notes")).ToHaveAttributeAsync("data-ready", "");
+        await page.EvaluateAsync("""
+            () => {
+                const show = HTMLElement.prototype.showPopover;
+                HTMLElement.prototype.showPopover = function (...options) {
+                    show.apply(this, options);
+                    this.hidePopover();
+                    window.openedFromCode = true;
+                };
+            }
+            """);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the notes" }).ClickAsync();
+        // The server renders the popover open before it asks the script to open it, so a "closed" after this can only
+        // come from the report.
+        await page.WaitForFunctionAsync("() => window.openedFromCode");
+
+        await Expect(page.GetByTestId("notes-open")).ToHaveTextAsync("closed");
+    }
 }

@@ -22,6 +22,8 @@ export function createMenu(root, menu, options, events) {
     const returnFocus = new Set();
     const openedByHover = new Set();
     const shown = new Set();
+    // Whether the server last knew the menu as open, from its own setOpen or from a toggle reported to it.
+    let reported = false;
     let focusLastOnOpen = false;
     let hovered = null;
     let hoverTimer = 0;
@@ -75,6 +77,13 @@ export function createMenu(root, menu, options, events) {
         }
 
         const open = event.newState === 'open';
+        // The server hears the menu, not its submenus, whenever it differs from what the server last knew: if code
+        // opens the menu and it closes before the toggle event runs, the browser fires one toggle that stays closed.
+        if (list === menu && open !== reported) {
+            reported = open;
+            events?.invokeMethodAsync('OnToggle', open);
+        }
+
         // The replay at attach and a toggle still queued from before it can both report one opening.
         if (open === shown.has(list)) {
             return;
@@ -87,10 +96,6 @@ export function createMenu(root, menu, options, events) {
         }
 
         opener(list).setAttribute('aria-expanded', String(open));
-        // The server hears the menu itself open and close, however it happened; its submenus aren't reported apart.
-        if (list === menu) {
-            events?.invokeMethodAsync('OnToggle', open);
-        }
 
         if (open) {
             // A submenu the pointer opened leaves focus where it was, as the pointer may only be passing through.
@@ -317,6 +322,7 @@ export function createMenu(root, menu, options, events) {
 
     return {
         setOpen(open) {
+            reported = open;
             if (open !== menu.matches(':popover-open')) {
                 menu.togglePopover(open);
             }

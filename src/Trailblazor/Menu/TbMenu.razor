@@ -298,8 +298,9 @@
         _handle = handle;
     }
 
-    // The script reports the menu opening or closing, by pointer, key or code. The menu is drawn again each time, so
-    // items that depend on state changed since the page last rendered, such as a file that finished loading, show it.
+    // The script reports the menu opening or closing by pointer or key, and a close that undoes an opening from code.
+    // The menu is drawn again each time, so items that depend on state changed since the page last rendered, such as
+    // a file that finished loading, show it.
     internal async Task OnToggleAsync(bool open)
     {
         if (open)

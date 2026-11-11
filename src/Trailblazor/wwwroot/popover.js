@@ -24,6 +24,8 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     let timer = 0;
     // The replay at attach and a toggle still queued from before it can both report one opening.
     let shown = false;
+    // Whether the server last knew the panel as open, from its own setOpen or from a toggle reported to it.
+    let reported = false;
 
     // A part marked data-tb-popover-focus, such as a date picker's calendar grid, takes focus instead of the first
     // tabbable control. It isn't autofocus, which a dialog or focus scope around a closed popover would look for.
@@ -45,6 +47,13 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     };
     const onToggle = event => {
         const open = event.newState === 'open';
+        // The server hears the panel whenever it differs from what the server last knew: if code opens the panel and
+        // it closes before the toggle event runs, the browser fires one toggle that stays closed.
+        if (open !== reported) {
+            reported = open;
+            dotNetReference?.invokeMethodAsync('OnToggle', open);
+        }
+
         if (open === shown) {
             return;
         }
@@ -63,8 +72,6 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
                 trigger.focus();
             }
         }
-
-        dotNetReference?.invokeMethodAsync('OnToggle', open);
     };
     // A click on the trigger of a panel the pointer opened keeps it open on purpose, instead of toggling it shut.
     const onTriggerClick = event => {
@@ -135,6 +142,7 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     trigger.dataset.ready = '';
     return {
         setOpen(open) {
+            reported = open;
             openedByHover = false;
             if (open && !panel.matches(':popover-open')) {
                 panel.showPopover();

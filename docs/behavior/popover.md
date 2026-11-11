@@ -40,6 +40,7 @@ Familiar apps: filter panels in Google Sheets and GitHub, Slack's profile cards
 
 - [x] A panel with no controls takes focus itself. `PopoverTests.Popover_ShouldStayOpenAndTakeFocus_WhenTheTriggerIsClickedAfterAHover`
 - [x] A panel clicked open before its script has loaded is placed and takes focus once it has, and an opening reported twice doesn't move focus a second time. `PopoverTests.Popover_ShouldPlaceItselfAndTakeFocus_WhenClickedBeforeItsScriptHasLoaded`, `PopoverTests.Popover_ShouldLeaveFocusWhereItIs_WhenAnOpeningIsReportedTwice`
+- [x] A panel opened from code and closed before its opening was reported still tells the parent it closed. `PopoverTests.Popover_ShouldTellTheParentItClosed_WhenItClosesBeforeTheOpeningFromCodeIsReported`
 - [x] A panel opened from code takes focus too. `PopoverTests.Popover_ShouldOpenFromAnIconTriggerAndFromCode_WhenAskedEitherWay`
 - [x] Closing returns focus to the trigger only if it was in the panel. `popover.js`
 - [x] Focus in a panel the pointer opened keeps it open after the pointer leaves. `PopoverTests.Popover_ShouldStayOpen_WhenTheUserWorksInAHoverOpenedPanelAndThePointerLeaves`

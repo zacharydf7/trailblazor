@@ -7,3 +7,14 @@
         <TbText>Open items haven't been shipped yet.</TbText>
     </TbPopover>
 </TbPopover>
+
+@* A popover the page opens from code, with the open state the page holds. *@
+<TbButton OnClick="() => _notes = true">Open the notes</TbButton>
+<TbPopover Label="Notes" @bind-Open="_notes">
+    <TbText>Bring water.</TbText>
+</TbPopover>
+<output data-testid="notes-open">@(_notes ? "open" : "closed")</output>
+
+@code {
+    private bool _notes;
+}

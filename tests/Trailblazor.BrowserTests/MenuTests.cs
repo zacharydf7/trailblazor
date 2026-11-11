@@ -1137,6 +1137,36 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().Menu("Report").ChooseAsync("Export");
     }
 
+    // Closing the menu in the task that opened it merges the two toggle events into one that says it stayed closed.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldTellTheParentItClosed_WhenItClosesBeforeTheOpeningFromCodeIsReported(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-open");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Report" })).ToHaveAttributeAsync("data-ready", "");
+        await page.EvaluateAsync("""
+            () => {
+                const toggle = HTMLElement.prototype.togglePopover;
+                HTMLElement.prototype.togglePopover = function (force) {
+                    const result = toggle.call(this, force);
+                    if (force === true) {
+                        this.hidePopover();
+                        window.openedFromCode = true;
+                    }
+
+                    return result;
+                };
+            }
+            """);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the tools" }).ClickAsync();
+        // The server renders the menu open before it asks the script to open it, so a "closed" after this can only come
+        // from the report.
+        await page.WaitForFunctionAsync("() => window.openedFromCode");
+
+        await Expect(page.GetByTestId("open")).ToHaveTextAsync("closed");
+        await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "Tools" })).ToBeHiddenAsync();
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldFinish_WhenTheChosenItemRemovesItsMenu(string browser)
     {
