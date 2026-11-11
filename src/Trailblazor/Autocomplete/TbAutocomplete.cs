@@ -69,9 +69,10 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     public int MinCharacters { get; set; }
 
-    /// <summary>The most suggestions the list shows.</summary>
+    /// <summary>The most suggestions the list shows. Defaults to 50, so a long <see cref="Items"/> list doesn't draw
+    /// every match; set it to null to show them all.</summary>
     [Parameter]
-    public int? MaxItems { get; set; }
+    public int? MaxItems { get; set; } = 50;
 
     /// <summary>Text shown while the field is empty. It is not a label.</summary>
     [Parameter]

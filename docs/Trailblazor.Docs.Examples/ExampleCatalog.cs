@@ -4230,8 +4230,8 @@ public static class ExampleCatalog
                     typeof(AutocompleteExample)),
                 new("items", "A fixed list", "`Items` is a list you already have, filtered by what someone types. A "
                     + "long suggestion widens the list.", typeof(AutocompleteItemsExample)),
-                new("many-items", "Many items", "A long list scrolls. Press Down to browse it, or type to narrow it "
-                    + "down.", typeof(AutocompleteManyExample)),
+                new("many-items", "Many items", "A long list scrolls. It shows the first 50 matches; type to narrow it "
+                    + "down, or set `MaxItems` to `null` to show them all.", typeof(AutocompleteManyExample)),
                 new("free-text", "Free text", "With `FreeText`, typed text that isn't a suggestion becomes the value, "
                     + "converted to the value's type. Without it, leaving the field puts back the chosen value's text.",
                     typeof(AutocompleteFreeTextExample)),
@@ -4241,7 +4241,8 @@ public static class ExampleCatalog
                     + "nothing. To see a failure, check the box and type again.",
                     typeof(AutocompleteStatesOfSearchExample)),
                 new("limits", "Minimum characters and maximum items", "`MinCharacters` sets how much someone must type "
-                    + "before suggestions show, and `MaxItems` caps how many the list shows.",
+                    + "before suggestions show, and `MaxItems` caps how many the list shows. It defaults to 50; set it to "
+                    + "`null` to show every match.",
                     typeof(AutocompleteLimitsExample)),
                 new("debounce", "Search delay", "`DebounceDelay` sets how long someone must stop typing before `Search` "
                     + "runs. It defaults to 200 milliseconds. Set it to zero to search immediately.",
@@ -4336,7 +4337,8 @@ public static class ExampleCatalog
                 + "search, and clicks the option by its name. With a `Search`, the browser waits out `DebounceDelay`, "
                 + "so in bUnit, which has no browser, `Search` runs and `OnTextChanged` fires on each input. Without a "
                 + "`Search`, `OnTextChanged` fires once `DebounceDelay` has passed on the app's `TimeProvider`, so advance a "
-                + "`FakeTimeProvider` past it, or set it to `TimeSpan.Zero`.",
+                + "`FakeTimeProvider` past it, or set it to `TimeSpan.Zero`. Only the first `MaxItems` matches, 50 by "
+                + "default, become options, so type enough to bring the one you want into the list.",
         },
         new("tag-input", "Tag input", ExampleCategory.Inputs,
             "A field where people type any number of short labels, such as a trail's features, each shown as a chip.")

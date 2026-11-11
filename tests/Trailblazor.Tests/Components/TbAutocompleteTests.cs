@@ -10,6 +10,8 @@ public class TbAutocompleteTests : BunitContext
 {
     private static readonly string[] Trails = ["Pine Hollow", "Eagle Ridge", "Cedar Flats", "Pine Bluff"];
 
+    private static readonly string[] Campsites = [.. Enumerable.Range(1, 60).Select(number => $"Site {number}")];
+
     private readonly FakeTimeProvider _time = new();
 
     public TbAutocompleteTests()
@@ -38,6 +40,28 @@ public class TbAutocompleteTests : BunitContext
         cut.Find("input").Input("pine");
 
         Assert.Equal(["Pine Hollow"], cut.FindAll("[role=option]").Select(option => option.TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Input_ShouldSuggestFiftyMatches_WhenMoreMatchAndMaxItemsIsNotSet()
+    {
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Campsite")
+            .Add(field => field.Items, Campsites));
+
+        cut.Find("input").Input("site");
+
+        Assert.Equal(50, cut.FindAll("[role=option]").Count);
+    }
+
+    [Fact]
+    public void Input_ShouldSuggestEveryMatch_WhenMaxItemsIsNull()
+    {
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Campsite")
+            .Add(field => field.Items, Campsites).Add(field => field.MaxItems, null));
+
+        cut.Find("input").Input("site");
+
+        Assert.Equal(Campsites.Length, cut.FindAll("[role=option]").Count);
     }
 
     [Fact]
