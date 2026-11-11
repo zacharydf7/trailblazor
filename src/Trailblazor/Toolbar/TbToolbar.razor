@@ -23,6 +23,7 @@
 @code {
     private readonly List<TbToolbarButton> _buttons = [];
     private IReadOnlyList<string> _overflowed = [];
+    private bool _attachedVertical;
     private ElementReference _toolbar;
     private ElementReference _more;
     private OverflowMenuItems? _menuItems;
@@ -40,7 +41,7 @@
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>Stacks the content and moves between the controls with Up and Down. A vertical toolbar never moves
-    /// buttons into the overflow menu, and only the first render's value decides that.</summary>
+    /// buttons into the overflow menu.</summary>
     [Parameter]
     public bool Vertical { get; set; }
 
@@ -77,13 +78,24 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        // When Vertical changes, moved buttons return to the toolbar before the script attaches again.
+        if (!firstRender && (_handle is null || _attachedVertical == Vertical))
         {
             return;
         }
 
         try
         {
+            if (_handle is not null)
+            {
+                // Taken out first, so a render during the awaits neither disposes it twice nor skips the new one.
+                var old = _handle;
+                _handle = null;
+                await old.DisposeHandleAsync();
+                _overflow?.Dispose();
+                OnOverflow([]);
+            }
+
             var module = await Modules.ImportAsync("./_content/Trailblazor/toolbar.js");
             if (_disposed)
             {
@@ -91,6 +103,7 @@
             }
 
             _overflow = DotNetObjectReference.Create(new ToolbarOverflow(OnOverflow));
+            _attachedVertical = Vertical;
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachToolbar", _toolbar,
                 Vertical ? null : _more, _overflow);
             if (handle is not null && _disposed)
@@ -100,6 +113,10 @@
             }
 
             _handle = handle;
+            if (_attachedVertical != Vertical)
+            {
+                StateHasChanged();
+            }
         }
         catch (JSDisconnectedException)
         {

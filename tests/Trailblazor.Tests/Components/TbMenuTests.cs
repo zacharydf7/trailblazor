@@ -457,4 +457,38 @@ public class TbMenuTests : BunitContext
 
         Assert.Equal("separator", cut.Find(".tb-menu__separator").GetAttribute("role"));
     }
+
+    [Fact]
+    public void Placement_ShouldAttachTheScriptAgainWithTheNewOptions_WhenPlacementOrAlignChanges()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/menu.js");
+        module.SetupModule("createMenu", _ => true).Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        cut.Render(parameters => parameters.Add(menu => menu.Placement, Placement.Top));
+        cut.Render(parameters => parameters.Add(menu => menu.Placement, Placement.Top));
+        cut.Render(parameters => parameters.Add(menu => menu.Align, PlacementAlign.End));
+
+        var calls = module.Invocations["createMenu"];
+        Assert.Equal(3, calls.Count);
+        Assert.Equal(AnchorSide.Top, ((AnchoredPositionOptions)calls[1].Arguments[2]!).Side);
+        Assert.Equal(Anchors.Align(PlacementAlign.End), ((AnchoredPositionOptions)calls[2].Arguments[2]!).Align);
+    }
+
+    [Fact]
+    public void Placement_ShouldOpenTheMenuAgain_WhenItChangesWhileOpen()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/menu.js");
+        var handle = module.SetupModule("createMenu", _ => true);
+        handle.Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Open, true)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+
+        cut.Render(parameters => parameters.Add(menu => menu.Placement, Placement.Top));
+
+        Assert.Equal(2, module.Invocations["createMenu"].Count);
+        Assert.Equal([true, true], handle.Invocations["setOpen"].Select(call => (bool)call.Arguments[0]!));
+    }
 }

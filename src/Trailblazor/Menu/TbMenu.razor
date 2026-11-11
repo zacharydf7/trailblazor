@@ -42,6 +42,8 @@
     private IJSObjectReference? _handle;
     private bool _disposed;
     private ControlTelemetry? _telemetry;
+    // What the script was attached with, so a change attaches it again.
+    private (Placement, PlacementAlign) _attachedWith;
     private DotNetObjectReference<MenuEvents>? _events;
     private bool _open;
     private bool _lastOpen;
@@ -88,13 +90,13 @@
     [Parameter]
     public Size Size { get; set; } = Size.Medium;
 
-    /// <summary>Which side of the trigger the menu opens on, read on the first render. It flips to the other side
+    /// <summary>Which side of the trigger the menu opens on. It flips to the other side
     /// when there's no room. Placed to the side in a narrow window, it wraps to fit or else overlaps the trigger.
     /// Defaults to <see cref="Placement.Bottom"/>.</summary>
     [Parameter]
     public Placement Placement { get; set; } = Placement.Bottom;
 
-    /// <summary>How the menu lines up with the trigger along that side, read on the first render. Defaults to
+    /// <summary>How the menu lines up with the trigger along that side. Defaults to
     /// <see cref="PlacementAlign.Start"/>.</summary>
     [Parameter]
     public PlacementAlign Align { get; set; } = PlacementAlign.Start;
@@ -123,7 +125,7 @@
 
     /// <summary>A label the menu's use is counted under, such as <c>"row-actions"</c>, through the <c>Trailblazor</c>
     /// meter: shown when it first renders, and used each time it opens, by pointer or key, which is how often its items
-    /// are seen. It names what the menu does, never the user. Read on the first render.</summary>
+    /// are seen. It names what the menu does, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -239,6 +241,17 @@
                 _attaching = true;
                 await AttachAsync();
             }
+            else if (_handle is not null && _attachedWith != (Placement, Align))
+            {
+                // Taken out first, so a render during the awaits neither disposes it twice nor skips the new one.
+                var old = _handle;
+                _handle = null;
+                await old.DisposeHandleAsync();
+                _events?.Dispose();
+                await AttachAsync();
+                // A menu that was open opens again through the new script.
+                _openFromParent = _open;
+            }
 
             if (_handle is not null && _openFromParent)
             {
@@ -283,6 +296,7 @@
             Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 4,
         };
         _events = DotNetObjectReference.Create(new MenuEvents(OnToggleAsync));
+        _attachedWith = (Placement, Align);
         var handle = await module.InvokeAsync<IJSObjectReference?>("createMenu", _root, _menu, options, _events);
         if (handle is null)
         {
@@ -296,6 +310,11 @@
         }
 
         _handle = handle;
+        // An option that changed during the awaits takes effect on the next render.
+        if (_attachedWith != (Placement, Align))
+        {
+            StateHasChanged();
+        }
     }
 
     // The script reports the menu opening or closing by pointer or key, and a close that undoes an opening from code.

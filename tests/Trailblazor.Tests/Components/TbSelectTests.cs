@@ -846,4 +846,38 @@ public class TbSelectTests : BunitContext
             builder.CloseComponent();
         }
     }
+
+    [Fact]
+    public void Filterable_ShouldAttachTheScriptAgainToTheNewList_WhenItChanges()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/select.js");
+        module.SetupModule("createSelect", _ => true).Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.Items, ["Ridge loop", "Lake shore"]));
+
+        cut.Render(parameters => parameters.Add(select => select.Filterable, true));
+        cut.Render(parameters => parameters.Add(select => select.Filterable, true));
+        Assert.Equal(2, module.Invocations["createSelect"].Count);
+        Assert.Single(cut.FindAll("[data-part=filter]"));
+        cut.Render(parameters => parameters.Add(select => select.Filterable, false));
+
+        Assert.Equal(3, module.Invocations["createSelect"].Count);
+        Assert.Empty(cut.FindAll("[data-part=filter]"));
+    }
+
+    [Fact]
+    public void Filterable_ShouldOpenTheListAgain_WhenItChangesWhileOpen()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/select.js");
+        var handle = module.SetupModule("createSelect", _ => true);
+        handle.Setup<bool>("setOpen", _ => true).SetResult(true);
+        handle.Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.Items, ["Ridge loop", "Lake shore"]).Add(select => select.Open, true));
+
+        cut.Render(parameters => parameters.Add(select => select.Filterable, true));
+
+        Assert.Equal(2, module.Invocations["createSelect"].Count);
+        Assert.Equal([true, true], handle.Invocations["setOpen"].Select(call => (bool)call.Arguments[0]!));
+    }
 }

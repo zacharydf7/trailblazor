@@ -499,6 +499,8 @@ export function createSelect(combobox, listbox, toggle) {
             return isOpen();
         },
         dispose() {
+            // Cleared so tests can wait for a script attached in its place to mark it ready again.
+            delete combobox.dataset.ready;
             close();
             position?.dispose();
             observer?.disconnect();

@@ -212,4 +212,27 @@ public class TbToolbarTests : BunitContext
             builder.CloseComponent();
         }
     }
+
+    [Fact]
+    public async Task Vertical_ShouldAttachAgainWithoutAndThenWithOverflow_WhenItTurnsOnAndOff()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/toolbar.js");
+        module.SetupModule("attachToolbar", _ => true).Mode = JSRuntimeMode.Loose;
+        var cut = RenderToolbar();
+        var overflow =
+            (DotNetObjectReference<ToolbarOverflow>)module.Invocations["attachToolbar"].Single().Arguments[2]!;
+        var delete = cut.Find("button.tb-button--text:not(.tb-icon-button)").GetAttribute("data-toolbar-item")!;
+        await cut.InvokeAsync(() => overflow.Value.OnOverflow([delete]));
+        Assert.Single(cut.FindAll("[role=menuitem]"));
+
+        cut.Render(parameters => parameters.Add(toolbar => toolbar.Vertical, true));
+        cut.Render(parameters => parameters.Add(toolbar => toolbar.Vertical, false));
+
+        var calls = module.Invocations["attachToolbar"];
+        Assert.Equal(3, calls.Count);
+        Assert.Null(calls[1].Arguments[1]);
+        Assert.NotNull(calls[2].Arguments[1]);
+        // The button the old script moved is back, so the new menu starts empty.
+        Assert.Empty(cut.FindAll("[role=menuitem]"));
+    }
 }

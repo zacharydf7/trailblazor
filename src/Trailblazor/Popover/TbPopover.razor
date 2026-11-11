@@ -44,6 +44,8 @@
     private IJSObjectReference? _handle;
     private DotNetObjectReference<PopoverEvents>? _reference;
     private bool _lastOpen;
+    // What the script was attached with, so a change attaches it again.
+    private (Placement, PlacementAlign, bool) _attachedWith;
     private bool _attaching;
     private bool _disposed;
 
@@ -79,19 +81,19 @@
     [Parameter]
     public string? Title { get; set; }
 
-    /// <summary>Which side of the trigger the panel opens on, read on the first render. It flips to the other side
+    /// <summary>Which side of the trigger the panel opens on. It flips to the other side
     /// when there's no room. Placed to the side in a narrow window, it wraps to fit or else overlaps the trigger.
     /// Defaults to <see cref="Placement.Bottom"/>.</summary>
     [Parameter]
     public Placement Placement { get; set; } = Placement.Bottom;
 
-    /// <summary>How the panel lines up with the trigger along that side, read on the first render. Defaults to
+    /// <summary>How the panel lines up with the trigger along that side. Defaults to
     /// <see cref="PlacementAlign.Start"/>.</summary>
     [Parameter]
     public PlacementAlign Align { get; set; } = PlacementAlign.Start;
 
     /// <summary>Also opens the panel when the pointer rests on the trigger, and closes it a moment after the pointer
-    /// leaves both. Clicks and the keyboard still open it. Read on the first render.</summary>
+    /// leaves both. Clicks and the keyboard still open it.</summary>
     [Parameter]
     public bool OpenOnHover { get; set; }
 
@@ -214,6 +216,22 @@
                 _attaching = true;
                 await AttachAsync();
             }
+            else if (_handle is not null && _attachedWith != (Placement, Align, OpenOnHover))
+            {
+                // Taken out first, so a render during the awaits neither disposes it twice nor skips the new one.
+                var old = _handle;
+                _handle = null;
+                // The new script would inherit a panel left open, so a close from the parent goes to the old one first.
+                if (Open != _lastOpen)
+                {
+                    _lastOpen = Open;
+                    await old.InvokeVoidAsync("setOpen", Open);
+                }
+
+                await old.DisposeHandleAsync();
+                _reference?.Dispose();
+                await AttachAsync();
+            }
             else if (_handle is not null && Open != _lastOpen)
             {
                 _lastOpen = Open;
@@ -258,6 +276,7 @@
         {
             Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 8,
         };
+        _attachedWith = (Placement, Align, OpenOnHover);
         var handle = await module.InvokeAsync<IJSObjectReference?>("createPopover", _root, _panel, options,
             OpenOnHover, _reference);
         if (handle is null)
@@ -276,6 +295,12 @@
         {
             _lastOpen = true;
             await _handle.InvokeVoidAsync("setOpen", true);
+        }
+
+        // An option or Open that changed during the awaits takes effect on the next render.
+        if (_attachedWith != (Placement, Align, OpenOnHover) || Open != _lastOpen)
+        {
+            StateHasChanged();
         }
     }
 

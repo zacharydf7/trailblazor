@@ -1,0 +1,29 @@
+@page "/live-options"
+
+@* Options a script reads as it attaches, switched after the page is interactive. *@
+<TbSwitch Label="Filter the trails" @bind-Value="_filterable" />
+<TbSelect TValue="string" Label="Trail" Items="Trails" Filterable="_filterable" @bind-Value="_trail" />
+<output aria-label="Trail chosen">@_trail</output>
+
+<TbSwitch Label="Open above" @bind-Value="_above" />
+<div style="margin-block: 12rem">
+    <TbPopover Label="Details" Placement="@(_above ? Placement.Top : Placement.Bottom)">Trail details</TbPopover>
+</div>
+
+<TbSwitch Label="Stand the toolbar up" @bind-Value="_vertical" />
+<div style="inline-size: 9rem">
+    <TbToolbar AriaLabel="Notes" Vertical="_vertical">
+        <TbToolbarButton Label="Bold" />
+        <TbToolbarButton Label="Italic" />
+        <TbToolbarButton Label="Underline" />
+        <TbToolbarButton Label="Strikethrough" />
+    </TbToolbar>
+</div>
+
+@code {
+    private bool _vertical;
+    private static readonly string[] Trails = ["Cedar flats", "Lake shore", "Pine hollow", "Ridge loop"];
+    private bool _filterable;
+    private string? _trail;
+    private bool _above;
+}

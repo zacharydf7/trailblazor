@@ -27,6 +27,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 
 ## Pointer
 
+- [x] A `Placement` or `Align` changed after the page is interactive takes effect, since the script attaches again with it. `TbMenuTests.Placement_ShouldAttachTheScriptAgainWithTheNewOptions_WhenPlacementOrAlignChanges`, `TbMenuTests.Placement_ShouldOpenTheMenuAgain_WhenItChangesWhileOpen`
 - [x] A click on the trigger opens the menu with its first item focused. `MenuTests.Menu_ShouldOpenWithTheFirstItemFocused_WhenTheTriggerIsClicked`
 - [x] A second click on the trigger, or a click outside, closes it. `TbMenu.razor`
 - [x] A click on an item runs it and closes every open list. `MenuTests.SubMenu_ShouldRunTheItemAndCloseEveryMenu_WhenOneOfItsItemsIsChosen`

@@ -1,3 +1,4 @@
+using Microsoft.JSInterop;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Trailblazor.Primitives;
@@ -215,5 +216,44 @@ public class TbPopoverTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(false));
 
         Assert.Equal([true, false], states);
+    }
+
+    [Fact]
+    public void Placement_ShouldAttachTheScriptAgainWithTheNewOptions_WhenPlacementAlignOrOpenOnHoverChanges()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/popover.js");
+        module.SetupModule("createPopover", _ => true).Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .AddChildContent("Options"));
+
+        cut.Render(parameters => parameters.Add(popover => popover.Placement, Placement.Top));
+        cut.Render(parameters => parameters.Add(popover => popover.Placement, Placement.Top));
+        cut.Render(parameters => parameters.Add(popover => popover.Align, PlacementAlign.End));
+        cut.Render(parameters => parameters.Add(popover => popover.OpenOnHover, true));
+
+        var calls = module.Invocations["createPopover"];
+        Assert.Equal(4, calls.Count);
+        Assert.Equal(AnchorSide.Top, ((AnchoredPositionOptions)calls[1].Arguments[2]!).Side);
+        Assert.Equal(Anchors.Align(PlacementAlign.End), ((AnchoredPositionOptions)calls[2].Arguments[2]!).Align);
+        Assert.Equal(true, calls[3].Arguments[3]);
+    }
+
+    [Fact]
+    public void Placement_ShouldCloseThePanelFirst_WhenTheParentClosesItAlongWithAPlacementChange()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/popover.js");
+        var handle = module.SetupModule("createPopover", _ => true);
+        handle.Mode = JSRuntimeMode.Loose;
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.Open, true).Add(popover => popover.OpenChanged, (bool _) => { })
+            .AddChildContent("Options"));
+
+        cut.Render(parameters => parameters.Add(popover => popover.Open, false)
+            .Add(popover => popover.Placement, Placement.Top));
+
+        var calls = handle.Invocations.Select(call => (call.Identifier, call.Arguments.FirstOrDefault())).ToList();
+        var closed = calls.IndexOf(("setOpen", false));
+        Assert.True(closed >= 0, "The parent's close didn't reach the script.");
+        Assert.True(closed < calls.IndexOf(("dispose", null)), "The old script was disposed before it closed.");
     }
 }

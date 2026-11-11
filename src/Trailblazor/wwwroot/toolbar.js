@@ -88,11 +88,15 @@ export function attachToolbar(toolbar, more, overflow) {
     toolbar.dataset.ready = '';
 
     return {
+        // Moved buttons come back, so a script attached in its place starts from the toolbar as rendered.
         dispose() {
             cancelAnimationFrame(frame);
             resizes.disconnect();
             changes.disconnect();
             focus.dispose();
+            toolbar.querySelectorAll('[data-overflowed]').forEach(item => item.removeAttribute('data-overflowed'));
+            more?.removeAttribute('data-shown');
+            delete toolbar.dataset.ready;
         },
     };
 }

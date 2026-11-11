@@ -331,6 +331,8 @@ export function createMenu(root, menu, options, events) {
             }
         },
         dispose() {
+            // Cleared so tests can wait for a script attached in its place to mark it ready again.
+            delete trigger.dataset.ready;
             // Closing the menu closes any submenu open inside it.
             if (menu.matches(':popover-open')) {
                 menu.hidePopover();

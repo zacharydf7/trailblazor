@@ -17,6 +17,7 @@ Familiar apps: filter panels in Google Sheets and GitHub, Slack's profile cards
 
 ## Pointer
 
+- [x] A `Placement`, `Align` or `OpenOnHover` changed after the page is interactive takes effect, since the script attaches again with it. `LiveOptionsTests.Popover_ShouldOpenOnItsNewSide_WhenPlacementChangesLater`, `TbPopoverTests.Placement_ShouldAttachTheScriptAgainWithTheNewOptions_WhenPlacementAlignOrOpenOnHoverChanges`, `TbPopoverTests.Placement_ShouldCloseThePanelFirst_WhenTheParentClosesItAlongWithAPlacementChange`
 - [x] A click on the trigger opens the panel, and a second click closes it. `TbPopover.razor`
 - [x] A click elsewhere closes the panel. `PopoverTests.Popover_ShouldCloseFromCodeAndOnAClickElsewhere_WhenItsOpenIsBound`
 - [x] A click in the panel keeps it open. `PopoverTests.Popover_ShouldStayOpen_WhenTheUserWorksInAHoverOpenedPanelAndThePointerLeaves`

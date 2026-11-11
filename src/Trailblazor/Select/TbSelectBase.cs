@@ -35,6 +35,8 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     private bool _lastOpen;
     private bool _openFromParent;
     private bool _attaching;
+    // Whether the script was attached to a filtered select, whose list sits in another element.
+    private bool _attachedFiltered;
     private bool _disposed;
 
     /// <summary>The <see cref="TbOption{TValue}"/>s to choose from.</summary>
@@ -63,7 +65,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
 
     /// <summary>Puts a text box above the options that narrows them to those containing what is typed, for long
     /// lists. The options are all on the page; to search a server as the user types, use
-    /// <see cref="TbAutocomplete{TValue}"/>. Read on the first render.</summary>
+    /// <see cref="TbAutocomplete{TValue}"/>.</summary>
     [Parameter]
     public bool Filterable { get; set; }
 
@@ -184,6 +186,17 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
                 _attaching = true;
                 await AttachAsync();
             }
+            else if (_handle is not null && _attachedFiltered != Filterable)
+            {
+                // Taken out first, so a render during the awaits neither disposes it twice nor skips the new one.
+                var old = _handle;
+                _handle = null;
+                await old.DisposeHandleAsync();
+                _toggle?.Dispose();
+                await AttachAsync();
+                // A list that was open opens again through the new script.
+                _openFromParent = _open;
+            }
 
             if (_handle is not null && _openFromParent)
             {
@@ -238,6 +251,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
 
         _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync, OnFilterAsync,
             OnFindAsync));
+        _attachedFiltered = Filterable;
         var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox, _toggle);
         if (handle is null)
         {
@@ -251,6 +265,11 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
         }
 
         _handle = handle;
+        // A Filterable that changed during the awaits takes effect on the next render.
+        if (_attachedFiltered != Filterable)
+        {
+            StateHasChanged();
+        }
     }
 
     bool ISelect.IsSelected(object? value) => IsChosen(value);

@@ -26,6 +26,7 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 
 ## Pointer
 
+- [x] A toolbar made `Vertical` after the page is interactive brings its moved buttons back and stops moving them, and one made horizontal again starts moving them. `LiveOptionsTests.Toolbar_ShouldShowItsMovedButtonsAndThenMoveThemAgain_WhenItTurnsVerticalAndBack`, `TbToolbarTests.Vertical_ShouldAttachAgainWithoutAndThenWithOverflow_WhenItTurnsOnAndOff`
 - [x] A click on a toolbar button runs `OnClick`. `TbToolbarButton.razor`
 - [x] When it narrows, the last buttons move into the More menu, still work, and move back when it widens. `ToolbarTests.Toolbar_ShouldMoveButtonsIntoTheMoreMenuAndBack_WhenItNarrowsAndWidens`
 - [x] The More menu keeps each button's icon, disabled state and order. `TbToolbarTests.Overflow_ShouldGiveTheMenuItemsTheButtonsIconsAndStateInTheOrderReported_WhenButtonsMove`

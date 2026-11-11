@@ -160,6 +160,8 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
             }
         },
         dispose() {
+            // Cleared so tests can wait for a script attached in its place to mark it ready again.
+            delete trigger.dataset.ready;
             clearTimeout(timer);
             position?.dispose();
             panel.removeEventListener('beforetoggle', onBeforeToggle);
