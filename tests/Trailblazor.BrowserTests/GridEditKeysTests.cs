@@ -80,6 +80,8 @@ public class GridEditKeysTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("h");
         await Expect(choice.GetByRole(AriaRole.Combobox)).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Escape");
+        // Focus comes back to the cell only after the server hears the render landed, which a slow link delays.
+        await Expect(choice).ToBeFocusedAsync();
         await Expect(choice).ToHaveTextAsync("Easy");
 
         await yesNo.ClickAsync();
