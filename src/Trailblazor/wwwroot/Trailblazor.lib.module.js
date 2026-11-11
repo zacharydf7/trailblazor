@@ -15,6 +15,17 @@ import './tooltip.js';
 import './throttled-input.js';
 import './debounced-input.js';
 import { measurePageScrollbar } from './page-scroll.js';
+// Every module that another one imports loads here too, so a component's module finds its imports already loaded.
+import '../Trailblazor.Primitives/anchored-position.js';
+import '../Trailblazor.Primitives/focus-scope.js';
+import '../Trailblazor.Primitives/pointer-drag.js';
+import '../Trailblazor.Primitives/roving-focus.js';
+import './browser.js';
+import './date-grid.js';
+import './field.js';
+import './inert.js';
+import './typeahead.js';
+import './unnamed-options.js';
 
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.
 export function afterWebStarted(blazor) {

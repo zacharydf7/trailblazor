@@ -60,6 +60,11 @@
         </TbText>
         <CodeBlock Label="App.razor" Code="@App" />
         <TbText>
+            Keep the <code>&lt;ImportMap /&gt;</code> that the Blazor Web App template puts in the head. It points each
+            of Trailblazor's scripts at an address that changes only when the script does, so the browser keeps them
+            until the package changes instead of checking each one on every visit.
+        </TbText>
+        <TbText>
             A standalone WebAssembly app links the stylesheet in its index.html instead, and copies the theme script as
             <a href="guides/theming#light-and-dark">the theming guide</a> shows.
         </TbText>
@@ -224,6 +229,7 @@
             <base href="/" />
             <TbStyles />
             <TbThemeHead />
+            <ImportMap />
             <HeadOutlet @rendermode="InteractiveServer" />
         </head>
 

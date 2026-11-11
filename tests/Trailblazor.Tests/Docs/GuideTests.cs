@@ -86,6 +86,7 @@ public class GuideTests : DocsTest
 
         Assert.Contains("<!DOCTYPE html>", app);
         Assert.Contains("<TbThemeHead />", app);
+        Assert.Contains("<ImportMap />", app);
         Assert.Contains("<Routes @rendermode=", app);
         var next = cut.Find("#next-steps").ParentElement!.ParentElement!.QuerySelectorAll("a");
         Assert.Superset(new HashSet<string?> { "guides/theming", "guides/forms", "guides/testing", "guides/accessibility" },
