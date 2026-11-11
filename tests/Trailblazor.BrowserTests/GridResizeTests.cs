@@ -10,12 +10,14 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     internal static async Task<IPage> ReadyAsync(IPage page)
     {
-        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = Table(page) }))
-            .ToHaveAttributeAsync("data-ready", "");
+        await Expect(Grid(page)).ToHaveAttributeAsync("data-ready", "");
         return page;
     }
 
     internal static ILocator Table(IPage page) => page.GetByRole(AriaRole.Table, new() { Name = "Trail widths" });
+
+    // The examples and docs pages hold other grids, whose column menus use the same button and item names.
+    internal static ILocator Grid(IPage page) => page.Locator("[data-part=grid]").Filter(new() { Has = Table(page) });
 
     internal static ILocator Header(IPage page, string column) => Table(page).Locator($"th[data-column={column}]");
 
@@ -24,8 +26,7 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static async Task ChooseAsync(IPage page, string column, string item)
     {
-        await page.GetByRole(AriaRole.Button, new() { Name = $"Options for {column}", Exact = true }).ClickAsync();
-        await page.GetByRole(AriaRole.Menuitem, new() { Name = item }).ClickAsync();
+        await Grid(page).Tb().Menu($"Options for {column}").ChooseAsync(item);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -49,11 +50,12 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
         string browser)
     {
         var page = await OpenResizeAsync(browser);
-        var menu = page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true });
+        var menu = Grid(page).GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true });
         await menu.FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await Expect(Grid(page).GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" }))
+            .ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
         await page.Keyboard.PressAsync("Enter");
 
@@ -82,12 +84,12 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Chooser_ShouldKeepTheWidthsFixed_WhenAColumnHiddenBeforeTheFirstResizeIsShown(string browser)
     {
         var page = await OpenResizeAsync(browser);
-        await page.Tb().Menu("Columns").ChooseAsync("Region");
+        await Grid(page).Tb().Menu("Columns").ChooseAsync("Region");
         await Expect(Header(page, "Region")).ToHaveCountAsync(0);
         await ChooseAsync(page, "Name", "Make Name wider");
         await Expect(Table(page)).ToHaveClassAsync(new Regex("tb-data-grid__table--fixed"));
 
-        await page.Tb().Menu("Columns").ChooseAsync("Region");
+        await Grid(page).Tb().Menu("Columns").ChooseAsync("Region");
 
         await Expect(page.GetByLabel("Column widths")).ToContainTextAsync("Region");
         await Expect(Table(page)).ToHaveClassAsync(new Regex("tb-data-grid__table--fixed"));
@@ -95,17 +97,19 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static async Task HideRegionWithTheKeysAsync(IPage page)
     {
-        await page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true }).FocusAsync();
+        await Grid(page).GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true }).FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await Expect(Grid(page).GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" }))
+            .ToBeFocusedAsync();
         await page.Keyboard.PressAsync("End");
-        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Hide Region" })).ToBeFocusedAsync();
+        await Expect(Grid(page).GetByRole(AriaRole.Menuitem, new() { Name = "Hide Region" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(page.GetByLabel("Hidden columns")).ToHaveTextAsync("Region");
         await Expect(Header(page, "Region")).ToHaveCountAsync(0);
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Columns", Exact = true })).ToBeFocusedAsync();
+        await Expect(Grid(page).GetByRole(AriaRole.Button, new() { Name = "Columns", Exact = true }))
+            .ToBeFocusedAsync();
     }
 
     // WebAssembly renders before the menu's own focus return runs, unlike a server circuit.
@@ -113,11 +117,12 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task ColumnMenu_ShouldKeepFocusOnTheMovedColumnsMenu_WhenItRunsInWebAssembly(string browser)
     {
         var page = await ReadyAsync(await OpenDocsAsync(browser, "components/data-grid"));
-        var menu = page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true });
+        var menu = Grid(page).GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true });
         await menu.FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await Expect(Grid(page).GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" }))
+            .ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
         await page.Keyboard.PressAsync("Enter");
 
@@ -161,13 +166,14 @@ public class GridResizeTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenResizeAsync(browser);
         var region = Header(page, "Region");
         var before = await WidthAsync(region);
-        await page.GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true }).FocusAsync();
+        await Grid(page).GetByRole(AriaRole.Button, new() { Name = "Options for Region", Exact = true }).FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" })).ToBeFocusedAsync();
+        await Expect(Grid(page).GetByRole(AriaRole.Menuitem, new() { Name = "Move Region earlier" }))
+            .ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
         await page.Keyboard.PressAsync("ArrowDown");
-        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Make Region wider" })).ToBeFocusedAsync();
+        await Expect(Grid(page).GetByRole(AriaRole.Menuitem, new() { Name = "Make Region wider" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(page.GetByLabel("Column widths")).ToContainTextAsync("Region");
@@ -233,12 +239,13 @@ public class GridResizeDragTests(BrowserFixture fixture) : BrowserTest(fixture)
         var header = GridResizeTests.Header(page, key);
         await page.Tb().Grid("Trail widths").ResizeColumnAsync(heading, 20);
         await Expect(header).ToHaveAttributeAsync("data-width", "128");
-        var menu = page.GetByRole(AriaRole.Button, new() { Name = $"Options for {heading}", Exact = true });
+        var grid = GridResizeTests.Grid(page);
+        var menu = grid.GetByRole(AriaRole.Button, new() { Name = $"Options for {heading}", Exact = true });
         Assert.True(await header.EvaluateAsync<bool>("(header, button) => button.getBoundingClientRect().right"
             + " <= header.getBoundingClientRect().right", await menu.ElementHandleAsync()));
 
         await menu.ClickAsync();
-        await page.GetByRole(AriaRole.Menuitem, new() { Name = $"Make {heading} wider" }).ClickAsync();
+        await grid.GetByRole(AriaRole.Menuitem, new() { Name = $"Make {heading} wider" }).ClickAsync();
 
         await Expect(header).ToHaveAttributeAsync("data-width", "160");
     }
