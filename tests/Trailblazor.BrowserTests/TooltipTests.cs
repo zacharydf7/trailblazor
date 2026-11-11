@@ -458,4 +458,103 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
             await page.Tb().Tooltip(page.GetByRole(AriaRole.List, new() { Name = "Trails" })
                 .GetByRole(AriaRole.Listitem).First.Locator(remove)).TextAsync());
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldShowAtOnce_WhenThePointerMovesOnFromAnotherThatShowed(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-delay");
+        var cut = page.GetByRole(AriaRole.Button, new() { Name = "Cut" });
+        var copy = page.GetByRole(AriaRole.Button, new() { Name = "Copy" });
+        await Expect(copy.Locator("xpath=..")).ToHaveAttributeAsync("data-ready", "");
+
+        await cut.HoverAsync();
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Cut the selection" })).ToBeVisibleAsync();
+        await copy.HoverAsync();
+
+        // Well within Copy's own one-second wait.
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Copy the selection" }))
+            .ToBeVisibleAsync(new() { Timeout = 500 });
+        // Long after the pointer left, the wait comes back.
+        await page.GetByText("Away from the toolbar").HoverAsync();
+        await page.WaitForTimeoutAsync(800);
+        await cut.HoverAsync();
+        await page.WaitForTimeoutAsync(400);
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Cut the selection" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldNotStartItsWait_WhenATouchArrives(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var add = page.GetByRole(AriaRole.Button, new() { Name = "Add" });
+        await Expect(add.Locator("xpath=..")).ToHaveAttributeAsync("data-ready", "");
+
+        // A touch that rests without pressing, as when it moves onto the trigger from elsewhere.
+        await add.DispatchEventAsync("pointerover", new Dictionary<string, object> { ["pointerType"] = "touch" });
+        await page.WaitForTimeoutAsync(800);
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" })).ToBeHiddenAsync();
+        await add.DispatchEventAsync("pointerover", new Dictionary<string, object> { ["pointerType"] = "mouse" });
+
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldShowAtOnce_WhenThePointerReachesItSoonAfterAnotherHid(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-delay");
+        var cut = page.GetByRole(AriaRole.Button, new() { Name = "Cut" });
+        var copy = page.GetByRole(AriaRole.Button, new() { Name = "Copy" });
+        await Expect(copy.Locator("xpath=..")).ToHaveAttributeAsync("data-ready", "");
+        await cut.HoverAsync();
+        var cutTip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Cut the selection" });
+        await Expect(cutTip).ToBeVisibleAsync();
+
+        // Off the toolbar until Cut's tooltip hides, then straight onto Copy with a raw mouse move: HoverAsync's
+        // wait for the button to settle could use up the half-second window.
+        var target = (await copy.BoundingBoxAsync())!;
+        await page.GetByText("Away from the toolbar").HoverAsync();
+        await Expect(cutTip).ToBeHiddenAsync();
+        await page.Mouse.MoveAsync(target.X + target.Width / 2, target.Y + target.Height / 2);
+
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Copy the selection" }))
+            .ToBeVisibleAsync(new() { Timeout = 500 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldKeepAFocusedTriggersTooltip_WhenThePointerPassesAnotherTrigger(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-delay");
+        var cut = page.GetByRole(AriaRole.Button, new() { Name = "Cut" });
+        var copy = page.GetByRole(AriaRole.Button, new() { Name = "Copy" });
+        await Expect(copy.Locator("xpath=..")).ToHaveAttributeAsync("data-ready", "");
+        await page.GetByRole(AriaRole.Switch, new() { Name = "Show the button" }).FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(cut).ToBeFocusedAsync();
+        var cutTip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Cut the selection" });
+        await Expect(cutTip).ToBeVisibleAsync();
+
+        // Passing over Copy for less than its one-second wait.
+        await copy.HoverAsync();
+        await page.WaitForTimeoutAsync(300);
+        await page.GetByText("Away from the toolbar").HoverAsync();
+
+        await Expect(cutTip).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Copy the selection" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldStay_WhenATouchLeavesItsTrigger(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var add = page.GetByRole(AriaRole.Button, new() { Name = "Add" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" });
+        await add.HoverAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+
+        // A finger lifting off the trigger, past the example's hide delay.
+        await add.DispatchEventAsync("pointerout", new Dictionary<string, object> { ["pointerType"] = "touch" });
+        await page.WaitForTimeoutAsync(800);
+
+        await Expect(tooltip).ToBeVisibleAsync();
+    }
 }

@@ -61,7 +61,8 @@
     public PlacementAlign Align { get; set; } = PlacementAlign.Center;
 
     /// <summary>How long the pointer rests on the trigger before the tooltip appears. Keyboard focus shows it at
-    /// once. Defaults to the app's <see cref="TooltipSettings.ShowDelay"/>.</summary>
+    /// once, and so does the pointer while another tooltip it showed is open or for half a second after that one
+    /// hides. Defaults to the app's <see cref="TooltipSettings.ShowDelay"/>.</summary>
     [Parameter]
     public TimeSpan? ShowDelay { get; set; }
 

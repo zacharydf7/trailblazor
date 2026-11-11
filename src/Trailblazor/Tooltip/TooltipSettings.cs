@@ -8,7 +8,8 @@ public sealed class TooltipSettings
     internal static readonly TimeSpan MaxDelay = TimeSpan.FromMilliseconds(int.MaxValue);
 
     /// <summary>How long the pointer rests on a trigger before its tooltip appears, up to 24 days. Keyboard focus shows
-    /// it at once. Defaults to 300 milliseconds.</summary>
+    /// it at once, and so does the pointer while another tooltip it showed is open or for half a second after that
+    /// one hides. Defaults to 300 milliseconds.</summary>
     public TimeSpan ShowDelay
     {
         get;

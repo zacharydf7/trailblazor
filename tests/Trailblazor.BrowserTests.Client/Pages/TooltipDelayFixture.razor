@@ -9,6 +9,17 @@
 }
 <TbSwitch Label="Show the button" @bind-Value="_shown" />
 
+@* A toolbar whose tips wait long, so one that shows at once has skipped its wait. *@
+<div style="display: flex; gap: 4px">
+    <TbTooltip Text="Cut the selection" ShowDelay="TimeSpan.FromSeconds(1)" HideDelay="TimeSpan.Zero">
+        <TbButton>Cut</TbButton>
+    </TbTooltip>
+    <TbTooltip Text="Copy the selection" ShowDelay="TimeSpan.FromSeconds(1)" HideDelay="TimeSpan.Zero">
+        <TbButton>Copy</TbButton>
+    </TbTooltip>
+</div>
+<p style="margin-block: 4rem">Away from the toolbar</p>
+
 @code {
     private bool _shown = true;
 }

@@ -13,6 +13,10 @@ const timers = new WeakMap();
 let shown = null;
 // The anchor the pointer last rested on, whose tooltip may still be waiting out its delay.
 let waiting = null;
+// Once the pointer shows a tooltip, the next one it reaches shows at once, as along a toolbar, until this long after
+// the last one hides. A tooltip shown for keyboard focus doesn't count, so a pointer passing by leaves it alone.
+const skipWindow = 500;
+let hidAt = -Infinity;
 
 const bubbleOf = anchor => anchor?.querySelector(':scope > [data-part="tooltip"]') ?? null;
 const anchorOf = target => {
@@ -31,7 +35,7 @@ const hideShown = () => {
     }
 };
 
-const show = anchor => {
+const show = (anchor, byPointer = false) => {
     clearTimeout(timers.get(anchor));
     const tooltip = bubbleOf(anchor);
     if (tooltip && !tooltip.matches(':popover-open')) {
@@ -39,7 +43,7 @@ const show = anchor => {
         tooltip.showPopover();
         const { side, align, offset } = tooltip.dataset;
         const position = createAnchoredPosition(tooltip, anchor, { side, align, offset: +offset });
-        shown = { anchor, tooltip, position };
+        shown = { anchor, tooltip, position, byPointer };
     }
 };
 
@@ -57,22 +61,35 @@ const later = (anchor, action, delay) => {
 
 const showSoon = anchor => {
     waiting = anchor;
-    later(anchor, show, bubbleOf(anchor).dataset.showDelay);
+    if (shown?.byPointer || performance.now() - hidAt < skipWindow) {
+        show(anchor, true);
+        return;
+    }
+
+    later(anchor, waited => show(waited, true), bubbleOf(anchor).dataset.showDelay);
 };
 
 // The tooltip is inside the anchor, so moving onto it keeps it open, unless it's forced over the anchor and lets
 // presses through. The CSS bridges the gap onto the tooltip, and the hide delay covers a path that strays off the
 // bridge (WCAG 1.4.13 hoverable).
+// A touch has no hover: its user gets a tooltip by focusing a text field, so a touch neither starts a tooltip's show
+// delay nor hides one when it leaves the trigger.
 document.addEventListener('pointerover', event => {
     const anchor = anchorOf(event.target);
-    if (anchor && !anchor.contains(event.relatedTarget)) {
+    if (anchor && event.pointerType !== 'touch' && !anchor.contains(event.relatedTarget)) {
         showSoon(anchor);
     }
 });
 document.addEventListener('pointerout', event => {
     const anchor = anchorOf(event.target);
-    if (anchor && !anchor.contains(event.relatedTarget)) {
-        later(anchor, hide, bubbleOf(anchor).dataset.hideDelay);
+    if (anchor && event.pointerType !== 'touch' && !anchor.contains(event.relatedTarget)) {
+        later(anchor, leaving => {
+            if (shown?.anchor === leaving && shown.byPointer) {
+                hidAt = performance.now();
+            }
+
+            hide(leaving);
+        }, bubbleOf(anchor).dataset.hideDelay);
     }
 });
 

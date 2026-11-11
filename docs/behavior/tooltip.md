@@ -24,6 +24,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] A click leaves it closed while the pointer stays on the trigger. `TooltipTests.Tooltip_ShouldStayClosed_WhenTheTriggerIsClicked`
 - [x] It follows the trigger as the page scrolls. `AnchoredPositionTests.Scroll_ShouldKeepFloatingAttached_WhenScrollContainerScrolls`
 - [x] It flips to the other side when there's no room. `AnchoredPositionTests.CreateAsync_ShouldFlipToTop_WhenThereIsNoRoomBelow`
+- [x] Once the pointer shows a tooltip, the next one it reaches shows at once, as along a toolbar, until half a second after the last one hides. A tooltip shown for keyboard focus doesn't count, so a pointer passing by leaves it alone. `TooltipTests.Tooltip_ShouldShowAtOnce_WhenThePointerMovesOnFromAnotherThatShowed`, `TooltipTests.Tooltip_ShouldShowAtOnce_WhenThePointerReachesItSoonAfterAnotherHid`, `TooltipTests.Tooltip_ShouldKeepAFocusedTriggersTooltip_WhenThePointerPassesAnotherTrigger`
 - [x] Only one tooltip shows at a time, so hovering a trigger hides the one showing for keyboard focus or still waiting out its hide delay. `TooltipTests.Tooltip_ShouldHideTheFocusedTriggersTooltip_WhenAnotherTriggerIsHovered`, `TooltipTests.Tooltip_ShouldHideOneWaitingToHide_WhenAnotherShows`
 - [ ] Hovering a natively disabled trigger shows its tooltip. UNCONFIRMED
 - [x] A tooltip placed to the side in a narrow window stays on screen, overlapping its trigger if it must. `NarrowPlacementTests.Tooltip_ShouldStayInsideTheWindow_WhenNeitherSideHasRoom`
@@ -34,7 +35,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 
 ## Touch
 
-- [x] A tap on a button shows no tooltip: the trigger listens for pointer events, and the press cancels the delay the touch started. `tooltip.js`
+- [x] A touch neither starts a tooltip's show delay nor hides a tooltip when it leaves the trigger, so a tap on a button shows no tooltip, and a text field's tooltip stays when the finger lifts. `TooltipTests.Tooltip_ShouldNotStartItsWait_WhenATouchArrives`, `TooltipTests.Tooltip_ShouldStay_WhenATouchLeavesItsTrigger`
 - [x] A tap into a text field shows it, since a text field's focus counts as keyboard focus. `tooltip.js`
 
 ## Focus
@@ -52,4 +53,3 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - Staying open while the pointer or focus is still on its trigger: it hides when either one leaves, which WCAG 1.4.13 allows.
 - Links or buttons in the bubble: the keyboard can't reach it, so that content belongs in a popover.
 - Long press to show the tooltip, as on Android: the docs send what touch users need to the page or a popover.
-- A shorter wait when moving between neighboring triggers, as in OS toolbars: each tooltip waits its own `ShowDelay`.

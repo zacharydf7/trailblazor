@@ -5655,7 +5655,9 @@ public static class ExampleCatalog
                 new("delays", "Delays", "A tooltip shows at once on keyboard focus and after a delay on hover. "
                     + "`ShowDelay` sets how long the pointer must rest before it appears, and `HideDelay` how long it "
                     + "stays after the pointer leaves. Both are 300 milliseconds unless set, and `options.Tooltips` in "
-                    + "`AddTrailblazor` changes them for the whole app.", typeof(TooltipDelayExample)),
+                    + "`AddTrailblazor` changes them for the whole app. Once the pointer shows one tooltip, the next it "
+                    + "reaches shows at once, as along a toolbar, until half a second after the last one hides. A touch "
+                    + "has no hover, so it shows a tooltip only by focusing a text field.", typeof(TooltipDelayExample)),
                 new("turning-off", "Turning a tooltip off", "`Disabled`, or `Text` left blank, shows no tooltip and "
                     + "adds no description, so a tooltip that only sometimes applies needs no `@if`. The switch here "
                     + "turns the delete button's tooltip off.", typeof(TooltipDisabledExample)),
