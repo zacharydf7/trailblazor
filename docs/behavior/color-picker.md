@@ -22,6 +22,7 @@ Familiar apps: a browser's color input, the color pickers in design tools and br
 - [x] Clicking the pad sets saturation and brightness, and the sliders follow. `ColorPickerPadTests.Pad_ShouldSetSaturationAndBrightness_WhenClicked`
 - [x] Dragging keeps following the pointer outside the pad, since it captures the pointer. `color-picker.js`
 - [x] The thumb follows a drag at once, but the value changes only a few times a second and once more when the drag ends, so a drag over a slow link doesn't send a message per frame. `ColorPickerPadTests.Pad_ShouldReportADragAFewTimesASecondAndAtItsEnd_WhenThePointerMovesAcrossIt`
+- [x] The hue, saturation, brightness and opacity sliders change the value at most every 50 ms while they move, and once more when they stop. `SliderDragTests.ColorPickerSlider_ShouldReportAFewTimesASecond_WhenItMovesEveryFrame`
 - [x] Right-clicking the pad leaves the color alone. `ColorPickerPadTests.Pad_ShouldLeaveTheColorAlone_WhenRightClickedAfterTheColorWasTyped`
 - [x] Clicking a swatch chooses it. `TbColorPickerTests.Swatch_ShouldChooseItsColor_WhenChanged`
 - [x] The opacity slider shows and sets the alpha. `ColorPickerTests.Opacity_ShouldShowAndSetTheAlpha_WhenAlphaIsOn`

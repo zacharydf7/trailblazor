@@ -12,6 +12,7 @@ import './range-slider.js';
 import './slider-keys.js';
 import './chip.js';
 import './tooltip.js';
+import './throttled-input.js';
 import { measurePageScrollbar } from './page-scroll.js';
 
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.

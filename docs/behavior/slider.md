@@ -19,6 +19,7 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 
 - [x] Clicking the track moves the thumb and fill there. `SliderTests.Slider_ShouldMoveItsThumbAndFillToThePointer_WhenTheTrackIsClicked`
 - [x] Dragging updates the value as the thumb moves and commits on release. `SliderExampleTests.SliderExample_ShouldFollowTheThumbAndSaveOnlyOnCommit_WhenItMoves`
+- [x] While the thumb moves, the value changes at most every 50 ms and once more when it stops, so a drag over a slow link doesn't send a message per frame. The commit has the value where the drag ended, a range slider's other thumb included. `SliderDragTests.Slider_ShouldReportAFewTimesASecondAndCommitTheLastValue_WhenItMovesEveryFrame`, `SliderDragTests.RangeSlider_ShouldCommitBothThumbsLastValues_WhenOneIsLetGoWhileTheOtherWaits`
 - [x] Clicking the label focuses the thumb without changing the value. `TbSliderTests.Render_ShouldBeARangeInputNamedByItsLabel_WhenCalled`, `TbSliderBase.razor`
 - [x] Each thumb of a range slider can be dragged. `SliderDragTests.RangeSlider_ShouldLetEachThumbBeDragged_WhenTheyShareATrack`
 - [x] A thumb dragged past the other stops at it. `TbSliderTests.Input_ShouldStopAThumbAtTheOther_WhenItIsDraggedPastIt`

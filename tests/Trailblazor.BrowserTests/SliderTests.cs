@@ -178,6 +178,76 @@ public class SliderTests(BrowserFixture fixture) : SliderKeysTests(fixture)
 [Collection(nameof(PointerDrags))]
 public class SliderDragTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    // Sends sixty input events a frame apart, then a change, timing them in the page. Reports are at least 50 ms
+    // apart (see throttled-input.js), so the script returns the most reports that time allows.
+    private const string MoveEveryFrame = """
+        async input => {
+            const started = performance.now();
+            for (let step = 1; step <= 60; step++) {
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                input.value = String(step * 5);
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            const allowed = Math.floor((performance.now() - started) / 50) + 2;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            return allowed;
+        }
+        """;
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slider_ShouldReportAFewTimesASecondAndCommitTheLastValue_WhenItMovesEveryFrame(string browser)
+    {
+        var page = await OpenAsync(browser, "/slider-drag");
+        var volume = page.GetByRole(AriaRole.Slider, new() { Name = "Volume" });
+        await Expect(volume).ToHaveAttributeAsync("data-ready", "");
+
+        var allowed = await volume.EvaluateAsync<int>(MoveEveryFrame);
+
+        await Expect(page.GetByTestId("committed")).ToHaveTextAsync("300");
+        Assert.InRange(int.Parse(await page.GetByTestId("changes").TextContentAsync() ?? "0"), 4, allowed);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RangeSlider_ShouldCommitBothThumbsLastValues_WhenOneIsLetGoWhileTheOtherWaits(string browser)
+    {
+        var page = await OpenAsync(browser, "/slider-drag");
+        var minimum = page.GetByRole(AriaRole.Slider, new() { Name = "Price Minimum", Exact = true });
+        await Expect(minimum).ToHaveAttributeAsync("data-ready", "");
+
+        // Both thumbs' inputs are still waiting their turn when the start thumb is let go.
+        await minimum.EvaluateAsync("""
+            start => {
+                const end = start.closest('.tb-slider').querySelector('[data-part=end-thumb]');
+                start.value = '100';
+                start.dispatchEvent(new Event('input', { bubbles: true }));
+                end.value = '900';
+                end.dispatchEvent(new Event('input', { bubbles: true }));
+                start.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            """);
+
+        await Expect(page.GetByTestId("committed-price")).ToHaveTextAsync("100-900");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ColorPickerSlider_ShouldReportAFewTimesASecond_WhenItMovesEveryFrame(string browser)
+    {
+        var page = await OpenAsync(browser, "/color-picker");
+        var trigger = ColorPickerTests.Field(page, "Accent")
+            .GetByRole(AriaRole.Button, new() { Name = "Choose a color" });
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+        await trigger.ClickAsync();
+        var hue = ColorPickerTests.Picker(page).GetByRole(AriaRole.Slider, new() { Name = "Hue" });
+        var changes = page.GetByTestId("changes");
+        var before = int.Parse(await changes.TextContentAsync() ?? "0");
+
+        var allowed = await hue.EvaluateAsync<int>(MoveEveryFrame);
+
+        await Expect(hue).ToHaveAttributeAsync("aria-valuetext", "300°");
+        Assert.InRange(int.Parse(await changes.TextContentAsync() ?? "0") - before, 4, allowed);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task RangeSlider_ShouldLetEachThumbBeDragged_WhenTheyShareATrack(string browser)
     {

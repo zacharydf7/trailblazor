@@ -1,6 +1,6 @@
 // A right-to-left range input's value rises leftward, but WebKit doesn't swap its Left and Right keys, so they're handled
 // here the same in every browser: Left raises the value and Right lowers it.
-const ranges = '.tb-slider input[type="range"], input.tb-color-picker__slider';
+export const ranges = '.tb-slider input[type="range"], input.tb-color-picker__slider';
 
 document.addEventListener('keydown', event => {
     const input = event.target;

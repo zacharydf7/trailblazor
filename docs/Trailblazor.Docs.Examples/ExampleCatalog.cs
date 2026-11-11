@@ -3629,6 +3629,9 @@ public static class ExampleCatalog
             Notes =
             [
                 new("A value outside `Min` and `Max` shows at the nearest end."),
+                new("While the thumb moves, `ValueChanged` is raised at most every 50 ms, and once more when it stops, so "
+                    + "a drag over a slow link doesn't send a message per frame. `ValueCommitted` always has the value "
+                    + "where the thumb was let go."),
                 new("`Min` must be below `Max`, both must fit the number type, and `Step` must be above 0. A whole number "
                     + "type also needs a whole `Min`, `Max` and `Step`. Anything else throws when it renders."),
                 new("`@ref` the slider and call `FocusAsync()` to move focus to it. A range slider focuses its start "
@@ -4513,7 +4516,8 @@ public static class ExampleCatalog
             [
                 new("A press around the text box, such as on the field's padding, focuses it, unless it lands on a button."),
                 new("During a drag on the pad, the thumb follows the pointer at once, but `ValueChanged` is raised only a "
-                    + "few times a second, and once more when the drag ends."),
+                    + "few times a second, and once more when the drag ends. The sliders below the pad raise `ValueChanged` "
+                    + "at most every 50 ms, and once more when they stop."),
             ],
             Accessibility =
             [
