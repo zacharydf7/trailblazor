@@ -6132,8 +6132,10 @@ public static class ExampleCatalog
                     + "trigger doesn't open it over another popover that is already open.",
                     typeof(PopoverHoverExample)),
                 new("opening-from-code", "Opening from code", "`@bind-Open` opens or closes a popover from code and "
-                    + "tells you when the user does. Here, the Apply button closes it, and a second button opens it.",
-                    typeof(PopoverOpenExample)),
+                    + "tells you when the user does. Here, the Apply button closes it, and a second button opens it. "
+                    + "`AttachOnFirstUse` waits to set up a popover's script until its trigger is first focused, "
+                    + "pointed at or clicked, or the panel is opened from code. That saves a call to the browser for "
+                    + "each popover in a long list.", typeof(PopoverOpenExample)),
                 new("placement", "Placement", "`Placement` picks the side a popover's panel opens on, and it flips to "
                     + "the other side when there's no room. Placed to the side in a narrow window, it wraps to fit, or "
                     + "overlaps the trigger if its content can't wrap that far. `Align` lines it up with the trigger. A "
@@ -6187,7 +6189,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens it and returns the panel, a "
                 + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
-                + "ready.",
+                + "ready. With `AttachOnFirstUse`, the trigger gets `data-ready` only when it's first focused, pointed "
+                + "at or clicked, so both focus it first.",
         },
         new("popconfirm", "Popconfirm", ExampleCategory.Overlays,
             "A small question that opens beside the button that asked, such as \"Delete this trail?\", with Cancel and "

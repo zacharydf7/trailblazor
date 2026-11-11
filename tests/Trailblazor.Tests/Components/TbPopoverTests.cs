@@ -21,6 +21,70 @@ public class TbPopoverTests : BunitContext
     }
 
     [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScriptOnlyOnceTheTriggerTakesFocus_WhenSet()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.AttachOnFirstUse, true).AddChildContent("Options"));
+        Assert.Empty(JSInterop.Invocations["createPopover"]);
+        var trigger = cut.Find("[data-part=trigger]");
+        Assert.True(trigger.HasAttribute("data-attach-on-use"));
+        Assert.Equal(cut.Find("[data-part=panel]").Id, trigger.GetAttribute("popovertarget"));
+
+        trigger.Focus();
+
+        Assert.Single(JSInterop.Invocations["createPopover"]);
+        Assert.False(cut.Find("[data-part=trigger]").HasAttribute("data-attach-on-use"));
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenThePointerReachesTheTrigger()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.AttachOnFirstUse, true).AddChildContent("Options"));
+
+        cut.Find("[data-part=trigger]").PointerEnter();
+
+        Assert.Single(JSInterop.Invocations["createPopover"]);
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenTheTriggerIsClickedWithoutFocus()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.AttachOnFirstUse, true).AddChildContent("Options"));
+
+        cut.Find("[data-part=trigger]").Click();
+
+        Assert.Single(JSInterop.Invocations["createPopover"]);
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScriptAndOpen_WhenTheParentOpensItBeforeUse()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/popover.js").SetupModule("createPopover", _ => true);
+        handle.SetupVoid("setOpen", _ => true);
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.AttachOnFirstUse, true).AddChildContent("Options"));
+
+        cut.Render(parameters => parameters.Add(popover => popover.Open, true));
+
+        Assert.Single(JSInterop.Invocations["createPopover"]);
+        Assert.Equal([true], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
+        Assert.False(cut.Find("[data-part=trigger]").HasAttribute("data-attach-on-use"));
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenTurnedOffBeforeUse()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.AttachOnFirstUse, true).AddChildContent("Options"));
+
+        cut.Render(parameters => parameters.Add(popover => popover.AttachOnFirstUse, false));
+
+        Assert.Single(JSInterop.Invocations["createPopover"]);
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenAnIconTriggerHasALabelButNoAriaLabel()
     {
         var error = Assert.Throws<InvalidOperationException>(() => Render<TbPopover>(parameters => parameters

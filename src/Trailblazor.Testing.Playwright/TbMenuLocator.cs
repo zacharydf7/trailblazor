@@ -19,16 +19,7 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
         var scripted = await Trigger.GetAttributeAsync("data-static") is null;
         if (scripted)
         {
-            // A menu that waits for its first use, such as a move handle, is marked once interactive and starts its
-            // script on focus; blurring first makes sure a trigger that already has focus fires a focus event.
-            await Trigger.And(scope.Locator("[data-ready], [data-attach-on-use]")).WaitForAsync();
-            if (await Trigger.GetAttributeAsync("data-attach-on-use") is not null)
-            {
-                await Trigger.BlurAsync();
-                await Trigger.FocusAsync();
-            }
-
-            await Assertions.Expect(Trigger).ToHaveAttributeAsync("data-ready", "");
+            await Scope.ReadyAsync(scope, Trigger);
         }
 
         var menu = Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");

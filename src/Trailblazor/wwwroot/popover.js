@@ -132,6 +132,12 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
         panel.addEventListener('pointerenter', stayOpen);
     }
 
+    // A pointer already on the trigger when this script attaches, such as the one whose arrival set it up, counts as
+    // a hover too.
+    if (hover && trigger.matches(':hover')) {
+        showSoon();
+    }
+
     // A panel clicked open before this script attached missed its toggles, so they are replayed.
     if (panel.matches(':popover-open')) {
         onBeforeToggle({ newState: 'open' });

@@ -775,6 +775,8 @@ override Trailblazor.TbOption<TValue>.OnParametersSet() -> void
 override Trailblazor.TbOverlay.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbPagination.OnParametersSet() -> void
 override Trailblazor.TbPopover.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+Trailblazor.TbPopover.AttachOnFirstUse.get -> bool
+Trailblazor.TbPopover.AttachOnFirstUse.set -> void
 override Trailblazor.TbPopover.OnParametersSet() -> void
 override Trailblazor.TbPopover.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbProgress.OnParametersSet() -> void

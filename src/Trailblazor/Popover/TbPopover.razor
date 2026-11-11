@@ -44,6 +44,7 @@
     private IJSObjectReference? _handle;
     private DotNetObjectReference<PopoverEvents>? _reference;
     private bool _lastOpen;
+    private bool _attaching;
     private bool _disposed;
 
     /// <summary>The text on the trigger button. Required unless an <see cref="Icon"/> or a <see cref="Trigger"/>
@@ -110,6 +111,12 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Sets up the popover's script when its trigger is first focused, pointed at or clicked, or the panel is
+    /// opened from code, not when the popover first renders. That saves a call to the browser for each popover in a
+    /// long list, such as a popover on every row.</summary>
+    [Parameter]
+    public bool AttachOnFirstUse { get; set; }
+
     private bool _givenVariant;
     private bool _givenSize;
 
@@ -159,6 +166,18 @@
                 attributes["data-static"] = "";
             }
 
+            // A popover that waits for its first use listens on its trigger and marks it, so tests know to focus it
+            // first. A prerendered trigger is replaced as the page turns interactive, so only the interactive one is
+            // marked. A popover opened from code isn't marked either: it attaches after this render, its last until
+            // it's used.
+            if (AttachOnFirstUse && RendererInfo.IsInteractive && !_attaching && !Open)
+            {
+                attributes["data-attach-on-use"] = "";
+                attributes["onfocus"] = EventCallback.Factory.Create(this, AttachOnUseAsync);
+                attributes["onpointerenter"] = EventCallback.Factory.Create(this, AttachOnUseAsync);
+                attributes["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, AttachOnUseAsync);
+            }
+
             // The built-in triggers take Disabled as a parameter; a custom one gets the attribute.
             if (Disabled && Trigger is not null)
             {
@@ -190,8 +209,9 @@
     {
         try
         {
-            if (firstRender)
+            if ((!AttachOnFirstUse || Open) && !_attaching)
             {
+                _attaching = true;
                 await AttachAsync();
             }
             else if (_handle is not null && Open != _lastOpen)
@@ -199,6 +219,24 @@
                 _lastOpen = Open;
                 await _handle.InvokeVoidAsync("setOpen", Open);
             }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the popover went with it.
+        }
+    }
+
+    private async Task AttachOnUseAsync()
+    {
+        if (_attaching)
+        {
+            return;
+        }
+
+        _attaching = true;
+        try
+        {
+            await AttachAsync();
         }
         catch (JSDisconnectedException)
         {

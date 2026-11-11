@@ -9,6 +9,28 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
         page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldOpenThroughTheTestingHelper_WhenItAttachesOnFirstUse(string browser)
+    {
+        var page = await OpenAsync(browser, "/popover-on-use");
+
+        var panel = await page.Tb().Popover("Filters").OpenAsync();
+
+        await Expect(panel).ToContainTextAsync("Filter options");
+        await Expect(Trigger(page, "Filters")).ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldOpenOnTheFirstHover_WhenItAttachesOnFirstUseAndOpensOnHover(string browser)
+    {
+        var page = await OpenAsync(browser, "/popover-on-use");
+        await Expect(Trigger(page, "Details")).ToHaveAttributeAsync("data-attach-on-use", "");
+
+        await Trigger(page, "Details").HoverAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Details" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Popover_ShouldTakeFocusAndGiveItBack_WhenOpenedAndClosedWithTheKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/popover");

@@ -26,6 +26,20 @@ internal static class Scope
     // What a component's aria-controls names, and what lives at the page's root, such as dialogs, toasts and the
     // announcer, can be outside a scope, so they're found in the scope's document.
     public static ILocator Document(ILocator scope) => scope.Locator("xpath=ancestor-or-self::html").First;
+
+    // A trigger that waits for its first use, such as a move handle's menu, is marked once interactive and starts its
+    // script on focus; blurring first makes sure a trigger that already has focus fires a focus event.
+    public static async Task ReadyAsync(ILocator scope, ILocator trigger)
+    {
+        await trigger.And(scope.Locator("[data-ready], [data-attach-on-use]")).WaitForAsync();
+        if (await trigger.GetAttributeAsync("data-attach-on-use") is not null)
+        {
+            await trigger.BlurAsync();
+            await trigger.FocusAsync();
+        }
+
+        await Assertions.Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+    }
 }
 
 /// <summary>The Trailblazor components on a page, or in one part of it.</summary>
@@ -173,7 +187,7 @@ public sealed class TbPopoverLocator(ILocator scope, string trigger)
     {
         if (await Trigger.GetAttributeAsync("data-static") is null)
         {
-            await Assertions.Expect(Trigger).ToHaveAttributeAsync("data-ready", "");
+            await Scope.ReadyAsync(scope, Trigger);
         }
 
         return Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
