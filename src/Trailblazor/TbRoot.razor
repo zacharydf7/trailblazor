@@ -5,24 +5,27 @@
     /// <summary>The render mode for the dialogs, toasts and announcements when interactivity is set page by page, so
     /// they run in the same session as the interactive pages that open them. The check that warns about other
     /// stylesheets overriding Trailblazor's runs in it too. Give it the render mode those pages use, and leave it unset
-    /// when the whole app is interactive.</summary>
+    /// when the whole app is interactive. It applies only while the root renders statically; when the root itself
+    /// renders interactively, as under an interactive Routes, the hosts run in that render's mode.</summary>
     [Parameter]
     public IComponentRenderMode? HostRenderMode { get; set; }
 
     // The hosts are internal, and Razor only finds public components by tag.
     private void RenderHosts(RenderTreeBuilder builder)
     {
+        // An interactive render can't hand its children another mode, such as Server inside WebAssembly.
+        var mode = RendererInfo.IsInteractive ? null : HostRenderMode;
         builder.OpenComponent<DialogHost>(0);
-        builder.AddComponentRenderMode(HostRenderMode);
+        builder.AddComponentRenderMode(mode);
         builder.CloseComponent();
         builder.OpenComponent<ToastHost>(1);
-        builder.AddComponentRenderMode(HostRenderMode);
+        builder.AddComponentRenderMode(mode);
         builder.CloseComponent();
         builder.OpenComponent<AnnouncerHost>(2);
-        builder.AddComponentRenderMode(HostRenderMode);
+        builder.AddComponentRenderMode(mode);
         builder.CloseComponent();
         builder.OpenComponent<StylesheetCheck>(3);
-        builder.AddComponentRenderMode(HostRenderMode);
+        builder.AddComponentRenderMode(mode);
         builder.CloseComponent();
     }
 }

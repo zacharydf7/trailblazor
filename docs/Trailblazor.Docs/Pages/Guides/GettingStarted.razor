@@ -133,7 +133,9 @@
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">When interactivity is set page by page</TbText>
         <TbText>
             Here, as in the default Blazor template, the layout renders statically. Give <code>TbRoot</code> the render
-            mode your interactive pages use, and it hosts dialogs, toasts and announcements in that mode.
+            mode your interactive pages use, and it hosts dialogs, toasts and announcements in that mode. When the layout
+            itself renders interactively, as under an interactive <code>Routes</code>, the hosts ignore this setting and
+            run in the layout's mode.
         </TbText>
         <CodeBlock Label="MainLayout.razor, interactivity per page" Code="@PerPageLayout" />
         <DocsCallout Tone="Tone.Warning" Title="Every page starts a session">
