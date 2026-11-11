@@ -1,0 +1,22 @@
+@page "/seeded-palette"
+
+@* The CSS TbThemeHead writes for a seeded palette, here without seeding the host app's own options; the test puts the
+   palette on the page as the theme script does. The swatches show each token as the browser draws it. *@
+<style>@((MarkupString)Brand.ToCss())</style>
+<div data-testid="brand">
+    <TbSurface data-testid="surface">Trail notes</TbSurface>
+    <TbButton>Save</TbButton>
+    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral">Cancel</TbButton>
+</div>
+@foreach (var token in Brand.Tokens)
+{
+    <span data-testid="@($"{token.Name}-light")" style="color: @token.Light.ToCss()"></span>
+    <span data-testid="@($"{token.Name}-dark")" style="color: @token.Dark.ToCss()"></span>
+}
+
+@code {
+    private static readonly SeededPalette Brand = SeededPalette.Build(new Palette("brand")
+    {
+        Seeds = new() { Primary = "#1F5FAD", Neutral = "#7A5B3C" },
+    });
+}

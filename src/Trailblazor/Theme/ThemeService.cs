@@ -23,7 +23,9 @@ internal sealed class ThemeService(JsModuleLoader modules, IOptions<TrailblazorO
         // A bUnit test without the browser answers null, which reads as a page that shows none of them.
         var shown = await module.InvokeAsync<string?[]?>("read") ?? [null, null, null];
         Mode = Enum.TryParse<ThemeMode>(shown[0], ignoreCase: true, out var mode) ? mode : _settings.Mode;
-        Palette = string.IsNullOrWhiteSpace(shown[1]) ? _settings.Palette : new Palette(shown[1]!);
+        // The app's own palette keeps its seeds, so it still equals the one in the options.
+        Palette = string.IsNullOrWhiteSpace(shown[1]) || shown[1] == _settings.Palette.Name ? _settings.Palette
+            : new Palette(shown[1]!);
         Density = Enum.TryParse<Density>(shown[2], ignoreCase: true, out var density) ? density : _settings.Density;
         Changed?.Invoke();
     }

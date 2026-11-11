@@ -1,11 +1,16 @@
 @namespace Trailblazor
 @using Microsoft.Extensions.Options
 @inject IOptions<TrailblazorOptions> Options
+@inject SeededPalettes SeededPalettes
 
 @* A plain script, not a module, so it runs while the head loads and the page paints in its theme from the start. *@
 <script src="@Assets["_content/Trailblazor/theme-head.js"]" data-mode="@Lower(Settings.Mode)"
         data-palette="@Settings.Palette.Name" data-density="@Lower(Settings.Density)"
         data-remember="@(Settings.Remember ? "true" : "false")"></script>
+@if (SeededPalettes.Css is { } css)
+{
+    <style>@((MarkupString)css)</style>
+}
 
 @code {
     private ThemeSettings Settings => Options.Value.Theme;

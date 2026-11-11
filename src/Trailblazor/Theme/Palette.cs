@@ -16,6 +16,11 @@ public sealed record Palette
     /// <summary>The <c>data-tb-palette</c> value that selects the palette.</summary>
     public string Name { get; }
 
+    /// <summary>The colors to build the palette from. When they're set on the palette in
+    /// <see cref="TrailblazorOptions.Theme"/>, <see cref="TbThemeHead"/> writes the palette's CSS, so the app needs
+    /// none of its own.</summary>
+    public PaletteSeeds? Seeds { get; init; }
+
     /// <summary>Near-monochrome grays with ink-colored primary actions. The default.</summary>
     public static Palette Graphite { get; } = new("graphite");
 

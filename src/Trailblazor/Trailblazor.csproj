@@ -32,6 +32,8 @@
     <InternalsVisibleTo Include="Trailblazor.Tests" />
     <!-- So a test's dialog can find its own content among others of its type. -->
     <InternalsVisibleTo Include="Trailblazor.Testing" />
+    <!-- So a browser test can show a seeded palette's CSS without changing the host app's own palette. -->
+    <InternalsVisibleTo Include="Trailblazor.BrowserTests.Host" />
   </ItemGroup>
 
 </Project>

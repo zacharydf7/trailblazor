@@ -4266,3 +4266,26 @@ Trailblazor.TbToolbarButton.Size.set -> void
 Trailblazor.TbToolbar.Size.get -> Trailblazor.Size
 Trailblazor.TbToolbar.Size.set -> void
 override Trailblazor.TbToolbarButton.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Trailblazor.Palette.Seeds.get -> Trailblazor.PaletteSeeds?
+Trailblazor.Palette.Seeds.init -> void
+Trailblazor.PaletteSeeds
+Trailblazor.PaletteSeeds.<Clone>$() -> Trailblazor.PaletteSeeds!
+Trailblazor.PaletteSeeds.Equals(Trailblazor.PaletteSeeds? other) -> bool
+Trailblazor.PaletteSeeds.Neutral.get -> string?
+Trailblazor.PaletteSeeds.Neutral.init -> void
+Trailblazor.PaletteSeeds.PaletteSeeds() -> void
+Trailblazor.PaletteSeeds.Primary.get -> string!
+Trailblazor.PaletteSeeds.Primary.init -> void
+Trailblazor.PaletteSeeds.PrimaryDark.get -> string?
+Trailblazor.PaletteSeeds.PrimaryDark.init -> void
+Trailblazor.PaletteSeeds.Secondary.get -> string?
+Trailblazor.PaletteSeeds.Secondary.init -> void
+Trailblazor.PaletteSeeds.SecondaryDark.get -> string?
+Trailblazor.PaletteSeeds.SecondaryDark.init -> void
+override Trailblazor.PaletteSeeds.Equals(object? obj) -> bool
+override Trailblazor.PaletteSeeds.GetHashCode() -> int
+override Trailblazor.PaletteSeeds.ToString() -> string!
+static Trailblazor.PaletteSeeds.operator !=(Trailblazor.PaletteSeeds? left, Trailblazor.PaletteSeeds? right) -> bool
+static Trailblazor.PaletteSeeds.operator ==(Trailblazor.PaletteSeeds? left, Trailblazor.PaletteSeeds? right) -> bool
+Trailblazor.TrailblazorOptions.WarnAboutContrast.get -> bool
+Trailblazor.TrailblazorOptions.WarnAboutContrast.set -> void

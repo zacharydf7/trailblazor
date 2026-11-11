@@ -24,6 +24,11 @@ public sealed class TrailblazorOptions
     /// stylesheet overrides them on purpose.</summary>
     public bool WarnAboutUnlayeredStyles { get; set; } = true;
 
+    /// <summary>Whether a palette built from <see cref="Palette.Seeds"/> logs a warning, once per app, for each pair of
+    /// its colors under the WCAG contrast minimum. Defaults to true; set it to
+    /// <c>builder.Environment.IsDevelopment()</c> to warn only in Development.</summary>
+    public bool WarnAboutContrast { get; set; } = true;
+
     /// <summary>Text for built-in strings in place of the English, by the keys in <see cref="TbStrings"/>, for the
     /// default <see cref="TbLocalizer"/>. An app that registers its own <see cref="ITbLocalizer"/> applies them itself.
     /// </summary>

@@ -13,6 +13,7 @@
         <TbTableOfContentsItem TargetId="restyle" Text="Restyle one component" />
         <TbTableOfContentsItem TargetId="brand" Text="Try a brand color" />
         <TbTableOfContentsItem TargetId="other-stylesheets" Text="Other stylesheets" />
+        <TbTableOfContentsItem TargetId="seeded-palette" Text="A palette from seed colors" />
         <TbTableOfContentsItem TargetId="custom-palette" Text="Your own palette" />
         <TbTableOfContentsItem TargetId="reduced-motion" Text="Reduced motion" />
         <TbTableOfContentsItem TargetId="token-reference" Text="Token reference" />
@@ -274,6 +275,27 @@
             <code>options.WarnAboutUnlayeredStyles = false</code>.
         </TbText>
 
+        <DocsHeading Id="seeded-palette" Text="A palette from seed colors" Class="docs-section" />
+        <TbText>
+            Give a palette a few seed colors and <code>TbThemeHead</code> writes its CSS, so the app needs none of its
+            own. <code>Primary</code> is required. <code>Neutral</code> tints the backgrounds, text, borders and the
+            neutral tone, keeping the built-in grays' lightness in both modes. <code>PrimaryDark</code>,
+            <code>Secondary</code> and <code>SecondaryDark</code> are optional; when a dark color is left out,
+            Trailblazor uses a lighter form of the light one. Each seed is a hex color or an <code>oklch()</code> color.
+        </TbText>
+        <CodeBlock Label="Program.cs" Code="@SeededPalette" />
+        <TbText>
+            The hover, pressed, subtle and text colors of the primary and secondary, and the focus ring, follow from the
+            seeds as they do for a built-in palette. Text on a filled button is white or near-black, whichever reads
+            better. Trailblazor checks the result once per app, in both modes, and logs a warning naming the tokens and
+            the ratio for each text color under 4.5:1 against its background, and for the strong border, the primary or
+            the focus ring under 3:1 against the page background. To warn only in Development, set
+            <code>WarnAboutContrast</code> to <code>builder.Environment.IsDevelopment()</code>.
+        </TbText>
+        <DocsCallout Tone="Tone.Info" Title="In a standalone WebAssembly app">
+            A standalone app has no <code>TbThemeHead</code>, so write the palette's CSS yourself, as below.
+        </DocsCallout>
+
         <DocsHeading Id="custom-palette" Text="Your own palette" Class="docs-section" />
         <TbText>
             A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
@@ -480,6 +502,14 @@
         <section style="--tb-color-primary: light-dark(#0f766e, #5eead4)">
             ...
         </section>
+        """;
+
+    private const string SeededPalette = """
+        builder.Services.AddTrailblazor(options =>
+            options.Theme.Palette = new Palette("brand")
+            {
+                Seeds = new() { Primary = "#1F5FAD", Neutral = "#5B6472" },
+            });
         """;
 
     private const string CustomPaletteOption = """

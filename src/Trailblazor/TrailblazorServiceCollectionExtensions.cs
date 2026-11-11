@@ -31,6 +31,7 @@ public static class TrailblazorServiceCollectionExtensions
         services.TryAddScoped<IThemeService, ThemeService>();
         services.AddMetrics();
         services.TryAddSingleton<TelemetryInstruments>();
+        services.TryAddSingleton<SeededPalettes>();
         services.TryAddScoped<Telemetry>();
         return services;
     }

@@ -83,4 +83,16 @@ public class ThemeServiceTests : BunitContext
         Assert.Equal((expectedMode, new Palette(expectedPalette), expectedDensity),
             (Theme.Mode, Theme.Palette, Theme.Density));
     }
+
+    [Fact]
+    public async Task Load_ShouldKeepTheAppsSeededPalette_WhenThePageShowsItByName()
+    {
+        var brand = new Palette("brand") { Seeds = new() { Primary = "#1F5FAD" } };
+        this.AddTrailblazor(options => options.Theme.Palette = brand);
+        _module.Setup<string?[]?>("read").SetResult(["light", "brand", "comfortable"]);
+
+        await Theme.LoadAsync();
+
+        Assert.Equal(brand, Theme.Palette);
+    }
 }
