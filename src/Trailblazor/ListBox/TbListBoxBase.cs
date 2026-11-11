@@ -39,7 +39,16 @@ public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(Dynamica
     [Parameter]
     public ListBoxLabels Labels { get; set; } = new();
 
+    /// <summary>Adds a box above the options that narrows them as the user types, ignoring case and accents, as
+    /// <see cref="TbSelectBase{TValue}.Filterable"/> does. Down Arrow moves from the box into the list.</summary>
+    [Parameter]
+    public bool Filterable { get; set; }
+
     private string EmptyText => Labels.Empty ?? Localizer[TbStrings.ListBoxEmpty];
+
+    private string FilterText => Labels.Filter ?? Localizer[TbStrings.SelectFilter];
+
+    private string NoResultsText => Labels.NoResults ?? Localizer[TbStrings.SelectNoResults];
 
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
@@ -126,8 +135,9 @@ public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(Dynamica
     private Task ChooseAllAsync() => ChooseManyAsync(_options, "select_all", "keyboard");
 
     // A long range arrives in batches, and they make one change to the value once the last is in. A second range can
-    // arrive alongside the first, so an id may come twice; more ids than options can only come from a bad client.
-    private Task ChooseRangeAsync(string[] ids, bool last)
+    // arrive alongside the first, so an id may come twice; more ids than options can only come from a bad client. A
+    // range that is Ctrl+A over a filter's options counts as choosing all.
+    private Task ChooseRangeAsync(string[] ids, bool last, bool all)
     {
         _range.UnionWith(ids);
         if (_range.Count > _options.Count)
@@ -143,7 +153,8 @@ public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(Dynamica
 
         var options = _options.Where(option => _range.Contains(option.Id)).ToList();
         _range.Clear();
-        return ChooseManyAsync(options, "select_range", "pointer");
+        return all ? ChooseManyAsync(options, "select_all", "keyboard")
+            : ChooseManyAsync(options, "select_range", "pointer");
     }
 
     private async Task ChooseManyAsync(IEnumerable<ISelectOption> options, string action, string input)

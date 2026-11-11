@@ -5,23 +5,18 @@
 @Layout(Classes, @<text>
     @if (RendererInfo.IsInteractive)
     {
-        @* Focus stays on the listbox; the script moves the active option and points aria-activedescendant at it. *@
-        <div @attributes="ControlAttributes" @ref="_listbox" data-part="input" id="@InputId" role="listbox"
-             tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
-             aria-multiselectable="@(Multiple ? "true" : null)" aria-disabled="@(Disabled ? "true" : null)"
-             aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@AriaRequired"
-             aria-invalid="@(ShowsInvalid ? "true" : null)"
-             aria-describedby="@InputDescribedBy" style="--tb-listbox-rows: @Rows"
-             class="@ClassNames.Join("tb-field__input", "tb-listbox", ClassNames.Modifier("tb-listbox", Size),
-                        Classes?.Input)">
-            <CascadingValue Value="this">@ChildContent</CascadingValue>
-            @if (_options.Count == 0)
+        @* The listbox keeps one parent whether or not a filter shows, so its script stays attached to it. *@
+        <div class="tb-listbox-body">
+            @if (Filterable)
             {
-                @* A listbox holds only options, so the message is one that can't be chosen, in muted text rather
-                   than disabled. *@
-                <div role="option" aria-disabled="true" aria-selected="false" data-part="status"
-                     class="tb-select__status">
-                    @EmptyText
+                <input data-part="filter" type="text" autocomplete="off" aria-controls="@InputId"
+                       aria-label="@FilterText" aria-describedby="@ClearDescribedBy" placeholder="@FilterText"
+                       disabled="@Disabled" class="tb-select__filter" />
+            }
+            @Listbox
+            @if (Filterable)
+            {
+                <div role="status" data-part="no-results" class="tb-select__no-results" data-text="@NoResultsText">
                 </div>
             }
         </div>
@@ -44,3 +39,27 @@
         </select>
     }
 </text>, null, null)
+
+@code {
+    // Focus stays on the listbox; the script moves the active option and points aria-activedescendant at it.
+    private RenderFragment Listbox =>
+        @<div @attributes="ControlAttributes" @ref="_listbox" data-part="input" id="@InputId" role="listbox"
+              tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+              aria-multiselectable="@(Multiple ? "true" : null)" aria-disabled="@(Disabled ? "true" : null)"
+              aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@AriaRequired"
+              aria-invalid="@(ShowsInvalid ? "true" : null)"
+              aria-describedby="@InputDescribedBy" style="--tb-listbox-rows: @Rows"
+              class="@ClassNames.Join("tb-field__input", "tb-listbox", ClassNames.Modifier("tb-listbox", Size),
+                         Classes?.Input)">
+            <CascadingValue Value="this">@ChildContent</CascadingValue>
+            @if (_options.Count == 0)
+            {
+                @* A listbox holds only options, so the message is one that can't be chosen, in muted text rather
+                   than disabled. *@
+                <div role="option" aria-disabled="true" aria-selected="false" data-part="status"
+                     class="tb-select__status">
+                    @EmptyText
+                </div>
+            }
+        </div>;
+}

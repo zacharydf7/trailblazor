@@ -28,6 +28,7 @@ import './browser.js';
 import './date-grid.js';
 import './field.js';
 import './inert.js';
+import './option-filter.js';
 import './typeahead.js';
 import './unnamed-options.js';
 

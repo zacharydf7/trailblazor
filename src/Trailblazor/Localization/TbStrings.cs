@@ -450,10 +450,10 @@ public static class TbStrings
     /// <see cref="ITbLocalizer.Plural"/>, with <see cref="RatingStar"/> as its one-form.</summary>
     public const string RatingStars = "Rating.Stars";
 
-    /// <summary>"Filter": names a select's filter box.</summary>
+    /// <summary>"Filter": names a select's or a list box's filter box.</summary>
     public const string SelectFilter = "Select.Filter";
 
-    /// <summary>"No matches": shown when a select's filter finds nothing.</summary>
+    /// <summary>"No matches": shown when a select's or a list box's filter finds nothing.</summary>
     public const string SelectNoResults = "Select.NoResults";
 
     /// <summary>"Nothing to choose from": shown in a select's list when it has no options.</summary>

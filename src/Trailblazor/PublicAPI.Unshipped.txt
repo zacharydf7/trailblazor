@@ -4513,3 +4513,9 @@ Trailblazor.TbSwitch.ThumbIcon.get -> Trailblazor.Icon?
 Trailblazor.TbSwitch.ThumbIcon.set -> void
 Trailblazor.TbSwitch.OffThumbIcon.get -> Trailblazor.Icon?
 Trailblazor.TbSwitch.OffThumbIcon.set -> void
+Trailblazor.TbListBoxBase<TValue>.Filterable.get -> bool
+Trailblazor.TbListBoxBase<TValue>.Filterable.set -> void
+Trailblazor.ListBoxLabels.Filter.get -> string?
+Trailblazor.ListBoxLabels.Filter.init -> void
+Trailblazor.ListBoxLabels.NoResults.get -> string?
+Trailblazor.ListBoxLabels.NoResults.init -> void

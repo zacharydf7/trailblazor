@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { createTypeahead } from './typeahead.js';
 import { watchForUnnamedOptions } from './unnamed-options.js';
+import { filterOptions } from './option-filter.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
@@ -106,34 +107,12 @@ export function createSelect(combobox, listbox, toggle) {
             active.scrollIntoView({ block: 'nearest' });
         }
     };
-    // Matching ignores case and accents, so "eagle" finds "Éagle".
-    const fold = text => text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
-    const applyFilter = () => {
-        const query = fold(filter.value.trim());
-        for (const option of listbox.querySelectorAll('[role="option"]')) {
-            // Choosing every option means nothing while only some are shown, and an empty list's message always shows.
-            // The server filters a virtualized list.
-            const hide = option.dataset.part === 'status' || place(option) !== null ? false
-                : option.dataset.part === 'select-all' ? query !== ''
-                : !fold(option.dataset.text || option.textContent).includes(query);
-            if (option.hidden !== hide) {
-                option.hidden = hide;
-            }
-        }
-
-        for (const group of listbox.querySelectorAll('[role="group"]')) {
-            const hide = !group.querySelector('[role="option"]:not([hidden])');
-            if (group.hidden !== hide) {
-                group.hidden = hide;
-            }
-        }
-
-        const text = query && !listbox.querySelector('[role="option"]:not([hidden])') && !(virtual() && count() > 0)
-            ? status.dataset.text : '';
-        if (status.textContent !== text) {
-            status.textContent = text;
-        }
-    };
+    // Choosing every option means nothing while only some are shown, and an empty list's message always shows. The
+    // server filters a virtualized list.
+    const ruleFor = option => option.dataset.part === 'status' || place(option) !== null ? false
+        : option.dataset.part === 'select-all' ? filter.value.trim() !== '' : null;
+    const applyFilter = () =>
+        filterOptions(listbox, filter.value.trim(), status, ruleFor, () => virtual() && count() > 0);
     // Opening from code leaves focus where it is; the user opening it moves focus to the filter.
     const open = (target, focus = true) => {
         if (combobox.getAttribute('aria-disabled') === 'true' || combobox.getAttribute('aria-readonly') === 'true') {

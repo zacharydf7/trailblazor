@@ -1,0 +1,62 @@
+@page "/listbox-filter"
+
+<TbListBox TValue="string" Label="Trail" Filterable @bind-Value="_trail">
+    @foreach (var trail in Trails)
+    {
+        <TbOption Value="trail">@trail</TbOption>
+    }
+</TbListBox>
+<output aria-label="Trail chosen">@_trail</output>
+
+<TbMultiListBox TItem="string" Label="Trails" Filterable @bind-Value="_trails">
+    @foreach (var trail in Trails)
+    {
+        <TbOption Value="trail">@trail</TbOption>
+    }
+</TbMultiListBox>
+<output aria-label="Trails chosen">@string.Join(", ", _trails)</output>
+
+@* A filter turned off later shows every option again, and an empty group's heading. *@
+<TbSwitch Label="Filter the camps" @bind-Value="_filterCamps" />
+<TbListBox TValue="string" Label="Camp" Filterable="_filterCamps" @bind-Value="_camp">
+    @foreach (var trail in Trails)
+    {
+        <TbOption Value="trail">@trail</TbOption>
+    }
+    <TbOptionGroup Label="Closed" />
+</TbListBox>
+
+@* A group with no matching options hides, and an option added while filtered is filtered too. *@
+<TbListBox TValue="string" Label="Region" Filterable @bind-Value="_region">
+    <TbOptionGroup Label="North">
+        <TbOption Value="@("pine")">Pine Hollow</TbOption>
+        <TbOption Value="@("eagle")">Eagle Ridge</TbOption>
+    </TbOptionGroup>
+    <TbOptionGroup Label="South">
+        <TbOption Value="@("cedar")">Cedar Flats</TbOption>
+        @foreach (var added in _added)
+        {
+            <TbOption Value="added">@added</TbOption>
+        }
+    </TbOptionGroup>
+</TbListBox>
+<TbButton OnClick="@(() => _added.Add("Lake Shore"))">Add a trail</TbButton>
+
+@* A list with no filter leaves its groups alone, even an empty one. *@
+<TbListBox TValue="string" Label="Season" @bind-Value="_season">
+    <TbOptionGroup Label="Summer">
+        <TbOption Value="@("june")">June</TbOption>
+    </TbOptionGroup>
+    <TbOptionGroup Label="Winter" />
+</TbListBox>
+
+@code {
+    private static readonly string[] Trails = ["Cedar Flats", "Éagle Ridge", "Lake Shore", "Lookout Loop", "Pine Hollow"];
+    private string? _trail;
+    private IReadOnlyList<string> _trails = [];
+    private bool _filterCamps = true;
+    private string? _camp;
+    private string? _region;
+    private string? _season;
+    private readonly List<string> _added = [];
+}

@@ -5467,9 +5467,16 @@
         cursor: default;
     }
 
-    .tb-field__control:has(> .tb-listbox) {
+    .tb-field__control:has(> .tb-listbox, > .tb-listbox-body) {
         align-items: stretch;
         padding: var(--tb-space-1);
+    }
+
+    .tb-listbox-body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-inline-size: 0;
     }
 
     /* Each size offsets the option height from the density's item height; small never drops below 24px. */

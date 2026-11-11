@@ -225,11 +225,27 @@ public class TelemetryOutcomeTests : BunitContext
             .AddChildContent<TbOption<string>>(option => option.Add(choice => choice.Value, "L").AddChildContent("L")));
         var events = ListBoxEvents();
 
-        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true));
+        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true, false));
 
         var use = Assert.Single(used.GetMeasurementSnapshot());
         Assert.Equal("select_range", use.Tags["trailblazor.action"]);
         Assert.Equal("pointer", use.Tags["trailblazor.input"]);
+    }
+
+    [Fact]
+    public async Task MultiListBox_ShouldCountASelectAllFromTheKeyboard_WhenCtrlAChoosesTheOptionsAFilterShows()
+    {
+        using var used = Collect("trailblazor.control.used");
+        var cut = Render<TbMultiListBox<string>>(parameters => parameters.Add(listbox => listbox.Label, "Size")
+            .Add(listbox => listbox.TelemetryName, "trail-size").Add(listbox => listbox.Filterable, true)
+            .AddChildContent<TbOption<string>>(option => option.Add(choice => choice.Value, "L").AddChildContent("L")));
+        var events = ListBoxEvents();
+
+        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true, true));
+
+        var use = Assert.Single(used.GetMeasurementSnapshot());
+        Assert.Equal("select_all", use.Tags["trailblazor.action"]);
+        Assert.Equal("keyboard", use.Tags["trailblazor.input"]);
     }
 
     private ListBoxEvents ListBoxEvents() =>

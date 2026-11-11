@@ -1,6 +1,8 @@
 import { createTypeahead } from './typeahead.js';
 import { watchForUnnamedOptions } from './unnamed-options.js';
+import { filterOptions } from './option-filter.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
 
 // How many option ids go to the server in one call, to stay within a circuit's message size limit.
 const rangeBatch = 100;
@@ -15,11 +17,14 @@ export function attachListBox(listbox, events) {
     // Marks that the keys work, which tests wait for.
     listbox.dataset.ready = '';
     const unnamed = watchForUnnamedOptions(listbox);
-    // An option the server removes, such as one moved to another list, can't stay the active one.
+    // An option the server removes, such as one moved to another list, can't stay the active one, and one it adds is
+    // filtered like the rest.
     const removals = new MutationObserver(() => {
         if (active && !listbox.contains(active)) {
             setActive(null);
         }
+
+        applyFilter();
     });
     removals.observe(listbox, { childList: true, subtree: true });
     const label = document.getElementById(listbox.getAttribute('aria-labelledby'));
@@ -38,8 +43,10 @@ export function attachListBox(listbox, events) {
 
     const disabled = () => listbox.getAttribute('aria-disabled') === 'true';
     const multiple = () => listbox.getAttribute('aria-multiselectable') === 'true';
-    const enabled = () => [...listbox.querySelectorAll('[role="option"]:not([aria-disabled="true"])')];
-    const selected = () => listbox.querySelector('[role="option"][aria-selected="true"]:not([aria-disabled="true"])');
+    // The keys reach only the options a filter shows.
+    const enabled = () => [...listbox.querySelectorAll('[role="option"]:not([aria-disabled="true"]):not([hidden])')];
+    const selected = () => listbox.querySelector(
+        '[role="option"][aria-selected="true"]:not([aria-disabled="true"]):not([hidden])');
     const isSelected = option => option.getAttribute('aria-selected') === 'true';
 
     const setActive = option => {
@@ -75,13 +82,55 @@ export function attachListBox(listbox, events) {
         const index = options.indexOf(active);
         return options[Math.min(Math.max(index + by, 0), options.length - 1)];
     };
+    // The filter box comes and goes with Filterable, so it's looked up each time; the listbox's parent stays put.
+    const body = listbox.parentElement;
+    const filterBox = () => body.querySelector(':scope > [data-part="filter"]');
+    const query = () => filterBox()?.value.trim() ?? '';
+    // Matching works as a select's filter does, and an empty list's message always shows. Once the filter box is
+    // removed the pass runs one last time to show what it hid, so a list that never filters keeps its empty groups.
+    let filtered = false;
+    const applyFilter = () => {
+        if (!filtered && !filterBox()) {
+            return;
+        }
+
+        filtered = !!filterBox();
+        filterOptions(listbox, query(), body.querySelector(':scope > [data-part="no-results"]'),
+            option => option.dataset.part === 'status' ? false : null);
+        if (!filtered) {
+            for (const group of listbox.querySelectorAll('[role="group"][hidden]')) {
+                group.hidden = false;
+            }
+        }
+
+        if (active?.hidden) {
+            setActive(null);
+        }
+    };
+    const onFilterInput = event => {
+        if (event.target === filterBox()) {
+            applyFilter();
+        }
+    };
+    // Down Arrow moves from the filter into the list, where the other keys work.
+    const onFilterKeyDown = event => {
+        if (event.target === filterBox() && event.key === 'ArrowDown' && !event.altKey && !isComposing(event)) {
+            event.preventDefault();
+            listbox.focus();
+        }
+    };
+    // Adding or removing the filter box filters the options again right away.
+    const filterShown = new MutationObserver(applyFilter);
+    filterShown.observe(body, { childList: true });
+
     const rowsShown = () => Math.max(1, Math.floor(listbox.clientHeight / (enabled()[0]?.offsetHeight || 1)));
     // A range reaches the server as one change to the value, not as a click on each option.
-    const chooseRange = async options => {
+    // A range is a Shift+click, or Ctrl+A over the options a filter shows.
+    const chooseRange = async (options, all) => {
         const ids = options.map(option => option.id);
         for (let start = 0; start < ids.length; start += rangeBatch) {
             const last = start + rangeBatch >= ids.length;
-            await callDotNet(events, 'OnChooseRange', ids.slice(start, start + rangeBatch), last);
+            await callDotNet(events, 'OnChooseRange', ids.slice(start, start + rangeBatch), last, all);
         }
     };
 
@@ -107,7 +156,7 @@ export function attachListBox(listbox, events) {
             const options = enabled();
             const to = options.indexOf(option);
             const from = rangeFrom ? options.indexOf(rangeFrom) : -1;
-            chooseRange(options.slice(Math.min(from < 0 ? to : from, to), Math.max(from, to) + 1));
+            chooseRange(options.slice(Math.min(from < 0 ? to : from, to), Math.max(from, to) + 1), false);
         }
     };
     const onFocus = () => {
@@ -135,7 +184,13 @@ export function attachListBox(listbox, events) {
         if (multiple() && !disabled() && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey
             && key.toLowerCase() === 'a') {
             event.preventDefault();
-            callDotNet(events, 'OnChooseAll');
+            // While a filter narrows the list, only the options it shows are chosen.
+            if (query()) {
+                chooseRange(enabled(), true);
+            } else {
+                callDotNet(events, 'OnChooseAll');
+            }
+
             return;
         }
 
@@ -197,6 +252,10 @@ export function attachListBox(listbox, events) {
     listbox.addEventListener('pointercancel', forgetPress);
     listbox.addEventListener('keydown', onKeyDown);
     label?.addEventListener('click', onLabelClick);
+    body.addEventListener('input', onFilterInput);
+    body.addEventListener('keydown', onFilterKeyDown);
+    // Text may have been typed into the filter before the script attached.
+    applyFilter();
     return {
         dispose() {
             unnamed.disconnect();
@@ -208,6 +267,9 @@ export function attachListBox(listbox, events) {
             listbox.removeEventListener('pointercancel', forgetPress);
             listbox.removeEventListener('keydown', onKeyDown);
             label?.removeEventListener('click', onLabelClick);
+            filterShown.disconnect();
+            body.removeEventListener('input', onFilterInput);
+            body.removeEventListener('keydown', onFilterKeyDown);
         },
     };
 }

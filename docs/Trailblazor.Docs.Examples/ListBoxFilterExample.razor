@@ -1,0 +1,16 @@
+<TbListBox @bind-Value="_camp" Label="Base camp" Filterable Rows="6" Style="max-inline-size: 24rem">
+    @foreach (var camp in Camps)
+    {
+        <TbOption Value="camp">@camp</TbOption>
+    }
+</TbListBox>
+
+@code {
+    private static readonly string[] Camps =
+    [
+        "Alder Grove", "Basalt Point", "Copper Basin", "Driftwood Bay", "Granite Pass", "Juniper Flat", "Quarry Rim",
+        "Sagebrush Mesa", "Tamarack Hut",
+    ];
+
+    private string? _camp;
+}

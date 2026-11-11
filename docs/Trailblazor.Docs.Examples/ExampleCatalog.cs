@@ -5354,9 +5354,11 @@ public static class ExampleCatalog
                 new("empty-list", "Empty list", "A list box with no options says so, in text as readable as the "
                     + "options. Set `Labels.Empty` to say why.", typeof(ListBoxEmptyExample)),
                 new("many-options", "Many options", "A long list scrolls, and a long option wraps. When people would "
-                    + "rather search than scroll, use a filterable [select](components/select) or an "
-                    + "[autocomplete](components/autocomplete).",
+                    + "rather search than scroll, make it `Filterable`.",
                     typeof(ListBoxManyExample)),
+                new("filter", "Filter", "`Filterable` adds a box above the options that narrows them as people type, "
+                    + "ignoring case and accents. Down Arrow moves from the box into the list.",
+                    typeof(ListBoxFilterExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and sets the options' height and text "
                     + "size. Each size follows the page's density, and an option is never shorter than 24 pixels.",
                     typeof(ListBoxSizeExample)),
@@ -5378,6 +5380,7 @@ public static class ExampleCatalog
                 typeof(ListBoxLabels), typeof(FieldClasses)],
             Keyboard =
             [
+                new(["Down"], "Moves from the filter into the list.") { When = "In a `Filterable` list box's filter" },
                 new(["Down", "Up"], "Moves to the next or previous option that isn't disabled, and chooses it.")
                     { When = "In a `TbListBox`" },
                 new(["Home", "End"], "Moves to the first or last option that isn't disabled, and chooses it.")
@@ -5396,7 +5399,7 @@ public static class ExampleCatalog
                     { When = "In a `TbMultiListBox`" },
                 new(["Page Up", "Page Down"], "Moves up or down by as many options as the list shows.")
                     { When = "In a `TbMultiListBox`" },
-                new(["Ctrl+A", "Cmd+A"], "Chooses every option that isn't disabled.")
+                new(["Ctrl+A", "Cmd+A"], "Chooses every option that isn't disabled and that a filter doesn't hide.")
                     { When = "In a `TbMultiListBox`" },
                 new(["A letter"], "Moves to an option that starts with what was typed. Pressed again quickly, it "
                     + "moves to the next one that starts with that letter.")
@@ -5410,6 +5413,7 @@ public static class ExampleCatalog
             Labeling =
             [
                 "A `listbox` named by its `Label`. A `TbOptionGroup` is a `group` named by its `Label`.",
+                "A `Filterable` list box's filter box is named by `Labels.Filter`, \"Filter\" by default.",
                 "An option's words name it. Content without words, such as an image, is named by its `Text`; with "
                     + "neither, it gets a warning in the browser console.",
             ],
@@ -5422,6 +5426,7 @@ public static class ExampleCatalog
                 "A validation message that appears as someone changes the choice is read out once, and a failed submit "
                     + "reads none out, as on a [text field](components/text-field). An `Error` your app sets is read "
                     + "out once when it appears.",
+                "When the filter matches nothing, `Labels.NoResults`, \"No matches\" by default, is read out.",
             ],
             Accessibility =
             [
@@ -5454,6 +5459,8 @@ public static class ExampleCatalog
                 new("group-label", "A group's heading."),
                 new("option", "One option."),
                 new("status", "The message the list shows when it has no options."),
+                new("filter", "The filter box above the options, in a `Filterable` list box."),
+                new("no-results", "The message shown when the filter matches nothing."),
             ],
             Anatomy = """
                 <TbListBox Label="…" @bind-Value="_value">
