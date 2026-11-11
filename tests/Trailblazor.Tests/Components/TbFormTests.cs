@@ -496,6 +496,90 @@ public class TbFormTests : BunitContext
         Assert.Equal("Callback failed.", failure.Message);
     }
 
+    [Theory]
+    [InlineData(Binding.None)]
+    [InlineData(Binding.Sync)]
+    [InlineData(Binding.Async)]
+    public void Input_ShouldReportOnceAndCheckTheModelOnce_WhenAKeystrokeChangesAFieldThatUpdatesOnInput(Binding binding)
+    {
+        var cut = Render<CountedHikeForm>(parameters => parameters.Add(form => form.Binding, binding));
+        var host = cut.Instance;
+        var (reports, checks) = (host.Reports, host.Hike.Checks);
+
+        cut.Find("input").Input("R");
+
+        Assert.Equal("R", host.Hike.Name);
+        Assert.Equal((reports + 2, checks + 1), (host.Reports, host.Hike.Checks));
+    }
+
+    [Fact]
+    public async Task Input_ShouldReportAnotherFieldsChange_WhenAFieldsEditWaitsOnItsHandler()
+    {
+        var cut = Render<CountedHikeForm>(parameters => parameters.Add(form => form.Binding, Binding.Async));
+        var host = cut.Instance;
+        host.Hold = new TaskCompletionSource();
+        var held = cut.Find("input").InputAsync(new ChangeEventArgs { Value = "R" });
+        Assert.True(host.Valid);
+
+        cut.FindAll("input")[1].Change("Far too long a note");
+
+        Assert.False(host.Valid);
+        host.Hold.SetResult();
+        await held;
+    }
+
+    [Fact]
+    public async Task Reset_ShouldReportOnceAndCheckTheModelOnce_WhenTheFormIsBound()
+    {
+        var cut = Render<CountedHikeForm>(parameters => parameters.Add(form => form.Binding, Binding.Sync));
+        cut.Find("input").Input("R");
+        var host = cut.Instance;
+        var (reports, checks) = (host.Reports, host.Hike.Checks);
+
+        await cut.InvokeAsync(() => cut.FindComponent<TbForm>().Instance.ResetAsync());
+
+        Assert.Equal((reports + 1, checks + 1), (host.Reports, host.Hike.Checks));
+    }
+
+    [Fact]
+    public async Task Validate_ShouldReportOnce_WhenTheValidatorAndTheFormBothRaiseEvents()
+    {
+        var cut = Render<CountedHikeForm>(parameters => parameters.Add(form => form.Binding, Binding.Sync));
+        var host = cut.Instance;
+        var (reports, checks) = (host.Reports, host.Hike.Checks);
+
+        await cut.InvokeAsync(() => cut.FindComponent<TbForm>().Instance.ValidateAsync());
+
+        Assert.Equal((reports + 2, checks + 2), (host.Reports, host.Hike.Checks));
+    }
+
+    [Fact]
+    public async Task ResetValidation_ShouldReuseTheModelsCheck_WhenOnlyTheShownMessagesChange()
+    {
+        var cut = Render<CountedHikeForm>();
+        var (reports, checks) = (cut.Instance.Reports, cut.Instance.Hike.Checks);
+
+        await cut.InvokeAsync(() => cut.FindComponent<TbForm>().Instance.ResetValidationAsync());
+
+        Assert.Equal((reports + 1, checks), (cut.Instance.Reports, cut.Instance.Hike.Checks));
+    }
+
+    [Fact]
+    public async Task Validate_ShouldCheckTheModelAgain_WhenCodeChangedItWithoutAFieldReportingIt()
+    {
+        var cut = Render<CountedHikeForm>(parameters => parameters.Add(form => form.Binding, Binding.Sync));
+        var hike = cut.Instance.Hike;
+        hike.Blocked = true;
+        cut.Render();
+        Assert.False(cut.Instance.Valid);
+        hike.Blocked = false;
+
+        var valid = await cut.InvokeAsync(() => cut.FindComponent<TbForm>().Instance.ValidateAsync());
+
+        Assert.True(valid);
+        Assert.True(cut.Instance.Valid);
+    }
+
     [Fact]
     public void Submit_ShouldLeaveValidatingToTheHandler_WhenGivenOnSubmit()
     {
@@ -767,6 +851,103 @@ public class TbFormTests : BunitContext
     }
 
     private sealed record TakenNames(params string[] Names);
+
+    // Counts how often the whole model is checked; Blocked fails it without any field changing.
+    private sealed class CountedHike : IValidatableObject
+    {
+        public string? Name { get; set; }
+
+        public bool Blocked { get; set; }
+
+        public int Checks { get; private set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            Checks++;
+            return Blocked ? [new ValidationResult("Blocked.")] : [];
+        }
+    }
+
+    public enum Binding
+    {
+        None,
+        Sync,
+        Async,
+    }
+
+    // A form whose field counts its checks: one by the field itself on each edit, and one per report, since the form
+    // asks every field for its problems. With Binding.Sync it re-renders as the field's value and the form's validity
+    // change, as @bind would; with Binding.Async the handler yields, so it re-renders while the field's edit is still under
+    // way.
+    private sealed class CountedHikeForm : ComponentBase
+    {
+        private readonly object _unbound = new();
+
+        [Parameter]
+        public Binding Binding { get; set; }
+
+        public CountedHike Hike { get; } = new();
+
+        public int Reports { get; private set; }
+
+        public bool Valid { get; private set; }
+
+        public string? Note { get; private set; }
+
+        // When set, the name field's handler waits for it to complete, keeping the edit open as a slow ValueChanged
+        // handler would.
+        public TaskCompletionSource? Hold { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            var receiver = Binding == Binding.None ? _unbound : this;
+            builder.OpenComponent<TbForm>(0);
+            builder.AddComponentParameter(1, nameof(TbForm.Model), Hike);
+            builder.AddComponentParameter(2, nameof(TbForm.DataAnnotations), true);
+            builder.AddComponentParameter(3, nameof(TbForm.IsValid), Valid);
+            builder.AddComponentParameter(4, nameof(TbForm.IsValidChanged),
+                EventCallback.Factory.Create<bool>(receiver, valid => Valid = valid));
+            builder.AddComponentParameter(5, nameof(TbForm.ChildContent), (RenderFragment)(field =>
+            {
+                field.OpenComponent<TbTextField<string>>(0);
+                field.AddComponentParameter(1, nameof(TbTextField<string>.Label), "Name");
+                field.AddComponentParameter(2, nameof(TbTextField<string>.UpdateOnInput), true);
+                field.AddComponentParameter(3, nameof(TbTextField<string>.Value), Hike.Name);
+                field.AddComponentParameter(4, nameof(TbTextField<string>.ValueChanged),
+                    Binding == Binding.Async ? EventCallback.Factory.Create<string>(receiver, async value =>
+                    {
+                        if (Hold is null)
+                        {
+                            await Task.Yield();
+                        }
+                        else
+                        {
+                            await Hold.Task;
+                        }
+
+                        Hike.Name = value;
+                    }) : EventCallback.Factory.Create<string>(receiver, value => Hike.Name = value));
+                field.AddComponentParameter(5, nameof(TbTextField<string>.ValueExpression),
+                    (System.Linq.Expressions.Expression<Func<string>>)(() => Hike.Name!));
+                field.AddComponentParameter(6, nameof(TbTextField<string>.Validation),
+                    (Func<string?, IEnumerable<string>>)(_ =>
+                    {
+                        Reports++;
+                        return [];
+                    }));
+                field.CloseComponent();
+                field.OpenComponent<TbTextField<string>>(10);
+                field.AddComponentParameter(11, nameof(TbTextField<string>.Label), "Note");
+                field.AddComponentParameter(12, nameof(TbTextField<string>.Value), Note);
+                field.AddComponentParameter(13, nameof(TbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create<string>(receiver, value => Note = value));
+                field.AddComponentParameter(14, nameof(TbTextField<string>.Validation),
+                    (Func<string?, IEnumerable<string>>)(note => note?.Length > 10 ? ["Keep the note short."] : []));
+                field.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
 
     // Checks a name against a service, as a uniqueness rule would.
     private sealed class NotTakenAttribute : ValidationAttribute

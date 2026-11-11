@@ -480,6 +480,15 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         _parseError = null;
         _unparsedText = null;
         _lastValue = Value = value;
+        await (_form is null ? ChangeAsync(value) : _form.EditAsync(() => ChangeAsync(value)));
+        if (!_disposed)
+        {
+            AnnounceNewErrors(before);
+        }
+    }
+
+    private async Task ChangeAsync(TValue? value)
+    {
         await ValueChanged.InvokeAsync(value!);
         if (_disposed)
         {
@@ -491,8 +500,6 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         {
             _editContext!.NotifyFieldChanged(_field!.Value);
         }
-
-        AnnounceNewErrors(before);
     }
 
     // Text that doesn't parse leaves the value alone and stays in the input, so the user can fix it.

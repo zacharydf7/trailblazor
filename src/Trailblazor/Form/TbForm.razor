@@ -17,6 +17,7 @@
           OnSubmit="SubmitAsync" novalidate class="@ClassNames.Join("tb-form", Class)" style="@Style">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </EditForm>
+@Reporter
 
 @code {
     private readonly List<IFormField> _fields = [];
@@ -26,6 +27,14 @@
     private object? _model;
     private IDisposable? _annotations;
     private bool _focusError;
+    // Whether IsValid or Errors may have changed since the last report.
+    private bool _stale = true;
+    // While a field's edit, a reset or a validation is under way, renders and the context's events hold their report
+    // until it ends.
+    private int _edits;
+    private FormReporter? _reporter;
+    // The model's own check from the last report, kept until a value may have changed.
+    private bool? _modelPasses;
     private ControlTelemetry? _telemetry;
 
     /// <inheritdoc />
@@ -108,6 +117,15 @@
 
     private object Id => AdditionalAttributes?.GetValueOrDefault("id") ?? _id;
 
+    // FormReporter is internal, so Razor can't name it; the form renders it through this.
+    private RenderFragment Reporter => builder =>
+    {
+        builder.OpenComponent<FormReporter>(0);
+        builder.AddComponentParameter(1, nameof(FormReporter.Form), this);
+        builder.AddComponentReferenceCapture(2, reporter => _reporter = (FormReporter)reporter);
+        builder.CloseComponent();
+    };
+
     // The browser's reset would clear the inputs and leave what they're bound to, so the fields do it instead. A
     // component can't take @onreset:preventDefault, so the attribute it compiles to goes in by name.
     private Dictionary<string, object> FormAttributes
@@ -146,14 +164,20 @@
         _editContext.OnValidationStateChanged -= OnValidationStateChanged;
         _editContext.OnFieldChanged += OnFieldChanged;
         _editContext.OnValidationStateChanged += OnValidationStateChanged;
+        // The parent can change a value or the model without any field reporting it.
+        _stale = true;
+        _modelPasses = null;
     }
 
-    // Every render is checked, since the parent can change a value or the model without any field reporting it.
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         Telemetry.Rendered(TelemetryName);
-        await ReportAsync();
+        if (_edits == 0)
+        {
+            await ReportIfStaleAsync();
+        }
+
         if (_focusError)
         {
             _focusError = false;
@@ -164,9 +188,21 @@
     /// <summary>Shows every field's messages and returns whether the form is valid.</summary>
     public async Task<bool> ValidateAsync()
     {
-        var valid = _editContext.Validate();
-        // Validate only asks the fields to check themselves, so they are told to show what they found.
-        _editContext.NotifyValidationStateChanged();
+        // Code may have changed the model without any field reporting it.
+        _modelPasses = null;
+        bool valid;
+        _edits++;
+        try
+        {
+            valid = _editContext.Validate();
+            // Validate only asks the fields to check themselves, so they are told to show what they found.
+            _editContext.NotifyValidationStateChanged();
+        }
+        finally
+        {
+            _edits--;
+        }
+
         await ReportAsync();
         return valid;
     }
@@ -181,7 +217,16 @@
             field.HideMessages();
         }
 
-        _editContext.NotifyValidationStateChanged();
+        _edits++;
+        try
+        {
+            _editContext.NotifyValidationStateChanged();
+        }
+        finally
+        {
+            _edits--;
+        }
+
         await ReportAsync();
     }
 
@@ -194,25 +239,63 @@
     /// doesn't change, the text stays and becomes the value once it's committed.</summary>
     public async Task ResetAsync()
     {
-        foreach (var field in _fields.ToList())
+        _modelPasses = null;
+        _edits++;
+        try
         {
-            await field.ResetAsync();
+            foreach (var field in _fields.ToList())
+            {
+                await field.ResetAsync();
+            }
+
+            // The data annotations validation clears its messages only when disposed, so a new one takes its place.
+            if (_annotations is not null)
+            {
+                _annotations.Dispose();
+                _annotations = _editContext.EnableDataAnnotationsValidation(Services);
+            }
+
+            _editContext.MarkAsUnmodified();
+            _editContext.NotifyValidationStateChanged();
+        }
+        finally
+        {
+            _edits--;
         }
 
-        // The data annotations validation clears its messages only when disposed, so a new one takes its place.
-        if (_annotations is not null)
-        {
-            _annotations.Dispose();
-            _annotations = _editContext.EnableDataAnnotationsValidation(Services);
-        }
-
-        _editContext.MarkAsUnmodified();
-        _editContext.NotifyValidationStateChanged();
         await ReportAsync();
         await OnReset.InvokeAsync();
     }
 
     internal void Add(IFormField field) => _fields.Add(field);
+
+    // One edit renders the parent and raises several events, so they share one report, made once the edit's renders are
+    // done.
+    internal async Task EditAsync(Func<Task> edit)
+    {
+        _edits++;
+        try
+        {
+            await edit();
+        }
+        finally
+        {
+            _edits--;
+        }
+
+        // The field's own problems may have changed even if no event marked the form stale. Another field's edit may
+        // still be open, waiting on a slow handler, but this one's report doesn't wait for it.
+        _stale = true;
+        _reporter!.Queue();
+    }
+
+    internal async Task ReportIfStaleAsync()
+    {
+        if (_stale)
+        {
+            await ReportAsync();
+        }
+    }
 
     internal void Remove(IFormField field) => _fields.Remove(field);
 
@@ -262,29 +345,30 @@
         }
     }
 
-    private void OnFieldChanged(object? sender, FieldChangedEventArgs e) => _ = InvokeAsync(ReportFromEventAsync);
-
-    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e) =>
-        _ = InvokeAsync(ReportFromEventAsync);
-
-    // The context's events can't await, so a failing callback goes to the renderer instead of being lost.
-    private async Task ReportFromEventAsync()
+    private void OnFieldChanged(object? sender, FieldChangedEventArgs e)
     {
-        try
+        _modelPasses = null;
+        ReportFromEvent();
+    }
+
+    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e) => ReportFromEvent();
+
+    // An event raised in a render batch, such as by a parent setting a field's Error, reports with the batch.
+    private void ReportFromEvent()
+    {
+        _stale = true;
+        if (_edits == 0 && _reporter is { } reporter)
         {
-            await ReportAsync();
-        }
-        catch (Exception exception)
-        {
-            await DispatchExceptionAsync(exception);
+            _ = InvokeAsync(reporter.Queue);
         }
     }
 
     // The parent hears only when the validity or the shown messages actually change.
     private async Task ReportAsync()
     {
+        _stale = false;
         var valid = !_fields.Any(field => field.HasProblems()) && !_editContext.GetValidationMessages().Any()
-            && await ModelPassesAsync();
+            && (_modelPasses ??= await ModelPassesAsync());
         if (valid != IsValid)
         {
             IsValid = valid;
