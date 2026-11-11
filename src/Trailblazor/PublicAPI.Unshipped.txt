@@ -4320,3 +4320,19 @@ Trailblazor.TbForm.IsTouchedChanged.set -> void
 Trailblazor.TbForm.MarkAsSavedAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbFieldBase<TValue>.ValidationAsync.get -> System.Func<TValue?, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string!>!>!>?
 Trailblazor.TbFieldBase<TValue>.ValidationAsync.set -> void
+Trailblazor.TbSelect<TValue>.Items.get -> System.Collections.Generic.IEnumerable<TValue>?
+Trailblazor.TbSelect<TValue>.Items.set -> void
+Trailblazor.TbSelect<TValue>.ItemText.get -> System.Func<TValue, string!>?
+Trailblazor.TbSelect<TValue>.ItemText.set -> void
+Trailblazor.TbSelect<TValue>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TValue>?
+Trailblazor.TbSelect<TValue>.ItemTemplate.set -> void
+Trailblazor.TbSelect<TValue>.ItemDisabled.get -> System.Func<TValue, bool>?
+Trailblazor.TbSelect<TValue>.ItemDisabled.set -> void
+Trailblazor.TbMultiSelect<TItem>.Items.get -> System.Collections.Generic.IEnumerable<TItem>?
+Trailblazor.TbMultiSelect<TItem>.Items.set -> void
+Trailblazor.TbMultiSelect<TItem>.ItemText.get -> System.Func<TItem, string!>?
+Trailblazor.TbMultiSelect<TItem>.ItemText.set -> void
+Trailblazor.TbMultiSelect<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
+Trailblazor.TbMultiSelect<TItem>.ItemTemplate.set -> void
+Trailblazor.TbMultiSelect<TItem>.ItemDisabled.get -> System.Func<TItem, bool>?
+Trailblazor.TbMultiSelect<TItem>.ItemDisabled.set -> void

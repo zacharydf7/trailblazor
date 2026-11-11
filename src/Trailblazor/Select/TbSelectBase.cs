@@ -13,6 +13,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     : TbBoxedFieldBase<TValue>, ISelect, IAsyncDisposable
 {
     private readonly List<ISelectOption> _options = [];
+    private IReadOnlyList<ItemOption> _itemOptions = [];
     private ElementReference _combobox;
     private ElementReference _listbox;
     private SelectDisplay? _display;
@@ -146,6 +147,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+        UseItems();
         // Only a new value from the parent opens or closes the list, so re-rendering with the old one keeps the
         // list as the user left it.
         if (Open != _lastOpen)
@@ -239,6 +241,35 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     }
 
     bool ISelect.IsSelected(object? value) => IsChosen(value);
+
+    // TbSelect and TbMultiSelect hand over their Items here.
+    private protected abstract void UseItems();
+
+    // Options are made again on each render, as TbOption children are, so items added to a list in place,
+    // and an ItemDisabled that reads the page's state, take effect.
+    private protected void UseItems<TItem>(IEnumerable<TItem>? items, Func<TItem, string>? itemText,
+        RenderFragment<TItem>? itemTemplate, Func<TItem, bool>? itemDisabled)
+    {
+        _options.RemoveAll(option => option is ItemOption);
+
+        _itemOptions = items?.Select((item, index) =>
+        {
+            var text = itemText?.Invoke(item) ?? FormatItem(item) ?? "";
+            return new ItemOption($"{FieldId}-item-{index}", item, text, itemDisabled?.Invoke(item) ?? false,
+                itemTemplate?.Invoke(item) ?? (builder => builder.AddContent(0, text)),
+                itemTemplate is null ? null : text);
+        }).ToList() ?? [];
+        _options.AddRange(_itemOptions);
+    }
+
+    // A choice the script makes for a key, such as Enter, is a click with no count of presses.
+    private async Task ChooseItemAsync(ItemOption option, MouseEventArgs args)
+    {
+        if (!option.Disabled)
+        {
+            await ((ISelect)this).ChooseAsync(option.Value, args.Detail > 0 ? "pointer" : "keyboard");
+        }
+    }
 
     bool ISelect.ShowsCheck => !Multiple;
 

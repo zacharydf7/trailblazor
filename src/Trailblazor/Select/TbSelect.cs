@@ -18,6 +18,27 @@ public class TbSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes
     [Parameter]
     public Func<TValue, string>? UnmatchedText { get; set; }
 
+    /// <summary>The values to offer, such as a long list or one loaded from a database, in place of
+    /// <see cref="TbOption{TValue}"/> children. They render without a component each.</summary>
+    [Parameter]
+    public IEnumerable<TValue>? Items { get; set; }
+
+    /// <summary>An item's text, which the list shows, type-ahead matches and screen readers read. Defaults to the
+    /// value's text.</summary>
+    [Parameter]
+    public Func<TValue, string>? ItemText { get; set; }
+
+    /// <summary>Shows an item in the list and, once chosen, in the select, in place of its text. The text still names
+    /// the item for screen readers and type-ahead.</summary>
+    [Parameter]
+    public RenderFragment<TValue>? ItemTemplate { get; set; }
+
+    /// <summary>Whether an item can't be chosen.</summary>
+    [Parameter]
+    public Func<TValue, bool>? ItemDisabled { get; set; }
+
+    private protected override void UseItems() => UseItems(Items, ItemText, ItemTemplate, ItemDisabled);
+
     private protected override bool Multiple => false;
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);

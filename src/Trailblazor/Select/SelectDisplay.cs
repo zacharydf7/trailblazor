@@ -85,7 +85,8 @@ internal sealed class SelectDisplay : ComponentBase
         foreach (var option in selected)
         {
             builder.OpenElement(3, "span");
-            builder.SetKey(option);
+            // By id, since options made from Items are made again on each render.
+            builder.SetKey(option.Id);
             builder.AddAttribute(4, "data-part", "chip");
             builder.AddAttribute(5, "data-option", option.Id);
             builder.AddAttribute(6, "class", "tb-chip tb-chip--small tb-chip--soft tb-chip--neutral tb-select__chip");

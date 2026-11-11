@@ -4004,6 +4004,10 @@ public static class ExampleCatalog
                     + "until it is first focused or pointed at, or its list is opened from code. That saves a call to "
                     + "the browser for each select on a page with many of them, such as a select on every row.",
                     typeof(SelectManyExample)),
+                new("items", "Options from a list", "`Items` makes the options from a list, such as one loaded from "
+                    + "a database, in place of `TbOption` children, and renders them without a component each. "
+                    + "`ItemText` names each one, `ItemTemplate` shows more than text, and `ItemDisabled` turns some "
+                    + "off. `TbMultiSelect` takes the same parameters.", typeof(SelectItemsExample)),
                 new("comparer", "Values loaded again", "`Comparer` decides whether two values are the same, so a value "
                     + "from another query, equal only by id, still matches its option.", typeof(SelectComparerExample)),
                 new("required", "Required", "`Required` shows a marker. Once the select is changed or its form "

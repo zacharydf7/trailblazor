@@ -58,6 +58,11 @@
                 }
             }
             <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+            @foreach (var option in _itemOptions)
+            {
+                <option value="@FormatItem(option.Value)" selected="@IsChosen(option.Value)"
+                        disabled="@option.Disabled">@option.Text</option>
+            }
             @if (_options.Count == 0)
             {
                 <option disabled data-part="status">@(Labels.Empty ?? Localizer[TbStrings.SelectEmpty])</option>
@@ -82,6 +87,25 @@
             }
             @* Not fixed, so every option re-renders with the select and its aria-selected follows the value. *@
             <CascadingValue Value="this">@ChildContent</CascadingValue>
+            @* Options made from Items: keep this markup in step with TbOption's. *@
+            @foreach (var option in _itemOptions)
+            {
+                var chosen = IsChosen(option.Value);
+                <div @key="option.Id" id="@option.Id" role="option" data-text="@option.Text" aria-label="@option.Name"
+                     aria-selected="@(chosen ? "true" : "false")" aria-disabled="@(option.Disabled ? "true" : null)"
+                     data-part="option" class="tb-select__option" @onclick="args => ChooseItemAsync(option, args)">
+                    @if (Multiple)
+                    {
+                        <span aria-hidden="true" class="tb-select__box"></span>
+                    }
+                    @option.Content
+                    @if (!Multiple && chosen)
+                    {
+                        <TbIcon Icon="BuiltInIcons.Check" Size="Size.Small" Tone="Tone.Primary" data-part="check"
+                                class="tb-select__check" />
+                    }
+                </div>
+            }
             @if (_options.Count == 0)
             {
                 @* A listbox holds only options, so the message is one that can't be chosen, in muted text rather

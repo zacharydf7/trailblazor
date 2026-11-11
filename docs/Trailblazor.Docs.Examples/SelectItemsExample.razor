@@ -1,0 +1,17 @@
+@* Items makes the options from the list, with no TbOption children; ItemText names each one. *@
+<TbSelect TValue="Trail" Label="Trail" Items="Trails" ItemText="trail => trail.Name"
+          ItemDisabled="trail => trail.Closed" Placeholder="Choose a trail" @bind-Value="_trail" />
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new("Cedar flats", Closed: false),
+        new("Eagle ridge", Closed: true),
+        new("Lake shore", Closed: false),
+        new("Pine hollow", Closed: false),
+    ];
+
+    private Trail? _trail;
+
+    private sealed record Trail(string Name, bool Closed);
+}

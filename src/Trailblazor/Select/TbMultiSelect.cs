@@ -28,6 +28,27 @@ public class TbMultiSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMember
     [Parameter]
     public bool SelectAll { get; set; }
 
+    /// <summary>The values to offer, such as a long list or one loaded from a database, in place of
+    /// <see cref="TbOption{TValue}"/> children. They render without a component each.</summary>
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>An item's text, which the list shows, type-ahead matches and screen readers read. Defaults to the
+    /// value's text.</summary>
+    [Parameter]
+    public Func<TItem, string>? ItemText { get; set; }
+
+    /// <summary>Shows an item in the list and, once chosen, in the select, in place of its text. The text still names
+    /// the item for screen readers and type-ahead.</summary>
+    [Parameter]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>Whether an item can't be chosen.</summary>
+    [Parameter]
+    public Func<TItem, bool>? ItemDisabled { get; set; }
+
+    private protected override void UseItems() => UseItems(Items, ItemText, ItemTemplate, ItemDisabled);
+
     private protected override bool ShowChips => Chips;
 
     private protected override bool ShowSelectAll => SelectAll;

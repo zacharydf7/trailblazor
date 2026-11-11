@@ -339,4 +339,20 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
 
     private static async Task<int> UnnamedWarningsAsync(IPage page) => (await page.ConsoleMessagesAsync())
         .Count(message => message.Type == "warning" && message.Text.Contains("Give the TbOption a Text."));
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldReachAndChooseItsItemsByKey_WhenItsOptionsComeFromItems(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+
+        await trail.FocusAsync();
+        await trail.PressAsync("ArrowDown");
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("End");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("trail")).ToHaveTextAsync("Ridge loop");
+        await Expect(trail).ToContainTextAsync("Ridge loop");
+    }
 }

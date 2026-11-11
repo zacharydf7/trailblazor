@@ -1,0 +1,10 @@
+@page "/select-items"
+
+@* A select built from Items, with no TbOption children, which the keys and type-ahead must still reach. *@
+<TbSelect TValue="string" Label="Trail" Items="Trails" @bind-Value="_trail" />
+<p data-testid="trail">@_trail</p>
+
+@code {
+    private static readonly string[] Trails = ["Cedar flats", "Lake shore", "Pine hollow", "Ridge loop"];
+    private string? _trail;
+}
