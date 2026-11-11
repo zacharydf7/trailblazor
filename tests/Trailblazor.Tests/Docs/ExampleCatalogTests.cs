@@ -174,6 +174,7 @@ public class ExampleCatalogTests
     private static readonly Dictionary<string, string[]> SharedFolders = new()
     {
         ["Button"] = ["icon-button"],
+        ["Checkbox"] = ["switch"],
         ["Dialog"] = ["drawer"],
         ["NavMenu"] = ["app-shell"],
         ["Popover"] = ["popconfirm"],
