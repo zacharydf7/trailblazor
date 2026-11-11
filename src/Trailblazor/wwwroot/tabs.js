@@ -101,8 +101,40 @@ export function attachTabs(list, order) {
     root.addEventListener('mousedown', onScrollerPress);
     list.addEventListener('scroll', updateScrollers, { passive: true });
 
+    // A focused tab the parent removes, by any route, hands focus to the next enabled tab or else the one before, as a
+    // closed tab does. Removing a tab after focus has left it moves nothing.
+    let focused = null;
+    const onFocusIn = event => focused = event.target.parentElement === list ? event.target : null;
+    // Chromium sends focusout while it removes the focused tab, and a window losing focus sends it too while the tab
+    // keeps focus, so wait a microtask to see whether focus really went elsewhere.
+    const onFocusOut = event => queueMicrotask(() => {
+        if (event.target === focused && event.target.isConnected && document.activeElement !== event.target) {
+            focused = null;
+        }
+    });
+    const refocus = records => {
+        const removedBy = new Map(records.flatMap(record => [...record.removedNodes].map(node => [node, record])));
+        const removal = focused && !focused.isConnected && removedBy.get(focused);
+        if (!removal || (document.activeElement && document.activeElement !== document.body)) {
+            return;
+        }
+
+        focused = null;
+        // A neighbor removed in the same render is passed over by continuing from the siblings its removal recorded.
+        const enabled = node => node.isConnected && node.matches?.('[role="tab"]:not(:disabled)');
+        const nearest = (node, side) => {
+            while (node && !enabled(node)) {
+                node = node.isConnected ? node[side] : removedBy.get(node)?.[side];
+            }
+
+            return node;
+        };
+        (nearest(removal.nextSibling, 'nextSibling') ?? nearest(removal.previousSibling, 'previousSibling'))?.focus();
+    };
+
     // Tabs arriving already selected change no attribute, and may not change the row's size.
-    const selection = new MutationObserver(() => {
+    const selection = new MutationObserver(records => {
+        refocus(records);
         revealSelected();
         watchTabs();
         updateScrollers();
@@ -167,6 +199,8 @@ export function attachTabs(list, order) {
     // A tab may have rendered between the first render and this call.
     reportOrder();
     list.addEventListener('keydown', onKeyDown);
+    list.addEventListener('focusin', onFocusIn);
+    list.addEventListener('focusout', onFocusOut);
     list.dataset.ready = '';
     const handle = DotNet.createJSObjectReference({
         dispose() {
@@ -174,6 +208,8 @@ export function attachTabs(list, order) {
             selection.disconnect();
             sizes.disconnect();
             list.removeEventListener('keydown', onKeyDown);
+            list.removeEventListener('focusin', onFocusIn);
+            list.removeEventListener('focusout', onFocusOut);
             list.removeEventListener('scroll', updateScrollers);
             root.removeEventListener('click', onScrollerClick);
             root.removeEventListener('mousedown', onScrollerPress);

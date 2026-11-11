@@ -1,0 +1,36 @@
+@page "/tabs-remove"
+
+@* The parent removes tabs from keys of its own, not through a close mark: "r" removes Beta, "b" removes Beta and
+   Gamma together, and "l" the last tab. Delta is disabled. *@
+<div @onkeydown="OnKeyDown">
+    <TbTabs AriaLabel="Trips">
+        @foreach (var trip in _trips)
+        {
+            <TbTab @key="trip" Text="@trip" Disabled="@(trip == "Delta")">@trip panel</TbTab>
+        }
+    </TbTabs>
+    <input aria-label="Notes" />
+</div>
+@* Not focusable, so a click on it sends focus to the page before Beta goes. *@
+<span @onclick="() => _trips.Remove(Beta)">Remove Beta</span>
+
+@code {
+    private const string Beta = "Beta";
+    private readonly List<string> _trips = ["Alpha", Beta, "Gamma", "Delta", "Echo"];
+
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        switch (args.Key)
+        {
+            case "r":
+                _trips.Remove(Beta);
+                break;
+            case "b":
+                _trips.RemoveAll(trip => trip is Beta or "Gamma");
+                break;
+            case "l":
+                _trips.RemoveAt(_trips.Count - 1);
+                break;
+        }
+    }
+}
