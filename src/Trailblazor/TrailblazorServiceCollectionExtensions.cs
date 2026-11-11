@@ -16,6 +16,7 @@ public static class TrailblazorServiceCollectionExtensions
     /// <summary>Registers Trailblazor's dialog, toast, announcer, browser, localizer, theme and telemetry services,
     /// and applies <paramref name="configure"/> to the app-wide <see cref="TrailblazorOptions"/>.</summary>
     [DynamicDependency(Kept, typeof(NumberChangeEventArgs))]
+    [DynamicDependency(Kept, typeof(NumberStepEventArgs))]
     [DynamicDependency(Kept, typeof(FieldFocusEventArgs))]
     [DynamicDependency(Kept, typeof(RowClickEventArgs))]
     [DynamicDependency(Kept, typeof(RowExtendEventArgs))]
