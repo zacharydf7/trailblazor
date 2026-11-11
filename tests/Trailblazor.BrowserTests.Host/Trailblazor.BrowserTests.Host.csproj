@@ -3,6 +3,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trailblazor\Trailblazor.csproj" />
     <ProjectReference Include="..\..\docs\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
+    <ProjectReference Include="..\Trailblazor.BrowserTests.Client\Trailblazor.BrowserTests.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,11 @@
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="ServerPages">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+    </Found>
+</Router>
+
+@code {
+    // The server's own pages, such as one that reads the posted form, which only render statically.
+    [Parameter]
+    public IEnumerable<System.Reflection.Assembly>? ServerPages { get; set; }
+}

@@ -1,0 +1,9 @@
+@inherits LayoutComponentBase
+
+@* Static pages still host dialogs and toasts interactively, for pages with an interactive part. *@
+<TbRoot HostRenderMode="InteractiveServer" />
+
+@* Tests wait for data-interactive, set once event handlers attach, and check data-renderer for where the page runs. *@
+<main data-interactive="@RendererInfo.IsInteractive" data-renderer="@RendererInfo.Name">
+    @Body
+</main>

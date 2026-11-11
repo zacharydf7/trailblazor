@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.WebUtilities;
+
 namespace Trailblazor.BrowserTests;
 
 public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
@@ -28,7 +30,7 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
             await held.Task;
             await route.ContinueAsync();
         });
-        await page.GotoAsync(new Uri(Fixture.BaseAddress, path).ToString());
+        await page.GotoAsync(HostAddress(path).ToString());
         // A click before this is lost anyway, when the interactive render replaces the prerendered page.
         await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
         return (page, held);
@@ -36,7 +38,7 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 
     // For pages rendered as static SSR, which never become interactive.
     protected Task<IPage> OpenStaticAsync(string browser, string path, BrowserNewContextOptions? options = null) =>
-        OpenAtAsync(browser, new Uri(Fixture.BaseAddress, path), options);
+        OpenAtAsync(browser, HostAddress(path), options);
 
     // For the published docs site, a WebAssembly app that has loaded once its page heading shows.
     protected async Task<IPage> OpenDocsAsync(string browser, string path, BrowserNewContextOptions? options = null)
@@ -52,6 +54,19 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         var page = await OpenAtAsync(browser, Fixture.TrimmedAppAddress, null);
         await page.GetByRole(AriaRole.Button).First.WaitForAsync();
         return page;
+    }
+
+    // TRAILBLAZOR_RENDER_MODE=webassembly or auto runs the host's pages that way, unless a test names its own ?mode=.
+    private Uri HostAddress(string path)
+    {
+        var address = new Uri(Fixture.BaseAddress, path);
+        var mode = Environment.GetEnvironmentVariable("TRAILBLAZOR_RENDER_MODE");
+        if (string.IsNullOrEmpty(mode) || QueryHelpers.ParseQuery(address.Query).ContainsKey("mode"))
+        {
+            return address;
+        }
+
+        return new Uri(QueryHelpers.AddQueryString(address.ToString(), "mode", mode));
     }
 
     private async Task<IPage> OpenAtAsync(string browser, Uri address, BrowserNewContextOptions? options)

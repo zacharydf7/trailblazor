@@ -4,8 +4,8 @@ using Trailblazor.BrowserTests.Host;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddTrailblazor(options => options.Dialogs.OutsidePopups.Add(".reused-popup"));
+builder.Services.AddRazorComponents().AddInteractiveServerComponents().AddInteractiveWebAssemblyComponents();
+builder.Services.AddTrailblazor(TestAppOptions.Configure);
 
 var app = builder.Build();
 
@@ -20,6 +20,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 });
 app.UseAntiforgery();
 app.MapStaticAssets();
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode().AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Routes).Assembly);
 
 app.Run();
