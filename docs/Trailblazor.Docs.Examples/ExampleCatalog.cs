@@ -6551,6 +6551,10 @@ public static class ExampleCatalog
                 new("overflow", "Many tabs", "A tab list too long for its row scrolls sideways, and moving focus to a "
                     + "tab brings it into view. The selected tab scrolls fully into view, leaving the page where it is.",
                     typeof(TabsOverflowExample)),
+                new("scroll-buttons", "Scroll buttons", "`ScrollButtons` puts a button at each end of the row; a click "
+                    + "scrolls the tabs by most of the row's width. They show only while the row overflows, each turns "
+                    + "off at its own end, and they're for the pointer, since the arrow keys already bring each tab "
+                    + "into view. A `Vertical` list has none.", typeof(TabsScrollButtonsExample)),
                 new("forms", "A form across tabs", "`RenderAllPanels` renders every panel from the start, hidden, so a "
                     + "form across the tabs validates and saves every field. A hidden panel's fields can't take focus, "
                     + "so name the tab that needs attention with `Text` and a `HeaderClass`; a class alone changes "
@@ -6626,6 +6630,8 @@ public static class ExampleCatalog
                 new("icon", "A tab's icon."),
                 new("close", "The close mark of a tab with an `OnClose`."),
                 new("add", "The add button that `OnAdd` shows."),
+                new("scroll-start", "The button that scrolls the row toward its start, with `ScrollButtons`."),
+                new("scroll-end", "The button that scrolls the row toward its end, with `ScrollButtons`."),
                 new("panel", "A tab's panel."),
             ],
             Anatomy = """

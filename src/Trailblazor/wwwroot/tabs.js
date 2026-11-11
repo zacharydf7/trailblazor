@@ -56,12 +56,82 @@ export function attachTabs(list, order) {
             : start < 0 ? start : Math.max(end, 0);
         list.scrollBy({ left, behavior: 'instant' });
     };
+    // Scroll buttons show while the row overflows, each turned off at its own end; a click scrolls by most of the row.
+    const scrollStep = 0.8;
+    // Some zoom levels leave the row a fraction of a pixel from its end.
+    const tolerance = 1;
+    const root = list.parentElement;
+    const scrollers = () => [...root.querySelectorAll(':scope > .tb-tabs__scroll')];
+    const updateScrollers = () => {
+        const overflow = list.scrollWidth - list.clientWidth;
+        // Right-to-left rows scroll to negative positions.
+        const along = Math.abs(list.scrollLeft);
+        for (const cell of scrollers()) {
+            const hide = overflow <= tolerance;
+            if (cell.hidden !== hide) {
+                cell.hidden = hide;
+            }
+
+            const toStart = cell.classList.contains('tb-tabs__scroll--start');
+            cell.querySelector('button').disabled = toStart ? along <= tolerance : along >= overflow - tolerance;
+        }
+    };
+    const scrollerOf = event => {
+        const cell = event.target.closest?.('.tb-tabs__scroll');
+        return cell?.parentElement === root ? cell : null;
+    };
+    const onScrollerClick = event => {
+        const cell = scrollerOf(event);
+        if (!cell) {
+            return;
+        }
+
+        const backward = cell.classList.contains('tb-tabs__scroll--start')
+            !== (getComputedStyle(list).direction === 'rtl');
+        const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+        list.scrollBy({ left: (backward ? -1 : 1) * list.clientWidth * scrollStep, behavior });
+    };
+    // A press leaves focus where it was, as on a number field's step buttons.
+    const onScrollerPress = event => {
+        if (scrollerOf(event)) {
+            event.preventDefault();
+        }
+    };
+    root.addEventListener('click', onScrollerClick);
+    root.addEventListener('mousedown', onScrollerPress);
+    list.addEventListener('scroll', updateScrollers, { passive: true });
+
     // Tabs arriving already selected change no attribute, and may not change the row's size.
-    const selection = new MutationObserver(revealSelected);
+    const selection = new MutationObserver(() => {
+        revealSelected();
+        watchTabs();
+        updateScrollers();
+    });
     selection.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
     // This covers what no selection change does: the first render and a hidden row being shown.
-    const sizes = new ResizeObserver(revealSelected);
+    const sizes = new ResizeObserver(() => {
+        revealSelected();
+        updateScrollers();
+    });
+    // A tab whose label grows changes how far the row overflows without resizing the list.
+    const watched = new Set();
+    const watchTabs = () => {
+        for (const tab of list.querySelectorAll(':scope > [role="tab"]')) {
+            if (!watched.has(tab)) {
+                watched.add(tab);
+                sizes.observe(tab);
+            }
+        }
+
+        for (const tab of watched) {
+            if (!tab.isConnected) {
+                watched.delete(tab);
+                sizes.unobserve(tab);
+            }
+        }
+    };
     sizes.observe(list);
+    watchTabs();
 
     let reported = null;
     const reportOrder = () => {
@@ -87,6 +157,11 @@ export function attachTabs(list, order) {
             || [...record.addedNodes, ...record.removedNodes].some(holdsAnchor))) {
             reportOrder();
         }
+
+        // Scroll buttons turned on after attachTabs ran arrive hidden, on a row that may already overflow.
+        if (records.some(record => record.target === root)) {
+            updateScrollers();
+        }
     });
     observer.observe(list.parentElement, { childList: true, subtree: true });
     // A tab may have rendered between the first render and this call.
@@ -99,6 +174,9 @@ export function attachTabs(list, order) {
             selection.disconnect();
             sizes.disconnect();
             list.removeEventListener('keydown', onKeyDown);
+            list.removeEventListener('scroll', updateScrollers);
+            root.removeEventListener('click', onScrollerClick);
+            root.removeEventListener('mousedown', onScrollerPress);
         },
     });
     return { handle };

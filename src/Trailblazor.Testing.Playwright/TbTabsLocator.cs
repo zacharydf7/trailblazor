@@ -22,8 +22,7 @@ public sealed class TbTabsLocator(ILocator scope, string? name)
     public async Task AddAsync()
     {
         await Assertions.Expect(List).ToHaveAttributeAsync("data-ready", "");
-        await List.Locator("xpath=following-sibling::*[1][@class='tb-tabs__actions']").Locator("[data-part=add]")
-            .ClickAsync();
+        await List.Locator("xpath=../*[@class='tb-tabs__actions']").Locator("[data-part=add]").ClickAsync();
     }
 
     /// <summary>Clicks the close mark of the tab with this name.</summary>

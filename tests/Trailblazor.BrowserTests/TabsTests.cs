@@ -164,6 +164,111 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(bareButton.X < bareColumn.X + bareColumn.Width, "The add button isn't in the bare column.");
     }
 
+    // A row's scroll buttons, by which end of the row they scroll toward.
+    private static (ILocator Start, ILocator End) Scrollers(ILocator list) =>
+        (list.Locator("xpath=..").Locator(":scope > .tb-tabs__scroll > [data-part=scroll-start]"),
+            list.Locator("xpath=..").Locator(":scope > .tb-tabs__scroll > [data-part=scroll-end]"));
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldScrollTheRowAndTurnEachButtonOffAtItsEnd_WhenItsScrollButtonsAreClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-scroll");
+        foreach (var name in new[] { "Long", "Flipped" })
+        {
+            var list = page.GetByRole(AriaRole.Tablist, new() { Name = name });
+            var (start, end) = Scrollers(list);
+            await Expect(start).ToBeDisabledAsync();
+            await Expect(end).ToBeEnabledAsync();
+            await list.GetByRole(AriaRole.Tab).First.FocusAsync();
+
+            await end.ClickAsync();
+            await Expect(start).ToBeEnabledAsync();
+            // Right-to-left rows scroll to negative positions.
+            Assert.True(await list.EvaluateAsync<double>("list => Math.abs(list.scrollLeft)") > 0,
+                $"{name} didn't scroll.");
+            await Expect(list.GetByRole(AriaRole.Tab).First).ToBeFocusedAsync();
+            // Forced, since the button can turn off between the check and the click as a smooth scroll ends.
+            for (var click = 0; click < 10 && await end.IsEnabledAsync(); click++)
+            {
+                await end.ClickAsync(new() { Force = true });
+                await page.WaitForTimeoutAsync(300);
+            }
+
+            await Expect(end).ToBeDisabledAsync();
+            Assert.True(await list.EvaluateAsync<bool>(
+                "list => Math.abs(list.scrollLeft) >= list.scrollWidth - list.clientWidth - 1"),
+                $"{name} isn't at its end.");
+            await start.ClickAsync();
+            await Expect(end).ToBeEnabledAsync();
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldHideTheScrollButtons_WhenTheRowFits(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-scroll");
+        await Expect(Scrollers(page.GetByRole(AriaRole.Tablist, new() { Name = "Long" })).End).ToBeVisibleAsync();
+
+        var (start, end) = Scrollers(page.GetByRole(AriaRole.Tablist, new() { Name = "Short" }));
+
+        await Expect(start).ToBeHiddenAsync();
+        await Expect(end).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldShowTheScrollButtons_WhenTurnedOnLaterOrTheRowStartsToOverflow(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-scroll");
+        await WaitForKeysAsync(page, "Late buttons");
+        await WaitForKeysAsync(page, "Growing");
+        var late = Scrollers(page.GetByRole(AriaRole.Tablist, new() { Name = "Late buttons" }));
+        var growing = Scrollers(page.GetByRole(AriaRole.Tablist, new() { Name = "Growing" }));
+        await Expect(growing.End).ToBeHiddenAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Show scroll buttons" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Grow the label" }).ClickAsync();
+
+        foreach (var (start, end) in new[] { late, growing })
+        {
+            await Expect(end).ToBeVisibleAsync();
+            await Expect(end).ToBeEnabledAsync();
+            await Expect(start).ToBeDisabledAsync();
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickTheAddButton_WhenScrollButtonsShowBeforeIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-scroll");
+        await Expect(Scrollers(page.GetByRole(AriaRole.Tablist, new() { Name = "Adding" })).End).ToBeVisibleAsync();
+
+        await page.Tb().Tabs("Adding").AddAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldKeepTheScrollButtonsAtTheRowsEndsBeforeTheAddButton_WhenBothShow(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-scroll");
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Adding" });
+        var (start, end) = Scrollers(list);
+        await Expect(end).ToBeVisibleAsync();
+        var add = list.Locator("xpath=..").Locator(":scope > .tb-tabs__actions > [data-part=add]");
+
+        var order = new[] { start, list, end, add };
+        var boxes = new List<LocatorBoundingBoxResult>();
+        foreach (var part in order)
+        {
+            boxes.Add((await part.BoundingBoxAsync())!);
+        }
+
+        for (var index = 1; index < boxes.Count; index++)
+        {
+            Assert.True(boxes[index].X >= boxes[index - 1].X + boxes[index - 1].Width - 1,
+                $"Part {index} is out of order.");
+            Assert.InRange(boxes[index].Y + boxes[index].Height / 2, boxes[1].Y, boxes[1].Y + boxes[1].Height);
+        }
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
     {

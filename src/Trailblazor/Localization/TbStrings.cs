@@ -508,6 +508,13 @@ public static class TbStrings
     /// <summary>"Add tab": names the add button that follows a tab list.</summary>
     public const string TabsAdd = "Tabs.Add";
 
+    /// <summary>"Scroll to earlier tabs": names the button that scrolls an overflowing tab row toward its start.
+    /// </summary>
+    public const string TabsScrollStart = "Tabs.ScrollStart";
+
+    /// <summary>"Scroll to later tabs": names the button that scrolls an overflowing tab row toward its end.</summary>
+    public const string TabsScrollEnd = "Tabs.ScrollEnd";
+
     /// <summary>"Enter adds a tag. Left Arrow moves to the tags.": describes a tag input's text box to screen
     /// readers. Right-to-left languages should say Right Arrow.</summary>
     public const string TagInputHint = "TagInput.Hint";
@@ -1099,6 +1106,8 @@ public static class TbStrings
         [PopconfirmCancel] = "Cancel",
         [TableOfContentsNavigation] = "On this page",
         [TabsAdd] = "Add tab",
+        [TabsScrollStart] = "Scroll to earlier tabs",
+        [TabsScrollEnd] = "Scroll to later tabs",
         [TagInputHint] = "Enter adds a tag. Left Arrow moves to the tags.",
         [TagInputRemove] = "Remove {0}",
         [TagInputAdded] = "{0} added",

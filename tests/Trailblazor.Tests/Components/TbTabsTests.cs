@@ -811,6 +811,36 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldPutAHiddenScrollButtonAtEachEndOfTheRow_WhenScrollButtonsIsSet()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ScrollButtons, true)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        var list = cut.Find("[role=tablist]");
+        var start = list.PreviousElementSibling!;
+        var end = list.NextElementSibling!;
+        Assert.Contains("tb-tabs--scrolls", cut.Find(".tb-tabs").ClassList);
+        Assert.True(start.HasAttribute("hidden") && end.HasAttribute("hidden"));
+        Assert.Equal(("Scroll to earlier tabs", "-1"), (start.QuerySelector("[data-part=scroll-start]")!
+            .GetAttribute("aria-label"), start.QuerySelector("button")!.GetAttribute("tabindex")));
+        Assert.Equal("Scroll to later tabs", end.QuerySelector("[data-part=scroll-end]")!.GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldPutNoScrollButtons_WhenTheListIsVerticalOrThePageIsStatic()
+    {
+        var vertical = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ScrollButtons, true)
+            .Add(tabs => tabs.Vertical, true)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var @static = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ScrollButtons, true)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Empty(vertical.FindAll(".tb-tabs__scroll"));
+        Assert.Empty(@static.FindAll(".tb-tabs__scroll"));
+    }
+
+    [Fact]
     public void Render_ShouldNameTheAddButtonByAddLabel_WhenGivenOne()
     {
         var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })

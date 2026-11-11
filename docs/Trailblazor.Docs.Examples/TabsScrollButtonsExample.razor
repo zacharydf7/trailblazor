@@ -1,0 +1,13 @@
+<div style="max-inline-size: 24rem">
+    <TbTabs AriaLabel="Trail sections" ScrollButtons>
+        @foreach (var section in Sections)
+        {
+            <TbTab Text="@section"><TbText>About the @section.ToLowerInvariant() of the trail.</TbText></TbTab>
+        }
+    </TbTabs>
+</div>
+
+@code {
+    private static readonly string[] Sections =
+        ["Trailhead", "Parking", "Bridges", "Switchbacks", "Ridge", "Summit", "Water", "Campsites", "Wildlife"];
+}

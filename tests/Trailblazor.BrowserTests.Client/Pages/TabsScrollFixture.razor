@@ -1,0 +1,58 @@
+@page "/tabs-scroll"
+
+@* Rows too long for their boxes, one right-to-left and one with an add button, and a short row that fits. *@
+<div style="inline-size: 20rem">
+    <TbTabs AriaLabel="Long" ScrollButtons>
+        @for (var index = 1; index <= 12; index++)
+        {
+            <TbTab Text="@($"Section {index}")">Section panel</TbTab>
+        }
+    </TbTabs>
+</div>
+<div dir="rtl" style="inline-size: 20rem">
+    <TbTabs AriaLabel="Flipped" ScrollButtons>
+        @for (var index = 1; index <= 12; index++)
+        {
+            <TbTab Text="@($"Part {index}")">Part panel</TbTab>
+        }
+    </TbTabs>
+</div>
+<div style="inline-size: 20rem">
+    <TbTabs AriaLabel="Adding" ScrollButtons OnAdd="() => { }">
+        @for (var index = 1; index <= 12; index++)
+        {
+            <TbTab Text="@($"Page {index}")">Page panel</TbTab>
+        }
+    </TbTabs>
+</div>
+<TbTabs AriaLabel="Short" ScrollButtons>
+    <TbTab Text="One">One panel</TbTab>
+    <TbTab Text="Two">Two panel</TbTab>
+</TbTabs>
+
+@* Overflows from the start, and gains scroll buttons only when asked. *@
+<div style="inline-size: 20rem">
+    <TbTabs AriaLabel="Late buttons" ScrollButtons="_lateButtons">
+        @for (var index = 1; index <= 12; index++)
+        {
+            <TbTab Text="@($"Step {index}")">Step panel</TbTab>
+        }
+    </TbTabs>
+</div>
+<TbButton OnClick="() => _lateButtons = true">Show scroll buttons</TbButton>
+
+@* Fits until its first tab's label grows. *@
+<div style="inline-size: 20rem">
+    <TbTabs AriaLabel="Growing" ScrollButtons>
+        <TbTab Text="@_growingLabel">First panel</TbTab>
+        <TbTab Text="Second">Second panel</TbTab>
+    </TbTabs>
+</div>
+<TbButton OnClick="GrowTheLabel">Grow the label</TbButton>
+
+@code {
+    private bool _lateButtons;
+    private string _growingLabel = "First";
+
+    private void GrowTheLabel() => _growingLabel = "A first tab with a label far too long to fit in its row";
+}

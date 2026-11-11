@@ -8,7 +8,16 @@
 
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), ClassNames.Modifier("tb-tabs", Size),
-                Vertical ? "tb-tabs--vertical" : null, ShowsAdd ? "tb-tabs--actions" : null, Class)">
+                Vertical ? "tb-tabs--vertical" : null, ShowsAdd ? "tb-tabs--actions" : null,
+                ShowsScrollButtons ? "tb-tabs--scrolls" : null, Class)">
+    @* Hidden until the script finds the row overflowing. *@
+    @if (ShowsScrollButtons)
+    {
+        <div class="tb-tabs__scroll tb-tabs__scroll--start" hidden>
+            <TbIconButton Icon="ScrollStartIcon" AriaLabel="@Localizer[TbStrings.TabsScrollStart]" Size="Size"
+                          tabindex="-1" data-part="scroll-start" />
+        </div>
+    }
     @* The script sets data-ready here once the arrow keys work, which tests wait for. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")"
@@ -28,6 +37,13 @@
                     @onclick="_click.For(tab)">@tab.HeaderContent</button>
         }
     </div>
+    @if (ShowsScrollButtons)
+    {
+        <div class="tb-tabs__scroll tb-tabs__scroll--end" hidden>
+            <TbIconButton Icon="ScrollEndIcon" AriaLabel="@Localizer[TbStrings.TabsScrollEnd]" Size="Size"
+                          tabindex="-1" data-part="scroll-end" />
+        </div>
+    }
     @* A tab list holds only tabs, so the add button follows it. *@
     @if (ShowsAdd)
     {
@@ -135,6 +151,12 @@
     [Parameter]
     public string? AddLabel { get; set; }
 
+    /// <summary>Puts a button at each end of the tab row; a click scrolls the row by most of its width.
+    /// The buttons show only while the row overflows and the page is interactive, and are for the pointer: the arrow
+    /// keys already bring each tab into view. A <see cref="Vertical"/> list has none.</summary>
+    [Parameter]
+    public bool ScrollButtons { get; set; }
+
     /// <summary>The tab list's accessible name, when nothing nearby already names it.</summary>
     [Parameter]
     public string? AriaLabel { get; set; }
@@ -148,6 +170,12 @@
     internal bool SelectsByKey => _selectsByKey;
 
     private bool ShowsAdd => OnAdd.HasDelegate && RendererInfo.IsInteractive;
+
+    private bool ShowsScrollButtons => ScrollButtons && !Vertical && RendererInfo.IsInteractive;
+
+    private static readonly Icon ScrollStartIcon = BuiltInIcons.ChevronStart with { MirrorsInRightToLeft = true };
+
+    private static readonly Icon ScrollEndIcon = BuiltInIcons.ChevronEnd with { MirrorsInRightToLeft = true };
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)

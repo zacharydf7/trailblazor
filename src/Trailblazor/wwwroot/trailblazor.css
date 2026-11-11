@@ -6043,6 +6043,46 @@
         border-block-end: 1px solid var(--tb-border-subtle);
     }
 
+    /* Scroll buttons sit outside the scrolling list, each in a fixed grid cell so hiding one shifts nothing. */
+    .tb-tabs--scrolls {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .tb-tabs--scrolls.tb-tabs--actions {
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+    }
+
+    .tb-tabs--scrolls > .tb-tabs__scroll--start {
+        grid-area: 1 / 1;
+    }
+
+    .tb-tabs--scrolls > .tb-tabs__list {
+        grid-area: 1 / 2;
+    }
+
+    .tb-tabs--scrolls > .tb-tabs__scroll--end {
+        grid-area: 1 / 3;
+    }
+
+    .tb-tabs--scrolls > .tb-tabs__actions {
+        grid-area: 1 / 4;
+    }
+
+    .tb-tabs--scrolls > :not(.tb-tabs__list, .tb-tabs__actions, .tb-tabs__scroll) {
+        grid-column: 1 / -1;
+    }
+
+    .tb-tabs__scroll {
+        display: flex;
+        align-items: center;
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-tabs__scroll[hidden] {
+        display: none;
+    }
+
     /* In a column, the add button sits under the tabs, and the panels beside both. */
     .tb-tabs--vertical.tb-tabs--actions {
         grid-template-columns: auto minmax(0, 1fr);
@@ -6134,7 +6174,7 @@
     }
 
     /* Soft and filled tabs are pills with no line under the row; the selected one takes the variant's fill. */
-    :is(.tb-tabs--soft, .tb-tabs--filled) > :is(.tb-tabs__list, .tb-tabs__actions) {
+    :is(.tb-tabs--soft, .tb-tabs--filled) > :is(.tb-tabs__list, .tb-tabs__actions, .tb-tabs__scroll) {
         border: none;
     }
 

@@ -805,8 +805,8 @@ public sealed class TbTabsDriver
     /// <summary>Clicks the add button that follows the tab list. Throws for tabs with no add button.</summary>
     public Task AddAsync()
     {
-        var add = _find().NextElementSibling is { ClassName: "tb-tabs__actions" } actions
-            ? actions.QuerySelector("[data-part=add]") : null;
+        var add = _find().ParentElement?.Children.FirstOrDefault(cell => cell.ClassName == "tb-tabs__actions")
+            ?.QuerySelector("[data-part=add]");
         return (add ?? throw new InvalidOperationException("The tabs have no add button."))
             .ClickAsync(new MouseEventArgs { Detail = 1 });
     }

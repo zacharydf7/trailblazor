@@ -4353,3 +4353,7 @@ Trailblazor.NumberStepEventArgs.Large.set -> void
 Trailblazor.NumberStepEventArgs.NumberStepEventArgs() -> void
 Trailblazor.TbNumberField<TValue>.LargeStep.get -> decimal?
 Trailblazor.TbNumberField<TValue>.LargeStep.set -> void
+const Trailblazor.TbStrings.TabsScrollEnd = "Tabs.ScrollEnd" -> string!
+const Trailblazor.TbStrings.TabsScrollStart = "Tabs.ScrollStart" -> string!
+Trailblazor.TbTabs.ScrollButtons.get -> bool
+Trailblazor.TbTabs.ScrollButtons.set -> void

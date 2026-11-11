@@ -337,6 +337,24 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Tabs_ShouldClickTheAddButton_WhenScrollButtonsComeBeforeIt()
+    {
+        var added = 0;
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ScrollButtons, true)
+            .Add(tabs => tabs.OnAdd, () => added++)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTab>(0);
+                builder.AddAttribute(1, nameof(TbTab.Text), "Overview");
+                builder.CloseComponent();
+            })));
+
+        await cut.Tb().Tabs().AddAsync();
+
+        Assert.Equal(1, added);
+    }
+
+    [Fact]
     public async Task Tabs_ShouldThrow_WhenAskedToAddToTabsWithNoAddButton()
     {
         var cut = RenderForm();
