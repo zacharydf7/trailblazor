@@ -60,6 +60,17 @@ public class DatePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldTypeAGregorianYear_WhenTheCulturesCalendarIsAnother(string browser)
+    {
+        var page = await OpenAsync(browser, "/date-picker?dates=th-TH");
+
+        await page.Tb().DatePicker("Start date").ChooseAsync(new DateOnly(2026, 9, 14));
+
+        await Expect(page.GetByTestId("start")).ToHaveTextAsync("2026-09-14");
+        await Expect(page.Tb().DatePicker("Start date").Input).ToHaveValueAsync("14/9/2026");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ValueAsync_ShouldWaitForTheInteractiveField_WhenThePageIsStillPrerendered(string browser)
     {
         var page = await OpenStaticAsync(browser, "/date-picker");

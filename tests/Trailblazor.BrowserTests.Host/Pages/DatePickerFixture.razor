@@ -2,11 +2,16 @@
 @using System.Globalization
 
 <TbStack Gap="4">
-    <TbDatePicker TDate="DateOnly" Label="Start date" @bind-Value="_start" Culture="_culture" />
+    <TbDatePicker TDate="DateOnly" Label="Start date" @bind-Value="_start" Culture="ShownCulture" />
     <output data-testid="start">@(_start?.ToString("yyyy-MM-dd") ?? "none")</output>
 </TbStack>
 
 @code {
-    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("en-US");
     private DateOnly? _start = new DateOnly(2026, 6, 3);
+
+    // A test can show the dates in another culture, such as ?dates=th-TH.
+    [SupplyParameterFromQuery(Name = "dates")]
+    public string? DateCulture { get; set; }
+
+    private CultureInfo ShownCulture => CultureInfo.GetCultureInfo(DateCulture ?? "en-US");
 }

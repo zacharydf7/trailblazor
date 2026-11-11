@@ -51,7 +51,8 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     public string? Format { get; set; }
 
     /// <summary>The culture for the format, the month and day names, and the first day of the week. Defaults to the
-    /// current culture.</summary>
+    /// current culture. Dates are always Gregorian, like the grid, even for a culture with its own calendar, such as
+    /// th-TH.</summary>
     [Parameter]
     public CultureInfo? Culture { get; set; }
 
@@ -92,7 +93,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     // The label names the group of boxes, not one box.
     private protected override bool LabelTargetsInput => false;
 
-    private CultureInfo DateCulture => Culture ?? CultureInfo.CurrentCulture;
+    private CultureInfo DateCulture => CalendarDates.Gregorian(Culture ?? CultureInfo.CurrentCulture);
 
     private string DateFormat => Format ?? DateCulture.DateTimeFormat.ShortDatePattern;
 

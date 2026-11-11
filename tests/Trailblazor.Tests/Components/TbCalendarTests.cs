@@ -81,6 +81,16 @@ public class TbCalendarTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameTheGridsGregorianYear_WhenTheCulturesCalendarIsAnother()
+    {
+        var cut = Render<TbCalendar<DateOnly>>(parameters => parameters.Add(calendar => calendar.Value, June3)
+            .Add(calendar => calendar.Culture, CultureInfo.GetCultureInfo("th-TH")));
+
+        Assert.EndsWith("2026", cut.Find("[data-part=title]").TextContent.Trim());
+        Assert.EndsWith("2026", Cell(cut, "2026-06-03").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public async Task Click_ShouldChooseTheDay_WhenADayIsClicked()
     {
         var cut = RenderCalendar(June3);

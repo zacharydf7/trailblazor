@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Trailblazor;
@@ -6,6 +7,19 @@ namespace Trailblazor;
 // The date arithmetic and names shared by the calendar and the date range picker's calendar.
 internal static partial class CalendarDates
 {
+    private static readonly ConditionalWeakTable<CultureInfo, CultureInfo> GregorianCultures = [];
+
+    // The grid is Gregorian, so a culture with another calendar, such as th-TH, names and reads dates in Gregorian too.
+    public static CultureInfo Gregorian(CultureInfo culture) => culture.DateTimeFormat.Calendar is GregorianCalendar
+        || !culture.OptionalCalendars.OfType<GregorianCalendar>().Any()
+        ? culture
+        : GregorianCultures.GetValue(culture, static other =>
+        {
+            var copy = (CultureInfo)other.Clone();
+            copy.DateTimeFormat.Calendar = other.OptionalCalendars.OfType<GregorianCalendar>().First();
+            return CultureInfo.ReadOnly(copy);
+        });
+
     public static void ThrowUnlessDate<TDate>(string component) where TDate : struct
     {
         if (typeof(TDate) != typeof(DateOnly) && typeof(TDate) != typeof(DateTime))

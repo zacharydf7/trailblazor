@@ -46,6 +46,17 @@ public class TbDateTimePickerTests : BunitContext
     }
 
     [Fact]
+    public async Task Change_ShouldReadAndShowAGregorianYear_WhenTheCulturesCalendarIsAnother()
+    {
+        var cut = RenderPicker(June3At2, culture: CultureInfo.GetCultureInfo("th-TH"));
+
+        Assert.Equal("3/6/2026", DateBox(cut).GetAttribute("value"));
+        await DateBox(cut).ChangeAsync(new ChangeEventArgs { Value = "12/6/2026" });
+
+        Assert.Equal([new DateTime(2026, 6, 12, 14, 30, 0)], _changes);
+    }
+
+    [Fact]
     public async Task Change_ShouldKeepTheTime_WhenADateIsTyped()
     {
         var cut = RenderPicker(June3At2);
@@ -365,11 +376,12 @@ public class TbDateTimePickerTests : BunitContext
         cut.Find("input[data-part=time-input]");
 
     private IRenderedComponent<TbDateTimePicker<DateTime>> RenderPicker(DateTime? value,
-        Action<ComponentParameterCollectionBuilder<TbDateTimePicker<DateTime>>>? configure = null) =>
+        Action<ComponentParameterCollectionBuilder<TbDateTimePicker<DateTime>>>? configure = null,
+        CultureInfo? culture = null) =>
         Render<TbDateTimePicker<DateTime>>(parameters =>
         {
             parameters.Add(picker => picker.Value, value).Add(picker => picker.Label, "Starts")
-                .Add(picker => picker.Culture, English)
+                .Add(picker => picker.Culture, culture ?? English)
                 .Add(picker => picker.ValueChanged, (DateTime? time) => _changes.Add(time));
             configure?.Invoke(parameters);
         });

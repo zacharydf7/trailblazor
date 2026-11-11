@@ -72,7 +72,8 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     public RenderFragment<TDate>? DayContent { get; set; }
 
     /// <summary>The culture for the month and day names and the first day of the week. Defaults to the current
-    /// culture.</summary>
+    /// culture. Dates are always Gregorian, like the grid, even for a culture with its own calendar, such as th-TH.
+    /// </summary>
     [Parameter]
     public CultureInfo? Culture { get; set; }
 
@@ -90,7 +91,7 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     [Inject]
     private TimeProvider Time { get; set; } = default!;
 
-    private CultureInfo DateCulture => Culture ?? CultureInfo.CurrentCulture;
+    private CultureInfo DateCulture => CalendarDates.Gregorian(Culture ?? CultureInfo.CurrentCulture);
 
     // The server's clock can be in another time zone, so the browser's date wins once its script has attached.
     private DateOnly Today => _browserToday ?? DateOnly.FromDateTime(Time.GetLocalNow().DateTime);

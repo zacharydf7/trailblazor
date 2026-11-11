@@ -32,6 +32,19 @@ public class TbDatePickerTests : BunitContext
     }
 
     [Fact]
+    public async Task Change_ShouldReadAndShowAGregorianYear_WhenTheCulturesCalendarIsAnother()
+    {
+        var cut = Render<TbDatePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Start date")
+            .Add(picker => picker.Value, June3).Add(picker => picker.Culture, CultureInfo.GetCultureInfo("th-TH"))
+            .Add(picker => picker.ValueChanged, (DateOnly? date) => _changes.Add(date)));
+
+        Assert.Equal("3/6/2026", cut.Find("input[data-part=input]").GetAttribute("value"));
+        await cut.Find("input[data-part=input]").ChangeAsync(new ChangeEventArgs { Value = "12/6/2026" });
+
+        Assert.Equal([new DateOnly(2026, 6, 12)], _changes);
+    }
+
+    [Fact]
     public async Task Change_ShouldSetTheDate_WhenTheTextIsInTheFormat()
     {
         var cut = RenderPicker(June3);

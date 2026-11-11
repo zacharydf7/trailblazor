@@ -5078,7 +5078,9 @@ public static class ExampleCatalog
                     typeof(DateRangePickerDisabledDaysExample)),
                 new("format-and-culture", "Format and culture", "`Format` sets how the boxes show and read dates. "
                     + "`Culture` sets the month and day names, the first day of the week, and the format when `Format` "
-                    + "isn't set. It defaults to the current culture.", typeof(DateRangePickerFormatExample)),
+                    + "isn't set. It defaults to the current culture. Dates stay Gregorian, like the calendar's grid, "
+                    + "even for a culture with its own calendar, such as th-TH.",
+                    typeof(DateRangePickerFormatExample)),
                 new("placeholders", "Placeholders", "Each empty box shows the format. `StartPlaceholder` and "
                     + "`EndPlaceholder` show other words instead, so give the format in `HelperText`.",
                     typeof(DateRangePickerPlaceholderExample)),

@@ -31,7 +31,7 @@ public sealed class TbDateTimePickerLocator(ILocator scope, string label)
         // A prerendered field is replaced once the page is interactive, so the typing waits for the boxes that read it.
         await Assertions.Expect(Group).ToHaveAttributeAsync("data-format", new Regex(".+"));
         var format = await Group.GetAttributeAsync("data-format");
-        var culture = CultureInfo.GetCultureInfo(await Group.GetAttributeAsync("data-culture") ?? "");
+        var culture = GregorianCulture.Named(await Group.GetAttributeAsync("data-culture"));
         await DateInput.FillAsync(value?.ToString(format, culture) ?? "");
         await DateInput.PressAsync("Tab");
         if (value is not { } chosen)

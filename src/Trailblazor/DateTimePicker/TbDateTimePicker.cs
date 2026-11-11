@@ -47,7 +47,8 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     public string? Format { get; set; }
 
     /// <summary>The culture for the date's format, the month and day names, and the first day of the week. Defaults to
-    /// the current culture. The time box shows the time in the browser's language.</summary>
+    /// the current culture. Dates are always Gregorian, like the grid, even for a culture with its own calendar, such as
+    /// th-TH. The time box shows the time in the browser's language.</summary>
     [Parameter]
     public CultureInfo? Culture { get; set; }
 
@@ -89,7 +90,7 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
 
     private string TimeId => $"{InputId}-time";
 
-    private CultureInfo DateCulture => Culture ?? CultureInfo.CurrentCulture;
+    private CultureInfo DateCulture => CalendarDates.Gregorian(Culture ?? CultureInfo.CurrentCulture);
 
     private string DateFormat => Format ?? DateCulture.DateTimeFormat.ShortDatePattern;
 

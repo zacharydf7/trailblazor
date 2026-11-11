@@ -366,7 +366,7 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label)
         // A prerendered field is replaced once the page is interactive, so the calendar's script is waited for.
         await Assertions.Expect(group.Locator("[data-part=trigger]")).ToHaveAttributeAsync("data-ready", "");
         var format = await group.GetAttributeAsync("data-format");
-        var culture = CultureInfo.GetCultureInfo(await group.GetAttributeAsync("data-culture") ?? "");
+        var culture = GregorianCulture.Named(await group.GetAttributeAsync("data-culture"));
         await boxes.Nth(0).FillAsync(start?.ToString(format, culture) ?? "");
         await boxes.Nth(1).FillAsync(end?.ToString(format, culture) ?? "");
         await boxes.Nth(1).PressAsync("Enter");

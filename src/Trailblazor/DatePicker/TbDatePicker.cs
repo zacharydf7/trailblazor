@@ -35,7 +35,8 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     public string? Format { get; set; }
 
     /// <summary>The culture for the format, the month and day names, and the first day of the week. Defaults to the
-    /// current culture.</summary>
+    /// current culture. Dates are always Gregorian, like the grid, even for a culture with its own calendar, such as
+    /// th-TH.</summary>
     [Parameter]
     public CultureInfo? Culture { get; set; }
 
@@ -57,7 +58,7 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     [Parameter]
     public FieldClasses? Classes { get; set; }
 
-    private CultureInfo DateCulture => Culture ?? CultureInfo.CurrentCulture;
+    private CultureInfo DateCulture => CalendarDates.Gregorian(Culture ?? CultureInfo.CurrentCulture);
 
     private string DateFormat => Format ?? DateCulture.DateTimeFormat.ShortDatePattern;
 

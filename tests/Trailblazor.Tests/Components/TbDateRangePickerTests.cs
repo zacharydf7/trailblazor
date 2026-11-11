@@ -191,6 +191,17 @@ public class TbDateRangePickerTests : BunitContext
     }
 
     [Fact]
+    public void Change_ShouldReadAndShowGregorianYears_WhenTheCulturesCalendarIsAnother()
+    {
+        var cut = RenderPicker(June3To10, culture: CultureInfo.GetCultureInfo("th-TH"));
+
+        Assert.Equal("3/6/2026", cut.Find("[data-part=start-input]").GetAttribute("value"));
+        cut.Find("[data-part=start-input]").Change("1/6/2026");
+
+        Assert.Equal([new(new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 10))], _changes);
+    }
+
+    [Fact]
     public void Change_ShouldExplainWithTheFormatAndKeepTheText_WhenADateCantBeRead()
     {
         var cut = RenderPicker(June3To10, parameters => parameters.Add(picker => picker.Format, "dd.MM.yyyy"));
@@ -340,11 +351,12 @@ public class TbDateRangePickerTests : BunitContext
     }
 
     private IRenderedComponent<TbDateRangePicker<DateOnly>> RenderPicker(DateRange<DateOnly> value,
-        Action<ComponentParameterCollectionBuilder<TbDateRangePicker<DateOnly>>>? configure = null) =>
+        Action<ComponentParameterCollectionBuilder<TbDateRangePicker<DateOnly>>>? configure = null,
+        CultureInfo? culture = null) =>
         Render<TbDateRangePicker<DateOnly>>(parameters =>
         {
             parameters.Add(picker => picker.Value, value).Add(picker => picker.Label, "Trip dates")
-                .Add(picker => picker.Culture, English)
+                .Add(picker => picker.Culture, culture ?? English)
                 .Add(picker => picker.ValueChanged, (DateRange<DateOnly> range) => _changes.Add(range));
             configure?.Invoke(parameters);
         });
