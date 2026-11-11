@@ -2570,6 +2570,8 @@ Trailblazor.TbSelect<TValue>.TbSelect() -> void
 Trailblazor.TbSelect<TValue>.UnmatchedText.get -> System.Func<TValue, string!>?
 Trailblazor.TbSelect<TValue>.UnmatchedText.set -> void
 Trailblazor.TbSelectBase<TValue>
+Trailblazor.TbSelectBase<TValue>.AttachOnFirstUse.get -> bool
+Trailblazor.TbSelectBase<TValue>.AttachOnFirstUse.set -> void
 Trailblazor.TbSelectBase<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbSelectBase<TValue>.ChildContent.set -> void
 Trailblazor.TbSelectBase<TValue>.Classes.get -> Trailblazor.FieldClasses?

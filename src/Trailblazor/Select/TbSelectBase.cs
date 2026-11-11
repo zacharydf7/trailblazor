@@ -21,11 +21,18 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     private bool _open;
     private bool _lastOpen;
     private bool _openFromParent;
+    private bool _attaching;
     private bool _disposed;
 
     /// <summary>The <see cref="TbOption{TValue}"/>s to choose from.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Sets up the select's script when it is first focused or pointed at, or its list is opened from code,
+    /// not when the select first renders. That saves a call to the browser for each select on a page with many of them,
+    /// such as a select on every row.</summary>
+    [Parameter]
+    public bool AttachOnFirstUse { get; set; }
 
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
@@ -158,29 +165,10 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
         await base.OnAfterRenderAsync(firstRender);
         try
         {
-            if (firstRender)
+            if ((!AttachOnFirstUse || _openFromParent) && !_attaching)
             {
-                var module = await Modules.ImportAsync("./_content/Trailblazor/select.js");
-                if (_disposed)
-                {
-                    return;
-                }
-
-                _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync));
-                var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox,
-                    _toggle);
-                if (handle is null)
-                {
-                    return;
-                }
-
-                if (_disposed)
-                {
-                    await handle.DisposeHandleAsync();
-                    return;
-                }
-
-                _handle = handle;
+                _attaching = true;
+                await AttachAsync();
             }
 
             if (_handle is not null && _openFromParent)
@@ -200,6 +188,54 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
         {
             // The circuit is gone, and the select went with it.
         }
+    }
+
+    // A select that waits for its first use listens on its combobox and marks it, so tests know to focus it first. One
+    // opened from code isn't marked: it attaches right after this render, and no later render would remove the mark.
+    private bool WaitsForUse => AttachOnFirstUse && !_attaching && !_openFromParent;
+
+    private EventCallback AttachOnUse => WaitsForUse ? EventCallback.Factory.Create(this, AttachOnUseAsync) : default;
+
+    private async Task AttachOnUseAsync()
+    {
+        if (_attaching)
+        {
+            return;
+        }
+
+        _attaching = true;
+        try
+        {
+            await AttachAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the select went with it.
+        }
+    }
+
+    private async Task AttachAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/select.js");
+        if (_disposed)
+        {
+            return;
+        }
+
+        _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync));
+        var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox, _toggle);
+        if (handle is null)
+        {
+            return;
+        }
+
+        if (_disposed)
+        {
+            await handle.DisposeHandleAsync();
+            return;
+        }
+
+        _handle = handle;
     }
 
     bool ISelect.IsSelected(object? value) => IsChosen(value);

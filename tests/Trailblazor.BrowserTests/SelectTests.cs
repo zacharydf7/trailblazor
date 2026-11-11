@@ -5,6 +5,58 @@ namespace Trailblazor.BrowserTests;
 public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldChooseThroughTheTestingHelper_WhenItAttachesOnFirstUse(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-on-use");
+
+        await page.Tb().Select("Trail").ChooseAsync("Eagle Ridge");
+
+        await Expect(page.GetByTestId("trail")).ToHaveTextAsync("Eagle Ridge");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldOpenItsList_WhenClickedBesideTheComboboxBeforeItsFirstUse(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-on-use");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-attach-on-use", "");
+
+        // A click on the field's edge, outside the combobox, neither focuses it nor passes over it.
+        await trail.Locator("xpath=..").ClickAsync(new() { Position = new() { X = 2, Y = 2 } });
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Trail" })).ToBeVisibleAsync();
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldFocusTheCombobox_WhenItsLabelIsClickedBeforeItsFirstUse(string browser)
+    {
+        var (page, _) = await OpenWithAScriptHeldAsync(browser, "/select-on-use", "**/select.*js");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-attach-on-use", "");
+
+        await page.Locator("label", new() { HasText = "Trail" }).ClickAsync();
+
+        await Expect(trail).ToBeFocusedAsync();
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldOpenItsList_WhenAKeyIsPressedBeforeItsScriptHasLoaded(string browser)
+    {
+        var (page, script) = await OpenWithAScriptHeldAsync(browser, "/select-on-use", "**/select.*js");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-attach-on-use", "");
+
+        await trail.FocusAsync();
+        await trail.PressAsync("ArrowDown");
+        script.SetResult();
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Trail" })).ToBeVisibleAsync();
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldOpenItsList_WhenClickedBeforeItsScriptHasLoaded(string browser)
     {
         var (page, script) = await OpenWithAScriptHeldAsync(browser, "/examples/select", "**/select.*js");

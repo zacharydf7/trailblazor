@@ -225,7 +225,7 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
         }
 
         // The keys and clicks work once the select's script has attached.
-        await Assertions.Expect(control).ToHaveAttributeAsync("data-ready", "");
+        await Scope.ReadyAsync(scope, control);
         // A filterable select points to the dialog that holds its filter and listbox.
         var controls = await control.GetAttributeAsync("aria-controls");
         var listbox = Scope.Document(scope)

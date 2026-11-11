@@ -318,7 +318,7 @@ export function createSelect(combobox, listbox, toggle) {
     control.addEventListener('pointerdown', onPointerDown, { capture: true });
     control.addEventListener('click', onControlClick);
     label?.addEventListener('click', onLabelClick);
-    // select-early-click.js marks a select that was clicked before this script attached.
+    // select-early-click.js marks a select that was clicked, or got an opening key, before this script attached.
     if ('openWhenReady' in combobox.dataset) {
         delete combobox.dataset.openWhenReady;
         combobox.focus();

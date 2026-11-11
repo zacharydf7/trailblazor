@@ -7,6 +7,7 @@
     {
         @* Focus stays on the combobox; the script moves an active option and keeps aria-expanded current. *@
         <div @attributes="ControlAttributes" @ref="_combobox" data-part="input" id="@InputId" role="combobox"
+             data-attach-on-use="@(WaitsForUse ? "" : null)" @onfocus="AttachOnUse" @onpointerenter="AttachOnUse"
              tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-haspopup="@(Filterable ? "dialog" : "listbox")" aria-expanded="false"
              aria-controls="@(Filterable ? PopupId : ListboxId)"

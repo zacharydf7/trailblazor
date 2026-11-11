@@ -665,6 +665,56 @@ public class TbSelectTests : BunitContext
         Assert.Null(day);
     }
 
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScriptOnlyOnceTheComboboxTakesFocus_WhenSet()
+    {
+        var cut = Render<TbSelect<string?>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.AttachOnFirstUse, true));
+        Assert.Empty(JSInterop.Invocations["createSelect"]);
+        Assert.True(cut.Find("[role=combobox]").HasAttribute("data-attach-on-use"));
+
+        cut.Find("[role=combobox]").Focus();
+
+        Assert.Single(JSInterop.Invocations["createSelect"]);
+        Assert.False(cut.Find("[role=combobox]").HasAttribute("data-attach-on-use"));
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenThePointerReachesTheCombobox()
+    {
+        var cut = Render<TbSelect<string?>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.AttachOnFirstUse, true));
+
+        cut.Find("[role=combobox]").PointerEnter();
+
+        Assert.Single(JSInterop.Invocations["createSelect"]);
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScriptAndOpen_WhenTheParentOpensItBeforeUse()
+    {
+        var handle = SetUpSetOpen();
+        var cut = Render<TbSelect<string?>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.AttachOnFirstUse, true));
+
+        cut.Render(parameters => parameters.Add(select => select.Open, true));
+
+        Assert.Single(JSInterop.Invocations["createSelect"]);
+        Assert.Equal([true], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
+        Assert.False(cut.Find("[role=combobox]").HasAttribute("data-attach-on-use"));
+    }
+
+    [Fact]
+    public void AttachOnFirstUse_ShouldStartTheScript_WhenTurnedOffBeforeUse()
+    {
+        var cut = Render<TbSelect<string?>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.AttachOnFirstUse, true));
+
+        cut.Render(parameters => parameters.Add(select => select.AttachOnFirstUse, false));
+
+        Assert.Single(JSInterop.Invocations["createSelect"]);
+    }
+
     // The script's setOpen reports the list open exactly when asked to open it.
     private BunitJSModuleInterop SetUpSetOpen(BunitJSModuleInterop? module = null)
     {

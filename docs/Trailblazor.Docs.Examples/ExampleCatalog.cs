@@ -3909,7 +3909,10 @@ public static class ExampleCatalog
                 new("many-options", "Many options", "A long list scrolls, and `Filterable` lets people search it. A "
                     + "long option widens the list, and once chosen it's cut off with an ellipsis. When the options "
                     + "come from a search as someone types, use an "
-                    + "[autocomplete](components/autocomplete).", typeof(SelectManyExample)),
+                    + "[autocomplete](components/autocomplete). `AttachOnFirstUse` waits to set up a select's script "
+                    + "until it is first focused or pointed at, or its list is opened from code. That saves a call to "
+                    + "the browser for each select on a page with many of them, such as a select on every row.",
+                    typeof(SelectManyExample)),
                 new("comparer", "Values loaded again", "`Comparer` decides whether two values are the same, so a value "
                     + "from another query, equal only by id, still matches its option.", typeof(SelectComparerExample)),
                 new("required", "Required", "`Required` shows a marker. Once the select is changed or its form "
@@ -4100,7 +4103,9 @@ public static class ExampleCatalog
                 + "`page.Tb().Select(row.GetByLabel(\"Size\"))`, or `page.Locator(\"#size\")` for one with an "
                 + "`id`. In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
                 + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows. "
-                + "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it.",
+                + "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it. With "
+                + "`AttachOnFirstUse`, the combobox gets `data-ready` only when it's first focused or pointed at, so "
+                + "`ChooseAsync` focuses it first.",
             Telemetry =
             [
                 "The select also counts `trailblazor.control.used` for each choice, with `trailblazor.input` `pointer` "

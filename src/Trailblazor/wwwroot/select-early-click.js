@@ -14,8 +14,32 @@ document.addEventListener('click', event => {
         delete marked.dataset.openWhenReady;
     }
 
+    // A select that waits for its first use starts its script when it takes focus, which a click beside the combobox,
+    // such as on its chevron, doesn't give it.
     if (wanted && !again) {
         wanted.dataset.openWhenReady = '';
+        if ('attachOnUse' in wanted.dataset) {
+            wanted.focus();
+        }
+    }
+
+    // A click on the label of a select that waits for its first use focuses it, as the script would.
+    const label = event.target.closest?.('label[data-part="label"]');
+    if (label?.id) {
+        document.querySelector(`.tb-select__trigger[data-attach-on-use][aria-labelledby="${CSS.escape(label.id)}"]`)
+            ?.focus();
+    }
+}, { capture: true });
+
+// An opening key pressed before the script attaches, as just after focus starts a waiting select's script, marks the
+// select to open when it attaches.
+const openingKeys = ['ArrowDown', 'ArrowUp', 'Enter', ' '];
+document.addEventListener('keydown', event => {
+    const combobox = event.target.closest?.('.tb-select__trigger');
+    if (combobox && !('ready' in combobox.dataset) && openingKeys.includes(event.key) && !event.ctrlKey
+        && !event.metaKey) {
+        event.preventDefault();
+        combobox.dataset.openWhenReady = '';
     }
 }, { capture: true });
 

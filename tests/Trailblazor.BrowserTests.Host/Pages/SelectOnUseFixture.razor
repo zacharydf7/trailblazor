@@ -1,0 +1,12 @@
+@page "/select-on-use"
+
+@* A select that sets up its script only when first used, as on every row of a long list. *@
+<TbSelect @bind-Value="_trail" Label="Trail" AttachOnFirstUse>
+    <TbOption Value="@("Pine Hollow")" />
+    <TbOption Value="@("Eagle Ridge")" />
+</TbSelect>
+<output data-testid="trail">@_trail</output>
+
+@code {
+    private string? _trail;
+}
