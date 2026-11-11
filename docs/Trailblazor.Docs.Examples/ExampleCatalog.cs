@@ -2809,8 +2809,9 @@ public static class ExampleCatalog
                     + "model `[ValidatableType]`, it checks nested objects too, as a submit does."),
                 new("A field's `Error`, like a `Required` field left empty, keeps the form from submitting and "
                     + "`IsValid` false. `Invalid` marks a field without a message and doesn't stop a submit."),
-                new("A field's `Required` and a model's `[Required]` each add a message, so use one of them for a "
-                    + "field. The [guide](guides/forms#model-and-data-annotations) says which.") { Pitfall = true },
+                new("A field bound to a `[Required]` text or nullable property is marked required. It shows one "
+                    + "required message whether its `Required`, the model's `[Required]` or both apply, and the "
+                    + "[guide](guides/forms#model-and-data-annotations) says which message."),
                 new("A form with `OnSubmit` isn't counted in `trailblazor.form.submitted`, since it doesn't validate "
                     + "the submit itself."),
                 new("Every field has `FocusAsync()`, to move focus from code. A disabled field doesn't take focus."),

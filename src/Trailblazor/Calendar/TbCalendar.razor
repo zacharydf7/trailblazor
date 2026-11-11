@@ -38,7 +38,7 @@
                data-view="@_view.ToString().ToLowerInvariant()" data-shown="@_shown"
                data-ready="@(_handle is null ? null : "")"
                aria-labelledby="@(ShownLabel is null ? TitleId : $"{LabelId} {TitleId}")"
-               aria-describedby="@InputDescribedBy" aria-required="@(Required ? "true" : null)"
+               aria-describedby="@InputDescribedBy" aria-required="@AriaRequired"
                aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
                aria-disabled="@(Disabled ? "true" : null)"
                class="@ClassNames.Join("tb-calendar__grid", ClassNames.Modifier("tb-calendar__grid", _view), Classes?.Input)">
@@ -158,7 +158,7 @@
                    data-static="@(AssignedRenderMode is null ? "" : null)"
                    value="@(Chosen is { } chosen ? Iso(chosen) : null)" min="@(Min is { } min ? Iso(ToDate(min)) : null)"
                    max="@(Max is { } max ? Iso(ToDate(max)) : null)" disabled="@Disabled" readonly="@ReadOnly"
-                   aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+                   aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
                    aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-calendar__input", Classes?.Input)" />
         </div>

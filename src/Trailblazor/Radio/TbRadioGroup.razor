@@ -8,7 +8,7 @@
 @* Radios that share a name already give one tab stop and arrow-key selection, so no script is needed. *@
 <fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" @ref="_group"
           role="radiogroup" disabled="@Disabled" style="@Style"
-          aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@(Required ? "true" : null)"
+          aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@AriaRequired"
           aria-invalid="@(ShowsInvalid ? "true" : null)"
           aria-describedby="@DescribedBy"
           class="@ClassNames.Join("tb-radio-group", ClassNames.Modifier("tb-radio-group", Tone),

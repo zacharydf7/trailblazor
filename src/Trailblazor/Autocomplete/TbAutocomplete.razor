@@ -12,7 +12,7 @@
            aria-autocomplete="@(RendererInfo.IsInteractive ? "list" : null)"
            aria-expanded="@(RendererInfo.IsInteractive ? "false" : null)"
            aria-controls="@(RendererInfo.IsInteractive ? ListboxId : null)"
-           aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+           aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     @if (RendererInfo.IsInteractive)
     {

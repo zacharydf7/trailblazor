@@ -7,6 +7,6 @@
 @Layout(Classes, @<input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
                         name="@InputNameAttribute" type="time" value="@Text" min="@IsoOf(Min)" max="@IsoOf(Max)"
                         step="@StepSeconds" @onchange="args => SetTextAsync(args.Value as string)" disabled="@Disabled"
-                        readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
+                        readonly="@ReadOnly" aria-required="@AriaRequired"
                         aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                         class="@ClassNames.Join("tb-field__input", Classes?.Input)" />, null, null)

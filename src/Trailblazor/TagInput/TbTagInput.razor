@@ -44,7 +44,7 @@
     <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" type="text"
            autocomplete="off" data-separators="@Separators" data-ready="@(_handle is null ? null : "")"
            placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
-           aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+           aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
            aria-describedby="@Described"
            class="@ClassNames.Join("tb-field__input", "tb-tag-input__input", Classes?.Input)"
            @ontbtagadd="OnAddAsync" @ontbtagremove="OnRemoveKeyAsync" />

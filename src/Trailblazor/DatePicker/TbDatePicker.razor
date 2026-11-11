@@ -14,7 +14,7 @@
                data-format="@DateFormat" data-culture="@DateCulture.Name"
                data-value="@(Chosen is { } committed ? Iso(committed) : "")"
                placeholder="@(Placeholder ?? FormatHint(DateFormat))" disabled="@Disabled" readonly="@ReadOnly"
-               aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+               aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
                aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }
@@ -24,7 +24,7 @@
         <input @attributes="ControlAttributes" data-part="input" data-static="@(AssignedRenderMode is null ? "" : null)"
                id="@InputId" name="@InputNameAttribute" type="date" value="@(Chosen is { } chosen ? Iso(chosen) : null)"
                min="@(Min is { } min ? Iso(ToDate(min)) : null)" max="@(Max is { } max ? Iso(ToDate(max)) : null)"
-               disabled="@Disabled" readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
+               disabled="@Disabled" readonly="@ReadOnly" aria-required="@AriaRequired"
                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }

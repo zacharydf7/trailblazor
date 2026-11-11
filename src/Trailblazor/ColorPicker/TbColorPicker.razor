@@ -9,7 +9,7 @@
                name="@InputNameAttribute" type="text" autocomplete="off" spellcheck="false" data-value="@Value"
                @bind:get="Text" @bind:set="SetTextAsync"
                placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
-               aria-required="@(Required ? "true" : null)"
+               aria-required="@AriaRequired"
                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     </text>, Preview, Buttons)
@@ -23,7 +23,7 @@ else
         <input @attributes="ControlAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="text"
                value="@Text" placeholder="@Placeholder" pattern="@StaticPattern" title="@BadColorLabel"
                disabled="@Disabled" readonly="@ReadOnly"
-               aria-required="@(Required ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
+               aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
                aria-describedby="@InputDescribedBy" data-static="@(AssignedRenderMode is null ? "" : null)"
                data-prerender="@(AssignedRenderMode is null ? null : "")"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />

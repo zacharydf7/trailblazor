@@ -16,7 +16,7 @@
                    data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="text" autocomplete="off"
                    @bind:get="StartText" @bind:set="SetStartTextAsync"
                    placeholder="@(StartPlaceholder ?? FormatHint)" disabled="@Disabled" readonly="@ReadOnly"
-                   aria-labelledby="@Names(StartId)" aria-required="@(Required ? "true" : null)"
+                   aria-labelledby="@Names(StartId)" aria-required="@AriaRequired"
                    aria-invalid="@AriaInvalid(_startBad)" aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
             <span class="tb-date-range__dash" aria-hidden="true">–</span>
@@ -24,7 +24,7 @@
                    autocomplete="off" @bind:get="EndText" @bind:set="SetEndTextAsync"
                    placeholder="@(EndPlaceholder ?? FormatHint)"
                    disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(EndId)"
-                   aria-required="@(Required ? "true" : null)"
+                   aria-required="@AriaRequired"
                    aria-invalid="@AriaInvalid(_endBad)" aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
         }
@@ -38,7 +38,7 @@
                    value="@IsoOrNull(StartDate)" min="@IsoOf(Min)" max="@IsoOf(Max)" disabled="@Disabled"
                    readonly="@ReadOnly"
                    aria-labelledby="@Names(StartId)"
-                   aria-required="@(Required ? "true" : null)" aria-invalid="@AriaInvalid(_startBad)"
+                   aria-required="@AriaRequired" aria-invalid="@AriaInvalid(_startBad)"
                    aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
             <span class="tb-date-range__dash" aria-hidden="true">–</span>
@@ -46,7 +46,7 @@
                    data-prerender="@PrerenderMarker" id="@EndId" name="@NameOf("End")"
                    type="date" value="@IsoOrNull(EndDate)" min="@IsoOf(Min)" max="@IsoOf(Max)"
                    disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(EndId)"
-                   aria-required="@(Required ? "true" : null)"
+                   aria-required="@AriaRequired"
                    aria-invalid="@AriaInvalid(_endBad)" aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
         }

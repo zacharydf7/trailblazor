@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,6 +17,7 @@ namespace Trailblazor;
 public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField, IDisposable
 {
     private readonly List<string> _messages = [];
+    private RequiredAttribute? _modelRequired;
     private EditContext? _editContext;
     private ValidationMessageStore? _messageStore;
     private FieldIdentifier? _field;
@@ -82,11 +85,16 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     /// <summary>Marks the field as required: screen readers hear it, the label shows a marker, and an empty value
     /// shows <see cref="RequiredMessage"/> once the user changes the field or its form validates. A disabled or
-    /// read-only field isn't checked, since the user can't fill it in.</summary>
+    /// read-only field isn't checked, since the user can't fill it in. A bound property with
+    /// <see cref="RequiredAttribute"/> marks the field the same way when the attribute rejects the value a cleared
+    /// field holds, as it does for text or a nullable value but not for a list. While the field shows its required
+    /// message, it shows no other, such as the same message from a <c>DataAnnotationsValidator</c>.
+    /// </summary>
     [Parameter]
     public bool Required { get; set; }
 
-    /// <summary>The message for a <see cref="Required"/> field left empty. Defaults to the app's text for
+    /// <summary>The message for a <see cref="Required"/> field left empty. Defaults to the bound property's
+    /// <see cref="RequiredAttribute"/> message when it sets one, or else the app's text for
     /// <see cref="TbStrings.FieldRequired"/>, "{label} is required." in English.</summary>
     [Parameter]
     public string? RequiredMessage { get; set; }
@@ -263,9 +271,14 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
     private protected bool HasParseError => _parseError is not null;
 
-    // Inside an EditForm the context holds every validator's messages for this field, including ours.
+    // Inside an EditForm the context holds every validator's messages for this field, including ours. While the field
+    // shows its required message it shows only its own, so a model's [Required] or [EmailAddress] doesn't add another.
     private protected IReadOnlyList<string> Errors =>
-        _messageStore is null ? OwnMessages : _editContext!.GetValidationMessages(_field!.Value).ToList();
+        _messageStore is null || ShowsRequiredMessage ? OwnMessages
+            : _editContext!.GetValidationMessages(_field!.Value).ToList();
+
+    // Once the field has checked itself while empty and required, its messages hold the required one.
+    private bool ShowsRequiredMessage => MissesRequired && _messages.Count > 0;
 
     private List<string> OwnMessages => ParentError is null ? _messages : [ParentError, .. _messages];
 
@@ -281,8 +294,24 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         _ => false,
     };
 
+    private protected bool IsRequired => Required || _modelRequired is not null;
+
+    // A list field clears to an empty list, which [Required] accepts; one that clears to null overrides this.
+    private protected virtual bool ClearsToEmptyList =>
+        typeof(TValue) != typeof(string) && typeof(System.Collections.IEnumerable).IsAssignableFrom(typeof(TValue));
+
+    private protected object? AriaRequired => IsRequired ? "true" : InputAttributes?.GetValueOrDefault("aria-required");
+
     // A field the user can't change isn't asked of them, as the browser's own validation skips one.
-    private bool MissesRequired => Required && !Disabled && !ReadOnly && _parseError is null && IsMissing(Value);
+    // The model's [Required] judges a value as the model does, so it never fails a false or a zero.
+    private bool MissesRequired => !Disabled && !ReadOnly && _parseError is null
+        && ((Required && IsMissing(Value)) || _modelRequired?.IsValid(Value) == false);
+
+    // A [Required] that sets its own message keeps it; the default one gives way to the app's text.
+    private string RequiredText => RequiredMessage
+        ?? (_modelRequired is { ErrorMessage: not null } or { ErrorMessageResourceType: not null }
+            ? _modelRequired.FormatErrorMessage(ShownLabel ?? Localizer[TbStrings.FieldUnnamed])
+            : Message(TbStrings.FieldRequired));
 
     // What's wrong with a value however it arrived (typed, posted or set by code), such as a number past a limit.
     private protected virtual string? ValueError(TValue? value) => null;
@@ -326,6 +355,12 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
         }
 
         _inputName = FieldNames.From(ValueExpression);
+        // [Required] marks the field only where it rejects what a cleared field holds, so not a value type that is
+        // never null, an empty list, or empty text it allows.
+        _modelRequired = default(TValue) is null && !ClearsToEmptyList
+            && ValueExpression?.Body is MemberExpression { Member: var member }
+            && member.GetCustomAttribute<RequiredAttribute>() is { AllowEmptyStrings: false } required
+            ? required : null;
         // Only a form needs the identifier, and outside one an expression it can't parse must not throw. A field
         // without a binding names itself, so the form still counts its messages.
         FieldIdentifier? field = CascadedEditContext is null ? null
@@ -553,7 +588,7 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
 
         if (MissesRequired)
         {
-            _messages.Add(RequiredMessage ?? Message(TbStrings.FieldRequired));
+            _messages.Add(RequiredText);
         }
         else if (Validation is not null)
         {
@@ -578,6 +613,23 @@ public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField,
             _messageStore?.Clear();
             _messageStore = null;
         }
+    }
+
+    IEnumerable<string> IFormField.HiddenMessages()
+    {
+        if (!ShowsRequiredMessage)
+        {
+            return [];
+        }
+
+        // Remove one copy of each message the field shows, so a validator's duplicate of the same text stays hidden.
+        var hidden = _editContext!.GetValidationMessages(_field!.Value).ToList();
+        foreach (var shown in OwnMessages)
+        {
+            hidden.Remove(shown);
+        }
+
+        return hidden;
     }
 
     bool IFormField.HasProblems() =>

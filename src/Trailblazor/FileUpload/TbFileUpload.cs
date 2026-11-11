@@ -108,6 +108,9 @@ public partial class TbFileUpload
         await ClearPickerAsync();
     }
 
+    // Removing the last file sets the value to null, which [Required] rejects.
+    private protected override bool ClearsToEmptyList => false;
+
     private protected override async Task OnResetAsync()
     {
         _rejected.Clear();
@@ -137,7 +140,7 @@ public partial class TbFileUpload
         builder.AddAttribute(7, "multiple", Multiple);
         builder.AddAttribute(8, "disabled", Disabled || ReadOnly);
         builder.AddAttribute(9, "aria-label", AccessibleName);
-        builder.AddAttribute(10, "aria-required", Required ? "true" : null);
+        builder.AddAttribute(10, "aria-required", AriaRequired);
         builder.AddAttribute(11, "aria-invalid", ShowsInvalid ? "true" : null);
         builder.AddAttribute(12, "aria-describedby", Description);
         builder.AddAttribute(13, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);

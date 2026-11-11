@@ -31,7 +31,7 @@
              @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
              id="@InputId" role="textbox" data-ready="@(_handle is null ? null : "")"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
-             aria-describedby="@InputDescribedBy" aria-required="@(Required ? "true" : null)"
+             aria-describedby="@InputDescribedBy" aria-required="@AriaRequired"
              aria-invalid="@(ShowsInvalid ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
              aria-disabled="@(Disabled ? "true" : null)" aria-placeholder="@Placeholder" data-placeholder="@Placeholder"
              contenteditable="@(Disabled ? "false" : "true")" tabindex="@(Disabled ? "-1" : "0")"

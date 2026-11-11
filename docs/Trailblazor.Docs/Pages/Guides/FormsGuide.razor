@@ -106,15 +106,17 @@
             the form, since it also counts the annotations in <code>IsValid</code> before any message shows.
         </TbText>
         <CodeBlock Label="FormModelExample.razor" Code="@ModelCode" />
-        <DocsCallout Tone="Tone.Warning">
-            A field's <code>Required</code> and a model's <code>[Required]</code> each add a message, so a field with
-            both shows two. Keep the field's <code>Required</code>, as above, and leave <code>[Required]</code> off the
-            model, because only the field's <code>Required</code> marks it for screen readers and shows the asterisk. If
-            a class shared with an API has to carry <code>[Required]</code>, give the form a model of its own.
-            <code>[EmailAddress]</code> causes the same problem, because it rejects the empty text a cleared field holds:
-            a required field with it shows two messages once cleared. To check a format on a required field, use
-            <code>[RegularExpression]</code>, which passes empty text.
-        </DocsCallout>
+        <TbText>
+            A field bound to a <code>[Required]</code> text or nullable property, but not a list, is required too:
+            screen readers hear it, the label shows the asterisk, and an empty value shows a message. A class shared
+            with an API can carry the rule, with no separate model for the form. The field shows one required message
+            whether its own <code>Required</code>, the model's <code>[Required]</code> or both apply. That message is
+            the field's <code>RequiredMessage</code>, or else the attribute's own message when it sets one, or else
+            "{label} is required." While that message shows, the field shows no other, so a rule such as
+            <code>[EmailAddress]</code>, which rejects the empty text a cleared field holds, doesn't add a second one.
+            The form's <code>Errors</code> leaves those out too, but a summary of your own that reads the
+            <code>EditContext</code> still finds the validator's messages.
+        </TbText>
         <TbText>
             Annotations stop at the model's own properties. To check nested objects too, add the
             <code>Microsoft.Extensions.Validation</code> package, call <code>AddValidation</code>, and mark the model

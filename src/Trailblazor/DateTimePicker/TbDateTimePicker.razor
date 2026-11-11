@@ -18,7 +18,7 @@
                    name="@NameOf("Date")" type="text" autocomplete="off" @bind:get="DateText"
                    @bind:set="SetDateTextAsync" placeholder="@(Placeholder ?? CalendarDates.FormatHint(DateFormat))"
                    disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(DateId)"
-                   aria-required="@(Required ? "true" : null)" aria-invalid="@AriaInvalid(_dateBad)"
+                   aria-required="@AriaRequired" aria-invalid="@AriaInvalid(_dateBad)"
                    aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-time__date", Classes?.Input)" />
             <TbPopover Icon="BuiltInIcons.Calendar" AriaLabel="@OpenLabel" Size="Size.Small"
@@ -41,7 +41,7 @@
             <input data-part="time-input" id="@TimeId" name="@NameOf("Time")" type="time" value="@TimeText"
                    @onchange="args => SetTimeTextAsync(args.Value as string)" step="@StepSeconds"
                    disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(TimeId)"
-                   aria-required="@(Required ? "true" : null)" aria-invalid="@AriaInvalid(_timeBad)"
+                   aria-required="@AriaRequired" aria-invalid="@AriaInvalid(_timeBad)"
                    aria-describedby="@InputDescribedBy"
                    class="@ClassNames.Join("tb-field__input", "tb-date-time__time", Classes?.Input)" />
             @if (Clearable && !Disabled && !ReadOnly && HasEntry)
@@ -58,7 +58,7 @@
                id="@InputId" name="@InputNameAttribute" type="datetime-local"
                value="@(Chosen is { } chosen ? Iso(chosen) : null)" min="@(Min is { } min ? Iso(WallClock(min)) : null)"
                max="@(Max is { } max ? Iso(WallClock(max)) : null)" step="@StepSeconds" disabled="@Disabled"
-               readonly="@ReadOnly" aria-required="@(Required ? "true" : null)"
+               readonly="@ReadOnly" aria-required="@AriaRequired"
                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }

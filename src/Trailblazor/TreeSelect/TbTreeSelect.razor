@@ -22,7 +22,7 @@
                    button's id, which skips the button's aria-labelledby, so it takes just the label from aria-label. *@
                 <button @ref="_trigger" type="button" @attributes="TriggerAttributes(context)" id="@InputId"
                         data-part="input" aria-labelledby="@NamedBy" aria-label="@ShownLabel"
-                        aria-required="@(Required ? "true" : null)"
+                        aria-required="@AriaRequired"
                         aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                         class="@TriggerClass">
                     @ValueText

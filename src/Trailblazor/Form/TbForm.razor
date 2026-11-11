@@ -292,6 +292,11 @@
         }
 
         var errors = _editContext.GetValidationMessages().ToList();
+        foreach (var hidden in _fields.SelectMany(field => field.HiddenMessages()).ToList())
+        {
+            errors.Remove(hidden);
+        }
+
         if (!errors.SequenceEqual(Errors))
         {
             Errors = errors;
