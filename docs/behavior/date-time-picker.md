@@ -30,6 +30,7 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 
 ## Focus
 
+- [x] `@bind-Open` opens and closes the calendar from code and reports the user closing it. Only a new value from the parent opens or closes it. `PickersOpenTests.Picker_ShouldOpenFromCodeAndReportAClose_WhenItsOpenIsBound`, `TbDateTimePickerTests.Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesTheCalendar`
 - [x] The label names the group, and each box adds "Date" or "Time". `TbDateTimePickerTests.Render_ShouldNameEachBoxAfterTheLabel_WhenInteractive`
 - [x] A step that isn't a whole number of minutes adds seconds to the time box. `TbDateTimePickerTests.Render_ShouldShowSeconds_WhenTheStepIsUnderAMinute`
 - [x] A static page shows the browser's own date and time box, named by the label, and a static form posts the value with no offset, which Blazor reads in the server's time zone. `TbDateTimePickerTests.Render_ShouldShowTheBrowsersDateAndTimeBox_WhenStatic`, `DateTimePickerTests.ChooseAsync_ShouldPostTheValue_WhenThePickerIsStatic`

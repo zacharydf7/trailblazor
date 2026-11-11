@@ -14,12 +14,23 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
 {
     private ElementReference _dateInput;
     private bool _open;
+    private bool _lastOpen;
     private TbCalendar<DateOnly>? _calendar;
     private string? _dateText;
     private string? _timeText;
     private bool _dateBad;
     private bool _timeBad;
     private TDateTime? _committed;
+
+    /// <summary>Whether the calendar is open. Bind it with <c>@bind-Open</c> to open or close it from code; only a new
+    /// value from the parent opens or closes it, so a render that passes the same value again leaves the user's
+    /// choice alone.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the calendar opens or closes, by the user or by a pick that closes it.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>The earliest date and time that can be chosen. The calendar's days before its date can't be picked.
     /// </summary>
@@ -132,6 +143,12 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+        if (Open != _lastOpen)
+        {
+            _lastOpen = Open;
+            _open = Open;
+        }
+
         // A new value from the parent replaces what the user typed into either box.
         if (!EqualityComparer<TDateTime?>.Default.Equals(Value, _committed))
         {
@@ -271,19 +288,29 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     private async Task PickAsync(DateOnly day)
     {
         await CommitTextsAsync(day);
-        _open = false;
+        await SetOpenAsync(false);
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        if (open != _open)
+        {
+            _open = open;
+            await OpenChanged.InvokeAsync(open);
+        }
     }
 
     // The picker sets the value when a day is picked, so the calendar's own copy needs no handling.
     private static Task KeepCalendarValue(DateOnly? date) => Task.CompletedTask;
 
-    private void OnOpenChanged(bool open)
+    private async Task OnOpenChangedAsync(bool open)
     {
-        _open = open;
         if (!open)
         {
             _calendar?.ShowChosen();
         }
+
+        await SetOpenAsync(open);
     }
 
     private async Task ClearAsync()

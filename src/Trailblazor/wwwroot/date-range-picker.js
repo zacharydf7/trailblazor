@@ -185,9 +185,10 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
 
     return {
         today: browserToday,
-        close() {
-            if (panel.matches(':popover-open')) {
-                panel.hidePopover();
+        // Opens or closes the calendar for the parent's Open.
+        setOpen(open) {
+            if (open !== panel.matches(':popover-open')) {
+                panel.togglePopover(open);
             }
         },
         dispose() {

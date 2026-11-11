@@ -4,25 +4,25 @@
 <TbButton OnClick="() => _first = true">First</TbButton>
 @* Opens both in one render, so the first one's block reaches the page after the second is there. *@
 <TbButton OnClick="() => _first = _second = true">Both</TbButton>
-<TbOverlay Visible="_first" Blocking>
+<TbOverlay Open="_first" Blocking>
     <TbButton OnClick="() => _second = true">Second</TbButton>
 </TbOverlay>
-<TbOverlay Visible="_second" Blocking>
+<TbOverlay Open="_second" Blocking>
     <TbButton OnClick="() => _first = false">Close the first</TbButton>
 </TbOverlay>
 
 @* A blocking page overlay and a card's contained one, opened in one render: the card's opens second but is drawn below. *@
 <TbButton OnClick="() => _page = _card = true">Page and card</TbButton>
-<TbOverlay Visible="_page" Blocking />
+<TbOverlay Open="_page" Blocking />
 <div style="position: relative">
-    <TbOverlay Visible="_card" Contained Blocking>
+    <TbOverlay Open="_card" Contained Blocking>
         <TbButton>Cancel loading</TbButton>
     </TbOverlay>
 </div>
 
 @* A closable overlay with a menu, a popover and a dialog that open above it. *@
 <TbButton OnClick="() => _closable = true">Closable</TbButton>
-<TbOverlay @bind-Visible="_closable" CloseOnClick>
+<TbOverlay @bind-Open="_closable" CloseOnClick>
     <TbMenu Label="Above menu">
         <TbMenuItem>Stay</TbMenuItem>
     </TbMenu>
@@ -37,14 +37,14 @@
 <TbButton OnClick="() => _holder = true">Holder</TbButton>
 <TbDialog @bind-Open="_holder" Title="Holder dialog">
     <TbButton OnClick="() => _inner = true">Cover the dialog</TbButton>
-    <TbOverlay @bind-Visible="_inner" CloseOnClick>Inner cover</TbOverlay>
+    <TbOverlay @bind-Open="_inner" CloseOnClick>Inner cover</TbOverlay>
 </TbDialog>
 
 @* A page-layer modal, which gets no close request from the browser, holding a closable overlay. *@
 <TbButton OnClick="() => _pageHolder = true">Page-layer modal</TbButton>
 <TbDialog @bind-Open="_pageHolder" Title="Page-layer dialog" Options="PageLayer">
     <TbButton OnClick="() => _pageInner = true">Cover the dialog</TbButton>
-    <TbOverlay @bind-Visible="_pageInner" CloseOnClick>Page inner cover</TbOverlay>
+    <TbOverlay @bind-Open="_pageInner" CloseOnClick>Page inner cover</TbOverlay>
     <TbButton OnClick="() => _closable = true">Cover the page</TbButton>
 </TbDialog>
 
@@ -52,11 +52,11 @@
 <TbButton OnClick="() => _left = _right = true">Windows</TbButton>
 <TbDialog @bind-Open="_left" Title="Left window" Options="Modeless">
     <TbButton OnClick="() => _leftCover = true">Cover left</TbButton>
-    <TbOverlay @bind-Visible="_leftCover" CloseOnClick>Left cover</TbOverlay>
+    <TbOverlay @bind-Open="_leftCover" CloseOnClick>Left cover</TbOverlay>
 </TbDialog>
 <TbDialog @bind-Open="_right" Title="Right window" Options="Modeless">
     <TbButton OnClick="() => _rightCover = true">Cover right</TbButton>
-    <TbOverlay @bind-Visible="_rightCover" CloseOnClick>Right cover</TbOverlay>
+    <TbOverlay @bind-Open="_rightCover" CloseOnClick>Right cover</TbOverlay>
 </TbDialog>
 
 @code {

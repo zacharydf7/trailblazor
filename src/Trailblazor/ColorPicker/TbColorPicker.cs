@@ -14,6 +14,8 @@ public partial class TbColorPicker : IAsyncDisposable
     private IJSObjectReference? _handle;
     private DotNetObjectReference<ColorPickerEvents>? _events;
     private string? _shownValue;
+    private bool _open;
+    private bool _lastOpen;
     private double _hue;
     private double _saturation;
     private double _brightness;
@@ -21,6 +23,16 @@ public partial class TbColorPicker : IAsyncDisposable
     private bool _canPickColor;
     private bool _disposed;
     private readonly ItemHandlers<string, Func<Task>> _chooseSwatch;
+
+    /// <summary>Whether the color panel is open. Bind it with <c>@bind-Open</c> to open or close it from code; only a
+    /// new value from the parent opens or closes it, so a render that passes the same value again leaves the user's
+    /// choice alone.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the color panel opens or closes.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>Creates the color picker.</summary>
     public TbColorPicker() => _chooseSwatch = new(swatch => () => ChooseSwatchAsync(swatch));
@@ -92,6 +104,18 @@ public partial class TbColorPicker : IAsyncDisposable
             _shownValue = Value;
             ShowColor(Color);
         }
+
+        if (Open != _lastOpen)
+        {
+            _lastOpen = Open;
+            _open = Open;
+        }
+    }
+
+    private async Task OnOpenChangedAsync(bool open)
+    {
+        _open = open;
+        await OpenChanged.InvokeAsync(open);
     }
 
     /// <inheritdoc />

@@ -233,4 +233,20 @@ public class TbColorPickerTests : BunitContext
                 .Add(picker => picker.ValueChanged, (string? color) => _changes.Add(color));
             configure?.Invoke(parameters);
         });
+
+    [Fact]
+    public async Task Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesThePanel()
+    {
+        var opens = new List<bool>();
+        var cut = Render<TbColorPicker>(parameters => parameters.Add(picker => picker.Label, "Accent")
+            .Add(picker => picker.Open, true).Add(picker => picker.OpenChanged, (bool open) => opens.Add(open)));
+        var popover = cut.FindComponent<TbPopover>();
+        Assert.True(popover.Instance.Open);
+
+        await cut.InvokeAsync(() => popover.Instance.OpenChanged.InvokeAsync(false));
+        cut.Render(parameters => parameters.Add(picker => picker.Open, true));
+
+        Assert.Equal([false], opens);
+        Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
+    }
 }

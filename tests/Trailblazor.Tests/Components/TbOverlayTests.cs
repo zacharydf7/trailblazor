@@ -17,12 +17,12 @@ public class TbOverlayTests : BunitContext
     {
         var handle = JSInterop.SetupModule("./_content/Trailblazor/overlay.js").SetupModule("blockBehind", _ => true);
         handle.Mode = JSRuntimeMode.Loose;
-        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
             .Add(overlay => overlay.Blocking, true).Add(overlay => overlay.Contained, contained));
         Assert.Equal(contained, JSInterop.Invocations["blockBehind"].Single().Arguments[1]);
         Assert.Empty(handle.Invocations["dispose"]);
 
-        cut.Render(parameters => parameters.Add(overlay => overlay.Visible, false));
+        cut.Render(parameters => parameters.Add(overlay => overlay.Open, false));
 
         Assert.Single(handle.Invocations["dispose"]);
     }
@@ -32,7 +32,7 @@ public class TbOverlayTests : BunitContext
     {
         var handle = JSInterop.SetupModule("./_content/Trailblazor/overlay.js").SetupModule("blockBehind", _ => true);
         handle.Mode = JSRuntimeMode.Loose;
-        Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+        Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
             .Add(overlay => overlay.Blocking, true));
 
         await DisposeComponentsAsync();
@@ -43,7 +43,7 @@ public class TbOverlayTests : BunitContext
     [Fact]
     public void Render_ShouldLeaveThePageAlone_WhenNotBlocking()
     {
-        Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true));
+        Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true));
 
         Assert.Empty(JSInterop.Invocations["blockBehind"]);
     }
@@ -57,9 +57,9 @@ public class TbOverlayTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldCoverThePageAndCenterItsContent_WhenVisible()
+    public void Render_ShouldCoverThePageAndCenterItsContent_WhenOpen()
     {
-        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
             .Add(overlay => overlay.LockScroll, true).Add(overlay => overlay.Blur, true).AddChildContent("Loading"));
 
         var overlay = cut.Find("[data-part=overlay]");
@@ -72,7 +72,7 @@ public class TbOverlayTests : BunitContext
     [Fact]
     public void Render_ShouldCoverItsRegionWithoutLockingThePage_WhenContained()
     {
-        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
             .Add(overlay => overlay.Contained, true).Add(overlay => overlay.LockScroll, true));
 
         Assert.Equal(["tb-overlay", "tb-overlay--contained"], cut.Find("[data-part=overlay]").ClassList);
@@ -84,9 +84,9 @@ public class TbOverlayTests : BunitContext
     {
         bool? visible = null;
         var clicks = 0;
-        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
             .Add(overlay => overlay.CloseOnClick, true).Add(overlay => overlay.OnClick, () => clicks++)
-            .Add(overlay => overlay.VisibleChanged, (bool value) => visible = value));
+            .Add(overlay => overlay.OpenChanged, (bool value) => visible = value));
 
         cut.Find("[data-part=scrim]").Click();
 
@@ -99,19 +99,19 @@ public class TbOverlayTests : BunitContext
     [InlineData(false)]
     public void Render_ShouldGiveTheOverlayALaterOpenOrder_WhenItIsClosedAndShownAgain(bool byClick)
     {
-        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
             .Add(overlay => overlay.CloseOnClick, true));
-        var other = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true));
+        var other = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true));
         if (byClick)
         {
             cut.Find("[data-part=scrim]").Click();
         }
         else
         {
-            cut.Render(parameters => parameters.Add(overlay => overlay.Visible, false));
+            cut.Render(parameters => parameters.Add(overlay => overlay.Open, false));
         }
 
-        cut.Render(parameters => parameters.Add(overlay => overlay.Visible, true));
+        cut.Render(parameters => parameters.Add(overlay => overlay.Open, true));
 
         Assert.True(long.Parse(cut.Find("[data-part=overlay]").GetAttribute("data-open-order")!)
             > long.Parse(other.Find("[data-part=overlay]").GetAttribute("data-open-order")!));
@@ -122,9 +122,9 @@ public class TbOverlayTests : BunitContext
     {
         bool? visible = null;
         var clicks = 0;
-        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Visible, true)
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
             .Add(overlay => overlay.OnClick, () => clicks++)
-            .Add(overlay => overlay.VisibleChanged, (bool value) => visible = value));
+            .Add(overlay => overlay.OpenChanged, (bool value) => visible = value));
 
         cut.Find("[data-part=scrim]").Click();
 

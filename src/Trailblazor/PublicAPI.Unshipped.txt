@@ -2454,10 +2454,10 @@ Trailblazor.TbOverlay.OnClick.set -> void
 Trailblazor.TbOverlay.TbOverlay() -> void
 Trailblazor.TbOverlay.Transparent.get -> bool
 Trailblazor.TbOverlay.Transparent.set -> void
-Trailblazor.TbOverlay.Visible.get -> bool
-Trailblazor.TbOverlay.Visible.set -> void
-Trailblazor.TbOverlay.VisibleChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
-Trailblazor.TbOverlay.VisibleChanged.set -> void
+Trailblazor.TbOverlay.Open.get -> bool
+Trailblazor.TbOverlay.Open.set -> void
+Trailblazor.TbOverlay.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbOverlay.OpenChanged.set -> void
 Trailblazor.TbPagination
 Trailblazor.TbPagination.AriaLabel.get -> string?
 Trailblazor.TbPagination.AriaLabel.set -> void
@@ -4357,3 +4357,20 @@ const Trailblazor.TbStrings.TabsScrollEnd = "Tabs.ScrollEnd" -> string!
 const Trailblazor.TbStrings.TabsScrollStart = "Tabs.ScrollStart" -> string!
 Trailblazor.TbTabs.ScrollButtons.get -> bool
 Trailblazor.TbTabs.ScrollButtons.set -> void
+Trailblazor.TbDatePicker<TDate>.Open.get -> bool
+Trailblazor.TbDatePicker<TDate>.Open.set -> void
+Trailblazor.TbDatePicker<TDate>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbDatePicker<TDate>.OpenChanged.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Open.get -> bool
+Trailblazor.TbDateTimePicker<TDateTime>.Open.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbDateTimePicker<TDateTime>.OpenChanged.set -> void
+Trailblazor.TbColorPicker.Open.get -> bool
+Trailblazor.TbColorPicker.Open.set -> void
+Trailblazor.TbColorPicker.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbColorPicker.OpenChanged.set -> void
+override Trailblazor.TbDatePicker<TDate>.OnParametersSet() -> void
+Trailblazor.TbDateRangePicker<TDate>.Open.get -> bool
+Trailblazor.TbDateRangePicker<TDate>.Open.set -> void
+Trailblazor.TbDateRangePicker<TDate>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbDateRangePicker<TDate>.OpenChanged.set -> void

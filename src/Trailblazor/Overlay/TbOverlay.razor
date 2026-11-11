@@ -7,7 +7,7 @@
 @inject IOptions<TrailblazorOptions> Settings
 @implements IAsyncDisposable
 
-@if (Visible)
+@if (Open)
 {
     @* The layer's script sets data-ready here once Escape is wired, just after the overlay appears. *@
     <div @attributes="AdditionalAttributes" @ref="_overlay" data-part="overlay" style="@Style"
@@ -32,13 +32,13 @@
     private static long _lastOpenOrder;
     private long _openOrder;
 
-    /// <summary>Shows the overlay. Bind it with <c>@bind-Visible</c> when clicks or Escape can close it.</summary>
+    /// <summary>Shows the overlay. Bind it with <c>@bind-Open</c> when clicks or Escape can close it.</summary>
     [Parameter]
-    public bool Visible { get; set; }
+    public bool Open { get; set; }
 
     /// <summary>Raised when the overlay closes itself, after a click on it or Escape.</summary>
     [Parameter]
-    public EventCallback<bool> VisibleChanged { get; set; }
+    public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>Closes the overlay when it is clicked, or when Escape is pressed while it is the topmost layer.
     /// </summary>
@@ -81,7 +81,7 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (!Visible)
+        if (!Open)
         {
             _openOrder = 0;
         }
@@ -95,7 +95,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await BlockAsync();
-        var wantsLayer = Visible && CloseOnClick && RendererInfo.IsInteractive;
+        var wantsLayer = Open && CloseOnClick && RendererInfo.IsInteractive;
         if (wantsLayer && _layer is null)
         {
             try
@@ -103,7 +103,7 @@
                 var layer = await DismissableLayer.CreateAsync(Modules, _overlay, null,
                     EventCallback.Factory.Create<DismissReason>(this, OnDismissAsync));
                 // The overlay may have closed, or gone, while the layer was being made.
-                if (_disposed || !Visible || !CloseOnClick)
+                if (_disposed || !Open || !CloseOnClick)
                 {
                     await layer.DisposeAsync();
                     return;
@@ -126,7 +126,7 @@
     // be undone.
     private async Task BlockAsync()
     {
-        var wantsBlock = Visible && Blocking && RendererInfo.IsInteractive;
+        var wantsBlock = Open && Blocking && RendererInfo.IsInteractive;
         if (wantsBlock && _block is null && !_blocking)
         {
             _blocking = true;
@@ -146,7 +146,7 @@
             }
 
             // The overlay may have closed, or been disposed, while blockBehind was running.
-            if (_disposed || !Visible || !Blocking)
+            if (_disposed || !Open || !Blocking)
             {
                 await UnblockAsync();
             }
@@ -182,9 +182,9 @@
 
     private async Task CloseAsync()
     {
-        Visible = false;
+        Open = false;
         _openOrder = 0;
-        await VisibleChanged.InvokeAsync(false);
+        await OpenChanged.InvokeAsync(false);
     }
 
     private async Task DisposeLayerAsync()

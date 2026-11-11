@@ -10,7 +10,7 @@
 <TbButton OnClick='() => Toasts.Show("Draft saved", options: new() { StayOpen = true })'>Toast</TbButton>
 <TbDialog @bind-Open="_modal" Title="Modal">Modal words</TbDialog>
 <TbDialog @bind-Open="_modeless" Title="Modeless" Options="Modeless">Modeless words</TbDialog>
-<TbOverlay Visible="_overlay" LockScroll Blocking>
+<TbOverlay Open="_overlay" LockScroll Blocking>
     <TbButton OnClick="() => _overlay = false">Close the overlay</TbButton>
 </TbOverlay>
 <div data-testid="pinned" style="position: fixed; top: 80px; right: calc(16px + var(--tb-scroll-lock-offset, 0px))">

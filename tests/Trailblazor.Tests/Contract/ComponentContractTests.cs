@@ -38,7 +38,7 @@ public class ComponentContractTests : BunitContext
     // or title they need when they are given none.
     internal static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
     {
-        [typeof(TbOverlay)] = (nameof(TbOverlay.Visible), true),
+        [typeof(TbOverlay)] = (nameof(TbOverlay.Open), true),
         [typeof(TbPopover)] = (nameof(TbPopover.Label), "Sample"),
         [typeof(TbPopconfirm)] = (nameof(TbPopconfirm.Label), "Sample"),
         [typeof(TbMenu)] = (nameof(TbMenu.Label), "Sample"),

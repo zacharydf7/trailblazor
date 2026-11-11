@@ -1,5 +1,5 @@
 <TbButton OnClick="() => _shown = true">Show page overlay</TbButton>
-<TbOverlay @bind-Visible="_shown" CloseOnClick LockScroll Blocking>
+<TbOverlay @bind-Open="_shown" CloseOnClick LockScroll Blocking>
     <TbSurface class="tb-p-6">
         <TbText>Click outside this box, or press Escape, to close the overlay.</TbText>
     </TbSurface>

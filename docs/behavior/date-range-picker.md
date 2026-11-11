@@ -43,6 +43,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 
 ## Focus
 
+- [x] `@bind-Open` opens and closes the calendar from code and reports the user closing it. Only a new value from the parent opens or closes it. `PickersOpenTests.Picker_ShouldOpenFromCodeAndReportAClose_WhenItsOpenIsBound`
 - [x] Opening puts focus on the range's start, or today, or the nearest allowed day. `DateRangePickerTests.Calendar_ShouldOpenOnTheStartAndCommitTheRange_WhenTwoDaysArePicked`
 - [x] A calendar clicked open before its script has loaded is placed and takes focus once it has, and an opening reported twice doesn't move focus a second time. `DateRangePickerTests.Calendar_ShouldPlaceItselfAndTakeFocus_WhenOpenedBeforeItsScriptHasLoaded`, `DateRangePickerTests.Calendar_ShouldLeaveFocusWhereItIs_WhenAnOpeningIsReportedTwice`
 - [x] Only one day is in the tab order, across both months. `TbDateRangePickerTests.Render_ShouldPutOneDayInTheTabOrder_WhenTwoMonthsShow`

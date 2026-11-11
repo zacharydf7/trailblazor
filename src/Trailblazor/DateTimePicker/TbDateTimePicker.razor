@@ -24,7 +24,7 @@
                    class="@ClassNames.Join("tb-field__input", "tb-date-time__date", Classes?.Input)" />
             <TbPopover Icon="BuiltInIcons.Calendar" AriaLabel="@OpenLabel" Size="Size.Small"
                        Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || ReadOnly)" Open="_open"
-                       OpenChanged="OnOpenChanged" data-part="popover">
+                       OpenChanged="OnOpenChangedAsync" data-part="popover">
                 @* The calendar here only shows and picks; the picker is the form's field, so the form's cascades stop.
                    The popover's dialog names it, its grid takes focus as it opens, and each closing shows the chosen
                    date again for the next opening. *@

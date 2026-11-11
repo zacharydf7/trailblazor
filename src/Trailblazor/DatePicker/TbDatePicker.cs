@@ -14,7 +14,18 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
 {
     private ElementReference _input;
     private bool _open;
+    private bool _lastOpen;
     private TbCalendar<TDate>? _calendar;
+
+    /// <summary>Whether the calendar is open. Bind it with <c>@bind-Open</c> to open or close it from code; only a new
+    /// value from the parent opens or closes it, so a render that passes the same value again leaves the user's
+    /// choice alone.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the calendar opens or closes, by the user or by a pick that closes it.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>The earliest date that can be chosen.</summary>
     [Parameter]
@@ -107,19 +118,40 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     private async Task PickAsync(TDate date)
     {
         await SetValueAsync(Keep(ToDate(date), Value));
-        _open = false;
+        await SetOpenAsync(false);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Open != _lastOpen)
+        {
+            _lastOpen = Open;
+            _open = Open;
+        }
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        if (open != _open)
+        {
+            _open = open;
+            await OpenChanged.InvokeAsync(open);
+        }
     }
 
     // The picker sets the date when a day is picked, so the calendar's own copy needs no handling.
     private static Task KeepCalendarValue(TDate? date) => Task.CompletedTask;
 
-    private void OnOpenChanged(bool open)
+    private async Task OnOpenChangedAsync(bool open)
     {
-        _open = open;
         if (!open)
         {
             _calendar?.ShowChosen();
         }
+
+        await SetOpenAsync(open);
     }
 
     private async Task ClearAsync()

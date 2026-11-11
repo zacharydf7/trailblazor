@@ -196,6 +196,38 @@ public class TbDatePickerTests : BunitContext
         Assert.Contains("DateTimeOffset", failure.Message);
     }
 
+    [Fact]
+    public async Task Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesTheCalendar()
+    {
+        var opens = new List<bool>();
+        var cut = RenderPicker(June3, parameters => parameters.Add(picker => picker.Open, true)
+            .Add(picker => picker.OpenChanged, (bool open) => opens.Add(open)));
+        var popover = cut.FindComponent<TbPopover>();
+        Assert.True(popover.Instance.Open);
+
+        await cut.InvokeAsync(() => popover.Instance.OpenChanged.InvokeAsync(false));
+        cut.Render(parameters => parameters.Add(picker => picker.Open, true));
+
+        Assert.Equal([false], opens);
+        Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
+        cut.Render(parameters => parameters.Add(picker => picker.Open, false));
+        cut.Render(parameters => parameters.Add(picker => picker.Open, true));
+        Assert.True(cut.FindComponent<TbPopover>().Instance.Open);
+    }
+
+    [Fact]
+    public async Task Pick_ShouldCloseTheCalendarAndReportIt_WhenADayIsPicked()
+    {
+        var opens = new List<bool>();
+        var cut = RenderPicker(June3, parameters => parameters.Add(picker => picker.Open, true)
+            .Add(picker => picker.OpenChanged, (bool open) => opens.Add(open)));
+
+        await cut.Find("[role=grid] [data-date='2026-06-09']").ClickAsync(new MouseEventArgs());
+
+        Assert.Equal([false], opens);
+        Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
+    }
+
     private IRenderedComponent<TbDatePicker<DateOnly>> RenderPicker(DateOnly? value,
         Action<ComponentParameterCollectionBuilder<TbDatePicker<DateOnly>>>? configure = null) =>
         Render<TbDatePicker<DateOnly>>(parameters =>

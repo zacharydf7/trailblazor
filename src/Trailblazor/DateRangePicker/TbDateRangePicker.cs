@@ -22,6 +22,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private bool _startBad;
     private bool _endBad;
     private bool _open;
+    private bool _lastOpen;
     private DateOnly _firstMonth;
     private DateOnly _focus;
     private DateOnly? _anchor;
@@ -31,6 +32,16 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
     /// <summary>Creates the date range picker.</summary>
     public TbDateRangePicker() => _pick = new(day => () => PickAsync(day));
+
+    /// <summary>Whether the calendar is open. Bind it with <c>@bind-Open</c> to open or close it from code; only a new
+    /// value from the parent opens or closes it, so a render that passes the same value again leaves the user's
+    /// choice alone.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the calendar opens or closes, by the user or by a pick that completes the range.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>The earliest date that can be chosen.</summary>
     [Parameter]
@@ -162,6 +173,14 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
             {
                 await AttachAsync();
             }
+
+            // The browser opens and closes the calendar, so a new Open from the parent goes to its script.
+            if (_handle is not null && Open != _lastOpen)
+            {
+                _lastOpen = Open;
+                _open = Open;
+                await _handle.InvokeVoidAsync("setOpen", Open);
+            }
         }
         catch (JSDisconnectedException)
         {
@@ -209,8 +228,10 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         _firstMonth = FirstOfMonth(_focus);
     }
 
-    private Task OnToggleAsync(bool open)
+    // Only a change the parent didn't ask for is reported, so opening from code isn't echoed back.
+    private async Task OnToggleAsync(bool open)
     {
+        var changed = open != _open;
         _open = open;
         if (!open)
         {
@@ -218,7 +239,10 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
         }
 
         StateHasChanged();
-        return Task.CompletedTask;
+        if (changed)
+        {
+            await OpenChanged.InvokeAsync(open);
+        }
     }
 
     // The browser moves focus among the days it shows; a date in another month brings that month into view.
@@ -364,7 +388,7 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     {
         if (_handle is not null)
         {
-            await _handle.InvokeVoidAsync("close");
+            await _handle.InvokeVoidAsync("setOpen", false);
         }
     }
 

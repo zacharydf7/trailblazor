@@ -1,0 +1,25 @@
+@page "/pickers-open"
+
+@* Each picker's Open bound to the page, so a button opens it from code and the page sees the user close it. *@
+<TbDatePicker TDate="DateOnly" Label="Start date" @bind-Open="_date" />
+<output aria-label="Date open">@_date</output>
+<TbButton OnClick="() => _date = true">Open the date</TbButton>
+
+<TbDateTimePicker TDateTime="DateTime" Label="Meeting" @bind-Open="_dateTime" />
+<output aria-label="Date and time open">@_dateTime</output>
+<TbButton OnClick="() => _dateTime = true">Open the date and time</TbButton>
+
+<TbDateRangePicker TDate="DateOnly" Label="Trip dates" @bind-Open="_range" />
+<output aria-label="Range open">@_range</output>
+<TbButton OnClick="() => _range = true">Open the range</TbButton>
+
+<TbColorPicker Label="Accent" @bind-Open="_color" />
+<output aria-label="Color open">@_color</output>
+<TbButton OnClick="() => _color = true">Open the color</TbButton>
+
+@code {
+    private bool _date;
+    private bool _dateTime;
+    private bool _range;
+    private bool _color;
+}

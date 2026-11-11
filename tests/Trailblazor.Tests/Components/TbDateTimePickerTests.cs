@@ -385,6 +385,22 @@ public class TbDateTimePickerTests : BunitContext
     private static AngleSharp.Dom.IElement TimeBox(IRenderedComponent<IComponent> cut) =>
         cut.Find("input[data-part=time-input]");
 
+    [Fact]
+    public async Task Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesTheCalendar()
+    {
+        var opens = new List<bool>();
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.Open, true)
+            .Add(picker => picker.OpenChanged, (bool open) => opens.Add(open)));
+        var popover = cut.FindComponent<TbPopover>();
+        Assert.True(popover.Instance.Open);
+
+        await cut.InvokeAsync(() => popover.Instance.OpenChanged.InvokeAsync(false));
+        cut.Render(parameters => parameters.Add(picker => picker.Open, true));
+
+        Assert.Equal([false], opens);
+        Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
+    }
+
     private IRenderedComponent<TbDateTimePicker<DateTime>> RenderPicker(DateTime? value,
         Action<ComponentParameterCollectionBuilder<TbDateTimePicker<DateTime>>>? configure = null,
         CultureInfo? culture = null) =>

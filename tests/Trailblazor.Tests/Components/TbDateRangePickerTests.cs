@@ -1,5 +1,6 @@
 using System.Globalization;
 using Bunit;
+using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
@@ -370,4 +371,64 @@ public class TbDateRangePickerTests : BunitContext
                 .Add(picker => picker.ValueChanged, (DateRange<DateOnly> range) => _changes.Add(range));
             configure?.Invoke(parameters);
         });
+
+    [Fact]
+    public async Task Open_ShouldLeaveTheCalendarAsTheUserLeftIt_WhenTheParentRendersWithTheSameValue()
+    {
+        var (handle, events) = SetUpScript();
+        var opens = new List<bool>();
+        var cut = Render<TbDateRangePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Trip")
+            .Add(picker => picker.OpenChanged, (bool open) => opens.Add(open)));
+
+        await cut.InvokeAsync(() => events().OnToggle(true));
+        cut.Render(parameters => parameters.Add(picker => picker.Label, "Trip dates"));
+
+        Assert.Equal([true], opens);
+        Assert.Empty(handle.Invocations["setOpen"]);
+        cut.Render(parameters => parameters.Add(picker => picker.Open, true));
+        Assert.Equal([true], handle.Invocations["setOpen"].Select(call => (bool)call.Arguments[0]!));
+        await cut.InvokeAsync(() => events().OnToggle(false));
+        cut.Render(parameters => parameters.Add(picker => picker.Label, "Trip"));
+        Assert.Equal([true, false], opens);
+        Assert.Single(handle.Invocations["setOpen"]);
+    }
+
+    [Fact]
+    public async Task OpenChanged_ShouldReportEachOpenAndClose_WhenOnlyItIsBound()
+    {
+        var (_, events) = SetUpScript();
+        var opens = new List<bool>();
+        var cut = Render<TbDateRangePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Trip")
+            .Add(picker => picker.OpenChanged, (bool open) => opens.Add(open)));
+
+        await cut.InvokeAsync(() => events().OnToggle(true));
+        await cut.InvokeAsync(() => events().OnToggle(false));
+
+        Assert.Equal([true, false], opens);
+    }
+
+    [Fact]
+    public async Task OpenChanged_ShouldNotReportAnOpenFromCode_WhenTheScriptAnswersIt()
+    {
+        var (_, events) = SetUpScript();
+        var opens = new List<bool>();
+        var cut = Render<TbDateRangePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Trip")
+            .Add(picker => picker.OpenChanged, (bool open) => opens.Add(open)));
+
+        cut.Render(parameters => parameters.Add(picker => picker.Open, true));
+        await cut.InvokeAsync(() => events().OnToggle(true));
+
+        Assert.Empty(opens);
+    }
+
+    // The picker's script, with a handle of its own, and the events the picker passes it.
+    private (BunitJSModuleInterop Handle, Func<DateRangePickerEvents> Events) SetUpScript()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/date-range-picker.js");
+        var handle = module.SetupModule("createDateRangePicker", _ => true);
+        handle.Setup<DateOnly?>("today").SetResult(null);
+        handle.SetupVoid("setOpen", _ => true).SetVoidResult();
+        return (handle, () => ((DotNetObjectReference<DateRangePickerEvents>)module
+            .Invocations["createDateRangePicker"].Single().Arguments[1]!).Value);
+    }
 }

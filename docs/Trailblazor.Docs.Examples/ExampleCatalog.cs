@@ -4664,7 +4664,8 @@ public static class ExampleCatalog
             TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
                 + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it; for "
                 + "pickers that share a label, pass a locator, as `ColorPicker(row.GetByLabel(\"Color\"))`. In bUnit, "
-                + "set `FakeBrowserService.PickedColor` to test the eyedropper.",
+                + "set `FakeBrowserService.PickedColor` to test the eyedropper. `@bind-Open` opens the color panel from "
+                + "code.",
         },
         new("file-upload", "File upload", ExampleCategory.Inputs,
             "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.")
@@ -4973,7 +4974,8 @@ public static class ExampleCatalog
             TestingTip = "`await page.Tb().DatePicker(\"Start date\").ChooseAsync(date)` from "
                 + "`Trailblazor.Testing.Playwright` types the date in the field's own format and waits until the field "
                 + "has taken it. In bUnit, `Change(\"6/12/2026\")` on the `input` sets it; write the date in the field's "
-                + "format, as here for en-US.",
+                + "format, as here for en-US. `@bind-Open` opens the calendar from code, so a test can check it "
+                + "without pressing its button.",
         },
         new("time-picker", "Time picker", ExampleCategory.Inputs,
             "Chooses a time of day in the browser's own time box, shown in the user's language.")
@@ -5153,7 +5155,7 @@ public static class ExampleCatalog
                 + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and waits "
                 + "until the field has taken both. In bUnit, `Change(\"6/12/2026\")` on the `date-input` and "
                 + "`Change(\"14:30\")` on the `time-input` set them; write the date in the field's format and the time "
-                + "in 24-hour form.",
+                + "in 24-hour form. `@bind-Open` opens the calendar from code.",
         },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
@@ -5299,7 +5301,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
                 + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until the "
-                + "field has taken them. Its boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`.",
+                + "field has taken them. Its boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`. "
+                + "`@bind-Open` opens the calendar from code.",
         },
         new("listbox", "List box", ExampleCategory.Inputs,
             "Picks one or several options from a list that is always shown.")
@@ -6484,7 +6487,7 @@ public static class ExampleCatalog
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
-                "An overlay with `Visible` already shows and catches the pointer. `Blocking`, `CloseOnClick` and "
+                "An overlay with `Open` already shows and catches the pointer. `Blocking`, `CloseOnClick` and "
                     + "Escape start working once the page is interactive.",
             ],
             Ready = new("[data-part=overlay]", "a visible overlay") { OpenedBy = new("button", "Show page overlay") },
@@ -6497,7 +6500,7 @@ public static class ExampleCatalog
                 new("content", "The overlay's content."),
             ],
             TestingTip = "The overlay's element has `data-part=\"overlay\"`; click its `data-part=\"scrim\"` to "
-                + "close one with `CloseOnClick`.",
+                + "close one with `CloseOnClick`; the value bound with `@bind-Open` turns false.",
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.")
