@@ -136,12 +136,13 @@ public class TbMenuTests : BunitContext
     {
         var handle = JSInterop.SetupModule("./_content/Trailblazor/menu.js").SetupModule("createMenu", _ => true);
         handle.SetupVoid("setOpen", _ => true);
-        Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
             .Add(menu => menu.AttachOnFirstUse, true).Add(menu => menu.Open, true)
             .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
 
         Assert.Single(JSInterop.Invocations["createMenu"]);
         Assert.Equal([true], handle.Invocations["setOpen"].Select(call => call.Arguments[0]));
+        Assert.False(cut.Find("[data-part=trigger]").HasAttribute("data-attach-on-use"));
     }
 
     [Fact]

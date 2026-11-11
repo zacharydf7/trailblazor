@@ -190,7 +190,8 @@
 
             // A menu that waits for its first use listens on its trigger and marks it, so tests know to focus it first.
             // A prerendered trigger is replaced as the page turns interactive, so only the interactive one is marked.
-            if (AttachOnFirstUse && RendererInfo.IsInteractive && !_attaching)
+            // A menu opened from code isn't marked: it attaches after this render, and no later render would unmark it.
+            if (AttachOnFirstUse && RendererInfo.IsInteractive && !_attaching && !_openFromParent)
             {
                 attributes["data-attach-on-use"] = "";
                 attributes["onfocus"] = EventCallback.Factory.Create(this, AttachOnUseAsync);
