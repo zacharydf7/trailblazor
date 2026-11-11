@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 
@@ -6,7 +7,8 @@ namespace Trailblazor;
 /// <summary>Chooses a time of day in the browser's own time box, which shows it in the user's language. Bind it with
 /// <c>@bind-Value</c> to a <see cref="TimeOnly"/>, or to a <see cref="TimeSpan"/> from midnight that is under 24 hours.
 /// </summary>
-public partial class TbTimePicker<TTime> where TTime : struct
+public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TTime> where TTime
+    : struct
 {
     private ElementReference _input;
 

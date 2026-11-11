@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,7 +15,8 @@ namespace Trailblazor;
 /// input of a text field or the box of a checkbox, as on a native input; its other attributes go on the field's root.
 /// A field with two controls, such as a range, keeps the <c>id</c> on its root, as do checkbox and radio groups.
 /// </summary>
-public abstract partial class TbFieldBase<TValue> : TbComponentBase, IFormField, IDisposable
+public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>
+    : TbComponentBase, IFormField, IDisposable
 {
     private readonly List<string> _messages = [];
     private RequiredAttribute? _modelRequired;

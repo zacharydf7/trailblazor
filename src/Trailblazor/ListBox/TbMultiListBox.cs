@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
@@ -5,7 +6,8 @@ namespace Trailblazor;
 /// <summary>A list, always shown, for choosing any number of its <see cref="TbOption{TValue}"/>s. Bind it with
 /// <c>@bind-Value</c> to an <see cref="IReadOnlyList{T}"/>. Values chosen interactively keep the order they were
 /// chosen in; a static form post lists them in the options' order.</summary>
-public class TbMultiListBox<TItem> : TbListBoxBase<IReadOnlyList<TItem>>
+public class TbMultiListBox<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TItem>
+    : TbListBoxBase<IReadOnlyList<TItem>>
 {
     /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
     /// still matches its option. Defaults to the values' own equality.</summary>

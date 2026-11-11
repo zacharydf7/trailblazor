@@ -19,6 +19,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Trailblazor.Analyzers.Tests/Trailblazor.Analyzers.Tests.csproj" />
     <Project Path="tests/Trailblazor.BrowserTests.Host/Trailblazor.BrowserTests.Host.csproj" />
+    <Project Path="tests/Trailblazor.TrimmedApp/Trailblazor.TrimmedApp.csproj" />
     <Project Path="tests/Trailblazor.BrowserTests/Trailblazor.BrowserTests.csproj" />
     <Project Path="tests/Trailblazor.Tests/Trailblazor.Tests.csproj" />
   </Folder>

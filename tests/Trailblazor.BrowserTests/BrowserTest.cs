@@ -46,6 +46,14 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return page;
     }
 
+    // The trimmed app isn't prerendered, so its buttons appear only after WebAssembly starts.
+    protected async Task<IPage> OpenTrimmedAppAsync(string browser)
+    {
+        var page = await OpenAtAsync(browser, Fixture.TrimmedAppAddress, null);
+        await page.GetByRole(AriaRole.Button).First.WaitForAsync();
+        return page;
+    }
+
     private async Task<IPage> OpenAtAsync(string browser, Uri address, BrowserNewContextOptions? options)
     {
         var context = await Fixture.NewContextAsync(browser, options);

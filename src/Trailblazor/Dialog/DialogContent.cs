@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -31,6 +32,8 @@ internal sealed class DialogContent : ComponentBase, IDisposable
         Dialog.ParametersChanged += OnParametersChanged;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "DynamicComponent's Type is only given "
+        + "ContentType, which keeps every member of the dialog's content.")]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenComponent<DynamicComponent>(0);

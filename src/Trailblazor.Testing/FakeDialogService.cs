@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Trailblazor.Testing;
 
@@ -50,33 +51,37 @@ public sealed class FakeDialogService : IDialogService
     // The overloads differ in their type parameter count, so no call is ambiguous.
 #pragma warning disable RS0026
     /// <inheritdoc />
-    public DialogReference<TResult> Show<TDialog, TResult>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public DialogReference<TResult> Show<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog, TResult>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Record(_dialogs.Show<TDialog, TResult>(title, parameters, options));
 
     /// <inheritdoc />
-    public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public Task<DialogResult<TResult>> ShowAsync<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog, TResult>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
 
     /// <inheritdoc />
-    public DialogReference<bool> Show<TDialog>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public DialogReference<bool> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => Show<TDialog, bool>(title, parameters, options);
 
     /// <inheritdoc />
-    public async Task<bool> ShowAsync<TDialog>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public async Task<bool> ShowAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
 #pragma warning restore RS0026
 
     /// <inheritdoc />
-    public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string? title = null,
+    public DialogReference<TResult> ShowDynamic<TResult>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null) =>
         Record(_dialogs.ShowDynamic<TResult>(dialog, title, parameters, options));
 
     /// <inheritdoc />
-    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string? title = null,
+    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null) =>
         ShowDynamic<TResult>(dialog, title, parameters, options).Result;
 

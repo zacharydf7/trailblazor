@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -8,7 +9,8 @@ namespace Trailblazor;
 
 /// <summary>What <see cref="TbSelect{TValue}"/> and <see cref="TbMultiSelect{TItem}"/> share: a combobox that opens
 /// a list of <see cref="TbOption{TValue}"/>s, or a native select when rendered statically.</summary>
-public abstract partial class TbSelectBase<TValue> : TbBoxedFieldBase<TValue>, ISelect, IAsyncDisposable
+public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>
+    : TbBoxedFieldBase<TValue>, ISelect, IAsyncDisposable
 {
     private readonly List<ISelectOption> _options = [];
     private ElementReference _combobox;

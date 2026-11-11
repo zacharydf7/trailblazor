@@ -18,6 +18,12 @@
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <!-- The API tables describe every public member by reflection, so trimming keeps the libraries whole. -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Trailblazor" />
+    <TrimmerRootAssembly Include="Trailblazor.Primitives" />
+  </ItemGroup>
+
   <!-- The icon pack is large, so it loads with the pages that draw its icons (App.razor). -->
   <ItemGroup>
     <BlazorWebAssemblyLazyLoad Include="Trailblazor.Icons.Material.wasm" />

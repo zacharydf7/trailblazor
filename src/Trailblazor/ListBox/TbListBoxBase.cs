@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
@@ -6,7 +7,8 @@ namespace Trailblazor;
 
 /// <summary>What <see cref="TbListBox{TValue}"/> and <see cref="TbMultiListBox{TItem}"/> share: a list of
 /// <see cref="TbOption{TValue}"/>s that is always shown, or a native list when rendered statically.</summary>
-public abstract partial class TbListBoxBase<TValue> : TbFieldBase<TValue>, ISelect, IAsyncDisposable
+public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>
+    : TbFieldBase<TValue>, ISelect, IAsyncDisposable
 {
     private ElementReference _listbox;
     private readonly List<ISelectOption> _options = [];

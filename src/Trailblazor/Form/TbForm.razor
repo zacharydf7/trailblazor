@@ -1,5 +1,6 @@
 @namespace Trailblazor
 @using System.ComponentModel.DataAnnotations
+@using System.Diagnostics.CodeAnalysis
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.DependencyInjection
 @using Microsoft.Extensions.Options
@@ -306,6 +307,9 @@
 
     // Checked like the form's validator, with its services: AddValidation's types if registered, else the model's own.
 #pragma warning disable ASP0029 // The validation types are experimental; the validator itself uses them.
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DataAnnotations reads the app's model by "
+        + "reflection, as Blazor's DataAnnotationsValidator does; the Forms guide tells a trimmed app to keep the "
+        + "model's properties.")]
     private async Task<bool> ModelPassesAsync()
     {
         if (!DataAnnotations || ReferenceEquals(_editContext.Model, _noModel))

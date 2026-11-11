@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Reflection;
 using Microsoft.Extensions.Options;
@@ -41,6 +42,8 @@ internal sealed class TelemetryInstruments
     ]);
 
     // An assembly loads only once its code runs, so a library nobody has reached yet is found through the references.
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The catalog reports the controls it can find; "
+        + "an assembly trimmed away has none to report.")]
     internal static List<Assembly> AppAssemblies(IEnumerable<Assembly> loaded)
     {
         var found = new List<Assembly>();

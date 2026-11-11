@@ -1,9 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
 
 /// <summary>A field for choosing one of its <see cref="TbOption{TValue}"/>s. Bind it with <c>@bind-Value</c>.</summary>
-public class TbSelect<TValue> : TbSelectBase<TValue>
+public class TbSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : TbSelectBase<TValue>
 {
     /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
     /// still matches its option. Defaults to the values' own equality.</summary>

@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
@@ -55,10 +54,7 @@ public abstract class TbDialogContent<TResult> : ComponentBase
     /// override returns a blank title.</summary>
     protected virtual string DefaultTitle => "";
 
-    // Read before the content exists, so a dialog opened without a title fails at once rather than opening unnamed.
-    internal static bool HasDefaultTitle(Type dialog) =>
-        dialog.GetProperty(nameof(DefaultTitle), BindingFlags.Instance | BindingFlags.NonPublic)?.DeclaringType
-            != typeof(TbDialogContent<TResult>);
+    internal const string DefaultTitleName = nameof(DefaultTitle);
 
     /// <summary>Called when the user presses Escape, clicks the backdrop or presses the close button, and cancels the
     /// dialog unless overridden. Override it to send these through the dialog's own cancel, such as one that asks

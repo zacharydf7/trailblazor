@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -7,7 +8,8 @@ namespace Trailblazor;
 
 /// <summary>A text field that suggests values as the user types, from a list or an async search, and lets the user
 /// choose one. Bind it with <c>@bind-Value</c>.</summary>
-public partial class TbAutocomplete<TValue> : IAsyncDisposable
+public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>
+    : IAsyncDisposable
 {
     private ElementReference _input;
     private ElementReference _listbox;

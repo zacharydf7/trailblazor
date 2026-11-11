@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using static Trailblazor.CalendarDates;
@@ -8,7 +9,8 @@ namespace Trailblazor;
 /// in the browser's own time box. Bind it with <c>@bind-Value</c> to a <see cref="DateTime"/> or
 /// <see cref="DateTimeOffset"/>. It shows exactly the date and time it is given and never converts time zones; a date
 /// chosen with no time is midnight.</summary>
-public partial class TbDateTimePicker<TDateTime> where TDateTime : struct
+public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDateTime>
+    where TDateTime : struct
 {
     private ElementReference _dateInput;
     private bool _open;

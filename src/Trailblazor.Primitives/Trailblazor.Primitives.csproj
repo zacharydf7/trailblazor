@@ -3,6 +3,8 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <Description>Headless behaviors shared by Trailblazor components.</Description>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

@@ -103,7 +103,9 @@
         <TbText>
             Give the form a <code>Model</code> and turn on <code>DataAnnotations</code> to check the class's annotations
             along with the fields' own checks. Use it instead of adding a <code>DataAnnotationsValidator</code> inside
-            the form, since it also counts the annotations in <code>IsValid</code> before any message shows.
+            the form, since it also counts the annotations in <code>IsValid</code> before any message shows. The
+            annotations are read by reflection, so a WebAssembly app published with full trimming must keep the model's
+            properties, for example with <code>[DynamicDependency]</code> on the component that shows the form.
         </TbText>
         <CodeBlock Label="FormModelExample.razor" Code="@ModelCode" />
         <TbText>

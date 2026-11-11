@@ -21,6 +21,8 @@
     <!-- Built first, so its publish below finds it up to date. -->
     <ProjectReference Include="..\..\docs\Trailblazor.Docs\Trailblazor.Docs.csproj" ReferenceOutputAssembly="false"
                       Private="false" />
+    <ProjectReference Include="..\Trailblazor.TrimmedApp\Trailblazor.TrimmedApp.csproj" ReferenceOutputAssembly="false"
+                      Private="false" />
   </ItemGroup>
 
   <!-- The docs-site tests serve the published site, as GitHub Pages does. -->
@@ -34,6 +36,12 @@
     </MSBuild>
     <!-- A forward slash, since Linux reads a backslash as part of the folder's name. -->
     <Exec Command="dotnet &quot;@(DocsMarkdownTool)&quot; &quot;$(TargetDir)docs-site/wwwroot&quot;" />
+  </Target>
+
+  <!-- A small app published with full trimming, so the trimmed-app tests run what trimming leaves. -->
+  <Target Name="PublishTrimmedApp" AfterTargets="Build">
+    <MSBuild Projects="..\Trailblazor.TrimmedApp\Trailblazor.TrimmedApp.csproj" Targets="Publish"
+             Properties="Configuration=$(Configuration);PublishDir=$(TargetDir)trimmed-app\" />
   </Target>
 
   <ItemGroup>

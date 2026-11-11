@@ -1,10 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
 
 /// <summary>A form field whose input sits in a box, such as a text field or a select, with the box's look and size.
 /// </summary>
-public abstract class TbBoxedFieldBase<TValue> : TbFieldBase<TValue>
+public abstract class TbBoxedFieldBase<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>
+    : TbFieldBase<TValue>
 {
     /// <summary>How the box is drawn. Defaults to <see cref="FieldVariant.Outlined"/>.</summary>
     [Parameter]

@@ -18,7 +18,7 @@ public sealed class BrowserFixture : IAsyncLifetime
     private readonly WebApplicationFactory<Program> _factory = new();
     private readonly Dictionary<string, Lazy<Task<IBrowser>>> _browsers = [];
     private IPlaywright? _playwright;
-    private WebApplication? _docs;
+    private readonly List<WebApplication> _sites = [];
 
     // Playwright starts Chromium with --hide-scrollbars, and a test of the page's width needs them drawn.
     public const string ChromiumWithScrollbars = "chromium with scrollbars";
@@ -27,12 +27,15 @@ public sealed class BrowserFixture : IAsyncLifetime
 
     public Uri DocsAddress { get; private set; } = null!;
 
+    public Uri TrimmedAppAddress { get; private set; } = null!;
+
     public async ValueTask InitializeAsync()
     {
         _factory.UseKestrel(0);
         _factory.StartServer();
         BaseAddress = _factory.ClientOptions.BaseAddress;
-        DocsAddress = await StartDocsSiteAsync();
+        DocsAddress = await StartSiteAsync("docs-site");
+        TrimmedAppAddress = await StartSiteAsync("trimmed-app");
 
         _playwright = await Playwright.CreateAsync();
         foreach (var name in AllBrowsers.Names)
@@ -44,22 +47,23 @@ public sealed class BrowserFixture : IAsyncLifetime
             _playwright.Chromium.LaunchAsync(new() { IgnoreDefaultArgs = ["--hide-scrollbars"] }));
     }
 
-    // Serves the docs site the build published, answering any other path with the app, as GitHub Pages does.
-    private async Task<Uri> StartDocsSiteAsync()
+    // Serves a WebAssembly site the build published, answering any other path with the app, as GitHub Pages does.
+    private async Task<Uri> StartSiteAsync(string folder)
     {
-        var root = Path.Combine(AppContext.BaseDirectory, "docs-site", "wwwroot");
+        var root = Path.Combine(AppContext.BaseDirectory, folder, "wwwroot");
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = root });
         builder.WebHost.UseUrls("http://127.0.0.1:0");
-        _docs = builder.Build();
+        var site = builder.Build();
+        _sites.Add(site);
         // The runtime's ICU data files end in .dat, which has no registered content type.
         var types = new FileExtensionContentTypeProvider
         {
             Mappings = { [".dat"] = "application/octet-stream", [".md"] = "text/markdown" },
         };
-        _docs.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = types });
-        _docs.MapFallbackToFile("index.html");
-        await _docs.StartAsync();
-        var address = _docs.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!;
+        site.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = types });
+        site.MapFallbackToFile("index.html");
+        await site.StartAsync();
+        var address = site.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!;
         return new Uri(address.Addresses.Single());
     }
 
@@ -81,9 +85,9 @@ public sealed class BrowserFixture : IAsyncLifetime
         }
 
         _playwright?.Dispose();
-        if (_docs is not null)
+        foreach (var site in _sites)
         {
-            await _docs.DisposeAsync();
+            await site.DisposeAsync();
         }
 
         await _factory.DisposeAsync();

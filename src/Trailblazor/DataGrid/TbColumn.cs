@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -235,7 +236,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     // An enum's values, each named in words, for a choice filter.
     internal IEnumerable<(object Value, string Label)> Choices => ValueType is { IsEnum: true } type
-        ? Enum.GetValues(type).Cast<object>().Select(value => (value, Words(value.ToString()!)))
+        ? Enum.GetNames(type).Select(name => (Enum.Parse(type, name), Words(name)))
         : [];
 
     internal string CellClass { get; private set; } = "";
@@ -393,6 +394,9 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     }
 
     // The field's data annotations, such as [Range], when it is a property.
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The attributes come from the property the "
+        + "column's expression reads, which trimming keeps; Getting Started tells a trimmed app to keep any other "
+        + "properties an attribute reads, such as [Compare]'s.")]
     internal string? AnnotationErrorOf(TItem item, object? value)
     {
         if ((Body(_field) as MemberExpression)?.Member is not PropertyInfo property || item is null)

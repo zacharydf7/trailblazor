@@ -1,0 +1,21 @@
+@inject IDialogService Dialogs
+
+@* A dialog opened only through IDialogService, whose parameters trimming could drop, and a field that converts its
+   value, which trimming could break too. *@
+<TbRoot />
+<TbButton OnClick="RenameAsync">Rename the trail</TbButton>
+<output data-testid="name">@_name</output>
+<TbNumberField @bind-Value="_length" Label="Length in miles" />
+<output data-testid="length">@_length</output>
+
+@code {
+    private string _name = "Ridge loop";
+    private decimal? _length = 4.5m;
+
+    private async Task RenameAsync()
+    {
+        var result = await Dialogs.ShowAsync<RenameDialog, string>("Rename the trail",
+            parameters => parameters.Set(dialog => dialog.Name, _name));
+        _name = result.Value ?? _name;
+    }
+}

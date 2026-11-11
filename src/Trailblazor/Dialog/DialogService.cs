@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
@@ -24,8 +25,9 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     // Raised when a dialog opens, closes, or starts or stops blocking the page, so the hosts re-render.
     public event Action? Changed;
 
-    public DialogReference<TResult> Show<TDialog, TResult>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public DialogReference<TResult> Show<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog, TResult>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>
     {
         RequireTitle<TResult>(typeof(TDialog), title);
@@ -34,19 +36,21 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         return Open<TResult>(title, typeof(TDialog), values.Values, options ?? new(), isAlert: false);
     }
 
-    public Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public Task<DialogResult<TResult>> ShowAsync<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog, TResult>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult> => Show<TDialog, TResult>(title, parameters, options).Result;
 
-    public DialogReference<bool> Show<TDialog>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public DialogReference<bool> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => Show<TDialog, bool>(title, parameters, options);
 
-    public async Task<bool> ShowAsync<TDialog>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    public async Task<bool> ShowAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
 
-    public DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string? title = null,
+    public DialogReference<TResult> ShowDynamic<TResult>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null)
     {
         if (dialog.IsAbstract || !typeof(TbDialogContent<TResult>).IsAssignableFrom(dialog))
@@ -81,7 +85,8 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         return Open<TResult>(title, dialog, values, options ?? new(), isAlert: false);
     }
 
-    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string? title = null,
+    public Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null) =>
         ShowDynamic<TResult>(dialog, title, parameters, options).Result;
 
@@ -137,15 +142,20 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     internal DialogReference<bool> OpenInPlace(string title, DialogOptions options) =>
         Open<bool>(title, null, new Dictionary<string, object?>(), options, isAlert: false);
 
-    private static void RequireTitle<TResult>(Type dialog, string? title)
+    // Read before the content exists, so a dialog opened without a title fails at once rather than opening unnamed.
+    private static void RequireTitle<TResult>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicProperties)] Type dialog, string? title)
     {
-        if (string.IsNullOrWhiteSpace(title) && !TbDialogContent<TResult>.HasDefaultTitle(dialog))
+        var defaultTitle = dialog.GetProperty(TbDialogContent<TResult>.DefaultTitleName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        if (string.IsNullOrWhiteSpace(title) && defaultTitle?.DeclaringType == typeof(TbDialogContent<TResult>))
         {
             throw new ArgumentException($"Give {dialog.Name} a title, or override its DefaultTitle.", nameof(title));
         }
     }
 
-    private DialogReference<TResult> Open<TResult>(string? title, Type? component,
+    private DialogReference<TResult> Open<TResult>(
+        string? title, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? component,
         IReadOnlyDictionary<string, object?> parameters, DialogOptions options, bool isAlert)
     {
         var settings = trailblazorOptions.Value.Dialogs;

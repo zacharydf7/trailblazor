@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
@@ -16,7 +17,8 @@ public abstract class DialogReference
     private bool _showHeader;
     private bool _closeButton;
 
-    private protected DialogReference(string? title, DialogOptions options, Type? component,
+    private protected DialogReference(string? title, DialogOptions options,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? component,
         IReadOnlyDictionary<string, object?> parameters, bool isAlert, Func<DialogReference, bool, object?, Task> close)
     {
         _title = title;
@@ -121,6 +123,7 @@ public abstract class DialogReference
 
     /// <summary>The content the dialog shows, the <c>TDialog</c> it was opened with, or null for a
     /// <see cref="TbDialog"/> written in markup, which renders its own content where it is.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     public Type? ContentType { get; }
 
     /// <summary>The content's parameters by name, as the dialog was opened with them and as
@@ -275,7 +278,8 @@ public sealed class DialogReference<TResult> : DialogReference
 {
     private readonly TaskCompletionSource<DialogResult<TResult>> _result = new();
 
-    internal DialogReference(string? title, DialogOptions options, Type? component,
+    internal DialogReference(string? title, DialogOptions options,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? component,
         IReadOnlyDictionary<string, object?> parameters, bool isAlert, Func<DialogReference, bool, object?, Task> close)
         : base(title, options, component, parameters, isAlert, close)
     {

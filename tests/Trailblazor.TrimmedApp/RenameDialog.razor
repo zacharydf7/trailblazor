@@ -1,0 +1,16 @@
+@inherits TbDialogContent<string>
+
+<TbTextField @bind-Value="_name" Label="Name" />
+<TbDialogActions>
+    <TbButton OnClick="() => Dialog.CloseAsync(_name)">Save</TbButton>
+</TbDialogActions>
+
+@code {
+    private string _name = "";
+
+    /// <summary>The name to start from.</summary>
+    [Parameter]
+    public string Name { get; set; } = "";
+
+    protected override void OnInitialized() => _name = Name;
+}

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -9,7 +10,8 @@ namespace Trailblazor;
 /// <summary>A month of days shown in place, for choosing one date. Its title shows the year's months, and then the
 /// decade's years, to reach a distant date quickly. Bind it with <c>@bind-Value</c> to a <see cref="DateOnly"/> or
 /// <see cref="DateTime"/>; it never converts time zones, and a picked date is midnight.</summary>
-public partial class TbCalendar<TDate> : IAsyncDisposable where TDate : struct
+public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDate>
+    : IAsyncDisposable where TDate : struct
 {
     private ElementReference _grid;
     // Set once the script has attached and given the browser's date; the grid's data-ready tells tests so.

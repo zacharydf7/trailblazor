@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 
@@ -5,7 +6,8 @@ namespace Trailblazor;
 
 /// <summary>What <see cref="TbSlider{TValue}"/> and <see cref="TbRangeSlider{TValue}"/> share: a track between
 /// <see cref="Min"/> and <see cref="Max"/> with native range inputs as its thumbs.</summary>
-public abstract partial class TbSliderBase<TValue> : TbFieldBase<TValue>
+public abstract partial class TbSliderBase<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>
+    : TbFieldBase<TValue>
 {
     /// <summary>
     /// The size of the thumb, the track and the text. Defaults to <see cref="Trailblazor.Size.Medium"/>.

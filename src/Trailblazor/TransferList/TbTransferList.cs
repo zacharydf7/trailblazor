@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 
@@ -7,7 +8,7 @@ namespace Trailblazor;
 /// a trip. Buttons between the lists move the items marked in one list to the other, or every item it shows. Bind it
 /// with <c>@bind-Value</c> to an <see cref="IReadOnlyList{T}"/> of the chosen items, which keep the order of
 /// <see cref="Items"/>.</summary>
-public partial class TbTransferList<TItem>
+public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TItem>
 {
     private TbMultiListBox<TItem>? _available;
     private IReadOnlyList<TItem> _markedAvailable = [];

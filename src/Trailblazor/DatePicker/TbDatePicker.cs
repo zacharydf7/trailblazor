@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using static Trailblazor.CalendarDates;
@@ -8,7 +9,8 @@ namespace Trailblazor;
 /// <c>@bind-Value</c> to a <see cref="DateOnly"/> or <see cref="DateTime"/>. It shows and returns exactly the date it is
 /// given and never converts time zones; a date left alone keeps its time, and a newly picked or typed date is midnight.
 /// </summary>
-public partial class TbDatePicker<TDate> where TDate : struct
+public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDate> where TDate
+    : struct
 {
     private ElementReference _input;
     private bool _open;

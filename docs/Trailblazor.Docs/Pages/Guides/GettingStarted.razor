@@ -10,6 +10,7 @@
         <TbTableOfContentsItem TargetId="host" Text="Host dialogs and toasts" />
         <TbTableOfContentsItem TargetId="render-modes" Text="Render modes" />
         <TbTableOfContentsItem TargetId="options" Text="App-wide options" />
+        <TbTableOfContentsItem TargetId="trimming" Text="Trimming and AOT" />
         <TbTableOfContentsItem TargetId="next-steps" Text="Next steps" />
     </Contents>
     <Header>
@@ -163,6 +164,23 @@
             still override them.
         </TbText>
         <CodeBlock Label="App-wide options" Code="@Options" />
+
+        <DocsHeading Id="trimming" Text="Trimming and AOT" Class="docs-section" />
+        <TbText>
+            Trailblazor can be trimmed and compiled ahead of time, so a WebAssembly app can publish with
+            <code>TrimMode</code> set to <code>full</code>. In a fully trimmed app:
+        </TbText>
+        <ul>
+            <li>
+                A form's <code>DataAnnotations</code> reads the model's properties and their attributes by reflection,
+                so keep them, for example with <code>[DynamicDependency]</code> on the component that shows the form.
+            </li>
+            <li>
+                A data grid column's annotations are kept with the property it shows, but an annotation that reads other
+                properties of the row, such as <code>[Compare]</code>, needs those kept too.
+            </li>
+            <li>The telemetry catalog lists only the controls that survive trimming.</li>
+        </ul>
 
         <DocsHeading Id="next-steps" Text="Next steps" Class="docs-section" />
         <ul>

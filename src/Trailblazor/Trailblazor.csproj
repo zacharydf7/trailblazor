@@ -8,6 +8,8 @@
          files can't fix. -->
     <NoWarn>$(NoWarn);CS1591;RS0041</NoWarn>
     <Description>Accessible Blazor UI components built on design tokens, cascade layers and native browser overlays.</Description>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

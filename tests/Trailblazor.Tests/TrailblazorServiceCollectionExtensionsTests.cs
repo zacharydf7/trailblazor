@@ -1,4 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.Extensions.Options;
 using Trailblazor.Primitives;
 
@@ -6,6 +10,27 @@ namespace Trailblazor.Tests;
 
 public class TrailblazorServiceCollectionExtensionsTests
 {
+    [Fact]
+    public void AddTrailblazor_ShouldKeepEveryTypeScriptsExchange_WhenTheAppIsTrimmed()
+    {
+        var types = typeof(TbButton).Assembly.GetTypes();
+        var events = types.SelectMany(type => type.GetCustomAttributes<EventHandlerAttribute>())
+            .Select(handler => handler.EventArgsType);
+        var invokable = types.SelectMany(type => type.GetMethods())
+            .Where(method => method.IsDefined(typeof(JSInvokableAttribute)))
+            .SelectMany(method => method.GetParameters().Select(parameter => parameter.ParameterType).Append(
+                method.ReturnType.IsGenericType ? method.ReturnType.GetGenericArguments()[0] : method.ReturnType));
+
+        var kept = typeof(TrailblazorServiceCollectionExtensions).GetMethod(nameof(
+                TrailblazorServiceCollectionExtensions.AddTrailblazor))!
+            .GetCustomAttributes<DynamicDependencyAttribute>().Select(dependency => dependency.Type);
+
+        // The framework's own types and enums need nothing kept. A type parameter's closed type can't be seen here, so
+        // a type sent through BrowserListener<T>, such as Viewport, goes on AddTrailblazor's list by hand.
+        Assert.Empty(events.Concat(invokable).Distinct().Where(type => !type.IsGenericParameter && !type.IsEnum
+            && type.Namespace?.StartsWith("System", StringComparison.Ordinal) != true).Except(kept!));
+    }
+
     [Fact]
     public void AddTrailblazor_ShouldRegisterJsModuleLoaderAsScoped_WhenCalled()
     {

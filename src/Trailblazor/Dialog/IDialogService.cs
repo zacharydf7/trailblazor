@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Trailblazor;
 
 /// <summary>Opens dialogs from code. Register it with <c>AddTrailblazor()</c> and put one <see cref="TbRoot"/> in the
@@ -14,26 +16,27 @@ public interface IDialogService
     /// for a dialog whose content overrides <c>DefaultTitle</c>.</summary>
     /// <exception cref="ArgumentException">There's no title, and the content doesn't override <c>DefaultTitle</c>.
     /// </exception>
-    DialogReference<TResult> Show<TDialog, TResult>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    DialogReference<TResult> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog, TResult>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>;
 
     /// <summary>Opens <typeparamref name="TDialog"/> and waits until it closes.</summary>
-    Task<DialogResult<TResult>> ShowAsync<TDialog, TResult>(string? title = null,
-        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+    Task<DialogResult<TResult>> ShowAsync<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog, TResult>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>;
 
     /// <summary>Opens <typeparamref name="TDialog"/>, a dialog with no result, and returns at once, as
     /// <see cref="Show{TDialog, TResult}"/> does. Close it as confirmed with <c>CloseAsync(true)</c>, or cancel it with
     /// <see cref="DialogReference.CancelAsync"/>.</summary>
-    DialogReference<bool> Show<TDialog>(string? title = null, Action<DialogParameters<TDialog>>? parameters = null,
-        DialogOptions? options = null)
+    DialogReference<bool> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent;
 
     /// <summary>Opens <typeparamref name="TDialog"/>, a dialog with no result, waits until it closes, and returns
     /// whether it was confirmed.</summary>
-    Task<bool> ShowAsync<TDialog>(string? title = null, Action<DialogParameters<TDialog>>? parameters = null,
-        DialogOptions? options = null)
+    Task<bool> ShowAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent;
 #pragma warning restore RS0026
 
@@ -44,12 +47,14 @@ public interface IDialogService
     /// that can be created, there's no title and it doesn't override <c>DefaultTitle</c>, or a name in
     /// <paramref name="parameters"/> isn't one of its parameters or its value doesn't fit the parameter's type.
     /// </exception>
-    DialogReference<TResult> ShowDynamic<TResult>(Type dialog, string? title = null,
+    DialogReference<TResult> ShowDynamic<TResult>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null);
 
     /// <summary>Opens a dialog whose content type is chosen at run time and waits until it closes. See
     /// <see cref="ShowDynamic{TResult}"/>.</summary>
-    Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(Type dialog, string? title = null,
+    Task<DialogResult<TResult>> ShowDynamicAsync<TResult>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null);
 
     /// <summary>Asks a yes-or-no question and returns whether it was confirmed. The buttons say the app's text for
