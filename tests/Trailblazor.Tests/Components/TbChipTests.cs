@@ -24,6 +24,15 @@ public class TbChipTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldCallNoScript_WhenTheChipCanBeRemoved()
+    {
+        Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Invoices")
+            .Add(chip => chip.OnClose, () => { }));
+
+        Assert.Empty(JSInterop.Invocations);
+    }
+
+    [Fact]
     public void Render_ShouldGiveTheIconItsOwnTone_WhenIconToneIsSet()
     {
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "New alerts")

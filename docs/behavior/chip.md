@@ -10,7 +10,7 @@ Familiar apps: a mail app's recipient chips, the filter chips on a shopping or s
 - [x] Tab reaches a chip's action and then its remove button. `TbChip.razor`
 - [x] Enter on the remove button removes the chip. `ChipTests.Chip_ShouldPassFocusToTheChipInItsPlace_WhenRemovedWithTheKeyboard`
 - [x] Delete or Backspace on either part removes the chip. `TbChipTests.KeyDown_ShouldAskToBeRemoved_WhenGivenARemovalKey`
-- [x] Backspace on a chip that can be removed doesn't go back a page in the browsers that still would. `chip.js`
+- [x] Backspace on a chip that can be removed doesn't go back a page in the browsers that still would. `ChipTests.Chip_ShouldKeepBackspaceFromGoingBack_WhenItCanBeRemoved`
 - [x] A disabled chip's keys do nothing. `TbChipTests.KeyDown_ShouldDoNothing_WhenTheChipIsDisabled`
 
 ## Pointer

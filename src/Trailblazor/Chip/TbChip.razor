@@ -2,9 +2,6 @@
 @inherits TbComponentBase
 @inject ITbLocalizer Localizer
 @using System.Globalization
-@using Microsoft.JSInterop
-@using Trailblazor.Primitives
-@inject JsModuleLoader Modules
 
 <span @attributes="AdditionalAttributes" @ref="_chip" role="@(Group is null ? null : "listitem")" style="@Style"
       class="@ClassNames.Join("tb-chip", ClassNames.Modifier("tb-chip", Variant), ClassNames.Modifier("tb-chip", Tone),
@@ -40,7 +37,6 @@
 
 @code {
     private ElementReference _chip;
-    private bool _claimedBackspace;
     private ControlTelemetry? _telemetry;
 
     /// <summary>The chip's text, which also names its remove button. Use <see cref="ChildContent"/> for richer
@@ -151,25 +147,7 @@
         </text>;
 
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        Telemetry.Rendered(TelemetryName);
-        if (_claimedBackspace || !OnClose.HasDelegate || !RendererInfo.IsInteractive)
-        {
-            return;
-        }
-
-        _claimedBackspace = true;
-        try
-        {
-            var module = await Modules.ImportAsync("./_content/Trailblazor/chip.js");
-            await module.InvokeVoidAsync("claimBackspace", _chip);
-        }
-        catch (JSDisconnectedException)
-        {
-            // The circuit is gone, and the chip went with it.
-        }
-    }
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
     // An empty callback leaves the link without a handler, so a plain link chip's clicks stay in the browser.
     private EventCallback<MouseEventArgs> LinkClick => TelemetryName is null ? OnClick

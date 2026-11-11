@@ -24,6 +24,20 @@ public class ChipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Chip_ShouldKeepBackspaceFromGoingBack_WhenItCanBeRemoved(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chip");
+        await page.EvaluateAsync("""
+            () => addEventListener('keydown', event => window.backspaceKept = event.defaultPrevented)
+            """);
+
+        await Remove(page, "Archive").FocusAsync();
+        await page.Keyboard.PressAsync("Backspace");
+
+        Assert.True(await page.EvaluateAsync<bool>("() => window.backspaceKept"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Chip_ShouldBeFilledWithReadableText_WhenAnOutlinedFilterIsSelected(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chip");

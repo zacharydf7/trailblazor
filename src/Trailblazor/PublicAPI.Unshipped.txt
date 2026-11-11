@@ -738,7 +738,7 @@ override Trailblazor.TbCheckbox<TValue>.OnAfterRenderAsync(bool firstRender) -> 
 override Trailblazor.TbCheckbox<TValue>.OnParametersSet() -> void
 override Trailblazor.TbCheckboxGroup<TItem>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbCheckboxItem<TItem>.OnParametersSet() -> void
-override Trailblazor.TbChip.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbChip.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbChipGroup.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbChipGroup.OnParametersSet() -> void
 override Trailblazor.TbColorPicker.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
