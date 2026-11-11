@@ -4,6 +4,7 @@
 @implements IDisposable
 @implements ISelectOption
 
+@{ _drawn = Shows; _drawnAttributes = AdditionalAttributes; }
 @if (RendererInfo.IsInteractive)
 {
     <div @attributes="AdditionalAttributes" id="@OptionId" role="option" data-text="@Text"
@@ -41,6 +42,8 @@ else
 @code {
     private readonly string _id = $"tb-option-{Guid.NewGuid():N}";
     private TValue? _value;
+    private Drawn _drawn;
+    private IReadOnlyDictionary<string, object>? _drawnAttributes;
     private ControlTelemetry? _telemetry;
 
     /// <summary>The value the select or listbox takes when this option is chosen.</summary>
@@ -117,6 +120,23 @@ else
             Select.Refresh();
         }
     }
+
+    // Draws only when what it shows changed: equal values can format differently, and ChildContent can't be compared.
+    private Drawn Shows => new(Select!.Format(Value), Text, ChildContent is null, Disabled, Select.IsSelected(Value),
+        Class, Style);
+
+    /// <inheritdoc />
+    protected override bool ShouldRender() => ChildContent is not null || !Shows.Equals(_drawn)
+        || !SameAttributes(AdditionalAttributes, _drawnAttributes);
+
+    // Blazor hands over a new dictionary on each render, so its entries are compared rather than the dictionary.
+    private static bool SameAttributes(IReadOnlyDictionary<string, object>? now,
+        IReadOnlyDictionary<string, object>? then) => ReferenceEquals(now, then)
+        || (now is not null && then is not null && now.Count == then.Count
+            && now.All(pair => then.TryGetValue(pair.Key, out var value) && Equals(pair.Value, value)));
+
+    private readonly record struct Drawn(string? Value, string? Text, bool Plain, bool Disabled, bool Selected,
+        string? Class, string? Style);
 
     // A choice the script makes for a key, such as Enter, is a click with no count of presses.
     private async Task ChooseAsync(MouseEventArgs args)

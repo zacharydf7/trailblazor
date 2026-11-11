@@ -772,6 +772,7 @@ override Trailblazor.TbNumberField<TValue>.FocusAsync(bool preventScroll = false
 override Trailblazor.TbNumberField<TValue>.OnParametersSet() -> void
 override Trailblazor.TbOption<TValue>.OnInitialized() -> void
 override Trailblazor.TbOption<TValue>.OnParametersSet() -> void
+override Trailblazor.TbOption<TValue>.ShouldRender() -> bool
 override Trailblazor.TbOverlay.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbPagination.OnParametersSet() -> void
 override Trailblazor.TbPopover.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!

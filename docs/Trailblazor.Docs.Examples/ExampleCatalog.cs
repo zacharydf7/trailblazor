@@ -3914,7 +3914,10 @@ public static class ExampleCatalog
                 new("many-options", "Many options", "A long list scrolls, and `Filterable` lets people search it. A "
                     + "long option widens the list, and once chosen it's cut off with an ellipsis. When the options "
                     + "come from a search as someone types, use an "
-                    + "[autocomplete](components/autocomplete). `AttachOnFirstUse` waits to set up a select's script "
+                    + "[autocomplete](components/autocomplete). Choosing draws again only the options whose state "
+                    + "changed, but an option with `ChildContent` draws again whenever the select does, since its "
+                    + "content can't be compared. "
+                    + "`AttachOnFirstUse` waits to set up a select's script "
                     + "until it is first focused or pointed at, or its list is opened from code. That saves a call to "
                     + "the browser for each select on a page with many of them, such as a select on every row.",
                     typeof(SelectManyExample)),

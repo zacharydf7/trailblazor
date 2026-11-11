@@ -725,6 +725,84 @@ public class TbSelectTests : BunitContext
         return handle;
     }
 
+    [Fact]
+    public void Render_ShouldDrawTheSelectOnceMoreForAllItsOptions_WhenTheyRegister()
+    {
+        var cut = RenderManySizes();
+
+        Assert.Equal(2, cut.RenderCount);
+    }
+
+    [Fact]
+    public void Click_ShouldDrawOnlyTheOptionsWhoseStateChanged_WhenAnOptionIsChosen()
+    {
+        var cut = RenderManySizes();
+        var options = cut.FindComponents<TbOption<string?>>();
+        var before = options.Select(option => option.RenderCount).ToList();
+
+        cut.FindAll("[role=option]")[10].Click();
+        cut.FindAll("[role=option]")[20].Click();
+
+        // Size 10 draws when it's chosen and again when it's unchosen, and Size 20 draws when it's chosen.
+        var drawn = options.Select((option, index) => option.RenderCount - before[index]).ToList();
+        Assert.Equal((2, 1), (drawn[10], drawn[20]));
+        Assert.Equal(3, drawn.Sum());
+        Assert.Equal("true", cut.FindAll("[role=option]")[20].GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public void Render_ShouldDrawAnOptionAgain_WhenItsValueReadsDifferentlyWhileStillEqual()
+    {
+        var cut = Render<TbSelect<Medal?>>(parameters => parameters.Add(select => select.Label, "Medal")
+            .Add(select => select.ChildContent, MedalOption(new Medal(1, "Gold"))));
+
+        cut.Render(parameters => parameters.Add(select => select.ChildContent, MedalOption(new Medal(1, "Golden"))));
+
+        Assert.Equal("Golden", cut.Find("[role=option]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldDrawAnOptionAgain_WhenOnlyItsChildContentChanges()
+    {
+        var cut = Render<TbSelect<int>>(parameters => parameters.Add(select => select.Label, "Medal")
+            .Add(select => select.ChildContent, (RenderFragment)(builder => AddNumbers(builder, (1, "Gold")))));
+
+        cut.Render(parameters => parameters.Add(select => select.ChildContent,
+            (RenderFragment)(builder => AddNumbers(builder, (1, "Gold medal")))));
+
+        Assert.Equal("Gold medal", cut.Find("[role=option]").TextContent.Trim());
+    }
+
+    // Equal by id alone, like an entity loaded again from a database.
+    private sealed record Medal(int Id, string Name)
+    {
+        public bool Equals(Medal? other) => other?.Id == Id;
+
+        public override int GetHashCode() => Id;
+
+        public override string ToString() => Name;
+    }
+
+    private static RenderFragment MedalOption(Medal medal) => builder =>
+    {
+        builder.OpenComponent<TbOption<Medal?>>(0);
+        builder.AddAttribute(1, nameof(TbOption<Medal?>.Value), medal);
+        builder.CloseComponent();
+    };
+
+    private IRenderedComponent<TbSelect<string?>> RenderManySizes() =>
+        Render<TbSelect<string?>>(parameters => parameters.Add(select => select.Label, "Size")
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                for (var i = 0; i < 50; i++)
+                {
+                    builder.OpenComponent<TbOption<string?>>(0);
+                    builder.AddAttribute(1, nameof(TbOption<string?>.Value), $"Size {i}");
+                    builder.AddAttribute(2, "data-size", i);
+                    builder.CloseComponent();
+                }
+            })));
+
     private IRenderedComponent<TbSelect<string?>> RenderSelect(string? value, bool disabled = false,
         Func<string?, IEnumerable<string>>? validation = null, bool open = false)
     {
