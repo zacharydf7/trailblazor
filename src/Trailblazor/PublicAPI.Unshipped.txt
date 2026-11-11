@@ -4343,3 +4343,13 @@ Trailblazor.TbTabs.AddLabel.get -> string?
 Trailblazor.TbTabs.AddLabel.set -> void
 Trailblazor.TbTabs.OnAdd.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbTabs.OnAdd.set -> void
+Trailblazor.NumberStepEventArgs
+Trailblazor.NumberStepEventArgs.Direction.get -> int
+Trailblazor.NumberStepEventArgs.Direction.set -> void
+Trailblazor.NumberStepEventArgs.Held.get -> bool
+Trailblazor.NumberStepEventArgs.Held.set -> void
+Trailblazor.NumberStepEventArgs.Large.get -> bool
+Trailblazor.NumberStepEventArgs.Large.set -> void
+Trailblazor.NumberStepEventArgs.NumberStepEventArgs() -> void
+Trailblazor.TbNumberField<TValue>.LargeStep.get -> decimal?
+Trailblazor.TbNumberField<TValue>.LargeStep.set -> void

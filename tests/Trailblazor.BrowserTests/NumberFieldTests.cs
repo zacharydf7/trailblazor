@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -498,5 +500,75 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(budget).ToHaveValueAsync("$125.00");
         await Expect(copies).ToHaveValueAsync("42");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task StepButton_ShouldKeepSteppingAndChangeTheValueOnce_WhenHeldAndLetGo(string browser)
+    {
+        var page = await OpenAsync(browser, "/number-step");
+        var seats = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Seats" });
+        await Expect(seats).ToHaveAttributeAsync("data-ready", "");
+        var increase = seats.Locator("xpath=..").Locator("[data-part=increment]");
+
+        await increase.HoverAsync();
+        await page.Mouse.DownAsync();
+        // Past the first pause, steps repeat while the field shows them, before the value changes.
+        await Expect(seats).ToHaveValueAsync(new Regex("^([7-9]|[1-9][0-9]+)$"));
+        await Expect(page.GetByLabel("Seat changes")).ToHaveTextAsync("0");
+        await page.WaitForTimeoutAsync(500);
+        await page.Mouse.UpAsync();
+        // Events reach the server in order, so once this click counts, the release and its click have been handled.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" }).ClickAsync();
+        await Expect(page.GetByLabel("Elsewhere clicks")).ToHaveTextAsync("1");
+
+        await Expect(page.GetByLabel("Seat changes")).ToHaveTextAsync("1");
+        var chosen = int.Parse(await page.GetByLabel("Seats chosen").TextContentAsync() ?? "",
+            CultureInfo.InvariantCulture);
+        Assert.True(chosen > 7, $"Only {chosen} after holding.");
+        await Expect(seats).ToHaveValueAsync(chosen.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task StepButton_ShouldStepFromTheTypedTextAndChangeTheValueOnce_WhenHeldByATouch()
+    {
+        var page = await OpenStepAsync("chromium", new() { HasTouch = true });
+        var seats = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Seats" });
+        await seats.FillAsync("42");
+        var box = (await seats.Locator("xpath=..").Locator("[data-part=increment]").BoundingBoxAsync())!;
+        var session = await page.Context.NewCDPSessionAsync(page);
+
+        await DialogMoveAndResizeTests.TouchAsync(session, "touchStart", box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.WaitForTimeoutAsync(900);
+        await DialogMoveAndResizeTests.TouchAsync(session, "touchEnd", null, null);
+        // Events reach the server in order, so once this click counts, the lift and its click have been handled.
+        await page.WaitForTimeoutAsync(500);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" }).ClickAsync();
+        await Expect(page.GetByLabel("Elsewhere clicks")).ToHaveTextAsync("1");
+
+        // The typed 42 committed as the hold started, then the held steps changed the value once more.
+        await Expect(page.GetByLabel("Seat changes")).ToHaveTextAsync("2");
+        var chosen = int.Parse(await page.GetByLabel("Seats chosen").TextContentAsync() ?? "",
+            CultureInfo.InvariantCulture);
+        Assert.InRange(chosen, 43, 500);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Field_ShouldTakeALargeStep_WhenPageUpOrPageDownIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/number-step");
+        var seats = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Seats" });
+        var price = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Price" });
+        await Expect(price).ToHaveAttributeAsync("data-ready", "");
+
+        await seats.FocusAsync();
+        await page.Keyboard.PressAsync("PageUp");
+        await Expect(page.GetByLabel("Seats chosen")).ToHaveTextAsync("30");
+        await page.Keyboard.PressAsync("PageDown");
+        await Expect(page.GetByLabel("Seats chosen")).ToHaveTextAsync("5");
+        await price.FocusAsync();
+        await page.Keyboard.PressAsync("PageUp");
+
+        await Expect(page.GetByLabel("Price chosen")).ToHaveTextAsync("30");
+        await Expect(price).ToHaveValueAsync("30.00");
     }
 }

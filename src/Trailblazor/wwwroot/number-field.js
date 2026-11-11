@@ -56,3 +56,91 @@ document.addEventListener('pointerdown', event => {
         input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 }, { capture: true });
+
+const spinner = 'input[data-part="input"]:is([type=number], [role=spinbutton])';
+const step = (input, direction, how) => input.dispatchEvent(new CustomEvent('tb-number-step',
+    { bubbles: true, detail: { direction, large: false, held: false, ...how } }));
+
+// Page Up and Page Down take a large step, in a number box and a formatted field alike. Typed text commits first, so
+// the step starts from it.
+document.addEventListener('keydown', event => {
+    const input = event.target;
+    if ((event.key === 'PageUp' || event.key === 'PageDown') && !isComposing(event) && !event.altKey && !event.ctrlKey
+        && !event.metaKey && input.matches?.(spinner)) {
+        event.preventDefault();
+        if (typed.has(input)) {
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        step(input, event.key === 'PageUp' ? 1 : -1, { large: true });
+    }
+}, { capture: true });
+
+// Holding a step button steps again and again, faster the longer it's held. The field shows each step, and the value
+// changes once, when the button is let go. A touch's mouse events come only once it lifts, too late for the mousedown
+// handler above to commit typed text, so the first repeat commits it.
+const holdDelay = 400;
+const firstRepeat = 150;
+const fastestRepeat = 40;
+const speedUp = 0.85;
+let holding = null;
+// The click that ends a hold would step once more, so it's dropped. A touch's click can come a while after it lifts, so
+// the next click on the button within a second is dropped, unless a new press comes first.
+const dropWindow = 1000;
+let dropping = null;
+
+const release = () => {
+    if (!holding) {
+        return;
+    }
+
+    const { button, input, timer, repeated } = holding;
+    clearTimeout(timer);
+    holding = null;
+    if (repeated) {
+        step(input, 0);
+        dropping = { button, until: performance.now() + dropWindow };
+    }
+};
+
+document.addEventListener('pointerdown', event => {
+    release();
+    dropping = null;
+    const button = event.target.closest?.('[data-part="increment"], [data-part="decrement"]');
+    const input = button?.closest('[data-part="control"]')?.querySelector(spinner);
+    if (!input || button.disabled || event.button !== 0) {
+        return;
+    }
+
+    const direction = button.dataset.part === 'increment' ? 1 : -1;
+    const hold = { button, input, repeated: false, timer: 0 };
+    let wait = firstRepeat;
+    const repeat = () => {
+        if (!hold.repeated && typed.has(input)) {
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        hold.repeated = true;
+        step(input, direction, { held: true });
+        wait = Math.max(fastestRepeat, wait * speedUp);
+        hold.timer = setTimeout(repeat, wait);
+    };
+    hold.timer = setTimeout(repeat, holdDelay);
+    holding = hold;
+}, { capture: true });
+document.addEventListener('pointerup', release, { capture: true });
+document.addEventListener('pointercancel', release, { capture: true });
+window.addEventListener('click', event => {
+    if (dropping && performance.now() < dropping.until && dropping.button.contains(event.target)) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    dropping = null;
+}, { capture: true });
+// A long press on a touch screen would open a menu, on some systems only once it lifts.
+document.addEventListener('contextmenu', event => {
+    if (holding || dropping?.button.contains(event.target)) {
+        event.preventDefault();
+    }
+}, { capture: true });

@@ -25,6 +25,9 @@
 @code {
     private ElementReference _input;
 
+    // While a step button is held, its steps show in the field, and the value changes once, when it's let go.
+    private decimal? _held;
+
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
     public RenderFragment? Start { get; set; }
@@ -52,6 +55,10 @@
     /// <summary>How much the step buttons and arrow keys change the value. Defaults to 1.</summary>
     [Parameter]
     public decimal Step { get; set; } = 1;
+
+    /// <summary>How much Page Up and Page Down change the value. Defaults to ten steps.</summary>
+    [Parameter]
+    public decimal? LargeStep { get; set; }
 
     /// <summary>Hides the decrease and increase buttons; the arrow keys still step the value.</summary>
     [Parameter]
@@ -105,7 +112,7 @@
         builder.AddAttribute(3, "id", InputId);
         builder.AddAttribute(4, "name", InputNameAttribute);
         builder.AddAttribute(5, "type", Formatted ? "text" : "number");
-        builder.AddAttribute(6, "value", Text);
+        builder.AddAttribute(6, "value", ShownText);
         builder.AddAttribute(7, "min", Formatted ? null : Invariant(Min));
         builder.AddAttribute(8, "max", Formatted ? null : Invariant(Max));
         // Before the page is interactive, a formatted field's number box takes any number, as the formatted field does.
@@ -121,10 +128,11 @@
             builder.AddAttribute(16, "inputmode", "decimal");
             builder.AddAttribute(17, "autocomplete", "off");
             builder.AddAttribute(18, "role", "spinbutton");
-            builder.AddAttribute(19, "aria-valuenow", TryGetSteppable(out var number) ? Invariant(number) : null);
+            builder.AddAttribute(19, "aria-valuenow",
+                TryGetSteppable(out var number) ? Invariant(_held ?? number) : null);
             builder.AddAttribute(20, "aria-valuemin", Invariant(Min));
             builder.AddAttribute(21, "aria-valuemax", Invariant(Max));
-            builder.AddAttribute(22, "aria-valuetext", Text);
+            builder.AddAttribute(22, "aria-valuetext", ShownText);
             builder.AddAttribute(23, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this,
                 change => SetTextAsync(change.Value as string)));
             builder.SetUpdatesAttributeName("value");
@@ -154,6 +162,9 @@
             }
         }
 
+        builder.AddAttribute(32, "ontbnumberstep",
+            EventCallback.Factory.Create<NumberStepEventArgs>(this, OnStepAsync));
+        builder.SetUpdatesAttributeName("value");
         // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text.
         builder.AddAttribute(27, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
         builder.AddAttribute(28, "data-ready", RendererInfo.IsInteractive ? "" : null);
@@ -214,16 +225,39 @@
         _ => Task.CompletedTask,
     };
 
-    // An empty field steps from the minimum, or from zero when there is none.
-    private Task StepAsync(int direction)
+    private string? ShownText => _held is { } held ? FormatValue(ToValue(held)) : Text;
+
+    private Task StepAsync(int direction) => StepAsync(direction, Step, held: false);
+
+    // An empty field steps from the minimum, or zero without one; a held button steps on from what it shows.
+    private Task StepAsync(int direction, decimal size, bool held)
     {
         if (!TryGetSteppable(out var number))
         {
             return Task.CompletedTask;
         }
 
-        var stepped = Math.Clamp((number ?? Min ?? 0) + direction * Step, Lower, Upper);
+        var stepped = Math.Clamp((_held ?? number ?? Min ?? 0) + direction * size, Lower, Upper);
+        if (held)
+        {
+            _held = stepped;
+            return Task.CompletedTask;
+        }
+
+        _held = null;
         return SetValueAsync(ToValue(stepped));
+    }
+
+    // number-field.js asks for these steps; letting go of a held button sends a direction of 0.
+    private Task OnStepAsync(NumberStepEventArgs e)
+    {
+        if (e.Direction == 0)
+        {
+            return _held is not null ? StepAsync(0, 0, held: false) : Task.CompletedTask;
+        }
+
+        return Disabled || ReadOnly ? Task.CompletedTask
+            : StepAsync(e.Direction, e.Large ? LargeStep ?? Step * 10 : Step, e.Held);
     }
 
     // Going to or from text the browser can't read in an empty field fires no change event, so leaving commits that. Any

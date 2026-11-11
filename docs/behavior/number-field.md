@@ -11,6 +11,7 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 - [x] An arrow steps from text typed but not yet committed. `NumberFieldTests.NumberField_ShouldStepFromTheTypedText_WhenAnArrowIsPressedBeforeItIsCommitted`
 - [x] Arrow presses aren't lost while updates are slow to come back. `NumberFieldTests.NumberField_ShouldKeepEveryArrowStep_WhenEachUpdateIsSlowToComeBack`
 - [x] Arrows stop at `Min` and `Max`. `TbNumberField.razor`
+- [x] Page Up and Page Down step by `LargeStep`, or ten steps without one, in a plain or formatted field, and change nothing in a read-only one. `NumberFieldTests.Field_ShouldTakeALargeStep_WhenPageUpOrPageDownIsPressed`, `TbNumberFieldTests.Step_ShouldTakeALargeStep_WhenPageUpOrPageDownAsksForOne`, `TbNumberFieldTests.Step_ShouldLeaveTheValue_WhenTheFieldIsReadOnly`
 - [x] Enter commits the text and submits the field's form. `TbNumberField.razor`
 - [x] Tab commits the text and skips the step buttons. `NumberFieldTests.NumberField_ShouldSkipItsStepButtons_WhenTabbing`, `TbNumberField.razor`
 - [x] In a read-only field the arrows change nothing and the step buttons are off. `TbNumberFieldTests.Render_ShouldTurnOffTheStepButtonsAndMakeTheInputReadOnly_WhenReadOnly`, `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
@@ -26,7 +27,7 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 - [x] A step in an empty field starts from the minimum. `TbNumberFieldTests.Click_ShouldStartFromTheMinimum_WhenTheFieldIsEmpty`
 - [x] A step button doesn't submit the form. `TbButtonBase.cs`
 - [x] Clicking the label focuses the input. `TbFieldBase.razor`
-- [ ] Holding a step button keeps stepping, as the browser's own spinner does. #148
+- [x] Holding a step button keeps stepping, faster the longer it's held, as the browser's own spinner does. The field shows each step, the value changes once when the button is let go, and the click that ends the hold adds no step. `NumberFieldTests.StepButton_ShouldKeepSteppingAndChangeTheValueOnce_WhenHeldAndLetGo`, `TbNumberFieldTests.Step_ShouldShowEachHeldStepAndChangeTheValueOnce_WhenAStepButtonIsHeldAndLetGo`
 - [x] Clicking anywhere in the box outside its controls, such as its padding, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`
 - [ ] Scrolling the wheel over a focused field leaves its value alone. UNCONFIRMED
 

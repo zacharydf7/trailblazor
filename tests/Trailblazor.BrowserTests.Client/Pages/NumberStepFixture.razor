@@ -1,4 +1,5 @@
 @page "/number-step"
+@using System.Globalization
 
 <TbNumberField TValue="int" Label="Copies" @bind-Value="_copies" Min="0" Max="10" />
 <output aria-label="Copies chosen">@_copies</output>
@@ -8,7 +9,21 @@
 <button type="button" @onclick="() => _elsewhere++">Elsewhere</button>
 <output aria-label="Elsewhere clicks">@_elsewhere</output>
 
+@* Counts each change, so a held step button can be seen to change the value once. *@
+<TbNumberField TValue="int" Label="Seats" Value="_seats" ValueChanged="SeatsChanged" Max="500" LargeStep="25" />
+<output aria-label="Seats chosen">@_seats</output>
+<output aria-label="Seat changes">@_seatChanges</output>
+<TbNumberField TValue="decimal" Label="Price" @bind-Value="_price" Format="N2" Culture="CultureInfo.InvariantCulture"
+               LargeStep="10" />
+<output aria-label="Price chosen">@_price</output>
+
 @code {
+    private int _seats = 5;
+    private int _seatChanges;
+    private decimal _price = 20;
+
+    private void SeatsChanged(int seats) => (_seats, _seatChanges) = (seats, _seatChanges + 1);
+
     private int _copies = 5;
     private decimal _rate = 0.125m;
     private int _elsewhere;

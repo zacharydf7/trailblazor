@@ -633,4 +633,59 @@ public class TbNumberFieldTests : BunitContext
 
     private static void Commit<TValue>(IRenderedComponent<TbNumberField<TValue>> cut, string text) =>
         cut.Find("input").TriggerEvent("ontbnumberchange", new NumberChangeEventArgs { Value = text });
+
+    [Fact]
+    public async Task Step_ShouldShowEachHeldStepAndChangeTheValueOnce_WhenAStepButtonIsHeldAndLetGo()
+    {
+        var changes = new List<int>();
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Seats")
+            .Add(field => field.Value, 5).Add(field => field.Max, 7)
+            .Add(field => field.ValueChanged, (int value) => changes.Add(value)));
+        var input = cut.Find("[data-part=input]");
+
+        for (var held = 0; held < 3; held++)
+        {
+            await input.TriggerEventAsync("ontbnumberstep", new NumberStepEventArgs { Direction = 1, Held = true });
+        }
+
+        Assert.Equal("7", cut.Find("[data-part=input]").GetAttribute("value"));
+        Assert.Empty(changes);
+        await cut.Find("[data-part=input]").TriggerEventAsync("ontbnumberstep", new NumberStepEventArgs());
+        Assert.Equal([7], changes);
+    }
+
+    [Theory]
+    [InlineData(null, 1, 15)]
+    [InlineData(null, -1, -5)]
+    [InlineData(4, 1, 9)]
+    public async Task Step_ShouldTakeALargeStep_WhenPageUpOrPageDownAsksForOne(int? largeStep, int direction,
+        int expected)
+    {
+        int? changed = null;
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Seats")
+            .Add(field => field.Value, 5).Add(field => field.LargeStep, largeStep)
+            .Add(field => field.ValueChanged, (int value) => changed = value));
+
+        await cut.Find("[data-part=input]").TriggerEventAsync("ontbnumberstep",
+            new NumberStepEventArgs { Direction = direction, Large = true });
+
+        Assert.Equal(expected, changed);
+    }
+
+    [Fact]
+    public async Task Step_ShouldLeaveTheValue_WhenTheFieldIsReadOnly()
+    {
+        var changes = 0;
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Seats")
+            .Add(field => field.Value, 5).Add(field => field.ReadOnly, true)
+            .Add(field => field.ValueChanged, (int _) => changes++));
+        var input = cut.Find("[data-part=input]");
+
+        await input.TriggerEventAsync("ontbnumberstep", new NumberStepEventArgs { Direction = 1, Large = true });
+        await input.TriggerEventAsync("ontbnumberstep", new NumberStepEventArgs { Direction = 1, Held = true });
+        await cut.Find("[data-part=input]").TriggerEventAsync("ontbnumberstep", new NumberStepEventArgs());
+
+        Assert.Equal(0, changes);
+        Assert.Equal("5", cut.Find("[data-part=input]").GetAttribute("value"));
+    }
 }

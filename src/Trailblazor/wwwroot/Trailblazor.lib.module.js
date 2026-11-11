@@ -63,6 +63,10 @@ function registerEvents(blazor) {
     blazor.registerCustomEventType('tbnumberchange', { browserEventName: 'change', createEventArgs: numberEventArgs });
     blazor.registerCustomEventType('tbnumberleave', { browserEventName: 'focusout', createEventArgs: numberEventArgs });
     blazor.registerCustomEventType('tbnumberinput', { browserEventName: 'input', createEventArgs: numberEventArgs });
+    // number-field.js sends these for Page Up and Page Down, and for a held step button. The browser event has a name
+    // of its own, since one matching the Blazor event's name would reach the handler twice.
+    blazor.registerCustomEventType('tbnumberstep',
+        { browserEventName: 'tb-number-step', createEventArgs: event => event.detail });
 
     // A field's OnFocus and OnBlur count only focus that crosses its root, not moves between its own parts.
     const fieldFocusEventArgs = event => {

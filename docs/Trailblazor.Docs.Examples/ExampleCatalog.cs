@@ -3260,7 +3260,9 @@ public static class ExampleCatalog
             [
                 new("limits-and-steps", "Limits and steps", "`Min` and `Max` set the limits. A typed value outside them, or "
                     + "text that isn't a number, shows an error and stays in the field to be fixed, and the bound value "
-                    + "doesn't change. `Step` sets how far the arrow keys and buttons move the value.",
+                    + "doesn't change. `Step` sets how far the arrow keys and buttons move the value, and `LargeStep` how far "
+                    + "Page Up and Page Down do. Holding a step button repeats it, faster the longer it's held, and "
+                    + "the value changes once, when it's let go.",
                     typeof(NumberFieldExample)),
                 new("values-set-by-code", "Values set by code", "`Min` and `Max` hold for a value your code sets too, "
                     + "such as one loaded from a saved trip: once the form validates, the field explains its limits and "
@@ -3298,6 +3300,7 @@ public static class ExampleCatalog
             Keyboard =
             [
                 new(["Up", "Down"], "Steps the value by `Step`."),
+                new(["Page Up", "Page Down"], "Steps the value by `LargeStep`, ten steps unless it's set."),
                 new(["Enter"], "Updates the value at once and submits the field's form."),
             ],
             Labeling =
