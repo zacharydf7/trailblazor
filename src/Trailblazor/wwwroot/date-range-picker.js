@@ -1,5 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { browserToday, dayTarget, toDate, toIso } from './date-grid.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // The calendar's focus moves here among the days on show; the server is told, and shows another month when needed.
 export function createDateRangePicker(panel, events, firstDayOfWeek) {
@@ -64,7 +65,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
             }
         }
 
-        events.invokeMethodAsync('OnToggle', open);
+        callDotNet(events, 'OnToggle', open);
     };
     const onKeyDown = event => {
         const button = event.target.closest('[data-part="day"]');
@@ -75,7 +76,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         // The button's own click would pick the day it now shows, so the server is told the day the keys moved to.
         if ((event.key === 'Enter' || event.key === ' ') && intended && intended !== button.dataset.date) {
             event.preventDefault();
-            events.invokeMethodAsync('OnPick', intended);
+            callDotNet(events, 'OnPick', intended);
             return;
         }
 
@@ -96,7 +97,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
             focusDay(shown);
         }
 
-        events.invokeMethodAsync('OnShowDate', iso);
+        callDotNet(events, 'OnShowDate', iso);
     };
     // Tabbing out of the calendar closes it, so it doesn't cover what focus moves to (WCAG 2.4.11). A press on the
     // calendar button doesn't close it here, since the button's click would then open it again.

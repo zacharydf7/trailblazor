@@ -1,5 +1,6 @@
 import { createTypeahead } from './typeahead.js';
 import { watchForUnnamedOptions } from './unnamed-options.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // How many option ids go to the server in one call, to stay within a circuit's message size limit.
 const rangeBatch = 100;
@@ -80,7 +81,7 @@ export function attachListBox(listbox, events) {
         const ids = options.map(option => option.id);
         for (let start = 0; start < ids.length; start += rangeBatch) {
             const last = start + rangeBatch >= ids.length;
-            await events.invokeMethodAsync('OnChooseRange', ids.slice(start, start + rangeBatch), last);
+            await callDotNet(events, 'OnChooseRange', ids.slice(start, start + rangeBatch), last);
         }
     };
 
@@ -134,7 +135,7 @@ export function attachListBox(listbox, events) {
         if (multiple() && !disabled() && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey
             && key.toLowerCase() === 'a') {
             event.preventDefault();
-            events.invokeMethodAsync('OnChooseAll');
+            callDotNet(events, 'OnChooseAll');
             return;
         }
 

@@ -1,4 +1,5 @@
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 const moveKeys = ['ArrowUp', 'ArrowDown', 'Home', 'End'];
 
@@ -62,7 +63,7 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
 
         event.preventDefault();
         event.stopPropagation();
-        events.invokeMethodAsync('OnKey', item.dataset.key, event.key);
+        callDotNet(events, 'OnKey', item.dataset.key, event.key);
     };
 
     // A drag's release would open the handle's menu, so that click goes nowhere.
@@ -114,8 +115,8 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
             clearDrop();
             item.dataset.drop = before ? 'before' : 'after';
             const current = over = { item, before };
-            events.invokeMethodAsync('OnDragOver', source.dataset.key, item.dataset.key, before).then(check => {
-                if (over === current && !check.allowed) {
+            callDotNet(events, 'OnDragOver', source.dataset.key, item.dataset.key, before).then(check => {
+                if (over === current && check && !check.allowed) {
                     showRefusal(item, check.reason);
                 }
             });
@@ -126,7 +127,7 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
             draggedHandle = handleOf(triggerOf(moved));
             endDrag();
             if (target && moved) {
-                events.invokeMethodAsync('OnDrop', moved.dataset.key, target.item.dataset.key, target.before);
+                callDotNet(events, 'OnDrop', moved.dataset.key, target.item.dataset.key, target.before);
             }
         },
         // Escape ends a drag before its release, whose click would open the menu.

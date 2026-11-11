@@ -1,5 +1,6 @@
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { createTypeahead } from './typeahead.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // Alt+Shift with an arrow moves the focused row: past its neighbors, into the row above, or out of its parent.
 const moveKeys = { ArrowUp: 'MoveUp', ArrowDown: 'MoveDown', ArrowRight: 'Indent', ArrowLeft: 'Outdent' };
@@ -68,7 +69,7 @@ export function createTreeView(tree, events) {
         const ids = own('[data-tree-item]').map(item => item.dataset.treeItem);
         if (ids.join() !== order) {
             order = ids.join();
-            events.invokeMethodAsync('OnItemOrder', ids);
+            callDotNet(events, 'OnItemOrder', ids);
         }
     };
     // A loading or failed row goes once its branch loads or tries again, so focus in it, or the tab stop if focus has
@@ -148,7 +149,7 @@ export function createTreeView(tree, events) {
         focusedRow = item && placeOf(item);
         if (event.target.matches('[role="treeitem"][data-key]')) {
             focusRow(event.target);
-            events.invokeMethodAsync('OnFocus', event.target.dataset.key);
+            callDotNet(events, 'OnFocus', event.target.dataset.key);
         } else if (event.target === row) {
             focusRow(row);
         }
@@ -172,7 +173,7 @@ export function createTreeView(tree, events) {
         const key = getComputedStyle(tree).direction === 'rtl' ? mirrored[event.key] ?? event.key : event.key;
         if (event.altKey && event.shiftKey && moveKeys[key] && current.matches('[data-draggable]')) {
             event.preventDefault();
-            events.invokeMethodAsync('OnKey', current.dataset.key, moveKeys[key], false, false);
+            callDotNet(events, 'OnKey', current.dataset.key, moveKeys[key], false, false);
             return;
         }
 
@@ -185,13 +186,13 @@ export function createTreeView(tree, events) {
         const expanded = current.getAttribute('aria-expanded');
         // A status row moves for the row it loads for, whose next row in the server's list is the one after it.
         const id = status ? ownerOf(current)?.dataset.key : current.dataset.key;
-        const send = key => events.invokeMethodAsync('OnKey', id, key, event.shiftKey, event.ctrlKey || event.metaKey);
+        const send = key => callDotNet(events, 'OnKey', id, key, event.shiftKey, event.ctrlKey || event.metaKey);
         const find = key => {
             if (!virtual()) {
                 return typing.find(rows(), current, key);
             }
 
-            events.invokeMethodAsync('OnFind', current.dataset.key, typing.type(key));
+            callDotNet(events, 'OnFind', current.dataset.key, typing.type(key));
             return null;
         };
         // Moves to a row this tree hasn't rendered are the server's, which renders the row and focuses it.
@@ -288,9 +289,9 @@ export function createTreeView(tree, events) {
             // the row it left in case the range has to start there.
             if (event.shiftKey && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) && next.dataset.key
                 && tree.getAttribute('aria-multiselectable') === 'true') {
-                events.invokeMethodAsync('OnExtend', next.dataset.key, id);
+                callDotNet(events, 'OnExtend', next.dataset.key, id);
             } else if ('followsFocus' in tree.dataset && next.dataset.key && !event.ctrlKey && !event.metaKey) {
-                events.invokeMethodAsync('OnKey', next.dataset.key, 'Follow', false, false);
+                callDotNet(events, 'OnKey', next.dataset.key, 'Follow', false, false);
             }
         }
     };
@@ -374,11 +375,11 @@ export function createTreeView(tree, events) {
             // Resting on a closed row opens it, so the drop can go among its children.
             if (position === 'Inside' && row.getAttribute('aria-expanded') === 'false') {
                 opening = setTimeout(
-                    () => events.invokeMethodAsync('OnKey', row.dataset.key, 'Open', false, false), openOnRest);
+                    () => callDotNet(events, 'OnKey', row.dataset.key, 'Open', false, false), openOnRest);
             }
-            events.invokeMethodAsync('OnDragOver', sources.map(source => source.dataset.key), row.dataset.key,
+            callDotNet(events, 'OnDragOver', sources.map(source => source.dataset.key), row.dataset.key,
                 position).then(check => {
-                if (over === current && !check.allowed) {
+                if (over === current && check && !check.allowed) {
                     showRefusal(row, check.reason);
                 }
             });
@@ -425,7 +426,7 @@ export function createTreeView(tree, events) {
         }
 
         view = { start: Math.max(0, first - spare), count: end - first + 2 * spare };
-        events.invokeMethodAsync('OnView', view.start, view.count);
+        callDotNet(events, 'OnView', view.start, view.count);
     };
     const scheduleView = () => {
         if (virtual() && !frame) {

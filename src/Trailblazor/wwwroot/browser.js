@@ -1,3 +1,4 @@
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 // The browser may still be reading a download's blob once the link's click returns, so it is let go well after.
 const revokeDelay = 40_000;
 
@@ -82,7 +83,7 @@ export function getViewport() {
 
 export function observeViewport(listener) {
     let timer;
-    const report = () => listener.invokeMethodAsync('OnChange', getViewport());
+    const report = () => callDotNet(listener, 'OnChange', getViewport());
     const onResize = () => {
         clearTimeout(timer);
         timer = setTimeout(report, resizeSettleDelay);
@@ -107,7 +108,7 @@ export function observeBreakpoint(listener, minWidths) {
         const breakpoint = queries.filter(query => query.matches).length;
         if (breakpoint !== reported) {
             reported = breakpoint;
-            listener.invokeMethodAsync('OnChange', breakpoint);
+            callDotNet(listener, 'OnChange', breakpoint);
         }
     };
 

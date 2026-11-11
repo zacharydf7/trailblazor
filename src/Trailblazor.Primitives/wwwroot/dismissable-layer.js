@@ -1,4 +1,5 @@
 import { isComposing } from './composing.js';
+import { callDotNet } from './dotnet-call.js';
 // Layers stack in creation order; only the topmost one reacts to a dismiss gesture.
 const layers = [];
 
@@ -85,5 +86,5 @@ function requestDismiss(layer, reason) {
     }
 
     layer.dismissPending = true;
-    layer.dotNetReference.invokeMethodAsync('OnDismissRequested', reason).finally(() => layer.dismissPending = false);
+    callDotNet(layer.dotNetReference, 'OnDismissRequested', reason).finally(() => layer.dismissPending = false);
 }

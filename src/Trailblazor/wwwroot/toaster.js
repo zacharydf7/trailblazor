@@ -1,3 +1,4 @@
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 // Toasts never take focus themselves, so F8 brings focus to the newest one and Escape sends it back.
 export function attachToaster(toaster, events) {
     // Blazor passes null for an element that was removed before this call arrived.
@@ -51,7 +52,7 @@ export function attachToaster(toaster, events) {
     const updatePause = () => {
         if ((pointerOn || document.hidden) !== paused) {
             paused = !paused;
-            events.invokeMethodAsync('OnPause', paused);
+            callDotNet(events, 'OnPause', paused);
         }
     };
     const onPointerEnter = () => {

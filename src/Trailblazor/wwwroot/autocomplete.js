@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { discard, flush } from './debounced-input.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // The list opens as the user types and the server fills it; the keys move an active option in the browser, and
 // choosing clicks it, which reaches the server. Focus never leaves the input.
@@ -44,9 +45,9 @@ export function createAutocomplete(input, listbox, events) {
         document.addEventListener('keydown', onDocumentKeyDown, true);
         position = createAnchoredPosition(listbox, control, { side: 'Bottom', align: 'Start', offset: 4 });
         input.setAttribute('aria-expanded', 'true');
-        events.invokeMethodAsync('OnToggle', true);
+        callDotNet(events, 'OnToggle', true);
         if (browse) {
-            events.invokeMethodAsync('OnBrowse');
+            callDotNet(events, 'OnBrowse');
         }
     };
     // Text still waiting out the delay is sent first, so the server handles Enter or Escape against the latest text,
@@ -63,7 +64,7 @@ export function createAutocomplete(input, listbox, events) {
         position = null;
         setActive(null);
         input.setAttribute('aria-expanded', 'false');
-        events.invokeMethodAsync('OnToggle', false);
+        callDotNet(events, 'OnToggle', false);
     };
     const move = step => {
         const list = options();

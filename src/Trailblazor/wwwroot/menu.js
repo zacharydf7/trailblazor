@@ -1,4 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 const itemSelector = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
 // A pointer passing over an item on its way elsewhere doesn't open or close a submenu.
@@ -81,7 +82,9 @@ export function createMenu(root, menu, options, events) {
         // opens the menu and it closes before the toggle event runs, the browser fires one toggle that stays closed.
         if (list === menu && open !== reported) {
             reported = open;
-            events?.invokeMethodAsync('OnToggle', open);
+            if (events) {
+                callDotNet(events, 'OnToggle', open);
+            }
         }
 
         // The replay at attach and a toggle still queued from before it can both report one opening.

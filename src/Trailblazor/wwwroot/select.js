@@ -2,6 +2,7 @@ import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-posit
 import { createTypeahead } from './typeahead.js';
 import { watchForUnnamedOptions } from './unnamed-options.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
 export function createSelect(combobox, listbox, toggle) {
@@ -137,7 +138,7 @@ export function createSelect(combobox, listbox, toggle) {
     const onToggle = event => {
         const opened = event.newState === 'open';
         combobox.setAttribute('aria-expanded', String(opened));
-        toggle.invokeMethodAsync('OnToggle', opened);
+        callDotNet(toggle, 'OnToggle', opened);
         if (!opened) {
             setActive(null);
             position?.dispose();
@@ -146,7 +147,7 @@ export function createSelect(combobox, listbox, toggle) {
     };
     const chips = () => [...combobox.querySelectorAll('[data-part="chip"]')];
     // The server finds the chip's option by its id and says the text the chip shows.
-    const removeChip = chip => toggle.invokeMethodAsync('OnRemoveChip', chip.dataset.option, chip.textContent.trim());
+    const removeChip = chip => callDotNet(toggle, 'OnRemoveChip', chip.dataset.option, chip.textContent.trim());
     const onKeyDown = event => {
         const key = event.key;
         if (event.ctrlKey || event.metaKey) {

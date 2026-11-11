@@ -1,4 +1,5 @@
 import { scrollIntoView } from './browser.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 const settleDelay = 150;
 
@@ -82,7 +83,7 @@ export function attachTableOfContents(root, events) {
         const id = (followed?.isConnected ? followed : inView())?.id ?? null;
         if (id !== reported) {
             reported = id;
-            events.invokeMethodAsync('OnActive', id);
+            callDotNet(events, 'OnActive', id);
         }
     };
     const schedule = () => {

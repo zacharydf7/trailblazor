@@ -36,6 +36,36 @@ public class CircuitTests(BrowserFixture fixture) : BrowserTest(fixture)
             .Select(record => $"{record.Category}: {record.Message} {record.Exception}"));
     }
 
+    // Blazor's own event dispatch throws for a DOM event once the circuit is gone; only a script's own call counts here.
+    // The grid's script makes no calls of its own, so only the select and the tree are checked.
+    [Theory]
+    [InlineData("/select")]
+    [InlineData("/tree-view")]
+    public async Task Scripts_ShouldRaiseNoErrors_WhenTheCircuitDropsMidInteraction(string path)
+    {
+        var page = await OpenAsync("chromium", path);
+        List<string> errors = [];
+        page.PageError += (_, error) => errors.Add(error);
+        await StartInteractionAsync(page, path);
+
+        await page.EvaluateAsync("() => Blazor.disconnect()");
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.PressAsync("Escape");
+        // A rejected call reaches the page's error events a little after the key that made it, so the test waits.
+        await page.WaitForTimeoutAsync(500);
+
+        Assert.DoesNotContain(errors, CameFromAScriptsOwnCall);
+    }
+
+    private static bool CameFromAScriptsOwnCall(string error)
+    {
+        var frames = error.Split('\n');
+        var call = Array.FindIndex(frames, frame => frame.Contains(".invokeMethodAsync", StringComparison.Ordinal));
+        return call >= 0 && call + 1 < frames.Length
+            && frames[call + 1].Contains("/_content/Trailblazor", StringComparison.Ordinal);
+    }
+
     private static async Task StartInteractionAsync(IPage page, string path)
     {
         switch (path)

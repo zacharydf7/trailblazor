@@ -1,3 +1,4 @@
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 // Dragging, the keys and the grip's menu resize panes in the browser, keeping every pane's share, and report the new
 // sizes when they stop; Enter asks the server to collapse or restore. `reporter` hears both, and the panes' order in
 // the markup, and `key` names the saved layout. Panes are named by id in every report.
@@ -52,7 +53,7 @@ export function attachSplitter(root, reporter, key) {
             reported = sizes;
             reporting++;
             root.dataset.reporting = '';
-            reporter.invokeMethodAsync('OnResize', panes().map(pane => pane.id),
+            callDotNet(reporter, 'OnResize', panes().map(pane => pane.id),
                 sizes.map(size => Math.round(size * 100) / 100)).finally(() => {
                 if (--reporting === 0) {
                     delete root.dataset.reporting;
@@ -146,7 +147,7 @@ export function attachSplitter(root, reporter, key) {
                 sizes = move(separator, from, 100);
                 break;
             case 'Enter':
-                reporter.invokeMethodAsync('OnToggle', separator.parentElement.previousElementSibling.id);
+                callDotNet(reporter, 'OnToggle', separator.parentElement.previousElementSibling.id);
                 event.preventDefault();
                 return;
             default:
@@ -170,7 +171,7 @@ export function attachSplitter(root, reporter, key) {
         const ids = panes().map(pane => pane.id);
         if (ids.join(' ') !== order) {
             order = ids.join(' ');
-            reporter.invokeMethodAsync('OnOrder', ids);
+            callDotNet(reporter, 'OnOrder', ids);
         }
     };
     const observer = new MutationObserver(reportOrder);

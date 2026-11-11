@@ -2,6 +2,7 @@ import { autofocusTarget, firstTabbable } from '../Trailblazor.Primitives/focus-
 import { focusForLastInput, focusOrigin } from '../Trailblazor.Primitives/pointer-origin.js';
 import { alwaysUsable, hold, release } from './inert.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // Open dialogs, back to front; keys go to the frontmost, or to a modeless one that has focus, so a nested dialog closes
 // before the one beneath it.
@@ -236,7 +237,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
 
         event.preventDefault();
         if (options.dismissOnEscape) {
-            dotNet.invokeMethodAsync('Dismiss', 'Escape');
+            callDotNet(dotNet, 'Dismiss', 'Escape');
         }
     };
     // Other close requests, such as a back gesture, ask the dialog like Escape. A browser that closes it anyway, as
@@ -244,14 +245,14 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     const onCancel = event => {
         event.preventDefault();
         if (options.dismissOnEscape) {
-            dotNet.invokeMethodAsync('Dismiss', 'Escape');
+            callDotNet(dotNet, 'Dismiss', 'Escape');
         }
     };
     // A close the browser made by itself still has to reach .NET, or the caller would wait forever. A dialog switching
     // between modal and modeless closes and opens again, so it is open by the time its close event arrives.
     const onClose = () => {
         if (!dialog.open && finish()) {
-            dotNet.invokeMethodAsync('Cancel');
+            callDotNet(dotNet, 'Cancel');
         }
     };
     // A drag that starts in a field and ends over the backdrop must not dismiss the dialog and lose the input.
@@ -268,7 +269,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     };
     const onClick = event => {
         if (entry.modal && options.dismissOnBackdrop && pressedOnBackdrop && onBackdrop(event)) {
-            dotNet.invokeMethodAsync('Dismiss', 'Backdrop');
+            callDotNet(dotNet, 'Dismiss', 'Backdrop');
         }
     };
 

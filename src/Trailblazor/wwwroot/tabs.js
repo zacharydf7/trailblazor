@@ -1,3 +1,4 @@
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 // The arrow keys, Home and End move focus between enabled tabs; with automatic activation they also select it, through
 // `order` rather than a click, so the tab's OnClick hears only clicks. The headers follow the order in which tabs
 // register, so the tabs' order in the markup is reported to `order` too.
@@ -31,7 +32,7 @@ export function attachTabs(list, order) {
         event.preventDefault();
         next.focus();
         if (list.dataset.activation === 'automatic') {
-            order.invokeMethodAsync('OnSelect', next.id);
+            callDotNet(order, 'OnSelect', next.id);
         }
     };
 
@@ -80,7 +81,7 @@ export function attachTabs(list, order) {
         const ids = anchors.join(' ');
         if (anchors.length === headers.length && ids !== reported) {
             reported = ids;
-            order.invokeMethodAsync('OnReorder', anchors);
+            callDotNet(order, 'OnReorder', anchors);
         }
     };
 

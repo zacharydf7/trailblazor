@@ -1,5 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { firstTabbable, markedTarget } from '../Trailblazor.Primitives/focus-scope.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 const showDelay = 300;
 // The pointer crosses the gap between the trigger and the panel; this keeps the panel open on the way (WCAG 1.4.13).
@@ -51,7 +52,9 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
         // it closes before the toggle event runs, the browser fires one toggle that stays closed.
         if (open !== reported) {
             reported = open;
-            dotNetReference?.invokeMethodAsync('OnToggle', open);
+            if (dotNetReference) {
+                callDotNet(dotNetReference, 'OnToggle', open);
+            }
         }
 
         if (open === shown) {

@@ -1,4 +1,5 @@
 import { createRovingFocus } from '../Trailblazor.Primitives/roving-focus.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // A disabled link stays out unless it was kept focusable, and a select's combobox is its control unless it's turned off.
 const controls = 'button, a[href], a[data-kept-focusable], input:not([type="hidden"]), select, textarea, '
@@ -58,7 +59,7 @@ export function attachToolbar(toolbar, more, overflow) {
         const moved = items.filter(item => item.hasAttribute('data-overflowed')).map(item => item.dataset.toolbarItem);
         if (moved.join(' ') !== reported) {
             reported = moved.join(' ');
-            overflow.invokeMethodAsync('OnOverflow', moved);
+            callDotNet(overflow, 'OnOverflow', moved);
         }
     };
 

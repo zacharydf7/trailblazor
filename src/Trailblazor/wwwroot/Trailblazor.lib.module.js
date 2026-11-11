@@ -18,6 +18,7 @@ import { measurePageScrollbar } from './page-scroll.js';
 // Every module that another one imports loads here too, so a component's module finds its imports already loaded.
 import '../Trailblazor.Primitives/anchored-position.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import '../Trailblazor.Primitives/dotnet-call.js';
 import '../Trailblazor.Primitives/focus-scope.js';
 import '../Trailblazor.Primitives/pointer-drag.js';
 import '../Trailblazor.Primitives/roving-focus.js';

@@ -1,3 +1,4 @@
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 // The pad follows the pointer at once; the server hears the new saturation and brightness when the drag ends, and at
 // most every reportEvery milliseconds before then. While dragging, the position goes on the thumb, whose style the
 // server's renders never overwrite, until the server has the final position.
@@ -18,7 +19,7 @@ export function createColorPad(pad, events) {
     const report = () => {
         timer = 0;
         reportedAt = performance.now();
-        return events.invokeMethodAsync('OnPad', latest.x, 1 - latest.y);
+        return callDotNet(events, 'OnPad', latest.x, 1 - latest.y);
     };
     const move = event => {
         const box = pad.getBoundingClientRect();

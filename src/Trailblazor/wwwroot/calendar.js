@@ -1,4 +1,5 @@
 import { addMonths, browserToday, dayTarget, toDate, toIso } from './date-grid.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // Months and years sit in rows of four.
 const columns = 4;
@@ -68,7 +69,7 @@ export function createCalendar(grid, events, firstDayOfWeek) {
         // The button's own click would pick the cell it now shows, so the server is told the cell the keys moved to.
         if ((event.key === 'Enter' || event.key === ' ') && intended && intended !== button.dataset.date) {
             event.preventDefault();
-            events.invokeMethodAsync('OnPick', intended);
+            callDotNet(events, 'OnPick', intended);
             return;
         }
 
@@ -91,7 +92,7 @@ export function createCalendar(grid, events, firstDayOfWeek) {
             focusCell(shown);
         }
 
-        events.invokeMethodAsync('OnShowDate', iso);
+        callDotNet(events, 'OnShowDate', iso);
     };
     // A render can remove or reuse the focused cell, or show another view, so focus goes to the cell it belongs on.
     const renders = new MutationObserver(() => {

@@ -1,3 +1,4 @@
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 // Tells the server when focus enters or leaves a carousel whose slides turn by themselves, and when keyboard focus lands
 // anywhere in it, which stops the turning until the user starts it again (WAI-ARIA carousel pattern). Focus from a
 // pointer press only pauses it.
@@ -12,12 +13,12 @@ export function createCarousel(section, events) {
     const onFocusIn = event => {
         const fromKeyboard = event.target.matches(':focus-visible');
         if (fromKeyboard || outside(event.relatedTarget)) {
-            events.invokeMethodAsync('OnFocusEnter', fromKeyboard);
+            callDotNet(events, 'OnFocusEnter', fromKeyboard);
         }
     };
     const onFocusOut = event => {
         if (outside(event.relatedTarget)) {
-            events.invokeMethodAsync('OnFocusLeave');
+            callDotNet(events, 'OnFocusLeave');
         }
     };
 
