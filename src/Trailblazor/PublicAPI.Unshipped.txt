@@ -16,6 +16,7 @@ const Trailblazor.TbStrings.CarouselSlideOf = "Carousel.SlideOf" -> string!
 const Trailblazor.TbStrings.CarouselStart = "Carousel.Start" -> string!
 const Trailblazor.TbStrings.CarouselStop = "Carousel.Stop" -> string!
 const Trailblazor.TbStrings.CodeFieldIncomplete = "CodeField.Incomplete" -> string!
+const Trailblazor.TbStrings.CodeFieldIncompleteOne = "CodeField.IncompleteOne" -> string!
 const Trailblazor.TbStrings.DataGridColumnHidden = "DataGrid.ColumnHidden" -> string!
 const Trailblazor.TbStrings.DataGridColumnMenu = "DataGrid.ColumnMenu" -> string!
 const Trailblazor.TbStrings.DataGridColumnMoved = "DataGrid.ColumnMoved" -> string!
@@ -44,6 +45,7 @@ const Trailblazor.TbStrings.TagInputHint = "TagInput.Hint" -> string!
 const Trailblazor.TbStrings.TagInputRemove = "TagInput.Remove" -> string!
 const Trailblazor.TbStrings.TagInputRemoved = "TagInput.Removed" -> string!
 const Trailblazor.TbStrings.TagInputTooMany = "TagInput.TooMany" -> string!
+const Trailblazor.TbStrings.TagInputTooManyOne = "TagInput.TooManyOne" -> string!
 const Trailblazor.TbStrings.TimePickerAtLeast = "TimePicker.AtLeast" -> string!
 const Trailblazor.TbStrings.TimePickerAtMost = "TimePicker.AtMost" -> string!
 const Trailblazor.TbStrings.TimePickerOutOfRange = "TimePicker.OutOfRange" -> string!
@@ -908,6 +910,7 @@ static Trailblazor.SliderRange<TValue>.operator ==(Trailblazor.SliderRange<TValu
 static Trailblazor.SortableMove<TItem>.operator !=(Trailblazor.SortableMove<TItem>? left, Trailblazor.SortableMove<TItem>? right) -> bool
 static Trailblazor.SortableMove<TItem>.operator ==(Trailblazor.SortableMove<TItem>? left, Trailblazor.SortableMove<TItem>? right) -> bool
 static Trailblazor.TbStrings.English(string! key) -> string!
+static Trailblazor.TbStrings.OneFormOf(string! key) -> string!
 static Trailblazor.ToastAction.operator !=(Trailblazor.ToastAction? left, Trailblazor.ToastAction? right) -> bool
 static Trailblazor.ToastAction.operator ==(Trailblazor.ToastAction? left, Trailblazor.ToastAction? right) -> bool
 static Trailblazor.ToastOptions.operator !=(Trailblazor.ToastOptions? left, Trailblazor.ToastOptions? right) -> bool
@@ -1361,6 +1364,7 @@ Trailblazor.ImageFit.None = 4 -> Trailblazor.ImageFit
 Trailblazor.ImageFit.ScaleDown = 3 -> Trailblazor.ImageFit
 Trailblazor.ITbLocalizer
 Trailblazor.ITbLocalizer.this[string! key].get -> string!
+Trailblazor.ITbLocalizer.Plural(string! key, int count) -> string!
 Trailblazor.ITelemetryTags
 Trailblazor.ITelemetryTags.Tags.get -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Trailblazor.IThemeService

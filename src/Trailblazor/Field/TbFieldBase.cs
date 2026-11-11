@@ -460,6 +460,10 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private protected string Message(string key, params object?[] args) => string.Format(CultureInfo.CurrentCulture,
         Localizer[key], [ShownLabel ?? Localizer[TbStrings.FieldUnnamed], .. args]);
 
+    // The same for a message whose words change with a count, which goes in {1} after the label.
+    private protected string CountedMessage(string key, int count) => string.Format(CultureInfo.CurrentCulture,
+        Localizer.Plural(key, count), ShownLabel ?? Localizer[TbStrings.FieldUnnamed], count);
+
     // Typed text, from a field that updates as the user types, stays with the value it was typed for.
     private protected async Task SetValueAsync(TValue? value, string? typedText = null)
     {

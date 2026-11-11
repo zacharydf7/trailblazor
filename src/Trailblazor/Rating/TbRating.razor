@@ -87,9 +87,8 @@
     [Parameter]
     public ChoiceClasses? Classes { get; set; }
 
-    private string NameOf(int star) => StarLabel?.Invoke(star) ?? (star == 1
-        ? Localizer[TbStrings.RatingStar]
-        : string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.RatingStars], star));
+    private string NameOf(int star) => StarLabel?.Invoke(star)
+        ?? string.Format(CultureInfo.CurrentCulture, Localizer.Plural(TbStrings.RatingStars, star), star);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

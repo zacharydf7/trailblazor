@@ -52,6 +52,30 @@ public class LocalizationTests : BunitContext
     }
 
     [Fact]
+    public void Plural_ShouldGiveTheOneFormForOneAndTheKeyForOtherCounts_WhenTheLocalizerKeepsTheDefault()
+    {
+        var localizer = Services.GetRequiredService<ITbLocalizer>();
+
+        Assert.Equal(["1 file chosen.", "{0} files chosen.", "{0} files chosen.", "{0} items"],
+            [localizer.Plural(TbStrings.FileUploadChosen, 1), localizer.Plural(TbStrings.FileUploadChosen, 0),
+                localizer.Plural(TbStrings.FileUploadChosen, 21), localizer.Plural(TbStrings.TreeViewItemCount, 1)]);
+    }
+
+    [Fact]
+    public void Rating_ShouldNameEachStarInTheLocalizersPluralForm_WhenItsLanguageHasThreeForms()
+    {
+        using var context = new BunitContext();
+        context.Services.AddScoped<ITbLocalizer, Russian>();
+        context.AddTrailblazor();
+
+        var cut = context.Render<TbRating>(parameters => parameters.Add(rating => rating.Label, "Оценка")
+            .Add(rating => rating.Max, 5));
+
+        Assert.Equal(["1 звезда", "2 звезды", "3 звезды", "4 звезды", "5 звёзд"],
+            cut.FindAll("[data-part=star] .tb-visually-hidden").Select(name => name.TextContent));
+    }
+
+    [Fact]
     public void Alert_ShouldNameItsCloseButtonWithItsOwnLabelOrElseTheLocalizers_WhenGivenOneOrNot()
     {
         var localized = RenderAlert(closeLabel: null);
@@ -159,6 +183,20 @@ public class LocalizationTests : BunitContext
     private IRenderedComponent<TbAlert> RenderAlert(string? closeLabel) =>
         Render<TbAlert>(parameters => parameters.Add(alert => alert.OnClose, () => { })
             .Add(alert => alert.CloseLabel, closeLabel).AddChildContent("Saved"));
+
+    // Russian's plural rule: one for 1, 21 and 31; few for 2–4 and 22–24; many for 5–20 and the rest.
+    private sealed class Russian : ITbLocalizer
+    {
+        public string this[string key] => TbStrings.English(key);
+
+        public string Plural(string key, int count) => key != TbStrings.RatingStars ? this[key]
+            : (count % 10, count % 100) switch
+            {
+                (1, not 11) => "{0} звезда",
+                (>= 2 and <= 4, < 12 or > 14) => "{0} звезды",
+                _ => "{0} звёзд",
+            };
+    }
 
     // An app's own localizer, which answers every key with the key itself in capitals.
     private sealed class Shouting : ITbLocalizer

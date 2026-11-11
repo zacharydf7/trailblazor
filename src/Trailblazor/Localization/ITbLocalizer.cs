@@ -9,4 +9,11 @@ public interface ITbLocalizer
     /// <summary>The text for <paramref name="key"/>. Placeholders such as <c>{0}</c> are filled in by the component
     /// that asks, as each key's summary in <see cref="TbStrings"/> describes.</summary>
     string this[string key] { get; }
+
+    /// <summary>The text for <paramref name="key"/> in the form that fits <paramref name="count"/>, for a message whose
+    /// words change with the number, such as "1 file chosen." and "3 files chosen." Keys asked for this way say so in
+    /// <see cref="TbStrings"/>. By default, a count of 1 gives the text of the key's one-form if it has one, such as
+    /// <see cref="TbStrings.FileUploadChosenOne"/>, and any other count gives the key's own text. Implement it to apply
+    /// a language's own plural rules, such as Russian's three forms.</summary>
+    string Plural(string key, int count) => this[count == 1 ? TbStrings.OneFormOf(key) : key];
 }

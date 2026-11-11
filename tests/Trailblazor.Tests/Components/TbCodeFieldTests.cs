@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor.Tests.Components;
@@ -94,6 +95,17 @@ public class TbCodeFieldTests : BunitContext
 
         Assert.Empty(Values);
         Assert.Empty(Completed);
+    }
+
+    [Fact]
+    public void Validate_ShouldAskTheLocalizerForTheCountedWords_WhenAPartlyTypedCodeCommits()
+    {
+        Services.AddScoped<ITbLocalizer, PluralRecorder>();
+        var cut = RenderCode();
+
+        cut.Find("[data-part=input]").Change("1234");
+
+        Assert.Equal("CodeField.Incomplete for 6", cut.Find("[role=alert], .tb-field__error").TextContent.Trim());
     }
 
     [Fact]

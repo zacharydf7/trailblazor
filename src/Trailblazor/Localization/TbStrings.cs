@@ -305,10 +305,11 @@ public static class TbStrings
     /// <summary>"Clear": names the button that removes every chosen file.</summary>
     public const string FileUploadClear = "FileUpload.Clear";
 
-    /// <summary>"{0} files chosen.": announced after choosing; {0} is how many.</summary>
+    /// <summary>"{0} files chosen.": announced after choosing; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="FileUploadChosenOne"/> as its one-form.</summary>
     public const string FileUploadChosen = "FileUpload.Chosen";
 
-    /// <summary>"1 file chosen.": announced after choosing one file.</summary>
+    /// <summary>"1 file chosen.": announced after choosing one file; {0}, if used, is the count.</summary>
     public const string FileUploadChosenOne = "FileUpload.ChosenOne";
 
     /// <summary>"{0} isn't one of {1}.": shown for a file of the wrong type; {0} is its name, {1} the allowed types.
@@ -331,10 +332,12 @@ public static class TbStrings
     /// <summary>"{0} GB": a file's size in gigabytes; {0} is the number.</summary>
     public const string FileUploadGigabytes = "FileUpload.Gigabytes";
 
-    /// <summary>"Choose at most {0} files.": shown when too many files are chosen; {0} is the limit.</summary>
+    /// <summary>"Choose at most {0} files.": shown when too many files are chosen; {0} is the limit. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="FileUploadTooManyOne"/> as its one-form.</summary>
     public const string FileUploadTooMany = "FileUpload.TooMany";
 
-    /// <summary>"Choose only one file.": shown when several files are chosen for a single-file upload.</summary>
+    /// <summary>"Choose only one file.": shown when several files are chosen for a single-file upload; {0}, if used, is
+    /// the limit.</summary>
     public const string FileUploadTooManyOne = "FileUpload.TooManyOne";
 
     /// <summary>"Information about {0}": names a label's info button; {0} is the label's text.</summary>
@@ -357,13 +360,19 @@ public static class TbStrings
     /// title.</summary>
     public const string TransferListMoveAll = "TransferList.MoveAll";
 
-    /// <summary>"Moved {0} to {1}": read out after a move; {0} is how many items moved and {1} the list's title.
+    /// <summary>"Moved {0} to {1}": read out after a move; {0} is how many items moved and {1} the list's title. Asked
+    /// for through <see cref="ITbLocalizer.Plural"/>, so a translation can make the verb agree with the count.
     /// </summary>
     public const string TransferListMoved = "TransferList.Moved";
 
     /// <summary>"{0} needs all {1} characters.": the error a code field shows while its code is only partly typed;
-    /// {0} is the field's label and {1} how many characters the code has.</summary>
+    /// {0} is the field's label and {1} how many characters the code has. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="CodeFieldIncompleteOne"/> as its one-form.</summary>
     public const string CodeFieldIncomplete = "CodeField.Incomplete";
+
+    /// <summary>"{0} needs its 1 character.": the same error for a code of one character; {0} is the field's label
+    /// and {1}, if used, the count.</summary>
+    public const string CodeFieldIncompleteOne = "CodeField.IncompleteOne";
 
     /// <summary>"Search {0}": labels the search box above a list; {0} is the list's title.</summary>
     public const string TransferListSearch = "TransferList.Search";
@@ -425,10 +434,11 @@ public static class TbStrings
     /// <summary>"Maximum": names a range slider's upper thumb, after the field's label.</summary>
     public const string RangeSliderEnd = "RangeSlider.End";
 
-    /// <summary>"1 star": what screen readers hear for a rating's first star.</summary>
+    /// <summary>"1 star": what screen readers hear for a rating's first star; {0}, if used, is its number.</summary>
     public const string RatingStar = "Rating.Star";
 
-    /// <summary>"{0} stars": what screen readers hear for a rating's other stars; {0} is the star's number.</summary>
+    /// <summary>"{0} stars": what screen readers hear for a rating's stars; {0} is the star's number. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="RatingStar"/> as its one-form.</summary>
     public const string RatingStars = "Rating.Stars";
 
     /// <summary>"Filter": names a select's filter box.</summary>
@@ -503,8 +513,13 @@ public static class TbStrings
     public const string TagInputDuplicate = "TagInput.Duplicate";
 
     /// <summary>"You can add up to {0} tags.": shown when a tag is typed once the limit is reached; {0} is the limit.
+    /// Asked for through <see cref="ITbLocalizer.Plural"/>, with <see cref="TagInputTooManyOne"/> as its one-form.
     /// </summary>
     public const string TagInputTooMany = "TagInput.TooMany";
+
+    /// <summary>"You can add only one tag.": shown when a tag is typed once a limit of one is reached; {0}, if used, is
+    /// the limit.</summary>
+    public const string TagInputTooManyOne = "TagInput.TooManyOne";
 
     /// <summary>"Clear": names a text field's clear button.</summary>
     public const string TextFieldClear = "TextField.Clear";
@@ -868,7 +883,8 @@ public static class TbStrings
     /// <summary>"{0} moved into {1}.": said after a tree move, with what moved and its new parent.</summary>
     public const string TreeViewMovedInside = "TreeView.MovedInside";
 
-    /// <summary>"{0} items": names several tree rows moved together; {0} is how many.</summary>
+    /// <summary>"{0} items": names several tree rows moved together; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>; one row is named by its text instead.</summary>
     public const string TreeViewItemCount = "TreeView.ItemCount";
 
     /// <summary>"Move {0}": the name of the handle that drags or moves an item of a sortable list or a grid row, with
@@ -900,6 +916,16 @@ public static class TbStrings
 
     /// <summary>"Search": names a tree select's search field and is its placeholder.</summary>
     public const string TreeSelectSearch = "TreeSelect.Search";
+
+    // Each Plural key's one-form, which the default Plural gives for a count of 1.
+    private static readonly FrozenDictionary<string, string> OneForms = new Dictionary<string, string>
+    {
+        [CodeFieldIncomplete] = CodeFieldIncompleteOne,
+        [FileUploadChosen] = FileUploadChosenOne,
+        [FileUploadTooMany] = FileUploadTooManyOne,
+        [RatingStars] = RatingStar,
+        [TagInputTooMany] = TagInputTooManyOne,
+    }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
     {
@@ -1016,6 +1042,7 @@ public static class TbStrings
         [TransferListMoveAll] = "Move all to {0}",
         [TransferListMoved] = "Moved {0} to {1}",
         [CodeFieldIncomplete] = "{0} needs all {1} characters.",
+        [CodeFieldIncompleteOne] = "{0} needs its 1 character.",
         [TransferListSearch] = "Search {0}",
         [NewTabHint] = "opens in a new tab",
         [NumberFieldDecrease] = "Decrease",
@@ -1062,6 +1089,7 @@ public static class TbStrings
         [TagInputRemoved] = "{0} removed",
         [TagInputDuplicate] = "{0} is already added.",
         [TagInputTooMany] = "You can add up to {0} tags.",
+        [TagInputTooManyOne] = "You can add only one tag.",
         [TextFieldClear] = "Clear",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",
         [RichTextEditorToolbar] = "Formatting",
@@ -1188,6 +1216,11 @@ public static class TbStrings
         [SortableMoveToEnd] = "Move to the end",
         [SortableMoved] = "{0} moved to position {1} of {2}.",
     }.ToFrozenDictionary();
+
+    /// <summary>The key of <paramref name="key"/>'s one-form, such as <see cref="FileUploadChosenOne"/> for
+    /// <see cref="FileUploadChosen"/>, or <paramref name="key"/> itself when it has none. An
+    /// <see cref="ITbLocalizer"/> with its own <see cref="ITbLocalizer.Plural"/> can fall back on it.</summary>
+    public static string OneFormOf(string key) => OneForms.TryGetValue(key, out var one) ? one : key;
 
     /// <summary>The English text for <paramref name="key"/>, for a localizer of your own to fall back on.</summary>
     /// <exception cref="KeyNotFoundException">The key isn't one of these.</exception>

@@ -111,7 +111,7 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
         _markedAvailable = [];
         _markedChosen = [];
         await SetValueAsync([.. chosen]);
-        Announcer.Polite(Format(Localizer[TbStrings.TransferListMoved], moved.Count,
+        Announcer.Polite(Format(Localizer.Plural(TbStrings.TransferListMoved, moved.Count), moved.Count,
             toChosen ? ChosenTitle : AvailableTitle));
     }
 }

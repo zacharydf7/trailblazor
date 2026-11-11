@@ -51,14 +51,14 @@
     {
         value = text;
         error = string.IsNullOrEmpty(text) || text.Length == Length
-            ? null : Message(TbStrings.CodeFieldIncomplete, Length);
+            ? null : CountedMessage(TbStrings.CodeFieldIncomplete, Length);
         return error is null;
     }
 
     // A static form post skips the script and the filter, so a short code or one with other characters fails here.
     private protected override string? ValueError(string? value) =>
         !TryParse(value, out _, out var error) ? error
-        : string.IsNullOrEmpty(value) || value.All(Takes) ? null : Message(TbStrings.CodeFieldIncomplete, Length);
+        : string.IsNullOrEmpty(value) || value.All(Takes) ? null : CountedMessage(TbStrings.CodeFieldIncomplete, Length);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

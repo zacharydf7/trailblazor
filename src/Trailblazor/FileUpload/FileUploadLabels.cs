@@ -23,8 +23,8 @@ public sealed record FileUploadLabels
     /// cref="TbStrings.FileUploadChosen"/>. </summary>
     public string? Chosen { get; init; }
 
-    /// <summary>Said after a choice of one file. Leave it null for the app's text for <see
-    /// cref="TbStrings.FileUploadChosenOne"/>.</summary>
+    /// <summary>Said after a choice of one file, with <c>{0}</c>, if used, for the number. Leave it null for the app's
+    /// text for <see cref="TbStrings.FileUploadChosenOne"/>.</summary>
     public string? ChosenOne { get; init; }
 
     /// <summary>The message for a file of a type the field doesn't take, with <c>{0}</c> for its name and <c>{1}</c>
@@ -40,7 +40,7 @@ public sealed record FileUploadLabels
     /// null for the app's text for <see cref="TbStrings.FileUploadTooMany"/>.</summary>
     public string? TooMany { get; init; }
 
-    /// <summary>The message when more than one file is chosen where one is allowed. Leave it null for the app's text
-    /// for <see cref="TbStrings.FileUploadTooManyOne"/>.</summary>
+    /// <summary>The message when more than one file is chosen where one is allowed, with <c>{0}</c>, if used, for the
+    /// limit. Leave it null for the app's text for <see cref="TbStrings.FileUploadTooManyOne"/>.</summary>
     public string? TooManyOne { get; init; }
 }

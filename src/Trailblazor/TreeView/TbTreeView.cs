@@ -1245,7 +1245,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         var moved = sources.Count == 1 ? TextOf(sources[0])
-            : string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.TreeViewItemCount], sources.Count);
+            : string.Format(CultureInfo.CurrentCulture, Localizer.Plural(TbStrings.TreeViewItemCount, sources.Count),
+                sources.Count);
         var said = position switch
         {
             TreeDropPosition.Before => TbStrings.TreeViewMovedBefore,

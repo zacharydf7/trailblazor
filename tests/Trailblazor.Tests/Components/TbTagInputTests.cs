@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Trailblazor.Testing;
@@ -99,6 +100,27 @@ public class TbTagInputTests : BunitContext
 
         Assert.Empty(Changes);
         Assert.Equal("You can add up to 2 tags.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task AddAsync_ShouldAskTheLocalizerForTheCountedWords_WhenTheFieldIsFull()
+    {
+        Services.AddScoped<ITbLocalizer, PluralRecorder>();
+        var cut = RenderTags(["Shade", "Water"], parameters => parameters.Add(field => field.MaxTags, 2));
+
+        await cut.Tb().TagInput("Features").AddAsync("Views");
+
+        Assert.Equal("TagInput.TooMany for 2", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task AddAsync_ShouldSayOnlyOneTagFits_WhenTheFieldTakesOneTag()
+    {
+        var cut = RenderTags(["Shade"], parameters => parameters.Add(field => field.MaxTags, 1));
+
+        await cut.Tb().TagInput("Features").AddAsync("Views");
+
+        Assert.Equal("You can add only one tag.", cut.Find("[data-part=error]").TextContent.Trim());
     }
 
     [Fact]

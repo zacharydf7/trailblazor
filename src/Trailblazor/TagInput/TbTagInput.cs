@@ -175,9 +175,9 @@ public partial class TbTagInput : IAsyncDisposable
             return Format(Labels?.Duplicate ?? Localizer[TbStrings.TagInputDuplicate], text);
         }
 
-        if (tags.Count >= MaxTags)
+        if (MaxTags is int most && tags.Count >= most)
         {
-            return Format(Labels?.TooMany ?? Localizer[TbStrings.TagInputTooMany], MaxTags);
+            return Format(Labels?.TooMany ?? Localizer.Plural(TbStrings.TagInputTooMany, most), most);
         }
 
         return TagValidation?.Invoke(text);

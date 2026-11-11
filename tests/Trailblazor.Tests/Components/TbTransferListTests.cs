@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Trailblazor.Testing;
 
@@ -39,6 +40,19 @@ public class TbTransferListTests : BunitContext
         Assert.Equal(["Casey"], cut.Tb().TransferList("Crew").Chosen);
         Assert.Equal("true", cut.Find("[data-part=move-chosen]").GetAttribute("aria-disabled"));
         Assert.Null(cut.Find("[data-part=move-all-chosen]").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public async Task MoveAsync_ShouldAskTheLocalizerForTheCountedWords_WhenItemsMove()
+    {
+        Services.AddScoped<ITbLocalizer, PluralRecorder>();
+        var host = Render<AnnouncerHost>();
+        var cut = RenderCrew([Hikers[2]]);
+
+        await cut.Tb().TransferList("Crew").MoveAsync("Devon", "Avery");
+
+        host.WaitForAssertion(() => Assert.Equal(["TransferList.Moved for 2"],
+            host.FindAll("[role=status] p").Select(p => p.TextContent)));
     }
 
     [Fact]

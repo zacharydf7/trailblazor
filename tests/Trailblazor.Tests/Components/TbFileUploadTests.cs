@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -76,6 +77,18 @@ public class TbFileUploadTests : BunitContext
 
         Assert.Equal(["a.pdf", "b.pdf"], _files!.Select(file => file.Name));
         Assert.Equal("Choose at most 2 files.", cut.Find("[data-part=rejected]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Choose_ShouldAskTheLocalizerForTheCountedWords_WhenThereAreMoreThanMaxFiles()
+    {
+        Services.AddScoped<ITbLocalizer, PluralRecorder>();
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true)
+            .Add(upload => upload.MaxFiles, 2));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("a.pdf"), Pdf("b.pdf"), Pdf("c.pdf"));
+
+        Assert.Equal("FileUpload.TooMany for 2", cut.Find("[data-part=rejected]").TextContent.Trim());
     }
 
     [Fact]

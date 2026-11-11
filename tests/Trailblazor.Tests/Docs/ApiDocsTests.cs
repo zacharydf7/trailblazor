@@ -16,7 +16,8 @@ public class ApiDocsTests
         Assert.Equal(["Mode { get; }", "Palette { get; }", "Density { get; }", "event Changed", "LoadAsync()",
             "SetModeAsync(ThemeMode mode)", "SetPaletteAsync(Palette palette)", "SetDensityAsync(Density density)"],
             theme.Select(member => member.Name));
-        Assert.Equal(["this[string key] { get; }"], localizer.Select(member => member.Name));
+        Assert.Equal(["this[string key] { get; }", "Plural(string key, int count)"],
+            localizer.Select(member => member.Name));
         Assert.All(theme.Concat(localizer), member => Assert.NotEmpty(member.Description));
     }
 

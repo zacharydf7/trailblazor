@@ -8,6 +8,7 @@
         <TbTableOfContentsItem TargetId="try-it" Text="Try it" />
         <TbTableOfContentsItem TargetId="change-a-few-words" Text="Change a few words" />
         <TbTableOfContentsItem TargetId="translate-the-whole-library" Text="Translate the whole library" />
+        <TbTableOfContentsItem TargetId="plurals" Text="Plurals" />
         <TbTableOfContentsItem TargetId="words-for-one-component" Text="Words for one component" />
         <TbTableOfContentsItem TargetId="testing" Text="Testing" />
         <TbTableOfContentsItem TargetId="keys" Text="Keys" />
@@ -65,6 +66,17 @@
             Keep placeholders such as <code>{0}</code> in your translations; the component fills them in. Each
             <code>TbStrings</code> constant's documentation says what its placeholders hold.
         </DocsCallout>
+
+        <DocsHeading Id="plurals" Text="Plurals" Class="docs-section" />
+        <TbText>
+            A few messages change their words with a number, such as "1 file chosen." and "3 files chosen." Trailblazor
+            asks for those through <code>Plural(key, count)</code>, and each such key's documentation in
+            <code>TbStrings</code> says so. By default, a count of 1 gives the text of the key's one-form if it has one,
+            such as <code>TbStrings.FileUploadChosenOne</code>, and any other count gives the key's own text. Implement
+            <code>Plural</code> to apply your language's own rules, such as Russian's three forms, and fall back on
+            <code>TbStrings.OneFormOf</code> for keys you haven't translated.
+        </TbText>
+        <CodeBlock Label="Russian plurals from resource files" Code="@Plurals" />
 
         <DocsHeading Id="words-for-one-component" Text="Words for one component" Class="docs-section" />
         <ul>
@@ -152,6 +164,22 @@
         builder.Services.AddLocalization();
         builder.Services.AddScoped<ITbLocalizer, ResourceLocalizer>();
         builder.Services.AddTrailblazor();
+        """;
+
+    private const string Plurals = """
+        // In the ResourceLocalizer above, with each counted key's forms
+        // in the resources as Key.One, Key.Few and Key.Many.
+        public string Plural(string key, int count) =>
+            text[$"{key}.{FormOf(count)}"] is { ResourceNotFound: false } found
+                ? found.Value
+                : this[count == 1 ? TbStrings.OneFormOf(key) : key];
+
+        private static string FormOf(int count) => (count % 10, count % 100) switch
+        {
+            (1, not 11) => "One",
+            (>= 2 and <= 4, < 12 or > 14) => "Few",
+            _ => "Many",
+        };
         """;
 
     private const string OneComponent = """

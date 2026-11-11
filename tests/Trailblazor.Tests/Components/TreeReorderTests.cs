@@ -1,5 +1,6 @@
 using AngleSharp.Dom;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Trailblazor.Testing;
@@ -79,6 +80,20 @@ public class TreeReorderTests : BunitContext
         Assert.Equal(MoveCheck.Allow, allowed);
         Assert.Equal(["Pass"], asked[0].Items.Select(place => place.Name));
         Assert.Equal("Lake", asked[0].Target.Name);
+    }
+
+    [Fact]
+    public async Task Drop_ShouldAskTheLocalizerForTheCountedWords_WhenSeveralRowsMove()
+    {
+        Services.AddScoped<ITbLocalizer, PluralRecorder>();
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPlaces();
+
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["2", "4"], Target = "6", Position = TreeDropPosition.After });
+
+        announcer.WaitForAssertion(() => Assert.Equal("TreeView.ItemCount for 2 moved after Pass.",
+            announcer.Find("[role=status] p").TextContent));
     }
 
     [Fact]

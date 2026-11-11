@@ -205,8 +205,7 @@ public partial class TbFileUpload
         if (tooMany)
         {
             var most = Multiple ? MaxFiles ?? 1 : 1;
-            _rejected.Add(most == 1 ? TooManyOneLabel
-                : string.Format(CultureInfo.CurrentCulture, TooManyLabel, most));
+            _rejected.Add(Counted(most == 1 ? Labels.TooManyOne : Labels.TooMany, TbStrings.FileUploadTooMany, most));
         }
 
         Announcer.Polite(string.Join(" ", [Count(chosen.Count), .. _rejected]));
@@ -241,7 +240,10 @@ public partial class TbFileUpload
                 : string.Equals(file.ContentType, type, StringComparison.OrdinalIgnoreCase));
 
     private string Count(int files) =>
-        files == 1 ? ChosenOneLabel : string.Format(CultureInfo.CurrentCulture, ChosenLabel, files);
+        Counted(files == 1 ? Labels.ChosenOne : Labels.Chosen, TbStrings.FileUploadChosen, files);
+
+    private string Counted(string? label, string key, int count) =>
+        string.Format(CultureInfo.CurrentCulture, label ?? Localizer.Plural(key, count), count);
 
     private string FormatSize(long bytes) => bytes switch
     {
@@ -258,10 +260,6 @@ public partial class TbFileUpload
     private string ChooseLabel => Labels.Choose ?? Localizer[TbStrings.FileUploadChoose];
     private string RemoveLabel => Labels.Remove ?? Localizer[TbStrings.FileUploadRemove];
     private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.FileUploadClear];
-    private string ChosenLabel => Labels.Chosen ?? Localizer[TbStrings.FileUploadChosen];
-    private string ChosenOneLabel => Labels.ChosenOne ?? Localizer[TbStrings.FileUploadChosenOne];
     private string WrongTypeLabel => Labels.WrongType ?? Localizer[TbStrings.FileUploadWrongType];
     private string TooLargeLabel => Labels.TooLarge ?? Localizer[TbStrings.FileUploadTooLarge];
-    private string TooManyLabel => Labels.TooMany ?? Localizer[TbStrings.FileUploadTooMany];
-    private string TooManyOneLabel => Labels.TooManyOne ?? Localizer[TbStrings.FileUploadTooManyOne];
 }
