@@ -1,20 +1,22 @@
 @namespace Trailblazor
+@using System.Globalization
 @using Microsoft.Extensions.Options
-@using Microsoft.JSInterop
-@using Trailblazor.Primitives
 @inherits TbComponentBase
-@implements IAsyncDisposable
-@inject JsModuleLoader Modules
 @inject IOptions<TrailblazorOptions> TrailblazorOptions
 
 @* The bubble's width comes from the anchor, since the positioning script writes the bubble's own style. *@
-@* The script sets data-ready as it attaches; tests wait for it before hovering, since a tooltip shows only then. *@
-<span @ref="_anchor" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tooltip-anchor", Class)"
+@* tooltip.js serves every tooltip from the settings on its bubble, and sets data-ready once it describes the
+   trigger. *@
+<span @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-tooltip-anchor", Class)"
       style="@AnchorStyle">
     @ChildContent
     @if (Active)
     {
-        <span @ref="_tooltip" id="@_id" popover="manual" role="tooltip" data-part="tooltip"
+        @* The arrow sits in the gap, so the tooltip moves out to make room for it. *@
+        <span id="@_id" popover="manual" role="tooltip" data-part="tooltip"
+              data-side="@Anchors.Side(Placement)" data-align="@Anchors.Align(Align)" data-offset="@(ShowArrow ? 9 : 6)"
+              data-show-delay="@Milliseconds(ShowDelay ?? TrailblazorOptions.Value.Tooltips.ShowDelay)"
+              data-hide-delay="@Milliseconds(HideDelay ?? TrailblazorOptions.Value.Tooltips.HideDelay)"
               class="@ClassNames.Join("tb-tooltip", BubbleClass)">
             @if (TextContent is null)
             {
@@ -34,11 +36,6 @@
 
 @code {
     private readonly string _id = $"tb-tooltip-{Guid.NewGuid():N}";
-    private ElementReference _anchor;
-    private ElementReference _tooltip;
-    private IJSObjectReference? _handle;
-    private bool _attaching;
-    private bool _disposed;
 
     /// <summary>The tooltip's text. It also becomes the trigger's accessible description, unless it only repeats the
     /// trigger's <c>aria-label</c>. Blank text, with no <see cref="TextContent"/>, shows no tooltip, so one that is
@@ -52,24 +49,24 @@
     [Parameter]
     public RenderFragment? TextContent { get; set; }
 
-    /// <summary>Which side of the trigger the tooltip appears on, read when the tooltip is set up. It flips when
-    /// there's no room. Placed to the side in a narrow window, it wraps to fit or else overlaps the trigger.
-    /// Defaults to <see cref="Placement.Top"/>.</summary>
+    /// <summary>Which side of the trigger the tooltip appears on. It flips when there's no room. Placed to the side in
+    /// a narrow window, it wraps to fit or else overlaps the trigger. Defaults to <see cref="Placement.Top"/>.
+    /// </summary>
     [Parameter]
     public Placement Placement { get; set; } = Placement.Top;
 
-    /// <summary>How the tooltip lines up with the trigger along that side, read when the tooltip is set up. Defaults to
+    /// <summary>How the tooltip lines up with the trigger along that side. Defaults to
     /// <see cref="PlacementAlign.Center"/>.</summary>
     [Parameter]
     public PlacementAlign Align { get; set; } = PlacementAlign.Center;
 
-    /// <summary>How long the pointer rests on the trigger before the tooltip appears, read when the tooltip is set
-    /// up. Keyboard focus shows it at once. Defaults to the app's <see cref="TooltipSettings.ShowDelay"/>.</summary>
+    /// <summary>How long the pointer rests on the trigger before the tooltip appears. Keyboard focus shows it at
+    /// once. Defaults to the app's <see cref="TooltipSettings.ShowDelay"/>.</summary>
     [Parameter]
     public TimeSpan? ShowDelay { get; set; }
 
-    /// <summary>How long the tooltip stays after the pointer leaves the trigger, read when the tooltip is set up.
-    /// Defaults to the app's <see cref="TooltipSettings.HideDelay"/>.</summary>
+    /// <summary>How long the tooltip stays after the pointer leaves the trigger. Defaults to the app's
+    /// <see cref="TooltipSettings.HideDelay"/>.</summary>
     [Parameter]
     public TimeSpan? HideDelay { get; set; }
 
@@ -108,91 +105,11 @@
             delay is null || (delay >= TimeSpan.Zero && delay <= TooltipSettings.MaxDelay);
     }
 
-    /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        // The script follows the tooltip as it is turned on and off, or its text comes and goes.
-        if (Active && _handle is null && !_attaching)
-        {
-            _attaching = true;
-            string bubble;
-            do
-            {
-                bubble = _tooltip.Id;
-                await AttachAsync(bubble);
-            }
-            while (!_disposed && Active && _handle is null && _tooltip.Id != bubble);
-
-            _attaching = false;
-        }
-        else if (!Active && _handle is { } handle)
-        {
-            _handle = null;
-            try
-            {
-                await handle.DisposeHandleAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-                // The circuit is gone, and the tooltip went with it.
-            }
-        }
-    }
-
     private bool Active => !Disabled && (TextContent is not null || !string.IsNullOrWhiteSpace(Text));
 
     private string? AnchorStyle => string.IsNullOrWhiteSpace(MaxWidth) ? Style
         : Styles.Join($"--tb-tooltip-max-width: {MaxWidth}", Style);
 
-    // A tooltip turned off, or off and on again, while the script was loading has lost its bubble or has a new one.
-    private async Task AttachAsync(string bubble)
-    {
-        try
-        {
-            var module = await Modules.ImportAsync("./_content/Trailblazor/tooltip.js");
-            if (_disposed || !Active || _tooltip.Id != bubble)
-            {
-                return;
-            }
-
-            // The arrow sits in the gap, so the tooltip moves out to make room for it.
-            var options = new AnchoredPositionOptions
-            {
-                Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = ShowArrow ? 9 : 6,
-            };
-            var settings = TrailblazorOptions.Value.Tooltips;
-            var delays = new TooltipDelays((ShowDelay ?? settings.ShowDelay).TotalMilliseconds,
-                (HideDelay ?? settings.HideDelay).TotalMilliseconds);
-            var handle = await module.InvokeAsync<IJSObjectReference?>("createTooltip", _anchor, _tooltip, options,
-                delays);
-            if (handle is null)
-            {
-                return;
-            }
-
-            if (_disposed || !Active || _tooltip.Id != bubble)
-            {
-                await handle.DisposeHandleAsync();
-                return;
-            }
-
-            _handle = handle;
-        }
-        catch (JSDisconnectedException)
-        {
-            // The circuit is gone, and the tooltip went with it.
-        }
-    }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        _disposed = true;
-        if (_handle is not null)
-        {
-            await _handle.DisposeHandleAsync();
-        }
-    }
-
-    internal sealed record TooltipDelays(double Show, double Hide);
+    private static string Milliseconds(TimeSpan delay) =>
+        delay.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
 }

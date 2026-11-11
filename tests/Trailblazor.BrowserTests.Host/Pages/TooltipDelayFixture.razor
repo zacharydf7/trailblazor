@@ -1,0 +1,14 @@
+@page "/tooltip-delay"
+
+@* A long show delay leaves time to remove the tooltip, or press Escape, before it would show. *@
+@if (_shown)
+{
+    <TbTooltip Text="Delete the selection" ShowDelay="TimeSpan.FromSeconds(1)">
+        <TbButton>Delete</TbButton>
+    </TbTooltip>
+}
+<TbSwitch Label="Show the button" @bind-Value="_shown" />
+
+@code {
+    private bool _shown = true;
+}

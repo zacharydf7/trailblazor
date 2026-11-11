@@ -812,7 +812,6 @@ override Trailblazor.TbToolbar.OnAfterRenderAsync(bool firstRender) -> System.Th
 override Trailblazor.TbToolbar.OnParametersSet() -> void
 override Trailblazor.TbToolbarButton.OnInitialized() -> void
 override Trailblazor.TbToolbarButton.OnParametersSet() -> void
-override Trailblazor.TbTooltip.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbTooltip.OnParametersSet() -> void
 override Trailblazor.TbTreeItem<TItem>.OnInitialized() -> void
 override Trailblazor.TbTreeItem<TItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
@@ -2920,7 +2919,6 @@ Trailblazor.TbTooltip.Align.get -> Trailblazor.PlacementAlign
 Trailblazor.TbTooltip.Align.set -> void
 Trailblazor.TbTooltip.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTooltip.ChildContent.set -> void
-Trailblazor.TbTooltip.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbTooltip.HideDelay.get -> System.TimeSpan?
 Trailblazor.TbTooltip.HideDelay.set -> void
 Trailblazor.TbTooltip.Placement.get -> Trailblazor.Placement

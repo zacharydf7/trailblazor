@@ -10,6 +10,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] Tabbing away hides it. `TooltipTests.Tooltip_ShouldClose_WhenFocusMovesAway`
 - [x] Escape hides it while the trigger has focus. `TooltipTests.Tooltip_ShouldDescribeTheTriggerAndCloseOnEscape_WhenTheTriggerHasFocus`
 - [x] Escape also hides a tooltip the pointer opened, wherever focus is. `tooltip.js`
+- [x] Escape also stops a tooltip still waiting out its show delay. `TooltipTests.Tooltip_ShouldStayHidden_WhenEscapeIsPressedDuringItsShowDelay`
 - [x] The Escape that hides a tooltip doesn't also close the dialog around it. `DialogTests.Dialog_ShouldHideTheTooltipFirstAndCancelNext_WhenEscapeIsPressedWithATooltipOpen`
 - [x] A disabled button that stays focusable shows its tooltip on Tab. `ButtonTests.Button_ShouldStayInTheTabOrderAndShowItsTooltip_WhenDisabledButFocusable`
 
@@ -43,6 +44,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] The tooltip's text is the trigger's description. `TooltipTests.Tooltip_ShouldDescribeTheTriggerWithItsContent_WhenGivenRichContent`
 - [x] The description comes back when the trigger re-renders. `TooltipTests.Tooltip_ShouldStillDescribeTheTrigger_WhenTheTriggerRewritesItsDescription`
 - [x] A tooltip turned off neither shows nor describes. `TooltipTests.Tooltip_ShouldNeitherShowNorDescribe_WhileItIsTurnedOff`
+- [x] A tooltip on a static page shows and describes its trigger. `TooltipTests.Tooltip_ShouldShowAndDescribeItsTrigger_WhenThePageIsStatic`
 
 ## Not applicable
 

@@ -1,118 +1,112 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 
+// Hover, focus and Escape stay in the browser, and one set of listeners serves every tooltip, so a tooltip costs the
+// server nothing, even to set up. The JS initializer imports this at startup; each bubble carries its own settings.
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
+const bubbleSelector = '.tb-tooltip-anchor > [data-part="tooltip"]';
 
+// The trigger each bubble describes, so its description can be taken back when the bubble goes.
+const described = new WeakMap();
+const timers = new WeakMap();
 // One tooltip shows at a time, as in an operating system, so showing one hides any other, even one shown for focus.
-let hideShown = null;
+let shown = null;
+// The anchor the pointer last rested on, whose tooltip may still be waiting out its delay.
+let waiting = null;
 
-// Hover and focus stay in the browser, so showing a tooltip sends nothing to the server. The CSS bridges the gap onto
-// the tooltip, and the hide delay covers a path that strays off the bridge (WCAG 1.4.13 hoverable).
-export function createTooltip(anchor, tooltip, options, delays) {
-    // Blazor passes null for an element that was removed before this call arrived.
-    if (!anchor || !tooltip) {
-        return null;
-    }
+const bubbleOf = anchor => anchor?.querySelector(':scope > [data-part="tooltip"]') ?? null;
+const anchorOf = target => {
+    const anchor = target?.closest?.('.tb-tooltip-anchor');
+    return bubbleOf(anchor) ? anchor : null;
+};
 
-    let trigger = describe(anchor, tooltip);
-    let position = null;
-    let timer = 0;
-
-    // Blazor rewrites aria-describedby when the trigger re-renders, so the tooltip's id is put back.
-    const observer = new MutationObserver(() => {
-        trigger = describe(anchor, tooltip);
-    });
-    observer.observe(anchor, { subtree: true, childList: true, attributeFilter: ['aria-describedby'] });
-
-    const show = () => {
-        clearTimeout(timer);
-        if (!tooltip.matches(':popover-open')) {
-            hideShown?.();
-            tooltip.showPopover();
-            position = createAnchoredPosition(tooltip, anchor, options);
-            hideShown = hide;
-        }
-    };
-    const hide = () => {
-        clearTimeout(timer);
+const hideShown = () => {
+    if (shown) {
+        const { tooltip, position } = shown;
+        shown = null;
+        position.dispose();
         if (tooltip.matches(':popover-open')) {
             tooltip.hidePopover();
         }
+    }
+};
 
-        position?.dispose();
-        position = null;
-        if (hideShown === hide) {
-            hideShown = null;
-        }
-    };
-    const showSoon = () => {
-        clearTimeout(timer);
-        timer = setTimeout(show, delays.show);
-    };
-    const hideSoon = () => {
-        clearTimeout(timer);
-        timer = setTimeout(hide, delays.hide);
-    };
-    // Focus a click or tap leaves, or that a dialog closed by one hands back, isn't :focus-visible: its user wants the
-    // control, not its description. A text field is, since its user is about to type.
-    const onFocusIn = event => {
-        if (event.target.matches(':focus-visible')) {
-            show();
-        }
-    };
-    // The Escape that hides a shown tooltip is used up, so a dialog around it stays open.
-    const onKeyDown = event => {
-        if (event.key !== 'Escape') {
-            return;
-        }
+const show = anchor => {
+    clearTimeout(timers.get(anchor));
+    const tooltip = bubbleOf(anchor);
+    if (tooltip && !tooltip.matches(':popover-open')) {
+        hideShown();
+        tooltip.showPopover();
+        const { side, align, offset } = tooltip.dataset;
+        const position = createAnchoredPosition(tooltip, anchor, { side, align, offset: +offset });
+        shown = { anchor, tooltip, position };
+    }
+};
 
-        if (tooltip.matches(':popover-open')) {
+const hide = anchor => {
+    clearTimeout(timers.get(anchor));
+    if (shown?.anchor === anchor) {
+        hideShown();
+    }
+};
+
+const later = (anchor, action, delay) => {
+    clearTimeout(timers.get(anchor));
+    timers.set(anchor, setTimeout(() => action(anchor), +delay));
+};
+
+const showSoon = anchor => {
+    waiting = anchor;
+    later(anchor, show, bubbleOf(anchor).dataset.showDelay);
+};
+
+// The tooltip is inside the anchor, so moving onto it keeps it open, unless it's forced over the anchor and lets
+// presses through. The CSS bridges the gap onto the tooltip, and the hide delay covers a path that strays off the
+// bridge (WCAG 1.4.13 hoverable).
+document.addEventListener('pointerover', event => {
+    const anchor = anchorOf(event.target);
+    if (anchor && !anchor.contains(event.relatedTarget)) {
+        showSoon(anchor);
+    }
+});
+document.addEventListener('pointerout', event => {
+    const anchor = anchorOf(event.target);
+    if (anchor && !anchor.contains(event.relatedTarget)) {
+        later(anchor, hide, bubbleOf(anchor).dataset.hideDelay);
+    }
+});
+
+// Focus a click or tap leaves, or that a dialog closed by one hands back, isn't :focus-visible: its user wants the
+// control, not its description. A text field is, since its user is about to type.
+document.addEventListener('focusin', event => {
+    const anchor = anchorOf(event.target);
+    if (anchor && event.target.matches(':focus-visible')) {
+        show(anchor);
+    }
+});
+document.addEventListener('focusout', event => hide(anchorOf(event.target)));
+document.addEventListener('pointerdown', event => hide(anchorOf(event.target)));
+
+// Escape always dismisses a tooltip (WCAG 1.4.13), even one still waiting to show. The Escape that hides a shown one
+// is used up, so a dialog around it stays open.
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        clearTimeout(timers.get(waiting));
+    }
+
+    if (event.key === 'Escape' && shown) {
+        if (shown.tooltip.matches(':popover-open')) {
             event.preventDefault();
         }
 
-        hide();
-    };
-
-    // The tooltip is inside the anchor, so moving onto it keeps it open, unless it's forced over the anchor and lets
-    // presses through; Escape always dismisses it (WCAG 1.4.13).
-    anchor.addEventListener('pointerenter', showSoon);
-    anchor.addEventListener('pointerleave', hideSoon);
-    anchor.addEventListener('focusin', onFocusIn);
-    anchor.addEventListener('focusout', hide);
-    anchor.addEventListener('pointerdown', hide);
-    document.addEventListener('keydown', onKeyDown);
-
-    // Setup finishes after the first render, so focus or a pointer that arrived earlier still counts.
-    if (anchor.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) {
-        show();
-    } else if (anchor.matches(':hover')) {
-        showSoon();
+        hideShown();
     }
-
-    anchor.dataset.ready = '';
-    return {
-        dispose() {
-            delete anchor.dataset.ready;
-            observer.disconnect();
-            hide();
-            anchor.removeEventListener('pointerenter', showSoon);
-            anchor.removeEventListener('pointerleave', hideSoon);
-            anchor.removeEventListener('focusin', onFocusIn);
-            anchor.removeEventListener('focusout', hide);
-            anchor.removeEventListener('pointerdown', hide);
-            document.removeEventListener('keydown', onKeyDown);
-            const ids = describedBy(trigger).filter(id => id !== tooltip.id);
-            if (ids.length > 0) {
-                trigger.setAttribute('aria-describedby', ids.join(' '));
-            } else {
-                trigger.removeAttribute('aria-describedby');
-            }
-        },
-    };
-}
+});
 
 // Adds the tooltip's id to the trigger's description, unless it is already there or the tooltip only repeats the
-// trigger's name, which a screen reader would then read twice.
-function describe(anchor, tooltip) {
+// trigger's name, which a screen reader would then read twice. Then it sets data-ready, which tests wait for before
+// hovering.
+function describe(tooltip) {
+    const anchor = tooltip.parentElement;
     const trigger = anchor.querySelector(focusableSelector) ?? anchor;
     const ids = describedBy(trigger);
     const repeatsName = trigger.getAttribute('aria-label')?.trim() === tooltip.textContent.trim();
@@ -120,9 +114,70 @@ function describe(anchor, tooltip) {
         trigger.setAttribute('aria-describedby', [...ids, tooltip.id].join(' '));
     }
 
-    return trigger;
+    const isNew = !described.has(tooltip);
+    described.set(tooltip, { anchor, trigger });
+    anchor.dataset.ready = '';
+    // A bubble that arrives under focus or the pointer, as when its text appears, shows as if the focus or pointer had
+    // just arrived.
+    if (isNew && anchor.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) {
+        show(anchor);
+    } else if (isNew && anchor.matches(':hover')) {
+        showSoon(anchor);
+    }
+}
+
+function forget(tooltip) {
+    const { anchor, trigger } = described.get(tooltip);
+    described.delete(tooltip);
+    clearTimeout(timers.get(anchor));
+    if (shown?.tooltip === tooltip) {
+        hideShown();
+    }
+
+    const ids = describedBy(trigger).filter(id => id !== tooltip.id);
+    if (ids.length > 0) {
+        trigger.setAttribute('aria-describedby', ids.join(' '));
+    } else {
+        trigger.removeAttribute('aria-describedby');
+    }
+
+    if (!bubbleOf(anchor)) {
+        delete anchor.dataset.ready;
+    }
 }
 
 function describedBy(element) {
     return (element.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
 }
+
+// Bubbles come and go as tooltips are turned on and off, and Blazor rewrites aria-describedby when a trigger
+// re-renders, so the page is watched for both.
+const observer = new MutationObserver(records => {
+    const anchors = new Set();
+    for (const record of records) {
+        for (const node of record.removedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                [node, ...node.querySelectorAll('[data-part="tooltip"]')].filter(bubble => described.has(bubble))
+                    .forEach(forget);
+            }
+        }
+
+        for (const node of record.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                [node, ...node.querySelectorAll(bubbleSelector)].filter(bubble => bubble.matches(bubbleSelector))
+                    .forEach(bubble => anchors.add(bubble.parentElement));
+            }
+        }
+
+        anchors.add(anchorOf(record.target));
+    }
+
+    for (const anchor of anchors) {
+        const tooltip = bubbleOf(anchor);
+        if (tooltip?.isConnected) {
+            describe(tooltip);
+        }
+    }
+});
+observer.observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-describedby'] });
+document.querySelectorAll(bubbleSelector).forEach(describe);

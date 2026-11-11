@@ -5543,8 +5543,9 @@ public static class ExampleCatalog
             ],
             BeforeInteractive =
             [
-                "The control works, but no tooltip shows and no description is added until the page is interactive, "
-                    + "because a script does both.",
+                "Tooltips work before the page is interactive, and on static pages, once Blazor's script has loaded. "
+                    + "A single script, started with Blazor's, shows every tooltip and adds its description, so "
+                    + "tooltips never call the server, not even to set up.",
             ],
             Ready = new(".tb-tooltip-anchor", "the element it describes"),
             Target = new("tooltip", "Add an item") { OpenedBy = new("button", "Add"), OpenOnHover = true },

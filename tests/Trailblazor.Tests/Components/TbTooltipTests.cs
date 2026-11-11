@@ -1,20 +1,15 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using Trailblazor.Primitives;
 
 namespace Trailblazor.Tests.Components;
 
 public class TbTooltipTests : BunitContext
 {
-    private const string Module = "./_content/Trailblazor/tooltip.js";
-
     public TbTooltipTests() => this.AddTrailblazor();
 
     [Fact]
-    public void Render_ShouldWrapTheTriggerAndHoldAClosedTooltip_WhenCalled()
+    public void Render_ShouldWrapTheTriggerAndHoldAClosedTooltipWithoutCallingAScript_WhenCalled()
     {
-        JSInterop.SetupModule(Module).SetupModule("createTooltip", _ => true);
-
         var cut = Render<TbTooltip>(parameters => parameters
             .Add(tooltip => tooltip.Text, "Delete the selection")
             .AddChildContent("<button>Delete</button>"));
@@ -23,6 +18,7 @@ public class TbTooltipTests : BunitContext
         Assert.Equal("manual", tooltip.GetAttribute("popover"));
         Assert.Equal("Delete the selection", tooltip.TextContent);
         Assert.NotNull(cut.Find(".tb-tooltip-anchor > button"));
+        Assert.Empty(JSInterop.Invocations);
     }
 
     [Theory]
@@ -33,33 +29,24 @@ public class TbTooltipTests : BunitContext
     public void Render_ShouldSetUpTheTooltipOnTheRequestedSide_WhenGivenAPlacementAndAlignment(Placement placement,
         PlacementAlign align, string side, string alignment)
     {
-        var module = JSInterop.SetupModule(Module);
-        module.SetupModule("createTooltip", _ => true);
-
-        Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete")
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete")
             .Add(tooltip => tooltip.Placement, placement).Add(tooltip => tooltip.Align, align));
 
-        var options = Assert.IsType<AnchoredPositionOptions>(module.VerifyInvoke("createTooltip").Arguments[2]);
-        Assert.Equal((side, alignment), (options.Side.ToString(), options.Align.ToString()));
+        var bubble = cut.Find("[role=tooltip]");
+        Assert.Equal((side, alignment), (bubble.GetAttribute("data-side"), bubble.GetAttribute("data-align")));
     }
 
     [Fact]
     public void Render_ShouldCenterTheTooltip_WhenNoAlignmentIsGiven()
     {
-        var module = JSInterop.SetupModule(Module);
-        module.SetupModule("createTooltip", _ => true);
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete"));
 
-        Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete"));
-
-        var options = Assert.IsType<AnchoredPositionOptions>(module.VerifyInvoke("createTooltip").Arguments[2]);
-        Assert.Equal(AnchorAlign.Center, options.Align);
+        Assert.Equal("Center", cut.Find("[role=tooltip]").GetAttribute("data-align"));
     }
 
     [Fact]
     public void Render_ShouldShowTheContentInsteadOfTheText_WhenGivenContent()
     {
-        JSInterop.SetupModule(Module).SetupModule("createTooltip", _ => true);
-
         var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Save")
             .Add(tooltip => tooltip.TextContent, "<strong>Save</strong> <kbd>Ctrl+S</kbd>"));
 
@@ -78,24 +65,6 @@ public class TbTooltipTests : BunitContext
 
         Assert.NotNull(cut.Find(".tb-tooltip-anchor > button"));
         Assert.Empty(cut.FindAll("[role=tooltip]"));
-        Assert.DoesNotContain(JSInterop.Invocations, call => call.Identifier == "createTooltip");
-    }
-
-    [Fact]
-    public void Render_ShouldDetachAndAttachTheScript_WhenTheTooltipIsTurnedOffAndOn()
-    {
-        var handle = JSInterop.SetupModule(Module).SetupModule("createTooltip", _ => true);
-        handle.SetupVoid("dispose", _ => true);
-        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete the selection")
-            .AddChildContent("<button>Delete</button>"));
-
-        cut.Render(parameters => parameters.Add(tooltip => tooltip.Disabled, true));
-        Assert.Empty(cut.FindAll("[role=tooltip]"));
-        cut.Render(parameters => parameters.Add(tooltip => tooltip.Disabled, false));
-
-        Assert.NotNull(cut.Find("[role=tooltip]"));
-        Assert.Equal(2, JSInterop.Invocations.Count(call => call.Identifier == "createTooltip"));
-        Assert.Single(handle.Invocations, call => call.Identifier == "dispose");
     }
 
     [Fact]
@@ -132,52 +101,32 @@ public class TbTooltipTests : BunitContext
             options.Tooltips.ShowDelay = TimeSpan.FromMilliseconds(800);
             options.Tooltips.HideDelay = TimeSpan.FromMilliseconds(100);
         });
-        var module = JSInterop.SetupModule(Module);
-        module.SetupModule("createTooltip", _ => true);
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete"));
 
-        Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete"));
-
-        Assert.Equal(new TbTooltip.TooltipDelays(800, 100), module.VerifyInvoke("createTooltip").Arguments[3]);
+        var bubble = cut.Find("[role=tooltip]");
+        Assert.Equal(("800", "100"), (bubble.GetAttribute("data-show-delay"), bubble.GetAttribute("data-hide-delay")));
     }
 
     [Fact]
     public void Render_ShouldUseItsOwnDelays_WhenTheTooltipGivesThem()
     {
-        var module = JSInterop.SetupModule(Module);
-        module.SetupModule("createTooltip", _ => true);
-
-        Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete")
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete")
             .Add(tooltip => tooltip.ShowDelay, TimeSpan.Zero)
-            .Add(tooltip => tooltip.HideDelay, TimeSpan.FromSeconds(1)));
+            .Add(tooltip => tooltip.HideDelay, TimeSpan.FromSeconds(1.5)));
 
-        Assert.Equal(new TbTooltip.TooltipDelays(0, 1000), module.VerifyInvoke("createTooltip").Arguments[3]);
+        var bubble = cut.Find("[role=tooltip]");
+        Assert.Equal(("0", "1500"), (bubble.GetAttribute("data-show-delay"), bubble.GetAttribute("data-hide-delay")));
     }
 
     [Theory]
-    [InlineData(false, 6)]
-    [InlineData(true, 9)]
-    public void Render_ShouldAddAnArrowAndRoomForIt_WhenShowArrowIsSet(bool showArrow, double offset)
+    [InlineData(false, "6")]
+    [InlineData(true, "9")]
+    public void Render_ShouldAddAnArrowAndRoomForIt_WhenShowArrowIsSet(bool showArrow, string offset)
     {
-        var module = JSInterop.SetupModule(Module);
-        module.SetupModule("createTooltip", _ => true);
-
         var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete")
             .Add(tooltip => tooltip.ShowArrow, showArrow));
 
         Assert.Equal(showArrow, cut.FindAll("[role=tooltip] > [data-part=arrow]").Count == 1);
-        Assert.Equal(offset, Assert.IsType<AnchoredPositionOptions>(module.VerifyInvoke("createTooltip").Arguments[2])
-            .Offset);
-    }
-
-    [Fact]
-    public async Task DisposeAsync_ShouldTearDownTheTooltip_WhenTheComponentGoes()
-    {
-        var handle = JSInterop.SetupModule(Module).SetupModule("createTooltip", _ => true);
-        handle.SetupVoid("dispose").SetVoidResult();
-        Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Delete"));
-
-        await DisposeComponentsAsync();
-
-        handle.VerifyInvoke("dispose");
+        Assert.Equal(offset, cut.Find("[role=tooltip]").GetAttribute("data-offset"));
     }
 }

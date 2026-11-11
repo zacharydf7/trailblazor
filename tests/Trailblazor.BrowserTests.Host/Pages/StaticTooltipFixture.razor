@@ -1,0 +1,7 @@
+@page "/static-tooltip"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where no component runs code in the browser, so only the shared tooltip script can help. *@
+<TbTooltip Text="Saves a copy to your device">
+    <TbButton>Download</TbButton>
+</TbTooltip>

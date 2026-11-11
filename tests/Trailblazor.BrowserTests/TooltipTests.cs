@@ -5,6 +5,48 @@ namespace Trailblazor.BrowserTests;
 public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldShowAndDescribeItsTrigger_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-tooltip");
+        var download = page.GetByRole(AriaRole.Button, new() { Name = "Download" });
+
+        Assert.Equal("Saves a copy to your device", await page.Tb().Tooltip(download).TextAsync());
+        await Expect(download).ToHaveAccessibleDescriptionAsync("Saves a copy to your device");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldDropItsPendingShow_WhenItsTriggerIsRemovedDuringTheDelay(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-delay");
+        var errors = new List<string>();
+        page.PageError += (_, error) => errors.Add(error);
+        var delete = page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
+        await Expect(delete.Locator("..")).ToHaveAttributeAsync("data-ready", "");
+
+        await delete.HoverAsync();
+        await page.GetByRole(AriaRole.Switch, new() { Name = "Show the button" }).FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        await Expect(delete).ToHaveCountAsync(0);
+        await page.WaitForTimeoutAsync(1500);
+
+        Assert.Empty(errors);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldStayHidden_WhenEscapeIsPressedDuringItsShowDelay(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-delay");
+        var delete = page.GetByRole(AriaRole.Button, new() { Name = "Delete" });
+        await Expect(delete.Locator("..")).ToHaveAttributeAsync("data-ready", "");
+
+        await delete.HoverAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await page.WaitForTimeoutAsync(1500);
+
+        await Expect(page.GetByRole(AriaRole.Tooltip, new() { Name = "Delete the selection" })).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldAppearAboveTheTrigger_WhenThePointerRestsOnIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tooltip");
