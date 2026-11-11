@@ -1,0 +1,17 @@
+@page "/static-grid-links"
+@attribute [ExcludeFromInteractiveRouting]
+@inject NavigationManager Navigation
+
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Trails" PageSize="2" Sorts="_place.Sorts" Page="_place.Page"
+            StateHref="Link">
+    <TbColumn Field="trail => trail" Title="Name" Id="name" Sortable />
+</TbDataGrid>
+
+@code {
+    private static readonly string[] Trails = ["Pine Hollow", "Cedar Flats", "Eagle Ridge", "Aspen Loop"];
+    private GridState _place = new();
+
+    protected override void OnParametersSet() => _place = GridState.FromQuery(new Uri(Navigation.Uri).Query);
+
+    private string Link(GridState state) => Navigation.GetUriWithQueryParameters(state.ToQueryParameters());
+}

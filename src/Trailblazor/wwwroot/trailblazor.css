@@ -6876,6 +6876,7 @@
         color: inherit;
         font: inherit;
         line-height: var(--tb-line-height-tight);
+        text-decoration: none;
         cursor: pointer;
     }
 

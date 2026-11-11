@@ -6922,6 +6922,12 @@ public static class ExampleCatalog
                     + "in one `GridState`. Bind it to save how the user arranged the rows, such as to local storage "
                     + "as JSON, and set it to restore them; filter values read back from JSON take their columns' "
                     + "types.", typeof(DataGridStateExample)),
+                new("links", "Sort and page links", "`StateHref` turns the sort headers and the pager into links to "
+                    + "the view each one leads to, so sorting and paging work in static SSR and the grid's place is in "
+                    + "the address, ready to share or reload. `GridState.ToQueryParameters` writes the sorts, page and "
+                    + "page size for the address, and `GridState.FromQuery` reads them back; a prefix keeps two grids "
+                    + "apart. A sort link sorts by its column alone, since a Shift- or Ctrl-click opens a link in a new "
+                    + "window or tab instead of adding a sort.", typeof(DataGridLinksExample)),
                 new("empty", "Empty", "With no rows, the grid says so. `EmptyContent` shows your own content, such as "
                     + "a way to add the first row.",
                     typeof(DataGridEmptyExample)),
@@ -6963,6 +6969,10 @@ public static class ExampleCatalog
                 new(["Enter", "Space"], "On a sortable header, sorts by it alone, then reverses it, then stops sorting "
                     + "by it.") { When = "Sorting" },
                 new(["Shift+Enter"], "On a sortable header, adds it to the sorts.") { When = "Sorting" },
+                new(["Shift+Enter"], "On a sort link, opens the sorted view in a new window.")
+                {
+                    When = "With a `StateHref`",
+                },
                 new(["Space"], "On a row's checkbox, selects or unselects the row. On its radio button, selects "
                     + "the row.") { When = "Selecting" },
                 new(["Shift+Up", "Shift+Down"], "Extends the selected rows, and moving back shrinks the range.")
@@ -7087,7 +7097,8 @@ public static class ExampleCatalog
                     + "in its rows for keys to scroll it.",
                 "With `Items` and no `Virtualize`, it renders its first page of rows as a plain table, so they can be "
                     + "read at once. Sorting, filtering, paging and selecting start working once the page is "
-                    + "interactive.",
+                    + "interactive. With a `StateHref`, sorting and paging work before that, as links; the page size "
+                    + "picker still waits.",
             ],
             Notes =
             [
@@ -7107,7 +7118,7 @@ public static class ExampleCatalog
             [
                 new("grid", "The grid itself."),
                 new("scroll", "The box that scrolls the rows."),
-                new("sort", "A column header's sort button."),
+                new("sort", "A column header's sort button, or its link with a `StateHref`."),
                 new("sort-order", "The number that shows a column's place when sorting by several."),
                 new("filters", "The row of filter fields under the headers."),
                 new("filter", "One column's cell in the row of filter fields."),
@@ -7160,6 +7171,10 @@ public static class ExampleCatalog
                     + "`Row(\"Cedar Flats\")` and a cell with `await CellAsync(\"Cedar Flats\", \"Region\")`.",
                 "`SortAsync(\"Name\", descending: true)`, `FilterAsync(\"Name\", \"ridge\")`, `SelectAsync(...)` and "
                     + "`GoToPageAsync(2)` drive it, and sorting, filtering and paging wait for a `DataProvider`'s rows.",
+                "With a `StateHref`, the sort headers and the pager are links. In an interactive grid, `SortAsync` and "
+                    + "`GoToPageAsync` still work; on a static page, click the header's link, and `GoToPageAsync` "
+                    + "follows the pager's. To start a test at a view, open the page at an address with "
+                    + "`GridState.ToQueryParameters` in its query.",
                 "In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` picks a condition too, and "
                     + "`FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly those values picked, in a "
                     + "menu's checkboxes or the filter row's multiple select.",

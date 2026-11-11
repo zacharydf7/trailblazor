@@ -1488,6 +1488,50 @@ public class TbDataGridTests : BunitContext
     private static IElement Row(IRenderedComponent<TbDataGrid<Trail>> cut, string key) =>
         cut.Find($"tr[data-part=row][data-key='{key}']");
 
+    [Fact]
+    public void Render_ShouldLinkTheSortHeadersAndPagesToTheStateEachShows_WhenGivenAStateHref()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.Sorts, [new GridSort("Name", SortDirection.Ascending)])
+            .Add(grid => grid.StateHref, state => "?" + string.Join('&', state.ToQueryParameters()
+                .Where(pair => pair.Value is not null).Select(pair => $"{pair.Key}={pair.Value}"))));
+
+        Assert.Equal(["?sort=-Name&size=2", "?sort=LengthKm&size=2"],
+            cut.FindAll("a[data-part=sort]").Take(2).Select(link => link.GetAttribute("href")));
+        Assert.Contains(cut.FindAll("a"), link => link.GetAttribute("href") == "?sort=Name&page=2&size=2");
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    public async Task Click_ShouldSortOnlyOnAPlainClick_WhenTheSortHeaderIsALink(bool shift, bool ctrl, bool alt)
+    {
+        IReadOnlyList<GridSort>? sorted = null;
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.StateHref, _ => "?view")
+            .Add(grid => grid.SortsChanged, (IReadOnlyList<GridSort> sorts) => sorted = sorts));
+
+        await cut.Find("a[data-part=sort]").ClickAsync(new MouseEventArgs
+        {
+            Detail = 1, ShiftKey = shift, CtrlKey = ctrl, AltKey = alt,
+        });
+
+        Assert.Equal(shift || ctrl || alt ? null : [new GridSort("Name", SortDirection.Ascending)], sorted);
+    }
+
+    [Fact]
+    public async Task Change_ShouldTakeTheAddressToTheNewPageSize_WhenTheGridHasAStateHref()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.PageSizes, [2, 5])
+            .Add(grid => grid.StateHref, state => $"/trails?size={state.PageSize}"));
+
+        await cut.InvokeAsync(() => cut.FindComponent<TbSelect<int>>().Instance.ValueChanged.InvokeAsync(5));
+
+        Assert.EndsWith("/trails?size=5", Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
     private IRenderedComponent<TbDataGrid<Trail>> RenderTrails(IReadOnlyList<Trail>? trails = null,
         Action<ComponentParameterCollectionBuilder<TbDataGrid<Trail>>>? configure = null,
         RenderFragment? columns = null) =>

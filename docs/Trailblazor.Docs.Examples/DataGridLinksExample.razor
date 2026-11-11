@@ -1,0 +1,45 @@
+@using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject NavigationManager Navigation
+
+@* The sort headers and pager are links to the view each one leads to, so the grid's place is in the address. *@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Linked trails" PageSize="3" Sorts="_place.Sorts"
+            Page="_place.Page" StateHref="Link">
+    <TbColumn Field="trail => trail.Name" Sortable />
+    <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
+</TbDataGrid>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new("Pine Hollow loop", 6.4),
+        new("Eagle Ridge traverse", 14.2),
+        new("Cedar Flats", 3.1),
+        new("Ridge Loop", 9.8),
+        new("Lake Shore", 11.5),
+        new("Fern Gully", 4.7),
+    ];
+
+    private GridState _place = new();
+
+    protected override void OnInitialized()
+    {
+        Read();
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    // The trails prefix keeps this grid's place apart from any other grid's on the page.
+    private void Read() => _place = GridState.FromQuery(new Uri(Navigation.Uri).Query, "trails");
+
+    private string Link(GridState state) => Navigation.GetUriWithQueryParameters(state.ToQueryParameters("trails"));
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        Read();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+
+    private sealed record Trail(string Name, double LengthKm);
+}

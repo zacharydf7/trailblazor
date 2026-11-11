@@ -282,7 +282,7 @@
             @if (PageCount > 1)
             {
                 <TbPagination Page="_page" PageChanged="PageFromPagerAsync" PageCount="PageCount" Size="Size.Small"
-                              ShowFirstLast="ShowFirstLast"
+                              ShowFirstLast="ShowFirstLast" PageHref="@(StateHref is null ? null : PageLink)"
                               AriaLabel="@(AriaLabel is null ? null : Format(TbStrings.DataGridPages, AriaLabel))" />
             }
         </div>
@@ -489,26 +489,20 @@
         @<text>
             @if (column.CanSort)
             {
-                <button type="button" data-part="sort" class="tb-data-grid__sort"
-                        @onkeydown="OnSortKeyDown" @onclick="_sort.For(column)">
-                    <span>@column.Heading</span>
-                    @if (sort is not null)
-                    {
-                        <TbIcon Size="Size.Small" class="tb-data-grid__sort-icon"
-                                Icon="@(sort.Direction == SortDirection.Ascending
-                                          ? BuiltInIcons.ArrowUp : BuiltInIcons.ArrowDown)" />
-                        @if (_sorts.Count > 1)
-                        {
-                            <span data-part="sort-order" class="tb-data-grid__sort-order"
-                                  aria-hidden="true">@(at + 1)</span>
-                            <span class="tb-visually-hidden">
-                                @Format(TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
-                                    Localizer[sort.Direction == SortDirection.Ascending
-                                        ? TbStrings.DataGridAscending : TbStrings.DataGridDescending])
-                            </span>
-                        }
-                    }
-                </button>
+                @if (StateHref is null)
+                {
+                    <button type="button" data-part="sort" class="tb-data-grid__sort"
+                            @onkeydown="OnSortKeyDown" @onclick="_sort.For(column)">
+                        @SortLabel(column, at, sort)
+                    </button>
+                }
+                else
+                {
+                    <a href="@SortLink(column)" data-part="sort" class="tb-data-grid__sort"
+                       @onkeydown="OnSortKeyDown" @onclick="_sort.For(column)">
+                        @SortLabel(column, at, sort)
+                    </a>
+                }
                 @if (column.Header is { } extra)
                 {
                     <span class="tb-data-grid__title">@extra</span>
@@ -526,6 +520,27 @@
             {
                 @FilterMenu(column)
             }
+        </text>;
+
+    private RenderFragment SortLabel(TbColumn<TItem> column, int at, GridSort? sort) =>
+        @<text>
+                    <span>@column.Heading</span>
+                    @if (sort is not null)
+                    {
+                        <TbIcon Size="Size.Small" class="tb-data-grid__sort-icon"
+                                Icon="@(sort.Direction == SortDirection.Ascending
+                                          ? BuiltInIcons.ArrowUp : BuiltInIcons.ArrowDown)" />
+                        @if (_sorts.Count > 1)
+                        {
+                            <span data-part="sort-order" class="tb-data-grid__sort-order"
+                                  aria-hidden="true">@(at + 1)</span>
+                            <span class="tb-visually-hidden">
+                                @Format(TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
+                                    Localizer[sort.Direction == SortDirection.Ascending
+                                        ? TbStrings.DataGridAscending : TbStrings.DataGridDescending])
+                            </span>
+                        }
+                    }
         </text>;
 
     private RenderFragment GroupTotalsRow(GroupTotalsLine totals, int at) =>

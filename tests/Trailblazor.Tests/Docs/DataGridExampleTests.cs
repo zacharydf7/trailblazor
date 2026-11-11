@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -50,6 +51,17 @@ public class DataGridExampleTests : DocsTest
         Assert.Equal(["Summit Gate"], Names(cut, "Hikes"));
         await hikes.FilterAsync("Length (km)", "");
         Assert.Equal(["Eagle Ridge traverse", "Summit Gate"], Names(cut, "Hikes"));
+    }
+
+    [Fact]
+    public void DataGridLinksExample_ShouldSortByTheAddress_WhenTheAddressNamesASort()
+    {
+        var cut = Render<DataGridLinksExample>();
+        Assert.Contains("trails.sort=Name", cut.Find("a[data-part=sort]").GetAttribute("href"));
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("?trails.sort=-LengthKm");
+
+        cut.WaitForAssertion(() => Assert.Equal("Eagle Ridge traverse", cut.Find("tbody td").TextContent.Trim()));
     }
 
     [Fact]

@@ -7,6 +7,22 @@ namespace Trailblazor.BrowserTests;
 public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Links_ShouldSortAndPageTheGrid_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-grid-links");
+        var names = page.Locator("tbody td");
+        await Expect(names).ToHaveTextAsync(["Pine Hollow", "Cedar Flats"]);
+
+        await page.GetByRole(AriaRole.Link, new() { Name = "Name" }).ClickAsync();
+        await Expect(names).ToHaveTextAsync(["Aspen Loop", "Cedar Flats"]);
+        await page.GetByRole(AriaRole.Link, new() { Name = "Page 2" }).ClickAsync();
+
+        await Expect(names).ToHaveTextAsync(["Eagle Ridge", "Pine Hollow"]);
+        Assert.Contains("sort=name", page.Url);
+        Assert.Contains("page=2", page.Url);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Row_ShouldBeClicked_WhenThePointerSlipsWhileClickingItsSelectedText(string browser)
     {
         var page = await OpenRowsAsync(browser);

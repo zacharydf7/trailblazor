@@ -276,6 +276,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public GridState? State { get; set; }
 
+    /// <summary>Builds the address for a grid state, such as the page's address with <see
+    /// cref="GridState.ToQueryParameters"/> in its query, and turns the sort headers and the pager into links to the
+    /// state each one leads to; picking a page size goes to its address too. Sorting and paging then work in static
+    /// SSR, and the grid's place can be shared and survives a reload; read it back with <see
+    /// cref="GridState.FromQuery"/> and pass its sorts, page and page size to the grid, such as
+    /// <c>PageSize="state.PageSize ?? 20"</c>, since a null page size turns paging off. A sort link sorts by its column
+    /// alone, since a Shift- or Ctrl-click opens a link in a new window or tab rather than adding a sort.</summary>
+    [Parameter]
+    public Func<GridState, string>? StateHref { get; set; }
+
     /// <summary>Raised when the user sorts, filters, groups or pages the rows, picks another page size, or resizes or
     /// moves a column.</summary>
     [Parameter]
@@ -398,6 +408,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
 
     [Inject]
     private IAnnouncer Announcer { get; set; } = default!;
@@ -1882,35 +1895,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // Firefox leaves Shift off the click that Enter or Space makes, so the key says whether Shift is held.
     private void OnSortKeyDown(KeyboardEventArgs args) => _sortKeyHasShift = args.ShiftKey && args.Key is "Enter" or " ";
 
-    // A plain click sorts by the column alone, then turns it around, then stops; Shift adds it to the sorts instead.
     private async Task SortAsync(TbColumn<TItem> column, MouseEventArgs args)
     {
-        Telemetry.Used(TelemetryName, "sort");
-        var at = _sorts.FindIndex(sort => sort.Column == column.Key);
-        List<GridSort> sorts = [.. _sorts];
         // A pointer's click has a detail, so a key let go elsewhere doesn't carry over to it.
-        var adding = args.ShiftKey || (_sortKeyHasShift && args.Detail == 0);
+        var shifted = args.ShiftKey || (_sortKeyHasShift && args.Detail == 0);
         _sortKeyHasShift = false;
-        if (!adding && !(at == 0 && _sorts.Count == 1))
+        // A modified click on a sort link opens it in a new tab or window, so this tab's grid stays as it is.
+        if (StateHref is not null && (shifted || args.CtrlKey || args.MetaKey || args.AltKey))
         {
-            sorts.Clear();
-            at = -1;
+            return;
         }
 
-        if (at < 0)
-        {
-            sorts.Add(new(column.Key, SortDirection.Ascending));
-        }
-        else if (sorts[at].Direction == SortDirection.Ascending)
-        {
-            sorts[at] = sorts[at] with { Direction = SortDirection.Descending };
-        }
-        else
-        {
-            sorts.RemoveAt(at);
-        }
-
-        _sorts = sorts;
+        Telemetry.Used(TelemetryName, "sort");
+        _sorts = NextSorts(column, adding: shifted);
         var pageMoved = _page != 1;
         _page = 1;
         // The load starts before the app hears of the change, so a handler that waits can't leave the table looking
@@ -1924,7 +1921,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         await StateChangedAsync();
 
-        Announcer.Polite(sorts.FirstOrDefault(sort => sort.Column == column.Key) is { } now
+        Announcer.Polite(_sorts.FirstOrDefault(sort => sort.Column == column.Key) is { } now
             ? Format(now.Direction == SortDirection.Ascending ? TbStrings.DataGridSortedAscending
                 : TbStrings.DataGridSortedDescending, column.Heading)
             : Format(TbStrings.DataGridUnsorted, column.Heading));
@@ -1957,7 +1954,44 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         await PageChanged.InvokeAsync(1);
         await StateChangedAsync();
         await show;
+        // The picker isn't a link, so the grid navigates to the new size's address itself, as a link would.
+        if (StateHref is not null)
+        {
+            Navigation.NavigateTo(StateHref(CurrentState));
+        }
     }
+
+    // A plain click sorts by the column alone, then turns it around, then stops; adding keeps the other sorts.
+    private List<GridSort> NextSorts(TbColumn<TItem> column, bool adding)
+    {
+        var at = _sorts.FindIndex(sort => sort.Column == column.Key);
+        List<GridSort> sorts = [.. _sorts];
+        if (!adding && !(at == 0 && _sorts.Count == 1))
+        {
+            sorts.Clear();
+            at = -1;
+        }
+
+        if (at < 0)
+        {
+            sorts.Add(new(column.Key, SortDirection.Ascending));
+        }
+        else if (sorts[at].Direction == SortDirection.Ascending)
+        {
+            sorts[at] = sorts[at] with { Direction = SortDirection.Descending };
+        }
+        else
+        {
+            sorts.RemoveAt(at);
+        }
+
+        return sorts;
+    }
+
+    private string SortLink(TbColumn<TItem> column) =>
+        StateHref!(CurrentState with { Sorts = NextSorts(column, adding: false), Page = 1 });
+
+    private string PageLink(int page) => StateHref!(CurrentState with { Page = page });
 
     private GridState CurrentState => new()
     {

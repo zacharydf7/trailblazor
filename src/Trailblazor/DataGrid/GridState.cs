@@ -57,6 +57,45 @@ public sealed record GridState
     public override int GetHashCode() => HashCode.Combine(Sorts.Count, Filters.Count, Groups.Count, Page, PageSize,
         ColumnWidths.Count, ColumnOrder.Count, HiddenColumns.Count);
 
+    /// <summary>The sorts, page and page size as query parameters, such as <c>sort=name,-length</c>, <c>page=2</c> and
+    /// <c>size=20</c>, for <c>NavigationManager.GetUriWithQueryParameters</c>. A value at its default is null, which
+    /// leaves its parameter out. A <paramref name="prefix"/>, such as "trails", names them <c>trails.sort</c> and so on, so two
+    /// grids can share a page. Filters, groups and columns aren't included.</summary>
+    public IReadOnlyDictionary<string, object?> ToQueryParameters(string? prefix = null) => new Dictionary<string, object?>
+    {
+        [Named(prefix, "sort")] = Sorts.Count == 0 ? null : string.Join(',', Sorts.Select(sort =>
+            (sort.Direction == SortDirection.Descending ? "-" : "") + sort.Column)),
+        [Named(prefix, "page")] = Page == 1 ? null : Page,
+        [Named(prefix, "size")] = PageSize,
+    };
+
+    /// <summary>The sorts, page and page size in a query string written by <see cref="ToQueryParameters"/> with the
+    /// same prefix, such as the query of the page's address. Anything the query doesn't name, or that can't be read,
+    /// keeps its default. The sorts' column keys come from the address as typed, so a <c>DataProvider</c> that builds a
+    /// query from them should check them against its own columns first.</summary>
+    public static GridState FromQuery(string? query, string? prefix = null)
+    {
+        var values = (query ?? "").TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(pair => pair.Split('=', 2))
+            .ToLookup(pair => Unescape(pair[0]), pair => pair.Length > 1 ? Unescape(pair[1]) : "");
+        var sorts = values[Named(prefix, "sort")].LastOrDefault()?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        return new()
+        {
+            Sorts = [.. sorts.Select(sort => sort.StartsWith('-')
+                ? new GridSort(sort[1..], SortDirection.Descending) : new GridSort(sort, SortDirection.Ascending))],
+            Page = PositiveNumber(values[Named(prefix, "page")].LastOrDefault()) ?? 1,
+            PageSize = PositiveNumber(values[Named(prefix, "size")].LastOrDefault()),
+        };
+    }
+
+    private static string Named(string? prefix, string name) => prefix is null ? name : $"{prefix}.{name}";
+
+    private static string Unescape(string text) => Uri.UnescapeDataString(text.Replace('+', ' '));
+
+    private static int? PositiveNumber(string? text) =>
+        int.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, out var number) && number > 0
+            ? number : null;
+
     internal static bool SameWidths(IReadOnlyDictionary<string, double> one,
         IReadOnlyDictionary<string, double> other) => one.Count == other.Count
         && one.All(width => other.TryGetValue(width.Key, out var value) && value == width.Value);

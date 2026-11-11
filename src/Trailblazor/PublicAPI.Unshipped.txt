@@ -4299,3 +4299,7 @@ static Trailblazor.PaletteSeeds.operator !=(Trailblazor.PaletteSeeds? left, Trai
 static Trailblazor.PaletteSeeds.operator ==(Trailblazor.PaletteSeeds? left, Trailblazor.PaletteSeeds? right) -> bool
 Trailblazor.TrailblazorOptions.WarnAboutContrast.get -> bool
 Trailblazor.TrailblazorOptions.WarnAboutContrast.set -> void
+Trailblazor.TbDataGrid<TItem>.StateHref.get -> System.Func<Trailblazor.GridState!, string!>?
+Trailblazor.TbDataGrid<TItem>.StateHref.set -> void
+Trailblazor.GridState.ToQueryParameters(string? prefix = null) -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+static Trailblazor.GridState.FromQuery(string? query, string? prefix = null) -> Trailblazor.GridState!
