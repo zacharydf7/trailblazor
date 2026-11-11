@@ -19,7 +19,8 @@ public class TbSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes
     public Func<TValue, string>? UnmatchedText { get; set; }
 
     /// <summary>The values to offer, such as a long list or one loaded from a database, in place of
-    /// <see cref="TbOption{TValue}"/> children. They render without a component each.</summary>
+    /// <see cref="TbOption{TValue}"/> children. They render without a component each. Past 100, only those in view
+    /// are in the page, though the keys, type-ahead and the filter still reach them all.</summary>
     [Parameter]
     public IEnumerable<TValue>? Items { get; set; }
 

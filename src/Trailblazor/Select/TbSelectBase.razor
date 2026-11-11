@@ -1,6 +1,7 @@
 @namespace Trailblazor
 @typeparam TValue
 @inherits TbBoxedFieldBase<TValue>
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 
 @Layout(Classes, @<text>
     @if (RendererInfo.IsInteractive)
@@ -75,7 +76,7 @@
     private RenderFragment Listbox =>
         @<div @ref="_listbox" id="@ListboxId" popover="@(Filterable ? null : "auto")" role="listbox"
               aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-multiselectable="@(Multiple ? "true" : null)"
-              data-part="listbox" class="tb-select__listbox">
+              data-count="@_shown?.Count" data-chosen="@ChosenIndex" data-part="listbox" class="tb-select__listbox">
             @if (ShowSelectAll)
             {
                 <div id="@ListboxId-all" role="option" aria-selected="@(AllChosen ? "true" : "false")"
@@ -87,24 +88,18 @@
             }
             @* Not fixed, so every option re-renders with the select and its aria-selected follows the value. *@
             <CascadingValue Value="this">@ChildContent</CascadingValue>
-            @* Options made from Items: keep this markup in step with TbOption's. *@
-            @foreach (var option in _itemOptions)
+            @if (_shown is not null)
             {
-                var chosen = IsChosen(option.Value);
-                <div @key="option.Id" id="@option.Id" role="option" data-text="@option.Text" aria-label="@option.Name"
-                     aria-selected="@(chosen ? "true" : "false")" aria-disabled="@(option.Disabled ? "true" : null)"
-                     data-part="option" class="tb-select__option" @onclick="args => ChooseItemAsync(option, args)">
-                    @if (Multiple)
-                    {
-                        <span aria-hidden="true" class="tb-select__box"></span>
-                    }
-                    @option.Content
-                    @if (!Multiple && chosen)
-                    {
-                        <TbIcon Icon="BuiltInIcons.Check" Size="Size.Small" Tone="Tone.Primary" data-part="check"
-                                class="tb-select__check" />
-                    }
-                </div>
+                <Virtualize Items="_shown" ItemSize="OptionSize" OverscanCount="OptionsBeyondView" Context="shown">
+                    @ItemOptionView(shown.Option, shown.Index)
+                </Virtualize>
+            }
+            else
+            {
+                @foreach (var option in _itemOptions)
+                {
+                    @ItemOptionView(option, null)
+                }
             }
             @if (_options.Count == 0)
             {
@@ -116,6 +111,29 @@
                 </div>
             }
         </div>;
+
+    // An option made from Items: keep this markup in step with TbOption's. A virtualized one also carries its place in
+    // the list.
+    private RenderFragment ItemOptionView(ItemOption option, int? index)
+    {
+        var chosen = IsChosen(option.Value);
+        return @<div @key="option.Id" id="@option.Id" role="option" data-text="@option.Text" aria-label="@option.Name"
+                     aria-selected="@(chosen ? "true" : "false")" aria-disabled="@(option.Disabled ? "true" : null)"
+                     data-index="@index" aria-posinset="@(index + 1)"
+                     aria-setsize="@(index is null ? null : _shown?.Count)"
+                     data-part="option" class="tb-select__option" @onclick="args => ChooseItemAsync(option, args)">
+            @if (Multiple)
+            {
+                <span aria-hidden="true" class="tb-select__box"></span>
+            }
+            @option.Content
+            @if (!Multiple && chosen)
+            {
+                <TbIcon Icon="BuiltInIcons.Check" Size="Size.Small" Tone="Tone.Primary" data-part="check"
+                        class="tb-select__check" />
+            }
+        </div>;
+    }
 
     private RenderFragment End =>
         @<text>

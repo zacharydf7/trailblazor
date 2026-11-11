@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -13,7 +14,18 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     : TbBoxedFieldBase<TValue>, ISelect, IAsyncDisposable
 {
     private readonly List<ISelectOption> _options = [];
+    // Past this many options from Items, only those in view are in the page.
+    private const int VirtualizeAbove = 100;
+
+    // A first guess at an option's height, in pixels, which Virtualize corrects as it measures them.
+    private const float OptionSize = 36;
+
+    // Options drawn beyond each end of the view, so a key press usually finds its option already there.
+    private const int OptionsBeyondView = 10;
+
     private IReadOnlyList<ItemOption> _itemOptions = [];
+    private List<ShownOption>? _shown;
+    private string _query = "";
     private ElementReference _combobox;
     private ElementReference _listbox;
     private SelectDisplay? _display;
@@ -224,7 +236,8 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
             return;
         }
 
-        _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync));
+        _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync, OnFilterAsync,
+            OnFindAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox, _toggle);
         if (handle is null)
         {
@@ -260,7 +273,46 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
                 itemTemplate is null ? null : text);
         }).ToList() ?? [];
         _options.AddRange(_itemOptions);
+        Show();
     }
+
+    // A long list is virtualized, so its filter runs here: most of its options aren't in the page for the script.
+    private void Show()
+    {
+        if (!RendererInfo.IsInteractive || _itemOptions.Count <= VirtualizeAbove)
+        {
+            _shown = null;
+            return;
+        }
+
+        var query = Fold(_query);
+        _shown = _itemOptions.Where(option => query == "" || Fold(option.Text).Contains(query, StringComparison.Ordinal))
+            .Select((option, index) => new ShownOption(index, option)).ToList();
+    }
+
+    // Where the list opens: the chosen option's place, which may not be in the page.
+    private int? ChosenIndex => _shown?.FindIndex(shown => IsChosen(shown.Option.Value)) is >= 0 and var index
+        ? index : null;
+
+    // As the script folds text: lowercase, without accents, so "eagle" finds "Éagle".
+    private static string Fold(string text) => string.Concat(text.Normalize(NormalizationForm.FormD).Where(letter =>
+        CharUnicodeInfo.GetUnicodeCategory(letter) is not (UnicodeCategory.NonSpacingMark
+            or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark)))
+        .ToLower(CultureInfo.CurrentCulture);
+
+    private Task OnFilterAsync(string query)
+    {
+        _query = query;
+        Show();
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    // The script calls this only for a virtualized list, so _shown is never null.
+    private Task<int> OnFindAsync(int from, string typed) => Task.FromResult(Typeahead.Find(_shown!.Count,
+        place => _shown[place].Option.Text, place => _shown[place].Option.Disabled, from, typed));
+
+    private readonly record struct ShownOption(int Index, ItemOption Option);
 
     // A choice the script makes for a key, such as Enter, is a click with no count of presses.
     private async Task ChooseItemAsync(ItemOption option, MouseEventArgs args)

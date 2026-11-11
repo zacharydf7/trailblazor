@@ -344,7 +344,7 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     public async Task Select_ShouldReachAndChooseItsItemsByKey_WhenItsOptionsComeFromItems(string browser)
     {
         var page = await OpenAsync(browser, "/select-items");
-        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail", Exact = true });
 
         await trail.FocusAsync();
         await trail.PressAsync("ArrowDown");
@@ -354,5 +354,147 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
 
         await Expect(page.GetByTestId("trail")).ToHaveTextAsync("Ridge loop");
         await Expect(trail).ToContainTextAsync("Ridge loop");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldReachOptionsOutOfThePageByKey_WhenItsLongListIsVirtualized(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trail", Exact = true });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.FocusAsync();
+        await trail.PressAsync("ArrowDown");
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "true");
+        await ExpectActiveAsync(page, trail, "Trail 1");
+        Assert.InRange(await page.GetByRole(AriaRole.Listbox).GetByRole(AriaRole.Option).CountAsync(), 1, 99);
+        await page.Keyboard.PressAsync("End");
+        await ExpectActiveAsync(page, trail, "Trail 1000");
+        // Trail 999 is disabled, so the move up passes over it.
+        await page.Keyboard.PressAsync("ArrowUp");
+        await ExpectActiveAsync(page, trail, "Trail 998");
+        await page.Keyboard.PressAsync("Home");
+        await ExpectActiveAsync(page, trail, "Trail 1");
+        await page.Keyboard.PressAsync("End");
+        await ExpectActiveAsync(page, trail, "Trail 1000");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByTestId("long-trail")).ToHaveTextAsync("Trail 1000");
+
+        // Opening again starts on the chosen option, though it isn't in the page until then.
+        await page.Keyboard.PressAsync("ArrowDown");
+        await ExpectActiveAsync(page, trail, "Trail 1000");
+        // From the chosen Trail 1000, typing wraps to Trail 1, which the closed list hasn't drawn. One key, since a
+        // slow machine can split a typed word.
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("t");
+        await ExpectActiveAsync(page, trail, "Trail 1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldFilterAllItsOptions_WhenItsLongListIsVirtualized(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Filtered trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.ClickAsync();
+        await page.Keyboard.TypeAsync("rail 99");
+        await Expect(page.GetByRole(AriaRole.Listbox).GetByRole(AriaRole.Option))
+            .ToHaveTextAsync(["Trail 99", "Trail 990", "Trail 991", "Trail 992", "Trail 993", "Trail 994", "Trail 995",
+                "Trail 996", "Trail 997", "Trail 998", "Trail 999"]);
+        // End stays with the filter's text, so the arrow reaches the last match.
+        for (var step = 0; step < 10; step++)
+        {
+            await page.Keyboard.PressAsync("ArrowDown");
+        }
+
+        await ExpectActiveAsync(page, trail, "Trail 999");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByTestId("filtered-trail")).ToHaveTextAsync("Trail 999");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldStartOnTheChosenOption_WhenItsVirtualizedListFirstOpensOrIsTypedIn(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var saved = page.GetByRole(AriaRole.Combobox, new() { Name = "Saved trail" });
+        var typed = page.GetByRole(AriaRole.Combobox, new() { Name = "Typed trail" });
+        await Expect(typed).ToHaveAttributeAsync("data-ready", "");
+
+        await saved.FocusAsync();
+        await saved.PressAsync("ArrowDown");
+        await ExpectActiveAsync(page, saved, "Trail 500");
+        await saved.PressAsync("Escape");
+        // A single letter moves on from the chosen option.
+        await typed.FocusAsync();
+        await typed.PressAsync("t");
+        await ExpectActiveAsync(page, typed, "Trail 501");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldReachTheEndsOfItsWholeList_WhenHomeOrEndOpensItsVirtualizedList(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trail", Exact = true });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await trail.FocusAsync();
+        await trail.PressAsync("End");
+        await ExpectActiveAsync(page, trail, "Trail 1000");
+        await trail.PressAsync("Escape");
+        await trail.PressAsync("Home");
+        await ExpectActiveAsync(page, trail, "Trail 1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldStayOnTheLastOption_WhenArrowDownIsPressedOnItInAVirtualizedList(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trails = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trails" });
+        await Expect(trails).ToHaveAttributeAsync("data-ready", "");
+
+        await trails.FocusAsync();
+        await trails.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("End");
+        await ExpectActiveAsync(page, trails, "Trail 1000");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await ExpectActiveAsync(page, trails, "Trail 1000");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldKeepTheLatestKeysOption_WhenAnEarlierKeyIsStillWaitingForItsOption(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trails = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trails" });
+        await Expect(trails).ToHaveAttributeAsync("data-ready", "");
+        await trails.FocusAsync();
+        await trails.PressAsync("ArrowDown");
+        // The first options draw a moment after the list opens, so wait for Trail 1 before the quick presses.
+        await page.Keyboard.PressAsync("ArrowDown");
+        await ExpectActiveAsync(page, trails, "Trail 1");
+        for (var step = 0; step < 5; step++)
+        {
+            await page.Keyboard.PressAsync("ArrowDown");
+        }
+
+        await ExpectActiveAsync(page, trails, "Trail 6");
+
+        // End waits for the server to draw Trail 1000, and ArrowUp, pressed meanwhile, replaces it.
+        await page.Keyboard.PressAsync("End");
+        await page.Keyboard.PressAsync("ArrowUp");
+        // Longer than the script's 2-second wait for an option, so End's search has given up by now.
+        await page.WaitForTimeoutAsync(2500);
+
+        await ExpectActiveAsync(page, trails, "Trail 5");
+    }
+
+    // The option marked active, which the combobox names to screen readers.
+    private static async Task ExpectActiveAsync(IPage page, ILocator combobox, string text)
+    {
+        var option = page.Locator($"[role=option][data-active][data-text='{text}']");
+        await Expect(option).ToHaveCountAsync(1);
+        await Expect(combobox).ToHaveAttributeAsync("aria-activedescendant", (await option.GetAttributeAsync("id"))!);
     }
 }

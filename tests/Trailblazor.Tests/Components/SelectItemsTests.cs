@@ -114,5 +114,64 @@ public class SelectItemsTests : BunitContext
         Assert.Equal(3, cut.FindAll("[role=option]").Count);
     }
 
+    [Fact]
+    public void Render_ShouldVirtualizeTheOptions_WhenThereAreMoreThanAHundredItems()
+    {
+        var cut = RenderLong(count: 150, value: null);
+
+        var listbox = cut.Find("[role=listbox]");
+        Assert.Equal("150", listbox.GetAttribute("data-count"));
+        var option = cut.Find("[role=option][data-index='3']");
+        Assert.Equal(("Trail 4", "4", "150"), (option.GetAttribute("data-text"), option.GetAttribute("aria-posinset"),
+            option.GetAttribute("aria-setsize")));
+        Assert.False(RenderLong(count: 100, value: null).Find("[role=listbox]").HasAttribute("data-count"));
+    }
+
+    [Fact]
+    public void Render_ShouldGiveTheChosenOptionsPlace_WhenTheListIsVirtualized()
+    {
+        var cut = RenderLong(count: 150, value: 120);
+
+        Assert.Equal("119", cut.Find("[role=listbox]").GetAttribute("data-chosen"));
+    }
+
+    [Fact]
+    public async Task Filter_ShouldShowOnlyMatchingItems_WhenTheVirtualizedListIsFiltered()
+    {
+        var cut = RenderLong(count: 150, value: null);
+
+        await cut.InvokeAsync(() => Toggle().OnFilter("TRAIL 14"));
+
+        Assert.Equal("11", cut.Find("[role=listbox]").GetAttribute("data-count"));
+        Assert.All(cut.FindAll("[role=option][data-index]"),
+            option => Assert.StartsWith("Trail 14", option.GetAttribute("data-text")));
+        await cut.InvokeAsync(() => Toggle().OnFilter(""));
+        Assert.Equal("150", cut.Find("[role=listbox]").GetAttribute("data-count"));
+    }
+
+    [Theory]
+    [InlineData(-1, "trail 9", 8)]
+    [InlineData(8, "t", 9)]
+    [InlineData(-1, "nowhere", -1)]
+    [InlineData(-1, "trail 2", 19)]
+    public async Task Find_ShouldGiveThePlaceOfTheNextEnabledMatch_WhenGivenTypedText(int from, string typed, int found)
+    {
+        var cut = RenderLong(count: 150, value: null);
+
+        Assert.Equal(found, await cut.InvokeAsync(() => Toggle().OnFind(from, typed)));
+    }
+
+    // Trail 2 is disabled, so typing "trail 2" finds Trail 20.
+    private IRenderedComponent<TbSelect<Trail>> RenderLong(int count, int? value) =>
+        Render<TbSelect<Trail>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.Filterable, true)
+            .Add(select => select.Items, Enumerable.Range(1, count).Select(id => new Trail(id, $"Trail {id}")).ToList())
+            .Add(select => select.ItemText, trail => trail.Name)
+            .Add(select => select.ItemDisabled, trail => trail.Id == 2)
+            .Add(select => select.Value, value is null ? null : new Trail(value.Value, $"Trail {value}")));
+
+    private SelectToggle Toggle() =>
+        ((DotNetObjectReference<SelectToggle>)JSInterop.Invocations["createSelect"].Last().Arguments[2]!).Value;
+
     private sealed record Trail(int Id, string Name);
 }

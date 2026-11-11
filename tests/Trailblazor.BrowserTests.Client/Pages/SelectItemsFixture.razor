@@ -4,7 +4,25 @@
 <TbSelect TValue="string" Label="Trail" Items="Trails" @bind-Value="_trail" />
 <p data-testid="trail">@_trail</p>
 
+@* Long enough to be virtualized, so most options aren't in the page; Trail 999 can't be chosen. *@
+<TbSelect TValue="string" Label="Long trail" Items="LongTrails" ItemDisabled="@(trail => trail == "Trail 999")"
+          @bind-Value="_longTrail" />
+<p data-testid="long-trail">@_longTrail</p>
+<TbSelect TValue="string" Label="Filtered trail" Items="LongTrails" Filterable @bind-Value="_filteredTrail" />
+<p data-testid="filtered-trail">@_filteredTrail</p>
+
+@* Chosen far down the list before either list was ever drawn. *@
+<TbSelect TValue="string" Label="Saved trail" Items="LongTrails" @bind-Value="_savedTrail" />
+<TbSelect TValue="string" Label="Typed trail" Items="LongTrails" @bind-Value="_typedTrail" />
+<TbMultiSelect TItem="string" Label="Long trails" Items="LongTrails" SelectAll @bind-Value="_longTrails" />
+
 @code {
     private static readonly string[] Trails = ["Cedar flats", "Lake shore", "Pine hollow", "Ridge loop"];
+    private static readonly string[] LongTrails = Enumerable.Range(1, 1000).Select(id => $"Trail {id}").ToArray();
     private string? _trail;
+    private string? _longTrail;
+    private string? _filteredTrail;
+    private string? _savedTrail = "Trail 500";
+    private string? _typedTrail = "Trail 500";
+    private IReadOnlyList<string> _longTrails = [];
 }

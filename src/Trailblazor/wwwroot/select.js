@@ -26,6 +26,64 @@ export function createSelect(combobox, listbox, toggle) {
     const typing = createTypeahead();
 
     const isOpen = () => popup.matches(':popover-open');
+    // A long list from Items is virtualized: only the options in view are in the page, each with its place.
+    const virtual = () => 'count' in listbox.dataset;
+    const count = () => Number(listbox.dataset.count);
+    const place = option => option?.dataset.index === undefined ? null : Number(option.dataset.index);
+    const atPlace = index => listbox.querySelector(`[role="option"][data-index="${index}"]`);
+    // Scrolls toward an option out of the page, from a drawn option's place and height.
+    const scrollToward = index => {
+        const near = listbox.querySelector('[role="option"][data-index]');
+        if (near) {
+            listbox.scrollTop += (index - place(near)) * near.offsetHeight
+                + near.getBoundingClientRect().top - listbox.getBoundingClientRect().top;
+        }
+    };
+    // Brings an option that isn't in the page into view and waits for the server to draw it. A list just opened has
+    // none drawn to measure from, and options of different heights can make a guess miss, so each drawing scrolls
+    // closer, a few times at most. A newer search stops it.
+    const optionWait = 2000;
+    const render = (index, ticket) => new Promise(resolve => {
+        let tries = 5;
+        const done = option => {
+            watch.disconnect();
+            clearTimeout(timer);
+            resolve(option);
+        };
+        const watch = new MutationObserver(() => {
+            if (ticket !== reaching || atPlace(index)) {
+                done(atPlace(index));
+            } else if (--tries > 0) {
+                scrollToward(index);
+            }
+        });
+        watch.observe(listbox, { childList: true, subtree: true });
+        const timer = setTimeout(() => done(atPlace(index)), optionWait);
+        scrollToward(index);
+    });
+    // The first enabled option at or past a place, in the step's direction, or null. A newer search, or a key that
+    // moves without one, replaces it, and then it gives undefined.
+    let reaching = 0;
+    const reach = async (index, step) => {
+        const ticket = ++reaching;
+        for (let at = index; at >= 0 && at < count(); at += step) {
+            const option = atPlace(at) ?? await render(at, ticket);
+            if (ticket !== reaching) {
+                return undefined;
+            }
+
+            if (!option) {
+                return null;
+            }
+
+            if (option.getAttribute('aria-disabled') !== 'true') {
+                return option;
+            }
+        }
+
+        return null;
+    };
+    const reachThen = (index, step, then) => reach(index, step).then(option => option && isOpen() && then(option));
     // Choosing in a multiple select toggles the option and leaves the list open for more.
     const multiple = () => listbox.getAttribute('aria-multiselectable') === 'true';
     const enabled = () => [...listbox.querySelectorAll('[role="option"]:not([aria-disabled="true"]):not([hidden])')];
@@ -54,7 +112,9 @@ export function createSelect(combobox, listbox, toggle) {
         const query = fold(filter.value.trim());
         for (const option of listbox.querySelectorAll('[role="option"]')) {
             // Choosing every option means nothing while only some are shown, and an empty list's message always shows.
-            const hide = option.dataset.part === 'status' ? false : option.dataset.part === 'select-all' ? query !== ''
+            // The server filters a virtualized list.
+            const hide = option.dataset.part === 'status' || place(option) !== null ? false
+                : option.dataset.part === 'select-all' ? query !== ''
                 : !fold(option.dataset.text || option.textContent).includes(query);
             if (option.hidden !== hide) {
                 option.hidden = hide;
@@ -68,7 +128,8 @@ export function createSelect(combobox, listbox, toggle) {
             }
         }
 
-        const text = query && !listbox.querySelector('[role="option"]:not([hidden])') ? status.dataset.text : '';
+        const text = query && !listbox.querySelector('[role="option"]:not([hidden])') && !(virtual() && count() > 0)
+            ? status.dataset.text : '';
         if (status.textContent !== text) {
             status.textContent = text;
         }
@@ -85,6 +146,15 @@ export function createSelect(combobox, listbox, toggle) {
 
         if (focus) {
             filter?.focus();
+        }
+
+        // A virtualized list renders its options a moment after it opens, and its chosen one may be far down.
+        const chosen = listbox.dataset.chosen;
+        const first = enabled()[0];
+        if (!target && !selected() && virtual() && (chosen !== undefined || !first)) {
+            setActive(first);
+            reachThen(chosen === undefined ? 0 : Number(chosen), 1, setActive);
+            return;
         }
 
         setActive(target ?? selected() ?? enabled()[0]);
@@ -107,8 +177,65 @@ export function createSelect(combobox, listbox, toggle) {
         const index = options.indexOf(option);
         return options[Math.min(Math.max(index + step, 0), options.length - 1)];
     };
+    // In a virtualized list the next option may not be in the page. Options before the list, such as "Select all",
+    // aren't virtualized.
+    const moveVirtual = key => {
+        const before = enabled().filter(option => place(option) === null);
+        const from = place(active);
+        const last = count() - 1;
+        const rows = rowsShown();
+        const [index, step] = {
+            ArrowDown: [from === null ? 0 : from + 1, 1],
+            ArrowUp: [from === null ? -1 : from - 1, -1],
+            Home: [before.length ? -1 : 0, 1],
+            End: [last, -1],
+            PageDown: [Math.min((from ?? -1) + rows, last), 1],
+            PageUp: [from === null ? -1 : Math.max(from - rows, 0), -1],
+        }[key];
+        const top = () => {
+            reaching++;
+            setActive(before[0] ?? active);
+        };
+        if (index < 0) {
+            top();
+            return;
+        }
+
+        // Moving down past the last enabled option stays on it; moving up past the first reaches "Select all".
+        reach(index, step)
+            .then(option => option !== null || step < 0 ? option : reach(Math.min(index, last), -1))
+            .then(option => {
+                if (option !== undefined && isOpen()) {
+                    option ? setActive(option) : top();
+                }
+            });
+    };
     const rowsShown = () => Math.max(1, Math.floor(listbox.clientHeight / (enabled()[0]?.offsetHeight || 1)));
     const typeahead = key => {
+        if (virtual()) {
+            const typed = typing.type(key);
+            const from = place(active ?? selected()) ?? Number(listbox.dataset.chosen ?? -1);
+            // A key pressed while the server looks replaces this search, as it would any other.
+            const ticket = ++reaching;
+            callDotNet(toggle, 'OnFind', from, typed).then(index => {
+                if (ticket !== reaching || index < 0) {
+                    return;
+                }
+
+                // A closed list renders no options, so it opens first, unless focus has moved on.
+                if (!isOpen()) {
+                    if (document.activeElement !== combobox) {
+                        return;
+                    }
+
+                    open(null, false);
+                }
+
+                reachThen(index, 1, setActive);
+            });
+            return;
+        }
+
         // Typing finds an option by its name, so it passes over "Select all".
         const match = typing.find(enabled().filter(option => option.dataset.part !== 'select-all'),
             active ?? selected(), key);
@@ -119,10 +246,16 @@ export function createSelect(combobox, listbox, toggle) {
 
     const onBeforeToggle = event => {
         if (event.newState !== 'open') {
+            // A search still waiting on the server ends with the list, however it closed.
+            reaching++;
             // Cleared here, since a quick close and reopen merges into one toggle event that only says open.
             if (filter) {
+                const filtered = filter.value !== '';
                 filter.value = '';
                 applyFilter();
+                if (virtual() && filtered) {
+                    callDotNet(toggle, 'OnFilter', '');
+                }
             }
 
             return;
@@ -169,7 +302,12 @@ export function createSelect(combobox, listbox, toggle) {
             if (['ArrowDown', 'ArrowUp', 'Enter', ' ', 'Home', 'End'].includes(key)) {
                 event.preventDefault();
                 const options = enabled();
-                open(key === 'Home' ? options[0] : key === 'End' ? options.at(-1) : null);
+                if (virtual() && (key === 'Home' || key === 'End')) {
+                    open();
+                    moveVirtual(key);
+                } else {
+                    open(key === 'Home' ? options[0] : key === 'End' ? options.at(-1) : null);
+                }
             } else if (key.length === 1 && !event.altKey) {
                 // With a filter, typing on the closed select starts the filter rather than jumping to an option.
                 if (filter) {
@@ -184,6 +322,12 @@ export function createSelect(combobox, listbox, toggle) {
                 }
             }
 
+            return;
+        }
+
+        if (virtual() && ['ArrowDown', 'ArrowUp', 'Home', 'End', 'PageDown', 'PageUp'].includes(key) && !event.altKey) {
+            event.preventDefault();
+            moveVirtual(key);
             return;
         }
 
@@ -249,6 +393,12 @@ export function createSelect(combobox, listbox, toggle) {
     };
     const onFilterInput = () => {
         applyFilter();
+        if (virtual()) {
+            const ticket = ++reaching;
+            callDotNet(toggle, 'OnFilter', filter.value.trim())
+                .then(() => ticket === reaching && reachThen(0, 1, setActive));
+        }
+
         setActive(enabled()[0]);
     };
     // The list keys work as on the combobox; Home, End and the other editing keys stay with the text box.
@@ -261,6 +411,15 @@ export function createSelect(combobox, listbox, toggle) {
     // Options can arrive after the user has typed, such as when they load as the list opens.
     const observer = filter ? new MutationObserver(applyFilter) : null;
     observer?.observe(listbox, { childList: true, subtree: true });
+    // A virtualized list draws its options again as it measures and scrolls, so the active one is found by its id.
+    const redrawn = new MutationObserver(() => {
+        const again = active && !active.isConnected ? document.getElementById(active.id) : null;
+        if (again) {
+            active = again;
+            again.setAttribute('data-active', '');
+        }
+    });
+    redrawn.observe(listbox, { childList: true, subtree: true });
     // Pressing the combobox closes an open list before the click arrives, so that click mustn't reopen it.
     const onPointerDown = () => {
         wasOpen = isOpen();
@@ -343,6 +502,7 @@ export function createSelect(combobox, listbox, toggle) {
             close();
             position?.dispose();
             observer?.disconnect();
+            redrawn.disconnect();
             unnamed.disconnect();
             popup.removeEventListener('beforetoggle', onBeforeToggle);
             popup.removeEventListener('toggle', onToggle);

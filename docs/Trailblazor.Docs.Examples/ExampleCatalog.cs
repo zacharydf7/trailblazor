@@ -4007,7 +4007,9 @@ public static class ExampleCatalog
                 new("items", "Options from a list", "`Items` makes the options from a list, such as one loaded from "
                     + "a database, in place of `TbOption` children, and renders them without a component each. "
                     + "`ItemText` names each one, `ItemTemplate` shows more than text, and `ItemDisabled` turns some "
-                    + "off. `TbMultiSelect` takes the same parameters.", typeof(SelectItemsExample)),
+                    + "off. `TbMultiSelect` takes the same parameters. Past 100 items, only the options in view are in "
+                    + "the page, so a list of thousands opens quickly; the keys, type-ahead and the filter still reach "
+                    + "every one.", typeof(SelectItemsExample)),
                 new("comparer", "Values loaded again", "`Comparer` decides whether two values are the same, so a value "
                     + "from another query, equal only by id, still matches its option.", typeof(SelectComparerExample)),
                 new("required", "Required", "`Required` shows a marker. Once the select is changed or its form "
