@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
@@ -15,6 +16,12 @@ namespace Trailblazor;
 [CascadingTypeParameter(nameof(TItem))]
 public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<TItem> where TKey : notnull
 {
+    // The chevron is the same on every row, so it's markup rather than a component each row draws.
+    private static readonly MarkupString Chevron = new($"<svg viewBox=\"{BuiltInIcons.ChevronEnd.ViewBox}\" "
+        + "fill=\"currentColor\" aria-hidden=\"true\" class=\"" + ClassNames.Join("tb-icon",
+            ClassNames.Modifier("tb-icon", Size.Small), BuiltInIcons.ChevronEnd.MirrorsInRightToLeft
+                ? "tb-icon--mirrored" : null, "tb-tree__chevron") + $"\">{BuiltInIcons.ChevronEnd.Svg}</svg>");
+
     private readonly List<TbTreeItem<TItem>> _declaredRoots = [];
     private readonly Dictionary<object, TbTreeItem<TItem>> _declared = [];
     private readonly Dictionary<object, TreeNode<TItem>> _nodes = [];
@@ -32,6 +39,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private List<TreeNode<TItem>> _roots = [];
     private List<TreeRow<TItem>> _rows = [];
     private int[] _inside = [];
+    private int _rowVersion;
     private HashSet<object> _keep = [];
     private HashSet<object> _matches = [];
     private HashSet<object> _matchAncestors = [];
@@ -332,6 +340,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        _rowVersion++;
         if (ChildContent is not null && (Items.Any() || ChildrenSelector is not null || ParentKeySelector is not null
             || LoadChildren is not null))
         {
@@ -395,6 +404,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// </summary>
     public Task RefreshAsync()
     {
+        _rowVersion++;
         Rebuild();
         StateHasChanged();
         return LoadOpenRowsAsync();
@@ -1245,6 +1255,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         Telemetry.Used(TelemetryName, "move");
         await OnDrop.InvokeAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
         // The app applies a move to its items, often in place, so the rows are built again from them.
+        _rowVersion++;
         Rebuild();
         StateHasChanged();
         Announcer.Polite(string.Format(CultureInfo.CurrentCulture, Localizer[said], moved, TextOf(target)));
@@ -1634,6 +1645,20 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     {
         _failed.Remove(node.Key);
         return LoadIfNeededAsync(node);
+    }
+
+    private void RenderItemRow(RenderTreeBuilder builder, TreeRow<TItem> row, int index, int? place, string? focusId)
+    {
+        var node = row.Node;
+        builder.OpenComponent<TreeItemRow>(0);
+        builder.SetKey(node.Key);
+        // Only the insert slots show a row's index, so without them a row that moves down needn't draw again.
+        builder.AddComponentParameter(1, nameof(TreeItemRow.State), new TreeRowState(_rowVersion,
+            InsertTemplate is null ? 0 : index, place,
+            Virtualize ? _inside[index] : null, node.Id == focusId, row.SetSize, row.Position, ContextOf(node)));
+        builder.AddComponentParameter(2, nameof(TreeItemRow.Content),
+            (RenderFragment)(rowBuilder => RenderRow(rowBuilder, row, index, place, focusId)));
+        builder.CloseComponent();
     }
 
     private TreeItemContext<TItem, TKey> ContextOf(TreeNode<TItem> node) => new(node.Item,

@@ -76,7 +76,7 @@
             int? place = Virtualize ? index : null;
             if (row.IsItem)
             {
-                RenderRow(__builder, row, index, place, focusId);
+                RenderItemRow(__builder, row, index, place, focusId);
             }
             else if (row.Kind == TreeRowKind.Loading)
             {
@@ -138,7 +138,7 @@
                   @onclick="_toggle.For(node.Key)" @onclick:stopPropagation @ondblclick:stopPropagation>
                 @if (node.HasChildren)
                 {
-                    <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-tree__chevron" />
+                    @Chevron
                 }
             </span>
             @if (checkable)

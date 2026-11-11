@@ -803,6 +803,75 @@ public class TbTreeViewTests : BunitContext
         Assert.Equal("-1", Row(cut, "1").GetAttribute("tabindex"));
     }
 
+    [Fact]
+    public void Click_ShouldDrawOnlyTheRowsThatChange_WhenOneRowIsSelected()
+    {
+        IReadOnlyList<Place> places = [new(1, "North"), new(2, "East"), new(3, "South"), new(4, "West")];
+        var cut = RenderPlaces(places, nested: false);
+        var rows = cut.FindComponents<TreeItemRow>();
+        var before = rows.Select(row => row.RenderCount).ToList();
+
+        Row(cut, "3").Click();
+
+        // The third row is now selected, and the tab stop moves to it from the first.
+        Assert.Equal([1, 0, 1, 0], rows.Select((row, index) => row.RenderCount - before[index]));
+        Assert.Equal("true", Row(cut, "3").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public void Toggle_ShouldLeaveTheRowsBelowAlone_WhenARowOpens()
+    {
+        var cut = RenderPlaces(Nested);
+        var south = cut.FindComponents<TreeItemRow>().Single(row => row.Find("[role=treeitem]").GetAttribute("data-key")
+            == "4");
+        var before = south.RenderCount;
+
+        Toggle(cut, "1");
+
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.Equal(before, south.RenderCount);
+    }
+
+    [Fact]
+    public void Render_ShouldDrawEveryRowAgain_WhenTheParentRendersAgain()
+    {
+        IReadOnlyList<Place> places = [new(1, "North"), new(2, "East")];
+        var cut = RenderPlaces(places, nested: false);
+
+        cut.Render(parameters => parameters.Add(tree => tree.ItemClass, place => $"place-{place.Id}"));
+
+        Assert.Contains("place-1", Row(cut, "1").ClassList);
+        Assert.Contains("place-2", Row(cut, "2").ClassList);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldDrawEveryRowAgain_WhenWhatTheRowsShowChangedInPlace()
+    {
+        var names = new Dictionary<int, string> { [1] = "North", [2] = "East" };
+        IReadOnlyList<Place> places = [new(1, "North"), new(2, "East")];
+        var cut = RenderPlaces(places, parameters => parameters.Add(tree => tree.ItemText, place => names[place.Id]),
+            nested: false);
+        names[2] = "Far East";
+
+        await cut.InvokeAsync(cut.Instance.RefreshAsync);
+
+        Assert.Equal(["North", "Far East"], Texts(cut));
+    }
+
+    [Fact]
+    public async Task Drop_ShouldDrawEveryRowAgain_WhenTheAppChangesWhatTheRowsShowInPlace()
+    {
+        var names = new Dictionary<int, string> { [1] = "North", [2] = "East", [3] = "South" };
+        IReadOnlyList<Place> places = [new(1, "North"), new(2, "East"), new(3, "South")];
+        var cut = RenderPlaces(places, parameters => parameters.Add(tree => tree.ItemText, place => names[place.Id])
+            .Add(tree => tree.OnDrop, (TreeDrop<Place> _) => names[3] = "Deep South"), nested: false);
+
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["2"], Target = "1", Position = TreeDropPosition.Before });
+
+        Assert.Equal("Deep South", Row(cut, "3").GetAttribute("data-text"));
+    }
+
     private static IElement Row(IRenderedComponent<TbTreeView<Place, int>> cut, string key) =>
         cut.Find($"[role=treeitem][data-key='{key}']");
 

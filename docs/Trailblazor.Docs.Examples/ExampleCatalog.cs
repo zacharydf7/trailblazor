@@ -6705,6 +6705,10 @@ public static class ExampleCatalog
             [
                 new("After changing `Items` in place, call `RefreshAsync`. A new collection, or an `OnDrop`, builds the "
                     + "rows again by itself.") { Pitfall = true },
+                new("With `Items`, choosing, opening or checking a row draws again only the rows that change, so a "
+                    + "long tree stays quick without `Virtualize`. Every row draws again when the tree's parent renders "
+                    + "or `RefreshAsync` runs, so an `ItemTemplate` that shows state from outside the tree updates only "
+                    + "then.") { Pitfall = true },
                 new("Rows written as nested `TbTreeItem`s work from any component inside the tree. Each draws its row "
                     + "where it is written, followed by a `group` holding what is written inside it, so other content "
                     + "between rows shows in place and hides with its parent."),
