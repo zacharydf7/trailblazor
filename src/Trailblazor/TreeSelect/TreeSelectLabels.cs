@@ -3,11 +3,11 @@ namespace Trailblazor;
 /// <summary>The words a tree select shows and says to screen readers.</summary>
 public sealed record TreeSelectLabels
 {
-    /// <summary>Names the search box and shows in it while it's empty. Leave it null for the app's text for <see
-    /// cref="TbStrings.TreeSelectSearch"/>.</summary>
-    public string? Search { get; init; }
+    /// <summary>Names the filter box and shows in it while it's empty. Leave it null for the app's text for <see
+    /// cref="TbStrings.TreeSelectFilter"/>.</summary>
+    public string? Filter { get; init; }
 
-    /// <summary>Shown and read out when no item contains the search text. Leave it null for the app's text for <see
+    /// <summary>Shown and read out when no item contains the filter text. Leave it null for the app's text for <see
     /// cref="TbStrings.SelectNoResults"/>.</summary>
     public string? NoResults { get; init; }
 

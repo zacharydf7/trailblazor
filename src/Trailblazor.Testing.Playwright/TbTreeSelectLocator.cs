@@ -29,19 +29,19 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label)
     /// and closes the tree again.</summary>
     public Task UncheckAsync(params string[] path) => SetCheckedAsync(path, "false");
 
-    /// <summary>Opens the tree and types this text in its search, waiting until the tree shows what matches. The tree
-    /// stays open, so its items can then be chosen.</summary>
-    public async Task SearchAsync(string text)
+    /// <summary>Opens the tree and types this text in its filter box, waiting until the tree shows what matches. The
+    /// tree stays open, so its items can then be chosen.</summary>
+    public async Task FilterAsync(string text)
     {
         await OpenAsync();
-        var search = (await PanelAsync()).Locator("[data-part=search]");
-        if (await search.CountAsync() == 0)
+        var filter = (await PanelAsync()).Locator("[data-part=filter]");
+        if (await filter.CountAsync() == 0)
         {
-            throw new InvalidOperationException("This tree select has no search; set Searchable to add one.");
+            throw new InvalidOperationException("This tree select has no filter box; set Filterable to add one.");
         }
 
-        await search.FillAsync(text);
-        await Assertions.Expect(search).ToHaveAttributeAsync("data-searched", text.Trim());
+        await filter.FillAsync(text);
+        await Assertions.Expect(filter).ToHaveAttributeAsync("data-filtered", text.Trim());
     }
 
     /// <summary>The text the field shows for its value, or null while it shows its placeholder.</summary>

@@ -103,9 +103,9 @@ public class TbTransferListTests : BunitContext
     }
 
     [Fact]
-    public async Task MoveAll_ShouldMoveOnlyTheItemsTheSearchShows_WhenTheListIsSearched()
+    public async Task MoveAll_ShouldMoveOnlyTheItemsTheFilterShows_WhenTheListIsFiltered()
     {
-        var cut = RenderCrew([], parameters => parameters.Add(list => list.Searchable, true));
+        var cut = RenderCrew([], parameters => parameters.Add(list => list.Filterable, true));
 
         await cut.Find("input[type=text]").InputAsync(new ChangeEventArgs { Value = "a" });
         await cut.Find("[data-part=move-all-chosen]").ClickAsync(new());
@@ -146,9 +146,9 @@ public class TbTransferListTests : BunitContext
     }
 
     [Fact]
-    public async Task MoveButton_ShouldHaveNothingToMove_WhenTheSearchHidesTheMarkedItem()
+    public async Task MoveButton_ShouldHaveNothingToMove_WhenTheFilterHidesTheMarkedItem()
     {
-        var cut = RenderCrew([], parameters => parameters.Add(list => list.Searchable, true));
+        var cut = RenderCrew([], parameters => parameters.Add(list => list.Filterable, true));
         await cut.Tb().ListBox("Available").ChooseAsync("Avery");
 
         await cut.Find("input[type=text]").InputAsync(new ChangeEventArgs { Value = "lake" });

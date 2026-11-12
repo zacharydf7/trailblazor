@@ -1,5 +1,5 @@
 <TbStack Gap="3">
-    <TbTransferList TItem="Hiker" Label="Trip crew" Items="Hikers" ItemText="hiker => hiker.Name" Searchable
+    <TbTransferList TItem="Hiker" Label="Trip crew" Items="Hikers" ItemText="hiker => hiker.Name" Filterable
                     Labels="@(new() { Available = "Hikers", Chosen = "On this trip" })" @bind-Value="_crew" />
     <output aria-label="Crew">@CrewText</output>
 </TbStack>

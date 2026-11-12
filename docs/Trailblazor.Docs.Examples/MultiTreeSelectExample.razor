@@ -1,7 +1,7 @@
 <TbStack Gap="3">
     <TbMultiTreeSelect TItem="Area" TKey="string" Label="Regions" Items="Areas" KeySelector="area => area.Id"
                        ItemText="area => area.Name" ChildrenSelector="area => area.Children"
-                       Placeholder="Choose regions" Searchable @bind-Value="_regions" />
+                       Placeholder="Choose regions" Filterable @bind-Value="_regions" />
     <output aria-label="Chosen regions">
         @(_regions.Count == 0 ? "No regions chosen." : $"Chosen: {string.Join(", ", _regions)}.")
     </output>

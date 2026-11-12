@@ -79,11 +79,11 @@ public class TransferListTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task TransferList_ShouldMoveOnlyTheItemsShown_WhenTheListIsSearchedAndAllAreMoved(string browser)
+    public async Task TransferList_ShouldMoveOnlyTheItemsShown_WhenTheListIsFilteredAndAllAreMoved(string browser)
     {
         var page = await OpenCrewAsync(browser);
 
-        await page.GetByLabel("Search Hikers").FillAsync("er");
+        await page.GetByLabel("Filter Hikers").FillAsync("er");
         await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Hikers" }).GetByRole(AriaRole.Option))
             .ToHaveTextAsync(["Avery", "Harper"]);
         await page.GetByRole(AriaRole.Button, new() { Name = "Move all to On this trip" }).ClickAsync();

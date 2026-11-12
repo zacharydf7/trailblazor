@@ -167,5 +167,5 @@ Trailblazor.Testing.TbTreeSelectDriver.Text.get -> string?
 Trailblazor.Testing.TbTreeSelectDriver.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeSelectDriver.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeSelectDriver.UncheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.TbTreeSelectDriver.SearchAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeSelectDriver.FilterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.TreeSelect(string! label) -> Trailblazor.Testing.TbTreeSelectDriver!

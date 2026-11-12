@@ -177,6 +177,6 @@ Trailblazor.Testing.Playwright.TbTreeSelectLocator.TbTreeSelectLocator(Microsoft
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.UncheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbTreeSelectLocator.SearchAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTreeSelectLocator.FilterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.TextAsync() -> System.Threading.Tasks.Task<string?>!
 Trailblazor.Testing.Playwright.TrailblazorPage.TreeSelect(string! label) -> Trailblazor.Testing.Playwright.TbTreeSelectLocator!

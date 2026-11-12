@@ -1,6 +1,6 @@
 @page "/tree-select-states"
 
-@* Tree selects that can't be used, one without a search, and one whose region starts partly checked. *@
+@* Tree selects that can't be used, one without a filter box, and one whose region starts partly checked. *@
 <TbStack Gap="3">
     <TbTreeSelect TItem="Place" TKey="string" Label="Closed trail" Items="Places" KeySelector="place => place.Id"
                   ItemText="place => place.Name" ChildrenSelector="place => place.Children" Disabled />

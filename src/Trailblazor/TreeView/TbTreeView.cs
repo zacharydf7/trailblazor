@@ -709,7 +709,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         await ScrollAfterRenderAsync(node, focus);
     }
 
-    // Focus from outside, such as a tree select's search, goes to the first shown match or else the tab-stop row.
+    // Focus from outside, such as a tree select's filter box, goes to the first shown match or else the tab-stop row.
     internal async Task FocusRowAsync(Func<TItem, bool>? match)
     {
         var node = (match is null ? null : _rows.Where(row => row.IsItem).Select(row => row.Node)

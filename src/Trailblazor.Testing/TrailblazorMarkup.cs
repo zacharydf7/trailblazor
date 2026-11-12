@@ -204,9 +204,9 @@ public sealed class TbTreeSelectDriver
     /// multi tree select as clicking its box does.</summary>
     public Task UncheckAsync(params string[] path) => SetCheckedAsync(path, false);
 
-    /// <summary>Types this text in the field's search, as the user does, so the tree shows what matches.</summary>
-    public Task SearchAsync(string text) => (Panel().QuerySelector("[data-part=search]")
-        ?? throw new InvalidOperationException("This tree select has no search; set Searchable to add one."))
+    /// <summary>Types this text in the field's filter box, as the user does, so the tree shows what matches.</summary>
+    public Task FilterAsync(string text) => (Panel().QuerySelector("[data-part=filter]")
+        ?? throw new InvalidOperationException("This tree select has no filter box; set Filterable to add one."))
         .InputAsync(new ChangeEventArgs { Value = text });
 
     private async Task SetCheckedAsync(string[] path, bool check)

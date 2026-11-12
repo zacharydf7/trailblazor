@@ -4250,13 +4250,13 @@ public static class ExampleCatalog
                     + "Choosing an item, by click, Enter or Space, closes the tree and shows its text in the field; "
                     + "choosing the item already chosen just closes it. The key type's default, such as 0 for an "
                     + "`int`, means nothing is chosen. `IsSelectable` lets headings such as a region open without "
-                    + "being chosen. `Searchable` adds a search that keeps the items whose text contains what's typed, "
-                    + "with the items above and below them, once typing pauses. `LoadChildren` loads a branch when it opens, and the "
-                    + "search covers only the branches loaded so far. `UnmatchedText` names a value whose item hasn't "
-                    + "loaded, such as a saved choice in a branch not yet opened. `Clearable` adds a button that "
-                    + "clears the choice. `@bind-Open` opens or closes the tree from code, though a disabled or "
-                    + "read-only field stays closed. `Labels` words the search box, its no-match message, the clear "
-                    + "button and the tree's own text.", typeof(TreeSelectExample)),
+                    + "being chosen. `Filterable` adds a filter box that keeps the items whose text contains what's "
+                    + "typed, with the items above and below them, once typing pauses. `LoadChildren` loads a branch "
+                    + "when it opens, and the filter covers only the branches loaded so far. `UnmatchedText` names a "
+                    + "value whose item hasn't loaded, such as a saved choice in a branch not yet opened. `Clearable` "
+                    + "adds a button that clears the choice. `@bind-Open` opens or closes the tree from code, though "
+                    + "a disabled or read-only field stays closed. `Labels` words the filter box, its no-match "
+                    + "message, the clear button and the tree's own text.", typeof(TreeSelectExample)),
                 new("choose-several", "Choosing several items", "`TbMultiTreeSelect` binds a list of keys. Its tree "
                     + "has a checkbox on each row, and stays open while items are checked by click, Enter or Space; "
                     + "the field shows their text, separated by commas. Past `MaxShown` items (3 unless set), the "
@@ -4266,7 +4266,7 @@ public static class ExampleCatalog
                     + "checks each row on its own. When `IsSelectable` leaves out a heading, it has a checkbox only "
                     + "while checks cascade; the checkbox checks the items inside it, including those that load "
                     + "later, but the heading isn't part of the value. The value lists keys in tree order, except "
-                    + "that with `LoadChildren` the keys of loaded items come after the rest. Search, "
+                    + "that with `LoadChildren` the keys of loaded items come after the rest. The filter, "
                     + "`LoadChildren` and `UnmatchedText` work as they do for one item.",
                     typeof(MultiTreeSelectExample)),
             ],
@@ -4276,11 +4276,11 @@ public static class ExampleCatalog
             ],
             Keyboard =
             [
-                new(["Enter", "Space"], "Opens the tree, with focus in its search when it has one.")
+                new(["Enter", "Space"], "Opens the tree, with focus in its filter box when it has one.")
                     { When = "On the field" },
                 new(["Down"], "Moves into the tree, to the first match of what's typed, or else to the row Tab would "
-                    + "reach: the last one focused, the chosen item or the first one.") { When = "In the search" },
-                new(["Tab"], "Moves from the search into the tree.") { When = "In the search" },
+                    + "reach: the last one focused, the chosen item or the first one.") { When = "In the filter box" },
+                new(["Tab"], "Moves from the filter box into the tree.") { When = "In the filter box" },
                 new(["Up", "Down", "Left", "Right", "Home", "End"], "Move through the tree and open or close its "
                     + "branches, as in a tree view.") { When = "In the tree" },
                 new(["Enter", "Space"], "Chooses the focused item, closes the tree and returns to the field.")
@@ -4314,7 +4314,7 @@ public static class ExampleCatalog
                     + "click outside.",
                 "The clear button sends focus back to the field.",
                 "A read-only field can still be focused and read, but opens nothing; a disabled one can't be focused.",
-                "A search that matches nothing shows \"No matches\" and announces it.",
+                "A filter that matches nothing shows \"No matches\" and announces it.",
                 "A required field with nothing chosen is invalid, and says so once the form validates, as any field "
                     + "does.",
             ],
@@ -4331,8 +4331,8 @@ public static class ExampleCatalog
             [
                 new("input", "The button that opens the tree and shows the choice."),
                 new("value", "The chosen item's text, or the placeholder."),
-                new("search", "The search field above the tree."),
-                new("no-results", "The message shown when the search matches nothing."),
+                new("filter", "The filter box above the tree."),
+                new("no-results", "The message shown when the filter matches nothing."),
                 new("clear", "The button that clears the choice, with `Clearable`."),
             ],
             Anatomy = """
@@ -4343,7 +4343,7 @@ public static class ExampleCatalog
                 "In Playwright, `await page.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar "
                     + "Flats\")` from `Trailblazor.Testing.Playwright` waits for the field's script, opens the tree "
                     + "and the rows along the path, and chooses the item. `CheckAsync`, `UncheckAsync` and "
-                    + "`SearchAsync` work the same way, and `TextAsync()` reads what the field shows.",
+                    + "`FilterAsync` work the same way, and `TextAsync()` reads what the field shows.",
                 "In bUnit, `await cut.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar Flats\")` "
                     + "from `Trailblazor.Testing` does the same, and `Text` reads the field.",
                 "The field's button is named by its label and its choice together, as in \"Trail Cedar Flats\", so "
@@ -5551,7 +5551,7 @@ public static class ExampleCatalog
                     + "keep the order of `Items`. Mark items in a list, then move them with the button beside it, or "
                     + "move every item a list shows. Double-clicking an item moves it to the other list. "
                     + "`ItemText` gives each item's text, `Labels` the lists' titles, and "
-                    + "`Searchable` a search box above each list, which then shows only the items whose text contains "
+                    + "`Filterable` a filter box above each list, which then shows only the items whose text contains "
                     + "what's typed.", typeof(TransferListExample)),
             ],
             Api = [typeof(TbTransferList<>), typeof(TransferListLabels), typeof(FieldClasses)],
@@ -5566,8 +5566,8 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
-                "A `fieldset` named by its `Label`. Each list is a `listbox` named by its title, and each search box "
-                    + "by \"Search\" and the title.",
+                "A `fieldset` named by its `Label`. Each list is a `listbox` named by its title, and each filter box "
+                    + "by \"Filter\" and the title.",
                 "Each move button is named for what it does and where to, such as \"Move to Chosen\".",
             ],
             Announcements =
@@ -5592,8 +5592,8 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("label", "The transfer list's label."),
-                new("available", "The list of items not chosen, with its search box."),
-                new("chosen", "The list of chosen items, with its search box."),
+                new("available", "The list of items not chosen, with its filter box."),
+                new("chosen", "The list of chosen items, with its filter box."),
                 new("moves", "The move buttons between the lists."),
                 new("move-chosen", "The button that moves the marked items to the chosen list."),
                 new("move-all-chosen", "The button that moves every item shown to the chosen list."),

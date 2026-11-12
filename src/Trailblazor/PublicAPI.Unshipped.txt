@@ -57,7 +57,7 @@ const Trailblazor.TbStrings.TransferListChosen = "TransferList.Chosen" -> string
 const Trailblazor.TbStrings.TransferListMove = "TransferList.Move" -> string!
 const Trailblazor.TbStrings.TransferListMoveAll = "TransferList.MoveAll" -> string!
 const Trailblazor.TbStrings.TransferListMoved = "TransferList.Moved" -> string!
-const Trailblazor.TbStrings.TransferListSearch = "TransferList.Search" -> string!
+const Trailblazor.TbStrings.TransferListFilter = "TransferList.Filter" -> string!
 override Trailblazor.CalendarLabels.Equals(object? obj) -> bool
 override Trailblazor.CalendarLabels.GetHashCode() -> int
 override Trailblazor.CalendarLabels.ToString() -> string!
@@ -2959,8 +2959,8 @@ Trailblazor.TbTransferList<TItem>.Labels.get -> Trailblazor.TransferListLabels?
 Trailblazor.TbTransferList<TItem>.Labels.set -> void
 Trailblazor.TbTransferList<TItem>.Rows.get -> int
 Trailblazor.TbTransferList<TItem>.Rows.set -> void
-Trailblazor.TbTransferList<TItem>.Searchable.get -> bool
-Trailblazor.TbTransferList<TItem>.Searchable.set -> void
+Trailblazor.TbTransferList<TItem>.Filterable.get -> bool
+Trailblazor.TbTransferList<TItem>.Filterable.set -> void
 Trailblazor.TbTransferList<TItem>.Size.get -> Trailblazor.Size
 Trailblazor.TbTransferList<TItem>.Size.set -> void
 Trailblazor.TbTransferList<TItem>.TbTransferList() -> void
@@ -4223,7 +4223,7 @@ Trailblazor.TbColumnGroup<TItem>.Dispose() -> void
 override Trailblazor.TbColumnGroup<TItem>.OnParametersSet() -> void
 Trailblazor.TbMenu.AttachOnFirstUse.get -> bool
 Trailblazor.TbMenu.AttachOnFirstUse.set -> void
-const Trailblazor.TbStrings.TreeSelectSearch = "TreeSelect.Search" -> string!
+const Trailblazor.TbStrings.TreeSelectFilter = "TreeSelect.Filter" -> string!
 Trailblazor.TbTreeView<TItem, TKey>.SelectAsync(TKey key) -> System.Threading.Tasks.Task!
 Trailblazor.TreeDropEventArgs
 Trailblazor.TreeDropEventArgs.Position.get -> Trailblazor.TreeMovePosition
@@ -4521,8 +4521,8 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Placeholder.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.RefreshAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Labels.get -> Trailblazor.TreeSelectLabels!
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Labels.set -> void
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Searchable.get -> bool
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Searchable.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Filterable.get -> bool
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Filterable.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.TbTreeSelectBase() -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.UnmatchedText.get -> System.Func<TKey, string!>?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.UnmatchedText.set -> void
@@ -4540,8 +4540,8 @@ override Trailblazor.TreeSelectLabels.GetHashCode() -> int
 override Trailblazor.TreeSelectLabels.ToString() -> string!
 static Trailblazor.TreeSelectLabels.operator !=(Trailblazor.TreeSelectLabels? left, Trailblazor.TreeSelectLabels? right) -> bool
 static Trailblazor.TreeSelectLabels.operator ==(Trailblazor.TreeSelectLabels? left, Trailblazor.TreeSelectLabels? right) -> bool
-Trailblazor.TreeSelectLabels.Search.get -> string?
-Trailblazor.TreeSelectLabels.Search.init -> void
+Trailblazor.TreeSelectLabels.Filter.get -> string?
+Trailblazor.TreeSelectLabels.Filter.init -> void
 Trailblazor.TreeSelectLabels.NoResults.get -> string?
 Trailblazor.TreeSelectLabels.NoResults.init -> void
 Trailblazor.TreeSelectLabels.More.get -> string?

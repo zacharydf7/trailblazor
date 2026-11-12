@@ -13,7 +13,7 @@ Familiar apps: the "Customize toolbar" and "Choose columns" dialogs in desktop a
 ## Pointer
 
 - [x] Clicking items marks them, and a move button moves them; the chosen items keep the order of `Items`. `TbTransferListTests.MoveAsync_ShouldMoveTheMarkedItemsKeepingTheItemsOrderAndSaySo_WhenCalled`, `TransferListTests.MoveAsync_ShouldMoveTheItemsAndWaitForThem_WhenCalled`
-- [x] Moving every item moves only the ones a search shows. `TransferListTests.TransferList_ShouldMoveOnlyTheItemsShown_WhenTheListIsSearchedAndAllAreMoved`, `TbTransferListTests.MoveAll_ShouldMoveOnlyTheItemsTheSearchShows_WhenTheListIsSearched`
+- [x] Moving every item moves only the ones a filter shows. `TransferListTests.TransferList_ShouldMoveOnlyTheItemsShown_WhenTheListIsFilteredAndAllAreMoved`, `TbTransferListTests.MoveAll_ShouldMoveOnlyTheItemsTheFilterShows_WhenTheListIsFiltered`
 - [x] Double-clicking an item moves it to the other list, unless the transfer list is read-only; like any move, it clears the marks, and the moved item doesn't stay the active option in the list it left. `TbTransferListTests.Option_ShouldMoveToTheOtherList_WhenDoubleClicked`, `TransferListTests.Option_ShouldMoveToTheOtherList_WhenDoubleClicked`, `TbTransferListTests.Option_ShouldStayInItsList_WhenDoubleClickedInAReadOnlyList`, `TransferListTests.List_ShouldHaveNoActiveOption_WhenItsLastItemIsDoubleClickedAway`
 
 ## Touch

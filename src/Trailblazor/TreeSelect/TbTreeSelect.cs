@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Trailblazor;
 
 /// <summary>A form field that opens a tree under it for choosing one item from a hierarchy, such as a folder or a
-/// region, with an optional search. The key type's default, such as 0 for an <c>int</c>, means nothing is chosen.
+/// region, with an optional filter. The key type's default, such as 0 for an <c>int</c>, means nothing is chosen.
 /// </summary>
 public class TbTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>
     : TbTreeSelectBase<TItem, TKey, TKey> where TKey : notnull

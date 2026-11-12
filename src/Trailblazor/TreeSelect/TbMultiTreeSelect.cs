@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace Trailblazor;
 
 /// <summary>A form field that opens a tree of checkboxes under it for choosing several items from a hierarchy, such as
-/// regions or folders, with an optional search. The tree stays open while the user checks items.</summary>
+/// regions or folders, with an optional filter. The tree stays open while the user checks items.</summary>
 public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>
     : TbTreeSelectBase<TItem, TKey, IReadOnlyList<TKey>> where TKey : notnull
 {

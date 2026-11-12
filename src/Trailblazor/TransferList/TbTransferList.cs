@@ -13,8 +13,8 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
     private TbMultiListBox<TItem>? _available;
     private IReadOnlyList<TItem> _markedAvailable = [];
     private IReadOnlyList<TItem> _markedChosen = [];
-    private string _searchAvailable = "";
-    private string _searchChosen = "";
+    private string _filterAvailable = "";
+    private string _filterChosen = "";
     private readonly ItemHandlers<TItem, Func<Task>> _moveToChosen;
     private readonly ItemHandlers<TItem, Func<Task>> _moveToAvailable;
 
@@ -30,7 +30,7 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter, EditorRequired]
     public IReadOnlyList<TItem> Items { get; set; } = [];
 
-    /// <summary>The text each item shows and is searched by. Defaults to the item's own text.</summary>
+    /// <summary>The text each item shows and is filtered by. Defaults to the item's own text.</summary>
     [Parameter]
     public Func<TItem, string>? ItemText { get; set; }
 
@@ -42,12 +42,12 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
     private protected override bool SameValue(IReadOnlyList<TItem>? value, IReadOnlyList<TItem>? other) =>
         SameItems(value, other, Comparer);
 
-    /// <summary>Adds a search box above each list; the list then shows only the items whose text contains what's
+    /// <summary>Adds a filter box above each list; the list then shows only the items whose text contains what's
     /// typed. Moving every item moves only the ones shown.</summary>
     [Parameter]
-    public bool Searchable { get; set; }
+    public bool Filterable { get; set; }
 
-    /// <summary>The size of the lists, their search boxes and the buttons. Defaults to
+    /// <summary>The size of the lists, their filter boxes and the buttons. Defaults to
     /// <see cref="Trailblazor.Size.Medium"/>.</summary>
     [Parameter]
     public Size Size { get; set; } = Size.Medium;
@@ -74,9 +74,9 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private string ChosenTitle => Labels?.Chosen ?? Localizer[TbStrings.TransferListChosen];
 
-    private IEnumerable<TItem> AvailableShown => Matching(Items.Where(item => !IsChosen(item)), _searchAvailable);
+    private IEnumerable<TItem> AvailableShown => Matching(Items.Where(item => !IsChosen(item)), _filterAvailable);
 
-    private IEnumerable<TItem> ChosenShown => Matching(Items.Where(IsChosen), _searchChosen);
+    private IEnumerable<TItem> ChosenShown => Matching(Items.Where(IsChosen), _filterChosen);
 
     private bool IsChosen(TItem item) => Value?.Any(chosen => Same(chosen, item)) ?? false;
 
@@ -85,13 +85,13 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
     private string TextOf(TItem item) => ItemText?.Invoke(item) ?? Convert.ToString(item, CultureInfo.CurrentCulture)
         ?? "";
 
-    private IEnumerable<TItem> Matching(IEnumerable<TItem> items, string search) => string.IsNullOrWhiteSpace(search)
-        ? items : items.Where(item => TextOf(item).Contains(search.Trim(), StringComparison.CurrentCultureIgnoreCase));
+    private IEnumerable<TItem> Matching(IEnumerable<TItem> items, string filter) => string.IsNullOrWhiteSpace(filter)
+        ? items : items.Where(item => TextOf(item).Contains(filter.Trim(), StringComparison.CurrentCultureIgnoreCase));
 
     private static string Format(string format, params object?[] args) =>
         string.Format(CultureInfo.CurrentCulture, format, args);
 
-    // Marked items that a search hides or a move takes away aren't moved again.
+    // Marked items that a filter hides or a move takes away aren't moved again.
     private IReadOnlyList<TItem> Shown(IReadOnlyList<TItem> marked, IEnumerable<TItem> shown) =>
         [.. marked.Where(item => shown.Any(other => Same(other, item)))];
 

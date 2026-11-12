@@ -130,8 +130,8 @@ function registerEvents(blazor) {
         createEventArgs: event => ({ order: event.detail.order }),
     });
     blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
-    blazor.registerCustomEventType('tbtreesearchdown', {
-        browserEventName: 'tb-tree-search-down',
+    blazor.registerCustomEventType('tbtreefilterdown', {
+        browserEventName: 'tb-tree-filter-down',
         createEventArgs: () => ({}),
     });
     blazor.registerCustomEventType('tbrichtextchange', {

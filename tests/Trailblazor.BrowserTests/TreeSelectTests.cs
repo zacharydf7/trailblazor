@@ -37,13 +37,13 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task TreeSelectLocator_ShouldSearchChooseAndReadTheField_WhenUsedByLabel(string browser)
+    public async Task TreeSelectLocator_ShouldFilterChooseAndReadTheField_WhenUsedByLabel(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");
         var field = page.Tb().TreeSelect("Trail");
         Assert.Null(await field.TextAsync());
 
-        await field.SearchAsync("cedar");
+        await field.FilterAsync("cedar");
         Assert.Equal(2, await page.GetByRole(AriaRole.Treeitem).CountAsync());
         await field.ChooseAsync("River valley", "Cedar Flats");
 
@@ -87,9 +87,9 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
             Assert.Contains("disabled or read-only", problem.Message);
         }
 
-        var search = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            page.Tb().TreeSelect("Plain trail").SearchAsync("pine"));
-        Assert.Contains("no search", search.Message);
+        var filter = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            page.Tb().TreeSelect("Plain trail").FilterAsync("pine"));
+        Assert.Contains("no filter box", filter.Message);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -114,7 +114,7 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await field.FocusAsync();
         await page.Keyboard.PressAsync("Enter");
         await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Trail", Exact = true })).ToBeVisibleAsync();
-        await Expect(page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" })).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Searchbox, new() { Name = "Filter" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Tab");
         var region = page.GetByRole(AriaRole.Treeitem, new() { Name = "North ridge" });
         await Expect(region).ToBeFocusedAsync();
@@ -131,13 +131,13 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Search_ShouldMoveToTheFirstMatch_WhenDownArrowIsPressed(string browser)
+    public async Task Filter_ShouldMoveToTheFirstMatch_WhenDownArrowIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");
         var field = await OpenFieldAsync(page);
 
         await field.ClickAsync();
-        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" }).FillAsync("cedar");
+        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Filter" }).FillAsync("cedar");
         await Expect(page.GetByRole(AriaRole.Treeitem)).ToHaveCountAsync(2);
         await page.Keyboard.PressAsync("ArrowDown");
 
@@ -145,28 +145,28 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Search_ShouldMoveToAMatchOfAllTheText_WhenDownArrowFollowsTypingAtOnce(string browser)
+    public async Task Filter_ShouldMoveToAMatchOfAllTheText_WhenDownArrowFollowsTypingAtOnce(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");
         var field = await OpenFieldAsync(page);
         await field.ClickAsync();
 
-        // Down Arrow comes before the search's pause in typing is over.
-        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" }).PressSequentiallyAsync("cedar");
+        // Down Arrow comes before the filter box's pause in typing is over.
+        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Filter" }).PressSequentiallyAsync("cedar");
         await page.Keyboard.PressAsync("ArrowDown");
 
         await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Cedar Flats" })).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Search_ShouldMoveToTheChosenItemOrTheFirst_WhenDownArrowIsPressedWithoutASearch(string browser)
+    public async Task Filter_ShouldMoveToTheChosenItemOrTheFirst_WhenDownArrowIsPressedWithoutAFilter(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");
         var field = await OpenFieldAsync(page);
-        var search = page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" });
+        var filter = page.GetByRole(AriaRole.Searchbox, new() { Name = "Filter" });
 
         await field.ClickAsync();
-        await Expect(search).ToBeFocusedAsync();
+        await Expect(filter).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
         await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "North ridge" })).ToBeFocusedAsync();
 
@@ -174,7 +174,7 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Treeitem, new() { Name = "Eagle Ridge traverse" }).ClickAsync();
         await Expect(field).ToContainTextAsync("Eagle Ridge traverse");
         await field.ClickAsync();
-        await Expect(search).ToBeFocusedAsync();
+        await Expect(filter).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
 
         await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Eagle Ridge traverse" })).ToBeFocusedAsync();
@@ -222,7 +222,7 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await field.FocusAsync();
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" })).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Searchbox, new() { Name = "Filter" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
         var coast = page.GetByRole(AriaRole.Treeitem, new() { Name = "Coast" });
         await Expect(coast).ToBeFocusedAsync();
@@ -272,7 +272,7 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         var field = await OpenRegionsAsync(page);
 
         await field.ClickAsync();
-        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" }).FillAsync("moor");
+        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Filter" }).FillAsync("moor");
         await Expect(page.GetByRole(AriaRole.Treeitem)).ToHaveCountAsync(2);
         await page.Keyboard.PressAsync("ArrowDown");
         await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Open moor" })).ToBeFocusedAsync();

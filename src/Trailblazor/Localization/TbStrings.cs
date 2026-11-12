@@ -383,8 +383,8 @@ public static class TbStrings
     /// and {1}, if used, the count.</summary>
     public const string CodeFieldIncompleteOne = "CodeField.IncompleteOne";
 
-    /// <summary>"Search {0}": labels the search box above a list; {0} is the list's title.</summary>
-    public const string TransferListSearch = "TransferList.Search";
+    /// <summary>"Filter {0}": labels the filter box above a list; {0} is the list's title.</summary>
+    public const string TransferListFilter = "TransferList.Filter";
 
     /// <summary>"opens in a new tab": read after the text of a link or menu item that opens a new tab.</summary>
     public const string NewTabHint = "NewTabHint";
@@ -940,8 +940,8 @@ public static class TbStrings
     /// <summary>"An item can't move into itself.": why a tree move into an item's own branch is refused.</summary>
     public const string TreeViewCantMoveIntoItself = "TreeView.CantMoveIntoItself";
 
-    /// <summary>"Search": names a tree select's search field and is its placeholder.</summary>
-    public const string TreeSelectSearch = "TreeSelect.Search";
+    /// <summary>"Filter": names a tree select's filter box and is its placeholder.</summary>
+    public const string TreeSelectFilter = "TreeSelect.Filter";
 
     /// <summary>"Clear": names a tree select's clear button.</summary>
     public const string TreeSelectClear = "TreeSelect.Clear";
@@ -1079,7 +1079,7 @@ public static class TbStrings
         [TransferListMoved] = "Moved {0} to {1}",
         [CodeFieldIncomplete] = "{0} needs all {1} characters.",
         [CodeFieldIncompleteOne] = "{0} needs its 1 character.",
-        [TransferListSearch] = "Search {0}",
+        [TransferListFilter] = "Filter {0}",
         [NewTabHint] = "opens in a new tab",
         [NumberFieldDecrease] = "Decrease",
         [NumberFieldIncrease] = "Increase",
@@ -1247,7 +1247,7 @@ public static class TbStrings
         [TreeViewMovedInside] = "{0} moved into {1}.",
         [TreeViewItemCount] = "{0} items",
         [TreeViewCantMoveIntoItself] = "An item can't move into itself.",
-        [TreeSelectSearch] = "Search",
+        [TreeSelectFilter] = "Filter",
         [TreeSelectClear] = "Clear",
         [TreeSelectMore] = "{0} more",
         [SortableHandle] = "Move {0}",

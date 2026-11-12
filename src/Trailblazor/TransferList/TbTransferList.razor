@@ -21,16 +21,16 @@
             @ShownLabel @RequiredMarker @InfoButton
         </legend>
     }
-    @* Hide the page's form from the inner lists and search boxes, so the form tracks only the transfer list's value. *@
+    @* Hide the page's form from the inner lists and filter boxes, so the form tracks only the transfer list's value. *@
     <CascadingValue TValue="EditContext" Value="null">
         <CascadingValue TValue="TbForm" Value="null">
             <div class="tb-transfer-list__panes">
                 <div data-part="available" class="tb-transfer-list__pane">
-                    @if (Searchable)
+                    @if (Filterable)
                     {
                         <TbTextField TValue="string" Size="Size" UpdateOnInput Disabled="Disabled"
-                                     Label="@Format(Localizer[TbStrings.TransferListSearch], AvailableTitle)"
-                                     @bind-Value="_searchAvailable" />
+                                     Label="@Format(Localizer[TbStrings.TransferListFilter], AvailableTitle)"
+                                     @bind-Value="_filterAvailable" />
                     }
                     <TbMultiListBox @ref="_available" TItem="TItem" Label="@AvailableTitle" Rows="Rows" Size="Size"
                                     Disabled="Disabled" ReadOnly="ReadOnly" Comparer="Comparer"
@@ -66,11 +66,11 @@
                                   OnClick="() => MoveToAvailableAsync(chosen)" />
                 </div>
                 <div data-part="chosen" class="tb-transfer-list__pane">
-                    @if (Searchable)
+                    @if (Filterable)
                     {
                         <TbTextField TValue="string" Size="Size" UpdateOnInput Disabled="Disabled"
-                                     Label="@Format(Localizer[TbStrings.TransferListSearch], ChosenTitle)"
-                                     @bind-Value="_searchChosen" />
+                                     Label="@Format(Localizer[TbStrings.TransferListFilter], ChosenTitle)"
+                                     @bind-Value="_filterChosen" />
                     }
                     <TbMultiListBox TItem="TItem" Label="@ChosenTitle" Rows="Rows" Size="Size" Disabled="Disabled"
                                     ReadOnly="ReadOnly" Comparer="Comparer" Value="markedChosen"

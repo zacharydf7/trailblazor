@@ -123,16 +123,16 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public void Open_ShouldCloseTheTreeAndItsSearch_WhenTheParentClearsIt()
+    public void Open_ShouldCloseTheTreeAndItsFilter_WhenTheParentClearsIt()
     {
         var cut = RenderInMemory(parameters => parameters.Add(select => select.Open, true)
-            .Add(select => select.Searchable, true));
-        cut.Find("[data-part=search]").Input("cedar");
+            .Add(select => select.Filterable, true));
+        cut.Find("[data-part=filter]").Input("cedar");
 
         cut.Render(parameters => parameters.Add(select => select.Open, false));
 
         Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
-        Assert.Equal("", cut.Find("[data-part=search]").GetAttribute("value") ?? "");
+        Assert.Equal("", cut.Find("[data-part=filter]").GetAttribute("value") ?? "");
     }
 
     [Theory]
@@ -221,49 +221,49 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public void Search_ShouldKeepTheMatchingItemsAndTheirParents_WhenTyped()
+    public void Filter_ShouldKeepTheMatchingItemsAndTheirParents_WhenTyped()
     {
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
 
-        cut.Find("[data-part=search]").Input("cedar");
+        cut.Find("[data-part=filter]").Input("cedar");
 
         Assert.Equal(["River valley", "Cedar Flats"], cut.FindAll("[role=treeitem]").Select(ItemName));
     }
 
     [Fact]
-    public void Search_ShouldKeepTheItemsUnderAMatchingHeading_WhenTyped()
+    public void Filter_ShouldKeepTheItemsUnderAMatchingHeading_WhenTyped()
     {
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
 
-        cut.Find("[data-part=search]").Input("north");
+        cut.Find("[data-part=filter]").Input("north");
 
         Assert.Equal(["North ridge", "Pine Hollow", "Eagle Ridge"], cut.FindAll("[role=treeitem]").Select(ItemName));
     }
 
     [Fact]
-    public void Search_ShouldShowAndAnnounceThatNothingMatches_WhenNoItemDoes()
+    public void Filter_ShouldShowAndAnnounceThatNothingMatches_WhenNoItemDoes()
     {
         var host = Render<AnnouncerHost>();
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
 
-        cut.Find("[data-part=search]").Input("summit");
+        cut.Find("[data-part=filter]").Input("summit");
 
         Assert.Equal("No matches", cut.Find("[data-part=no-results]").TextContent.Trim());
         host.WaitForAssertion(() => Assert.Contains("No matches", host.Find("[role=status]").TextContent));
     }
 
     [Fact]
-    public void Labels_ShouldWordTheSearchNoMatchesAndClear_WhenGiven()
+    public void Labels_ShouldWordTheFilterNoMatchesAndClear_WhenGiven()
     {
         var host = Render<AnnouncerHost>();
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true)
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true)
             .Add(select => select.Clearable, true).Add(select => select.Value, "cedar")
-            .Add(select => select.Labels, new() { Search = "Find a trail", NoResults = "No trail by that name",
+            .Add(select => select.Labels, new() { Filter = "Find a trail", NoResults = "No trail by that name",
                 Clear = "Clear the trail" }));
 
-        cut.Find("[data-part=search]").Input("summit");
+        cut.Find("[data-part=filter]").Input("summit");
 
-        Assert.Equal("Find a trail", cut.Find("[data-part=search]").GetAttribute("aria-label"));
+        Assert.Equal("Find a trail", cut.Find("[data-part=filter]").GetAttribute("aria-label"));
         Assert.Equal("Clear the trail", cut.Find("[data-part=clear]").GetAttribute("aria-label"));
         Assert.Equal("No trail by that name", cut.Find("[data-part=no-results]").TextContent.Trim());
         host.WaitForAssertion(() => Assert.Contains("No trail by that name", host.Find("[role=status]").TextContent));
@@ -281,10 +281,10 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public void Search_ShouldKeepItsFilter_WhenTheFieldRendersAgain()
+    public void Filter_ShouldKeepItsFilter_WhenTheFieldRendersAgain()
     {
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
-        cut.Find("[data-part=search]").Input("cedar");
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
+        cut.Find("[data-part=filter]").Input("cedar");
         var filter = cut.FindComponent<TbTreeView<Place, string>>().Instance.Filter;
 
         cut.Render();
@@ -350,11 +350,11 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public async Task TreeSelectDriver_ShouldNarrowTheTree_WhenSearching()
+    public async Task TreeSelectDriver_ShouldNarrowTheTree_WhenFiltering()
     {
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
 
-        await cut.Tb().TreeSelect("Trail").SearchAsync("cedar");
+        await cut.Tb().TreeSelect("Trail").FilterAsync("cedar");
 
         Assert.Equal(["River valley", "Cedar Flats"], cut.FindAll("[role=treeitem]").Select(ItemName));
     }
@@ -374,57 +374,57 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public void Search_ShouldStaySilent_WhenSomethingMatches()
+    public void Filter_ShouldStaySilent_WhenSomethingMatches()
     {
         var host = Render<AnnouncerHost>();
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
 
-        cut.Find("[data-part=search]").Input("eagle");
+        cut.Find("[data-part=filter]").Input("eagle");
 
         Assert.Empty(cut.FindAll("[data-part=no-results]"));
         Assert.DoesNotContain("No matches", host.Markup);
     }
 
     [Fact]
-    public void Search_ShouldStaySilent_WhenOnlyALoadedChildMatches()
+    public void Filter_ShouldStaySilent_WhenOnlyALoadedChildMatches()
     {
         var host = Render<AnnouncerHost>();
-        var cut = RenderPlaces(parameters => parameters.Add(select => select.Searchable, true)
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.Filterable, true)
             .Add(select => select.LoadChildren, (place, _) => Task.FromResult<IEnumerable<Place>>(place.Children ?? []))
             .Add(select => select.HasChildren, place => place.Children is not null));
         Item(cut, "North ridge").QuerySelector("[data-part=toggle]")!.Click();
         cut.WaitForAssertion(() => Item(cut, "Pine Hollow"));
 
-        cut.Find("[data-part=search]").Input("pine");
+        cut.Find("[data-part=filter]").Input("pine");
 
         Assert.DoesNotContain("No matches", host.Markup);
     }
 
     [Fact]
-    public void Search_ShouldAnnounceNothingMatchesOnce_WhenTheUserKeepsTypingWithoutAMatch()
+    public void Filter_ShouldAnnounceNothingMatchesOnce_WhenTheUserKeepsTypingWithoutAMatch()
     {
         var host = Render<AnnouncerHost>();
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
 
-        cut.Find("[data-part=search]").Input("sum");
-        cut.Find("[data-part=search]").Input("summit");
+        cut.Find("[data-part=filter]").Input("sum");
+        cut.Find("[data-part=filter]").Input("summit");
 
         host.WaitForAssertion(() => Assert.Single(host.FindAll("[role=status] p"),
             message => message.TextContent == "No matches"));
     }
 
     [Fact]
-    public async Task Search_ShouldStartAfresh_WhenTheTreeClosesWithoutAChoice()
+    public async Task Filter_ShouldStartAfresh_WhenTheTreeClosesWithoutAChoice()
     {
         var host = Render<AnnouncerHost>();
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
         var popover = cut.FindComponent<TbPopover>().Instance;
         await cut.InvokeAsync(() => popover.OnToggleAsync(true));
-        cut.Find("[data-part=search]").Input("summit");
+        cut.Find("[data-part=filter]").Input("summit");
 
         await cut.InvokeAsync(() => popover.OnToggleAsync(false));
-        Assert.Equal("", cut.Find("[data-part=search]").GetAttribute("value") ?? "");
-        cut.Find("[data-part=search]").Input("summit");
+        Assert.Equal("", cut.Find("[data-part=filter]").GetAttribute("value") ?? "");
+        cut.Find("[data-part=filter]").Input("summit");
 
         host.WaitForAssertion(() => Assert.Equal(2, host.FindAll("[role=status] p")
             .Count(message => message.TextContent == "No matches")));

@@ -31,14 +31,14 @@
                 </button>
             </Trigger>
             <ChildContent>
-                @if (Searchable)
+                @if (Filterable)
                 {
-                    @* The search waits for a pause in typing, and Down Arrow is the only key it sends to the server. *@
-                    <input type="search" data-part="search" autocomplete="off" aria-label="@SearchText"
-                           placeholder="@SearchText" @bind="_search" @bind:event="oninput" @bind:after="Searched"
-                           data-input-delay="@SearchDelay" data-searched="@(_search?.Trim() ?? "")"
-                           @ontbtreesearchdown="SearchDownAsync"
-                           class="tb-select__filter tb-tree-select__search" />
+                    @* The filter waits for a pause in typing, and Down Arrow is the only key it sends to the server. *@
+                    <input type="search" data-part="filter" autocomplete="off" aria-label="@FilterText"
+                           placeholder="@FilterText" @bind="_filter" @bind:event="oninput" @bind:after="Filtered"
+                           data-input-delay="@FilterDelay" data-filtered="@(_filter?.Trim() ?? "")"
+                           @ontbtreefilterdown="FilterDownAsync"
+                           class="tb-select__filter tb-tree-select__filter" />
                 }
                 <CascadingValue TValue="ITreeChoice" Value="this" IsFixed="true">
                     <TbTreeView @ref="_tree" TItem="TItem" TKey="TKey" Items="Items" KeySelector="KeySelector"
@@ -46,11 +46,11 @@
                                 LoadChildren="@(LoadChildren is null ? null : LoadAndKeepAsync)"
                                 HasChildren="HasChildren" ItemText="ItemText" ItemIcon="ItemIcon"
                                 IsSelectable="IsSelectable" ItemDisabled="ItemDisabled"
-                                InitialExpandDepth="InitialExpandDepth" AriaLabel="@ShownLabel" Filter="SearchFilter"
+                                InitialExpandDepth="InitialExpandDepth" AriaLabel="@ShownLabel" Filter="FilterMatch"
                                 FilterKeepsDescendants SelectedKeys="SelectedKeys" Checkable="ChecksRows"
                                 CheckedKeys="CheckedKeys" CheckedKeysChanged="CheckedAsync"
                                 CascadeChecks="CascadesChecks"
-                                EmptyContent="@(SearchFilter is null ? null : NoMatches)"
+                                EmptyContent="@(FilterMatch is null ? null : NoMatches)"
                                 Labels="@(Labels.Tree ?? new())" Class="tb-tree-select__tree" />
                 </CascadingValue>
             </ChildContent>
@@ -60,8 +60,8 @@
     ? ClearButton : null)
 
 @code {
-    // Milliseconds of quiet in the search before it filters.
-    private const int SearchDelay = 200;
+    // Milliseconds of quiet in the filter box before the tree filters.
+    private const int FilterDelay = 200;
 
     private readonly Dictionary<TKey, TItem> _loaded = [];
     private OrderedDictionary<TKey, TItem>? _byKey;
@@ -70,7 +70,7 @@
     private TbTreeView<TItem, TKey>? _tree;
     private bool _open;
     private bool _lastOpen;
-    private string? _search;
+    private string? _filter;
     private bool _saidNoMatches;
 
     /// <summary>The items at the top of the tree. The tree and the field's text read them again when this is a new
@@ -120,13 +120,13 @@
     [Parameter]
     public int InitialExpandDepth { get; set; }
 
-    /// <summary>Adds a search field above the tree. It keeps the items whose text contains what's typed, with the
-    /// items above and below them. It searches only the items loaded so far, so with <see cref="LoadChildren"/> it
+    /// <summary>Adds a filter box above the tree. It keeps the items whose text contains what's typed, with the
+    /// items above and below them. It filters only the items loaded so far, so with <see cref="LoadChildren"/> it
     /// skips branches that haven't been opened.</summary>
     [Parameter]
-    public bool Searchable { get; set; }
+    public bool Filterable { get; set; }
 
-    /// <summary>The words the field shows and says to screen readers, such as the search box's name. Each one left
+    /// <summary>The words the field shows and says to screen readers, such as the filter box's name. Each one left
     /// null uses the app's text.</summary>
     [Parameter]
     public TreeSelectLabels Labels { get; set; } = new();
@@ -182,7 +182,7 @@
     private string TriggerClass => ClassNames.Join("tb-field__input", "tb-select__trigger", "tb-tree-select__trigger",
         Classes?.Input);
 
-    private string SearchText => Labels.Search ?? Localizer[TbStrings.TreeSelectSearch];
+    private string FilterText => Labels.Filter ?? Localizer[TbStrings.TreeSelectFilter];
 
     private string NoResultsText => Labels.NoResults ?? Localizer[TbStrings.SelectNoResults];
 
@@ -198,8 +198,8 @@
         @NoResultsText
     </div>;
 
-    // Made once per search, since the tree lays out its rows again for each new filter.
-    private Func<TItem, bool>? SearchFilter { get; set; }
+    // Made once per filter text, since the tree lays out its rows again for each new filter.
+    private Func<TItem, bool>? FilterMatch { get; set; }
 
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _trigger.FocusAsync(preventScroll);
@@ -213,12 +213,12 @@
     }
 
     // A live region that joins the page already holding its text isn't spoken, so the announcer says it.
-    private void Searched()
+    private void Filtered()
     {
-        var text = _search?.Trim();
-        SearchFilter = string.IsNullOrEmpty(text) ? null
+        var text = _filter?.Trim();
+        FilterMatch = string.IsNullOrEmpty(text) ? null
             : item => ItemText(item).Contains(text, StringComparison.CurrentCultureIgnoreCase);
-        var none = SearchFilter is { } filter && !Known().Any(filter);
+        var none = FilterMatch is { } filter && !Known().Any(filter);
         if (none && !_saidNoMatches)
         {
             Announcer.Polite(NoResultsText);
@@ -227,11 +227,11 @@
         _saidNoMatches = none;
     }
 
-    private async Task SearchDownAsync()
+    private async Task FilterDownAsync()
     {
         if (_tree is not null)
         {
-            await _tree.FocusRowAsync(SearchFilter);
+            await _tree.FocusRowAsync(FilterMatch);
         }
     }
 
@@ -239,24 +239,24 @@
     {
         if (!_open)
         {
-            ClearSearch();
+            ClearFilter();
         }
 
         await OpenChanged.InvokeAsync(_open);
     }
 
-    private void ClearSearch()
+    private void ClearFilter()
     {
-        _search = null;
-        SearchFilter = null;
+        _filter = null;
+        FilterMatch = null;
         _saidNoMatches = false;
     }
 
-    // Closes the tree and its search, as a select closes its list once an option is chosen.
+    // Closes the tree and clears its filter, as a select closes its list once an option is chosen.
     private protected async Task CloseAsync()
     {
         _open = false;
-        ClearSearch();
+        ClearFilter();
         await OpenChanged.InvokeAsync(false);
     }
 
@@ -286,7 +286,7 @@
             _open = open;
             if (!open)
             {
-                ClearSearch();
+                ClearFilter();
             }
         }
 
