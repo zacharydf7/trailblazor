@@ -102,7 +102,7 @@ public class GuideTests : DocsTest
             .Select(line => Regex.Match(line, @"^(TB\d+) \|")).Where(match => match.Success)
             .Select(match => match.Groups[1].Value).Order().ToArray();
 
-        var rules = PageAt("guides/analyzers").FindAll("table[aria-label='Analyzer rules'] tbody th[scope=row]");
+        var rules = PageAt("guides/analyzers").FindAll("[aria-label='Analyzer rules'] tbody th[scope=row]");
 
         Assert.NotEmpty(released);
         Assert.Equal(released, Texts(rules));
