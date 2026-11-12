@@ -2,9 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace Trailblazor;
 
-/// <summary>Where a <see cref="TreeDrop{TItem}"/> puts the moved items, beside or inside its target.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<TreeDropPosition>))]
-public enum TreeDropPosition
+/// <summary>Where a <see cref="TreeMove{TItem}"/> puts the moved items, beside or inside its target.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<TreeMovePosition>))]
+public enum TreeMovePosition
 {
     /// <summary>Just before the target, among its siblings.</summary>
     Before,

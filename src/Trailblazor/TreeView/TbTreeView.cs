@@ -267,17 +267,17 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// other change, and the tree builds its rows again from them once this returns. Setting it lets rows be
     /// dragged.</summary>
     [Parameter]
-    public EventCallback<TreeDrop<TItem>> OnDrop { get; set; }
+    public EventCallback<TreeMove<TItem>> OnMove { get; set; }
 
     /// <summary>Decides which rows can be moved. When null, every row that isn't disabled can be moved.</summary>
     [Parameter]
-    public Func<TItem, bool>? CanDrag { get; set; }
+    public Func<TItem, bool>? CanMoveItem { get; set; }
 
     /// <summary>Asked whether a move is allowed, as a drag passes over a place and before a keyboard move. Refuse
     /// with <see cref="MoveCheck.Refuse"/> and a reason, which shows beside the place and is read out. An item can
     /// never move into itself, whatever this says.</summary>
     [Parameter]
-    public Func<TreeDrop<TItem>, Task<MoveCheck>>? CanDrop { get; set; }
+    public Func<TreeMove<TItem>, Task<MoveCheck>>? CanMove { get; set; }
 
     /// <summary>A slot below each row, such as an "insert here" button, which shows while the pointer is on the row's
     /// lower edge or the slot has keyboard focus. Until it shows, it takes the pointer only on that edge, clear of the
@@ -1157,8 +1157,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private IEnumerable<TreeNode<TItem>> Siblings(TreeNode<TItem> node) => node.Parent?.Children ?? _roots;
 
-    private bool CanDragRow(TreeNode<TItem> node) => OnDrop.HasDelegate && HasValue(node) && !Disabled
-        && !IsItemDisabled(node) && CanDrag?.Invoke(node.Item) != false;
+    private bool CanDragRow(TreeNode<TItem> node) => OnMove.HasDelegate && HasValue(node) && !Disabled
+        && !IsItemDisabled(node) && CanMoveItem?.Invoke(node.Item) != false;
 
     // A slot below a row inserts as its first child when its children show under it, and otherwise just after it. A
     // row with no value can't be named as the parent, so no slot goes inside one.
@@ -1182,7 +1182,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     }
 
     private async Task<MoveCheck> CheckDropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
-        TreeDropPosition position)
+        TreeMovePosition position)
     {
         // A row with no value can't be named to the app as the place a move goes.
         if (sources.Count == 0 || !sources.All(CanDragRow) || !HasValue(target))
@@ -1196,11 +1196,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return MoveCheck.Refuse(Localizer[TbStrings.TreeViewCantMoveIntoItself]);
         }
 
-        return CanDrop is null ? MoveCheck.Allow
-            : await CanDrop(new([.. sources.Select(source => source.Item)], target.Item, position));
+        return CanMove is null ? MoveCheck.Allow
+            : await CanMove(new([.. sources.Select(source => source.Item)], target.Item, position));
     }
 
-    private Task<MoveCheck> OnDragOverAsync(string[] ids, string targetId, TreeDropPosition position) =>
+    private Task<MoveCheck> OnDragOverAsync(string[] ids, string targetId, TreeMovePosition position) =>
         _byId.TryGetValue(targetId, out var target) ? CheckDropAsync(NodesOf(ids), target, position)
             : Task.FromResult(new MoveCheck(false));
 
@@ -1221,10 +1221,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         var index = siblings.IndexOf(node);
         var (target, position) = key switch
         {
-            "MoveUp" => (index > 0 ? siblings[index - 1] : null, TreeDropPosition.Before),
-            "MoveDown" => (index < siblings.Count - 1 ? siblings[index + 1] : null, TreeDropPosition.After),
-            "Indent" => (index > 0 ? siblings[index - 1] : null, TreeDropPosition.Inside),
-            _ => (node.Parent, TreeDropPosition.After),
+            "MoveUp" => (index > 0 ? siblings[index - 1] : null, TreeMovePosition.Before),
+            "MoveDown" => (index < siblings.Count - 1 ? siblings[index + 1] : null, TreeMovePosition.After),
+            "Indent" => (index > 0 ? siblings[index - 1] : null, TreeMovePosition.Inside),
+            _ => (node.Parent, TreeMovePosition.After),
         };
         if (target is not null)
         {
@@ -1234,7 +1234,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     // The app moves the items; the tree opens a target they went into and says what moved, or why it didn't.
     private async Task DropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
-        TreeDropPosition position, bool keepFocus)
+        TreeMovePosition position, bool keepFocus)
     {
         var check = await CheckDropAsync(sources, target, position);
         if (!check.Allowed)
@@ -1252,18 +1252,18 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 sources.Count);
         var said = position switch
         {
-            TreeDropPosition.Before => TbStrings.TreeViewMovedBefore,
-            TreeDropPosition.After => TbStrings.TreeViewMovedAfter,
+            TreeMovePosition.Before => TbStrings.TreeViewMovedBefore,
+            TreeMovePosition.After => TbStrings.TreeViewMovedAfter,
             _ => TbStrings.TreeViewMovedInside,
         };
         Telemetry.Used(TelemetryName, "move");
-        await OnDrop.InvokeAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
+        await OnMove.InvokeAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
         // The app applies a move to its items, often in place, so the rows are built again from them.
         _rowVersion++;
         Rebuild();
         StateHasChanged();
         Announcer.Polite(string.Format(CultureInfo.CurrentCulture, Localizer[said], moved, TextOf(target)));
-        if (position == TreeDropPosition.Inside)
+        if (position == TreeMovePosition.Inside)
         {
             await ExpandAsync((TKey)target.Key);
         }

@@ -11,5 +11,5 @@ public sealed class TreeDropEventArgs : EventArgs
     public string Target { get; set; } = "";
 
     /// <summary>Whether they go before, after or inside the target.</summary>
-    public TreeDropPosition Position { get; set; }
+    public TreeMovePosition Position { get; set; }
 }

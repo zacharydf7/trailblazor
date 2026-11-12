@@ -570,27 +570,27 @@ public sealed class TbTreeDriver
     /// <summary>Drops the row at <paramref name="row"/> just before the row at <paramref name="target"/>, as dragging
     /// it onto that row's top edge does. Both rows must be showing, and the row must be one the tree lets move.
     /// </summary>
-    public Task DragBeforeAsync(string[] row, string[] target) => DragAsync(row, target, TreeDropPosition.Before);
+    public Task DragBeforeAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.Before);
 
     /// <summary>Drops the row at <paramref name="row"/> just after the row at <paramref name="target"/>, as dragging it
     /// onto that row's bottom edge does, which for an open row means above its first child. Both rows must be
     /// showing, and the row must be one the tree lets move.</summary>
-    public Task DragAfterAsync(string[] row, string[] target) => DragAsync(row, target, TreeDropPosition.After);
+    public Task DragAfterAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.After);
 
     /// <summary>Drops the row at <paramref name="row"/> inside the row at <paramref name="target"/>, as dragging it
     /// onto that row's middle does. Both rows must be showing, and the row must be one the tree lets move.</summary>
-    public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, TreeDropPosition.Inside);
+    public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.Inside);
 
     // Follows the tree's script: a selected row brings the other selected rows that can move, a drop below an open
-    // row goes above its first child, and a drop on a moving row does nothing. The tree then checks it with CanDrop.
-    private Task DragAsync(string[] row, string[] target, TreeDropPosition position)
+    // row goes above its first child, and a drop on a moving row does nothing. The tree then checks it with CanMove.
+    private Task DragAsync(string[] row, string[] target, TreeMovePosition position)
     {
         var source = Item(row);
         if (!source.HasAttribute("data-draggable"))
         {
             throw new InvalidOperationException($"The row at {string.Join(" > ", row)} can't be dragged: the tree "
-                + "needs an OnDrop and mustn't be disabled, and the row must be enabled, have a value and be allowed "
-                + "by CanDrag.");
+                + "needs an OnMove and mustn't be disabled, and the row must be enabled, have a value and be allowed "
+                + "by CanMoveItem.");
         }
 
         var rows = OwnRows();
@@ -603,10 +603,10 @@ public sealed class TbTreeDriver
         }
 
         var next = rows.ElementAtOrDefault(rows.IndexOf(onto) + 1);
-        if (position == TreeDropPosition.After && onto.GetAttribute("aria-expanded") == "true" && next is not null
+        if (position == TreeMovePosition.After && onto.GetAttribute("aria-expanded") == "true" && next is not null
             && Level(next) > Level(onto))
         {
-            (onto, position) = (next, TreeDropPosition.Before);
+            (onto, position) = (next, TreeMovePosition.Before);
         }
 
         return moved.Contains(onto) ? Task.CompletedTask : _find().TriggerEventAsync("ontbtreedrop",

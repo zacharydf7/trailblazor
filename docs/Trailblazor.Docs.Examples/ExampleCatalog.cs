@@ -2478,7 +2478,7 @@ public static class ExampleCatalog
             WhenNotToUse =
             [
                 "To reorder rows with columns, use a [data grid](components/data-grid) with `OnRowMove`.",
-                "To reorder nested items, use a [tree view](components/tree-view) with `OnDrop`.",
+                "To reorder nested items, use a [tree view](components/tree-view) with `OnMove`.",
             ],
             Related = ["data-grid", "tree-view", "list"],
             Sections =
@@ -6866,10 +6866,10 @@ public static class ExampleCatalog
                     + "exception.", typeof(TreeViewLoadExample)),
                 new("empty", "Empty", "With no rows, the tree says so. `EmptyContent` shows your own content, such as "
                     + "a way to add the first row.", typeof(TreeViewEmptyExample)),
-                new("move-and-insert", "Move and insert", "With `OnDrop`, rows move by dragging with a mouse, pen or "
+                new("move-and-insert", "Move and insert", "With `OnMove`, rows move by dragging with a mouse, pen or "
                     + "finger, or with Alt+Shift and the arrows. A finger holds still for a moment first, so a swipe "
-                    + "still scrolls. `OnDrop` says what moved and where, and the app applies it, so it can be undone "
-                    + "like any other change. A drag that rests on a closed row opens it. `CanDrop` can refuse a move "
+                    + "still scrolls. `OnMove` says what moved and where, and the app applies it, so it can be undone "
+                    + "like any other change. A drag that rests on a closed row opens it. `CanMove` can refuse a move "
                     + "and say why. `InsertTemplate` puts content on each row's edge, such as the buttons here that "
                     + "add a row. It shows when the pointer reaches that edge or the content has keyboard focus, and "
                     + "on a touch screen for the focused row.",
@@ -6892,7 +6892,7 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeDrop<>),
+                typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeMove<>),
                 typeof(MoveCheck), typeof(TreeInsertContext<>), typeof(TreeViewClasses),
             ],
             Keyboard =
@@ -6934,7 +6934,7 @@ public static class ExampleCatalog
             [
                 "A load that fails is read out.",
                 "A move is read out, such as \"Lake camp moved before Pine Hollow.\"",
-                "The reason `CanDrop` gives for refusing a place is read out when the move is tried.",
+                "The reason `CanMove` gives for refusing a place is read out when the move is tried.",
             ],
             Accessibility =
             [
@@ -6962,7 +6962,7 @@ public static class ExampleCatalog
             ],
             Notes =
             [
-                new("After changing `Items` in place, call `RefreshAsync`. A new collection, or an `OnDrop`, builds the "
+                new("After changing `Items` in place, call `RefreshAsync`. A new collection, or an `OnMove`, builds the "
                     + "rows again by itself.") { Pitfall = true },
                 new("With `Items`, choosing, opening or checking a row draws again only the rows that change, so a "
                     + "long tree stays quick without `Virtualize`. Every row draws again when the tree's parent renders "
@@ -7027,8 +7027,8 @@ public static class ExampleCatalog
                 "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same `ExpandAsync`, "
                     + "`ExpandAllAsync`, `SelectAsync`, `CheckAsync`, `DragBeforeAsync`, `DragAfterAsync` and "
                     + "`DragIntoAsync`, with `Texts` for the rows that show and `Item` and `Items` to find rows. A drag "
-                    + "step moves what a drag in the browser would, selected rows included, and goes through `CanDrop` "
-                    + "and `OnDrop`.",
+                    + "step moves what a drag in the browser would, selected rows included, and goes through `CanMove` "
+                    + "and `OnMove`.",
             ],
             Telemetry =
             [

@@ -3,8 +3,8 @@
 @* A tree that has no rows when its script attaches, and gets them afterward. *@
 <TbButton OnClick="AddStops">Add stops</TbButton>
 <TbTreeView TItem="string" TKey="string" AriaLabel="Stops" Items="_stops" KeySelector="stop => stop"
-            ItemText="stop => stop" OnDrop="_ => { }"
-            CanDrop="@(_ => Task.FromResult(MoveCheck.Refuse("These stops stay put.")))" />
+            ItemText="stop => stop" OnMove="_ => { }"
+            CanMove="@(_ => Task.FromResult(MoveCheck.Refuse("These stops stay put.")))" />
 
 @code {
     private string[] _stops = [];

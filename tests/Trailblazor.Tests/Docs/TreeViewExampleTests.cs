@@ -167,7 +167,7 @@ public class TreeViewExampleTests : DocsTest
 
         Assert.Contains("Moving rows", cut.Markup);
         Assert.Contains("ExpandAllAsync", cut.Find("ul[aria-label='Testing tips']").TextContent);
-        Assert.DoesNotContain("OnDrop", accessibility);
+        Assert.DoesNotContain("OnMove", accessibility);
         Assert.DoesNotContain("InsertTemplate", accessibility);
     }
 }

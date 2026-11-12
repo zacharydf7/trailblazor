@@ -29,7 +29,7 @@
     <TbButton OnClick="() => _trails.Reverse()">Reverse</TbButton>
     @* A heading with no value, and a row that holds a tree of its own. *@
     <TbTreeView TItem="string" TKey="string" AriaLabel="Outline" InitialExpandDepth="2"
-                @bind-SelectedKeys="_outline" OnDrop="(TreeDrop<string> _) => { }">
+                @bind-SelectedKeys="_outline" OnMove="(TreeMove<string> _) => { }">
         <TbTreeItem Text="Part one">
             <TbTreeItem Value="@("chapter")" Text="Chapter">
                 <TextContent>

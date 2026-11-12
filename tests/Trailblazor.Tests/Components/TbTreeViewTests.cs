@@ -864,10 +864,10 @@ public class TbTreeViewTests : BunitContext
         var names = new Dictionary<int, string> { [1] = "North", [2] = "East", [3] = "South" };
         IReadOnlyList<Place> places = [new(1, "North"), new(2, "East"), new(3, "South")];
         var cut = RenderPlaces(places, parameters => parameters.Add(tree => tree.ItemText, place => names[place.Id])
-            .Add(tree => tree.OnDrop, (TreeDrop<Place> _) => names[3] = "Deep South"), nested: false);
+            .Add(tree => tree.OnMove, (TreeMove<Place> _) => names[3] = "Deep South"), nested: false);
 
         await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
-            new TreeDropEventArgs { Rows = ["2"], Target = "1", Position = TreeDropPosition.Before });
+            new TreeDropEventArgs { Rows = ["2"], Target = "1", Position = TreeMovePosition.Before });
 
         Assert.Equal("Deep South", Row(cut, "3").GetAttribute("data-text"));
     }

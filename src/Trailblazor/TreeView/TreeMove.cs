@@ -6,4 +6,4 @@ namespace Trailblazor;
 /// every selected row that shows, apart from any inside another that moves with it.</param>
 /// <param name="Target">The row the items go beside or into.</param>
 /// <param name="Position">Whether they go before, after or inside <paramref name="Target"/>.</param>
-public sealed record TreeDrop<TItem>(IReadOnlyList<TItem> Items, TItem Target, TreeDropPosition Position);
+public sealed record TreeMove<TItem>(IReadOnlyList<TItem> Items, TItem Target, TreeMovePosition Position);

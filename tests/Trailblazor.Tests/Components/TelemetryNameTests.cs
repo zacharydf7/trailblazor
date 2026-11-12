@@ -341,7 +341,7 @@ public class TelemetryNameTests : BunitContext
             .Add(tree => tree.ChildrenSelector, place => place.Children).Add(tree => tree.KeySelector, place => place.Id)
             .Add(tree => tree.AriaLabel, "Places").Add(tree => tree.TelemetryName, "places")
             .Add(tree => tree.Checkable, true).Add(tree => tree.OnActivate, (Place _) => { })
-            .Add(tree => tree.OnDrop, (TreeDrop<Place> _) => { }));
+            .Add(tree => tree.OnMove, (TreeMove<Place> _) => { }));
         var events = ((DotNetObjectReference<TreeViewEvents>)JSInterop.Invocations["createTreeView"].Single()
             .Arguments[1]!).Value;
 
@@ -355,7 +355,7 @@ public class TelemetryNameTests : BunitContext
         TreeRow(cut, "4").QuerySelector("[data-part=check]")!.Click();
         TreeRow(cut, "4").DoubleClick();
         await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
-            new TreeDropEventArgs { Rows = ["4"], Target = "1", Position = TreeDropPosition.Before });
+            new TreeDropEventArgs { Rows = ["4"], Target = "1", Position = TreeMovePosition.Before });
         await cut.InvokeAsync(() => cut.Instance.ExpandAsync(4));
         await cut.InvokeAsync(() => cut.Instance.SelectAsync(1));
 

@@ -229,20 +229,20 @@ public class TreeItemTests : BunitContext
     [Fact]
     public async Task TreeItem_ShouldNotBeDraggedOrDroppedBeside_WhenItHasNoValue()
     {
-        List<TreeDrop<string>> drops = [];
+        List<TreeMove<string>> drops = [];
         Row[] rows = [new("guides", [new("guide")], "Guides", NoValue: true), new("src")];
         var cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.InitialExpandDepth, 1)
-            .Add(tree => tree.OnDrop, (TreeDrop<string> drop) => drops.Add(drop)));
+            .Add(tree => tree.OnMove, (TreeMove<string> drop) => drops.Add(drop)));
         var heading = cut.Find("[data-text=Guides]");
         Assert.False(heading.HasAttribute("data-draggable"));
         Assert.True(cut.Find("[data-key=guide]").HasAttribute("data-draggable"));
 
         var check = await cut.InvokeAsync(() =>
-            Events().OnDragOver(["src"], heading.GetAttribute("data-key")!, TreeDropPosition.Before));
+            Events().OnDragOver(["src"], heading.GetAttribute("data-key")!, TreeMovePosition.Before));
         await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
             new TreeDropEventArgs
             {
-                Rows = ["src"], Target = heading.GetAttribute("data-key")!, Position = TreeDropPosition.Inside,
+                Rows = ["src"], Target = heading.GetAttribute("data-key")!, Position = TreeMovePosition.Inside,
             });
 
         Assert.False(check.Allowed);

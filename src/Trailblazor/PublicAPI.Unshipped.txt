@@ -833,9 +833,9 @@ override Trailblazor.ToastAction.ToString() -> string!
 override Trailblazor.ToastOptions.Equals(object? obj) -> bool
 override Trailblazor.ToastOptions.GetHashCode() -> int
 override Trailblazor.ToastOptions.ToString() -> string!
-override Trailblazor.TreeDrop<TItem>.Equals(object? obj) -> bool
-override Trailblazor.TreeDrop<TItem>.GetHashCode() -> int
-override Trailblazor.TreeDrop<TItem>.ToString() -> string!
+override Trailblazor.TreeMove<TItem>.Equals(object? obj) -> bool
+override Trailblazor.TreeMove<TItem>.GetHashCode() -> int
+override Trailblazor.TreeMove<TItem>.ToString() -> string!
 override Trailblazor.TreeInsertContext<TItem>.Equals(object? obj) -> bool
 override Trailblazor.TreeInsertContext<TItem>.GetHashCode() -> int
 override Trailblazor.TreeInsertContext<TItem>.ToString() -> string!
@@ -918,8 +918,8 @@ static Trailblazor.ToastAction.operator !=(Trailblazor.ToastAction? left, Trailb
 static Trailblazor.ToastAction.operator ==(Trailblazor.ToastAction? left, Trailblazor.ToastAction? right) -> bool
 static Trailblazor.ToastOptions.operator !=(Trailblazor.ToastOptions? left, Trailblazor.ToastOptions? right) -> bool
 static Trailblazor.ToastOptions.operator ==(Trailblazor.ToastOptions? left, Trailblazor.ToastOptions? right) -> bool
-static Trailblazor.TreeDrop<TItem>.operator !=(Trailblazor.TreeDrop<TItem>? left, Trailblazor.TreeDrop<TItem>? right) -> bool
-static Trailblazor.TreeDrop<TItem>.operator ==(Trailblazor.TreeDrop<TItem>? left, Trailblazor.TreeDrop<TItem>? right) -> bool
+static Trailblazor.TreeMove<TItem>.operator !=(Trailblazor.TreeMove<TItem>? left, Trailblazor.TreeMove<TItem>? right) -> bool
+static Trailblazor.TreeMove<TItem>.operator ==(Trailblazor.TreeMove<TItem>? left, Trailblazor.TreeMove<TItem>? right) -> bool
 static Trailblazor.TreeInsertContext<TItem>.operator !=(Trailblazor.TreeInsertContext<TItem>? left, Trailblazor.TreeInsertContext<TItem>? right) -> bool
 static Trailblazor.TreeInsertContext<TItem>.operator ==(Trailblazor.TreeInsertContext<TItem>? left, Trailblazor.TreeInsertContext<TItem>? right) -> bool
 static Trailblazor.TreeItemContext<TItem, TKey>.operator !=(Trailblazor.TreeItemContext<TItem, TKey>? left, Trailblazor.TreeItemContext<TItem, TKey>? right) -> bool
@@ -2988,10 +2988,10 @@ Trailblazor.TbTreeItem<TItem>.Value.set -> void
 Trailblazor.TbTreeView<TItem, TKey>
 Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.get -> string?
 Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.CanDrag.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeView<TItem, TKey>.CanDrag.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.CanDrop.get -> System.Func<Trailblazor.TreeDrop<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
-Trailblazor.TbTreeView<TItem, TKey>.CanDrop.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CanMoveItem.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.CanMoveItem.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.CanMove.get -> System.Func<Trailblazor.TreeMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
+Trailblazor.TbTreeView<TItem, TKey>.CanMove.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.CascadeChecks.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.CascadeChecks.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.Checkable.get -> bool
@@ -3053,8 +3053,8 @@ Trailblazor.TbTreeView<TItem, TKey>.LoadChildren.get -> System.Func<TItem, Syste
 Trailblazor.TbTreeView<TItem, TKey>.LoadChildren.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.OnActivate.get -> Microsoft.AspNetCore.Components.EventCallback<TItem>
 Trailblazor.TbTreeView<TItem, TKey>.OnActivate.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.OnDrop.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.TreeDrop<TItem>!>
-Trailblazor.TbTreeView<TItem, TKey>.OnDrop.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.OnMove.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.TreeMove<TItem>!>
+Trailblazor.TbTreeView<TItem, TKey>.OnMove.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
 Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ParentKeySelector.get -> System.Func<TItem, object?>?
@@ -3247,21 +3247,21 @@ Trailblazor.TransferListLabels.Chosen.get -> string?
 Trailblazor.TransferListLabels.Chosen.init -> void
 Trailblazor.TransferListLabels.Equals(Trailblazor.TransferListLabels? other) -> bool
 Trailblazor.TransferListLabels.TransferListLabels() -> void
-Trailblazor.TreeDrop<TItem>
-Trailblazor.TreeDrop<TItem>.<Clone>$() -> Trailblazor.TreeDrop<TItem>!
-Trailblazor.TreeDrop<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out TItem Target, out Trailblazor.TreeDropPosition Position) -> void
-Trailblazor.TreeDrop<TItem>.Equals(Trailblazor.TreeDrop<TItem>? other) -> bool
-Trailblazor.TreeDrop<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
-Trailblazor.TreeDrop<TItem>.Items.init -> void
-Trailblazor.TreeDrop<TItem>.Position.get -> Trailblazor.TreeDropPosition
-Trailblazor.TreeDrop<TItem>.Position.init -> void
-Trailblazor.TreeDrop<TItem>.Target.get -> TItem
-Trailblazor.TreeDrop<TItem>.Target.init -> void
-Trailblazor.TreeDrop<TItem>.TreeDrop(System.Collections.Generic.IReadOnlyList<TItem>! Items, TItem Target, Trailblazor.TreeDropPosition Position) -> void
-Trailblazor.TreeDropPosition
-Trailblazor.TreeDropPosition.After = 1 -> Trailblazor.TreeDropPosition
-Trailblazor.TreeDropPosition.Before = 0 -> Trailblazor.TreeDropPosition
-Trailblazor.TreeDropPosition.Inside = 2 -> Trailblazor.TreeDropPosition
+Trailblazor.TreeMove<TItem>
+Trailblazor.TreeMove<TItem>.<Clone>$() -> Trailblazor.TreeMove<TItem>!
+Trailblazor.TreeMove<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TItem>! Items, out TItem Target, out Trailblazor.TreeMovePosition Position) -> void
+Trailblazor.TreeMove<TItem>.Equals(Trailblazor.TreeMove<TItem>? other) -> bool
+Trailblazor.TreeMove<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.TreeMove<TItem>.Items.init -> void
+Trailblazor.TreeMove<TItem>.Position.get -> Trailblazor.TreeMovePosition
+Trailblazor.TreeMove<TItem>.Position.init -> void
+Trailblazor.TreeMove<TItem>.Target.get -> TItem
+Trailblazor.TreeMove<TItem>.Target.init -> void
+Trailblazor.TreeMove<TItem>.TreeMove(System.Collections.Generic.IReadOnlyList<TItem>! Items, TItem Target, Trailblazor.TreeMovePosition Position) -> void
+Trailblazor.TreeMovePosition
+Trailblazor.TreeMovePosition.After = 1 -> Trailblazor.TreeMovePosition
+Trailblazor.TreeMovePosition.Before = 0 -> Trailblazor.TreeMovePosition
+Trailblazor.TreeMovePosition.Inside = 2 -> Trailblazor.TreeMovePosition
 Trailblazor.TreeInsertContext<TItem>
 Trailblazor.TreeInsertContext<TItem>.<Clone>$() -> Trailblazor.TreeInsertContext<TItem>!
 Trailblazor.TreeInsertContext<TItem>.Deconstruct(out TItem? Parent, out int Index) -> void
@@ -4224,7 +4224,7 @@ Trailblazor.TbMenu.AttachOnFirstUse.set -> void
 const Trailblazor.TbStrings.TreeSelectSearch = "TreeSelect.Search" -> string!
 Trailblazor.TbTreeView<TItem, TKey>.SelectAsync(TKey key) -> System.Threading.Tasks.Task!
 Trailblazor.TreeDropEventArgs
-Trailblazor.TreeDropEventArgs.Position.get -> Trailblazor.TreeDropPosition
+Trailblazor.TreeDropEventArgs.Position.get -> Trailblazor.TreeMovePosition
 Trailblazor.TreeDropEventArgs.Position.set -> void
 Trailblazor.TreeDropEventArgs.Rows.get -> string![]!
 Trailblazor.TreeDropEventArgs.Rows.set -> void

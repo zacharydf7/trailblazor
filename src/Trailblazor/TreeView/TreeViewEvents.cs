@@ -6,7 +6,7 @@ namespace Trailblazor;
 // others and scroll a virtualized tree, so the public tree needn't expose [JSInvokable] methods.
 internal sealed class TreeViewEvents(Func<string, Task> onFocus, Func<string, string, bool, bool, Task> onKey,
     Func<string, string, Task> onExtend, Func<string[], Task> onItemOrder,
-    Func<string[], string, TreeDropPosition, Task<MoveCheck>> onDragOver, Func<int, int, Task> onView,
+    Func<string[], string, TreeMovePosition, Task<MoveCheck>> onDragOver, Func<int, int, Task> onView,
     Func<string, string, Task> onFind)
 {
     [JSInvokable]
@@ -22,7 +22,7 @@ internal sealed class TreeViewEvents(Func<string, Task> onFocus, Func<string, st
     public Task OnItemOrder(string[] ids) => onItemOrder(ids);
 
     [JSInvokable]
-    public Task<MoveCheck> OnDragOver(string[] ids, string target, TreeDropPosition position) =>
+    public Task<MoveCheck> OnDragOver(string[] ids, string target, TreeMovePosition position) =>
         onDragOver(ids, target, position);
 
     [JSInvokable]
