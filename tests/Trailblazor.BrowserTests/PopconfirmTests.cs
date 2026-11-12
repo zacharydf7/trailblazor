@@ -90,7 +90,10 @@ public class PopconfirmTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/popconfirm");
         var archive = page.GetByRole(AriaRole.Dialog, new() { Name = "Archive Cedar Flats?" });
 
-        await page.Tb().Popconfirm("Archive Cedar Flats").ConfirmAsync();
+        // The helper waits until OnConfirm finishes, so this presses the confirm button itself to see the loading state
+        // while it runs.
+        var panel = await page.Tb().Popover("Archive Cedar Flats").OpenAsync();
+        await panel.Locator("[data-part=confirm]").ClickAsync();
 
         await Expect(archive.Locator("[data-part=confirm]")).ToHaveClassAsync(new Regex("tb-button--loading"));
         await Expect(archive).ToBeVisibleAsync();

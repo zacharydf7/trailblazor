@@ -5,8 +5,8 @@ namespace Trailblazor.Testing.Playwright;
 /// <summary>A <c>TbNumberField</c>, found by its label.</summary>
 public sealed class TbNumberFieldLocator(ILocator scope, string label)
 {
-    /// <summary>Types this text into the field and leaves it, which commits it. A statically rendered field just gets
-    /// the text.</summary>
+    /// <summary>Types this text into the field and leaves it, which commits it, and waits until the app has it. A
+    /// statically rendered field just gets the text.</summary>
     public async Task EnterAsync(string text)
     {
         var input = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
@@ -18,7 +18,12 @@ public sealed class TbNumberFieldLocator(ILocator scope, string label)
 
         // A prerendered field is replaced once the page is interactive, and would lose the text.
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
-        await input.FillAsync(text);
-        await input.BlurAsync();
+        await Commit.WaitAsync(input, async () =>
+        {
+            var changes = await input.InputValueAsync() != text;
+            await input.FillAsync(text);
+            await input.BlurAsync();
+            return changes;
+        });
     }
 }

@@ -101,18 +101,22 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>NumberField(label).EnterAsync(text)</code></th>
-                        <td>Types a number.</td>
+                        <td>Types a number and waits until the app has it.</td>
                     </tr>
                     <tr>
                         <th scope="row"><code>TagInput(label).AddAsync(text)</code></th>
                         <td>
-                            Adds a tag, or shows the field's message for one it refuses. <code>RemoveAsync(tag)</code>
-                            removes one, and <code>Tags</code> reads them.
+                            Adds a tag, or shows the field's message for one it refuses, and waits for the app's
+                            answer. <code>RemoveAsync(tag)</code> removes one and waits too, and <code>Tags</code>
+                            reads them.
                         </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>RichTextEditor(label).EnterAsync(html)</code></th>
-                        <td>Replaces the editor's text with this HTML, keeping only the formats it allows.</td>
+                        <td>
+                            Replaces the editor's text with this HTML, keeping only the formats it allows, and waits
+                            until the app has it.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>TransferList(label)</code></th>
@@ -374,7 +378,12 @@
                         <td>
                             <code>data-ready</code>, an empty attribute, on the element the table below names, such as
                             a tree, a data grid, a select's combobox, a tab list, a menu's trigger or a number field's
-                            input. The helpers wait for it too, and it stays the same between versions.
+                            input. The helpers wait for it too, and it stays the same between versions. A component
+                            with <code>AttachOnFirstUse</code>, such as every move handle in a sortable list or a data
+                            grid, gets it only once it's focused, pointed at or clicked, and carries
+                            <code>data-attach-on-use</code> until then. Wait for
+                            <code>[data-ready], [data-attach-on-use]</code>, which says the page is interactive; if it
+                            carries <code>data-attach-on-use</code>, focus it, then wait for <code>data-ready</code>.
                         </td>
                     </tr>
                     <tr>
@@ -598,15 +607,18 @@
             + "time, and `ValueAsync()` reads them."),
         new("Date range picker", "Its label", "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates, and "
             + "`RangeAsync()` reads them."),
-        new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number."),
+        new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number and waits until the "
+            + "app has it."),
         new("Slider", "Its label", "`Slider(label).SetAsync(value)` moves it and waits until the field has the value, "
             + "and `ValueAsync()` reads it."),
         new("Range slider", "Its label", "`RangeSlider(label).SetAsync(start, end)` moves both thumbs and waits until "
             + "the field has the range, and `RangeAsync()` reads it."),
         new("Tag input", "Its label", "`TagInput(label).AddAsync(text)` types a tag and presses Enter, "
-            + "`RemoveAsync(tag)` clicks its remove button, and `Tags` is the tags, for assertions."),
-        new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text "
-            + "and leaves the editor; `Input` is the editing area, for typing and reading its text."),
+            + "`RemoveAsync(tag)` clicks its remove button, and both wait for the app's answer; `Tags` is the tags, "
+            + "for assertions."),
+        new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text, "
+            + "leaves the editor and waits until the app has it; `Input` is the editing area, for typing and reading "
+            + "its text."),
         new("Transfer list", "Its label", "`TransferList(label).MoveAsync(items)` moves items to the chosen list, "
             + "`MoveBackAsync(items)` moves them back, and `ChosenAsync()` reads the chosen ones."),
         new("Calendar", "Its label", "`Calendar(label).ChooseAsync(date)` picks a date as a user would, through the "
@@ -625,7 +637,10 @@
             + "with the separator's keys and waits until the app has the size, and `SizeAsync()` reads it."),
         new("Popover", "Its trigger", "`Popover(trigger).OpenAsync()` opens it and hands back its panel."),
         new("Popconfirm", "Its trigger",
-            "`Popconfirm(trigger).ConfirmAsync()` opens it and confirms; `CancelAsync()` cancels."),
+            "`Popconfirm(trigger).ConfirmAsync()` opens it, confirms and waits until it closes, which it does once "
+            + "the app's `OnConfirm` has run; `CancelAsync()` cancels and waits until it closes, though an async "
+            + "`OnCancel` may still be running. An `OnConfirm` that waits for the user, such as one that opens a "
+            + "dialog, would keep the helper waiting, so click the confirm button instead."),
         new("Menu", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its submenus."),
         new("Tabs", "Their list's name", "`Tabs(name).SelectAsync(tab)` selects a tab by its name."),
         new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name."),

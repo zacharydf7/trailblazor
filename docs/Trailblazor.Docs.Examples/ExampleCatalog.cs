@@ -2555,7 +2555,10 @@ public static class ExampleCatalog
             TestingTip = "Press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
-                + "follow. In bUnit, `MoveAsync` makes a move as the user would.",
+                + "follow. A handle gets `data-ready`, and its keys start working, once it's focused, pointed at or "
+                + "clicked: wait for `[data-ready], [data-attach-on-use]`, focus it, then wait for `data-ready`. "
+                + "In bUnit, the sortable's own `MoveAsync(from, to)` moves an item as an app's button would: it asks "
+                + "`CanMove` and raises `OnMove`, but doesn't check `Disabled`, and telemetry doesn't count it.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"alert-order\"`, each move the user makes counts "
@@ -3248,8 +3251,8 @@ public static class ExampleCatalog
             [
                 "In bUnit, `cut.Tb().RichTextEditor(label).EnterAsync(html)` sets the value through the editor's own "
                     + "change event.",
-                "In Playwright, `page.Tb().RichTextEditor(label).EnterAsync(html)` pastes the HTML and leaves the "
-                    + "editor.",
+                "In Playwright, `page.Tb().RichTextEditor(label).EnterAsync(html)` pastes the HTML, leaves the "
+                    + "editor and waits until the app has the value.",
                 "To type instead, wait for `Input` to have its `data-ready` attribute, then type into it. The value "
                     + "reaches .NET when focus leaves, or as it's typed with `UpdateOnInput`.",
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
@@ -3374,7 +3377,8 @@ public static class ExampleCatalog
                 + "bUnit's `Change` doesn't reach; `await cut.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` "
                 + "from `Trailblazor.Testing` types into either kind. In Playwright, "
                 + "`await page.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from "
-                + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types and leaves it.",
+                + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types, leaves it and waits "
+                + "until the app has the value.",
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.")
@@ -4602,9 +4606,9 @@ public static class ExampleCatalog
                 new("error", "The validation message, or why a typed tag was refused."),
             ],
             TestingTip = "Add a tag with `page.Tb().TagInput(\"Trail features\").AddAsync(\"Shade\")`, which types it "
-                + "and presses Enter once the field's keys work, and check the tags with "
-                + "`Expect(tags.Tags).ToHaveTextAsync([...])`. In bUnit, `cut.Tb().TagInput(\"Trail features\")` has "
-                + "`AddAsync`, `RemoveAsync` and `Tags`.",
+                + "and presses Enter once the field's keys work, then waits for the app's answer. Check the tags "
+                + "with `Expect(tags.Tags).ToHaveTextAsync([...])`. In bUnit, "
+                + "`cut.Tb().TagInput(\"Trail features\")` has `AddAsync`, `RemoveAsync` and `Tags`.",
             Telemetry =
             [
                 "It also counts `trailblazor.control.used` with `trailblazor.action` `add` for each addition and "
@@ -6527,8 +6531,12 @@ public static class ExampleCatalog
                 new("cancel", "The cancel button."),
                 new("confirm", "The confirm button."),
             ],
-            TestingTip = "`await page.Tb().Popconfirm(\"Delete trail\").ConfirmAsync()` opens it and confirms; "
-                + "`CancelAsync()` cancels. In bUnit, click `[data-part=confirm]` or `[data-part=cancel]`, which work "
+            TestingTip = "`await page.Tb().Popconfirm(\"Delete trail\").ConfirmAsync()` opens it, confirms and waits "
+                + "until it closes, which it does once `OnConfirm` has run; `CancelAsync()` cancels and waits until it "
+                + "closes, though an async `OnCancel` may still be running, so check its result with `Expect`. An "
+                + "`OnConfirm` that waits for the user, such as one that opens a dialog, would keep the helper "
+                + "waiting, so click `[data-part=confirm]` instead. In bUnit, click "
+                + "`[data-part=confirm]` or `[data-part=cancel]`, which work "
                 + "without opening it first.",
             Telemetry =
             [
@@ -6756,7 +6764,10 @@ public static class ExampleCatalog
                 + "text in bUnit, and `await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
                 + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready. On a static page, which "
                 + "never becomes ready, click the tab instead. Both helpers also have `CloseAsync(\"Summary\")`, which "
-                + "clicks the close mark of a tab with an `OnClose`, and `AddAsync()`, which clicks the add button.",
+                + "clicks the close mark of a tab with an `OnClose`, and `AddAsync()`, which clicks the add button; "
+                + "in a browser, each waits until the app's handler has run. A handler that waits for the user, such "
+                + "as one that opens a dialog, would keep the helper waiting, so click `[data-part=add]` or "
+                + "`[data-part=close]` instead and answer the dialog.",
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "
@@ -7482,7 +7493,10 @@ public static class ExampleCatalog
                     + "`[data-part=group]` row whose `[data-part=group-toggle]` button opens or closes it.",
                 "A row's details button is named for the row: `GetByRole(AriaRole.Button, new() { Name = \"Details "
                     + "for Cedar Flats\" })`. Its `aria-controls` names the `[data-part=detail]` row it opens.",
-                "Without the helpers, wait for the table's `aria-busy` to clear before clicking a row.",
+                "Without the helpers, wait for the table's `aria-busy` to clear before clicking a row. A row's move "
+                    + "handle gets `data-ready` only once it's focused, pointed at or clicked: wait for "
+                    + "`[data-ready], [data-attach-on-use]`, focus it, then wait for `data-ready` before pressing its "
+                    + "keys.",
                 "Rows carry `data-key` and `data-selected`, a filtered column's header `data-filtered`, and cells "
                     + "`data-column`, the field's path such as "
                     + "`Shipping.City` unless the column has an `Id`. A pinned column's header and cells also carry "

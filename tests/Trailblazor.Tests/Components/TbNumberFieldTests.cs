@@ -468,6 +468,37 @@ public class TbNumberFieldTests : BunitContext
     }
 
     [Fact]
+    public void Commits_ShouldCountLeavingTheFieldButNotTyping_WhenUpdateOnInputIsSet()
+    {
+        var cut = Render<TbNumberField<double?>>(parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.ValueChanged, (double? _) => { }));
+        var input = cut.Find("input");
+
+        input.TriggerEvent("ontbnumberinput", new NumberChangeEventArgs { Value = "7" });
+        Assert.Equal("0", cut.Find(".tb-field").GetAttribute("data-commits"));
+        input.TriggerEvent("ontbnumberchange", new NumberChangeEventArgs { Value = "7" });
+
+        Assert.Equal("1", cut.Find(".tb-field").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task Commits_ShouldWaitForTheTypedChange_WhenTheAppStoresTheValueLate()
+    {
+        var stored = new TaskCompletionSource();
+        var cut = Render<TbNumberField<double?>>(parameters => parameters.Add(field => field.UpdateOnInput, true)
+            .Add(field => field.ValueChanged, (double? _) => stored.Task));
+        var input = cut.Find("input");
+        var typing = input.TriggerEventAsync("ontbnumberinput", new NumberChangeEventArgs { Value = "7" });
+
+        var leaving = input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = "7" });
+        Assert.Equal("0", cut.Find(".tb-field").GetAttribute("data-commits"));
+        stored.SetResult();
+        await Task.WhenAll(typing, leaving);
+
+        Assert.Equal("1", cut.Find(".tb-field").GetAttribute("data-commits"));
+    }
+
+    [Fact]
     public void Input_ShouldUpdateTheValueAndKeepTheTextAsTyped_WhenUpdateOnInputIsSetOnAPlainField()
     {
         double? value = null;

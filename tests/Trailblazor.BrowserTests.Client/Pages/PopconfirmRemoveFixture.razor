@@ -1,0 +1,17 @@
+@page "/popconfirm-remove"
+
+@* Confirming a delete removes the row that holds the popconfirm. *@
+<ul>
+    @foreach (var trail in _trails)
+    {
+        <li @key="trail">
+            @trail
+            <TbPopconfirm Label="@($"Delete {trail}")" Title="@($"Delete {trail}?")" ConfirmText="Delete"
+                          OnConfirm="() => _trails.Remove(trail)" />
+        </li>
+    }
+</ul>
+
+@code {
+    private readonly List<string> _trails = ["Cedar Flats", "Pine Hollow"];
+}

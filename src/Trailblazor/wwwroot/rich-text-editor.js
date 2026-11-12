@@ -512,12 +512,18 @@ class Editor {
         const link = this.linkForReplacing(from, to);
         const paragraphs = pasted ?? text.split(/\r\n?|\n/)
             .map(line => paragraph(normalize([{ text: line.replace(/[\t\f\xa0]/g, ' '), marks, link }])));
-        if (this.transformsPaste) this.dispatchInParts('tb-rich-text-paste', toHtml(paragraphs));
-        else this.edit(() => this.insertParagraphs(paragraphs));
+        if (this.transformsPaste) {
+            // Marks a paste that's waiting on the app's transform; test helpers wait for the mark to clear.
+            this.root.dataset.pasting = '';
+            this.dispatchInParts('tb-rich-text-paste', toHtml(paragraphs));
+        } else {
+            this.edit(() => this.insertParagraphs(paragraphs));
+        }
     }
 
     // What the app's paste transform returned goes in at the caret.
     insertPasted(html) {
+        delete this.root.dataset.pasting;
         const pasted = readBlocks(parseDocument(html), true, this.schema);
         if (this.readOnly || !pasted.length) return;
         this.readBack();

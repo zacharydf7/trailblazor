@@ -20,7 +20,7 @@
         </div>
     }
     @* The script sets data-ready here once the arrow keys work, which tests wait for. *@
-    <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list"
+    <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list" data-commits="@_answered"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")"
          data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
          class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null, Classes?.List)">
@@ -57,7 +57,7 @@
     {
         <div class="tb-tabs__actions">
             <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(Labels.Add ?? Localizer[TbStrings.TabsAdd])" Size="Size"
-                          OnClick="() => OnAdd.InvokeAsync()" Class="@Classes?.Add" data-part="add" />
+                          OnClick="AddAsync" Class="@Classes?.Add" data-part="add" />
         </div>
     }
     @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
@@ -67,6 +67,8 @@
 @code {
     private readonly string _closeHintId = $"tb-tabs-{Guid.NewGuid():N}-close-hint";
     private readonly List<TbTab> _tabs = [];
+    // Counts the adds and closes the app has answered, so a test can wait until its own has run.
+    private int _answered;
     private ElementReference _list;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<TabOrder>? _order;
@@ -457,8 +459,15 @@
         {
             _closingTabs.Remove(tab);
             _closeEnded = true;
+            _answered++;
             StateHasChanged();
         }
+    }
+
+    private async Task AddAsync()
+    {
+        await OnAdd.InvokeAsync();
+        _answered++;
     }
 
     // The tab is selected first, so its OnClick sees the new selection.

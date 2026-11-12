@@ -175,6 +175,14 @@ public sealed class TbPopoverLocator(ILocator scope, string trigger)
         }
     }
 
+    // Waits until the panel has closed by itself, as a popconfirm's does once it's answered. The answer may remove the
+    // trigger, as a delete in a list does, so a trigger that's gone counts as closed.
+    internal async Task ClosedAsync(ILocator panel)
+    {
+        await Assertions.Expect(panel).ToBeHiddenAsync();
+        await Assertions.Expect(Trigger.And(scope.Locator("[aria-expanded=true]"))).ToHaveCountAsync(0);
+    }
+
     // A browser can show or hide the panel before its toggle handler moves focus and sets aria-expanded, so that is
     // waited for.
     private async Task SettledAsync(bool open)
@@ -204,11 +212,19 @@ public sealed class TbPopconfirmLocator
 
     internal TbPopconfirmLocator(TbPopoverLocator popover) => _popover = popover;
 
-    /// <summary>Opens the confirmation and presses its confirm button.</summary>
-    public async Task ConfirmAsync() => await (await _popover.OpenAsync()).Locator("[data-part=confirm]").ClickAsync();
+    /// <summary>Opens the confirmation, presses its confirm button and waits until it has closed, which it does once
+    /// the app's <c>OnConfirm</c> has run.</summary>
+    public Task ConfirmAsync() => PressAsync("confirm");
 
-    /// <summary>Opens the confirmation and presses its cancel button.</summary>
-    public async Task CancelAsync() => await (await _popover.OpenAsync()).Locator("[data-part=cancel]").ClickAsync();
+    /// <summary>Opens the confirmation, presses its cancel button and waits until it has closed.</summary>
+    public Task CancelAsync() => PressAsync("cancel");
+
+    private async Task PressAsync(string part)
+    {
+        var panel = await _popover.OpenAsync();
+        await panel.Locator($"[data-part={part}]").ClickAsync();
+        await _popover.ClosedAsync(panel);
+    }
 }
 
 /// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label or a locator.</summary>

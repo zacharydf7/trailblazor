@@ -15,17 +15,25 @@ public sealed class TbTagInputLocator(ILocator scope, string label)
 
     private ILocator Field => Input.Locator("xpath=ancestor::*[@data-part='control'][1]");
 
-    /// <summary>Types this text and presses Enter, which adds it as a tag, once the field's keys work.</summary>
+    /// <summary>Once the field's keys work, types this text and presses Enter, which adds it as a tag, then waits until
+    /// the app has added it or turned it down.</summary>
     public async Task AddAsync(string text)
     {
         // A prerendered field is replaced once the page is interactive, and would lose the text.
         await Assertions.Expect(Input).ToHaveAttributeAsync("data-ready", "");
-        await Input.FillAsync(text);
-        await Input.PressAsync("Enter");
+        await Commit.WaitAsync(Input, async () =>
+        {
+            await Input.FillAsync(text);
+            await Input.PressAsync("Enter");
+            return !string.IsNullOrWhiteSpace(text);
+        });
     }
 
-    /// <summary>Removes this tag with its remove button.</summary>
-    public Task RemoveAsync(string tag) => Tags
-        .Filter(new() { HasTextRegex = new Regex($@"^\s*{Regex.Escape(tag)}\s*$") })
-        .Locator("[data-part=remove]").ClickAsync();
+    /// <summary>Removes this tag with its remove button and waits until the app has taken it out.</summary>
+    public Task RemoveAsync(string tag) => Commit.WaitAsync(Input, async () =>
+    {
+        await Tags.Filter(new() { HasTextRegex = new Regex($@"^\s*{Regex.Escape(tag)}\s*$") })
+            .Locator("[data-part=remove]").ClickAsync();
+        return true;
+    });
 }

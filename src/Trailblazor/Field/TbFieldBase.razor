@@ -6,7 +6,7 @@
     // The label, the box with the input and its slots, then the helper text and messages, shared by the text fields.
     private protected RenderFragment Layout(FieldClasses? classes, RenderFragment input, RenderFragment? start,
         RenderFragment? end) =>
-        @<div @attributes="RootAttributes" style="@Style"
+        @<div @attributes="RootAttributes" style="@Style" data-commits="@_commits"
               class="@ClassNames.Join("tb-field", FieldModifiers, ShowsInvalid ? "tb-field--invalid" : null,
                          Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
             @if (ShownLabel is not null)

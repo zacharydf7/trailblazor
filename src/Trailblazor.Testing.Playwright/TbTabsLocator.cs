@@ -18,17 +18,28 @@ public sealed class TbTabsLocator(ILocator scope, string? name)
         await Assertions.Expect(button).ToHaveAttributeAsync("aria-selected", "true");
     }
 
-    /// <summary>Clicks the add button that follows the tab list.</summary>
+    /// <summary>Clicks the add button that follows the tab list and waits until the app's <c>OnAdd</c> has run.
+    /// </summary>
     public async Task AddAsync()
     {
         await Assertions.Expect(List).ToHaveAttributeAsync("data-ready", "");
-        await List.Locator("xpath=../*[@class='tb-tabs__actions']").Locator("[data-part=add]").ClickAsync();
+        await Commit.WaitAsync(List, async () =>
+        {
+            await List.Locator("xpath=../*[@class='tb-tabs__actions']").Locator("[data-part=add]").ClickAsync();
+            return true;
+        });
     }
 
-    /// <summary>Clicks the close mark of the tab with this name.</summary>
+    /// <summary>Clicks the close mark of the tab with this name and waits until the tab's <c>OnClose</c> has run.
+    /// </summary>
     public async Task CloseAsync(string tab)
     {
         await Assertions.Expect(List).ToHaveAttributeAsync("data-ready", "");
-        await List.GetByRole(AriaRole.Tab, new() { Name = tab, Exact = true }).Locator("[data-part=close]").ClickAsync();
+        await Commit.WaitAsync(List, async () =>
+        {
+            await List.GetByRole(AriaRole.Tab, new() { Name = tab, Exact = true }).Locator("[data-part=close]")
+                .ClickAsync();
+            return true;
+        });
     }
 }

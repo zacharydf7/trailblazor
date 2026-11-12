@@ -26,6 +26,11 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private FieldIdentifier? _field;
     private ControlTelemetry? _telemetry;
     private string? _parseError;
+    // Counts the commits the field has finished handling, whether it took a new value, kept the same one or refused
+    // the text, so a test can wait until its own lands. Updates while typing don't count: leaving the field commits.
+    private int _commits;
+    // The change a typed update is still delivering, which the commit on leaving the field waits for before it counts.
+    private Task _typedChange = Task.CompletedTask;
     private string? _unparsedText;
     private TValue? _valueAtParseError;
     private string? _typedText;
@@ -522,6 +527,12 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         (_typedText, _typedValue) = (typedText, value);
         if (_parseError is null && EqualityComparer<TValue>.Default.Equals(value, Value))
         {
+            if (typedText is null)
+            {
+                await _typedChange;
+                _commits++;
+            }
+
             return;
         }
 
@@ -529,7 +540,14 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         _parseError = null;
         _unparsedText = null;
         _lastValue = Value = value;
-        await (_form is null ? ChangeAsync(value) : _form.EditAsync(() => ChangeAsync(value)));
+        var change = _form is null ? ChangeAsync(value) : _form.EditAsync(() => ChangeAsync(value));
+        if (typedText is not null)
+        {
+            _typedChange = change;
+        }
+
+        await change;
+        _commits += typedText is null ? 1 : 0;
         if (!_disposed)
         {
             AnnounceNewErrors(before);
@@ -585,6 +603,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // The text stays in the input for the user to fix, and rendering what the browser sent doesn't write over it.
     private protected void ShowParseError(string error, string? text)
     {
+        _commits++;
         var before = Errors.ToList();
         _unparsedText = text;
         _parseError = error;
@@ -597,6 +616,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // Takes back the message the last commit showed, for when the text it was about is gone.
     private protected void ClearParseError()
     {
+        _commits++;
         if (_parseError is null)
         {
             return;
