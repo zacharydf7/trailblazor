@@ -79,7 +79,9 @@
 
     private bool IsButton => !Disabled && (IsCurrent || Completed || !Stepper!.Linear);
 
-    private string OptionalText => Localizer[TbStrings.StepperOptional];
+    private string OptionalText => Stepper!.Labels.Optional ?? Localizer[TbStrings.StepperOptional];
+
+    private string CompletedText => Stepper!.Labels.Completed ?? Localizer[TbStrings.StepperCompleted];
 
     private RenderFragment Header => @<text>
         <span aria-hidden="true" data-part="indicator" class="tb-stepper__indicator">
@@ -109,7 +111,7 @@
             @* Last, so the words the step shows come first in its name, unbroken. *@
             @if (IsCompleted)
             {
-                <span class="tb-visually-hidden">@Localizer[TbStrings.StepperCompleted]</span>
+                <span class="tb-visually-hidden">@CompletedText</span>
             }
         </span>
     </text>;
@@ -134,7 +136,8 @@
         // A step that becomes current after the stepper first shows is announced, since moving on doesn't move focus.
         if (IsCurrent && !_wasCurrent && _rendered)
         {
-            Announcer.Polite(string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.StepperCurrent], Title));
+            Announcer.Polite(string.Format(CultureInfo.CurrentCulture,
+                Stepper!.Labels.Current ?? Localizer[TbStrings.StepperCurrent], Title));
         }
 
         _wasCurrent = IsCurrent;

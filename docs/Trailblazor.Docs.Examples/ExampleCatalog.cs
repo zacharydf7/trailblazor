@@ -3278,7 +3278,8 @@ public static class ExampleCatalog
                     + "text that isn't a number, shows an error and stays in the field to be fixed, and the bound value "
                     + "doesn't change. `Step` sets how far the arrow keys and buttons move the value, and `LargeStep` how far "
                     + "Page Up and Page Down do. Holding a step button repeats it, faster the longer it's held, and "
-                    + "the value changes once, when it's let go.",
+                    + "the value changes once, when it's let go. `Labels` rewords the error messages, with `{0}` for "
+                    + "the label and `{1}` for the limit, or `{1}` and `{2}` for both limits in `Labels.Range`.",
                     typeof(NumberFieldExample)),
                 new("values-set-by-code", "Values set by code", "`Min` and `Max` hold for a value your code sets too, "
                     + "such as one loaded from a saved trip: once the form validates, the field explains its limits and "
@@ -3312,7 +3313,7 @@ public static class ExampleCatalog
                 new("size-and-variant", "Size and variant", "`Size` and `Variant` work as on the [text field]"
                     + "(components/text-field#size-and-variant).", typeof(NumberFieldSizeExample)),
             ],
-            Api = [typeof(TbNumberField<>), typeof(FieldClasses)],
+            Api = [typeof(TbNumberField<>), typeof(NumberFieldLabels), typeof(FieldClasses)],
             Keyboard =
             [
                 new(["Up", "Down"], "Steps the value by `Step`."),
@@ -3322,6 +3323,8 @@ public static class ExampleCatalog
             Labeling =
             [
                 "The `Label` names the field.",
+                "The step buttons are named \"Decrease\" and \"Increase\", or `Labels.Decrease` and "
+                    + "`Labels.Increase`.",
             ],
             Announcements =
             [
@@ -7672,7 +7675,7 @@ public static class ExampleCatalog
                     + "people can go to any step, done or not.",
                     typeof(StepperStatesExample)),
             ],
-            Api = [typeof(TbStepper), typeof(TbStep)],
+            Api = [typeof(TbStepper), typeof(TbStep), typeof(StepperLabels)],
             Anatomy = """
                 <TbStepper @bind-ActiveKey="_step">
                     <TbStep Title="…" Completed="…" />
@@ -7689,12 +7692,13 @@ public static class ExampleCatalog
                 "A list named by `AriaLabel` (\"Progress\" by default). Screen readers hear each step's place in it, "
                     + "as in \"2 of 4\".",
                 "Each step's button is named by what it shows: its title, its \"Optional\" note, description and "
-                    + "error, then \"Completed\" for a finished step.",
+                    + "error, then \"Completed\" for a finished step. `Labels.Optional` and `Labels.Completed` "
+                    + "replace those words.",
             ],
             Announcements =
             [
                 "The current step has `aria-current=\"step\"`. When the step changes after the stepper first shows, "
-                    + "screen readers hear \"Current step: Payment\".",
+                    + "screen readers hear \"Current step: Payment\", or `Labels.Current` with `{0}` for the title.",
             ],
             Accessibility =
             [
@@ -7734,7 +7738,7 @@ public static class ExampleCatalog
             [
                 "Find the current step with `Locator(\"[aria-current=step]\")`, and a step by its title with "
                     + "`GetByRole(AriaRole.Button, new() { Name = \"Gear\" })`; a finished step's name ends in "
-                    + "\"Completed\", as in \"Trip Completed\".",
+                    + "\"Completed\", or `Labels.Completed`, as in \"Trip Completed\".",
                 "In bUnit, set `ActiveKey` and check `[aria-current=step]`.",
             ],
         },

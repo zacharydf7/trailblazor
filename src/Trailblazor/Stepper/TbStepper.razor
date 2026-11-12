@@ -41,6 +41,12 @@
     [Parameter]
     public string? AriaLabel { get; set; }
 
+    /// <summary>The words the steps show and say to screen readers: the optional step's note, the word said after a
+    /// completed step's title and what is read out as a step becomes current. Each one left null uses the app's text.
+    /// </summary>
+    [Parameter]
+    public StepperLabels Labels { get; set; } = new();
+
     internal string? Current { get; private set; }
 
     /// <inheritdoc />

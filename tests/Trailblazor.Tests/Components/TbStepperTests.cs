@@ -130,6 +130,21 @@ public class TbStepperTests : BunitContext
     }
 
     [Fact]
+    public void Labels_ShouldWordTheOptionalCompletedAndCurrentStep_WhenGiven()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderStepper("Gear", parameters => parameters.Add(stepper => stepper.Labels,
+            new() { Optional = "Can skip", Completed = "Done", Current = "Now on {0}" }));
+
+        cut.Render(parameters => parameters.Add(stepper => stepper.ActiveKey, "pay"));
+
+        Assert.Equal("Can skip", cut.Find("[data-part=optional]").TextContent);
+        Assert.Contains("Done", cut.FindAll("[data-part=step]")[0].TextContent);
+        announcer.WaitForAssertion(() =>
+            Assert.Equal("Now on Payment", announcer.Find("[role=status] p").TextContent));
+    }
+
+    [Fact]
     public void ActiveKey_ShouldAnnounceTheNewStep_WhenItChangesAfterTheFirstRender()
     {
         var announcer = Render<AnnouncerHost>();

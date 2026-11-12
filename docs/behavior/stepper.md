@@ -29,6 +29,7 @@ Familiar apps: the checkout steps of a shop, and the setup of a new phone
 - [x] Screen readers hear a list named "Progress" whose current step has `aria-current="step"`, and "Completed" after a finished step's title. `TbStepperTests.Render_ShouldListTheStepsAndMarkTheCurrentOne_WhenGivenSteps`
 - [x] A step's button is named by every word it shows, then "Completed" for a finished step, so a name spoken to voice control matches what is on screen. `TbStepperTests.StepButton_ShouldEndItsTextWithItsState_WhenItIsCompleted`
 - [x] When the step changes, screen readers hear "Current step: Gear", since moving on doesn't move focus. `TbStepperTests.ActiveKey_ShouldAnnounceTheNewStep_WhenItChangesAfterTheFirstRender`
+- [x] `Labels` replaces the "Optional" note, the "Completed" word and the "Current step" announcement. `TbStepperTests.Labels_ShouldWordTheOptionalCompletedAndCurrentStep_WhenGiven`
 - [x] A step with an error shows its message, and a warning in place of its number or check. `TbStepperTests.Render_ShouldShowTheErrorInPlaceOfTheCheck_WhenAStepHasOne`
 - [x] In forced-colors mode, the current step's number takes the system's highlight, and the lines between steps stay drawn. `StepperTests.Stepper_ShouldHighlightTheCurrentStepAndKeepTheLines_WhenColorsAreForced`
 

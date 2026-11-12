@@ -4647,3 +4647,43 @@ Trailblazor.TbTextField<TValue>.Labels.get -> Trailblazor.TextFieldLabels!
 Trailblazor.TbTextField<TValue>.Labels.set -> void
 Trailblazor.TbTabs.Labels.get -> Trailblazor.TabsLabels!
 Trailblazor.TbTabs.Labels.set -> void
+Trailblazor.NumberFieldLabels
+Trailblazor.NumberFieldLabels.<Clone>$() -> Trailblazor.NumberFieldLabels!
+Trailblazor.NumberFieldLabels.Equals(Trailblazor.NumberFieldLabels? other) -> bool
+Trailblazor.NumberFieldLabels.NumberFieldLabels() -> void
+override Trailblazor.NumberFieldLabels.Equals(object? obj) -> bool
+override Trailblazor.NumberFieldLabels.GetHashCode() -> int
+override Trailblazor.NumberFieldLabels.ToString() -> string!
+static Trailblazor.NumberFieldLabels.operator !=(Trailblazor.NumberFieldLabels? left, Trailblazor.NumberFieldLabels? right) -> bool
+static Trailblazor.NumberFieldLabels.operator ==(Trailblazor.NumberFieldLabels? left, Trailblazor.NumberFieldLabels? right) -> bool
+Trailblazor.NumberFieldLabels.Decrease.get -> string?
+Trailblazor.NumberFieldLabels.Decrease.init -> void
+Trailblazor.NumberFieldLabels.Increase.get -> string?
+Trailblazor.NumberFieldLabels.Increase.init -> void
+Trailblazor.NumberFieldLabels.NotANumber.get -> string?
+Trailblazor.NumberFieldLabels.NotANumber.init -> void
+Trailblazor.NumberFieldLabels.Range.get -> string?
+Trailblazor.NumberFieldLabels.Range.init -> void
+Trailblazor.NumberFieldLabels.AtLeast.get -> string?
+Trailblazor.NumberFieldLabels.AtLeast.init -> void
+Trailblazor.NumberFieldLabels.AtMost.get -> string?
+Trailblazor.NumberFieldLabels.AtMost.init -> void
+Trailblazor.StepperLabels
+Trailblazor.StepperLabels.<Clone>$() -> Trailblazor.StepperLabels!
+Trailblazor.StepperLabels.Equals(Trailblazor.StepperLabels? other) -> bool
+Trailblazor.StepperLabels.StepperLabels() -> void
+override Trailblazor.StepperLabels.Equals(object? obj) -> bool
+override Trailblazor.StepperLabels.GetHashCode() -> int
+override Trailblazor.StepperLabels.ToString() -> string!
+static Trailblazor.StepperLabels.operator !=(Trailblazor.StepperLabels? left, Trailblazor.StepperLabels? right) -> bool
+static Trailblazor.StepperLabels.operator ==(Trailblazor.StepperLabels? left, Trailblazor.StepperLabels? right) -> bool
+Trailblazor.StepperLabels.Optional.get -> string?
+Trailblazor.StepperLabels.Optional.init -> void
+Trailblazor.StepperLabels.Completed.get -> string?
+Trailblazor.StepperLabels.Completed.init -> void
+Trailblazor.StepperLabels.Current.get -> string?
+Trailblazor.StepperLabels.Current.init -> void
+Trailblazor.TbNumberField<TValue>.Labels.get -> Trailblazor.NumberFieldLabels!
+Trailblazor.TbNumberField<TValue>.Labels.set -> void
+Trailblazor.TbStepper.Labels.get -> Trailblazor.StepperLabels!
+Trailblazor.TbStepper.Labels.set -> void

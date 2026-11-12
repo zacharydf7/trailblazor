@@ -7,17 +7,17 @@
     @* The step buttons repeat the arrow keys for pointers, so they stay out of the tab order. *@
     @if (!HideStepButtons)
     {
-        <TbIconButton Icon="BuiltInIcons.Minus" AriaLabel="@Localizer[TbStrings.NumberFieldDecrease]"
-                      Size="Size.Small" tabindex="-1"
-                      data-part="decrement" Disabled="@(Disabled || ReadOnly || !CanStep(-1))"
+        <TbIconButton Icon="BuiltInIcons.Minus"
+                      AriaLabel="@(Labels.Decrease ?? Localizer[TbStrings.NumberFieldDecrease])" Size="Size.Small"
+                      tabindex="-1" data-part="decrement" Disabled="@(Disabled || ReadOnly || !CanStep(-1))"
                       OnClick="() => StepAsync(-1)" />
     }
     @Input
     @if (!HideStepButtons)
     {
-        <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@Localizer[TbStrings.NumberFieldIncrease]"
-                      Size="Size.Small" tabindex="-1"
-                      data-part="increment" Disabled="@(Disabled || ReadOnly || !CanStep(1))"
+        <TbIconButton Icon="BuiltInIcons.Plus"
+                      AriaLabel="@(Labels.Increase ?? Localizer[TbStrings.NumberFieldIncrease])" Size="Size.Small"
+                      tabindex="-1" data-part="increment" Disabled="@(Disabled || ReadOnly || !CanStep(1))"
                       OnClick="() => StepAsync(1)" />
     }
 </text>, Start, End)
@@ -63,6 +63,11 @@
     /// <summary>Hides the decrease and increase buttons; the arrow keys still step the value.</summary>
     [Parameter]
     public bool HideStepButtons { get; set; }
+
+    /// <summary>The words the field shows and says to screen readers: the step buttons' names and its messages. Each
+    /// one left null uses the app's text.</summary>
+    [Parameter]
+    public NumberFieldLabels Labels { get; set; } = new();
 
     /// <summary>A .NET number format, such as <c>N2</c> for grouped digits, <c>C</c> for currency or <c>P0</c> for a
     /// percent. Once the page is interactive, the field then shows and reads the value in <see cref="Culture"/>'s
@@ -176,7 +181,7 @@
 
     private decimal Upper => Math.Min(Max ?? decimal.MaxValue, NumberTypes.Limits(NumberType).Max);
 
-    private string NotANumber => Message(TbStrings.NumberFieldNotANumber);
+    private string NotANumber => FormatMessage(Labels.NotANumber ?? Localizer[TbStrings.NumberFieldNotANumber]);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -317,9 +322,9 @@
         return (number < (double?)Min, number > (double?)Max) switch
         {
             (true, _) or (_, true) when Min is not null && Max is not null =>
-                Message(TbStrings.NumberFieldRange, Limit(Min), Limit(Max)),
-            (true, _) => Message(TbStrings.NumberFieldAtLeast, Limit(Min)),
-            (_, true) => Message(TbStrings.NumberFieldAtMost, Limit(Max)),
+                FormatMessage(Labels.Range ?? Localizer[TbStrings.NumberFieldRange], Limit(Min), Limit(Max)),
+            (true, _) => FormatMessage(Labels.AtLeast ?? Localizer[TbStrings.NumberFieldAtLeast], Limit(Min)),
+            (_, true) => FormatMessage(Labels.AtMost ?? Localizer[TbStrings.NumberFieldAtMost], Limit(Max)),
             _ => null,
         };
     }

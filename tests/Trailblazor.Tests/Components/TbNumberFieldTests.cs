@@ -150,6 +150,35 @@ public class TbNumberFieldTests : BunitContext
     }
 
     [Theory]
+    [InlineData("12", 0, 10, "Pick 0 to 10 for Quantity.")]
+    [InlineData("-1", 0, null, "Pick 0 or more for Quantity.")]
+    [InlineData("12", null, 10, "Pick 10 or less for Quantity.")]
+    [InlineData("many", 0, 10, "Quantity takes digits.")]
+    public void Labels_ShouldWordTheMessagesWithTheLabel_WhenGiven(string text, int? min, int? max, string message)
+    {
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Quantity")
+            .Add(field => field.Min, min).Add(field => field.Max, max).Add(field => field.Labels, new()
+            {
+                Range = "Pick {1} to {2} for {0}.", AtLeast = "Pick {1} or more for {0}.",
+                AtMost = "Pick {1} or less for {0}.", NotANumber = "{0} takes digits.",
+            }));
+
+        Commit(cut, text);
+
+        Assert.Equal(message, cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Labels_ShouldNameTheStepButtons_WhenGiven()
+    {
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Quantity")
+            .Add(field => field.Labels, new() { Decrease = "One fewer", Increase = "One more" }));
+
+        Assert.Equal(("One fewer", "One more"), (cut.Find("[data-part=decrement]").GetAttribute("aria-label"),
+            cut.Find("[data-part=increment]").GetAttribute("aria-label")));
+    }
+
+    [Theory]
     [InlineData("12", 0, 10, "Quantity must be from 0 to 10.")]
     [InlineData("-1", 0, 10, "Quantity must be from 0 to 10.")]
     [InlineData("-1", 0, null, "Quantity must be at least 0.")]
