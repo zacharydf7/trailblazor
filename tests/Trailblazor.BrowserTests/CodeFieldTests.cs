@@ -30,6 +30,39 @@ public class CodeFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Field_ShouldTakeEachDigitAsItsAsciiDigit_WhenTypedOrComposedInAnotherScript(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/code-field");
+        var code = await OpenCodeAsync(page);
+        await code.FocusAsync();
+
+        await page.Keyboard.TypeAsync("٢٤٦");
+        await code.EvaluateAsync("""
+            input => {
+                input.value += '۸۱۰';
+                input.dispatchEvent(new CompositionEvent('compositionend', { data: '۸۱۰' }));
+            }
+            """);
+
+        await Expect(code).ToHaveValueAsync("246810");
+        await Expect(page.GetByLabel("Result")).ToHaveTextAsync("Code accepted.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Field_ShouldKeepASelectedCode_WhenAKeyItDoesntTakeIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/code-field");
+        var code = await OpenCodeAsync(page);
+        await code.FocusAsync();
+        await page.Keyboard.TypeAsync("246810");
+
+        await code.SelectTextAsync();
+        await page.Keyboard.TypeAsync("a");
+
+        await Expect(code).ToHaveValueAsync("246810");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Paste_ShouldKeepOnlyTheDigits_WhenTheCodeHasADash(string browser)
     {
         var page = await OpenAsync(browser, "/examples/code-field");

@@ -31,6 +31,24 @@ public class TbListBoxTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldTellTheScriptItsCulture_WhenFilterable()
+    {
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = new("tr-TR");
+            var cut = Render<TbListBox<string>>(parameters => parameters.Add(list => list.Label, "Trail")
+                .Add(list => list.Filterable, true));
+
+            Assert.Equal("tr-TR", cut.Find("[role=listbox]").GetAttribute("data-culture"));
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [Fact]
     public void Render_ShouldPutNoFilter_WhenNotFilterable()
     {
         var cut = Render<TbListBox<string>>(parameters => parameters.Add(list => list.Label, "Trail")

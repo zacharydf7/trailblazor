@@ -217,7 +217,7 @@
     {
         var text = _filter?.Trim();
         FilterMatch = string.IsNullOrEmpty(text) ? null
-            : item => ItemText(item).Contains(text, StringComparison.CurrentCultureIgnoreCase);
+            : item => TextFold.Contains(ItemText(item), text);
         var none = FilterMatch is { } filter && !Known().Any(filter);
         if (none && !_saidNoMatches)
         {

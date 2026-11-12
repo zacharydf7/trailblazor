@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -304,20 +303,15 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
             return;
         }
 
-        var query = Fold(_query);
-        _shown = _itemOptions.Where(option => query == "" || Fold(option.Text).Contains(query, StringComparison.Ordinal))
+        var query = TextFold.Fold(_query);
+        _shown = _itemOptions.Where(option => query == ""
+                || TextFold.Fold(option.Text).Contains(query, StringComparison.Ordinal))
             .Select((option, index) => new ShownOption(index, option)).ToList();
     }
 
     // Where the list opens: the chosen option's place, which may not be in the page.
     private int? ChosenIndex => _shown?.FindIndex(shown => IsChosen(shown.Option.Value)) is >= 0 and var index
         ? index : null;
-
-    // As the script folds text: lowercase, without accents, so "eagle" finds "Éagle".
-    private static string Fold(string text) => string.Concat(text.Normalize(NormalizationForm.FormD).Where(letter =>
-        CharUnicodeInfo.GetUnicodeCategory(letter) is not (UnicodeCategory.NonSpacingMark
-            or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark)))
-        .ToLower(CultureInfo.CurrentCulture);
 
     private Task OnFilterAsync(string query)
     {

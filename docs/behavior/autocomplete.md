@@ -20,6 +20,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Arrows pass over the status message. `AutocompleteTests.Listbox_ShouldStayOpenWithNothingActive_WhenItsMessageIsClickedOrArrowedTo`
 - [x] Tab closes the list and settles the typed text the same way. `AutocompleteTests.Autocomplete_ShouldTakeTypedTextAsTheValue_WhenFreeTextIsEnteredOrLeft`
 - [x] Enter and Escape go to an input method while it composes text, not to the list. `AutocompleteTests.Autocomplete_ShouldLeaveTheKeyToTheIme_WhenItIsComposing`
+- [x] With `Items`, the suggestions are the items whose text contains what's typed, ignoring case and accents. `TbAutocompleteTests.Input_ShouldSuggestTheMatchingItems_WhenTheUserTypes`, `TbAutocompleteTests.Input_ShouldIgnoreAccents_WhenTheItemsAreLocal`
 
 ## Pointer
 

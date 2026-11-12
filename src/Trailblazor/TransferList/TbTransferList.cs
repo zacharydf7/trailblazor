@@ -96,7 +96,7 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
         ?? "";
 
     private IEnumerable<TItem> Matching(IEnumerable<TItem> items, string filter) => string.IsNullOrWhiteSpace(filter)
-        ? items : items.Where(item => TextOf(item).Contains(filter.Trim(), StringComparison.CurrentCultureIgnoreCase));
+        ? items : items.Where(item => TextFold.Contains(TextOf(item), filter.Trim()));
 
     private static string Format(string format, params object?[] args) =>
         string.Format(CultureInfo.CurrentCulture, format, args);

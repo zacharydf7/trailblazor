@@ -76,7 +76,9 @@
     private RenderFragment Listbox =>
         @<div @ref="_listbox" id="@ListboxId" popover="@(Filterable ? null : "auto")" role="listbox"
               aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-multiselectable="@(Multiple ? "true" : null)"
-              data-count="@_shown?.Count" data-chosen="@ChosenIndex" data-part="listbox" class="tb-select__listbox">
+              data-count="@_shown?.Count" data-chosen="@ChosenIndex"
+              data-culture="@System.Globalization.CultureInfo.CurrentCulture.Name" data-part="listbox"
+              class="tb-select__listbox">
             @if (ShowSelectAll)
             {
                 <div id="@ListboxId-all" role="option" aria-selected="@(AllChosen ? "true" : "false")"

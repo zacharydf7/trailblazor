@@ -50,6 +50,29 @@ public class TbCodeFieldTests : BunitContext
         Assert.Equal("123456", cut.Find("[data-part=input]").GetAttribute("value"));
     }
 
+    [Theory]
+    [InlineData("ar-EG", "١٢٣-٤٥٦")]
+    [InlineData("fa-IR", "۱۲۳۴۵۶")]
+    [InlineData("ja-JP", "１２３４５６")]
+    [InlineData("en-US", "𝟏𝟐𝟑𝟒𝟓𝟔")]
+    public void Input_ShouldTakeEachDigitAsItsAsciiDigit_WhenTypedInAnotherScript(string culture, string typed)
+    {
+        var current = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = new(culture);
+            var cut = RenderCode();
+
+            cut.Find("[data-part=input]").Input(typed);
+
+            Assert.Equal(["123456"], Values);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = current;
+        }
+    }
+
     [Fact]
     public void Input_ShouldTakeLettersInCapitals_WhenLettersAreAllowed()
     {

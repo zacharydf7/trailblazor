@@ -43,6 +43,17 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
+    public void Input_ShouldIgnoreAccents_WhenTheItemsAreLocal()
+    {
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Stop")
+            .Add(field => field.Items, ["Café Rouge", "Pine Hollow"]));
+
+        cut.Find("input").Input("cafe");
+
+        Assert.Equal(["Café Rouge"], cut.FindAll("[role=option]").Select(option => option.TextContent.Trim()));
+    }
+
+    [Fact]
     public void Input_ShouldSuggestFiftyMatches_WhenMoreMatchAndMaxItemsIsNotSet()
     {
         var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Campsite")
@@ -359,6 +370,20 @@ public class TbAutocompleteTests : BunitContext
         cut.Find("input").Change("eagle ridge");
 
         Assert.Equal("Eagle Ridge", chosen);
+    }
+
+    [Fact]
+    public void Change_ShouldChooseTheItem_WhenTheTextMatchesItIgnoringAccents()
+    {
+        string? chosen = null;
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Stop")
+            .Add(field => field.Items, ["Café Rouge", "Pine Hollow"])
+            .Add(field => field.ValueChanged, (string? value) => chosen = value));
+
+        cut.Find("input").Input("cafe rouge");
+        cut.Find("input").Change("cafe rouge");
+
+        Assert.Equal("Café Rouge", chosen);
     }
 
     [Fact]

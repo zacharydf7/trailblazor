@@ -140,6 +140,17 @@ public class TbTransferListTests : BunitContext
     }
 
     [Fact]
+    public async Task Filter_ShouldIgnoreAccents_WhenTyped()
+    {
+        var cut = Render<TbTransferList<string>>(parameters => parameters.Add(list => list.Label, "Crew")
+            .Add(list => list.Items, ["José", "Ana"]).Add(list => list.Filterable, true));
+
+        await cut.Find("input[type=text]").InputAsync(new ChangeEventArgs { Value = "jose" });
+
+        Assert.Equal(["José"], cut.Tb().ListBox("Available").Options);
+    }
+
+    [Fact]
     public void Value_ShouldMatchItsItems_WhenTheComparerSaysTheyAreTheSame()
     {
         var cut = RenderCrew([new Hiker(2, "Blake (loaded again)")], parameters => parameters.Add(list => list.Comparer,

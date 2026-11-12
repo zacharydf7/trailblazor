@@ -4268,8 +4268,9 @@ public static class ExampleCatalog
                     + "choosing the item already chosen just closes it. The key type's default, such as 0 for an "
                     + "`int`, means nothing is chosen. `IsSelectable` lets headings such as a region open without "
                     + "being chosen. `Filterable` adds a filter box that keeps the items whose text contains what's "
-                    + "typed, with the items above and below them, once typing pauses. `LoadChildren` loads a branch "
-                    + "when it opens, and the filter covers only the branches loaded so far. `UnmatchedText` names a "
+                    + "typed, with the items above and below them, once typing pauses. Matching ignores case and "
+                    + "accents. `LoadChildren` loads a branch when it opens, and the filter covers only the branches "
+                    + "loaded so far. `UnmatchedText` names a "
                     + "value whose item hasn't loaded, such as a saved choice in a branch not yet opened. `Clearable` "
                     + "adds a button that clears the choice. `@bind-Open` opens or closes the tree from code, though "
                     + "a disabled or read-only field stays closed. `Labels` words the filter box, its no-match "
@@ -4392,8 +4393,9 @@ public static class ExampleCatalog
                 new("search", "Search", "`Search` finds the suggestions as someone types, and is canceled when they "
                     + "type again. `ItemText` turns a suggestion into text, and `ItemTemplate` draws it in the list.",
                     typeof(AutocompleteExample)),
-                new("items", "A fixed list", "`Items` is a list you already have, filtered by what someone types. A "
-                    + "long suggestion widens the list.", typeof(AutocompleteItemsExample)),
+                new("items", "A fixed list", "`Items` is a list you already have, filtered by what someone types, "
+                    + "ignoring case and accents. A long suggestion widens the list.",
+                    typeof(AutocompleteItemsExample)),
                 new("many-items", "Many items", "A long list scrolls. It shows the first 50 matches; type to narrow it "
                     + "down, or set `MaxItems` to `null` to show them all.", typeof(AutocompleteManyExample)),
                 new("free-text", "Free text", "With `FreeText`, typed text that isn't a suggestion becomes the value, "
@@ -5569,7 +5571,7 @@ public static class ExampleCatalog
                     + "move every item a list shows. Double-clicking an item moves it to the other list. "
                     + "`ItemText` gives each item's text, `Labels` the lists' titles and the field's other words, and "
                     + "`Filterable` a filter box above each list, which then shows only the items whose text contains "
-                    + "what's typed.", typeof(TransferListExample)),
+                    + "what's typed, ignoring case and accents.", typeof(TransferListExample)),
             ],
             Api = [typeof(TbTransferList<>), typeof(TransferListLabels), typeof(FieldClasses)],
             Keyboard =
@@ -5656,7 +5658,8 @@ public static class ExampleCatalog
                 new("verification-code", "A verification code", "`Length` sets how many characters the code has, six "
                     + "by default, and `Characters` whether it takes only digits or letters too. The field is one "
                     + "input, so a phone can fill it from a text message, and pasting or deleting works as in any "
-                    + "field; a paste of \"123-456\" keeps only the digits. The value is the code once every box is "
+                    + "field; a paste of \"123-456\" keeps only the digits. Digits from another number system, such as "
+                    + "Arabic-Indic or full-width ones, count as 0 to 9. The value is the code once every box is "
                     + "filled, and `OnComplete` runs when the last box is. A partly typed code isn't a value: the "
                     + "bound value keeps the last full code, and the field shows an error once it loses focus.",
                     typeof(CodeFieldExample)),

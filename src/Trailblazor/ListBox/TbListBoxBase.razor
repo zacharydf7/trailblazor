@@ -44,6 +44,7 @@
     // Focus stays on the listbox; the script moves the active option and points aria-activedescendant at it.
     private RenderFragment Listbox =>
         @<div @attributes="ControlAttributes" @ref="_listbox" data-part="input" id="@InputId" role="listbox"
+              data-culture="@System.Globalization.CultureInfo.CurrentCulture.Name"
               tabindex="@(Disabled ? "-1" : "0")" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
               aria-multiselectable="@(Multiple ? "true" : null)" aria-disabled="@(Disabled ? "true" : null)"
               aria-readonly="@(ReadOnly ? "true" : null)" aria-required="@AriaRequired"

@@ -10,6 +10,7 @@ Familiar apps: the sign-in code steps of banking apps, GitHub's two-factor promp
 - [x] Backspace removes the character before the caret, whichever box it is in. `CodeFieldTests.Field_ShouldTakeOnlyTheCodesCharacters_WhenTyped`
 - [x] Typing the last character raises `OnComplete`, and so does changing a full code to another or retyping its last character after deleting it, but not an input that leaves the full code unchanged. `TbCodeFieldTests.Input_ShouldKeepOnlyTheCodesCharactersAndRaiseOnComplete_WhenTyped`, `TbCodeFieldTests.Input_ShouldRaiseOnCompleteAgain_WhenAFullCodeChangesToAnother`, `TbCodeFieldTests.Input_ShouldRaiseOnCompleteAgain_WhenTheLastCharacterIsDeletedAndRetyped`
 - [x] A code of letters and digits shows them in capitals. `TbCodeFieldTests.Input_ShouldTakeLettersInCapitals_WhenLettersAreAllowed`
+- [x] Digits from another number system, such as Arabic-Indic, Persian or full-width ones, count as 0 to 9, whether typed, pasted or composed. `CodeFieldTests.Field_ShouldTakeEachDigitAsItsAsciiDigit_WhenTypedOrComposedInAnotherScript`, `TbCodeFieldTests.Input_ShouldTakeEachDigitAsItsAsciiDigit_WhenTypedInAnotherScript`
 
 ## Pointer
 

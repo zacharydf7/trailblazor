@@ -231,6 +231,18 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public void Filter_ShouldIgnoreAccents_WhenTyped()
+    {
+        var cut = Render<TbTreeSelect<string, string>>(parameters => parameters.Add(select => select.Label, "Stop")
+            .Add(select => select.Items, ["Café Rouge", "Pine Hollow"]).Add(select => select.KeySelector, name => name)
+            .Add(select => select.ItemText, name => name).Add(select => select.Filterable, true));
+
+        cut.Find("[data-part=filter]").Input("cafe");
+
+        Assert.Equal(["Café Rouge"], cut.FindAll("[role=treeitem]").Select(ItemName));
+    }
+
+    [Fact]
     public void Filter_ShouldKeepTheItemsUnderAMatchingHeading_WhenTyped()
     {
         var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));

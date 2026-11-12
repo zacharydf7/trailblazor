@@ -90,6 +90,24 @@ public class ListBoxFilterTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(season.GetByRole(AriaRole.Group, new() { Name = "Winter" })).Not.ToHaveAttributeAsync("hidden", "");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Filter_ShouldFoldInTheListsCulture_WhenItHasOneTheBrowserKnowsOrElseInTheBrowsers(string browser)
+    {
+        var page = await OpenFilterAsync(browser);
+        var trail = page.GetByRole(AriaRole.Listbox, new() { Name = "Trail", Exact = true });
+        var first = trail.GetByRole(AriaRole.Option).First;
+        await first.EvaluateAsync("option => option.dataset.text = 'Istanbul'");
+
+        // In Turkish, "I" lowercases to dotless "ı", so "ist" doesn't find it; a tag the browser rejects falls back.
+        await trail.EvaluateAsync("listbox => listbox.dataset.culture = 'tr-TR'");
+        await FilterOf(trail).FillAsync("ist");
+        await Expect(first).ToBeHiddenAsync();
+        await trail.EvaluateAsync("listbox => listbox.dataset.culture = 'en_US'");
+        await FilterOf(trail).FillAsync("is");
+        await FilterOf(trail).FillAsync("ist");
+        await Expect(first).ToBeVisibleAsync();
+    }
+
     // Each filter sits beside its own list, inside the field.
     private static ILocator FilterOf(ILocator listbox) =>
         listbox.Locator("xpath=..").GetByRole(AriaRole.Textbox, new() { Name = "Filter" });

@@ -1,4 +1,6 @@
 @namespace Trailblazor
+@using System.Globalization
+@using System.Text
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inherits TbBoxedFieldBase<string>
@@ -93,7 +95,13 @@
     private bool Editable => !Disabled && !ReadOnly;
 
     private string CodeOf(string? text) =>
-        new([.. (text ?? "").Where(Takes).Select(char.ToUpperInvariant).Take(Length)]);
+        new([.. AsciiDigits(text ?? "").Where(Takes).Select(char.ToUpperInvariant).Take(Length)]);
+
+    // Any decimal digit becomes its ASCII digit, as in code-field.js, so Arabic-Indic, Persian or full-width digits
+    // aren't dropped.
+    private static string AsciiDigits(string text) => string.Concat(text.EnumerateRunes().Select(rune =>
+        Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber
+            ? ((int)Rune.GetNumericValue(rune)).ToString(CultureInfo.InvariantCulture) : rune.ToString()));
 
     private bool Takes(char character) => Characters == CodeCharacters.Digits
         ? char.IsAsciiDigit(character) : char.IsAsciiLetterOrDigit(character);

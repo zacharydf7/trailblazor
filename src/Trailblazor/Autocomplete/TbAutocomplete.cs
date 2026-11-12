@@ -316,8 +316,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
             }
             else
             {
-                found = Items?.Where(item => TextOf(item).Contains(_text, StringComparison.CurrentCultureIgnoreCase))
-                    ?? [];
+                found = Items?.Where(item => TextFold.Contains(TextOf(item), _text)) ?? [];
             }
 
             token.ThrowIfCancellationRequested();
@@ -404,10 +403,15 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
             return;
         }
 
-        if (_results.Find(item => string.Equals(TextOf(item), _text, StringComparison.CurrentCultureIgnoreCase))
-            is { } match)
+        // Text that equals a suggestion ignoring case takes it; failing that, a match that also ignores accents does,
+        // if only one suggestion matches.
+        var folded = TextFold.Fold(_text);
+        var matches = _results.Where(item => TextFold.Fold(TextOf(item)) == folded).Take(2).ToList();
+        var exact = _results.FindIndex(item =>
+            string.Equals(TextOf(item), _text, StringComparison.CurrentCultureIgnoreCase));
+        if (exact >= 0 || matches.Count == 1)
         {
-            await ChooseAsync(match);
+            await ChooseAsync(exact >= 0 ? _results[exact] : matches[0]);
         }
         else if (FreeText)
         {
