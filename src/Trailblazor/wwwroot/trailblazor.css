@@ -434,7 +434,7 @@
         --tb-color-text-muted: light-dark(var(--tb-graphite-600), var(--tb-graphite-300));
         --tb-color-text-disabled: light-dark(var(--tb-graphite-400), var(--tb-graphite-600));
         --tb-border-subtle: light-dark(var(--tb-graphite-200), var(--tb-graphite-800));
-        --tb-border-strong: var(--tb-graphite-500);
+        --tb-border-strong: light-dark(var(--tb-graphite-500), var(--tb-graphite-400));
 
         /* The primary action is ink: near-black in light mode, near-white in dark. */
         --tb-color-primary: light-dark(var(--tb-graphite-900), var(--tb-graphite-50));
@@ -448,7 +448,6 @@
         --tb-color-on-neutral: light-dark(white, var(--tb-graphite-950));
         --tb-color-neutral-subtle: light-dark(var(--tb-graphite-100), var(--tb-graphite-800));
         --tb-color-neutral-text: light-dark(var(--tb-graphite-700), var(--tb-graphite-300));
-
     }
 
     [data-tb-palette="cobalt"] {
@@ -3320,10 +3319,11 @@
         color: var(--tb-color-text-muted);
     }
 
+    /* A tint of the text color, since a read-only or filled editor already sits on the sunken surface. */
     .tb-rich-text-editor__content code {
         padding-inline: 0.2em;
         border-radius: var(--tb-radius-sm);
-        background: var(--tb-color-surface-sunken);
+        background: color-mix(in srgb, var(--tb-color-text) 8%, transparent);
         font-family: var(--tb-font-family-mono);
         font-size: 0.9em;
     }
@@ -4527,15 +4527,15 @@
     .tb-drawer--start {
         --tb-drawer-from: -100% 0;
         margin-inline-end: auto;
-        border-start-end-radius: var(--tb-radius-lg);
-        border-end-end-radius: var(--tb-radius-lg);
+        border-start-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
+        border-end-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
     }
 
     .tb-drawer--end {
         --tb-drawer-from: 100% 0;
         margin-inline-start: auto;
-        border-start-start-radius: var(--tb-radius-lg);
-        border-end-start-radius: var(--tb-radius-lg);
+        border-start-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
+        border-end-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
     }
 
     .tb-drawer--start:dir(rtl) {
@@ -4567,15 +4567,15 @@
     .tb-drawer--top {
         --tb-drawer-from: 0 -100%;
         margin-block-end: auto;
-        border-end-start-radius: var(--tb-radius-lg);
-        border-end-end-radius: var(--tb-radius-lg);
+        border-end-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
+        border-end-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
     }
 
     .tb-drawer--bottom {
         --tb-drawer-from: 0 100%;
         margin-block-start: auto;
-        border-start-start-radius: var(--tb-radius-lg);
-        border-start-end-radius: var(--tb-radius-lg);
+        border-start-start-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
+        border-start-end-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
     }
 
     @starting-style {
@@ -4732,7 +4732,7 @@
     }
 
     /* On a narrow window the navigation leaves the page, and the menu button opens it in a drawer instead. */
-    @media (max-width: 48em) {
+    @media (width < 768px) {
         .tb-app-shell {
             grid-template-columns: minmax(0, 1fr);
             grid-template-areas: "header" "main" "footer";
@@ -5397,7 +5397,7 @@
         min-width: var(--tb-anchor-width, 0px);
         margin: 0;
         border: 1px solid var(--tb-border-subtle);
-        border-radius: var(--tb-radius-md);
+        border-radius: var(--tb-popover-radius, var(--tb-radius-md));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
         font-family: var(--tb-font-family);
@@ -7669,9 +7669,9 @@
         max-block-size: var(--tb-available-block-size, none);
         overflow-y: auto;
         margin: 0;
-        padding: var(--tb-space-3);
+        padding: var(--tb-space-4);
         border: 1px solid var(--tb-border-subtle);
-        border-radius: var(--tb-radius-md);
+        border-radius: var(--tb-popover-radius, var(--tb-radius-md));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
         font-family: var(--tb-font-family);

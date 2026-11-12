@@ -1095,4 +1095,28 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
             editor.dispatchEvent(event);
         }
         """, html);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task InlineCode_ShouldStandOut_WhenTheEditorIsReadOnly(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/rich-text-editor");
+        var content = page.Locator(".tb-rich-text-editor__content[aria-readonly=true]").First;
+
+        // The code's fill, and the fill of the nearest element behind it that has one.
+        var colors = await content.EvaluateAsync<string[]>("""
+            content => {
+                const code = content.appendChild(document.createElement('code'));
+                code.textContent = 'trail_id';
+                let field = content;
+                while (getComputedStyle(field).backgroundColor === 'rgba(0, 0, 0, 0)') {
+                    field = field.parentElement;
+                }
+
+                return [getComputedStyle(code).backgroundColor, getComputedStyle(field).backgroundColor];
+            }
+            """);
+
+        Assert.NotEqual("rgba(0, 0, 0, 0)", colors[0]);
+        Assert.NotEqual(colors[1], colors[0]);
+    }
 }

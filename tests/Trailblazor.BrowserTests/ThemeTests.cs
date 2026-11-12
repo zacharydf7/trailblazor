@@ -128,4 +128,29 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal(["serif", "32px"], (await page.EvaluateAsync<string[]>(Type))[..2]);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GraphiteStrongBorder_ShouldLighten_WhenTheThemeIsDark(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/button");
+
+        // The strong border and graphite 400, each resolved inside a dark graphite region.
+        var colors = await page.EvaluateAsync<string[]>("""
+            () => {
+                const host = document.body.appendChild(document.createElement('div'));
+                host.dataset.tbPalette = 'graphite';
+                host.dataset.tbTheme = 'dark';
+                const color = token => {
+                    const probe = host.appendChild(document.createElement('div'));
+                    probe.style.color = token;
+                    return getComputedStyle(probe).color;
+                };
+                const colors = [color('var(--tb-border-strong)'), color('var(--tb-graphite-400)')];
+                host.remove();
+                return colors;
+            }
+            """);
+
+        Assert.Equal(colors[1], colors[0]);
+    }
 }

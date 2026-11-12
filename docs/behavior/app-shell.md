@@ -35,4 +35,4 @@ Familiar apps: the sidebar and top bar of a mail app, and of a cloud provider's 
 
 - Arrow keys between the links: the disclosure navigation pattern leaves them optional, and Tab reaches every link.
 - Remembering whether the navigation was collapsed: the app binds `NavigationCollapsed` and keeps it where it likes.
-- Choosing the breakpoint at run time: it is 48em, and an app's own stylesheet can override the rules that use it.
+- Choosing the breakpoint at run time: it is 768px, and an app's own stylesheet can override the rules that use it.

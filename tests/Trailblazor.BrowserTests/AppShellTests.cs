@@ -140,4 +140,27 @@ public class AppShellTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Beside(page).GetByRole(AriaRole.Link, new() { Name = "Home" }))
             .ToHaveCSSAsync("background-color", highlight);
     }
+
+    [Theory]
+    [InlineData("chromium", 767, false)]
+    [InlineData("chromium", 768, true)]
+    [InlineData("firefox", 767, false)]
+    [InlineData("firefox", 768, true)]
+    [InlineData("webkit", 767, false)]
+    [InlineData("webkit", 768, true)]
+    public async Task AppShell_ShouldKeepItsNavigationBesideOnlyFrom768px_WhenTheWindowIsAtTheBreakpoint(string browser,
+        int width, bool beside)
+    {
+        var page = await OpenAsync(browser, "/app-shell",
+            new() { ViewportSize = new() { Width = width, Height = 800 } });
+
+        if (beside)
+        {
+            await Expect(Beside(page)).ToBeVisibleAsync();
+        }
+        else
+        {
+            await Expect(Beside(page)).ToBeHiddenAsync();
+        }
+    }
 }

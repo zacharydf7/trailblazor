@@ -586,4 +586,14 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(hovered.Violations.Concat(chosen.Violations).Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldPadLikeAPopover_WhenOpened(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/date-range-picker");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Choose dates", Exact = true }).First.ClickAsync();
+
+        await Expect(page.Locator(".tb-date-range__panel:popover-open")).ToHaveCSSAsync("padding-top", "16px");
+    }
 }

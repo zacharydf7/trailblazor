@@ -2028,7 +2028,7 @@ public static class ExampleCatalog
                 new("basic", "App shell", "`Header` holds a `TbAppBar` across the top, `Navigation` a `TbNavMenu` "
                     + "beside the page, and the page goes in the `main` landmark, with a link that skips to it. The "
                     + "app bar's menu button narrows the navigation to a rail of icons, bound with "
-                    + "`@bind-NavigationCollapsed`. On a window narrower than 48em, the navigation leaves the page and "
+                    + "`@bind-NavigationCollapsed`. On a window narrower than 768px, the navigation leaves the page and "
                     + "the button opens it in a drawer instead, which closes when people follow a link. Here the shell "
                     + "sits inside this page, so its landmarks are inside the page's own; in an app it is the frame.",
                     typeof(AppShellExample)),
@@ -2134,7 +2134,7 @@ public static class ExampleCatalog
                 "Find the navigation by its landmark, with "
                     + "`GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the current page's link with "
                     + "`Locator(\"[aria-current=page]\")`.",
-                "Playwright's window is wide unless you set `ViewportSize`; set it narrower than 48em to test the "
+                "Playwright's window is wide unless you set `ViewportSize`; set it narrower than 768px to test the "
                     + "drawer. On a narrow window, open it with "
                     + "`GetByRole(AriaRole.Button, new() { Name = \"Navigation\" })`.",
                 "In bUnit, navigate with the `NavigationManager` to make a link current; both menu buttons render, "

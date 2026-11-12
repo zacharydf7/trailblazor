@@ -300,7 +300,8 @@
         <TbText>
             A palette is a block of color tokens for one value of <code>data-tb-palette</code>. Use
             <code>light-dark()</code> so each color has its light and dark value, and set the background, surface, text,
-            border, primary and neutral tokens; the primary's states and the focus ring follow from the primary. The
+            border, primary, secondary and neutral tokens. The primary's and secondary's states follow from those colors,
+            and the focus ring from the primary. The
             built-in palettes in <code>trailblazor.css</code> list every token a palette sets.
         </TbText>
         <CodeBlock Label="A custom palette" Code="@CustomPalette" Language="CodeLanguage.Css" />
@@ -316,7 +317,8 @@
         <TbText>When the device asks for reduced motion:</TbText>
         <ul>
             <li>Transitions finish at once.</li>
-            <li>A busy button's spinner stops.</li>
+            <li>A busy button's spinner stops, and so does a tree row's spinner while its children load.</li>
+            <li>A skeleton stops its pulse or wave and shows as a still placeholder.</li>
             <li>An indeterminate progress bar or circle fills and gently pulses in place instead of moving.</li>
         </ul>
 
@@ -527,6 +529,8 @@
             --tb-color-text: light-dark(#14231a, #e8f2ec);
             --tb-color-primary: light-dark(#1e6b45, #7fd1a5);
             --tb-color-on-primary: light-dark(white, #0f1a14);
+            --tb-color-secondary: light-dark(#7a4e14, #e8b46a);
+            --tb-color-on-secondary: light-dark(white, #0f1a14);
             /* ...and the remaining surface, border and neutral tokens. */
         }
         """;
