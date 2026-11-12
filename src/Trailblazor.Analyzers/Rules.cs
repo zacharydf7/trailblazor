@@ -39,9 +39,10 @@ internal static class Rules
 
     public static readonly DiagnosticDescriptor ItemTypeMismatch = new("TB007",
         "An item's value isn't the type its list holds", "{0}'s value is {1}, but the {2} it's in holds {3}", Usage,
-        DiagnosticSeverity.Warning, isEnabledByDefault: true, "An option or toggle item's value must be the type of " +
-        "the select, list box or toggle group it's in. Razor infers each one's type from its own value, so a value " +
-        "such as 1 in a list of strings makes an option of int, which throws as it renders.");
+        DiagnosticSeverity.Warning, isEnabledByDefault: true, "The value of an option, toggle item, radio, checkbox " +
+        "item or menu radio item must be the type of the select, list box, toggle group, radio group, checkbox " +
+        "group or menu radio group it's in. Razor infers each one's type from its own value, so a value such as 1 " +
+        "in a list of strings makes an option of int, which throws as it renders.");
 
     public static readonly DiagnosticDescriptor SliderNotANumber = new("TB008", "A slider holds something other " +
         "than a number", "{0} holds {1}, but a slider needs a number type", Usage, DiagnosticSeverity.Warning,

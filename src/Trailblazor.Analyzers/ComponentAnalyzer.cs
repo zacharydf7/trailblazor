@@ -22,17 +22,25 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbChipGroup", ["AriaLabel"]),
         ("Trailblazor.TbToolbar", ["AriaLabel"]),
         ("Trailblazor.TbToggleGroupBase`1", ["AriaLabel"]),
-        ("Trailblazor.TbToolbarButton", ["Label", "AriaLabel"]),
         ("Trailblazor.TbProgress", ["Label", "AriaLabel"]),
-        ("Trailblazor.TbMenu", ["Label", "AriaLabel", "Trigger"]),
-        ("Trailblazor.TbPopover", ["Label", "AriaLabel", "Trigger"]),
         ("Trailblazor.TbTab", ["Text", "TextContent"]),
         ("Trailblazor.TbTreeView`2", ["AriaLabel", "aria-labelledby"]),
         ("Trailblazor.TbSubMenu", ["Label"]),
         ("Trailblazor.TbOptionGroup", ["Label"]),
         ("Trailblazor.TbSortable`1", ["Label"]),
         ("Trailblazor.TbInsertDivider", ["Label"]),
+        ("Trailblazor.TbCarousel", ["AriaLabel"]),
+        ("Trailblazor.TbVirtualList`1", ["AriaLabel"]),
+        ("Trailblazor.TbFab", ["Label"]),
+        ("Trailblazor.TbSpeedDial", ["Label"]),
+        ("Trailblazor.TbStep", ["Title"]),
+        ("Trailblazor.TbAvatar", ["Name"]),
     ];
+
+    // Named by Label, or by AriaLabel when an Icon replaces the text, unless the app's own Trigger replaces their
+    // button.
+    internal static readonly string[] Labeled =
+        ["Trailblazor.TbToolbarButton", "Trailblazor.TbMenu", "Trailblazor.TbPopover", "Trailblazor.TbPopconfirm"];
 
     // An id lets a TbLabel elsewhere name the field's native input. Other attributes written on a field go on its
     // wrapper, not its input, so they don't name it.
@@ -52,9 +60,14 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbCalendar`1", ["Label", "AriaLabel", "InputAttributes"]),
     ];
 
-    // Components that work only inside another, paired with each host that can hold them; the warning names the first.
+    // Components that work only inside another, paired with each host that can hold them; the warning names each.
     internal static readonly (string Child, string Host)[] Hosted =
     [
+        ("Trailblazor.TbRadio`1", "Trailblazor.TbRadioGroup`1"),
+        ("Trailblazor.TbCheckboxItem`1", "Trailblazor.TbCheckboxGroup`1"),
+        ("Trailblazor.TbOption`1", "Trailblazor.TbSelectBase`1"),
+        ("Trailblazor.TbOption`1", "Trailblazor.TbListBoxBase`1"),
+        ("Trailblazor.TbToggleItem`1", "Trailblazor.TbToggleGroupBase`1"),
         ("Trailblazor.TbTab", "Trailblazor.TbTabs"),
         ("Trailblazor.TbSplitterPane", "Trailblazor.TbSplitter"),
         ("Trailblazor.TbTableOfContentsItem", "Trailblazor.TbTableOfContents"),
@@ -78,6 +91,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbOption`1", "Trailblazor.TbSelectBase`1"),
         ("Trailblazor.TbOption`1", "Trailblazor.TbListBoxBase`1"),
         ("Trailblazor.TbToggleItem`1", "Trailblazor.TbToggleGroupBase`1"),
+        ("Trailblazor.TbRadio`1", "Trailblazor.TbRadioGroup`1"),
+        ("Trailblazor.TbCheckboxItem`1", "Trailblazor.TbCheckboxGroup`1"),
+        ("Trailblazor.TbMenuRadioItem`1", "Trailblazor.TbMenuRadioGroup`1"),
     ];
 
     /// <inheritdoc />
@@ -107,7 +123,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 compilation.GetTypeByMetadataName("Trailblazor.IDialogService"), Pairs(compilation, Hosted),
                 Pairs(compilation, Listed), [.. new[] { "Trailblazor.TbSlider`1", "Trailblazor.TbRangeSlider`1" }
                     .Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
-                compilation.GetTypeByMetadataName("Trailblazor.TbTreeView`2"));
+                compilation.GetTypeByMetadataName("Trailblazor.TbTreeView`2"),
+                [.. Labeled.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()]);
             start.RegisterOperationAction(operation => Analyze(operation, types), OperationKind.Invocation);
         });
     }
@@ -132,11 +149,18 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         }
 
         var component = usage.Component;
-        foreach (var (_, names) in types.Named.Where(entry => InheritsFrom(component, entry.Type)))
+        // A decorative avatar is hidden from screen readers, so it needs no name.
+        foreach (var (_, names) in types.Named.Where(entry => InheritsFrom(component, entry.Type)
+            && !IsOn(usage, "Decorative")))
         {
             var shown = names.Where(name => char.IsUpper(name[0])).ToList();
             CheckName(context, usage, names, Rules.NoAccessibleName, component.Name, shown.Count > 2
                 ? $"{string.Join(", ", shown.Take(shown.Count - 1))} or {shown.Last()}" : string.Join(" or ", shown));
+        }
+
+        if (types.Labeled.Any(type => InheritsFrom(component, type)) && !usage.Has("Trigger"))
+        {
+            CheckLabelOrIcon(context, usage);
         }
 
         if (SymbolEqualityComparer.Default.Equals(component, types.Dialog))
@@ -167,6 +191,20 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 usage.Parameters["Value"].Location, component.Name, fix));
         }
     }
+
+    // Repeats the component's own check: with an Icon it needs an AriaLabel, and without one a Label. When the Icon
+    // may be null at run time, either name will do.
+    private static void CheckLabelOrIcon(OperationAnalysisContext context, ComponentUsage usage)
+    {
+        string[] names = !usage.Has("Icon") ? ["Label"]
+            : IsSurelyAnIcon(usage.Parameters["Icon"].Value) ? ["AriaLabel"] : ["Label", "AriaLabel"];
+        var shown = Property(usage.Component, "Trigger") is null || names.Length > 1 ? names : [.. names, "Trigger"];
+        CheckName(context, usage, names, Rules.NoAccessibleName, usage.Component.Name, string.Join(" or ", shown));
+    }
+
+    // An Icon? read from a model or a field may be null; one written in the markup is surely set.
+    private static bool IsSurelyAnIcon(IOperation? value) => IsSurelySet(value) && Unwrap(value)?.Type
+        is not INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T };
 
     // An attribute named like a type parameter, such as T or TItem, on a generic Trailblazor component whose own type
     // parameter has another name.
@@ -210,11 +248,14 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        // The warning names a select, not the TbSelectBase that each kind of select shares.
+        var names = hosts.Select(host => host.Name.EndsWith("Base", StringComparison.Ordinal)
+            ? host.Name.Substring(0, host.Name.Length - "Base".Length) : host.Name);
         context.ReportDiagnostic(Diagnostic.Create(Rules.OutsideItsParent, usage.Location, usage.Component.Name,
-            hosts[0].Name));
+            string.Join(" or ", names)));
     }
 
-    // An option or toggle item whose value can't be its list's type. The nearest list around it is the one it joins,
+    // An item whose value can't be its list's type. The nearest list around it is the one it joins,
     // unless a component from outside Trailblazor comes first, which may put it in another.
     private static void CheckItemType(OperationAnalysisContext context, IInvocationOperation open,
         ComponentUsage usage, (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed)
@@ -485,7 +526,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         (INamedTypeSymbol Type, string[] Names)[] otherFields, INamedTypeSymbol? dialog,
         INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted,
         (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed, INamedTypeSymbol[] sliders,
-        INamedTypeSymbol? treeView)
+        INamedTypeSymbol? treeView, INamedTypeSymbol[] labeled)
     {
         public (INamedTypeSymbol Type, string[] Names)[] Named { get; } = named;
 
@@ -504,5 +545,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol[] Sliders { get; } = sliders;
 
         public INamedTypeSymbol? TreeView { get; } = treeView;
+
+        public INamedTypeSymbol[] Labeled { get; } = labeled;
     }
 }

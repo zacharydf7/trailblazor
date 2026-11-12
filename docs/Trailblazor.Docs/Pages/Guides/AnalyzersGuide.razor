@@ -34,9 +34,12 @@
                     <tr>
                         <th scope="row">TB001</th>
                         <td>
-                            A control that needs a name has none, or a blank one: an icon button, menu, popover,
-                            toolbar, toolbar button, chip group, toggle group, progress, tab, tree, submenu, option
-                            group, sortable list or insert divider.
+                            A control that needs a name has none, or a blank one: an icon button, toolbar, chip group,
+                            toggle group, progress, tab, tree, submenu, option group, sortable list, insert divider,
+                            carousel, virtual list, floating action button, speed dial, step, or avatar that isn't
+                            <code>Decorative</code>. A menu, popover, popconfirm or toolbar button without a
+                            <code>Trigger</code> needs an <code>AriaLabel</code> when it shows an <code>Icon</code>,
+                            and a <code>Label</code> when it doesn't.
                         </td>
                         <td>Set the parameter the warning names, such as <code>AriaLabel</code>.</td>
                     </tr>
@@ -81,18 +84,20 @@
                         <td>
                             A component that works only inside another is written in a page outside it: a tab outside
                             its tabs, a splitter pane, table of contents item, tree item, menu radio item, breadcrumb,
-                            carousel slide, nav link or group, or step outside its own parent, or a dialog title or
-                            description outside a <code>TbDialog</code> or <code>TbDrawer</code>. Outside its parent, it
-                            throws as it renders.
+                            carousel slide, nav link or group, step, radio, checkbox item or toggle item outside its
+                            own parent, an option outside a select or list box, or a dialog title or description
+                            outside a <code>TbDialog</code> or <code>TbDrawer</code>. Outside its parent, it throws as
+                            it renders.
                         </td>
                         <td>Move it inside the component the warning names.</td>
                     </tr>
                     <tr>
                         <th scope="row">TB007</th>
                         <td>
-                            An option's value isn't the type its select or list box holds, or a toggle item's isn't its
-                            toggle group's, such as <code>Value="1"</code> in a list of strings. Razor infers each
-                            item's type from its own value, not from its list's, so the item throws as it renders.
+                            An option's value isn't the type its select or list box holds, or the value of a toggle
+                            item, radio, checkbox item or menu radio item isn't its group's type, such as
+                            <code>Value="1"</code> in a list of strings. Razor infers each item's type from its own
+                            value, not from its list's, so the item throws as it renders.
                         </td>
                         <td>
                             Set the item's <code>TValue</code> to the list's type, such as

@@ -43,7 +43,7 @@ public class ComponentAnalyzerTests
     }
 
     [Fact]
-    public async Task ComponentAnalyzer_ShouldReportNoAccessibleName_WhenAMenuHasNeitherLabelNorTrigger()
+    public async Task ComponentAnalyzer_ShouldReportNoAccessibleName_WhenAnIconMenuHasNoAriaLabelOrTrigger()
     {
         var diagnostics = await RunAsync("""
             __builder.OpenComponent<TbMenu>(0);
@@ -53,7 +53,79 @@ public class ComponentAnalyzerTests
 
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal("TB001", diagnostic.Id);
-        Assert.Equal("TbMenu has no accessible name. Set Label, AriaLabel or Trigger.", diagnostic.GetMessage());
+        Assert.Equal("TbMenu has no accessible name. Set AriaLabel or Trigger.", diagnostic.GetMessage());
+    }
+
+    [Theory]
+    [InlineData("TbMenu", "Icon", "Label", "TbMenu has no accessible name. Set AriaLabel or Trigger.")]
+    [InlineData("TbMenu", "Icon", "AriaLabel", "")]
+    [InlineData("TbPopover", "", "AriaLabel", "TbPopover has no accessible name. Set Label or Trigger.")]
+    [InlineData("TbPopover", "", "Label", "")]
+    [InlineData("TbPopconfirm", "", "", "TbPopconfirm has no accessible name. Set Label or Trigger.")]
+    [InlineData("TbPopconfirm", "Icon", "AriaLabel", "")]
+    [InlineData("TbToolbarButton", "", "AriaLabel", "TbToolbarButton has no accessible name. Set Label.")]
+    [InlineData("TbToolbarButton", "Icon", "Label", "TbToolbarButton has no accessible name. Set AriaLabel.")]
+    public async Task ComponentAnalyzer_ShouldAskForTheNameItsButtonUses_WhenAnIconIsOrIsntSet(string component,
+        string icon, string name, string expected)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<{{component}}>(0);
+            {{(icon == "" ? "" : "__builder.AddComponentParameter(1, \"Icon\", (Icon?)default(Icon));")}}
+            {{(name == "" ? "" : $"__builder.AddComponentParameter(2, \"{name}\", \"Trail\");")}}
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(expected == "" ? [] : [expected], diagnostics.Select(diagnostic => diagnostic.GetMessage()));
+    }
+
+    [Theory]
+    [InlineData("_compact ? default(Icon) : null")]
+    [InlineData("_icon")]
+    public async Task ComponentAnalyzer_ShouldTakeEitherName_WhenTheIconMayBeNullAsThePageRuns(string icon)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbMenu>(0);
+            __builder.AddComponentParameter(1, "Icon", {{icon}});
+            __builder.AddComponentParameter(2, "Label", "Trail");
+            __builder.CloseComponent();
+            """, "private bool _compact; private Icon? _icon;");
+
+        Assert.Empty(ids);
+    }
+
+    [Theory]
+    [InlineData("TbCarousel", "AriaLabel")]
+    [InlineData("TbVirtualList<string>", "AriaLabel")]
+    [InlineData("TbFab", "Label")]
+    [InlineData("TbSpeedDial", "Label")]
+    [InlineData("TbStep", "Title")]
+    [InlineData("TbAvatar", "Name")]
+    public async Task ComponentAnalyzer_ShouldReportNoAccessibleName_WhenTheNameItThrowsWithoutIsBlank(
+        string component, string name)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<{{component}}>(0);
+            __builder.AddComponentParameter(1, "{{name}}", " ");
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(["TB001"], ids);
+    }
+
+    [Theory]
+    [InlineData("true", "")]
+    [InlineData("_decorative", "")]
+    [InlineData("false", "TB001")]
+    public async Task ComponentAnalyzer_ShouldNameAnAvatarOnlyWhenItIsntDecorative_WhenItHasNoName(string decorative,
+        string expected)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbAvatar>(0);
+            __builder.AddComponentParameter(1, "Decorative", {{decorative}});
+            __builder.CloseComponent();
+            """, "private bool _decorative;");
+
+        Assert.Equal(expected == "" ? [] : [expected], ids);
     }
 
     [Fact]
@@ -476,6 +548,23 @@ public class ComponentAnalyzerTests
         Assert.Empty(ids);
     }
 
+    [Theory]
+    [InlineData("TbRadio<string>", "TbRadio isn't inside a TbRadioGroup, so it throws as it renders")]
+    [InlineData("TbCheckboxItem<string>", "TbCheckboxItem isn't inside a TbCheckboxGroup, so it throws as it renders")]
+    [InlineData("TbOption<string>", "TbOption isn't inside a TbSelect or TbListBox, so it throws as it renders")]
+    [InlineData("TbToggleItem<string>", "TbToggleItem isn't inside a TbToggleGroup, so it throws as it renders")]
+    public async Task ComponentAnalyzer_ShouldReportOutsideItsParent_WhenAPagesItemHasNoList(string item,
+        string expected)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<{{item}}>(0);
+            __builder.AddComponentParameter(1, "Value", "Ridge");
+            __builder.CloseComponent();
+            """, attributes: Routed);
+
+        Assert.Equal([expected], diagnostics.Select(diagnostic => diagnostic.GetMessage()));
+    }
+
     private const string Routed = "[Route(\"/days\")]";
 
     private const string TabInStack = """
@@ -735,6 +824,27 @@ public class ComponentAnalyzerTests
             __builder.AddComponentParameter(1, "AriaLabel", "Pace");
             __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
                 __builder2.OpenComponent<TbToggleItem<int>>(3);
+                __builder2.AddComponentParameter(4, "Value", 1);
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(["TB007"], ids);
+    }
+
+    [Theory]
+    [InlineData("TbRadioGroup<string>", "TbRadio<int>")]
+    [InlineData("TbCheckboxGroup<string>", "TbCheckboxItem<int>")]
+    [InlineData("TbMenuRadioGroup<string>", "TbMenuRadioItem<int>")]
+    public async Task ComponentAnalyzer_ShouldReportItemTypeMismatch_WhenAGroupsItemIsntItsType(string group,
+        string item)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<{{group}}>(0);
+            __builder.AddComponentParameter(1, "AriaLabel", "Pace");
+            __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<{{item}}>(3);
                 __builder2.AddComponentParameter(4, "Value", 1);
                 __builder2.CloseComponent();
             }));
@@ -1036,6 +1146,17 @@ public class ComponentAnalyzerTests
 
         var missing = ComponentAnalyzer.Hosted.SelectMany(entry => new[] { entry.Child, entry.Host })
             .Where(name => library.GetType(name) is null);
+
+        Assert.Empty(missing);
+    }
+
+    [Fact]
+    public void ComponentAnalyzer_ShouldNameOnlyComponentsWithALabelAndAnIcon_WhenItsLabeledTableIsRead()
+    {
+        var library = typeof(TbButton).Assembly;
+
+        var missing = ComponentAnalyzer.Labeled.Where(name => library.GetType(name) is not { } type
+            || new[] { "Label", "AriaLabel", "Icon" }.Any(parameter => type.GetProperty(parameter) is null));
 
         Assert.Empty(missing);
     }

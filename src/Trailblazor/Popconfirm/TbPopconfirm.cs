@@ -145,6 +145,12 @@ public partial class TbPopconfirm
                 + $"{nameof(AriaLabel)}, which names the icon button; {nameof(Label)} is for a text trigger.");
         }
 
+        if (Trigger is null && Icon is null && string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbPopconfirm)} needs a {nameof(Label)} or a {nameof(Trigger)}.");
+        }
+
         // A new Open from the parent opens or closes the confirmation; one it already reported changes nothing.
         if (Open != _lastOpen)
         {

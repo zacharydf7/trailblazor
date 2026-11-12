@@ -166,6 +166,15 @@ public class TbPopconfirmTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameItselfInTheError_WhenItHasNoLabelOrTrigger()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbPopconfirm>(parameters => parameters
+            .Add(confirm => confirm.Title, "Delete Pine Hollow loop?")));
+
+        Assert.Equal("TbPopconfirm needs a Label or a Trigger.", error.Message);
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenTheTitleIsBlank()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbPopconfirm>(parameters => parameters
