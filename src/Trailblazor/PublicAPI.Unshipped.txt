@@ -2947,7 +2947,7 @@ Trailblazor.TbTransferList<TItem>.Items.get -> System.Collections.Generic.IReadO
 Trailblazor.TbTransferList<TItem>.Items.set -> void
 Trailblazor.TbTransferList<TItem>.ItemText.get -> System.Func<TItem, string!>?
 Trailblazor.TbTransferList<TItem>.ItemText.set -> void
-Trailblazor.TbTransferList<TItem>.Labels.get -> Trailblazor.TransferListLabels?
+Trailblazor.TbTransferList<TItem>.Labels.get -> Trailblazor.TransferListLabels!
 Trailblazor.TbTransferList<TItem>.Labels.set -> void
 Trailblazor.TbTransferList<TItem>.Rows.get -> int
 Trailblazor.TbTransferList<TItem>.Rows.set -> void
@@ -4713,3 +4713,13 @@ Trailblazor.TbRangeSlider<TValue>.Labels.get -> Trailblazor.RangeSliderLabels!
 Trailblazor.TbRangeSlider<TValue>.Labels.set -> void
 Trailblazor.TbThemePicker.Labels.get -> Trailblazor.ThemePickerLabels!
 Trailblazor.TbThemePicker.Labels.set -> void
+Trailblazor.TransferListLabels.Filter.get -> string?
+Trailblazor.TransferListLabels.Filter.init -> void
+Trailblazor.TransferListLabels.Move.get -> string?
+Trailblazor.TransferListLabels.Move.init -> void
+Trailblazor.TransferListLabels.MoveAll.get -> string?
+Trailblazor.TransferListLabels.MoveAll.init -> void
+Trailblazor.TransferListLabels.Moved.get -> string?
+Trailblazor.TransferListLabels.Moved.init -> void
+Trailblazor.TransferListLabels.Empty.get -> string?
+Trailblazor.TransferListLabels.Empty.init -> void

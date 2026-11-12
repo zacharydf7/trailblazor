@@ -56,9 +56,11 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     public int Rows { get; set; } = 8;
 
-    /// <summary>Replaces the lists' titles.</summary>
+    /// <summary>The words the field shows and says to screen readers: the lists' titles, what an empty list shows,
+    /// the filter boxes' labels, the move buttons' names and what is read out after a move. Each one left null uses
+    /// the app's text.</summary>
     [Parameter]
-    public TransferListLabels? Labels { get; set; }
+    public TransferListLabels Labels { get; set; } = new();
 
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
@@ -70,9 +72,17 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private bool Editable => !Disabled && !ReadOnly;
 
-    private string AvailableTitle => Labels?.Available ?? Localizer[TbStrings.TransferListAvailable];
+    private string AvailableTitle => Labels.Available ?? Localizer[TbStrings.TransferListAvailable];
 
-    private string ChosenTitle => Labels?.Chosen ?? Localizer[TbStrings.TransferListChosen];
+    private string ChosenTitle => Labels.Chosen ?? Localizer[TbStrings.TransferListChosen];
+
+    private string FilterLabel => Labels.Filter ?? Localizer[TbStrings.TransferListFilter];
+
+    private string MoveLabel => Labels.Move ?? Localizer[TbStrings.TransferListMove];
+
+    private string MoveAllLabel => Labels.MoveAll ?? Localizer[TbStrings.TransferListMoveAll];
+
+    private ListBoxLabels ListLabels => new() { Empty = Labels.Empty };
 
     private IEnumerable<TItem> AvailableShown => Matching(Items.Where(item => !IsChosen(item)), _filterAvailable);
 
@@ -114,7 +124,7 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
         _markedAvailable = [];
         _markedChosen = [];
         await SetValueAsync([.. chosen]);
-        Announcer.Polite(Format(Localizer.Plural(TbStrings.TransferListMoved, moved.Count), moved.Count,
+        Announcer.Polite(Format(Labels.Moved ?? Localizer.Plural(TbStrings.TransferListMoved, moved.Count), moved.Count,
             toChosen ? ChosenTitle : AvailableTitle));
     }
 }

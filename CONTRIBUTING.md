@@ -137,6 +137,11 @@ The same idea gets the same name on every component.
   the attributes for the element that opens the popup.
 - A slot before or after a component's main content, such as an icon in a button or a unit in a field, is `Start` or
   `End`.
+- A component with two or more built-in strings takes them as a `Labels` record, such as `PaginationLabels`, whose
+  members are null by default. The accessible name of its landmark or group is still set by `AriaLabel`, not by
+  `Labels`. `LabelsRuleTests` reads the files of each component, its base classes and the internal parts it renders,
+  and fails for a component that reads two or more built-in strings and has no `Labels` parameter, apart from the
+  exceptions it lists with their reasons.
 
 ## Upcoming components
 

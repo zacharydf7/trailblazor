@@ -5567,7 +5567,7 @@ public static class ExampleCatalog
                 new("move-items", "Moving items", "`Items` holds every item, and `@bind-Value` the chosen ones, which "
                     + "keep the order of `Items`. Mark items in a list, then move them with the button beside it, or "
                     + "move every item a list shows. Double-clicking an item moves it to the other list. "
-                    + "`ItemText` gives each item's text, `Labels` the lists' titles, and "
+                    + "`ItemText` gives each item's text, `Labels` the lists' titles and the field's other words, and "
                     + "`Filterable` a filter box above each list, which then shows only the items whose text contains "
                     + "what's typed.", typeof(TransferListExample)),
             ],
@@ -5586,6 +5586,8 @@ public static class ExampleCatalog
                 "A `fieldset` named by its `Label`. Each list is a `listbox` named by its title, and each filter box "
                     + "by \"Filter\" and the title.",
                 "Each move button is named for what it does and where to, such as \"Move to Chosen\".",
+                "`Labels` replaces the titles, an empty list's text, the filter boxes' labels, the move buttons' names "
+                    + "and the announcement after a move.",
             ],
             Announcements =
             [

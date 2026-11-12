@@ -29,10 +29,11 @@
                     @if (Filterable)
                     {
                         <TbTextField TValue="string" Size="Size" UpdateOnInput Disabled="Disabled"
-                                     Label="@Format(Localizer[TbStrings.TransferListFilter], AvailableTitle)"
+                                     Label="@Format(FilterLabel, AvailableTitle)"
                                      @bind-Value="_filterAvailable" />
                     }
-                    <TbMultiListBox @ref="_available" TItem="TItem" Label="@AvailableTitle" Rows="Rows" Size="Size"
+                    <TbMultiListBox @ref="_available" TItem="TItem" Label="@AvailableTitle" Labels="ListLabels"
+                                    Rows="Rows" Size="Size"
                                     Disabled="Disabled" ReadOnly="ReadOnly" Comparer="Comparer"
                                     Value="markedAvailable" ValueChanged="marked => _markedAvailable = marked">
                         @foreach (var item in available)
@@ -46,22 +47,22 @@
                 <div data-part="moves" class="tb-transfer-list__moves">
                     <TbIconButton Icon="BuiltInIcons.ChevronEnd" Size="Size" data-part="move-chosen"
                                   ShowTooltip FocusableWhenDisabled="!Disabled"
-                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMove], ChosenTitle)"
+                                  AriaLabel="@Format(MoveLabel, ChosenTitle)"
                                   Disabled="!Editable || markedAvailable.Count == 0"
                                   OnClick="() => MoveToChosenAsync(markedAvailable)" />
                     <TbIconButton Icon="BuiltInIcons.PageLast" Size="Size" data-part="move-all-chosen"
                                   ShowTooltip FocusableWhenDisabled="!Disabled"
-                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMoveAll], ChosenTitle)"
+                                  AriaLabel="@Format(MoveAllLabel, ChosenTitle)"
                                   Disabled="!Editable || available.Count == 0"
                                   OnClick="() => MoveToChosenAsync(available)" />
                     <TbIconButton Icon="BuiltInIcons.ChevronStart" Size="Size" data-part="move-available"
                                   ShowTooltip FocusableWhenDisabled="!Disabled"
-                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMove], AvailableTitle)"
+                                  AriaLabel="@Format(MoveLabel, AvailableTitle)"
                                   Disabled="!Editable || markedChosen.Count == 0"
                                   OnClick="() => MoveToAvailableAsync(markedChosen)" />
                     <TbIconButton Icon="BuiltInIcons.PageFirst" Size="Size" data-part="move-all-available"
                                   ShowTooltip FocusableWhenDisabled="!Disabled"
-                                  AriaLabel="@Format(Localizer[TbStrings.TransferListMoveAll], AvailableTitle)"
+                                  AriaLabel="@Format(MoveAllLabel, AvailableTitle)"
                                   Disabled="!Editable || chosen.Count == 0"
                                   OnClick="() => MoveToAvailableAsync(chosen)" />
                 </div>
@@ -69,10 +70,11 @@
                     @if (Filterable)
                     {
                         <TbTextField TValue="string" Size="Size" UpdateOnInput Disabled="Disabled"
-                                     Label="@Format(Localizer[TbStrings.TransferListFilter], ChosenTitle)"
+                                     Label="@Format(FilterLabel, ChosenTitle)"
                                      @bind-Value="_filterChosen" />
                     }
-                    <TbMultiListBox TItem="TItem" Label="@ChosenTitle" Rows="Rows" Size="Size" Disabled="Disabled"
+                    <TbMultiListBox TItem="TItem" Label="@ChosenTitle" Labels="ListLabels" Rows="Rows" Size="Size"
+                                    Disabled="Disabled"
                                     ReadOnly="ReadOnly" Comparer="Comparer" Value="markedChosen"
                                     ValueChanged="marked => _markedChosen = marked">
                         @foreach (var item in chosen)

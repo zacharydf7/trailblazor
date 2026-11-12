@@ -69,6 +69,32 @@ public class TbTransferListTests : BunitContext
     }
 
     [Fact]
+    public async Task Labels_ShouldWordTheTitlesFiltersMovesAndAnnouncement_WhenGiven()
+    {
+        var host = Render<AnnouncerHost>();
+        var cut = RenderCrew([Hikers[2]], parameters => parameters.Add(list => list.Filterable, true)
+            .Add(list => list.Labels, new TransferListLabels
+            {
+                Available = "Free", Chosen = "Going", Empty = "No one", Filter = "Find in {0}", Move = "Send to {0}",
+                MoveAll = "Send all to {0}", Moved = "{0} sent to {1}",
+            }));
+
+        Assert.Equal(["Avery", "Blake", "Devon"], cut.Tb().ListBox("Free").Options);
+        Assert.Equal(["Casey"], cut.Tb().ListBox("Going").Options);
+        var labels = cut.FindAll("label").Select(label => label.TextContent.Trim()).ToList();
+        Assert.Contains("Find in Free", labels);
+        Assert.Contains("Find in Going", labels);
+        Assert.Equal(["Send to Going", "Send all to Going", "Send to Free", "Send all to Free"],
+            cut.FindAll("[data-part=moves] button").Select(button => button.GetAttribute("aria-label")));
+        await cut.Tb().TransferList("Crew").MoveAsync("Devon");
+
+        host.WaitForAssertion(() => Assert.Equal(["1 sent to Going"],
+            host.FindAll("[role=status] p").Select(p => p.TextContent)));
+        await cut.Tb().TransferList("Crew").MoveBackAsync("Casey", "Devon");
+        Assert.Contains("No one", cut.Find("[data-part=chosen]").TextContent);
+    }
+
+    [Fact]
     public async Task Option_ShouldMoveToTheOtherList_WhenDoubleClicked()
     {
         var cut = RenderCrew([Hikers[2]]);
