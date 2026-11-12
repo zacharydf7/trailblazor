@@ -68,6 +68,21 @@ public sealed class TrailblazorMarkup
     public TbRichTextEditorDriver RichTextEditor(string label) =>
         new(() => Field(label, "[role=textbox][contenteditable]"));
 
+    /// <summary>The <c>TbDatePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbDatePickerDriver DatePicker(string label) =>
+        new(() => Field(label, "input[data-format]", "input[type=date][data-static]:not(.tb-calendar__input)"));
+
+    /// <summary>The <c>TbDateTimePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbDateTimePickerDriver DateTimePicker(string label) =>
+        new(() => Field(label, "[role=group][data-format]:has([data-part=time-input])",
+            "input[type=datetime-local][data-static]"));
+
+    /// <summary>The <c>TbDateRangePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbDateRangePickerDriver DateRangePicker(string label) =>
+        new(() => Field(label, "[role=group][data-format]:has([data-part=end-input])"));
+
     /// <summary>The <c>TbPagination</c> with this accessible name, or the only one in the markup when no name is
     /// given.</summary>
     public TbPaginationDriver Pagination(string? name = null) => new(() =>
@@ -369,6 +384,136 @@ internal static class Choices
         if (control.GetAttribute("aria-disabled") == "true")
         {
             throw new InvalidOperationException("This field is disabled, so its options can't be chosen.");
+        }
+    }
+}
+
+/// <summary>A <c>TbDatePicker</c>, found by its label.</summary>
+public sealed class TbDatePickerDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbDatePickerDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The date the field holds, or null when it has none.</summary>
+    public DateOnly? Value
+    {
+        get
+        {
+            var input = _find();
+            return Dates.ReadIso(input.GetAttribute(input.HasAttribute("data-static") ? "value" : "data-value"));
+        }
+    }
+
+    /// <summary>Types the date in the field's own format and commits it, as typing and leaving the field does; null
+    /// clears it. A date the field can't take shows its error, as in a browser. On a static page, or when the field is
+    /// read-only or disabled, this throws.</summary>
+    public Task ChooseAsync(DateOnly? date)
+    {
+        var input = _find();
+        Dates.ThrowIfStaticOrLocked(input);
+        return input.ChangeAsync(new ChangeEventArgs
+        {
+            Value = date?.ToString(input.GetAttribute("data-format"), Dates.CultureOf(input)) ?? "",
+        });
+    }
+}
+
+/// <summary>A <c>TbDateTimePicker</c>, found by its label.</summary>
+public sealed class TbDateTimePickerDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbDateTimePickerDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The date and time the field holds, or null when it has none.</summary>
+    public DateTime? Value
+    {
+        get
+        {
+            var picker = _find();
+            var text = picker.HasAttribute("data-static") ? picker.GetAttribute("value")
+                : picker.GetAttribute("data-value");
+            return string.IsNullOrEmpty(text) ? null : DateTime.ParseExact(text,
+                ["yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss"], CultureInfo.InvariantCulture);
+        }
+    }
+
+    /// <summary>Types the date in the field's own format and then the time, committing each as leaving its box does;
+    /// null clears the date. On a static page, or when the field is read-only or disabled, this throws.</summary>
+    public async Task ChooseAsync(DateTime? value)
+    {
+        var group = _find();
+        var dateInput = group.QuerySelector("[data-part=date-input]")!;
+        Dates.ThrowIfStaticOrLocked(group.HasAttribute("data-static") ? group : dateInput);
+        await dateInput.ChangeAsync(new ChangeEventArgs
+        {
+            Value = value?.ToString(group.GetAttribute("data-format"), Dates.CultureOf(group)) ?? "",
+        });
+        if (value is { } chosen)
+        {
+            await _find().QuerySelector("[data-part=time-input]")!.ChangeAsync(new ChangeEventArgs
+            {
+                Value = chosen.ToString(chosen.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture),
+            });
+        }
+    }
+}
+
+/// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>
+public sealed class TbDateRangePickerDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbDateRangePickerDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The range the field holds; either end is null when it has none.</summary>
+    public (DateOnly? Start, DateOnly? End) Range
+    {
+        get
+        {
+            var dates = (_find().GetAttribute("data-value") ?? throw new InvalidOperationException(
+                "The date range picker doesn't report its range.")).Split('/');
+            return (Dates.ReadIso(dates[0]), Dates.ReadIso(dates[1]));
+        }
+    }
+
+    /// <summary>Types both dates in the field's own format and commits them, as typing in each box and leaving it does;
+    /// null clears that end. On a static page, or when the field is read-only or disabled, this throws.</summary>
+    public async Task ChooseAsync(DateOnly? start, DateOnly? end)
+    {
+        var group = _find();
+        Dates.ThrowIfStaticOrLocked(group.QuerySelector("[data-part=start-input]")!);
+        var format = group.GetAttribute("data-format");
+        var culture = Dates.CultureOf(group);
+        await group.QuerySelector("[data-part=start-input]")!.ChangeAsync(
+            new ChangeEventArgs { Value = start?.ToString(format, culture) ?? "" });
+        await _find().QuerySelector("[data-part=end-input]")!.ChangeAsync(
+            new ChangeEventArgs { Value = end?.ToString(format, culture) ?? "" });
+    }
+}
+
+internal static class Dates
+{
+    internal static DateOnly? ReadIso(string? text) => string.IsNullOrEmpty(text) ? null
+        : DateOnly.ParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    // The date fields read and show dates in their culture's Gregorian calendar, so typed text has to use it too.
+    internal static CultureInfo CultureOf(IElement field) =>
+        CalendarDates.Gregorian(CultureInfo.GetCultureInfo(field.GetAttribute("data-culture") ?? ""));
+
+    internal static void ThrowIfStaticOrLocked(IElement input)
+    {
+        if (input.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("This field renders as the browser's own date box on a static page, "
+                + "which posts with its form; render it on an interactive page to choose a date.");
+        }
+
+        if (input.HasAttribute("readonly") || input.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException(
+                "This field is read-only or disabled, so a date can't be typed into it.");
         }
     }
 }

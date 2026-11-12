@@ -192,3 +192,15 @@ Trailblazor.Testing.TbAccordionItemDriver.CollapseAsync() -> System.Threading.Ta
 Trailblazor.Testing.TbPopconfirmDriver
 Trailblazor.Testing.TbPopconfirmDriver.ConfirmAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbPopconfirmDriver.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.DatePicker(string! label) -> Trailblazor.Testing.TbDatePickerDriver!
+Trailblazor.Testing.TrailblazorMarkup.DateTimePicker(string! label) -> Trailblazor.Testing.TbDateTimePickerDriver!
+Trailblazor.Testing.TrailblazorMarkup.DateRangePicker(string! label) -> Trailblazor.Testing.TbDateRangePickerDriver!
+Trailblazor.Testing.TbDatePickerDriver
+Trailblazor.Testing.TbDatePickerDriver.Value.get -> System.DateOnly?
+Trailblazor.Testing.TbDatePickerDriver.ChooseAsync(System.DateOnly? date) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDateTimePickerDriver
+Trailblazor.Testing.TbDateTimePickerDriver.Value.get -> System.DateTime?
+Trailblazor.Testing.TbDateTimePickerDriver.ChooseAsync(System.DateTime? value) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDateRangePickerDriver
+Trailblazor.Testing.TbDateRangePickerDriver.Range.get -> (System.DateOnly? Start, System.DateOnly? End)
+Trailblazor.Testing.TbDateRangePickerDriver.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!

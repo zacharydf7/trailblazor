@@ -5056,9 +5056,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().DatePicker(\"Start date\").ChooseAsync(date)` from "
                 + "`Trailblazor.Testing.Playwright` types the date in the field's own format and waits until the field "
-                + "has taken it. In bUnit, `Change(\"6/12/2026\")` on the `input` sets it; write the date in the field's "
-                + "format, as here for en-US. `@bind-Open` opens the calendar from code, so a test can check it "
-                + "without pressing its button.",
+                + "has taken it. In bUnit, `cut.Tb().DatePicker(\"Start date\")` from `Trailblazor.Testing` has the "
+                + "same `ChooseAsync(date)`, and `Value` reads the date. `@bind-Open` opens the calendar from code, so "
+                + "a test can check it without pressing its button.",
         },
         new("time-picker", "Time picker", ExampleCategory.Inputs,
             "Chooses a time of day in the browser's own time box, shown in the user's language.")
@@ -5236,9 +5236,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().DateTimePicker(\"Guided hike starts\").ChooseAsync(start)` from "
                 + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and waits "
-                + "until the field has taken both. In bUnit, `Change(\"6/12/2026\")` on the `date-input` and "
-                + "`Change(\"14:30\")` on the `time-input` set them; write the date in the field's format and the time "
-                + "in 24-hour form. `@bind-Open` opens the calendar from code.",
+                + "until the field has taken both. In bUnit, `cut.Tb().DateTimePicker(\"Guided hike starts\")` from "
+                + "`Trailblazor.Testing` has the same `ChooseAsync(start)`, and `Value` reads it. `@bind-Open` opens "
+                + "the calendar from code.",
         },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
@@ -5384,8 +5384,10 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
                 + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until the "
-                + "field has taken them. Its boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`. "
-                + "`@bind-Open` opens the calendar from code.",
+                + "field has taken them. In bUnit, `cut.Tb().DateRangePicker(\"Trip dates\")` from "
+                + "`Trailblazor.Testing` has the same `ChooseAsync(start, end)`, and `Range` reads both. Its boxes "
+                + "have `data-part=\"start-input\"` and `data-part=\"end-input\"`. `@bind-Open` opens the calendar "
+                + "from code.",
         },
         new("listbox", "List box", ExampleCategory.Inputs,
             "Picks one or several options from a list that is always shown.")

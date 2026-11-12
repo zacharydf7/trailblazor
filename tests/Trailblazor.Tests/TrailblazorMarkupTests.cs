@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
@@ -580,6 +581,109 @@ public class TrailblazorMarkupTests : BunitContext
         await cut.Tb().Grid("Trails").GoToPageAsync(3);
 
         Assert.Equal("Lake camp", cut.Find("tbody tr[data-part=row]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task DatePicker_ShouldTypeTheDateInTheFieldsFormat_WhenChosen()
+    {
+        DateOnly? value = null;
+        var cut = Render<TbDatePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Start")
+            .Add(picker => picker.ValueChanged, (DateOnly? date) => value = date));
+
+        await cut.Tb().DatePicker("Start").ChooseAsync(new DateOnly(2026, 3, 14));
+        Assert.Equal(new DateOnly(2026, 3, 14), value);
+        Assert.Equal(new DateOnly(2026, 3, 14), cut.Tb().DatePicker("Start").Value);
+        await cut.Tb().DatePicker("Start").ChooseAsync(null);
+
+        Assert.Null(value);
+    }
+
+    [Fact]
+    public async Task DateTimePicker_ShouldTypeTheDateAndTime_WhenChosen()
+    {
+        DateTime? value = null;
+        var cut = Render<TbDateTimePicker<DateTime>>(parameters => parameters.Add(picker => picker.Label, "Departs")
+            .Add(picker => picker.ValueChanged, (DateTime? chosen) => value = chosen));
+
+        await cut.Tb().DateTimePicker("Departs").ChooseAsync(new DateTime(2026, 3, 14, 9, 30, 0));
+
+        Assert.Equal(new DateTime(2026, 3, 14, 9, 30, 0), value);
+        Assert.Equal(new DateTime(2026, 3, 14, 9, 30, 0), cut.Tb().DateTimePicker("Departs").Value);
+    }
+
+    [Fact]
+    public async Task DateRangePicker_ShouldTypeBothDates_WhenChosen()
+    {
+        var cut = Render<TbDateRangePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Trip"));
+
+        await cut.Tb().DateRangePicker("Trip").ChooseAsync(new DateOnly(2026, 3, 14), new DateOnly(2026, 3, 20));
+
+        Assert.Equal((new DateOnly(2026, 3, 14), new DateOnly(2026, 3, 20)), cut.Tb().DateRangePicker("Trip").Range);
+    }
+
+    [Fact]
+    public async Task DatePickers_ShouldTypeInTheFieldsCultureAndCalendar_WhenItsCultureIsGiven()
+    {
+        var thai = CultureInfo.GetCultureInfo("th-TH");
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbDatePicker<DateOnly>>(0);
+            builder.AddAttribute(1, "Label", "Start");
+            builder.AddAttribute(2, "Culture", thai);
+            builder.CloseComponent();
+            builder.OpenComponent<TbDateTimePicker<DateTime>>(3);
+            builder.AddAttribute(4, "Label", "Departs");
+            builder.AddAttribute(5, "Culture", thai);
+            builder.CloseComponent();
+            builder.OpenComponent<TbDateRangePicker<DateOnly>>(6);
+            builder.AddAttribute(7, "Label", "Trip");
+            builder.AddAttribute(8, "Culture", thai);
+            builder.CloseComponent();
+        });
+
+        await cut.Tb().DatePicker("Start").ChooseAsync(new DateOnly(2026, 9, 14));
+        await cut.Tb().DateTimePicker("Departs").ChooseAsync(new DateTime(2026, 9, 14, 9, 30, 0));
+        await cut.Tb().DateRangePicker("Trip").ChooseAsync(new DateOnly(2026, 9, 14), new DateOnly(2026, 9, 20));
+
+        // The Thai culture's own calendar is Buddhist, where 2026 is 2569, so a field reading dates in it would differ.
+        Assert.Equal(new DateOnly(2026, 9, 14), cut.Tb().DatePicker("Start").Value);
+        Assert.Equal(new DateTime(2026, 9, 14, 9, 30, 0), cut.Tb().DateTimePicker("Departs").Value);
+        Assert.Equal((new DateOnly(2026, 9, 14), new DateOnly(2026, 9, 20)), cut.Tb().DateRangePicker("Trip").Range);
+        Assert.Contains("2026", cut.Find("[data-part=input]").GetAttribute("value"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DatePickers_ShouldReadButNotChoose_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbDatePicker<DateOnly>>(0);
+            builder.AddAttribute(1, "Label", "Start");
+            builder.AddAttribute(2, "Value", (DateOnly?)new DateOnly(2026, 3, 14));
+            builder.CloseComponent();
+            builder.OpenComponent<TbDateTimePicker<DateTime>>(3);
+            builder.AddAttribute(4, "Label", "Departs");
+            builder.AddAttribute(5, "Value", (DateTime?)new DateTime(2026, 3, 14, 9, 30, 0));
+            builder.CloseComponent();
+        });
+
+        Assert.Equal(new DateOnly(2026, 3, 14), cut.Tb().DatePicker("Start").Value);
+        Assert.Equal(new DateTime(2026, 3, 14, 9, 30, 0), cut.Tb().DateTimePicker("Departs").Value);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().DatePicker("Start").ChooseAsync(new DateOnly(2026, 3, 15)));
+        Assert.Contains("static page", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DatePicker_ShouldThrow_WhenTheFieldIsReadOnly()
+    {
+        var cut = Render<TbDatePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Start")
+            .Add(picker => picker.ReadOnly, true));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().DatePicker("Start").ChooseAsync(new DateOnly(2026, 3, 14)));
+        Assert.Contains("read-only", error.Message, StringComparison.Ordinal);
     }
 
     [Fact]
