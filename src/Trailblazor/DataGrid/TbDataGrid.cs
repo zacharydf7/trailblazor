@@ -1546,7 +1546,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // went to. A key press keeps focus on the moved row's handle.
     private async Task MoveRowAsync(int from, int to, string input)
     {
-        if (!CanReorder || from < 0 || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf))
+        if (!CanReorder || from < 0
+            || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf, moved: null))
         {
             return;
         }
@@ -2273,6 +2274,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private string LabelOf(TItem item) => RowLabel?.Invoke(item)
         ?? _columns.Select(column => column.TextOf(item)).FirstOrDefault(text => text is not null) ?? IdOf(item);
+
+    // The row handles use the app's text, since DataGridLabels doesn't word them.
+    private static readonly SortableLabels RowHandleLabels = new();
 
     private string Format(string key, params object?[] args) =>
         string.Format(CultureInfo.CurrentCulture, Localizer[key], args);

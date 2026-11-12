@@ -12,29 +12,31 @@
     <div data-part="bar" class="tb-splitter__bar">
         <div @ref="_separator" role="separator" tabindex="0" data-part="separator" class="tb-splitter__separator"
              aria-orientation="@(Splitter.Vertical ? "horizontal" : "vertical")" aria-controls="@before.Id"
-             aria-label="@Format(TbStrings.SplitterResize, before)"
+             aria-label="@Format(Splitter.Labels.Resize, TbStrings.SplitterResize, before)"
              aria-valuenow="@Whole(Splitter.Percent(before))"
              aria-valuemin="@(before.Collapsible ? "0" : Whole(Splitter.InOpenSpace(before.MinSize)))"
              aria-valuemax="@Whole(Splitter.InOpenSpace(before.MaxSize))">
         </div>
         <TbMenu Class="tb-splitter__grip" data-part="grip">
             <Trigger>
-                <TbIconButton Icon="BuiltInIcons.DragHandle" AriaLabel="@Format(TbStrings.SplitterMenu, before)"
-                              Size="Trailblazor.Size.Small" @attributes="context.Attributes" tabindex="-1" />
+                <TbIconButton Icon="BuiltInIcons.DragHandle" Size="Trailblazor.Size.Small"
+                              AriaLabel="@Format(Splitter.Labels.Menu, TbStrings.SplitterMenu, before)"
+                              @attributes="context.Attributes" tabindex="-1" />
             </Trigger>
             <ChildContent>
                 <TbMenuItem Disabled="!Splitter.CanMove(before, this, 10)"
                             OnClick="() => Splitter.StepAsync(_separator, 10)">
-                    @Format(TbStrings.SplitterLarger, before)
+                    @Format(Splitter.Labels.Larger, TbStrings.SplitterLarger, before)
                 </TbMenuItem>
                 <TbMenuItem Disabled="!Splitter.CanMove(before, this, -10)"
                             OnClick="() => Splitter.StepAsync(_separator, -10)">
-                    @Format(TbStrings.SplitterSmaller, before)
+                    @Format(Splitter.Labels.Smaller, TbStrings.SplitterSmaller, before)
                 </TbMenuItem>
                 @if (Splitter.ToggleTarget(before) is { } toggled)
                 {
                     <TbMenuItem OnClick="() => Splitter.ToggleAsync(before)">
-                        @Format(toggled.IsCollapsed ? TbStrings.SplitterRestore : TbStrings.SplitterCollapse, toggled)
+                        @(toggled.IsCollapsed ? Format(Splitter.Labels.Restore, TbStrings.SplitterRestore, toggled)
+                            : Format(Splitter.Labels.Collapse, TbStrings.SplitterCollapse, toggled))
                     </TbMenuItem>
                 }
             </ChildContent>
@@ -177,9 +179,9 @@
     }
 
     // Names the pane by its label, or by its number when it has none.
-    private string Format(string key, TbSplitterPane pane) => string.Format(CultureInfo.CurrentCulture,
-        Localizer[key], pane.Label ?? string.Format(CultureInfo.CurrentCulture,
-            Localizer[TbStrings.SplitterPane], Splitter!.IndexOf(pane) + 1));
+    private string Format(string? label, string key, TbSplitterPane pane) => string.Format(CultureInfo.CurrentCulture,
+        label ?? Localizer[key], pane.Label ?? string.Format(CultureInfo.CurrentCulture,
+            Splitter!.Labels.Pane ?? Localizer[TbStrings.SplitterPane], Splitter.IndexOf(pane) + 1));
 
     private static string Round(double value) => Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
 

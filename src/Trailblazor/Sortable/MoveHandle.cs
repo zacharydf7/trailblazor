@@ -10,12 +10,13 @@ namespace Trailblazor;
 internal static class MoveHandle
 {
     public static void Add(RenderTreeBuilder builder, int sequence, string label, int index, int count, bool disabled,
-        ITbLocalizer localizer, Func<int, MouseEventArgs, Task> moveTo)
+        SortableLabels labels, ITbLocalizer localizer, Func<int, MouseEventArgs, Task> moveTo)
     {
         builder.OpenComponent<TbMenu>(sequence);
         builder.AddComponentParameter(sequence + 1, nameof(TbMenu.AriaLabel), label);
         builder.AddComponentParameter(sequence + 2, nameof(TbMenu.Icon), BuiltInIcons.DragHandle);
-        builder.AddComponentParameter(sequence + 3, nameof(TbMenu.Description), localizer[TbStrings.SortableHint]);
+        builder.AddComponentParameter(sequence + 3, nameof(TbMenu.Description),
+            labels.Hint ?? localizer[TbStrings.SortableHint]);
         builder.AddComponentParameter(sequence + 4, nameof(TbMenu.Size), Size.Small);
         builder.AddComponentParameter(sequence + 5, nameof(TbMenu.Disabled), disabled);
         builder.AddComponentParameter(sequence + 6, nameof(TbMenu.Class), "tb-sortable__handle");
@@ -23,10 +24,10 @@ internal static class MoveHandle
         builder.AddAttribute(sequence + 8, "data-part", "handle");
         builder.AddComponentParameter(sequence + 9, nameof(TbMenu.ChildContent), (RenderFragment)(items =>
         {
-            AddItem(items, 0, localizer[TbStrings.SortableMoveUp], index - 1);
-            AddItem(items, 10, localizer[TbStrings.SortableMoveDown], index + 1);
-            AddItem(items, 20, localizer[TbStrings.SortableMoveToStart], 0);
-            AddItem(items, 30, localizer[TbStrings.SortableMoveToEnd], count - 1);
+            AddItem(items, 0, labels.MoveUp ?? localizer[TbStrings.SortableMoveUp], index - 1);
+            AddItem(items, 10, labels.MoveDown ?? localizer[TbStrings.SortableMoveDown], index + 1);
+            AddItem(items, 20, labels.MoveToStart ?? localizer[TbStrings.SortableMoveToStart], 0);
+            AddItem(items, 30, labels.MoveToEnd ?? localizer[TbStrings.SortableMoveToEnd], count - 1);
         }));
         builder.CloseComponent();
 

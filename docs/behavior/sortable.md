@@ -43,6 +43,7 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] Focus goes back to the handle after a move chosen from its menu with the keyboard. `TbSortable.cs`
 - [x] Each handle is named for its item, and says how the keys work. `TbSortableTests.Render_ShouldNameTheListAndEachHandle_WhenGivenItems`
 - [x] Screen readers hear where the item landed. `TbSortableTests.Keys_ShouldMoveTheItemAndSaySo_WhenPressedOnItsHandle`
+- [x] `Labels` replaces the handle's name and description, its menu's items and the announcement after a move. `TbSortableTests.Labels_ShouldWordTheHandlesTheirMenuAndTheMove_WhenGiven`
 
 ## Not applicable
 

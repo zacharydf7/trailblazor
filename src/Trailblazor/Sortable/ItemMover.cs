@@ -39,7 +39,7 @@ internal sealed class ItemMover<TItem>(IAnnouncer announcer, ITbLocalizer locali
     // so the app isn't asked again about a list that is about to change. items reads the list as it is now.
     public async Task<bool> MoveAsync(Func<IReadOnlyList<TItem>> items, int from, int to,
         Func<SortableMove<TItem>, Task<MoveCheck>>? canMove, EventCallback<SortableMove<TItem>> onMove,
-        Func<TItem, string> text)
+        Func<TItem, string> text, string? moved)
     {
         var before = items();
         if (_moving || from < 0 || from >= before.Count)
@@ -70,7 +70,7 @@ internal sealed class ItemMover<TItem>(IAnnouncer announcer, ITbLocalizer locali
             }
 
             await onMove.InvokeAsync(new(item, from, to));
-            announcer.Polite(string.Format(CultureInfo.CurrentCulture, localizer[TbStrings.SortableMoved],
+            announcer.Polite(string.Format(CultureInfo.CurrentCulture, moved ?? localizer[TbStrings.SortableMoved],
                 text(item), to + 1, now.Count));
             return true;
         }

@@ -4558,3 +4558,53 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Open.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.OpenChanged.set -> void
 override Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+Trailblazor.SortableLabels
+Trailblazor.SortableLabels.<Clone>$() -> Trailblazor.SortableLabels!
+Trailblazor.SortableLabels.Equals(Trailblazor.SortableLabels? other) -> bool
+Trailblazor.SortableLabels.SortableLabels() -> void
+override Trailblazor.SortableLabels.Equals(object? obj) -> bool
+override Trailblazor.SortableLabels.GetHashCode() -> int
+override Trailblazor.SortableLabels.ToString() -> string!
+static Trailblazor.SortableLabels.operator !=(Trailblazor.SortableLabels? left, Trailblazor.SortableLabels? right) -> bool
+static Trailblazor.SortableLabels.operator ==(Trailblazor.SortableLabels? left, Trailblazor.SortableLabels? right) -> bool
+Trailblazor.SortableLabels.Handle.get -> string?
+Trailblazor.SortableLabels.Handle.init -> void
+Trailblazor.SortableLabels.Hint.get -> string?
+Trailblazor.SortableLabels.Hint.init -> void
+Trailblazor.SortableLabels.MoveUp.get -> string?
+Trailblazor.SortableLabels.MoveUp.init -> void
+Trailblazor.SortableLabels.MoveDown.get -> string?
+Trailblazor.SortableLabels.MoveDown.init -> void
+Trailblazor.SortableLabels.MoveToStart.get -> string?
+Trailblazor.SortableLabels.MoveToStart.init -> void
+Trailblazor.SortableLabels.MoveToEnd.get -> string?
+Trailblazor.SortableLabels.MoveToEnd.init -> void
+Trailblazor.SortableLabels.Moved.get -> string?
+Trailblazor.SortableLabels.Moved.init -> void
+Trailblazor.SplitterLabels
+Trailblazor.SplitterLabels.<Clone>$() -> Trailblazor.SplitterLabels!
+Trailblazor.SplitterLabels.Equals(Trailblazor.SplitterLabels? other) -> bool
+Trailblazor.SplitterLabels.SplitterLabels() -> void
+override Trailblazor.SplitterLabels.Equals(object? obj) -> bool
+override Trailblazor.SplitterLabels.GetHashCode() -> int
+override Trailblazor.SplitterLabels.ToString() -> string!
+static Trailblazor.SplitterLabels.operator !=(Trailblazor.SplitterLabels? left, Trailblazor.SplitterLabels? right) -> bool
+static Trailblazor.SplitterLabels.operator ==(Trailblazor.SplitterLabels? left, Trailblazor.SplitterLabels? right) -> bool
+Trailblazor.SplitterLabels.Resize.get -> string?
+Trailblazor.SplitterLabels.Resize.init -> void
+Trailblazor.SplitterLabels.Menu.get -> string?
+Trailblazor.SplitterLabels.Menu.init -> void
+Trailblazor.SplitterLabels.Larger.get -> string?
+Trailblazor.SplitterLabels.Larger.init -> void
+Trailblazor.SplitterLabels.Smaller.get -> string?
+Trailblazor.SplitterLabels.Smaller.init -> void
+Trailblazor.SplitterLabels.Collapse.get -> string?
+Trailblazor.SplitterLabels.Collapse.init -> void
+Trailblazor.SplitterLabels.Restore.get -> string?
+Trailblazor.SplitterLabels.Restore.init -> void
+Trailblazor.SplitterLabels.Pane.get -> string?
+Trailblazor.SplitterLabels.Pane.init -> void
+Trailblazor.TbSortable<TItem>.Labels.get -> Trailblazor.SortableLabels!
+Trailblazor.TbSortable<TItem>.Labels.set -> void
+Trailblazor.TbSplitter.Labels.get -> Trailblazor.SplitterLabels!
+Trailblazor.TbSplitter.Labels.set -> void

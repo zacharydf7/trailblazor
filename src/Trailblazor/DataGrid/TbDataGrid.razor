@@ -311,7 +311,7 @@
             {
                 <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle">
                     @((RenderFragment)(handle => MoveHandle.Add(handle, 0, Format(TbStrings.SortableHandle,
-                        label ?? LabelOf(item)), at, _total, disabled: false, Localizer,
+                        label ?? LabelOf(item)), at, _total, disabled: false, RowHandleLabels, Localizer,
                         (to, args) => MoveRowAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
                 </td>
             }

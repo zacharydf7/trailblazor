@@ -1905,7 +1905,7 @@ public static class ExampleCatalog
                     + "each splitter.",
                     typeof(SplitterPersistExample)),
             ],
-            Api = [typeof(TbSplitter), typeof(TbSplitterPane)],
+            Api = [typeof(TbSplitter), typeof(TbSplitterPane), typeof(SplitterLabels)],
             Keyboard =
             [
                 new(["Left", "Right"], "Resizes by 1%.") { When = "On a separator, side by side" },
@@ -1922,6 +1922,9 @@ public static class ExampleCatalog
                     + "it.",
                 "The grip in the middle of each separator is a menu `button` named \"Size of\" followed by the "
                     + "`Label` of the pane before it.",
+                "A pane with no `Label` is named by its number, as in \"pane 2\". The splitter's `Labels` replaces "
+                    + "all of these words and the grip menu's items, with `{0}` for the pane's name or, in `Pane`, its "
+                    + "number.",
             ],
             Announcements =
             [
@@ -2495,7 +2498,7 @@ public static class ExampleCatalog
                 new("empty", "Empty", "A sortable list has no message of its own, so show your own in its place until "
                     + "it has items.", typeof(SortableEmptyExample)),
             ],
-            Api = [typeof(TbSortable<>), typeof(SortableMove<>), typeof(MoveCheck)],
+            Api = [typeof(TbSortable<>), typeof(SortableMove<>), typeof(MoveCheck), typeof(SortableLabels)],
             Keyboard =
             [
                 new(["Up", "Down"], "Moves the item one place, and focus stays on the handle.") { When = "On a handle" },
@@ -2509,6 +2512,9 @@ public static class ExampleCatalog
                 "A `list` named by its `Label`.",
                 "Each item's handle is a menu `button` named \"Move\" followed by the item's text, and described by how "
                     + "its keys work.",
+                "`Labels` replaces the handle's name (with `{0}` for the item's text), its description, its menu's "
+                    + "items and the announcement after a move (with `{0}` for the item's text, `{1}` for its new "
+                    + "position and `{2}` for the number of items).",
             ],
             Announcements =
             [

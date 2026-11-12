@@ -165,6 +165,26 @@ public class TbSortableTests : BunitContext
     }
 
     [Fact]
+    public async Task Labels_ShouldWordTheHandlesTheirMenuAndTheMove_WhenGiven()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderRules(parameters => parameters.Add(list => list.Labels, new SortableLabels
+        {
+            Handle = "Drag {0}", Hint = "Use the arrows.", MoveUp = "Up", MoveDown = "Down", MoveToStart = "First",
+            MoveToEnd = "Last", Moved = "{0} is now {1} of {2}.",
+        }));
+
+        Assert.Equal("Drag Block spam", Handles(cut)[0].GetAttribute("aria-label"));
+        Assert.Equal("Use the arrows.",
+            cut.Find($"#{Handles(cut)[0].GetAttribute("aria-describedby")}").TextContent.Trim());
+        Assert.Equal(["Up", "Down", "First", "Last"], cut.FindAll("[data-part=handle]")[0]
+            .QuerySelectorAll("[role=menuitem]").Select(choice => choice.TextContent.Trim()));
+        await cut.InvokeAsync(() => Events().OnKey("Block spam", "End"));
+        announcer.WaitForAssertion(() => Assert.Equal("Block spam is now 3 of 3.",
+            announcer.FindAll("[role=status] p").Last().TextContent));
+    }
+
+    [Fact]
     public async Task MoveAsync_ShouldMoveTheItemAsTheUserWould_WhenAnAppsButtonAsks()
     {
         var cut = RenderRules();

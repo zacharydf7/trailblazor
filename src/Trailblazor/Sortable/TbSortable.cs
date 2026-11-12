@@ -54,6 +54,11 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>The words the move handles show and say to screen readers: their names, hint and menu, and what is
+    /// read out after a move. Each one left null uses the app's text.</summary>
+    [Parameter]
+    public SortableLabels Labels { get; set; } = new();
+
     /// <summary>A label the list's use is counted under, such as <c>"rule-order"</c>, through the <c>Trailblazor</c>
     /// meter: shown when it renders, and used with the action <c>move</c> and the input <c>pointer</c> or
     /// <c>keyboard</c> each time the user moves an item. Which item is never recorded. It names the list, never the
@@ -82,7 +87,7 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     /// Returns whether the item moved.</summary>
     public async Task<bool> MoveAsync(int from, int to)
     {
-        var moved = await Mover.MoveAsync(() => Items, from, to, CanMove, OnMove, TextOf);
+        var moved = await Mover.MoveAsync(() => Items, from, to, CanMove, OnMove, TextOf, Labels.Moved);
         if (moved)
         {
             StateHasChanged();
@@ -144,7 +149,7 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     private string TextOf(TItem item) => ItemLabel?.Invoke(item) ?? item?.ToString() ?? "";
 
     private string HandleLabel(TItem item) =>
-        string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.SortableHandle], TextOf(item));
+        string.Format(CultureInfo.CurrentCulture, Labels.Handle ?? Localizer[TbStrings.SortableHandle], TextOf(item));
 
     private Task<MoveCheck> OnDragOverAsync(string id, string targetId, bool before) =>
         !Disabled && ItemMover<TItem>.DropIndex(IndexOf(id), IndexOf(targetId), before) is { } to

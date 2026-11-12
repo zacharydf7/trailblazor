@@ -239,6 +239,29 @@ public class TbSplitterTests : BunitContext
     }
 
     [Theory]
+    [InlineData(false, "Hide section 1")]
+    [InlineData(true, "Show section 1")]
+    public void Labels_ShouldWordTheSeparatorsAndTheirMenus_WhenGiven(bool collapsed, string toggle)
+    {
+        var labels = new SplitterLabels
+        {
+            Resize = "Drag {0}", Menu = "Menu for {0}", Larger = "Grow {0}", Smaller = "Shrink {0}", Collapse = "Hide {0}",
+            Restore = "Show {0}", Pane = "section {0}",
+        };
+        var cut = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.Labels, labels)
+            .Add(splitter => splitter.ChildContent, builder =>
+            {
+                AddPane(builder, new Pane(null, 30, Collapsible: true, Collapsed: collapsed));
+                AddPane(builder, new Pane("Map"));
+            }));
+
+        Assert.Equal("Drag section 1", cut.Find("[role=separator]").GetAttribute("aria-label"));
+        Assert.Equal("Menu for section 1",
+            cut.Find("[data-part=grip] > [data-part=trigger]").GetAttribute("aria-label"));
+        Assert.Equal(["Grow section 1", "Shrink section 1", toggle], MenuItems(cut, 0));
+    }
+
+    [Theory]
     [InlineData(10, "Make Left larger")]
     [InlineData(-10, "Make Left smaller")]
     public void Grip_ShouldStepTheSeparatorBy10_WhenItsMenuResizes(double delta, string item)
@@ -388,6 +411,6 @@ public class TbSplitterTests : BunitContext
         }
     }
 
-    private sealed record Pane(string Label, double? Size = null, bool Collapsible = false, bool Collapsed = false,
+    private sealed record Pane(string? Label, double? Size = null, bool Collapsible = false, bool Collapsed = false,
         double MinSize = 0, double MaxSize = 100, Action<double?>? OnSize = null, Action<bool>? OnCollapsed = null);
 }

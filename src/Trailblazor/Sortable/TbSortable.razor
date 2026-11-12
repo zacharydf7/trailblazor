@@ -14,7 +14,8 @@
             var at = index;
             <li @key="KeyOf(item)" data-part="item" data-key="@IdOf(item)" class="tb-sortable__item">
                 @((RenderFragment)(handle => MoveHandle.Add(handle, 0, HandleLabel(item), at, Items.Count, Disabled,
-                    Localizer, (to, args) => UserMoveAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
+                    Labels, Localizer,
+                    (to, args) => UserMoveAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
                 <div class="tb-sortable__content">@ItemTemplate(item)</div>
             </li>
         }
