@@ -1,6 +1,6 @@
 <TbStack Gap="2">
     <TbSlider @bind-Value="_brightness" Label="Map brightness" ShowValue ValueFormatter="@(value => $"{value}%")"
-              ValueCommitted="@((int value) => { _saved = value; })" />
+              OnValueCommitted="@((int value) => { _saved = value; })" />
     <output>Map brightness value: @_brightness%</output>
     <output>Saved at @_saved%</output>
 </TbStack>

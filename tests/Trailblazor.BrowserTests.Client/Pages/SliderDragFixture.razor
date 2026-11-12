@@ -1,12 +1,12 @@
 @page "/slider-drag"
 
 @* Counts the values the server hears as the volume slider moves, and shows what each slider commits. *@
-<TbSlider @bind-Value="_volume" @bind-Value:after="Count" ValueCommitted="(int value) => _committed = value"
+<TbSlider @bind-Value="_volume" @bind-Value:after="Count" OnValueCommitted="(int value) => _committed = value"
           Label="Volume" Max="1000" />
 <output data-testid="changes">@_changes</output>
 <output data-testid="committed">@_committed</output>
 <TbRangeSlider @bind-Value="_price" Label="Price" Max="1000"
-               ValueCommitted="(SliderRange<int> range) => _committedPrice = range" />
+               OnValueCommitted="(SliderRange<int> range) => _committedPrice = range" />
 <output data-testid="committed-price">@(_committedPrice is { } price ? $"{price.Start}-{price.End}" : "")</output>
 
 @code {

@@ -39,7 +39,7 @@ public abstract partial class TbSliderBase<[DynamicallyAccessedMembers(Dynamical
     /// <summary>Raised once the user lets go of a thumb, or finishes moving it with the keyboard, with the value it
     /// settled on; <c>ValueChanged</c> is raised as the thumb moves.</summary>
     [Parameter]
-    public EventCallback<TValue> ValueCommitted { get; set; }
+    public EventCallback<TValue> OnValueCommitted { get; set; }
 
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
@@ -98,5 +98,5 @@ public abstract partial class TbSliderBase<[DynamicallyAccessedMembers(Dynamical
         decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? number : null;
 
     // Bound to each thumb's change event, which the browser fires once the user lets go.
-    private protected Task CommitAsync() => ReadOnly ? Task.CompletedTask : ValueCommitted.InvokeAsync(Value!);
+    private protected Task CommitAsync() => ReadOnly ? Task.CompletedTask : OnValueCommitted.InvokeAsync(Value!);
 }

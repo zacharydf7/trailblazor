@@ -242,7 +242,7 @@ public class TelemetryNameTests : BunitContext
     {
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Open trails")
             .Add(chip => chip.TelemetryName, "filter-open").Add(chip => chip.OnClick, () => { })
-            .Add(chip => chip.OnClose, () => { }));
+            .Add(chip => chip.OnRemove, () => { }));
 
         cut.Find("[data-part=action]").Click();
         cut.Find("[data-part=remove]").Click();

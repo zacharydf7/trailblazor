@@ -140,8 +140,8 @@ public class LocalizationTests : BunitContext
     public void Chip_ShouldPutItsTextWhereTheLocalizersTextSays_WhenItHasText()
     {
         var named = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Rechnungen")
-            .Add(chip => chip.OnClose, () => { }));
-        var unnamed = Render<TbChip>(parameters => parameters.Add(chip => chip.OnClose, () => { })
+            .Add(chip => chip.OnRemove, () => { }));
+        var unnamed = Render<TbChip>(parameters => parameters.Add(chip => chip.OnRemove, () => { })
             .AddChildContent("Rechnungen"));
 
         Assert.Equal("Rechnungen entfernen", named.Find("[data-part=remove]").GetAttribute("aria-label"));

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Trailblazor;
 
@@ -37,7 +36,7 @@ public partial class TbBanner
 
     /// <summary>Shows a close button that raises this; hide the banner when it does.</summary>
     [Parameter]
-    public EventCallback<MouseEventArgs> OnClose { get; set; }
+    public EventCallback OnClose { get; set; }
 
     /// <summary>The close button's name. Defaults to the app's text for <see cref="TbStrings.BannerClose"/>.
     /// </summary>

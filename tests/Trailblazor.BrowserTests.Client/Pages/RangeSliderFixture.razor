@@ -2,12 +2,12 @@
 
 @* Thumbs sharing a value, in the middle and at each end, and the states that keep a press from changing anything. *@
 <TbRangeSlider TValue="int" Label="Middle" Min="0" Max="100" Step="10" @bind-Value="_middle"
-               ValueCommitted="_ => _commits++" />
+               OnValueCommitted="_ => _commits++" />
 <TbRangeSlider TValue="int" Label="Rising" Min="0" Max="100" Step="10" @bind-Value="_rising" />
 <TbRangeSlider TValue="int" Label="Top" Min="0" Max="100" Step="10" @bind-Value="_top" />
 <TbRangeSlider TValue="int" Label="Bottom" Min="0" Max="100" Step="10" @bind-Value="_bottom" />
 <TbRangeSlider TValue="int" Label="Parted" Min="0" Max="100" Step="10" @bind-Value="_parted"
-               ValueCommitted="_ => _commits++" />
+               OnValueCommitted="_ => _commits++" />
 <TbRangeSlider TValue="int" Label="Locked" Min="0" Max="100" Step="10" ReadOnly @bind-Value="_locked" />
 <TbRangeSlider TValue="int" Label="Off" Min="0" Max="100" Step="10" Disabled @bind-Value="_off" />
 <fieldset disabled>
@@ -18,7 +18,7 @@
 </div>
 @* Thumbs on different values that overlap on screen, since each step is a fraction of a pixel. *@
 <TbRangeSlider TValue="int" Label="Close" Min="0" Max="1000" Step="1" @bind-Value="_close"
-               ValueCommitted="_ => _commits++" />
+               OnValueCommitted="_ => _commits++" />
 <output>@_commits</output>
 
 @code {

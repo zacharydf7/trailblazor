@@ -46,7 +46,7 @@ public class TbBannerTests : BunitContext
         var closed = 0;
         var cut = Render<TbBanner>(parameters => parameters.AddChildContent("You're offline.")
             .Add(banner => banner.CloseLabel, closeLabel)
-            .Add(banner => banner.OnClose, (MouseEventArgs _) => closed++));
+            .Add(banner => banner.OnClose, () => closed++));
 
         var close = cut.Find("[data-part=close]");
         Assert.Equal(name, close.GetAttribute("aria-label"));

@@ -2,7 +2,7 @@
     @foreach (var guest in _guests)
     {
         <TbChip @key="guest" Text="@guest" RemoveLabel="Take {0} off the trip"
-                OnClose="() => _guests.Remove(guest)" />
+                OnRemove="() => _guests.Remove(guest)" />
     }
 </TbChipGroup>
 

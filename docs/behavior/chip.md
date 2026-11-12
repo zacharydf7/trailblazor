@@ -17,8 +17,8 @@ Familiar apps: a mail app's recipient chips, the filter chips on a shopping or s
 
 - [x] A click turns a filter chip on or off, and a check shows while it's on. `TbChipTests.Click_ShouldToggleAndShowACheck_WhenBoundToSelected`
 - [x] A click runs a chip with `OnClick`, and it isn't a toggle. `TbChipTests.Click_ShouldRunOnClickFromAPlainButton_WhenOnClickIsSet`
-- [x] A click on the remove button asks to remove the chip and doesn't run the chip's action. `TbChipTests.Click_ShouldAskToBeRemovedWithANamedButton_WhenOnCloseIsSet`
-- [x] While an async `OnClose` runs, another click on the remove button doesn't ask again, and a held Delete or Backspace asks only once. `TbChipTests.Click_ShouldAskOnce_WhenTheRemoveButtonIsClickedAgainWhileOnCloseRuns`, `TbChipTests.KeyDown_ShouldAskOnce_WhenARemovalKeyIsHeld`
+- [x] A click on the remove button asks to remove the chip and doesn't run the chip's action. `TbChipTests.Click_ShouldAskToBeRemovedWithANamedButton_WhenOnRemoveIsSet`
+- [x] While an async `OnRemove` runs, another click on the remove button doesn't ask again, and a held Delete or Backspace asks only once. `TbChipTests.Click_ShouldAskOnce_WhenTheRemoveButtonIsClickedAgainWhileOnRemoveRuns`, `TbChipTests.KeyDown_ShouldAskOnce_WhenARemovalKeyIsHeld`
 - [x] A link chip is a real link until it is disabled. `TbChipTests.Render_ShouldLinkToTheAddressUnlessDisabled_WhenHrefIsSet`
 - [x] A chip with no action is plain text with nothing to click. `TbChipTests.Render_ShouldBePlainTextInASoftNeutralPill_WhenItHasNoActions`
 
@@ -31,7 +31,7 @@ Familiar apps: a mail app's recipient chips, the filter chips on a shopping or s
 - [x] Removing a chip in a group moves focus to the chip now in its place, or the one before when the last went. `ChipTests.Chip_ShouldPassFocusToTheChipInItsPlace_WhenRemovedWithTheKeyboard`
 - [x] Removing the group's last chip moves focus to the group. `ChipTests.Chip_ShouldPassFocusToTheChipInItsPlace_WhenRemovedWithTheKeyboard`
 - [x] A chip in a group is a list item, and the group is a named list. `TbChipTests.Render_ShouldBeAListOfItems_WhenChipsAreInAGroup`
-- [x] The remove button is named for its chip, and a filter chip says whether it's on. `TbChipTests.Click_ShouldAskToBeRemovedWithANamedButton_WhenOnCloseIsSet`
+- [x] The remove button is named for its chip, and a filter chip says whether it's on. `TbChipTests.Click_ShouldAskToBeRemovedWithANamedButton_WhenOnRemoveIsSet`
 
 ## Not applicable
 

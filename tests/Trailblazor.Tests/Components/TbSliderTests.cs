@@ -100,7 +100,7 @@ public class TbSliderTests : BunitContext
     }
 
     [Fact]
-    public void Change_ShouldRaiseValueCommitted_WhenTheUserLetsGo()
+    public void Change_ShouldRaiseOnValueCommitted_WhenTheUserLetsGo()
     {
         var committed = new List<int>();
         var cut = RenderSlider(40, onCommit: committed.Add);
@@ -229,12 +229,12 @@ public class TbSliderTests : BunitContext
     }
 
     [Fact]
-    public void Change_ShouldRaiseValueCommittedWithTheWholeRange_WhenAThumbIsLetGo()
+    public void Change_ShouldRaiseOnValueCommittedWithTheWholeRange_WhenAThumbIsLetGo()
     {
         var committed = new List<SliderRange<int>>();
         var cut = Render<TbRangeSlider<int>>(parameters => parameters.Add(slider => slider.Max, 4000)
             .Add(slider => slider.Value, new SliderRange<int>(800, 2400))
-            .Add(slider => slider.ValueCommitted, (SliderRange<int> range) => committed.Add(range)));
+            .Add(slider => slider.OnValueCommitted, (SliderRange<int> range) => committed.Add(range)));
 
         cut.Find("[data-part=end-thumb]").Input("3000");
         cut.Find("[data-part=end-thumb]").Change("3000");
@@ -303,7 +303,7 @@ public class TbSliderTests : BunitContext
             .Add(slider => slider.ValueFormatter, formatter)
             .Add(slider => slider.Value, value)
             .Add(slider => slider.ValueChanged, (int next) => Brightness = next)
-            .Add(slider => slider.ValueCommitted, (int next) => onCommit?.Invoke(next))
+            .Add(slider => slider.OnValueCommitted, (int next) => onCommit?.Invoke(next))
             .Add(slider => slider.ValueExpression, (Expression<Func<int>>)(() => Brightness)));
     }
 

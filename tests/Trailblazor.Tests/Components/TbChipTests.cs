@@ -27,7 +27,7 @@ public class TbChipTests : BunitContext
     public void Render_ShouldCallNoScript_WhenTheChipCanBeRemoved()
     {
         Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Invoices")
-            .Add(chip => chip.OnClose, () => { }));
+            .Add(chip => chip.OnRemove, () => { }));
 
         Assert.Empty(JSInterop.Invocations);
     }
@@ -114,38 +114,38 @@ public class TbChipTests : BunitContext
     }
 
     [Fact]
-    public async Task Click_ShouldAskOnce_WhenTheRemoveButtonIsClickedAgainWhileOnCloseRuns()
+    public async Task Click_ShouldAskOnce_WhenTheRemoveButtonIsClickedAgainWhileOnRemoveRuns()
     {
-        var closes = 0;
+        var removals = 0;
         var held = new TaskCompletionSource();
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
-            .Add(chip => chip.OnClose, () =>
+            .Add(chip => chip.OnRemove, () =>
             {
-                closes++;
+                removals++;
                 return held.Task;
             }));
 
         cut.Find("[data-part=remove]").Click();
         cut.Find("[data-part=remove]").Click();
-        Assert.Equal(1, closes);
-        // Once the first close ends, the chip can be asked again.
+        Assert.Equal(1, removals);
+        // Once the first removal ends, the chip can be asked again.
         await cut.InvokeAsync(held.SetResult);
         cut.Find("[data-part=remove]").Click();
 
-        Assert.Equal(2, closes);
+        Assert.Equal(2, removals);
     }
 
     [Fact]
-    public void Click_ShouldAskToBeRemovedWithANamedButton_WhenOnCloseIsSet()
+    public void Click_ShouldAskToBeRemovedWithANamedButton_WhenOnRemoveIsSet()
     {
-        var closes = 0;
+        var removals = 0;
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
-            .Add(chip => chip.OnClose, () => closes++));
+            .Add(chip => chip.OnRemove, () => removals++));
 
         cut.Find("[data-part=remove]").Click();
 
         Assert.Equal("Remove Archive", cut.Find("[data-part=remove]").GetAttribute("aria-label"));
-        Assert.Equal(1, closes);
+        Assert.Equal(1, removals);
     }
 
     [Theory]
@@ -153,39 +153,39 @@ public class TbChipTests : BunitContext
     [InlineData("Backspace")]
     public void KeyDown_ShouldAskToBeRemoved_WhenGivenARemovalKey(string key)
     {
-        var closes = 0;
+        var removals = 0;
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
-            .Add(chip => chip.OnClick, () => { }).Add(chip => chip.OnClose, () => closes++));
+            .Add(chip => chip.OnClick, () => { }).Add(chip => chip.OnRemove, () => removals++));
 
         cut.Find("[data-part=action]").KeyDown(new KeyboardEventArgs { Key = key });
 
-        Assert.Equal(1, closes);
+        Assert.Equal(1, removals);
     }
 
     [Fact]
     public void KeyDown_ShouldAskOnce_WhenARemovalKeyIsHeld()
     {
-        var closes = 0;
+        var removals = 0;
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
-            .Add(chip => chip.OnClose, () => closes++));
+            .Add(chip => chip.OnRemove, () => removals++));
 
         cut.Find("[data-part=remove]").KeyDown(new KeyboardEventArgs { Key = "Delete" });
         cut.Find("[data-part=remove]").KeyDown(new KeyboardEventArgs { Key = "Delete", Repeat = true });
 
-        Assert.Equal(1, closes);
+        Assert.Equal(1, removals);
     }
 
     [Fact]
     public void KeyDown_ShouldDoNothing_WhenTheChipIsDisabled()
     {
-        var closes = 0;
+        var removals = 0;
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
-            .Add(chip => chip.Disabled, true).Add(chip => chip.OnClose, () => closes++));
+            .Add(chip => chip.Disabled, true).Add(chip => chip.OnRemove, () => removals++));
 
         cut.Find("[data-part=remove]").KeyDown(new KeyboardEventArgs { Key = "Delete" });
 
         Assert.True(cut.Find("[data-part=remove]").HasAttribute("disabled"));
-        Assert.Equal(0, closes);
+        Assert.Equal(0, removals);
     }
 
     [Fact]

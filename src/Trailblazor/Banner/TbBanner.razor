@@ -27,7 +27,8 @@
         @if (OnClose.HasDelegate)
         {
             <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(CloseLabel ?? Localizer[TbStrings.BannerClose])"
-                          Variant="Variant.Text" Size="Size.Small" OnClick="OnClose" data-part="close"
+                          Variant="Variant.Text" Size="Size.Small" OnClick="() => OnClose.InvokeAsync()"
+                          data-part="close"
                           Class="tb-banner__close" />
         }
     </div>

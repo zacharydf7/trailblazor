@@ -278,7 +278,7 @@ Trailblazor.TbBanner.CloseLabel.get -> string?
 Trailblazor.TbBanner.CloseLabel.set -> void
 Trailblazor.TbBanner.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbBanner.Icon.set -> void
-Trailblazor.TbBanner.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbBanner.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbBanner.OnClose.set -> void
 Trailblazor.TbBanner.ShowIcon.get -> bool
 Trailblazor.TbBanner.ShowIcon.set -> void
@@ -1604,7 +1604,7 @@ Trailblazor.TbAlert.CloseLabel.get -> string?
 Trailblazor.TbAlert.CloseLabel.set -> void
 Trailblazor.TbAlert.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbAlert.Icon.set -> void
-Trailblazor.TbAlert.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbAlert.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbAlert.OnClose.set -> void
 Trailblazor.TbAlert.ShowIcon.get -> bool
 Trailblazor.TbAlert.ShowIcon.set -> void
@@ -1784,8 +1784,8 @@ Trailblazor.TbChip.IconTone.get -> Trailblazor.Tone?
 Trailblazor.TbChip.IconTone.set -> void
 Trailblazor.TbChip.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
 Trailblazor.TbChip.OnClick.set -> void
-Trailblazor.TbChip.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
-Trailblazor.TbChip.OnClose.set -> void
+Trailblazor.TbChip.OnRemove.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbChip.OnRemove.set -> void
 Trailblazor.TbChip.RemoveLabel.get -> string?
 Trailblazor.TbChip.RemoveLabel.set -> void
 Trailblazor.TbChip.Selected.get -> bool
@@ -2630,8 +2630,8 @@ Trailblazor.TbSliderBase<TValue>.ShowValue.set -> void
 Trailblazor.TbSliderBase<TValue>.Step.get -> decimal
 Trailblazor.TbSliderBase<TValue>.Step.set -> void
 Trailblazor.TbSliderBase<TValue>.TbSliderBase() -> void
-Trailblazor.TbSliderBase<TValue>.ValueCommitted.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
-Trailblazor.TbSliderBase<TValue>.ValueCommitted.set -> void
+Trailblazor.TbSliderBase<TValue>.OnValueCommitted.get -> Microsoft.AspNetCore.Components.EventCallback<TValue>
+Trailblazor.TbSliderBase<TValue>.OnValueCommitted.set -> void
 Trailblazor.TbSortable<TItem>
 Trailblazor.TbSortable<TItem>.CanMove.get -> System.Func<Trailblazor.SortableMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
 Trailblazor.TbSortable<TItem>.CanMove.set -> void

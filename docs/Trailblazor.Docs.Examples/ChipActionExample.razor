@@ -5,7 +5,7 @@
         @if (_recentShown)
         {
             <TbChip Text="Recently viewed" Href="guides/palettes" Size="Size.Small"
-                    OnClose="() => _recentShown = false" />
+                    OnRemove="() => _recentShown = false" />
         }
     </TbStack>
     <output aria-label="Times opened">Times opened: @_opened</output>

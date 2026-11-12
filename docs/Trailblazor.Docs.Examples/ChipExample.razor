@@ -1,7 +1,7 @@
 <TbChipGroup AriaLabel="Selected tags">
     @foreach (var tag in _tags)
     {
-        <TbChip @key="tag" Text="@tag" OnClose="() => RemoveAsync(tag)" />
+        <TbChip @key="tag" Text="@tag" OnRemove="() => RemoveAsync(tag)" />
     }
 </TbChipGroup>
 

@@ -25,7 +25,7 @@
     {
         <span data-part="action" class="tb-chip__action" aria-disabled="@(Disabled ? "true" : null)">@Content</span>
     }
-    @if (OnClose.HasDelegate)
+    @if (OnRemove.HasDelegate)
     {
         <button type="button" data-part="remove" class="tb-chip__remove" disabled="@Disabled"
                 aria-label="@RemoveName" @onclick="RemoveAsync"
@@ -96,7 +96,7 @@
     /// <summary>Raised when the user removes the chip, with its remove button or the Delete or Backspace key. With
     /// it, the chip has a remove button, but the chip stays until the parent takes it away.</summary>
     [Parameter]
-    public EventCallback OnClose { get; set; }
+    public EventCallback OnRemove { get; set; }
 
     /// <summary>A label this chip's use is counted under, such as <c>"filter-open-trails"</c>, so the app can count how
     /// often people see it and use it through the <c>Trailblazor</c> meter. A click or toggle counts as a use, and a
@@ -175,7 +175,7 @@
     private async Task OnKeyDownAsync(KeyboardEventArgs e)
     {
         // A held key repeats, and each repeat would ask to remove the chip again.
-        if (OnClose.HasDelegate && !Disabled && !e.Repeat && e.Key is "Delete" or "Backspace")
+        if (OnRemove.HasDelegate && !Disabled && !e.Repeat && e.Key is "Delete" or "Backspace")
         {
             await RemoveAsync();
         }
@@ -184,7 +184,7 @@
     // In a group, focus moves to the chip that takes this one's place, instead of falling back to the page.
     private async Task RemoveAsync()
     {
-        // A second click on the remove button while an async OnClose runs mustn't ask again.
+        // A second click on the remove button while an async OnRemove runs mustn't ask again.
         if (_removing)
         {
             return;
@@ -199,7 +199,7 @@
                 await Group.RememberPlaceAsync(_chip);
             }
 
-            await OnClose.InvokeAsync();
+            await OnRemove.InvokeAsync();
         }
         finally
         {

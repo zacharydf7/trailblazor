@@ -2299,7 +2299,7 @@ public static class ExampleCatalog
             Related = ["badge", "button", "checkbox-group", "toggle-group"],
             Sections =
             [
-                new("removable", "Removable", "`OnClose` adds a remove button. When a chip in a `TbChipGroup` is "
+                new("removable", "Removable", "`OnRemove` adds a remove button. When a chip in a `TbChipGroup` is "
                     + "removed, focus moves to the chip that takes its place, or to the group when none is "
                     + "left.", typeof(ChipExample)),
                 new("filter", "Filter", "`@bind-Selected` makes the chip a toggle, and a selected one shows a check.",
@@ -2308,7 +2308,7 @@ public static class ExampleCatalog
                     + "`Icon` adds an icon before its text. `IconTone` gives the icon a tone of its own, such as a red "
                     + "bell on a neutral chip.", typeof(ChipStyleExample)),
                 new("actions", "Links and buttons", "`Href` makes the chip a link and `OnClick` a button, and either "
-                    + "can also have `OnClose`.", typeof(ChipActionExample)),
+                    + "can also have `OnRemove`.", typeof(ChipActionExample)),
                 new("disabled", "Disabled", "`Disabled` turns off the chip and its remove button.",
                     typeof(ChipDisabledExample)),
                 new("remove-label", "Naming the remove button", "`RemoveLabel` replaces the remove button's name, "
@@ -2318,8 +2318,8 @@ public static class ExampleCatalog
             Api = [typeof(TbChip), typeof(TbChipGroup)],
             Anatomy = """
                 <TbChipGroup AriaLabel="…">
-                    <TbChip Text="…" OnClose="…" />
-                    <TbChip Text="…" OnClose="…" />
+                    <TbChip Text="…" OnRemove="…" />
+                    <TbChip Text="…" OnRemove="…" />
                 </TbChipGroup>
 
                 <TbChipGroup AriaLabel="…">
@@ -2331,7 +2331,7 @@ public static class ExampleCatalog
             [
                 new(["Tab"], "Reaches each chip that is a button, link or toggle, and each remove button."),
                 new(["Enter", "Space"], "Presses the focused chip or remove button. A link takes Enter only."),
-                new(["Delete", "Backspace"], "Removes the focused chip, if it has `OnClose`."),
+                new(["Delete", "Backspace"], "Removes the focused chip, if it has `OnRemove`."),
             ],
             Labeling =
             [
@@ -3663,7 +3663,7 @@ public static class ExampleCatalog
             Sections =
             [
                 new("value", "Value", "`ShowValue` shows the value above the thumb, and `ValueFormatter` sets its "
-                    + "text. `@bind-Value` follows the thumb as it moves, and `ValueCommitted` reports where it "
+                    + "text. `@bind-Value` follows the thumb as it moves, and `OnValueCommitted` reports where it "
                     + "settled, once someone lets go or finishes with the keys.", typeof(SliderExample)),
                 new("label-and-help", "Label and help text", "`Label` names the slider and `HelperText` adds a hint. A "
                     + "long label wraps above the track.", typeof(SliderHelpExample)),
@@ -3723,7 +3723,7 @@ public static class ExampleCatalog
             [
                 new("A value outside `Min` and `Max` shows at the nearest end."),
                 new("While the thumb moves, `ValueChanged` is raised at most every 50 ms, and once more when it stops, so "
-                    + "a drag over a slow link doesn't send a message per frame. `ValueCommitted` always has the value "
+                    + "a drag over a slow link doesn't send a message per frame. `OnValueCommitted` always has the value "
                     + "where the thumb was let go."),
                 new("`Min` can't be above `Max`, both must fit the number type, and `Step` must be above 0. A whole "
                     + "number type also needs a whole `Min`, `Max` and `Step`. Anything else throws when it renders. When "

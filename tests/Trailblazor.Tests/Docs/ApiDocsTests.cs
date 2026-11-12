@@ -143,7 +143,7 @@ public class ApiDocsTests
             member => member.Type.StartsWith("EventCallback", StringComparison.Ordinal)
                 || member.Type.StartsWith("RenderFragment", StringComparison.Ordinal));
         Assert.Contains(ApiDocs.Describe(typeof(TbChip)).Groups.Single(group => group.Name == "Events").Members,
-            member => member is { Name: "OnClose", Type: "EventCallback" });
+            member => member is { Name: "OnRemove", Type: "EventCallback" });
     }
 
     [Fact]

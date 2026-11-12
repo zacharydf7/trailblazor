@@ -24,7 +24,7 @@
     @if (OnClose.HasDelegate)
     {
         <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(CloseLabel ?? Localizer[TbStrings.AlertClose])"
-                      Size="Size.Small" OnClick="OnClose"
+                      Size="Size.Small" OnClick="() => OnClose.InvokeAsync()"
                       data-part="close" Class="@ClassNames.Join("tb-alert__close", Classes?.Close)" />
     }
 </div>
@@ -58,7 +58,7 @@
 
     /// <summary>Raised when the close button is clicked. The close button is shown only when this is set.</summary>
     [Parameter]
-    public EventCallback<MouseEventArgs> OnClose { get; set; }
+    public EventCallback OnClose { get; set; }
 
     /// <summary>The close button's accessible name. Defaults to the app's text for <see cref="TbStrings.AlertClose"/>,
     /// "Close" in English.</summary>
