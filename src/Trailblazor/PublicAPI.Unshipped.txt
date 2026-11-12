@@ -4760,3 +4760,7 @@ const Trailblazor.TbStrings.CodeFieldDigitsOne = "CodeField.DigitsOne" -> string
 const Trailblazor.TbStrings.CodeFieldCharacters = "CodeField.Characters" -> string!
 const Trailblazor.TbStrings.CodeFieldCharactersOne = "CodeField.CharactersOne" -> string!
 Trailblazor.TbTreeView<TItem, TKey>.RenderRows() -> void
+Trailblazor.TbDataGrid<TItem>.StartEditAsync(TItem item, string? columnId = null) -> System.Threading.Tasks.Task!
+Trailblazor.TbDataGrid<TItem>.CancelEditAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbDrawer.Options.get -> Trailblazor.DialogOptions?
+Trailblazor.TbDrawer.Options.set -> void

@@ -43,6 +43,23 @@ public class GridEditKeysTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task EditButton_ShouldOpenTheRowsNameForEditing_WhenClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Trail names" });
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        var name = grid.Locator("tr[data-key='2'] td[data-column=Name]");
+
+        await grid.GetByRole(AriaRole.Button, new() { Name = "Edit Eagle Ridge traverse" }).ClickAsync();
+
+        await Expect(name.Locator("input")).ToBeFocusedAsync();
+        await name.Locator("input").FillAsync("Eagle Ridge loop");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(name).ToHaveTextAsync("Eagle Ridge loop");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Typing_ShouldStartTheEditWithWhatWasTyped_WhenPressedOnATextCell(string browser)
     {
         var page = await OpenReadyAsync(browser);

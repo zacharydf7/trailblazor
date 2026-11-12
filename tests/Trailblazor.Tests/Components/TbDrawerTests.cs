@@ -11,6 +11,23 @@ public class TbDrawerTests : BunitContext
         Assert.Single(Services.GetRequiredService<IDialogService>().OpenDialogs).Options;
 
     [Fact]
+    public void Options_ShouldReachTheDialogUnderTheDrawersOwnSettings_WhenGiven()
+    {
+        Render<TbDrawer>(parameters => parameters.Add(drawer => drawer.Open, true)
+            .Add(drawer => drawer.Title, "Filters").Add(drawer => drawer.Side, DrawerSide.Start)
+            .Add(drawer => drawer.Width, "30rem")
+            .Add(drawer => drawer.Options, new DialogOptions
+            {
+                DismissOnBackdrop = false, ShowHeader = false, Position = DialogPosition.Center, Width = "10rem",
+                Modal = false, TelemetryName = "trail-filters",
+            }));
+
+        Assert.Equal((false, false, DialogPosition.Start, "30rem", true, "trail-filters"),
+            (OpenOptions.DismissOnBackdrop, OpenOptions.ShowHeader, OpenOptions.Position, OpenOptions.Width,
+                OpenOptions.Modal, OpenOptions.TelemetryName));
+    }
+
+    [Fact]
     public void Open_ShouldOpenAModalDialogAtTheEnd_WhenTrue()
     {
         var cut = Render<TbDrawer>(parameters => parameters.Add(drawer => drawer.Open, true)

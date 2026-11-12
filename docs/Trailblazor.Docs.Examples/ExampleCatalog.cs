@@ -6236,7 +6236,9 @@ public static class ExampleCatalog
             [
                 new("basic", "Drawer", "`@bind-Open` opens the drawer, and turns false when people close it. `Title` "
                     + "names it and shows in its header with a close button. Put its buttons in a `TbDialogActions`, "
-                    + "which stays at the bottom however long the content is.", typeof(DrawerExample)),
+                    + "which stays at the bottom however long the content is. `Options` takes other dialog options, "
+                    + "such as `DismissOnBackdrop` or `InitialFocus`; the drawer's own `Side`, `Modal`, `Size` and "
+                    + "`Width` override the matching ones.", typeof(DrawerExample)),
                 new("sides", "Sides and sheets", "`Side` sets the edge it slides in from: `End` unless set, or `Start`, "
                     + "`Top` or `Bottom`. Start and end follow the reading direction. A drawer at the top or bottom "
                     + "is a sheet across the window, as tall as its content.", typeof(DrawerSideExample)),
@@ -6244,7 +6246,7 @@ public static class ExampleCatalog
                     + "open, with no backdrop, so people can pick another item and see it in the same drawer.",
                     typeof(DrawerNonModalExample)),
             ],
-            Api = [typeof(TbDrawer), typeof(DrawerSide)],
+            Api = [typeof(TbDrawer), typeof(DrawerSide), typeof(DialogOptions), typeof(DialogClasses)],
             Anatomy = """
                 <TbDrawer Title="…" Side="…" @bind-Open="_open">
                     …
@@ -7197,6 +7199,11 @@ public static class ExampleCatalog
                     + "Each value is checked by its field's data annotations and the column's `Validate`, and "
                     + "`OnCellEdit` gets each saved edit. An `Editable` column turns on cell navigation.",
                     typeof(DataGridEditExample)),
+                new("edit-button", "Edit from a button", "An app's own button, such as an Edit button in an action "
+                    + "column, calls `StartEditAsync(item, columnId)` to start an edit in that cell, or, without a "
+                    + "column id, in the first editable one. `CancelEditAsync()` cancels the open edit, but focus "
+                    + "leaving the cell saves it first, so cancel from code that leaves focus in the cell, or edit "
+                    + "whole rows, which have their own Cancel button.", typeof(DataGridEditButtonExample)),
                 new("edit-rows", "Edit rows", "With `EditMode` set to `Row`, an edit opens every editable cell of "
                     + "the row: Tab moves between its fields and its Save and Cancel buttons, Enter saves the row, "
                     + "Escape cancels it, focus leaving the row saves it, and `OnRowEdit` gets all of its values at "

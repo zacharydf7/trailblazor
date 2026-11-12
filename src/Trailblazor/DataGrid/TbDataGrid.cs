@@ -916,6 +916,26 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return rendered.Task;
     }
 
+    /// <summary>Starts an edit in this item's row from code, such as an app's own Edit button, as a double-click on one
+    /// of its cells does. <paramref name="columnId"/> names the cell to start in by its column's <c>Id</c> or field
+    /// path, and without one the first editable column is used. An edit already open is saved first, and stays open
+    /// when it can't be. An item the grid isn't showing, such as one filtered out, isn't edited.</summary>
+    /// <exception cref="ArgumentException">No shown, editable column has this id.</exception>
+    /// <exception cref="InvalidOperationException">No shown column is editable.</exception>
+    public async Task StartEditAsync(TItem item, string? columnId = null)
+    {
+        var editable = _shownColumns.Where(CanEdit).ToList();
+        if (editable.Count == 0)
+        {
+            throw new InvalidOperationException("The grid shows no editable column.");
+        }
+
+        var column = columnId is null ? editable[0] : editable.FirstOrDefault(shown => shown.Key == columnId)
+            ?? throw new ArgumentException($"No shown, editable column has the id \"{columnId}\".", nameof(columnId));
+        await StartEditAsync(item, column);
+        StateHasChanged();
+    }
+
     // An edit already open is saved before another starts, and stays open when it can't be. In row mode an edit covers
     // every editable cell of the row, starting in the one asked for.
     private async Task StartEditAsync(TItem item, TbColumn<TItem> column)
@@ -1079,7 +1099,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return change.Error;
     }
 
-    private async Task CancelEditAsync()
+    /// <summary>Cancels the open edit, as Escape does: the values stay as they were, and focus goes back to the cell.
+    /// In <see cref="GridEditMode.Cell"/>, focus leaving the cell saves the edit, so a control outside the cell that
+    /// takes focus saves the edit before this method can cancel it; call this from code that leaves focus where it is,
+    /// or use <see cref="GridEditMode.Row"/>, whose rows have their own Cancel button.</summary>
+    public async Task CancelEditAsync()
     {
         if (_edit is not { } edit)
         {

@@ -3241,6 +3241,12 @@
         -webkit-appearance: none;
     }
 
+    /* Edge adds its own show-password button, so a password box with an app's own in the End slot would show two. The
+       clear button sits in the same slot, so it doesn't count. */
+    .tb-field__control:has([data-part="end"] > :not([data-part="clear"])) input.tb-field__input::-ms-reveal {
+        display: none;
+    }
+
     /* A text area with MaxLines sizes to its text between its line counts; without field-sizing it stays resizable. */
     @supports (field-sizing: content) {
         textarea.tb-field__input[data-max-lines] {

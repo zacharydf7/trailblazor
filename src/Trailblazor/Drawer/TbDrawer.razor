@@ -55,12 +55,19 @@
     [Parameter]
     public string? TelemetryName { get; set; }
 
+    /// <summary>Other dialog options, such as <see cref="DialogOptions.DismissOnBackdrop"/>,
+    /// <see cref="DialogOptions.InitialFocus"/> or <see cref="DialogOptions.Classes"/>. The drawer's own
+    /// <see cref="Side"/>, <see cref="Modal"/>, <see cref="Size"/> and <see cref="Width"/> override the matching
+    /// options, and its <see cref="TelemetryName"/> does when set.</summary>
+    [Parameter]
+    public DialogOptions? Options { get; set; }
+
     /// <summary>The drawer's content. Put its buttons in a <see cref="TbDialogActions"/>, which stays at the bottom.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    private DialogOptions DrawerOptions => new()
+    private DialogOptions DrawerOptions => (Options ?? new()) with
     {
         Modal = Modal,
         Size = Size,
@@ -72,6 +79,6 @@
             DrawerSide.Bottom => DialogPosition.Bottom,
             _ => DialogPosition.End,
         },
-        TelemetryName = TelemetryName,
+        TelemetryName = TelemetryName ?? Options?.TelemetryName,
     };
 }

@@ -44,5 +44,5 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 ## Not applicable
 
 - Escape: a plain text box has no action for it. A browser's search box may clear on it, and `Clearable` adds a button.
-- A show-password button: browsers and password managers add their own, and an app can put one in the `End` slot.
+- A show-password button: an app can put one in the `End` slot. Of the browsers, only Edge adds its own, and the field hides Edge's whenever the `End` slot holds the app's content, so people never see two.
 - Ctrl+Enter to submit from a text area: a chat convention, which an app can add.

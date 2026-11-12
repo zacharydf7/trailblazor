@@ -57,6 +57,76 @@ public class TbDataGridEditTests : BunitContext
     }
 
     [Fact]
+    public async Task StartEditAsync_ShouldOpenTheNamedCell_WhenGivenAColumnId()
+    {
+        var cut = RenderHikes();
+
+        await cut.InvokeAsync(() => cut.Instance.StartEditAsync(_hikes[1], "LengthKm"));
+
+        Assert.NotNull(Cell(cut, 2, "LengthKm").QuerySelector("[data-part=editor]"));
+    }
+
+    [Fact]
+    public async Task StartEditAsync_ShouldOpenTheFirstEditableCell_WhenGivenNoColumnId()
+    {
+        var cut = RenderHikes();
+
+        await cut.InvokeAsync(() => cut.Instance.StartEditAsync(_hikes[0]));
+
+        Assert.Equal("Pine Hollow",
+            Cell(cut, 1, "Name").QuerySelector("[data-part=editor] input")?.GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task StartEditAsync_ShouldLeaveTheGridUnedited_WhenTheGridIsntShowingTheItem()
+    {
+        var cut = RenderHikes();
+
+        await cut.InvokeAsync(() => cut.Instance.StartEditAsync(new Hike(9, "Lost Lake", 3, Difficulty.Easy, true)));
+
+        Assert.Empty(cut.FindAll("[data-part=editor]"));
+    }
+
+    [Fact]
+    public async Task CancelEditAsync_ShouldCloseTheEditAndKeepTheValue_WhenOneIsOpen()
+    {
+        var cut = RenderHikes();
+        await cut.InvokeAsync(() => cut.Instance.StartEditAsync(_hikes[0], "Name"));
+        await cut.Find("[data-part=editor] input").InputAsync(new ChangeEventArgs { Value = "Pine loop" });
+
+        await cut.InvokeAsync(cut.Instance.CancelEditAsync);
+
+        Assert.Empty(cut.FindAll("[data-part=editor]"));
+        Assert.Equal("Pine Hollow", _hikes[0].Name);
+    }
+
+    [Fact]
+    public async Task StartEditAsync_ShouldThrow_WhenNoColumnIsEditable()
+    {
+        var cut = Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.Items, _hikes)
+            .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Hike>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Hike>.Field), Field(hike => hike.Name));
+                builder.CloseComponent();
+            })));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.InvokeAsync(() => cut.Instance.StartEditAsync(_hikes[0])));
+    }
+
+    [Fact]
+    public async Task StartEditAsync_ShouldThrowNamingTheColumn_WhenNoEditableColumnHasTheId()
+    {
+        var cut = RenderHikes();
+
+        var error = await Assert.ThrowsAsync<ArgumentException>(
+            () => cut.InvokeAsync(() => cut.Instance.StartEditAsync(_hikes[0], "Ranger")));
+
+        Assert.Contains("\"Ranger\"", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Enter_ShouldSetTheValueOnTheItem_WhenTheGridHasNoEditHandler()
     {
         var cut = RenderHikes();

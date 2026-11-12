@@ -1,0 +1,22 @@
+@* Each row's Edit button opens the trail's name for editing. *@
+<TbDataGrid @ref="_grid" TItem="Trail" Items="_trails" AriaLabel="Trail names" KeySelector="trail => trail.Id">
+    <TbColumn Field="trail => trail.Name" Editable />
+    <TbColumn Title="Actions" Id="actions">
+        <CellTemplate>
+            <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@($"Edit {context.Name}")"
+                      OnClick="() => _grid!.StartEditAsync(context, nameof(Trail.Name))">Edit</TbButton>
+        </CellTemplate>
+    </TbColumn>
+</TbDataGrid>
+
+@code {
+    private readonly List<Trail> _trails = [new(1, "Pine Hollow loop"), new(2, "Eagle Ridge traverse")];
+    private TbDataGrid<Trail>? _grid;
+
+    private sealed class Trail(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; set; } = name;
+    }
+}
