@@ -38,6 +38,7 @@
 @code {
     private ElementReference _chip;
     private ControlTelemetry? _telemetry;
+    private bool _removing;
 
     /// <summary>The chip's text, which also names its remove button. Use <see cref="ChildContent"/> for richer
     /// content.</summary>
@@ -173,7 +174,8 @@
 
     private async Task OnKeyDownAsync(KeyboardEventArgs e)
     {
-        if (OnClose.HasDelegate && !Disabled && e.Key is "Delete" or "Backspace")
+        // A held key repeats, and each repeat would ask to remove the chip again.
+        if (OnClose.HasDelegate && !Disabled && !e.Repeat && e.Key is "Delete" or "Backspace")
         {
             await RemoveAsync();
         }
@@ -182,13 +184,28 @@
     // In a group, focus moves to the chip that takes this one's place, instead of falling back to the page.
     private async Task RemoveAsync()
     {
-        Telemetry.Used(TelemetryName, "remove");
-        if (Group is not null && RendererInfo.IsInteractive)
+        // A second click on the remove button while an async OnClose runs mustn't ask again.
+        if (_removing)
         {
-            await Group.RememberPlaceAsync(_chip);
+            return;
         }
 
-        await OnClose.InvokeAsync();
+        _removing = true;
+        try
+        {
+            Telemetry.Used(TelemetryName, "remove");
+            if (Group is not null && RendererInfo.IsInteractive)
+            {
+                await Group.RememberPlaceAsync(_chip);
+            }
+
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
+            _removing = false;
+        }
+
         Group?.RestoreFocusAfterRender();
     }
 }

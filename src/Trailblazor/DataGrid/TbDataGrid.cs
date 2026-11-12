@@ -1545,8 +1545,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // went to. A key press keeps focus on the moved row's handle.
     private async Task MoveRowAsync(int from, int to, string input)
     {
-        var items = AllItems;
-        if (!CanReorder || from < 0 || !await Mover.MoveAsync(items, from, to, CanMoveRow, OnRowMove, LabelOf))
+        if (!CanReorder || from < 0 || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf))
         {
             return;
         }

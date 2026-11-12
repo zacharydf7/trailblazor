@@ -88,6 +88,69 @@ public class TbSortableTests : BunitContext
     }
 
     [Fact]
+    public async Task Keys_ShouldAskAndMoveOnce_WhenPressedAgainWhileCanMoveRuns()
+    {
+        var asks = 0;
+        var held = new TaskCompletionSource<MoveCheck>();
+        var cut = RenderRules(parameters => parameters.Add(list => list.CanMove, _ =>
+        {
+            asks++;
+            return held.Task;
+        }));
+
+        var first = cut.InvokeAsync(() => Events().OnKey("Block spam", "ArrowDown"));
+        var second = cut.InvokeAsync(() => Events().OnKey("Block spam", "ArrowDown"));
+        await cut.InvokeAsync(() => held.SetResult(MoveCheck.Allow));
+        await Task.WhenAll(first, second);
+
+        Assert.Equal(1, asks);
+        Assert.Equal([new("Block spam", 0, 1)], _moves);
+    }
+
+    [Fact]
+    public async Task Keys_ShouldLeaveTheList_WhenItChangesWhileCanMoveRuns()
+    {
+        var held = new TaskCompletionSource<MoveCheck>();
+        var cut = RenderRules(parameters => parameters.Add(list => list.CanMove, _ => held.Task));
+
+        var move = cut.InvokeAsync(() => Events().OnKey("Block spam", "ArrowDown"));
+        _rules.Insert(0, "Skip drafts");
+        await cut.InvokeAsync(() => held.SetResult(MoveCheck.Allow));
+        await move;
+
+        Assert.Empty(_moves);
+    }
+
+    [Fact]
+    public async Task Keys_ShouldLeaveTheList_WhenItsEndIsRemovedWhileCanMoveRuns()
+    {
+        var held = new TaskCompletionSource<MoveCheck>();
+        var cut = RenderRules(parameters => parameters.Add(list => list.CanMove, _ => held.Task));
+
+        var move = cut.InvokeAsync(() => Events().OnKey("Block spam", "End"));
+        _rules.RemoveAt(2);
+        await cut.InvokeAsync(() => held.SetResult(MoveCheck.Allow));
+        await move;
+
+        Assert.Empty(_moves);
+    }
+
+    [Fact]
+    public async Task Keys_ShouldLeaveTheList_WhenTheParentReplacesItWhileCanMoveRuns()
+    {
+        var held = new TaskCompletionSource<MoveCheck>();
+        var cut = RenderRules(parameters => parameters.Add(list => list.CanMove, _ => held.Task));
+
+        var move = cut.InvokeAsync(() => Events().OnKey("Block spam", "ArrowDown"));
+        cut.Render(parameters =>
+            parameters.Add(list => list.Items, ["Archive the rest", "Block spam", "Flag invoices"]));
+        await cut.InvokeAsync(() => held.SetResult(MoveCheck.Allow));
+        await move;
+
+        Assert.Empty(_moves);
+    }
+
+    [Fact]
     public async Task Menu_ShouldMoveTheItemOrOfferNothing_WhenAMoveIsChosenFromItsHandle()
     {
         var cut = RenderRules();

@@ -763,6 +763,34 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public async Task Close_ShouldAskOnce_WhenTheMarkIsClickedAgainWhileOnCloseRuns()
+    {
+        var closes = 0;
+        var held = new TaskCompletionSource();
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            AddTab(builder, 0, "Overview", "Overview panel");
+            builder.OpenComponent<TbTab>(10);
+            builder.AddAttribute(11, nameof(TbTab.Text), "Specs");
+            builder.AddAttribute(12, nameof(TbTab.OnClose), EventCallback.Factory.Create(this, () =>
+            {
+                closes++;
+                return held.Task;
+            }));
+            builder.CloseComponent();
+        })));
+
+        cut.Find("[data-part=close]").Click();
+        cut.Find("[data-part=close]").Click();
+        Assert.Equal(1, closes);
+        // Once the first close ends, the tab can be asked again.
+        await cut.InvokeAsync(held.SetResult);
+        cut.Find("[data-part=close]").Click();
+
+        Assert.Equal(2, closes);
+    }
+
+    [Fact]
     public async Task Delete_ShouldRaiseOnCloseOnlyForAClosableTab_WhenTheScriptReportsIt()
     {
         var order = SetUpOrder();

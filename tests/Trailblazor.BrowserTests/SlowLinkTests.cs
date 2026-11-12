@@ -117,3 +117,26 @@ public class SlowLinkSelectWaitTests(BrowserFixture fixture) : BrowserTest(fixtu
         await SelectTests.ExpectActiveAsync(page, trails, "Trail 5");
     }
 }
+
+// Each Shift+Arrow has to be pressed before the server draws the one before it, as on a slow link.
+public class SlowLinkListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
+{
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiListBox_ShouldKeepAnOptionShiftAddedTwice_WhenTheFirstHasntBeenDrawnYet(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/listbox");
+        var gear = page.GetByRole(AriaRole.Listbox, new() { Name = "Gear to pack", Exact = true });
+        await Expect(gear).ToHaveAttributeAsync("data-ready", "");
+        await gear.FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+ArrowDown");
+        await page.Keyboard.PressAsync("Shift+ArrowUp");
+        await page.Keyboard.PressAsync("Shift+ArrowDown");
+        // Long enough for every press to reach the server and its answer to come back.
+        await page.WaitForTimeoutAsync(1500);
+
+        await Expect(page.GetByText("Packing: ")).ToHaveTextAsync("Packing: Tent, Stove");
+    }
+}

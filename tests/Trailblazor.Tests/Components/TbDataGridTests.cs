@@ -1239,6 +1239,29 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task RowMove_ShouldAskAndMoveOnce_WhenAKeyComesAgainWhileCanMoveRowRuns()
+    {
+        List<Trail> trails = [.. Trails];
+        var asks = 0;
+        var held = new TaskCompletionSource<MoveCheck>();
+        var cut = RenderTrails(trails, parameters => parameters
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.CanMoveRow, _ =>
+            {
+                asks++;
+                return held.Task;
+            }));
+
+        var first = cut.InvokeAsync(() => MoveEvents().OnKey("1", "ArrowDown"));
+        var second = cut.InvokeAsync(() => MoveEvents().OnKey("1", "ArrowDown"));
+        await cut.InvokeAsync(() => held.SetResult(MoveCheck.Allow));
+        await Task.WhenAll(first, second);
+
+        Assert.Equal(1, asks);
+        Assert.Equal(["Eagle Ridge", "Pine Hollow", "Cedar Flats", "Fern Gully", "Lake Camp"], Names(cut));
+    }
+
+    [Fact]
     public async Task RowMove_ShouldOfferNoHandles_WhenTheGridIsSorted()
     {
         List<Trail> trails = [.. Trails];

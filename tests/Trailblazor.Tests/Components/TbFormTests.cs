@@ -57,6 +57,47 @@ public class TbFormTests : BunitContext
     }
 
     [Fact]
+    public void Submit_ShouldDoNothingAndTurnOffItsButtons_WhenTheFormIsDisabled()
+    {
+        var valid = 0;
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.Disabled, true)
+            .Add(form => form.OnValidSubmit, (EditContext _) => valid++)
+            .Add(form => form.ChildContent, builder =>
+            {
+                foreach (var (sequence, type) in new[] { (0, ButtonType.Submit), (10, ButtonType.Reset),
+                             (20, ButtonType.Button) })
+                {
+                    builder.OpenComponent<TbButton>(sequence);
+                    builder.AddAttribute(sequence + 1, nameof(TbButton.Type), type);
+                    builder.AddAttribute(sequence + 2, nameof(TbButton.ChildContent),
+                        (RenderFragment)(text => text.AddContent(0, type.ToString())));
+                    builder.CloseComponent();
+                }
+            }));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(0, valid);
+        Assert.Equal([true, true, false], cut.FindAll("button").Select(button => button.HasAttribute("disabled")));
+    }
+
+    [Fact]
+    public void Submit_ShouldTurnItsButtonBackOn_WhenTheFormIsEnabledAndTheButtonsParentDoesntRender()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.Disabled, true)
+            .Add(form => form.ChildContent, builder =>
+            {
+                builder.OpenComponent<FormActions>(0);
+                builder.CloseComponent();
+            }));
+        Assert.True(cut.Find("button").HasAttribute("disabled"));
+
+        cut.Render(parameters => parameters.Add(form => form.Disabled, false));
+
+        Assert.False(cut.Find("button").HasAttribute("disabled"));
+    }
+
+    [Fact]
     public void Submit_ShouldRaiseOnValidSubmit_WhenEveryFieldPasses()
     {
         var valid = 0;
@@ -318,6 +359,19 @@ public class TbFormTests : BunitContext
 
         Assert.Single(cut.FindAll("input"));
         Assert.Equal("Trail", cut.Find("input").GetAttribute("value"));
+    }
+
+    // Takes no parameters, so nothing renders it again after the first time.
+    private sealed class FormActions : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbButton>(0);
+            builder.AddAttribute(1, nameof(TbButton.Type), ButtonType.Submit);
+            builder.AddAttribute(2, nameof(TbButton.ChildContent),
+                (RenderFragment)(text => text.AddContent(0, "Save")));
+            builder.CloseComponent();
+        }
     }
 
     // A field that shows another for one of its values, so resetting it can remove the other mid-reset.

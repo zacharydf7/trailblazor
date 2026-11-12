@@ -304,9 +304,9 @@ public class TbListBoxTests : BunitContext
         var cut = RenderPackingList([]);
         var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
 
-        await cut.InvokeAsync(() => Events().OnChooseRange(ids[..2], false, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[..2], false, false, false));
         Assert.Equal(0, _gearChanges);
-        await cut.InvokeAsync(() => Events().OnChooseRange(ids[2..], true, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[2..], true, false, false));
 
         Assert.Equal(["Tent", "Stove", "Water filter"], Gear);
         Assert.Equal(1, _gearChanges);
@@ -318,7 +318,7 @@ public class TbListBoxTests : BunitContext
         var cut = RenderPackingList([]);
         var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
 
-        await cut.InvokeAsync(() => Events().OnChooseRange(["gone", ids[0]], true, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange(["gone", ids[0]], true, false, false));
 
         Assert.Equal(["Tent"], Gear);
     }
@@ -329,8 +329,8 @@ public class TbListBoxTests : BunitContext
         var cut = RenderPackingList([]);
         var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
 
-        await cut.InvokeAsync(() => Events().OnChooseRange([ids[0], ids[2]], false, false));
-        await cut.InvokeAsync(() => Events().OnChooseRange([ids[2], ids[3]], true, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange([ids[0], ids[2]], false, false, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange([ids[2], ids[3]], true, false, false));
 
         Assert.Equal(["Tent", "Stove", "Water filter"], Gear);
     }
@@ -341,8 +341,8 @@ public class TbListBoxTests : BunitContext
         var cut = RenderPackingList([]);
         var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
 
-        await cut.InvokeAsync(() => Events().OnChooseRange(["a", "b", "c", "d", ids[2]], false, false));
-        await cut.InvokeAsync(() => Events().OnChooseRange([ids[0]], true, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange(["a", "b", "c", "d", ids[2]], false, false, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange([ids[0]], true, false, false));
 
         Assert.Equal(["Tent"], Gear);
     }
@@ -352,11 +352,11 @@ public class TbListBoxTests : BunitContext
     {
         var cut = RenderPackingList([]);
         var ids = cut.FindAll("[role=option]").Select(option => option.Id!).ToArray();
-        await cut.InvokeAsync(() => Events().OnChooseRange(ids[..1], true, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[..1], true, false, false));
         Gear = [];
         cut.Render(parameters => parameters.Add(listbox => listbox.Value, []));
 
-        await cut.InvokeAsync(() => Events().OnChooseRange(ids[2..3], true, false));
+        await cut.InvokeAsync(() => Events().OnChooseRange(ids[2..3], true, false, false));
 
         Assert.Equal(["Stove"], Gear);
     }

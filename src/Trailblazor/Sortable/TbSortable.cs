@@ -82,7 +82,7 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     /// Returns whether the item moved.</summary>
     public async Task<bool> MoveAsync(int from, int to)
     {
-        var moved = await Mover.MoveAsync(Items, from, to, CanMove, OnMove, TextOf);
+        var moved = await Mover.MoveAsync(() => Items, from, to, CanMove, OnMove, TextOf);
         if (moved)
         {
             StateHasChanged();

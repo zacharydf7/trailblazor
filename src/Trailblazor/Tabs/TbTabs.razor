@@ -65,6 +65,7 @@
     private readonly ItemHandlers<TbTab, Func<MouseEventArgs, Task>> _click;
     private (TbTab Tab, TbTab? Neighbor)? _closing;
     private bool _closeEnded;
+    private readonly HashSet<TbTab> _closingTabs = [];
     private TbTab? _focusAfterRender;
     private int _active;
     private int? _lastActiveIndex;
@@ -430,6 +431,12 @@
     // Focus goes to the next enabled tab, or the one before it, if the parent removes the tab while closing it.
     internal async Task CloseAsync(TbTab tab)
     {
+        // A second click on the close mark while an async OnClose runs mustn't ask again.
+        if (!_closingTabs.Add(tab))
+        {
+            return;
+        }
+
         var enabled = _tabs.FindAll(other => !other.Disabled);
         var index = enabled.IndexOf(tab);
         _closing = (tab, enabled.ElementAtOrDefault(index + 1) ?? enabled.ElementAtOrDefault(index - 1));
@@ -439,6 +446,7 @@
         }
         finally
         {
+            _closingTabs.Remove(tab);
             _closeEnded = true;
             StateHasChanged();
         }

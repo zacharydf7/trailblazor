@@ -137,7 +137,7 @@ public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(Dynamica
     // A long range arrives in batches, and they make one change to the value once the last is in. A second range can
     // arrive alongside the first, so an id may come twice; more ids than options can only come from a bad client. A
     // range that is Ctrl+A over a filter's options counts as choosing all.
-    private Task ChooseRangeAsync(string[] ids, bool last, bool all)
+    private Task ChooseRangeAsync(string[] ids, bool last, bool all, bool keyboard)
     {
         _range.UnionWith(ids);
         if (_range.Count > _options.Count)
@@ -154,7 +154,7 @@ public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(Dynamica
         var options = _options.Where(option => _range.Contains(option.Id)).ToList();
         _range.Clear();
         return all ? ChooseManyAsync(options, "select_all", "keyboard")
-            : ChooseManyAsync(options, "select_range", "pointer");
+            : ChooseManyAsync(options, "select_range", keyboard ? "keyboard" : "pointer");
     }
 
     private async Task ChooseManyAsync(IEnumerable<ISelectOption> options, string action, string input)

@@ -2813,8 +2813,9 @@ public static class ExampleCatalog
                     + "`ResetAsync` does the same from code, and `OnReset` lets you reset anything else.",
                     typeof(FormResetExample)),
                 new("locked", "Read-only and disabled forms", "`ReadOnly` on the form makes every field in it read "
-                    + "only, as each field's own `ReadOnly` would, and `Disabled` turns them all off. A field's own "
-                    + "setting still applies when the form's is off, and buttons in the form aren't affected.",
+                    + "only, as each field's own `ReadOnly` would, and `Disabled` turns them all off, along with the "
+                    + "form's submit and reset buttons. A field's own setting still applies when the form's is off, "
+                    + "and other buttons in the form aren't affected.",
                     typeof(FormLockedExample)),
                 new("server-errors", "Server errors", "A field's `Error` shows what the server said, and blocks the "
                     + "next submit until it is cleared, so clear it when the value changes. `Loading` shows the save "
@@ -5511,9 +5512,10 @@ public static class ExampleCatalog
                 "An option with a `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` each "
                     + "time it is chosen on its own. A disabled or read-only list box chooses nothing, so it counts "
                     + "nothing; the value is never recorded.",
-                "Choosing several at once doesn't count each option. A list box with its own `TelemetryName` counts "
-                    + "one use instead, with `trailblazor.action` `select_all` for Ctrl+A or `select_range` for "
-                    + "Shift+click.",
+                "Choosing several at once, or with Shift+Up or Shift+Down, doesn't count each option. A list box "
+                    + "with its own `TelemetryName` counts one use instead, with `trailblazor.action` `select_all` for "
+                    + "Ctrl+A or `select_range` for Shift+click, Shift+Up or Shift+Down. Its `trailblazor.input` says "
+                    + "whether the pointer or the keys chose the options.",
             ],
         },
         new("transfer-list", "Transfer list", ExampleCategory.Inputs,

@@ -114,6 +114,28 @@ public class TbChipTests : BunitContext
     }
 
     [Fact]
+    public async Task Click_ShouldAskOnce_WhenTheRemoveButtonIsClickedAgainWhileOnCloseRuns()
+    {
+        var closes = 0;
+        var held = new TaskCompletionSource();
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
+            .Add(chip => chip.OnClose, () =>
+            {
+                closes++;
+                return held.Task;
+            }));
+
+        cut.Find("[data-part=remove]").Click();
+        cut.Find("[data-part=remove]").Click();
+        Assert.Equal(1, closes);
+        // Once the first close ends, the chip can be asked again.
+        await cut.InvokeAsync(held.SetResult);
+        cut.Find("[data-part=remove]").Click();
+
+        Assert.Equal(2, closes);
+    }
+
+    [Fact]
     public void Click_ShouldAskToBeRemovedWithANamedButton_WhenOnCloseIsSet()
     {
         var closes = 0;
@@ -136,6 +158,19 @@ public class TbChipTests : BunitContext
             .Add(chip => chip.OnClick, () => { }).Add(chip => chip.OnClose, () => closes++));
 
         cut.Find("[data-part=action]").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.Equal(1, closes);
+    }
+
+    [Fact]
+    public void KeyDown_ShouldAskOnce_WhenARemovalKeyIsHeld()
+    {
+        var closes = 0;
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
+            .Add(chip => chip.OnClose, () => closes++));
+
+        cut.Find("[data-part=remove]").KeyDown(new KeyboardEventArgs { Key = "Delete" });
+        cut.Find("[data-part=remove]").KeyDown(new KeyboardEventArgs { Key = "Delete", Repeat = true });
 
         Assert.Equal(1, closes);
     }

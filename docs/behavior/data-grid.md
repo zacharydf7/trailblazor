@@ -22,6 +22,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Enter in a filter or an edit doesn't submit a form around the grid. `DataGridTests.Filters_ShouldApplyWithoutSubmittingThePagesForm_WhenEnterIsPressedInThem`, `data-grid.js`
 - [x] Enter in a filter menu's value applies it, and Escape closes the menu without applying. `DataGridTests.FilterMenu_ShouldApplyTheValue_WhenEnterIsPressedInIt`
 - [x] Arrows, Home and End on a row's handle move the row. `SortableTests.GridRows_ShouldReorderByKeysAndByDragging_WhenTheGridLetsRowsMove`
+- [x] A move key pressed while an async `CanMoveRow` or `OnRowMove` runs is ignored. `TbDataGridTests.RowMove_ShouldAskAndMoveOnce_WhenAKeyComesAgainWhileCanMoveRowRuns`
 - [x] Enter on a row's details button opens its details; the arrows reach them as one cell, Enter goes into them, and Escape from anywhere in them, even a nested grid, comes back to the details. `GridDetailTests.Details_ShouldOpenAndLetFocusMoveInAndOutOfANestedGrid_WhenUsedFromTheKeyboard`
 - [x] With cell navigation, the arrow keys reach a `TbColumnGroup`'s heading above its columns' headers and come back down to the column they left. `GridBandsTests.Bands_ShouldBeReachedFromTheirColumnsHeaders_WhenTheArrowKeysMoveUp`
 - [x] Enter on a group's heading opens or closes the group. `DataGridTests.GroupToggle_ShouldCloseItsGroupAndKeepFocus_WhenEnterIsPressedOnIt`

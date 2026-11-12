@@ -14,7 +14,11 @@ export function attachTabs(list, order) {
         if ((event.key === 'Delete' || event.key === 'Backspace') && !event.altKey && !event.ctrlKey && !event.metaKey
             && tab.parentElement === list && tab.hasAttribute('aria-keyshortcuts')) {
             event.preventDefault();
-            callDotNet(order, 'OnClose', tab.id);
+            // A held key repeats, and each repeat would ask to close the tab again while the first close runs.
+            if (!event.repeat) {
+                callDotNet(order, 'OnClose', tab.id);
+            }
+
             return;
         }
 

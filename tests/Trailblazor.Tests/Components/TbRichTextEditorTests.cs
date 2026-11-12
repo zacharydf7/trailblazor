@@ -1,6 +1,9 @@
 using System.Text.Json;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
+using Trailblazor.Primitives;
 
 namespace Trailblazor.Tests.Components;
 
@@ -469,6 +472,26 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNotBeEditableOrReady_WhenTheScriptHasntAttachedYet()
+    {
+        Services.AddSingleton(new JsModuleLoader(new ScriptStillLoading()));
+
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+
+        Assert.Equal("false", cut.Find("[data-part=input]").GetAttribute("contenteditable"));
+        Assert.False(cut.Find("[data-part=input]").HasAttribute("data-ready"));
+    }
+
+    [Fact]
+    public void Render_ShouldBeEditableAndReady_WhenTheScriptHasAttached()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+
+        cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("[data-part=input]").GetAttribute("contenteditable")));
+        Assert.True(cut.Find("[data-part=input]").HasAttribute("data-ready"));
+    }
+
+    [Fact]
     public async Task FocusAsync_ShouldFocusTheEditingArea_WhenCalled()
     {
         var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
@@ -565,5 +588,15 @@ public class TbRichTextEditorTests : BunitContext
                 EventCallback.Factory.Create<string>(this, html => Value = html));
             builder.CloseComponent();
         }
+    }
+
+    // Never answers, as while the editor's script is still on its way.
+    private sealed class ScriptStillLoading : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) =>
+            new(new TaskCompletionSource<TValue>().Task);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken,
+            object?[]? args) => new(new TaskCompletionSource<TValue>().Task);
     }
 }

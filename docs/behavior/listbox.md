@@ -18,6 +18,7 @@ Familiar apps: a native `<select size>`, the list panes in Windows dialogs and m
 - [x] A Space typed mid-word is part of the search. `listbox.js`
 - [x] In a multiple-selection list, the arrows move without choosing, and Space toggles the active option. `ListBoxTests.MultiListBox_ShouldToggleWithSpaceAndExtendWithShift_WhenTheKeysAreUsed`
 - [x] In a multiple-selection list, Shift+Down and Shift+Up also choose the option they move to. `ListBoxTests.MultiListBox_ShouldToggleWithSpaceAndExtendWithShift_WhenTheKeysAreUsed`
+- [x] Shift+Down and Shift+Up only ever choose an option, never unchoose it, so pressing them back and forth faster than the page updates keeps every option they reached chosen. `SlowLinkListBoxTests.MultiListBox_ShouldKeepAnOptionShiftAddedTwice_WhenTheFirstHasntBeenDrawnYet`
 - [x] In a multiple-selection list, Ctrl+A or Cmd+A chooses every enabled option as one change to the value. A read-only list stays as it is, and a single-selection list leaves the keys to the page. `ListBoxKeysTests.MultiListBox_ShouldChooseEveryEnabledOptionAsOneChange_WhenCtrlAIsPressed`, `ListBoxKeysTests.MultiListBox_ShouldLeaveTheValueAlone_WhenItIsReadOnlyAndCtrlAIsPressed`, `ListBoxKeysTests.ListBox_ShouldLeaveCtrlAToThePage_WhenOnlyOneOptionCanBeChosen`, `TbListBoxTests.ChooseAll_ShouldKeepWhatIsChosenAndSkipDisabledOptions_WhenCalled`, `TbListBoxTests.ChooseAll_ShouldChooseNothing_WhenTheListIsDisabledOrReadOnly`, `ListBoxKeysTests.MultiListBox_ShouldLeaveCtrlShiftAToThePage_WhenItIsPressed`
 - [x] A disabled list ignores the keys. `listbox.js`
 

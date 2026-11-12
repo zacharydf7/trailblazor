@@ -71,8 +71,18 @@ export function attachListBox(listbox, events) {
             lastChosen = null;
         }
 
+        // Shift+Arrow only adds: a click would toggle, and the page may not yet show the option the last Shift+Arrow
+        // chose.
+        if (multiple()) {
+            if (extend) {
+                chooseRange([option], false, true);
+            }
+
+            return;
+        }
+
         const chosen = isSelected(option) && (lastChosen === null || lastChosen === option);
-        if ((!multiple() || extend) && !chosen) {
+        if (!chosen) {
             option.click();
         }
     };
@@ -125,12 +135,12 @@ export function attachListBox(listbox, events) {
 
     const rowsShown = () => Math.max(1, Math.floor(listbox.clientHeight / (enabled()[0]?.offsetHeight || 1)));
     // A range reaches the server as one change to the value, not as a click on each option.
-    // A range is a Shift+click, or Ctrl+A over the options a filter shows.
-    const chooseRange = async (options, all) => {
+    // A range is a Shift+click, a Shift+Arrow, or Ctrl+A over the options a filter shows.
+    const chooseRange = async (options, all, keyboard = all) => {
         const ids = options.map(option => option.id);
         for (let start = 0; start < ids.length; start += rangeBatch) {
             const last = start + rangeBatch >= ids.length;
-            await callDotNet(events, 'OnChooseRange', ids.slice(start, start + rangeBatch), last, all);
+            await callDotNet(events, 'OnChooseRange', ids.slice(start, start + rangeBatch), last, all, keyboard);
         }
     };
 

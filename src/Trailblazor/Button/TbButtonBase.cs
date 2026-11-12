@@ -77,6 +77,9 @@ public abstract partial class TbButtonBase : TbComponentBase
     [CascadingParameter]
     private TbButtonGroup? Group { get; set; }
 
+    [CascadingParameter(Name = TbForm.DisabledCascade)]
+    private bool FormDisabled { get; set; }
+
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
@@ -86,7 +89,8 @@ public abstract partial class TbButtonBase : TbComponentBase
 
     private protected Size ShownSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
 
-    private bool Off => Disabled || Group?.Disabled == true;
+    private bool Off => Disabled || Group?.Disabled == true
+        || (FormDisabled && Type is ButtonType.Submit or ButtonType.Reset);
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 

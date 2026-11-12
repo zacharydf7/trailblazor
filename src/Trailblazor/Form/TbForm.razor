@@ -15,11 +15,16 @@
 @* The fields check themselves, so the browser's own validation bubbles are turned off. *@
 <EditForm @attributes="FormAttributes" id="@Id" EditContext="_editContext" FormName="@FormName"
           OnSubmit="SubmitAsync" novalidate class="@ClassNames.Join("tb-form", Class)" style="@Style">
-    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    <CascadingValue Value="this" IsFixed="true">
+        @* Not fixed, so submit and reset buttons follow Disabled without being rendered again by their parents. *@
+        <CascadingValue Value="Disabled" Name="@DisabledCascade">@ChildContent</CascadingValue>
+    </CascadingValue>
 </EditForm>
 @Reporter
 
 @code {
+    internal const string DisabledCascade = "TbForm.Disabled";
+
     private readonly List<IFormField> _fields = [];
     private readonly string _id = $"tb-form-{Guid.NewGuid():N}";
     private readonly object _noModel = new();
@@ -66,7 +71,8 @@
     public string? FormName { get; set; }
 
     /// <summary>Turns off every field in the form, as a field's own <c>Disabled</c> does: the fields can't be focused
-    /// or changed, and they aren't posted. A field's own <c>Disabled</c> still applies while this is false.</summary>
+    /// or changed, and they aren't posted. The form's submit and reset buttons turn off too, and the form ignores a
+    /// submit. A field's own <c>Disabled</c> still applies while this is false.</summary>
     [Parameter]
     public bool Disabled { get; set; }
 
@@ -372,6 +378,12 @@
 
     private async Task SubmitAsync(EditContext context)
     {
+        // Enter in a field, or a submit button the form doesn't know of, can still post a disabled form.
+        if (Disabled)
+        {
+            return;
+        }
+
         if (OnSubmit.HasDelegate)
         {
             await OnSubmit.InvokeAsync(context);

@@ -216,8 +216,10 @@ public class TelemetryOutcomeTests : BunitContext
         Assert.Equal("keyboard", use.Tags["trailblazor.input"]);
     }
 
-    [Fact]
-    public async Task MultiListBox_ShouldCountOneUseWithItsAction_WhenARangeIsChosen()
+    [Theory]
+    [InlineData(false, "pointer")]
+    [InlineData(true, "keyboard")]
+    public async Task MultiListBox_ShouldCountOneUseWithItsAction_WhenARangeIsChosen(bool keyboard, string input)
     {
         using var used = Collect("trailblazor.control.used");
         var cut = Render<TbMultiListBox<string>>(parameters => parameters.Add(listbox => listbox.Label, "Size")
@@ -225,11 +227,11 @@ public class TelemetryOutcomeTests : BunitContext
             .AddChildContent<TbOption<string>>(option => option.Add(choice => choice.Value, "L").AddChildContent("L")));
         var events = ListBoxEvents();
 
-        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true, false));
+        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true, false, keyboard));
 
         var use = Assert.Single(used.GetMeasurementSnapshot());
         Assert.Equal("select_range", use.Tags["trailblazor.action"]);
-        Assert.Equal("pointer", use.Tags["trailblazor.input"]);
+        Assert.Equal(input, use.Tags["trailblazor.input"]);
     }
 
     [Fact]
@@ -241,7 +243,7 @@ public class TelemetryOutcomeTests : BunitContext
             .AddChildContent<TbOption<string>>(option => option.Add(choice => choice.Value, "L").AddChildContent("L")));
         var events = ListBoxEvents();
 
-        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true, true));
+        await cut.InvokeAsync(() => events.OnChooseRange([cut.Find("[role=option]").Id!], true, true, true));
 
         var use = Assert.Single(used.GetMeasurementSnapshot());
         Assert.Equal("select_all", use.Tags["trailblazor.action"]);

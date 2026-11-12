@@ -10,6 +10,7 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] Home and End on a handle move the item to the start and the end. `TbSortableTests.Keys_ShouldMoveTheItemAndSaySo_WhenPressedOnItsHandle`
 - [x] A move key at the end of the list does nothing and says nothing. `ItemMover.cs`
 - [x] Keys pressed quickly in a row each move the same item, before the last move shows. `TbSortableTests.Keys_ShouldMoveTheItemTheyWerePressedOn_WhenTheyArriveBeforeTheLastMoveShows`
+- [x] A move key pressed while an async `CanMove` or `OnMove` runs is ignored, and a move isn't made when the list changes, shrinks or is replaced while `CanMove` runs and the move no longer fits it. `TbSortableTests.Keys_ShouldAskAndMoveOnce_WhenPressedAgainWhileCanMoveRuns`, `TbSortableTests.Keys_ShouldLeaveTheList_WhenItChangesWhileCanMoveRuns`, `TbSortableTests.Keys_ShouldLeaveTheList_WhenItsEndIsRemovedWhileCanMoveRuns`, `TbSortableTests.Keys_ShouldLeaveTheList_WhenTheParentReplacesItWhileCanMoveRuns`
 - [x] Up and Down with Alt, Ctrl, Shift or Cmd leave a handle's menu closed, as its other move keys do. `SortableTests.Keys_ShouldLeaveTheHandlesMenuClosed_WhenUpOrDownIsPressedWithAModifier`
 - [x] A refused move leaves the order and reads out why. `ItemMover.cs`
 - [x] Enter or Space on a handle opens its menu of moves, for screen readers that keep the arrow keys. `MoveHandle.cs`

@@ -25,8 +25,9 @@
                 }
             </TbToolbar>
         }
-        @* The script owns everything inside the editing area once the page is interactive, and sets data-ready
-           here as it attaches, which tests wait for. *@
+        @* The script owns everything inside the editing area once the page is interactive. Text typed before it
+           attaches would be lost, so the area becomes editable only then, together with data-ready, which tests
+           wait for. *@
         <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync"
              @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
              id="@InputId" role="textbox"
@@ -34,7 +35,8 @@
              aria-describedby="@InputDescribedBy" aria-required="@AriaRequired"
              aria-invalid="@(ShowsInvalid ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
              aria-disabled="@(Disabled ? "true" : null)" aria-placeholder="@Placeholder" data-placeholder="@Placeholder"
-             contenteditable="@(Disabled ? "false" : "true")" tabindex="@(Disabled ? "-1" : "0")"
+             contenteditable="@(Disabled || _handle is null ? "false" : "true")" tabindex="@(Disabled ? "-1" : "0")"
+             data-ready="@(_handle is null ? null : "")"
              inputmode="@(ReadOnly ? "none" : null)" spellcheck="true"
              style="--tb-rich-text-editor-lines: @Lines; --tb-rich-text-editor-max-lines: @(MaxLines ?? 0)"
              class="@ClassNames.Join("tb-field__input", "tb-rich-text-editor__content",
@@ -293,6 +295,7 @@
             _handle = handle;
             // The parent may have set a value while the script loaded.
             await OnParametersSetAsync();
+            StateHasChanged();
         }
         catch (JSDisconnectedException)
         {

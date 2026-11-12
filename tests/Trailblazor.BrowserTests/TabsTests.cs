@@ -87,6 +87,24 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldCloseOneTab_WhenDeleteIsHeld(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        await WaitForKeysAsync(page, "Open trails");
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Open trails" });
+        await list.GetByRole(AriaRole.Tab, new() { Name = "Ridge loop", Exact = true }).FocusAsync();
+
+        await page.Keyboard.DownAsync("Delete");
+        await Expect(list.GetByRole(AriaRole.Tab, new() { Name = "Lake shore", Exact = true })).ToBeFocusedAsync();
+        // A second press while the key is still down is a repeat.
+        await page.Keyboard.DownAsync("Delete");
+        await page.Keyboard.UpAsync("Delete");
+        await page.WaitForTimeoutAsync(500);
+
+        await Expect(list.GetByRole(AriaRole.Tab)).ToHaveTextAsync(["All trails", "Lake shore", "Cedar flats"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldCloseATabWithoutSelectingIt_WhenItsCloseMarkIsClicked(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tabs");

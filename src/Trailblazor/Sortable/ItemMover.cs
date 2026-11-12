@@ -6,6 +6,8 @@ namespace Trailblazor;
 // Asks whether a move is allowed, has the app make it, and says what happened, for TbSortable and the data grid's rows.
 internal sealed class ItemMover<TItem>(IAnnouncer announcer, ITbLocalizer localizer)
 {
+    private bool _moving;
+
     // Where a move key sends the item at index, or null when it would stay where it is.
     public static int? TargetOf(string key, int index, int count)
     {
@@ -33,26 +35,48 @@ internal sealed class ItemMover<TItem>(IAnnouncer announcer, ITbLocalizer locali
         from < 0 || from >= items.Count || to < 0 || to >= items.Count || from == to ? new(false)
             : canMove is null ? MoveCheck.Allow : await canMove(new(items[from], from, to));
 
-    // True when the move was made.
-    public async Task<bool> MoveAsync(IReadOnlyList<TItem> items, int from, int to,
+    // True when the move was made. A move asked for while another runs, such as a held key's repeats, is dropped,
+    // so the app isn't asked again about a list that is about to change. items reads the list as it is now.
+    public async Task<bool> MoveAsync(Func<IReadOnlyList<TItem>> items, int from, int to,
         Func<SortableMove<TItem>, Task<MoveCheck>>? canMove, EventCallback<SortableMove<TItem>> onMove,
         Func<TItem, string> text)
     {
-        var check = await CheckAsync(items, from, to, canMove);
-        if (!check.Allowed)
+        var before = items();
+        if (_moving || from < 0 || from >= before.Count)
         {
-            if (check.Reason is { } reason)
-            {
-                announcer.Polite(reason);
-            }
-
             return false;
         }
 
-        var item = items[from];
-        await onMove.InvokeAsync(new(item, from, to));
-        announcer.Polite(string.Format(CultureInfo.CurrentCulture, localizer[TbStrings.SortableMoved], text(item),
-            to + 1, items.Count));
-        return true;
+        _moving = true;
+        try
+        {
+            var item = before[from];
+            var check = await CheckAsync(before, from, to, canMove);
+            if (!check.Allowed)
+            {
+                if (check.Reason is { } reason)
+                {
+                    announcer.Polite(reason);
+                }
+
+                return false;
+            }
+
+            // The app can change or replace the list while CanMove runs, and then the indexes may no longer fit it.
+            var now = items();
+            if (from >= now.Count || to >= now.Count || !EqualityComparer<TItem>.Default.Equals(now[from], item))
+            {
+                return false;
+            }
+
+            await onMove.InvokeAsync(new(item, from, to));
+            announcer.Polite(string.Format(CultureInfo.CurrentCulture, localizer[TbStrings.SortableMoved],
+                text(item), to + 1, now.Count));
+            return true;
+        }
+        finally
+        {
+            _moving = false;
+        }
     }
 }
