@@ -1,7 +1,8 @@
 @namespace Trailblazor
 @typeparam TItem
 @typeparam TKey where TKey : notnull
-@inherits TbBoxedFieldBase<TKey>
+@typeparam TValue
+@inherits TbBoxedFieldBase<TValue>
 @implements ITreeChoice
 
 @Layout(Classes, @<text>
@@ -10,7 +11,7 @@
         @* A read-only field can be focused and read, but opens nothing. *@
         <button @ref="_trigger" type="button" @attributes="ControlAttributes" id="@InputId" data-part="input"
                 aria-labelledby="@NamedBy" aria-describedby="@InputDescribedBy" class="@TriggerClass">
-            @ValueText
+            @ValueContent
         </button>
     }
     else
@@ -18,14 +19,14 @@
         <TbPopover @bind-Open="_open" @bind-Open:after="OpenChanged" id="@InputId" Disabled="Disabled"
                    Class="tb-tree-select__popover">
             <Trigger>
-                @* The label and the chosen item name the button, as they would a select. The popup is named by the
+                @* The label and the chosen items name the button, as they would a select. The popup is named by the
                    button's id, which skips the button's aria-labelledby, so it takes just the label from aria-label. *@
                 <button @ref="_trigger" type="button" @attributes="TriggerAttributes(context)" id="@InputId"
                         data-part="input" aria-labelledby="@NamedBy" aria-label="@ShownLabel"
                         aria-required="@AriaRequired"
                         aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                         class="@TriggerClass">
-                    @ValueText
+                    @ValueContent
                     <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" />
                 </button>
             </Trigger>
@@ -43,7 +44,9 @@
                                 HasChildren="HasChildren" ItemText="ItemText" ItemIcon="ItemIcon"
                                 IsSelectable="IsSelectable" IsDisabled="IsDisabled"
                                 InitialExpandDepth="InitialExpandDepth" AriaLabel="@ShownLabel" Filter="SearchFilter"
-                                FilterKeepsDescendants SelectedKeys="@(IsMissing(Value) ? [] : [Value!])"
+                                FilterKeepsDescendants SelectedKeys="SelectedKeys" Checkable="ChecksRows"
+                                CheckedKeys="CheckedKeys" CheckedKeysChanged="CheckedAsync"
+                                CascadeChecks="CascadesChecks"
                                 EmptyContent="@(SearchFilter is null ? null : NoMatches)"
                                 Class="tb-tree-select__tree" />
                 </CascadingValue>
@@ -64,8 +67,7 @@
     [Parameter, EditorRequired]
     public IEnumerable<TItem> Items { get; set; } = [];
 
-    /// <summary>Gives each item the key the value holds. The key type's default, such as 0 for an <c>int</c>,
-    /// means nothing is chosen. Required.</summary>
+    /// <summary>Gives each item the key the value holds. Required.</summary>
     [Parameter, EditorRequired]
     public Func<TItem, TKey> KeySelector { get; set; } = default!;
 
@@ -85,8 +87,8 @@
     [Parameter]
     public Func<TItem, bool>? HasChildren { get; set; }
 
-    /// <summary>The text the field shows for a value whose item hasn't loaded, such as a saved choice under a branch
-    /// that <see cref="LoadChildren"/> hasn't opened yet. Defaults to the key's own text.</summary>
+    /// <summary>The text the field shows for a chosen key whose item hasn't loaded, such as a saved choice under a
+    /// branch that <see cref="LoadChildren"/> hasn't opened yet. Defaults to the key's own text.</summary>
     [Parameter]
     public Func<TKey, string>? UnmatchedText { get; set; }
 
@@ -126,6 +128,24 @@
     [Parameter]
     public FieldClasses? Classes { get; set; }
 
+    // The text the field shows for its value, or null to show the placeholder.
+    private protected abstract string? ValueText { get; }
+
+    // The rows the tree marks selected.
+    private protected virtual IReadOnlyCollection<TKey>? SelectedKeys => null;
+
+    // Whether rows carry checks, which a click, Enter or Space toggles, rather than being chosen one at a time.
+    private protected virtual bool ChecksRows => false;
+
+    private protected virtual IReadOnlyCollection<TKey>? CheckedKeys => null;
+
+    private protected virtual bool CascadesChecks => false;
+
+    private protected virtual Task CheckedAsync(IReadOnlyCollection<TKey> keys) => Task.CompletedTask;
+
+    // A row the user chose in a tree without checks.
+    private protected virtual Task ChosenAsync(TKey key) => Task.CompletedTask;
+
     private string ValueId => $"{FieldId}-value";
 
     private string NamedBy => ShownLabel is null ? ValueId : $"{LabelId} {ValueId}";
@@ -135,9 +155,9 @@
 
     private string SearchText => SearchLabel ?? Localizer[TbStrings.TreeSelectSearch];
 
-    private RenderFragment ValueText => IsMissing(Value)
-        ? @<span id="@ValueId" data-part="value" class="tb-select__placeholder">@Placeholder</span>
-        : @<span id="@ValueId" data-part="value" class="tb-select__value">@TextOf(Value!)</span>;
+    private RenderFragment ValueContent => ValueText is { } text
+        ? @<span id="@ValueId" data-part="value" class="tb-select__value">@text</span>
+        : @<span id="@ValueId" data-part="value" class="tb-select__placeholder">@Placeholder</span>;
 
     private RenderFragment NoMatches => @<div data-part="no-results" class="tb-select__no-results">
         @Localizer[TbStrings.SelectNoResults]
@@ -191,14 +211,18 @@
         _saidNoMatches = false;
     }
 
+    // Closes the tree and its search, as a select closes its list once an option is chosen.
+    private protected void Close()
+    {
+        _open = false;
+        ClearSearch();
+    }
+
     // The items held in memory, in tree order, then the children loaded so far.
-    private IEnumerable<TItem> Known() => Walk(Items).Concat(_loaded.Values);
+    private protected IEnumerable<TItem> Known() => Walk(Items).Concat(_loaded.Values);
 
     private IEnumerable<TItem> Walk(IEnumerable<TItem>? items) =>
         (items ?? []).SelectMany(item => (IEnumerable<TItem>)[item, .. Walk(ChildrenSelector?.Invoke(item))]);
-
-    private protected override bool IsMissing(TKey? value) =>
-        value is null || EqualityComparer<TKey>.Default.Equals(value, default);
 
     // An element takes one set of splatted attributes, so the field's and the popover's go together.
     private Dictionary<string, object> TriggerAttributes(PopoverTrigger trigger)
@@ -212,16 +236,20 @@
         return attributes;
     }
 
-    private string TextOf(TKey key) =>
-        Known().Where(item => EqualityComparer<TKey>.Default.Equals(KeySelector(item), key)).Select(ItemText)
-            .FirstOrDefault() ?? UnmatchedText?.Invoke(key) ?? key.ToString() ?? "";
-
-    // Choosing an item closes the tree, as a select closes its list, even when it's the item already chosen.
-    async Task ITreeChoice.ChosenAsync(object key)
+    // Each known item by its key: those held in memory in tree order, then the children loaded so far.
+    private protected OrderedDictionary<TKey, TItem> ByKey()
     {
-        _open = false;
-        ClearSearch();
-        await SetValueAsync((TKey)key);
-        StateHasChanged();
+        var items = new OrderedDictionary<TKey, TItem>();
+        foreach (var item in Known())
+        {
+            items.TryAdd(KeySelector(item), item);
+        }
+
+        return items;
     }
+
+    private protected string TextOf(TKey key, OrderedDictionary<TKey, TItem> items) =>
+        items.TryGetValue(key, out var item) ? ItemText(item) : UnmatchedText?.Invoke(key) ?? key.ToString() ?? "";
+
+    Task ITreeChoice.ChosenAsync(object key) => ChosenAsync((TKey)key);
 }

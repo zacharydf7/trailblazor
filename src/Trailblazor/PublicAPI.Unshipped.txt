@@ -4221,41 +4221,7 @@ Trailblazor.TbColumnGroup<TItem>.Dispose() -> void
 override Trailblazor.TbColumnGroup<TItem>.OnParametersSet() -> void
 Trailblazor.TbMenu.AttachOnFirstUse.get -> bool
 Trailblazor.TbMenu.AttachOnFirstUse.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>
-Trailblazor.TbTreeSelect<TItem, TKey>.ChildrenSelector.get -> System.Func<TItem, System.Collections.Generic.IEnumerable<TItem>?>?
-Trailblazor.TbTreeSelect<TItem, TKey>.ChildrenSelector.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.Classes.get -> Trailblazor.FieldClasses?
-Trailblazor.TbTreeSelect<TItem, TKey>.Classes.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.HasChildren.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeSelect<TItem, TKey>.HasChildren.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.InitialExpandDepth.get -> int
-Trailblazor.TbTreeSelect<TItem, TKey>.InitialExpandDepth.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.IsDisabled.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeSelect<TItem, TKey>.IsDisabled.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.IsSelectable.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeSelect<TItem, TKey>.IsSelectable.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.ItemIcon.get -> System.Func<TItem, Trailblazor.Icon?>?
-Trailblazor.TbTreeSelect<TItem, TKey>.ItemIcon.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.ItemText.get -> System.Func<TItem, string!>!
-Trailblazor.TbTreeSelect<TItem, TKey>.ItemText.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.Items.get -> System.Collections.Generic.IEnumerable<TItem>!
-Trailblazor.TbTreeSelect<TItem, TKey>.Items.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.KeySelector.get -> System.Func<TItem, TKey>!
-Trailblazor.TbTreeSelect<TItem, TKey>.KeySelector.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.LoadChildren.get -> System.Func<TItem, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TItem>!>!>?
-Trailblazor.TbTreeSelect<TItem, TKey>.LoadChildren.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.Placeholder.get -> string?
-Trailblazor.TbTreeSelect<TItem, TKey>.Placeholder.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.SearchLabel.get -> string?
-Trailblazor.TbTreeSelect<TItem, TKey>.SearchLabel.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.Searchable.get -> bool
-Trailblazor.TbTreeSelect<TItem, TKey>.Searchable.set -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.TbTreeSelect() -> void
-Trailblazor.TbTreeSelect<TItem, TKey>.UnmatchedText.get -> System.Func<TKey, string!>?
-Trailblazor.TbTreeSelect<TItem, TKey>.UnmatchedText.set -> void
 const Trailblazor.TbStrings.TreeSelectSearch = "TreeSelect.Search" -> string!
-override Trailblazor.TbTreeSelect<TItem, TKey>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
-~override Trailblazor.TbTreeSelect<TItem, TKey>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbTreeView<TItem, TKey>.SelectAsync(TKey key) -> System.Threading.Tasks.Task!
 Trailblazor.TreeDropEventArgs
 Trailblazor.TreeDropEventArgs.Position.get -> Trailblazor.TreeDropPosition
@@ -4519,3 +4485,43 @@ Trailblazor.ListBoxLabels.Filter.get -> string?
 Trailblazor.ListBoxLabels.Filter.init -> void
 Trailblazor.ListBoxLabels.NoResults.get -> string?
 Trailblazor.ListBoxLabels.NoResults.init -> void
+Trailblazor.TbMultiTreeSelect<TItem, TKey>
+Trailblazor.TbMultiTreeSelect<TItem, TKey>.CascadeChecks.get -> bool
+Trailblazor.TbMultiTreeSelect<TItem, TKey>.CascadeChecks.set -> void
+Trailblazor.TbMultiTreeSelect<TItem, TKey>.TbMultiTreeSelect() -> void
+Trailblazor.TbTreeSelect<TItem, TKey>
+Trailblazor.TbTreeSelect<TItem, TKey>.TbTreeSelect() -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ChildrenSelector.get -> System.Func<TItem, System.Collections.Generic.IEnumerable<TItem>?>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ChildrenSelector.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Classes.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.HasChildren.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.HasChildren.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.InitialExpandDepth.get -> int
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.InitialExpandDepth.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsDisabled.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsDisabled.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsSelectable.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsSelectable.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemIcon.get -> System.Func<TItem, Trailblazor.Icon?>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemIcon.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemText.get -> System.Func<TItem, string!>!
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemText.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Items.get -> System.Collections.Generic.IEnumerable<TItem>!
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Items.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.KeySelector.get -> System.Func<TItem, TKey>!
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.KeySelector.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.get -> System.Func<TItem, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TItem>!>!>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Placeholder.get -> string?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Placeholder.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.SearchLabel.get -> string?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.SearchLabel.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Searchable.get -> bool
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Searchable.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.TbTreeSelectBase() -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.UnmatchedText.get -> System.Func<TKey, string!>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.UnmatchedText.set -> void
+override Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+~override Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

@@ -4228,8 +4228,8 @@ public static class ExampleCatalog
             ],
         },
         new("tree-select", "Tree select", ExampleCategory.Inputs,
-            "A form field that opens a tree under it for choosing one item from a hierarchy, such as a trail within "
-                + "its region.")
+            "A form field that opens a tree under it for choosing one item, or several, from a hierarchy, such as a "
+                + "trail within its region.")
         {
             WhenToUse =
             [
@@ -4253,8 +4253,18 @@ public static class ExampleCatalog
                     + "with the items above and below them. `LoadChildren` loads a branch when it opens, and the "
                     + "search covers only the branches loaded so far. `UnmatchedText` names a value whose item hasn't "
                     + "loaded, such as a saved choice in a branch not yet opened.", typeof(TreeSelectExample)),
+                new("choose-several", "Choosing several items", "`TbMultiTreeSelect` binds a list of keys. Its tree "
+                    + "has a checkbox on each row, and stays open while items are checked by click, Enter or Space; "
+                    + "the field shows their text, separated by commas. Checking an item checks the items inside it, "
+                    + "and a parent shows whether all, some or none of them are checked; `CascadeChecks=\"false\"` "
+                    + "checks each row on its own. When `IsSelectable` leaves out a heading, it has a checkbox only "
+                    + "while checks cascade; the checkbox checks the items inside it, including those that load "
+                    + "later, but the heading isn't part of the value. The value lists keys in tree order, except "
+                    + "that with `LoadChildren` the keys of loaded items come after the rest. Search, "
+                    + "`LoadChildren` and `UnmatchedText` work as they do for one item.",
+                    typeof(MultiTreeSelectExample)),
             ],
-            Api = [typeof(TbTreeSelect<,>), typeof(FieldClasses)],
+            Api = [typeof(TbTreeSelect<,>), typeof(TbMultiTreeSelect<,>), typeof(FieldClasses)],
             Keyboard =
             [
                 new(["Enter", "Space"], "Opens the tree, with focus in its search when it has one.")
@@ -4265,17 +4275,21 @@ public static class ExampleCatalog
                 new(["Up", "Down", "Left", "Right", "Home", "End"], "Move through the tree and open or close its "
                     + "branches, as in a tree view.") { When = "In the tree" },
                 new(["Enter", "Space"], "Chooses the focused item, closes the tree and returns to the field.")
-                    { When = "In the tree" },
+                    { When = "In the tree, choosing one item" },
+                new(["Enter", "Space"], "Checks or unchecks the focused item, and the tree stays open.")
+                    { When = "In a multi tree select's tree" },
                 new(["Escape"], "Closes the tree without choosing, and returns to the field.") { When = "In the tree" },
             ],
             Labeling =
             [
-                "The field's `Label` and the chosen item's text name its button together, as they would a select.",
+                "The field's `Label` and the chosen item's text name its button together, as they would a select; "
+                    + "in a multi tree select, the checked items' text takes the chosen item's place.",
             ],
             Announcements =
             [
                 "The button has `aria-haspopup=\"dialog\"` and `aria-expanded`; the tree is a `tree` of `treeitem`s, "
-                    + "named by the label, with the chosen item `aria-selected`.",
+                    + "named by the label, with the chosen item `aria-selected`. In a multi tree select, each row has "
+                    + "`aria-checked`, which is `mixed` for a parent with only some of its items checked.",
             ],
             Accessibility =
             [

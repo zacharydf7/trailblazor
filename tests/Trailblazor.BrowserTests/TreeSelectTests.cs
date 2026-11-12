@@ -86,4 +86,77 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(field).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(page.GetByLabel("Chosen trail")).ToHaveTextAsync("No trail chosen.");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiTreeSelect_ShouldCheckFromTheKeyboardAndStayOpen_WhenEnterOrSpaceIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = await OpenRegionsAsync(page);
+
+        await field.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        var coast = page.GetByRole(AriaRole.Treeitem, new() { Name = "Coast" });
+        await Expect(coast).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(coast).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("ArrowDown");
+        var bay = page.GetByRole(AriaRole.Treeitem, new() { Name = "Harbor bay" });
+        await Expect(bay).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(bay).ToHaveAttributeAsync("aria-checked", "true");
+        await Expect(coast).ToHaveAttributeAsync("aria-checked", "mixed");
+        await Expect(page.GetByLabel("Chosen regions")).ToHaveTextAsync("Chosen: bay.");
+        await Expect(bay).ToBeFocusedAsync();
+        await Expect(field).ToHaveAttributeAsync("aria-expanded", "true");
+
+        await page.Keyboard.PressAsync("Space");
+        await Expect(page.GetByLabel("Chosen regions")).ToHaveTextAsync("No regions chosen.");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(field).ToBeFocusedAsync();
+        await Expect(field).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiTreeSelect_ShouldCheckAParentsItemsAndShowTheirText_WhenItsRowIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = await OpenRegionsAsync(page);
+
+        await field.ClickAsync();
+        await page.GetByRole(AriaRole.Treeitem, new() { Name = "Forest" }).ClickAsync();
+
+        foreach (var key in new[] { "forest", "birch", "spruce" })
+        {
+            await Expect(page.GetByLabel("Chosen regions")).ToContainTextAsync(key);
+        }
+
+        await Expect(field).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(field).ToContainTextAsync("Forest");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiTreeSelect_ShouldMoveToTheFirstMatchAndCheckIt_WhenDownArrowThenSpaceIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = await OpenRegionsAsync(page);
+
+        await field.ClickAsync();
+        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" }).FillAsync("moor");
+        await Expect(page.GetByRole(AriaRole.Treeitem)).ToHaveCountAsync(2);
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Open moor" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Space");
+
+        await Expect(page.GetByLabel("Chosen regions")).ToContainTextAsync("moor");
+    }
+
+    private static async Task<ILocator> OpenRegionsAsync(IPage page)
+    {
+        var field = page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Regions ") });
+        await Expect(field).ToHaveAttributeAsync("data-ready", "");
+        return field;
+    }
 }

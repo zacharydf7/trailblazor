@@ -448,9 +448,13 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // A declared row with no value is keyed by its TbTreeItem, which stays inside the tree and out of the bound keys.
     private static bool HasValue(TreeNode<TItem> node) => node.Key is not TbTreeItem<TItem>;
 
-    // A row with no value is checked only through the rows inside it, as its own check would mean nothing.
-    private bool CanCheck(TreeNode<TItem> node) =>
-        Checkable && (HasValue(node) || (CascadeChecks && node.Children.Count > 0));
+    // A row with no value is checked only through the rows inside it, as its own check would mean nothing. A row a
+    // tree select can't choose gets a checkbox only while checks cascade and it may hold rows, as otherwise its check
+    // would reach nothing.
+    private bool CanCheck(TreeNode<TItem> node) => Checkable
+        && ((HasValue(node)
+                && (Choice is null || (CascadeChecks && node.HasChildren) || IsSelectable?.Invoke(node.Item) != false))
+            || (CascadeChecks && node.Children.Count > 0));
 
     private static List<TKey> Reported(IEnumerable<object> keys) =>
         [.. keys.Where(key => key is not TbTreeItem<TItem>).Cast<TKey>()];
@@ -1122,6 +1126,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                     .Select(sibling => sibling.Key)));
                 await Task.WhenAll(Siblings(node).Select(LoadIfNeededAsync));
                 break;
+            case "Enter" when Checkable && Choice is not null:
+                await ToggleCheckAsync(node);
+                break;
             case "Enter":
                 await SelectAsync(node, shift: false, toggle: false);
                 await ActivateAsync(node);
@@ -1291,6 +1298,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 await ToggleAsync(node);
             }
         }
+        else if (Checkable && Choice is not null)
+        {
+            await ToggleCheckAsync(node);
+        }
         else
         {
             await SelectAsync(node, args.ShiftKey, toggle: args.CtrlKey || args.MetaKey);
@@ -1452,10 +1463,11 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         Telemetry.Used(TelemetryName, "check");
-        // A cascade sets the rows it can reach, unchecking them once all of them are checked.
+        // A cascade sets the rows it can reach, unchecking them once all the rows with nothing inside are checked, as a
+        // tree select's value from outside carries no heading's key.
         var reached = CascadeChecks ? EnabledDescendants(node).ToList() : [];
         var check = reached.Count == 0 ? !_checked.Contains(node.Key)
-            : !reached.All(each => _checked.Contains(each.Key));
+            : !reached.Where(each => each.Children.Count == 0).All(each => _checked.Contains(each.Key));
         var keys = new HashSet<object>(_checked);
         foreach (var each in reached.Prepend(node))
         {

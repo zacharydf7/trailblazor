@@ -225,6 +225,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         ["tree-select"] =
         [
             new(new("dialog", "Trail"), page => ClickWhenReadyAsync(Button(page, "Trail Choose a trail"))),
+            new(new("dialog", "Regions"), page => ClickWhenReadyAsync(Button(page, "Regions Choose regions"))),
         ],
         ["popover"] =
         [
