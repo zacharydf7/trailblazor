@@ -6,6 +6,8 @@
 <TbDialog Title="" />
 <TbCheckbox T="bool" Label="Agree" @bind-Value="_agree" />
 <TbStack><TbTab Text="Day one" /></TbStack>
+<TbSelect Label="Trail" @bind-Value="_trail"><TbOption Value="1">One</TbOption></TbSelect>
+<TbSlider TValue="string" Label="Pace" />
 
 @code {
     private string? _trail;

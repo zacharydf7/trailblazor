@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -7,8 +8,9 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Trailblazor.Analyzers;
 
 /// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, inputs given a
-/// Value without ValueChanged, attributes that look like a misnamed type parameter, and components written outside
-/// the one they belong in.</summary>
+/// Value without ValueChanged, attributes that look like a misnamed type parameter, components written outside the
+/// one they belong in, items whose value isn't their list's type, and sliders of something other than a number.
+/// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 {
@@ -69,10 +71,19 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbStep", "Trailblazor.TbStepper"),
     ];
 
+    // Items whose value must be their list's type, paired with each list that can hold them. Each list's only type
+    // parameter is the type of its items.
+    internal static readonly (string Item, string List)[] Listed =
+    [
+        ("Trailblazor.TbOption`1", "Trailblazor.TbSelectBase`1"),
+        ("Trailblazor.TbOption`1", "Trailblazor.TbListBoxBase`1"),
+        ("Trailblazor.TbToggleItem`1", "Trailblazor.TbToggleGroupBase`1"),
+    ];
+
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
-        Rules.TypeParameterAsAttribute, Rules.OutsideItsParent);
+        Rules.TypeParameterAsAttribute, Rules.OutsideItsParent, Rules.ItemTypeMismatch, Rules.SliderNotANumber);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -90,13 +101,11 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            var hosted = Hosted.Select(entry => (Child: compilation.GetTypeByMetadataName(entry.Child),
-                    Host: compilation.GetTypeByMetadataName(entry.Host)))
-                .Where(entry => entry.Child is not null && entry.Host is not null)
-                .Select(entry => (entry.Child!, entry.Host!)).ToArray();
             var types = new KnownTypes(Resolve(compilation, Named), fieldBase, Resolve(compilation, OtherFields),
                 compilation.GetTypeByMetadataName("Trailblazor.TbDialog"),
-                compilation.GetTypeByMetadataName("Trailblazor.IDialogService"), hosted);
+                compilation.GetTypeByMetadataName("Trailblazor.IDialogService"), Pairs(compilation, Hosted),
+                Pairs(compilation, Listed), [.. new[] { "Trailblazor.TbSlider`1", "Trailblazor.TbRangeSlider`1" }
+                    .Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()]);
             start.RegisterOperationAction(operation => Analyze(operation, types), OperationKind.Invocation);
         });
     }
@@ -142,6 +151,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 
         CheckTypeParameterNames(context, usage);
         CheckParent(context, invocation, usage, types.Hosted);
+        CheckItemType(context, invocation, usage, types.Listed);
+        CheckSliderType(context, invocation, usage, types.Sliders);
 
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
@@ -199,6 +210,79 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(Rules.OutsideItsParent, usage.Location, usage.Component.Name,
             hosts[0].Name));
     }
+
+    // An option or toggle item whose value can't be its list's type. The nearest list around it is the one it joins,
+    // unless a component from outside Trailblazor comes first, which may put it in another.
+    private static void CheckItemType(OperationAnalysisContext context, IInvocationOperation open,
+        ComponentUsage usage, (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed)
+    {
+        var lists = listed.Where(entry =>
+            SymbolEqualityComparer.Default.Equals(usage.Component.OriginalDefinition, entry.Item))
+            .Select(entry => entry.List).ToList();
+        if (lists.Count == 0 || ComponentNesting.Enclosing(open) is not { } enclosing)
+        {
+            return;
+        }
+
+        foreach (var owner in enclosing.TakeWhile(owner =>
+            owner.ContainingNamespace.ToDisplayString() == "Trailblazor"))
+        {
+            if (lists.Any(list => InheritsFrom(owner, list)))
+            {
+                var item = NonNullable(ComponentNesting.Resolved(usage.Component, open).TypeArguments[0]);
+                var held = NonNullable(owner.TypeArguments[0]);
+                if (!Fits(context.Compilation, item, held))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(Rules.ItemTypeMismatch, usage.Location,
+                        usage.Component.Name, Shown(item), owner.Name, Shown(held)));
+                }
+
+                return;
+            }
+        }
+    }
+
+    private static void CheckSliderType(OperationAnalysisContext context, IInvocationOperation open,
+        ComponentUsage usage, INamedTypeSymbol[] sliders)
+    {
+        // An app's own slider may take other type parameters, so only the library's sliders are checked.
+        if (!sliders.Contains(usage.Component.OriginalDefinition, SymbolEqualityComparer.Default))
+        {
+            return;
+        }
+
+        var type = NonNullable(ComponentNesting.Resolved(usage.Component, open).TypeArguments[0]);
+        if (type is not ITypeParameterSymbol and not IErrorTypeSymbol && !IsNumber(type))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.SliderNotANumber, usage.Location, usage.Component.Name,
+                Shown(type)));
+        }
+    }
+
+    private static bool IsNumber(ITypeSymbol type) => type.SpecialType is SpecialType.System_SByte
+        or SpecialType.System_Byte or SpecialType.System_Int16 or SpecialType.System_UInt16 or SpecialType.System_Int32
+        or SpecialType.System_UInt32 or SpecialType.System_Int64 or SpecialType.System_UInt64
+        or SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal;
+
+    // A value of one type can be the other at run time: the same type, or one a cast could reach without changing it.
+    // A type known only as the page runs could be anything.
+    private static bool Fits(Compilation compilation, ITypeSymbol item, ITypeSymbol held)
+    {
+        if (item is ITypeParameterSymbol or IErrorTypeSymbol || held is ITypeParameterSymbol or IErrorTypeSymbol)
+        {
+            return true;
+        }
+
+        var conversion = compilation.ClassifyConversion(item, held);
+        return conversion.IsIdentity || conversion.IsReference || conversion.IsBoxing || conversion.IsUnboxing;
+    }
+
+    private static ITypeSymbol NonNullable(ITypeSymbol type) =>
+        type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable
+            ? nullable.TypeArguments[0] : type;
+
+    private static string Shown(ITypeSymbol type) => type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)
+        .ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
     private static bool IsTypeParameterName(string name) =>
         name.Length > 0 && name[0] == 'T' && (name.Length == 1 || char.IsUpper(name[1]))
@@ -286,6 +370,13 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ComponentNesting.CallTo(reference)?.Arguments
             .FirstOrDefault(argument => argument.Parameter?.Ordinal == reference.Parameter.Ordinal)?.Value;
 
+    private static (INamedTypeSymbol, INamedTypeSymbol)[] Pairs(Compilation compilation,
+        (string, string)[] table) =>
+        table.Select(entry => (compilation.GetTypeByMetadataName(entry.Item1),
+                compilation.GetTypeByMetadataName(entry.Item2)))
+            .Where(entry => entry.Item1 is not null && entry.Item2 is not null)
+            .Select(entry => (entry.Item1!, entry.Item2!)).ToArray();
+
     private static (INamedTypeSymbol Type, string[] Names)[] Resolve(Compilation compilation,
         (string Type, string[] Names)[] table) =>
         table.Select(entry => (Type: compilation.GetTypeByMetadataName(entry.Type), entry.Names))
@@ -323,7 +414,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     private sealed class KnownTypes(
         (INamedTypeSymbol Type, string[] Names)[] named, INamedTypeSymbol fieldBase,
         (INamedTypeSymbol Type, string[] Names)[] otherFields, INamedTypeSymbol? dialog,
-        INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted)
+        INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted,
+        (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed, INamedTypeSymbol[] sliders)
     {
         public (INamedTypeSymbol Type, string[] Names)[] Named { get; } = named;
 
@@ -336,5 +428,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol? DialogService { get; } = dialogService;
 
         public (INamedTypeSymbol Child, INamedTypeSymbol Host)[] Hosted { get; } = hosted;
+
+        public (INamedTypeSymbol Item, INamedTypeSymbol List)[] Listed { get; } = listed;
+
+        public INamedTypeSymbol[] Sliders { get; } = sliders;
     }
 }

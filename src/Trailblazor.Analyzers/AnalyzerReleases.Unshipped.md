@@ -11,3 +11,5 @@ TB003 | Usage | Warning | Value is set without ValueChanged
 TB004 | Accessibility | Warning | A field has no label
 TB005 | Usage | Warning | An attribute looks like a type parameter
 TB006 | Usage | Warning | A component is outside the one it belongs in
+TB007 | Usage | Warning | An item's value isn't the type its list holds
+TB008 | Usage | Warning | A slider holds something other than a number

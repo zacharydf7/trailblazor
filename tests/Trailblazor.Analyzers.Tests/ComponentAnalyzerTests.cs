@@ -671,6 +671,232 @@ public class ComponentAnalyzerTests
         Assert.Equal(expected == "" ? [] : [expected], ids);
     }
 
+    // An option of one type in a list of another, with a group between them when grouped.
+    private static string OptionIn(string list, string type, bool grouped = false)
+    {
+        var option = $$"""
+            __builder2.OpenComponent<TbOption<{{type}}>>(6);
+            __builder2.AddComponentParameter(7, "Value", default({{type}}));
+            __builder2.CloseComponent();
+            """;
+        if (grouped)
+        {
+            option = $$"""
+                __builder2.OpenComponent<TbOptionGroup>(3);
+                __builder2.AddComponentParameter(4, "Label", "North");
+                __builder2.AddAttribute(5, "ChildContent", (RenderFragment)((__builder2) => {
+                {{option}}
+                }));
+                __builder2.CloseComponent();
+                """;
+        }
+
+        return $$"""
+            __builder.OpenComponent<{{list}}>(0);
+            __builder.AddComponentParameter(1, "Label", "Trail");
+            __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+            {{option}}
+            }));
+            __builder.CloseComponent();
+            """;
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportItemTypeMismatch_WhenAnOptionsValueIsntItsSelectsType()
+    {
+        var diagnostics = await RunAsync(OptionIn("TbSelect<string>", "int"));
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("TB007", diagnostic.Id);
+        Assert.Equal("TbOption's value is int, but the TbSelect it's in holds string", diagnostic.GetMessage());
+    }
+
+    [Theory]
+    [InlineData("TbSelect<int?>", "int", false, "")]
+    [InlineData("TbSelect<int>", "int?", false, "")]
+    [InlineData("TbSelect<long>", "int", false, "TB007")]
+    [InlineData("TbSelect<string>", "object", false, "")]
+    [InlineData("TbMultiSelect<string>", "int", true, "TB007")]
+    [InlineData("TbListBox<string>", "string", true, "")]
+    [InlineData("TbMultiListBox<int>", "string", false, "TB007")]
+    public async Task ComponentAnalyzer_ShouldReportAnOptionOnlyWhenItCantFit_WhenItIsInAList(string list,
+        string type, bool grouped, string expected)
+    {
+        var ids = await IdsAsync(OptionIn(list, type, grouped));
+
+        Assert.Equal(expected == "" ? [] : [expected], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportItemTypeMismatch_WhenAToggleItemIsntItsGroupsType()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbToggleGroup<string>>(0);
+            __builder.AddComponentParameter(1, "AriaLabel", "Pace");
+            __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<TbToggleItem<int>>(3);
+                __builder2.AddComponentParameter(4, "Value", 1);
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(["TB007"], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAComponentOutsideTrailblazorHoldsTheOption()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbSelect<string>>(0);
+            __builder.AddComponentParameter(1, "Label", "Trail");
+            __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<Choices>(3);
+                __builder2.AddAttribute(4, "ChildContent", (RenderFragment)((__builder3) => {
+                    __builder3.OpenComponent<TbOption<int>>(5);
+                    __builder3.AddComponentParameter(6, "Value", 1);
+                    __builder3.CloseComponent();
+                }));
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+            """, """
+            // It may put its content in a select of its own.
+            private sealed class Choices : ComponentBase
+            {
+                [Parameter]
+                public RenderFragment? ChildContent { get; set; }
+            }
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    // Razor infers both types in helpers: the select's from its bound value, the option's from its own value.
+    [Theory]
+    [InlineData("\"pine\"", "")]
+    [InlineData("1", "TB007")]
+    public async Task ComponentAnalyzer_ShouldCompareInferredTypes_WhenRazorInfersTheSelectsAndOptionsTypes(
+        string value, string expected)
+    {
+        var ids = await IdsAsync($$"""
+            TypeInference.CreateTbSelect_0(__builder, 0, 1, "pine", 2, (__builder2) => {
+                TypeInference.CreateTbOption_1(__builder2, 3, 4, {{value}});
+            });
+            """, """
+            internal static class TypeInference
+            {
+                public static void CreateTbSelect_0<TValue>(RenderTreeBuilder __builder, int seq, int __seq0,
+                    TValue __arg0, int __seq1, RenderFragment __arg1)
+                {
+                    __builder.OpenComponent<TbSelect<TValue>>(seq);
+                    __builder.AddComponentParameter(__seq0, "Label", "Trail");
+                    __builder.AddComponentParameter(__seq0, nameof(TbSelect<TValue>.Value), __arg0);
+                    __builder.AddComponentParameter(__seq0, "ReadOnly", true);
+                    __builder.AddComponentParameter(__seq1, "ChildContent", __arg1);
+                    __builder.CloseComponent();
+                }
+
+                public static void CreateTbOption_1<TValue>(RenderTreeBuilder __builder, int seq, int __seq0,
+                    TValue __arg0)
+                {
+                    __builder.OpenComponent<TbOption<TValue>>(seq);
+                    __builder.AddComponentParameter(__seq0, nameof(TbOption<TValue>.Value), __arg0);
+                    __builder.CloseComponent();
+                }
+            }
+            """);
+
+        Assert.Equal(expected == "" ? [] : [expected], ids);
+    }
+
+    [Theory]
+    [InlineData("TbSlider<string>", "TB008")]
+    [InlineData("TbSlider<System.DayOfWeek>", "TB008")]
+    [InlineData("TbRangeSlider<bool>", "TB008")]
+    [InlineData("TbSlider<int?>", "")]
+    [InlineData("TbRangeSlider<decimal>", "")]
+    public async Task ComponentAnalyzer_ShouldReportSliderNotANumber_WhenItsTypeIsntANumber(string slider,
+        string expected)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<{{slider}}>(0);
+            __builder.AddComponentParameter(1, "Label", "Distance");
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(expected == "" ? [] : [expected], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheListsTypeIsKnownOnlyAsThePageRuns()
+    {
+        var ids = await IdsAsync("", """
+            private sealed class Picker<T> : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                {
+                    __builder.OpenComponent<TbSelect<T>>(0);
+                    __builder.AddComponentParameter(1, "Label", "Trail");
+                    __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+                        __builder2.OpenComponent<TbOption<string>>(3);
+                        __builder2.AddComponentParameter(4, "Value", "pine");
+                        __builder2.CloseComponent();
+                    }));
+                    __builder.CloseComponent();
+                }
+            }
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportSliderNotANumber_WhenRazorInfersTheSlidersType()
+    {
+        var ids = await IdsAsync("""
+            TypeInference.CreateTbSlider_0(__builder, 0, 1, "far");
+            """, """
+            internal static class TypeInference
+            {
+                public static void CreateTbSlider_0<TValue>(RenderTreeBuilder __builder, int seq, int __seq0,
+                    TValue __arg0)
+                {
+                    __builder.OpenComponent<TbSlider<TValue>>(seq);
+                    __builder.AddComponentParameter(__seq0, "Label", "Distance");
+                    __builder.AddComponentParameter(__seq0, nameof(TbSlider<TValue>.Value), __arg0);
+                    __builder.AddComponentParameter(__seq0, "ReadOnly", true);
+                    __builder.CloseComponent();
+                }
+            }
+            """);
+
+        Assert.Equal(["TB008"], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheAppsOwnSliderHasNoTypeParameter()
+    {
+        var diagnostics = await RunAsync("""
+            __builder.OpenComponent<PercentSlider>(0);
+            __builder.AddComponentParameter(1, "Label", "Done");
+            __builder.CloseComponent();
+            """, "private sealed class PercentSlider : TbSlider<int>;");
+
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void ComponentAnalyzer_ShouldNameOnlyComponentsThatExist_WhenItsListTableIsRead()
+    {
+        var library = typeof(TbButton).Assembly;
+
+        var missing = ComponentAnalyzer.Listed.SelectMany(entry => new[] { entry.Item, entry.List })
+            .Where(name => library.GetType(name) is null);
+
+        Assert.Empty(missing);
+    }
+
     [Fact]
     public void ComponentAnalyzer_ShouldNameOnlyComponentsThatExist_WhenItsHostTableIsRead()
     {

@@ -14,8 +14,9 @@
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
             The Trailblazor package includes an analyzer that reads your markup as the app builds. It warns, at the line
             in the <code>.razor</code> file, about a control or field screen readers can't name, a dialog with no title,
-            a value that snaps back after the user changes it, a type parameter given under the wrong name, and a
-            component written outside the one it belongs in.
+            a value that snaps back after the user changes it, a type parameter given under the wrong name, a
+            component written outside the one it belongs in, an option whose value isn't its list's type, and a slider
+            of something other than a number.
         </TbText>
     </Header>
     <ChildContent>
@@ -84,6 +85,23 @@
                         throws as it renders.
                     </td>
                     <td>Move it inside the component the warning names.</td>
+                </tr>
+                <tr>
+                    <th scope="row">TB007</th>
+                    <td>
+                        An option's value isn't the type its select or list box holds, or a toggle item's isn't its
+                        toggle group's, such as <code>Value="1"</code> in a list of strings. Razor infers each item's
+                        type from its own value, not from its list's, so the item throws as it renders.
+                    </td>
+                    <td>
+                        Set the item's <code>TValue</code> to the list's type, such as <code>TValue="string"</code>, or
+                        give the value that type.
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">TB008</th>
+                    <td>A slider's type isn't a number, such as a <code>string</code> or an enum.</td>
+                    <td>Use a number type, such as <code>int</code> or <code>double</code>.</td>
                 </tr>
             </tbody>
         </TbTable>
@@ -154,6 +172,10 @@
                 and a component that isn't a page may itself be rendered inside one. A layout that wraps its pages in
                 one isn't seen either, so turn the rule off for a project that does that.
             </li>
+            <li>
+                TB007 likewise stays quiet when one of your components sits between an item and its list, since that
+                component may put the item in a list of its own.
+            </li>
         </ul>
 
         <DocsHeading Id="turning-a-rule-off" Text="Turning a rule off" Class="docs-section" />
@@ -184,6 +206,7 @@
         <TbCheckbox Label="Only open trails" Value="true" />
         <TbCheckbox T="bool" Label="Dogs allowed" @bind-Value="_dogs" />
         <TbStack><TbTab Text="Results" /></TbStack>
+        <TbSelect Label="Sort" @bind-Value="_sort"><TbOption Value="1">Name</TbOption></TbSelect>
         """;
 
     private const string Warnings = """
@@ -198,6 +221,8 @@
             set its type. To set the type, write TValue="bool".
         Search.razor(6,17): warning TB006: TbTab isn't inside a TbTabs, so it throws
             as it renders
+        Search.razor(7,54): warning TB007: TbOption's value is int, but the TbSelect
+            it's in holds string
         """;
 
     private const string NoWarn = """

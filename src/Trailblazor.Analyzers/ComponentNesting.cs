@@ -35,6 +35,18 @@ internal static class ComponentNesting
         return null;
     }
 
+    // The component with the types it's given in markup. One whose types Razor infers is opened in a type-inference
+    // helper, with the helper's own type parameters; the call to the helper says what they are.
+    public static INamedTypeSymbol Resolved(INamedTypeSymbol component, IOperation open) =>
+        InHelper(open) && CallTo(open) is { } call ? AtCall(component, call) : component;
+
+    private static INamedTypeSymbol AtCall(INamedTypeSymbol type, IInvocationOperation call) =>
+        type.TypeArguments.Length == 0 ? type
+            : type.OriginalDefinition.Construct([.. type.TypeArguments.Select(argument =>
+                argument is ITypeParameterSymbol { DeclaringMethod: { } method } parameter
+                && SymbolEqualityComparer.Default.Equals(method, call.TargetMethod.OriginalDefinition)
+                    ? call.TargetMethod.TypeArguments[parameter.Ordinal] : argument)]);
+
     // A routable page, which the router renders, so no component of the page's own holds its markup; a layout can,
     // but the analyzer can't see it.
     public static bool IsInPage(IOperation operation) => operation.SemanticModel!.Compilation
@@ -69,7 +81,8 @@ internal static class ComponentNesting
                 .SelectMany(syntax => syntax.DescendantNodes().OfType<InvocationExpressionSyntax>())
                 .Select(syntax => call.SemanticModel!.GetOperation(syntax)).OfType<IInvocationOperation>()
                 .Where(open => open.TargetMethod.Name == "OpenComponent" && open.TargetMethod.TypeArguments.Length == 1)
-                .Select(open => open.TargetMethod.TypeArguments[0]).OfType<INamedTypeSymbol>().FirstOrDefault();
+                .Select(open => open.TargetMethod.TypeArguments[0]).OfType<INamedTypeSymbol>()
+                .Select(type => AtCall(type, call)).FirstOrDefault();
         }
 
         if (call.TargetMethod.Name is not ("AddAttribute" or "AddComponentParameter")

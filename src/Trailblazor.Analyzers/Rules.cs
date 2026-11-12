@@ -36,4 +36,15 @@ internal static class Rules
         "A component is outside the one it belongs in", "{0} isn't inside a {1}, so it throws as it renders", Usage,
         DiagnosticSeverity.Warning, isEnabledByDefault: true, "Some components work only inside another, such as a " +
         "tab inside its tabs. Anywhere else, the component throws as it renders, which ends a Blazor Server circuit.");
+
+    public static readonly DiagnosticDescriptor ItemTypeMismatch = new("TB007",
+        "An item's value isn't the type its list holds", "{0}'s value is {1}, but the {2} it's in holds {3}", Usage,
+        DiagnosticSeverity.Warning, isEnabledByDefault: true, "An option or toggle item's value must be the type of " +
+        "the select, list box or toggle group it's in. Razor infers each one's type from its own value, so a value " +
+        "such as 1 in a list of strings makes an option of int, which throws as it renders.");
+
+    public static readonly DiagnosticDescriptor SliderNotANumber = new("TB008", "A slider holds something other " +
+        "than a number", "{0} holds {1}, but a slider needs a number type", Usage, DiagnosticSeverity.Warning,
+        isEnabledByDefault: true, "A slider moves through numbers, so its type must be one, such as int or double. " +
+        "Any other type throws as it renders.");
 }
