@@ -5,7 +5,7 @@
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 
-<div @attributes="AdditionalAttributes" @ref="_root" data-part="splitter" style="@Style"
+<div @attributes="AdditionalAttributes" @ref="_root" data-part="splitter" data-report="@_reported" style="@Style"
      class="@ClassNames.Join("tb-splitter", Vertical ? "tb-splitter--vertical" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>
@@ -16,6 +16,8 @@
     private IJSObjectReference? _handle;
     private DotNetObjectReference<SplitterReport>? _report;
     private bool _saveAfterRender;
+    // The number of the browser's last resize report this render shows.
+    private int _reported;
     private bool _disposed;
 
     /// <summary>The <see cref="TbSplitterPane"/>s, two or more, with a separator between each pair.</summary>
@@ -148,7 +150,7 @@
 
     // The browser measures the open panes as shares of the open space, which are scaled back to percent of the whole
     // around what the collapsed panes keep, so a restored pane comes back at its own size.
-    private async Task OnResizeAsync(string[] ids, double[] shares)
+    private async Task OnResizeAsync(string[] ids, double[] shares, int report)
     {
         var open = OpenSpace;
         for (var index = 0; index < ids.Length && index < shares.Length; index++)
@@ -159,6 +161,8 @@
             }
         }
 
+        // Set last, since a pane's SizeChanged can render the splitter before the other panes have their sizes.
+        _reported = report;
         StateHasChanged();
         await SaveAsync();
     }

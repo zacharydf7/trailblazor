@@ -44,17 +44,20 @@ export function attachSplitter(root, reporter, key) {
         return next;
     };
     // Keys can come faster than the server renders the sizes they report, and the render for an earlier key would move
-    // the panes back, so while a report is on its way the keys start from the sizes last reported. data-reporting
-    // tells a test the app doesn't have the sizes yet.
+    // the panes back, so the keys start from the sizes last reported until the root's data-report shows that report's
+    // number. Waiting for the call isn't enough, since it can finish before its render arrives. data-reporting tells a
+    // test the app doesn't have the sizes yet.
     let reported = null;
+    let reports = 0;
     let reporting = 0;
     const report = sizes => {
         if (sizes) {
             reported = sizes;
+            reports++;
             reporting++;
             root.dataset.reporting = '';
             callDotNet(reporter, 'OnResize', panes().map(pane => pane.id),
-                sizes.map(size => Math.round(size * 100) / 100)).finally(() => {
+                sizes.map(size => Math.round(size * 100) / 100), reports).finally(() => {
                 if (--reporting === 0) {
                     delete root.dataset.reporting;
                 }
@@ -131,7 +134,8 @@ export function attachSplitter(root, reporter, key) {
         const grow = vertical() ? 'ArrowDown' : rtl ? 'ArrowLeft' : 'ArrowRight';
         const shrink = vertical() ? 'ArrowUp' : rtl ? 'ArrowRight' : 'ArrowLeft';
         const step = event.shiftKey ? 10 : 1;
-        const from = reporting > 0 && reported?.length === panes().length ? reported : shares();
+        const rendered = Number(root.dataset.report ?? 0) >= reports;
+        const from = !rendered && reported?.length === panes().length ? reported : shares();
         let sizes;
         switch (event.key) {
             case grow:

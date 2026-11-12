@@ -81,11 +81,28 @@ public class TbSplitterTests : BunitContext
         var cut = RenderSplitter(new Pane("Left", 30, OnSize: sizes.Add), new Pane("Right"));
         var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
 
-        await cut.InvokeAsync(() => report.Value.OnResize(PaneIds(cut), [45, 55]));
+        await cut.InvokeAsync(() => report.Value.OnResize(PaneIds(cut), [45, 55], 1));
         cut.Render();
 
         Assert.Equal([45d], sizes);
         Assert.Equal("45", cut.Find("[role=separator]").GetAttribute("aria-valuenow"));
+    }
+
+    [Fact]
+    public async Task Resize_ShouldMarkTheReportOnlyWithEverySize_WhenAPanesBindingRendersThePageMidway()
+    {
+        var module = SetUpScript();
+        string? markedWhileSizing = null;
+        IRenderedComponent<BoundPanes>? cut = null;
+        cut = Render<BoundPanes>(parameters => parameters.Add(host => host.OnRightSize,
+            () => markedWhileSizing = cut!.Find("[data-part=splitter]").GetAttribute("data-report")));
+        var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
+
+        await cut.InvokeAsync(() => report.Value.OnResize(PaneIds(cut.FindComponent<TbSplitter>()), [40, 60], 7));
+
+        // The left pane's binding rendered the page before the right pane had its size.
+        Assert.Equal("0", markedWhileSizing);
+        Assert.Equal("7", cut.Find("[data-part=splitter]").GetAttribute("data-report"));
     }
 
     [Theory]
@@ -142,7 +159,7 @@ public class TbSplitterTests : BunitContext
         var ids = PaneIds(cut);
 
         await cut.InvokeAsync(() => report.Value.OnToggle(ids[0]));
-        await cut.InvokeAsync(() => report.Value.OnResize(ids, [0, 60, 40]));
+        await cut.InvokeAsync(() => report.Value.OnResize(ids, [0, 60, 40], 1));
         await cut.InvokeAsync(() => report.Value.OnToggle(ids[0]));
 
         Assert.Equal(["25", "45"],
@@ -163,7 +180,7 @@ public class TbSplitterTests : BunitContext
         // With Trails collapsed, Map's 20% of the whole is 26.67% of the 75% left open.
         Assert.Equal("27", map().GetAttribute("aria-valuemin"));
         Assert.Equal("26.67", cut.FindAll("[data-part=pane]")[1].GetAttribute("data-min"));
-        await cut.InvokeAsync(() => report.Value.OnResize(ids, [0, 26.67, 73.33]));
+        await cut.InvokeAsync(() => report.Value.OnResize(ids, [0, 26.67, 73.33], 1));
         Assert.Equal("27", map().GetAttribute("aria-valuenow"));
         await cut.InvokeAsync(() => report.Value.OnToggle(ids[0]));
 
@@ -334,6 +351,41 @@ public class TbSplitterTests : BunitContext
         builder.AddAttribute(8, nameof(TbSplitterPane.CollapsedChanged),
             EventCallback.Factory.Create<bool>(this, collapsed => pane.OnCollapsed?.Invoke(collapsed)));
         builder.CloseComponent();
+    }
+
+    // Two panes bound as @bind-Size binds them, so each size change renders this host, and the splitter with it.
+    private sealed class BoundPanes : ComponentBase
+    {
+        private double? _left = 30;
+        private double? _right = 70;
+
+        [Parameter]
+        public Action? OnRightSize { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbSplitter>(0);
+            builder.AddAttribute(1, nameof(TbSplitter.ChildContent), (RenderFragment)(content =>
+            {
+                content.OpenComponent<TbSplitterPane>(2);
+                content.AddAttribute(3, nameof(TbSplitterPane.Label), "Left");
+                content.AddAttribute(4, nameof(TbSplitterPane.Size), _left);
+                content.AddAttribute(5, nameof(TbSplitterPane.SizeChanged),
+                    EventCallback.Factory.Create<double?>(this, size => _left = size));
+                content.CloseComponent();
+                content.OpenComponent<TbSplitterPane>(6);
+                content.AddAttribute(7, nameof(TbSplitterPane.Label), "Right");
+                content.AddAttribute(8, nameof(TbSplitterPane.Size), _right);
+                content.AddAttribute(9, nameof(TbSplitterPane.SizeChanged), EventCallback.Factory.Create<double?>(this,
+                    size =>
+                    {
+                        OnRightSize?.Invoke();
+                        _right = size;
+                    }));
+                content.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
     }
 
     private sealed record Pane(string Label, double? Size = null, bool Collapsible = false, bool Collapsed = false,
