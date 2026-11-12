@@ -4516,6 +4516,7 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.get -> System.Fun
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Placeholder.get -> string?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Placeholder.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.RefreshAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Labels.get -> Trailblazor.TreeSelectLabels!
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Labels.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Searchable.get -> bool

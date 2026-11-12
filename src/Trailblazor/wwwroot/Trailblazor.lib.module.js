@@ -8,6 +8,7 @@ import './file-upload.js';
 import './accordion.js';
 import './pagination.js';
 import './tabs.js';
+import './tree-select.js';
 import './field-box.js';
 import './range-slider.js';
 import './slider-keys.js';
@@ -129,6 +130,10 @@ function registerEvents(blazor) {
         createEventArgs: event => ({ order: event.detail.order }),
     });
     blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
+    blazor.registerCustomEventType('tbtreesearchdown', {
+        browserEventName: 'tb-tree-search-down',
+        createEventArgs: () => ({}),
+    });
     blazor.registerCustomEventType('tbrichtextchange', {
         browserEventName: 'tb-rich-text-change',
         createEventArgs: event => ({ html: event.detail.html, continues: event.detail.continues }),

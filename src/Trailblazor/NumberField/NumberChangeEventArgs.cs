@@ -71,6 +71,7 @@ public sealed class RichTextLinkEventArgs : EventArgs
 [EventHandler("ontbrowclick", typeof(RowClickEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbrowextend", typeof(RowExtendEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbselectall", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbtreesearchdown", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbeditstart", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbeditkey", typeof(GridEditKeyEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbcolumnwidths", typeof(ColumnWidthsEventArgs), enableStopPropagation: true,

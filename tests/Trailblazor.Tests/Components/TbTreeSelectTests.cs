@@ -281,6 +281,62 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public void Search_ShouldKeepItsFilter_WhenTheFieldRendersAgain()
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+        cut.Find("[data-part=search]").Input("cedar");
+        var filter = cut.FindComponent<TbTreeView<Place, string>>().Instance.Filter;
+
+        cut.Render();
+
+        Assert.NotNull(filter);
+        Assert.Same(filter, cut.FindComponent<TbTreeView<Place, string>>().Instance.Filter);
+    }
+
+    [Fact]
+    public void Render_ShouldNotWalkTheTreeAgain_WhenTheItemsAreTheSame()
+    {
+        var reads = 0;
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.Value, "cedar")
+            .Add(select => select.ChildrenSelector, place =>
+            {
+                reads++;
+                return place.Children;
+            }));
+        var first = reads;
+
+        cut.Render();
+
+        Assert.Equal(first, reads);
+        Assert.Equal("Cedar Flats", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheNewItemsText_WhenGivenANewItemsCollection()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.Value, "pine")
+            .Add(select => select.ChildrenSelector, place => place.Children));
+
+        cut.Render(parameters => parameters.Add(select => select.Items, [new Place("pine", "Pine Hollow loop")]));
+
+        Assert.Equal("Pine Hollow loop", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldShowAnItemChangedInPlace_WhenCalled()
+    {
+        List<Place> places = [new("pine", "Pine Hollow")];
+        var cut = Render<TbTreeSelect<Place, string>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.Items, places).Add(select => select.KeySelector, place => place.Id)
+            .Add(select => select.ItemText, place => place.Name).Add(select => select.Value, "pine"));
+        places[0] = new("pine", "Pine Hollow loop");
+
+        await cut.InvokeAsync(() => cut.Instance.RefreshAsync());
+
+        Assert.Equal("Pine Hollow loop", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
     public void Search_ShouldStaySilent_WhenSomethingMatches()
     {
         var host = Render<AnnouncerHost>();

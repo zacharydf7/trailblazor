@@ -51,6 +51,20 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Search_ShouldMoveToAMatchOfAllTheText_WhenDownArrowFollowsTypingAtOnce(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = await OpenFieldAsync(page);
+        await field.ClickAsync();
+
+        // Down Arrow comes before the search's pause in typing is over.
+        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Search" }).PressSequentiallyAsync("cedar");
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Cedar Flats" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Search_ShouldMoveToTheChosenItemOrTheFirst_WhenDownArrowIsPressedWithoutASearch(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");

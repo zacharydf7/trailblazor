@@ -33,9 +33,11 @@
             <ChildContent>
                 @if (Searchable)
                 {
+                    @* The search waits for a pause in typing, and Down Arrow is the only key it sends to the server. *@
                     <input type="search" data-part="search" autocomplete="off" aria-label="@SearchText"
                            placeholder="@SearchText" @bind="_search" @bind:event="oninput" @bind:after="Searched"
-                           @onkeydown="SearchKeyDownAsync" class="tb-select__filter" />
+                           data-input-delay="@SearchDelay" @ontbtreesearchdown="SearchDownAsync"
+                           class="tb-select__filter tb-tree-select__search" />
                 }
                 <CascadingValue TValue="ITreeChoice" Value="this" IsFixed="true">
                     <TbTreeView @ref="_tree" TItem="TItem" TKey="TKey" Items="Items" KeySelector="KeySelector"
@@ -57,7 +59,12 @@
     ? ClearButton : null)
 
 @code {
+    // Milliseconds of quiet in the search before it filters.
+    private const int SearchDelay = 200;
+
     private readonly Dictionary<TKey, TItem> _loaded = [];
+    private OrderedDictionary<TKey, TItem>? _byKey;
+    private object? _byKeyFor;
     private ElementReference _trigger;
     private TbTreeView<TItem, TKey>? _tree;
     private bool _open;
@@ -65,7 +72,8 @@
     private string? _search;
     private bool _saidNoMatches;
 
-    /// <summary>The items at the top of the tree.</summary>
+    /// <summary>The items at the top of the tree. The tree and the field's text read them again when this is a new
+    /// collection; call <see cref="RefreshAsync"/> after changing it, or the children it holds, in place.</summary>
     [Parameter, EditorRequired]
     public IEnumerable<TItem> Items { get; set; } = [];
 
@@ -189,8 +197,8 @@
         @NoResultsText
     </div>;
 
-    private Func<TItem, bool>? SearchFilter => string.IsNullOrWhiteSpace(_search) ? null
-        : item => ItemText(item).Contains(_search.Trim(), StringComparison.CurrentCultureIgnoreCase);
+    // Made once per search, since the tree lays out its rows again for each new filter.
+    private Func<TItem, bool>? SearchFilter { get; set; }
 
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _trigger.FocusAsync(preventScroll);
@@ -206,6 +214,9 @@
     // A live region that joins the page already holding its text isn't spoken, so the announcer says it.
     private void Searched()
     {
+        var text = _search?.Trim();
+        SearchFilter = string.IsNullOrEmpty(text) ? null
+            : item => ItemText(item).Contains(text, StringComparison.CurrentCultureIgnoreCase);
         var none = SearchFilter is { } filter && !Known().Any(filter);
         if (none && !_saidNoMatches)
         {
@@ -215,9 +226,9 @@
         _saidNoMatches = none;
     }
 
-    private async Task SearchKeyDownAsync(KeyboardEventArgs args)
+    private async Task SearchDownAsync()
     {
-        if (args is { Key: "ArrowDown", IsComposing: false } && _tree is not null)
+        if (_tree is not null)
         {
             await _tree.FocusRowAsync(SearchFilter);
         }
@@ -236,6 +247,7 @@
     private void ClearSearch()
     {
         _search = null;
+        SearchFilter = null;
         _saidNoMatches = false;
     }
 
@@ -286,8 +298,37 @@
     // The items held in memory, in tree order, then the children loaded so far.
     private protected IEnumerable<TItem> Known() => Walk(Items).Concat(_loaded.Values);
 
-    private IEnumerable<TItem> Walk(IEnumerable<TItem>? items) =>
-        (items ?? []).SelectMany(item => (IEnumerable<TItem>)[item, .. Walk(ChildrenSelector?.Invoke(item))]);
+    // Each item, then the items inside it, without recursing, so a deep tree can't overflow the stack.
+    private IEnumerable<TItem> Walk(IEnumerable<TItem>? items)
+    {
+        var levels = new Stack<IEnumerator<TItem>>();
+        levels.Push((items ?? []).GetEnumerator());
+        try
+        {
+            while (levels.TryPeek(out var level))
+            {
+                if (!level.MoveNext())
+                {
+                    levels.Pop().Dispose();
+                    continue;
+                }
+
+                yield return level.Current;
+                if (ChildrenSelector?.Invoke(level.Current) is { } children)
+                {
+                    levels.Push(children.GetEnumerator());
+                }
+            }
+        }
+        finally
+        {
+            // A caller that stops early, as Any does, leaves levels open.
+            while (levels.TryPop(out var open))
+            {
+                open.Dispose();
+            }
+        }
+    }
 
     // An element takes one set of splatted attributes, so the field's and the popover's go together.
     private Dictionary<string, object> TriggerAttributes(PopoverTrigger trigger)
@@ -301,16 +342,33 @@
         return attributes;
     }
 
-    // Each known item by its key: those held in memory in tree order, then the children loaded so far.
+    // Each known item by its key: those held in memory in tree order, then the children loaded so far. Like the tree's
+    // rows, it's rebuilt for new items or selectors, a loaded child or RefreshAsync, but not on every render.
     private protected OrderedDictionary<TKey, TItem> ByKey()
     {
-        var items = new OrderedDictionary<TKey, TItem>();
-        foreach (var item in Known())
+        var builtFor = (Items, _loaded.Count, KeySelector.Method, ChildrenSelector?.Method);
+        if (_byKey is null || !builtFor.Equals(_byKeyFor))
         {
-            items.TryAdd(KeySelector(item), item);
+            _byKey = [];
+            foreach (var item in Known())
+            {
+                _byKey.TryAdd(KeySelector(item), item);
+            }
+
+            _byKeyFor = builtFor;
         }
 
-        return items;
+        return _byKey;
+    }
+
+    /// <summary>Reads <see cref="Items"/> again, after it, or the children it holds, changed in place, or after what
+    /// <see cref="KeySelector"/> or <see cref="ChildrenSelector"/> read from outside the item changed. Children already
+    /// loaded with <see cref="LoadChildren"/> stay.</summary>
+    public Task RefreshAsync()
+    {
+        _byKey = null;
+        StateHasChanged();
+        return _tree?.RefreshAsync() ?? Task.CompletedTask;
     }
 
     private protected string TextOf(TKey key, OrderedDictionary<TKey, TItem> items) =>

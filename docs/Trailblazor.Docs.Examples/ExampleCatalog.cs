@@ -4251,7 +4251,7 @@ public static class ExampleCatalog
                     + "choosing the item already chosen just closes it. The key type's default, such as 0 for an "
                     + "`int`, means nothing is chosen. `IsSelectable` lets headings such as a region open without "
                     + "being chosen. `Searchable` adds a search that keeps the items whose text contains what's typed, "
-                    + "with the items above and below them. `LoadChildren` loads a branch when it opens, and the "
+                    + "with the items above and below them, once typing pauses. `LoadChildren` loads a branch when it opens, and the "
                     + "search covers only the branches loaded so far. `UnmatchedText` names a value whose item hasn't "
                     + "loaded, such as a saved choice in a branch not yet opened. `Clearable` adds a button that "
                     + "clears the choice. `@bind-Open` opens or closes the tree from code, though a disabled or "
@@ -4288,6 +4288,11 @@ public static class ExampleCatalog
                 new(["Enter", "Space"], "Checks or unchecks the focused item, and the tree stays open.")
                     { When = "In a multi tree select's tree" },
                 new(["Escape"], "Closes the tree without choosing, and returns to the field.") { When = "In the tree" },
+            ],
+            Notes =
+            [
+                new("After changing `Items`, or the children it holds, in place, call `RefreshAsync`. A new collection, "
+                    + "or a branch that loads, is read again by itself.") { Pitfall = true },
             ],
             Labeling =
             [
