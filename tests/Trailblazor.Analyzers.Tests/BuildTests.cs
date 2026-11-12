@@ -17,7 +17,7 @@ public partial class BuildTests
         var reported = Reported().Matches(output).Select(match => match.Value).Distinct().Order();
         Assert.Equal(["Mistakes.razor(3,30): error TB001", "Mistakes.razor(4,20): error TB004",
             "Mistakes.razor(5,27): error TB003", "Mistakes.razor(6,11): error TB002",
-            "Mistakes.razor(7,22): error TB005"], reported);
+            "Mistakes.razor(7,22): error TB005", "Mistakes.razor(8,17): error TB006"], reported);
     }
 
     [Fact]

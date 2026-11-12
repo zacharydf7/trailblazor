@@ -14,7 +14,8 @@
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
             The Trailblazor package includes an analyzer that reads your markup as the app builds. It warns, at the line
             in the <code>.razor</code> file, about a control or field screen readers can't name, a dialog with no title,
-            a value that snaps back after the user changes it, and a type parameter given under the wrong name.
+            a value that snaps back after the user changes it, a type parameter given under the wrong name, and a
+            component written outside the one it belongs in.
         </TbText>
     </Header>
     <ChildContent>
@@ -72,6 +73,17 @@
                         parameter but isn't one of its own, so it doesn't set the component's type.
                     </td>
                     <td>Use the component's type parameter name, such as <code>TValue</code>.</td>
+                </tr>
+                <tr>
+                    <th scope="row">TB006</th>
+                    <td>
+                        A component that works only inside another is written in a page outside it: a tab outside
+                        its tabs, a splitter pane, table of contents item, tree item, menu radio item, breadcrumb,
+                        carousel slide, nav link or group, or step outside its own parent, or a dialog title or
+                        description outside a <code>TbDialog</code> or <code>TbDrawer</code>. Outside its parent, it
+                        throws as it renders.
+                    </td>
+                    <td>Move it inside the component the warning names.</td>
                 </tr>
             </tbody>
         </TbTable>
@@ -136,6 +148,12 @@
                 A required parameter that's left out, such as an icon button's <code>AriaLabel</code>, already gets
                 Razor's own RZ2012 warning, so TB001 warns only when it is blank.
             </li>
+            <li>
+                TB006 checks only pages, and stays quiet when any component around the item isn't one of
+                Trailblazor's. Your own components may render their content inside a <code>TbTabs</code> or a tree,
+                and a component that isn't a page may itself be rendered inside one. A layout that wraps its pages in
+                one isn't seen either, so turn the rule off for a project that does that.
+            </li>
         </ul>
 
         <DocsHeading Id="turning-a-rule-off" Text="Turning a rule off" Class="docs-section" />
@@ -160,22 +178,26 @@
 
 @code {
     private const string Mistakes = """
+        @page "/search"
         <TbIconButton Icon="Icons.Search" AriaLabel="" />
         <TbTextField @bind-Value="_query" />
         <TbCheckbox Label="Only open trails" Value="true" />
         <TbCheckbox T="bool" Label="Dogs allowed" @bind-Value="_dogs" />
+        <TbStack><TbTab Text="Results" /></TbStack>
         """;
 
     private const string Warnings = """
-        Search.razor(1,35): warning TB001: TbIconButton has no accessible name.
+        Search.razor(2,35): warning TB001: TbIconButton has no accessible name.
             Set AriaLabel.
-        Search.razor(2,20): warning TB004: TbTextField has no label. Set Label, or
+        Search.razor(3,20): warning TB004: TbTextField has no label. Set Label, or
             AriaLabel when the layout has no room for one.
-        Search.razor(3,38): warning TB003: TbCheckbox sets Value without ValueChanged,
+        Search.razor(4,38): warning TB003: TbCheckbox sets Value without ValueChanged,
             so the parent's next render undoes the user's change. Use @bind-Value,
             handle ValueChanged, or set ReadOnly.
-        Search.razor(4,22): warning TB005: TbCheckbox has no T parameter, so T doesn't
+        Search.razor(5,22): warning TB005: TbCheckbox has no T parameter, so T doesn't
             set its type. To set the type, write TValue="bool".
+        Search.razor(6,17): warning TB006: TbTab isn't inside a TbTabs, so it throws
+            as it renders
         """;
 
     private const string NoWarn = """

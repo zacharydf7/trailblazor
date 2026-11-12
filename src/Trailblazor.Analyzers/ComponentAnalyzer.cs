@@ -7,7 +7,8 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Trailblazor.Analyzers;
 
 /// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, inputs given a
-/// Value without ValueChanged, and attributes that look like a misnamed type parameter.</summary>
+/// Value without ValueChanged, attributes that look like a misnamed type parameter, and components written outside
+/// the one they belong in.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 {
@@ -49,10 +50,29 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbCalendar`1", ["Label", "AriaLabel", "InputAttributes"]),
     ];
 
+    // Components that work only inside another, paired with each host that can hold them; the warning names the first.
+    internal static readonly (string Child, string Host)[] Hosted =
+    [
+        ("Trailblazor.TbTab", "Trailblazor.TbTabs"),
+        ("Trailblazor.TbSplitterPane", "Trailblazor.TbSplitter"),
+        ("Trailblazor.TbTableOfContentsItem", "Trailblazor.TbTableOfContents"),
+        ("Trailblazor.TbTreeItem`1", "Trailblazor.TbTreeView`2"),
+        ("Trailblazor.TbMenuRadioItem`1", "Trailblazor.TbMenuRadioGroup`1"),
+        ("Trailblazor.TbDialogTitle", "Trailblazor.TbDialog"),
+        ("Trailblazor.TbDialogTitle", "Trailblazor.TbDrawer"),
+        ("Trailblazor.TbDialogDescription", "Trailblazor.TbDialog"),
+        ("Trailblazor.TbDialogDescription", "Trailblazor.TbDrawer"),
+        ("Trailblazor.TbBreadcrumb", "Trailblazor.TbBreadcrumbs"),
+        ("Trailblazor.TbCarouselSlide", "Trailblazor.TbCarousel"),
+        ("Trailblazor.TbNavLink", "Trailblazor.TbNavMenu"),
+        ("Trailblazor.TbNavGroup", "Trailblazor.TbNavMenu"),
+        ("Trailblazor.TbStep", "Trailblazor.TbStepper"),
+    ];
+
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
-        Rules.TypeParameterAsAttribute);
+        Rules.TypeParameterAsAttribute, Rules.OutsideItsParent);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -70,9 +90,13 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
+            var hosted = Hosted.Select(entry => (Child: compilation.GetTypeByMetadataName(entry.Child),
+                    Host: compilation.GetTypeByMetadataName(entry.Host)))
+                .Where(entry => entry.Child is not null && entry.Host is not null)
+                .Select(entry => (entry.Child!, entry.Host!)).ToArray();
             var types = new KnownTypes(Resolve(compilation, Named), fieldBase, Resolve(compilation, OtherFields),
                 compilation.GetTypeByMetadataName("Trailblazor.TbDialog"),
-                compilation.GetTypeByMetadataName("Trailblazor.IDialogService"));
+                compilation.GetTypeByMetadataName("Trailblazor.IDialogService"), hosted);
             start.RegisterOperationAction(operation => Analyze(operation, types), OperationKind.Invocation);
         });
     }
@@ -117,6 +141,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         }
 
         CheckTypeParameterNames(context, usage);
+        CheckParent(context, invocation, usage, types.Hosted);
 
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
@@ -153,6 +178,26 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                     component.Name, name, fix));
             }
         }
+    }
+
+    // Warns when a page writes a component with no host around it. A non-Trailblazor component around it may render
+    // it inside a host, and a non-page component may itself be rendered inside one, so neither is checked.
+    private static void CheckParent(OperationAnalysisContext context, IInvocationOperation open, ComponentUsage usage,
+        (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted)
+    {
+        var hosts = hosted.Where(entry =>
+            SymbolEqualityComparer.Default.Equals(usage.Component.OriginalDefinition, entry.Child))
+            .Select(entry => entry.Host).ToList();
+        if (hosts.Count == 0 || ComponentNesting.Enclosing(open) is not { } enclosing
+            || enclosing.Any(owner => hosts.Any(host => InheritsFrom(owner, host))
+                || owner.ContainingNamespace.ToDisplayString() != "Trailblazor")
+            || !ComponentNesting.IsInPage(open))
+        {
+            return;
+        }
+
+        context.ReportDiagnostic(Diagnostic.Create(Rules.OutsideItsParent, usage.Location, usage.Component.Name,
+            hosts[0].Name));
     }
 
     private static bool IsTypeParameterName(string name) =>
@@ -237,25 +282,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         _ => value,
     };
 
-    private static IOperation? ArgumentAtCall(IParameterReferenceOperation reference)
-    {
-        var helper = (IMethodSymbol)reference.Parameter.ContainingSymbol;
-        var model = reference.SemanticModel!;
-        var calls = reference.Syntax.SyntaxTree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
-        foreach (var call in calls)
-        {
-            if (call.Expression is MemberAccessExpressionSyntax access
-                && access.Name.Identifier.ValueText == helper.Name
-                && model.GetOperation(call) is IInvocationOperation operation
-                && SymbolEqualityComparer.Default.Equals(operation.TargetMethod.OriginalDefinition, helper))
-            {
-                return operation.Arguments.FirstOrDefault(argument =>
-                    argument.Parameter?.Ordinal == reference.Parameter.Ordinal)?.Value;
-            }
-        }
-
-        return null;
-    }
+    private static IOperation? ArgumentAtCall(IParameterReferenceOperation reference) =>
+        ComponentNesting.CallTo(reference)?.Arguments
+            .FirstOrDefault(argument => argument.Parameter?.Ordinal == reference.Parameter.Ordinal)?.Value;
 
     private static (INamedTypeSymbol Type, string[] Names)[] Resolve(Compilation compilation,
         (string Type, string[] Names)[] table) =>
@@ -294,7 +323,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     private sealed class KnownTypes(
         (INamedTypeSymbol Type, string[] Names)[] named, INamedTypeSymbol fieldBase,
         (INamedTypeSymbol Type, string[] Names)[] otherFields, INamedTypeSymbol? dialog,
-        INamedTypeSymbol? dialogService)
+        INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted)
     {
         public (INamedTypeSymbol Type, string[] Names)[] Named { get; } = named;
 
@@ -305,5 +334,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol? Dialog { get; } = dialog;
 
         public INamedTypeSymbol? DialogService { get; } = dialogService;
+
+        public (INamedTypeSymbol Child, INamedTypeSymbol Host)[] Hosted { get; } = hosted;
     }
 }

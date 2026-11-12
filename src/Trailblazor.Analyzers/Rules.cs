@@ -31,4 +31,9 @@ internal static class Rules
         "the type, write {2}.", Usage, DiagnosticSeverity.Warning, isEnabledByDefault: true,
         "Razor sets a generic component's type only from an attribute with the type parameter's exact name. Any " +
         "other name, such as T, doesn't set the type and is passed to the component like any other attribute.");
+
+    public static readonly DiagnosticDescriptor OutsideItsParent = new("TB006",
+        "A component is outside the one it belongs in", "{0} isn't inside a {1}, so it throws as it renders", Usage,
+        DiagnosticSeverity.Warning, isEnabledByDefault: true, "Some components work only inside another, such as a " +
+        "tab inside its tabs. Anywhere else, the component throws as it renders, which ends a Blazor Server circuit.");
 }

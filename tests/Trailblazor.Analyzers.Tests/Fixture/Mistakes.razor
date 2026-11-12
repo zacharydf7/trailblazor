@@ -1,10 +1,11 @@
 @using Trailblazor
-
+@page "/mistakes"
 <TbIconButton Icon="default" AriaLabel=" " />
 <TbTextField @bind-Value="_trail" />
 <TbCheckbox Label="Share" Value="true" />
 <TbDialog Title="" />
 <TbCheckbox T="bool" Label="Agree" @bind-Value="_agree" />
+<TbStack><TbTab Text="Day one" /></TbStack>
 
 @code {
     private string? _trail;

@@ -73,7 +73,7 @@ internal sealed class ComponentUsage
 
     private static bool IsMapped(Location location) => location.GetMappedLineSpan().HasMappedPath;
 
-    private static ISymbol? Builder(IInvocationOperation call) => call.Instance switch
+    internal static ISymbol? Builder(IInvocationOperation call) => call.Instance switch
     {
         IParameterReferenceOperation parameter => parameter.Parameter,
         ILocalReferenceOperation local => local.Local,

@@ -14,7 +14,8 @@ internal static class Analysis
             .Select(path => MetadataReference.CreateFromFile(path)),
     ];
 
-    public static async Task<ImmutableArray<Diagnostic>> RunAsync(string render, string members = "")
+    public static async Task<ImmutableArray<Diagnostic>> RunAsync(string render, string members = "",
+        string attributes = "")
     {
         var source = $$"""
             using System.Collections.Generic;
@@ -23,6 +24,7 @@ internal static class Analysis
             using Microsoft.AspNetCore.Components.Rendering;
             using Trailblazor;
 
+            {{attributes}}
             public class Page : ComponentBase
             {
                 protected override void BuildRenderTree(RenderTreeBuilder __builder)
@@ -42,6 +44,6 @@ internal static class Analysis
             .GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
     }
 
-    public static async Task<IEnumerable<string>> IdsAsync(string render, string members = "") =>
-        (await RunAsync(render, members)).Select(diagnostic => diagnostic.Id);
+    public static async Task<IEnumerable<string>> IdsAsync(string render, string members = "",
+        string attributes = "") => (await RunAsync(render, members, attributes)).Select(diagnostic => diagnostic.Id);
 }

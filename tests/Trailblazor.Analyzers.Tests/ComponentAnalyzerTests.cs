@@ -476,6 +476,212 @@ public class ComponentAnalyzerTests
         Assert.Empty(ids);
     }
 
+    private const string Routed = "[Route(\"/days\")]";
+
+    private const string TabInStack = """
+        __builder.OpenComponent<TbStack>(0);
+        __builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder2) => {
+            __builder2.OpenComponent<TbTab>(2);
+            __builder2.AddComponentParameter(3, nameof(TbTab.Text), "Day one");
+            __builder2.CloseComponent();
+        }));
+        __builder.CloseComponent();
+        """;
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportOutsideItsParent_WhenAPagesTabIsInsideAnotherComponentOnly()
+    {
+        var diagnostics = await RunAsync(TabInStack, attributes: Routed);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("TB006", diagnostic.Id);
+        Assert.Equal("TbTab isn't inside a TbTabs, so it throws as it renders", diagnostic.GetMessage());
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenATabsContentHoldsTheTabThroughAnotherComponent()
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbTabs>(10);
+            __builder.AddComponentParameter(11, nameof(TbTabs.AriaLabel), "Days");
+            __builder.AddAttribute(12, "ChildContent", (RenderFragment)((__builder) => {
+            {{TabInStack}}
+            }));
+            __builder.CloseComponent();
+            """, attributes: Routed);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheTabIsInsideAComponentOutsideTrailblazor()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<Layout>(0);
+            __builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<TbTab>(2);
+                __builder2.AddComponentParameter(3, nameof(TbTab.Text), "Day one");
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+            """, attributes: Routed, members: """
+            // It may render its content inside a TbTabs of its own.
+            private sealed class Layout : ComponentBase
+            {
+                [Parameter]
+                public RenderFragment? ChildContent { get; set; }
+            }
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAComponentsOwnMarkupHasATabInAStack()
+    {
+        var ids = await IdsAsync(TabInStack);
+
+        Assert.Empty(ids);
+    }
+
+    [Theory]
+    [InlineData("TbDialog", "")]
+    [InlineData("TbDrawer", "")]
+    [InlineData("TbStack", "TB006")]
+    public async Task ComponentAnalyzer_ShouldTakeADrawerAsADialog_WhenItHoldsADialogTitle(string holder,
+        string expected)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<{{holder}}>(0);
+            __builder.AddComponentParameter(1, "Title", "Filters");
+            __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<TbDialogTitle>(3);
+                __builder2.AddAttribute(4, "ChildContent", (RenderFragment)(content => content.AddContent(5, "x")));
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+            """, attributes: Routed);
+
+        Assert.Equal(expected == "" ? [] : [expected], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAComponentsOwnMarkupStartsWithATab()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbTab>(0);
+            __builder.AddComponentParameter(1, nameof(TbTab.Text), "Day one");
+            __builder.CloseComponent();
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportOutsideItsParent_WhenAPageStartsWithATab()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbTab>(0);
+            __builder.AddComponentParameter(1, nameof(TbTab.Text), "Day one");
+            __builder.CloseComponent();
+            """, attributes: Routed);
+
+        Assert.Equal(["TB006"], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheTabComesFromARenderFragmentMember()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbStack>(0);
+            __builder.AddAttribute(1, "ChildContent", Day);
+            __builder.CloseComponent();
+            """, """
+            private RenderFragment Day => __builder2 =>
+            {
+                __builder2.OpenComponent<TbTab>(2);
+                __builder2.AddComponentParameter(3, nameof(TbTab.Text), "Day one");
+                __builder2.CloseComponent();
+            };
+            """, Routed);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheTabPassesThroughAMethodOnItsWay()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbStack>(0);
+            __builder.AddAttribute(1, "ChildContent", Wrap(__builder2 => {
+                __builder2.OpenComponent<TbTab>(2);
+                __builder2.AddComponentParameter(3, nameof(TbTab.Text), "Day one");
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+            """, """
+            // It may render the content inside a TbTabs of its own.
+            private static RenderFragment Wrap(RenderFragment content) => content;
+            """, Routed);
+
+        Assert.Empty(ids);
+    }
+
+    // Razor opens a generic component whose types it infers in a helper, and passes the helper its content.
+    [Theory]
+    [InlineData("CreateTbTreeView_0", "")]
+    [InlineData("CreateTbStack_0", "TB006")]
+    public async Task ComponentAnalyzer_ShouldFollowTypeInferenceHelpers_WhenATreeItemsTypesAreInferred(
+        string outer, string expected)
+    {
+        var ids = await IdsAsync($$"""
+            TypeInference.{{outer}}(__builder, 0, 1, (__builder2) => {
+                TypeInference.CreateTbTreeItem_1(__builder2, 2, 3, "pine");
+            });
+            """, """
+            internal static class TypeInference
+            {
+                public static void CreateTbTreeView_0(RenderTreeBuilder __builder, int seq, int __seq0,
+                    RenderFragment __arg0)
+                {
+                    __builder.OpenComponent<TbTreeView<string, string>>(seq);
+                    __builder.AddComponentParameter(__seq0, "AriaLabel", "Trails");
+                    __builder.AddComponentParameter(__seq0, "ChildContent", __arg0);
+                    __builder.CloseComponent();
+                }
+
+                public static void CreateTbStack_0(RenderTreeBuilder __builder, int seq, int __seq0,
+                    RenderFragment __arg0)
+                {
+                    __builder.OpenComponent<TbStack>(seq);
+                    __builder.AddComponentParameter(__seq0, "ChildContent", __arg0);
+                    __builder.CloseComponent();
+                }
+
+                public static void CreateTbTreeItem_1<TItem>(RenderTreeBuilder __builder, int seq, int __seq0,
+                    TItem __arg0)
+                {
+                    __builder.OpenComponent<TbTreeItem<TItem>>(seq);
+                    __builder.AddComponentParameter(__seq0, nameof(TbTreeItem<TItem>.Value), __arg0);
+                    __builder.CloseComponent();
+                }
+            }
+            """, Routed);
+
+        Assert.Equal(expected == "" ? [] : [expected], ids);
+    }
+
+    [Fact]
+    public void ComponentAnalyzer_ShouldNameOnlyComponentsThatExist_WhenItsHostTableIsRead()
+    {
+        var library = typeof(TbButton).Assembly;
+
+        var missing = ComponentAnalyzer.Hosted.SelectMany(entry => new[] { entry.Child, entry.Host })
+            .Where(name => library.GetType(name) is null);
+
+        Assert.Empty(missing);
+    }
+
     [Fact]
     public void ComponentAnalyzer_ShouldNameOnlyComponentsAndParametersThatExist_WhenItsTableIsRead()
     {
