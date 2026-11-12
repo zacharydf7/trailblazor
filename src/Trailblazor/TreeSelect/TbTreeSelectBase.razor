@@ -44,7 +44,7 @@
                                 ChildrenSelector="ChildrenSelector"
                                 LoadChildren="@(LoadChildren is null ? null : LoadAndKeepAsync)"
                                 HasChildren="HasChildren" ItemText="ItemText" ItemIcon="ItemIcon"
-                                IsSelectable="IsSelectable" IsDisabled="IsDisabled"
+                                IsSelectable="IsSelectable" ItemDisabled="ItemDisabled"
                                 InitialExpandDepth="InitialExpandDepth" AriaLabel="@ShownLabel" Filter="SearchFilter"
                                 FilterKeepsDescendants SelectedKeys="SelectedKeys" Checkable="ChecksRows"
                                 CheckedKeys="CheckedKeys" CheckedKeysChanged="CheckedAsync"
@@ -113,7 +113,7 @@
 
     /// <summary>Whether an item is turned off: it shows, but can't be chosen.</summary>
     [Parameter]
-    public Func<TItem, bool>? IsDisabled { get; set; }
+    public Func<TItem, bool>? ItemDisabled { get; set; }
 
     /// <summary>How many levels of the tree start open.</summary>
     [Parameter]

@@ -1,6 +1,6 @@
 <TbStack Gap="4">
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Open and closed regions" Items="Regions"
-                KeySelector="place => place.Id" ItemText="place => place.Name" IsDisabled="place => place.Closed" />
+                KeySelector="place => place.Id" ItemText="place => place.Name" ItemDisabled="place => place.Closed" />
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Archived regions" Items="Regions" KeySelector="place => place.Id"
                 ItemText="place => place.Name" Disabled />
 </TbStack>

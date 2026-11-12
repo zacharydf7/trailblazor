@@ -31,14 +31,14 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     [Parameter, EditorRequired]
     public string Label { get; set; } = "";
 
-    /// <summary>The item's text, which names its handle and is said after it moves. Defaults to
+    /// <summary>The item's name for its handle's label, which is also said after it moves. Defaults to
     /// <see cref="object.ToString"/>.</summary>
     [Parameter]
-    public Func<TItem, string>? ItemText { get; set; }
+    public Func<TItem, string>? ItemLabel { get; set; }
 
     /// <summary>What tells the items apart as they move, such as an id. Defaults to the item itself.</summary>
     [Parameter]
-    public Func<TItem, object>? ItemKey { get; set; }
+    public Func<TItem, object>? KeySelector { get; set; }
 
     /// <summary>Raised when the user moves an item; apply it to <see cref="Items"/>, as
     /// <see cref="SortableMove{TItem}.ApplyTo"/> does.</summary>
@@ -124,7 +124,7 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
         }
     }
 
-    private object KeyOf(TItem item) => ItemKey?.Invoke(item) ?? item!;
+    private object KeyOf(TItem item) => KeySelector?.Invoke(item) ?? item!;
 
     private string IdOf(TItem item) => _ids.IdOf(KeyOf(item));
 
@@ -141,7 +141,7 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
         return -1;
     }
 
-    private string TextOf(TItem item) => ItemText?.Invoke(item) ?? item?.ToString() ?? "";
+    private string TextOf(TItem item) => ItemLabel?.Invoke(item) ?? item?.ToString() ?? "";
 
     private string HandleLabel(TItem item) =>
         string.Format(CultureInfo.CurrentCulture, Localizer[TbStrings.SortableHandle], TextOf(item));

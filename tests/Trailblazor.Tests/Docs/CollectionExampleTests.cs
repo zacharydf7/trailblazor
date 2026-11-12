@@ -82,7 +82,7 @@ public class CollectionExampleTests : DocsTest
     }
 
     [Fact]
-    public void SortableContentExample_ShouldNameTheHandleByItsItemText_WhenItemsArentStrings()
+    public void SortableContentExample_ShouldNameTheHandleByItsItemLabel_WhenItemsArentStrings()
     {
         var cut = Render<SortableContentExample>();
 

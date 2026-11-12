@@ -513,7 +513,7 @@ public class TbTreeViewTests : BunitContext
     public void Click_ShouldLeaveADisabledParentRowClosed_WhenTheRowCantBeSelected()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.None)
-            .Add(tree => tree.IsDisabled, place => place.Id == 1));
+            .Add(tree => tree.ItemDisabled, place => place.Id == 1));
 
         Row(cut, "1").Click(new() { Detail = 1 });
 
@@ -619,7 +619,7 @@ public class TbTreeViewTests : BunitContext
     public void Check_ShouldPassOverTurnedOffRows_WhenAParentCascades()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Checkable, true)
-            .Add(tree => tree.IsDisabled, place => place.Name == "Pass"));
+            .Add(tree => tree.ItemDisabled, place => place.Name == "Pass"));
 
         Check(cut, "1");
         Assert.Equal([2, 3], _checkedChanges.Single().Order());
@@ -646,7 +646,7 @@ public class TbTreeViewTests : BunitContext
     public void Check_ShouldLeaveOutParentsAboveATurnedOffRow_WhenItIsDeeperDown()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Checkable, true)
-            .Add(tree => tree.IsDisabled, place => place.Name == "Summit").Add(tree => tree.InitialExpandDepth, 2));
+            .Add(tree => tree.ItemDisabled, place => place.Name == "Summit").Add(tree => tree.InitialExpandDepth, 2));
 
         Check(cut, "1");
 

@@ -1,4 +1,4 @@
-<TbSortable TItem="Stop" Items="_stops" Label="Trip stops" ItemText="stop => stop.Name" ItemKey="stop => stop.Id"
+<TbSortable TItem="Stop" Items="_stops" Label="Trip stops" ItemLabel="stop => stop.Name" KeySelector="stop => stop.Id"
             OnMove="move => move.ApplyTo(_stops)" Style="max-inline-size: 24rem">
     <ItemTemplate>
         <TbStack Gap="1">

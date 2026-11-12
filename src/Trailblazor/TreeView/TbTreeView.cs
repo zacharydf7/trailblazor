@@ -213,7 +213,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     /// <summary>Whether a row is turned off: it can be focused but not selected, checked or activated.</summary>
     [Parameter]
-    public Func<TItem, bool>? IsDisabled { get; set; }
+    public Func<TItem, bool>? ItemDisabled { get; set; }
 
     /// <summary>Shows a checkbox on each row, apart from selection.</summary>
     [Parameter]
@@ -1367,7 +1367,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
 
     private bool IsItemDisabled(TreeNode<TItem> node) => _declared.GetValueOrDefault(node.Key)?.Disabled == true
-        || (HasValue(node) && IsDisabled?.Invoke(node.Item) == true);
+        || (HasValue(node) && ItemDisabled?.Invoke(node.Item) == true);
 
     // Without a KeySelector, OnParametersSet has checked that the items are keys.
     private object KeyOf(TItem item) => KeySelector is null ? item! : KeySelector(item);

@@ -2488,8 +2488,8 @@ public static class ExampleCatalog
                     + "app's own buttons, such as Raise, with the same check and announcement.",
                     typeof(SortableExample)),
                 new("content", "Your own content", "`ItemTemplate` draws each item, and long text wraps inside it. "
-                    + "`ItemText` names the handle when items aren't strings, and `ItemKey` tells items apart as they "
-                    + "move.", typeof(SortableContentExample)),
+                    + "`ItemLabel` names the handle when items aren't strings, and `KeySelector` tells items apart as "
+                    + "they move.", typeof(SortableContentExample)),
                 new("disabled", "Disabled", "`Disabled` turns off the handles and dragging, so people can't change the "
                     + "order. An app's own `MoveAsync` still works.", typeof(SortableDisabledExample)),
                 new("empty", "Empty", "A sortable list has no message of its own, so show your own in its place until "
@@ -6845,7 +6845,7 @@ public static class ExampleCatalog
                 new("independent-checks", "Independent checks", "`CascadeChecks=\"false\"` checks only the row itself, "
                     + "so a parent and its children each keep their own check.",
                     typeof(TreeViewIndependentChecksExample)),
-                new("disabled", "Disabled rows", "`IsDisabled` turns off single rows, and `Disabled` turns off the "
+                new("disabled", "Disabled rows", "`ItemDisabled` turns off single rows, and `Disabled` turns off the "
                     + "whole tree.", typeof(TreeViewDisabledExample)),
                 new("item-template", "Item template", "`ItemTemplate` draws a row's content. Keep `ItemText` so typing "
                     + "still finds the row.", typeof(TreeViewTemplateExample)),

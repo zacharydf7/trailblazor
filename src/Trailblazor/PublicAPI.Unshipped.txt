@@ -2638,14 +2638,14 @@ Trailblazor.TbSortable<TItem>.CanMove.set -> void
 Trailblazor.TbSortable<TItem>.Disabled.get -> bool
 Trailblazor.TbSortable<TItem>.Disabled.set -> void
 Trailblazor.TbSortable<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Trailblazor.TbSortable<TItem>.ItemKey.get -> System.Func<TItem, object!>?
-Trailblazor.TbSortable<TItem>.ItemKey.set -> void
+Trailblazor.TbSortable<TItem>.KeySelector.get -> System.Func<TItem, object!>?
+Trailblazor.TbSortable<TItem>.KeySelector.set -> void
 Trailblazor.TbSortable<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
 Trailblazor.TbSortable<TItem>.Items.set -> void
 Trailblazor.TbSortable<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>!
 Trailblazor.TbSortable<TItem>.ItemTemplate.set -> void
-Trailblazor.TbSortable<TItem>.ItemText.get -> System.Func<TItem, string!>?
-Trailblazor.TbSortable<TItem>.ItemText.set -> void
+Trailblazor.TbSortable<TItem>.ItemLabel.get -> System.Func<TItem, string!>?
+Trailblazor.TbSortable<TItem>.ItemLabel.set -> void
 Trailblazor.TbSortable<TItem>.Label.get -> string!
 Trailblazor.TbSortable<TItem>.Label.set -> void
 Trailblazor.TbSortable<TItem>.MoveAsync(int from, int to) -> System.Threading.Tasks.Task<bool>!
@@ -3027,8 +3027,8 @@ Trailblazor.TbTreeView<TItem, TKey>.InitialExpandDepth.get -> int
 Trailblazor.TbTreeView<TItem, TKey>.InitialExpandDepth.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.InsertTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.TreeInsertContext<TItem>!>?
 Trailblazor.TbTreeView<TItem, TKey>.InsertTemplate.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.IsDisabled.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeView<TItem, TKey>.IsDisabled.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemDisabled.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemDisabled.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.get -> System.Func<TItem, bool>?
 Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemClass.get -> System.Func<TItem, string?>?
@@ -4500,8 +4500,8 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.HasChildren.get -> System.Func
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.HasChildren.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.InitialExpandDepth.get -> int
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.InitialExpandDepth.set -> void
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsDisabled.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsDisabled.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemDisabled.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemDisabled.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsSelectable.get -> System.Func<TItem, bool>?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsSelectable.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemIcon.get -> System.Func<TItem, Trailblazor.Icon?>?
