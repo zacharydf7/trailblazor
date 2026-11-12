@@ -70,12 +70,12 @@ public class ComponentAnalyzerTests
     }
 
     [Theory]
-    [InlineData(nameof(TbTreeView<string, int>.AriaLabel))]
+    [InlineData(nameof(TbTreeView<string, string>.AriaLabel))]
     [InlineData("aria-labelledby")]
     public async Task ComponentAnalyzer_ShouldReportNothing_WhenATreeIsGivenAName(string name)
     {
         var ids = await IdsAsync($$"""
-            __builder.OpenComponent<TbTreeView<string, int>>(0);
+            __builder.OpenComponent<TbTreeView<string, string>>(0);
             __builder.AddComponentParameter(1, "{{name}}", "Trails");
             __builder.CloseComponent();
             """);
@@ -85,12 +85,12 @@ public class ComponentAnalyzerTests
 
     // The tree's own aria-label, from AriaLabel, replaces one written on the component.
     [Theory]
-    [InlineData(nameof(TbTreeView<string, int>.Items), "new[] { \"North\" }")]
+    [InlineData(nameof(TbTreeView<string, string>.Items), "new[] { \"North\" }")]
     [InlineData("aria-label", "\"Trails\"")]
     public async Task ComponentAnalyzer_ShouldReportNoAccessibleName_WhenATreeHasNoNameItUses(string name, string value)
     {
         var ids = await IdsAsync($$"""
-            __builder.OpenComponent<TbTreeView<string, int>>(0);
+            __builder.OpenComponent<TbTreeView<string, string>>(0);
             __builder.AddComponentParameter(1, "{{name}}", {{value}});
             __builder.CloseComponent();
             """);
@@ -114,7 +114,7 @@ public class ComponentAnalyzerTests
     public async Task ComponentAnalyzer_ShouldReadTheMarkupsValue_WhenAGenericComponentIsBuiltByATypeInferenceHelper()
     {
         var ids = await IdsAsync("""
-            TypeInference.CreateTbTreeView_0<string, int>(__builder, 0, 1, "");
+            TypeInference.CreateTbTreeView_0<string, string>(__builder, 0, 1, "");
             """, """
             private static class TypeInference
             {
@@ -415,8 +415,8 @@ public class ComponentAnalyzerTests
     public async Task ComponentAnalyzer_ShouldNameEachTypeParameter_WhenAComponentHasSeveral()
     {
         var diagnostics = await RunAsync("""
-            __builder.OpenComponent<TbTreeView<string, int>>(0);
-            __builder.AddComponentParameter(1, nameof(TbTreeView<string, int>.AriaLabel), "Trails");
+            __builder.OpenComponent<TbTreeView<string, string>>(0);
+            __builder.AddComponentParameter(1, nameof(TbTreeView<string, string>.AriaLabel), "Trails");
             __builder.AddComponentParameter(2, "TId", "int");
             __builder.CloseComponent();
             """);
@@ -459,7 +459,7 @@ public class ComponentAnalyzerTests
     }
 
     [Theory]
-    [InlineData("TbTreeView<string, int>", "TKey")]
+    [InlineData("TbTreeView<string, string>", "TKey")]
     [InlineData("TbCheckbox<bool>", "Title")]
     [InlineData("TbCheckbox<bool>", "T-shirt")]
     [InlineData("TbButton", "T")]
@@ -884,6 +884,138 @@ public class ComponentAnalyzerTests
             """, "private sealed class PercentSlider : TbSlider<int>;");
 
         Assert.Empty(diagnostics);
+    }
+
+    // A named tree view of the given types, with the given parameters after its AriaLabel.
+    private static string Tree(string types, string parameters) => $$"""
+        __builder.OpenComponent<TbTreeView<{{types}}>>(0);
+        __builder.AddComponentParameter(1, "AriaLabel", "Trails");
+        {{parameters}}
+        __builder.CloseComponent();
+        """;
+
+    private const string TreeItems = """
+        __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+            __builder2.OpenComponent<TbTreeItem<string>>(3);
+            __builder2.AddComponentParameter(4, "Value", "pine");
+            __builder2.CloseComponent();
+        }));
+        """;
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportTreeSetup_WhenATreeTakesItemsAndTreeItems()
+    {
+        var diagnostics = await RunAsync(Tree("string, string", """
+            __builder.AddComponentParameter(5, "Items", new[] { "cedar" });
+            """ + TreeItems));
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("TB009", diagnostic.Id);
+        Assert.Equal("TbTreeView takes Items or TbTreeItems, not both", diagnostic.GetMessage());
+    }
+
+    [Theory]
+    [InlineData("""__builder.AddComponentParameter(5, "Items", new[] { "cedar" });""", "")]
+    [InlineData("""
+        __builder.AddComponentParameter(5, "ParentKeySelector", (System.Func<string, string?>)(trail => null));
+        __builder.AddComponentParameter(6, "ChildrenSelector",
+            (System.Func<string, IEnumerable<string>?>)(trail => null));
+        """, "takes a ParentKeySelector or a ChildrenSelector and LoadChildren, not both")]
+    [InlineData("""
+        __builder.AddComponentParameter(5, "ParentKeySelector", (System.Func<string, string?>)(trail => null));
+        __builder.AddComponentParameter(6, "ChildrenSelector", System.DateTime.Now.Year > 2000 ? null
+            : (System.Func<string, IEnumerable<string>?>)(trail => null));
+        """, "")]
+    [InlineData("""
+        __builder.AddComponentParameter(5, "ParentKeySelector", (System.Func<string, string?>)(trail => null));
+        __builder.AddComponentParameter(6, "ChildrenSelector", (System.Func<string, IEnumerable<string>?>)null);
+        """, "")]
+    [InlineData("""__builder.AddComponentParameter(5, "Virtualize", true);""" + TreeItems,
+        "virtualizes only Items, since TbTreeItems draw their rows where they are written")]
+    [InlineData("""__builder.AddComponentParameter(5, "Virtualize", false);""" + TreeItems, "")]
+    [InlineData("""
+        __builder.AddComponentParameter(5, "LoadChildren",
+            (System.Func<string, System.Threading.CancellationToken, Task<IEnumerable<string>>>)((trail, _) => null!));
+        """ + TreeItems, "takes Items or TbTreeItems, not both")]
+    [InlineData("""
+        __builder.AddComponentParameter(5, "ParentKeySelector", (System.Func<string, string?>)(trail => null));
+        __builder.AddComponentParameter(6, "LoadChildren",
+            (System.Func<string, System.Threading.CancellationToken, Task<IEnumerable<string>>>)((trail, _) => null!));
+        """, "takes a ParentKeySelector or a ChildrenSelector and LoadChildren, not both")]
+    public async Task ComponentAnalyzer_ShouldReportTreeSetupOnlyWhenParametersClash_WhenATreeIsSetUp(
+        string parameters, string expected)
+    {
+        var diagnostics = await RunAsync(Tree("string, string", parameters));
+
+        Assert.Equal(expected == "" ? [] : [$"TbTreeView {expected}"], diagnostics.Select(item => item.GetMessage()));
+    }
+
+    [Theory]
+    [InlineData("string, string", "")]
+    [InlineData("string, object", "")]
+    [InlineData("int, object", "")]
+    [InlineData("int, long", "TB009")]
+    [InlineData("string, int", "TB009")]
+    public async Task ComponentAnalyzer_ShouldAskForAKeySelector_WhenTheItemsArentTheirOwnKeys(string types,
+        string expected)
+    {
+        var ids = await IdsAsync(Tree(types, ""));
+
+        Assert.Equal(expected == "" ? [] : [expected], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenATreeHasAKeySelector()
+    {
+        var ids = await IdsAsync(Tree("string, int", """
+            __builder.AddComponentParameter(5, "KeySelector", (System.Func<string, int>)(trail => 0));
+            """));
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAComponentPassesItsOwnParametersToATree()
+    {
+        var ids = await IdsAsync(Tree("string, string", """
+            __builder.AddComponentParameter(5, "Items", Trails);
+            __builder.AddComponentParameter(6, "ChildContent", Rows);
+            __builder.AddComponentParameter(7, "ParentKeySelector", Parents);
+            """), """
+            [Parameter]
+            public IEnumerable<string> Trails { get; set; } = [];
+
+            [Parameter]
+            public RenderFragment? Rows { get; set; }
+
+            [Parameter]
+            public System.Func<string, string?>? Parents { get; set; }
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldAskForAKeySelector_WhenRazorInfersTypesThatArentTheirOwnKeys()
+    {
+        var ids = await IdsAsync("""
+            TypeInference.CreateTbTreeView_0(__builder, 0, 1, new[] { 1, 2 }, 2, new List<string>());
+            """, """
+            internal static class TypeInference
+            {
+                public static void CreateTbTreeView_0<TItem, TKey>(RenderTreeBuilder __builder, int seq, int __seq0,
+                    IEnumerable<TItem> __arg0, int __seq1, IReadOnlyCollection<TKey> __arg1) where TKey : notnull
+                {
+                    __builder.OpenComponent<TbTreeView<TItem, TKey>>(seq);
+                    __builder.AddComponentParameter(__seq0, "AriaLabel", "Trails");
+                    __builder.AddComponentParameter(__seq0, "Items", __arg0);
+                    __builder.AddComponentParameter(__seq1, "SelectedKeys", __arg1);
+                    __builder.CloseComponent();
+                }
+            }
+            """);
+
+        Assert.Equal(["TB009"], ids);
     }
 
     [Fact]

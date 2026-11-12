@@ -47,4 +47,10 @@ internal static class Rules
         "than a number", "{0} holds {1}, but a slider needs a number type", Usage, DiagnosticSeverity.Warning,
         isEnabledByDefault: true, "A slider moves through numbers, so its type must be one, such as int or double. " +
         "Any other type throws as it renders.");
+
+    public static readonly DiagnosticDescriptor TreeSetup = new("TB009", "A tree view's parameters don't go together",
+        "TbTreeView {0}", Usage, DiagnosticSeverity.Warning, isEnabledByDefault: true, "A tree view takes its rows " +
+        "from Items or from TbTreeItems written inside it, finds children through either a ParentKeySelector or a " +
+        "ChildrenSelector and LoadChildren, virtualizes only Items, and needs a KeySelector unless its items are " +
+        "their own keys. Any other setup throws as it renders.");
 }

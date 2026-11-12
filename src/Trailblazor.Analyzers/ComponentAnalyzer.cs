@@ -9,8 +9,8 @@ namespace Trailblazor.Analyzers;
 
 /// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, inputs given a
 /// Value without ValueChanged, attributes that look like a misnamed type parameter, components written outside the
-/// one they belong in, items whose value isn't their list's type, and sliders of something other than a number.
-/// </summary>
+/// one they belong in, items whose value isn't their list's type, sliders of something other than a number, and
+/// tree views whose parameters don't go together.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 {
@@ -83,7 +83,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
-        Rules.TypeParameterAsAttribute, Rules.OutsideItsParent, Rules.ItemTypeMismatch, Rules.SliderNotANumber);
+        Rules.TypeParameterAsAttribute, Rules.OutsideItsParent, Rules.ItemTypeMismatch, Rules.SliderNotANumber,
+        Rules.TreeSetup);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -105,7 +106,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 compilation.GetTypeByMetadataName("Trailblazor.TbDialog"),
                 compilation.GetTypeByMetadataName("Trailblazor.IDialogService"), Pairs(compilation, Hosted),
                 Pairs(compilation, Listed), [.. new[] { "Trailblazor.TbSlider`1", "Trailblazor.TbRangeSlider`1" }
-                    .Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()]);
+                    .Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
+                compilation.GetTypeByMetadataName("Trailblazor.TbTreeView`2"));
             start.RegisterOperationAction(operation => Analyze(operation, types), OperationKind.Invocation);
         });
     }
@@ -153,6 +155,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         CheckParent(context, invocation, usage, types.Hosted);
         CheckItemType(context, invocation, usage, types.Listed);
         CheckSliderType(context, invocation, usage, types.Sliders);
+        CheckTreeSetup(context, invocation, usage, types.TreeView);
 
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
@@ -257,6 +260,72 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(Diagnostic.Create(Rules.SliderNotANumber, usage.Location, usage.Component.Name,
                 Shown(type)));
         }
+    }
+
+    // Repeats the checks the tree view makes as it renders, in the same order, for the parameters set in markup.
+    private static void CheckTreeSetup(OperationAnalysisContext context, IInvocationOperation open,
+        ComponentUsage usage, INamedTypeSymbol? treeView)
+    {
+        if (!SymbolEqualityComparer.Default.Equals(usage.Component.OriginalDefinition, treeView))
+        {
+            return;
+        }
+
+        bool Set(string name) => usage.Parameters.TryGetValue(name, out var parameter) && IsSurelySet(parameter.Value);
+        if (Set("ChildContent") && (Set("Items") || Set("ChildrenSelector") || Set("ParentKeySelector")
+            || Set("LoadChildren")))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.TreeSetup, usage.Location,
+                "takes Items or TbTreeItems, not both"));
+            return;
+        }
+
+        if (Set("ParentKeySelector") && (Set("ChildrenSelector") || Set("LoadChildren")))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.TreeSetup, usage.Parameters["ParentKeySelector"].Location,
+                "takes a ParentKeySelector or a ChildrenSelector and LoadChildren, not both"));
+            return;
+        }
+
+        if (Set("ChildContent") && IsOn(usage, "Virtualize"))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.TreeSetup, usage.Parameters["Virtualize"].Location,
+                "virtualizes only Items, since TbTreeItems draw their rows where they are written"));
+            return;
+        }
+
+        // Splatted attributes may hold the KeySelector.
+        if (!usage.Has("KeySelector") && !usage.HasSplattedAttributes
+            && !AreOwnKeys(context.Compilation, ComponentNesting.Resolved(usage.Component, open)))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.TreeSetup, usage.Location,
+                "needs a KeySelector when its items aren't their own keys"));
+        }
+    }
+
+    // Whether markup surely gives the parameter a value. A component's own parameter passed along, or a ?: choice,
+    // may be null as the page runs, and the tree view's checks treat null as not given.
+    private static bool IsSurelySet(IOperation? value) => Unwrap(value) switch
+    {
+        null => true,
+        { ConstantValue: { HasValue: true, Value: null } } => false,
+        IConditionalOperation => false,
+        IPropertyReferenceOperation { Property: var property } => !property.GetAttributes().Any(attribute =>
+            attribute.AttributeClass?.ToDisplayString() == "Microsoft.AspNetCore.Components.ParameterAttribute"),
+        _ => true,
+    };
+
+    // Whether each item can be its own key, as the tree view checks with TKey.IsAssignableFrom(TItem).
+    private static bool AreOwnKeys(Compilation compilation, INamedTypeSymbol tree)
+    {
+        var (item, key) = (tree.TypeArguments[0], tree.TypeArguments[1]);
+        if (item is ITypeParameterSymbol or IErrorTypeSymbol || key is ITypeParameterSymbol or IErrorTypeSymbol)
+        {
+            return true;
+        }
+
+        var conversion = compilation.ClassifyConversion(item, key);
+        return conversion.IsIdentity || (conversion.IsImplicit && (conversion.IsReference || conversion.IsBoxing));
     }
 
     private static bool IsNumber(ITypeSymbol type) => type.SpecialType is SpecialType.System_SByte
@@ -415,7 +484,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         (INamedTypeSymbol Type, string[] Names)[] named, INamedTypeSymbol fieldBase,
         (INamedTypeSymbol Type, string[] Names)[] otherFields, INamedTypeSymbol? dialog,
         INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted,
-        (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed, INamedTypeSymbol[] sliders)
+        (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed, INamedTypeSymbol[] sliders,
+        INamedTypeSymbol? treeView)
     {
         public (INamedTypeSymbol Type, string[] Names)[] Named { get; } = named;
 
@@ -432,5 +502,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         public (INamedTypeSymbol Item, INamedTypeSymbol List)[] Listed { get; } = listed;
 
         public INamedTypeSymbol[] Sliders { get; } = sliders;
+
+        public INamedTypeSymbol? TreeView { get; } = treeView;
     }
 }

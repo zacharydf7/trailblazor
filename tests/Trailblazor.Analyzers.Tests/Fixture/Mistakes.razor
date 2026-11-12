@@ -8,8 +8,10 @@
 <TbStack><TbTab Text="Day one" /></TbStack>
 <TbSelect Label="Trail" @bind-Value="_trail"><TbOption Value="1">One</TbOption></TbSelect>
 <TbSlider TValue="string" Label="Pace" />
+<TbTreeView TItem="string" TKey="int" AriaLabel="Trails" Items="_trails" />
 
 @code {
     private string? _trail;
     private bool _agree;
+    private readonly string[] _trails = [];
 }

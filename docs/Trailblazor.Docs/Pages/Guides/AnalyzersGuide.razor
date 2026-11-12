@@ -15,8 +15,8 @@
             The Trailblazor package includes an analyzer that reads your markup as the app builds. It warns, at the line
             in the <code>.razor</code> file, about a control or field screen readers can't name, a dialog with no title,
             a value that snaps back after the user changes it, a type parameter given under the wrong name, a
-            component written outside the one it belongs in, an option whose value isn't its list's type, and a slider
-            of something other than a number.
+            component written outside the one it belongs in, an option whose value isn't its list's type, a slider of
+            something other than a number, and a tree view whose parameters don't go together.
         </TbText>
     </Header>
     <ChildContent>
@@ -103,6 +103,21 @@
                     <td>A slider's type isn't a number, such as a <code>string</code> or an enum.</td>
                     <td>Use a number type, such as <code>int</code> or <code>double</code>.</td>
                 </tr>
+                <tr>
+                    <th scope="row">TB009</th>
+                    <td>
+                        A tree view is given <code>TbTreeItem</code>s along with <code>Items</code>, a
+                        <code>ChildrenSelector</code>, a <code>ParentKeySelector</code> or <code>LoadChildren</code>;
+                        a <code>ParentKeySelector</code> along with a <code>ChildrenSelector</code> or
+                        <code>LoadChildren</code>; or <code>Virtualize</code> with <code>TbTreeItem</code>s. It also
+                        warns when there's no <code>KeySelector</code> and the items aren't their own keys. Each of
+                        these throws as it renders.
+                    </td>
+                    <td>
+                        Keep one of the two setups the warning names and remove the other, or add a
+                        <code>KeySelector</code>.
+                    </td>
+                </tr>
             </tbody>
         </TbTable>
         <CodeBlock Label="Search.razor" Code="@Mistakes" />
@@ -175,6 +190,12 @@
             <li>
                 TB007 likewise stays quiet when one of your components sits between an item and its list, since that
                 component may put the item in a list of its own.
+            </li>
+            <li>
+                TB009's checks for parameters that don't go together count a parameter only when the markup itself
+                sets it. A selector, <code>Items</code> or <code>TbTreeItem</code>s passed along from one of your
+                component's own parameters, or chosen with <code>?:</code>, may be <code>null</code> as the page runs,
+                so TB009 doesn't count it.
             </li>
         </ul>
 
