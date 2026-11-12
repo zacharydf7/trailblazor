@@ -67,6 +67,36 @@ public class AppShellTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AppShell_ShouldScrollAFocusedControlOutFromUnderTheBar_WhenTheBarCoversIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/app-shell");
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "After the heading" });
+        await button.EvaluateAsync("button => scrollTo(0, button.getBoundingClientRect().top + scrollY - 10)");
+        await page.WaitForFunctionAsync("() => scrollY > 0");
+
+        await button.FocusAsync();
+
+        var bar = (await page.Locator("[data-part=app-bar]").BoundingBoxAsync())!;
+        Assert.True((await button.BoundingBoxAsync())!.Y >= bar.Height - 1, "The focused button is under the bar.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AppShell_ShouldScrollAFocusedControlOutFromUnderATallerBar_WhenTheRootSetsItsHeight(string browser)
+    {
+        var page = await OpenAsync(browser, "/app-shell");
+        await page.EvaluateAsync("() => document.documentElement.style.setProperty('--tb-app-bar-height', '5rem')");
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "After the heading" });
+        await button.EvaluateAsync("button => scrollTo(0, button.getBoundingClientRect().top + scrollY - 10)");
+        await page.WaitForFunctionAsync("() => scrollY > 0");
+
+        await button.FocusAsync();
+
+        var bar = (await page.Locator("[data-part=app-bar]").BoundingBoxAsync())!;
+        Assert.Equal(80, Math.Round(bar.Height));
+        Assert.True((await button.BoundingBoxAsync())!.Y >= bar.Height - 1, "The focused button is under the bar.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MenuButton_ShouldNarrowTheNavigationToARail_WhenTheWindowIsWide(string browser)
     {
         var page = await OpenAsync(browser, "/app-shell");

@@ -15,6 +15,7 @@ Familiar apps: the sign-in code steps of banking apps, GitHub's two-factor promp
 ## Pointer
 
 - [x] A paste keeps only the code's characters, so "123-456" fills six digit boxes, and a read-only field takes none. `CodeFieldTests.Paste_ShouldKeepOnlyTheDigits_WhenTheCodeHasADash`, `TbCodeFieldTests.Input_ShouldLeaveTheValue_WhenTheFieldIsReadOnly`
+- [x] In forced-colors mode, the boxes are drawn in the system's text color. `CodeFieldTests.Field_ShouldDrawItsSlotsInTheTextColor_WhenColorsAreForced`
 
 ## Touch
 
@@ -28,6 +29,7 @@ Familiar apps: the sign-in code steps of banking apps, GitHub's two-factor promp
 ## Screen readers
 
 - [x] The whole code has one name, its label, and is read as one value. `TbCodeFieldTests.Render_ShouldOfferOneInputForAOneTimeCode_WhenShown`
+- [x] The input is described by its length, such as "6 digits" or "8 characters", which otherwise only its boxes show. `Labels.Length` and `Labels.Incomplete` reword the description and the error. `TbCodeFieldTests.Render_ShouldDescribeTheInputByItsLength_WhenShown`, `TbCodeFieldTests.Labels_ShouldWordTheLengthAndTheIncompleteMessage_WhenGiven`
 - [x] A partly typed code is invalid and says how many characters it needs once the field commits, not while it is typed. `TbCodeFieldTests.Validate_ShouldAskForEveryCharacter_WhenAPartlyTypedCodeCommits`
 - [x] A code that arrives without typing, such as from a static form post, is invalid when it's short or holds other characters. `TbCodeFieldTests.Form_ShouldBeInvalid_WhenTheCodeArrivesShortOrWithOtherCharacters`
 - [x] Removing the field from a form takes its errors with it. `TbCodeFieldTests.Dispose_ShouldLeaveTheFormValid_WhenAFieldWithAnErrorIsRemoved`

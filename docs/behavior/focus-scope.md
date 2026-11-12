@@ -20,6 +20,7 @@ Familiar apps: how focus moves in OS dialogs and app side panels
 - [x] An editable region is a stop unless it sets `tabindex="-1"`; an editable element inside it isn't. Tab wraps both ways when an editable region ends a trapped scope, and a dialog starts on one that comes first. `EditableStopsTests.FocusScope_ShouldWrapBothWays_WhenAnEditableRegionEndsIt`, `EditableStopsTests.Dialog_ShouldStartOnTheEditableRegion_WhenItComesFirst`
 - [x] A player with controls is a stop, so Shift+Tab wraps to one that ends a trapped scope. `EditableStopsTests.FocusScope_ShouldWrapBackwardToThePlayer_WhenAPlayerWithControlsEndsIt`
 - [x] Tab goes through a player's own controls before wrapping when the player ends a trapped scope, and Shift+Tab does the same when it starts one, even when nothing outside the scope can take focus. Focus moved outside the scope from those controls comes back to the player. WebKit gives a player no controls to Tab through. `EditableStopsTests.FocusScope_ShouldTabThroughThePlayersControlsBeforeWrapping_WhenAPlayerEndsIt`, `EditableStopsTests.FocusScope_ShouldShiftTabThroughThePlayersControlsBeforeWrapping_WhenAPlayerStartsIt`, `EditableStopsTests.Focus_ShouldReturnToThePlayer_WhenMovedOutsideFromThePlayersControls`
+- [x] A `<details>` summary is a stop, so Shift+Tab reaches one that ends a trapped scope, and Tab from it wraps. `EditableStopsTests.FocusScope_ShouldReachAndWrapPastADetailsSummary_WhenOneEndsIt`
 
 ## Pointer
 

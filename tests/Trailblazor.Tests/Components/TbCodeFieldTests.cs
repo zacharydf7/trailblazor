@@ -37,6 +37,35 @@ public class TbCodeFieldTests : BunitContext
         Assert.Single(cut.FindAll("input"));
     }
 
+    [Theory]
+    [InlineData(CodeCharacters.Digits, 6, "6 digits")]
+    [InlineData(CodeCharacters.Digits, 1, "1 digit")]
+    [InlineData(CodeCharacters.LettersAndDigits, 8, "8 characters")]
+    public void Render_ShouldDescribeTheInputByItsLength_WhenShown(CodeCharacters characters, int length,
+        string description)
+    {
+        var cut = RenderCode(parameters => parameters.Add(field => field.Characters, characters)
+            .Add(field => field.Length, length).Add(field => field.HelperText, "Sent to your phone."));
+
+        var described = cut.Find("[data-part=input]").GetAttribute("aria-describedby")!.Split(' ');
+        Assert.Equal(["Sent to your phone.", description],
+            described.Select(id => cut.Find($"#{id}").TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Labels_ShouldWordTheLengthAndTheIncompleteMessage_WhenGiven()
+    {
+        var cut = RenderCode(parameters => parameters.Add(field => field.Length, 4).Add(field => field.Labels,
+            new CodeFieldLabels { Length = "{0} numbers", Incomplete = "{0} wants {1} numbers." }));
+
+        cut.Find("[data-part=input]").Input("12");
+        cut.Find("[data-part=input]").Change("12");
+
+        Assert.Equal("4 numbers", cut.Find($"#{cut.Find("[data-part=input]").GetAttribute("aria-describedby")!
+            .Split(' ').Last()}").TextContent);
+        Assert.Equal("Verification code wants 4 numbers.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
     [Fact]
     public void Input_ShouldKeepOnlyTheCodesCharactersAndRaiseOnComplete_WhenTyped()
     {

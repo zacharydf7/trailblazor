@@ -387,6 +387,22 @@ public static class TbStrings
     /// and {1}, if used, the count.</summary>
     public const string CodeFieldIncompleteOne = "CodeField.IncompleteOne";
 
+    /// <summary>"{0} digits": describes a code field of digits by its length, which only its boxes show; {0} is how
+    /// many digits the code has. Asked for through <see cref="ITbLocalizer.Plural"/>, with
+    /// <see cref="CodeFieldDigitsOne"/> as its one-form.</summary>
+    public const string CodeFieldDigits = "CodeField.Digits";
+
+    /// <summary>"1 digit": the same description for a code of one digit.</summary>
+    public const string CodeFieldDigitsOne = "CodeField.DigitsOne";
+
+    /// <summary>"{0} characters": describes a code field of letters and digits by its length; {0} is how many
+    /// characters the code has. Asked for through <see cref="ITbLocalizer.Plural"/>, with
+    /// <see cref="CodeFieldCharactersOne"/> as its one-form.</summary>
+    public const string CodeFieldCharacters = "CodeField.Characters";
+
+    /// <summary>"1 character": the same description for a code of one character.</summary>
+    public const string CodeFieldCharactersOne = "CodeField.CharactersOne";
+
     /// <summary>"Filter {0}": labels the filter box above a list; {0} is the list's title.</summary>
     public const string TransferListFilter = "TransferList.Filter";
 
@@ -511,6 +527,9 @@ public static class TbStrings
 
     /// <summary>"Add tab": names the add button that follows a tab list.</summary>
     public const string TabsAdd = "Tabs.Add";
+
+    /// <summary>"Press Delete to close": describes a tab that can be closed, since nothing else says how.</summary>
+    public const string TabsCloseHint = "Tabs.CloseHint";
 
     /// <summary>"Scroll to earlier tabs": names the button that scrolls an overflowing tab row toward its start.
     /// </summary>
@@ -958,6 +977,8 @@ public static class TbStrings
     private static readonly FrozenDictionary<string, string> OneForms = new Dictionary<string, string>
     {
         [CodeFieldIncomplete] = CodeFieldIncompleteOne,
+        [CodeFieldDigits] = CodeFieldDigitsOne,
+        [CodeFieldCharacters] = CodeFieldCharactersOne,
         [FileUploadChosen] = FileUploadChosenOne,
         [FileUploadTooMany] = FileUploadTooManyOne,
         [RatingStars] = RatingStar,
@@ -1084,6 +1105,10 @@ public static class TbStrings
         [TransferListMoved] = "Moved {0} to {1}",
         [CodeFieldIncomplete] = "{0} needs all {1} characters.",
         [CodeFieldIncompleteOne] = "{0} needs its 1 character.",
+        [CodeFieldDigits] = "{0} digits",
+        [CodeFieldDigitsOne] = "1 digit",
+        [CodeFieldCharacters] = "{0} characters",
+        [CodeFieldCharactersOne] = "1 character",
         [TransferListFilter] = "Filter {0}",
         [NewTabHint] = "opens in a new tab",
         [NumberFieldDecrease] = "Decrease",
@@ -1125,6 +1150,7 @@ public static class TbStrings
         [PopconfirmCancel] = "Cancel",
         [TableOfContentsNavigation] = "On this page",
         [TabsAdd] = "Add tab",
+        [TabsCloseHint] = "Press Delete to close",
         [TabsScrollStart] = "Scroll to earlier tabs",
         [TabsScrollEnd] = "Scroll to later tabs",
         [TagInputHint] = "Enter adds a tag. Left Arrow moves to the tags.",

@@ -30,6 +30,7 @@ Familiar apps: the filter panel on a shop's search results, and the share sheet 
 - [x] A modal drawer makes the rest of the page inert, as a modal dialog does. `DialogTests.Dialog_ShouldFocusTheFirstFieldAndKeepFocusOffThePage_WhenModal`
 - [x] A drawer slides in from its own edge and back to it as it closes, from the right edge for a start drawer in right-to-left text. `DrawerTests.Drawer_ShouldSlideFromItsOwnEdge_WhenItOpensAndCloses`
 - [x] The actions stay in view at the bottom while long content scrolls. `DrawerTests.Drawer_ShouldKeepItsActionsInView_WhenItsContentScrolls`
+- [x] A field focused behind the sticky actions, such as by Tab, scrolls out from behind them while they fit on one row. `DrawerTests.Drawer_ShouldScrollAFocusedFieldOutFromBehindItsActions_WhenTheyCoverIt`
 
 ## Not applicable
 

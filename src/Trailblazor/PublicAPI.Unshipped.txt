@@ -4296,6 +4296,7 @@ Trailblazor.TbMultiSelect<TItem>.ItemDisabled.set -> void
 Trailblazor.TbTab.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbTab.OnClose.set -> void
 const Trailblazor.TbStrings.TabsAdd = "Tabs.Add" -> string!
+const Trailblazor.TbStrings.TabsCloseHint = "Tabs.CloseHint" -> string!
 Trailblazor.TbTabs.OnAdd.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbTabs.OnAdd.set -> void
 Trailblazor.Internal.Events.NumberStepEventArgs
@@ -4636,6 +4637,8 @@ Trailblazor.TabsLabels.Add.get -> string?
 Trailblazor.TabsLabels.Add.init -> void
 Trailblazor.TabsLabels.ScrollStart.get -> string?
 Trailblazor.TabsLabels.ScrollStart.init -> void
+Trailblazor.TabsLabels.CloseHint.get -> string?
+Trailblazor.TabsLabels.CloseHint.init -> void
 Trailblazor.TabsLabels.ScrollEnd.get -> string?
 Trailblazor.TabsLabels.ScrollEnd.init -> void
 Trailblazor.TbAppShell.Labels.get -> Trailblazor.AppShellLabels!
@@ -4737,3 +4740,22 @@ Trailblazor.TbPopover.TelemetryName.set -> void
 Trailblazor.TbToolbarButton.TelemetryName.get -> string?
 Trailblazor.TbToolbarButton.TelemetryName.set -> void
 override Trailblazor.TbListItem.OnAfterRender(bool firstRender) -> void
+Trailblazor.CodeFieldLabels
+Trailblazor.CodeFieldLabels.<Clone>$() -> Trailblazor.CodeFieldLabels!
+Trailblazor.CodeFieldLabels.Equals(Trailblazor.CodeFieldLabels? other) -> bool
+Trailblazor.CodeFieldLabels.CodeFieldLabels() -> void
+override Trailblazor.CodeFieldLabels.Equals(object? obj) -> bool
+override Trailblazor.CodeFieldLabels.GetHashCode() -> int
+override Trailblazor.CodeFieldLabels.ToString() -> string!
+static Trailblazor.CodeFieldLabels.operator !=(Trailblazor.CodeFieldLabels? left, Trailblazor.CodeFieldLabels? right) -> bool
+static Trailblazor.CodeFieldLabels.operator ==(Trailblazor.CodeFieldLabels? left, Trailblazor.CodeFieldLabels? right) -> bool
+Trailblazor.CodeFieldLabels.Incomplete.get -> string?
+Trailblazor.CodeFieldLabels.Incomplete.init -> void
+Trailblazor.CodeFieldLabels.Length.get -> string?
+Trailblazor.CodeFieldLabels.Length.init -> void
+Trailblazor.TbCodeField.Labels.get -> Trailblazor.CodeFieldLabels!
+Trailblazor.TbCodeField.Labels.set -> void
+const Trailblazor.TbStrings.CodeFieldDigits = "CodeField.Digits" -> string!
+const Trailblazor.TbStrings.CodeFieldDigitsOne = "CodeField.DigitsOne" -> string!
+const Trailblazor.TbStrings.CodeFieldCharacters = "CodeField.Characters" -> string!
+const Trailblazor.TbStrings.CodeFieldCharactersOne = "CodeField.CharactersOne" -> string!

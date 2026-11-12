@@ -16,8 +16,11 @@
            maxlength="@Length" data-characters="@(Characters == CodeCharacters.Digits ? "digits" : "letters")"
            disabled="@Disabled" readonly="@ReadOnly"
            aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
-           aria-describedby="@InputDescribedBy" style="--tb-code-field-length: @Length"
+           aria-describedby="@(InputDescribedBy is null ? LengthId : $"{InputDescribedBy} {LengthId}")"
+           style="--tb-code-field-length: @Length"
            class="@ClassNames.Join("tb-field__input", "tb-code-field__input", Classes?.Input)" />
+    @* Only the boxes show the length, and maxlength isn't read out, so the input is described by it. *@
+    <span id="@LengthId" hidden>@LengthText</span>
 </text>, null, null)
 
 @code {
@@ -39,6 +42,20 @@
     [Parameter]
     public EventCallback<string> OnComplete { get; set; }
 
+    /// <summary>The words the field shows and says to screen readers: its length and the message for a code typed only in part.
+    /// Each one left null uses the app's text.</summary>
+    [Parameter]
+    public CodeFieldLabels Labels { get; set; } = new();
+
+    private string LengthId => $"{FieldId}-length";
+
+    private string LengthText => string.Format(CultureInfo.CurrentCulture,
+        Labels.Length ?? Localizer.Plural(Characters == CodeCharacters.Digits
+            ? TbStrings.CodeFieldDigits : TbStrings.CodeFieldCharacters, Length), Length);
+
+    private string IncompleteMessage => Labels.Incomplete is { } incomplete
+        ? FormatMessage(incomplete, Length) : CountedMessage(TbStrings.CodeFieldIncomplete, Length);
+
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
     public FieldClasses? Classes { get; set; }
@@ -52,15 +69,14 @@
     private protected override bool TryParse(string? text, out string? value, out string? error)
     {
         value = text;
-        error = string.IsNullOrEmpty(text) || text.Length == Length
-            ? null : CountedMessage(TbStrings.CodeFieldIncomplete, Length);
+        error = string.IsNullOrEmpty(text) || text.Length == Length ? null : IncompleteMessage;
         return error is null;
     }
 
     // A static form post skips the script and the filter, so a short code or one with other characters fails here.
     private protected override string? ValueError(string? value) =>
         !TryParse(value, out _, out var error) ? error
-        : string.IsNullOrEmpty(value) || value.All(Takes) ? null : CountedMessage(TbStrings.CodeFieldIncomplete, Length);
+        : string.IsNullOrEmpty(value) || value.All(Takes) ? null : IncompleteMessage;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

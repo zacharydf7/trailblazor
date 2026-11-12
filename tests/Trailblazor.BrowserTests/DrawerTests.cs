@@ -124,6 +124,35 @@ public class DrawerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Drawer_ShouldScrollAFocusedFieldOutFromBehindItsActions_WhenTheyCoverIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/drawer", Still);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Filters" }).ClickAsync();
+        var drawer = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail filters" });
+        await Expect(drawer).ToBeVisibleAsync();
+        var body = drawer.Locator("[data-part=body]");
+        await body.EvaluateAsync("""
+            body => {
+                const field = Object.assign(document.createElement('button'), { textContent: 'Low field' });
+                const filler = Object.assign(document.createElement('div'), { style: 'flex: none; height: 3000px' });
+                body.querySelector('[data-part=actions]').before(filler, field);
+                body.scrollTop += field.getBoundingClientRect().bottom - body.getBoundingClientRect().bottom + 2;
+            }
+            """);
+        var field = drawer.GetByRole(AriaRole.Button, new() { Name = "Low field" });
+        await drawer.GetByRole(AriaRole.Button, new() { Name = "Reset" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+Tab");
+
+        await Expect(field).ToBeFocusedAsync();
+
+        var (_, _, _, fieldBottom) = await EdgesAsync(field);
+        var (_, actionsTop, _, _) = await EdgesAsync(drawer.Locator("[data-part=actions]"));
+        Assert.True(fieldBottom <= actionsTop + 1,
+            $"The field ends at {fieldBottom}, under actions from {actionsTop}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Drawer_ShouldCloseAndGiveFocusBack_WhenEscapeIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/drawer");

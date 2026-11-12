@@ -19,6 +19,7 @@ Familiar apps: the sidebar and top bar of a mail app, and of a cloud provider's 
 - [x] On a wide window, the menu button narrows the navigation to a rail of icons and labels. `AppShellTests.MenuButton_ShouldNarrowTheNavigationToARail_WhenTheWindowIsWide`, `TbAppShellTests.CollapseButton_ShouldNarrowTheNavigationToARail_WhenPressed`
 - [x] On a narrow window, the navigation leaves the page, the menu button opens it in a drawer, and following a link closes the drawer. `AppShellTests.MenuButton_ShouldOpenTheNavigationInADrawer_WhenTheWindowIsNarrow`, `TbAppShellTests.Navigation_ShouldCloseTheDrawer_WhenTheAddressChanges`
 - [x] The app bar and the navigation stay in view as the page scrolls. `AppShellTests.AppShell_ShouldKeepTheBarAndNavigationInView_WhenThePageScrolls`
+- [x] A control focused under the sticky app bar, such as by Shift+Tab, scrolls out from under it, also when an app sets `--tb-app-bar-height` on the root. `AppShellTests.AppShell_ShouldScrollAFocusedControlOutFromUnderTheBar_WhenTheBarCoversIt`, `AppShellTests.AppShell_ShouldScrollAFocusedControlOutFromUnderATallerBar_WhenTheRootSetsItsHeight`
 
 ## Touch
 

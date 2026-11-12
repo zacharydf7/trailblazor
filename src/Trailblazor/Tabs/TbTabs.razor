@@ -33,6 +33,7 @@
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
                     aria-keyshortcuts="@(tab.CanClose ? "Delete Backspace" : null)"
+                    aria-describedby="@(tab.CanClose ? _closeHintId : null)"
                     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
                     class="@ClassNames.Join("tb-tabs__tab", Classes?.Tab, tab.HeaderClass)"
                     @onclick="_click.For(tab)">@tab.HeaderContent</button>
@@ -45,6 +46,11 @@
                           AriaLabel="@(Labels.ScrollEnd ?? Localizer[TbStrings.TabsScrollEnd])" Size="Size"
                           Class="@Classes?.ScrollButton" tabindex="-1" data-part="scroll-end" />
         </div>
+    }
+    @* A tab list holds only tabs, so the hint a closable tab is described by sits outside it. *@
+    @if (_tabs.Any(tab => tab.CanClose))
+    {
+        <span id="@_closeHintId" hidden>@(Labels.CloseHint ?? Localizer[TbStrings.TabsCloseHint])</span>
     }
     @* A tab list holds only tabs, so the add button follows it. *@
     @if (ShowsAdd)
@@ -59,6 +65,7 @@
 </div>
 
 @code {
+    private readonly string _closeHintId = $"tb-tabs-{Guid.NewGuid():N}-close-hint";
     private readonly List<TbTab> _tabs = [];
     private ElementReference _list;
     private IJSObjectReference? _handle;

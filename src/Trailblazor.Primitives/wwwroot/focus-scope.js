@@ -1,14 +1,15 @@
 import { focusOrigin } from './pointer-origin.js';
 
 const players = 'audio[controls], video[controls]';
+const summary = 'details > summary:first-of-type';
 const focusableSelector = 'a[href], area[href], button, input:not([type="hidden"]), select, textarea, iframe, '
-    + `${players}, [contenteditable]:not([contenteditable="false"]), [tabindex]`;
+    + `${players}, ${summary}, [contenteditable]:not([contenteditable="false"]), [tabindex]`;
 
-// Tab reaches these, but without a tabindex attribute an editable region's tabIndex reads -1, and in WebKit so does a
-// player's. Only the outermost editable element is a stop: the browser can't focus one inside it.
+// Tab reaches these, but without a tabindex attribute an editable region's tabIndex reads -1, and in WebKit so do a
+// player's and a summary's. Only the outermost editable element is a stop: the browser can't focus one inside it.
 function isStopWithoutTabIndex(element) {
-    return !element.hasAttribute('tabindex')
-        && (element.matches(players) || element.isContentEditable && !element.parentElement?.isContentEditable);
+    return !element.hasAttribute('tabindex') && (element.matches(players) || element.matches(summary)
+        || element.isContentEditable && !element.parentElement?.isContentEditable);
 }
 
 // Only the most recently created trapped scope traps; the ones below it resume when it is disposed.

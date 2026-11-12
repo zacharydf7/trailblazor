@@ -40,6 +40,7 @@ Familiar apps: a browser's color input, the color pickers in design tools and br
 
 - [x] `@bind-Open` opens and closes the color panel from code and reports the user closing it. Only a new value from the parent opens or closes it. `PickersOpenTests.Picker_ShouldOpenFromCodeAndReportAClose_WhenItsOpenIsBound`, `TbColorPickerTests.Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesThePanel`
 - [x] Opening puts focus on the chosen swatch, as Tab would, so the arrows move from it. `RadioStopsTests.ColorPicker_ShouldTakeFocusOnTheChosenSwatch_WhenItOpens`
+- [x] The checked swatch is marked inside its edge, so a focus ring on it stays visible. `ColorPickerTests.Swatch_ShouldMarkItsCheckWithoutTheFocusRing_WhenItIsChecked`
 - [x] Opening with no palette puts focus on the first control. `popover.js`
 - [x] Clearing moves focus to the text box. `ColorPickerTests.Clear_ShouldEmptyTheColorAndFocusTheBox_WhenClicked`
 - [x] A read-only field turns off the picker's controls and its buttons. `TbColorPickerTests.Render_ShouldTurnOffEveryControlInThePanel_WhenReadOnly`

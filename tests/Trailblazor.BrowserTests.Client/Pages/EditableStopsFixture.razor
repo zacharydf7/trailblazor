@@ -5,6 +5,7 @@
 <button type="button" @onclick="() => _scope = Scope.Editable">Open editable last</button>
 <button type="button" @onclick="() => _scope = Scope.Player">Open player last</button>
 <button type="button" @onclick="() => _scope = Scope.PlayerFirst">Open player first</button>
+<button type="button" @onclick="() => _scope = Scope.Details">Open details last</button>
 @if (_scope == Scope.Editable)
 {
     <TbFocusScope Trapped>
@@ -30,6 +31,14 @@ else if (_scope == Scope.PlayerFirst)
     </TbFocusScope>
 }
 
+else if (_scope == Scope.Details)
+{
+    <TbFocusScope Trapped>
+        <button type="button">Before</button>
+        <details><summary>Route notes</summary>Steep after the bridge.</details>
+    </TbFocusScope>
+}
+
 <TbButton OnClick="() => _dialog = true">Open editable first</TbButton>
 <TbDialog @bind-Open="_dialog" Title="Editable">
     <div contenteditable="true" data-testid="draft">Draft</div>
@@ -37,7 +46,7 @@ else if (_scope == Scope.PlayerFirst)
 </TbDialog>
 
 @code {
-    private enum Scope { None, Editable, Player, PlayerFirst }
+    private enum Scope { None, Editable, Player, PlayerFirst, Details }
 
     private Scope _scope;
     private bool _dialog;

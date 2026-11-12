@@ -3789,10 +3789,21 @@
         font-size: var(--tb-code-field-font-size);
         letter-spacing: calc(var(--tb-code-field-slot) - 1ch);
         text-transform: uppercase;
-        background: repeating-linear-gradient(to right, var(--tb-border-strong) 0
+        background: repeating-linear-gradient(to right, var(--tb-code-field-slot-color, var(--tb-border-strong)) 0
                 calc(var(--tb-code-field-slot) - var(--tb-space-2)), transparent 0 var(--tb-code-field-slot))
             calc(var(--tb-space-2) / 2) calc(100% - var(--tb-space-1)) /
             calc(var(--tb-code-field-length) * var(--tb-code-field-slot)) 2px no-repeat;
+    }
+
+    /* Forced colors drop the slots' color, so the input opts out and draws the slots, its text and its background in
+       system colors. */
+    @media (forced-colors: active) {
+        .tb-code-field .tb-code-field__input {
+            --tb-code-field-slot-color: CanvasText;
+            forced-color-adjust: none;
+            background-color: Canvas;
+            color: CanvasText;
+        }
     }
 
     .tb-transfer-list {
@@ -4583,6 +4594,12 @@
         flex-direction: column;
     }
 
+    /* The sticky actions cover the bottom of the body, so a field that Tab reaches scrolls to rest above them (WCAG
+       2.4.11). The padding fits one row of actions; a second row covers part of the field. */
+    .tb-drawer .tb-dialog__body:has(.tb-dialog__actions) {
+        scroll-padding-block-end: calc(var(--tb-control-height) + 2 * var(--tb-space-3) + 1px);
+    }
+
     .tb-drawer .tb-dialog__actions {
         position: sticky;
         inset-block-end: calc(-1 * var(--tb-space-5));
@@ -4596,7 +4613,6 @@
         --tb-app-shell-height: 100dvh;
         --tb-app-shell-navigation-width: 16rem;
         --tb-app-shell-rail-width: 5.5rem;
-        --tb-app-bar-height: 3.5rem;
         position: relative;
         display: grid;
         grid-template-columns: var(--tb-app-shell-navigation-width) minmax(0, 1fr);
@@ -4618,6 +4634,12 @@
         --tb-app-bar-height: 0px;
     }
 
+    /* The window scrolls under the sticky bar, so a control that Shift+Tab reaches scrolls to rest below it (WCAG
+       2.4.11). The page can't see a token set on the shell, so an app sets the bar's height on the root. */
+    html:has(.tb-app-shell:not(.tb-app-shell--no-header)) {
+        scroll-padding-block-start: var(--tb-app-bar-height, 3.5rem);
+    }
+
     .tb-app-shell__header {
         position: sticky;
         inset-block-start: 0;
@@ -4627,9 +4649,9 @@
 
     .tb-app-shell__navigation {
         position: sticky;
-        inset-block-start: var(--tb-app-bar-height);
+        inset-block-start: var(--tb-app-bar-height, 3.5rem);
         box-sizing: border-box;
-        height: calc(var(--tb-app-shell-height) - var(--tb-app-bar-height));
+        height: calc(var(--tb-app-shell-height) - var(--tb-app-bar-height, 3.5rem));
         overflow-y: auto;
         grid-area: navigation;
         padding: var(--tb-space-2);
@@ -7956,9 +7978,10 @@
         cursor: pointer;
     }
 
+    /* The checked swatch is marked inside its edge, so the focus ring outside it stays visible (WCAG 2.4.7). */
     .tb-color-picker__swatch:checked {
-        outline: 2px solid var(--tb-color-primary);
-        outline-offset: 2px;
+        border: 2px solid var(--tb-color-primary);
+        box-shadow: inset 0 0 0 2px var(--tb-color-surface);
     }
 
     .tb-color-picker__swatch:focus-visible {
@@ -8104,7 +8127,8 @@
         }
 
         .tb-color-picker__swatch:checked {
-            outline-color: Highlight;
+            border-color: Highlight;
+            box-shadow: inset 0 0 0 2px Canvas;
         }
     }
 

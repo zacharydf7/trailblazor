@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Testing.Playwright;
 
@@ -73,6 +74,23 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("accent")).ToHaveTextAsync("#cc3333");
         await Expect(Picker(page).GetByRole(AriaRole.Radio, new() { Name = "Brick" })).ToBeCheckedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Swatch_ShouldMarkItsCheckWithoutTheFocusRing_WhenItIsChecked(string browser)
+    {
+        var page = await OpenPickerAsync(browser);
+        var ocean = Picker(page).GetByRole(AriaRole.Radio, new() { Name = "Ocean" });
+        await Expect(ocean).ToHaveCSSAsync("border-top-width", "2px");
+        await Expect(ocean).ToHaveCSSAsync("outline-style", "none");
+
+        await ocean.FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        var brick = Picker(page).GetByRole(AriaRole.Radio, new() { Name = "Brick" });
+        await Expect(brick).ToHaveCSSAsync("border-top-width", "2px");
+        await Expect(brick).ToHaveCSSAsync("box-shadow", new Regex("inset"));
+        await Expect(ocean).ToHaveCSSAsync("border-top-width", "1px");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -4348,7 +4348,7 @@ public static class ExampleCatalog
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             Ready = new("[data-part=input]", "the field's button"),
-            Target = new("button", "Trail Choose a trail"),
+            Target = new("combobox", "Trail Choose a trail"),
             Blocks = ["tb-tree-select"],
             DataParts =
             [
@@ -5675,7 +5675,7 @@ public static class ExampleCatalog
                     + "bound value keeps the last full code, and the field shows an error once it loses focus.",
                     typeof(CodeFieldExample)),
             ],
-            Api = [typeof(TbCodeField), typeof(CodeCharacters), typeof(FieldClasses)],
+            Api = [typeof(TbCodeField), typeof(CodeCharacters), typeof(CodeFieldLabels), typeof(FieldClasses)],
             Keyboard =
             [
                 new(["Backspace"], "Removes the character before the caret, from any box."),
@@ -5684,13 +5684,16 @@ public static class ExampleCatalog
             Labeling =
             [
                 "One input named by its `Label`, so the whole code has a single name rather than one per box.",
+                "The input is described by its length, such as \"6 digits\", which otherwise only its boxes show. "
+                    + "`Labels.Length` rewords it.",
             ],
             Accessibility =
             [
                 "The input says it holds a one-time code (`autocomplete=\"one-time-code\"`), so browsers and phones "
                     + "offer a code they received. A code of digits brings up a number keyboard.",
                 "A partly typed code shows \"Verification code needs all 6 characters.\" once the field loses focus "
-                    + "or Enter is pressed, not while the code is being typed.",
+                    + "or Enter is pressed, not while the code is being typed. `Labels.Incomplete` rewords it.",
+                "In forced-colors mode, such as Windows high contrast, the boxes are drawn in the system's text color.",
             ],
             BeforeInteractive =
             [
@@ -6700,8 +6703,9 @@ public static class ExampleCatalog
             [
                 "A `tablist` of `tab`s, each controlling a `tabpanel`. A `Vertical` list has "
                     + "`aria-orientation=\"vertical\"`.",
-                "A tab that can close has `aria-keyshortcuts=\"Delete Backspace\"`. Its close mark is hidden from "
-                    + "screen readers, since a tab can't hold a button.",
+                "A tab that can close has `aria-keyshortcuts=\"Delete Backspace\"` and is described by \"Press Delete "
+                    + "to close\", which `Labels.CloseHint` rewords. Its close mark is hidden from screen readers, "
+                    + "since a tab can't hold a button.",
             ],
             Accessibility =
             [

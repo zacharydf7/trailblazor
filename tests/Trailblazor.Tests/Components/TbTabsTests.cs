@@ -738,6 +738,28 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDescribeAClosableTabByHowToCloseIt_WhenATabCanClose()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, ClosableTabs(() => { })));
+
+        var tabs = cut.FindAll("[role=tab]");
+        Assert.Null(tabs[0].GetAttribute("aria-describedby"));
+        var hint = cut.Find($"#{tabs[1].GetAttribute("aria-describedby")}");
+        Assert.Equal("Press Delete to close", hint.TextContent);
+        Assert.Null(hint.Closest("[role=tablist]"));
+    }
+
+    [Fact]
+    public void Labels_ShouldWordTheCloseHint_WhenGiven()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, ClosableTabs(() => { }))
+            .Add(tabs => tabs.Labels, new TabsLabels { CloseHint = "Delete closes this tab" }));
+
+        Assert.Equal("Delete closes this tab",
+            cut.Find($"#{cut.FindAll("[role=tab]")[1].GetAttribute("aria-describedby")}").TextContent);
+    }
+
+    [Fact]
     public void Render_ShouldShowNoCloseMark_WhenThePageIsStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));

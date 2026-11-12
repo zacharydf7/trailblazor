@@ -31,6 +31,21 @@ public class EditableStopsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("player")).ToBeFocusedAsync();
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FocusScope_ShouldReachAndWrapPastADetailsSummary_WhenOneEndsIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/editable-stops");
+        await Button(page, "Open details last").ClickAsync();
+        var summary = page.Locator("summary", new() { HasText = "Route notes" });
+        await Expect(Button(page, "Before")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await Expect(summary).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(Button(page, "Before")).ToBeFocusedAsync();
+    }
+
     // Presses the key until focus reaches the target, and counts the presses that left it on the player.
     private static async Task<int> PressPastThePlayerAsync(IPage page, string key, ILocator target)
     {

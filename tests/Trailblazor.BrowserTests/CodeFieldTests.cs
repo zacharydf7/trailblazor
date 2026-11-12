@@ -83,4 +83,15 @@ public class CodeFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(code).ToHaveValueAsync("123456");
         await Expect(page.GetByLabel("Result")).ToHaveTextAsync("123456 isn't the code.");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Field_ShouldDrawItsSlotsInTheTextColor_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/code-field", new() { ForcedColors = ForcedColors.Active });
+        var code = await OpenCodeAsync(page);
+
+        var slots = await code.EvaluateAsync<string>("code => getComputedStyle(code).backgroundImage");
+
+        Assert.Contains(await SystemColorAsync(page, "CanvasText"), slots);
+    }
 }
