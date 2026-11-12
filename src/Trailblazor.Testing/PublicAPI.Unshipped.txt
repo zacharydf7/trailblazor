@@ -178,3 +178,17 @@ Trailblazor.Testing.TbTextFieldDriver.Text.get -> string?
 Trailblazor.Testing.TbTextFieldDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.Cell(string! row, string! column) -> AngleSharp.Dom.IElement!
 Trailblazor.Testing.TbGridDriver.SortAsync(string! column, bool descending = false) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Pagination(string? name = null) -> Trailblazor.Testing.TbPaginationDriver!
+Trailblazor.Testing.TrailblazorMarkup.AccordionItem(string! header) -> Trailblazor.Testing.TbAccordionItemDriver!
+Trailblazor.Testing.TrailblazorMarkup.Popconfirm(string! trigger) -> Trailblazor.Testing.TbPopconfirmDriver!
+Trailblazor.Testing.TbGridDriver.GoToPageAsync(int number) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbPaginationDriver
+Trailblazor.Testing.TbPaginationDriver.Page.get -> int
+Trailblazor.Testing.TbPaginationDriver.GoToPageAsync(int number) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAccordionItemDriver
+Trailblazor.Testing.TbAccordionItemDriver.Trigger.get -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbAccordionItemDriver.ExpandAsync() -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
+Trailblazor.Testing.TbAccordionItemDriver.CollapseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbPopconfirmDriver
+Trailblazor.Testing.TbPopconfirmDriver.ConfirmAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbPopconfirmDriver.CancelAsync() -> System.Threading.Tasks.Task!

@@ -518,6 +518,123 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Features").Text);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Pagination_ShouldGoToAPageItDoesntShow_WhenAskedForIt(bool compact)
+    {
+        var page = 1;
+        var cut = Render<TbPagination>(parameters => parameters.Add(pager => pager.AriaLabel, "Trail pages")
+            .Add(pager => pager.PageCount, 20).Add(pager => pager.Compact, compact)
+            .Add(pager => pager.PageChanged, (int number) => page = number));
+
+        await cut.Tb().Pagination("Trail pages").GoToPageAsync(12);
+
+        Assert.Equal(12, page);
+        Assert.Equal(12, cut.Tb().Pagination().Page);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => cut.Tb().Pagination().GoToPageAsync(21));
+    }
+
+    [Theory]
+    [InlineData(20, 3, 1)]
+    [InlineData(1, 12, 0)]
+    [InlineData(20, 12, 0)]
+    public async Task Pagination_ShouldStepThroughThePagesItShows_WhenTheTargetIsFarAway(int from, int to, int siblings)
+    {
+        var cut = Render<TbPagination>(parameters => parameters.Add(pager => pager.PageCount, 20)
+            .Add(pager => pager.Page, from).Add(pager => pager.SiblingCount, siblings));
+
+        await cut.Tb().Pagination().GoToPageAsync(to);
+
+        Assert.Equal(to, cut.Tb().Pagination().Page);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Pagination_ShouldThrow_WhenItIsDisabled(bool compact)
+    {
+        var page = 1;
+        var cut = Render<TbPagination>(parameters => parameters.Add(pager => pager.PageCount, 20)
+            .Add(pager => pager.Disabled, true).Add(pager => pager.Compact, compact)
+            .Add(pager => pager.PageChanged, (int number) => page = number));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Pagination().GoToPageAsync(12));
+        Assert.Equal(1, page);
+    }
+
+    [Fact]
+    public async Task Grid_ShouldGoToAPage_WhenItHasAPager()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.Items, [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")])
+            .Add(grid => grid.PageSize, 1)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trail>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trail>.Field),
+                    (System.Linq.Expressions.Expression<Func<Trail, object?>>)(trail => trail.Name));
+                builder.CloseComponent();
+            })));
+
+        await cut.Tb().Grid("Trails").GoToPageAsync(3);
+
+        Assert.Equal("Lake camp", cut.Find("tbody tr[data-part=row]").TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task AccordionItem_ShouldOpenAndCloseTheItem_WhenAskedByItsHeader()
+    {
+        var expanded = false;
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Gear")
+            .Add(item => item.ExpandedChanged, (bool open) => expanded = open).AddChildContent("Tent and stove"));
+
+        var panel = await cut.Tb().AccordionItem("Gear").ExpandAsync();
+        Assert.True(expanded);
+        Assert.Contains("Tent and stove", panel.TextContent, StringComparison.Ordinal);
+        await cut.Tb().AccordionItem("Gear").CollapseAsync();
+
+        Assert.False(expanded);
+    }
+
+    [Fact]
+    public async Task AccordionItem_ShouldThrow_WhenTheClosedItemIsDisabled()
+    {
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Gear")
+            .Add(item => item.Disabled, true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().AccordionItem("Gear").ExpandAsync());
+    }
+
+    [Fact]
+    public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
+    {
+        var answers = new List<string>();
+        var cut = Render<TbPopconfirm>(parameters => parameters.Add(confirm => confirm.Label, "Delete trail")
+            .Add(confirm => confirm.Title, "Delete Pine Hollow?")
+            .Add(confirm => confirm.OnConfirm, () => answers.Add("confirm"))
+            .Add(confirm => confirm.OnCancel, () => answers.Add("cancel")));
+
+        await cut.Tb().Popconfirm("Delete trail").ConfirmAsync();
+        await cut.Tb().Popconfirm("Delete trail").CancelAsync();
+
+        Assert.Equal(["confirm", "cancel"], answers);
+    }
+
+    [Theory]
+    [InlineData("Delete trail", true)]
+    [InlineData("Archive trail", false)]
+    public async Task Popconfirm_ShouldThrow_WhenItIsDisabledOrNotThere(string trigger, bool disabled)
+    {
+        var confirmed = false;
+        var cut = Render<TbPopconfirm>(parameters => parameters.Add(confirm => confirm.Label, "Delete trail")
+            .Add(confirm => confirm.Title, "Delete Pine Hollow?").Add(confirm => confirm.Disabled, disabled)
+            .Add(confirm => confirm.OnConfirm, () => confirmed = true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Popconfirm(trigger).ConfirmAsync());
+        Assert.False(confirmed);
+    }
+
     [Fact]
     public async Task Tree_ShouldExpandSelectAndCheckRowsByTheirTexts_WhenRowsRepeatATextAndHoldATree()
     {

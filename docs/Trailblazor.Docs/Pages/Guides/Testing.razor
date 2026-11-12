@@ -170,12 +170,25 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Pagination(name).GoToPageAsync(number)</code></th>
+                        <td>Goes to a page, and <code>Page</code> reads the current one.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>AccordionItem(header).ExpandAsync()</code></th>
+                        <td>Opens the item and hands back its panel; <code>CollapseAsync()</code> closes it.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Popconfirm(trigger).ConfirmAsync()</code></th>
+                        <td>Presses the confirm button; <code>CancelAsync()</code> presses the cancel button.</td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Grid(name)</code></th>
                         <td>
                             Clicks or selects a row by a cell's text, with <code>ClickRowAsync</code> and
-                            <code>SelectAsync</code>, sorts by a column with <code>SortAsync</code>, filters a column
-                            with <code>FilterAsync</code> or picks a filter's values with
-                            <code>FilterChoicesAsync</code>, and resizes a column with <code>ResizeColumnAsync</code>.
+                            <code>SelectAsync</code>, sorts by a column with <code>SortAsync</code>, pages with
+                            <code>GoToPageAsync</code>, filters a column with <code>FilterAsync</code> or picks a
+                            filter's values with <code>FilterChoicesAsync</code>, and resizes a column with
+                            <code>ResizeColumnAsync</code>.
                             Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,
                             a column's total with <code>Total</code> and each group's totals with
                             <code>GroupTotals</code>.

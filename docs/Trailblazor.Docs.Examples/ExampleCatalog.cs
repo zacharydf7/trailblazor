@@ -6537,9 +6537,9 @@ public static class ExampleCatalog
                 + "until it closes, which it does once `OnConfirm` has run; `CancelAsync()` cancels and waits until it "
                 + "closes, though an async `OnCancel` may still be running, so check its result with `Expect`. An "
                 + "`OnConfirm` that waits for the user, such as one that opens a dialog, would keep the helper "
-                + "waiting, so click `[data-part=confirm]` instead. In bUnit, click "
-                + "`[data-part=confirm]` or `[data-part=cancel]`, which work "
-                + "without opening it first.",
+                + "waiting, so click `[data-part=confirm]` instead. In bUnit, "
+                + "`cut.Tb().Popconfirm(\"Delete trail\")` from `Trailblazor.Testing` has `ConfirmAsync` and "
+                + "`CancelAsync`, which press the buttons without opening it first.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"delete-trail\"`, it counts `trailblazor.control.shown` as it first "
@@ -6865,7 +6865,9 @@ public static class ExampleCatalog
                 """,
             TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
                 + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, once the page is "
-                + "interactive, and hands back its panel. On a static page, click the item's header instead.",
+                + "interactive, and hands back its panel. On a static page, click the item's header instead. In "
+                + "bUnit, `cut.Tb().AccordionItem(\"Sizing\")` from `Trailblazor.Testing` has the same `ExpandAsync` "
+                + "and `CollapseAsync`.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
@@ -7880,7 +7882,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
                 + "`Trailblazor.Testing.Playwright` clicks it, types it into a compact pagination's box, or steps "
-                + "with Next and Previous, then waits for it to be current.",
+                + "with Next and Previous, then waits for it to be current. In bUnit, "
+                + "`cut.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from `Trailblazor.Testing` does the same, and "
+                + "`Page` reads the current page.",
         },
         new("table-of-contents", "Table of contents", ExampleCategory.Navigation,
             "Links to the sections of a page that mark the section in view as the page scrolls.")

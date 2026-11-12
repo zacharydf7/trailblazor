@@ -68,6 +68,24 @@ public sealed class TrailblazorMarkup
     public TbRichTextEditorDriver RichTextEditor(string label) =>
         new(() => Field(label, "[role=textbox][contenteditable]"));
 
+    /// <summary>The <c>TbPagination</c> with this accessible name, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbPaginationDriver Pagination(string? name = null) => new(() =>
+    {
+        var navs = _findAll("nav[data-page-count]")
+            .Where(nav => name is null || nav.GetAttribute("aria-label") == name).ToList();
+        return navs.Count == 1 ? navs[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one pagination, found {navs.Count}; name the one to use."
+                : $"No pagination is named \"{name}\".");
+    });
+
+    /// <summary>The <c>TbAccordionItem</c>, in an accordion or on its own, whose header reads this.</summary>
+    public TbAccordionItemDriver AccordionItem(string header) => new(header, _findAll);
+
+    /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
+    public TbPopconfirmDriver Popconfirm(string trigger) => new(trigger, _findAll);
+
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuDriver Menu(string trigger) => new(trigger, _findAll);
 
@@ -352,6 +370,143 @@ internal static class Choices
         {
             throw new InvalidOperationException("This field is disabled, so its options can't be chosen.");
         }
+    }
+}
+
+/// <summary>A <c>TbPagination</c>, found by its name.</summary>
+public sealed class TbPaginationDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbPaginationDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The page shown.</summary>
+    public int Page => int.Parse(_find().GetAttribute("data-page")!, CultureInfo.InvariantCulture);
+
+    private int PageCount => int.Parse(_find().GetAttribute("data-page-count")!, CultureInfo.InvariantCulture);
+
+    /// <summary>Goes to this page as a user would: types it into a compact pagination's page box, or else clicks the
+    /// page's button, the visible page nearest it, or Next or Previous, until it's current. A disabled pagination
+    /// throws.</summary>
+    public async Task GoToPageAsync(int number)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(number, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(number, PageCount);
+        if (_find().QuerySelector("[data-part=page-box] input") is { } box)
+        {
+            if (box.HasAttribute("disabled"))
+            {
+                throw new InvalidOperationException("The pagination is disabled.");
+            }
+
+            await new TbNumberFieldDriver(() => _find().QuerySelector("[data-part=page-box] input")!)
+                .EnterAsync(number.ToString(CultureInfo.InvariantCulture));
+            if (Page != number)
+            {
+                throw new InvalidOperationException($"The pagination stayed on page {Page}.");
+            }
+
+            return;
+        }
+
+        while (Page is var current && current != number)
+        {
+            var shown = _find().QuerySelectorAll("[data-part=page]")
+                .ToDictionary(page => int.Parse(page.TextContent.Trim(), CultureInfo.InvariantCulture));
+            var between = shown.Keys.Where(page => number > current ? page > current && page < number
+                : page < current && page > number).ToList();
+            var next = shown.ContainsKey(number) ? shown[number]
+                : between.Count > 0 ? shown[number > current ? between.Max() : between.Min()]
+                : _find().QuerySelector(number > current ? "[data-part=next]" : "[data-part=previous]")
+                ?? throw new InvalidOperationException(
+                    $"The pagination can't reach page {number} from page {current}.");
+            await next.ClickAsync(new MouseEventArgs { Detail = 1 });
+            if (Page == current)
+            {
+                throw new InvalidOperationException($"The pagination stayed on page {current}; is it disabled?");
+            }
+        }
+    }
+}
+
+/// <summary>A <c>TbAccordionItem</c>, found by its header's text.</summary>
+public sealed class TbAccordionItemDriver
+{
+    private readonly string _header;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbAccordionItemDriver(string header, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_header, _findAll) = (header, findAll);
+
+    /// <summary>The header's button, whose <c>aria-expanded</c> says whether the item is open.</summary>
+    public IElement Trigger
+    {
+        get
+        {
+            var triggers = _findAll("button.tb-accordion__trigger")
+                .Where(trigger => Choices.NameOf(trigger) == _header).ToList();
+            return triggers.Count == 1 ? triggers[0] : throw new InvalidOperationException(triggers.Count == 0
+                ? $"No accordion item's header reads \"{_header}\"."
+                : $"{triggers.Count} accordion items' headers read \"{_header}\".");
+        }
+    }
+
+    /// <summary>Opens the item, if it's closed, and returns its panel. Throws for a disabled item that is closed.
+    /// </summary>
+    public async Task<IElement> ExpandAsync()
+    {
+        await SetAsync(true);
+        return _findAll($"[id='{Trigger.GetAttribute("aria-controls")}']").Single();
+    }
+
+    /// <summary>Closes the item, if it's open. Throws for a disabled item that is open.</summary>
+    public Task CollapseAsync() => SetAsync(false);
+
+    private Task SetAsync(bool expanded)
+    {
+        var trigger = Trigger;
+        if (trigger.GetAttribute("aria-expanded") == (expanded ? "true" : "false"))
+        {
+            return Task.CompletedTask;
+        }
+
+        return trigger.HasAttribute("disabled")
+            ? throw new InvalidOperationException($"The accordion item \"{_header}\" is disabled.")
+            : trigger.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+}
+
+/// <summary>A <c>TbPopconfirm</c>, found by its trigger's name.</summary>
+public sealed class TbPopconfirmDriver
+{
+    private readonly string _trigger;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbPopconfirmDriver(string trigger, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_trigger, _findAll) = (trigger, findAll);
+
+    /// <summary>Presses the confirm button, which raises <c>OnConfirm</c>. In bUnit the button works without
+    /// opening the panel first. A disabled popconfirm throws, since a user can't open it.</summary>
+    public Task ConfirmAsync() => PressAsync("confirm");
+
+    /// <summary>Presses the cancel button, which raises <c>OnCancel</c>. A disabled popconfirm throws.</summary>
+    public Task CancelAsync() => PressAsync("cancel");
+
+    private Task PressAsync(string part)
+    {
+        var triggers = _findAll("[data-part=trigger][aria-haspopup=dialog]")
+            .Where(trigger => Choices.NameOf(trigger) == _trigger).ToList();
+        var trigger = triggers.Count == 1 ? triggers[0] : throw new InvalidOperationException(triggers.Count == 0
+            ? $"No popconfirm's trigger is named \"{_trigger}\"."
+            : $"{triggers.Count} popconfirms' triggers are named \"{_trigger}\".");
+        if (trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException($"The popconfirm \"{_trigger}\" is disabled.");
+        }
+
+        var button = _findAll($"[id='{trigger.GetAttribute("aria-controls")}'] [data-part={part}]").SingleOrDefault()
+            ?? throw new InvalidOperationException($"The popover that \"{_trigger}\" opens isn't a popconfirm.");
+        return button.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 }
 
@@ -719,6 +874,17 @@ public sealed class TbGridDriver
         }
 
         throw new InvalidOperationException($"The \"{column}\" column didn't sort {wanted}.");
+    }
+
+    /// <summary>Goes to this page with the grid's pager, as <see cref="TbPaginationDriver.GoToPageAsync"/> does.
+    /// </summary>
+    public Task GoToPageAsync(int number)
+    {
+        var pager = new TbPaginationDriver(() =>
+            _find().Closest("[data-part=grid]")?.QuerySelector(":scope > [data-part=pager] nav")
+            ?? throw new InvalidOperationException(
+                "The grid shows no page buttons; it needs a PageSize and more than one page of rows."));
+        return pager.GoToPageAsync(number);
     }
 
     /// <summary>Clicks the row with a cell whose text is exactly this, as the browser reports a click on a plain cell
