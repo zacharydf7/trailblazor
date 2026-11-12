@@ -302,6 +302,10 @@ public static class TbStrings
     /// <summary>"The field": stands in for the label in a field's messages when it has none.</summary>
     public const string FieldUnnamed = "Field.Unnamed";
 
+    /// <summary>"required": describes a required group or calendar to screen readers, since it can't carry
+    /// <c>aria-required</c>.</summary>
+    public const string FieldRequiredMark = "Field.RequiredMark";
+
     /// <summary>"Drop files here, or click to choose them.": the file upload's drop zone.</summary>
     public const string FileUploadZone = "FileUpload.Zone";
 
@@ -1055,6 +1059,7 @@ public static class TbStrings
         [DialogCancel] = "Cancel",
         [FieldInvalid] = "{0} isn't valid.",
         [FieldRequired] = "{0} is required.",
+        [FieldRequiredMark] = "required",
         [FieldUnnamed] = "The field",
         [FileUploadZone] = "Drop files here, or click to choose them.",
         [FileUploadChoose] = "Choose files",

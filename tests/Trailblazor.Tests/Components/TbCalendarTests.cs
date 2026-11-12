@@ -365,13 +365,15 @@ public class TbCalendarTests : BunitContext
     }
 
     [Fact]
-    public async Task Required_ShouldMarkTheGridRequiredAndValid_WhenADateIsChosen()
+    public async Task Required_ShouldDescribeTheGridAsRequiredAndBeValid_WhenADateIsChosen()
     {
         var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Required, true));
 
         await Cell(cut, "2026-06-09").ClickAsync(new MouseEventArgs());
 
-        Assert.Equal("true", cut.Find("[role=grid]").GetAttribute("aria-required"));
+        var grid = cut.Find("[role=grid]");
+        Assert.Null(grid.GetAttribute("aria-required"));
+        Assert.Equal("required", cut.Find($"#{grid.GetAttribute("aria-describedby")}").TextContent);
         Assert.Null(cut.Find("[role=grid]").GetAttribute("aria-invalid"));
         Assert.Empty(cut.FindAll("[data-part=error]"));
     }

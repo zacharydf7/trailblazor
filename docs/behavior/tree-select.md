@@ -1,6 +1,6 @@
 # Tree select
 
-Pattern: a field whose button opens a [Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) popup holding a [Tree view](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/), as a select opens its list; `TbMultiTreeSelect` holds a tree with checkboxes
+Pattern: a field whose combobox button opens a [Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) popup holding a [Tree view](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/), as a select opens its list; `TbMultiTreeSelect` holds a tree with checkboxes
 
 Familiar apps: the folder picker in Google Drive's move dialog, the category picker in online stores and the location picker in issue trackers
 
@@ -48,13 +48,14 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 
 ## Screen readers
 
-- [x] The button is named by the label and the chosen item's text, and says it opens a dialog. `TbTreeSelectTests.Render_ShouldNameTheButtonByItsLabelAndChoice_WhenShown`
+- [x] The combobox is named by the label and the chosen item's text, and says it opens a dialog. `TbTreeSelectTests.Render_ShouldNameTheButtonByItsLabelAndChoice_WhenShown`
 - [x] A chosen item from a branch that loaded when opened keeps its text in the field. `TbTreeSelectTests.Choose_ShouldShowTheItemsText_WhenItsBranchWasLoaded`
 - [x] A value whose item hasn't loaded still shows a name, from `UnmatchedText`. `TbTreeSelectTests.Render_ShouldAskForTheText_WhenTheValuesItemIsntLoaded`
 - [x] A key type's default, such as 0 for an `int`, counts as nothing chosen and shows the placeholder. `TbTreeSelectTests.Render_ShouldShowThePlaceholder_WhenAnIntKeyHoldsItsDefault`
 - [x] A multi tree select's field shows the checked items' text, separated by commas, or the placeholder when none is checked. `TbMultiTreeSelectTests.Render_ShouldShowTheCheckedItemsTextOrThePlaceholder_WhenGivenAValue`
 - [x] Past `MaxShown` items (three unless set), the field counts the rest, so its accessible name stays short. `TbMultiTreeSelectTests.Render_ShouldNameUpToMaxShownItemsAndCountTheRest_WhenGivenMaxShown`, `TbMultiTreeSelectTests.Render_ShouldNameThreeItemsAndCountTheRest_WhenMaxShownIsLeftAlone`
 - [x] A required field with nothing chosen leaves the form invalid. `TbTreeSelectTests.Form_ShouldBeInvalid_WhenARequiredTreeSelectIsEmpty`
+- [x] The field is a `combobox`, so screen readers hear a required one as required, and the label names its popup. `TbTreeSelectTests.Render_ShouldBeARequiredComboboxWhoseLabelNamesThePopup_WhenRequired`, `TreeSelectTests.TreeSelect_ShouldChooseFromTheKeyboardAndReturnToTheField_WhenOpened`
 
 ## Not applicable
 

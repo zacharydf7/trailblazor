@@ -3490,9 +3490,10 @@ public static class ExampleCatalog
                 new("options-and-value", "Options and value", "Each `TbCheckboxItem` is an option. The group's `Value` "
                     + "holds the checked options' values, in the order they were checked.",
                     typeof(CheckboxGroupExample)),
-                new("required", "Required", "`Required` shows a marker. Once the group is changed or its form "
-                    + "validates, a message shows while nothing is checked. `RequiredMessage` replaces the default, "
-                    + "which uses the label. Say what's needed in `HelperText` too.",
+                new("required", "Required", "`Required` shows a marker, and the group is described as \"required\" to "
+                    + "screen readers, since a group can't carry `aria-required`. Once the group is changed or its "
+                    + "form validates, a message shows while nothing is checked. `RequiredMessage` replaces the "
+                    + "default, which uses the label. Say what's needed in `HelperText` too.",
                     typeof(CheckboxGroupRequiredExample)),
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
                     + "as a chip. All of it names the checkbox, so keep it short.",
@@ -4287,6 +4288,9 @@ public static class ExampleCatalog
                     + "that with `LoadChildren` the keys of loaded items come after the rest. The filter, "
                     + "`LoadChildren` and `UnmatchedText` work as they do for one item.",
                     typeof(MultiTreeSelectExample)),
+                new("required", "Required", "`Required` shows a marker, and screen readers hear the field as "
+                    + "required. Once the field is changed or its form validates, a message shows while nothing is "
+                    + "chosen.", typeof(TreeSelectRequiredExample)),
             ],
             Api =
             [
@@ -4316,13 +4320,14 @@ public static class ExampleCatalog
             [
                 "The clear button is named \"Clear\", or `Labels.Clear`, and described by the field's label, so a "
                     + "screen reader says which field it clears.",
-                "The field's `Label` and the chosen item's text name its button together, as they would a select; "
+                "The field's `Label` and the chosen item's text name its `combobox` together, as they would a select; "
                     + "in a multi tree select, the first `MaxShown` checked items' text and a count of the rest take the "
                     + "chosen item's place.",
             ],
             Announcements =
             [
-                "The button has `aria-haspopup=\"dialog\"` and `aria-expanded`; the tree is a `tree` of `treeitem`s, "
+                "The combobox has `aria-haspopup=\"dialog\"`, `aria-expanded` and, when `Required`, "
+                    + "`aria-required`; the label names the popup. The tree is a `tree` of `treeitem`s, "
                     + "named by the label, with the chosen item `aria-selected`. In a multi tree select, each row has "
                     + "`aria-checked`, which is `mixed` for a parent with only some of its items checked.",
             ],
@@ -4883,6 +4888,9 @@ public static class ExampleCatalog
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the date from changing while "
                     + "the months can still be browsed. `Disabled` turns every button off and takes the calendar out "
                     + "of the tab order.", typeof(CalendarStatesExample)),
+                new("required", "Required", "`Required` shows a marker, and the grid is described as \"required\" to "
+                    + "screen readers, since a grid can't carry `aria-required`. Once its form validates, a message "
+                    + "shows while no date is chosen.", typeof(CalendarRequiredExample)),
             ],
             Api = [typeof(TbCalendar<>), typeof(CalendarLabels), typeof(ChoiceClasses)],
             Keyboard =
@@ -5572,6 +5580,9 @@ public static class ExampleCatalog
                     + "`ItemText` gives each item's text, `Labels` the lists' titles and the field's other words, and "
                     + "`Filterable` a filter box above each list, which then shows only the items whose text contains "
                     + "what's typed, ignoring case and accents.", typeof(TransferListExample)),
+                new("required", "Required", "`Required` shows a marker, and the field is described as \"required\" to "
+                    + "screen readers, since a group can't carry `aria-required`. Once its form validates, a message "
+                    + "shows while nothing is chosen.", typeof(TransferListRequiredExample)),
             ],
             Api = [typeof(TbTransferList<>), typeof(TransferListLabels), typeof(FieldClasses)],
             Keyboard =

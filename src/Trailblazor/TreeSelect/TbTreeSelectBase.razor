@@ -17,12 +17,12 @@
     else
     {
         <TbPopover @bind-Open="_open" @bind-Open:after="ToggledAsync" id="@InputId" Disabled="Disabled"
-                   Class="tb-tree-select__popover">
+                   PanelLabelledBy="@(ShownLabel is null ? null : LabelId)" Class="tb-tree-select__popover">
             <Trigger>
-                @* The label and the chosen items name the button, as they would a select. The popup is named by the
-                   button's id, which skips the button's aria-labelledby, so it takes just the label from aria-label. *@
+                @* A combobox, like a select's trigger, so it can carry aria-required. The label and the chosen items
+                   name it; the label names the popup, since the combobox would name it by its value. *@
                 <button @ref="_trigger" type="button" @attributes="TriggerAttributes(context)" id="@InputId"
-                        data-part="input" aria-labelledby="@NamedBy" aria-label="@ShownLabel"
+                        role="combobox" data-part="input" aria-labelledby="@NamedBy"
                         aria-required="@AriaRequired"
                         aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                         class="@TriggerClass">

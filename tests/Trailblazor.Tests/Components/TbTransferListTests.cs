@@ -151,6 +151,15 @@ public class TbTransferListTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDescribeTheListAsRequiredAndStillBeFoundByItsLabel_WhenRequired()
+    {
+        var cut = RenderCrew([], parameters => parameters.Add(list => list.Required, true));
+
+        Assert.Equal("required", cut.Find($"#{cut.Find("fieldset").GetAttribute("aria-describedby")}").TextContent);
+        Assert.Empty(cut.Tb().TransferList("Crew").Chosen);
+    }
+
+    [Fact]
     public void Value_ShouldMatchItsItems_WhenTheComparerSaysTheyAreTheSame()
     {
         var cut = RenderCrew([new Hiker(2, "Blake (loaded again)")], parameters => parameters.Add(list => list.Comparer,

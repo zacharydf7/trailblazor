@@ -6,11 +6,11 @@
 @inherits TbFieldBase<IReadOnlyList<TItem>>
 @inject JsModuleLoader Modules
 
-@* ARIA gives a group no required state, so the legend's marker and the helper text say an answer is needed. The
+@* ARIA gives a group no required state, so a description says "required" to screen readers instead. The
    invalid state goes on the group and on each checkbox, where screen readers announce it. *@
 <fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" @ref="_group"
           disabled="@Disabled" style="@Style"
-          aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedBy"
+          aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedWithRequired(DescribedBy)"
           class="@ClassNames.Join("tb-checkbox-group", ClassNames.Modifier("tb-checkbox-group", Tone),
                      ClassNames.Modifier("tb-checkbox-group", Size),
                      ShowsInvalid ? "tb-checkbox-group--invalid" : null,
@@ -22,6 +22,7 @@
             <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span> @RequiredMarker @InfoButton
         </legend>
     }
+    @RequiredDescription
     <div data-part="options"
          class="@ClassNames.Join("tb-checkbox-group__options", Row ? "tb-checkbox-group__options--row" : null)">
         <CascadingValue Value="this">

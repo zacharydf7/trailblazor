@@ -27,6 +27,7 @@ Familiar apps: the "Customize toolbar" and "Choose columns" dialogs in desktop a
 
 ## Screen readers
 
+- [x] A required transfer list is described as "required", since a group can't carry `aria-required`. `TbTransferListTests.Render_ShouldDescribeTheListAsRequiredAndStillBeFoundByItsLabel_WhenRequired`
 - [x] The lists are named by their titles and the buttons by what they do and where to, such as "Move to Chosen". `TbTransferListTests.Render_ShouldListTheItemsNotChosenAndTheChosenOnes_WhenGivenAValue`
 - [x] `Labels` replaces the titles, an empty list's text, the filter boxes' labels, the move buttons' names and the announcement after a move. `TbTransferListTests.Labels_ShouldWordTheTitlesFiltersMovesAndAnnouncement_WhenGiven`
 - [x] A move is read out with how many items moved and to which list. `TbTransferListTests.MoveAsync_ShouldMoveTheMarkedItemsKeepingTheItemsOrderAndSaySo_WhenCalled`

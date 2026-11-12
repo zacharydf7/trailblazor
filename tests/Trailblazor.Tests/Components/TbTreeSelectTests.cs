@@ -234,6 +234,16 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldBeARequiredComboboxWhoseLabelNamesThePopup_WhenRequired()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.Required, true));
+
+        var trigger = cut.Find("[data-part=input]");
+        Assert.Equal(("combobox", "true"), (trigger.GetAttribute("role"), trigger.GetAttribute("aria-required")));
+        Assert.Equal(cut.Find("label").Id, cut.Find("[data-part=panel]").GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
     public void Activate_ShouldLeaveTheValue_WhenTheItemCantBeChosen()
     {
         var cut = RenderInMemory(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area));

@@ -33,12 +33,13 @@
                           OnClick="() => PageAsync(1)" class="tb-calendar__flip" />
         </div>
         <span class="tb-visually-hidden" aria-live="polite">@Title</span>
+        @RequiredDescription
         @* The grid stays one element across the views, since the script listens on it. *@
         <table @ref="_grid" @attributes="ControlAttributes" id="@InputId" role="grid" data-part="grid"
                data-view="@_view.ToString().ToLowerInvariant()" data-shown="@_shown"
                data-ready="@(_handle is null ? null : "")"
                aria-labelledby="@(ShownLabel is null ? TitleId : $"{LabelId} {TitleId}")"
-               aria-describedby="@InputDescribedBy" aria-required="@AriaRequired"
+               aria-describedby="@DescribedWithRequired(InputDescribedBy)"
                aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
                aria-disabled="@(Disabled ? "true" : null)"
                class="@ClassNames.Join("tb-calendar__grid", ClassNames.Modifier("tb-calendar__grid", _view), Classes?.Input)">

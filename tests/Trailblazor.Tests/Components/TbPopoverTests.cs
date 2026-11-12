@@ -112,6 +112,24 @@ public class TbPopoverTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameThePanelByTheGivenElement_WhenPanelLabelledByIsSetWithoutATitle()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Shortcuts")
+            .Add(popover => popover.PanelLabelledBy, "shortcuts-heading"));
+
+        Assert.Equal("shortcuts-heading", cut.Find("[data-part=panel]").GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
+    public void Render_ShouldNameThePanelByItsTitle_WhenPanelLabelledByIsSetToo()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Shortcuts")
+            .Add(popover => popover.Title, "Keyboard shortcuts").Add(popover => popover.PanelLabelledBy, "elsewhere"));
+
+        Assert.Equal(cut.Find("[data-part=title]").Id, cut.Find("[data-part=panel]").GetAttribute("aria-labelledby"));
+    }
+
+    [Fact]
     public void Render_ShouldNameThePanelAfterTheTrigger_WhenThereIsNoTitle()
     {
         var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Shortcuts"));

@@ -34,7 +34,7 @@ public class CheckboxGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
         await ways.GetByRole(AriaRole.Checkbox, new() { Name = "Email" }).UncheckAsync();
 
         await Expect(ways).ToHaveAttributeAsync("aria-invalid", "true");
-        await Expect(ways).ToHaveAccessibleDescriptionAsync("Pick at least one. Pick at least one way to reach you.");
+        await Expect(ways).ToHaveAccessibleDescriptionAsync("Pick at least one. Pick at least one way to reach you. required");
         await Expect(ways.GetByRole(AriaRole.Checkbox, new() { Name = "Phone call" }))
             .ToHaveAttributeAsync("aria-invalid", "true");
     }

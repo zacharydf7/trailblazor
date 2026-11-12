@@ -1,0 +1,17 @@
+<TbForm @ref="_form" aria-label="Hike plan">
+    <TbCalendar TDate="DateOnly" Label="Permit date" Required @bind-Value="_hike" />
+</TbForm>
+
+@code {
+    private TbForm _form = default!;
+    private DateOnly? _hike;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+}

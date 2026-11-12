@@ -31,6 +31,7 @@ Familiar apps: the month view beside a booking form, a phone's calendar app jump
 
 ## Focus
 
+- [x] A required calendar's grid is described as "required", since a grid can't carry `aria-required`. `TbCalendarTests.Required_ShouldDescribeTheGridAsRequiredAndBeValid_WhenADateIsChosen`
 - [x] Screen readers hear a group named by the label, a grid named by the label and the month, and each day by its full date. `TbCalendarTests.Render_ShouldNameTheGridByTheLabelAndTitle_WhenLabeled`
 - [x] Content added to a day is read after its date. `TbCalendarTests.DayTemplate_ShouldShowUnderTheDayAndDescribeIt_WhenGiven`
 - [x] A new month or value from the parent brings its month into view, the same month given again leaves the calendar where the user took it, and each month the user moves to is reported. `TbCalendarTests.Month_ShouldShowTheGivenMonth_WhenTheParentSetsIt`, `TbCalendarTests.Month_ShouldStayWhereTheUserTookIt_WhenTheParentRendersAgainWithTheMonthItGave`, `TbCalendarTests.Value_ShouldBringItsMonthIntoView_WhenTheParentChangesIt`, `TbCalendarTests.MonthChanged_ShouldReportEachMonthShown_WhenTheUserMovesThroughTheViews`

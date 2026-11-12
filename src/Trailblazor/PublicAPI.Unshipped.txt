@@ -575,6 +575,7 @@ const Trailblazor.TbStrings.DialogSizeMedium = "Dialog.Size.Medium" -> string!
 const Trailblazor.TbStrings.DialogSizeSmall = "Dialog.Size.Small" -> string!
 const Trailblazor.TbStrings.FieldInvalid = "Field.Invalid" -> string!
 const Trailblazor.TbStrings.FieldRequired = "Field.Required" -> string!
+const Trailblazor.TbStrings.FieldRequiredMark = "Field.RequiredMark" -> string!
 const Trailblazor.TbStrings.FieldUnnamed = "Field.Unnamed" -> string!
 const Trailblazor.TbStrings.FileUploadBytes = "FileUpload.Bytes" -> string!
 const Trailblazor.TbStrings.FileUploadChoose = "FileUpload.Choose" -> string!
@@ -2511,6 +2512,8 @@ Trailblazor.TbPopover.Placement.set -> void
 Trailblazor.TbPopover.Size.get -> Trailblazor.Size
 Trailblazor.TbPopover.Size.set -> void
 Trailblazor.TbPopover.TbPopover() -> void
+Trailblazor.TbPopover.PanelLabelledBy.get -> string?
+Trailblazor.TbPopover.PanelLabelledBy.set -> void
 Trailblazor.TbPopover.Title.get -> string?
 Trailblazor.TbPopover.Title.set -> void
 Trailblazor.TbPopover.Trigger.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.PopoverTrigger!>?

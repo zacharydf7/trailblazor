@@ -224,8 +224,8 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         ],
         ["tree-select"] =
         [
-            new(new("dialog", "Trail"), page => ClickWhenReadyAsync(Button(page, "Trail Choose a trail"))),
-            new(new("dialog", "Regions"), page => ClickWhenReadyAsync(Button(page, "Regions Choose regions"))),
+            new(new("dialog", "Trail"), page => ClickWhenReadyAsync(Combobox(page, "Trail Choose a trail"))),
+            new(new("dialog", "Regions"), page => ClickWhenReadyAsync(Combobox(page, "Regions Choose regions"))),
         ],
         ["popover"] =
         [
@@ -264,6 +264,9 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static ILocator Button(IPage page, string name) =>
         page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
+    private static ILocator Combobox(IPage page, string name) =>
+        page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
 
     // A control whose script opens its popup is clicked once the script has attached.
     private static async Task ClickWhenReadyAsync(ILocator control)

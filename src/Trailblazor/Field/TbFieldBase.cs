@@ -269,6 +269,11 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     private protected string ErrorId => $"{FieldId}-error";
 
+    private protected string RequiredId => $"{FieldId}-required";
+
+    private protected string? DescribedWithRequired(string? describedBy) =>
+        !IsRequired ? describedBy : describedBy is null ? RequiredId : $"{describedBy} {RequiredId}";
+
     // The input attributes come first, so ours win; where ours are empty the consumer's still apply.
     private protected object? InputNameAttribute => _inputName ?? InputAttributes?.GetValueOrDefault("name");
 

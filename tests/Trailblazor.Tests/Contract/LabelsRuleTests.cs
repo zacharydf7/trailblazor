@@ -36,7 +36,7 @@ public partial class LabelsRuleTests
         ["DialogService"] = "its callers pass the title and the buttons' text",
         ["ToastService"] = "its callers pass the toast's text; the hint that an action is available is app-wide",
         ["TbFieldBase"] = "RequiredMessage and InfoButtonLabel replace two of its messages; the invalid-value and "
-            + "unnamed-field messages are app-wide, worded by the app's localizer",
+            + "unnamed-field messages and the spoken \"required\" are app-wide, worded by the app's localizer",
     };
 
     private static readonly string Source = Path.Combine(Repository.Root, "src", "Trailblazor");

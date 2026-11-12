@@ -42,6 +42,16 @@
             }
         </text>;
 
+    // A group or grid can't carry aria-required, so hidden text describes it as required instead. Keeping that text out
+    // of the label leaves its name, which test helpers match, unchanged.
+    private protected RenderFragment RequiredDescription =>
+        @<text>
+            @if (IsRequired)
+            {
+                <span id="@RequiredId" hidden>@Localizer[TbStrings.FieldRequiredMark]</span>
+            }
+        </text>;
+
     private protected RenderFragment Messages(string? helperClass, string? errorClass) =>
         @<text>
             @if (HelperText is not null)

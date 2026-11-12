@@ -7,7 +7,7 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     private static async Task<ILocator> OpenFieldAsync(IPage page)
     {
-        var field = page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Trail ") });
+        var field = page.GetByRole(AriaRole.Combobox, new() { NameRegex = new Regex("^Trail ") });
         await Expect(field).ToHaveAttributeAsync("data-ready", "");
         return field;
     }
@@ -77,7 +77,7 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task TreeSelectLocator_ShouldThrow_WhenTheFieldCantChange(string browser)
     {
         var page = await OpenAsync(browser, "/tree-select-states");
-        await Expect(page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Plain trail") }))
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { NameRegex = new Regex("^Plain trail") }))
             .ToHaveAttributeAsync("data-ready", "");
 
         foreach (var label in new[] { "Closed trail", "Fixed trail" })
@@ -283,7 +283,7 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static async Task<ILocator> OpenRegionsAsync(IPage page)
     {
-        var field = page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Regions ") });
+        var field = page.GetByRole(AriaRole.Combobox, new() { NameRegex = new Regex("^Regions ") });
         await Expect(field).ToHaveAttributeAsync("data-ready", "");
         return field;
     }

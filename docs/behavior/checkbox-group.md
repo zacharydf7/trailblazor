@@ -26,6 +26,7 @@ Familiar apps: the filter lists on shopping sites, notification settings pages
 
 ## Focus
 
+- [x] A required group is described as "required", including when it has an info button, since a group can't carry `aria-required`. `TbCheckboxGroupTests.Render_ShouldDescribeTheGroupAsRequiredButLeaveItsName_WhenRequired`, `TbCheckboxGroupTests.Render_ShouldDescribeTheGroupAsRequired_WhenItHasAnInfoButton`
 - [x] `FocusAsync` moves focus to the first enabled box. `TbCheckboxGroupTests.FocusAsync_ShouldAskTheScriptToFocusACheckboxInTheGroup_WhenCalled`
 - [x] A failed submit moves focus to the first enabled box when the group holds the first error. `form.js`
 - [x] `AutoFocus` sends focus to the first enabled box. `focus-scope.js`

@@ -100,7 +100,7 @@ public class TbCheckboxGroupTests : BunitContext
         var group = cut.Find("fieldset");
         Assert.Contains("tb-checkbox-group--invalid", group.ClassList);
         Assert.Equal("true", group.GetAttribute("aria-invalid"));
-        Assert.Equal(cut.Find("[data-part=error]").Id, group.GetAttribute("aria-describedby"));
+        Assert.StartsWith(cut.Find("[data-part=error]").Id, group.GetAttribute("aria-describedby"));
         Assert.All(cut.FindAll("input[type=checkbox]"), box => Assert.Equal("true", box.GetAttribute("aria-invalid")));
         Assert.Contains("*", cut.Find("legend").TextContent);
     }
@@ -199,6 +199,29 @@ public class TbCheckboxGroupTests : BunitContext
         cut.FindAll("input")[1].Change(true);
 
         Assert.Equal([1, 2], chosen);
+    }
+
+    [Fact]
+    public void Render_ShouldDescribeTheGroupAsRequiredButLeaveItsName_WhenRequired()
+    {
+        var cut = RenderGroup([], helperText: "Pick at least one.", required: true);
+
+        var fieldset = cut.Find("fieldset");
+        Assert.Equal(["Pick at least one.", "required"], fieldset.GetAttribute("aria-describedby")!.Split(' ')
+            .Select(id => cut.Find($"#{id}").TextContent.Trim()));
+        Assert.Null(fieldset.GetAttribute("aria-required"));
+        Assert.Equal("Days *", cut.Find("legend").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldDescribeTheGroupAsRequired_WhenItHasAnInfoButton()
+    {
+        var cut = Render<TbCheckboxGroup<string>>(parameters => parameters.Add(group => group.Label, "Days")
+            .Add(group => group.Info, "Weekdays only.").Add(group => group.Required, true));
+
+        var fieldset = cut.Find("fieldset");
+        Assert.Equal("Days", cut.Find($"#{fieldset.GetAttribute("aria-labelledby")}").TextContent);
+        Assert.Equal("required", cut.Find($"#{fieldset.GetAttribute("aria-describedby")}").TextContent);
     }
 
     private IRenderedComponent<TbCheckboxGroup<string>> RenderGroup(IReadOnlyList<string> value,

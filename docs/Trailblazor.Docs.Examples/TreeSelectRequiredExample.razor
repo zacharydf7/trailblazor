@@ -1,0 +1,28 @@
+<TbForm @ref="_form" aria-label="Hike plan">
+    <TbTreeSelect TItem="Place" TKey="string" Label="Route" Items="Places" KeySelector="place => place.Id"
+                  ItemText="place => place.Name" ChildrenSelector="place => place.Children"
+                  IsSelectable="place => place.Children is null" Placeholder="Choose a route" Required
+                  @bind-Value="_trail" />
+</TbForm>
+
+@code {
+    private static readonly Place[] Places =
+    [
+        new("north", "North ridge", [new("pine", "Pine Hollow loop"), new("eagle", "Eagle Ridge traverse")]),
+        new("valley", "River valley", [new("cedar", "Cedar Flats")]),
+    ];
+
+    private TbForm _form = default!;
+    private string? _trail;
+
+    // Only so this demo shows its message on load; a real form waits for a submit.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _form.ValidateAsync();
+        }
+    }
+
+    private sealed record Place(string Id, string Name, IReadOnlyList<Place>? Children = null);
+}

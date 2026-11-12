@@ -12,7 +12,7 @@
     var markedChosen = Shown(_markedChosen, chosen);
 }
 <fieldset @attributes="GroupRootAttributes" disabled="@Disabled" style="@Style"
-          aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedBy"
+          aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedWithRequired(DescribedBy)"
           class="@ClassNames.Join("tb-transfer-list", ClassNames.Modifier("tb-transfer-list", Size),
                      ShowsInvalid ? "tb-transfer-list--invalid" : null, Class)">
     @if (ShownLabel is not null)
@@ -21,6 +21,7 @@
             @ShownLabel @RequiredMarker @InfoButton
         </legend>
     }
+    @RequiredDescription
     @* Hide the page's form from the inner lists and filter boxes, so the form tracks only the transfer list's value. *@
     <CascadingValue TValue="EditContext" Value="null">
         <CascadingValue TValue="TbForm" Value="null">

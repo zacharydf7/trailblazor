@@ -23,7 +23,7 @@
         </TbButton>
     }
     <div @ref="_panel" id="@PanelId" popover="auto" role="dialog" tabindex="-1" data-part="panel"
-         aria-labelledby="@(Title is null ? TriggerId : TitleId)" aria-describedby="@Described?.Id"
+         aria-labelledby="@(Title is null ? PanelLabelledBy ?? TriggerId : TitleId)" aria-describedby="@Described?.Id"
          class="tb-popover__panel">
         @if (Title is not null)
         {
@@ -83,6 +83,12 @@
     /// names the panel.</summary>
     [Parameter]
     public string? Title { get; set; }
+
+    /// <summary>The id of an element that names the panel when it has no <see cref="Title"/>, in place of the
+    /// trigger. Set it when the trigger can't name the panel well, such as a combobox, which would name it by its
+    /// current value instead of its label.</summary>
+    [Parameter]
+    public string? PanelLabelledBy { get; set; }
 
     /// <summary>Which side of the trigger the panel opens on. It flips to the other side
     /// when there's no room. Placed to the side in a narrow window, it wraps to fit or else overlaps the trigger.
